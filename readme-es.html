@@ -147,6 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Lee páginas PDF escaneadas con el OCR integrado en Windows y macOS.</li>
 <li>Marcadores y notas, para que puedas marcar tu lugar y volver a él.</li>
 <li>Cada atajo de teclado puede ser personalizado.</li>
+<li>Abre documentos directamente desde enlaces http y https, y los descarga nuevamente cuando los reabre o presiona <code>F5</code>, manteniendo tu posición de lectura y marcadores. Al restaurar los documentos que tenías abiertos, descarga nuevamente los de enlaces que eran de 2 MB o menores.</li>
 <li>Viene con <code>pb</code>, una herramienta de línea de comandos que convierte cualquier documento compatible a HTML, Markdown o texto plano. Acepta tantos documentos como le proporciones, expande <code>*.pdf</code> y similares por sí sola para que el mismo comando funcione en Windows, y puede escribir un archivo por documento en una carpeta. También puede leer una lista de documentos de un archivo o desde stdin con <code>--files-from</code>, y convertir documentos directamente desde enlaces http y https.</li>
 </ul>
 <h2 id="compatibilidad-con-lectores-de-pantalla">Compatibilidad con lectores de pantalla</h2>
@@ -188,6 +189,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="menú-archivo">Menú Archivo</h3>
 <ul>
 <li><code>Ctrl+O</code>: Abre un documento.</li>
+<li><code>Ctrl+L</code> (macOS: <code>Cmd+Option+O</code>): Abre un documento desde un enlace web.</li>
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Cierra el documento actual.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Cierra todos los documentos abiertos.</li>
 <li><code>Ctrl+Shift+T</code>: Reabre el último documento cerrado.</li>
@@ -209,7 +211,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h3 id="menú-vista">Menú Vista</h3>
 <ul>
-<li><code>F5</code>: Vuelve a leer el documento actual desde el disco. Funciona tanto si “Recargar automáticamente documentos modificados” está activado en Configuración como si no.</li>
+<li><code>F5</code>: Vuelve a leer el documento actual desde el disco, o lo descarga de nuevo si se abrió desde un enlace. Funciona tanto si “Recargar automáticamente documentos modificados” está activado en Configuración como si no.</li>
 <li><code>Ctrl+Alt+W</code>: Alterna el ajuste de palabras.</li>
 <li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, es decir, Control+Comando+F): Alterna pantalla completa.</li>
 <li><code>Ctrl+Shift+V</code>: Abre el contenido actual en Vista web.</li>
@@ -327,7 +329,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>Cambiar a modo TTS o Cambiar a modo Texto:</strong> se mueve entre el modo lectura en voz alta y el modo texto, descrito arriba. En modo texto, un elemento Lectura en voz alta inicia y pausa la lectura en voz alta sin salir del modo texto.</li>
 <li><strong>Tabla de contenidos:</strong> los capítulos del libro, abiertos en el que estás leyendo. Elige uno para ir directamente a él. Las entradas con capítulos bajo ellas pueden expandirse y contraerse con las acciones del lector de pantalla.</li>
 <li><strong>Elementos:</strong> una lista de los encabezados o enlaces del documento. Cambia entre los dos con el selector de Tipo en iOS, o las pestañas en Android, luego elige uno para ir a él.</li>
-<li><strong>Buscar:</strong> escribe lo que quieres buscar, o elige una búsqueda anterior del Historial de búsqueda, y elige si deseas coincidir mayúsculas y minúsculas, coincidir solo palabras completas, o usar una expresión regular. Buscar anterior y Buscar siguiente saltan a una coincidencia y dicen dónde llegó, y Buscar permanece abierto para que puedas continuar. En modo lectura en voz alta, Buscar también aparece como una unidad de navegación en la barra de lectura, para que puedas navegar por las coincidencias desde allí también.</li>
+<li><strong>Buscar:</strong> escribe lo que quieres buscar, o elige una búsqueda anterior del Historial de búsquedas, y elige si deseas coincidir mayúsculas y minúsculas, coincidir solo palabras completas, o usar una expresión regular. Buscar anterior y Buscar siguiente saltan a una coincidencia y dicen dónde llegó, y Buscar permanece abierto para que puedas continuar. En modo lectura en voz alta, Buscar también aparece como una unidad de navegación en la barra de lectura, para que puedas navegar por las coincidencias desde allí también. <strong>Detener lectura después de coincidencias de búsqueda</strong> en Configuración bajo Síntesis de voz está activado por defecto y se detiene después de leer el párrafo que contiene una coincidencia. Desactívalo para continuar leyendo desde la coincidencia mientras los controles Anterior y Siguiente de la barra de lectura aún navegan por Buscar.</li>
 <li><strong>Ir a:</strong> salta a una línea, una página, o un porcentaje del documento. Elige cuál con el selector de Modo.</li>
 <li><strong>Documentos recientes:</strong> todos los documentos que has abierto, cada uno marcado como actualmente abierto, cerrado o archivo no encontrado. Cada uno tiene dos acciones del lector de pantalla: Eliminar lo quita de la lista, y Localizar te permite encontrar un documento cuyo archivo se ha movido. Borrar documentos recientes vacía la lista sin eliminar ningún documento.</li>
 <li><strong>Contar palabras:</strong> el número de palabras en el documento.</li>

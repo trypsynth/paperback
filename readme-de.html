@@ -147,6 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Liest gescannte PDF-Seiten mit der in Windows und macOS integrierten Texterkennung.</li>
 <li>Lesezeichen und Notizen, damit du deine Position markieren und später dorthin zurückkehren kannst.</li>
 <li>Jede Tastenkombination kann geändert werden.</li>
+<li>Öffnet Dokumente direkt aus http- und https-Links, und lädt sie erneut herunter, wenn du sie erneut öffnest oder <code>F5</code> drückst, wobei die Leseposition und Lesezeichen erhalten bleiben. Beim Wiederherstellen der Dokumente, die du geöffnet hattest, lädt es erneut die Dokumente aus Links herunter, die 2 MB oder kleiner waren.</li>
 <li>Kommt mit <code>pb</code>, einem Befehlszeilentool, das beliebige unterstützte Dokumente in HTML, Markdown oder einfachen Text konvertiert. Es verarbeitet beliebig viele Dokumente, expandiert <code>*.pdf</code> und ähnliches selbst, sodass dieselbe Befehlszeile auf Windows funktioniert, und kann eine Datei pro Dokument in einen Ordner schreiben. Es kann auch eine Liste von Dokumenten aus einer Datei oder von stdin mit <code>--files-from</code> lesen und Dokumente direkt von http- und https-Links konvertieren.</li>
 </ul>
 <h2 id="bildschirmleser-kompatibilität">Bildschirmleser-Kompatibilität</h2>
@@ -188,6 +189,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="menü-datei">Menü „Datei“</h3>
 <ul>
 <li><code>Ctrl+O</code>: Öffnet ein Dokument.</li>
+<li><code>Ctrl+L</code> (macOS: <code>Cmd+Option+O</code>): Ein Dokument von einem Weblink öffnen.</li>
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Schließt das aktuelle Dokument.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Schließt alle offenen Dokumente.</li>
 <li><code>Ctrl+Shift+T</code>: Öffnet das zuletzt geschlossene Dokument erneut.</li>
@@ -209,7 +211,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h3 id="menü-ansicht">Menü „Ansicht“</h3>
 <ul>
-<li><code>F5</code>: Liest das aktuelle Dokument von der Festplatte neu ein. Funktioniert unabhängig davon, ob „Geänderte Dokumente automatisch neu laden“ in den Einstellungen aktiviert ist.</li>
+<li><code>F5</code>: Liest das aktuelle Dokument von der Festplatte neu ein, oder lädt es erneut herunter, wenn es von einem Link aus geöffnet wurde. Funktioniert unabhängig davon, ob „Geänderte Dokumente automatisch neu laden“ in den Einstellungen aktiviert ist.</li>
 <li><code>Ctrl+Alt+W</code>: Wortumbruch umschalten.</li>
 <li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, d. h. Strg+Cmd+F): Vollbild umschalten.</li>
 <li><code>Ctrl+Shift+V</code>: Aktuellen Inhalt in der Webansicht öffnen.</li>
@@ -327,7 +329,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>Zu Vorlesemodus oder zu Textmodus wechseln:</strong> wechselt zwischen dem Modus „Vorlesen“ und dem Textmodus (siehe oben). Im Textmodus startet und pausiert ein Eintrag „Vorlesen“ die Wiedergabe, ohne den Textmodus zu verlassen.</li>
 <li><strong>Inhaltsverzeichnis:</strong> zeigt die Kapitel des Buchs und öffnet das Kapitel, das du gerade liest. Wähle ein Kapitel, um direkt dorthin zu springen. Einträge mit Unterkapiteln können mit den Aktionen des Bildschirmlesers aus- und eingeklappt werden.</li>
 <li><strong>Elemente:</strong> eine Liste der Überschriften oder Links des Dokuments. Wechsle zwischen beiden mit der Typauswahl unter iOS oder den Registerkarten unter Android, und wähle dann einen Eintrag, um dorthin zu springen.</li>
-<li><strong>Suchen:</strong> gib ein, was zu suchen ist, oder wähle eine frühere Suche aus dem Suchverlauf, und entscheide, ob Groß- und Kleinschreibung beachtet werden soll, nur ganze Wörter gesucht werden sollen, oder ein regulärer Ausdruck verwendet werden soll. „Vorherige suchen“ und „Nächste suchen“ springen zu einer Übereinstimmung und geben an, wo sie gefunden wurde. Die Suche bleibt offen, sodass du weitermachen kannst. Im Vorlesemodus wird die Suche auch als Navigationselement in der Leiste angezeigt, sodass du die Übereinstimmungen auch von dort aus durchgehen kannst.</li>
+<li><strong>Suchen:</strong> gib ein, was zu suchen ist, oder wähle eine frühere Suche aus dem Suchverlauf, und entscheide, ob Groß- und Kleinschreibung beachtet werden soll, nur ganze Wörter gesucht werden sollen, oder ein regulärer Ausdruck verwendet werden soll. „Vorheriges finden“ und „Nächstes finden“ springen zu einer Übereinstimmung und geben an, wo sie gefunden wurde. Die Suche bleibt offen, sodass du weitermachen kannst. Im Vorlesemodus wird die Suche auch als Navigationselement in der Leiste angezeigt, sodass du die Übereinstimmungen auch von dort aus durchgehen kannst. <strong>Nach Suchtreffern stoppen</strong> in den Einstellungen unter „Sprachausgabe“ ist standardmäßig aktiviert und stoppt nach dem Vorlesen des Absatzes, der einen Treffer enthält. Deaktiviere diese Einstellung, um ab dem Treffer weiterzulesen, während die Steuerelemente „Vorheriges“ und „Nächstes“ in der Leiste weiterhin nach Suchtreffern navigieren.</li>
 <li><strong>Gehe zu:</strong> springe zu einer Zeile, einer Seite oder einer Prozentzahl im Dokument. Wähle mit der Modusauswahl aus.</li>
 <li><strong>Zuletzt geöffnete Dokumente:</strong> alle Dokumente, die du geöffnet hast, jeweils gekennzeichnet als zurzeit offen, geschlossen oder Datei fehlt. Jedes Dokument hat zwei Aktionen des Bildschirmlesers: „Entfernen“ nimmt es aus der Liste, und „Suchen“ ermöglicht es dir, ein Dokument zu finden, dessen Datei verschoben wurde. „Zuletzt geöffnete Dokumente löschen“ leert die Liste, ohne Dokumente zu löschen.</li>
 <li><strong>Wortanzahl:</strong> die Anzahl der Wörter im Dokument.</li>

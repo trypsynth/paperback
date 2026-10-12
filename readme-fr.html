@@ -147,6 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Lit les pages PDF numérisées avec l’OCR intégré à Windows et macOS.</li>
 <li>Signets et notes, pour que vous puissiez marquer votre place et y revenir.</li>
 <li>Chaque raccourci clavier peut être modifié.</li>
+<li>Ouvre les documents directement à partir de liens http et https, et les télécharge à nouveau quand vous les rouvrez ou appuyez sur <code>F5</code>, en conservant votre position de lecture et vos signets. Lors de la restauration des documents que vous aviez ouverts, il télécharge à nouveau ceux des liens qui faisaient 2 Mo ou moins.</li>
 <li>Livré avec <code>pb</code>, un outil en ligne de commande qui convertit tout document pris en charge en HTML, Markdown ou texte brut. Il accepte autant de documents que vous lui en fournissez, développe <code>*.pdf</code> et les fichiers similaires de lui-même pour que la même ligne de commande fonctionne sur Windows, et peut écrire un fichier par document dans un dossier. Il peut également lire une liste de documents à partir d’un fichier ou de stdin avec <code>--files-from</code>, et convertir des documents directement à partir de liens http et https.</li>
 </ul>
 <h2 id="compatibilité-avec-les-lecteurs-décran">Compatibilité avec les lecteurs d’écran</h2>
@@ -188,6 +189,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="menu-fichier">Menu Fichier</h3>
 <ul>
 <li><code>Ctrl+O</code> : Ouvrir un document.</li>
+<li><code>Ctrl+L</code> (macOS : <code>Cmd+Option+O</code>) : Ouvrir un document à partir d’un lien web.</li>
 <li><code>Ctrl+F4</code> (macOS : <code>Cmd+W</code>) : Fermer le document actif.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS : <code>Cmd+Shift+W</code>) : Fermer tous les documents ouverts.</li>
 <li><code>Ctrl+Shift+T</code> : Rouvrir le dernier document fermé.</li>
@@ -209,7 +211,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h3 id="menu-affichage">Menu Affichage</h3>
 <ul>
-<li><code>F5</code> : Relire le document actif depuis le disque. Fonctionne que « Recharger automatiquement les documents modifiés » soit activé ou non dans Paramètres.</li>
+<li><code>F5</code> : Relire le document actif depuis le disque, ou le télécharger à nouveau s’il a été ouvert à partir d’un lien. Fonctionne que « Recharger automatiquement les documents modifiés » soit activé ou non dans Paramètres.</li>
 <li><code>Ctrl+Alt+W</code> : Basculer le retour à la ligne automatique.</li>
 <li><code>F11</code> (macOS : <code>RawCtrl+Ctrl+F</code>, c’est-à-dire Control+Command+F) : Basculer le mode plein écran.</li>
 <li><code>Ctrl+Shift+V</code> : Ouvrir le contenu actuel dans Vue Web.</li>
@@ -327,7 +329,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>Passer au mode TTS ou Passer au mode Texte :</strong> bascule entre le mode lecture à haute voix et le mode texte, décrit ci-dessus. En mode texte, un élément Lire à haute voix lance et met en pause la lecture à haute voix sans quitter le mode texte.</li>
 <li><strong>Table des matières :</strong> les chapitres du livre, ouverts à celui que vous lisez. Choisissez-en un pour y aller directement. Les entrées ayant des chapitres sous elles peuvent être développées et réduites avec les actions du lecteur d’écran.</li>
 <li><strong>Éléments :</strong> une liste des titres ou des liens du document. Basculez entre les deux avec le sélecteur Type sur iOS, ou les onglets sur Android, puis choisissez-en un pour y aller.</li>
-<li><strong>Rechercher :</strong> tapez ce que vous cherchez, ou choisissez une recherche antérieure dans l’Historique de recherche, et choisissez s’il faut respecter la casse, faire correspondre des mots entiers seulement, ou utiliser une expression régulière. Rechercher le précédent et Rechercher le suivant sautent à une correspondance et indiquent où c’est tombé, et Rechercher reste ouvert pour que vous puissiez continuer. En mode lecture à haute voix, Rechercher s’affiche également comme une unité de navigation sur la barre de lecture, ce qui vous permet de parcourir les correspondances à partir de là aussi.</li>
+<li><strong>Rechercher :</strong> tapez ce que vous cherchez, ou choisissez une recherche antérieure dans l’Historique des recherches, et choisissez s’il faut respecter la casse, faire correspondre des mots entiers seulement, ou utiliser une expression régulière. Rechercher le précédent et Rechercher suivant sautent à une correspondance et indiquent où c’est tombé, et Rechercher reste ouvert pour que vous puissiez continuer. En mode lecture à haute voix, Rechercher s’affiche également comme une unité de navigation sur la barre de lecture, ce qui vous permet de parcourir les correspondances à partir de là aussi. <strong>Arrêter la lecture après les correspondances de recherche</strong> dans les Paramètres sous Synthèse vocale est activé par défaut et arrête après la lecture du paragraphe contenant une correspondance. Désactivez-le pour continuer la lecture à partir de la correspondance tandis que les contrôles précédent et suivant de la barre de lecture naviguent toujours par Rechercher.</li>
 <li><strong>Aller à :</strong> sautez à une ligne, une page, ou un pourcentage du document. Choisissez lequel avec le sélecteur Mode.</li>
 <li><strong>Documents récents :</strong> tous les documents que vous avez ouverts, chacun marqué comme actuellement ouvert, fermé ou fichier manquant. Chacun a deux actions du lecteur d’écran : Supprimer l’enlève de la liste, et Localiser vous permet de trouver un document dont le fichier a été déplacé. Effacer les documents récents vide la liste sans supprimer de documents.</li>
 <li><strong>Nombre de mots :</strong> le nombre de mots du document.</li>

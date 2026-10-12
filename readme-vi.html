@@ -147,6 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Đọc các trang PDF được quét bằng OCR tích hợp trong Windows và macOS.</li>
 <li>Dấu trang và ghi chú, để bạn có thể đánh dấu vị trí của mình và quay lại nó.</li>
 <li>Mọi phím tắt bàn phím có thể được thay đổi.</li>
+<li>Mở tài liệu trực tiếp từ các liên kết http và https, và tải xuống lại chúng khi bạn mở lại hoặc nhấn <code>F5</code>, giữ lại vị trí đọc và dấu trang của bạn. Khi khôi phục các tài liệu bạn đã mở, nó tải xuống lại những tài liệu từ các liên kết có kích thước 2 MB trở xuống.</li>
 <li>Đi kèm với <code>pb</code>, một công cụ dòng lệnh chuyển đổi bất kỳ tài liệu được hỗ trợ nào thành HTML, Markdown hoặc văn bản thuần túy. Nó có thể nhận bao nhiêu tài liệu bạn cung cấp, tự động mở rộng <code>*.pdf</code> và các tệp tương tự để lệnh dòng lệnh tương tự hoạt động trên Windows, và có thể ghi một tệp trên mỗi tài liệu vào một thư mục. Nó cũng có thể đọc danh sách các tài liệu từ một tệp hoặc từ stdin với <code>--files-from</code>, và chuyển đổi các tài liệu trực tiếp từ các liên kết http và https.</li>
 </ul>
 <h2 id="khả-năng-tương-thích-với-trình-đọc-màn-hình">Khả năng Tương thích với Trình Đọc Màn hình</h2>
@@ -188,6 +189,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="menu-tệp">Menu Tệp</h3>
 <ul>
 <li><code>Ctrl+O</code>: Mở một tài liệu.</li>
+<li><code>Ctrl+L</code> (macOS: <code>Cmd+Option+O</code>): Mở một tài liệu từ một liên kết web.</li>
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Đóng tài liệu hiện tại.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Đóng tất cả các tài liệu đang mở.</li>
 <li><code>Ctrl+Shift+T</code>: Mở lại tài liệu đã đóng lần cuối.</li>
@@ -209,7 +211,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h3 id="menu-xem">Menu Xem</h3>
 <ul>
-<li><code>F5</code>: Đọc lại tài liệu hiện tại từ đĩa. Hoạt động cho dù “Tự động tải lại các tài liệu đã thay đổi” có được bật trong Cài đặt hay không.</li>
+<li><code>F5</code>: Đọc lại tài liệu hiện tại từ đĩa, hoặc tải lại nếu nó được mở từ một liên kết. Hoạt động cho dù “Tự động tải lại các tài liệu đã thay đổi” có được bật trong Cài đặt hay không.</li>
 <li><code>Ctrl+Alt+W</code>: Bật/tắt tự động ngắt dòng.</li>
 <li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, tức là Control+Command+F): Bật/tắt toàn màn hình.</li>
 <li><code>Ctrl+Shift+V</code>: Mở nội dung hiện tại trong Chế độ xem web.</li>
@@ -327,7 +329,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>Switch to TTS Mode hoặc Switch to Text Mode:</strong> di chuyển giữa chế độ đọc to và chế độ văn bản, được mô tả ở trên. Ở chế độ văn bản, mục Read Aloud bắt đầu và tạm dừng đọc to mà không rời khỏi chế độ văn bản.</li>
 <li><strong>Table of Contents:</strong> các chương của sách, được mở tại chương bạn đang đọc. Chọn một để đi thẳng tới nó. Các mục có các chương dưới chúng có thể được mở rộng và thu gọn bằng các hành động của trình đọc màn hình.</li>
 <li><strong>Elements:</strong> danh sách các tiêu đề hoặc liên kết của tài liệu. Chuyển đổi giữa hai cái bằng Bộ chọn Type trên iOS hoặc các thẻ trên Android, sau đó chọn một để đi tới nó.</li>
-<li><strong>Find:</strong> nhập những gì cần tìm hoặc chọn tìm kiếm trước đó từ Search History, và chọn xem có so khớp chữ hoa chữ thường, chỉ khớp toàn bộ từ hay sử dụng biểu thức chính quy. Find Previous và Find Next nhảy đến một kết quả khớp và cho biết nó được đặt ở đâu, và Find vẫn mở để bạn có thể tiếp tục. Ở chế độ đọc to, Find cũng xuất hiện dưới dạng đơn vị điều hướng trên thanh đọc, vì vậy bạn có thể bước qua các kết quả khớp từ đó.</li>
+<li><strong>Find:</strong> nhập những gì cần tìm hoặc chọn tìm kiếm trước đó từ Lịch sử tìm kiếm, và chọn xem có so khớp chữ hoa chữ thường, chỉ khớp toàn bộ từ hay sử dụng biểu thức chính quy. Tìm từ trước và Tìm từ tiếp theo nhảy đến một kết quả khớp và cho biết nó được đặt ở đâu, và Tìm vẫn mở để bạn có thể tiếp tục. Ở chế độ đọc to, Tìm cũng xuất hiện dưới dạng đơn vị điều hướng trên thanh đọc, vì vậy bạn có thể bước qua các kết quả khớp từ đó. <strong>Stop reading after search matches</strong> trong Cài đặt dưới Text to Speech được bật theo mặc định và dừng lại sau khi đọc đoạn văn chứa kết quả khớp. Tắt nó để tiếp tục đọc từ kết quả khớp trong khi các điều khiển trước và tiếp theo của thanh đọc vẫn điều hướng theo Tìm.</li>
 <li><strong>Go To:</strong> nhảy tới một dòng, một trang hoặc một phần trăm trong tài liệu. Chọn cái nào bằng Bộ chọn Mode.</li>
 <li><strong>Recent Documents:</strong> mọi tài liệu bạn đã mở, mỗi tài liệu được đánh dấu là hiện đang mở, đã đóng hoặc tệp bị thiếu. Mỗi tài liệu có hai hành động của trình đọc màn hình: Remove loại bỏ nó khỏi danh sách và Locate cho phép bạn tìm tài liệu có tệp đã được di chuyển. Clear Recent Documents làm trống danh sách mà không xóa bất kỳ tài liệu nào.</li>
 <li><strong>Word Count:</strong> số từ trong tài liệu.</li>
