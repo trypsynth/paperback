@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 5e3e3226ca7ab1c2; sections: 84030068,db723a70,df2f4c18,6a9811ab,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 00f7ee3d7a248f3f; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,a06775bf,3a4c3efe,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - Version 1.0
 
@@ -25,6 +25,7 @@ Paperback läuft auf Windows 10/11, allen modernen ARM-Versionen von macOS, Linu
 * Liest gescannte PDF-Seiten mit der in Windows und macOS integrierten Texterkennung.
 * Lesezeichen und Notizen, damit du deine Position markieren und später dorthin zurückkehren kannst.
 * Jede Tastenkombination kann geändert werden.
+* Öffnet Dokumente direkt aus http- und https-Links, und lädt sie erneut herunter, wenn du sie erneut öffnest oder `F5` drückst, wobei die Leseposition und Lesezeichen erhalten bleiben. Beim Wiederherstellen der Dokumente, die du geöffnet hattest, lädt es erneut die Dokumente aus Links herunter, die 2 MB oder kleiner waren.
 * Kommt mit `pb`, einem Befehlszeilentool, das beliebige unterstützte Dokumente in HTML, Markdown oder einfachen Text konvertiert. Es verarbeitet beliebig viele Dokumente, expandiert `*.pdf` und ähnliches selbst, sodass dieselbe Befehlszeile auf Windows funktioniert, und kann eine Datei pro Dokument in einen Ordner schreiben. Es kann auch eine Liste von Dokumenten aus einer Datei oder von stdin mit `--files-from` lesen und Dokumente direkt von http- und https-Links konvertieren.
 
 ## Bildschirmleser-Kompatibilität
@@ -78,6 +79,7 @@ Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet
 ### Menü „Datei"
 
 * `Ctrl+O`: Öffnet ein Dokument.
+* `Ctrl+L` (macOS: `Cmd+Option+O`): Ein Dokument von einem Weblink öffnen.
 * `Ctrl+F4` (macOS: `Cmd+W`): Schließt das aktuelle Dokument.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Schließt alle offenen Dokumente.
 * `Ctrl+Shift+T`: Öffnet das zuletzt geschlossene Dokument erneut.
@@ -99,7 +101,7 @@ Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet
 
 ### Menü „Ansicht"
 
-* `F5`: Liest das aktuelle Dokument von der Festplatte neu ein. Funktioniert unabhängig davon, ob „Geänderte Dokumente automatisch neu laden" in den Einstellungen aktiviert ist.
+* `F5`: Liest das aktuelle Dokument von der Festplatte neu ein, oder lädt es erneut herunter, wenn es von einem Link aus geöffnet wurde. Funktioniert unabhängig davon, ob „Geänderte Dokumente automatisch neu laden" in den Einstellungen aktiviert ist.
 * `Ctrl+Alt+W`: Wortumbruch umschalten.
 * `F11` (macOS: `RawCtrl+Ctrl+F`, d. h. Strg+Cmd+F): Vollbild umschalten.
 * `Ctrl+Shift+V`: Aktuellen Inhalt in der Webansicht öffnen.
@@ -225,7 +227,7 @@ Das Menü „Weitere Optionen" enthält alles Übrige. Einige Einträge verhalte
 * **Zu Vorlesemodus oder zu Textmodus wechseln:** wechselt zwischen dem Modus „Vorlesen" und dem Textmodus (siehe oben). Im Textmodus startet und pausiert ein Eintrag „Vorlesen" die Wiedergabe, ohne den Textmodus zu verlassen.
 * **Inhaltsverzeichnis:** zeigt die Kapitel des Buchs und öffnet das Kapitel, das du gerade liest. Wähle ein Kapitel, um direkt dorthin zu springen. Einträge mit Unterkapiteln können mit den Aktionen des Bildschirmlesers aus- und eingeklappt werden.
 * **Elemente:** eine Liste der Überschriften oder Links des Dokuments. Wechsle zwischen beiden mit der Typauswahl unter iOS oder den Registerkarten unter Android, und wähle dann einen Eintrag, um dorthin zu springen.
-* **Suchen:** gib ein, was zu suchen ist, oder wähle eine frühere Suche aus dem Suchverlauf, und entscheide, ob Groß- und Kleinschreibung beachtet werden soll, nur ganze Wörter gesucht werden sollen, oder ein regulärer Ausdruck verwendet werden soll. „Vorherige suchen" und „Nächste suchen" springen zu einer Übereinstimmung und geben an, wo sie gefunden wurde. Die Suche bleibt offen, sodass du weitermachen kannst. Im Vorlesemodus wird die Suche auch als Navigationselement in der Leiste angezeigt, sodass du die Übereinstimmungen auch von dort aus durchgehen kannst.
+* **Suchen:** gib ein, was zu suchen ist, oder wähle eine frühere Suche aus dem Suchverlauf, und entscheide, ob Groß- und Kleinschreibung beachtet werden soll, nur ganze Wörter gesucht werden sollen, oder ein regulärer Ausdruck verwendet werden soll. „Vorheriges finden" und „Nächstes finden" springen zu einer Übereinstimmung und geben an, wo sie gefunden wurde. Die Suche bleibt offen, sodass du weitermachen kannst. Im Vorlesemodus wird die Suche auch als Navigationselement in der Leiste angezeigt, sodass du die Übereinstimmungen auch von dort aus durchgehen kannst. **Nach Suchtreffern stoppen** in den Einstellungen unter „Sprachausgabe" ist standardmäßig aktiviert und stoppt nach dem Vorlesen des Absatzes, der einen Treffer enthält. Deaktiviere diese Einstellung, um ab dem Treffer weiterzulesen, während die Steuerelemente „Vorheriges" und „Nächstes" in der Leiste weiterhin nach Suchtreffern navigieren.
 * **Gehe zu:** springe zu einer Zeile, einer Seite oder einer Prozentzahl im Dokument. Wähle mit der Modusauswahl aus.
 * **Zuletzt geöffnete Dokumente:** alle Dokumente, die du geöffnet hast, jeweils gekennzeichnet als zurzeit offen, geschlossen oder Datei fehlt. Jedes Dokument hat zwei Aktionen des Bildschirmlesers: „Entfernen" nimmt es aus der Liste, und „Suchen" ermöglicht es dir, ein Dokument zu finden, dessen Datei verschoben wurde. „Zuletzt geöffnete Dokumente löschen" leert die Liste, ohne Dokumente zu löschen.
 * **Wortanzahl:** die Anzahl der Wörter im Dokument.

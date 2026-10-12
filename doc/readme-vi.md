@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 5e3e3226ca7ab1c2; sections: 84030068,db723a70,df2f4c18,6a9811ab,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 00f7ee3d7a248f3f; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,a06775bf,3a4c3efe,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - phiên bản 1.0
 
@@ -25,6 +25,7 @@ Paperback chạy trên Windows 10/11, tất cả các phiên bản ARM macOS hi�
 * Đọc các trang PDF được quét bằng OCR tích hợp trong Windows và macOS.
 * Dấu trang và ghi chú, để bạn có thể đánh dấu vị trí của mình và quay lại nó.
 * Mọi phím tắt bàn phím có thể được thay đổi.
+* Mở tài liệu trực tiếp từ các liên kết http và https, và tải xuống lại chúng khi bạn mở lại hoặc nhấn `F5`, giữ lại vị trí đọc và dấu trang của bạn. Khi khôi phục các tài liệu bạn đã mở, nó tải xuống lại những tài liệu từ các liên kết có kích thước 2 MB trở xuống.
 * Đi kèm với `pb`, một công cụ dòng lệnh chuyển đổi bất kỳ tài liệu được hỗ trợ nào thành HTML, Markdown hoặc văn bản thuần túy. Nó có thể nhận bao nhiêu tài liệu bạn cung cấp, tự động mở rộng `*.pdf` và các tệp tương tự để lệnh dòng lệnh tương tự hoạt động trên Windows, và có thể ghi một tệp trên mỗi tài liệu vào một thư mục. Nó cũng có thể đọc danh sách các tài liệu từ một tệp hoặc từ stdin với `--files-from`, và chuyển đổi các tài liệu trực tiếp từ các liên kết http và https.
 
 ## Khả năng Tương thích với Trình Đọc Màn hình
@@ -78,6 +79,7 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 ### Menu Tệp
 
 * `Ctrl+O`: Mở một tài liệu.
+* `Ctrl+L` (macOS: `Cmd+Option+O`): Mở một tài liệu từ một liên kết web.
 * `Ctrl+F4` (macOS: `Cmd+W`): Đóng tài liệu hiện tại.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Đóng tất cả các tài liệu đang mở.
 * `Ctrl+Shift+T`: Mở lại tài liệu đã đóng lần cuối.
@@ -99,7 +101,7 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 
 ### Menu Xem
 
-* `F5`: Đọc lại tài liệu hiện tại từ đĩa. Hoạt động cho dù "Tự động tải lại các tài liệu đã thay đổi" có được bật trong Cài đặt hay không.
+* `F5`: Đọc lại tài liệu hiện tại từ đĩa, hoặc tải lại nếu nó được mở từ một liên kết. Hoạt động cho dù "Tự động tải lại các tài liệu đã thay đổi" có được bật trong Cài đặt hay không.
 * `Ctrl+Alt+W`: Bật/tắt tự động ngắt dòng.
 * `F11` (macOS: `RawCtrl+Ctrl+F`, tức là Control+Command+F): Bật/tắt toàn màn hình.
 * `Ctrl+Shift+V`: Mở nội dung hiện tại trong Chế độ xem web.
@@ -225,7 +227,7 @@ Menu More Options là nơi mọi thứ khác nằm. Một số mục hoạt đ�
 * **Switch to TTS Mode hoặc Switch to Text Mode:** di chuyển giữa chế độ đọc to và chế độ văn bản, được mô tả ở trên. Ở chế độ văn bản, mục Read Aloud bắt đầu và tạm dừng đọc to mà không rời khỏi chế độ văn bản.
 * **Table of Contents:** các chương của sách, được mở tại chương bạn đang đọc. Chọn một để đi thẳng tới nó. Các mục có các chương dưới chúng có thể được mở rộng và thu gọn bằng các hành động của trình đọc màn hình.
 * **Elements:** danh sách các tiêu đề hoặc liên kết của tài liệu. Chuyển đổi giữa hai cái bằng Bộ chọn Type trên iOS hoặc các thẻ trên Android, sau đó chọn một để đi tới nó.
-* **Find:** nhập những gì cần tìm hoặc chọn tìm kiếm trước đó từ Search History, và chọn xem có so khớp chữ hoa chữ thường, chỉ khớp toàn bộ từ hay sử dụng biểu thức chính quy. Find Previous và Find Next nhảy đến một kết quả khớp và cho biết nó được đặt ở đâu, và Find vẫn mở để bạn có thể tiếp tục. Ở chế độ đọc to, Find cũng xuất hiện dưới dạng đơn vị điều hướng trên thanh đọc, vì vậy bạn có thể bước qua các kết quả khớp từ đó.
+* **Find:** nhập những gì cần tìm hoặc chọn tìm kiếm trước đó từ Lịch sử tìm kiếm, và chọn xem có so khớp chữ hoa chữ thường, chỉ khớp toàn bộ từ hay sử dụng biểu thức chính quy. Tìm từ trước và Tìm từ tiếp theo nhảy đến một kết quả khớp và cho biết nó được đặt ở đâu, và Tìm vẫn mở để bạn có thể tiếp tục. Ở chế độ đọc to, Tìm cũng xuất hiện dưới dạng đơn vị điều hướng trên thanh đọc, vì vậy bạn có thể bước qua các kết quả khớp từ đó. **Stop reading after search matches** trong Cài đặt dưới Text to Speech được bật theo mặc định và dừng lại sau khi đọc đoạn văn chứa kết quả khớp. Tắt nó để tiếp tục đọc từ kết quả khớp trong khi các điều khiển trước và tiếp theo của thanh đọc vẫn điều hướng theo Tìm.
 * **Go To:** nhảy tới một dòng, một trang hoặc một phần trăm trong tài liệu. Chọn cái nào bằng Bộ chọn Mode.
 * **Recent Documents:** mọi tài liệu bạn đã mở, mỗi tài liệu được đánh dấu là hiện đang mở, đã đóng hoặc tệp bị thiếu. Mỗi tài liệu có hai hành động của trình đọc màn hình: Remove loại bỏ nó khỏi danh sách và Locate cho phép bạn tìm tài liệu có tệp đã được di chuyển. Clear Recent Documents làm trống danh sách mà không xóa bất kỳ tài liệu nào.
 * **Word Count:** số từ trong tài liệu.
