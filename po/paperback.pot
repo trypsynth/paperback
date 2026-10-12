@@ -4507,3 +4507,15 @@ msgstr ""
 #: kt
 msgid "Go up to parent directory: {}"
 msgstr ""
+
+#. TRANSLATORS: Toggle controlling whether TTS stops after the paragraph containing a Find match while Find is the navigation unit
+#: swift
+#: kt
+msgid "Stop reading after search matches"
+msgstr ""
+
+#. TRANSLATORS: Explanation of the Find playback setting; turning it off lets reading continue without changing the navigation unit
+#: swift
+#: kt
+msgid "Turn off to continue reading while navigating by search matches."
+msgstr ""

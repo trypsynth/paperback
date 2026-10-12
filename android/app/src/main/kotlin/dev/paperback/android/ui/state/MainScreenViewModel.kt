@@ -202,23 +202,22 @@ class MainScreenViewModel(
 	}
 
 	init {
-		// Continuous-reading auto-advance: once an utterance finishes, keep moving forward
-		// paragraph by paragraph on its own. That's the right behavior for ordinary reading, but
-		// wrong while browsing Find matches — landing on a match should just speak its context
-		// and then wait, not silently keep auto-advancing past it before the next button press.
+		// Both queued audio and completion callbacks follow the Find playback preference.
+		ttsManager.shouldAutoAdvance = { !shouldStopAfterFindMatch() }
 		ttsManager.onSegmentTransition = {
-			if (_currentNavUnit.value !is NavUnit.Find) {
+			if (!shouldStopAfterFindMatch()) {
 				transitionToNextContinuousSegment()
 			}
 		}
 		ttsManager.onUtteranceCompleted = {
-			if (_currentNavUnit.value !is NavUnit.Find) {
+			if (!shouldStopAfterFindMatch()) {
 				playNextContinuousSegment()
 			} else {
 				// The cursor stays on the match, so remember that its paragraph was read right
 				// through. Without this, play would find the same paragraph under the cursor and
 				// speak it again, for ever.
 				spokenThroughPosition = _ttsPosition.value
+				ttsManager.stop()
 			}
 		}
 		ttsManager.onPlayCommand = { resumeTts() }
@@ -660,6 +659,9 @@ class MainScreenViewModel(
 	private fun navSegmentType(): SegmentTypeFfi =
 		(_currentNavUnit.value as? NavUnit.Segment)?.type ?: SegmentTypeFfi.PARAGRAPH
 
+	private fun shouldStopAfterFindMatch(): Boolean =
+		_currentNavUnit.value is NavUnit.Find && settings.stopAfterFindMatch.state.value
+
 	/** Handles previous/next for a document being navigated by elapsed time rather than by text
 	 * unit. False when that isn't what's happening, leaving the ordinary text path to run. */
 	private fun seekAudioByNavUnit(forward: Boolean): Boolean {
@@ -709,6 +711,7 @@ class MainScreenViewModel(
 		} else if (speak) {
 			ttsManager.stop()
 			ttsManager.speak(text)
+			precacheNextContinuousSegment()
 		} else if (announce) {
 			if (ttsManager.isPaused.value) {
 				ttsManager.stop()
@@ -780,9 +783,10 @@ class MainScreenViewModel(
 		val tab = uiState.value.activeTab ?: return
 		val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
 		if (segment.text.isNotBlank()) {
-			_ttsPosition.value = segment.startPos
+			// Keep the exact match position so Find Next cannot land on that match again.
+			if (_currentNavUnit.value !is NavUnit.Find) _ttsPosition.value = segment.startPos
 			_currentSegmentText.value = segment.text
-			saveTtsPositionToConfig(segment.startPos)
+			saveTtsPositionToConfig(_ttsPosition.value)
 			ttsManager.stop()
 			ttsManager.speak(segment.text)
 			precacheNextContinuousSegment()
@@ -852,6 +856,7 @@ class MainScreenViewModel(
 		if (resume) {
 			ttsManager.stop()
 			ttsManager.speak(text)
+			precacheNextContinuousSegment()
 		} else if (ttsManager.isPaused.value) {
 			// Was paused mid-utterance elsewhere; clear that stale state so a later resume
 			// doesn't play the old paragraph's audio instead of the new position.
@@ -935,6 +940,7 @@ class MainScreenViewModel(
 	}
 
 	fun precacheNextContinuousSegment() {
+		if (shouldStopAfterFindMatch()) return
 		val tab = uiState.value.activeTab ?: return
 		val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT)
 		if (segment.text.isNotBlank()) {

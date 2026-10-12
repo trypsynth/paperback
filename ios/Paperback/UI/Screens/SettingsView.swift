@@ -5,6 +5,7 @@ private let sampleText = "This is a sample of the current voice and speed settin
 
 private struct TtsSettingsSection<VoiceDestination: View>: View {
 	@Bindable var ttsManager: TtsManager
+	@Binding var stopAfterFindMatch: Bool
 	let onPlaySample: () -> Void
 	@ViewBuilder let voiceDestination: () -> VoiceDestination
 
@@ -101,6 +102,12 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 				}
 			}
 			.accessibilityValue(paragraphPauseLabel)
+			Toggle(isOn: $stopAfterFindMatch) {
+				// TRANSLATORS: Toggle controlling whether TTS stops after the paragraph containing a Find match while Find is the navigation unit
+				Text(t("Stop reading after search matches"))
+				// TRANSLATORS: Explanation of the Find playback setting; turning it off lets reading continue without changing the navigation unit
+				Text(t("Turn off to continue reading while navigating by search matches."))
+			}
 			NavigationLink {
 				SpeechDictionaryView()
 			} label: {
@@ -222,6 +229,10 @@ struct SettingsView: View {
 			ReadabilitySettingsSection(viewModel: viewModel)
 			TtsSettingsSection(
 				ttsManager: viewModel.reading.ttsManager,
+				stopAfterFindMatch: Binding(
+					get: { viewModel.reading.stopAfterFindMatch },
+					set: { viewModel.reading.stopAfterFindMatch = $0 }
+				),
 				onPlaySample: { viewModel.reading.ttsManager.speakSample(sampleText) },
 				voiceDestination: { voicePicker }
 			)

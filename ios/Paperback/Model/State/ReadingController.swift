@@ -67,6 +67,12 @@ final class ReadingController {
 	private var spokeCurrentSegment = false
 	var currentSegmentText: String = ""
 	var currentNavUnit: NavUnit = .segment(.paragraph)
+	var stopAfterFindMatch: Bool = true {
+		didSet {
+			if stopAfterFindMatch != oldValue { onStopAfterFindMatchChanged?(stopAfterFindMatch) }
+		}
+	}
+	@ObservationIgnored var onStopAfterFindMatchChanged: ((Bool) -> Void)?
 	// The structural unit the FFI is asked for. Find isn't one, so it reads as paragraph: that's
 	// what a match's surrounding context is spoken as.
 	var currentSegmentType: SegmentTypeFfi {
@@ -200,11 +206,12 @@ final class ReadingController {
 	// jumps that only return the marker's title text, so using them here would make continuous
 	// playback read a heading, then skip straight to the next one, forever.
 	private func advanceTtsAfterUtterance() {
-		// Landing on a Find match should speak its context and then wait for the next button
-		// press, not silently keep reading past it. Remember that it was read, so that pressing
-		// play carries on from here rather than repeating the paragraph for ever.
-		if currentNavUnit == .find {
+		// When stopping after a Find match, remember that its context was read so pressing
+		// play carries on from here. Clear any queued audio too, since prefetch can already
+		// have scheduled the following paragraph before this callback runs.
+		if currentNavUnit == .find && stopAfterFindMatch {
 			spokeCurrentSegment = true
+			ttsManager.stop()
 			return
 		}
 		speakNextContinuousSegment(isAutoAdvance: true)

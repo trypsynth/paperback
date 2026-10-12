@@ -112,6 +112,11 @@ class TtsManager(
 
 	var onUtteranceCompleted: (() -> Unit)? = null
 	var onSegmentTransition: (() -> Unit)? = null
+
+	// Consulted when linking and consuming queued audio, so a changed Find preference
+	// takes effect at the next paragraph boundary as well as on the next play press.
+	var shouldAutoAdvance: () -> Boolean = { true }
+
 	var onPlayCommand: (() -> Unit)? = null
 	var onPauseCommand: (() -> Unit)? = null
 	var onNextCommand: (() -> Unit)? = null
@@ -289,7 +294,7 @@ class TtsManager(
 											if (_isSpeaking.value && !_isPaused.value) {
 												mp.start()
 											}
-											nextMediaPlayer?.let {
+											nextMediaPlayer?.takeIf { shouldAutoAdvance() }?.let {
 												try {
 													mp.setNextMediaPlayer(it)
 												} catch (_: Exception) {
@@ -326,7 +331,7 @@ class TtsManager(
 										ttsScope.launch(Dispatchers.Main) {
 											nextMediaPlayer = nextMp
 											isNextMediaPlayerPrepared = true
-											mediaPlayer?.let {
+											mediaPlayer?.takeIf { shouldAutoAdvance() }?.let {
 												try {
 													it.setNextMediaPlayer(nextMp)
 												} catch (_: Exception) {
@@ -426,7 +431,7 @@ class TtsManager(
 		utteranceId: String?
 	) {
 		mp.setOnCompletionListener { _ ->
-			if (nextMediaPlayer != null && isNextMediaPlayerPrepared) {
+			if (shouldAutoAdvance() && nextMediaPlayer != null && isNextMediaPlayerPrepared) {
 				val oldMp = mediaPlayer
 				mediaPlayer = nextMediaPlayer
 				nextMediaPlayer = null
@@ -447,7 +452,12 @@ class TtsManager(
 
 				onSegmentTransition?.invoke()
 
-				mediaPlayer?.let { setupCompletionListener(it, "TTS_CONTENT_ID") }
+				mediaPlayer?.let {
+					// A preference changed since this player was prepared: it may never have
+					// been linked to the previous one, so start it if the handoff did not.
+					if (_isSpeaking.value && !_isPaused.value && !it.isPlaying) it.start()
+					setupCompletionListener(it, "TTS_CONTENT_ID")
+				}
 			} else {
 				stopSpeakingJob?.cancel()
 				stopSpeakingJob = ttsScope.launch {
