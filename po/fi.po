@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 16:45+0000\n"
-"PO-Revision-Date: 2026-10-10 03:08+0300\n"
+"POT-Creation-Date: 2026-10-12 16:46+0000\n"
+"PO-Revision-Date: 2026-10-12 22:35+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -18,6 +18,45 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.9\n"
+
+#. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
+msgid "this is not a web link"
+msgstr "tämä ei ole URL-osoite"
+
+#. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
+msgid "Checking %s"
+msgstr "Tarkistetaan osoitetta %s"
+
+#. TRANSLATORS: Download window message while Paperback asks a web server about one of several links; the first %d is the link's number, the second how many links there are, and %s is the link
+msgid "Checking %d of %d: %s"
+msgstr "Tarkistetaan osoitetta %d / %d: %s"
+
+#. TRANSLATORS: Download window message while a document opened from a link downloads; %s is its file name
+#| msgid "Downloading update..."
+msgid "Downloading %s"
+msgstr "Ladataan %s"
+
+#. TRANSLATORS: Download window message while one of several documents opened from links downloads; the first %d is its number, the second how many there are, and %s is its file name
+msgid "Downloading %d of %d: %s"
+msgstr "Ladataan %d / %d: %s"
+
+#. TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
+msgid ""
+"The server sends a web page (%s) instead of the document the link names."
+msgstr ""
+"Palvelin palautti pyydetyn asiakirjan sijaan verkkosivun, jonka "
+"sisältötyyppi on %s."
+
+msgid "The server sends %s, which is not a format Paperback reads."
+msgstr "Palvelin lähetti sisältöä muodossa %s, jota Paperback ei tue."
+
+#. TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
+msgid "The server does not say what it sends."
+msgstr "Palvelin ei ilmoita lähettämänsä sisällön tyyppiä."
+
+#. TRANSLATORS: Question at the end of the security warning before downloading a document from a link
+msgid "Download it anyway?"
+msgstr "Haluatko jatkaa lataamista?"
 
 #. TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
 #. command-line tool (Paperback's headless document-to-text/HTML converter) runnable
@@ -187,6 +226,14 @@ msgstr "Näytä muistiinpano"
 msgid "Open Document"
 msgstr "Asiakirjan avaaminen"
 
+#. TRANSLATORS: Title of the error shown when what was typed into Open from URL is not a web link
+#. TRANSLATORS: Title of the dialog that asks for the web link to open a document from
+#. TRANSLATORS: Title of the window that shows documents being downloaded from links
+#. TRANSLATORS: Title of the error listing the links that could not be opened
+#| msgid "Open from Archive"
+msgid "Open from URL"
+msgstr "URL-osoitteesta avaaminen"
+
 #. TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
 msgid "Document reloaded."
 msgstr "Asiakirja päivitetty."
@@ -207,6 +254,15 @@ msgstr "&Avaa..."
 #. TRANSLATORS: Status-bar help text for the File > Open menu item.
 msgid "Open a document"
 msgstr "Avaa asiakirja"
+
+#. TRANSLATORS: Menu item in the File menu to open documents from web links.
+msgid "Open from &URL..."
+msgstr "Avaa &URL-osoitteesta..."
+
+#. TRANSLATORS: Status-bar help text for the File > Open from URL menu item.
+#| msgid "Open document in web view"
+msgid "Open documents from web links"
+msgstr "Avaa asiakirjoja URL-osoitteista"
 
 #. TRANSLATORS: Menu item in the File menu to close the current document.
 msgid "&Close"
@@ -999,6 +1055,16 @@ msgstr "HTML"
 msgid "Markdown"
 msgstr "Markdown"
 
+#. TRANSLATORS: Label of the field in Open from URL, which takes the web link of a document
+#| msgid "Link"
+msgid "Link:"
+msgstr "Linkki:"
+
+#. TRANSLATORS: Title of the security warning shown before downloading a document from a link
+#| msgid "Security Error"
+msgid "Security Warning"
+msgstr "Suojausvaroitus"
+
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
 msgstr "Tausta: Oletus"
@@ -1537,6 +1603,11 @@ msgstr "Ei enempää tuloksia. Aloitetaan alusta."
 msgid "Failed to reveal file in folder."
 msgstr "Tiedostokansion avaaminen epäonnistui."
 
+#. TRANSLATORS: Shown by Reveal File in Folder for a document opened from a web link, which is read from a temporary copy
+msgid "This document was opened from a link, so it has no folder to show."
+msgstr ""
+"Asiakirja on avattu URL-osoitteesta, joten sen kansiota ei voi näyttää."
+
 #. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
 msgid ""
 "readme.html not found. Please ensure the application was built properly."
@@ -1556,6 +1627,16 @@ msgstr "Lahjoitussivun avaaminen selaimessa epäonnistui."
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback ei voi suorittaa toimintoja selainnäkymän ollessa avoinna."
 
+#. TRANSLATORS: First message in the window that downloads documents from links, before the first server answers
+#| msgid "Settings..."
+msgid "Connecting..."
+msgstr "Yhdistetään..."
+
+#. TRANSLATORS: Title of the window that shows a document opened from a link being downloaded again
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Reload"
+msgstr "Päivitä"
+
 #. TRANSLATORS: Announced when the copy shortcut is pressed with nothing selected, so there was nothing to put on the clipboard.
 #. TRANSLATORS: Announced when a copy had nothing to copy: no text was selected, or the marked beginning of a selection is at the reader's own position, leaving nothing between the two.
 msgid "Nothing to copy."
@@ -1566,8 +1647,6 @@ msgid "Could not copy to the clipboard."
 msgstr "Leikepöydälle ei voi kopioida."
 
 #. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
-#| msgid "Copied %d character."
-#| msgid_plural "Copied %d characters."
 msgid "Selected %d character."
 msgid_plural "Selected %d characters."
 msgstr[0] "%d merkki valittu."
@@ -1687,7 +1766,6 @@ msgid "Could not load the document source."
 msgstr "Asiakirjan lähdekoodia ei voitu näyttää."
 
 #. TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
-#| msgid "Could not load the document source."
 msgid "Couldn't extract the document from the archive: {}"
 msgstr "Asiakirjan purkaminen paketista ei onnistunut. Virhe: {}"
 
@@ -2372,16 +2450,17 @@ msgid "Open..."
 msgstr "Avaa..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "Open..."
+msgid "Open from URL..."
+msgstr "Avaa URL-osoitteesta..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Close All"
 msgstr "Sulje kaikki"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Reopen Last Closed"
 msgstr "Avaa viimeksi suljettu"
-
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Reload"
-msgstr "Päivitä"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
@@ -4331,7 +4410,7 @@ msgid "File Manager"
 msgstr "Tiedostoselain"
 
 #. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
-#: kt
+#: swift kt
 msgid "{}% through"
 msgstr "{} % luettu"
 
@@ -4542,3 +4621,15 @@ msgstr "Tallennustilat"
 #: kt
 msgid "Go up to parent directory: {}"
 msgstr "Siirry ylemmän tason hakemistoon: {}"
+
+#. TRANSLATORS: Toggle controlling whether TTS stops after the paragraph containing a Find match while Find is the navigation unit
+#: swift kt
+msgid "Stop reading after search matches"
+msgstr "Keskeytä lukeminen hakutuloksen sisältävän kappaleen jälkeen"
+
+#. TRANSLATORS: Explanation of the Find playback setting; turning it off lets reading continue without changing the navigation unit
+#: swift kt
+msgid "Turn off to continue reading while navigating by search matches."
+msgstr ""
+"Poista asetus käytöstä, jos haluat tekstistä puheeksi -toiminnolla lukemisen "
+"jatkuvan hakutuloksittain navigoitaessa."

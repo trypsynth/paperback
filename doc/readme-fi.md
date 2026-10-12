@@ -23,6 +23,7 @@ Paperback toimii Windows 10:ssä ja 11:ssä, kaikissa nykyaikaisissa ARM-pohjais
 * Mahdollistaa skannattujen PDF-asiakirjojen lukemisen Windowsin ja macOSin tekstintunnistusominaisuuden avulla.
 * Kirjanmerkit ja muistiinpanot lukukohdan merkitsemistä ja siihen palaamista varten.
 * Kaikkia pikanäppäimiä on mahdollista muokata.
+* Avaa asiakirjoja suoraan HTTP- ja HTTPS-osoitteista. Ne ladataan uudelleen jokaisella avauskerralla tai `F5`-näppäimen painalluksella, mutta lukukohta ja kirjanmerkit säilyvät. Kun aiemmin avoinna olleet asiakirjat palautetaan, URL-osoitteista avatut asiakirjat ladataan uudelleen, jos niiden koko on enintään 2 Mt.
 * Mukana tulee `pb`-komentorivityökalu, joka muuntaa minkä tahansa tuetun asiakirjan HTML-, Markdown- tai tekstimuotoon. Se käsittelee kerralla useita asiakirjoja, tulkitsee `*.pdf`-tyyppiset jokerimerkit myös Windowsissa ja tallentaa muunnetut asiakirjat määritettyyn kansioon omiksi tiedostoikseen. Lisäksi se pystyy lukemaan `--files-from`-valitsimella käsiteltävien asiakirjojen luettelon tiedostosta tai vakiosyötteestä. Asiakirjoja voi muuntaa myös suoraan HTTP- ja HTTPS-osoitteista.
 
 ## Ruudunlukijoiden yhteensopivuus
@@ -76,6 +77,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 ### Tiedosto-valikko
 
 * `Ctrl+O`: Avaa asiakirja.
+* `Ctrl+L` (macOSissa `Cmd+Option+O`): Avaa asiakirjan URL-osoitteesta.
 * `Ctrl+F4` (macOSissa `Cmd+W`): Sulje nykyinen asiakirja.
 * `Ctrl+Vaihto+F4` (macOSissa `Cmd+Vaihto+W`): Sulje kaikki avoimet asiakirjat.
 * `Ctrl+Vaihto+T`: Avaa viimeksi suljetun asiakirjan uudelleen.
@@ -97,7 +99,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 
 ### Näytä-valikko
 
-* `F5`: Päivitä asiakirjan sisältö. Tämä toimii riippumatta siitä, onko "Päivitä muuttuneet asiakirjat automaattisesti" -asetus käytössä.
+* `F5`: Päivitä levyllä olevan asiakirjan sisältö tai lataa se uudelleen URL-osoitteesta. Tämä toimii riippumatta siitä, onko "Päivitä muuttuneet asiakirjat automaattisesti" -asetus käytössä.
 * `Ctrl+Alt+W`: Ota automaattinen rivitys käyttöön tai poista se käytöstä.
 * `F11` (macOSissa `RawCtrl+Ctrl+F` eli Ctrl+Cmd+F): Ota koko näytön tila käyttöön tai poista se käytöstä.
 * `Ctrl+Vaihto+V`: Avaa nykyinen sisältö selainnäkymässä.
@@ -164,6 +166,8 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `Vaihto+;`: Lyhennä kelauksen aikasiirtymää.
 * `Ctrl+Vaihto+.`: Nopeuta äänitteen toistoa.
 * `Ctrl+Vaihto+,`: Hidasta äänitteen toistoa.
+* `Ctrl+'`: Nosta äänitteen äänenvoimakkuutta.
+* `Ctrl+;`: Laske äänitteen äänenvoimakkuutta.
 
 ### Työkalut-valikko
 
@@ -223,7 +227,7 @@ Muut toiminnot löytyvät Lisää vaihtoehtoja -valikosta. Osa niistä toimii so
 * **Vaihda tekstistä puheeksi -tilaan tai Vaihda tekstitilaan:** vaihtaa edellä kuvatun tekstistä puheeksi -lukutilan ja tekstitilan välillä. Tekstitilassa ”Lue tekstistä puheeksi -toiminnolla” -vaihtoehto aloittaa ja pysäyttää ääneenluvun poistumatta tekstitilasta.
 * **Sisällysluettelo:** näyttää kirjan luvut avattuna parhaillaan luettavan luvun kohdalta. Valitse luku siirtyäksesi sen kohdalle. Alalukuja sisältävät kohdat voidaan laajentaa ja supistaa ruudunlukijan toiminnoilla.
 * **Elementit:** näyttää asiakirjan otsikot ja linkit erillisissä luetteloissa. iOSissa luetteloa vaihdetaan Tyyppi-valitsimella ja Androidissa välilehdillä. Valitse haluamasi kohde siirtyäksesi siihen.
-* **Etsi:** kirjoita etsittävä teksti tai valitse hakuhistoriasta aiempi haku ja valitse, otetaanko kirjainkoko huomioon, etsitäänkö vain kokonaisia sanoja vai käytetäänkö säännöllistä lauseketta. Etsi edellinen- ja Etsi seuraava -painikkeet siirtävät hakutuloksen kohdalle samalla kun sen sijainti ilmoitetaan. Etsi-ikkuna pysyy avoinna haun jatkamista varten. Tekstistä puheeksi -lukutilassa Etsi-toiminto näkyy myös lukupalkissa navigointiyksikkönä, joten hakutuloksia voi selata myös sitä kautta.
+* **Etsi:** kirjoita etsittävä teksti tai valitse hakuhistoriasta aiempi haku ja valitse, otetaanko kirjainkoko huomioon, etsitäänkö vain kokonaisia sanoja vai käytetäänkö säännöllistä lauseketta. Etsi edellinen- ja Etsi seuraava -painikkeet siirtävät hakutuloksen kohdalle samalla kun sen sijainti ilmoitetaan. Etsi-ikkuna pysyy avoinna haun jatkamista varten. Tekstistä puheeksi -lukutilassa Etsi-toiminto näkyy myös lukupalkissa navigoinnin tarkkuuden yksikkönä, joten hakutuloksia voi selata myös sitä kautta. **Keskeytä lukeminen hakutuloksen sisältävän kappaleen jälkeen** -asetus on oletusarvoisesti käytössä Tekstistä puheeksi -asetuksissa. Kun asetus on käytössä, lukeminen keskeytetään hakutuloksen sisältävän kappaleen jälkeen. Poista asetus käytöstä, jos haluat lukemisen jatkuvan hakutuloksen kohdalta samalla, kun lukupalkin Edellinen- ja Seuraava-painikkeilla voi edelleen siirtyä hakutulosten välillä.
 * **Siirry:** siirry asiakirjassa haluamallesi riville, sivulle tai tiettyyn prosenttikohtaan. Valitse haluamasi siirtymätapa Tila-valitsimella.
 * **Viimeksi avatut:** näyttää kaikki avaamasi asiakirjat ja ilmoittaa kunkin kohdalla, onko se parhaillaan avoinna, suljettu tai jos sen tiedostoa ei löydy. Asiakirjoille on kaksi ruudunlukijan toimintoa: ”Poista” poistaa asiakirjan luettelosta ja ”Etsi”-toiminnolla voit etsiä asiakirjan tiedoston, jos se on siirretty toiseen hakemistoon. ”Tyhjennä viimeksi avattujen luettelo” tyhjentää luettelon poistamatta varsinaisia asiakirjoja.
 * **Sanamäärä:** näyttää asiakirjan sanojen määrän.
