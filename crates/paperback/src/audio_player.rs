@@ -29,6 +29,11 @@ const MIN_SPEED: f32 = 0.5;
 const MAX_SPEED: f32 = 3.0;
 const SPEED_STEP: f32 = 0.1;
 
+/// The quietest and loudest volume `increase_volume`/`decrease_volume` will step to, and the size of each step. Above 1.0 amplifies, for recordings made too quietly.
+const MIN_VOLUME: f32 = 0.1;
+const MAX_VOLUME: f32 = 2.0;
+const VOLUME_STEP: f32 = 0.1;
+
 /// How often the live source checks `shared_speed` for a change made while it's already
 /// playing (see `AudioPlayer::speed`'s doc comment).
 const SPEED_POLL_PERIOD: Duration = Duration::from_millis(20);
@@ -86,6 +91,8 @@ pub struct AudioPlayer {
 	/// mixer thread once appended, out of this struct's reach otherwise).
 	speed: f32,
 	shared_speed: Arc<Mutex<f32>>,
+	/// The volume multiplier (1.0 = as recorded), applied to the loaded source and to whatever loads next.
+	volume: f32,
 }
 
 impl AudioPlayer {
@@ -105,6 +112,7 @@ impl AudioPlayer {
 			cache_dir,
 			speed: 1.0,
 			shared_speed: Arc::new(Mutex::new(1.0)),
+			volume: 1.0,
 		})
 	}
 
@@ -178,7 +186,7 @@ impl AudioPlayer {
 	/// change re-seeks the live source to where it already was, which re-bases
 	/// `position_base_ms`/`position_ms` against the new speed before anything is scaled by it.
 	pub fn set_speed(&mut self, speed: f32) -> f32 {
-		let new_speed = round_speed(speed.clamp(MIN_SPEED, MAX_SPEED));
+		let new_speed = round_to_hundredth(speed.clamp(MIN_SPEED, MAX_SPEED));
 		if (new_speed - self.speed).abs() < f32::EPSILON {
 			return self.speed;
 		}
@@ -205,6 +213,29 @@ impl AudioPlayer {
 	/// Steps the playback speed down by `SPEED_STEP`, clamped at `MIN_SPEED`.
 	pub fn decrease_speed(&mut self) -> f32 {
 		self.set_speed(self.speed - SPEED_STEP)
+	}
+
+	/// The current volume multiplier (1.0 = as recorded).
+	#[must_use]
+	pub const fn volume(&self) -> f32 {
+		self.volume
+	}
+
+	/// Sets the volume, clamped to `MIN_VOLUME..=MAX_VOLUME`, for the loaded source and whatever loads next. Returns the volume applied.
+	pub fn set_volume(&mut self, volume: f32) -> f32 {
+		self.volume = round_to_hundredth(volume.clamp(MIN_VOLUME, MAX_VOLUME));
+		if let Some(player) = self.player.as_ref() {
+			player.set_volume(self.volume);
+		}
+		self.volume
+	}
+
+	pub fn increase_volume(&mut self) -> f32 {
+		self.set_volume(self.volume + VOLUME_STEP)
+	}
+
+	pub fn decrease_volume(&mut self) -> f32 {
+		self.set_volume(self.volume - VOLUME_STEP)
 	}
 
 	/// Moves on to the next source once the current one has played out, and notices the end of
@@ -382,6 +413,7 @@ impl AudioPlayer {
 		};
 		tracing::debug!(source_index, path = %path.display(), seek_ms, applied_seek_ms, ?length_ms, "audio: load_source");
 		let player = Player::connect_new(self.device.mixer());
+		player.set_volume(self.volume);
 		player.append(wsola_speed_source(decoder, self.speed, &self.shared_speed));
 		if self.playing {
 			player.play();
@@ -446,11 +478,10 @@ fn wsola_speed_source(
 	})
 }
 
-/// Rounds a speed multiplier to the nearest hundredth, so repeated `increase_speed`/
-/// `decrease_speed` steps land on clean values (`1.0`, `1.1`, ...) instead of drifting from
-/// `f32` addition error.
-fn round_speed(speed: f32) -> f32 {
-	(speed * 100.0).round() / 100.0
+/// Rounds a speed or volume multiplier to the nearest hundredth, so repeated steps land on
+/// clean values (`1.0`, `1.1`, ...) instead of drifting from `f32` addition error.
+fn round_to_hundredth(value: f32) -> f32 {
+	(value * 100.0).round() / 100.0
 }
 
 /// Resolves an `AudioLocation` to a real file path the decoder can open. Zip-embedded
@@ -689,6 +720,24 @@ mod tests {
 		let at_min = player.decrease_speed();
 		assert!((at_min - MIN_SPEED).abs() < f32::EPSILON, "clamps at the minimum, got {at_min}");
 		assert!((player.decrease_speed() - MIN_SPEED).abs() < f32::EPSILON, "stays at the minimum");
+	}
+
+	#[test]
+	fn volume_steps_and_clamps_at_both_ends() {
+		if !has_audio_device() {
+			eprintln!("no audio output device: skipping");
+			return;
+		}
+		let mut player = AudioPlayer::new(AudioTimelineBuilder::new().build()).unwrap();
+		assert!((player.volume() - 1.0).abs() < f32::EPSILON, "starts as recorded");
+		assert!((player.increase_volume() - 1.1).abs() < 1e-6, "one step up from 1.0 is 1.1");
+		assert!((player.decrease_volume() - 1.0).abs() < 1e-6, "one step back down is 1.0 again");
+		player.set_volume(MAX_VOLUME - 0.05);
+		assert!((player.increase_volume() - MAX_VOLUME).abs() < f32::EPSILON, "clamps at the maximum");
+		assert!((player.increase_volume() - MAX_VOLUME).abs() < f32::EPSILON, "stays at the maximum");
+		player.set_volume(MIN_VOLUME + 0.05);
+		assert!((player.decrease_volume() - MIN_VOLUME).abs() < f32::EPSILON, "clamps at the minimum");
+		assert!((player.decrease_volume() - MIN_VOLUME).abs() < f32::EPSILON, "stays at the minimum");
 	}
 
 	#[test]

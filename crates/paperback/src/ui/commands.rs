@@ -695,6 +695,24 @@ pub static COMMANDS: &[Command] = &[
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(audio::decrease_speed),
 	},
+	Command {
+		action: ActionId::IncreaseAudioVolume,
+		// TRANSLATORS: Menu item in the Audio menu to make the audio narration louder.
+		label: || t("Increase Audio &Volume"),
+		// TRANSLATORS: Status-bar help text for the Increase Audio Volume menu item.
+		help: Some(|| t("Make the audio narration louder")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(audio::increase_volume),
+	},
+	Command {
+		action: ActionId::DecreaseAudioVolume,
+		// TRANSLATORS: Menu item in the Audio menu to make the audio narration quieter.
+		label: || t("Decrease Audio Vo&lume"),
+		// TRANSLATORS: Status-bar help text for the Decrease Audio Volume menu item.
+		help: Some(|| t("Make the audio narration quieter")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(audio::decrease_volume),
+	},
 ];
 
 /// Looks up a ported command by its action.
@@ -797,6 +815,8 @@ mod tests {
 	#[case::seek_backward(ActionId::SeekAudioBackward)]
 	#[case::increase_speed(ActionId::IncreaseAudioSpeed)]
 	#[case::decrease_speed(ActionId::DecreaseAudioSpeed)]
+	#[case::increase_volume(ActionId::IncreaseAudioVolume)]
+	#[case::decrease_volume(ActionId::DecreaseAudioVolume)]
 	fn audio_playback_needs_a_document(#[case] action: ActionId) {
 		let command = for_action(action).unwrap();
 		assert_eq!(command.enable, Enable::HasDocument);
