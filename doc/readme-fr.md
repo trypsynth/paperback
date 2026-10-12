@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 5e3e3226ca7ab1c2; sections: 84030068,db723a70,df2f4c18,6a9811ab,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 00f7ee3d7a248f3f; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,a06775bf,3a4c3efe,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - version 1.0
 
@@ -25,6 +25,7 @@ Paperback fonctionne sur Windows 10/11, toutes les versions modernes d'ARM macOS
 * Lit les pages PDF numérisées avec l'OCR intégré à Windows et macOS.
 * Signets et notes, pour que vous puissiez marquer votre place et y revenir.
 * Chaque raccourci clavier peut être modifié.
+* Ouvre les documents directement à partir de liens http et https, et les télécharge à nouveau quand vous les rouvrez ou appuyez sur `F5`, en conservant votre position de lecture et vos signets. Lors de la restauration des documents que vous aviez ouverts, il télécharge à nouveau ceux des liens qui faisaient 2 Mo ou moins.
 * Livré avec `pb`, un outil en ligne de commande qui convertit tout document pris en charge en HTML, Markdown ou texte brut. Il accepte autant de documents que vous lui en fournissez, développe `*.pdf` et les fichiers similaires de lui-même pour que la même ligne de commande fonctionne sur Windows, et peut écrire un fichier par document dans un dossier. Il peut également lire une liste de documents à partir d'un fichier ou de stdin avec `--files-from`, et convertir des documents directement à partir de liens http et https.
 
 ## Compatibilité avec les lecteurs d'écran
@@ -78,6 +79,7 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 ### Menu Fichier
 
 * `Ctrl+O` : Ouvrir un document.
+* `Ctrl+L` (macOS : `Cmd+Option+O`) : Ouvrir un document à partir d'un lien web.
 * `Ctrl+F4` (macOS : `Cmd+W`) : Fermer le document actif.
 * `Ctrl+Shift+F4` (macOS : `Cmd+Shift+W`) : Fermer tous les documents ouverts.
 * `Ctrl+Shift+T` : Rouvrir le dernier document fermé.
@@ -99,7 +101,7 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 
 ### Menu Affichage
 
-* `F5` : Relire le document actif depuis le disque. Fonctionne que « Recharger automatiquement les documents modifiés » soit activé ou non dans Paramètres.
+* `F5` : Relire le document actif depuis le disque, ou le télécharger à nouveau s'il a été ouvert à partir d'un lien. Fonctionne que « Recharger automatiquement les documents modifiés » soit activé ou non dans Paramètres.
 * `Ctrl+Alt+W` : Basculer le retour à la ligne automatique.
 * `F11` (macOS : `RawCtrl+Ctrl+F`, c'est-à-dire Control+Command+F) : Basculer le mode plein écran.
 * `Ctrl+Shift+V` : Ouvrir le contenu actuel dans Vue Web.
@@ -225,7 +227,7 @@ Le menu Plus d'options est l'endroit où tout le reste se trouve. Certains élé
 * **Passer au mode TTS ou Passer au mode Texte :** bascule entre le mode lecture à haute voix et le mode texte, décrit ci-dessus. En mode texte, un élément Lire à haute voix lance et met en pause la lecture à haute voix sans quitter le mode texte.
 * **Table des matières :** les chapitres du livre, ouverts à celui que vous lisez. Choisissez-en un pour y aller directement. Les entrées ayant des chapitres sous elles peuvent être développées et réduites avec les actions du lecteur d'écran.
 * **Éléments :** une liste des titres ou des liens du document. Basculez entre les deux avec le sélecteur Type sur iOS, ou les onglets sur Android, puis choisissez-en un pour y aller.
-* **Rechercher :** tapez ce que vous cherchez, ou choisissez une recherche antérieure dans l'Historique de recherche, et choisissez s'il faut respecter la casse, faire correspondre des mots entiers seulement, ou utiliser une expression régulière. Rechercher le précédent et Rechercher le suivant sautent à une correspondance et indiquent où c'est tombé, et Rechercher reste ouvert pour que vous puissiez continuer. En mode lecture à haute voix, Rechercher s'affiche également comme une unité de navigation sur la barre de lecture, ce qui vous permet de parcourir les correspondances à partir de là aussi.
+* **Rechercher :** tapez ce que vous cherchez, ou choisissez une recherche antérieure dans l'Historique des recherches, et choisissez s'il faut respecter la casse, faire correspondre des mots entiers seulement, ou utiliser une expression régulière. Rechercher le précédent et Rechercher suivant sautent à une correspondance et indiquent où c'est tombé, et Rechercher reste ouvert pour que vous puissiez continuer. En mode lecture à haute voix, Rechercher s'affiche également comme une unité de navigation sur la barre de lecture, ce qui vous permet de parcourir les correspondances à partir de là aussi. **Arrêter la lecture après les correspondances de recherche** dans les Paramètres sous Synthèse vocale est activé par défaut et arrête après la lecture du paragraphe contenant une correspondance. Désactivez-le pour continuer la lecture à partir de la correspondance tandis que les contrôles précédent et suivant de la barre de lecture naviguent toujours par Rechercher.
 * **Aller à :** sautez à une ligne, une page, ou un pourcentage du document. Choisissez lequel avec le sélecteur Mode.
 * **Documents récents :** tous les documents que vous avez ouverts, chacun marqué comme actuellement ouvert, fermé ou fichier manquant. Chacun a deux actions du lecteur d'écran : Supprimer l'enlève de la liste, et Localiser vous permet de trouver un document dont le fichier a été déplacé. Effacer les documents récents vide la liste sans supprimer de documents.
 * **Nombre de mots :** le nombre de mots du document.
