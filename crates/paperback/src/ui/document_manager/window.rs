@@ -116,7 +116,7 @@ impl DocumentManager {
 		if source != CopySource::WholeDocument {
 			return false;
 		}
-		let text = tab.session.get_text_range(0, doc_len);
+		let text = tab.session.content();
 		if text.is_empty() {
 			return false;
 		}
@@ -138,7 +138,7 @@ impl DocumentManager {
 		let text = match source {
 			CopySource::Nothing => return None,
 			CopySource::Selection => tab.text_ctrl.get_string_selection(),
-			CopySource::WholeDocument => tab.session.get_text_range(0, doc_len),
+			CopySource::WholeDocument => tab.session.content(),
 		};
 		(!text.is_empty()).then_some(text)
 	}
