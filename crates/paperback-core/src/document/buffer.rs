@@ -18,7 +18,7 @@ pub struct DocumentBuffer {
 	/// Byte offset of the `i`-th char, stored as `u32` rather than `usize`. This halves the
 	/// table's footprint, which matters because it has one entry per char in the whole
 	/// document (a large book can have hundreds of millions of chars). A document whose byte
-	/// length exceeds `u32::MAX` (4 GiB of text) isn't supported; see `to_u32`.
+	/// length exceeds `u32::MAX` (4 GiB of text) is refused; see `assert_addressable`.
 	char_to_byte_map: Vec<u32>,
 	/// `display_len_at_char[i]` is the display-unit offset (UTF-16 code units on
 	/// Windows/macOS, Unicode scalars on GTK, see `util::text::display_len`) of the `i`-th
@@ -32,14 +32,22 @@ pub struct DocumentBuffer {
 }
 
 /// Narrows a byte/display offset to `u32` for storage in `DocumentBuffer`'s per-char index
-/// tables. Debug-only bounds check: documents are read fully into memory elsewhere (e.g. the
-/// EPUB parser) long before reaching 4 GiB, so this is unreachable in practice, and checking it
-/// on every char in release builds would cost real time on large books.
+/// tables. The bounds check is debug-only because [`assert_addressable`] has already bounded
+/// the whole content, and checking every char in release builds would cost real time on large
+/// books.
 #[inline]
 #[allow(clippy::cast_possible_truncation)]
 fn to_u32(value: usize) -> u32 {
 	debug_assert!(u32::try_from(value).is_ok(), "DocumentBuffer offset exceeds u32::MAX");
 	value as u32
+}
+
+/// Refuses content of `byte_len` bytes if the per-char tables' `u32` offsets couldn't address
+/// all of it. Checked once per change to the content rather than per char, so it stays in
+/// release builds. No real document gets near 4 GiB of text, and a panic beats offsets that
+/// silently wrap.
+fn assert_addressable(byte_len: usize) {
+	assert!(u32::try_from(byte_len).is_ok(), "document text exceeds the 4 GiB a u32 offset can address");
 }
 
 /// A part's `[start, end)` span in the assembled buffer's display units (the same units as
@@ -142,6 +150,10 @@ impl DocumentBuffer {
 	/// truth for all of them. Called by [`Self::with_content`] and after any in-place content
 	/// mutation (currently only [`Self::replace_ranges`]).
 	fn rebuild_indexes(&mut self) {
+		// The content is only checked here: `with_content` hands over a caller's string unchecked,
+		// and `replace_ranges` has already spliced its edits in. This is the last point before
+		// every offset gets narrowed to `u32`.
+		assert_addressable(self.content.len());
 		let mut char_count = 0usize;
 		let mut display_count = 0usize;
 		let mut newline_char_positions = Vec::new();
@@ -223,6 +235,7 @@ impl DocumentBuffer {
 	}
 
 	pub fn append(&mut self, text: &str) {
+		assert_addressable(self.content.len() + text.len());
 		let base = self.content_char_count;
 		let mut count = 0usize;
 		let mut display_count = self.content_display_len;
@@ -293,6 +306,7 @@ impl DocumentBuffer {
 			// all-empty (not one-boundary-entry) shape rather than building degenerate arrays.
 			return (Self::new(), spans);
 		}
+		assert_addressable(byte_acc);
 		let mut content_bytes = vec![0u8; byte_acc];
 		let mut char_to_byte_map = vec![0u32; char_acc + 1];
 		let mut display_len_at_char = vec![0u32; char_acc + 1];
