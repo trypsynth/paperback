@@ -5,7 +5,10 @@
 
 use rtf_parser::tokens::{ControlWord, Property, Token};
 
-use crate::document::{DocumentBuffer, Marker, MarkerType};
+use crate::{
+	document::{DocumentBuffer, Marker, MarkerType},
+	util::text::display_len,
+};
 
 struct PendingLink {
 	url: String,
@@ -245,7 +248,7 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 						pending_link = Some(PendingLink { url, start_position: buffer.current_position() });
 					} else if let Some(link) = pending_link.take() {
 						let display_text = text.to_string();
-						let text_len = display_text.chars().count();
+						let text_len = display_len(&display_text);
 						buffer.append(&display_text);
 						buffer.add_marker(
 							Marker::new(MarkerType::Link, link.start_position)

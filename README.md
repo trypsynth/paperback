@@ -52,14 +52,6 @@ To build the desktop app, you need the following:
   sudo apt install cmake ninja-build gettext libgtk-3-dev libwebkit2gtk-4.1-dev libpng-dev libjpeg-dev libtiff-dev libgl1-mesa-dev libglu1-mesa-dev libxkbcommon-dev libwayland-dev libexpat1-dev libxtst-dev libsm-dev libice-dev libasound2-dev
   ```
 
-### Fetch wxWidgets
-
-Paperback builds against a pinned commit of wxWidgets master instead of a release, because it relies on accessibility fixes that haven't shipped in a release yet. `WXWIDGETS_DIR` in `.cargo/config.toml` names the commit. Before your first build, and whenever the pinned commit changes, fetch it:
-
-```
-cargo xtask wxwidgets
-```
-
 ### Build and run
 
 To build the app, run the following command:

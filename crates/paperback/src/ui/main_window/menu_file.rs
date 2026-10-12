@@ -5,12 +5,12 @@
 
 use std::{path::Path, rc::Rc, sync::Mutex};
 
-use paperback_core::{config::ConfigManager, export::ExportFormat};
+use paperback_core::{config::ConfigManager, export::ExportFormat, parser::is_remote_url};
 use patois::t;
 use wxdragon::prelude::*;
 
 use super::{
-	DocumentManager, DocumentTab, dialogs, ensure_parser_ready_for_path, menu, menu_ids, resolve_zip_path,
+	DocumentManager, DocumentTab, dialogs, ensure_parser_ready_for_path, menu, menu_ids, open_links, resolve_zip_path,
 	update_title_from_manager,
 };
 use crate::ui::navigation::announce;
@@ -33,6 +33,10 @@ pub(super) fn handle_fallback(
 		if let Ok(doc_index) = usize::try_from(doc_index)
 			&& let Some(path) = recent_docs.get(doc_index)
 		{
+			if is_remote_url(path) {
+				open_links(frame, dm, config, vec![path.clone()]);
+				return;
+			}
 			let path = Path::new(path);
 			if !ensure_parser_ready_for_path(frame, path, config) {
 				return;
@@ -86,8 +90,9 @@ fn handle_show_all_documents(
 			dm_ref.restore_focus();
 		}
 	}
+	let (links, files): (Vec<String>, Vec<String>) = result.open.into_iter().partition(|path| is_remote_url(path));
 	let mut opened_any = false;
-	for path in &result.open {
+	for path in &files {
 		let Some(path) = resolve_zip_path(frame, Path::new(path), config, false) else {
 			continue;
 		};
@@ -109,6 +114,9 @@ fn handle_show_all_documents(
 	drop(dm_ref);
 	menu::update_menu_item_states(frame, has_docs);
 	menu::update_reopen_state(frame, has_reopen);
+	if !links.is_empty() {
+		open_links(frame, dm, config, links);
+	}
 }
 
 pub(super) fn handle_export_to_plain_text(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>) {
@@ -181,7 +189,7 @@ pub(super) fn handle_export_document_data(
 	};
 	let default_name =
 		// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-		tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
+		tab.local_path().file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
 	let default_file = format!("{default_name}.paperback");
 	// TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
 	let wildcard = t("Paperback files (*.paperback)|*.paperback");
@@ -273,7 +281,7 @@ fn export_document_as(
 ) {
 	let default_name =
 		// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-		tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
+		tab.local_path().file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
 	let default_file = format!("{default_name}.{extension}");
 	let dialog = FileDialog::builder(frame)
 		.with_message(dialog_title)

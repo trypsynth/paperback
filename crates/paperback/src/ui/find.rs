@@ -416,10 +416,9 @@ fn do_find(
 	// Search the whole document (not just whatever window is currently loaded into
 	// text_ctrl) in the same document-absolute coordinate space `tab.window` uses, so a
 	// found match can be reached even when it falls outside the loaded window.
-	let text = tab.session.content();
 	let (origin_start, origin_end) = state.search_origin(tab);
 	let start_pos = if forward { origin_end } else { origin_start };
-	let result = find_text_with_wrap(&text, &query, start_pos, options);
+	let result = find_text_with_wrap(&tab.session.handle().document().buffer, &query, start_pos, options);
 	tracing::debug!(query = %query, forward, found = result.found, wrapped = result.wrapped, "find search");
 	if !result.found {
 		drop(dm);

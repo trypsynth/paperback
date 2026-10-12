@@ -183,6 +183,7 @@ fun SettingsScreen(
 	val useInAppFileBrowser by settings.useInAppFileBrowser.state.collectAsStateWithLifecycle()
 	val swipeUpMovesForward by settings.swipeUpMovesForward.state.collectAsStateWithLifecycle()
 	val hidePrevNextButtons by settings.hidePrevNextButtons.state.collectAsStateWithLifecycle()
+	val stopAfterFindMatch by settings.stopAfterFindMatch.state.collectAsStateWithLifecycle()
 	val textScalePercent by settings.textScalePercent.state.collectAsStateWithLifecycle()
 	val lineSpacing by settings.lineSpacing.state.collectAsStateWithLifecycle()
 	val paragraphSpacing by settings.paragraphSpacing.state.collectAsStateWithLifecycle()
@@ -550,6 +551,30 @@ fun SettingsScreen(
 						valueRange = PAUSE_RANGE,
 						steps = 0
 					)
+				}
+				Spacer(modifier = Modifier.height(16.dp))
+				Row(
+					modifier = Modifier
+						.fillMaxWidth()
+						.toggleable(
+							value = stopAfterFindMatch,
+							onValueChange = { settings.stopAfterFindMatch.set(it) },
+							role = Role.Switch
+						).padding(vertical = 8.dp),
+					verticalAlignment = Alignment.CenterVertically,
+					horizontalArrangement = Arrangement.SpaceBetween
+				) {
+					Column(modifier = Modifier.weight(1f)) {
+						// TRANSLATORS: Toggle controlling whether TTS stops after the paragraph containing a Find match while Find is the navigation unit
+						Text(t("Stop reading after search matches"))
+						// TRANSLATORS: Explanation of the Find playback setting; turning it off lets reading continue without changing the navigation unit
+						Text(
+							t("Turn off to continue reading while navigating by search matches."),
+							style = MaterialTheme.typography.bodySmall,
+							color = MaterialTheme.colorScheme.onSurfaceVariant
+						)
+					}
+					Switch(checked = stopAfterFindMatch, onCheckedChange = null)
 				}
 				Spacer(modifier = Modifier.height(16.dp))
 				Button(

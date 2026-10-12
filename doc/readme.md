@@ -23,6 +23,7 @@ Paperback runs on Windows 10/11, all the modern versions of ARM macOS, Linux, iO
 * Reads scanned PDF pages with the OCR built into Windows and macOS.
 * Bookmarks and notes, so you can mark your place and come back to it.
 * Every keyboard shortcut can be changed.
+* Opens documents straight from http and https links, and downloads them again when you reopen them or press `F5`, keeping your reading position and bookmarks. When restoring the documents you had open, it downloads again the ones from links that were 2 MB or smaller.
 * Comes with `pb`, a command line tool that converts any supported document to HTML, Markdown, or plain text. It takes as many documents as you give it, expands `*.pdf` and the like itself so the same command line works on Windows, and can write one file per document into a folder. It can also read a list of documents from a file or from stdin with `--files-from`, and convert documents straight from http and https links.
 
 ## Screen Reader Compatibility
@@ -76,6 +77,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 ### File menu
 
 * `Ctrl+O`: Open a document.
+* `Ctrl+L` (macOS: `Cmd+Option+O`): Open a document from a web link.
 * `Ctrl+F4` (macOS: `Cmd+W`): Close the current document.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Close all open documents.
 * `Ctrl+Shift+T`: Reopen the last closed document.
@@ -97,7 +99,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 
 ### View menu
 
-* `F5`: Re-read the current document from disk. Works whether or not "Automatically reload changed documents" is switched on in Settings.
+* `F5`: Re-read the current document from disk, or download it again if it was opened from a link. Works whether or not "Automatically reload changed documents" is switched on in Settings.
 * `Ctrl+Alt+W`: Toggle word wrap.
 * `F11` (macOS: `RawCtrl+Ctrl+F`, i.e. Control+Command+F): Toggle full screen.
 * `Ctrl+Shift+V`: Open current content in Web View.
@@ -164,6 +166,8 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Shift+;`: Decrease the audio seek amount.
 * `Ctrl+Shift+.`: Speed up audio narration.
 * `Ctrl+Shift+,`: Slow down audio narration.
+* `Ctrl+'`: Make audio narration louder.
+* `Ctrl+;`: Make audio narration quieter.
 
 ### Tools menu
 
@@ -223,7 +227,7 @@ The More Options menu is where everything else lives. Some items work a little d
 * **Switch to TTS Mode or Switch to Text Mode:** moves between read aloud mode and text mode, described above. In text mode, a Read Aloud item starts and pauses reading aloud without leaving text mode.
 * **Table of Contents:** the book's chapters, opened at the one you're reading. Pick one to go straight to it. Entries with chapters under them can be expanded and collapsed with the screen reader's actions.
 * **Elements:** a list of the document's headings or links. Switch between the two with the Type picker on iOS, or the tabs on Android, then pick one to go to it.
-* **Find:** type what to look for, or pick an earlier search from Search History, and choose whether to match case, match whole words only, or use a regular expression. Find Previous and Find Next jump to a match and say where it landed, and Find stays open so you can keep going. In read aloud mode, Find also shows up as a navigation unit on the reading bar, so you can step through the matches from there too.
+* **Find:** type what to look for, or pick an earlier search from Search History, and choose whether to match case, match whole words only, or use a regular expression. Find Previous and Find Next jump to a match and say where it landed, and Find stays open so you can keep going. In read aloud mode, Find also shows up as a navigation unit on the reading bar, so you can step through the matches from there too. **Stop reading after search matches** in Settings under Text to Speech is on by default and stops after reading the paragraph containing a match. Turn it off to keep reading from the match while the reading bar's previous and next controls still navigate by Find.
 * **Go To:** jump to a line, a page, or a percentage through the document. Pick which with the Mode picker.
 * **Recent Documents:** every document you've opened, each marked as currently open, closed, or file missing. Each one has two screen reader actions: Remove takes it off the list, and Locate lets you find a document whose file has moved. Clear Recent Documents empties the list without deleting any documents.
 * **Word Count:** the number of words in the document.

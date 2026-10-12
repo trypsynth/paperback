@@ -175,6 +175,27 @@ impl ConfigManager {
 		let key = self.get_doc_key(path);
 		self.data.borrow().documents.get(&key).map(|d| d.password.clone()).unwrap_or_default()
 	}
+
+	/// Records how many bytes the last download of the document at the link `path` was.
+	pub fn set_document_download_size(&self, path: &str, size: u64) {
+		if !self.initialized {
+			return;
+		}
+		{
+			let key = self.get_doc_key(path);
+			let mut data = self.data.borrow_mut();
+			Self::doc_entry_mut(&mut data, key, path).download_size = Some(size);
+		}
+		self.dirty.set(true);
+	}
+
+	pub fn get_document_download_size(&self, path: &str) -> Option<u64> {
+		if !self.initialized {
+			return None;
+		}
+		let key = self.get_doc_key(path);
+		self.data.borrow().documents.get(&key).and_then(|d| d.download_size)
+	}
 }
 
 /// [`ReplaceOutcome::shift`] over the `i64` offsets the config stores.
@@ -186,6 +207,16 @@ fn shift(outcome: &ReplaceOutcome, position: i64) -> i64 {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	#[test]
+	fn the_download_size_is_kept_for_each_link() {
+		let config = ConfigManager::in_memory();
+		assert_eq!(config.get_document_download_size("https://example.org/a.epub"), None);
+		config.set_document_download_size("https://example.org/a.epub", 1_500_000);
+		config.set_document_download_size("https://example.org/a.epub", 1_600_000);
+		assert_eq!(config.get_document_download_size("https://example.org/a.epub"), Some(1_600_000));
+		assert_eq!(config.get_document_download_size("https://example.org/b.epub"), None);
+	}
 
 	#[test]
 	fn temporary_bookmark_set_get_overwrite_clear() {

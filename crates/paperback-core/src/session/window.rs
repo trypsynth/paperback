@@ -46,11 +46,8 @@ impl DocumentSession {
 	/// The text between two display-unit positions, `start` inclusive and `end` exclusive - the
 	/// same unit [`Self::document_len`], the GUI caret and `Marker.position` all use.
 	///
-	/// Use this, not [`Self::get_text_range`], for any range a caret or a marker produced.
-	/// `get_text_range` treats its arguments as *char* indices, so for an interior range in a
-	/// document holding an astral-plane character (one char, two display units on Windows and
-	/// macOS) it returns text shifted by however many such characters precede the range. This
-	/// converts through [`crate::document::DocumentBuffer::byte_index_for_display`] instead.
+	/// Converts through [`crate::document::DocumentBuffer::byte_index_for_display`] so astral-plane
+	/// characters (one char, two display units on Windows and macOS) preserve caret and marker bounds.
 	/// Nothing is snapped to a paragraph boundary: a bound landing mid-word cuts the word, which
 	/// is the point when the caller is naming two caret positions.
 	///
@@ -341,10 +338,8 @@ epsilon";
 		assert_eq!(session.get_text_range_display(0, end(4)), "a\u{1F600}bc");
 	}
 
-	/// The reason this method exists at all. An astral-plane character is one char but two
-	/// display units on Windows and macOS, so a range read off the caret only survives the
-	/// char-indexed sibling by accident. Gated to the platforms where the two units differ - on
-	/// GTK a display unit *is* a scalar and `get_text_range` would agree.
+	/// An astral-plane character is one char but two display units on Windows and macOS.
+	/// Gated to the platforms where the two units differ; GTK display units are scalars.
 	#[cfg(any(windows, target_os = "macos"))]
 	#[test]
 	fn get_text_range_display_agrees_with_the_buffer_on_astral_characters() {
@@ -354,8 +349,5 @@ epsilon";
 		assert_eq!(session.get_text_range_display(0, 5), "a\u{1F600}bc");
 		assert_eq!(session.get_text_range_display(1, 3), "\u{1F600}");
 		assert_eq!(session.get_text_range_display(3, 5), "bc");
-		// The same numbers through the char-indexed sibling land somewhere else entirely, which
-		// is what a copy built on `get_text_range` would have put on the clipboard.
-		assert_eq!(session.get_text_range(1, 3), "\u{1F600}b");
 	}
 }

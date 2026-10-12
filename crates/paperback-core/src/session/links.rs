@@ -82,20 +82,24 @@ impl DocumentSession {
 }
 
 impl DocumentSession {
+	/// The bookmark at `position` among those kept under `path`, which is where the document's
+	/// settings are: the link for a document opened from one.
 	#[must_use]
 	pub fn bookmark_display_at_position(
 		&self,
 		config: &ConfigManager,
+		path: &str,
 		position: i64,
 	) -> ffi::BookmarkDisplayAtPosition {
-		let bookmark = config.get_bookmarks(&self.file_path).into_iter().find(|bm| bm.start == position);
+		let bookmark = config.get_bookmarks(path).into_iter().find(|bm| bm.start == position);
 		let Some(bookmark) = bookmark else {
 			return ffi::BookmarkDisplayAtPosition { found: false, note: String::new(), snippet: String::new() };
 		};
+		// Bookmark bounds are caret positions, so read them in display units, not chars.
 		let snippet = if bookmark.start == bookmark.end {
-			self.get_line_text(bookmark.start)
+			self.line_text_at(bookmark.start)
 		} else {
-			self.get_text_range(bookmark.start, bookmark.end)
+			self.get_text_range_display(bookmark.start, bookmark.end)
 		};
 		ffi::BookmarkDisplayAtPosition { found: true, note: bookmark.note, snippet }
 	}
