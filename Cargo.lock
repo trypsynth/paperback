@@ -328,7 +328,7 @@ dependencies = [
  "regex",
  "rustc-hash",
  "shlex",
- "syn 3.0.6",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -5782,8 +5782,3 @@ checksum = "27bc9d5b815bc103f142aa054f561d9187d191692ec7c2d1e2b4737f8dbd7296"
 dependencies = [
  "zune-core",
 ]
-
-[[patch.unused]]
-name = "zip"
-version = "9.0.0-pre3"
-source = "git+https://github.com/zip-rs/zip2.git?rev=96407e1332cb9ec8f39af88e6dac866ce83995b8#96407e1332cb9ec8f39af88e6dac866ce83995b8"
