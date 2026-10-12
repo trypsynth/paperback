@@ -43,23 +43,12 @@ pub fn reader_search(buffer: &DocumentBuffer, needle: &str, start: i64, options:
 	let Some(re) = build_matcher(needle, options) else {
 		return -1;
 	};
-	if options.contains(SearchOptions::FORWARD) {
-		if let Some(m) = re.find(&haystack[start_byte..]) {
-			let byte_pos = start_byte + m.start();
-			let display_pos = buffer.display_index_for_byte(byte_pos);
-			return i64::try_from(display_pos).unwrap_or(-1);
-		}
+	let found = if options.contains(SearchOptions::FORWARD) {
+		re.find(&haystack[start_byte..]).map(|m| start_byte + m.start())
 	} else {
-		let mut last: Option<usize> = None;
-		for m in re.find_iter(&haystack[..start_byte]) {
-			last = Some(m.start());
-		}
-		if let Some(pos) = last {
-			let display_pos = buffer.display_index_for_byte(pos);
-			return i64::try_from(display_pos).unwrap_or(-1);
-		}
-	}
-	-1
+		re.find_iter(&haystack[..start_byte]).last().map(|m| m.start())
+	};
+	found.map_or(-1, |byte| i64::try_from(buffer.display_index_for_byte(byte)).unwrap_or(-1))
 }
 
 /// Every match of `needle` in `buffer`, as display-unit `(start, end)` spans in document order.
