@@ -147,8 +147,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Leest gescande PDF-pagina’s met de OCR die in Windows en macOS is ingebouwd.</li>
 <li>Bladwijzers en notities, zodat je kunt markeren waar je gebleven bent en er later naar terug kunt gaan.</li>
 <li>Elke toetsenbordsneltoets kan worden aangepast.</li>
-<li>Opent documenten rechtstreeks van http- en https-koppelingen, en download ze opnieuw wanneer je ze heropent of <code>F5</code> indrukt, waarbij je leespositie en bladwijzers behouden blijven. Bij het herstellen van de documenten die je open had, download het programma opnieuw de documenten van koppelingen die 2 MB of kleiner waren.</li>
-<li>Wordt geleverd met <code>pb</code>, een terminalprogramma dat elk ondersteund document omzet naar HTML, Markdown of platte tekst. Het accepteert zoveel documenten als je opgeeft, verwerkt jokertekens zoals <code>*.pdf</code> zelf zodat dezelfde opdracht ook op Windows werkt, en kan per document één bestand in een map schrijven. Het kan ook een lijst met documenten uit een bestand of van stdin lezen met <code>--files-from</code> en documenten rechtstreeks van http- en https-koppelingen omzetten.</li>
+<li>Opent documenten rechtstreeks via http- en https-links en downloadt ze opnieuw wanneer je ze heropent of op <code>F5</code> drukt, met behoud van je leespositie en bladwijzers. Bij het herstellen van de documenten die je open had, downloadt Paperback de documenten van links die 2 MB of kleiner waren opnieuw.</li>
+<li>Wordt geleverd met <code>pb</code>, een terminalprogramma dat elk ondersteund document omzet naar HTML, Markdown of platte tekst. Het accepteert zoveel documenten als je opgeeft, verwerkt jokertekens zoals <code>*.pdf</code> zelf zodat dezelfde opdracht ook op Windows werkt, en kan per document één bestand in een map schrijven. Het kan ook een lijst met documenten uit een bestand of van stdin lezen met <code>--files-from</code> en documenten rechtstreeks via http- en https-links omzetten.</li>
 </ul>
 <h2 id="schermlezercompatibiliteit">Schermlezercompatibiliteit</h2>
 <p>Paperback werkt goed met alle belangrijke schermlezers. Er zijn echter twee bekende problemen voor JAWS-gebruikers.</p>
@@ -189,7 +189,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="menu-bestand">Menu Bestand</h3>
 <ul>
 <li><code>Ctrl+O</code>: Een document openen.</li>
-<li><code>Ctrl+L</code> (macOS: <code>Cmd+Option+O</code>): Een document openen van een weblink.</li>
+<li><code>Ctrl+L</code> (macOS: <code>Cmd+Option+O</code>): Een document openen via een weblink.</li>
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Het huidige document sluiten.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Alle geopende documenten sluiten.</li>
 <li><code>Ctrl+Shift+T</code>: Het laatst gesloten document heropenen.</li>
@@ -211,7 +211,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h3 id="menu-beeld">Menu Beeld</h3>
 <ul>
-<li><code>F5</code>: Het huidige document opnieuw van schijf inlezen, of het opnieuw downloaden als het van een link werd geopend. Werkt ongeacht of “Gewijzigde documenten automatisch opnieuw laden” in Instellingen is ingeschakeld.</li>
+<li><code>F5</code>: Het huidige document opnieuw van schijf inlezen, of het opnieuw downloaden als het via een link is geopend. Werkt ongeacht of “Gewijzigde documenten automatisch opnieuw laden” in Instellingen is ingeschakeld.</li>
 <li><code>Ctrl+Alt+W</code>: Automatische terugloop in-/uitschakelen.</li>
 <li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, oftewel Control+Command+F): Volledig scherm in-/uitschakelen.</li>
 <li><code>Ctrl+Shift+V</code>: De huidige inhoud openen in webweergave.</li>
@@ -329,7 +329,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>Overschakelen naar TTS-modus of Overschakelen naar tekstmodus:</strong> wisselt tussen de voorleesmodus en de tekstmodus, zoals hierboven beschreven. In de tekstmodus start en pauzeert een item Voorlezen het voorlezen zonder de tekstmodus te verlaten.</li>
 <li><strong>Inhoudsopgave:</strong> de hoofdstukken van het boek, geopend bij het hoofdstuk dat je aan het lezen bent. Kies er een om er direct naartoe te gaan. Items met hoofdstukken eronder kun je uit- en samenvouwen met de acties van je schermlezer.</li>
 <li><strong>Elementen:</strong> een lijst met de koppen of links van het document. Wissel tussen de twee met de keuzelijst Type op iOS of de tabbladen op Android, en kies er dan een om ernaartoe te gaan.</li>
-<li><strong>Zoeken:</strong> typ waarnaar je wilt zoeken, of kies een eerdere zoekopdracht uit Zoekgeschiedenis, en kies of je hoofdlettergevoelig wilt zoeken, alleen hele woorden wilt vinden of een reguliere expressie wilt gebruiken. Vorige zoeken en Volgende zoeken springen naar een overeenkomst en zeggen waar je terecht bent gekomen, en Zoeken blijft open zodat je verder kunt. In de voorleesmodus verschijnt Zoeken ook als navigatie-eenheid op de leesbalk, zodat je ook van daaruit door de overeenkomsten kunt gaan. <strong>Na zoekresultaten stoppen met voorlezen</strong> in Instellingen onder Tekst-naar-spraak staat standaard aan en stopt na het voorlezen van de alinea die een overeenkomst bevat. Schakel dit uit om door te blijven lezen vanaf de overeenkomst, terwijl de vorige en volgende elementen op de leesbalk nog steeds per zoekresultaat navigeren.</li>
+<li><strong>Zoeken:</strong> typ waarnaar je wilt zoeken, of kies een eerdere zoekopdracht uit Zoekgeschiedenis, en kies of je hoofdlettergevoelig wilt zoeken, alleen hele woorden wilt vinden of een reguliere expressie wilt gebruiken. Vorige zoeken en Volgende zoeken springen naar een overeenkomst en zeggen waar je terecht bent gekomen, en Zoeken blijft open zodat je verder kunt. In de voorleesmodus verschijnt Zoeken ook als navigatie-eenheid op de leesbalk, zodat je ook van daaruit door de overeenkomsten kunt gaan. <strong>Voorlezen stoppen na zoekovereenkomsten</strong> in Instellingen onder Tekst-naar-spraak staat standaard aan en stopt na het voorlezen van de alinea met de overeenkomst. Schakel dit uit om vanaf de overeenkomst door te blijven lezen, terwijl Vorige en Volgende op de leesbalk nog steeds per zoekovereenkomst navigeren.</li>
 <li><strong>Ga naar:</strong> spring naar een regel, een pagina of een percentage van het document. Kies welke met de keuzelijst Modus.</li>
 <li><strong>Recente documenten:</strong> alle documenten die je hebt geopend, elk gemarkeerd als momenteel open, gesloten of bestand ontbreekt. Elk document heeft twee schermlezeracties: Verwijderen haalt het uit de lijst en Terugvinden laat je een document terugvinden waarvan het bestand is verplaatst. Recente documenten wissen leegt de lijst zonder documenten te verwijderen.</li>
 <li><strong>Woordenaantal:</strong> het aantal woorden in het document.</li>
