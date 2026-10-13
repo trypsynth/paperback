@@ -4,7 +4,7 @@
 //!
 //! What is read is a rendering of the page, not the text layer it replaces, which is what makes re-reading a page that already has text worth doing at all.
 //!
-//! A whole document is read on several threads, which `paperback_core::ocr::pool` runs and which the app's Batch OCR uses too. The pages come back in the document's own order, so everything below works on them as if they had been read one at a time.
+//! Pages are read on several threads by the same pool as the app's Batch OCR.
 //!
 //! The recognized text is put in place of what it replaces rather than in front of it, for the reason given on [`Edit`]: an insertion at a page's start moves every marker sitting there past the words, the page break and the image marker naming the artwork among them, so in HTML the rule for a scanned page comes out after its text.
 
@@ -69,13 +69,10 @@ pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, select
 		return Ok(());
 	}
 	let max_dimension = max_image_dimension();
-	// The pages the pool is asked for, in the order the edits are in. A page number that will not
-	// fit an `i32` is one the renderer could not be asked for anyway, and leaving it out reads it
-	// the way a page out of range is read: the edit keeps what it had.
+	// A page number too big for an `i32` could never be rendered, so its edit keeps what it had.
 	let page_numbers: Vec<i32> = edits.iter().filter_map(|edit| i32::try_from(edit.page).ok()).collect();
 	let mut results: HashMap<i32, Result<String, OcrError>> = HashMap::with_capacity(page_numbers.len());
-	// The command line has no way to stop a run part-way, so the pool is handed a flag nothing
-	// raises rather than being given a second entry point without one.
+	// The command line cannot stop a run part-way, so nothing raises this.
 	let cancel = AtomicBool::new(false);
 	recognize_pages(
 		file_path,
@@ -128,9 +125,7 @@ pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, select
 
 /// Renders one 1-based page and recognizes the text on it.
 fn recognize_page(renderer: &mut PageRenderer, page: i32, max_dimension: u32) -> Result<String, OcrError> {
-	// `render` takes a 0-based page index; the document numbers its pages from one. A page that
-	// fell out of the subtraction is a page the document does not have, and pdfium's own bounds
-	// check is what refuses it.
+	// `render` takes a 0-based page index; the document numbers its pages from one.
 	let rendered = renderer.render(page - 1, max_dimension).map_err(|error| OcrError::Failed(error.to_string()))?;
 	recognize_rgba(&rendered.rgba, rendered.width, rendered.height)
 }

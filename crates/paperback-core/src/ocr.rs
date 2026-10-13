@@ -67,11 +67,9 @@ pub struct RenderedPage {
 /// A document held open for repeated page rendering.
 ///
 /// Batch OCR renders many pages from one file, so the file is opened once here rather than per
-/// page. A renderer is created and used on one thread, which need not be the UI thread: every call
-/// into pdfium takes the library's own global lock, and that lock is what `PdfDocument`'s `Send`
-/// rests on. Nothing in the type enforces the one-thread rule, so it is worth knowing why it is
-/// kept -- that lock serializes rasterizing, so sharing one renderer between the pool's workers
-/// would only queue them behind each other, and each opening its own is what lets them overlap.
+/// page. It need not live on the UI thread, since every pdfium call takes the library's global
+/// lock. Each pool worker opens its own rather than sharing one, so one worker's rasterizing can
+/// overlap another's reading.
 pub struct PageRenderer {
 	source: Source,
 }
