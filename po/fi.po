@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-12 16:46+0000\n"
-"PO-Revision-Date: 2026-10-13 01:37+0300\n"
+"PO-Revision-Date: 2026-10-13 05:12+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -232,7 +232,7 @@ msgstr "Asiakirjan avaaminen"
 #. TRANSLATORS: Title of the error listing the links that could not be opened
 #| msgid "Open from Archive"
 msgid "Open from URL"
-msgstr "URL-osoitteesta avaaminen"
+msgstr "Avaa URL-osoitteesta"
 
 #. TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
 msgid "Document reloaded."
