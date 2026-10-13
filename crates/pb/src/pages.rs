@@ -361,8 +361,8 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 		if start >= end {
 			continue;
 		}
-		let byte_start = doc.buffer.byte_index_for_display(start);
-		let byte_end = doc.buffer.byte_index_for_display(end);
+		let page_text =
+			doc.buffer.slice(doc.buffer.byte_index_for_display(start)..doc.buffer.byte_index_for_display(end));
 		let offset = display_len(&content);
 		// Only a page the reader left out needs a break before the next one. Pages asked for
 		// together were adjacent in the document and already carry whatever separator the parser
@@ -372,7 +372,7 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 		if spans.last().is_some_and(|previous| previous.page + 1 != page) {
 			content.push('\n');
 		}
-		content.push_str(&doc.buffer.content[byte_start..byte_end]);
+		content.push_str(page_text);
 		spans.push(Span { start, end, offset, page });
 	}
 	if spans.is_empty() {
