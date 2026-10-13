@@ -147,6 +147,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Odczytuje zeskanowane strony PDF za pomocą OCR wbudowanego w Windows i macOS.</li>
 <li>Pozwala dodawać zakładki i notatki, aby zaznaczać miejsca i do nich wracać.</li>
 <li>Umożliwia zmianę każdego skrótu klawiszowego.</li>
+<li>Otwiera dokumenty bezpośrednio z odnośników HTTP i HTTPS. Pobiera je ponownie przy ponownym otwarciu lub po naciśnięciu <code>F5</code>, zachowując pozycję czytania i zakładki. Przy przywracaniu wcześniej otwartych dokumentów ponownie pobiera z odnośników te dokumenty, które przy ostatnim pobraniu miały nie więcej niż 2 MB.</li>
 <li>Zawiera <code>pb</code>, narzędzie wiersza poleceń, które przekształca dowolny obsługiwany dokument na HTML, Markdown lub zwykły tekst. Przyjmuje wiele dokumentów naraz i samodzielnie rozwija wzorce nazw plików, takie jak <code>*.pdf</code>, dzięki czemu to samo polecenie działa także w systemie Windows. Może zapisać w folderze osobny plik dla każdego dokumentu. Opcja <code>--files-from</code> pozwala też wczytać listę dokumentów z pliku lub ze standardowego wejścia. Można również przekształcać dokumenty bezpośrednio z odnośników HTTP i HTTPS.</li>
 </ul>
 <h2 id="zgodność-z-czytnikami-ekranu">Zgodność z czytnikami ekranu</h2>
@@ -189,6 +190,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="menu-plik">Menu Plik</h3>
 <ul>
 <li><code>Ctrl+O</code>: Otwórz dokument.</li>
+<li><code>Ctrl+L</code> (macOS: <code>Cmd+Option+O</code>): Otwórz dokument z odnośnika internetowego.</li>
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Zamknij bieżący dokument.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Zamknij wszystkie otwarte dokumenty.</li>
 <li><code>Ctrl+Shift+T</code>: Otwórz ponownie ostatnio zamknięty dokument.</li>
@@ -210,7 +212,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h3 id="menu-widok">Menu Widok</h3>
 <ul>
-<li><code>F5</code>: Przeładuj bieżący dokument z dysku. Działa niezależnie od tego, czy opcja „Automatycznie przeładowuj zmienione dokumenty” jest włączona w Ustawieniach.</li>
+<li><code>F5</code>: Przeładuj bieżący dokument z dysku lub pobierz go ponownie, jeśli otwarto go z odnośnika. Działa niezależnie od tego, czy opcja „Automatycznie przeładowuj zmienione dokumenty” jest włączona w Ustawieniach.</li>
 <li><code>Ctrl+Alt+W</code>: Przełącz zawijanie wierszy.</li>
 <li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, czyli Control+Command+F): Przełącz tryb pełnoekranowy.</li>
 <li><code>Ctrl+Shift+V</code>: Otwórz bieżącą treść w Widoku WWW.</li>
@@ -277,6 +279,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+;</code>: Zmniejsz skok przewijania dźwięku.</li>
 <li><code>Ctrl+Shift+.</code>: Zwiększ szybkość odtwarzania narracji dźwiękowej.</li>
 <li><code>Ctrl+Shift+,</code>: Zmniejsz szybkość odtwarzania narracji dźwiękowej.</li>
+<li><code>Ctrl+'</code>: Zwiększ głośność narracji dźwiękowej.</li>
+<li><code>Ctrl+;</code>: Zmniejsz głośność narracji dźwiękowej.</li>
 </ul>
 <h3 id="menu-narzędzia">Menu Narzędzia</h3>
 <ul>
@@ -328,7 +332,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>Przełącz na tryb mowy lub Przełącz na tryb tekstowy:</strong> przełącza między opisanymi wyżej sposobami czytania. W Androidzie jest też polecenie Czytaj na głos, które uruchamia i wstrzymuje odczyt.</li>
 <li><strong>Spis treści:</strong> lista rozdziałów książki, otwierana na aktualnie czytanym rozdziale. Wybierz rozdział, aby od razu do niego przejść. Pozycje z podrozdziałami można rozwijać i zwijać za pomocą akcji czytnika ekranu.</li>
 <li><strong>Elementy:</strong> lista nagłówków lub odnośników w dokumencie. W iOS wybierz rodzaj elementów w polu Typ, a w Androidzie przełącz kartę. Następnie wybierz element, aby do niego przejść.</li>
-<li><strong>Znajdź:</strong> wpisz szukany tekst albo wybierz wcześniejsze wyszukiwanie z Historii wyszukiwania. Określ, czy uwzględniać wielkość liter, czy szukać tylko całych słów i czy używać wyrażenia regularnego. Przyciski Znajdź poprzednie i Znajdź następne przenoszą do dopasowania i podają jego położenie. Ekran Znajdź pozostaje otwarty, aby można było kontynuować wyszukiwanie. W trybie mowy Znajdź pojawia się też jako jednostka nawigacji na pasku czytania, co pozwala przechodzić między dopasowaniami także z tego paska.</li>
+<li><strong>Znajdź:</strong> wpisz szukany tekst albo wybierz wcześniejsze wyszukiwanie z Historii wyszukiwania. Określ, czy uwzględniać wielkość liter, czy szukać tylko całych słów i czy używać wyrażenia regularnego. Przyciski Znajdź poprzednie i Znajdź następne przenoszą do dopasowania i podają jego położenie. Ekran Znajdź pozostaje otwarty, aby można było kontynuować wyszukiwanie. W trybie mowy Znajdź pojawia się też jako jednostka nawigacji na pasku czytania, co pozwala przechodzić między dopasowaniami także z tego paska. Opcja <strong>Zatrzymuj czytanie po akapicie z dopasowaniem</strong>, dostępna w Ustawieniach w sekcji Synteza mowy, jest domyślnie włączona i zatrzymuje odczyt po akapicie zawierającym dopasowanie. Wyłącz ją, aby kontynuować czytanie od znalezionego miejsca. Przyciski Znajdź poprzednie i Znajdź następne na pasku czytania nadal pozwalają przechodzić między dopasowaniami.</li>
 <li><strong>Przejdź do:</strong> przenosi do wybranego wiersza, strony lub pozycji wyrażonej procentowo. Rodzaj pozycji wybiera się w polu Tryb.</li>
 <li><strong>Ostatnie dokumenty:</strong> lista wszystkich otwieranych dokumentów. Przy każdym podany jest stan: obecnie otwarty, zamknięty lub brak pliku. Każdy dokument ma dwie akcje czytnika ekranu: Usuń usuwa go z listy, a Zlokalizuj pozwala wskazać plik po jego przeniesieniu. Polecenie Wyczyść listę ostatnich dokumentów opróżnia listę, ale nie usuwa samych dokumentów.</li>
 <li><strong>Liczba słów:</strong> liczba słów w dokumencie.</li>
