@@ -13,7 +13,7 @@ use std::{collections::HashMap, sync::atomic::AtomicBool};
 use anyhow::{Context, Result};
 use native_ocr::{Error as OcrError, max_image_dimension, recognize_rgba};
 use paperback_core::{
-	document::{Document, Edit, Marker, MarkerType},
+	document::{ContentBytePos, Document, Edit, Marker, MarkerType},
 	ocr::{PageRenderer, default_workers, image_only_placeholder, recognize_pages},
 	parser::pdf::join_wrapped_lines,
 };
@@ -211,9 +211,12 @@ fn page_edits(doc: &Document, selection: Selection) -> Vec<PageEdit> {
 			// document is the very start of the content and has no newline in front of it to find a
 			// start after.
 			let byte_start = buffer.byte_index_for_display(start);
-			let head = buffer.content[..byte_start].rfind('\n').map_or(0, |offset| offset + 1);
+			let head = buffer
+				.slice(..byte_start)
+				.rfind('\n')
+				.map_or(ContentBytePos::ZERO, |offset| ContentBytePos::from_raw(offset + 1));
 			// The newline is left where it was rather than carried in the replacement.
-			let rest = &buffer.content[byte_start..];
+			let rest = buffer.slice(byte_start..);
 			let length = rest.find('\n').unwrap_or(rest.len());
 			let line_start = buffer.display_index_for_byte(head);
 			let line_end = buffer.display_index_for_byte(byte_start + length);
@@ -318,7 +321,9 @@ mod tests {
 	fn a_scanned_page_is_reported_by_the_number_the_document_gives_it() {
 		let mut doc = document();
 		// Put the marker where page 2's text starts.
-		let start = doc.buffer.display_index_for_byte(doc.buffer.content.find("text of page 2").unwrap_or(0));
+		let start = doc
+			.buffer
+			.display_index_for_byte(ContentBytePos::from_raw(doc.buffer.content.find("text of page 2").unwrap()));
 		doc.buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, start));
 		let edits = page_edits(&doc, images_only());
 		assert_eq!(edits.len(), 1);
@@ -368,7 +373,9 @@ mod tests {
 	#[test]
 	fn the_two_kinds_of_page_are_asked_for_separately() {
 		let mut doc = document();
-		let start = doc.buffer.display_index_for_byte(doc.buffer.content.find("text of page 2").unwrap_or(0));
+		let start = doc
+			.buffer
+			.display_index_for_byte(ContentBytePos::from_raw(doc.buffer.content.find("text of page 2").unwrap()));
 		doc.buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, start));
 
 		let scanned: Vec<usize> =

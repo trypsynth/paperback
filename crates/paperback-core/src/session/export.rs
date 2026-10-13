@@ -133,8 +133,8 @@ impl DocumentSession {
 		let position = position.min(doc_len);
 		let end = (position + MAX_WEBVIEW_DISPLAY_LEN / 2).min(doc_len).max(MAX_WEBVIEW_DISPLAY_LEN);
 		let start = end - MAX_WEBVIEW_DISPLAY_LEN;
-		let byte_start = snap_start_to_paragraph_boundary(&buffer.content, buffer.byte_index_for_display(start));
-		let byte_end = snap_end_to_paragraph_boundary(&buffer.content, buffer.byte_index_for_display(end));
+		let byte_start = snap_start_to_paragraph_boundary(buffer, buffer.byte_index_for_display(start));
+		let byte_end = snap_end_to_paragraph_boundary(buffer, buffer.byte_index_for_display(end));
 		buffer.display_index_for_byte(byte_start)..buffer.display_index_for_byte(byte_end)
 	}
 

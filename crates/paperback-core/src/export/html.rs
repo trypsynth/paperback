@@ -47,16 +47,13 @@ pub fn render_with_anchor(doc: &DocumentHandle, anchor: Option<usize>) -> String
 #[must_use]
 pub fn render_range(doc: &DocumentHandle, range: Range<usize>, anchor: Option<usize>) -> String {
 	let document = doc.document();
-	let content = &document.buffer.content;
 	let doc_display_len = document.buffer.total_display_len();
 	let range_start = range.start.min(doc_display_len);
 	let range_end = range.end.clamp(range_start, doc_display_len);
 	let is_partial = range_start > 0 || range_end < doc_display_len;
-	let content = {
-		let byte_start = document.buffer.byte_index_for_display(range_start);
-		let byte_end = document.buffer.byte_index_for_display(range_end);
-		&content[byte_start..byte_end]
-	};
+	let content = document
+		.buffer
+		.slice(document.buffer.byte_index_for_display(range_start)..document.buffer.byte_index_for_display(range_end));
 	// Precompute section boundaries once so link resolution is O(log S) per link
 	// instead of O(M) per link (where M = total marker count).
 	let section_break_positions: Vec<usize> =
