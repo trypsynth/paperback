@@ -1,5 +1,6 @@
 //! Putting a document's text into the reading control: loading the window around the caret,
-//! extending it, and rendering the bold, italic and underline runs the parser found.
+//! extending it, and rendering the bold, italic and underline runs the parser found, along with
+//! the headings and lists a screen reader reports.
 
 use paperback_core::session::{DocumentSession, WindowSlice};
 #[cfg(target_os = "windows")]
@@ -8,7 +9,10 @@ use wxdragon::prelude::*;
 
 use super::document_manager::DocumentTab;
 #[cfg(target_os = "windows")]
-use super::rtf_stream::{append_rtf_into_ctrl, stream_rtf_into_ctrl};
+use super::{
+	paragraph_format::apply_paragraph_formats,
+	rtf_stream::{append_rtf_into_ctrl, stream_rtf_into_ctrl},
+};
 #[cfg(target_os = "windows")]
 use crate::rtf::{RtfFontInfo, build_rtf, build_rtf_for_whole_control, sanitize_for_rich_edit};
 use crate::{
@@ -96,7 +100,7 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: TextCtrl, slice: &WindowSlice) -> 
 		let rtf = build_rtf(
 			&expected,
 			&segments,
-			&[],
+			&slice.paragraphs,
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
 		);
 		if append_rtf_into_ctrl(text_ctrl, &rtf) {
@@ -112,15 +116,18 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: TextCtrl, slice: &WindowSlice) -> 
 	if text_ctrl.get_last_position() <= base {
 		return false;
 	}
+	#[cfg(target_os = "windows")]
+	apply_paragraph_formats(text_ctrl, base, &slice.paragraphs);
 	let shifted: Vec<FormatSegment> =
 		segments.iter().map(|seg| FormatSegment { start: seg.start + base, end: seg.end + base, ..*seg }).collect();
 	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &shifted);
 	true
 }
 
-/// Fills `text_ctrl` with `slice`'s text and bold/italic/underline markers. `slice` may be a
-/// window into a much larger document (see `text_window`) rather than its full content;
-/// this function has no notion of "the whole document" and just fills whatever it's handed.
+/// Fills `text_ctrl` with `slice`'s text, its bold/italic/underline markers and its heading and
+/// list paragraphs. `slice` may be a window into a much larger document (see `text_window`)
+/// rather than its full content; this function has no notion of "the whole document" and just
+/// fills whatever it's handed.
 ///
 /// On Windows this streams a single RTF blob into the native `RichEdit` control
 /// via `EM_STREAMIN` (see `rtf_stream::stream_rtf_into_ctrl`) instead of issuing
@@ -156,7 +163,7 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &Window
 		let rtf = build_rtf_for_whole_control(
 			&expected,
 			&segments,
-			&[],
+			&slice.paragraphs,
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
 		);
 		if stream_rtf_into_ctrl(text_ctrl, &rtf) {
@@ -186,6 +193,8 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &Window
 		// fall back below to the plain-text + segment-loop path.
 	}
 	fill_text_ctrl(text_ctrl, content);
+	#[cfg(target_os = "windows")]
+	apply_paragraph_formats(text_ctrl, 0, &slice.paragraphs);
 	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &segments);
 }
 

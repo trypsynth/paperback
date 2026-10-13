@@ -1,5 +1,6 @@
 //! Builds a minimal RTF document from plain text plus a set of non-overlapping
-//! bold/italic/underline spans, for the Windows RTF fast path in
+//! bold/italic/underline spans and the heading and list paragraphs a screen reader
+//! reports, for the Windows RTF fast path in
 //! `document_manager`. See `apply_formatting_markers_to_ctrl_from_segments` for why this
 //! exists: the native `RichEdit` control backing a `wxTE_RICH2` `TextCtrl`
 //! special-cases `WM_SETTEXT`. Text starting with `{\rtf` is parsed as RTF in
