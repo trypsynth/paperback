@@ -39,7 +39,7 @@ mod checks {
 	}
 
 	fn load_window(text_ctrl: TextCtrl) {
-		assert!(stream_rtf_into_ctrl(text_ctrl, &build_rtf_for_whole_control(WINDOW, &[], &font_info(text_ctrl))));
+		assert!(stream_rtf_into_ctrl(text_ctrl, &build_rtf_for_whole_control(WINDOW, &[], &[], &font_info(text_ctrl))));
 		assert_eq!(text_ctrl.get_value(), WINDOW, "the loaded window keeps its last paragraph mark");
 		assert_eq!(text_ctrl.get_last_position(), 6, "the loaded window stores every display unit");
 	}
@@ -55,7 +55,7 @@ mod checks {
 
 	pub fn run(text_ctrl: TextCtrl) {
 		load_window(text_ctrl);
-		assert!(append_rtf_into_ctrl(text_ctrl, &build_rtf(EXTENSION, &[], &font_info(text_ctrl))));
+		assert!(append_rtf_into_ctrl(text_ctrl, &build_rtf(EXTENSION, &[], &[], &font_info(text_ctrl))));
 		assert_extended(text_ctrl, "RTF extension");
 		load_window(text_ctrl);
 		text_ctrl.append_text(EXTENSION);

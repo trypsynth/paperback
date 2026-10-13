@@ -96,6 +96,7 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: TextCtrl, slice: &WindowSlice) -> 
 		let rtf = build_rtf(
 			&expected,
 			&segments,
+			&[],
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
 		);
 		if append_rtf_into_ctrl(text_ctrl, &rtf) {
@@ -155,6 +156,7 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &Window
 		let rtf = build_rtf_for_whole_control(
 			&expected,
 			&segments,
+			&[],
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
 		);
 		if stream_rtf_into_ctrl(text_ctrl, &rtf) {
