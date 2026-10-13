@@ -3,13 +3,11 @@
 //!
 //! Everything that touches a `DocumentTab` runs on the UI thread. The worker thread holds only
 //! the file path and a list of page numbers: it renders and recognizes, then hands text back
-//! through `wxdragon::call_after`. A batch reads its pages on a pool of threads, which
-//! `paperback_core::ocr::pool` runs and which hands the pages over in order, so what arrives here
-//! is what a one-page-at-a-time pass would have produced. Pages are addressed by number rather
-//! than by offset for a reason. Applying one page's text moves every offset after it, so an
-//! offset captured before the job started would be stale by the time the worker's next result
-//! lands. Page numbers stay true, and the UI thread re-resolves each one's placeholder as it
-//! applies it.
+//! through `wxdragon::call_after`. A batch reads its pages on a pool of threads, which hands them
+//! over in page order. Pages are addressed by number rather than by offset for a reason. Applying
+//! one page's text moves every offset after it, so an offset captured before the job started
+//! would be stale by the time the worker's next result lands. Page numbers stay true, and the UI
+//! thread re-resolves each one's placeholder as it applies it.
 
 use std::{
 	path::{Path, PathBuf},
@@ -18,6 +16,7 @@ use std::{
 		atomic::{AtomicBool, Ordering},
 	},
 	thread,
+	time::{Duration, Instant},
 };
 
 use paperback_core::{
@@ -34,29 +33,10 @@ use crate::{
 	ui::{navigation::announce, text_render::reload_window_around},
 };
 
-/// How many pages between spoken progress announcements during a batch OCR job.
+/// How long a batch OCR job goes between folding its pages into the document and announcing progress.
 ///
-/// A page takes about 30 ms once the pool is reading them, so this is an announcement roughly
-/// every second and a half. It was 20, which was near enough to the same cadence when a page took
-/// 190 ms; the pool did not make the announcements less useful, it made them four times as
-/// frequent, and an announcement that arrives before the reader has finished hearing the last one
-/// is worse than no announcement at all.
-const BATCH_OCR_PROGRESS_EVERY: usize = 50;
-
-/// How many recognized pages to hold before folding them into the document together.
-///
-/// Every apply rebuilds the buffer's per-char index tables, which is linear in the whole
-/// document, so applying page by page would be quadratic over a long scan. Flushing in groups
-/// keeps that cost proportional to the document while still letting the reader reach the early
-/// pages long before a several-hundred-page job finishes. Fifty pages is about a second and a
-/// half, which is as long as it is worth making a reader wait to read the page they are on, and
-/// it is also the fewest applies: a 500-page job rebuilds those tables ten times rather than
-/// twenty-five.
-///
-/// The progress interval, so the text has landed by the time the announcement says it has. The
-/// two are queued to the UI thread one after the other in this order, so a reader who goes to look
-/// at page fifty when they hear "OCR 50 of 300" finds the words there rather than a placeholder.
-const BATCH_OCR_FLUSH_EVERY: usize = BATCH_OCR_PROGRESS_EVERY;
+/// Time rather than a page count, because a page takes several times longer on a two-core laptop than on a desktop with a pool of workers, and a count tuned for one is either chatty or silent on the other. Every apply rebuilds the buffer's per-char index tables, which is linear in the whole document, so this also keeps a long scan from going quadratic. Both happen together so the text has landed by the time the announcement says it has.
+const BATCH_OCR_UPDATE_EVERY: Duration = Duration::from_secs(4);
 
 /// A running OCR job, one per tab. Owned by the UI thread; the worker sees only `cancel`.
 pub(super) struct OcrJob {
@@ -379,12 +359,7 @@ fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[i64], window: TextWindow, 
 	}
 }
 
-/// The worker thread: opens the document once per pool worker, then renders and recognizes pages
-/// on several threads at once, posting results back to the UI thread in flushes.
-///
-/// The pool hands pages over in page order however the workers finish, so everything below reads
-/// as the single-threaded pass it replaced: a flush always carries a run of pages in ascending
-/// order, the progress count only ever goes up, and a page can never land after a later one.
+/// The worker thread: renders and recognizes pages on a pool of threads, posting results back to the UI thread in flushes.
 ///
 /// `id` travels with every message so the UI thread can tell this run apart from any other job on the same document, which may by now be open again under a new tab.
 fn run_ocr(
@@ -396,11 +371,11 @@ fn run_ocr(
 	batch: bool,
 	id: u64,
 ) {
-	// Asked for once rather than per page: it is the engine's cap, and it does not change.
 	let max_dimension = ocr::max_image_dimension();
 	let total = pages.len();
-	let mut pending: Vec<PageResult> = Vec::with_capacity(BATCH_OCR_FLUSH_EVERY);
+	let mut pending: Vec<PageResult> = Vec::new();
 	let mut done = 0usize;
+	let mut last_update = Instant::now();
 	let run = recognize_pages(
 		path_str,
 		password,
@@ -417,11 +392,12 @@ fn run_ocr(
 		|page, result| {
 			done += 1;
 			pending.push((page, result));
-			if pending.len() >= BATCH_OCR_FLUSH_EVERY && done != total {
+			if done != total && last_update.elapsed() >= BATCH_OCR_UPDATE_EVERY {
 				post_apply(id, file_path, std::mem::take(&mut pending));
-			}
-			if batch && done.is_multiple_of(BATCH_OCR_PROGRESS_EVERY) && done != total {
-				post_progress(id, done, total);
+				if batch {
+					post_progress(id, done, total);
+				}
+				last_update = Instant::now();
 			}
 		},
 	);
