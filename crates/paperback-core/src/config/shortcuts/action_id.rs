@@ -96,6 +96,7 @@ pub enum ActionId {
 	CustomizeShortcuts,
 	ImportDocumentData,
 	ExportDocumentData,
+	ExportNotesAndBookmarks,
 	ExportToPlainText,
 	ExportToHtml,
 	ExportToMarkdown,
@@ -199,6 +200,7 @@ impl ActionId {
 			Self::CustomizeShortcuts,
 			Self::ImportDocumentData,
 			Self::ExportDocumentData,
+			Self::ExportNotesAndBookmarks,
 			Self::ExportToPlainText,
 			Self::ExportToHtml,
 			Self::ExportToMarkdown,
@@ -222,6 +224,7 @@ impl ActionId {
 			| Self::RevealFileInFolder
 			| Self::ImportDocumentData
 			| Self::ExportDocumentData
+			| Self::ExportNotesAndBookmarks
 			| Self::ExportToPlainText
 			| Self::ExportToHtml
 			| Self::ExportToMarkdown => ShortcutCategory::File,
@@ -492,6 +495,8 @@ impl ActionId {
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ExportDocumentData => crate::t("Export Document Data..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::ExportNotesAndBookmarks => crate::t("Export Notes and Bookmarks as Text or HTML..."),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ExportToPlainText => crate::t("Export to Plain Text..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ExportToHtml => crate::t("Export to HTML..."),
@@ -617,6 +622,7 @@ impl ActionId {
 			Self::CustomizeShortcuts => None,
 			Self::ImportDocumentData => Some(KeyChord::new(true, false, true, "I")),
 			Self::ExportDocumentData => Some(KeyChord::new(true, false, true, "E")),
+			Self::ExportNotesAndBookmarks => Some(KeyChord::new(true, true, false, "E")),
 			Self::ExportToPlainText => Some(KeyChord::new(true, false, false, "E")),
 			Self::ExportToHtml => None,
 			Self::ExportToMarkdown => None,
@@ -722,6 +728,7 @@ impl ActionId {
 			Self::CustomizeShortcuts => None,
 			Self::ImportDocumentData => Some(KeyChord::new(true, false, true, "I")),
 			Self::ExportDocumentData => Some(KeyChord::new(true, false, true, "E")),
+			Self::ExportNotesAndBookmarks => Some(KeyChord::new(true, true, false, "E")),
 			Self::ExportToPlainText => Some(KeyChord::new(true, false, false, "E")),
 			Self::ExportToHtml => None,
 			Self::ExportToMarkdown => None,

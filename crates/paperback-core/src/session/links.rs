@@ -8,7 +8,8 @@ use super::{
 use crate::{
 	config::ConfigManager,
 	document::{self, MarkerType},
-	reader_core::resolve_link,
+	export::annotations::{AnnotationEntry, AnnotationFormat, AnnotationOptions, render_annotations},
+	reader_core::{get_filtered_bookmarks, resolve_link},
 	types::{self as ffi},
 };
 
@@ -82,6 +83,31 @@ impl DocumentSession {
 }
 
 impl DocumentSession {
+	#[must_use]
+	pub fn render_annotations_export(
+		&self,
+		config: &ConfigManager,
+		title: &str,
+		filter: ffi::BookmarkFilterType,
+		options: AnnotationOptions,
+		format: AnnotationFormat,
+	) -> String {
+		let entries: Vec<AnnotationEntry> = get_filtered_bookmarks(config, &self.file_path, 0, filter)
+			.items
+			.into_iter()
+			.map(|b| AnnotationEntry {
+				passage: if b.is_whole_line {
+					self.get_line_text(b.start)
+				} else {
+					self.get_text_range(b.start, b.end)
+				},
+				note: b.note,
+				audio_ms: b.audio_ms,
+			})
+			.collect();
+		render_annotations(title, &entries, options, format)
+	}
+
 	#[must_use]
 	pub fn bookmark_display_at_position(
 		&self,
