@@ -118,6 +118,22 @@ pub fn build_rtf(content: &str, segments: &[FormatSegment], font: &RtfFontInfo) 
 	out
 }
 
+/// [`build_rtf`] for an RTF stream that replaces everything the control holds, as
+/// `stream_rtf_into_ctrl` does; text appended after existing content uses [`build_rtf`] itself.
+///
+/// `RichEdit` takes the last paragraph mark of a replacing stream as the end of its story and
+/// stores nothing for it. A window ending in one would then load a display unit short, and text
+/// appended to it later would run into its last paragraph. One more paragraph mark keeps it.
+#[must_use]
+pub fn build_rtf_for_whole_control(content: &str, segments: &[FormatSegment], font: &RtfFontInfo) -> String {
+	let mut rtf = build_rtf(content, segments, font);
+	if content.ends_with('\n') {
+		// Before the closing brace.
+		rtf.insert_str(rtf.len() - 1, "\\par");
+	}
+	rtf
+}
+
 fn escape_font_name(name: &str, out: &mut String) {
 	for ch in name.chars() {
 		match ch {
@@ -288,6 +304,17 @@ mod tests {
 		assert!(bold_on < italic_on);
 		// Bold never closes because it's active through the end of the text.
 		assert!(!rtf.contains("\\b0 "));
+	}
+
+	#[test]
+	fn rtf_for_the_whole_control_writes_one_more_paragraph_mark_after_a_trailing_one() {
+		let rtf = build_rtf_for_whole_control("Intro\n", &[], &font());
+		assert!(rtf.ends_with("Intro\\par\n\\par}"));
+	}
+
+	#[test]
+	fn rtf_for_the_whole_control_adds_nothing_to_text_without_a_trailing_paragraph_mark() {
+		assert_eq!(build_rtf_for_whole_control("Intro", &[], &font()), build_rtf("Intro", &[], &font()));
 	}
 
 	#[test]

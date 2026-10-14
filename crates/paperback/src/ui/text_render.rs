@@ -8,7 +8,7 @@ use super::document_manager::DocumentTab;
 #[cfg(target_os = "windows")]
 use super::rtf_stream::{append_rtf_into_ctrl, stream_rtf_into_ctrl};
 #[cfg(target_os = "windows")]
-use crate::rtf::{RtfFontInfo, build_rtf, sanitize_for_rich_edit, stored_display_len};
+use crate::rtf::{RtfFontInfo, build_rtf, build_rtf_for_whole_control, sanitize_for_rich_edit, stored_display_len};
 use crate::{
 	text_format::{FormatSegment, merge_formatting_markers},
 	text_window::{self, TextWindow},
@@ -150,7 +150,7 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &Window
 		// see `sanitize_for_rich_edit`. Everything below compares against this rather
 		// than against `content`.
 		let expected = sanitize_for_rich_edit(content);
-		let rtf = build_rtf(
+		let rtf = build_rtf_for_whole_control(
 			&expected,
 			&segments,
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
