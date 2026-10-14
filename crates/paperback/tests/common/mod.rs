@@ -255,6 +255,25 @@ pub fn wait_for_reader_focus(pid: u32) {
 	wait_for_focus(pid, Duration::from_secs(10), is_reader);
 }
 
+/// Puts focus on the tab strip, the control holding a tab per open document, and waits until it is
+/// really there. Lets a test tell the frame's shortcuts apart from the focused control's.
+pub fn focus_tab_strip(pid: u32) {
+	let automation = automation();
+	let tab_strip = automation
+		.create_matcher()
+		.from(main_window(pid))
+		.depth(5)
+		.control_type(ControlType::Tab)
+		.timeout(10_000)
+		.find_first()
+		.expect("tab strip");
+	tab_strip.set_focus().expect("focus the tab strip");
+	// The strip reports itself as the tab it lands on rather than as the strip.
+	wait_for_focus(pid, Duration::from_secs(10), |control_type, _| {
+		matches!(control_type, ControlType::Tab | ControlType::TabItem)
+	});
+}
+
 /// The app's top-level frame.
 pub fn main_window(pid: u32) -> UIElement {
 	let automation = automation();

@@ -26,10 +26,23 @@ mod window;
 
 use reload::{FileFingerprint, parse_settings, read_fingerprint};
 
+/// What a tab's text control is for, which is what most of the app's per-tab decisions come down
+/// to. Whether a tab is tracked in the recent documents is a separate question, answered by
+/// [`DocumentTab::track`]: a help page and a document opened from a link are both ordinary
+/// documents here, and only one of them is tracked.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TabKind {
+	/// A document parsed from a file, a link or generated source, read only.
+	Document,
+	/// A scratch pad: text the reader types, with no file and nothing parsed.
+	Scratch,
+}
+
 pub struct DocumentTab {
 	pub panel: Panel,
 	pub text_ctrl: TextCtrl,
 	pub session: DocumentSession,
+	pub kind: TabKind,
 	/// What the reader opened: a file, or for a document opened from a link the link itself. Its
 	/// settings, its place in the recent documents and its tab are all found by this.
 	pub file_path: PathBuf,
@@ -67,9 +80,13 @@ pub fn title_or_filename(title: String, path: &Path) -> String {
 
 impl DocumentTab {
 	/// The file the document is read from: its working copy if it was opened from a link,
-	/// otherwise its own file.
+	/// otherwise its own file. Empty for a scratch pad, which has none.
 	pub fn local_path(&self) -> &Path {
 		reading_path(&self.file_path, self.working_copy.as_ref())
+	}
+
+	pub const fn is_scratch(&self) -> bool {
+		matches!(self.kind, TabKind::Scratch)
 	}
 }
 
@@ -127,6 +144,10 @@ pub struct DocumentManager {
 	pub(super) from_keyboard: Rc<Cell<bool>>,
 	/// Hands out an id per OCR job, so a worker whose tab has been closed is recognisable as stale rather than mistaken for one on a reopened tab.
 	next_job_id: Cell<u64>,
+	/// The number the next scratch pad is named after. Only ever counts up: a number that came
+	/// round again would name a second pad the same as one the reader may still remember reading,
+	/// and two tabs called `scratch2` in one session is worse than a gap in the numbering.
+	next_scratch_number: Cell<u64>,
 }
 
 impl DocumentManager {
@@ -150,6 +171,7 @@ impl DocumentManager {
 			recently_closed: Vec::new(),
 			from_keyboard,
 			next_job_id: Cell::new(0),
+			next_scratch_number: Cell::new(1),
 		}
 	}
 
@@ -160,6 +182,13 @@ impl DocumentManager {
 
 	pub fn active_tab(&self) -> Option<&DocumentTab> {
 		self.active_tab_index().and_then(|i| self.tabs.get(i))
+	}
+
+	/// What the active tab is for, or `None` when no document is open. The menu bar's enablement
+	/// and the reading control's key dispatch both branch on this, which is why it is one answer
+	/// rather than a pair of booleans they could disagree about.
+	pub fn active_tab_kind(&self) -> Option<TabKind> {
+		self.active_tab().map(|tab| tab.kind)
 	}
 
 	/// The column vertical navigation is aiming for in the active document, if any.
@@ -198,17 +227,28 @@ impl DocumentManager {
 		self.tabs.len()
 	}
 
+	/// The paths of the open documents, for the All Documents dialog and for what the app remembers
+	/// as open. Scratch pads have no path and are left out: there is nothing to reopen next launch.
 	pub fn open_paths(&self) -> Vec<String> {
-		self.tabs.iter().map(|tab| tab.file_path.to_string_lossy().to_string()).collect()
+		self.tabs
+			.iter()
+			.filter(|tab| !tab.is_scratch())
+			.map(|tab| tab.file_path.to_string_lossy().to_string())
+			.collect()
 	}
 
+	/// The tab reading `path`, if one is open.
+	///
+	/// Scratch pads are skipped rather than compared. Their path is empty, so every one of them
+	/// would otherwise match an empty lookup and answer with the first scratch pad open, naming a
+	/// different pad's text than the caller meant.
 	pub fn find_tab_by_path(&self, path: &Path) -> Option<usize> {
 		let target = normalized_path_key(path);
 		// A link only matches itself, so there is no file of any tab to look up on disk.
 		if is_remote_url(&target) {
-			return self.tabs.iter().position(|tab| tab.file_path == path);
+			return self.tabs.iter().position(|tab| !tab.is_scratch() && tab.file_path == path);
 		}
-		self.tabs.iter().position(|tab| normalized_path_key(&tab.file_path) == target)
+		self.tabs.iter().position(|tab| !tab.is_scratch() && normalized_path_key(&tab.file_path) == target)
 	}
 
 	pub fn pop_recently_closed(&mut self) -> Option<PathBuf> {

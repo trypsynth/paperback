@@ -6,6 +6,7 @@ use super::{KeyChord, ShortcutCategory};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ActionId {
+	NewScratchPad,
 	Open,
 	OpenFromUrl,
 	Close,
@@ -110,6 +111,7 @@ pub enum ActionId {
 impl ActionId {
 	pub const fn all() -> &'static [Self] {
 		&[
+			Self::NewScratchPad,
 			Self::Open,
 			Self::OpenFromUrl,
 			Self::Close,
@@ -214,7 +216,8 @@ impl ActionId {
 
 	pub const fn category(self) -> ShortcutCategory {
 		match self {
-			Self::Open
+			Self::NewScratchPad
+			| Self::Open
 			| Self::OpenFromUrl
 			| Self::Close
 			| Self::CloseAll
@@ -314,6 +317,8 @@ impl ActionId {
 
 	pub fn display_name(self) -> String {
 		match self {
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::NewScratchPad => crate::t("New Scratch Pad"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::Open => crate::t("Open..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
@@ -518,6 +523,7 @@ impl ActionId {
 	pub fn default_chord(self) -> Option<KeyChord> {
 		#[cfg(target_os = "macos")]
 		match self {
+			Self::NewScratchPad => Some(KeyChord::new(true, false, false, "N")),
 			Self::Open => Some(KeyChord::new(true, false, false, "O")),
 			Self::OpenFromUrl => Some(KeyChord::new(true, true, false, "O")),
 			Self::Close => Some(KeyChord::new(true, false, false, "W")),
@@ -634,6 +640,7 @@ impl ActionId {
 		}
 		#[cfg(not(target_os = "macos"))]
 		match self {
+			Self::NewScratchPad => Some(KeyChord::new(true, false, false, "N")),
 			Self::Open => Some(KeyChord::new(true, false, false, "O")),
 			Self::OpenFromUrl => Some(KeyChord::new(true, false, false, "L")),
 			Self::Close => Some(KeyChord::new(true, false, false, "F4")),

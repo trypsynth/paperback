@@ -33,7 +33,9 @@ impl DocumentManager {
 		if !config.get_app_bool("bookmark_sounds", true) {
 			return;
 		}
-		let Some(tab) = self.active_tab() else {
+		// A scratch pad has no bookmarks to land on, and its empty path is the one key every
+		// scratch pad would look them up under.
+		let Some(tab) = self.active_tab().filter(|tab| !tab.is_scratch()) else {
 			return;
 		};
 		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());

@@ -3,19 +3,26 @@
 //! control, closing tabs, and saving reading positions. Split out of the main `DocumentManager`
 //! impl.
 
-use std::{cell::Cell, path::Path, rc::Rc, sync::Mutex, time::Instant};
+use std::{
+	cell::Cell,
+	path::{Path, PathBuf},
+	rc::Rc,
+	sync::Mutex,
+	time::Instant,
+};
 
-use paperback_core::{parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
+use paperback_core::{config::ConfigManager, parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
 use patois::t;
 use wxdragon::prelude::*;
 
 use super::{
-	DocumentManager, DocumentTab, POSITION_SAVE_INTERVAL_SECS, parse_settings, read_fingerprint, reading_path,
+	DocumentManager, DocumentTab, POSITION_SAVE_INTERVAL_SECS, TabKind, parse_settings, read_fingerprint, reading_path,
 	title_or_filename,
 };
 use crate::{
 	audio_player::AudioPlayer,
 	shell,
+	text_window::TextWindow,
 	ui::{
 		readability::{
 			apply_bg_color_to_ctrl, apply_foreground_color_to_ctrl, apply_readability_format_to_ctrl,
@@ -148,6 +155,117 @@ impl DocumentManager {
 		}
 	}
 
+	/// A new tab's page and reading control, styled with the reader's font, colours and wrapping
+	/// and sized to fill the page.
+	///
+	/// Shared by the two ways a tab is created, which part company immediately afterwards: what
+	/// goes into the control, and what the app remembers about it. The readability spacing is
+	/// applied by the callers instead of here, because both of them do it after the text is in.
+	fn build_tab_panel(&self, self_rc: &Rc<Mutex<Self>>, config: &ConfigManager, kind: TabKind) -> (Panel, TextCtrl) {
+		let panel = Panel::builder(&self.notebook).build();
+		let word_wrap = config.get_app_bool("word_wrap", false);
+		let text_ctrl =
+			reader_input::build_text_ctrl(panel, word_wrap, self_rc, self.frame, self.from_keyboard.clone(), kind);
+		let rf = config.get_readability_font();
+		if let Some(font) = build_font_from_readability(&rf) {
+			text_ctrl.set_font(&font);
+		}
+		apply_foreground_color_to_ctrl(text_ctrl, rf.color);
+		apply_bg_color_to_ctrl(text_ctrl, config.get_bg_color());
+		let sizer = BoxSizer::builder(Orientation::Vertical).build();
+		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
+		panel.set_sizer(sizer, true);
+		(panel, text_ctrl)
+	}
+
+	/// Opens a new scratch pad: an empty tab the reader types into, with no file behind it and
+	/// nothing remembered about it.
+	///
+	/// Deliberately not a route through [`Self::add_session_tab`], which is about a document that
+	/// was parsed from somewhere: a scratch pad has no saved position to restore, no navigation
+	/// history, no audio and no fingerprint to watch, and its control has to be editable and
+	/// loaded whole rather than as a window.
+	pub fn new_scratch_pad(&mut self, self_rc: &Rc<Mutex<Self>>) {
+		let number = self.next_scratch_number.get();
+		self.next_scratch_number.set(number + 1);
+		// TRANSLATORS: Tab title of a scratch pad, a document the reader types into that is never saved. %d counts up over the session: scratch1, scratch2, ...
+		let title = t("scratch%d").replacen("%d", &number.to_string(), 1);
+		let session = DocumentSession::new_scratch(&title);
+		let config = self.config.lock().unwrap();
+		let (panel, text_ctrl) = self.build_tab_panel(self_rc, &config, TabKind::Scratch);
+		apply_readability_format_to_ctrl(
+			text_ctrl,
+			config.get_line_spacing(),
+			config.get_paragraph_spacing(),
+			config.get_letter_spacing(),
+			config.get_text_alignment(),
+		);
+		// See the comment in `add_session_tab`: `add_page` can reenter and want this lock.
+		drop(config);
+		self.notebook.add_page(&panel, &title, true, None);
+		let doc_len = session.document_len();
+		self.tabs.push(DocumentTab {
+			panel,
+			text_ctrl,
+			session,
+			kind: TabKind::Scratch,
+			file_path: PathBuf::new(),
+			working_copy: None,
+			track: false,
+			audio_player: None,
+			disk_fingerprint: None,
+			preferred_column: Cell::new(None),
+			selection_mark: Cell::new(None),
+			window: TextWindow::whole(doc_len),
+			ocr_job: None,
+		});
+		text_ctrl.set_focus();
+	}
+
+	/// Mirrors the active scratch pad's text from its control into its session.
+	///
+	/// The control is what the reader types into and the session is what everything else reads, so
+	/// this is where the two are put back together after an edit. Called from the control's own text
+	/// event, so the tab it acts on is the one whose control has focus.
+	///
+	/// The tab's window is moved to cover the whole of the text at the same time. A scratch pad is
+	/// never windowed, and a window left behind would claim the loaded text no longer reaches the
+	/// caret, which the next caret move would answer by reloading the control and discarding the
+	/// edit that grew the text in the first place.
+	pub fn sync_scratch_from_ctrl(&mut self) {
+		let Some(tab) = self.active_tab_mut() else {
+			return;
+		};
+		if !tab.is_scratch() {
+			return;
+		}
+		// RichEdit stores the line breaks it was given rather than necessarily the ones typed, so
+		// its text is normalised here. Line numbers, percentages and every caret offset downstream
+		// count newlines the way the session's buffer does.
+		let text = tab.text_ctrl.get_value().replace("\r\n", "\n").replace('\r', "\n");
+		if text == tab.session.content() {
+			return;
+		}
+		let old_len = tab.session.document_len();
+		tab.session.replace_range(0, old_len, &text);
+		tab.window = TextWindow::whole(tab.session.document_len());
+		// Every offset has moved, so the mark now names a position in text that is no longer there.
+		// Same reasoning as `reparse_tab_in_place`, which clears it for the same reason.
+		tab.selection_mark.set(None);
+	}
+
+	/// Recomputes the active tab's word and character statistics when it is a scratch pad.
+	///
+	/// A parsed document's figures are fixed at parse time; a scratch pad's change with every
+	/// keystroke, so its session's copy is stale almost always. Called by the two commands that
+	/// read them - Word Count and Document Info - rather than from the edit itself, because the
+	/// scan is parallel and costs far more than the keystroke that prompted it.
+	pub fn refresh_stats_if_scratch(&mut self) {
+		if let Some(tab) = self.active_tab_mut().filter(|tab| tab.is_scratch()) {
+			tab.session.recompute_stats();
+		}
+	}
+
 	fn add_session_tab(
 		&mut self,
 		self_rc: &Rc<Mutex<Self>>,
@@ -164,21 +282,9 @@ impl DocumentManager {
 		}
 		let local_path = reading_path(path, working_copy.as_ref()).to_path_buf();
 		let title = title_override.map_or_else(|| title_or_filename(session.title(), &local_path), ToString::to_string);
-		let panel = Panel::builder(&self.notebook).build();
 		let config = self.config.lock().unwrap();
 		let mut session = session;
-		let word_wrap = config.get_app_bool("word_wrap", false);
-		let text_ctrl =
-			reader_input::build_text_ctrl(panel, word_wrap, self_rc, self.frame, self.from_keyboard.clone());
-		let rf = config.get_readability_font();
-		if let Some(font) = build_font_from_readability(&rf) {
-			text_ctrl.set_font(&font);
-		}
-		apply_foreground_color_to_ctrl(text_ctrl, rf.color);
-		apply_bg_color_to_ctrl(text_ctrl, config.get_bg_color());
-		let sizer = BoxSizer::builder(Orientation::Vertical).build();
-		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
-		panel.set_sizer(sizer, true);
+		let (panel, text_ctrl) = self.build_tab_panel(self_rc, &config, TabKind::Document);
 		let path_str = path.to_string_lossy();
 		let doc_len = session.document_len();
 		let saved_pos = config.get_validated_document_position(&path_str, doc_len);
@@ -213,6 +319,7 @@ impl DocumentManager {
 			panel,
 			text_ctrl,
 			session,
+			kind: TabKind::Document,
 			file_path: path.to_path_buf(),
 			working_copy,
 			track,

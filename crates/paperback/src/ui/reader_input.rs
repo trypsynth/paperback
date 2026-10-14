@@ -11,8 +11,8 @@ use patois::t;
 use wxdragon::{event::KeyboardEvent, prelude::*};
 
 use super::{
-	document_manager::{DocumentManager, DocumentTab, tab_index_for_key},
-	menu, menu_ids,
+	document_manager::{DocumentManager, DocumentTab, TabKind, tab_index_for_key},
+	menu, menu_ids, scratch_pad,
 	text_render::reload_window_around,
 };
 
@@ -25,14 +25,18 @@ mod windows;
 #[cfg(target_os = "windows")]
 use windows::try_navigate_line_by_column;
 
-/// Builds the reading control and binds everything it responds to.
+/// Builds the control a tab reads or writes through and binds everything it responds to.
 pub(super) fn build_text_ctrl(
 	panel: Panel,
 	word_wrap: bool,
 	self_rc: &Rc<Mutex<DocumentManager>>,
 	frame: Frame,
 	from_keyboard: Rc<Cell<bool>>,
+	kind: TabKind,
 ) -> TextCtrl {
+	if kind == TabKind::Scratch {
+		return build_scratch_text_ctrl(panel, word_wrap, self_rc, frame, from_keyboard);
+	}
 	let style = TextCtrlStyle::MultiLine
 		| TextCtrlStyle::ReadOnly
 		| TextCtrlStyle::Rich2
@@ -252,6 +256,140 @@ pub(super) fn build_text_ctrl(
 		show_reader_context_menu(text_ctrl_for_right_click);
 	});
 	text_ctrl
+}
+
+/// The control a scratch pad is typed into.
+///
+/// The same widget as the reading control, without the read-only style and bound to a fraction of
+/// what that one responds to. Everything left out is there because it is what would otherwise stop
+/// a letter being typed: the Return and Space activation of a link or a table, the shifted-character
+/// shortcut path, the caret handling that intercepts Home, End and the arrow keys, and above all
+/// the shortcut table itself, whose plain single-letter chords would swallow `h`, `t`, `p` and the
+/// rest before the control ever saw them.
+///
+/// What is left is the keys a scratch pad does answer to, and they are decided in one place:
+/// `scratch_pad::available_in_scratch`. The same answer greys out the menu, so a chord that runs
+/// nothing here is a chord with nothing to run.
+fn build_scratch_text_ctrl(
+	panel: Panel,
+	word_wrap: bool,
+	self_rc: &Rc<Mutex<DocumentManager>>,
+	frame: Frame,
+	from_keyboard: Rc<Cell<bool>>,
+) -> TextCtrl {
+	let style = TextCtrlStyle::MultiLine
+		| TextCtrlStyle::Rich2
+		| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
+	let text_ctrl = TextCtrl::builder(&panel).with_style(style).build();
+	// The typed text is mirrored into the tab's session, which is what every command a scratch pad
+	// keeps actually reads: Find searches it, Go to Line counts its newlines, the status bar takes
+	// its line and percentage from it, Word Count counts its words. Nothing here writes back to the
+	// control, and the mirror only ever reads it, so the two cannot chase each other.
+	let dm_for_text = Rc::clone(self_rc);
+	text_ctrl.on_text_changed(move |_| {
+		if let Ok(mut dm) = dm_for_text.try_lock() {
+			dm.sync_scratch_from_ctrl();
+			dm.update_status_bar();
+		}
+	});
+	// Moving the caret without typing changes the line and percentage the status bar reports but
+	// fires no text event, so the two ways of moving are watched separately. Neither saves the
+	// reading position or plays a bookmark's sound: a scratch pad is not reopened and has no
+	// bookmarks to find.
+	let dm_for_move = Rc::clone(self_rc);
+	text_ctrl.bind_internal(EventType::KEY_UP, move |event| {
+		event.skip(true);
+		if let Ok(dm) = dm_for_move.try_lock() {
+			dm.update_status_bar();
+		}
+	});
+	let dm_for_mouse = Rc::clone(self_rc);
+	text_ctrl.bind_internal(EventType::LEFT_UP, move |event| {
+		event.skip(true);
+		if let Ok(dm) = dm_for_mouse.try_lock() {
+			dm.update_status_bar();
+		}
+	});
+	let ctrl_for_menu = text_ctrl;
+	let dm_for_keys = Rc::clone(self_rc);
+	let frame_for_keys = frame;
+	text_ctrl.on_key_down(move |event| {
+		if let WindowEventData::Keyboard(kbd) = &event
+			&& let Some(key) = kbd.get_key_code()
+		{
+			if (key == WXK_F10 && kbd.shift_down()) || key == WXK_WINDOWS_MENU {
+				kbd.event.skip(false);
+				show_scratch_context_menu(ctrl_for_menu);
+				return;
+			}
+			// Control+C and Control+A are lifted out to their commands for the same reason the
+			// reading control lifts them: left to itself the control does the work and says
+			// nothing, and how much was selected or copied is the whole of what either gives a
+			// reader who cannot see it happen. An editable control would copy and select quite
+			// happily on its own, so this is not about making them work - it is about hearing that
+			// they did.
+			#[cfg(not(target_os = "macos"))]
+			if let Some(stock_id) = stock_edit_command(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down()) {
+				kbd.event.skip(false);
+				from_keyboard.set(true);
+				if !frame_for_keys.process_menu_command(stock_id) {
+					from_keyboard.set(false);
+				}
+				return;
+			}
+			let action = dm_for_keys
+				.try_lock()
+				.ok()
+				.and_then(|dm| {
+					let config = dm.config.lock().unwrap();
+					config.get_shortcuts().find_action(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down())
+				})
+				.filter(|&act| scratch_pad::available_in_scratch(act));
+			if let Some(act) = action {
+				kbd.event.skip(false);
+				// Everything else reaches its command as a menu command, so this does too. Marking
+				// it as keyboard-sourced is what has its announcement spoken at once rather than
+				// held back as though a menu had been clicked.
+				from_keyboard.set(true);
+				run_shortcut(act, &dm_for_keys, &frame_for_keys);
+				return;
+			}
+			if let Some(index) = tab_index_for_key(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down()) {
+				kbd.event.skip(false);
+				if let Ok(dm) = dm_for_keys.try_lock() {
+					dm.switch_to_tab(index);
+				}
+				return;
+			}
+		}
+		event.skip(true);
+	});
+	let ctrl_for_right_click = text_ctrl;
+	text_ctrl.bind_internal(EventType::RIGHT_UP, move |event| {
+		event.skip(false);
+		show_scratch_context_menu(ctrl_for_right_click);
+	});
+	text_ctrl
+}
+
+/// The right-click menu for a scratch pad: the commands above, less the ones that name a position
+/// in a document there is none of.
+fn show_scratch_context_menu(text_ctrl: TextCtrl) {
+	text_ctrl.set_focus();
+	let mut menu = Menu::builder()
+		// TRANSLATORS: Right-click context menu item and status text to open the find dialog
+		.append_item(menu_ids::FIND, &t("&Find"), &t("Find text"))
+		// TRANSLATORS: Right-click context menu item and status text to repeat the last search forward
+		.append_item(menu_ids::FIND_NEXT, &t("Find &next"), &t("Find next match"))
+		// TRANSLATORS: Right-click context menu item and status text to repeat the last search backward
+		.append_item(menu_ids::FIND_PREVIOUS, &t("Find &previous"), &t("Find previous match"))
+		.append_separator()
+		// TRANSLATORS: Right-click context menu item and status text to jump to a specific line
+		.append_item(menu_ids::GO_TO_LINE, &t("Go to &line"), &t("Go to line"))
+		// TRANSLATORS: Right-click context menu item and status text to jump to a percentage through the document
+		.append_item(menu_ids::GO_TO_PERCENT, &t("Go to &percent"), &t("Go to percent"))
+		.build();
+	text_ctrl.popup_menu(&mut menu, None);
 }
 
 const fn is_selection_command(action: ActionId) -> bool {

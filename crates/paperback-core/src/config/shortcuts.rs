@@ -257,6 +257,7 @@ mod tests {
 		assert_eq!(
 			ShortcutCategory::File.actions(),
 			[
+				ActionId::NewScratchPad,
 				ActionId::Open,
 				ActionId::OpenFromUrl,
 				ActionId::Close,

@@ -62,6 +62,11 @@ pub(super) fn bind_document_events(
 			page_reload_guard.set(false);
 		}
 		update_title_from_manager(&frame_copy, &dm_ref);
+		// Switching tabs changes which commands make sense, not just which document is in front:
+		// every command a scratch pad cannot use has to be greyed out while it is, and brought back
+		// when the reader switches away. Nothing else recomputes this on a tab switch.
+		let menu_state = dm_ref.menu_state();
+		menu::refresh_menu_states(&frame_copy, &dm_ref.config.lock().unwrap(), menu_state);
 		dm_ref.reset_sound_line();
 		dm_ref.pause_inactive_audio();
 	});
@@ -136,16 +141,15 @@ pub(super) fn bind_document_events(
 				let mut dm = dm.lock().unwrap();
 				close_active_document_announced(&mut dm, live_region_label);
 				update_title_from_manager(&frame_copy, &dm);
-				let has_docs = dm.tab_count() > 0;
-				let has_reopen = dm.has_recently_closed();
-				if has_docs {
+				if dm.tab_count() > 0 {
 					dm.restore_focus();
 				} else {
 					dm.notebook().set_focus();
 				}
+				let menu_state = dm.menu_state();
+				let config = Rc::clone(&dm.config);
 				drop(dm);
-				menu::update_menu_item_states(&frame_copy, has_docs);
-				menu::update_reopen_state(&frame_copy, has_reopen);
+				menu::refresh_menu_states(&frame_copy, &config.lock().unwrap(), menu_state);
 				event.skip(false);
 				return;
 			}
@@ -176,7 +180,9 @@ pub(super) fn bind_teardown(
 			// Geometry has to be read while the window is still on screen, so this
 			// comes before it goes.
 			window_geometry::save(&frame, &cfg);
-			if let Some(tab) = dm.active_tab() {
+			// Not for a scratch pad: it has no path, and writing the empty one would forget
+			// which document to reopen next launch in favour of a tab that cannot be reopened.
+			if let Some(tab) = dm.active_tab().filter(|tab| !tab.is_scratch()) {
 				cfg.set_app_string("active_document", &tab.file_path.to_string_lossy());
 			}
 			// Off the screen now. Everything below is bookkeeping: writing the config,

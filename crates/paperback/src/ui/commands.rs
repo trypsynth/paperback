@@ -115,6 +115,15 @@ impl Command {
 /// Every command that has been ported to the table.
 pub static COMMANDS: &[Command] = &[
 	Command {
+		action: ActionId::NewScratchPad,
+		// TRANSLATORS: Menu item in the File menu that opens an empty document to type notes into. A scratch pad is never saved and has no file.
+		label: || t("&New Scratch Pad"),
+		// TRANSLATORS: Status-bar help text for the File > New Scratch Pad menu item.
+		help: Some(|| t("Open an empty document to type into")),
+		enable: Enable::Always,
+		behavior: Behavior::Run(file::new_scratch_pad),
+	},
+	Command {
 		action: ActionId::Open,
 		// TRANSLATORS: Menu item in the File menu to open a document.
 		label: || t("&Open..."),

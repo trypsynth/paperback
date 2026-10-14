@@ -18,6 +18,7 @@ mod readability;
 mod reader_input;
 #[cfg(target_os = "windows")]
 mod rtf_stream;
+mod scratch_pad;
 mod selection;
 mod sleep_timer;
 mod sounds;

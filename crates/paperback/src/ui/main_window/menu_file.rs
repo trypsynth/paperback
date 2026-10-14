@@ -49,9 +49,8 @@ pub(super) fn handle_fallback(
 				}
 				let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 				frame.set_menu_bar(menu_bar);
-				menu::update_menu_item_states(frame, true);
-				let has_reopen = dm.lock().unwrap().has_recently_closed();
-				menu::update_reopen_state(frame, has_reopen);
+				let state = dm.lock().unwrap().menu_state();
+				menu::refresh_menu_states(frame, &config.lock().unwrap(), state);
 			}
 		}
 	} else if id == menu_ids::SHOW_ALL_DOCUMENTS {
@@ -108,12 +107,8 @@ fn handle_show_all_documents(
 	}
 	let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 	frame.set_menu_bar(menu_bar);
-	let dm_ref = dm.lock().unwrap();
-	let has_docs = dm_ref.tab_count() > 0;
-	let has_reopen = dm_ref.has_recently_closed();
-	drop(dm_ref);
-	menu::update_menu_item_states(frame, has_docs);
-	menu::update_reopen_state(frame, has_reopen);
+	let state = dm.lock().unwrap().menu_state();
+	menu::refresh_menu_states(frame, &config.lock().unwrap(), state);
 	if !links.is_empty() {
 		open_links(frame, dm, config, links);
 	}

@@ -85,16 +85,30 @@ impl DocumentManager {
 		for tab in &mut self.tabs {
 			let old_ctrl = tab.text_ctrl;
 			let current_doc_pos = tab.window.to_doc(old_ctrl.get_insertion_point());
-			// Re-slice just the currently loaded window rather than the whole document: a wrap
-			// toggle doesn't change what range is loaded, only how it's laid out.
-			let slice = tab.session.get_window(tab.window.start(), tab.window.end());
-			let text_ctrl =
-				reader_input::build_text_ctrl(tab.panel, word_wrap, self_rc, self.frame, self.from_keyboard.clone());
+			let text_ctrl = reader_input::build_text_ctrl(
+				tab.panel,
+				word_wrap,
+				self_rc,
+				self.frame,
+				self.from_keyboard.clone(),
+				tab.kind,
+			);
 			let sizer = BoxSizer::builder(Orientation::Vertical).build();
 			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
-			fill_text_ctrl_with_formatting(text_ctrl, &slice);
-			tab.window = TextWindow::new(slice.start, slice.end);
+			if tab.is_scratch() {
+				// The session holds what was typed, so it is what the new control is given. `set_value`
+				// would do as well, but it raises the text event, and the handler on the new control
+				// would then mirror the text straight back into the session it came from.
+				text_ctrl.change_value(&tab.session.content());
+				tab.window = TextWindow::whole(tab.session.document_len());
+			} else {
+				// Re-slice just the currently loaded window rather than the whole document: a wrap
+				// toggle doesn't change what range is loaded, only how it's laid out.
+				let slice = tab.session.get_window(tab.window.start(), tab.window.end());
+				fill_text_ctrl_with_formatting(text_ctrl, &slice);
+				tab.window = TextWindow::new(slice.start, slice.end);
+			}
 			if let Some(font) = build_font_from_readability(&rf) {
 				text_ctrl.set_font(&font);
 			}

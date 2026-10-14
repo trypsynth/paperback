@@ -76,6 +76,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 
 ### File menu
 
+* `Ctrl+N`: Open a new scratch pad. A scratch pad is an empty document you type into, for jotting something down while you read. It isn't saved anywhere and there's no file behind it, so closing it, or closing Paperback, loses whatever is in it — if you want to keep it, copy the text out or use a real text editor. As many can be open at once as you like, named scratch1, scratch2, and so on. In a scratch pad your letter keys type letters rather than running the commands they usually do, and the menus that have nothing to act on are greyed out.
 * `Ctrl+O`: Open a document.
 * `Ctrl+L` (macOS: `Cmd+Option+O`): Open a document from a web link.
 * `Ctrl+F4` (macOS: `Cmd+W`): Close the current document.

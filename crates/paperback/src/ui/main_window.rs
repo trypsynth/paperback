@@ -96,7 +96,8 @@ impl MainWindow {
 		frame.set_status_text(&t("Ready"), 0);
 		let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 		frame.set_menu_bar(menu_bar);
-		menu::update_menu_item_states(&frame, false);
+		// Nothing is open yet, so there is no tab kind to report.
+		menu::update_menu_item_states(&frame, &config.lock().unwrap(), None);
 		menu::update_reopen_state(&frame, false);
 		let panel = Panel::builder(&frame).build();
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
@@ -130,7 +131,7 @@ impl MainWindow {
 			#[cfg(target_os = "windows")]
 			&hotkey_handle,
 		);
-		menu_events::bind_key_source(&frame, &config, Rc::clone(&from_keyboard));
+		menu_events::bind_key_source(&frame, &config, &doc_manager, Rc::clone(&from_keyboard));
 		#[cfg(target_os = "macos")]
 		super::mac_shortcuts::install(frame, Rc::clone(&config), Rc::clone(&from_keyboard));
 		#[cfg(not(target_os = "windows"))]
@@ -258,12 +259,8 @@ pub(crate) fn rebuild_menu_bar(
 ) {
 	let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 	frame.set_menu_bar(menu_bar);
-	let dm_ref = doc_manager.lock().unwrap();
-	let has_docs = dm_ref.tab_count() > 0;
-	let has_reopen = dm_ref.has_recently_closed();
-	drop(dm_ref);
-	menu::update_menu_item_states(frame, has_docs);
-	menu::update_reopen_state(frame, has_reopen);
+	let state = doc_manager.lock().unwrap().menu_state();
+	menu::refresh_menu_states(frame, &config.lock().unwrap(), state);
 }
 
 pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
@@ -292,8 +289,12 @@ pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		// TRANSLATORS: Window title when a document is open; {} is the document title
 		let template = t("{} - Paperback");
 		frame.set_title(&template.replace("{}", &display_title(tab)));
+		// A scratch pad has no file to represent. Clearing the proxy icon on macOS is the
+		// truthful answer rather than naming a path that is not there.
 		#[cfg(target_os = "macos")]
-		frame.set_represented_filename(&tab.local_path().to_string_lossy());
+		if !tab.is_scratch() {
+			frame.set_represented_filename(&tab.local_path().to_string_lossy());
+		}
 		let position = navigation::doc_caret(tab);
 		let status_info = tab.session.get_status_info(position);
 		let mut status_text = status::format_status_text(&status_info);

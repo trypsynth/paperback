@@ -61,6 +61,13 @@ pub(super) fn load_window_into_ctrl(
 /// which path moved it, without anyone having to reproduce it first. Equally, a report with no
 /// line here is evidence the window is not what moved, which is worth just as much.
 pub fn reload_window_around(tab: &mut DocumentTab, doc_offset: i64, reason: &'static str) {
+	// A scratch pad is loaded whole and typed into, so there is no window to reload around
+	// anything: its control holds the text itself rather than a rendering of the session's, and
+	// refilling it would throw away whatever the reader has typed. The window is kept covering the
+	// whole text for exactly this reason, so `needs_reload_for` should not be asking either.
+	if tab.is_scratch() {
+		return;
+	}
 	let doc_len = tab.session.document_len();
 	let before = tab.window;
 	tab.window = load_window_into_ctrl(tab.text_ctrl, &tab.session, doc_offset, doc_len);

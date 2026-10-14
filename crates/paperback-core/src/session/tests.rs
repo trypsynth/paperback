@@ -8,6 +8,7 @@ mod formula;
 mod links;
 mod navigation;
 mod ocr;
+mod scratch;
 mod webview;
 
 fn sample_session(parser_flags: ParserFlags) -> DocumentSession {

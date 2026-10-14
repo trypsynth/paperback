@@ -27,6 +27,20 @@ use crate::{
 	},
 };
 
+/// Opens a new scratch pad: an empty tab the reader types into, that is never saved and has no file.
+///
+/// Nothing is remembered about it, so there is no title to derive, no position to restore and
+/// nothing to add to the recent documents. What the menu offers changes, though, because a scratch
+/// pad cannot use most of it.
+pub fn new_scratch_pad(ctx: &Ctx) {
+	let mut dm = ctx.dm.lock().unwrap();
+	dm.new_scratch_pad(ctx.dm);
+	update_title_from_manager(ctx.frame, &dm);
+	let state = dm.menu_state();
+	drop(dm);
+	menu::refresh_menu_states(ctx.frame, &ctx.config.lock().unwrap(), state);
+}
+
 pub fn open(ctx: &Ctx) {
 	let wildcard = build_file_filter_string();
 	// TRANSLATORS: Title of the file picker dialog shown when opening a document
@@ -64,13 +78,13 @@ pub fn open(ctx: &Ctx) {
 	drop(dm_ref);
 	let menu_bar = menu::create_menu_bar(&ctx.config.lock().unwrap());
 	ctx.frame.set_menu_bar(menu_bar);
-	menu::update_menu_item_states(ctx.frame, true);
-	// The rebuilt menu bar comes back with every item enabled, so the reopen item has
-	// to be told again whether there is anything to reopen. Every other place that
-	// rebuilds the bar does this; this one did not, which left Reopen Last Closed
-	// enabled and doing nothing after opening a document from a fresh start.
-	let has_reopen = ctx.dm.lock().unwrap().has_recently_closed();
-	menu::update_reopen_state(ctx.frame, has_reopen);
+	// The rebuilt menu bar comes back with every item enabled, so everything the enabled
+	// state depends on has to be told to it again: whether there is anything to reopen,
+	// and which commands the tab now in front can use. Every other place that rebuilds
+	// the bar does this; this one did not, which left Reopen Last Closed enabled and
+	// doing nothing after opening a document from a fresh start.
+	let state = ctx.dm.lock().unwrap().menu_state();
+	menu::refresh_menu_states(ctx.frame, &ctx.config.lock().unwrap(), state);
 }
 
 pub fn open_from_url(ctx: &Ctx) {
@@ -97,9 +111,11 @@ pub fn close(ctx: &Ctx) {
 	} else {
 		dm.notebook().set_focus();
 	}
+	// Closing a tab decides both what is in front and what there is to reopen, and the tab now
+	// in front may be a scratch pad, so both are read back off the manager rather than guessed.
+	let state = dm.menu_state();
 	drop(dm);
-	menu::update_menu_item_states(ctx.frame, has_docs);
-	menu::update_reopen_state(ctx.frame, true);
+	menu::refresh_menu_states(ctx.frame, &ctx.config.lock().unwrap(), state);
 }
 
 pub fn close_all(ctx: &Ctx) {
@@ -107,9 +123,9 @@ pub fn close_all(ctx: &Ctx) {
 	dm.close_all_documents();
 	update_title_from_manager(ctx.frame, &dm);
 	dm.notebook().set_focus();
+	let state = dm.menu_state();
 	drop(dm);
-	menu::update_menu_item_states(ctx.frame, false);
-	menu::update_reopen_state(ctx.frame, true);
+	menu::refresh_menu_states(ctx.frame, &ctx.config.lock().unwrap(), state);
 }
 
 pub fn reopen_last_closed(ctx: &Ctx) {
@@ -128,10 +144,9 @@ pub fn reopen_last_closed(ctx: &Ctx) {
 			drop(dm_ref);
 			let menu_bar = menu::create_menu_bar(&ctx.config.lock().unwrap());
 			ctx.frame.set_menu_bar(menu_bar);
-			menu::update_menu_item_states(ctx.frame, true);
 		}
-		let has_reopen = ctx.dm.lock().unwrap().has_recently_closed();
-		menu::update_reopen_state(ctx.frame, has_reopen);
+		let state = ctx.dm.lock().unwrap().menu_state();
+		menu::refresh_menu_states(ctx.frame, &ctx.config.lock().unwrap(), state);
 	}
 }
 

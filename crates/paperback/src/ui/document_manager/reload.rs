@@ -58,6 +58,12 @@ impl DocumentManager {
 			(readability_style(&cfg), parse_inputs)
 		};
 		for (tab, (password, forced_extension)) in self.tabs.iter_mut().zip(parse_inputs) {
+			// A scratch pad was never parsed and has no file to re-parse. Left to
+			// `reparse_tab_in_place` it would fail on the empty path and leave the tab unchanged,
+			// which costs nothing but logs something alarming about a document that is fine.
+			if tab.is_scratch() {
+				continue;
+			}
 			let _ = reparse_tab_in_place(tab, &password, &forced_extension, settings, &style);
 		}
 	}

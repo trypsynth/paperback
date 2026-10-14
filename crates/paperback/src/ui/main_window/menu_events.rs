@@ -17,7 +17,7 @@ use super::{
 	DocumentManager, FindDialogState, MainWindow, background, commands, dialogs, find, get_update_channel, help, menu,
 	menu_file, menu_go, menu_ids, menu_tools, menu_view, sleep_timer, update_title_from_manager, updater,
 };
-use crate::ui::navigation::announce_for_command;
+use crate::ui::{document_manager::TabKind, navigation::announce_for_command};
 
 impl MainWindow {
 	#[allow(clippy::too_many_lines)]
@@ -198,9 +198,8 @@ impl MainWindow {
 						}
 						let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 						frame_copy.set_menu_bar(menu_bar);
-						menu::update_menu_item_states(&frame_copy, true);
-						let has_reopen = dm.lock().unwrap().has_recently_closed();
-						menu::update_reopen_state(&frame_copy, has_reopen);
+						let state = dm.lock().unwrap().menu_state();
+						menu::refresh_menu_states(&frame_copy, &config.lock().unwrap(), state);
 					}
 				}
 				menu_ids::CHECK_FOR_UPDATES => {
@@ -250,9 +249,21 @@ impl MainWindow {
 /// on every command plus by the key handler for actions it runs itself, so a key that produces
 /// no command cannot leave it set for a later menu click.
 /// On macOS, `mac_shortcuts` runs menu shortcuts before Cocoa selects their items and sets the mark itself; this hook still covers keys left to wxWidgets.
-pub(super) fn bind_key_source(frame: &Frame, config: &Rc<Mutex<ConfigManager>>, from_keyboard: Rc<Cell<bool>>) {
+pub(super) fn bind_key_source(
+	frame: &Frame,
+	config: &Rc<Mutex<ConfigManager>>,
+	dm: &Rc<Mutex<DocumentManager>>,
+	from_keyboard: Rc<Cell<bool>>,
+) {
 	let config = Rc::clone(config);
+	let dm = Rc::clone(dm);
 	frame.bind_internal(EventType::CHAR_HOOK, move |event| {
+		// A scratch pad is typed into, so a letter that happens to name a command is text, not a
+		// command. Marking it would leave the mark set for the next menu click, which would then
+		// be taken for a shortcut and have its announcement held back and read over.
+		if dm.try_lock().is_ok_and(|dm| dm.active_tab_kind() == Some(TabKind::Scratch)) {
+			return;
+		}
 		if let Some(key) = event.get_key_code()
 			&& let Ok(cfg) = config.try_lock()
 			&& cfg

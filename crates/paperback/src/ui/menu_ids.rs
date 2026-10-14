@@ -35,7 +35,7 @@ pub const SELECT_ALL: i32 = wxdragon::ffi::WXD_ID_SELECTALL as i32;
 const BASE: i32 = ID_HIGHEST + 1;
 
 // File menu, plus Reload from the View menu (BASE + 0..99)
-seq_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED, CLEAR_RECENT_DOCUMENTS, RELOAD, OPEN_FROM_URL);
+seq_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED, CLEAR_RECENT_DOCUMENTS, RELOAD, OPEN_FROM_URL, NEW_SCRATCH_PAD);
 
 // Recent documents - reserved range (BASE + 100..199)
 pub const RECENT_DOCUMENT_BASE: i32 = BASE + 100;
@@ -130,6 +130,7 @@ seq_ids!(BASE + 900 => RESTORE);
 pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 {
 	use paperback_core::config::ActionId;
 	match action {
+		ActionId::NewScratchPad => NEW_SCRATCH_PAD,
 		ActionId::Open => OPEN,
 		ActionId::OpenFromUrl => OPEN_FROM_URL,
 		ActionId::Close => CLOSE,
@@ -232,9 +233,29 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 	}
 }
 
+/// The action whose menu item carries `id`, the inverse of [`action_to_menu_id`].
+///
+/// `None` for ids that are nobody's action: the stock Edit items, which wxWidgets owns, and the
+/// [`RECENT_DOCUMENT_BASE`] range, whose entries stand for a path rather than an action. Callers
+/// that gate menu items on the action behind them treat `None` as "not ours to reason about".
+#[must_use]
+pub fn action_for(id: i32) -> Option<paperback_core::config::ActionId> {
+	paperback_core::config::ActionId::all().iter().copied().find(|&action| action_to_menu_id(action) == id)
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	/// `action_for` is the inverse the menu enablement walks, so a mapping that is not injective
+	/// would silently gate the wrong item.
+	#[test]
+	fn action_for_inverts_action_to_menu_id_for_every_action() {
+		use paperback_core::config::ActionId;
+		for &action in ActionId::all() {
+			assert_eq!(action_for(action_to_menu_id(action)), Some(action), "{action:?} did not round-trip");
+		}
+	}
 
 	#[test]
 	fn clear_recent_documents_has_a_file_menu_id() {

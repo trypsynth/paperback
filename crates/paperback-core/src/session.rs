@@ -358,6 +358,32 @@ impl DocumentSession {
 		})
 	}
 
+	/// A session for a document that has no file behind it and was never parsed: a scratch pad the
+	/// reader types into. Starts empty, and is kept current by [`Self::replace_range`] rather than
+	/// by re-parsing, so `file_path` stays empty and nothing downstream mistakes it for a path.
+	///
+	/// The parser flags are the ones the plain-text format declares, which is what the content is:
+	/// there are no headings, pages or links to navigate to.
+	#[must_use]
+	pub fn new_scratch(title: &str) -> Self {
+		let mut doc = document::Document::new().with_title(title.to_string());
+		doc.compute_stats();
+		Self {
+			handle: DocumentHandle::new(doc),
+			file_path: String::new(),
+			history: Vec::new(),
+			history_index: 0,
+			parser_flags: ParserFlags::NONE,
+			parse_settings: ParseSettings::default(),
+		}
+	}
+
+	/// Recomputes the word and character statistics after edits made outside the parser. The
+	/// caller decides when, since the scan is far more expensive than the edit that prompted it.
+	pub fn recompute_stats(&mut self) {
+		self.handle.recompute_stats();
+	}
+
 	/// The parsed document handle backing this session.
 	#[must_use]
 	pub const fn handle(&self) -> &DocumentHandle {

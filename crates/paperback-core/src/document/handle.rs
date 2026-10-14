@@ -29,6 +29,14 @@ impl DocumentHandle {
 		&self.doc
 	}
 
+	/// Recomputes the word and character statistics, for a document whose buffer has changed since
+	/// it was parsed. Deliberately not part of [`Self::replace_range`]: the scan is parallel and
+	/// costs far more than the edit does, so a caller editing on every keystroke recomputes only
+	/// when something is about to read the figures.
+	pub fn recompute_stats(&mut self) {
+		self.doc.compute_stats();
+	}
+
 	/// Replaces the text spanning `start..end` (display units) with `replacement`, keeping the
 	/// document's external position maps in sync. See [`Self::replace_ranges`], which this wraps.
 	pub fn replace_range(&mut self, start: usize, end: usize, replacement: &str) -> i64 {

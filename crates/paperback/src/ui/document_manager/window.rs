@@ -54,6 +54,13 @@ impl DocumentManager {
 		let Some(tab) = self.active_tab_mut() else {
 			return;
 		};
+		// A scratch pad holds all of its text already, so there is never anything to extend into.
+		// Guarded rather than left to `wants_extension_for`, which would ask for the tail again if
+		// the window ever fell behind the text - and the tail appended a second time is the text
+		// duplicated in front of the reader.
+		if tab.is_scratch() {
+			return;
+		}
 		let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		let doc_len = tab.session.document_len();
 		if !tab.window.wants_extension_for(doc_pos, doc_len) {
@@ -86,6 +93,9 @@ impl DocumentManager {
 		let Some(tab) = self.active_tab_mut() else {
 			return;
 		};
+		if tab.is_scratch() {
+			return;
+		}
 		let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		let doc_len = tab.session.document_len();
 		if !tab.window.needs_compaction_for(doc_pos, doc_len) {
@@ -170,6 +180,9 @@ impl DocumentManager {
 		let Some(tab) = self.active_tab_mut() else {
 			return;
 		};
+		if tab.is_scratch() {
+			return;
+		}
 		if tab.window.loaded_len() <= text_window::compaction_threshold() {
 			return;
 		}

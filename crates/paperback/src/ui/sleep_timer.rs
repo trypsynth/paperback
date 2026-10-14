@@ -82,7 +82,9 @@ impl SleepTimer {
 				let dm = dm_for_tick.lock().unwrap();
 				let cfg = config_for_tick.lock().unwrap();
 				for i in 0..dm.tab_count() {
-					if let Some(tab) = dm.get_tab(i) {
+					// Not a scratch pad: it has no path to save a position under, and an empty one
+					// is the key every scratch pad would share.
+					if let Some(tab) = dm.get_tab(i).filter(|tab| !tab.is_scratch()) {
 						let current_pos = navigation::doc_caret(tab);
 						let path_str = tab.file_path.to_string_lossy();
 						cfg.set_document_position(&path_str, current_pos);

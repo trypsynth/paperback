@@ -22,9 +22,10 @@ use crate::{
 };
 
 pub(super) fn handle_word_count(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
-	let Ok(dm_ref) = dm.try_lock() else {
+	let Ok(mut dm_ref) = dm.try_lock() else {
 		return;
 	};
+	dm_ref.refresh_stats_if_scratch();
 	if let Some(tab) = dm_ref.active_tab() {
 		let selection = tab.text_ctrl.get_string_selection();
 		let is_selection = !selection.trim().is_empty();
@@ -46,9 +47,10 @@ pub(super) fn handle_word_count(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, 
 }
 
 pub(super) fn handle_document_info(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>) {
-	let Ok(dm_ref) = dm.try_lock() else {
+	let Ok(mut dm_ref) = dm.try_lock() else {
 		return;
 	};
+	dm_ref.refresh_stats_if_scratch();
 	if let Some(tab) = dm_ref.active_tab() {
 		let stats = tab.session.stats();
 		let title = tab.session.title();
@@ -243,12 +245,8 @@ pub(super) fn handle_options(
 	}
 	let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 	frame.set_menu_bar(menu_bar);
-	let dm_ref = dm.lock().unwrap();
-	let has_docs = dm_ref.tab_count() > 0;
-	let has_reopen = dm_ref.has_recently_closed();
-	drop(dm_ref);
-	menu::update_menu_item_states(frame, has_docs);
-	menu::update_reopen_state(frame, has_reopen);
+	let state = dm.lock().unwrap().menu_state();
+	menu::refresh_menu_states(frame, &config.lock().unwrap(), state);
 }
 
 pub(super) fn handle_customize_shortcuts(
@@ -265,11 +263,7 @@ pub(super) fn handle_customize_shortcuts(
 		}
 		let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 		frame.set_menu_bar(menu_bar);
-		let dm_ref = dm.lock().unwrap();
-		let has_docs = dm_ref.tab_count() > 0;
-		let has_reopen = dm_ref.has_recently_closed();
-		drop(dm_ref);
-		menu::update_menu_item_states(frame, has_docs);
-		menu::update_reopen_state(frame, has_reopen);
+		let state = dm.lock().unwrap().menu_state();
+		menu::refresh_menu_states(frame, &config.lock().unwrap(), state);
 	}
 }

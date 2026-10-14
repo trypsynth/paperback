@@ -18,7 +18,7 @@ mod view_menu;
 pub use builder::{MenuEntry, format_menu_label, item_with_help};
 use builder::{build_menu, claim_access_key, deduplicate_access_keys};
 pub use file_menu::recent_documents_for_menu;
-pub use state::{update_menu_item_states, update_reopen_state};
+pub use state::{refresh_menu_states, update_menu_item_states, update_reopen_state};
 
 /// One menu of the menu bar, holding the commands of one shortcut category.
 pub struct TopMenu {
