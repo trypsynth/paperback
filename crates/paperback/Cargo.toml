@@ -83,3 +83,7 @@ harness = false
 [[test]]
 name = "macos_menu_shortcuts"
 harness = false
+
+[[test]]
+name = "windows_rtf_window_append"
+harness = false

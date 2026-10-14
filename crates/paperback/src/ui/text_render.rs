@@ -2,13 +2,15 @@
 //! extending it, and rendering the bold, italic and underline runs the parser found.
 
 use paperback_core::session::{DocumentSession, WindowSlice};
+#[cfg(target_os = "windows")]
+use paperback_core::util::text::display_len;
 use wxdragon::prelude::*;
 
 use super::document_manager::DocumentTab;
 #[cfg(target_os = "windows")]
 use super::rtf_stream::{append_rtf_into_ctrl, stream_rtf_into_ctrl};
 #[cfg(target_os = "windows")]
-use crate::rtf::{RtfFontInfo, build_rtf, sanitize_for_rich_edit, stored_display_len};
+use crate::rtf::{RtfFontInfo, build_rtf, build_rtf_for_whole_control, sanitize_for_rich_edit};
 use crate::{
 	text_format::{FormatSegment, merge_formatting_markers},
 	text_window::{self, TextWindow},
@@ -150,27 +152,13 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &Window
 		// see `sanitize_for_rich_edit`. Everything below compares against this rather
 		// than against `content`.
 		let expected = sanitize_for_rich_edit(content);
-		let rtf = build_rtf(
+		let rtf = build_rtf_for_whole_control(
 			&expected,
 			&segments,
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
 		);
 		if stream_rtf_into_ctrl(text_ctrl, &rtf) {
-			let round_tripped = text_ctrl.get_value();
-			// RichEdit's document model implicitly terminates the buffer, so a
-			// wholly-trailing "\par" (with no content after it) doesn't manifest
-			// as a stored character. Tolerate exactly that one known, harmless
-			// discrepancy rather than falling back over it: the very last
-			// position of *whatever we streamed in* ends up one short of `expected`,
-			// which only matters at its literal last character. This applies the same
-			// way to a windowed slice as to the whole document - RichEdit has no notion
-			// of "there's more after this that isn't loaded"; from its perspective
-			// `expected` (window or not) *is* the whole buffer it was asked to store.
-			let matched = round_tripped == *expected
-				|| (expected.ends_with('\n')
-					&& round_tripped.len() + 1 == expected.len()
-					&& expected.starts_with(round_tripped.as_str()));
-			if matched {
+			if text_ctrl.get_value() == *expected {
 				return;
 			}
 			// Not identical, but harmless as long as it cost no display units: every position
@@ -182,7 +170,7 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &Window
 			// length check is still decisive against the failure this guards: unparsed RTF
 			// stored as literal text would be tens of thousands of display units longer than
 			// the content it encodes.
-			let expected_len = stored_display_len(&expected);
+			let expected_len = i64::try_from(display_len(&expected)).unwrap_or(i64::MAX);
 			let stored_len = text_ctrl.get_last_position();
 			if stored_len == expected_len {
 				tracing::debug!(expected_len, "RTF round-trip was substituted but not resized; keeping it");
