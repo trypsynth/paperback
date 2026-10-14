@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 46948a73c2f7729f; sections: 84030068,db723a70,df2f4c18,f0855d6a,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4b8c6a9acace3273; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,e611d7d9,3a4c3efe,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versión 1.0
 
@@ -25,7 +25,8 @@ Paperback funciona en Windows 10/11, todas las versiones modernas de ARM macOS, 
 * Lee páginas PDF escaneadas con el OCR integrado en Windows y macOS.
 * Marcadores y notas, para que puedas marcar tu lugar y volver a él.
 * Cada atajo de teclado puede ser personalizado.
-* Viene con `pb`, una herramienta de línea de comandos que convierte cualquier documento compatible a HTML, Markdown o texto plano. Acepta tantos documentos como le proporciones, expande `*.pdf` y similares por sí sola para que el mismo comando funcione en Windows, y puede escribir un archivo por documento en una carpeta.
+* Abre documentos directamente desde enlaces http y https, y los descarga nuevamente cuando los reabre o presiona `F5`, manteniendo tu posición de lectura y marcadores. Al restaurar los documentos que tenías abiertos, descarga nuevamente los de enlaces que eran de 2 MB o menores.
+* Viene con `pb`, una herramienta de línea de comandos que convierte cualquier documento compatible a HTML, Markdown o texto plano. Acepta tantos documentos como le proporciones, expande `*.pdf` y similares por sí sola para que el mismo comando funcione en Windows, y puede escribir un archivo por documento en una carpeta. También puede leer una lista de documentos de un archivo o desde stdin con `--files-from`, y convertir documentos directamente desde enlaces http y https.
 
 ## Compatibilidad con lectores de pantalla
 
@@ -78,6 +79,7 @@ Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, e
 ### Menú Archivo
 
 * `Ctrl+O`: Abre un documento.
+* `Ctrl+L` (macOS: `Cmd+Option+O`): Abre un documento desde un enlace web.
 * `Ctrl+F4` (macOS: `Cmd+W`): Cierra el documento actual.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Cierra todos los documentos abiertos.
 * `Ctrl+Shift+T`: Reabre el último documento cerrado.
@@ -99,7 +101,7 @@ Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, e
 
 ### Menú Vista
 
-* `F5`: Vuelve a leer el documento actual desde el disco. Funciona tanto si "Recargar automáticamente documentos modificados" está activado en Configuración como si no.
+* `F5`: Vuelve a leer el documento actual desde el disco, o lo descarga de nuevo si se abrió desde un enlace. Funciona tanto si "Recargar automáticamente documentos modificados" está activado en Configuración como si no.
 * `Ctrl+Alt+W`: Alterna el ajuste de palabras.
 * `F11` (macOS: `RawCtrl+Ctrl+F`, es decir, Control+Comando+F): Alterna pantalla completa.
 * `Ctrl+Shift+V`: Abre el contenido actual en Vista web.
@@ -166,6 +168,8 @@ Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, e
 * `Shift+;`: Reduce la cantidad de búsqueda de audio.
 * `Ctrl+Shift+.`: Acelera la narración de audio.
 * `Ctrl+Shift+,`: Ralentiza la narración de audio.
+* `Ctrl+'`: Aumenta el volumen de la narración de audio.
+* `Ctrl+;`: Reduce el volumen de la narración de audio.
 
 ### Menú Herramientas
 
@@ -225,7 +229,7 @@ El menú Más opciones es donde vive todo lo demás. Algunos elementos funcionan
 * **Cambiar a modo TTS o Cambiar a modo Texto:** se mueve entre el modo lectura en voz alta y el modo texto, descrito arriba. En modo texto, un elemento Lectura en voz alta inicia y pausa la lectura en voz alta sin salir del modo texto.
 * **Tabla de contenidos:** los capítulos del libro, abiertos en el que estás leyendo. Elige uno para ir directamente a él. Las entradas con capítulos bajo ellas pueden expandirse y contraerse con las acciones del lector de pantalla.
 * **Elementos:** una lista de los encabezados o enlaces del documento. Cambia entre los dos con el selector de Tipo en iOS, o las pestañas en Android, luego elige uno para ir a él.
-* **Buscar:** escribe lo que quieres buscar, o elige una búsqueda anterior del Historial de búsqueda, y elige si deseas coincidir mayúsculas y minúsculas, coincidir solo palabras completas, o usar una expresión regular. Buscar anterior y Buscar siguiente saltan a una coincidencia y dicen dónde llegó, y Buscar permanece abierto para que puedas continuar. En modo lectura en voz alta, Buscar también aparece como una unidad de navegación en la barra de lectura, para que puedas navegar por las coincidencias desde allí también.
+* **Buscar:** escribe lo que quieres buscar, o elige una búsqueda anterior del Historial de búsquedas, y elige si deseas coincidir mayúsculas y minúsculas, coincidir solo palabras completas, o usar una expresión regular. Buscar anterior y Buscar siguiente saltan a una coincidencia y dicen dónde llegó, y Buscar permanece abierto para que puedas continuar. En modo lectura en voz alta, Buscar también aparece como una unidad de navegación en la barra de lectura, para que puedas navegar por las coincidencias desde allí también. **Detener lectura después de coincidencias de búsqueda** en Configuración bajo Síntesis de voz está activado por defecto y se detiene después de leer el párrafo que contiene una coincidencia. Desactívalo para continuar leyendo desde la coincidencia mientras los controles Anterior y Siguiente de la barra de lectura aún navegan por Buscar.
 * **Ir a:** salta a una línea, una página, o un porcentaje del documento. Elige cuál con el selector de Modo.
 * **Documentos recientes:** todos los documentos que has abierto, cada uno marcado como actualmente abierto, cerrado o archivo no encontrado. Cada uno tiene dos acciones del lector de pantalla: Eliminar lo quita de la lista, y Localizar te permite encontrar un documento cuyo archivo se ha movido. Borrar documentos recientes vacía la lista sin eliminar ningún documento.
 * **Contar palabras:** el número de palabras en el documento.

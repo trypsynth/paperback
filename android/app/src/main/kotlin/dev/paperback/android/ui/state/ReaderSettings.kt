@@ -53,6 +53,8 @@ class ReaderSettings(
 	// nobody should lose the buttons without having chosen to.
 	val hidePrevNextButtons = boolSetting("hide_prev_next_buttons", false)
 
+	val stopAfterFindMatch = boolSetting("tts_stop_after_find_match", true)
+
 	val textScalePercent = intSetting("text_scale_percent", 100) {
 		it.coerceIn(MIN_TEXT_SCALE_PERCENT, MAX_TEXT_SCALE_PERCENT)
 	}

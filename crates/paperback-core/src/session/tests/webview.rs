@@ -16,6 +16,7 @@ fn webview_target_path_returns_none_for_missing_markdown_file() {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
+		parse_settings: ParseSettings::default(),
 	};
 	assert!(session.webview_target_path(0, "C:\\temp").is_none());
 }
@@ -117,6 +118,7 @@ fn extract_resource_returns_false_for_non_epub_files() {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
+		parse_settings: ParseSettings::default(),
 	};
 	assert_eq!(session.extract_resource("anything", "out.file").ok(), Some(false));
 }
@@ -128,6 +130,7 @@ fn session_with_path(file_path: &str) -> DocumentSession {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
+		parse_settings: ParseSettings::default(),
 	}
 }
 
@@ -209,6 +212,7 @@ fn extract_resource_for_missing_epub_returns_error() {
 		history: Vec::new(),
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
+		parse_settings: ParseSettings::default(),
 	};
 	assert!(session.extract_resource("x", "y").is_err());
 }

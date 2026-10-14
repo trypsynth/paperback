@@ -31,6 +31,9 @@ const MAX_FORM_DEPTH: u32 = 8;
 /// across; announcing one of those as an image gives the reader a stop with nothing at it.
 const MIN_IMAGE_SIDE: f32 = 4.0;
 
+/// How much of the page one image can cover and still be a picture on the page rather than the page itself. A scanned book with an OCR text layer draws each sheet as one image under its invisible text, and announcing that put an "[Image]" with nothing behind it on every page (#1046).
+pub(super) const PAGE_IMAGE_COVERAGE: f64 = 0.9;
+
 /// Writes one image's line into the page, with a marker spanning it.
 ///
 /// `description` is the image's alt text, and is empty when it has none. An undescribed image
@@ -63,10 +66,11 @@ pub(super) fn append_image(
 /// scanner's output and a placed-artwork export both look like this) draws no image object of its
 /// own, so stopping at the top level would find nothing on it at all.
 pub(super) fn page_image_tops(page: &PdfPage) -> Vec<f64> {
+	let page_area = f64::from(page.width()) * f64::from(page.height());
 	let mut tops = Vec::new();
 	for i in 0..page.object_count() {
 		if let Some(object) = page.object(i) {
-			collect_image_tops(&object, 0, &mut tops);
+			collect_image_tops(&object, 0, page_area, &mut tops);
 		}
 	}
 	// Y grows up the page, so the image nearest the top of it has the largest one.
@@ -115,12 +119,11 @@ fn collect_largest_image_area(object: &PageObject, depth: u32, largest: &mut f64
 	}
 }
 
-fn collect_image_tops(object: &PageObject, depth: u32, tops: &mut Vec<f64>) {
+fn collect_image_tops(object: &PageObject, depth: u32, page_area: f64, tops: &mut Vec<f64>) {
 	match object.kind() {
 		ObjectKind::Image => {
 			if let Some(bounds) = object.bounds()
-				&& (bounds.right - bounds.left).abs() >= MIN_IMAGE_SIDE
-				&& (bounds.top - bounds.bottom).abs() >= MIN_IMAGE_SIDE
+				&& is_announced_image((bounds.right - bounds.left).abs(), (bounds.top - bounds.bottom).abs(), page_area)
 			{
 				tops.push(f64::from(bounds.top));
 			}
@@ -128,12 +131,17 @@ fn collect_image_tops(object: &PageObject, depth: u32, tops: &mut Vec<f64>) {
 		ObjectKind::Form if depth < MAX_FORM_DEPTH => {
 			for i in 0..object.form_object_count() {
 				if let Some(child) = object.form_object(i) {
-					collect_image_tops(&child, depth + 1, tops);
+					collect_image_tops(&child, depth + 1, page_area, tops);
 				}
 			}
 		}
 		_ => {}
 	}
+}
+
+fn is_announced_image(width: f32, height: f32, page_area: f64) -> bool {
+	let covers_page = page_area > 0.0 && f64::from(width) * f64::from(height) / page_area >= PAGE_IMAGE_COVERAGE;
+	width >= MIN_IMAGE_SIDE && height >= MIN_IMAGE_SIDE && !covers_page
 }
 
 /// Writes `count` undescribed images into the page, one line each.
@@ -210,8 +218,26 @@ pub(super) fn images_before_each_paragraph(image_tops: &[f64], paragraph_tops: &
 
 #[cfg(test)]
 mod tests {
-	use super::{UnclaimedImages, append_image, images_before_each_paragraph};
+	use super::{UnclaimedImages, append_image, images_before_each_paragraph, is_announced_image};
 	use crate::document::{DocumentBuffer, MarkerType};
+
+	/// The page from #1046: 323 by 518 points, under a 323 by 496 point scan.
+	const PAGE_AREA: f64 = 323.0 * 518.0;
+
+	#[test]
+	fn a_scan_under_the_whole_page_is_not_announced() {
+		assert!(!is_announced_image(323.0, 496.0, PAGE_AREA));
+	}
+
+	#[test]
+	fn a_figure_on_the_page_is_announced() {
+		assert!(is_announced_image(250.0, 300.0, PAGE_AREA));
+	}
+
+	#[test]
+	fn a_hairline_rule_is_not_announced() {
+		assert!(!is_announced_image(300.0, 0.5, PAGE_AREA));
+	}
 
 	/// A described figure reads as its description, and the marker spans the whole line so that
 	/// arrowing onto any part of it lands on the figure.

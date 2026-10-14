@@ -124,6 +124,15 @@ pub static COMMANDS: &[Command] = &[
 		behavior: Behavior::Run(file::open),
 	},
 	Command {
+		action: ActionId::OpenFromUrl,
+		// TRANSLATORS: Menu item in the File menu to open documents from web links.
+		label: || t("Open from &URL..."),
+		// TRANSLATORS: Status-bar help text for the File > Open from URL menu item.
+		help: Some(|| t("Open documents from web links")),
+		enable: Enable::Always,
+		behavior: Behavior::Run(file::open_from_url),
+	},
+	Command {
 		action: ActionId::Close,
 		// TRANSLATORS: Menu item in the File menu to close the current document.
 		label: || t("&Close"),
@@ -553,7 +562,7 @@ pub static COMMANDS: &[Command] = &[
 	Command {
 		action: ActionId::ViewNoteText,
 		// TRANSLATORS: Menu item in the Bookmarks menu to view the text of the note at the current reading position.
-		label: || t("&View Note Text"),
+		label: || t("&View Note Text..."),
 		// TRANSLATORS: Status-bar help text for the Bookmarks > View Note Text menu item.
 		help: Some(|| t("View the note at current position")),
 		enable: Enable::HasDocument,
@@ -570,7 +579,7 @@ pub static COMMANDS: &[Command] = &[
 	Command {
 		action: ActionId::BookmarkWithNote,
 		// TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
-		label: || t("Bookmark &with Note"),
+		label: || t("Bookmark &with Note..."),
 		help: None,
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(bookmarks::with_note),
@@ -629,7 +638,7 @@ pub static COMMANDS: &[Command] = &[
 		label: || t("&Play/Pause Audio"),
 		// TRANSLATORS: Status-bar help text for the Play/Pause Audio menu item.
 		help: Some(|| t("Play or pause this document's audio narration")),
-		enable: Enable::Always,
+		enable: Enable::HasDocument,
 		behavior: Behavior::Run(audio::toggle_play_pause),
 	},
 	Command {
@@ -638,7 +647,7 @@ pub static COMMANDS: &[Command] = &[
 		label: || t("Seek Audio &Forward"),
 		// TRANSLATORS: Status-bar help text for the Seek Audio Forward menu item.
 		help: Some(|| t("Skip the audio narration forward")),
-		enable: Enable::Always,
+		enable: Enable::HasDocument,
 		behavior: Behavior::Run(audio::seek_forward),
 	},
 	Command {
@@ -647,7 +656,7 @@ pub static COMMANDS: &[Command] = &[
 		label: || t("Seek Audio &Backward"),
 		// TRANSLATORS: Status-bar help text for the Seek Audio Backward menu item.
 		help: Some(|| t("Skip the audio narration backward")),
-		enable: Enable::Always,
+		enable: Enable::HasDocument,
 		behavior: Behavior::Run(audio::seek_backward),
 	},
 	Command {
@@ -674,7 +683,7 @@ pub static COMMANDS: &[Command] = &[
 		label: || t("&Increase Audio Speed"),
 		// TRANSLATORS: Status-bar help text for the Increase Audio Speed menu item.
 		help: Some(|| t("Increase how fast the audio narration plays")),
-		enable: Enable::Always,
+		enable: Enable::HasDocument,
 		behavior: Behavior::Run(audio::increase_speed),
 	},
 	Command {
@@ -683,8 +692,26 @@ pub static COMMANDS: &[Command] = &[
 		label: || t("&Decrease Audio Speed"),
 		// TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
 		help: Some(|| t("Decrease how fast the audio narration plays")),
-		enable: Enable::Always,
+		enable: Enable::HasDocument,
 		behavior: Behavior::Run(audio::decrease_speed),
+	},
+	Command {
+		action: ActionId::IncreaseAudioVolume,
+		// TRANSLATORS: Menu item in the Audio menu to make the audio narration louder.
+		label: || t("Increase Audio &Volume"),
+		// TRANSLATORS: Status-bar help text for the Increase Audio Volume menu item.
+		help: Some(|| t("Make the audio narration louder")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(audio::increase_volume),
+	},
+	Command {
+		action: ActionId::DecreaseAudioVolume,
+		// TRANSLATORS: Menu item in the Audio menu to make the audio narration quieter.
+		label: || t("Decrease Audio Vo&lume"),
+		// TRANSLATORS: Status-bar help text for the Decrease Audio Volume menu item.
+		help: Some(|| t("Make the audio narration quieter")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(audio::decrease_volume),
 	},
 ];
 
@@ -746,6 +773,8 @@ pub fn apply_enable_to(menu_bar: &MenuBar, enable: Enable, available: bool) {
 
 #[cfg(test)]
 mod tests {
+	use rstest::rstest;
+
 	use super::*;
 
 	/// Two commands sharing a wx id would make [`find`] pick whichever came first, silently
@@ -777,6 +806,19 @@ mod tests {
 	#[test]
 	fn reload_needs_a_document() {
 		let command = for_action(ActionId::Reload).unwrap();
+		assert_eq!(command.enable, Enable::HasDocument);
+	}
+
+	#[rstest]
+	#[case::play_pause(ActionId::PlayPauseAudio)]
+	#[case::seek_forward(ActionId::SeekAudioForward)]
+	#[case::seek_backward(ActionId::SeekAudioBackward)]
+	#[case::increase_speed(ActionId::IncreaseAudioSpeed)]
+	#[case::decrease_speed(ActionId::DecreaseAudioSpeed)]
+	#[case::increase_volume(ActionId::IncreaseAudioVolume)]
+	#[case::decrease_volume(ActionId::DecreaseAudioVolume)]
+	fn audio_playback_needs_a_document(#[case] action: ActionId) {
+		let command = for_action(action).unwrap();
 		assert_eq!(command.enable, Enable::HasDocument);
 	}
 

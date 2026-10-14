@@ -55,6 +55,16 @@ class TtsManager(
 	private var currentContentUtteranceId: String? = null
 	private var currentPrecacheUtteranceId: String? = null
 
+	// Kept so a rate or pitch change can render the paragraph being read again, since its audio was made at the old settings.
+	private var currentText: String? = null
+
+	// Set while paused after a rate or pitch change, so resuming renders the paragraph again instead of playing the old audio (#1067).
+	private var currentAudioStale = false
+
+	// How far into the paragraph the old audio was, so the new audio carries on from about the same word.
+	private var resumeFraction: Float? = null
+	private var rerenderJob: Job? = null
+
 	var currentDocumentTitle: String = "Paperback"
 		set(value) {
 			field = value
@@ -73,6 +83,7 @@ class TtsManager(
 		const val KEY_RATE = "tts_rate"
 		const val KEY_PITCH = "tts_pitch"
 		const val KEY_PARAGRAPH_PAUSE = "tts_paragraph_pause_ms"
+		private const val RERENDER_DELAY_MS = 400L
 	}
 
 	private val _currentEngineName = MutableStateFlow<String?>(null)
@@ -101,6 +112,11 @@ class TtsManager(
 
 	var onUtteranceCompleted: (() -> Unit)? = null
 	var onSegmentTransition: (() -> Unit)? = null
+
+	// Consulted when linking and consuming queued audio, so a changed Find preference
+	// takes effect at the next paragraph boundary as well as on the next play press.
+	var shouldAutoAdvance: () -> Boolean = { true }
+
 	var onPlayCommand: (() -> Unit)? = null
 	var onPauseCommand: (() -> Unit)? = null
 	var onNextCommand: (() -> Unit)? = null
@@ -273,10 +289,12 @@ class TtsManager(
 									setOnPreparedListener { mp ->
 										ttsScope.launch(Dispatchers.Main) {
 											mediaPlayer = mp
+											resumeFraction?.let { mp.seekTo((it * mp.duration).toInt()) }
+											resumeFraction = null
 											if (_isSpeaking.value && !_isPaused.value) {
 												mp.start()
 											}
-											nextMediaPlayer?.let {
+											nextMediaPlayer?.takeIf { shouldAutoAdvance() }?.let {
 												try {
 													mp.setNextMediaPlayer(it)
 												} catch (_: Exception) {
@@ -313,7 +331,7 @@ class TtsManager(
 										ttsScope.launch(Dispatchers.Main) {
 											nextMediaPlayer = nextMp
 											isNextMediaPlayerPrepared = true
-											mediaPlayer?.let {
+											mediaPlayer?.takeIf { shouldAutoAdvance() }?.let {
 												try {
 													it.setNextMediaPlayer(nextMp)
 												} catch (_: Exception) {
@@ -413,11 +431,12 @@ class TtsManager(
 		utteranceId: String?
 	) {
 		mp.setOnCompletionListener { _ ->
-			if (nextMediaPlayer != null && isNextMediaPlayerPrepared) {
+			if (shouldAutoAdvance() && nextMediaPlayer != null && isNextMediaPlayerPrepared) {
 				val oldMp = mediaPlayer
 				mediaPlayer = nextMediaPlayer
 				nextMediaPlayer = null
 				isNextMediaPlayerPrepared = false
+				currentText = precachedText
 				precachedText = null
 
 				try {
@@ -433,7 +452,12 @@ class TtsManager(
 
 				onSegmentTransition?.invoke()
 
-				mediaPlayer?.let { setupCompletionListener(it, "TTS_CONTENT_ID") }
+				mediaPlayer?.let {
+					// A preference changed since this player was prepared: it may never have
+					// been linked to the previous one, so start it if the handoff did not.
+					if (_isSpeaking.value && !_isPaused.value && !it.isPlaying) it.start()
+					setupCompletionListener(it, "TTS_CONTENT_ID")
+				}
 			} else {
 				stopSpeakingJob?.cancel()
 				stopSpeakingJob = ttsScope.launch {
@@ -464,6 +488,10 @@ class TtsManager(
 				audioFocus.request()
 			}
 			stopSpeakingJob?.cancel()
+			rerenderJob?.cancel()
+			currentText = if (isSample) null else text
+			currentAudioStale = false
+			resumeFraction = null
 			fileCounter++
 			val utteranceId = if (isSample) "TTS_SAMPLE_ID_$fileCounter" else "TTS_CONTENT_ID_$fileCounter"
 			currentContentUtteranceId = utteranceId
@@ -527,7 +555,9 @@ class TtsManager(
 	}
 
 	override fun resume() {
-		if (_isPaused.value) {
+		if (_isPaused.value && currentAudioStale) {
+			rerenderCurrentParagraph()
+		} else if (_isPaused.value) {
 			_isPaused.value = false
 			_isSpeaking.value = true
 			updatePlaybackState(true)
@@ -569,6 +599,9 @@ class TtsManager(
 		tts?.stop()
 		cleanupPlayer()
 		stopSpeakingJob?.cancel()
+		rerenderJob?.cancel()
+		currentText = null
+		currentAudioStale = false
 		currentContentUtteranceId = null
 		currentPrecacheUtteranceId = null
 		_isSpeaking.value = false
@@ -586,6 +619,7 @@ class TtsManager(
 			config.flush()
 			tts?.setSpeechRate(speechRateFor(percentage))
 			resynthesizePrecache()
+			applyToCurrentParagraph()
 		}
 	}
 
@@ -598,7 +632,40 @@ class TtsManager(
 			config.flush()
 			tts?.setPitch(pitchFor(percentage))
 			resynthesizePrecache()
+			applyToCurrentParagraph()
 		}
+	}
+
+	/** Makes a rate or pitch change heard in the paragraph being read, not only from the next one: straight away while playing, and on resume while paused. */
+	private fun applyToCurrentParagraph() {
+		if (mediaPlayer == null || currentText == null) return
+		if (_isPaused.value) {
+			currentAudioStale = true
+			return
+		}
+		if (!_isSpeaking.value) return
+		rerenderJob?.cancel()
+		// A slider swipe or drag sends a run of changes; rendering the paragraph once they stop avoids a stutter of restarts.
+		rerenderJob = ttsScope.launch {
+			delay(RERENDER_DELAY_MS)
+			rerenderCurrentParagraph()
+		}
+	}
+
+	/** Renders the paragraph again at the current settings and carries on from about where the old audio was. */
+	private fun rerenderCurrentParagraph() {
+		val text = currentText ?: return
+		val fraction = mediaPlayer?.let {
+			try {
+				if (it.duration > 0) it.currentPosition.toFloat() / it.duration else 0f
+			} catch (_: Exception) {
+				0f
+			}
+		} ?: 0f
+		val next = precachedText
+		speak(text)
+		resumeFraction = fraction
+		next?.let { precache(it) }
 	}
 
 	fun setParagraphPause(ms: Int) {

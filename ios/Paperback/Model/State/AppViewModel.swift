@@ -93,6 +93,10 @@ final class AppViewModel {
 		highContrastText = configManager.getAppBool(key: "high_contrast_text", defaultValue: false)
 
 		reading.context = self
+		reading.stopAfterFindMatch = configManager.getAppBool(key: "tts_stop_after_find_match", defaultValue: true)
+		reading.onStopAfterFindMatchChanged = { [weak self] stop in
+			self?.configManager.setAppBool(key: "tts_stop_after_find_match", value: stop)
+		}
 
 		let narration = RecordedNarration(config: configManager)
 		narration.onClipChanged = { [weak self] position in
@@ -500,6 +504,70 @@ func segmentTypeName(_ type: SegmentTypeFfi) -> String {
 	case .figure: return t("Figure")
 	// TRANSLATORS: Name of the "formula" reading/navigation unit
 	case .formula: return t("Formula")
+	}
+}
+
+/// A whole phrase per unit, because many languages inflect "previous"/"next" to agree with the noun (#1033).
+func previousUnitLabel(_ type: SegmentTypeFfi) -> String {
+	switch type {
+	// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by paragraph
+	case .paragraph: return t("Previous Paragraph")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by line
+	case .line: return t("Previous Line")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by heading
+	case .heading: return t("Previous Heading")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by link
+	case .link: return t("Previous Link")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by section
+	case .section: return t("Previous Section")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by page
+	case .page: return t("Previous Page")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by list
+	case .list: return t("Previous List")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by list item
+	case .listItem: return t("Previous List Item")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by table
+	case .table: return t("Previous Table")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by separator
+	case .separator: return t("Previous Separator")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by image
+	case .image: return t("Previous Image")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by figure
+	case .figure: return t("Previous Figure")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by formula
+	case .formula: return t("Previous Formula")
+	}
+}
+
+/// A whole phrase per unit, because many languages inflect "previous"/"next" to agree with the noun (#1033).
+func nextUnitLabel(_ type: SegmentTypeFfi) -> String {
+	switch type {
+	// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by paragraph
+	case .paragraph: return t("Next Paragraph")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by line
+	case .line: return t("Next Line")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by heading
+	case .heading: return t("Next Heading")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by link
+	case .link: return t("Next Link")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by section
+	case .section: return t("Next Section")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by page
+	case .page: return t("Next Page")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by list
+	case .list: return t("Next List")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by list item
+	case .listItem: return t("Next List Item")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by table
+	case .table: return t("Next Table")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by separator
+	case .separator: return t("Next Separator")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by image
+	case .image: return t("Next Image")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by figure
+	case .figure: return t("Next Figure")
+	// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by formula
+	case .formula: return t("Next Formula")
 	}
 }
 

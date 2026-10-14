@@ -26,11 +26,12 @@ pub struct BookmarkDialogResult {
 pub fn show_bookmark_dialog(
 	parent: &Frame,
 	session: &DocumentSession,
+	file_path: &str,
 	config: &Rc<Mutex<ConfigManager>>,
 	current_pos: i64,
 	initial_filter: BookmarkFilterType,
 ) -> Option<BookmarkDialogResult> {
-	let file_path = session.file_path().to_string();
+	let file_path = file_path.to_string();
 	let snippets = Rc::new(text_snippets(session, &config.lock().unwrap().get_bookmarks(&file_path)));
 	// TRANSLATORS: Title of the Jump to Bookmark dialog
 	let dialog = Dialog::builder(parent, &t("Jump to Bookmark")).build();
@@ -204,16 +205,16 @@ fn build_bookmark_dialog_ui(dialog: Dialog, initial_filter: BookmarkFilterType) 
 
 /// The text each text bookmark quotes, keyed by its span: the whole line for a line bookmark,
 /// else the marked range. Worked out once when the dialog opens, since every change of filter
-/// refills the list.
+/// refills the list. The bounds are caret positions, so they're read in display units.
 fn text_snippets(session: &DocumentSession, bookmarks: &[Bookmark]) -> HashMap<(i64, i64), String> {
 	bookmarks
 		.iter()
 		.filter(|bm| bm.audio_ms.is_none())
 		.map(|bm| {
 			let text = if bm.start == bm.end {
-				session.get_line_text(bm.start)
+				session.line_text_at(bm.start)
 			} else {
-				session.get_text_range(bm.start, bm.end)
+				session.get_text_range_display(bm.start, bm.end)
 			};
 			((bm.start, bm.end), text)
 		})

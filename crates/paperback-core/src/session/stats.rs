@@ -7,7 +7,7 @@ use super::{
 	DocumentSession, DocumentStatsFfi, LineMarker, SegmentDirectionFfi, SegmentTypeFfi, StatusInfo, TextSegmentFfi,
 };
 use crate::{
-	document::{MarkerType, ParserFlags},
+	document::{ContentBytePos, MarkerType, ParserFlags},
 	reader_core::reader_navigate,
 	types::{self as ffi, NavDirection, NavTarget},
 };
@@ -121,13 +121,11 @@ impl DocumentSession {
 				let mut text = res.marker_text.clone();
 				let mut end_pos = offset;
 				if text.trim().is_empty() {
-					let content = &self.handle.document().buffer.content;
-					let total_chars = self.handle.document().buffer.char_count();
-					let start_pos_char = usize::try_from(offset.max(0)).unwrap_or(0).min(total_chars);
-					let byte_idx = self.handle.document().buffer.byte_index_for_char(start_pos_char);
-					let (start_byte, end_byte) =
-						self.find_paragraph_boundaries(content, byte_idx, SegmentDirectionFfi::Current);
-					text = content[start_byte..end_byte].trim().to_string();
+					let buffer = &self.handle.document().buffer;
+					let start_pos_char = usize::try_from(offset.max(0)).unwrap_or(0).min(buffer.char_count());
+					let byte_idx = buffer.byte_index_for_char(start_pos_char);
+					let (start_byte, end_byte) = self.find_paragraph_boundaries(byte_idx, SegmentDirectionFfi::Current);
+					text = buffer.slice(start_byte..end_byte).trim().to_string();
 					end_pos = offset + i64::try_from(text.chars().count()).unwrap_or(0);
 				} else {
 					end_pos += i64::try_from(text.chars().count()).unwrap_or(0);
@@ -136,28 +134,26 @@ impl DocumentSession {
 			}
 			return TextSegmentFfi { text: String::new(), start_pos: position, end_pos: position, found: false };
 		}
-		let content = &self.handle.document().buffer.content;
-		let total_chars = self.handle.document().buffer.char_count();
-		let start_pos_char = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let byte_idx = self.handle.document().buffer.byte_index_for_char(start_pos_char);
+		let buffer = &self.handle.document().buffer;
+		let start_pos_char = usize::try_from(position.max(0)).unwrap_or(0).min(buffer.char_count());
+		let byte_idx = buffer.byte_index_for_char(start_pos_char);
 		let (start_byte, end_byte) = if matches!(segment_type, SegmentTypeFfi::Line) {
-			let line_num = self.line_from_position(start_pos_char as i64);
+			let start_display = buffer.display_index_for_char(start_pos_char);
+			let line_num = self.line_from_position(i64::try_from(start_display).unwrap_or(0));
 			let target_line = match direction {
 				SegmentDirectionFfi::Previous => (line_num - 1).max(1),
 				SegmentDirectionFfi::Next => line_num + 1,
 				SegmentDirectionFfi::Current => line_num,
 			};
-			let start_char_idx = usize::try_from(self.position_from_line(target_line)).unwrap_or(0);
-			let end_char_idx = usize::try_from(self.position_from_line(target_line + 1)).unwrap_or(0);
-			let sb = self.handle.document().buffer.byte_index_for_char(start_char_idx);
-			let eb = self.handle.document().buffer.byte_index_for_char(end_char_idx);
-			(sb, eb)
+			let start_display = usize::try_from(self.position_from_line(target_line)).unwrap_or(0);
+			let end_display = usize::try_from(self.position_from_line(target_line + 1)).unwrap_or(0);
+			(buffer.byte_index_for_display(start_display), buffer.byte_index_for_display(end_display))
 		} else {
-			self.find_paragraph_boundaries(content, byte_idx, direction)
+			self.find_paragraph_boundaries(byte_idx, direction)
 		};
-		let text = content[start_byte..end_byte].trim().to_string();
-		let start_char = self.handle.document().buffer.char_index_for_byte(start_byte);
-		let end_char = self.handle.document().buffer.char_index_for_byte(end_byte);
+		let text = buffer.slice(start_byte..end_byte).trim().to_string();
+		let start_char = buffer.char_index_for_byte(start_byte);
+		let end_char = buffer.char_index_for_byte(end_byte);
 		TextSegmentFfi {
 			text,
 			start_pos: i64::try_from(start_char).unwrap_or(0),
@@ -173,7 +169,8 @@ impl DocumentSession {
 	pub fn get_status_info(&self, position: i64) -> StatusInfo {
 		let buf = &self.handle.document().buffer;
 		let total_chars = buf.char_count();
-		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
+		let display_pos = usize::try_from(position.max(0)).unwrap_or(0).min(buf.total_display_len());
+		let pos = buf.char_index_for_display(display_pos);
 		let line_number = buf.newline_positions().partition_point(|&p| p < pos) + 1;
 		let character_number = pos + 1;
 		let percentage = (pos * 100).checked_div(total_chars).unwrap_or(0);
@@ -186,13 +183,15 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn position_from_percent(&self, percent: i32) -> i64 {
-		let total_chars = i64::try_from(self.handle.document().buffer.char_count()).unwrap_or(0);
+		let buf = &self.handle.document().buffer;
+		let total_chars = i64::try_from(buf.char_count()).unwrap_or(0);
 		let percent = i64::from(percent.clamp(0, 100));
 		if total_chars == 0 {
 			return 0;
 		}
-		// Ceiling division: (percent * total_chars + 99) / 100
-		(percent * total_chars + 99) / 100
+		// Calculate over characters so the result cannot split an astral character.
+		let char_pos = usize::try_from((percent * total_chars + 99) / 100).unwrap_or(0);
+		i64::try_from(buf.display_index_for_char(char_pos)).unwrap_or(0)
 	}
 
 	#[must_use]
@@ -211,17 +210,17 @@ impl DocumentSession {
 		let target_newlines = usize::try_from(line - 1).unwrap_or(0);
 		let newlines = buf.newline_positions();
 		if target_newlines <= newlines.len() {
-			i64::try_from(newlines[target_newlines - 1] + 1).unwrap_or(0)
+			i64::try_from(buf.display_index_for_char(newlines[target_newlines - 1] + 1)).unwrap_or(0)
 		} else {
-			i64::try_from(buf.char_count()).unwrap_or(0)
+			i64::try_from(buf.total_display_len()).unwrap_or(0)
 		}
 	}
 
 	#[must_use]
 	pub fn line_from_position(&self, position: i64) -> i64 {
 		let buf = &self.handle.document().buffer;
-		let total_chars = buf.char_count();
-		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
+		let display_pos = usize::try_from(position.max(0)).unwrap_or(0).min(buf.total_display_len());
+		let pos = buf.char_index_for_display(display_pos);
 		let line_number = buf.newline_positions().partition_point(|&p| p < pos) + 1;
 		i64::try_from(line_number).unwrap_or(1)
 	}
@@ -245,17 +244,7 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn get_line_text(&self, position: i64) -> String {
-		let buf = &self.handle.document().buffer;
-		let total_chars = buf.char_count();
-		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
-		let newlines = buf.newline_positions();
-		let line_start = match newlines.partition_point(|&p| p < pos) {
-			0 => 0,
-			idx => newlines[idx - 1] + 1,
-		};
-		let start_byte = buf.byte_index_for_char(line_start);
-		let line_end_byte = buf.content[start_byte..].find('\n').map_or(buf.content.len(), |i| start_byte + i);
-		buf.content[start_byte..line_end_byte].to_string()
+		self.line_text_at(position)
 	}
 
 	#[must_use]
@@ -341,10 +330,11 @@ impl DocumentSession {
 
 	fn find_paragraph_boundaries(
 		&self,
-		content: &str,
-		byte_idx: usize,
+		byte_idx: ContentBytePos,
 		direction: SegmentDirectionFfi,
-	) -> (usize, usize) {
+	) -> (ContentBytePos, ContentBytePos) {
+		let content = self.handle.document().buffer.content.as_str();
+		let byte_idx = byte_idx.get();
 		let mut start = byte_idx;
 		if matches!(direction, SegmentDirectionFfi::Previous) {
 			let mut search_end = byte_idx;
@@ -375,7 +365,7 @@ impl DocumentSession {
 			start = content[..start].rfind('\n').map_or(0, |i| i + 1);
 		}
 		let end = content[start..].find('\n').map_or(content.len(), |i| start + i);
-		(start, end)
+		(ContentBytePos::from_raw(start), ContentBytePos::from_raw(end))
 	}
 
 	#[must_use]
@@ -398,23 +388,8 @@ impl DocumentSession {
 			.collect()
 	}
 
-	/// Returns the text between two positions (start inclusive, end exclusive).
-	#[must_use]
-	pub fn get_text_range(&self, start: i64, end: i64) -> String {
-		let total_chars = self.handle.document().buffer.char_count();
-		let start_pos = usize::try_from(start.max(0)).unwrap_or(0).min(total_chars);
-		let end_pos = usize::try_from(end.max(0)).unwrap_or(0).min(total_chars);
-		if start_pos >= end_pos {
-			return String::new();
-		}
-		let start_byte = self.handle.document().buffer.byte_index_for_char(start_pos);
-		let end_byte = self.handle.document().buffer.byte_index_for_char(end_pos);
-		self.handle.document().buffer.content[start_byte..end_byte].to_string()
-	}
-
 	/// The display-unit `[start, end)` span of the line containing `position` (display units),
-	/// where `end` is the index of the line's terminating `\n` (exclusive of it). Unlike
-	/// [`Self::get_line_text`], which treats its argument as a *char* index, this converts via
+	/// where `end` is the index of the line's terminating `\n` (exclusive of it). This converts via
 	/// [`DocumentBuffer::char_index_for_display`]/[`display_index_for_char`], so astral
 	/// characters before the caret (which occupy two display units) can't misalign the result.
 	/// Returns `None` for an empty document.
@@ -444,10 +419,7 @@ impl DocumentSession {
 		let Some((start, end)) = self.line_bounds_at(position) else {
 			return String::new();
 		};
-		let buf = &self.handle.document().buffer;
-		let start_char = buf.char_index_for_display(usize::try_from(start.max(0)).unwrap_or(0));
-		let end_char = buf.char_index_for_display(usize::try_from(end.max(0)).unwrap_or(0));
-		self.get_text_range(i64::try_from(start_char).unwrap_or(0), i64::try_from(end_char).unwrap_or(0))
+		self.get_text_range_display(start, end)
 	}
 
 	/// Returns the first non-blank line of real content at or after `position`, skipping blank
@@ -458,14 +430,16 @@ impl DocumentSession {
 	pub fn first_content_line_after(&self, position: i64) -> String {
 		let buf = &self.handle.document().buffer;
 		let total_chars = buf.char_count();
-		let mut pos = usize::try_from(position.max(0)).unwrap_or(0).min(total_chars);
+		let display_pos = usize::try_from(position.max(0)).unwrap_or(0).min(buf.total_display_len());
+		let mut pos = buf.char_index_for_display(display_pos);
 		let newlines = buf.newline_positions();
 		loop {
 			let idx = newlines.partition_point(|&p| p < pos);
 			let line_start = if idx == 0 { 0 } else { newlines[idx - 1] + 1 };
 			let line_end = newlines.get(idx).copied().unwrap_or(total_chars);
-			let line =
-				self.get_text_range(i64::try_from(line_start).unwrap_or(0), i64::try_from(line_end).unwrap_or(0));
+			let start_display = i64::try_from(buf.display_index_for_char(line_start)).unwrap_or(0);
+			let end_display = i64::try_from(buf.display_index_for_char(line_end)).unwrap_or(0);
+			let line = self.get_text_range_display(start_display, end_display);
 			if is_content_line(line.trim()) {
 				return line;
 			}

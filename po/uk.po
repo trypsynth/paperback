@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 08:33-0600\n"
-"PO-Revision-Date: 2026-09-25 12:05+0300\n"
+"POT-Creation-Date: 2026-10-09 16:45+0000\n"
+"PO-Revision-Date: 2026-10-11 18:38+0300\n"
 "Last-Translator: Ivan Shtefuriak <ip0877@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -188,6 +188,10 @@ msgstr "Перегляд нотатки"
 msgid "Open Document"
 msgstr "Відкрити документ"
 
+#. TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
+msgid "Document reloaded."
+msgstr "Документ перезавантажено."
+
 #. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
 #. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
@@ -228,6 +232,14 @@ msgstr "Відкрити &останній закритий файл"
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "Відкрити останній закритий документ"
+
+#. TRANSLATORS: Menu item in the View menu to re-read the current document from disk.
+msgid "&Reload"
+msgstr "&Оновити"
+
+#. TRANSLATORS: Status-bar help text for the View > Reload menu item.
+msgid "Re-read the current document from disk"
+msgstr "Повторно прочитати поточний документ з диска"
 
 #. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
 msgid "Clea&r Recent Documents"
@@ -430,103 +442,111 @@ msgstr "За нижню &межу контейнера"
 msgid "Go past the end of the current list or table"
 msgstr "Перейти за кінець поточного списку або таблиці"
 
-#. TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
+#. TRANSLATORS: Menu item in the Bookmarks menu to move to the previous bookmark in the document.
 msgid "&Previous Bookmark"
 msgstr "&Попередня закладка"
 
-#. TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Previous Bookmark menu item.
 msgid "Go to previous bookmark"
 msgstr "Перейти до попередньої закладки"
 
-#. TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
+#. TRANSLATORS: Menu item in the Bookmarks menu to move to the next bookmark in the document.
 msgid "&Next Bookmark"
 msgstr "&Наступна закладка"
 
-#. TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Next Bookmark menu item.
 msgid "Go to next bookmark"
 msgstr "Перейти до наступної закладки"
 
-#. TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
-msgid "Previous &Note"
+#. TRANSLATORS: Menu item in the Bookmarks menu to move to the previous note in the document.
+msgid "Previous Not&e"
 msgstr "&Попередня нотатка"
 
-#. TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Previous Note menu item.
 msgid "Go to previous note"
 msgstr "Перейти до попередньої нотатки"
 
-#. TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
+#. TRANSLATORS: Menu item in the Bookmarks menu to move to the next note in the document.
 msgid "Next N&ote"
 msgstr "&Наступна нотатка"
 
-#. TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Next Note menu item.
 msgid "Go to next note"
 msgstr "Перейти до наступної нотатки"
 
-#. TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
+#. TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing all bookmarks and notes.
 msgid "Jump to &All..."
 msgstr "Перейти до &всіх..."
 
-#. TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Jump to All menu item.
 msgid "Show all bookmarks and notes"
 msgstr "Показати всі закладки та нотатки"
 
-#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only bookmarks.
+#. TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing only bookmarks.
 msgid "Jump to &Bookmarks Only..."
 msgstr "Перейти лише до &закладок..."
 
-#. TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Jump to Bookmarks Only menu item.
 msgid "Show bookmarks only"
 msgstr "Показати лише закладки"
 
-#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
-msgid "Jump to Notes &Only..."
-msgstr "Перейти лише до &нотаток..."
+#. TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing only notes.
+msgid "Jump to Notes Onl&y..."
+msgstr "Перейти &лише до нотаток..."
 
-#. TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Jump to Notes Only menu item.
 msgid "Show notes only"
 msgstr "Показати лише нотатки"
 
-#. TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
-msgid "&View Note Text"
-msgstr "Переглянути &текст нотатки"
+#. TRANSLATORS: Menu item in the Bookmarks menu to view the text of the note at the current reading position.
+msgid "&View Note Text..."
+msgstr "Переглянути &текст нотатки..."
 
-#. TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > View Note Text menu item.
 msgid "View the note at current position"
 msgstr "Переглянути нотатку в поточній позиції"
 
-#. TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
-msgid "Toggle &Bookmark"
-msgstr "Додати/видалити &закладку"
+#. TRANSLATORS: Menu item in the Bookmarks menu to add or remove a bookmark at the current reading position.
+msgid "&Toggle Bookmark"
+msgstr "&Додати/видалити закладку"
 
-#. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
-msgid "Bookmark with &Note"
-msgstr "Закладка з &нотаткою"
+#. TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
+msgid "Bookmark &with Note..."
+msgstr "Закладка з &нотаткою..."
 
-#. TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
-msgid "Set Selection St&art"
-msgstr "Встановити &початок виділення"
+#. TRANSLATORS: Menu item in the Bookmarks menu to remember the current reading position as the temporary bookmark.
+msgid "&Set Temporary Bookmark"
+msgstr "&Тимчасова закладка"
 
-#. TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
+#. TRANSLATORS: Menu item in the Bookmarks menu to go back to the position remembered as the temporary bookmark.
+msgid "&Jump to Temporary Bookmark"
+msgstr "Перейти до &тимчасової закладки"
+
+#. TRANSLATORS: Menu item in the Edit menu to mark the current position as the beginning of a selection to copy from later.
+msgid "Set &Selection Start"
+msgstr "Встановити початок &виділення"
+
+#. TRANSLATORS: Status-bar help text for the Edit > Set Selection Start menu item.
 msgid "Mark the beginning of a selection to copy from"
 msgstr "Позначити початок виділення для копіювання"
 
-#. TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
-msgid "&Copy from Selection Start"
+#. TRANSLATORS: Menu item in the Edit menu to copy everything from the marked beginning of a selection to the current position.
+msgid "Copy fro&m Selection Start"
 msgstr "&Копіювати від початку виділення"
 
-#. TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
+#. TRANSLATORS: Status-bar help text for the Edit > Copy from Selection Start menu item.
 msgid "Copy from the beginning of the selection to here"
 msgstr "Скопіювати від початку виділеного фрагмента до цього місця"
 
-#. TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+#. TRANSLATORS: Menu item in the Edit menu to go back to the marked beginning of the selection.
 msgid "&Jump to Selection Start"
 msgstr "&Перейти до початку виділення"
 
-#. TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+#. TRANSLATORS: Status-bar help text for the Edit > Jump to Selection Start menu item.
 msgid "Go back to the beginning of the selection"
 msgstr "Повернутися до початку виділення"
 
-#. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
+#. TRANSLATORS: Menu item in the Audio menu to play or pause the document's audio narration.
 msgid "&Play/Pause Audio"
 msgstr "&Відтворити/Призупинити аудіо"
 
@@ -534,7 +554,7 @@ msgstr "&Відтворити/Призупинити аудіо"
 msgid "Play or pause this document's audio narration"
 msgstr "Відтворити або призупинити аудіосупровід цього документа"
 
-#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
+#. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 msgid "Seek Audio &Forward"
 msgstr "Перемотати &вперед"
 
@@ -542,7 +562,7 @@ msgstr "Перемотати &вперед"
 msgid "Skip the audio narration forward"
 msgstr "Перемотати аудіо вперед"
 
-#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
+#. TRANSLATORS: Menu item in the Audio menu to skip the audio narration backward.
 msgid "Seek Audio &Backward"
 msgstr "Перемотати &назад"
 
@@ -550,23 +570,23 @@ msgstr "Перемотати &назад"
 msgid "Skip the audio narration backward"
 msgstr "Перемотати аудіо назад"
 
-#. TRANSLATORS: Menu item in the Tools menu to increase the amount of time each audio seek skips.
-msgid "&Increase Audio Seek Amount"
+#. TRANSLATORS: Menu item in the Audio menu to increase the amount of time each audio seek skips.
+msgid "Increase Audio Seek &Amount"
 msgstr "&Збільшити крок перемотування аудіо"
 
 #. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
 msgid "Increase how far seeking the audio narration moves"
 msgstr "Збільшити інтервал перемотування аудіо"
 
-#. TRANSLATORS: Menu item in the Tools menu to decrease the amount of time each audio seek skips.
-msgid "&Decrease Audio Seek Amount"
+#. TRANSLATORS: Menu item in the Audio menu to decrease the amount of time each audio seek skips.
+msgid "Decrease Audio Seek Am&ount"
 msgstr "З&меншити крок перемотування аудіо"
 
 #. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
 msgid "Decrease how far seeking the audio narration moves"
 msgstr "Зменшити інтервал перемотування аудіо"
 
-#. TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
+#. TRANSLATORS: Menu item in the Audio menu to increase the audio narration's playback speed.
 msgid "&Increase Audio Speed"
 msgstr "&Збільшити швидкість аудіо"
 
@@ -574,7 +594,7 @@ msgstr "&Збільшити швидкість аудіо"
 msgid "Increase how fast the audio narration plays"
 msgstr "Збільшити швидкість відтворення аудіо"
 
-#. TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
+#. TRANSLATORS: Menu item in the Audio menu to decrease the audio narration's playback speed.
 msgid "&Decrease Audio Speed"
 msgstr "&Зменшити швидкість аудіо"
 
@@ -733,6 +753,10 @@ msgstr "&Початкова сторінка:"
 msgid "&End page:"
 msgstr "&Кінцева сторінка:"
 
+#. TRANSLATORS: Checkbox to OCR pages that already have a text layer, not only image-only pages
+msgid "&Include text pages too"
+msgstr "&Включати також текстові сторінки"
+
 #. TRANSLATORS: Label for the button that starts the batch OCR
 msgid "OCR"
 msgstr "Розпізнати"
@@ -746,6 +770,7 @@ msgid "&Filter:"
 msgstr "&Фільтр:"
 
 #. TRANSLATORS: Option in the filter dropdown to show bookmarks only
+#. TRANSLATORS: Name of the "Bookmarks" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Bookmarks"
 msgstr "Закладки"
 
@@ -791,7 +816,6 @@ msgid "Edit bookmark note:"
 msgstr "Текст закладки:"
 
 #. TRANSLATORS: Title of the Document Info dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Document Info"
 msgstr "Відомості про документ"
 
@@ -915,11 +939,11 @@ msgstr "Рядок поза межами діапазону."
 
 #. TRANSLATORS: Title of the Go to page dialog
 msgid "Go to page"
-msgstr "Перехід на сторінку"
+msgstr "Перехід до сторінки"
 
 #. TRANSLATORS: Label/prompt template for the page selection dialog. The %d placeholders represent current_page and max_page respectively.
 msgid "Go to page (%d/%d):"
-msgstr "Перейти на сторінку (%d/%d):"
+msgstr "Перейти до сторінки (%d/%d):"
 
 #. TRANSLATORS: Announced when the entered page number is outside the document's range
 msgid "Page out of range."
@@ -1041,6 +1065,7 @@ msgid "&Shift"
 msgstr "&Shift"
 
 #. TRANSLATORS: Checkbox label for Windows modifier key
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
 msgid "&Win"
 msgstr "&Win"
 
@@ -1085,13 +1110,21 @@ msgstr "&Переносити слова"
 msgid "Render tables &inline"
 msgstr "Відображати &таблиці у тексті"
 
-#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
 msgid "&Join wrapped lines into paragraphs in PDFs"
 msgstr "&Об'єднувати перенесені рядки в абзаци у PDF-файлах"
 
+#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
+msgid "Remove repeated page &headers and footers in PDFs"
+msgstr "Видаляти повторювані верхні та нижні &колонтитули у файлах PDF"
+
+#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
+msgid "Read text between dollar signs as &math in Markdown"
+msgstr "У Markdown Текст між знаками долара слід читати як математичний вираз"
+
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
-msgstr "Показати компактне меню &Перейти"
+msgstr "Показувати компактне меню &Перейти"
 
 #. TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
 msgid "&Wrap navigation"
@@ -1100,6 +1133,10 @@ msgstr "&Циклічна навігація"
 #. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
 msgid "Move to &start of line"
 msgstr "Переходити до &початку рядка"
+
+#. TRANSLATORS: Option to select the text Find matches; turned off, Find only moves the caret to the match
+msgid "&Highlight found text"
+msgstr "&Виділяти знайдений текст"
 
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
@@ -1132,6 +1169,10 @@ msgstr "Стабільний"
 #. TRANSLATORS: Developer/development update channel option
 msgid "Dev"
 msgstr "Розробницький"
+
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+msgid "Log Level:"
+msgstr "Рівень журналу:"
 
 #. TRANSLATORS: Button label to open the hotkey customization dialog
 msgid "Customize &Window Hotkey..."
@@ -1250,6 +1291,30 @@ msgstr "Читабельність"
 msgid "Choose a colour"
 msgstr "Виберіть колір"
 
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+msgid "Off"
+msgstr "Вимкнено"
+
+#. TRANSLATORS: Log level choice that records only errors
+msgid "Errors"
+msgstr "Помилка"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+msgid "Warnings"
+msgstr "Попередження"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+msgid "Information"
+msgstr "Інформація"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+msgid "Debug"
+msgstr "Налагодження"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+msgid "Trace"
+msgstr "Трасування (найвищий)"
+
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "Таймер сну"
@@ -1259,7 +1324,6 @@ msgid "&Minutes:"
 msgstr "&Хвилини:"
 
 #. TRANSLATORS: Title of the Table of Contents dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Table of Contents"
 msgstr "Зміст"
 
@@ -1304,6 +1368,14 @@ msgstr[0] "Цей документ містить %d слово."
 msgstr[1] "Цей документ містить %d слова."
 msgstr[2] "Цей документ містить %d слів."
 
+#. TRANSLATORS: Title of the dialog listing the documents inside a zip archive
+msgid "Open from Archive"
+msgstr "Відкриття з архіву"
+
+#. TRANSLATORS: Label for the list of documents inside a zip archive
+msgid "&Documents in this archive:"
+msgstr "&Документи в цьому архіві:"
+
 #. TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
 msgid "{} to {}"
 msgstr "{} до {}"
@@ -1325,6 +1397,26 @@ msgstr "Імпорт даних документа"
 #. TRANSLATORS: Error shown when the user dismisses the password prompt for an encrypted document without entering one
 msgid "Password is required."
 msgstr "Потрібно ввести пароль."
+
+#. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
+msgid "&Password:"
+msgstr "&Пароль:"
+
+msgid "Document Password"
+msgstr "Пароль документа"
+
+#. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
+#. TRANSLATORS: Generic error message shown when a document fails to load, followed by file and detail lines
+msgid "Failed to load document."
+msgstr "Не вдалося завантажити документ."
+
+#. TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
+msgid "File: {}"
+msgstr "Файл: {}"
+
+#. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
+msgid "Details: {}"
+msgstr "Деталі: {}"
 
 #. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
 msgid "OCR in progress."
@@ -1369,10 +1461,6 @@ msgstr[0] "Пакетне розпізнавання тексту заверше
 msgstr[1] "Пакетне розпізнавання тексту завершено. Розпізнано %d сторінки."
 msgstr[2] "Пакетне розпізнавання тексту завершено. Розпізнано %d сторінок."
 
-#. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
-msgid "Navigated to internal link."
-msgstr "Перейдено за внутрішнім посиланням."
-
 #. TRANSLATORS: Default status bar text when no document is open
 msgid "Ready"
 msgstr "Готово"
@@ -1393,33 +1481,9 @@ msgstr "Тимчасова закладка."
 msgid "%s, page %d"
 msgstr "%s, сторінка %d"
 
-#. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
-msgid "&Password:"
-msgstr "&Пароль:"
-
-msgid "Document Password"
-msgstr "Пароль документа"
-
-#. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
-#. TRANSLATORS: Generic error message shown when a document fails to load, followed by file and detail lines
-msgid "Failed to load document."
-msgstr "Не вдалося завантажити документ."
-
-#. TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
-msgid "File: {}"
-msgstr "Файл: {}"
-
-#. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
-msgid "Details: {}"
-msgstr "Деталі: {}"
-
-#. TRANSLATORS: Accessible name of the list of Find All results
-msgid "Results"
-msgstr "Результати"
-
-#. TRANSLATORS: Title of the Find dialog
-msgid "Find"
-msgstr "Пошук"
+#. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
+msgid "Navigated to internal link."
+msgstr "Перейдено за внутрішнім посиланням."
 
 #. TRANSLATORS: Label for the text field where the user types what to search for
 msgid "Find &what:"
@@ -1442,12 +1506,12 @@ msgid "Use &regular expressions"
 msgstr "Використовувати &регулярні вирази"
 
 #. TRANSLATORS: Button to search backward for the previous match
-#. TRANSLATORS: Menu item in the Go menu to find the previous occurrence of the current search term.
+#. TRANSLATORS: Menu item in the Edit menu to find the previous occurrence of the current search term.
 msgid "Find &Previous"
 msgstr "Знайти &назад"
 
 #. TRANSLATORS: Button to search forward for the next match
-#. TRANSLATORS: Menu item in the Go menu to find the next occurrence of the current search term.
+#. TRANSLATORS: Menu item in the Edit menu to find the next occurrence of the current search term.
 msgid "Find &Next"
 msgstr "Знайти &Далі"
 
@@ -1463,6 +1527,14 @@ msgstr "&Перейти"
 #. TRANSLATORS: Announced when a search finds no matches in the document
 msgid "Not found."
 msgstr "Не знайдено."
+
+#. TRANSLATORS: Accessible name of the list of Find All results
+msgid "Results"
+msgstr "Результати"
+
+#. TRANSLATORS: Title of the Find dialog
+msgid "Find"
+msgstr "Пошук"
 
 #. TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
 msgid "No more results. Wrapping search."
@@ -1488,6 +1560,26 @@ msgstr "Не вдалося запустити типовий браузер."
 msgid "Failed to open donation page in browser."
 msgstr "Не вдалося відкрити сторінку Донатів у браузері."
 
+#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr "Paperback не може виконувати жодних дій, поки відкрито Web-перегляд."
+
+#. TRANSLATORS: Announced when the copy shortcut is pressed with nothing selected, so there was nothing to put on the clipboard.
+#. TRANSLATORS: Announced when a copy had nothing to copy: no text was selected, or the marked beginning of a selection is at the reader's own position, leaving nothing between the two.
+msgid "Nothing to copy."
+msgstr "Копіювати нічого."
+
+#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
+msgid "Could not copy to the clipboard."
+msgstr "Не вдалося скопіювати в буфер обміну."
+
+#. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
+msgid "Selected %d character."
+msgid_plural "Selected %d characters."
+msgstr[0] "Вибрано %d символ."
+msgstr[1] "Вибрано %d символи."
+msgstr[2] "Вибрано %d символів."
+
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
 msgstr "Перенесення слів увімкнено."
@@ -1501,49 +1593,6 @@ msgstr "Повноекранний режим увімкнено."
 
 msgid "Full screen off."
 msgstr "Повноекранний режим вимкнено."
-
-#. TRANSLATORS: Announced when landing on a blank line; %d is the line number
-msgid "Line %d"
-msgstr "Рядок %d"
-
-#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-#. A menu invocation returns focus to the book just like a closed dialog does,
-#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
-#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-msgid "No pages."
-msgstr "Немає сторінок."
-
-#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
-msgid "No table of contents."
-msgstr "Немає змісту."
-
-#. TRANSLATORS: Confirmation asked when Batch OCR is chosen while a batch is already running
-msgid "Batch OCR is running. Stop it?"
-msgstr "Виконується пакетне розпізнавання. Зупинити його?"
-
-#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
-msgid "Web View"
-msgstr "Веб-перегляд"
-
-#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
-msgid "Could not determine content to display in Web View."
-msgstr "Не вдалося визначити вміст для відображення у веб-перегляді."
-
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr "документ"
-
-#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
-msgid "Source:"
-msgstr "Джерело:"
-
-#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
-msgid "Source view is not available for this document format."
-msgstr "Перегляд джерела недоступний для цього формату документа."
-
-#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
-msgid "Could not load the document source."
-msgstr "Не вдалося завантажити джерело документа."
 
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
@@ -1568,6 +1617,10 @@ msgstr "Файли Markdown (*.md)|*.md|Усі файли (*.*)|*.*"
 #. TRANSLATORS: Title of the file save dialog when exporting a document to Markdown
 msgid "Export document to Markdown"
 msgstr "Експорт документа в Markdown"
+
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "документ"
 
 #. TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
 msgid "Paperback files (*.paperback)|*.paperback"
@@ -1597,6 +1650,53 @@ msgstr "Нотатки та закладки імпортовано успішн
 msgid "Import Successful"
 msgstr "Імпорт успішний"
 
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "Не вдалося експортувати документ."
+
+#. TRANSLATORS: Announced when landing on a blank line; %d is the line number
+msgid "Line %d"
+msgstr "Рядок %d"
+
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
+#. A menu invocation returns focus to the book just like a closed dialog does,
+#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
+msgid "No pages."
+msgstr "Немає сторінок."
+
+#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
+msgid "No table of contents."
+msgstr "Немає змісту."
+
+#. TRANSLATORS: Confirmation asked when Batch OCR is chosen while a batch is already running
+msgid "Batch OCR is running. Stop it?"
+msgstr "Виконується пакетне розпізнавання. Зупинити його?"
+
+#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
+msgid "Web View"
+msgstr "Веб-перегляд"
+
+#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
+msgid "Could not determine content to display in Web View."
+msgstr "Не вдалося визначити вміст для відображення у веб-перегляді."
+
+#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
+msgid "Source:"
+msgstr "Джерело:"
+
+#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
+msgid "Source view is not available for this document format."
+msgstr "Перегляд джерела недоступний для цього формату документа."
+
+#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
+msgid "Could not load the document source."
+msgstr "Не вдалося завантажити джерело документа."
+
+#. TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
+msgid "Couldn't extract the document from the archive: {}"
+msgstr "Не вдалося видобути документ з архіву."
+
 #. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 msgid "Unsupported format selected."
 msgstr "Вибрано непідтримуваний формат."
@@ -1605,44 +1705,52 @@ msgstr "Вибрано непідтримуваний формат."
 msgid "Paperback"
 msgstr "Paperback"
 
-msgid "Document reloaded."
-msgstr "Документ перезавантажено."
-
-#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
-msgid "Paperback cannot perform any actions while Web View is open."
-msgstr "Paperback не може виконувати жодних дій, поки відкрито Web-перегляд."
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr "Не вдалося експортувати документ."
+msgid "Installing the update. Paperback will restart."
+msgstr "Встановлення оновлення. Paperback перезапуститься."
 
 #. TRANSLATORS: Window title when a document is open; {} is the document title
 msgid "{} - Paperback"
 msgstr "{} - Paperback"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
-msgid "&Undo\tCtrl+Z"
-msgstr "&Скасувати\tCtrl+Z"
+msgid "&Undo"
+msgstr "&Скасувати"
 
 #. TRANSLATORS: Menu item in the Edit menu to redo the last undone action.
-msgid "&Redo\tCtrl+Shift+Z"
-msgstr "&Повторити\tCtrl+Shift+Z"
+msgid "&Redo"
+msgstr "&Повторити"
 
 #. TRANSLATORS: Menu item in the Edit menu to cut the current selection.
-msgid "Cu&t\tCtrl+X"
-msgstr "Вирі&зати\tCtrl+X"
+msgid "Cu&t"
+msgstr "&Вирізати"
 
 #. TRANSLATORS: Menu item in the Edit menu to copy the current selection.
-msgid "&Copy\tCtrl+C"
-msgstr "&Копіювати\tCtrl+C"
+msgid "&Copy"
+msgstr "&Копіювати"
 
 #. TRANSLATORS: Menu item in the Edit menu to paste from the clipboard.
-msgid "&Paste\tCtrl+V"
-msgstr "&Вставити\tCtrl+V"
+msgid "&Paste"
+msgstr "&Вставити"
 
 #. TRANSLATORS: Menu item in the Edit menu to select all text.
-msgid "Select &All\tCtrl+A"
-msgstr "Вибрати вс&е\tCtrl+A"
+msgid "Select &All"
+msgstr "Вибрати &все"
+
+#. TRANSLATORS: Menu item in the Edit menu to open the find dialog.
+msgid "&Find..."
+msgstr "&Пошук..."
+
+#. TRANSLATORS: Status-bar help text for the Edit > Find menu item.
+msgid "Find text in the document"
+msgstr "Знайти текст у документі"
+
+#. TRANSLATORS: Status-bar help text for the Edit > Find Next menu item.
+msgid "Find next occurrence"
+msgstr "Знайти наступний збіг"
+
+#. TRANSLATORS: Status-bar help text for the Edit > Find Previous menu item.
+msgid "Find previous occurrence"
+msgstr "Знайти попередній збіг"
 
 #. TRANSLATORS: Label for the Recent Documents submenu in the File menu.
 msgid "&Recent Documents"
@@ -1652,6 +1760,58 @@ msgstr "&Останні документи"
 msgid "Open a recent document"
 msgstr "Відкрити останній документ"
 
+#. TRANSLATORS: Label for the Export submenu in the File menu, which lists the formats a document can be exported to.
+msgid "Ex&port"
+msgstr "&Експорт"
+
+#. TRANSLATORS: Menu item in the File > Export submenu to export the document as a plain text file.
+msgid "Export to &Plain Text..."
+msgstr "Експортувати в звичайний &текст..."
+
+#. TRANSLATORS: Status-bar help text for the Export to Plain Text menu item.
+msgid "Export document as plain text"
+msgstr "Експортувати документ у вигляді простого тексту"
+
+#. TRANSLATORS: Menu item in the File > Export submenu to export the document as an HTML file.
+msgid "Export to &HTML..."
+msgstr "Експортувати в &HTML..."
+
+#. TRANSLATORS: Status-bar help text for the Export to HTML menu item.
+msgid "Export document as HTML"
+msgstr "Експорт документа у форматі HTML"
+
+#. TRANSLATORS: Menu item in the File > Export submenu to export the document as a Markdown file.
+msgid "Export to &Markdown..."
+msgstr "Експортувати в &Markdown..."
+
+#. TRANSLATORS: Status-bar help text for the Export to Markdown menu item.
+msgid "Export document as Markdown"
+msgstr "Експорт документа у формат Markdown"
+
+#. TRANSLATORS: Menu item in the File menu to import bookmarks and reading position from a file.
+msgid "&Import Document Data..."
+msgstr "&Імпортувати дані документа..."
+
+#. TRANSLATORS: Status-bar help text for the Import Document Data menu item.
+msgid "Import bookmarks and position"
+msgstr "Імпорт закладок та позиції"
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and reading position to a file.
+msgid "&Export Document Data..."
+msgstr "&Експортувати дані документа..."
+
+#. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
+msgid "Export bookmarks and position"
+msgstr "Експорт закладок та позиції"
+
+#. TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
+msgid "Reveal &File in Folder"
+msgstr "Показати &файл у папці"
+
+#. TRANSLATORS: Status-bar help text for the Reveal File in Folder menu item.
+msgid "Reveal document in the file manager"
+msgstr "Відкрити документ у файловому менеджері"
+
 #. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are no recent documents.
 msgid "(No recent documents)"
 msgstr "(Немає останніх документів)"
@@ -1659,50 +1819,6 @@ msgstr "(Немає останніх документів)"
 #. TRANSLATORS: Menu item at the bottom of the Recent Documents submenu to open the full list of documents.
 msgid "Show All..."
 msgstr "Показати всі..."
-
-#. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
-msgid "Go to &Page"
-msgstr "Перейти на &Сторінку"
-
-#. TRANSLATORS: Menu item in the Go menu to open the find dialog.
-msgid "&Find..."
-msgstr "&Пошук..."
-
-#. TRANSLATORS: Status-bar help text for the Go > Find menu item.
-msgid "Find text in the document"
-msgstr "Знайти текст у документі"
-
-#. TRANSLATORS: Status-bar help text for the Go > Find Next menu item.
-msgid "Find next occurrence"
-msgstr "Знайти наступний збіг"
-
-#. TRANSLATORS: Status-bar help text for the Go > Find Previous menu item.
-msgid "Find previous occurrence"
-msgstr "Знайти попередній збіг"
-
-#. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
-msgid "Go to &line..."
-msgstr "Перейти до &рядка..."
-
-#. TRANSLATORS: Status-bar help text for the Go > Go to Line menu item.
-msgid "Go to a specific line"
-msgstr "Перейти до вказаного номера рядка"
-
-#. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
-msgid "Go to &percent..."
-msgstr "Перейти до &відсотка..."
-
-#. TRANSLATORS: Status-bar help text for the Go > Go to Percent menu item.
-msgid "Go to a percentage of the document"
-msgstr "Перейти до вказаного відсотка документа"
-
-#. TRANSLATORS: Status-bar help text for the Go > Go Back menu item.
-msgid "Go back in history"
-msgstr "Перейти до попереднього елемента в історії"
-
-#. TRANSLATORS: Status-bar help text for the Go > Go Forward menu item.
-msgid "Go forward in history"
-msgstr "Перейти до наступного елемента в історії"
 
 #. TRANSLATORS: Label for the Sections submenu in the compact Go menu.
 msgid "&Sections"
@@ -1728,16 +1844,8 @@ msgstr "&Сторінки"
 msgid "Navigate by pages"
 msgstr "Навігація за сторінками"
 
-#. TRANSLATORS: Label for the Bookmarks submenu in the compact Go menu.
-msgid "&Bookmarks"
-msgstr "&Закладки"
-
-#. TRANSLATORS: Status-bar help text for the Go > Bookmarks submenu.
-msgid "Navigate by bookmarks"
-msgstr "Навігація за закладками"
-
 #. TRANSLATORS: Label for the Links submenu in the compact Go menu.
-msgid "&Links"
+msgid "Lin&ks"
 msgstr "&Посилання"
 
 #. TRANSLATORS: Status-bar help text for the Go > Links submenu.
@@ -1753,7 +1861,7 @@ msgid "Navigate by images"
 msgstr "Навігація за зображеннями"
 
 #. TRANSLATORS: Label for the Figures submenu in the compact Go menu.
-msgid "&Figures"
+msgid "Fig&ures"
 msgstr "&Малюнки"
 
 #. TRANSLATORS: Status-bar help text for the Go > Figures submenu.
@@ -1777,7 +1885,7 @@ msgid "Navigate by formulas"
 msgstr "Навігація за математичними виразами"
 
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
-msgid "&Separators"
+msgid "Sep&arators"
 msgstr "&Роздільники"
 
 #. TRANSLATORS: Status-bar help text for the Go > Separators submenu.
@@ -1799,6 +1907,50 @@ msgstr "&Контейнери"
 #. TRANSLATORS: Status-bar help text for the Go > Containers submenu.
 msgid "Navigate by containers"
 msgstr "Навігація за контейнерами"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
+msgid "Go to li&ne..."
+msgstr "Перейти до &рядка..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Go to Line menu item.
+msgid "Go to a specific line"
+msgstr "Перейти до вказаного номера рядка"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
+msgid "Go to pe&rcent..."
+msgstr "Перейти до &відсотка..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Go to Percent menu item.
+msgid "Go to a percentage of the document"
+msgstr "Перейти до вказаного відсотка документа"
+
+#. TRANSLATORS: Status-bar help text for the Go > Go Back menu item.
+msgid "Go back in history"
+msgstr "Перейти до попереднього елемента в історії"
+
+#. TRANSLATORS: Status-bar help text for the Go > Go Forward menu item.
+msgid "Go forward in history"
+msgstr "Перейти до наступного елемента в історії"
+
+#. TRANSLATORS: Menu item in the Go menu to show the document's table of contents.
+msgid "Table &of Contents..."
+msgstr "&Зміст..."
+
+#. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
+msgid "Show table of contents"
+msgstr "Показати зміст"
+
+#. TRANSLATORS: Menu item in the Go menu to show a list of the document's structural elements.
+msgid "&Elements List..."
+msgstr "&Список елементів..."
+
+#. TRANSLATORS: Status-bar help text for the Elements List menu item.
+msgid "Show elements list"
+msgstr "Показати список елементів"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
+msgid "&Go to Page..."
+msgstr "Перейти до &сторінки..."
 
 #. TRANSLATORS: Menu item in the Help menu to show information about the application.
 msgid "&About Paperback"
@@ -1840,127 +1992,43 @@ msgstr "Зробити &внесок"
 msgid "Support Paperback development"
 msgstr "Підтримати розробку Paperback"
 
-#. TRANSLATORS: Menu item in Tools > Import/Export to import bookmarks and reading position from a file.
-msgid "&Import Document Data..."
-msgstr "&Імпортувати дані документа..."
-
-#. TRANSLATORS: Status-bar help text for the Import Document Data menu item.
-msgid "Import bookmarks and position"
-msgstr "Імпорт закладок та позиції"
-
-#. TRANSLATORS: Menu item in Tools > Import/Export to export bookmarks and reading position to a file.
-msgid "&Export Document Data..."
-msgstr "&Експортувати дані документа..."
-
-#. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
-msgid "Export bookmarks and position"
-msgstr "Експорт закладок та позиції"
-
-#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a plain text file.
-msgid "Export to &Plain Text..."
-msgstr "Експортувати в звичайний &текст..."
-
-#. TRANSLATORS: Status-bar help text for the Export to Plain Text menu item.
-msgid "Export document as plain text"
-msgstr "Експортувати документ у вигляді простого тексту"
-
-#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as an HTML file.
-msgid "Export to &HTML..."
-msgstr "Експортувати в &HTML..."
-
-#. TRANSLATORS: Status-bar help text for the Export to HTML menu item.
-msgid "Export document as HTML"
-msgstr "Експорт документа у форматі HTML"
-
-#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a Markdown file.
-msgid "Export to &Markdown..."
-msgstr "Експортувати в &Markdown..."
-
-#. TRANSLATORS: Status-bar help text for the Export to Markdown menu item.
-msgid "Export document as Markdown"
-msgstr "Експорт документа у формат Markdown"
-
 #. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
-msgid "&Word Count"
-msgstr "&Кількість слів"
+msgid "&Word Count..."
+msgstr "&Кількість слів..."
 
 #. TRANSLATORS: Status-bar help text for the Word Count menu item.
 msgid "Show word count"
 msgstr "Показати кількість слів"
 
 #. TRANSLATORS: Menu item in the Tools menu to show information about the document.
-msgid "Document &Info"
-msgstr "&Відомості про документ"
+msgid "Document &Info..."
+msgstr "&Відомості про документ..."
 
 #. TRANSLATORS: Status-bar help text for the Document Info menu item.
 msgid "Show document information"
 msgstr "Показати інформацію про документ"
 
-#. TRANSLATORS: Menu item in the Tools menu to show the document's table of contents.
-msgid "&Table of Contents"
-msgstr "&Зміст"
+#. TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
+msgid "Sleep &Timer..."
+msgstr "&Таймер сну..."
 
-#. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
-msgid "Show table of contents"
-msgstr "Показати зміст"
+#. TRANSLATORS: Menu item in the Tools menu to open the application's settings dialog.
+msgid "&Settings"
+msgstr "&Налаштування"
 
-#. TRANSLATORS: Menu item in the Tools menu to show a list of the document's structural elements.
-msgid "&Elements List..."
-msgstr "&Список елементів..."
+#. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
+msgid "&Batch OCR..."
+msgstr "Пакетне &розпізнавання OCR..."
 
-#. TRANSLATORS: Status-bar help text for the Elements List menu item.
-msgid "Show elements list"
-msgstr "Показати список елементів"
-
-#. TRANSLATORS: Menu item in the Tools menu to reveal the document's file in the system file manager.
-msgid "Reveal &File in Folder"
-msgstr "Показати &файл у папці"
-
-#. TRANSLATORS: Status-bar help text for the Reveal File in Folder menu item.
-msgid "Reveal document in the file manager"
-msgstr "Відкрити документ у файловому менеджері"
-
-#. TRANSLATORS: Menu item in the Tools menu to open the document in a web view.
-msgid "Open in &Web View"
-msgstr "Показати як &вебсторінку"
-
-#. TRANSLATORS: Status-bar help text for the Open in Web View menu item.
-msgid "Open document in web view"
-msgstr "Відкрити документ у режимі вебперегляду"
-
-#. TRANSLATORS: Menu item in the Tools menu to open the document's underlying source markup in a new tab.
-msgid "View &Source"
-msgstr "Переглянути &джерело"
-
-#. TRANSLATORS: Status-bar help text for the View Source menu item.
-msgid "Open the document source in a new tab"
-msgstr "Відкрити джерело документа в новій вкладці"
-
-#. TRANSLATORS: Label for the Import/Export submenu in the Tools menu.
-msgid "I&mport/Export"
-msgstr "&Імпорт/експорт"
-
-#. TRANSLATORS: Status-bar help text for the Tools > Import/Export submenu.
-msgid "Import and export options"
-msgstr "Параметри імпорту та експорту"
-
-#. TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
-msgid "Select and &copy"
-msgstr "Виділити та &скопіювати"
-
-#. TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
-msgid "Mark a selection and copy from it"
-msgstr "Позначення початку виділення та копіювання від нього"
-
-#. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
-msgid "Word w&rap"
-msgstr "Перенесення &слів"
+#. TRANSLATORS: Checkable menu item in the View menu that toggles whether word wrap is enabled.
+msgid "W&ord wrap"
+msgstr "&Перенесення слів"
 
 #. TRANSLATORS: Status-bar help text for the Word Wrap menu item.
 msgid "Toggle word wrap"
 msgstr "Увімкнути/вимкнути перенесення слів"
 
-#. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
+#. TRANSLATORS: Checkable menu item in the View menu that toggles full screen mode.
 msgid "&Full Screen"
 msgstr "Повно&екранний режим"
 
@@ -1968,21 +2036,41 @@ msgstr "Повно&екранний режим"
 msgid "Toggle full screen"
 msgstr "Увімкнути/вимкнути повноекранний режим"
 
-#. TRANSLATORS: Menu item in the Tools menu to open the application's settings dialog.
-msgid "&Settings"
-msgstr "&Налаштування"
+#. TRANSLATORS: Menu item in the View menu to open the document in a web view.
+msgid "Open in &Web View"
+msgstr "Показати як &вебсторінку"
 
-#. TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
-msgid "&Sleep Timer..."
-msgstr "&Таймер сну..."
+#. TRANSLATORS: Status-bar help text for the Open in Web View menu item.
+msgid "Open document in web view"
+msgstr "Відкрити документ у режимі вебперегляду"
 
-#. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
-msgid "&Batch OCR..."
-msgstr "Пакетне &розпізнавання OCR..."
+#. TRANSLATORS: Menu item in the View menu to open the document's underlying source markup in a new tab.
+msgid "View &Source"
+msgstr "Переглянути &джерело"
+
+#. TRANSLATORS: Status-bar help text for the View Source menu item.
+msgid "Open the document source in a new tab"
+msgstr "Відкрити джерело документа в новій вкладці"
 
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
 msgstr "&Файл"
+
+#. TRANSLATORS: Top-level "Edit" menu label in the menu bar
+msgid "&Edit"
+msgstr "&Редагувати"
+
+#. TRANSLATORS: Top-level "View" menu label in the menu bar
+msgid "&View"
+msgstr "&Вигляд"
+
+#. TRANSLATORS: Top-level "Bookmarks" menu label in the menu bar
+msgid "&Bookmarks"
+msgstr "&Закладки"
+
+#. TRANSLATORS: Top-level "Audio" menu label in the menu bar
+msgid "&Audio"
+msgstr "&Аудіо"
 
 #. TRANSLATORS: Top-level "Tools" menu label in the menu bar
 msgid "&Tools"
@@ -1991,10 +2079,6 @@ msgstr "&інструменти"
 #. TRANSLATORS: Top-level "Help" menu label in the menu bar
 msgid "&Help"
 msgstr "&довідка"
-
-#. TRANSLATORS: Top-level "Edit" menu label in the menu bar (macOS only)
-msgid "&Edit"
-msgstr "&Редагувати"
 
 #. TRANSLATORS: Announced when the document has no sections to navigate
 msgid "No sections."
@@ -2218,7 +2302,7 @@ msgstr "Знайти попередній збіг"
 
 #. TRANSLATORS: Right-click context menu item and status text to jump to a specific page
 msgid "Go to &page"
-msgstr "Перейти на &сторінку"
+msgstr "Перейти до &сторінки"
 
 #. TRANSLATORS: Right-click context menu item and status text to jump to a specific line
 msgid "Go to &line"
@@ -2234,9 +2318,12 @@ msgstr "Перейти до &відсотка"
 msgid "Go to percent"
 msgstr "Перейти до відсотка"
 
-#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
-msgid "Copied (%d chars)."
-msgstr "Скопійовано (%d символів)."
+#. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
+msgid "Copied %d character."
+msgid_plural "Copied %d characters."
+msgstr[0] "Скопійовано %d символ."
+msgstr[1] "Скопійовано %d символи."
+msgstr[2] "Скопійовано %d символів."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 msgid "Beginning of selection set."
@@ -2245,14 +2332,6 @@ msgstr "Початок виділення встановлено."
 #. TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
 msgid "Cannot copy; set beginning of selection first."
 msgstr "Неможливо скопіювати; спочатку визначте початок виділення."
-
-#. TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
-msgid "Nothing to copy."
-msgstr "Копіювати нічого."
-
-#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
-msgid "Could not copy to the clipboard."
-msgstr "Не вдалося скопіювати в буфер обміну."
 
 #. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
 msgid "Cannot jump; set beginning of selection first."
@@ -2309,6 +2388,10 @@ msgid "Reopen Last Closed"
 msgstr "Відкрити останній закритий файл"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Reload"
+msgstr "Оновити"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
 msgstr "Показати всі останні документи..."
 
@@ -2342,7 +2425,7 @@ msgstr "Перейти до відсотка..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Go to Page..."
-msgstr "Перейти на сторінку..."
+msgstr "Перейти до сторінки..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Go Back"
@@ -2509,6 +2592,14 @@ msgid "Past Container End"
 msgstr "За нижню межу контейнера"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Document Info..."
+msgstr "Відомості про документ..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Table of Contents..."
+msgstr "Зміст..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Elements List..."
 msgstr "Список елементів..."
 
@@ -2640,6 +2731,18 @@ msgstr "Зробити внесок"
 msgid "File"
 msgstr "Файл"
 
+#. TRANSLATORS: Name of the "Edit" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Edit"
+msgstr "Редагувати"
+
+#. TRANSLATORS: Name of the "View" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "View"
+msgstr "Вигляд"
+
+#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Audio"
+msgstr "Аудіо"
+
 #. TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Tools"
 msgstr "Інструменти"
@@ -2656,6 +2759,38 @@ msgstr "Немає"
 msgid "This view shows the part of the document you are reading."
 msgstr ""
 "На цьому екрані відображається частина документа, який ви зараз читаєте."
+
+#. TRANSLATORS: Error when downloading a document from a link fails; {} is the HTTP status code, such as 404
+msgid "the server answered with status {}"
+msgstr "сервер відповів зі статусом {}"
+
+#. TRANSLATORS: Error when the server of a link cannot be reached; {} is the technical reason
+msgid "the server could not be reached: {}"
+msgstr "не вдалося встановити з'єднання з сервером: {}"
+
+#. TRANSLATORS: Error when a document downloaded from a link cannot be saved; {} is the technical reason
+msgid "the download could not be saved: {}"
+msgstr "не вдалося зберегти завантажений файл: {}"
+
+#. TRANSLATORS: Message when downloading a document from a link is cancelled
+msgid "the download was cancelled"
+msgstr "завантаження скасовано"
+
+#. TRANSLATORS: Error when a link names a file type that is never downloaded; {} is the extension without the leading dot
+msgid ".{} files cannot be read, so the link was not downloaded"
+msgstr "Файли .{} не можна прочитати, тому посилання не було завантажено"
+
+#. TRANSLATORS: Error when a secure https link is redirected to an insecure http address
+msgid ""
+"the secure link was redirected to an insecure address, so it was not "
+"downloaded"
+msgstr ""
+"безпечне посилання було перенаправлено на незахищену адресу, тому його не "
+"було завантажено"
+
+#. TRANSLATORS: Error when a document behind a link is too large to download; {} is the limit in megabytes
+msgid "the document is larger than {} MB, so it was not downloaded"
+msgstr "розмір документа перевищує {} МБ, тому його не вдалося завантажити"
 
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 msgid "[Image only. Press enter to OCR.]"
@@ -2859,6 +2994,11 @@ msgstr "Потрібен пароль"
 msgid "Password incorrect"
 msgstr "Неправильний пароль"
 
+msgid "This document is encrypted in a way Paperback cannot open: {}"
+msgstr ""
+"Цей документ зашифровано таким чином, що програма Paperback не може його "
+"відкрити: {}"
+
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 msgid "ODP file does not contain any pages"
 msgstr "Файл ODP не містить жодної сторінки"
@@ -2950,8 +3090,63 @@ msgstr "Не знайдено парсер для розширення: .{}"
 msgid "All parsers failed for extension: .{}"
 msgstr "Усі парсери повернули помилку для розширення: .{}"
 
-msgid "Unknown update file format."
-msgstr "Невідомий формат файлу оновлення."
+msgid "Not running from an AppImage; cannot self-update."
+msgstr "Програму запущено не з AppImage; автооновлення неможливе."
+
+msgid "Failed to get current exe path"
+msgstr "Не вдалося отримати поточний шлях до exe-файлу"
+
+msgid "Failed to launch update script"
+msgstr "Не вдалося запустити скрипт оновлення"
+
+msgid "Failed to start installation"
+msgstr "Не вдалося розпочати встановлення"
+
+msgid "Failed to stage the application"
+msgstr "Не вдалося підготувати застосунок"
+
+msgid "The update contains a different application."
+msgstr "Оновлення містить іншу програму."
+
+msgid "Could not determine the update log directory."
+msgstr "Не вдалося визначити каталог журналу оновлень."
+
+msgid "Failed to launch update helper"
+msgstr "Не вдалося запустити засіб оновлення"
+
+msgid "The update helper did not start. See the log:"
+msgstr "Помічник з оновлення не запустився. Дивись журнал:"
+
+msgid ""
+"The application did not quit within 60 seconds. The current app was kept."
+msgstr "Програма не закрилася протягом 60 секунд. Поточну програму збережено."
+
+msgid "The installation changed while waiting. The current app was kept."
+msgstr ""
+"Під час очікування відбулися зміни в інсталяції. Поточну програму збережено."
+
+msgid "Could not move the current application. The current app was kept."
+msgstr "Не вдалося перемістити поточну програму. Поточну програму збережено."
+
+msgid "Could not install the update. The previous version was restored."
+msgstr "Не вдалося встановити оновлення. Відновлено попередню версію."
+
+msgid "Could not restore the previous version. Recover it from:"
+msgstr "Не вдалося відновити попередню версію. Відновіть її з:"
+
+msgid ""
+"macOS could not launch the update. The previous version is preserved at:"
+msgstr ""
+"macOS не вдалося запустити оновлення. Попередня версія збережена за адресою:"
+
+msgid "Application update failed"
+msgstr "Не вдалося оновити застосунок"
+
+msgid "Log:"
+msgstr "Журнал:"
+
+msgid "Update cancelled."
+msgstr "Оновлення скасовано."
 
 msgid "Failed to open disk image"
 msgstr "Не вдалося відкрити образ диска"
@@ -2963,20 +3158,29 @@ msgstr ""
 "Оновлення завантажено, а його образ диска відкрито. Закрийте %s і "
 "перетягніть нову версію до теки «Програми», щоб завершити встановлення."
 
-msgid "Update Ready"
-msgstr "Оновлення готове"
+msgid "Invalid application metadata"
+msgstr "Недійсні метадані програми"
 
-msgid "Failed to get current exe path"
-msgstr "Не вдалося отримати поточний шлях до exe-файлу"
+msgid "The disk image must contain exactly one matching application."
+msgstr "Образ диска має містити рівно один відповідний додаток."
 
-msgid "Failed to launch installer script"
-msgstr "Не вдалося запустити скрипт інсталятора"
+msgid "The update must be signed by the application's developer team"
+msgstr "Оновлення має бути підписане командою розробників програми"
 
-msgid "Failed to launch update script"
-msgstr "Не вдалося запустити скрипт оновлення"
+msgid "Invalid application executable."
+msgstr "Некоректний файл програми."
 
-msgid "Update failed"
-msgstr "Оновлення не вдалося"
+msgid "Invalid application executable"
+msgstr "Некоректний файл програми"
+
+msgid "Application signature verification failed"
+msgstr "Помилка перевірки підпису програми"
+
+msgid "Failed to mount disk image"
+msgstr "Не вдалося підключити образ диска"
+
+msgid "Failed to unmount disk image"
+msgstr "Не вдалося відключити образ диска"
 
 msgid ""
 "Update downloaded to: %s\n"
@@ -3008,6 +3212,15 @@ msgstr "Оновлення %s"
 msgid "Downloading update..."
 msgstr "Завантаження оновлення..."
 
+msgid "Update failed"
+msgstr "Оновлення не вдалося"
+
+msgid "Preparing update..."
+msgstr "Підготовка оновлення..."
+
+msgid "Update Ready"
+msgstr "Оновлення готове"
+
 msgid "No updates available."
 msgstr "Немає доступних оновлень."
 
@@ -3024,21 +3237,21 @@ msgstr "Перевірка безпеки не вдалася. Можливо, �
 msgid "Security Error"
 msgstr "Помилка безпеки"
 
-#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] "%d година"
 msgstr[1] "%d години"
 msgstr[2] "%d годин"
 
-#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for minutes (for example, "1 minute" or "5 minutes"). The %d placeholder is replaced with the count.
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d хвилина"
 msgstr[1] "%d хвилини"
 msgstr[2] "%d хвилин"
 
-#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for seconds (for example, "1 second" or "5 seconds"). The %d placeholder is replaced with the count.
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] "%d секунда"
@@ -3052,6 +3265,14 @@ msgstr "Комбінація клавіш: {}"
 #. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
 msgid "Configure shortcut for {}:"
 msgstr "Налаштування комбінації {}:"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Command modifier in the shortcut, on macOS.
+msgid "&Cmd"
+msgstr "&Cmd"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Option modifier in the shortcut, on macOS.
+msgid "&Option"
+msgstr "&Option"
 
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr ""
@@ -3095,6 +3316,17 @@ msgstr "Скинути до &початкового налаштування"
 msgid "Reset &All to Defaults"
 msgstr "Скинути &усі до початкових налаштувань"
 
+msgid ""
+"A system-wide shortcut needs Ctrl, Alt, or Win, or it would take that key "
+"from every other program."
+msgstr ""
+"Системна комбінація клавіш має містити Ctrl, Alt або Win, інакше вона "
+"перехоплюватиме цю клавішу з усіх інших програм."
+
+#. TRANSLATORS: Title of the dialog refusing a shortcut that can't be used.
+msgid "Shortcut Not Allowed"
+msgstr "Недозволена комбінація"
+
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
 msgstr "«{}» вже призначено для «{}». Перепризначити для «{}»?"
@@ -3103,7 +3335,7 @@ msgstr "«{}» вже призначено для «{}». Перепризнач
 msgid "Shortcut Conflict"
 msgstr "Конфлікт комбінацій клавіш"
 
-#. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
+#. TRANSLATORS: Confirmation prompt shown when resetting keyboard shortcuts that span more than one tab to their defaults.
 msgid "Reset all shortcuts to their default values?"
 msgstr "Скинути всі комбінації клавіш до стандартних значень?"
 
@@ -3522,11 +3754,6 @@ msgstr "Зупинити таймер"
 msgid "Start Timer"
 msgstr "Запустити таймер"
 
-#. TRANSLATORS: Toolbar button toggling the rule list's edit mode; label reflects the action it will perform next (finish editing / start editing)
-#: swift
-msgid "Edit"
-msgstr "Редагувати"
-
 #. TRANSLATORS: Accessibility label for the "+" button that adds a new speech dictionary rule
 #: swift
 msgid "Add Rule"
@@ -3562,8 +3789,8 @@ msgstr "У цьому документі немає змісту."
 msgid "Navigation unit"
 msgstr "Тип навігації"
 
-#. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
-#: kt swift
+#. TRANSLATORS: Accessibility label for the "previous" button when navigating audio by time; {} is an amount like "30 seconds"
+#: swift
 msgid "Previous {}"
 msgstr "Назад: {}"
 
@@ -3587,8 +3814,8 @@ msgstr "Кінець документа"
 msgid "Beginning of document"
 msgstr "Початок документа"
 
-#. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
-#: kt swift
+#. TRANSLATORS: Accessibility label for the "next" button when navigating audio by time; {} is an amount like "30 seconds"
+#: swift
 msgid "Next {}"
 msgstr "Далі: {}"
 
@@ -4259,11 +4486,142 @@ msgstr "Оригінальний файл"
 msgid "Settings exported"
 msgstr "Налаштування експортовано"
 
+#. TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
+#: kt swift
+msgid "Language"
+msgstr "Мова"
+
+#. TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
+#: kt swift
+msgid "Opens Paperback in the Settings app, where its language can be changed."
+msgstr ""
+"Відкриває сторінку Paperback у застосунку «Налаштування», де можна змінити "
+"мову."
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by paragraph
+#: kt swift
+msgid "Previous Paragraph"
+msgstr "Попередній абзац"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by line
+#: kt swift
+msgid "Previous Line"
+msgstr "Попередній рядок"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by paragraph
+#: kt swift
+msgid "Next Paragraph"
+msgstr "Наступний абзац"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by line
+#: kt swift
+msgid "Next Line"
+msgstr "Наступний рядок"
+
+#. TRANSLATORS: TalkBack action on the top bar's overflow button, which opens its menu
+#: kt
+msgid "Show all options in a menu"
+msgstr "Показати всі параметри в меню"
+
+#. TRANSLATORS: TalkBack action on a document tab that closes it; {} is the document's title
+#: kt
+msgid "Close {}"
+msgstr "Закрити {}"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's unit selector, which opens the list of navigation units
+#: kt
+msgid "Select navigation unit"
+msgstr "Вибрати тип навігації"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
+#: kt
+msgid "Select speech rate"
+msgstr "Вибрати темп мовлення"
+
+#. TRANSLATORS: Title of the file manager's top level, which lists the device's storage volumes
+#: kt
+msgid "Storage Devices"
+msgstr "Пристрої зберігання даних"
+
+#. TRANSLATORS: TalkBack label for the file manager's row that goes up a folder; {} is the parent folder's name
+#: kt
+msgid "Go up to parent directory: {}"
+msgstr "Угору до папки: {}"
+
+#~ msgid "Previous &Note"
+#~ msgstr "&Попередня нотатка"
+
+#~ msgid "Jump to Notes &Only..."
+#~ msgstr "Перейти лише до &нотаток..."
+
+#~ msgid "Toggle &Bookmark"
+#~ msgstr "Додати/видалити &закладку"
+
+#~ msgid "Bookmark with &Note"
+#~ msgstr "Закладка з &нотаткою"
+
+#~ msgid "Set Selection St&art"
+#~ msgstr "Встановити &початок виділення"
+
+#~ msgid "&Copy from Selection Start"
+#~ msgstr "&Копіювати від початку виділення"
+
+#~ msgid "&Increase Audio Seek Amount"
+#~ msgstr "&Збільшити крок перемотування аудіо"
+
+#~ msgid "&Decrease Audio Seek Amount"
+#~ msgstr "З&меншити крок перемотування аудіо"
+
+#~ msgid "&Undo\tCtrl+Z"
+#~ msgstr "&Скасувати\tCtrl+Z"
+
+#~ msgid "&Redo\tCtrl+Shift+Z"
+#~ msgstr "&Повторити\tCtrl+Shift+Z"
+
+#~ msgid "Cu&t\tCtrl+X"
+#~ msgstr "Вирі&зати\tCtrl+X"
+
+#~ msgid "&Copy\tCtrl+C"
+#~ msgstr "&Копіювати\tCtrl+C"
+
+#~ msgid "Go to &Page"
+#~ msgstr "Перейти до &Сторінки"
+
+#~ msgid "Navigate by bookmarks"
+#~ msgstr "Навігація за закладками"
+
+#~ msgid "&Links"
+#~ msgstr "&Посилання"
+
+#~ msgid "&Table of Contents"
+#~ msgstr "&Зміст"
+
+#~ msgid "I&mport/Export"
+#~ msgstr "&Імпорт/експорт"
+
+#~ msgid "Import and export options"
+#~ msgstr "Параметри імпорту та експорту"
+
+#~ msgid "Select and &copy"
+#~ msgstr "Виділити та &скопіювати"
+
+#~ msgid "Mark a selection and copy from it"
+#~ msgstr "Позначення початку виділення та копіювання від нього"
+
+#~ msgid "Word w&rap"
+#~ msgstr "Перенесення &слів"
+
+#~ msgid "&Sleep Timer..."
+#~ msgstr "&Таймер сну..."
+
+#~ msgid "Unknown update file format."
+#~ msgstr "Невідомий формат файлу оновлення."
+
+#~ msgid "Failed to launch installer script"
+#~ msgstr "Не вдалося запустити скрипт інсталятора"
+
 #~ msgid "%d char"
 #~ msgid_plural "%d chars"
 #~ msgstr[0] "%d символ"
 #~ msgstr[1] "%d символа"
 #~ msgstr[2] "%d символів"
-
-#~ msgid "Document Information"
-#~ msgstr "Інформація про документ"

@@ -12,7 +12,7 @@ use crate::audio_player::AudioPlayer;
 
 mod announce;
 
-pub use announce::{announce, announce_for_command, page_announcement};
+pub use announce::{announce, announce_for_command, announce_for_selection_command, page_announcement};
 use announce::{format_nav_found_message, nav_announcements};
 
 /// `(file_path, history_positions, history_index)` snapshot to persist via

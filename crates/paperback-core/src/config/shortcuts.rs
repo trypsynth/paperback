@@ -258,6 +258,7 @@ mod tests {
 			ShortcutCategory::File.actions(),
 			[
 				ActionId::Open,
+				ActionId::OpenFromUrl,
 				ActionId::Close,
 				ActionId::CloseAll,
 				ActionId::ReopenLastClosed,
@@ -358,6 +359,8 @@ mod tests {
 				ActionId::DecreaseAudioSeekAmount,
 				ActionId::IncreaseAudioSpeed,
 				ActionId::DecreaseAudioSpeed,
+				ActionId::IncreaseAudioVolume,
+				ActionId::DecreaseAudioVolume,
 			]
 		);
 	}

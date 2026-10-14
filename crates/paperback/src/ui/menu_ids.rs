@@ -35,7 +35,7 @@ pub const SELECT_ALL: i32 = wxdragon::ffi::WXD_ID_SELECTALL as i32;
 const BASE: i32 = ID_HIGHEST + 1;
 
 // File menu, plus Reload from the View menu (BASE + 0..99)
-seq_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED, CLEAR_RECENT_DOCUMENTS, RELOAD);
+seq_ids!(BASE => OPEN, CLOSE, CLOSE_ALL, SHOW_ALL_DOCUMENTS, REOPEN_LAST_CLOSED, CLEAR_RECENT_DOCUMENTS, RELOAD, OPEN_FROM_URL);
 
 // Recent documents - reserved range (BASE + 100..199)
 pub const RECENT_DOCUMENT_BASE: i32 = BASE + 100;
@@ -112,7 +112,7 @@ seq_ids!(BASE + 440 => TOGGLE_WORD_WRAP, TOGGLE_FULL_SCREEN);
 seq_ids!(BASE + 450 =>
 	PLAY_PAUSE_AUDIO, SEEK_AUDIO_FORWARD, SEEK_AUDIO_BACKWARD,
 	INCREASE_AUDIO_SEEK_AMOUNT, DECREASE_AUDIO_SEEK_AMOUNT,
-	INCREASE_AUDIO_SPEED, DECREASE_AUDIO_SPEED,
+	INCREASE_AUDIO_SPEED, DECREASE_AUDIO_SPEED, INCREASE_AUDIO_VOLUME, DECREASE_AUDIO_VOLUME,
 );
 
 // Tools menu: OCR (BASE + 460..469)
@@ -131,6 +131,7 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 	use paperback_core::config::ActionId;
 	match action {
 		ActionId::Open => OPEN,
+		ActionId::OpenFromUrl => OPEN_FROM_URL,
 		ActionId::Close => CLOSE,
 		ActionId::CloseAll => CLOSE_ALL,
 		ActionId::ReopenLastClosed => REOPEN_LAST_CLOSED,
@@ -213,6 +214,8 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::DecreaseAudioSeekAmount => DECREASE_AUDIO_SEEK_AMOUNT,
 		ActionId::IncreaseAudioSpeed => INCREASE_AUDIO_SPEED,
 		ActionId::DecreaseAudioSpeed => DECREASE_AUDIO_SPEED,
+		ActionId::IncreaseAudioVolume => INCREASE_AUDIO_VOLUME,
+		ActionId::DecreaseAudioVolume => DECREASE_AUDIO_VOLUME,
 		ActionId::ToggleFullScreen => TOGGLE_FULL_SCREEN,
 		ActionId::Options => OPTIONS,
 		ActionId::SleepTimer => SLEEP_TIMER,

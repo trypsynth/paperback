@@ -15,7 +15,7 @@ anyhow = "1.0.104"
 base64 = "0.23.1"
 bitflags = "2.13.2"
 rstest = "0.27.0"
-toml = "1.1.6"
+toml = "1.1.8"
 
 # Lint policy for every crate in the workspace; each member opts in with `[lints] workspace = true`.
 # `clippy::all` is denied so CI fails on it. The pedantic and nursery groups are warnings we're
@@ -52,15 +52,7 @@ lto = true
 panic = "abort"
 codegen-units = 1
 
-# zip reads a ZIP64 extended information extra field over an entry's own size and offset fields
-# whenever the block is 24 bytes or longer, without checking that any of those fields actually
-# holds the 0xFFFFFFFF sentinel asking for it. Some EPUB writers attach a malformed block that
-# no field asked for, and the bad offset that results fails the whole archive with "Invalid
-# local file header", even though unzip, Python and 7-Zip all read it fine.
-# Fixed upstream in zip-rs/zip2#962, merged but not yet published: 9.0.0-pre3 is still the newest
-# version on crates.io. Drop this once the fix reaches a release.
 [patch.crates-io]
-# Pinned to wxDragon main for the binary-size work (its #224 and #225) and the tree item data fix
-# (#241), none of it released yet. Swap back to a plain version requirement once a release carries them.
-wxdragon = { git = "https://github.com/AllenDang/wxDragon", rev = "82356530e28062b0909de96b6831a585cae7256c" }
-zip = { git = "https://github.com/zip-rs/zip2.git", rev = "96407e1332cb9ec8f39af88e6dac866ce83995b8" }
+# Pinned to wxDragon main for the binary-size work (its #224 and #225), the tree item data fix
+# (#241), and wxWidgets 3.3.4 with its accessibility fixes, none of it released yet. Swap back to a plain version requirement once a release carries them.
+wxdragon = { git = "https://github.com/AllenDang/wxDragon", rev = "e32baf6060b9ad6fde8cda1a1bc5449d16039cbe" }

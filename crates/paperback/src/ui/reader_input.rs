@@ -16,6 +16,7 @@ use super::{
 	text_render::reload_window_around,
 };
 
+mod activation;
 #[cfg(target_os = "macos")]
 mod macos;
 #[cfg(target_os = "windows")]
@@ -39,44 +40,48 @@ pub(super) fn build_text_ctrl(
 	let text_ctrl = TextCtrl::builder(&panel).with_style(style).build();
 	let dm_for_enter = Rc::clone(self_rc);
 	let frame_for_char = frame;
+	activation::bind_activation(text_ctrl, move |enter| {
+		#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+		let _ = enter;
+		// Enter on an image-only page runs OCR instead of the table/link activation
+		// below. Enter only; Space always falls through to that activation.
+		#[cfg(any(target_os = "windows", target_os = "macos"))]
+		if enter {
+			let on_placeholder = {
+				let dm = dm_for_enter.lock().unwrap();
+				dm.image_only_page_at_caret().is_some()
+			};
+			if on_placeholder {
+				dm_for_enter.lock().unwrap().start_ocr_for_current_page();
+				return;
+			}
+		}
+		// Drop the manager lock before opening the modal dialog, whose handlers may lock it again.
+		let dialog = {
+			let dm = dm_for_enter.lock().unwrap();
+			dm.activate_current_formula()
+				.map(|html| {
+					// TRANSLATORS: Title of the dialog displaying a formula as MathML
+					(t("Formula View"), html)
+				})
+				.or_else(|| {
+					// TRANSLATORS: Title of the dialog showing a table activated in the document
+					dm.activate_current_table().map(|html| (t("Table View"), html))
+				})
+				.map(|(title, html)| (dm.frame, title, html))
+		};
+		if let Some((frame, title, html)) = dialog {
+			super::dialogs::show_web_view_dialog(&frame, &title, &html, false, None);
+		} else {
+			let mut dm = dm_for_enter.lock().unwrap();
+			dm.activate_current_link();
+		}
+	});
+	let dm_for_char = Rc::clone(self_rc);
 	text_ctrl.on_char(move |event| {
 		if let WindowEventData::Keyboard(kbd) = event {
-			if kbd.get_key_code() == Some(13) || kbd.get_key_code() == Some(32) {
-				// Enter on an image-only page runs OCR instead of the table/link activation
-				// below. Enter only; Space always falls through to that activation.
-				#[cfg(any(target_os = "windows", target_os = "macos"))]
-				if kbd.get_key_code() == Some(13) {
-					let on_placeholder = {
-						let dm = dm_for_enter.lock().unwrap();
-						dm.image_only_page_at_caret().is_some()
-					};
-					if on_placeholder {
-						dm_for_enter.lock().unwrap().start_ocr_for_current_page();
-						return;
-					}
-				}
-				// Drop the manager lock before opening the modal dialog, whose handlers may lock it again.
-				let dialog = {
-					let dm = dm_for_enter.lock().unwrap();
-					dm.activate_current_formula()
-						.map(|html| {
-							// TRANSLATORS: Title of the dialog displaying a formula as MathML
-							(t("Formula View"), html)
-						})
-						.or_else(|| {
-							// TRANSLATORS: Title of the dialog showing a table activated in the document
-							dm.activate_current_table().map(|html| (t("Table View"), html))
-						})
-						.map(|(title, html)| (dm.frame, title, html))
-				};
-				if let Some((frame, title, html)) = dialog {
-					super::dialogs::show_web_view_dialog(&frame, &title, &html, false, None);
-				} else {
-					let mut dm = dm_for_enter.lock().unwrap();
-					dm.activate_current_link();
-				}
-			} else if let Some(action) = shortcut_for_shifted_character(&kbd, &dm_for_enter) {
-				run_shortcut(action, &dm_for_enter, &frame_for_char);
+			if let Some(action) = shortcut_for_shifted_character(&kbd, &dm_for_char) {
+				run_shortcut(action, &dm_for_char, &frame_for_char);
 			} else {
 				kbd.event.skip(true);
 			}
@@ -125,14 +130,14 @@ pub(super) fn build_text_ctrl(
 				show_reader_context_menu(text_ctrl_for_menu);
 				return;
 			}
-			// Ctrl+C is intercepted here because the reading control consumes it in its own window procedure, before wx consults the accelerator table, so it never becomes a menu command and the handler Edit > Copy reaches never runs for the keystroke. Raising the same command a click produces is what makes the two ways of copying behave identically.
-			// The mark is set here rather than by `bind_key_source`'s CHAR_HOOK, which resolves a key through the ActionIds and finds nothing for a wxWidgets stock command; without it the announcement is deferred as though a menu had been clicked, and read over by the focus chain returning to the book. It is cleared again when the command goes unhandled, so a Ctrl+C that reaches nothing cannot leave the mark set for the next click.
-			// macOS leaves Ctrl+C to the native copy, which is reached before this handler.
+			// Ctrl+C and Ctrl+A are intercepted here because the reading control consumes them in its own window procedure, before wx consults the accelerator table, so neither ever becomes a menu command and the handlers Edit > Copy and Edit > Select All reach never run for the keystroke. Raising the same command a click produces is what makes the two ways of doing either behave identically - for the copy that is the announcement and the widening to the whole document, and for the select all it is the announcement alone, without which the command says nothing at all.
+			// The mark is set here rather than by `bind_key_source`'s CHAR_HOOK, which resolves a key through the ActionIds and finds nothing for a wxWidgets stock command; without it the announcement is deferred as though a menu had been clicked, and read over by the focus chain returning to the book. It is cleared again when the command goes unhandled, so a chord that reaches nothing cannot leave the mark set for the next click.
+			// macOS leaves both to the native Edit menu, which is reached before this handler.
 			#[cfg(not(target_os = "macos"))]
-			if is_copy_key(key, kbd) {
+			if let Some(stock_id) = stock_edit_command(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down()) {
 				kbd.event.skip(false);
 				from_keyboard.set(true);
-				if !frame_for_keys.process_menu_command(menu_ids::COPY) {
+				if !frame_for_keys.process_menu_command(stock_id) {
 					from_keyboard.set(false);
 				}
 				return;
@@ -253,21 +258,31 @@ const fn is_selection_command(action: ActionId) -> bool {
 	matches!(action, ActionId::SetSelectionStart | ActionId::CopyFromSelectionStart | ActionId::JumpToSelectionStart)
 }
 
+/// The stock Edit command a chord names, for the two whose keys the reading control would otherwise
+/// swallow before wx consults the accelerator table: Control+C and Control+A. Its own function of the
+/// key and the modifiers so it can be tested without a `KeyboardEvent`, which cannot be built outside
+/// a running app.
+///
+/// Plain Control only. Ctrl+Shift+C, Ctrl+Alt+C and their A counterparts are left to the reader, who
+/// may have bound one of those to something of their own.
 #[cfg(not(target_os = "macos"))]
-fn is_copy_key(key: i32, kbd: &KeyboardEvent) -> bool {
-	is_copy_chord(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down())
-}
-
-/// Plain Control+C only; Ctrl+Shift+C and Ctrl+Alt+C are left to the reader, who may have bound one of those to something of their own. Its own function of the key and the modifiers so it can be tested without a `KeyboardEvent`, which cannot be built outside a running app.
-#[cfg(not(target_os = "macos"))]
-const fn is_copy_chord(key: i32, control: bool, alt: bool, shift: bool) -> bool {
-	key == 'C' as i32 && control && !alt && !shift
+const fn stock_edit_command(key: i32, control: bool, alt: bool, shift: bool) -> Option<i32> {
+	if !control || alt || shift {
+		return None;
+	}
+	if key == 'C' as i32 {
+		Some(menu_ids::COPY)
+	} else if key == 'A' as i32 {
+		Some(menu_ids::SELECT_ALL)
+	} else {
+		None
+	}
 }
 
 fn run_shortcut(action: ActionId, dm: &Rc<Mutex<DocumentManager>>, frame: &Frame) {
 	let Ok(dm) = dm.try_lock() else { return };
 	if action == ActionId::AnnouncePercent {
-		dm.announce_current_percent();
+		dm.announce_current_percent(true);
 	} else {
 		drop(dm);
 		frame.process_menu_command(menu_ids::action_to_menu_id(action));
@@ -392,23 +407,27 @@ fn show_reader_context_menu(text_ctrl: TextCtrl) {
 
 #[cfg(all(test, not(target_os = "macos")))]
 mod tests {
-	use super::is_copy_chord;
+	use super::stock_edit_command;
+	use crate::ui::menu_ids;
 
 	const C: i32 = 'C' as i32;
+	const A: i32 = 'A' as i32;
 
-	/// The intercept has to recognise exactly Ctrl+C, or it would take a chord the reader bound to something else.
+	/// The intercept has to recognise exactly these two chords, or it would take one the reader bound to something else.
 	#[test]
-	fn only_plain_control_c_is_the_copy_key() {
-		assert!(is_copy_chord(C, true, false, false), "Ctrl+C is the copy key");
-		assert!(!is_copy_chord(C, false, false, false), "a bare C types a c");
-		assert!(!is_copy_chord(C, true, true, false), "Ctrl+Alt+C may be the reader's own");
-		assert!(!is_copy_chord(C, true, false, true), "Ctrl+Shift+C may be the reader's own");
+	fn only_plain_control_names_a_stock_edit_command() {
+		assert_eq!(stock_edit_command(C, true, false, false), Some(menu_ids::COPY), "Ctrl+C copies");
+		assert_eq!(stock_edit_command(A, true, false, false), Some(menu_ids::SELECT_ALL), "Ctrl+A selects all");
+		assert_eq!(stock_edit_command(C, false, false, false), None, "a bare C types a c");
+		assert_eq!(stock_edit_command(C, true, true, false), None, "Ctrl+Alt+C may be the reader's own");
+		assert_eq!(stock_edit_command(C, true, false, true), None, "Ctrl+Shift+C may be the reader's own");
 	}
 
-	/// Only the letter, so a neighbouring key on the keyboard is not mistaken for it.
+	/// Only the letter, so a neighbouring key on the keyboard is not mistaken for either.
 	#[test]
-	fn only_the_letter_c_is_the_copy_key() {
-		assert!(!is_copy_chord('V' as i32, true, false, false), "Ctrl+V pastes");
-		assert!(!is_copy_chord('X' as i32, true, false, false), "Ctrl+X cuts");
+	fn only_the_letters_c_and_a_name_a_command() {
+		assert_eq!(stock_edit_command('V' as i32, true, false, false), None, "Ctrl+V pastes");
+		assert_eq!(stock_edit_command('X' as i32, true, false, false), None, "Ctrl+X cuts");
+		assert_eq!(stock_edit_command('S' as i32, true, false, false), None, "Ctrl+S is not ours");
 	}
 }

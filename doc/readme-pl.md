@@ -23,7 +23,8 @@ Paperback działa w systemach Windows 10/11, we wszystkich nowoczesnych wersjach
 * Odczytuje zeskanowane strony PDF za pomocą OCR wbudowanego w Windows i macOS.
 * Pozwala dodawać zakładki i notatki, aby zaznaczać miejsca i do nich wracać.
 * Umożliwia zmianę każdego skrótu klawiszowego.
-* Zawiera `pb`, narzędzie wiersza poleceń, które przekształca dowolny obsługiwany dokument na HTML, Markdown lub zwykły tekst. Przyjmuje wiele dokumentów naraz i samodzielnie rozwija wzorce nazw plików, takie jak `*.pdf`, dzięki czemu to samo polecenie działa także w systemie Windows. Może zapisać w folderze osobny plik dla każdego dokumentu.
+* Otwiera dokumenty bezpośrednio z odnośników HTTP i HTTPS. Pobiera je ponownie przy ponownym otwarciu lub po naciśnięciu `F5`, zachowując pozycję czytania i zakładki. Przy przywracaniu wcześniej otwartych dokumentów ponownie pobiera z odnośników te dokumenty, które przy ostatnim pobraniu miały nie więcej niż 2 MB.
+* Zawiera `pb`, narzędzie wiersza poleceń, które przekształca dowolny obsługiwany dokument na HTML, Markdown lub zwykły tekst. Przyjmuje wiele dokumentów naraz i samodzielnie rozwija wzorce nazw plików, takie jak `*.pdf`, dzięki czemu to samo polecenie działa także w systemie Windows. Może zapisać w folderze osobny plik dla każdego dokumentu. Opcja `--files-from` pozwala też wczytać listę dokumentów z pliku lub ze standardowego wejścia. Można również przekształcać dokumenty bezpośrednio z odnośników HTTP i HTTPS.
 
 ## Zgodność z czytnikami ekranu
 
@@ -78,6 +79,7 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 ### Menu Plik
 
 * `Ctrl+O`: Otwórz dokument.
+* `Ctrl+L` (macOS: `Cmd+Option+O`): Otwórz dokument z odnośnika internetowego.
 * `Ctrl+F4` (macOS: `Cmd+W`): Zamknij bieżący dokument.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Zamknij wszystkie otwarte dokumenty.
 * `Ctrl+Shift+T`: Otwórz ponownie ostatnio zamknięty dokument.
@@ -99,7 +101,7 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 
 ### Menu Widok
 
-* `F5`: Przeładuj bieżący dokument z dysku. Działa niezależnie od tego, czy opcja „Automatycznie przeładowuj zmienione dokumenty” jest włączona w Ustawieniach.
+* `F5`: Przeładuj bieżący dokument z dysku lub pobierz go ponownie, jeśli otwarto go z odnośnika. Działa niezależnie od tego, czy opcja „Automatycznie przeładowuj zmienione dokumenty” jest włączona w Ustawieniach.
 * `Ctrl+Alt+W`: Przełącz zawijanie wierszy.
 * `F11` (macOS: `RawCtrl+Ctrl+F`, czyli Control+Command+F): Przełącz tryb pełnoekranowy.
 * `Ctrl+Shift+V`: Otwórz bieżącą treść w Widoku WWW.
@@ -166,6 +168,8 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 * `Shift+;`: Zmniejsz skok przewijania dźwięku.
 * `Ctrl+Shift+.`: Zwiększ szybkość odtwarzania narracji dźwiękowej.
 * `Ctrl+Shift+,`: Zmniejsz szybkość odtwarzania narracji dźwiękowej.
+* `Ctrl+'`: Zwiększ głośność narracji dźwiękowej.
+* `Ctrl+;`: Zmniejsz głośność narracji dźwiękowej.
 
 ### Menu Narzędzia
 
@@ -225,7 +229,7 @@ Menu Więcej opcji zawiera pozostałe funkcje. Niektóre działają nieco inacze
 * **Przełącz na tryb mowy lub Przełącz na tryb tekstowy:** przełącza między opisanymi wyżej sposobami czytania. W Androidzie jest też polecenie Czytaj na głos, które uruchamia i wstrzymuje odczyt.
 * **Spis treści:** lista rozdziałów książki, otwierana na aktualnie czytanym rozdziale. Wybierz rozdział, aby od razu do niego przejść. Pozycje z podrozdziałami można rozwijać i zwijać za pomocą akcji czytnika ekranu.
 * **Elementy:** lista nagłówków lub odnośników w dokumencie. W iOS wybierz rodzaj elementów w polu Typ, a w Androidzie przełącz kartę. Następnie wybierz element, aby do niego przejść.
-* **Znajdź:** wpisz szukany tekst albo wybierz wcześniejsze wyszukiwanie z Historii wyszukiwania. Określ, czy uwzględniać wielkość liter, czy szukać tylko całych słów i czy używać wyrażenia regularnego. Przyciski Znajdź poprzednie i Znajdź następne przenoszą do dopasowania i podają jego położenie. Ekran Znajdź pozostaje otwarty, aby można było kontynuować wyszukiwanie. W trybie mowy Znajdź pojawia się też jako jednostka nawigacji na pasku czytania, co pozwala przechodzić między dopasowaniami także z tego paska.
+* **Znajdź:** wpisz szukany tekst albo wybierz wcześniejsze wyszukiwanie z Historii wyszukiwania. Określ, czy uwzględniać wielkość liter, czy szukać tylko całych słów i czy używać wyrażenia regularnego. Przyciski Znajdź poprzednie i Znajdź następne przenoszą do dopasowania i podają jego położenie. Ekran Znajdź pozostaje otwarty, aby można było kontynuować wyszukiwanie. W trybie mowy Znajdź pojawia się też jako jednostka nawigacji na pasku czytania, co pozwala przechodzić między dopasowaniami także z tego paska. Opcja **Zatrzymuj czytanie po akapicie z dopasowaniem**, dostępna w Ustawieniach w sekcji Synteza mowy, jest domyślnie włączona i zatrzymuje odczyt po akapicie zawierającym dopasowanie. Wyłącz ją, aby kontynuować czytanie od znalezionego miejsca. Przyciski Znajdź poprzednie i Znajdź następne na pasku czytania nadal pozwalają przechodzić między dopasowaniami.
 * **Przejdź do:** przenosi do wybranego wiersza, strony lub pozycji wyrażonej procentowo. Rodzaj pozycji wybiera się w polu Tryb.
 * **Ostatnie dokumenty:** lista wszystkich otwieranych dokumentów. Przy każdym podany jest stan: obecnie otwarty, zamknięty lub brak pliku. Każdy dokument ma dwie akcje czytnika ekranu: Usuń usuwa go z listy, a Zlokalizuj pozwala wskazać plik po jego przeniesieniu. Polecenie Wyczyść listę ostatnich dokumentów opróżnia listę, ale nie usuwa samych dokumentów.
 * **Liczba słów:** liczba słów w dokumencie.

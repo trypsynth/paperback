@@ -15,13 +15,36 @@
       "rangeStrategy": "bump"
     },
     {
-      "matchManagers": ["github-actions"],
-      "groupName": "github actions"
+      "description": "Gradle, the Gradle wrapper, the Android Gradle plugin, Kotlin and every library in the version catalog move together, majors included, so a Kotlin or AGP bump arrives with whatever it needs.",
+      "matchManagers": ["gradle", "gradle-wrapper"],
+      "groupName": "android dependencies",
+      "separateMajorMinor": false
+    },
+    {
+      "description": "Everything the workflows pin (actions, the Rust toolchain, downloaded tools) in one PR, majors included, since the PR's own CI exercises all of it.",
+      "matchFileNames": [".github/workflows/**"],
+      "groupName": "github actions",
+      "separateMajorMinor": false
     },
     {
       "description": "windows-core is only here for #[implement] in the UI Automation tests, which has to use the same windows-core the windows crate does. windows is still on 0.62, so raise this ceiling together with windows.",
       "matchPackageNames": ["windows-core"],
       "allowedVersions": "<0.100.0"
+    },
+    {
+      "description": "math-core 0.8 turns on phf's ptrhash feature for the whole build, which breaks web_atoms (tmke8/math-core#1253). Lift this once that is fixed.",
+      "matchPackageNames": ["math-core"],
+      "allowedVersions": "<0.8.0"
+    },
+    {
+      "description": "rodio-wsola, which time-stretches audiobook speed changes, is built against rodio 0.22 (axel10/rodio-wsola). Lift this together with a rodio-wsola release for 0.23.",
+      "matchPackageNames": ["rodio"],
+      "allowedVersions": "<0.23.0"
+    },
+    {
+      "description": "libc 0.2.190 drops the _dyld_* functions backtrace needs on iOS (rust-lang/libc#5606). paperback-core holds libc at =0.2.189 for the lock file; skipping only this release lets the fixed one replace that pin.",
+      "matchPackageNames": ["libc"],
+      "allowedVersions": "!/^0\\.2\\.190$/"
     }
   ],
   "customManagers": [
@@ -33,14 +56,6 @@
         "# renovate: datasource=(?<datasource>[a-z-]+?) depName=(?<depName>[^\\s]+?)\\s+COBALT_VERSION: (?<currentValue>[^\\s]+)"
       ],
       "extractVersionTemplate": "^v(?<version>.+)$"
-    },
-    {
-      "description": "The wxWidgets master commit Paperback builds against, named in WXWIDGETS_DIR so a new one rebuilds wxWidgets.",
-      "customType": "regex",
-      "managerFilePatterns": [".cargo/config.toml"],
-      "matchStrings": [
-        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+) branch=(?<currentValue>\\S+)\\s+WXWIDGETS_DIR = \\{ value = \"target/wxWidgets-(?<currentDigest>[0-9a-f]{40})\""
-      ]
     }
   ]
 }

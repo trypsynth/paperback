@@ -116,7 +116,7 @@ impl DocumentManager {
 		if source != CopySource::WholeDocument {
 			return false;
 		}
-		let text = tab.session.get_text_range(0, doc_len);
+		let text = tab.session.content();
 		if text.is_empty() {
 			return false;
 		}
@@ -138,9 +138,22 @@ impl DocumentManager {
 		let text = match source {
 			CopySource::Nothing => return None,
 			CopySource::Selection => tab.text_ctrl.get_string_selection(),
-			CopySource::WholeDocument => tab.session.get_text_range(0, doc_len),
+			CopySource::WholeDocument => tab.session.content(),
 		};
 		(!text.is_empty()).then_some(text)
+	}
+
+	/// Selects everything the reading control holds and reports the document's own character count,
+	/// or `None` when there is no document open.
+	///
+	/// The count is the document's rather than the control's selection: a windowed document holds a
+	/// slice of the book, and selecting all of that slice is the reader asking for all of it - which
+	/// is what a copy of it will put on the clipboard, so the two counts agree.
+	#[cfg(not(target_os = "macos"))]
+	pub fn select_all_and_count(&self) -> Option<usize> {
+		let tab = self.active_tab()?;
+		tab.text_ctrl.select_all();
+		Some(tab.session.handle().document().buffer.char_count())
 	}
 
 	/// Collapses a window that grew during a long read back to target size around the caret.

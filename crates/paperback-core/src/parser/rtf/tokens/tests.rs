@@ -292,3 +292,21 @@ fn extract_content_keeps_bold_that_starts_the_body_without_pard() {
 	assert_eq!(bold.len(), 1);
 	assert_eq!(bold[0].length, "Bold".chars().count());
 }
+
+#[test]
+fn extract_content_measures_link_length_in_display_units() {
+	let tokens = vec![
+		Token::ControlSymbol((ControlWord::Pard, Property::None)),
+		Token::PlainText("see "),
+		Token::PlainText("HYPERLINK \"https://example.com\""),
+		Token::PlainText("smile \u{1F600} here"),
+		Token::PlainText(" now"),
+	];
+	let buffer = extract_content_from_tokens(&tokens);
+	assert_eq!(buffer.content, "see smile \u{1F600} here now");
+	let links: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Link).collect();
+	assert_eq!(links.len(), 1);
+	assert_eq!(links[0].position, display_len("see "));
+	assert_eq!(links[0].length, display_len("smile \u{1F600} here"));
+	assert_eq!(links[0].reference, "https://example.com");
+}

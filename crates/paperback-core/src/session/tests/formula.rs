@@ -1,6 +1,79 @@
+use rstest::{fixture, rstest};
+
 use super::*;
+use crate::util::{test_support::TempDir, text::display_len};
 
 const MATHML: &str = "<math><mi>x</mi><mo>=</mo><mn>1</mn></math>";
+
+const MARKDOWN_SOURCE: &str = "Before $x^2$.\n\n$$\n\\frac{a}{b}\n$$\n\nAfter.";
+
+/// A session over [`MARKDOWN_SOURCE`], with the directory that holds the file and receives web and source views.
+struct MarkdownSession {
+	dir: TempDir,
+	session: DocumentSession,
+}
+
+impl MarkdownSession {
+	fn temp_path(&self) -> &str {
+		self.dir.path().to_str().unwrap()
+	}
+}
+
+#[fixture]
+fn markdown(#[default(ParseSettings::default())] settings: ParseSettings) -> MarkdownSession {
+	let dir = TempDir::new("markdown-formula-session");
+	let path = dir.write_str("formulas.md", MARKDOWN_SOURCE);
+	let session = DocumentSession::new(&path, "", "", settings).expect("open Markdown");
+	MarkdownSession { dir, session }
+}
+
+#[rstest]
+fn markdown_formulas_are_navigable(markdown: MarkdownSession) {
+	let first = markdown.session.navigate_formula(0, false, true);
+	let second = markdown.session.navigate_formula(first.offset, false, true);
+	assert_eq!((first.found, first.marker_text.as_str()), (true, "x^2"));
+	assert_eq!((second.found, second.marker_text.as_str()), (true, "a/b"));
+}
+
+#[rstest]
+fn markdown_formula_view_shows_mathml(markdown: MarkdownSession) {
+	let first = markdown.session.navigate_formula(0, false, true);
+	let formula = markdown.session.get_formula_at_position(first.offset).expect("formula view content");
+	assert!(formula.contains("<msup>"), "{formula}");
+}
+
+#[rstest]
+fn markdown_web_view_renders_formulas_as_mathml(markdown: MarkdownSession) {
+	let first = markdown.session.navigate_formula(0, false, true);
+	let formula = markdown.session.get_formula_at_position(first.offset).expect("formula view content");
+	let target = markdown.session.webview_target_path(first.offset, markdown.temp_path()).expect("Markdown web view");
+	let html = scraper::Html::parse_document(&std::fs::read_to_string(target.path).unwrap());
+	let math = scraper::Selector::parse("math").unwrap();
+	let formulas: Vec<_> = html.select(&math).collect();
+	assert_eq!(formulas.len(), 2);
+	assert_eq!(formulas[0].html(), formula);
+	assert_eq!(formulas[1].attr("display"), Some("block"));
+}
+
+#[rstest]
+fn markdown_web_view_keeps_dollars_when_dollar_math_is_off(
+	#[with(ParseSettings { markdown_dollar_math: false, ..ParseSettings::default() })] markdown: MarkdownSession,
+) {
+	let target = markdown.session.webview_target_path(0, markdown.temp_path()).expect("Markdown web view");
+	let html = std::fs::read_to_string(target.path).unwrap();
+	assert!(!html.contains("<math"), "{html}");
+	assert!(html.contains("Before $x^2$."), "{html}");
+}
+
+#[rstest]
+fn markdown_source_view_maps_positions_past_formulas(markdown: MarkdownSession) {
+	let content = markdown.session.content();
+	let after = content.find("After.").unwrap();
+	let position = i64::try_from(display_len(&content[..after])).unwrap();
+	let view = markdown.session.view_source(position, markdown.temp_path()).expect("Markdown source view");
+	assert_eq!(std::fs::read_to_string(view.path).unwrap(), MARKDOWN_SOURCE);
+	assert_eq!(view.caret, i64::try_from(MARKDOWN_SOURCE.find("After.").unwrap()).unwrap());
+}
 
 fn formula_session() -> DocumentSession {
 	let mut buffer = DocumentBuffer::with_content("before\nx = 1 after".to_string());

@@ -3,10 +3,12 @@
 
 use std::{cell::RefCell, path::Path, rc::Rc, sync::Mutex};
 
-use paperback_core::config::ConfigManager;
+use paperback_core::{config::ConfigManager, parser::is_remote_url};
 use wxdragon::prelude::*;
 
-use super::{DocumentManager, ensure_parser_ready_for_path, rebuild_menu_bar, update_title_from_manager};
+use super::{
+	DocumentManager, ensure_parser_ready_for_path, links::open_links_then, rebuild_menu_bar, update_title_from_manager,
+};
 
 #[derive(Default)]
 struct RestoreState {
@@ -44,7 +46,11 @@ pub(super) fn schedule_restore_documents(
 		let active_path = config.lock().unwrap().get_app_string("active_document", "");
 		let paths = config.lock().unwrap().get_opened_documents();
 		tracing::info!(count = paths.len(), "restoring previously open documents");
-		let failed = restore_each(paths, |path_str| {
+		let plan = {
+			let cfg = config.lock().unwrap();
+			plan(paths, |link| cfg.get_document_download_size(link), RESTORE_DOWNLOAD_LIMIT)
+		};
+		let failed = restore_each(plan.files, |path_str| {
 			let path = Path::new(path_str);
 			if !path.exists() {
 				tracing::info!(path = %path.display(), "previously open document is missing; forgetting it");
@@ -57,28 +63,41 @@ pub(super) fn schedule_restore_documents(
 		});
 		{
 			let config = config.lock().unwrap();
-			for path in &failed {
+			// A link too large to download again stays in the recent documents only.
+			for path in failed.iter().chain(&plan.dropped) {
 				config.remove_opened_document(path);
 			}
 			config.flush();
 		}
-		let mut target_idx = pre_restore_active;
-		if target_idx.is_none() && !active_path.is_empty() {
-			target_idx = doc_manager.lock().unwrap().find_tab_by_path(Path::new(&active_path));
-		}
-		if let Some(idx) = target_idx {
-			doc_manager.lock().unwrap().notebook().set_selection(idx);
-		}
-		update_title_from_manager(&frame, &doc_manager.lock().unwrap());
-		rebuild_menu_bar(&frame, &doc_manager, &config);
-		doc_manager.lock().unwrap().restore_focus();
-		// A large book keeps the window busy for seconds after this, and a screen reader that
-		// was told about the focus during that stretch has nothing to read: the reader is left
-		// on a document where no key says anything until it is closed and opened again
-		// (<https://github.com/trypsynth/paperback/issues/920>). Saying it again once the queue
-		// has drained costs nothing when the first one did arrive, since focus does not move.
-		focus_again_once_settled(&frame, &doc_manager);
+		let (dm, cfg) = (Rc::clone(&doc_manager), Rc::clone(&config));
+		// Runs once the links have opened, which selects their tabs, or straight away without links.
+		open_links_then(&frame, &doc_manager, &config, plan.links, move || {
+			select_restored_tab(&dm, pre_restore_active, &active_path);
+			update_title_from_manager(&frame, &dm.lock().unwrap());
+			rebuild_menu_bar(&frame, &dm, &cfg);
+			dm.lock().unwrap().restore_focus();
+			// A large book keeps the window busy for seconds after this, and a screen reader that
+			// was told about the focus during that stretch has nothing to read: the reader is left
+			// on a document where no key says anything until it is closed and opened again
+			// (<https://github.com/trypsynth/paperback/issues/920>). Saying it again once the queue
+			// has drained costs nothing when the first one did arrive, since focus does not move.
+			focus_again_once_settled(&frame, &dm);
+		});
 	});
+}
+
+/// Links whose last download was larger than this are not downloaded again at startup.
+const RESTORE_DOWNLOAD_LIMIT: u64 = 2 * 1024 * 1024;
+
+/// Selects the tab that was active before the restore, such as a document from the command line,
+/// or else the document that was active when Paperback closed.
+fn select_restored_tab(doc_manager: &Rc<Mutex<DocumentManager>>, pre_restore_active: Option<usize>, active_path: &str) {
+	let dm = doc_manager.lock().unwrap();
+	let target = pre_restore_active
+		.or_else(|| if active_path.is_empty() { None } else { dm.find_tab_by_path(Path::new(active_path)) });
+	if let Some(index) = target {
+		dm.notebook().set_selection(index);
+	}
 }
 
 /// How long after the restore to say where focus is a second time. Long enough for the window
@@ -111,6 +130,33 @@ fn focus_again_once_settled(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManage
 	}
 }
 
+/// What startup does with the documents that were open when Paperback closed.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub(super) struct RestorePlan {
+	/// Files, reopened in order.
+	files: Vec<String>,
+	/// Links whose last download was small enough to download again, in order.
+	links: Vec<String>,
+	/// Links not reopened, which stay in the recent documents only.
+	dropped: Vec<String>,
+}
+
+/// Sorts the stored `paths` into a [`RestorePlan`]: a link is downloaded again when its last
+/// download, by `size_of`, was at most `limit` bytes.
+pub(super) fn plan(paths: Vec<String>, size_of: impl Fn(&str) -> Option<u64>, limit: u64) -> RestorePlan {
+	let mut plan = RestorePlan::default();
+	for path in paths {
+		if !is_remote_url(&path) {
+			plan.files.push(path);
+		} else if size_of(&path).is_some_and(|size| size <= limit) {
+			plan.links.push(path);
+		} else {
+			plan.dropped.push(path);
+		}
+	}
+	plan
+}
+
 /// Runs `open` on every stored path in order and returns the ones it could not reopen.
 pub(super) fn restore_each(paths: Vec<String>, mut open: impl FnMut(&str) -> bool) -> Vec<String> {
 	paths.into_iter().filter(|path| !open(path)).collect()
@@ -135,5 +181,35 @@ mod tests {
 	fn restore_each_returns_empty_when_all_succeed() {
 		let failed = restore_each(vec!["a".to_string(), "b".to_string()], |_| true);
 		assert!(failed.is_empty());
+	}
+
+	fn strings(items: &[&str]) -> Vec<String> {
+		items.iter().map(ToString::to_string).collect()
+	}
+
+	#[test]
+	fn plan_downloads_again_only_the_links_whose_last_download_was_small() {
+		let sizes = |link: &str| match link {
+			"https://a.org/small.epub" => Some(100),
+			"https://a.org/limit.epub" => Some(1_000),
+			"https://a.org/large.pdf" => Some(1_001),
+			_ => None,
+		};
+		let paths = strings(&[
+			"https://a.org/large.pdf",
+			"C:\\books\\one.epub",
+			"https://a.org/small.epub",
+			"https://a.org/never-sized.epub",
+			"C:\\books\\two.epub",
+			"https://a.org/limit.epub",
+		]);
+		assert_eq!(
+			plan(paths, sizes, 1_000),
+			RestorePlan {
+				files: strings(&["C:\\books\\one.epub", "C:\\books\\two.epub"]),
+				links: strings(&["https://a.org/small.epub", "https://a.org/limit.epub"]),
+				dropped: strings(&["https://a.org/large.pdf", "https://a.org/never-sized.epub"]),
+			}
+		);
 	}
 }

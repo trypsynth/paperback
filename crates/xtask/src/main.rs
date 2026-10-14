@@ -7,7 +7,6 @@ mod pot;
 mod release;
 mod translate;
 mod workspace;
-mod wxwidgets;
 
 fn main() -> Result<(), Box<dyn Error>> {
 	let task = env::args().nth(1);
@@ -19,7 +18,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 		Some("gen-pot") => pot::gen_pot()?,
 		Some("translate") => translate::translate()?,
 		Some("site-docs") => docs::site_docs()?,
-		Some("wxwidgets") => println!("wxWidgets is at {}", wxwidgets::ensure()?.display()),
 		_ => print_help(),
 	}
 	Ok(())
@@ -30,7 +28,6 @@ pub(crate) fn print_help() {
 	println!("	release       Build release binaries and package them");
 	println!("	gen-pot       Regenerate po/paperback.pot from all translatable crates");
 	println!("	site-docs     Build the manual for paperback.dev into web/_site, or the directory given");
-	println!("	wxwidgets     Fetch the wxWidgets commit .cargo/config.toml pins, if it is not already there");
 	println!("	android       Generate Kotlin bindings and build native Android libraries");
 	println!("	  --release          Build APK using gradlew assembleRelease");
 	println!("	  --debug            Build APK using gradlew assembleDebug");

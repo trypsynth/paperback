@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 46948a73c2f7729f; sections: 84030068,db723a70,df2f4c18,f0855d6a,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4b8c6a9acace3273; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,e611d7d9,3a4c3efe,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versão 1.0
 
@@ -25,7 +25,8 @@ Paperback funciona no Windows 10/11, em todas as versões modernas de ARM macOS,
 * Lê páginas PDF digitalizadas com o OCR integrado no Windows e macOS.
 * Marcadores e notas, para que você possa marcar seu lugar e voltar a ele.
 * Todos os atalhos de teclado podem ser alterados.
-* Vem com `pb`, uma ferramenta de linha de comando que converte qualquer documento suportado para HTML, Markdown ou texto simples. Ele aceita quantos documentos você fornecer, expande `*.pdf` e similares por conta própria para que o mesmo comando funcione no Windows, e pode escrever um arquivo por documento em uma pasta.
+* Abre documentos diretamente de links http e https, e os baixa novamente quando você os reabre ou pressiona `F5`, mantendo sua posição de leitura e Favoritos. Ao restaurar os documentos que você tinha abertos, ele baixa novamente os dos links que eram 2 MB ou menores.
+* Vem com `pb`, uma ferramenta de linha de comando que converte qualquer documento suportado para HTML, Markdown ou texto simples. Ele aceita quantos documentos você fornecer, expande `*.pdf` e similares por conta própria para que o mesmo comando funcione no Windows, e pode escrever um arquivo por documento em uma pasta. Também pode ler uma lista de documentos de um arquivo ou de stdin com `--files-from`, e converter documentos diretamente de links http e https.
 
 ## Compatibilidade com Leitores de Tela
 
@@ -78,6 +79,7 @@ Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é ano
 ### Menu Arquivo
 
 * `Ctrl+O`: Abrir um documento.
+* `Ctrl+L` (macOS: `Cmd+Option+O`): Abrir um documento a partir de um link da Web.
 * `Ctrl+F4` (macOS: `Cmd+W`): Fechar o documento atual.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Fechar todos os documentos abertos.
 * `Ctrl+Shift+T`: Reabrir o último documento fechado.
@@ -99,7 +101,7 @@ Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é ano
 
 ### Menu Visualização
 
-* `F5`: Reler o documento atual do disco. Funciona independentemente de "Recarregar automaticamente documentos alterados" estar ativado em Configurações.
+* `F5`: Reler o documento atual do disco ou baixá-lo novamente se foi aberto a partir de um link. Funciona independentemente de "Recarregar automaticamente documentos alterados" estar ativado em Configurações.
 * `Ctrl+Alt+W`: Alternar quebra de linha.
 * `F11` (macOS: `RawCtrl+Ctrl+F`, ou seja, Control+Command+F): Alternar para tela cheia.
 * `Ctrl+Shift+V`: Abrir conteúdo atual na Visualização da Web.
@@ -166,6 +168,8 @@ Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é ano
 * `Shift+;`: Diminuir o valor de busca de áudio.
 * `Ctrl+Shift+.`: Acelerar narração de áudio.
 * `Ctrl+Shift+,`: Desacelerar narração de áudio.
+* `Ctrl+'`: Tornar narração de áudio mais alta.
+* `Ctrl+;`: Tornar narração de áudio mais baixa.
 
 ### Menu Ferramentas
 
@@ -225,7 +229,7 @@ O menu More Options é onde tudo mais fica. Alguns itens funcionam um pouco dife
 * **Switch to TTS Mode ou Switch to Text Mode:** alterna entre modo de leitura em voz alta e modo texto, descrito acima. No modo texto, um item Read Aloud inicia e pausa a leitura em voz alta sem sair do modo texto.
 * **Table of Contents:** os capítulos do livro, aberto no que você está lendo. Escolha um para ir direto a ele. Entradas com capítulos sob elas podem ser expandidas e recolhidas com as ações do leitor de tela.
 * **Elements:** uma lista dos headings ou links do documento. Alterne entre os dois com o Type picker no iOS ou as abas no Android, depois escolha um para ir a ele.
-* **Find:** digite o que procurar ou escolha uma busca anterior de Search History e escolha se deseja corresponder maiúsculas e minúsculas, corresponder apenas palavras inteiras ou usar uma expressão regular. Find Previous e Find Next saltam para uma correspondência e dizem onde caíram, e Find fica aberto para que você possa continuar. No modo de leitura em voz alta, Find também aparece como uma unidade de navegação na barra de leitura, para que você possa percorrer as correspondências de lá também.
+* **Find:** digite o que procurar ou escolha uma busca anterior de Search History e escolha se deseja corresponder maiúsculas e minúsculas, corresponder apenas palavras inteiras ou usar uma expressão regular. Find Previous e Find Next saltam para uma correspondência e dizem onde caíram, e Find fica aberto para que você possa continuar. No modo de leitura em voz alta, Find também aparece como uma unidade de navegação na barra de leitura, para que você possa percorrer as correspondências de lá também. **Stop reading after search matches** em Settings sob Síntese de Fala está ativado por padrão e para após ler o parágrafo contendo uma correspondência. Desative-o para continuar lendo a partir da correspondência enquanto os controles previous e next da barra de leitura ainda navegam por Find.
 * **Go To:** salte para uma linha, uma página ou uma porcentagem através do documento. Escolha qual com o Mode picker.
 * **Recent Documents:** cada documento que você abriu, cada um marcado como atualmente aberto, fechado ou arquivo não encontrado. Cada um tem duas ações do leitor de tela: Remove o remove da lista e Locate permite encontrar um documento cujo arquivo foi movido. Clear Recent Documents esvazia a lista sem excluir nenhum documento.
 * **Word Count:** o número de palavras no documento.

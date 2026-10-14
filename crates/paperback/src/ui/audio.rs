@@ -75,8 +75,8 @@ pub fn handle_seek_audio(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
-	from_keyboard: bool,
 	forward: bool,
+	from_keyboard: bool,
 ) {
 	let (sync_enabled, amount_seconds, spill_into_next_file) = {
 		let cfg = config.lock().unwrap();
@@ -128,8 +128,8 @@ pub fn handle_seek_audio(
 pub fn handle_change_audio_speed(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	live_region_label: StaticText,
-	from_keyboard: bool,
 	increase: bool,
+	from_keyboard: bool,
 ) {
 	let mut dm = doc_manager.lock().unwrap();
 	let result = dm.active_tab_mut().and_then(|tab| tab.audio_player.as_mut()).map(|player| {
@@ -154,6 +154,43 @@ pub fn handle_change_audio_speed(
 		label
 	};
 	announce_for_command(live_region_label, from_keyboard, message);
+}
+
+/// Steps the active document's audio volume up or down, and announces the new volume. Like speed, it belongs to the document's `AudioPlayer`, because recordings differ in how loud they are.
+pub fn handle_change_audio_volume(
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	live_region_label: StaticText,
+	increase: bool,
+	from_keyboard: bool,
+) {
+	let mut dm = doc_manager.lock().unwrap();
+	let result = dm.active_tab_mut().and_then(|tab| tab.audio_player.as_mut()).map(|player| {
+		let before = player.volume();
+		let after = if increase { player.increase_volume() } else { player.decrease_volume() };
+		(after, (after - before).abs() < f32::EPSILON)
+	});
+	drop(dm);
+	let Some((volume, at_limit)) = result else {
+		// TRANSLATORS: Announced when trying to change audio volume on a document that has none
+		announce_for_command(live_region_label, from_keyboard, t("This document has no audio."));
+		return;
+	};
+	let label = volume_label(volume);
+	let message = if at_limit && increase {
+		// TRANSLATORS: Announced when the audio volume is already at its loudest; {} is the current volume, e.g. "200%"
+		t("{} (maximum)").replace("{}", &label)
+	} else if at_limit {
+		// TRANSLATORS: Announced when the audio volume is already at its quietest; {} is the current volume, e.g. "10%"
+		t("{} (minimum)").replace("{}", &label)
+	} else {
+		label
+	};
+	announce_for_command(live_region_label, from_keyboard, message);
+}
+
+/// A volume as a whole percentage, e.g. `80%` or `150%`.
+fn volume_label(volume: f32) -> String {
+	format!("{}%", (volume * 100.0).round())
 }
 
 /// A human-readable label for a playback speed multiplier, e.g. `1.5x`, `1x`, `0.75x`.
@@ -239,6 +276,13 @@ mod tests {
 	use paperback_core::audio::{AudioLocation, AudioTimelineBuilder};
 
 	use super::*;
+
+	#[test]
+	fn volume_reads_as_a_whole_percentage() {
+		assert_eq!(volume_label(1.0), "100%");
+		assert_eq!(volume_label(0.1), "10%");
+		assert_eq!(volume_label(1.5), "150%");
+	}
 
 	/// Two "files", each one placeholder-duration clip covering its whole 24h declared length
 	/// (like `build_plain_audio_zip_document`'s clips), so a real file length far shorter than

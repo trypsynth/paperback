@@ -219,10 +219,9 @@ fn dl_dt_dd_produce_separate_lines() {
 }
 /// `TableInfo.length` must equal the emitted display extent (display units), NOT the
 /// emitted text's byte length. Prefix text ensures `start_offset` > 0. With inline rendering the
-/// emitted row is the TSV "A\t𝄞"; a non-BMP char (U+1D11E, G Clef, width 2) locks the math.
+/// emitted row is the TSV "A\t𝄞"; its non-BMP character distinguishes display and byte lengths.
 #[test]
 fn xml_table_display_length_is_display_extent_not_byte_length() {
-	// "Intro\n" → 6 display units. Inline table row: "A\t𝄞" = 4 display units + newline = 5.
 	let xml =
 		concat!("<root><body><p>Intro</p>", "<table><tr><td>A</td><td>\u{1D11E}</td></tr></table>", "</body></root>");
 	let mut converter = XmlToText::with_render_tables_inline(true);
@@ -231,8 +230,10 @@ fn xml_table_display_length_is_display_extent_not_byte_length() {
 	assert_eq!(tables.len(), 1, "expected exactly one table");
 	let table = &tables[0];
 	assert_eq!(table.offset, 6, "table starts after 'Intro\\n'");
-	// display_length = 5 (display extent); emitted byte length = 6, they differ.
-	assert_eq!(table.length, 5, "length must be the display extent (5), not byte length (6)");
+	// The emitted row includes a newline. The non-BMP character occupies two UTF-16 units
+	// on Windows/macOS, but one character position on GTK.
+	let expected_length = if cfg!(any(windows, target_os = "macos")) { 5 } else { 4 };
+	assert_eq!(table.length, expected_length, "length must be the platform's display extent");
 }
 
 /// OFF mode emits the `"[Table]: <first row>"` placeholder; ON mode emits the full TSV.

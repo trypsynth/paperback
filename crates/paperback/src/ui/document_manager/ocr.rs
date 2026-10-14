@@ -3,10 +3,11 @@
 //!
 //! Everything that touches a `DocumentTab` runs on the UI thread. The worker thread holds only
 //! the file path and a list of page numbers: it renders and recognizes, then hands text back
-//! through `wxdragon::call_after`. Pages are addressed by number rather than by offset for a
-//! reason. Applying one page's text moves every offset after it, so an offset captured before
-//! the job started would be stale by the time the worker's next result lands. Page numbers stay
-//! true, and the UI thread re-resolves each one's placeholder as it applies it.
+//! through `wxdragon::call_after`. A batch reads its pages on a pool of threads, which hands them
+//! over in page order. Pages are addressed by number rather than by offset for a reason. Applying
+//! one page's text moves every offset after it, so an offset captured before the job started
+//! would be stale by the time the worker's next result lands. Page numbers stay true, and the UI
+//! thread re-resolves each one's placeholder as it applies it.
 
 use std::{
 	path::{Path, PathBuf},
@@ -15,9 +16,13 @@ use std::{
 		atomic::{AtomicBool, Ordering},
 	},
 	thread,
+	time::{Duration, Instant},
 };
 
-use paperback_core::{ocr::PageRenderer, parser::pdf::join_wrapped_lines};
+use paperback_core::{
+	ocr::{default_workers, recognize_pages},
+	parser::pdf::join_wrapped_lines,
+};
 use patois::{nt, t};
 use wxdragon::prelude::*;
 
@@ -28,17 +33,10 @@ use crate::{
 	ui::{navigation::announce, text_render::reload_window_around},
 };
 
-/// How many pages between spoken progress announcements during a batch OCR job.
-const BATCH_OCR_PROGRESS_EVERY: usize = 20;
-
-/// How many recognized pages to hold before folding them into the document together.
+/// How long a batch OCR job goes between folding its pages into the document and announcing progress.
 ///
-/// Every apply rebuilds the buffer's per-char index tables, which is linear in the whole
-/// document, so applying page by page would be quadratic over a long scan. Flushing in groups
-/// keeps that cost proportional to the document while still letting the reader reach the early
-/// pages long before a several-hundred-page job finishes. Matched to the progress interval so
-/// the text appears exactly when the progress announcement says it has.
-const BATCH_OCR_FLUSH_EVERY: usize = BATCH_OCR_PROGRESS_EVERY;
+/// Time rather than a page count, because a page takes several times longer on a two-core laptop than on a desktop with a pool of workers, and a count tuned for one is either chatty or silent on the other. Every apply rebuilds the buffer's per-char index tables, which is linear in the whole document, so this also keeps a long scan from going quadratic. Both happen together so the text has landed by the time the announcement says it has.
+const BATCH_OCR_UPDATE_EVERY: Duration = Duration::from_secs(4);
 
 /// A running OCR job, one per tab. Owned by the UI thread; the worker sees only `cancel`.
 pub(super) struct OcrJob {
@@ -156,7 +154,7 @@ impl DocumentManager {
 			return;
 		}
 		let (start, end) = if start <= end { (start, end) } else { (end, start) };
-		let pages: Vec<i32> = if include_text_pages && is_ocr_able(&tab.file_path) {
+		let pages: Vec<i32> = if include_text_pages && is_ocr_able(tab.local_path()) {
 			let last = i32::try_from(tab.session.page_count()).unwrap_or(i32::MAX);
 			// Left to go empty when the range starts past the last page, which is what sends it
 			// to the "nothing to do" announcement below rather than to a job for a page the
@@ -184,9 +182,9 @@ impl DocumentManager {
 			return;
 		};
 		let path = tab.file_path.clone();
-		let path_str = path.to_string_lossy().to_string();
-		let password = self.config.lock().unwrap().get_document_password(&path_str);
+		let password = self.config.lock().unwrap().get_document_password(&path.to_string_lossy());
 		let password = (!password.is_empty()).then_some(password);
+		let path_str = tab.local_path().to_string_lossy().to_string();
 		let cancel = Arc::new(AtomicBool::new(false));
 		let worker_cancel = Arc::clone(&cancel);
 		let id = self.next_job_id.get();
@@ -236,8 +234,8 @@ impl DocumentManager {
 		// An OCR engine reads a page a printed line at a time, so its text arrives broken at
 		// every line end. The reader who asked for wrapped lines to be joined asked about the
 		// text of a page, not about where it was read from.
-		let join_paragraphs =
-			is_pdf(file_path) && self.config.lock().unwrap().get_app_bool("join_pdf_paragraphs", true);
+		let join_paragraphs = is_pdf(self.tabs[index].local_path())
+			&& self.config.lock().unwrap().get_app_bool("join_pdf_paragraphs", true);
 		let tab = &mut self.tabs[index];
 		let mut pages = Vec::with_capacity(results.len());
 		// Where each page being replaced starts, read before the edit for the same reason the
@@ -361,8 +359,7 @@ fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[i64], window: TextWindow, 
 	}
 }
 
-/// The worker thread: opens the document once, then renders and recognizes each page in turn,
-/// posting results back to the UI thread in flushes.
+/// The worker thread: renders and recognizes pages on a pool of threads, posting results back to the UI thread in flushes.
 ///
 /// `id` travels with every message so the UI thread can tell this run apart from any other job on the same document, which may by now be open again under a new tab.
 fn run_ocr(
@@ -374,41 +371,48 @@ fn run_ocr(
 	batch: bool,
 	id: u64,
 ) {
-	let mut renderer = match PageRenderer::open(path_str, password) {
-		Ok(renderer) => renderer,
-		Err(err) => {
-			tracing::warn!(error = %err, "failed to open the document for ocr");
-			post_finish(id, file_path, false);
-			return;
-		}
-	};
-	let total = pages.len();
 	let max_dimension = ocr::max_image_dimension();
-	let mut pending: Vec<PageResult> = Vec::with_capacity(BATCH_OCR_FLUSH_EVERY);
-	let mut canceled = false;
-	for (done, page) in pages.iter().enumerate() {
-		if cancel.load(Ordering::Relaxed) {
-			canceled = true;
-			break;
+	let total = pages.len();
+	let mut pending: Vec<PageResult> = Vec::new();
+	let mut done = 0usize;
+	let mut last_update = Instant::now();
+	let run = recognize_pages(
+		path_str,
+		password,
+		pages,
+		default_workers(),
+		cancel,
+		|renderer, page| {
+			// `render` takes a 0-based page index; the job list is 1-based.
+			renderer
+				.render(page - 1, max_dimension)
+				.map_err(|error| OcrError::Failed(error.to_string()))
+				.and_then(|rendered| ocr::recognize_rgba(&rendered.rgba, rendered.width, rendered.height))
+		},
+		|page, result| {
+			done += 1;
+			pending.push((page, result));
+			if done != total && last_update.elapsed() >= BATCH_OCR_UPDATE_EVERY {
+				post_apply(id, file_path, std::mem::take(&mut pending));
+				if batch {
+					post_progress(id, done, total);
+				}
+				last_update = Instant::now();
+			}
+		},
+	);
+	match run {
+		Ok(run) => {
+			if !pending.is_empty() {
+				post_apply(id, file_path, pending);
+			}
+			post_finish(id, file_path, run.stopped);
 		}
-		// `render` takes a 0-based page index; the job list is 1-based.
-		let result = renderer
-			.render(page - 1, max_dimension)
-			.map_err(|err| OcrError::Failed(err.to_string()))
-			.and_then(|rendered| ocr::recognize_rgba(&rendered.rgba, rendered.width, rendered.height));
-		pending.push((*page, result));
-		let done = done + 1;
-		if pending.len() >= BATCH_OCR_FLUSH_EVERY && done != total {
-			post_apply(id, file_path, std::mem::take(&mut pending));
-		}
-		if batch && done % BATCH_OCR_PROGRESS_EVERY == 0 && done != total {
-			post_progress(id, done, total);
+		Err(error) => {
+			tracing::warn!(error = %error, "failed to open the document for ocr");
+			post_finish(id, file_path, false);
 		}
 	}
-	if !pending.is_empty() {
-		post_apply(id, file_path, pending);
-	}
-	post_finish(id, file_path, canceled);
 }
 
 fn post_apply(id: u64, file_path: &Path, results: Vec<PageResult>) {

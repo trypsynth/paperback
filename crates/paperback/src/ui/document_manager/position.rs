@@ -4,7 +4,7 @@ use patois::t;
 
 use super::{DocumentManager, DocumentTab};
 use crate::ui::{
-	navigation::{self, announce, move_to_offset_and_record_history, persist_navigation_history},
+	navigation::{self, announce_for_command, move_to_offset_and_record_history, persist_navigation_history},
 	sleep_timer, status,
 };
 
@@ -40,18 +40,18 @@ impl DocumentManager {
 
 	/// Announces the current caret position as a percentage of the document, and the page it falls
 	/// on where the document has pages, via the live region.
-	pub fn announce_current_percent(&self) {
+	pub fn announce_current_percent(&self, from_keyboard: bool) {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
 		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		let percent = navigation::reading_percent(tab, position);
 		let page = page_at(tab, position);
-		announce(self.live_region_label, position_announcement(percent, page));
+		announce_for_command(self.live_region_label, from_keyboard, position_announcement(percent, page));
 	}
 
 	/// Sets the temporary bookmark at the current caret position and announces it.
-	pub fn set_temporary_bookmark(&self) {
+	pub fn set_temporary_bookmark(&self, from_keyboard: bool) {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
@@ -62,12 +62,12 @@ impl DocumentManager {
 		config.flush();
 		drop(config);
 		// TRANSLATORS: Announced after setting a temporary bookmark at the current position
-		announce(self.live_region_label, t("Temporary bookmark set."));
+		announce_for_command(self.live_region_label, from_keyboard, t("Temporary bookmark set."));
 	}
 
 	/// Jumps to the temporary bookmark, announcing the line text there, or "No temporary bookmark."
 	/// if none has been set.
-	pub fn jump_to_temporary_bookmark(&mut self) {
+	pub fn jump_to_temporary_bookmark(&mut self, from_keyboard: bool) {
 		let path_str = {
 			let Some(tab) = self.active_tab() else {
 				return;
@@ -80,7 +80,7 @@ impl DocumentManager {
 		};
 		let Some(position) = position else {
 			// TRANSLATORS: Announced when jumping to a temporary bookmark but none has been set
-			announce(self.live_region_label, t("No temporary bookmark."));
+			announce_for_command(self.live_region_label, from_keyboard, t("No temporary bookmark."));
 			return;
 		};
 		let (message, track, update) = {
@@ -96,7 +96,7 @@ impl DocumentManager {
 			let update = move_to_offset_and_record_history(tab, position);
 			(message, tab.track, update)
 		};
-		announce(self.live_region_label, message);
+		announce_for_command(self.live_region_label, from_keyboard, message);
 		persist_navigation_history(&self.config, track.then_some(&update));
 	}
 }

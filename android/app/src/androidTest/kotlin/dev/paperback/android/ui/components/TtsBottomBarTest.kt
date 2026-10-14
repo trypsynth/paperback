@@ -28,7 +28,7 @@ class TtsBottomBarTest {
 	private fun bar(
 		hidePrevNextButtons: Boolean = false,
 		isSpeaking: Boolean = false,
-		speechRatePercent: Int = 50,
+		speechRatePercent: Int? = 50,
 		onPrev: () -> Unit = {},
 		onNext: () -> Unit = {},
 		onPlayPause: () -> Unit = {},
@@ -59,6 +59,12 @@ class TtsBottomBarTest {
 		bar()
 		compose.onNodeWithContentDescription("Previous Paragraph").assertExists()
 		compose.onNodeWithContentDescription("Next Paragraph").assertExists()
+	}
+
+	@Test
+	fun theRateControlIsLeftOutWhenTheEngineFollowsTheSystemRate() {
+		bar(speechRatePercent = null)
+		compose.onNodeWithContentDescription("Speech Rate").assertDoesNotExist()
 	}
 
 	@Test

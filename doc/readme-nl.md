@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 46948a73c2f7729f; sections: 84030068,db723a70,df2f4c18,f0855d6a,1387e8b7,3887c286,70bc1667,ca4819ea,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4b8c6a9acace3273; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,e611d7d9,3a4c3efe,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versie 1.0
 
@@ -25,7 +25,8 @@ Paperback draait op Windows 10/11, alle moderne versies van macOS op ARM, Linux,
 * Leest gescande PDF-pagina's met de OCR die in Windows en macOS is ingebouwd.
 * Bladwijzers en notities, zodat je kunt markeren waar je gebleven bent en er later naar terug kunt gaan.
 * Elke toetsenbordsneltoets kan worden aangepast.
-* Wordt geleverd met `pb`, een terminalprogramma dat elk ondersteund document omzet naar HTML, Markdown of platte tekst. Het accepteert zoveel documenten als je opgeeft, verwerkt jokertekens zoals `*.pdf` zelf zodat dezelfde opdracht ook op Windows werkt, en kan per document één bestand in een map schrijven.
+* Opent documenten rechtstreeks via http- en https-links en downloadt ze opnieuw wanneer je ze heropent of op `F5` drukt, met behoud van je leespositie en bladwijzers. Bij het herstellen van de documenten die je open had, downloadt Paperback de documenten van links die 2 MB of kleiner waren opnieuw.
+* Wordt geleverd met `pb`, een terminalprogramma dat elk ondersteund document omzet naar HTML, Markdown of platte tekst. Het accepteert zoveel documenten als je opgeeft, verwerkt jokertekens zoals `*.pdf` zelf zodat dezelfde opdracht ook op Windows werkt, en kan per document één bestand in een map schrijven. Het kan ook een lijst met documenten uit een bestand of van stdin lezen met `--files-from` en documenten rechtstreeks via http- en https-links omzetten.
 
 ## Schermlezercompatibiliteit
 
@@ -78,6 +79,7 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 ### Menu Bestand
 
 * `Ctrl+O`: Een document openen.
+* `Ctrl+L` (macOS: `Cmd+Option+O`): Een document openen via een weblink.
 * `Ctrl+F4` (macOS: `Cmd+W`): Het huidige document sluiten.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Alle geopende documenten sluiten.
 * `Ctrl+Shift+T`: Het laatst gesloten document heropenen.
@@ -99,7 +101,7 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 
 ### Menu Beeld
 
-* `F5`: Het huidige document opnieuw van schijf inlezen. Werkt ongeacht of "Gewijzigde documenten automatisch opnieuw laden" in Instellingen is ingeschakeld.
+* `F5`: Het huidige document opnieuw van schijf inlezen, of het opnieuw downloaden als het via een link is geopend. Werkt ongeacht of "Gewijzigde documenten automatisch opnieuw laden" in Instellingen is ingeschakeld.
 * `Ctrl+Alt+W`: Automatische terugloop in-/uitschakelen.
 * `F11` (macOS: `RawCtrl+Ctrl+F`, oftewel Control+Command+F): Volledig scherm in-/uitschakelen.
 * `Ctrl+Shift+V`: De huidige inhoud openen in webweergave.
@@ -166,6 +168,8 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 * `Shift+;`: De audiospoelstap verkleinen.
 * `Ctrl+Shift+.`: Audio sneller afspelen.
 * `Ctrl+Shift+,`: Audio langzamer afspelen.
+* `Ctrl+'`: Audio luider afspelen.
+* `Ctrl+;`: Audio stiller afspelen.
 
 ### Menu Extra
 
@@ -225,7 +229,7 @@ In het menu Meer opties vind je al het andere. Sommige items werken in elke app 
 * **Overschakelen naar TTS-modus of Overschakelen naar tekstmodus:** wisselt tussen de voorleesmodus en de tekstmodus, zoals hierboven beschreven. In de tekstmodus start en pauzeert een item Voorlezen het voorlezen zonder de tekstmodus te verlaten.
 * **Inhoudsopgave:** de hoofdstukken van het boek, geopend bij het hoofdstuk dat je aan het lezen bent. Kies er een om er direct naartoe te gaan. Items met hoofdstukken eronder kun je uit- en samenvouwen met de acties van je schermlezer.
 * **Elementen:** een lijst met de koppen of links van het document. Wissel tussen de twee met de keuzelijst Type op iOS of de tabbladen op Android, en kies er dan een om ernaartoe te gaan.
-* **Zoeken:** typ waarnaar je wilt zoeken, of kies een eerdere zoekopdracht uit Zoekgeschiedenis, en kies of je hoofdlettergevoelig wilt zoeken, alleen hele woorden wilt vinden of een reguliere expressie wilt gebruiken. Vorige zoeken en Volgende zoeken springen naar een overeenkomst en zeggen waar je terecht bent gekomen, en Zoeken blijft open zodat je verder kunt. In de voorleesmodus verschijnt Zoeken ook als navigatie-eenheid op de leesbalk, zodat je ook van daaruit door de overeenkomsten kunt gaan.
+* **Zoeken:** typ waarnaar je wilt zoeken, of kies een eerdere zoekopdracht uit Zoekgeschiedenis, en kies of je hoofdlettergevoelig wilt zoeken, alleen hele woorden wilt vinden of een reguliere expressie wilt gebruiken. Vorige zoeken en Volgende zoeken springen naar een overeenkomst en zeggen waar je terecht bent gekomen, en Zoeken blijft open zodat je verder kunt. In de voorleesmodus verschijnt Zoeken ook als navigatie-eenheid op de leesbalk, zodat je ook van daaruit door de overeenkomsten kunt gaan. **Voorlezen stoppen na zoekovereenkomsten** in Instellingen onder Tekst-naar-spraak staat standaard aan en stopt na het voorlezen van de alinea met de overeenkomst. Schakel dit uit om vanaf de overeenkomst door te blijven lezen, terwijl Vorige en Volgende op de leesbalk nog steeds per zoekovereenkomst navigeren.
 * **Ga naar:** spring naar een regel, een pagina of een percentage van het document. Kies welke met de keuzelijst Modus.
 * **Recente documenten:** alle documenten die je hebt geopend, elk gemarkeerd als momenteel open, gesloten of bestand ontbreekt. Elk document heeft twee schermlezeracties: Verwijderen haalt het uit de lijst en Terugvinden laat je een document terugvinden waarvan het bestand is verplaatst. Recente documenten wissen leegt de lijst zonder documenten te verwijderen.
 * **Woordenaantal:** het aantal woorden in het document.

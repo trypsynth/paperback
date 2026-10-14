@@ -5,7 +5,10 @@
 //! chosen match span.
 
 use super::DocumentSession;
-use crate::{document::MarkerType, reader_core::SearchOptions};
+use crate::{
+	document::{ContentBytePos, MarkerType},
+	reader_core::SearchOptions,
+};
 
 /// One match's extent, in the same display units (UTF-16 code units on Windows/macOS) as the
 /// GUI caret and page markers, so a caller can hand it straight to a range selector.
@@ -33,12 +36,13 @@ impl DocumentSession {
 	#[must_use]
 	pub fn find_all_lines(&self, query: &str, options: SearchOptions) -> Vec<FindAllLine> {
 		let buffer = &self.handle.document().buffer;
-		let matches = crate::reader_core::reader_search_all(&buffer.content, query, options);
+		let matches = crate::reader_core::reader_search_all(buffer, query, options);
 		if matches.is_empty() {
 			return Vec::new();
 		}
-		let newline_bytes: Vec<usize> = buffer.content.match_indices('\n').map(|(idx, _)| idx).collect();
-		let content_len = buffer.content.len();
+		let newline_bytes: Vec<ContentBytePos> =
+			buffer.content.match_indices('\n').map(|(idx, _)| ContentBytePos::from_raw(idx)).collect();
+		let content_end = buffer.content_end();
 		// The page-break offsets once, so each result line's page is a binary search instead of
 		// recounting every marker per line (which would scale with lines x markers).
 		let pagebreak_offsets: Vec<i64> = buffer
@@ -48,14 +52,14 @@ impl DocumentSession {
 			.map(|marker| i64::try_from(marker.position).unwrap_or(i64::MAX))
 			.collect();
 		let mut rows: Vec<FindAllLine> = Vec::new();
-		let mut open_line_start: Option<usize> = None;
+		let mut open_line_start: Option<ContentBytePos> = None;
 		for (start, end) in matches {
-			let start_byte = buffer.byte_index_for_display(usize::try_from(start.max(0)).unwrap_or(0)).min(content_len);
+			let start_byte = buffer.byte_index_for_display(usize::try_from(start.max(0)).unwrap_or(0)).min(content_end);
 			let line_idx = newline_bytes.partition_point(|&p| p < start_byte);
-			let line_start = if line_idx == 0 { 0 } else { newline_bytes[line_idx - 1] + 1 };
-			let line_end = newline_bytes.get(line_idx).copied().unwrap_or(content_len);
+			let line_start = if line_idx == 0 { ContentBytePos::ZERO } else { newline_bytes[line_idx - 1] + 1 };
+			let line_end = newline_bytes.get(line_idx).copied().unwrap_or(content_end);
 			if open_line_start != Some(line_start) {
-				let text = buffer.content[line_start..line_end].trim().to_string();
+				let text = buffer.slice(line_start..line_end).trim().to_string();
 				if text.is_empty() {
 					continue;
 				}

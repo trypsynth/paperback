@@ -122,9 +122,9 @@ fn navigate_text_bookmark(
 		let bookmarks = cfg.get_bookmarks(&path_str);
 		let has_items = if notes_only { bookmarks.iter().any(|bm| !bm.note.is_empty()) } else { !bookmarks.is_empty() };
 		let result = if notes_only {
-			tab.session.navigate_note(&cfg, current_pos, wrap, next)
+			tab.session.navigate_note(&cfg, &path_str, current_pos, wrap, next)
 		} else {
-			tab.session.navigate_bookmark(&cfg, current_pos, wrap, next)
+			tab.session.navigate_bookmark(&cfg, &path_str, current_pos, wrap, next)
 		};
 		(result, has_items)
 	};
@@ -181,14 +181,15 @@ pub fn handle_bookmark_dialog(
 			return;
 		};
 		let current_pos = doc_caret(tab);
-		let selection = dialogs::show_bookmark_dialog(frame, &tab.session, &Rc::clone(config), current_pos, filter);
+		let path_str = tab.file_path.to_string_lossy().to_string();
+		let selection =
+			dialogs::show_bookmark_dialog(frame, &tab.session, &path_str, &Rc::clone(config), current_pos, filter);
 		let Some(selection) = selection else {
 			return;
 		};
 		let update = move_to_offset_and_record_history(tab, selection.start);
 		let message = if let Some(audio_ms) = selection.audio_ms {
 			seek_to_audio_bookmark(tab, audio_ms);
-			let path_str = tab.file_path.to_string_lossy().to_string();
 			let note = config
 				.lock()
 				.unwrap()
@@ -201,7 +202,7 @@ pub fn handle_bookmark_dialog(
 		} else {
 			let info = {
 				let cfg = config.lock().unwrap();
-				tab.session.bookmark_display_at_position(&cfg, selection.start)
+				tab.session.bookmark_display_at_position(&cfg, &path_str, selection.start)
 			};
 			let text =
 				if info.found { if info.note.is_empty() { info.snippet } else { info.note } } else { String::new() };

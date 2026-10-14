@@ -3,7 +3,7 @@
 //! `crates/paperback/src/ui/text_window.rs` for the caller-side half of this.
 
 use super::{DocumentSession, LineMarker};
-use crate::document::MarkerType;
+use crate::document::{ContentBytePos, DocumentBuffer, MarkerType};
 
 /// How much of a document, in display units, is shown at once when it is too long to show
 /// whole: the width of the reader's loaded window, and of the slice the web view is handed.
@@ -46,11 +46,8 @@ impl DocumentSession {
 	/// The text between two display-unit positions, `start` inclusive and `end` exclusive - the
 	/// same unit [`Self::document_len`], the GUI caret and `Marker.position` all use.
 	///
-	/// Use this, not [`Self::get_text_range`], for any range a caret or a marker produced.
-	/// `get_text_range` treats its arguments as *char* indices, so for an interior range in a
-	/// document holding an astral-plane character (one char, two display units on Windows and
-	/// macOS) it returns text shifted by however many such characters precede the range. This
-	/// converts through [`crate::document::DocumentBuffer::byte_index_for_display`] instead.
+	/// Converts through [`crate::document::DocumentBuffer::byte_index_for_display`] so astral-plane
+	/// characters (one char, two display units on Windows and macOS) preserve caret and marker bounds.
 	/// Nothing is snapped to a paragraph boundary: a bound landing mid-word cuts the word, which
 	/// is the point when the caller is naming two caret positions.
 	///
@@ -67,7 +64,7 @@ impl DocumentSession {
 		// Slicing on `char_to_byte_map` entries, so both bounds are char boundaries.
 		let start_byte = buf.byte_index_for_display(start_display);
 		let end_byte = buf.byte_index_for_display(end_display);
-		buf.content[start_byte..end_byte].to_string()
+		buf.slice(start_byte..end_byte).to_string()
 	}
 
 	/// The display-unit position just past the character at `display_pos`, so that
@@ -98,11 +95,11 @@ impl DocumentSession {
 		let doc_len = buf.total_display_len();
 		let raw_start = usize::try_from(raw_start.max(0)).unwrap_or(0).min(doc_len);
 		let raw_end = usize::try_from(raw_end.max(0)).unwrap_or(0).clamp(raw_start, doc_len);
-		let byte_start = snap_start_to_paragraph_boundary(&buf.content, buf.byte_index_for_display(raw_start));
-		let byte_end = snap_end_to_paragraph_boundary(&buf.content, buf.byte_index_for_display(raw_end));
+		let byte_start = snap_start_to_paragraph_boundary(buf, buf.byte_index_for_display(raw_start));
+		let byte_end = snap_end_to_paragraph_boundary(buf, buf.byte_index_for_display(raw_end));
 		let start = buf.display_index_for_byte(byte_start);
 		let end = buf.display_index_for_byte(byte_end);
-		let text = buf.content[byte_start..byte_end].to_string();
+		let text = buf.slice(byte_start..byte_end).to_string();
 		let markers = buf
 			.markers
 			.iter()
@@ -131,20 +128,20 @@ impl DocumentSession {
 
 /// Extends `byte_idx` backward to the start of the paragraph it's in - the byte right after
 /// the nearest preceding `\n`, or 0 if there isn't one - so a window never starts mid-paragraph.
-pub(super) fn snap_start_to_paragraph_boundary(content: &str, byte_idx: usize) -> usize {
-	content[..byte_idx].rfind('\n').map_or(0, |i| i + 1)
+pub(super) fn snap_start_to_paragraph_boundary(buffer: &DocumentBuffer, byte_idx: ContentBytePos) -> ContentBytePos {
+	buffer.slice(..byte_idx).rfind('\n').map_or(ContentBytePos::ZERO, |i| ContentBytePos::from_raw(i + 1))
 }
 
 /// Extends `byte_idx` forward to the end of the paragraph it's in - one past the nearest
 /// following `\n`, or the end of the content if there isn't one.
-pub(super) fn snap_end_to_paragraph_boundary(content: &str, byte_idx: usize) -> usize {
-	content[byte_idx..].find('\n').map_or(content.len(), |i| byte_idx + i + 1)
+pub(super) fn snap_end_to_paragraph_boundary(buffer: &DocumentBuffer, byte_idx: ContentBytePos) -> ContentBytePos {
+	buffer.slice(byte_idx..).find('\n').map_or_else(|| buffer.content_end(), |i| byte_idx + i + 1)
 }
 
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::document::{Document, DocumentBuffer, DocumentHandle, Marker, MarkerType, ParserFlags};
+	use crate::document::{Document, DocumentBuffer, DocumentHandle, Marker, MarkerType, ParseSettings, ParserFlags};
 
 	fn session_with(content: &str, markers: &[Marker]) -> DocumentSession {
 		let mut buffer = DocumentBuffer::with_content(content.to_string());
@@ -159,6 +156,7 @@ mod tests {
 			history: Vec::new(),
 			history_index: 0,
 			parser_flags: ParserFlags::empty(),
+			parse_settings: ParseSettings::default(),
 		}
 	}
 
@@ -340,10 +338,8 @@ epsilon";
 		assert_eq!(session.get_text_range_display(0, end(4)), "a\u{1F600}bc");
 	}
 
-	/// The reason this method exists at all. An astral-plane character is one char but two
-	/// display units on Windows and macOS, so a range read off the caret only survives the
-	/// char-indexed sibling by accident. Gated to the platforms where the two units differ - on
-	/// GTK a display unit *is* a scalar and `get_text_range` would agree.
+	/// An astral-plane character is one char but two display units on Windows and macOS.
+	/// Gated to the platforms where the two units differ; GTK display units are scalars.
 	#[cfg(any(windows, target_os = "macos"))]
 	#[test]
 	fn get_text_range_display_agrees_with_the_buffer_on_astral_characters() {
@@ -353,8 +349,5 @@ epsilon";
 		assert_eq!(session.get_text_range_display(0, 5), "a\u{1F600}bc");
 		assert_eq!(session.get_text_range_display(1, 3), "\u{1F600}");
 		assert_eq!(session.get_text_range_display(3, 5), "bc");
-		// The same numbers through the char-indexed sibling land somewhere else entirely, which
-		// is what a copy built on `get_text_range` would have put on the clipboard.
-		assert_eq!(session.get_text_range(1, 3), "\u{1F600}b");
 	}
 }

@@ -16,6 +16,25 @@ use std::{
 };
 
 use anyhow::{Result, bail};
+use paperback_core::parser::is_remote_url;
+
+/// One document to convert: a file on disk, or a link to download first.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Source {
+	File(PathBuf),
+	Link(String),
+}
+
+impl Source {
+	/// The source as the reader named it.
+	#[must_use]
+	pub fn shown(&self) -> String {
+		match self {
+			Self::File(path) => path.display().to_string(),
+			Self::Link(url) => url.clone(),
+		}
+	}
+}
 
 /// One input as the reader gave it.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -31,8 +50,8 @@ pub enum Given {
 /// What the arguments on the command line named.
 #[derive(Debug, Default)]
 pub struct Inputs {
-	/// The files to convert, in the order the arguments named them.
-	pub files: Vec<PathBuf>,
+	/// The documents to convert, in the order the arguments named them.
+	pub sources: Vec<Source>,
 	/// Patterns that matched no file. Carried rather than refused, so that one mistyped pattern
 	/// among several does not stop the run before the patterns that were right have converted.
 	pub unmatched: Vec<String>,
@@ -52,40 +71,42 @@ pub fn is_pattern(arg: &Path) -> bool {
 /// Every file the inputs name, every pattern among the arguments that matched nothing, and every
 /// listed input that cannot be converted.
 ///
-/// An argument that is not a pattern, and a listed input without `*` or `?`, is passed through as
-/// it is, whether or not it exists: `input::check` says why a missing file is a problem in terms
+/// An http or https link, listed or typed, is a [`Source::Link`]. An argument that is not a
+/// pattern, and a listed input without `*` or `?`, is passed through as it is, whether or not it
+/// exists: `input::check` says why a missing file is a problem in terms
 /// the reader can act on, which is a better place for that than here.
 #[must_use]
 pub fn collect(given: &[Given]) -> Inputs {
 	let mut collected = Inputs::default();
 	for item in given {
-		let arg = match item {
-			Given::Listed(path) if is_pattern(path) => {
-				collected.problems.push(listed_pattern(path));
-				continue;
-			}
-			Given::Listed(path) => {
-				collected.files.push(path.clone());
-				continue;
-			}
+		let (arg, listed) = match item {
 			Given::Unreadable(problem) => {
 				collected.problems.push(problem.clone());
 				continue;
 			}
-			Given::Argument(arg) => arg,
+			Given::Listed(path) => (path, true),
+			Given::Argument(arg) => (arg, false),
 		};
-		if !is_pattern(arg) {
-			collected.files.push(arg.clone());
+		if let Some(url) = arg.to_str().filter(|text| is_remote_url(text)) {
+			collected.sources.push(Source::Link(url.to_string()));
+			continue;
+		}
+		if listed && is_pattern(arg) {
+			collected.problems.push(listed_pattern(arg));
+			continue;
+		}
+		if listed || !is_pattern(arg) {
+			collected.sources.push(Source::File(arg.clone()));
 			continue;
 		}
 		let (files, matched) = expand(arg);
 		if matched {
-			collected.files.extend(files);
+			collected.sources.extend(files.into_iter().map(Source::File));
 		} else {
 			collected.unmatched.push(arg.to_string_lossy().into_owned());
 		}
 	}
-	dedupe(&mut collected.files);
+	dedupe(&mut collected.sources);
 	collected
 }
 
@@ -207,9 +228,14 @@ fn escaped(pattern: &Path) -> String {
 /// Two arguments can name one file -- `pb *.pdf book.epub`, or the same glob twice -- and
 /// converting it twice writes the same output over itself and reports the same failure twice.
 /// The reader asked for it once by the time they see one line.
-fn dedupe(files: &mut Vec<PathBuf>) {
+fn dedupe(sources: &mut Vec<Source>) {
 	let mut seen = HashSet::new();
-	files.retain(|path| seen.insert(same_file(path)));
+	sources.retain(|source| {
+		seen.insert(match source {
+			Source::File(path) => Source::File(same_file(path)),
+			Source::Link(url) => Source::Link(url.clone()),
+		})
+	});
 }
 
 /// The path as a key for "is this the same file", without the spellings that mean one file.
@@ -266,8 +292,14 @@ mod tests {
 		}
 	}
 
-	fn names(paths: &[PathBuf]) -> Vec<String> {
-		paths.iter().map(|path| path.file_name().unwrap_or_default().to_string_lossy().into_owned()).collect()
+	fn names(sources: &[Source]) -> Vec<String> {
+		sources
+			.iter()
+			.map(|source| match source {
+				Source::File(path) => path.file_name().unwrap_or_default().to_string_lossy().into_owned(),
+				Source::Link(url) => url.clone(),
+			})
+			.collect()
 	}
 
 	#[test]
@@ -300,7 +332,7 @@ mod tests {
 			fs::write(dir.join(name), b"x").expect("write");
 		}
 		let collected = collect_args(&[dir.pattern("*.epub")]);
-		assert_eq!(names(&collected.files), ["a.epub", "b.epub"], "not sorted, or the .txt slipped in");
+		assert_eq!(names(&collected.sources), ["a.epub", "b.epub"], "not sorted, or the .txt slipped in");
 		assert!(collected.unmatched.is_empty());
 	}
 
@@ -312,7 +344,7 @@ mod tests {
 			fs::write(dir.join(name), b"x").expect("write");
 		}
 		let collected = collect_args(&[dir.pattern("a?.txt")]);
-		assert_eq!(names(&collected.files), ["a1.txt"]);
+		assert_eq!(names(&collected.sources), ["a1.txt"]);
 	}
 
 	#[test]
@@ -321,7 +353,7 @@ mod tests {
 		fs::create_dir(dir.join("sub")).expect("mkdir");
 		fs::write(dir.join("a.epub"), b"x").expect("write");
 		let collected = collect_args(&[dir.pattern("*")]);
-		assert_eq!(names(&collected.files), ["a.epub"]);
+		assert_eq!(names(&collected.sources), ["a.epub"]);
 	}
 
 	/// A folder of books is as likely to be named with brackets in it as anything else, and
@@ -332,7 +364,7 @@ mod tests {
 		fs::create_dir(dir.join("Books [2024]")).expect("mkdir");
 		fs::write(dir.join("Books [2024]").join("a.pdf"), b"x").expect("write");
 		let collected = collect_args(&[dir.pattern("Books [2024]/*.pdf")]);
-		assert_eq!(names(&collected.files), ["a.pdf"]);
+		assert_eq!(names(&collected.sources), ["a.pdf"]);
 		assert!(collected.unmatched.is_empty(), "{:?}", collected.unmatched);
 	}
 
@@ -342,7 +374,7 @@ mod tests {
 		let dir = TempDir::new("brackets-file");
 		fs::write(dir.join("notes[final].pdf"), b"x").expect("write");
 		let collected = collect_args(&[dir.pattern("*s[final].pdf")]);
-		assert_eq!(names(&collected.files), ["notes[final].pdf"]);
+		assert_eq!(names(&collected.sources), ["notes[final].pdf"]);
 		assert!(collected.unmatched.is_empty(), "{:?}", collected.unmatched);
 	}
 
@@ -355,7 +387,7 @@ mod tests {
 		}
 		for name in ["[book].pdf", "book].pdf", "book[.pdf"] {
 			let collected = collect_args(&[dir.pattern(name)]);
-			assert_eq!(names(&collected.files), [name], "{name}");
+			assert_eq!(names(&collected.sources), [name], "{name}");
 		}
 	}
 
@@ -370,7 +402,7 @@ mod tests {
 		fs::write(dir.join("c.pdf"), b"x").expect("write");
 		let collected = collect_args(&[dir.pattern("*/*.pdf")]);
 		assert_eq!(
-			names(&collected.files),
+			names(&collected.sources),
 			["a.pdf", "b.pdf"],
 			"the folders were not descended, or c.pdf was not left alone"
 		);
@@ -384,7 +416,7 @@ mod tests {
 		fs::write(dir.join("a.pdf"), b"x").expect("write");
 		fs::write(dir.join("sub").join("b.pdf"), b"x").expect("write");
 		let collected = collect_args(&[dir.pattern("*.pdf")]);
-		assert_eq!(names(&collected.files), ["a.pdf"]);
+		assert_eq!(names(&collected.sources), ["a.pdf"]);
 	}
 
 	/// `SCAN.PDF` and `scan.pdf` are one file on Windows and two elsewhere, so a pattern follows the
@@ -396,11 +428,11 @@ mod tests {
 		fs::write(dir.join("SCAN.PDF"), b"x").expect("write");
 		let lower = collect_args(&[dir.pattern("*.pdf")]);
 		let upper = collect_args(&[dir.pattern("*.PDF")]);
-		assert_eq!(upper.files.len(), 1, "`*.PDF` reaches SCAN.PDF everywhere");
+		assert_eq!(upper.sources.len(), 1, "`*.PDF` reaches SCAN.PDF everywhere");
 		if cfg!(windows) {
-			assert_eq!(lower.files.len(), 1, "`*.pdf` reaches SCAN.PDF on Windows");
+			assert_eq!(lower.sources.len(), 1, "`*.pdf` reaches SCAN.PDF on Windows");
 		} else {
-			assert_eq!(lower.files.len(), 0, "`*.pdf` reaches nothing on {}", env::consts::OS);
+			assert_eq!(lower.sources.len(), 0, "`*.pdf` reaches nothing on {}", env::consts::OS);
 			assert_eq!(lower.unmatched.len(), 1, "and says so rather than matching the wrong file");
 		}
 	}
@@ -412,7 +444,7 @@ mod tests {
 		fs::write(dir.join("a.pdf"), b"x").expect("write");
 		let collected = collect_args(&[dir.pattern("*.pdf"), dir.pattern("*.mobi")]);
 		assert_eq!(
-			names(&collected.files),
+			names(&collected.sources),
 			["a.pdf"],
 			"the pattern that did match was thrown away with the one that did not"
 		);
@@ -427,7 +459,7 @@ mod tests {
 		fs::write(dir.join("b.epub"), b"x").expect("write");
 		fs::write(dir.join("c.pdf"), b"x").expect("write");
 		let collected = collect_args(&[dir.pattern("*.pdf"), dir.pattern("*.epub")]);
-		assert_eq!(names(&collected.files), ["a.pdf", "c.pdf", "b.epub"]);
+		assert_eq!(names(&collected.sources), ["a.pdf", "c.pdf", "b.epub"]);
 	}
 
 	/// Converting a file twice writes its output over itself and reports its failure twice.
@@ -437,17 +469,20 @@ mod tests {
 		fs::write(dir.join("a.epub"), b"x").expect("write");
 		fs::write(dir.join("b.epub"), b"x").expect("write");
 		let collected = collect_args(&[dir.pattern("*.epub"), dir.join("a.epub")]);
-		assert_eq!(names(&collected.files), ["a.epub", "b.epub"]);
+		assert_eq!(names(&collected.sources), ["a.epub", "b.epub"]);
 	}
 
 	#[test]
 	fn a_missing_path_is_passed_through_rather_than_refused_here() {
-		assert_eq!(collect_args(&[PathBuf::from("nowhere.epub")]).files, [PathBuf::from("nowhere.epub")]);
+		assert_eq!(
+			collect_args(&[PathBuf::from("nowhere.epub")]).sources,
+			[Source::File(PathBuf::from("nowhere.epub"))]
+		);
 	}
 
 	#[test]
 	fn no_arguments_collect_to_no_files() {
-		assert!(collect_args(&[]).files.is_empty());
+		assert!(collect_args(&[]).sources.is_empty());
 	}
 
 	/// A shell that expands `*.txt` hands over `./book.txt`; a reader who types the name gets
@@ -543,7 +578,7 @@ mod tests {
 	#[test]
 	fn an_unreadable_line_is_reported_rather_than_converted() {
 		let collected = collect(&[Given::Unreadable("line 2 of the list is not UTF-8 text".to_string())]);
-		assert!(collected.files.is_empty());
+		assert!(collected.sources.is_empty());
 		assert_eq!(collected.problems, ["line 2 of the list is not UTF-8 text"]);
 	}
 
@@ -552,7 +587,7 @@ mod tests {
 		let dir = TempDir::new("listed-literal");
 		fs::write(dir.join("ab.epub"), b"x").expect("write");
 		let collected = collect(&[Given::Listed(dir.pattern("??.epub"))]);
-		assert!(collected.files.is_empty(), "{:?}", collected.files);
+		assert!(collected.sources.is_empty(), "{:?}", collected.sources);
 		assert_eq!(collected.problems.len(), 1, "{:?}", collected.problems);
 		assert!(collected.problems[0].contains("not expanded"), "{}", collected.problems[0]);
 		assert!(collected.problems[0].contains("$OutputEncoding"), "{}", collected.problems[0]);
@@ -563,6 +598,58 @@ mod tests {
 		let dir = TempDir::new("typed-pattern");
 		fs::write(dir.join("a.epub"), b"x").expect("write");
 		let given = gather(&[dir.pattern("*.epub")], Some(listed(&["b.pdf"]))).expect("inputs");
-		assert_eq!(names(&collect(&given).files), ["a.epub", "b.pdf"]);
+		assert_eq!(names(&collect(&given).sources), ["a.epub", "b.pdf"]);
+	}
+	#[test]
+	fn a_link_with_a_question_mark_is_a_link_and_not_a_pattern() {
+		let collected = collect_args(&[PathBuf::from("https://example.org/download?id=3&x=*")]);
+		assert_eq!(collected.sources, [Source::Link("https://example.org/download?id=3&x=*".to_string())]);
+		assert!(collected.unmatched.is_empty(), "{:?}", collected.unmatched);
+	}
+
+	#[test]
+	fn links_and_files_keep_the_order_they_were_given() {
+		let collected = collect_args(&[
+			PathBuf::from("a.epub"),
+			PathBuf::from("https://example.org/b.pdf"),
+			PathBuf::from("c.docx"),
+		]);
+		assert_eq!(
+			collected.sources,
+			[
+				Source::File("a.epub".into()),
+				Source::Link("https://example.org/b.pdf".to_string()),
+				Source::File("c.docx".into())
+			]
+		);
+	}
+
+	#[test]
+	fn a_link_named_twice_is_converted_once() {
+		let link = PathBuf::from("https://example.org/b.pdf");
+		assert_eq!(collect_args(&[link.clone(), link]).sources.len(), 1);
+	}
+
+	#[test]
+	fn links_differing_only_in_path_case_are_two_links() {
+		let collected = collect_args(&[
+			PathBuf::from("https://example.org/Book.pdf"),
+			PathBuf::from("https://example.org/book.pdf"),
+		]);
+		assert_eq!(collected.sources.len(), 2);
+	}
+
+	#[test]
+	fn a_link_is_shown_as_typed() {
+		assert_eq!(
+			Source::Link("https://example.org/a.epub?x=1".to_string()).shown(),
+			"https://example.org/a.epub?x=1"
+		);
+	}
+	#[test]
+	fn a_link_in_a_list_is_a_link() {
+		let collected = collect(&[Given::Listed(PathBuf::from("https://example.org/a.epub?x=1&y=2"))]);
+		assert_eq!(collected.sources, [Source::Link("https://example.org/a.epub?x=1&y=2".to_string())]);
+		assert!(collected.problems.is_empty(), "{:?}", collected.problems);
 	}
 }
