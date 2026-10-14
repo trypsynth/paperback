@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 00f7ee3d7a248f3f; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,a06775bf,3a4c3efe,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4b8c6a9acace3273; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,e611d7d9,3a4c3efe,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - version 1.0
 
@@ -168,6 +168,8 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 * `Shift+;` : Diminuer le montant de l'avance rapide audio.
 * `Ctrl+Shift+.` : Accélérer la narration audio.
 * `Ctrl+Shift+,` : Ralentir la narration audio.
+* `Ctrl+'` : Augmenter le volume de la narration audio.
+* `Ctrl+;` : Diminuer le volume de la narration audio.
 
 ### Menu Outils
 
