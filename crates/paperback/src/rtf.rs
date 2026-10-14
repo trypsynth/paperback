@@ -47,19 +47,6 @@ const fn is_discarded_by_rich_edit(ch: char) -> bool {
 	matches!(ch, '\u{FFF9}'..='\u{FFFF}')
 }
 
-/// How many display units `content` occupies once `RichEdit` has stored it, which is what
-/// `wxTextCtrl::GetLastPosition` reports back.
-///
-/// A wholly-trailing `\par` - one with no content after it - doesn't manifest as a stored
-/// character, since `RichEdit`'s document model implicitly terminates the buffer, so a trailing
-/// newline is not counted.
-#[must_use]
-pub fn stored_display_len(content: &str) -> i64 {
-	let total: usize = content.chars().map(ch_width).sum();
-	let trailing_newline = usize::from(content.ends_with('\n'));
-	i64::try_from(total.saturating_sub(trailing_newline)).unwrap_or(i64::MAX)
-}
-
 pub struct RtfFontInfo {
 	pub face_name: String,
 	/// Same units as `wxdragon::widgets::font::Font::get_point_size()`.
@@ -178,6 +165,8 @@ fn append_escaped_char(ch: char, out: &mut String) {
 mod tests {
 	use std::{env, fs, process};
 
+	use paperback_core::util::text::display_len;
+
 	use super::*;
 
 	fn font() -> RtfFontInfo {
@@ -208,7 +197,7 @@ mod tests {
 			let content = format!("a{ch}b");
 			let sanitized = sanitize_for_rich_edit(&content);
 			assert_eq!(sanitized, "a b", "U+{cp:04X} should become a space");
-			assert_eq!(stored_display_len(&sanitized), stored_display_len(&content), "U+{cp:04X} changed width");
+			assert_eq!(display_len(&sanitized), display_len(&content), "U+{cp:04X} changed width");
 		}
 	}
 
@@ -218,22 +207,6 @@ mod tests {
 		// would be a silent, pointless downgrade of the text.
 		let content = "a\u{FFF8}b\u{FFF0}c";
 		assert!(matches!(sanitize_for_rich_edit(content), Cow::Borrowed(_)));
-	}
-
-	#[test]
-	fn stored_display_len_drops_only_a_wholly_trailing_newline() {
-		assert_eq!(stored_display_len("abc"), 3);
-		assert_eq!(stored_display_len("abc\n"), 3);
-		assert_eq!(stored_display_len("abc\n\n"), 4);
-		assert_eq!(stored_display_len("a\nb"), 3);
-		assert_eq!(stored_display_len(""), 0);
-	}
-
-	#[test]
-	fn stored_display_len_counts_display_units_not_chars() {
-		// Astral characters are two display units where the app measures in UTF-16.
-		let expected = i64::try_from(ch_width('a') + ch_width('\u{1D538}') + ch_width('b')).unwrap();
-		assert_eq!(stored_display_len("a\u{1D538}b"), expected);
 	}
 
 	#[test]

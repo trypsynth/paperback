@@ -214,11 +214,10 @@ impl DocumentManager {
 			loaded = tab.window.loaded_len(),
 			"extended loaded window"
 		);
-		// The control and the window have to agree on how much is loaded, give or take the single
-		// display unit RichEdit does not store for a wholly-trailing paragraph mark (see
-		// `rtf::stored_display_len`). Drift past that would offset every translation from here on.
+		// The control and the window have to agree on how much is loaded. Any drift would offset
+		// every translation from here on.
 		let drift = tab.text_ctrl.get_last_position() - tab.window.loaded_len();
-		if !(-1..=0).contains(&drift) {
+		if drift != 0 {
 			tracing::warn!(drift, "window extension left the control and the window disagreeing");
 			return false;
 		}
