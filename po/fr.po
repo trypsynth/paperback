@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 16:46+0000\n"
+"POT-Creation-Date: 2026-10-13 22:23+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -111,6 +111,7 @@ msgstr "Avertissement"
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
 #. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
+#. TRANSLATORS: Announced when trying to change audio volume on a document that has none
 #, fuzzy
 msgid "This document has no audio."
 msgstr "Ce document n'a pas d'audio."
@@ -121,12 +122,14 @@ msgid "Audio hasn't started playing yet."
 msgstr "La lecture audio n'a pas encore commencé."
 
 #. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
+#. TRANSLATORS: Announced when the audio volume is already at its loudest; {} is the current volume, e.g. "200%"
 #. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
 #, fuzzy
 msgid "{} (maximum)"
 msgstr "{} (maximum)"
 
 #. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
+#. TRANSLATORS: Announced when the audio volume is already at its quietest; {} is the current volume, e.g. "10%"
 #. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
 #, fuzzy
 msgid "{} (minimum)"
@@ -769,6 +772,26 @@ msgstr "&Diminuer la vitesse audio"
 #, fuzzy
 msgid "Decrease how fast the audio narration plays"
 msgstr "Diminuer la vitesse de lecture de la narration audio"
+
+#. TRANSLATORS: Menu item in the Audio menu to make the audio narration louder.
+#, fuzzy
+msgid "Increase Audio &Volume"
+msgstr "Augmenter le &volume audio"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Volume menu item.
+#, fuzzy
+msgid "Make the audio narration louder"
+msgstr "Augmenter le volume de la narration audio"
+
+#. TRANSLATORS: Menu item in the Audio menu to make the audio narration quieter.
+#, fuzzy
+msgid "Decrease Audio Vo&lume"
+msgstr "Réduire le &volume audio"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Volume menu item.
+#, fuzzy
+msgid "Make the audio narration quieter"
+msgstr "Réduire le volume de la narration audio"
 
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
@@ -3114,6 +3137,16 @@ msgstr "Augmenter la vitesse audio"
 #, fuzzy
 msgid "Decrease Audio Speed"
 msgstr "Diminuer la vitesse audio"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Increase Audio Volume"
+msgstr "Augmenter le volume audio"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Decrease Audio Volume"
+msgstr "Réduire le volume audio"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy

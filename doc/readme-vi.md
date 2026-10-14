@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 00f7ee3d7a248f3f; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,a06775bf,3a4c3efe,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4b8c6a9acace3273; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,e611d7d9,3a4c3efe,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - phiên bản 1.0
 
@@ -168,6 +168,8 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 * `Shift+;`: Giảm lượng tìm kiếm âm thanh.
 * `Ctrl+Shift+.`: Tăng tốc độ kể chuyện âm thanh.
 * `Ctrl+Shift+,`: Giảm tốc độ kể chuyện âm thanh.
+* `Ctrl+'`: Làm cho kể chuyện âm thanh lớn hơn.
+* `Ctrl+;`: Làm cho kể chuyện âm thanh nhỏ hơn.
 
 ### Menu Công Cụ
 

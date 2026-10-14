@@ -4,7 +4,10 @@
 use bitflags::bitflags;
 use regex::{Regex, RegexBuilder};
 
-use crate::{document::DocumentBuffer, types as ffi};
+use crate::{
+	document::{ContentBytePos, DocumentBuffer},
+	types as ffi,
+};
 
 bitflags! {
 	#[derive(Copy, Clone)]
@@ -36,30 +39,18 @@ pub fn reader_search(buffer: &DocumentBuffer, needle: &str, start: i64, options:
 	if needle.is_empty() {
 		return -1;
 	}
-	let haystack = &buffer.content;
 	let start_display = usize::try_from(start.max(0)).unwrap_or(0).min(buffer.total_display_len());
 	let start_byte = buffer.byte_index_for_display(start_display);
 	// Build regex for search - this avoids copying/lowercasing the entire haystack.
 	let Some(re) = build_matcher(needle, options) else {
 		return -1;
 	};
-	if options.contains(SearchOptions::FORWARD) {
-		if let Some(m) = re.find(&haystack[start_byte..]) {
-			let byte_pos = start_byte + m.start();
-			let display_pos = buffer.display_index_for_byte(byte_pos);
-			return i64::try_from(display_pos).unwrap_or(-1);
-		}
+	let found = if options.contains(SearchOptions::FORWARD) {
+		re.find(buffer.slice(start_byte..)).map(|m| start_byte + m.start())
 	} else {
-		let mut last: Option<usize> = None;
-		for m in re.find_iter(&haystack[..start_byte]) {
-			last = Some(m.start());
-		}
-		if let Some(pos) = last {
-			let display_pos = buffer.display_index_for_byte(pos);
-			return i64::try_from(display_pos).unwrap_or(-1);
-		}
-	}
-	-1
+		re.find_iter(buffer.slice(..start_byte)).last().map(|m| ContentBytePos::from_raw(m.start()))
+	};
+	found.map_or(-1, |byte| i64::try_from(buffer.display_index_for_byte(byte)).unwrap_or(-1))
 }
 
 /// Every match of `needle` in `buffer`, as display-unit `(start, end)` spans in document order.
@@ -76,8 +67,8 @@ pub fn reader_search_all(buffer: &DocumentBuffer, needle: &str, options: SearchO
 	re.find_iter(&buffer.content)
 		.filter(|m| !m.is_empty())
 		.map(|m| {
-			let start = i64::try_from(buffer.display_index_for_byte(m.start())).unwrap_or(-1);
-			let end = i64::try_from(buffer.display_index_for_byte(m.end())).unwrap_or(-1);
+			let start = i64::try_from(buffer.display_index_for_byte(ContentBytePos::from_raw(m.start()))).unwrap_or(-1);
+			let end = i64::try_from(buffer.display_index_for_byte(ContentBytePos::from_raw(m.end()))).unwrap_or(-1);
 			(start, end)
 		})
 		.collect()

@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 00f7ee3d7a248f3f; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,a06775bf,3a4c3efe,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4b8c6a9acace3273; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,e611d7d9,3a4c3efe,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versión 1.0
 
@@ -168,6 +168,8 @@ Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, e
 * `Shift+;`: Reduce la cantidad de búsqueda de audio.
 * `Ctrl+Shift+.`: Acelera la narración de audio.
 * `Ctrl+Shift+,`: Ralentiza la narración de audio.
+* `Ctrl+'`: Aumenta el volumen de la narración de audio.
+* `Ctrl+;`: Reduce el volumen de la narración de audio.
 
 ### Menú Herramientas
 
