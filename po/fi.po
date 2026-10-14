@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 16:46+0000\n"
-"PO-Revision-Date: 2026-10-13 05:12+0300\n"
+"POT-Creation-Date: 2026-10-13 22:23+0000\n"
+"PO-Revision-Date: 2026-10-14 20:04+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.9\n"
+"X-Generator: Poedit 3.10\n"
 
 #. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
 msgid "this is not a web link"
@@ -32,7 +32,6 @@ msgid "Checking %d of %d: %s"
 msgstr "Tarkistetaan osoitetta %d / %d: %s"
 
 #. TRANSLATORS: Download window message while a document opened from a link downloads; %s is its file name
-#| msgid "Downloading update..."
 msgid "Downloading %s"
 msgstr "Ladataan %s"
 
@@ -95,6 +94,7 @@ msgstr "Varoitus"
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
 #. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
+#. TRANSLATORS: Announced when trying to change audio volume on a document that has none
 msgid "This document has no audio."
 msgstr "Asiakirjassa ei ole äänitettä."
 
@@ -103,11 +103,13 @@ msgid "Audio hasn't started playing yet."
 msgstr "Äänitteen toisto ei ole käynnissä."
 
 #. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
+#. TRANSLATORS: Announced when the audio volume is already at its loudest; {} is the current volume, e.g. "200%"
 #. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
 msgid "{} (maximum)"
 msgstr "{} (enimmäisaika)"
 
 #. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
+#. TRANSLATORS: Announced when the audio volume is already at its quietest; {} is the current volume, e.g. "10%"
 #. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
 msgid "{} (minimum)"
 msgstr "{} (vähimmäisaika)"
@@ -230,7 +232,6 @@ msgstr "Asiakirjan avaaminen"
 #. TRANSLATORS: Title of the dialog that asks for the web link to open a document from
 #. TRANSLATORS: Title of the window that shows documents being downloaded from links
 #. TRANSLATORS: Title of the error listing the links that could not be opened
-#| msgid "Open from Archive"
 msgid "Open from URL"
 msgstr "Avaa URL-osoitteesta"
 
@@ -260,7 +261,6 @@ msgid "Open from &URL..."
 msgstr "Avaa &URL-osoitteesta..."
 
 #. TRANSLATORS: Status-bar help text for the File > Open from URL menu item.
-#| msgid "Open document in web view"
 msgid "Open documents from web links"
 msgstr "Avaa asiakirjoja URL-osoitteista"
 
@@ -656,6 +656,24 @@ msgstr "&Hidasta äänitteen toistoa"
 #. TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
 msgid "Decrease how fast the audio narration plays"
 msgstr "Hidastaa äänitteen toistoa"
+
+#. TRANSLATORS: Menu item in the Audio menu to make the audio narration louder.
+msgid "Increase Audio &Volume"
+msgstr "Nosta äänitteen äänen&voimakkuutta"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Volume menu item.
+#| msgid "Skip the audio narration forward"
+msgid "Make the audio narration louder"
+msgstr "Lisää äänitteen äänenvoimakkuutta"
+
+#. TRANSLATORS: Menu item in the Audio menu to make the audio narration quieter.
+#| msgid "Decrease Audio Speed"
+msgid "Decrease Audio Vo&lume"
+msgstr "Laske äänitteen äänenvo&imakkuutta"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Volume menu item.
+msgid "Make the audio narration quieter"
+msgstr "Vähennä äänitteen äänenvoimakkuutta"
 
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
@@ -1056,12 +1074,10 @@ msgid "Markdown"
 msgstr "Markdown"
 
 #. TRANSLATORS: Label of the field in Open from URL, which takes the web link of a document
-#| msgid "Link"
 msgid "Link:"
 msgstr "Osoite:"
 
 #. TRANSLATORS: Title of the security warning shown before downloading a document from a link
-#| msgid "Security Error"
 msgid "Security Warning"
 msgstr "Suojausvaroitus"
 
@@ -1628,7 +1644,6 @@ msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback ei voi suorittaa toimintoja selainnäkymän ollessa avoinna."
 
 #. TRANSLATORS: First message in the window that downloads documents from links, before the first server answers
-#| msgid "Settings..."
 msgid "Connecting..."
 msgstr "Yhdistetään..."
 
@@ -2030,7 +2045,7 @@ msgstr "&Tietoa Paperbackista"
 
 #. TRANSLATORS: Status-bar help text for the Help > About Paperback menu item.
 msgid "About this application"
-msgstr "Tietoa sovelluksesta"
+msgstr "Tietoja sovelluksesta"
 
 #. TRANSLATORS: Menu item in the Help menu to open the help documentation in the user's web browser.
 msgid "View Help in &Browser"
@@ -2450,7 +2465,6 @@ msgid "Open..."
 msgstr "Avaa..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#| msgid "Open..."
 msgid "Open from URL..."
 msgstr "Avaa URL-osoitteesta..."
 
@@ -2737,6 +2751,15 @@ msgstr "Nopeuta äänitteen toistoa"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Decrease Audio Speed"
 msgstr "Hidasta äänitteen toistoa"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Increase Audio Volume"
+msgstr "Nosta äänitteen äänenvoimakkuutta"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "Decrease Audio Speed"
+msgid "Decrease Audio Volume"
+msgstr "Laske äänitteen äänenvoimakkuutta"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Full Screen"
@@ -3230,7 +3253,7 @@ msgid ""
 "the new version into Applications to finish installing."
 msgstr ""
 "Päivitys on ladattu ja sen levykuva avattu. Sulje %s ja viimeistele asennus "
-"vetämällä uusi versio Ohjelmat-kansioon."
+"raahaamalla uusi versio Ohjelmat-kansioon."
 
 msgid "Invalid application metadata"
 msgstr "Sovelluksen metatiedot ovat virheellisiä"
