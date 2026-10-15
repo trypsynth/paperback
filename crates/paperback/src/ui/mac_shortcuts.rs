@@ -153,6 +153,8 @@ mod tests {
 		assert_eq!(shortcut_action(&shortcuts, 'H' as i32, 0), None);
 		shortcuts.set_chord(ActionId::NextHeading, Some(KeyChord::new(true, false, true, "/")));
 		assert_eq!(shortcut_action(&shortcuts, '/' as i32, COMMAND | SHIFT), Some(ActionId::NextHeading));
-		assert_eq!(shortcut_action(&shortcuts, '/' as i32, COMMAND), None);
+		// Cmd+/ is the Scratch Pad's default chord, so the bare Cmd+/ must resolve to it once
+		// NextHeading has been moved to Cmd+Shift+/.
+		assert_eq!(shortcut_action(&shortcuts, '/' as i32, COMMAND), Some(ActionId::NewScratchPad));
 	}
 }
