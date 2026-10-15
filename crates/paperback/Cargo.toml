@@ -47,8 +47,8 @@ wx-utils = { version = "0.4.3", features = ["shortcuts"] }
 # and friends handlers, its Find uses Rust regex, and its dialogs use the system icons rather
 # than the Tango set built into wxArtProvider. Asserts go too, since a release build cannot act
 # on them.
-wxdragon = { version = "0.9.22", default-features = false, features = ["webview"] }
-zip = { version = "9.0.2", default-features = false, features = ["deflate"] }
+wxdragon = { version = "0.9.23", default-features = false, features = ["webview"] }
+zip = { version = "9.0.3", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Pipes", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading", "Win32_UI_Shell"] }
