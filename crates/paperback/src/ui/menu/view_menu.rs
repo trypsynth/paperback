@@ -30,5 +30,8 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 		item_with_help(menu_ids::OPEN_IN_WEB_VIEW, web_view_label, web_view_help),
 		item_with_help(menu_ids::VIEW_SOURCE, view_source_label, view_source_help),
 	]);
+	// The scratch pad is a window rather than a way of viewing the active document, so it sits
+	// apart at the bottom of the menu, after the document-viewing entries.
+	entries.extend(commands::menu_entries(&[ActionId::NewScratchPad], config));
 	entries
 }

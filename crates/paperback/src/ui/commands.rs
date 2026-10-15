@@ -20,6 +20,7 @@ use super::{
 	menu::{MenuEntry, format_menu_label, item_with_help},
 	menu_ids,
 	navigation::{MarkerNavTarget, handle_marker_navigation},
+	scratch_pad_window,
 };
 
 pub mod audio;
@@ -51,6 +52,7 @@ pub struct Ctx<'a> {
 	pub frame: &'a Frame,
 	pub dm: &'a Rc<Mutex<DocumentManager>>,
 	pub config: &'a Rc<Mutex<ConfigManager>>,
+	pub scratch_pad: &'a scratch_pad_window::ScratchPadWindow,
 	pub live_region_label: StaticText,
 	/// Whether a keyboard shortcut asked for this command rather than a menu click. Both
 	/// produce an identical menu event, so the char hook tags this one; see
@@ -114,6 +116,15 @@ impl Command {
 
 /// Every command that has been ported to the table.
 pub static COMMANDS: &[Command] = &[
+	Command {
+		action: ActionId::NewScratchPad,
+		// TRANSLATORS: Menu item in the View menu that opens a separate window to jot text into while reading. The window has no save or file support and its content is lost when the app closes.
+		label: || t("&Scratch Pad"),
+		// TRANSLATORS: Status-bar help text for the View > Scratch Pad menu item.
+		help: Some(|| t("Open a window to jot text into")),
+		enable: Enable::Always,
+		behavior: Behavior::Run(file::new_scratch_pad),
+	},
 	Command {
 		action: ActionId::Open,
 		// TRANSLATORS: Menu item in the File menu to open a document.

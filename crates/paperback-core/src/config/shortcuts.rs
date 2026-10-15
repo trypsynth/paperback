@@ -316,6 +316,7 @@ mod tests {
 		assert_eq!(
 			ShortcutCategory::View.actions(),
 			[
+				ActionId::NewScratchPad,
 				ActionId::Reload,
 				ActionId::OpenInWebView,
 				ActionId::ViewSource,

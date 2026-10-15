@@ -27,7 +27,15 @@ use crate::{
 		navigation::announce_for_command,
 	},
 };
-
+/// Shows the single scratch pad window: a separate window with an edit box and a Close button, for
+/// pasting bits of a document into while reading. It is not a tab and not a document; nothing is
+/// saved, and closing the app loses whatever is in it.
+///
+/// The window already exists (hidden, with whatever was typed last kept in it) after the first use,
+/// so this just brings it to the front.
+pub fn new_scratch_pad(ctx: &Ctx) {
+	ctx.scratch_pad.show(ctx.frame);
+}
 pub fn open(ctx: &Ctx) {
 	let wildcard = build_file_filter_string();
 	// TRANSLATORS: Title of the file picker dialog shown when opening a document

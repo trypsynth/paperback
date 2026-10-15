@@ -14,7 +14,7 @@ use super::{
 	find::{self, FindDialogState},
 	help, icon, menu, menu_ids, navigation,
 	readability::build_font_from_readability,
-	sleep_timer, status, window_geometry,
+	scratch_pad_window, sleep_timer, status, window_geometry,
 };
 use crate::{
 	config_ext::{UpdateChannel, get_update_channel},
@@ -62,6 +62,7 @@ pub struct MainWindow {
 	)]
 	live_region_label: StaticText,
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
+	_scratch_pad: scratch_pad_window::ScratchPadWindow,
 	#[cfg(target_os = "windows")]
 	_hotkey_handle: Rc<RefCell<Option<HotkeyHandle>>>,
 	/// Recurring timers, held for the window's lifetime. `Timer`'s `Drop` destroys the
@@ -118,6 +119,7 @@ impl MainWindow {
 			Rc::clone(&from_keyboard),
 		)));
 		let find_dialog = Rc::new(Mutex::new(None));
+		let scratch_pad = scratch_pad_window::ScratchPadWindow::new();
 		#[cfg(target_os = "windows")]
 		let hotkey_handle = Rc::new(RefCell::new(start_hotkey_listener(&config.lock().unwrap().get_hotkey())));
 		let timers = Self::bind_menu_events(
@@ -125,6 +127,7 @@ impl MainWindow {
 			&doc_manager,
 			&config,
 			&find_dialog,
+			&scratch_pad,
 			live_region_label,
 			&from_keyboard,
 			#[cfg(target_os = "windows")]
@@ -159,6 +162,7 @@ impl MainWindow {
 			tray_state,
 			live_region_label,
 			_find_dialog: find_dialog,
+			_scratch_pad: scratch_pad,
 			#[cfg(target_os = "windows")]
 			_hotkey_handle: hotkey_handle,
 			_timers: timers,

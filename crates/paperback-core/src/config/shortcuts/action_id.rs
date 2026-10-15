@@ -6,6 +6,7 @@ use super::{KeyChord, ShortcutCategory};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ActionId {
+	NewScratchPad,
 	Open,
 	OpenFromUrl,
 	Close,
@@ -112,6 +113,7 @@ pub enum ActionId {
 impl ActionId {
 	pub const fn all() -> &'static [Self] {
 		&[
+			Self::NewScratchPad,
 			Self::Open,
 			Self::OpenFromUrl,
 			Self::Close,
@@ -232,9 +234,12 @@ impl ActionId {
 			| Self::ExportToPlainText
 			| Self::ExportToHtml
 			| Self::ExportToMarkdown => ShortcutCategory::File,
-			Self::Reload | Self::OpenInWebView | Self::ViewSource | Self::ToggleWordWrap | Self::ToggleFullScreen => {
-				ShortcutCategory::View
-			}
+			Self::NewScratchPad
+			| Self::Reload
+			| Self::OpenInWebView
+			| Self::ViewSource
+			| Self::ToggleWordWrap
+			| Self::ToggleFullScreen => ShortcutCategory::View,
 			Self::Find
 			| Self::FindNext
 			| Self::FindPrevious
@@ -320,6 +325,8 @@ impl ActionId {
 
 	pub fn display_name(self) -> String {
 		match self {
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::NewScratchPad => crate::t("Scratch Pad"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::Open => crate::t("Open..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
@@ -528,6 +535,7 @@ impl ActionId {
 	pub fn default_chord(self) -> Option<KeyChord> {
 		#[cfg(target_os = "macos")]
 		match self {
+			Self::NewScratchPad => Some(KeyChord::new(true, false, false, "/")),
 			Self::Open => Some(KeyChord::new(true, false, false, "O")),
 			Self::OpenFromUrl => Some(KeyChord::new(true, true, false, "O")),
 			Self::Close => Some(KeyChord::new(true, false, false, "W")),
@@ -647,6 +655,7 @@ impl ActionId {
 		}
 		#[cfg(not(target_os = "macos"))]
 		match self {
+			Self::NewScratchPad => Some(KeyChord::new(true, false, false, "/")),
 			Self::Open => Some(KeyChord::new(true, false, false, "O")),
 			Self::OpenFromUrl => Some(KeyChord::new(true, false, false, "L")),
 			Self::Close => Some(KeyChord::new(true, false, false, "F4")),

@@ -15,7 +15,8 @@ use super::HotkeyHandle;
 use super::menu_edit;
 use super::{
 	DocumentManager, FindDialogState, MainWindow, background, commands, dialogs, find, get_update_channel, help, menu,
-	menu_file, menu_go, menu_ids, menu_tools, menu_view, sleep_timer, update_title_from_manager, updater,
+	menu_file, menu_go, menu_ids, menu_tools, menu_view, scratch_pad_window, sleep_timer, update_title_from_manager,
+	updater,
 };
 use crate::ui::navigation::announce_for_command;
 
@@ -26,6 +27,7 @@ impl MainWindow {
 		doc_manager: &Rc<Mutex<DocumentManager>>,
 		config: &Rc<Mutex<ConfigManager>>,
 		find_dialog: &Rc<Mutex<Option<FindDialogState>>>,
+		scratch_pad: &scratch_pad_window::ScratchPadWindow,
 		live_region_label: StaticText,
 		from_keyboard: &Rc<Cell<bool>>,
 		#[cfg(target_os = "windows")] hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
@@ -34,6 +36,7 @@ impl MainWindow {
 		let dm = Rc::clone(doc_manager);
 		let config = Rc::clone(config);
 		let find_dialog = Rc::clone(find_dialog);
+		let scratch_pad = scratch_pad.clone();
 		let from_keyboard = Rc::clone(from_keyboard);
 		#[cfg(target_os = "windows")]
 		let hotkey_handle_for_options = Rc::clone(hotkey_handle);
@@ -53,7 +56,14 @@ impl MainWindow {
 			// shrinking remainder, still keyed to menu ids by hand.
 			if commands::dispatch(
 				id,
-				&commands::Ctx { frame: &frame_copy, dm: &dm, config: &config, live_region_label, from_keyboard },
+				&commands::Ctx {
+					frame: &frame_copy,
+					dm: &dm,
+					config: &config,
+					scratch_pad: &scratch_pad,
+					live_region_label,
+					from_keyboard,
+				},
 			) {
 				return;
 			}

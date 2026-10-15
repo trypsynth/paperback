@@ -32,8 +32,8 @@ use windows::{
 			},
 			Input::KeyboardAndMouse::{
 				INPUT, INPUT_0, INPUT_KEYBOARD, KEYBD_EVENT_FLAGS, KEYBDINPUT, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP,
-				KEYEVENTF_UNICODE, MAPVK_VK_TO_VSC, MapVirtualKeyW, SendInput, VIRTUAL_KEY, VK_CONTROL, VK_DOWN, VK_F4,
-				VK_F5, VK_MENU, VK_RETURN, VK_SHIFT,
+				KEYEVENTF_UNICODE, MAPVK_VK_TO_VSC, MapVirtualKeyW, SendInput, VIRTUAL_KEY, VK_CONTROL, VK_DOWN,
+				VK_ESCAPE, VK_F4, VK_F5, VK_MENU, VK_RETURN, VK_SHIFT, VK_TAB,
 			},
 		},
 	},
@@ -381,6 +381,16 @@ pub fn ctrl_f4() {
 
 pub fn enter() {
 	send_key(VK_RETURN, KEYBD_EVENT_FLAGS(0));
+}
+
+/// Presses and releases Tab.
+pub fn press_tab() {
+	send_key(VK_TAB, KEYBD_EVENT_FLAGS(0));
+}
+
+/// Presses and releases Escape.
+pub fn press_escape() {
+	send_key(VK_ESCAPE, KEYBD_EVENT_FLAGS(0));
 }
 
 pub fn f5() {
