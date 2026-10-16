@@ -45,6 +45,8 @@ struct SectionContent {
 	/// only record an image that carries a description, so this is the only sign that a page whose
 	/// whole body is one undescribed picture is a picture and not simply empty.
 	has_image_markup: bool,
+	/// Why the section was read as HTML rather than XML, for the one summary line a book gets: an EPUB whose XHTML is not well-formed usually has every section like that.
+	xml_error: Option<String>,
 }
 
 impl ConverterOutput for SectionContent {
@@ -140,6 +142,19 @@ pub(super) fn convert_spine_items(
 				conversion_errors.push(err);
 			}
 		}
+	}
+	let read_as_html: Vec<(&str, &str)> = ok_entries
+		.iter()
+		.filter_map(|(_, item, section)| section.xml_error.as_deref().map(|error| (item.path.as_str(), error)))
+		.collect();
+	if let Some((first, error)) = read_as_html.first() {
+		tracing::warn!(
+			sections = read_as_html.len(),
+			of = ok_entries.len(),
+			first,
+			error,
+			"epub sections were not well-formed xml, so they were read as html"
+		);
 	}
 	// `DocumentBuffer::from_parts` builds the buffer's content and per-char indices for every
 	// section in parallel, in one pass, instead of appending them one at a time; it hands back
@@ -245,7 +260,11 @@ fn is_binary_image(media_type: &str) -> bool {
 
 fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionContent> {
 	let mut xml_converter = XmlToText::with_render_tables_inline(render_tables_inline);
-	if xml_converter.convert(content) {
+	let xml_error = match xml_converter.try_convert(content) {
+		Ok(()) => None,
+		Err(error) => Some(error.to_string()),
+	};
+	if xml_error.is_none() {
 		return Ok(SectionContent {
 			text: xml_converter.get_text(),
 			headings: xml_converter.get_headings().to_vec(),
@@ -262,9 +281,9 @@ fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionC
 			underlines: xml_converter.get_underlines().to_vec(),
 			id_positions: xml_converter.get_id_positions().clone(),
 			has_image_markup: content_has_image_markup(content),
+			xml_error: None,
 		});
 	}
-	tracing::warn!("epub section xml conversion failed, falling back to html converter");
 	let mut html_converter = HtmlToText::with_render_tables_inline(render_tables_inline);
 	if html_converter.convert(content, HtmlSourceMode::NativeHtml) {
 		return Ok(SectionContent {
@@ -283,6 +302,7 @@ fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionC
 			underlines: html_converter.get_underlines().to_vec(),
 			id_positions: html_converter.get_id_positions().clone(),
 			has_image_markup: content_has_image_markup(content),
+			xml_error,
 		});
 	}
 	// currently unreachable, HtmlToText::convert always returns true today
@@ -293,7 +313,21 @@ fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionC
 
 #[cfg(test)]
 mod tests {
-	use super::{content_has_image_markup, is_binary_image};
+	use super::{content_has_image_markup, convert_section, is_binary_image};
+
+	#[test]
+	fn a_section_that_is_not_well_formed_xml_is_read_as_html_and_says_why() {
+		let section =
+			convert_section("<html><body><p>Before <img src='a.jpg'> after</p></body></html>", false).unwrap();
+		assert!(section.text.contains("Before"), "{:?}", section.text);
+		assert!(section.xml_error.is_some());
+	}
+
+	#[test]
+	fn a_well_formed_section_records_no_xml_error() {
+		let section = convert_section("<html><body><p>Fine</p></body></html>", false).unwrap();
+		assert_eq!(section.xml_error, None);
+	}
 
 	#[test]
 	fn image_markup_is_detected_however_it_is_written() {

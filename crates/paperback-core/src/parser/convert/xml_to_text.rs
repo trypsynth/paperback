@@ -56,21 +56,30 @@ impl XmlToText {
 	}
 
 	pub fn convert(&mut self, xml_content: &str) -> bool {
-		self.clear();
-		let options = ParsingOptions { allow_dtd: true, ..ParsingOptions::default() };
-		let doc = match Document::parse_with_options(xml_content, options) {
-			Ok(doc) => doc,
+		match self.try_convert(xml_content) {
+			Ok(()) => true,
 			Err(e) => {
 				tracing::warn!(error = %e, "failed to parse xml document");
-				return false;
+				false
 			}
-		};
+		}
+	}
+
+	/// [`Self::convert`] without the warning, for a caller that has a fallback for content that is not well-formed and reports that itself.
+	///
+	/// # Errors
+	///
+	/// Returns the parse error when `xml_content` is not well-formed XML.
+	pub fn try_convert(&mut self, xml_content: &str) -> Result<(), roxmltree::Error> {
+		self.clear();
+		let options = ParsingOptions { allow_dtd: true, ..ParsingOptions::default() };
+		let doc = Document::parse_with_options(xml_content, options)?;
 		for child in doc.root().children() {
 			self.process_node(child);
 		}
 		self.text.finalize_current_line();
 		tracing::debug!(bytes = xml_content.len(), lines = self.text.lines.len(), "converted xml document to text");
-		true
+		Ok(())
 	}
 
 	#[must_use]
