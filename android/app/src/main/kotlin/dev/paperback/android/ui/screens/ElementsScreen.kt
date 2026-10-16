@@ -116,7 +116,7 @@ fun ElementsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -
 								.fillMaxWidth()
 								// TRANSLATORS: TalkBack action label for a heading in the elements list, read as "double tap to go to heading"
 								.clickable(onClickLabel = t("go to heading")) {
-									viewModel.requestJumpToOffset(item.offset)
+									viewModel.navigation.requestJumpToOffset(item.offset)
 									onDismiss()
 								}.semantics(mergeDescendants = true) {
 									// The row's indentation shows the level on screen, so the
@@ -150,7 +150,7 @@ fun ElementsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -
 									.fillMaxWidth()
 									// TRANSLATORS: TalkBack action label for a link in the elements list, read as "double tap to go to link"
 									.clickable(onClickLabel = t("go to link")) {
-										viewModel.requestJumpToOffset(item.offset)
+										viewModel.navigation.requestJumpToOffset(item.offset)
 										onDismiss()
 									}.padding(16.dp)
 							) {

@@ -63,9 +63,9 @@ class MainActivity : ComponentActivity() {
 	private val headsethookHandler = Handler(Looper.getMainLooper())
 	private val headsethookRunnable = Runnable {
 		when (headsethookClickCount) {
-			1 -> vm.togglePlayPause()
-			2 -> vm.playNextSegment()
-			3 -> vm.playPrevSegment()
+			1 -> vm.reading.togglePlayPause()
+			2 -> vm.reading.playNextSegment()
+			3 -> vm.reading.playPrevSegment()
 		}
 		headsethookClickCount = 0
 	}
@@ -86,28 +86,28 @@ class MainActivity : ComponentActivity() {
 
 	private fun perform(shortcut: ReaderShortcut) {
 		when (shortcut) {
-			ReaderShortcut.TogglePlayback -> vm.togglePlayPause()
-			ReaderShortcut.PlayOnly -> if (!vm.ttsManager.isSpeaking.value) vm.togglePlayPause()
-			ReaderShortcut.PauseOnly -> if (vm.ttsManager.isSpeaking.value) vm.togglePlayPause()
+			ReaderShortcut.TogglePlayback -> vm.reading.togglePlayPause()
+			ReaderShortcut.PlayOnly -> if (!vm.ttsManager.isSpeaking.value) vm.reading.togglePlayPause()
+			ReaderShortcut.PauseOnly -> if (vm.ttsManager.isSpeaking.value) vm.reading.togglePlayPause()
 			ReaderShortcut.HeadsetHook -> countHeadsetClick()
-			ReaderShortcut.NextSegment -> vm.playNextSegment()
-			ReaderShortcut.PreviousSegment -> vm.playPrevSegment()
+			ReaderShortcut.NextSegment -> vm.reading.playNextSegment()
+			ReaderShortcut.PreviousSegment -> vm.reading.playPrevSegment()
 			ReaderShortcut.FindNext -> vm.search.findNext()
 			ReaderShortcut.FindPrevious -> vm.search.findPrevious()
-			ReaderShortcut.OpenFind -> vm.findDialog.open()
-			ReaderShortcut.OpenSettings -> vm.settingsRequest.request()
-			ReaderShortcut.OpenBook -> vm.openBookRequest.request()
-			ReaderShortcut.OpenToc -> vm.tocRequest.request()
+			ReaderShortcut.OpenFind -> vm.navigation.findDialog.open()
+			ReaderShortcut.OpenSettings -> vm.navigation.settingsRequest.request()
+			ReaderShortcut.OpenBook -> vm.navigation.openBookRequest.request()
+			ReaderShortcut.OpenToc -> vm.navigation.tocRequest.request()
 			ReaderShortcut.OpenElements -> vm.openElements()
 			ReaderShortcut.OpenWordCount -> vm.openWordCountDialog()
-			ReaderShortcut.OpenAllDocuments -> vm.allDocumentsRequest.request()
-			ReaderShortcut.OpenDocumentInfo -> vm.documentInfoDialog.open()
-			ReaderShortcut.OpenSleepTimer -> vm.sleepTimerDialog.open()
+			ReaderShortcut.OpenAllDocuments -> vm.navigation.allDocumentsRequest.request()
+			ReaderShortcut.OpenDocumentInfo -> vm.navigation.documentInfoDialog.open()
+			ReaderShortcut.OpenSleepTimer -> vm.navigation.sleepTimerDialog.open()
 			ReaderShortcut.ExportDocument -> vm.openExportDocumentDialog()
-			ReaderShortcut.ExportSettings -> vm.exportSettingsRequest.request()
-			ReaderShortcut.ImportSettings -> vm.importSettingsRequest.request()
+			ReaderShortcut.ExportSettings -> vm.navigation.exportSettingsRequest.request()
+			ReaderShortcut.ImportSettings -> vm.navigation.importSettingsRequest.request()
 			is ReaderShortcut.OpenGoTo -> vm.openGoToDialog(shortcut.mode)
-			is ReaderShortcut.Navigate -> vm.navigateByType(shortcut.type, shortcut.direction)
+			is ReaderShortcut.Navigate -> vm.reading.navigateByType(shortcut.type, shortcut.direction)
 		}
 	}
 

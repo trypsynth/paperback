@@ -95,7 +95,7 @@ fun TocScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -> Uni
 							.then(if (isActive) Modifier.focusRequester(focusRequester) else Modifier)
 							// TRANSLATORS: TalkBack action label for a table of contents entry, read as "double tap to go to chapter"
 							.clickable(onClickLabel = t("go to chapter")) {
-								viewModel.updateTtsPosition(item.position)
+								viewModel.reading.updateTtsPosition(item.position)
 								onDismiss()
 							}.semantics(mergeDescendants = true) {
 								// The row's indentation shows the level on screen, so the number
