@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use roxmltree::Document as XmlDocument;
 
-use super::{super::numbering::Numbering, Walk, traverse};
+use super::{super::numbering::Numbering, Walk, number_pages, traverse};
 use crate::{
 	document::{DocumentBuffer, MarkerType},
 	util::text::display_len,
@@ -28,6 +28,7 @@ fn walk(xml_doc: &XmlDocument, render_tables_inline: bool, numbering: Numbering)
 	};
 	traverse(xml_doc.root(), &mut walk);
 	walk.end_list();
+	number_pages(&mut buffer, 0, 0);
 	buffer
 }
 
@@ -184,4 +185,64 @@ fn run_format_offset_accounts_for_leading_whitespace_trim() {
 	let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");
 	assert_eq!(marker.position, 0, "Bold marker must point at the start of the trimmed content");
 	assert_eq!(marker.length, display_len("bold"));
+}
+
+fn pages(buffer: &DocumentBuffer) -> Vec<(usize, String)> {
+	let mut pages: Vec<(usize, String)> = buffer
+		.markers
+		.iter()
+		.filter(|m| m.mtype == MarkerType::PageBreak)
+		.map(|m| (m.position, m.text.clone()))
+		.collect();
+	pages.sort();
+	pages
+}
+
+/// #1121: a .docx has no pages of its own, so they come from where Word last broke them, and the first page, which Word records no break for, starts the document.
+#[test]
+fn pages_start_where_word_last_broke_them() {
+	let xml = r"<document><body><p><r><t>Cover</t></r></p><p><r><lastRenderedPageBreak/><t>Contents</t></r></p><p><r><t>More</t></r></p><p><r><lastRenderedPageBreak/><t>Body</t></r></p></body></document>";
+	let buffer = parse_run_props(xml);
+	assert_eq!(
+		buffer.content,
+		"Cover
+Contents
+More
+Body
+"
+	);
+	assert_eq!(pages(&buffer), [(0, "Page 1".to_string()), (6, "Page 2".to_string()), (20, "Page 3".to_string())]);
+}
+
+/// A document Word never laid out records no breaks, and claiming it is one page would be a guess.
+#[test]
+fn a_document_with_no_recorded_breaks_has_no_pages() {
+	let buffer = parse_run_props(r"<document><body><p><r><t>One</t></r></p><p><r><t>Two</t></r></p></body></document>");
+	assert!(pages(&buffer).is_empty());
+}
+
+/// A page that breaks partway through a paragraph starts at the words after the break.
+#[test]
+fn a_page_can_start_inside_a_paragraph() {
+	let xml = r"<document><body><p><r><t>Start</t></r></p><p><r><t>end of one </t></r><r><lastRenderedPageBreak/><t>top of two</t></r></p></body></document>";
+	let buffer = parse_run_props(xml);
+	assert_eq!(
+		pages(&buffer)[1],
+		(
+			display_len(
+				"Start
+end of one "
+			),
+			"Page 2".to_string()
+		)
+	);
+}
+
+/// A page inside a table starts with the table, so the pages after it keep their numbers.
+#[test]
+fn a_page_that_starts_inside_a_table_starts_with_it() {
+	let xml = r"<document><body><p><r><t>Intro</t></r></p><tbl><tr><tc><p><r><t>A</t></r></p></tc></tr><tr><tc><p><r><lastRenderedPageBreak/><t>B</t></r></p></tc></tr></tbl><p><r><lastRenderedPageBreak/><t>After</t></r></p></body></document>";
+	let buffer = parse_run_props(xml);
+	let after = buffer.content.find("After").unwrap();
+	assert_eq!(pages(&buffer), [(0, "Page 1".to_string()), (6, "Page 2".to_string()), (after, "Page 3".to_string())]);
 }
