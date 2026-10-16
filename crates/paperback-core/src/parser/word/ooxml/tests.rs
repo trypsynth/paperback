@@ -218,7 +218,7 @@ Body
 #[test]
 fn a_document_with_no_recorded_breaks_has_no_pages() {
 	let buffer = parse_run_props(r"<document><body><p><r><t>One</t></r></p><p><r><t>Two</t></r></p></body></document>");
-	assert!(pages(&buffer).is_empty());
+	assert_eq!(pages(&buffer), []);
 }
 
 /// A page that breaks partway through a paragraph starts at the words after the break.
