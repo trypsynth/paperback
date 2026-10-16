@@ -218,7 +218,7 @@ Body
 #[test]
 fn a_document_with_no_recorded_breaks_has_no_pages() {
 	let buffer = parse_run_props(r"<document><body><p><r><t>One</t></r></p><p><r><t>Two</t></r></p></body></document>");
-	assert!(pages(&buffer).is_empty());
+	assert_eq!(pages(&buffer), []);
 }
 
 /// A page that breaks partway through a paragraph starts at the words after the break.
@@ -245,4 +245,34 @@ fn a_page_that_starts_inside_a_table_starts_with_it() {
 	let buffer = parse_run_props(xml);
 	let after = buffer.content.find("After").unwrap();
 	assert_eq!(pages(&buffer), [(0, "Page 1".to_string()), (6, "Page 2".to_string()), (after, "Page 3".to_string())]);
+}
+
+/// Links and bookmarks are display positions, which differ from byte offsets once a character outside the Basic Multilingual Plane, such as an emoji, comes before them. The leading spaces are trimmed away, so they also check the positions move back with the trim.
+#[test]
+fn links_and_bookmarks_land_on_their_text_after_an_emoji() {
+	let xml = "<document><body><p><r><t xml:space=\"preserve\">  \u{1F600} see </t></r><bookmarkStart name=\"here\"/><hyperlink anchor=\"here\"><r><t>this</t></r></hyperlink><r><t xml:space=\"preserve\"> and </t></r><r><fldChar fldCharType=\"begin\"/></r><r><instrText> HYPERLINK \"https://example.com\" </instrText></r><r><fldChar fldCharType=\"separate\"/></r><r><t>that</t></r><r><fldChar fldCharType=\"end\"/></r></p></body></document>";
+	let xml_doc = XmlDocument::parse(xml).expect("valid xml");
+	let mut buffer = DocumentBuffer::new();
+	let mut headings = Vec::new();
+	let mut id_positions = HashMap::new();
+	let rels = HashMap::new();
+	let style_heading_map = HashMap::new();
+	let mut walk = Walk {
+		buffer: &mut buffer,
+		headings: &mut headings,
+		id_positions: &mut id_positions,
+		rels: &rels,
+		style_heading_map: &style_heading_map,
+		render_tables_inline: false,
+		numbering: Numbering::default(),
+		list: None,
+	};
+	traverse(xml_doc.root(), &mut walk);
+	let this = display_len("\u{1F600} see ");
+	assert_eq!(id_positions["here"], this, "the bookmark is where its text starts");
+	let links: Vec<(usize, &str)> =
+		buffer.markers.iter().filter(|m| m.mtype == MarkerType::Link).map(|m| (m.position, m.text.as_str())).collect();
+	assert_eq!(links[0], (this, "this"));
+	assert_eq!(links[1].0, display_len("\u{1F600} see this and "));
+	assert_eq!(buffer.content, "\u{1F600} see this and that\n");
 }

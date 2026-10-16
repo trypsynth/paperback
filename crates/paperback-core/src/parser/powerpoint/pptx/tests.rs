@@ -117,3 +117,15 @@ fn extract_slide_text_renders_table_placeholder() {
 	assert_eq!(tables.len(), 1);
 	assert_eq!(tables[0].caption, "One Two");
 }
+
+/// A link's position is in display units, which an emoji before it makes differ from bytes.
+#[test]
+fn extract_slide_text_places_a_link_after_an_emoji_in_display_units() {
+	let xml = "<root><p><r><t>\u{1F600} see </t></r><r><hlinkClick id=\"rId1\"/><t>this</t></r></p></root>";
+	let doc = XmlDocument::parse(xml).expect("xml parse");
+	let mut links = Vec::new();
+	let mut tables = Vec::new();
+	let rels = HashMap::from([("rId1".to_string(), "https://example.com".to_string())]);
+	extract_slide_text(doc.root(), &mut links, &mut tables, 0, &rels, true);
+	assert_eq!(links[0].offset, crate::util::text::display_len("\u{1F600} see "));
+}

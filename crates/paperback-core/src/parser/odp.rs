@@ -15,6 +15,7 @@ use crate::{
 	},
 	t,
 	types::LinkInfo,
+	util::text::display_len,
 };
 
 pub struct OdpParser;
@@ -135,7 +136,7 @@ fn traverse_page(node: Node, text: &mut String, links: &mut Vec<LinkInfo>, slide
 		let tag_name = node.tag_name().name();
 		if tag_name == "a" {
 			if let Some(href) = node.attribute("href") {
-				let link_offset = slide_start + text.len();
+				let link_offset = slide_start + display_len(text);
 				let link_text = collect_element_text(node);
 				if !link_text.is_empty() {
 					text.push_str(&link_text);
@@ -230,6 +231,16 @@ mod tests {
 		assert_eq!(link.text, "the site");
 		assert_eq!(link.reference, "https://example.com");
 		assert_eq!(&doc.buffer.content[link.position..link.position + link.text.len()], "the site");
+	}
+
+	/// A link's position is in display units, which an emoji before it makes differ from bytes.
+	#[test]
+	fn a_link_after_an_emoji_lands_on_its_text() {
+		let doc = parse_ok(&fodp_document(&page(
+			"<text:p>\u{1F600} <text:a xlink:href=\"https://example.com\">the site</text:a></text:p>",
+		)));
+		let link = doc.buffer.markers.iter().find(|marker| marker.mtype == MarkerType::Link).expect("link marker");
+		assert_eq!(link.position, display_len("\u{1F600} "));
 	}
 
 	/// A deck can hold empty layout placeholder slides; they'd otherwise each contribute a page

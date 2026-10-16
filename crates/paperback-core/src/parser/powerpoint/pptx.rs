@@ -210,7 +210,7 @@ fn traverse_for_text(
 					{
 						let link_text = collect_text_from_tagged_elements(parent, "t");
 						if !link_text.is_empty() {
-							let link_offset = slide_start + text.len();
+							let link_offset = slide_start + display_len(text);
 							text.push_str(&link_text);
 							links.push(LinkInfo {
 								offset: link_offset,
