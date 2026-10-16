@@ -61,7 +61,12 @@ pub(super) fn handle_document_info(frame: &Frame, dm: &Rc<Mutex<DocumentManager>
 /// menu item covers both so there is nothing to enable and disable as a job starts and ends, and
 /// the answer to "how do I stop this" is the same item that started it.
 #[cfg(any(target_os = "windows", target_os = "macos"))]
-pub(super) fn handle_batch_ocr(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText, from_keyboard: bool) {
+pub(super) fn handle_batch_ocr(
+	frame: &Frame,
+	dm: &Rc<Mutex<DocumentManager>>,
+	live_region_label: StaticText,
+	from_keyboard: bool,
+) {
 	let (max_page, running) = {
 		let dm_ref = dm.lock().unwrap();
 		let Some(tab) = dm_ref.active_tab() else {
