@@ -21,7 +21,6 @@ class RecordedNarration(context: Context, private val config: ConfigManagerFfi, 
 	RecordedPlayer {
 	private val player = DaisyAudioPlayer(context)
 
-	/** The document the player is currently narrating, if any. */
 	private var attachedDocumentUri: String? = null
 
 	/** Invoked whenever playback starts or stops, including at the end of the book. */
@@ -77,7 +76,6 @@ class RecordedNarration(context: Context, private val config: ConfigManagerFfi, 
 		onDetached?.invoke()
 	}
 
-	/** Whether the recording currently loaded belongs to [documentUri]. */
 	fun isNarrating(documentUri: String): Boolean = attachedDocumentUri == documentUri
 
 	fun persistPosition() {

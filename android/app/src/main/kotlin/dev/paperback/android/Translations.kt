@@ -93,7 +93,6 @@ private const val PLURAL_MANY_MARKER = "⁣"
 
 fun t(str: String): String = Translations.map[str] ?: str.removeSuffix(PLURAL_MANY_MARKER)
 
-/** The marker a translatable string uses where an argument goes. */
 private const val PLACEHOLDER = "{}"
 
 /**

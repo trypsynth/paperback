@@ -13,9 +13,9 @@ import com.google.common.util.concurrent.ListenableFuture
 /**
  * Adapts TtsManager's play/pause state and document title/author into Media3's Player
  * interface, so a MediaSession (and its auto-generated notification, lock-screen
- * controls, and Bluetooth/headset button routing) can be driven by it. The actual
- * TextToSpeech-to-MediaPlayer playback pipeline lives entirely in TtsManager; this class
- * only reports its state and forwards transport commands back to it.
+ * controls, and Bluetooth/headset button routing) can be driven by it. The playback itself lives
+ * entirely in TtsManager; this class only reports its state and forwards transport commands back
+ * to it.
  */
 @OptIn(UnstableApi::class)
 class TtsPlayer(
@@ -63,13 +63,11 @@ class TtsPlayer(
 		return Futures.immediateVoidFuture()
 	}
 
-	/** Called by TtsManager whenever isSpeaking changes. */
 	fun updatePlaybackState(isPlaying: Boolean) {
 		playing = isPlaying
 		invalidateState()
 	}
 
-	/** Called by TtsManager whenever the document title/author changes. */
 	fun updateMetadata(title: String, author: String) {
 		val metadata = MediaMetadata
 			.Builder()

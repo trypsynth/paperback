@@ -93,7 +93,6 @@ private fun ChoiceSetting(label: String, options: List<String>, selectedIndex: I
  * A speech setting on a 0 to 100 scale, with the slider semantics a screen reader needs to
  * announce and change it: the label and the percentage are folded into the group so TalkBack
  * reads one control rather than a heading and a slider separately.
- *
  */
 @Composable
 private fun PercentSetting(label: String, percentage: Int, onChange: (Int) -> Unit) {
@@ -453,8 +452,7 @@ fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -
 								if (canChooseVoice) {
 									Modifier
 								} else {
-									// Say why it cannot be opened, the same way the sliders do
-									// when they are following the engine's own settings.
+									// Say why it cannot be opened, rather than leaving it to read as an ordinary button that does nothing.
 									Modifier.semantics {
 										stateDescription = if (isSystemDefault) {
 											t("System Default")

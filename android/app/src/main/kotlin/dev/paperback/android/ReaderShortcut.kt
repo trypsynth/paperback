@@ -14,7 +14,6 @@ import uniffi.paperback.SegmentTypeFfi
  * that quietly stops matching is not a small thing.
  */
 sealed interface ReaderShortcut {
-	/** Play, pause, or start reading, depending on what is happening now. */
 	object TogglePlayback : ReaderShortcut
 
 	/** Start playing, but leave playback alone if it is already going (the media Play key,
@@ -63,7 +62,6 @@ sealed interface ReaderShortcut {
 	/** Opens Go To on one of its modes (line, page or percentage). */
 	data class OpenGoTo(val mode: String) : ReaderShortcut
 
-	/** Steps to the next or previous element of one kind. */
 	data class Navigate(val type: SegmentTypeFfi, val direction: SegmentDirectionFfi) : ReaderShortcut
 }
 

@@ -324,7 +324,6 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		}
 	}
 
-	/** Speaks whatever was asked for while the engine was still starting. */
 	private fun speakPending() {
 		val (text, isSample) = pendingSpeak ?: return
 		pendingSpeak = null

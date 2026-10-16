@@ -457,11 +457,6 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 		}.start()
 	}
 
-	/**
-	 * Extraction directory for [uriString], stable across opens. Naming it with a fresh UUID
-	 * meant every pick -- and every tab restore at launch -- left behind another full copy of
-	 * the document, with nothing that ever deleted it.
-	 */
 	private suspend fun prepareDocumentTabIO(
 		uri: Uri,
 		providedPassword: String? = null,
@@ -1037,7 +1032,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 	 * Seeks the recording to `percent` of its running time, reporting whether it applied.
 	 *
 	 * False for a document with no audio, and for one whose file lengths are not all known, so
-	 * the caller maps the percentage through the text instead, as everything did before. A
+	 * the caller maps the percentage through the text instead. A
 	 * percentage through the text of an audiobook counts blank lines, one per file, so it treats
 	 * a two minute file and an hour long one as equal shares of the book.
 	 *
