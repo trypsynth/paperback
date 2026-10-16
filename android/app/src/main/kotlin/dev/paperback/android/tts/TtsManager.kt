@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import android.provider.Settings
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
@@ -26,6 +27,7 @@ import kotlinx.coroutines.launch
 import uniffi.paperback.ConfigManagerFfi
 import java.io.File
 import java.util.Locale
+import kotlin.math.roundToInt
 
 private const val TAG = "PaperbackTts"
 
@@ -77,6 +79,7 @@ class TtsManager(
 		const val KEY_PARAGRAPH_PAUSE = "tts_paragraph_pause_ms"
 		private const val RERENDER_DELAY_MS = 400L
 		private const val SAMPLE_PREFIX = "TTS_SAMPLE_ID_"
+		private const val SYSTEM_SPEECH_SCALE = 100
 
 		/** Where synthesized audio is written once it has already been handed over as it was made. */
 		private val DISCARDED_AUDIO = File("/dev/null")
@@ -316,6 +319,7 @@ class TtsManager(
 			if (engine == null || engine == SYSTEM_DEFAULT) {
 				_availableVoices.value = emptyList()
 				_currentVoice.value = null
+				loadSystemDefaultSpeech()
 			} else {
 				val savedRate = config.getAppString("${KEY_RATE}_$engine", "50").toIntOrNull() ?: 50
 				setSpeechRate(savedRate)
@@ -495,30 +499,48 @@ class TtsManager(
 		audioFocus.abandon()
 	}
 
+	/**
+	 * Takes up the system default engine's rate and pitch: the reader's own, once they have set one here, and otherwise Android's.
+	 *
+	 * Android's are only shown, not applied, since leaving them alone is what follows them. Applying the slider's default instead would change the speed of every reader who never touched it, because the middle of the slider is faster than Android's normal rate.
+	 */
+	private fun loadSystemDefaultSpeech() {
+		val savedRate = config.getAppString("${KEY_RATE}_$SYSTEM_DEFAULT", "").toIntOrNull()
+		if (savedRate != null) {
+			setSpeechRate(savedRate)
+		} else {
+			_currentSpeechRate.value = speechRatePercentageFor(systemSpeechSetting(Settings.Secure.TTS_DEFAULT_RATE))
+		}
+		val savedPitch = config.getAppString("${KEY_PITCH}_$SYSTEM_DEFAULT", "").toIntOrNull()
+		if (savedPitch != null) {
+			setPitch(savedPitch)
+		} else {
+			_currentPitch.value = pitchPercentageFor(systemSpeechSetting(Settings.Secure.TTS_DEFAULT_PITCH))
+		}
+	}
+
+	/** One of Android's own speech settings, which it stores as a hundredth of the multiplier. */
+	private fun systemSpeechSetting(name: String): Float =
+		Settings.Secure.getInt(context.contentResolver, name, SYSTEM_SPEECH_SCALE) / SYSTEM_SPEECH_SCALE.toFloat()
+
 	fun setSpeechRate(ratePercentage: Int) {
 		val percentage = ratePercentage.coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE)
 		_currentSpeechRate.value = percentage
-		val engine = _currentEngineName.value
-		if (engine != null && engine != SYSTEM_DEFAULT) {
-			config.setAppString("${KEY_RATE}_$engine", percentage.toString())
-			config.flush()
-			tts?.setSpeechRate(speechRateFor(percentage))
-			resynthesizePrecache()
-			applyToCurrentParagraph()
-		}
+		config.setAppString("${KEY_RATE}_${getCurrentEngine()}", percentage.toString())
+		config.flush()
+		tts?.setSpeechRate(speechRateFor(percentage))
+		resynthesizePrecache()
+		applyToCurrentParagraph()
 	}
 
 	fun setPitch(pitchPercentage: Int) {
 		val percentage = pitchPercentage.coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE)
 		_currentPitch.value = percentage
-		val engine = _currentEngineName.value
-		if (engine != null && engine != SYSTEM_DEFAULT) {
-			config.setAppString("${KEY_PITCH}_$engine", percentage.toString())
-			config.flush()
-			tts?.setPitch(pitchFor(percentage))
-			resynthesizePrecache()
-			applyToCurrentParagraph()
-		}
+		config.setAppString("${KEY_PITCH}_${getCurrentEngine()}", percentage.toString())
+		config.flush()
+		tts?.setPitch(pitchFor(percentage))
+		resynthesizePrecache()
+		applyToCurrentParagraph()
 	}
 
 	/** Makes a rate or pitch change heard in the paragraph being read, not only from the next one: straight away while playing, and on resume while paused. */
@@ -651,3 +673,11 @@ internal fun speechRateFor(percentage: Int): Float =
  * stops being understandable rather than just sounding different. */
 internal fun pitchFor(percentage: Int): Float =
 	0.1f + (percentage.coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE) / 100f) * 1.9f
+
+/** The slider percentage nearest an engine speech rate, the inverse of [speechRateFor]. */
+internal fun speechRatePercentageFor(rate: Float): Int =
+	((rate - 0.1f) / 2.9f * 100f).roundToInt().coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE)
+
+/** The slider percentage nearest an engine pitch, the inverse of [pitchFor]. */
+internal fun pitchPercentageFor(pitch: Float): Int =
+	((pitch - 0.1f) / 1.9f * 100f).roundToInt().coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE)

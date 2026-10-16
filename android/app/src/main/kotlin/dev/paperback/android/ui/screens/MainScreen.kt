@@ -24,7 +24,6 @@ import androidx.navigation3.runtime.NavKey
 import dev.paperback.android.AllDocumentsRoute
 import dev.paperback.android.SettingsRoute
 import dev.paperback.android.t
-import dev.paperback.android.tts.TtsManager
 import dev.paperback.android.ui.components.DocumentTextView
 import dev.paperback.android.ui.components.MainScreenTopBar
 import dev.paperback.android.ui.components.NoDocumentPane
@@ -383,7 +382,7 @@ fun MainScreen(
 						currentUnit = currentNavUnit,
 						navUnits = navUnits,
 						onNavUnitChange = { viewModel.setNavUnit(it) },
-						speechRatePercent = speechRatePercent.takeUnless { ttsEngine == null || ttsEngine == TtsManager.SYSTEM_DEFAULT },
+						speechRatePercent = speechRatePercent.takeUnless { ttsEngine == null },
 						onSpeechRateChange = { viewModel.ttsManager.setSpeechRate(it) },
 						swipeUpMovesForward = swipeUpMovesForward,
 						hidePrevNextButtons = hidePrevNextButtons
