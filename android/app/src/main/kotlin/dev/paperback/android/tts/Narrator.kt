@@ -51,9 +51,7 @@ interface RecordedPlayer {
  * recording knows which clip narrates which part of the text, so playback follows the caret
  * rather than the other way round.
  */
-class RecordedNarrator(
-	private val player: RecordedPlayer
-) : Narrator {
+class RecordedNarrator(private val player: RecordedPlayer) : Narrator {
 	override fun isPlaying(): Boolean = player.isPlaying()
 
 	override fun play() = player.play()
@@ -73,10 +71,7 @@ class RecordedNarrator(
  * Paused is a state of its own here rather than a stopped player: resuming carries on mid
  * sentence, while a fresh [speakCurrentSegment] would start the paragraph again.
  */
-class SpokenNarrator(
-	private val speech: SpeechEngine,
-	private val speakCurrentSegment: () -> Unit
-) : Narrator {
+class SpokenNarrator(private val speech: SpeechEngine, private val speakCurrentSegment: () -> Unit) : Narrator {
 	override fun isPlaying(): Boolean = speech.isSpeaking.value
 
 	override fun play() {

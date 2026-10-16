@@ -47,9 +47,7 @@ private const val AUDIO_SEEK_AMOUNT_KEY = "audio_seek_amount_seconds"
 private const val ACTIVE_DOCUMENT_KEY = "active_document"
 private const val DEFAULT_AUDIO_SEEK_SECONDS = 10
 
-class MainScreenViewModel(
-	application: Application
-) : AndroidViewModel(application) {
+class MainScreenViewModel(application: Application) : AndroidViewModel(application) {
 	private val context get() = getApplication<Application>()
 
 	// Loaded here rather than from the coroutine below, because every `ConfigManagerFfi` read
@@ -301,39 +299,38 @@ class MainScreenViewModel(
 		}
 	}
 
-	private suspend fun getRecentDocumentsListIO(): List<RecentDocumentItem> =
-		withContext(Dispatchers.IO) {
-			val recents = config.getRecentDocuments()
-			val opened = config.getOpenedDocuments().toSet()
-			recents.map { uriString ->
-				val uri = uriString.toUri()
-				var displayName = uri.lastPathSegment ?: uriString
-				var isMissing = false
+	private suspend fun getRecentDocumentsListIO(): List<RecentDocumentItem> = withContext(Dispatchers.IO) {
+		val recents = config.getRecentDocuments()
+		val opened = config.getOpenedDocuments().toSet()
+		recents.map { uriString ->
+			val uri = uriString.toUri()
+			var displayName = uri.lastPathSegment ?: uriString
+			var isMissing = false
 
-				if (uri.scheme == "content") {
-					try {
-						context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-							if (cursor.moveToFirst()) {
-								val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-								if (nameIndex != -1) displayName = cursor.getString(nameIndex)
-							} else {
-								isMissing = true
-							}
-						} ?: run { isMissing = true }
-						if (!isMissing) {
-							context.contentResolver.openAssetFileDescriptor(uri, "r")?.close()
+			if (uri.scheme == "content") {
+				try {
+					context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+						if (cursor.moveToFirst()) {
+							val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+							if (nameIndex != -1) displayName = cursor.getString(nameIndex)
+						} else {
+							isMissing = true
 						}
-					} catch (_: Exception) {
-						isMissing = true
+					} ?: run { isMissing = true }
+					if (!isMissing) {
+						context.contentResolver.openAssetFileDescriptor(uri, "r")?.close()
 					}
-				} else {
-					val file = File(uri.path ?: uriString)
-					displayName = file.name
-					isMissing = !file.exists()
+				} catch (_: Exception) {
+					isMissing = true
 				}
-				RecentDocumentItem(uriString, displayName, opened.contains(uriString), isMissing)
+			} else {
+				val file = File(uri.path ?: uriString)
+				displayName = file.name
+				isMissing = !file.exists()
 			}
+			RecentDocumentItem(uriString, displayName, opened.contains(uriString), isMissing)
 		}
+	}
 
 	/** Empties the recent documents list. The open tabs are left alone: a document being read
 	 * is not a document the reader is finished with. */
@@ -358,10 +355,7 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun locateRecentDocument(
-		oldUriString: String,
-		newUri: Uri
-	) {
+	fun locateRecentDocument(oldUriString: String, newUri: Uri) {
 		val newUriString = newUri.toString()
 		viewModelScope.launch(Dispatchers.IO) {
 			try {
@@ -377,16 +371,10 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun openDocument(
-		uri: Uri,
-		track: Boolean = true
-	) = openDocuments(listOf(uri), track)
+	fun openDocument(uri: Uri, track: Boolean = true) = openDocuments(listOf(uri), track)
 
 	// One after another in a single job: a job per document would race to add their tabs and write the config.
-	fun openDocuments(
-		uris: List<Uri>,
-		track: Boolean = true
-	) {
+	fun openDocuments(uris: List<Uri>, track: Boolean = true) {
 		viewModelScope.launch(Dispatchers.IO) {
 			for (uri in uris) {
 				val uriString = uri.toString()
@@ -444,11 +432,7 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun savePosition(
-		session: DocumentSession,
-		documentUri: String,
-		scrollIndex: Int
-	) {
+	fun savePosition(session: DocumentSession, documentUri: String, scrollIndex: Int) {
 		val position = session.positionFromLine((scrollIndex + 1).toLong())
 		_ttsPosition.value = position
 		viewModelScope.launch(Dispatchers.IO) {
@@ -482,87 +466,83 @@ class MainScreenViewModel(
 		uri: Uri,
 		providedPassword: String? = null,
 		isRestore: Boolean = false
-	): DocumentTabState? =
-		withContext(Dispatchers.IO) {
-			try {
-				val uriString = uri.toString()
-				val isContentUri = uri.scheme == "content"
-				val absolutePath: String
-				val displayName: String
+	): DocumentTabState? = withContext(Dispatchers.IO) {
+		try {
+			val uriString = uri.toString()
+			val isContentUri = uri.scheme == "content"
+			val absolutePath: String
+			val displayName: String
 
-				if (isContentUri) {
-					val inputStream = context.contentResolver.openInputStream(uri) ?: return@withContext null
-					var name = ""
-					context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-						if (cursor.moveToFirst()) {
-							val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-							if (nameIndex != -1) name = cursor.getString(nameIndex)
-						}
+			if (isContentUri) {
+				val inputStream = context.contentResolver.openInputStream(uri) ?: return@withContext null
+				var name = ""
+				context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+					if (cursor.moveToFirst()) {
+						val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+						if (nameIndex != -1) name = cursor.getString(nameIndex)
 					}
-					displayName = name
-					val ext = displayName.substringAfterLast('.', "epub").lowercase()
-					val tempDir = documentCache.directoryFor(uriString)
-					tempDir.deleteRecursively()
-					tempDir.mkdirs()
-					val tempFile = File(tempDir, displayName.ifBlank { "document.$ext" })
-					FileOutputStream(tempFile).use { inputStream.copyTo(it) }
-					inputStream.close()
-					absolutePath = tempFile.absolutePath
-					config.associateUriWithLocalFile(uriString, absolutePath)
-				} else {
-					absolutePath = uri.path ?: uriString
-					val file = File(absolutePath)
-					displayName = file.name
-					config.associateUriWithLocalFile(uriString, absolutePath)
 				}
-
-				if (!isRestore && File(sidecarPathFor(absolutePath)).exists()) {
-					_importPromptPath.value = absolutePath
-				}
-
-				val docKey = config.getDocKey(uriString)
-				val savedPosition = config.getDocumentPosition(uriString)
-				val password = providedPassword ?: config.getDocumentPassword(uriString)
-				val session = DocumentSession.newFfi(absolutePath, password, "", false)
-				if (providedPassword != null) {
-					config.setDocumentPassword(uriString, providedPassword)
-					config.flush()
-				}
-				val initialScrollIndex = if (savedPosition > 0L) {
-					(session.lineFromPosition(savedPosition) - 1L).toInt().coerceAtLeast(0)
-				} else {
-					0
-				}
-				DocumentTabState(
-					session = session,
-					title = session.title().ifBlank { displayName },
-					author = session.author(),
-					fileName = displayName,
-					lineCount = session.lineCount(),
-					toc = session.getToc(),
-					documentUri = uriString,
-					docKey = docKey,
-					initialScrollIndex = initialScrollIndex,
-					savedPosition = savedPosition,
-					hasAudio = session.hasAudioFfi(),
-					isAudioOnly = session.isAudioOnlyFfi()
-				)
-			} catch (e: Exception) {
-				val msg = e.message ?: ""
-				if (msg.contains("[password_required]")) {
-					withContext(Dispatchers.Main) {
-						_passwordPromptUri.value = uri
-					}
-					return@withContext null
-				}
-				null
+				displayName = name
+				val ext = displayName.substringAfterLast('.', "epub").lowercase()
+				val tempDir = documentCache.directoryFor(uriString)
+				tempDir.deleteRecursively()
+				tempDir.mkdirs()
+				val tempFile = File(tempDir, displayName.ifBlank { "document.$ext" })
+				FileOutputStream(tempFile).use { inputStream.copyTo(it) }
+				inputStream.close()
+				absolutePath = tempFile.absolutePath
+				config.associateUriWithLocalFile(uriString, absolutePath)
+			} else {
+				absolutePath = uri.path ?: uriString
+				val file = File(absolutePath)
+				displayName = file.name
+				config.associateUriWithLocalFile(uriString, absolutePath)
 			}
-		}
 
-	private suspend fun loadDocument(
-		uri: Uri,
-		makeActive: Boolean
-	) = withContext(Dispatchers.IO) {
+			if (!isRestore && File(sidecarPathFor(absolutePath)).exists()) {
+				_importPromptPath.value = absolutePath
+			}
+
+			val docKey = config.getDocKey(uriString)
+			val savedPosition = config.getDocumentPosition(uriString)
+			val password = providedPassword ?: config.getDocumentPassword(uriString)
+			val session = DocumentSession.newFfi(absolutePath, password, "", false)
+			if (providedPassword != null) {
+				config.setDocumentPassword(uriString, providedPassword)
+				config.flush()
+			}
+			val initialScrollIndex = if (savedPosition > 0L) {
+				(session.lineFromPosition(savedPosition) - 1L).toInt().coerceAtLeast(0)
+			} else {
+				0
+			}
+			DocumentTabState(
+				session = session,
+				title = session.title().ifBlank { displayName },
+				author = session.author(),
+				fileName = displayName,
+				lineCount = session.lineCount(),
+				toc = session.getToc(),
+				documentUri = uriString,
+				docKey = docKey,
+				initialScrollIndex = initialScrollIndex,
+				savedPosition = savedPosition,
+				hasAudio = session.hasAudioFfi(),
+				isAudioOnly = session.isAudioOnlyFfi()
+			)
+		} catch (e: Exception) {
+			val msg = e.message ?: ""
+			if (msg.contains("[password_required]")) {
+				withContext(Dispatchers.Main) {
+					_passwordPromptUri.value = uri
+				}
+				return@withContext null
+			}
+			null
+		}
+	}
+
+	private suspend fun loadDocument(uri: Uri, makeActive: Boolean) = withContext(Dispatchers.IO) {
 		if (currentTabs.isEmpty()) {
 			_uiState.value = MainScreenUiState.Loading
 		}
@@ -676,11 +656,7 @@ class MainScreenViewModel(
 	 * unit or elapsed time. False when that isn't what's happening, leaving the ordinary text
 	 * path to run. Always returns true once "Find" is the active unit, even with no query or no
 	 * more matches, since there is nothing else for prev/next to fall back to in that case. */
-	private fun navigateByFind(
-		forward: Boolean,
-		speak: Boolean,
-		announce: Boolean
-	): Boolean {
+	private fun navigateByFind(forward: Boolean, speak: Boolean, announce: Boolean): Boolean {
 		if (_currentNavUnit.value !is NavUnit.Find) return false
 		val query = search.query.value
 		val options = search.options.value
@@ -823,10 +799,7 @@ class MainScreenViewModel(
 
 	/** A segment's own text, falling back to its enclosing section's TOC title when blank — the
 	 * case for a plain-audio DAISY section, whose buffer content is just a placeholder space. */
-	private fun displayTextFor(
-		tab: DocumentTabState,
-		segment: TextSegmentFfi
-	): String {
+	private fun displayTextFor(tab: DocumentTabState, segment: TextSegmentFfi): String {
 		if (segment.text.isNotBlank()) return segment.text
 		return sectionTitleAt(tab.toc, segment.startPos)
 	}
@@ -836,10 +809,7 @@ class MainScreenViewModel(
 	 * `updateTtsPosition`/`speakCurrentSegment`, which re-derive the *enclosing paragraph* of a
 	 * position and snap to its start — fine for ordinary navigation, but it would silently move
 	 * a Find jump off the match it just found and back to that paragraph's beginning. */
-	fun jumpToFoundPosition(
-		pos: Long,
-		resume: Boolean
-	) {
+	fun jumpToFoundPosition(pos: Long, resume: Boolean) {
 		val tab = uiState.value.activeTab ?: return
 		_ttsPosition.value = pos
 		val segment = tab.session.getTextSegment(pos, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
@@ -864,10 +834,7 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun playNextSegment(
-		speak: Boolean = true,
-		announce: Boolean = false
-	) {
+	fun playNextSegment(speak: Boolean = true, announce: Boolean = false) {
 		if (navigateByFind(forward = true, speak = speak, announce = announce)) return
 		if (seekAudioByNavUnit(forward = true)) return
 		val tab = uiState.value.activeTab ?: return
@@ -948,10 +915,7 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun playPrevSegment(
-		speak: Boolean = true,
-		announce: Boolean = false
-	) {
+	fun playPrevSegment(speak: Boolean = true, announce: Boolean = false) {
 		if (navigateByFind(forward = false, speak = speak, announce = announce)) return
 		if (seekAudioByNavUnit(forward = false)) return
 		val tab = uiState.value.activeTab ?: return
@@ -983,10 +947,7 @@ class MainScreenViewModel(
 		narrator.pause()
 	}
 
-	fun navigateByType(
-		type: SegmentTypeFfi,
-		direction: SegmentDirectionFfi
-	) {
+	fun navigateByType(type: SegmentTypeFfi, direction: SegmentDirectionFfi) {
 		val tab = uiState.value.activeTab ?: return
 		val segment = tab.session.getTextSegment(_ttsPosition.value, type, direction)
 		if (segment.found) {
@@ -1013,19 +974,12 @@ class MainScreenViewModel(
 		return settingsTransfer.exportToSidecar(tab.documentUri)
 	}
 
-	fun exportSettingsToUri(
-		context: Context,
-		destUri: Uri
-	): Boolean {
+	fun exportSettingsToUri(context: Context, destUri: Uri): Boolean {
 		val tab = uiState.value.activeTab ?: return false
 		return settingsTransfer.exportTo(context, tab.documentUri, destUri)
 	}
 
-	fun exportDocumentToUri(
-		context: Context,
-		destUri: Uri,
-		format: ExportFormat
-	): Boolean {
+	fun exportDocumentToUri(context: Context, destUri: Uri, format: ExportFormat): Boolean {
 		val tab = uiState.value.activeTab ?: return false
 		return try {
 			val content = tab.session.renderExportFfi(format)
@@ -1038,10 +992,7 @@ class MainScreenViewModel(
 		}
 	}
 
-	fun importSettingsFromUri(
-		context: Context,
-		sourceUri: Uri
-	): Boolean {
+	fun importSettingsFromUri(context: Context, sourceUri: Uri): Boolean {
 		val tab = uiState.value.activeTab ?: return false
 		if (!settingsTransfer.importFrom(context, tab.documentUri, sourceUri)) return false
 		val savedPosition = config.getDocumentPosition(tab.documentUri)

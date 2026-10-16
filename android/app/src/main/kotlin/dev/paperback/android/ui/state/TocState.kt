@@ -10,10 +10,7 @@ import uniffi.paperback.TocEntry
  * currently inside. One object rather than two flows so a recomposition can never pair a fresh
  * active row with a stale expansion set and scroll to the wrong place.
  */
-data class TocUiState(
-	val expandedIndices: Set<Int> = emptySet(),
-	val activeIndex: Int? = null
-)
+data class TocUiState(val expandedIndices: Set<Int> = emptySet(), val activeIndex: Int? = null)
 
 /**
  * Where the table of contents is pointing. Expansion survives from one opening of the screen to
@@ -35,10 +32,7 @@ class TocState {
 	 * Points the list at `position`: the nearest entry at or before it becomes the active one,
 	 * and its ancestors are expanded so it is actually on screen when the list opens.
 	 */
-	fun pointAt(
-		toc: List<TocEntry>,
-		position: Long
-	) {
+	fun pointAt(toc: List<TocEntry>, position: Long) {
 		val activeIndex = activeEntryFor(toc, position)
 		if (activeIndex == null) {
 			_state.value = _state.value.copy(activeIndex = null)
@@ -56,10 +50,7 @@ class TocState {
  * an empty table of contents. A position ahead of every entry (a document whose first heading is
  * some way in) counts as being in the first one, since that is the section being read.
  */
-internal fun activeEntryFor(
-	toc: List<TocEntry>,
-	position: Long
-): Int? {
+internal fun activeEntryFor(toc: List<TocEntry>, position: Long): Int? {
 	if (toc.isEmpty()) return null
 	var activeIndex = 0
 	var bestDistance = Long.MAX_VALUE
@@ -80,10 +71,7 @@ internal fun activeEntryFor(
  * one before it, until the top level. These are the rows that have to be expanded for `index` to
  * be visible at all.
  */
-internal fun ancestorsOf(
-	toc: List<TocEntry>,
-	index: Int
-): Set<Int> {
+internal fun ancestorsOf(toc: List<TocEntry>, index: Int): Set<Int> {
 	val ancestors = mutableSetOf<Int>()
 	var currentLevel = toc[index].level
 	for (i in index - 1 downTo 0) {
@@ -105,7 +93,5 @@ internal fun ancestorsOf(
  * a row falls back to the first one, while a spoken announcement is better off saying nothing
  * than naming a section the reader is not in.
  */
-fun sectionTitleAt(
-	toc: List<TocEntry>,
-	position: Long
-): String = toc.lastOrNull { it.position <= position }?.title.orEmpty()
+fun sectionTitleAt(toc: List<TocEntry>, position: Long): String =
+	toc.lastOrNull { it.position <= position }?.title.orEmpty()

@@ -7,13 +7,12 @@ import uniffi.paperback.MarkerType
  * 6 as they do in HTML, and the reading view uses the number both to size the line and to tell a
  * screen reader how deep in the structure it is.
  */
-internal fun headingLevelOf(markerType: MarkerType): Int? =
-	when (markerType) {
-		MarkerType.HEADING1 -> 1
-		MarkerType.HEADING2 -> 2
-		MarkerType.HEADING3 -> 3
-		MarkerType.HEADING4 -> 4
-		MarkerType.HEADING5 -> 5
-		MarkerType.HEADING6 -> 6
-		else -> null
-	}
+internal fun headingLevelOf(markerType: MarkerType): Int? = when (markerType) {
+	MarkerType.HEADING1 -> 1
+	MarkerType.HEADING2 -> 2
+	MarkerType.HEADING3 -> 3
+	MarkerType.HEADING4 -> 4
+	MarkerType.HEADING5 -> 5
+	MarkerType.HEADING6 -> 6
+	else -> null
+}

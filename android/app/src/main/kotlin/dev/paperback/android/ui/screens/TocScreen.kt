@@ -29,10 +29,7 @@ import dev.paperback.android.ui.state.activeTab
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TocScreen(
-	viewModel: MainScreenViewModel = viewModel(),
-	onDismiss: () -> Unit
-) {
+fun TocScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -> Unit) {
 	val state by viewModel.uiState.collectAsStateWithLifecycle()
 	val tocState by viewModel.toc.state.collectAsStateWithLifecycle()
 	val expandedTocIndices = tocState.expandedIndices

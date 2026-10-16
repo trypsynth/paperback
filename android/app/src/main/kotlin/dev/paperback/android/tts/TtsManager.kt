@@ -31,10 +31,8 @@ import kotlin.math.roundToInt
 
 private const val TAG = "PaperbackTts"
 
-class TtsManager(
-	private val context: Context,
-	private val config: ConfigManagerFfi
-) : TextToSpeech.OnInitListener,
+class TtsManager(private val context: Context, private val config: ConfigManagerFfi) :
+	TextToSpeech.OnInitListener,
 	SpeechEngine {
 	private var tts: TextToSpeech? = null
 	private var mediaSession: MediaSession? = null
@@ -180,10 +178,7 @@ class TtsManager(
 		// see https://github.com/androidx/media/issues/167, where the Media3 maintainers
 		// confirm a bound controller/client is the supported way to avoid it.
 		val connection = object : ServiceConnection {
-			override fun onServiceConnected(
-				name: ComponentName,
-				binder: IBinder?
-			) {
+			override fun onServiceConnected(name: ComponentName, binder: IBinder?) {
 			}
 
 			override fun onServiceDisconnected(name: ComponentName) {}
@@ -229,10 +224,7 @@ class TtsManager(
 	 *
 	 * The engine only reports audio to the app while making it for a file or for its own playback, and its own playback cannot be paused part-way through. So the file is one that keeps nothing.
 	 */
-	private fun synthesize(
-		text: String,
-		utteranceId: String
-	): Boolean {
+	private fun synthesize(text: String, utteranceId: String): Boolean {
 		val queued = tts?.synthesizeToFile(text, null, DISCARDED_AUDIO, utteranceId)
 		if (queued != TextToSpeech.SUCCESS) {
 			Log.e(TAG, "TTS engine refused to synthesize (result $queued)")
@@ -269,19 +261,11 @@ class TtsManager(
 			tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
 				override fun onStart(utteranceId: String?) {}
 
-				override fun onBeginSynthesis(
-					utteranceId: String?,
-					sampleRateInHz: Int,
-					audioFormat: Int,
-					channelCount: Int
-				) {
+				override fun onBeginSynthesis(utteranceId: String?, sampleRateInHz: Int, audioFormat: Int, channelCount: Int) {
 					utteranceId?.let { playback.begin(it, sampleRateInHz, audioFormat, channelCount) }
 				}
 
-				override fun onAudioAvailable(
-					utteranceId: String?,
-					audio: ByteArray?
-				) {
+				override fun onAudioAvailable(utteranceId: String?, audio: ByteArray?) {
 					if (utteranceId != null && audio != null) playback.audio(utteranceId, audio)
 				}
 
@@ -301,10 +285,7 @@ class TtsManager(
 					ttsScope.launch { onSynthesisFailed(utteranceId) }
 				}
 
-				override fun onStop(
-					utteranceId: String?,
-					interrupted: Boolean
-				) {
+				override fun onStop(utteranceId: String?, interrupted: Boolean) {
 					utteranceId?.let { playback.done(it) }
 				}
 			})
@@ -398,18 +379,11 @@ class TtsManager(
 		}
 	}
 
-	fun speak(
-		text: String,
-		isSample: Boolean = false
-	) {
+	fun speak(text: String, isSample: Boolean = false) {
 		speakFrom(text, isSample, skipMs = 0)
 	}
 
-	private fun speakFrom(
-		text: String,
-		isSample: Boolean,
-		skipMs: Long
-	) {
+	private fun speakFrom(text: String, isSample: Boolean, skipMs: Long) {
 		if (text.isBlank()) return
 		// Every call before the engine reports itself ready fails and returns ERROR, so hold the text instead of handing it over to be dropped.
 		if (!_isInitialized.value) {

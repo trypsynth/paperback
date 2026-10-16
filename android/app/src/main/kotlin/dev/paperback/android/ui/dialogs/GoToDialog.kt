@@ -38,15 +38,14 @@ const val GO_TO_PERCENTAGE = "Percentage"
  * Each name is a literal `t()` call so the string extractor can find it; the modes are chosen
  * from a list at runtime, and `t(mode)` on a variable would leave nothing to extract.
  */
-private fun goToModeName(mode: String): String =
-	when (mode) {
-		// TRANSLATORS: Go To mode that jumps to a line number
-		GO_TO_LINE -> t("Line")
-		// TRANSLATORS: Go To mode that jumps to a page number
-		GO_TO_PAGE -> t("Page")
-		// TRANSLATORS: Go To mode that jumps to a percentage through the document
-		else -> t("Percentage")
-	}
+private fun goToModeName(mode: String): String = when (mode) {
+	// TRANSLATORS: Go To mode that jumps to a line number
+	GO_TO_LINE -> t("Line")
+	// TRANSLATORS: Go To mode that jumps to a page number
+	GO_TO_PAGE -> t("Page")
+	// TRANSLATORS: Go To mode that jumps to a percentage through the document
+	else -> t("Percentage")
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

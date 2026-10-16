@@ -136,8 +136,6 @@ class ReaderShortcutTest {
 		assertNull(plain(KeyEvent.KEYCODE_ENTER))
 	}
 
-	private fun navigate(
-		type: SegmentTypeFfi,
-		direction: SegmentDirectionFfi = SegmentDirectionFfi.NEXT
-	) = ReaderShortcut.Navigate(type, direction)
+	private fun navigate(type: SegmentTypeFfi, direction: SegmentDirectionFfi = SegmentDirectionFfi.NEXT) =
+		ReaderShortcut.Navigate(type, direction)
 }

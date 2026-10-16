@@ -17,11 +17,8 @@ import uniffi.paperback.ConfigManagerFfi
  * callback of any kind, and a book resumed from the wrong place is a book the reader has to find
  * their way back through.
  */
-class RecordedNarration(
-	context: Context,
-	private val config: ConfigManagerFfi,
-	private val scope: CoroutineScope
-) : RecordedPlayer {
+class RecordedNarration(context: Context, private val config: ConfigManagerFfi, private val scope: CoroutineScope) :
+	RecordedPlayer {
 	private val player = DaisyAudioPlayer(context)
 
 	/** The document the player is currently narrating, if any. */

@@ -20,11 +20,7 @@ internal class StreamedPlayback(
 	private val audioAttributes: AudioAttributes,
 	private val onSegmentPlayed: (String) -> Unit
 ) {
-	private data class Format(
-		val sampleRateHz: Int,
-		val encoding: Int,
-		val channels: Int
-	) {
+	private data class Format(val sampleRateHz: Int, val encoding: Int, val channels: Int) {
 		val bytesPerFrame: Int
 			get() = channels * when (encoding) {
 				AudioFormat.ENCODING_PCM_8BIT -> 1
@@ -35,11 +31,7 @@ internal class StreamedPlayback(
 		fun bytesFor(ms: Long): Long = if (ms <= 0) 0 else ms * sampleRateHz / 1000 * bytesPerFrame
 	}
 
-	private class Segment(
-		val id: String,
-		val skipMs: Long,
-		val pauseMs: () -> Int
-	) {
+	private class Segment(val id: String, val skipMs: Long, val pauseMs: () -> Int) {
 		var format: Format? = null
 		val chunks = ArrayDeque<ByteArray>()
 		var done = false
@@ -48,10 +40,7 @@ internal class StreamedPlayback(
 	}
 
 	/** Where a written segment's audio ends on the track, so the poller can tell when it has been heard. */
-	private class End(
-		val id: String,
-		val frame: Long
-	)
+	private class End(val id: String, val frame: Long)
 
 	private val lock = Object()
 	private val segments = ArrayDeque<Segment>()
@@ -73,11 +62,7 @@ internal class StreamedPlayback(
 	}
 
 	/** Queues a segment after every one already queued. [skipMs] of its start is dropped, for carrying on part-way through a paragraph made again at a new rate. */
-	fun enqueue(
-		id: String,
-		pauseMs: () -> Int,
-		skipMs: Long = 0
-	) {
+	fun enqueue(id: String, pauseMs: () -> Int, skipMs: Long = 0) {
 		synchronized(lock) {
 			segments.addLast(Segment(id, skipMs, pauseMs))
 			lock.notifyAll()
@@ -92,22 +77,14 @@ internal class StreamedPlayback(
 		}
 	}
 
-	fun begin(
-		id: String,
-		sampleRateHz: Int,
-		encoding: Int,
-		channels: Int
-	) {
+	fun begin(id: String, sampleRateHz: Int, encoding: Int, channels: Int) {
 		synchronized(lock) {
 			segments.firstOrNull { it.id == id }?.format = Format(sampleRateHz, encoding, channels)
 			lock.notifyAll()
 		}
 	}
 
-	fun audio(
-		id: String,
-		bytes: ByteArray
-	) {
+	fun audio(id: String, bytes: ByteArray) {
 		synchronized(lock) {
 			segments.firstOrNull { it.id == id }?.chunks?.addLast(bytes) ?: return
 			lock.notifyAll()
@@ -214,13 +191,12 @@ internal class StreamedPlayback(
 		}
 	}
 
-	private fun rest(): Boolean =
-		try {
-			Thread.sleep(WAIT_MS)
-			true
-		} catch (_: InterruptedException) {
-			!closed
-		}
+	private fun rest(): Boolean = try {
+		Thread.sleep(WAIT_MS)
+		true
+	} catch (_: InterruptedException) {
+		!closed
+	}
 
 	private fun writeFully(bytes: ByteArray) {
 		var offset = 0

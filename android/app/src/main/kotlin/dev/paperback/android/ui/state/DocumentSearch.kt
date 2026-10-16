@@ -31,10 +31,7 @@ class DocumentSearch {
 	/** Emits true to step to the next match, false for the previous one. */
 	val stepRequests: SharedFlow<Boolean> = _stepRequests.asSharedFlow()
 
-	fun start(
-		query: String,
-		options: SearchOptionsFfi
-	) {
+	fun start(query: String, options: SearchOptionsFfi) {
 		_query.value = query
 		_options.value = options
 	}
@@ -45,10 +42,7 @@ class DocumentSearch {
 	 * still the same search, and treating it as a new one would re-find the match the reader is
 	 * already sitting on.
 	 */
-	fun isSameAs(
-		query: String,
-		options: SearchOptionsFfi
-	): Boolean {
+	fun isSameAs(query: String, options: SearchOptionsFfi): Boolean {
 		val running = _options.value ?: return false
 		return _query.value == query &&
 			running.matchCase == options.matchCase &&

@@ -39,10 +39,7 @@ import uniffi.paperback.HeadingTreeItemFfi
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ElementsScreen(
-	viewModel: MainScreenViewModel = viewModel(),
-	onDismiss: () -> Unit
-) {
+fun ElementsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -> Unit) {
 	val headings by viewModel.currentHeadings.collectAsStateWithLifecycle()
 	val links by viewModel.currentLinks.collectAsStateWithLifecycle()
 	var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -168,10 +165,7 @@ fun ElementsScreen(
 	}
 }
 
-private fun calculateDepth(
-	items: List<HeadingTreeItemFfi>,
-	parentIndex: Int
-): Int {
+private fun calculateDepth(items: List<HeadingTreeItemFfi>, parentIndex: Int): Int {
 	var depth = 0
 	var currentIndex = parentIndex
 	while (currentIndex >= 0 && currentIndex < items.size) {

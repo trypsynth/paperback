@@ -41,9 +41,8 @@ private const val SCALE_STEPS =
 		ReaderSettings.TEXT_SCALE_PERCENT_STEP - 1
 
 /** Rounds a raw slider value so the text size only ever lands on a whole step. */
-private fun snapScale(value: Float): Int =
-	(value / ReaderSettings.TEXT_SCALE_PERCENT_STEP).roundToInt() *
-		ReaderSettings.TEXT_SCALE_PERCENT_STEP
+private fun snapScale(value: Float): Int = (value / ReaderSettings.TEXT_SCALE_PERCENT_STEP).roundToInt() *
+	ReaderSettings.TEXT_SCALE_PERCENT_STEP
 
 private val PERCENT_RANGE = 0f..100f
 
@@ -61,12 +60,7 @@ private const val PAUSE_STEPS = (MAX_PARAGRAPH_PAUSE_MS - MIN_PARAGRAPH_PAUSE_MS
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ChoiceSetting(
-	label: String,
-	options: List<String>,
-	selectedIndex: Int,
-	onSelect: (Int) -> Unit
-) {
+private fun ChoiceSetting(label: String, options: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit) {
 	var expanded by remember { mutableStateOf(false) }
 	val selectedLabel = options.getOrElse(selectedIndex) { options.first() }
 	ExposedDropdownMenuBox(
@@ -102,11 +96,7 @@ private fun ChoiceSetting(
  *
  */
 @Composable
-private fun PercentSetting(
-	label: String,
-	percentage: Int,
-	onChange: (Int) -> Unit
-) {
+private fun PercentSetting(label: String, percentage: Int, onChange: (Int) -> Unit) {
 	Column(
 		modifier = Modifier.clearAndSetSemantics {
 			contentDescription = label
@@ -162,10 +152,7 @@ private fun LanguageRow() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(
-	viewModel: MainScreenViewModel = viewModel(),
-	onDismiss: () -> Unit
-) {
+fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -> Unit) {
 	val settings = viewModel.settings
 	val restorePreviousDocuments by settings.restorePreviousDocuments.state.collectAsStateWithLifecycle()
 	val useInAppFileBrowser by settings.useInAppFileBrowser.state.collectAsStateWithLifecycle()

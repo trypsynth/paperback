@@ -586,12 +586,7 @@ fun MainScreen(
  * file is slow enough to belong off the main thread and quiet enough to need saying, since the
  * result is a file somewhere the reader cannot see from here.
  */
-private fun CoroutineScope.reportResult(
-	context: Context,
-	succeeded: String,
-	failed: String,
-	work: () -> Boolean
-) {
+private fun CoroutineScope.reportResult(context: Context, succeeded: String, failed: String, work: () -> Boolean) {
 	launch(Dispatchers.IO) {
 		val message = if (work()) succeeded else failed
 		withContext(Dispatchers.Main) {

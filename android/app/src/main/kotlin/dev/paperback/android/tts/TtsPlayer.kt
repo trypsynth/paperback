@@ -38,26 +38,21 @@ class TtsPlayer(
 			Player.COMMAND_GET_TIMELINE
 		).build()
 
-	override fun getState(): State =
-		State
-			.Builder()
-			.setAvailableCommands(availableCommands)
-			.setPlaylist(listOf(mediaItemData))
-			.setCurrentMediaItemIndex(0)
-			.setPlayWhenReady(playing, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
-			.setPlaybackState(Player.STATE_READY)
-			.build()
+	override fun getState(): State = State
+		.Builder()
+		.setAvailableCommands(availableCommands)
+		.setPlaylist(listOf(mediaItemData))
+		.setCurrentMediaItemIndex(0)
+		.setPlayWhenReady(playing, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
+		.setPlaybackState(Player.STATE_READY)
+		.build()
 
 	override fun handleSetPlayWhenReady(playWhenReady: Boolean): ListenableFuture<*> {
 		if (playWhenReady) onPlayCommand() else onPauseCommand()
 		return Futures.immediateVoidFuture()
 	}
 
-	override fun handleSeek(
-		mediaItemIndex: Int,
-		positionMs: Long,
-		seekCommand: Int
-	): ListenableFuture<*> {
+	override fun handleSeek(mediaItemIndex: Int, positionMs: Long, seekCommand: Int): ListenableFuture<*> {
 		when (seekCommand) {
 			Player.COMMAND_SEEK_TO_NEXT -> onNextCommand()
 			Player.COMMAND_SEEK_TO_PREVIOUS -> onPrevCommand()
@@ -75,10 +70,7 @@ class TtsPlayer(
 	}
 
 	/** Called by TtsManager whenever the document title/author changes. */
-	fun updateMetadata(
-		title: String,
-		author: String
-	) {
+	fun updateMetadata(title: String, author: String) {
 		val metadata = MediaMetadata
 			.Builder()
 			.setTitle(title)

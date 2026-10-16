@@ -29,17 +29,13 @@ data class ReadabilityStyle(
 
 /** The text and page colours of high contrast: black on white, or white on black in the dark theme. */
 @Immutable
-data class HighContrastColors(
-	val text: Color,
-	val background: Color
-)
+data class HighContrastColors(val text: Color, val background: Color)
 
-fun highContrastColors(darkTheme: Boolean): HighContrastColors =
-	if (darkTheme) {
-		HighContrastColors(text = Color.White, background = Color.Black)
-	} else {
-		HighContrastColors(text = Color.Black, background = Color.White)
-	}
+fun highContrastColors(darkTheme: Boolean): HighContrastColors = if (darkTheme) {
+	HighContrastColors(text = Color.White, background = Color.Black)
+} else {
+	HighContrastColors(text = Color.Black, background = Color.White)
+}
 
 /**
  * Builds the [ReadabilityStyle] for the reader's current preferences.

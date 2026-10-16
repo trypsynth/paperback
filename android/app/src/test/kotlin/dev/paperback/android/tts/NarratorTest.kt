@@ -88,10 +88,7 @@ class RecordedNarratorTest {
 }
 
 class SpokenNarratorTest {
-	private fun narrator(
-		speech: FakeSpeech,
-		spoken: MutableList<String>
-	) = SpokenNarrator(speech) { spoken += "speak" }
+	private fun narrator(speech: FakeSpeech, spoken: MutableList<String>) = SpokenNarrator(speech) { spoken += "speak" }
 
 	@Test
 	fun `playing from a pause carries on rather than starting the paragraph again`() {

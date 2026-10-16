@@ -91,12 +91,11 @@ fun DocumentToolDialogs(
 }
 
 /** The extension an exported document is offered under, matching the format it is rendered in. */
-internal fun ExportFormat.fileExtension(): String =
-	when (this) {
-		ExportFormat.TEXT -> "txt"
-		ExportFormat.HTML -> "html"
-		ExportFormat.MARKDOWN -> "md"
-	}
+internal fun ExportFormat.fileExtension(): String = when (this) {
+	ExportFormat.TEXT -> "txt"
+	ExportFormat.HTML -> "html"
+	ExportFormat.MARKDOWN -> "md"
+}
 
 /**
  * The dialogs that act on the open document's text. Unlike the tool dialogs these need the
