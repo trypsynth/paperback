@@ -98,6 +98,8 @@ final class RecordedNarration {
 	@discardableResult
 	func seekToMs(_ elapsedMs: Int64) -> Bool { player.seekToMs(elapsedMs) }
 
+	var elapsedMs: Int64? { player.elapsedMs }
+
 	@discardableResult
 	func seekRelativeMs(_ deltaMs: Int64) -> Bool { player.seekRelativeMs(deltaMs) }
 
