@@ -27,6 +27,8 @@ pub(super) fn process_paragraph(
 	let label = numbering.label_for(find_child_element(element, "pPr"));
 	let mut paragraph_text = label.as_ref().map_or_else(String::new, |label| format!("{} ", label.text));
 	let mut para_display_len = display_len(&paragraph_text);
+	let label_len = para_display_len;
+	let mut page_starts: Vec<usize> = Vec::new();
 	let mut heading_level = 0;
 	let mut is_paragraph_style_heading = false;
 	let mut format_spans: Vec<(MarkerType, usize, usize)> = Vec::new();
@@ -45,8 +47,14 @@ pub(super) fn process_paragraph(
 				id_positions.insert(name.to_string(), paragraph_start + paragraph_text.len());
 			}
 		} else if tag_name == "hyperlink" {
+			if child.children().any(|run| run.tag_name().name() == "r" && starts_page(run)) {
+				page_starts.push(para_display_len);
+			}
 			para_display_len += process_hyperlink(child, &mut paragraph_text, buffer, rels, paragraph_start);
 		} else if tag_name == "r" {
+			if starts_page(child) {
+				page_starts.push(para_display_len);
+			}
 			if heading_level == 0
 				&& let Some(rpr_node) = find_child_element(child, "rPr")
 			{
@@ -93,6 +101,15 @@ pub(super) fn process_paragraph(
 	buffer.append(trimmed);
 	buffer.append("\n");
 	let leading_trim = display_len(&paragraph_text) - display_len(paragraph_text.trim_start());
+	// A page that starts on the paragraph's first words starts on the paragraph, not after its list label.
+	for offset in page_starts {
+		let position = if offset <= label_len {
+			paragraph_start
+		} else {
+			paragraph_start + offset.saturating_sub(leading_trim).min(display_len(trimmed))
+		};
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, position));
+	}
 	for (kind, start, end) in format_spans {
 		let adj_start = start.saturating_sub(leading_trim);
 		let adj_end = end.saturating_sub(leading_trim);
@@ -117,6 +134,13 @@ pub(super) fn process_paragraph(
 		Marker::new(MarkerType::ListItem, paragraph_start).with_text(trimmed.to_string()).with_level(label.level),
 	);
 	true
+}
+
+/// Whether Word began a new page at `run` the last time it laid the document out.
+///
+/// A .docx has no pages of its own: Word paginates as it lays the document out, and saves where each page after the first began with this element, so it is the closest a saved file comes to Word's own page numbers. Explicit page breaks are not counted on top, because Word records one of these after each of those too.
+pub(super) fn starts_page(run: Node) -> bool {
+	find_child_element(run, "lastRenderedPageBreak").is_some()
 }
 
 /// Appends the hyperlink's display text to `paragraph_text`, records a Link
