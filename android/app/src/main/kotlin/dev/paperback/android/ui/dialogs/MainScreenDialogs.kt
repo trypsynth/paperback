@@ -42,17 +42,17 @@ fun DocumentToolDialogs(
 	viewModel: MainScreenViewModel,
 	onExportFormatChosen: (ExportFormat, String) -> Unit
 ) {
-	val wordCountOpen by viewModel.wordCountDialog.isOpen.collectAsStateWithLifecycle()
-	val documentInfoOpen by viewModel.documentInfoDialog.isOpen.collectAsStateWithLifecycle()
-	val sleepTimerOpen by viewModel.sleepTimerDialog.isOpen.collectAsStateWithLifecycle()
-	val sleepTimerRemaining by viewModel.sleepTimer.remaining.collectAsStateWithLifecycle()
-	val exportOpen by viewModel.exportDocumentDialog.isOpen.collectAsStateWithLifecycle()
+	val wordCountOpen by viewModel.navigation.wordCountDialog.isOpen.collectAsStateWithLifecycle()
+	val documentInfoOpen by viewModel.navigation.documentInfoDialog.isOpen.collectAsStateWithLifecycle()
+	val sleepTimerOpen by viewModel.navigation.sleepTimerDialog.isOpen.collectAsStateWithLifecycle()
+	val sleepTimerRemaining by viewModel.reading.sleepTimer.remaining.collectAsStateWithLifecycle()
+	val exportOpen by viewModel.navigation.exportDocumentDialog.isOpen.collectAsStateWithLifecycle()
 
 	if (wordCountOpen && docState != null) {
 		val stats = remember(docState.session) { docState.session.getStatsFfi() }
 		WordCountDialog(
 			stats = stats,
-			onDismiss = { viewModel.wordCountDialog.close() }
+			onDismiss = { viewModel.navigation.wordCountDialog.close() }
 		)
 	}
 	if (documentInfoOpen && docState != null) {
@@ -60,15 +60,15 @@ fun DocumentToolDialogs(
 		DocumentInfoDialog(
 			docState = docState,
 			stats = stats,
-			onDismiss = { viewModel.documentInfoDialog.close() }
+			onDismiss = { viewModel.navigation.documentInfoDialog.close() }
 		)
 	}
 	if (sleepTimerOpen) {
 		SleepTimerDialog(
 			remainingSeconds = sleepTimerRemaining,
-			onSetTimer = { viewModel.sleepTimer.start(it) },
-			onCancelTimer = { viewModel.sleepTimer.cancel() },
-			onDismiss = { viewModel.sleepTimerDialog.close() }
+			onSetTimer = { viewModel.reading.sleepTimer.start(it) },
+			onCancelTimer = { viewModel.reading.sleepTimer.cancel() },
+			onDismiss = { viewModel.navigation.sleepTimerDialog.close() }
 		)
 	}
 	if (exportOpen) {
@@ -76,27 +76,26 @@ fun DocumentToolDialogs(
 			ExportDocumentDialog(
 				supportedFormats = docState.session.getSupportedExportFormatsFfi(),
 				onFormatSelected = { format ->
-					viewModel.exportDocumentDialog.close()
+					viewModel.navigation.exportDocumentDialog.close()
 					onExportFormatChosen(format, "${docState.fileName.substringBeforeLast(".")}.${format.fileExtension()}")
 				},
-				onDismiss = { viewModel.exportDocumentDialog.close() }
+				onDismiss = { viewModel.navigation.exportDocumentDialog.close() }
 			)
 		} else {
 			// Nothing to export: the last tab closed while the dialog was open. Closing from an
 			// effect rather than straight from composition keeps the state change out of the
 			// composition that is reading it.
-			LaunchedEffect(Unit) { viewModel.exportDocumentDialog.close() }
+			LaunchedEffect(Unit) { viewModel.navigation.exportDocumentDialog.close() }
 		}
 	}
 }
 
 /** The extension an exported document is offered under, matching the format it is rendered in. */
-internal fun ExportFormat.fileExtension(): String =
-	when (this) {
-		ExportFormat.TEXT -> "txt"
-		ExportFormat.HTML -> "html"
-		ExportFormat.MARKDOWN -> "md"
-	}
+internal fun ExportFormat.fileExtension(): String = when (this) {
+	ExportFormat.TEXT -> "txt"
+	ExportFormat.HTML -> "html"
+	ExportFormat.MARKDOWN -> "md"
+}
 
 /**
  * The dialogs that act on the open document's text. Unlike the tool dialogs these need the
@@ -113,17 +112,17 @@ fun DocumentTextDialogs(
 	onGoToLine: (Int) -> Unit,
 	onFocusLine: (Int) -> Unit
 ) {
-	val goToOpen by viewModel.showGoToDialog.collectAsStateWithLifecycle()
-	val findOpen by viewModel.findDialog.isOpen.collectAsStateWithLifecycle()
+	val goToOpen by viewModel.navigation.showGoToDialog.collectAsStateWithLifecycle()
+	val findOpen by viewModel.navigation.findDialog.isOpen.collectAsStateWithLifecycle()
 	val activeQuery by viewModel.search.query.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
 	if (goToOpen) {
 		GoToDialog(
 			docState = docState,
-			onDismiss = { viewModel.closeGoToDialog() },
+			onDismiss = { viewModel.navigation.closeGoToDialog() },
 			initialMode = goToInitialMode,
 			onGoTo = onGoToLine,
-			onSeekPercent = { viewModel.seekAudioToPercent(it) }
+			onSeekPercent = { viewModel.reading.seekAudioToPercent(it) }
 		)
 	}
 	// Focus stays in the Find dialog while it is open, so the line the last match landed on only
@@ -134,27 +133,27 @@ fun DocumentTextDialogs(
 			configManager = viewModel.configManager,
 			initialQuery = activeQuery ?: "",
 			onDismiss = {
-				viewModel.findDialog.close()
+				viewModel.navigation.findDialog.close()
 				lastMatchLine?.let(onFocusLine)
 				lastMatchLine = null
 			},
 			onSearch = { query, options ->
 				val wasSpeaking = viewModel.ttsManager.isSpeaking.value
 				if (wasSpeaking) {
-					viewModel.pauseTts()
+					viewModel.reading.pauseTts()
 				}
 				// Searching again for what is already running would just re-find the match the
 				// reader is sitting on, so that case starts one step past it.
 				val isSameQuery = viewModel.search.isSameAs(query, options)
 				viewModel.search.start(query, options)
 				if (!isTextMode) {
-					viewModel.setNavUnit(NavUnit.Find)
+					viewModel.reading.setNavUnit(NavUnit.Find)
 				}
 				val searchPos = if (isTextMode) {
 					val nextLineOffset = if (isSameQuery) 2 else 1
 					docState.session.positionFromLine((listState.firstVisibleItemIndex + nextLineOffset).toLong())
 				} else {
-					val currentPos = viewModel.ttsPosition.value
+					val currentPos = viewModel.reading.ttsPosition.value
 					if (isSameQuery) currentPos + 1L else currentPos
 				}
 				val res = docState.session.searchFfi(query, searchPos, options)
@@ -170,10 +169,10 @@ fun DocumentTextDialogs(
 					lastMatchLine = targetIndex
 					scope.launch { listState.scrollToItem(targetIndex) }
 				} else {
-					viewModel.jumpToFoundPosition(res.position, resume = wasSpeaking)
+					viewModel.reading.jumpToFoundPosition(res.position, resume = wasSpeaking)
 				}
 				if (isTextMode || !wasSpeaking) {
-					viewModel.announceFoundMatch(res.position)
+					viewModel.reading.announceFoundMatch(res.position)
 				}
 			}
 		)

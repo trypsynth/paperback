@@ -370,7 +370,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
 	line_spacing_ctrl.append(&t("Normal"));
 	// TRANSLATORS: 1.5x line spacing option
-	line_spacing_ctrl.append(&t("1.5\u{00d7}"));
+	line_spacing_ctrl.append(&t("1.5×"));
 	// TRANSLATORS: Double line spacing option
 	line_spacing_ctrl.append(&t("Double"));
 	#[cfg(target_os = "macos")]

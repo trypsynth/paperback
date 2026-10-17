@@ -16,10 +16,7 @@ private const val SIDECAR_EXTENSION = "paperback"
  * picker handed back: the config layer writes to a real path, and a picked destination is a
  * content URI that only the resolver can open.
  */
-class SettingsTransfer(
-	private val config: ConfigManagerFfi,
-	private val cacheDir: File
-) {
+class SettingsTransfer(private val config: ConfigManagerFfi, private val cacheDir: File) {
 	/**
 	 * Writes the document's data to the `.paperback` file beside it. Only for a document opened
 	 * from a real path: one opened through a content URI has no "beside it" to write to.
@@ -30,11 +27,7 @@ class SettingsTransfer(
 		return runCatching { config.exportDocumentSettings(path, sidecarPathFor(path)) }.isSuccess
 	}
 
-	fun exportTo(
-		context: Context,
-		documentUri: String,
-		destination: Uri
-	): Boolean {
+	fun exportTo(context: Context, documentUri: String, destination: Uri): Boolean {
 		val temporary = File(cacheDir, "temp_export.$SIDECAR_EXTENSION")
 		return try {
 			config.exportDocumentSettings(settingsPathFor(documentUri), temporary.absolutePath)
@@ -49,11 +42,7 @@ class SettingsTransfer(
 		}
 	}
 
-	fun importFrom(
-		context: Context,
-		documentUri: String,
-		source: Uri
-	): Boolean {
+	fun importFrom(context: Context, documentUri: String, source: Uri): Boolean {
 		val temporary = File(cacheDir, "temp_import.$SIDECAR_EXTENSION")
 		return try {
 			context.contentResolver.openInputStream(source)?.use { input ->

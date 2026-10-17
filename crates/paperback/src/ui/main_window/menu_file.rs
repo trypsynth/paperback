@@ -13,7 +13,7 @@ use super::{
 	DocumentManager, DocumentTab, dialogs, ensure_parser_ready_for_path, menu, menu_ids, open_links, resolve_zip_path,
 	update_title_from_manager,
 };
-use crate::ui::navigation::announce;
+use crate::ui::navigation::announce_for_command;
 
 /// Handles every menu id not covered by `bind_menu_events`'s own dispatch match: dynamic
 /// recent-document entries and "Show All Documents". Does nothing if `id` matches neither.
@@ -23,6 +23,7 @@ pub(super) fn handle_fallback(
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
+	from_keyboard: bool,
 ) {
 	if (menu_ids::RECENT_DOCUMENT_BASE..=menu_ids::RECENT_DOCUMENT_MAX).contains(&id) {
 		let doc_index = id - menu_ids::RECENT_DOCUMENT_BASE;
@@ -55,7 +56,7 @@ pub(super) fn handle_fallback(
 			}
 		}
 	} else if id == menu_ids::SHOW_ALL_DOCUMENTS {
-		handle_show_all_documents(frame, dm, config, live_region_label);
+		handle_show_all_documents(frame, dm, config, live_region_label, from_keyboard);
 	}
 }
 
@@ -64,6 +65,7 @@ fn handle_show_all_documents(
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
+	from_keyboard: bool,
 ) {
 	let has_documents = {
 		let config_guard = config.lock().unwrap();
@@ -71,7 +73,7 @@ fn handle_show_all_documents(
 	};
 	if !has_documents {
 		// TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
-		announce(live_region_label, t("No recent documents."));
+		announce_for_command(live_region_label, from_keyboard, t("No recent documents."));
 		return;
 	}
 	let open_paths = dm.lock().unwrap().open_paths();

@@ -38,10 +38,7 @@ class ScreenRequest {
  * the same way a jump offset from the elements screen does.
  */
 @Composable
-fun OnScreenRequest(
-	request: ScreenRequest,
-	action: () -> Unit
-) {
+fun OnScreenRequest(request: ScreenRequest, action: () -> Unit) {
 	val requested by request.isRequested.collectAsStateWithLifecycle()
 	LaunchedEffect(requested) {
 		if (requested) {

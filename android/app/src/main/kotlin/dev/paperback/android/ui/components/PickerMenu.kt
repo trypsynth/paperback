@@ -33,11 +33,7 @@ fun pickerAnchorColors(): ButtonColors =
  * has to close it and read the anchor to find out.
  */
 @Composable
-fun PickerMenuItem(
-	label: String,
-	selected: Boolean,
-	onClick: () -> Unit
-) {
+fun PickerMenuItem(label: String, selected: Boolean, onClick: () -> Unit) {
 	DropdownMenuItem(
 		// The state rides on the label so it merges into the node the item's click builds, which is
 		// the one a screen reader reads out.

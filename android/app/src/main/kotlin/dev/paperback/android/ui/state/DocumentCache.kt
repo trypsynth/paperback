@@ -14,9 +14,7 @@ private val UUID_DIR_REGEX = Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
  * read. One directory per document, named after the URI rather than at random, so reopening the
  * same document reuses its directory instead of filling the cache with a copy per opening.
  */
-class DocumentCache(
-	private val cacheRoot: File
-) {
+class DocumentCache(private val cacheRoot: File) {
 	fun directoryFor(uriString: String): File = File(cacheRoot, "$DOCUMENT_DIR/${cacheKeyFor(uriString)}")
 
 	/**
@@ -41,9 +39,8 @@ class DocumentCache(
  * content URI can be long enough, and hold enough of anything, to run past what a file name can
  * carry on its own.
  */
-internal fun cacheKeyFor(uriString: String): String =
-	MessageDigest
-		.getInstance("SHA-256")
-		.digest(uriString.toByteArray())
-		.take(KEY_BYTES)
-		.joinToString("") { "%02x".format(it) }
+internal fun cacheKeyFor(uriString: String): String = MessageDigest
+	.getInstance("SHA-256")
+	.digest(uriString.toByteArray())
+	.take(KEY_BYTES)
+	.joinToString("") { "%02x".format(it) }

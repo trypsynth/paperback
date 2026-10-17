@@ -30,6 +30,12 @@ struct DocumentInfoSheet: View {
 						Divider().padding(.leading, 16)
 						// TRANSLATORS: Label for the document's file name in the Document Information dialog
 						infoRow(t("File Name"), value: viewModel.activeTab?.url.lastPathComponent ?? "—")
+						// Text mode has no reading bar to show this on, so it is here for either mode.
+						if let percent = viewModel.reading.progressPercent() {
+							Divider().padding(.leading, 16)
+							// TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
+							infoRow(t("Progress"), value: t("{}% through").replacingOccurrences(of: "{}", with: "\(percent)"))
+						}
 						Divider().padding(.leading, 16)
 						// TRANSLATORS: Row label for the document's total word count
 						infoRow(t("Words"), value: stats.wordCount.formatted())

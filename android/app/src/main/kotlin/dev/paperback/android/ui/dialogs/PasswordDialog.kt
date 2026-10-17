@@ -28,14 +28,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import dev.paperback.android.t
 
 @Composable
-fun PasswordDialog(
-	onConfirm: (String) -> Unit,
-	onDismiss: () -> Unit
-) {
+fun PasswordDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
 	var password by remember { mutableStateOf("") }
 	val focusRequester = remember { FocusRequester() }
 
-	// Automatically focus the password field when the dialog opens
 	LaunchedEffect(Unit) {
 		focusRequester.requestFocus()
 	}

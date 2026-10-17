@@ -22,10 +22,7 @@ import uniffi.paperback.DocumentStatsFfi
 import java.text.NumberFormat
 
 @Composable
-fun WordCountDialog(
-	stats: DocumentStatsFfi,
-	onDismiss: () -> Unit
-) {
+fun WordCountDialog(stats: DocumentStatsFfi, onDismiss: () -> Unit) {
 	// TRANSLATORS: Sentence announced to screen readers with the document's word count; {} is
 	// replaced with the number. Which of the three forms is used depends on the target language's
 	// own plural rule, read from its catalogue (see nt() in Translations.kt). The "many" form's

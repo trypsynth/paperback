@@ -39,10 +39,7 @@ import uniffi.paperback.HeadingTreeItemFfi
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ElementsScreen(
-	viewModel: MainScreenViewModel = viewModel(),
-	onDismiss: () -> Unit
-) {
+fun ElementsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -> Unit) {
 	val headings by viewModel.currentHeadings.collectAsStateWithLifecycle()
 	val links by viewModel.currentLinks.collectAsStateWithLifecycle()
 	var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -119,7 +116,7 @@ fun ElementsScreen(
 								.fillMaxWidth()
 								// TRANSLATORS: TalkBack action label for a heading in the elements list, read as "double tap to go to heading"
 								.clickable(onClickLabel = t("go to heading")) {
-									viewModel.requestJumpToOffset(item.offset)
+									viewModel.navigation.requestJumpToOffset(item.offset)
 									onDismiss()
 								}.semantics(mergeDescendants = true) {
 									// The row's indentation shows the level on screen, so the
@@ -153,7 +150,7 @@ fun ElementsScreen(
 									.fillMaxWidth()
 									// TRANSLATORS: TalkBack action label for a link in the elements list, read as "double tap to go to link"
 									.clickable(onClickLabel = t("go to link")) {
-										viewModel.requestJumpToOffset(item.offset)
+										viewModel.navigation.requestJumpToOffset(item.offset)
 										onDismiss()
 									}.padding(16.dp)
 							) {
@@ -168,10 +165,7 @@ fun ElementsScreen(
 	}
 }
 
-private fun calculateDepth(
-	items: List<HeadingTreeItemFfi>,
-	parentIndex: Int
-): Int {
+private fun calculateDepth(items: List<HeadingTreeItemFfi>, parentIndex: Int): Int {
 	var depth = 0
 	var currentIndex = parentIndex
 	while (currentIndex >= 0 && currentIndex < items.size) {

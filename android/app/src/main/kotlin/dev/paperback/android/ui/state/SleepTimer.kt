@@ -21,10 +21,7 @@ private const val SECONDS_PER_MINUTE = 60
  * [onExpired] stops playback. It runs before [expired] is emitted, so anything listening for the
  * end (an announcement, say) can count on playback already being stopped by the time it hears.
  */
-class SleepTimer(
-	private val scope: CoroutineScope,
-	private val onExpired: () -> Unit
-) {
+class SleepTimer(private val scope: CoroutineScope, private val onExpired: () -> Unit) {
 	private val _remaining = MutableStateFlow<Int?>(null)
 
 	/** Seconds left, or null when no timer is running. */

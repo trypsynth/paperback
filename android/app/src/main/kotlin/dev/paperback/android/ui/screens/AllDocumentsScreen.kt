@@ -29,10 +29,7 @@ import androidx.compose.foundation.lazy.itemsIndexed as lazyItemsIndexed
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AllDocumentsScreen(
-	viewModel: MainScreenViewModel = viewModel(),
-	onDismiss: () -> Unit
-) {
+fun AllDocumentsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -> Unit) {
 	val state by viewModel.uiState.collectAsStateWithLifecycle()
 	val recentDocuments = (state as? MainScreenUiState.Success)?.recentDocuments.orEmpty()
 	val supportedMimeTypes by viewModel.supportedMimeTypes.collectAsStateWithLifecycle()

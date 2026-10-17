@@ -7,7 +7,7 @@ description: Paperback is a fast, fully accessible ebook and document reader for
 
 <div class="hero">
 <h1>Read anything, on anything</h1>
-<p class="lede">Paperback is a fast, fully accessible reader for ebooks, documents and audio books. It opens over twenty formats and speaks sixteen languages. Windows, macOS and Linux are free downloads. The iOS and Android apps are paid, and the source is MIT licensed if you would rather build them yourself.</p>
+<p class="lede">Paperback is a fast, fully accessible reader for ebooks, documents and audio books. It opens over twenty formats and speaks seventeen languages. Windows, macOS and Linux are free downloads. The iOS and Android apps are paid, and the source is MIT licensed if you would rather build them yourself.</p>
 <ul class="cta">
 <li><a href="/downloads">Download Paperback</a></li>
 <li><a href="/readme.html">Read the manual</a></li>
@@ -89,6 +89,7 @@ Buying the mobile apps is what pays for the work. If you would rather not, the s
 <li>Finnish</li>
 <li>French</li>
 <li>German</li>
+<li>Hungarian</li>
 <li>Japanese</li>
 <li>Polish</li>
 <li>Portuguese (Brazil)</li>

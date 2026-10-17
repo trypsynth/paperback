@@ -412,6 +412,13 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		pollTimer = nil
 	}
 
+	/// How far into the whole recording playback has got, or nil before a file has been loaded or when the timeline has no answer.
+	var elapsedMs: Int64? {
+		guard let session, let source = currentSource, let player else { return nil }
+		let elapsed = session.audioElapsedForSourcePositionFfi(source: source, rawMs: Int64(player.currentTime * 1000))
+		return elapsed >= 0 ? elapsed : nil
+	}
+
 	/// Keeps the reported "currently narrating" clip in step with natural playback advance.
 	private func pollTick() {
 		guard playing, let session, let source = currentSource, let player else { return }

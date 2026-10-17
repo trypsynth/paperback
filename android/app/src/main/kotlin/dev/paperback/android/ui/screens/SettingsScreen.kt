@@ -41,15 +41,13 @@ private const val SCALE_STEPS =
 		ReaderSettings.TEXT_SCALE_PERCENT_STEP - 1
 
 /** Rounds a raw slider value so the text size only ever lands on a whole step. */
-private fun snapScale(value: Float): Int =
-	(value / ReaderSettings.TEXT_SCALE_PERCENT_STEP).roundToInt() *
-		ReaderSettings.TEXT_SCALE_PERCENT_STEP
+private fun snapScale(value: Float): Int = (value / ReaderSettings.TEXT_SCALE_PERCENT_STEP).roundToInt() *
+	ReaderSettings.TEXT_SCALE_PERCENT_STEP
 
 private val PERCENT_RANGE = 0f..100f
 
 /** One step per whole percent, so TalkBack's swipe-to-adjust moves by one rather than jumping. */
 private const val PERCENT_ACCESSIBILITY_STEPS = 99
-private const val PERCENT_MIDPOINT = 50f
 
 private val PAUSE_RANGE = MIN_PARAGRAPH_PAUSE_MS.toFloat()..MAX_PARAGRAPH_PAUSE_MS.toFloat()
 
@@ -62,12 +60,7 @@ private const val PAUSE_STEPS = (MAX_PARAGRAPH_PAUSE_MS - MIN_PARAGRAPH_PAUSE_MS
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ChoiceSetting(
-	label: String,
-	options: List<String>,
-	selectedIndex: Int,
-	onSelect: (Int) -> Unit
-) {
+private fun ChoiceSetting(label: String, options: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit) {
 	var expanded by remember { mutableStateOf(false) }
 	val selectedLabel = options.getOrElse(selectedIndex) { options.first() }
 	ExposedDropdownMenuBox(
@@ -100,46 +93,30 @@ private fun ChoiceSetting(
  * A speech setting on a 0 to 100 scale, with the slider semantics a screen reader needs to
  * announce and change it: the label and the percentage are folded into the group so TalkBack
  * reads one control rather than a heading and a slider separately.
- *
- * A setting following the engine's own default has nothing to show, so it reads as the system
- * default and reports itself disabled rather than showing a figure the reader cannot change.
  */
 @Composable
-private fun PercentSetting(
-	label: String,
-	percentage: Int,
-	isSystemDefault: Boolean,
-	onChange: (Int) -> Unit
-) {
+private fun PercentSetting(label: String, percentage: Int, onChange: (Int) -> Unit) {
 	Column(
 		modifier = Modifier.clearAndSetSemantics {
 			contentDescription = label
-			if (isSystemDefault) {
-				// TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
-				stateDescription = t("System Default")
-				disabled()
-			} else {
-				stateDescription = t("{} percent", percentage.toString())
-				progressBarRangeInfo = ProgressBarRangeInfo(
-					current = percentage.toFloat(),
-					range = PERCENT_RANGE,
-					steps = PERCENT_ACCESSIBILITY_STEPS
-				)
-				setProgress { targetValue ->
-					onChange(targetValue.roundToInt())
-					true
-				}
+			stateDescription = t("{} percent", percentage.toString())
+			progressBarRangeInfo = ProgressBarRangeInfo(
+				current = percentage.toFloat(),
+				range = PERCENT_RANGE,
+				steps = PERCENT_ACCESSIBILITY_STEPS
+			)
+			setProgress { targetValue ->
+				onChange(targetValue.roundToInt())
+				true
 			}
 		}
 	) {
-		val readout = if (isSystemDefault) t("System Default") else "$percentage%"
-		Text("$label: $readout", style = MaterialTheme.typography.labelLarge)
+		Text("$label: $percentage%", style = MaterialTheme.typography.labelLarge)
 		Slider(
-			value = if (isSystemDefault) PERCENT_MIDPOINT else percentage.toFloat(),
+			value = percentage.toFloat(),
 			onValueChange = { onChange(it.roundToInt()) },
 			valueRange = PERCENT_RANGE,
-			steps = 0,
-			enabled = !isSystemDefault
+			steps = 0
 		)
 	}
 }
@@ -174,10 +151,7 @@ private fun LanguageRow() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(
-	viewModel: MainScreenViewModel = viewModel(),
-	onDismiss: () -> Unit
-) {
+fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -> Unit) {
 	val settings = viewModel.settings
 	val restorePreviousDocuments by settings.restorePreviousDocuments.state.collectAsStateWithLifecycle()
 	val useInAppFileBrowser by settings.useInAppFileBrowser.state.collectAsStateWithLifecycle()
@@ -478,8 +452,7 @@ fun SettingsScreen(
 								if (canChooseVoice) {
 									Modifier
 								} else {
-									// Say why it cannot be opened, the same way the sliders do
-									// when they are following the engine's own settings.
+									// Say why it cannot be opened, rather than leaving it to read as an ordinary button that does nothing.
 									Modifier.semantics {
 										stateDescription = if (isSystemDefault) {
 											t("System Default")
@@ -513,7 +486,6 @@ fun SettingsScreen(
 					// TRANSLATORS: TalkBack label for the speech rate slider
 					label = t("Speech Rate"),
 					percentage = currentSpeechRate,
-					isSystemDefault = isSystemDefault,
 					onChange = { viewModel.ttsManager.setSpeechRate(it) }
 				)
 				Spacer(modifier = Modifier.height(16.dp))
@@ -521,7 +493,6 @@ fun SettingsScreen(
 					// TRANSLATORS: TalkBack label for the speech pitch slider
 					label = t("Pitch"),
 					percentage = currentPitch,
-					isSystemDefault = isSystemDefault,
 					onChange = { viewModel.ttsManager.setPitch(it) }
 				)
 				Spacer(modifier = Modifier.height(16.dp))

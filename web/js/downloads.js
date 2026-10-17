@@ -22,9 +22,10 @@
 
   // One row per download: the link, then the count as quiet text beside it.
   const row = (url, label, count) =>
-    `<li><a href="${url}">${label}</a> <span class="count">${fmtCount(count)}</span></li>`;
+    count === null ? `<li><a href="${url}">${label}</a></li>` : `<li><a href="${url}">${label}</a> <span class="count">${fmtCount(count)}</span></li>`;
 
-  const render = (release, label, subtitle = "", showMac = false) => {
+  // Each development build replaces the last, so its counts start again from nothing every time and say nothing about it.
+  const render = (release, label, subtitle = "", showMac = false, showCounts = true) => {
     const assets = (release.assets ?? []).filter(a => !legacyAssetNames.has(a.name.toLowerCase()));
     const exes = assets.filter(a => a.name.toLowerCase().endsWith(".exe"));
     const winZips = assets.filter(a => a.name.toLowerCase().endsWith(".zip"));
@@ -33,17 +34,20 @@
     const macDmg = assets.find(a => a.name.toLowerCase().endsWith(".dmg"));
     const version = release.tag_name.replace(/^v/, "");
     const archLabel = name => name.toLowerCase().includes("arm64") ? " (ARM64)" : name.toLowerCase().includes("x64") ? " (x64)" : "";
+    const count = a => showCounts ? a.download_count : null;
     const archOrder = name => name.toLowerCase().includes("arm64") ? 1 : 0;
     const byArch = list => list.sort((a, b) => archOrder(a.name) - archOrder(b.name));
     const rows = [
-      ...byArch(exes).map(a => row(a.browser_download_url, `Windows Installer${archLabel(a.name)} (.exe)`, a.download_count)),
-      ...byArch(winZips).map(a => row(a.browser_download_url, `Windows Portable${archLabel(a.name)} (.zip)`, a.download_count)),
-      ...(showMac && macDmg ? [row(macDmg.browser_download_url, "macOS (.dmg)", macDmg.download_count)] : []),
-      ...byArch(linuxAppImages).map(a => row(a.browser_download_url, `Linux Installer${archLabel(a.name)} (.AppImage)`, a.download_count)),
-      ...byArch(linuxTarballs).map(a => row(a.browser_download_url, `Linux Portable${archLabel(a.name)} (.tar.gz)`, a.download_count)),
+      ...byArch(exes).map(a => row(a.browser_download_url, `Windows Installer${archLabel(a.name)} (.exe)`, count(a))),
+      ...byArch(winZips).map(a => row(a.browser_download_url, `Windows Portable${archLabel(a.name)} (.zip)`, count(a))),
+      ...(showMac && macDmg ? [row(macDmg.browser_download_url, "macOS (.dmg)", count(macDmg))] : []),
+      ...byArch(linuxAppImages).map(a => row(a.browser_download_url, `Linux Installer${archLabel(a.name)} (.AppImage)`, count(a))),
+      ...byArch(linuxTarballs).map(a => row(a.browser_download_url, `Linux Portable${archLabel(a.name)} (.tar.gz)`, count(a))),
     ];
+    // The development build's tag is "latest", which says nothing a reader needs after its name.
+    const heading = release.tag_name === "latest" ? label : `${label} ${version}`;
     return `
-      <h3>${label} ${version}</h3>
+      <h3>${heading}</h3>
       ${subtitle ? `<p class="subtitle">${subtitle}</p>` : ""}
       <ul>
         ${rows.join("\n        ")}
@@ -60,7 +64,7 @@
     const dev = releases.find(r => r.tag_name === "latest");
     const previousStable = releases.filter(isStable).slice(1);
     stableEl.innerHTML = stable ? render(stable, "Stable Version", "Recommended for most users", true) : "No stable release found.";
-    devEl.innerHTML = dev ? render(dev, "Master Build", "Includes experimental features, may be unstable", true) : "No development builds found.";
+    devEl.innerHTML = dev ? render(dev, "Development Build", "Includes experimental features, may be unstable", true, false) : "No development builds found.";
     if (previousStable.length > 0) {
       const blocks = previousStable.map(r => `<div class="release">${render(r, "Stable Version", "", true)}</div>`).join("");
       historyEl.innerHTML = `

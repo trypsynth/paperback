@@ -92,7 +92,7 @@ impl MainWindow {
 					menu_go::handle_go_to_line(&frame_copy, &dm, &config, live_region_label);
 				}
 				menu_ids::GO_TO_PAGE => {
-					menu_go::handle_go_to_page(&frame_copy, &dm, &config, live_region_label);
+					menu_go::handle_go_to_page(&frame_copy, &dm, &config, live_region_label, from_keyboard);
 				}
 				menu_ids::GO_TO_PERCENT => {
 					menu_go::handle_go_to_percent(&frame_copy, &dm, &config, live_region_label);
@@ -150,7 +150,7 @@ impl MainWindow {
 					menu_tools::handle_document_info(&frame_copy, &dm);
 				}
 				menu_ids::TABLE_OF_CONTENTS => {
-					menu_go::handle_table_of_contents(&frame_copy, &dm, &config, live_region_label);
+					menu_go::handle_table_of_contents(&frame_copy, &dm, &config, live_region_label, from_keyboard);
 				}
 				menu_ids::ELEMENTS_LIST => {
 					menu_go::handle_elements_list(&frame_copy, &dm, &config, live_region_label);
@@ -181,7 +181,7 @@ impl MainWindow {
 				}
 				#[cfg(any(target_os = "windows", target_os = "macos"))]
 				menu_ids::BATCH_OCR => {
-					menu_tools::handle_batch_ocr(&frame_copy, &dm, live_region_label);
+					menu_tools::handle_batch_ocr(&frame_copy, &dm, live_region_label, from_keyboard);
 				}
 				menu_ids::ABOUT => {
 					dialogs::show_about_dialog(&frame_copy);
@@ -227,7 +227,7 @@ impl MainWindow {
 					menu_edit::handle_select_all(&dm, live_region_label, from_keyboard);
 				}
 				_ => {
-					menu_file::handle_fallback(id, &frame_copy, &dm, &config, live_region_label);
+					menu_file::handle_fallback(id, &frame_copy, &dm, &config, live_region_label, from_keyboard);
 				}
 			}
 		});

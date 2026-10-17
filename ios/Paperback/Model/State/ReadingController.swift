@@ -463,6 +463,21 @@ final class ReadingController {
 		return narration.seekToMs(targetMs)
 	}
 
+	/// How far through the document the reader is, as a whole-number percentage, or nil when there is no answer.
+	///
+	/// An audio-only book is measured through its recording: its text is one placeholder line per file, so a share of the text treats a two minute file and an hour long one alike. It has no answer when the files' lengths are not all known. In text mode the place is the first line on screen, which is what is saved as the reading position there.
+	func progressPercent() -> Int? {
+		guard let session = activeSession else { return nil }
+		if isAudioOnly {
+			let point = session.audioPointForPositionFfi(position: ttsPosition)
+			guard let elapsed = narration?.elapsedMs ?? (point.found ? point.timeMs : nil) else { return nil }
+			let percent = session.audioProgressPercentFfi(elapsedMs: elapsed)
+			return percent >= 0 ? Int(percent) : nil
+		}
+		let position = isTextMode ? session.positionFromLine(line: Int64(textModeFirstLine + 1)) : ttsPosition
+		return Int(session.getStatusInfo(position: position).percentage)
+	}
+
 	func goToPercent(_ percent: Int32, announce shouldAnnounce: Bool = false) {
 		guard let session = activeSession else { return }
 		jump(to: session.positionFromPercent(percent: percent), announce: shouldAnnounce)

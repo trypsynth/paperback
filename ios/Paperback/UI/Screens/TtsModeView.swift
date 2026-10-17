@@ -28,15 +28,20 @@ struct TtsModeView: View {
 					// it sits, so VoiceOver reading both would say the same words twice.
 					.accessibilityHidden(true)
 			}
-			if let percent = progressPercent {
-				// The text below says the same number, so the bar is for the eye only.
-				ProgressView(value: Double(percent), total: 100)
-					.padding(.horizontal, 24)
-					.accessibilityHidden(true)
-				// TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
-				Text(t("{}% through").replacingOccurrences(of: "{}", with: "\(percent)"))
-					.font(.caption)
-					.foregroundStyle(.secondary)
+			// A recording moves on between the clip changes the view is told about, so its share is read again every second while it plays.
+			TimelineView(.periodic(from: .now, by: 1)) { _ in
+				if let percent = viewModel.reading.progressPercent() {
+					VStack(spacing: 16) {
+						// The text below says the same number, so the bar is for the eye only.
+						ProgressView(value: Double(percent), total: 100)
+							.padding(.horizontal, 24)
+							.accessibilityHidden(true)
+						// TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
+						Text(t("{}% through").replacingOccurrences(of: "{}", with: "\(percent)"))
+							.font(.caption)
+							.foregroundStyle(.secondary)
+					}
+				}
 			}
 			if let remaining = viewModel.reading.sleepTimerRemaining {
 				Text(String(format: "Sleep timer: %d:%02d", remaining / 60, remaining % 60))
@@ -45,12 +50,6 @@ struct TtsModeView: View {
 			}
 			Spacer()
 		}
-	}
-
-	/// How far through the document the reading position is. An audio-only book goes without: its text is one blank line per narration file, so a share of it says nothing about how far in the reader is.
-	private var progressPercent: Int? {
-		guard let session = viewModel.activeSession, !viewModel.reading.isAudioOnly else { return nil }
-		return Int(session.getStatusInfo(position: viewModel.reading.ttsPosition).percentage)
 	}
 
 	/// The line under the caret, shown small beneath the spoken text as a place marker.

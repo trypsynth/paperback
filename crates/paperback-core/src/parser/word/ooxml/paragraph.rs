@@ -27,9 +27,15 @@ pub(super) fn process_paragraph(
 	let label = numbering.label_for(find_child_element(element, "pPr"));
 	let mut paragraph_text = label.as_ref().map_or_else(String::new, |label| format!("{} ", label.text));
 	let mut para_display_len = display_len(&paragraph_text);
+	let label_len = para_display_len;
+	let mut page_starts: Vec<usize> = Vec::new();
+	let mut bookmarks: Vec<(String, usize)> = Vec::new();
+	let mut links: Vec<(usize, String, String)> = Vec::new();
 	let mut heading_level = 0;
 	let mut is_paragraph_style_heading = false;
 	let mut format_spans: Vec<(MarkerType, usize, usize)> = Vec::new();
+	// A hyperlink field's displayed text was already taken whole when its instruction was read, so its runs are skipped until the field ends rather than read a second time.
+	let mut in_taken_field = false;
 	for child in element.children() {
 		if child.node_type() != NodeType::Element {
 			continue;
@@ -42,11 +48,22 @@ pub(super) fn process_paragraph(
 			}
 		} else if tag_name == "bookmarkStart" {
 			if let Some(name) = child.attribute("name") {
-				id_positions.insert(name.to_string(), paragraph_start + paragraph_text.len());
+				bookmarks.push((name.to_string(), para_display_len));
 			}
 		} else if tag_name == "hyperlink" {
-			para_display_len += process_hyperlink(child, &mut paragraph_text, buffer, rels, paragraph_start);
+			if child.children().any(|run| run.tag_name().name() == "r" && starts_page(run)) {
+				page_starts.push(para_display_len);
+			}
+			para_display_len += process_hyperlink(child, &mut paragraph_text, &mut links, rels, para_display_len);
 		} else if tag_name == "r" {
+			if starts_page(child) {
+				page_starts.push(para_display_len);
+			}
+			if in_taken_field {
+				in_taken_field = find_child_element(child, "fldChar").and_then(|field| field.attribute("fldCharType"))
+					!= Some("end");
+				continue;
+			}
 			if heading_level == 0
 				&& let Some(rpr_node) = find_child_element(child, "rPr")
 			{
@@ -60,20 +77,16 @@ pub(super) fn process_paragraph(
 				if !link_target.is_empty() {
 					let (display_text, _) = extract_field_display_text(element, child);
 					if !display_text.is_empty() {
-						let link_offset = paragraph_start + paragraph_text.len();
+						links.push((para_display_len, display_text.clone(), link_target));
 						paragraph_text.push_str(&display_text);
 						para_display_len += display_len(&display_text);
-						buffer.add_marker(
-							Marker::new(MarkerType::Link, link_offset)
-								.with_text(display_text.clone())
-								.with_reference(link_target),
-						);
+						in_taken_field = true;
 					}
 				}
 			}
 			let run_text = collect_ooxml_run_text(child);
 			if !run_text.is_empty() {
-				let run_start = paragraph_start + para_display_len;
+				let run_start = para_display_len;
 				let run_len = display_len(&run_text);
 				if let Some(rpr_node) = find_child_element(child, "rPr") {
 					let (bold, italic, underline) = get_run_format_flags(rpr_node);
@@ -93,9 +106,23 @@ pub(super) fn process_paragraph(
 	buffer.append(trimmed);
 	buffer.append("\n");
 	let leading_trim = display_len(&paragraph_text) - display_len(paragraph_text.trim_start());
+	let trimmed_len = display_len(trimmed);
+	// Offsets were taken in the untrimmed text, so they move back by what the trim removed, and never out of this paragraph.
+	let in_trimmed = |offset: usize| paragraph_start + offset.saturating_sub(leading_trim).min(trimmed_len);
+	// A page or bookmark that starts on the paragraph's first words starts on the paragraph, not after its list label.
+	let at_words = |offset: usize| if offset <= label_len { paragraph_start } else { in_trimmed(offset) };
+	for offset in page_starts {
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, at_words(offset)));
+	}
+	for (name, offset) in bookmarks {
+		id_positions.insert(name, at_words(offset));
+	}
+	for (offset, text, reference) in links {
+		buffer.add_marker(Marker::new(MarkerType::Link, in_trimmed(offset)).with_text(text).with_reference(reference));
+	}
 	for (kind, start, end) in format_spans {
-		let adj_start = start.saturating_sub(leading_trim);
-		let adj_end = end.saturating_sub(leading_trim);
+		let adj_start = in_trimmed(start);
+		let adj_end = in_trimmed(end);
 		if adj_end > adj_start {
 			buffer.add_marker(Marker::new(kind, adj_start).with_length(adj_end - adj_start));
 		}
@@ -119,14 +146,20 @@ pub(super) fn process_paragraph(
 	true
 }
 
-/// Appends the hyperlink's display text to `paragraph_text`, records a Link
-/// marker, and returns the number of display units appended.
+/// Whether Word began a new page at `run` the last time it laid the document out.
+///
+/// A .docx has no pages of its own: Word paginates as it lays the document out, and saves where each page after the first began with this element, so it is the closest a saved file comes to Word's own page numbers. Explicit page breaks are not counted on top, because Word records one of these after each of those too.
+pub(super) fn starts_page(run: Node) -> bool {
+	find_child_element(run, "lastRenderedPageBreak").is_some()
+}
+
+/// Appends the hyperlink's display text to `paragraph_text`, records the link at `offset` into the paragraph, and returns the number of display units appended.
 fn process_hyperlink(
 	element: Node,
 	paragraph_text: &mut String,
-	buffer: &mut DocumentBuffer,
+	links: &mut Vec<(usize, String, String)>,
 	rels: &HashMap<String, String>,
-	paragraph_start: usize,
+	offset: usize,
 ) -> usize {
 	let r_id = element.attribute("id").unwrap_or("");
 	let anchor = element.attribute("anchor").unwrap_or("");
@@ -146,12 +179,9 @@ fn process_hyperlink(
 	if link_text.is_empty() {
 		return 0;
 	}
-	let link_offset = paragraph_start + paragraph_text.len();
 	paragraph_text.push_str(&link_text);
 	if !link_target.is_empty() {
-		buffer.add_marker(
-			Marker::new(MarkerType::Link, link_offset).with_text(link_text.clone()).with_reference(link_target),
-		);
+		links.push((offset, link_text.clone(), link_target));
 	}
 	display_len(&link_text)
 }
