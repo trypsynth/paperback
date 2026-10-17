@@ -107,6 +107,9 @@ a:hover {
 }
 
 .brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
 	font-size: 1.2rem;
 	font-weight: 700;
 	color: var(--text);
@@ -116,6 +119,10 @@ a:hover {
 
 .brand:hover {
 	color: var(--accent);
+}
+
+.brand img {
+	border-radius: 6px;
 }
 
 .site-nav ul {
