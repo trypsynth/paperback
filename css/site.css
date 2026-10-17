@@ -477,3 +477,13 @@ details > summary {
 		transition-duration: 0.01ms !important;
 	}
 }
+
+/* Google's badge carries its own transparent margin, so it sits in a line of text without any of its own. */
+.store-badge img {
+	vertical-align: middle;
+}
+
+.fine-print {
+	color: var(--muted);
+	font-size: 0.85rem;
+}
