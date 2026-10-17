@@ -42,8 +42,10 @@
       ...byArch(linuxAppImages).map(a => row(a.browser_download_url, `Linux Installer${archLabel(a.name)} (.AppImage)`, a.download_count)),
       ...byArch(linuxTarballs).map(a => row(a.browser_download_url, `Linux Portable${archLabel(a.name)} (.tar.gz)`, a.download_count)),
     ];
+    // The development build's tag is "latest", which says nothing a reader needs after its name.
+    const heading = release.tag_name === "latest" ? label : `${label} ${version}`;
     return `
-      <h3>${label} ${version}</h3>
+      <h3>${heading}</h3>
       ${subtitle ? `<p class="subtitle">${subtitle}</p>` : ""}
       <ul>
         ${rows.join("\n        ")}
@@ -60,7 +62,7 @@
     const dev = releases.find(r => r.tag_name === "latest");
     const previousStable = releases.filter(isStable).slice(1);
     stableEl.innerHTML = stable ? render(stable, "Stable Version", "Recommended for most users", true) : "No stable release found.";
-    devEl.innerHTML = dev ? render(dev, "Master Build", "Includes experimental features, may be unstable", true) : "No development builds found.";
+    devEl.innerHTML = dev ? render(dev, "Development Build", "Includes experimental features, may be unstable", true) : "No development builds found.";
     if (previousStable.length > 0) {
       const blocks = previousStable.map(r => `<div class="release">${render(r, "Stable Version", "", true)}</div>`).join("");
       historyEl.innerHTML = `
