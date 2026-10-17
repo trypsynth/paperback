@@ -264,6 +264,7 @@ Jos haluat osallistua kääntämiseen, katso ohjeet [käännösoppaasta](transla
 * suomi
 * tšekki
 * ukraina
+* unkari
 * venäjä
 * vietnam
 * yksinkertaistettu kiina
