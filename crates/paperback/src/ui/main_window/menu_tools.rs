@@ -18,7 +18,7 @@ use super::{HotkeyHandle, re_register_hotkey};
 use crate::{
 	config_ext::{set_log_level, set_update_channel},
 	translation_manager::TranslationManager,
-	ui::navigation::announce,
+	ui::navigation::announce_for_command,
 };
 
 pub(super) fn handle_word_count(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
@@ -61,12 +61,17 @@ pub(super) fn handle_document_info(frame: &Frame, dm: &Rc<Mutex<DocumentManager>
 /// menu item covers both so there is nothing to enable and disable as a job starts and ends, and
 /// the answer to "how do I stop this" is the same item that started it.
 #[cfg(any(target_os = "windows", target_os = "macos"))]
-pub(super) fn handle_batch_ocr(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText) {
+pub(super) fn handle_batch_ocr(
+	frame: &Frame,
+	dm: &Rc<Mutex<DocumentManager>>,
+	live_region_label: StaticText,
+	from_keyboard: bool,
+) {
 	let (max_page, running) = {
 		let dm_ref = dm.lock().unwrap();
 		let Some(tab) = dm_ref.active_tab() else {
 			// TRANSLATORS: Announced when Batch OCR is chosen with no document open
-			announce(live_region_label, t("No document open."));
+			announce_for_command(live_region_label, from_keyboard, t("No document open."));
 			return;
 		};
 		(i32::try_from(tab.session.page_count()).unwrap_or(i32::MAX), dm_ref.batch_ocr_running())
