@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 22:23+0000\n"
+"POT-Creation-Date: 2026-10-17 17:31+0000\n"
 "PO-Revision-Date: 2026-10-17 12:00+0200\n"
 "Last-Translator: Torma Zsolt <torma.zsolt@gmail.com>\n"
 "Language-Team: Torma Zsolt <torma.zsolt@gmail.com>\n"
@@ -1278,8 +1278,8 @@ msgid "Normal"
 msgstr "Normál"
 
 #. TRANSLATORS: 1.5x line spacing option
-msgid "1.5\\u{00d7}"
-msgstr "1,5\\u{00d7}"
+msgid "1.5×"
+msgstr "1,5×"
 
 #. TRANSLATORS: Double line spacing option
 msgid "Double"
@@ -1711,9 +1711,6 @@ msgstr "Nem sikerült exportálni a dokumentumot."
 msgid "Line %d"
 msgstr "%d. sor"
 
-#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-#. A menu invocation returns focus to the book just like a closed dialog does,
-#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr "Nincsenek oldalak."
@@ -4194,7 +4191,6 @@ msgstr "Beépített fájlböngésző használata (az összes fájlhoz való hozz
 msgid "Text-to-Speech"
 msgstr "Szövegfelolvasás"
 
-#. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
 msgid "System Default"
 msgstr "Rendszer alapértelmezése"
@@ -4218,11 +4214,6 @@ msgstr "{} megadása"
 #: kt
 msgid "Error loading document: {}"
 msgstr "Hiba a dokumentum betöltésekor: {}"
-
-#. TRANSLATORS: 1.5x line spacing option
-#: kt
-msgid "1.5×"
-msgstr "1,5×"
 
 #. TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
 #: kt
@@ -4537,3 +4528,14 @@ msgstr "Felolvasás leállítása a keresési találatok után"
 #: swift kt
 msgid "Turn off to continue reading while navigating by search matches."
 msgstr "Kapcsolja ki, ha a keresési találatok közötti navigálás közben folytatni szeretné a felolvasást."
+
+#. TRANSLATORS: 1.5x line spacing option
+#: swift
+msgid "1.5\\u{00d7}"
+msgstr "1,5\\u{00d7}"
+
+#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
+#: swift
+#, fuzzy
+msgid "Progress"
+msgstr "Előrehaladás"
