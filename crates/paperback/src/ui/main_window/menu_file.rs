@@ -5,7 +5,11 @@
 
 use std::{path::Path, rc::Rc, sync::Mutex};
 
-use paperback_core::{config::ConfigManager, export::ExportFormat, parser::is_remote_url};
+use paperback_core::{
+	config::ConfigManager,
+	export::{ExportFormat, annotations::AnnotationFormat},
+	parser::is_remote_url,
+};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -217,6 +221,69 @@ pub(super) fn handle_export_document_data(
 		)
 		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
 		.build();
+		dialog.show_modal();
+	}
+}
+
+pub(super) fn handle_export_notes_and_bookmarks(
+	frame: &Frame,
+	dm: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+) {
+	let stem = {
+		let Ok(dm_ref) = dm.try_lock() else {
+			return;
+		};
+		let Some(tab) = dm_ref.active_tab() else {
+			return;
+		};
+		// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+		tab.file_path.file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string())
+	};
+	let Some(choice) = dialogs::show_export_annotations_dialog(frame, config) else {
+		return;
+	};
+	// TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+	let wildcard = t("Text files (*.txt)|*.txt|HTML files (*.html)|*.html|Paperback files (*.paperback)|*.paperback");
+	let dialog = FileDialog::builder(frame)
+		// TRANSLATORS: Title of the file save dialog when exporting notes and bookmarks as text or HTML
+		.with_message(&t("Export notes and bookmarks"))
+		.with_default_file(&format!("{stem}.txt"))
+		.with_wildcard(&wildcard)
+		.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
+		.build();
+	if dialog.show_modal() != ID_OK {
+		return;
+	}
+	let Some(path) = dialog.get_path() else {
+		return;
+	};
+	let extension = Path::new(&path).extension().map(|e| e.to_string_lossy().to_ascii_lowercase());
+	let format = match extension.as_deref() {
+		Some("html" | "htm") => AnnotationFormat::Html,
+		_ => AnnotationFormat::Text,
+	};
+	let rendered = {
+		let Ok(dm_ref) = dm.try_lock() else {
+			return;
+		};
+		let Some(tab) = dm_ref.active_tab() else {
+			return;
+		};
+		if extension.as_deref() == Some("paperback") {
+			config.lock().unwrap().export_document_settings(&tab.file_path.to_string_lossy(), &path);
+			tracing::info!(doc = %tab.file_path.display(), export = %path, "document data exported");
+			return;
+		}
+		tab.session.render_annotations_export(&config.lock().unwrap(), &stem, choice.filter, choice.options, format)
+	};
+	if let Err(e) = std::fs::write(&path, rendered) {
+		tracing::error!(path = %path, error = %e, "failed to export notes and bookmarks");
+		let dialog =
+			// TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+			MessageDialog::builder(frame, &t("Failed to export notes and bookmarks."), &t("Error"))
+				.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+				.build();
 		dialog.show_modal();
 	}
 }
