@@ -258,6 +258,7 @@ To learn how to contribute, please read our [Translation Guide](translating.md).
 * Finnish
 * French
 * German
+* Hungarian
 * Japanese
 * Polish
 * Portuguese (Brazil)
