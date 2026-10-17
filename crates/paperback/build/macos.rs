@@ -24,6 +24,7 @@ fn bundle_document_extensions_block() -> String {
 /// are renamed the same way `cargo ios` renames their `.lproj` folders.
 fn bundle_localizations_block() -> String {
 	let mut languages = BTreeSet::from(["en".to_string()]);
+	println!("cargo:rerun-if-changed={}", paths::workspace_dir().join("po").display());
 	if let Ok(entries) = fs::read_dir(paths::workspace_dir().join("po")) {
 		for path in entries.flatten().map(|entry| entry.path()) {
 			if path.extension().is_some_and(|ext| ext == "po")
