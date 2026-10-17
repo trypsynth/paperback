@@ -13,7 +13,10 @@ Pick the stable version unless you want to try what is coming next. Nothing here
 Free, for Windows, macOS and Linux.
 
 <div id="latest-stable" class="release">Loading the latest release&hellip;</div>
+<details>
+<summary>Development build</summary>
 <div id="latest-dev" class="release">Loading the latest development build&hellip;</div>
+</details>
 <div id="stable-history"></div>
 
 ## Mobile apps
