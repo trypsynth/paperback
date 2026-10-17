@@ -195,6 +195,12 @@ li + li {
 	margin-top: 0.25rem;
 }
 
+/* The spacing above is for lists that run down the page. In one laid out in a row it drops every item after the first below it. */
+.site-nav li + li,
+.cta li + li {
+	margin-top: 0;
+}
+
 strong {
 	font-weight: 650;
 }
