@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paperback – 1.0-s verzió</title>
+<style>
+:root { color-scheme: light dark; }
+body { font-family: system-ui, sans-serif; line-height: 1.5; max-width: 45em; margin: 0 auto; padding: 1em; }
+h1, h2, h3, h4 { line-height: 1.25; }
+code { font-family: ui-monospace, Consolas, monospace; font-size: 0.95em; }
+pre { overflow-x: auto; padding: 0.75em; border: 1px solid color-mix(in srgb, currentColor 25%, transparent); }
+table { border-collapse: collapse; margin: 1em 0; }
+th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); padding: 0.3em 0.6em; text-align: left; }
+#TOC ul { padding-left: 1.5em; }
+</style>
+<link rel="alternate" hreflang="en" href="https://paperback.dev/readme.html">
+<link rel="alternate" hreflang="bs" href="https://paperback.dev/readme-bs.html">
+<link rel="alternate" hreflang="cs" href="https://paperback.dev/readme-cs.html">
+<link rel="alternate" hreflang="de" href="https://paperback.dev/readme-de.html">
+<link rel="alternate" hreflang="es" href="https://paperback.dev/readme-es.html">
+<link rel="alternate" hreflang="fi" href="https://paperback.dev/readme-fi.html">
+<link rel="alternate" hreflang="fr" href="https://paperback.dev/readme-fr.html">
+<link rel="alternate" hreflang="hu" href="https://paperback.dev/readme-hu.html">
+<link rel="alternate" hreflang="ja" href="https://paperback.dev/readme-ja.html">
+<link rel="alternate" hreflang="nl" href="https://paperback.dev/readme-nl.html">
+<link rel="alternate" hreflang="pl" href="https://paperback.dev/readme-pl.html">
+<link rel="alternate" hreflang="pt-br" href="https://paperback.dev/readme-pt_br.html">
+<link rel="alternate" hreflang="ru" href="https://paperback.dev/readme-ru.html">
+<link rel="alternate" hreflang="sr" href="https://paperback.dev/readme-sr.html">
+<link rel="alternate" hreflang="uk" href="https://paperback.dev/readme-uk.html">
+<link rel="alternate" hreflang="vi" href="https://paperback.dev/readme-vi.html">
+<link rel="alternate" hreflang="zh-CN" href="https://paperback.dev/readme-zh_CN.html">
+<link rel="alternate" hreflang="x-default" href="https://paperback.dev/readme.html">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<p><a href="/">&larr; paperback.dev</a></p>
+<nav class="language-bar" aria-label="Language">
+<ul>
+<li><a href="/readme.html" lang="en" hreflang="en">English</a></li>
+<li><a href="/readme-bs.html" lang="bs" hreflang="bs">Bosanski</a></li>
+<li><a href="/readme-cs.html" lang="cs" hreflang="cs">Čeština</a></li>
+<li><a href="/readme-de.html" lang="de" hreflang="de">Deutsch</a></li>
+<li><a href="/readme-es.html" lang="es" hreflang="es">Español</a></li>
+<li><a href="/readme-fi.html" lang="fi" hreflang="fi">Suomi</a></li>
+<li><a href="/readme-fr.html" lang="fr" hreflang="fr">Français</a></li>
+<li><span lang="hu" aria-current="true">Magyar</span></li>
+<li><a href="/readme-ja.html" lang="ja" hreflang="ja">日本語</a></li>
+<li><a href="/readme-nl.html" lang="nl" hreflang="nl">Nederlands</a></li>
+<li><a href="/readme-pl.html" lang="pl" hreflang="pl">Polski</a></li>
+<li><a href="/readme-pt_br.html" lang="pt-br" hreflang="pt-br">Português (Brasil)</a></li>
+<li><a href="/readme-ru.html" lang="ru" hreflang="ru">Русский</a></li>
+<li><a href="/readme-sr.html" lang="sr" hreflang="sr">Српски</a></li>
+<li><a href="/readme-uk.html" lang="uk" hreflang="uk">Українська</a></li>
+<li><a href="/readme-vi.html" lang="vi" hreflang="vi">Tiếng Việt</a></li>
+<li><a href="/readme-zh_CN.html" lang="zh-CN" hreflang="zh-CN">中文（简体）</a></li>
+</ul>
+</nav>
+<main>
+<h1 id="paperback--10-s-verzió">Paperback – 1.0-s verzió</h1>
+<nav id="TOC">
+<ul>
+<li><a href="#bevezetés">Bevezetés</a></li>
+<li><a href="#rendszerkövetelmények">Rendszerkövetelmények</a></li>
+<li><a href="#funkciók">Funkciók</a></li>
+<li><a href="#képernyőolvasó-kompatibilitás">Képernyőolvasó-kompatibilitás</a><ul>
+<li><a href="#a-jaws-és-a-braille-kijelzők">A JAWS és a braille-kijelzők</a></li>
+<li><a href="#a-jaws-és-a-paperback-üzenetei">A JAWS és a Paperback üzenetei</a></li>
+</ul>
+</li>
+<li><a href="#jelenleg-támogatott-fájltípusok">Jelenleg támogatott fájltípusok</a></li>
+<li><a href="#billentyűparancsok">Billentyűparancsok</a><ul>
+<li><a href="#fájl-menü">Fájl menü</a></li>
+<li><a href="#szerkesztés-menü">Szerkesztés menü</a></li>
+<li><a href="#nézet-menü">Nézet menü</a></li>
+<li><a href="#ugrás-menü">Ugrás menü</a></li>
+<li><a href="#könyvjelzők-menü">Könyvjelzők menü</a></li>
+<li><a href="#hang-menü">Hang menü</a></li>
+<li><a href="#eszközök-menü">Eszközök menü</a></li>
+<li><a href="#súgó-menü">Súgó menü</a></li>
+<li><a href="#további-billentyűk-a-dokumentumnézetben">További billentyűk a dokumentumnézetben</a></li>
+</ul>
+</li>
+<li><a href="#ios-és-android">iOS és Android</a><ul>
+<li><a href="#dokumentumok-megnyitása">Dokumentumok megnyitása</a></li>
+<li><a href="#olvasás-és-hallgatás">Olvasás és hallgatás</a></li>
+<li><a href="#az-olvasósáv">Az olvasósáv</a></li>
+<li><a href="#további-lehetőségek">További lehetőségek</a></li>
+<li><a href="#billentyűzet-és-headset">Billentyűzet és headset</a></li>
+</ul>
+</li>
+<li><a href="#támogatott-nyelvek">Támogatott nyelvek</a></li>
+<li><a href="#köszönetnyilvánítás">Köszönetnyilvánítás</a><ul>
+<li><a href="#fejlesztés">Fejlesztés</a></li>
+<li><a href="#adományok">Adományok</a></li>
+</ul>
+</li>
+<li><a href="#változásnapló">Változásnapló</a><ul>
+<li><a href="#10-s-verzió">1.0-s verzió</a><ul>
+<li><a href="#újdonságok">Újdonságok</a></li>
+<li><a href="#javítások">Javítások</a></li>
+<li><a href="#ios-és-android-1">iOS és Android</a></li>
+</ul>
+</li>
+<li><a href="#092-es-verzió">0.9.2-es verzió</a></li>
+<li><a href="#091-es-verzió">0.9.1-es verzió</a></li>
+<li><a href="#090-s-verzió">0.9.0-s verzió</a><ul>
+<li><a href="#újdonságok-1">Újdonságok</a></li>
+<li><a href="#javítások-1">Javítások</a></li>
+</ul>
+</li>
+<li><a href="#085-ös-verzió">0.8.5-ös verzió</a></li>
+<li><a href="#082-es-verzió">0.8.2-es verzió</a></li>
+<li><a href="#081-es-verzió">0.8.1-es verzió</a></li>
+<li><a href="#080-s-verzió">0.8.0-s verzió</a></li>
+<li><a href="#070-s-verzió">0.7.0-s verzió</a></li>
+<li><a href="#061-es-verzió">0.6.1-es verzió</a></li>
+<li><a href="#060-s-verzió">0.6.0-s verzió</a></li>
+<li><a href="#050-s-verzió">0.5.0-s verzió</a></li>
+<li><a href="#041-es-verzió">0.4.1-es verzió</a></li>
+<li><a href="#040-s-verzió">0.4.0-s verzió</a></li>
+<li><a href="#030-s-verzió">0.3.0-s verzió</a></li>
+<li><a href="#021-es-verzió">0.2.1-es verzió</a></li>
+<li><a href="#020-s-verzió">0.2.0-s verzió</a></li>
+<li><a href="#010-s-verzió">0.1.0-s verzió</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+<h2 id="bevezetés">Bevezetés</h2>
+<p>A Paperback kis erőforrásigényű, gyors és akadálymentes olvasóprogram e-könyvekhez, dokumentumokhoz és hangoskönyvekhez, mindenkinek, az alkalmi olvasóktól a legigényesebb haladó felhasználókig. Tervezésekor a képernyőolvasós akadálymentesség, a sebesség és a fölösleges sallangoktól mentes használat volt a cél.</p>
+<h2 id="rendszerkövetelmények">Rendszerkövetelmények</h2>
+<p>A Paperback a következő rendszereken fut: Windows 10/11, az ARM-alapú macOS összes újabb verziója, Linux, iOS 17 vagy újabb és Android 7 vagy újabb. Az iOS- és az Android-alkalmazás az App Store-ban, illetve a Google Playen érhető el.</p>
+<h2 id="funkciók">Funkciók</h2>
+<ul>
+<li>Teljesen önálló: az olvasás megkezdéséhez semmilyen más szoftvert nem kell telepíteni a számítógépre.</li>
+<li>Rendkívül gyors, még régi hardveren is.</li>
+<li>Egyszerű, lapokra osztott felület, amelyben tetszőleges számú dokumentumot nyithat meg egymás mellett.</li>
+<li>Minden megnyitott dokumentumban pontosan megjegyzi az olvasási pozíciót.</li>
+<li>Ha kéri, megjegyzi, mely dokumentumok voltak megnyitva a program bezárásakor, és a következő indításkor újra megnyitja őket.</li>
+<li>Számos képernyőolvasó böngészési módjához hasonló navigációs funkciókat kínál, amelyekkel gyorsan és egyszerűen mozoghat a dokumentumokban.</li>
+<li>Sokoldalú keresési párbeszédpanel, többek között keresési előzményekkel és a reguláris kifejezések támogatásával.</li>
+<li>Teljesen hordozható módon is futtatható, de telepíthető is, ekkor a fájltársítások automatikusan beállnak.</li>
+<li>A gyakori fájlformátumok rendkívül széles körét támogatja.</li>
+<li>Hangoskönyveket is lejátszik, állítható sebességgel és olyan könyvjelzőkkel, amelyek a pontos időpontot jegyzik meg.</li>
+<li>A szkennelt PDF-oldalakat a Windows és a macOS beépített szövegfelismerésével teszi olvashatóvá.</li>
+<li>Könyvjelzők és jegyzetek, hogy megjelölhesse, hol tart, és később visszatérhessen oda.</li>
+<li>Minden billentyűparancs módosítható.</li>
+<li>Dokumentumokat közvetlenül http- és https-hivatkozásokról is megnyit, és újra letölti őket, amikor ismét megnyitja őket, vagy megnyomja az <code>F5</code> billentyűt; az olvasási pozíció és a könyvjelzők ilyenkor is megmaradnak. A korábban megnyitott dokumentumok visszaállításakor a hivatkozásról megnyitottak közül a legfeljebb 2 MB méretűeket tölti le újra.</li>
+<li>Része a <code>pb</code> parancssori eszköz, amely bármely támogatott dokumentumot HTML-, Markdown- vagy egyszerű szöveges formátumba alakít. Egyszerre tetszőleges számú dokumentumot feldolgoz, a <code>*.pdf</code> és a hasonló mintákat maga bontja ki, így ugyanaz a parancssor Windowson is működik, és dokumentumonként külön fájlt is írhat egy mappába. A <code>--files-from</code> kapcsolóval a dokumentumok listáját fájlból vagy a szabványos bemenetről (stdin) is beolvashatja, és közvetlenül http- és https-hivatkozásokról is át tud alakítani dokumentumokat.</li>
+</ul>
+<h2 id="képernyőolvasó-kompatibilitás">Képernyőolvasó-kompatibilitás</h2>
+<p>A Paperback minden elterjedt képernyőolvasóval jól működik. A JAWS felhasználóinál azonban két ismert probléma van.</p>
+<h3 id="a-jaws-és-a-braille-kijelzők">A JAWS és a braille-kijelzők</h3>
+<p>Ha a JAWS-t braille-kijelzővel használja, előfordulhat, hogy a hosszú bekezdések csonkák lesznek, amikor a kijelző navigációs gombjaival előre léptet. A hiba a Bekezdés felolvasása parancsot is érinti. Ez a JAWS hibája a RICHEDIT50W szövegvezérlő kezelésében, nem magáé a Paperbacké, és elég sokáig tartott, mire megoldódott – ami nem meglepő, ha figyelembe vesszük, milyen lelkesen szokott reagálni a Vispero a nyílt forráskódú szoftverekkel kapcsolatos hibajelentésekre.</p>
+<p>A megkerülő megoldás, amely hónapokig tartó várakozás után végül a JAWS vitacsoportjában került elő: szerkessze a <code>paperback.jcf</code> fájlt, és a „Braille-leképezés és léptetés” beállításnál válassza a „Ha van, mindig a DOM használatával.” lehetőséget. Érdemes a „Szöveg léptetése bekezdésenként” beállítást is bekapcsolni, különben a kijelző az aktív bekezdésen marad, és nem lép tovább. Ha mindkét beállítás érvényben van, a léptetésnek megfelelően kell működnie.</p>
+<h3 id="a-jaws-és-a-paperback-üzenetei">A JAWS és a Paperback üzenetei</h3>
+<p>A Paperback az olyan üzeneteket, mint a „Nincsenek oldalak.” vagy az „Ehhez a dokumentumhoz nem tartozik hang.”, akadálymentességi értesítésként küldi; ez teszi lehetővé, hogy a képernyőolvasó akkor is kimondja őket, ha éppen mást mond. A JAWS csak akkor reagál ezekre, ha az alkalmazáshoz be van kapcsolva az „Elérhető értesítési események engedélyezése” beállítás, egyes gépeken pedig nincs bekapcsolva.</p>
+<p>Ha a JAWS semmit sem mond, amikor olyan billentyűt nyom meg, amelynek valamit be kellene jelentenie, nyissa meg a Beállítási központot, miközben a Paperback van előtérben (<code>Insert+6</code>), keressen rá az „értesítés” szóra, és jelölje be az „Elérhető értesítési események engedélyezése” beállítást. Ez a <code>paperback.jcf</code> fájlba írja a beállítást, így csak a Paperbackre vonatkozik.</p>
+<h2 id="jelenleg-támogatott-fájltípusok">Jelenleg támogatott fájltípusok</h2>
+<p>A Paperback a következő formátumokat és kiterjesztéseket támogatja:</p>
+<ul>
+<li>Képregényarchívumok (<code>.cbz</code>)</li>
+<li>CHM-súgófájlok (<code>.chm</code>)</li>
+<li>DAISY-könyvek (<code>.opf</code>, <code>.zip</code>)</li>
+<li>EPUB-könyvek (<code>.epub</code>)</li>
+<li>FB2 formátumú e-könyvek (<code>.fb2</code>)</li>
+<li>HTML-dokumentumok (<code>.htm</code>, <code>.html</code>, <code>.xhtml</code>)</li>
+<li>Unix-kézikönyvoldalak, <code>man</code> és BSD <code>mdoc</code> formátumban is (<code>.1</code>–<code>.9</code>, <code>.man</code>, <code>.roff</code>, valamint mindegyik gzippel tömörített változata)</li>
+<li>Markdown-dokumentumok (<code>.md</code>, <code>.markdown</code>, <code>.mdx</code>, <code>.mdown</code>, <code>.mdwn</code>, <code>.mkd</code>, <code>.mkdn</code>, <code>.mkdown</code>, <code>.ronn</code>)</li>
+<li>Microsoft Word-dokumentumok (<code>.docx</code>, <code>.docm</code>, <code>.doc</code>)</li>
+<li>M4B-hangoskönyvek (<code>.m4b</code>)</li>
+<li>MOBI/Kindle-könyvek (<code>.mobi</code>, <code>.azw</code>, <code>.azw3</code>)</li>
+<li>MP3-hangoskönyvek (<code>.mp3</code>)</li>
+<li>OpenDocument-bemutatók (<code>.odp</code>, <code>.fodp</code>)</li>
+<li>OpenDocument-szövegfájlok (<code>.odt</code>, <code>.fodt</code>)</li>
+<li>PDF-dokumentumok (<code>.pdf</code>)</li>
+<li>PowerPoint-bemutatók (<code>.pptx</code>, <code>.pptm</code>, <code>.ppt</code>)</li>
+<li>reStructuredText-dokumentumok (<code>.rst</code>, <code>.rest</code>)</li>
+<li>RTF-dokumentumok (<code>.rtf</code>)</li>
+<li>Windows Write-dokumentumok (<code>.wri</code>)</li>
+<li>WinHelp-fájlok (<code>.hlp</code>)</li>
+<li>Egyszerű szöveges és naplófájlok (<code>.txt</code>, <code>.log</code>)</li>
+</ul>
+<h2 id="billentyűparancsok">Billentyűparancsok</h2>
+<p>A Paperback elsősorban billentyűzetes használatra készült. Az alábbiakban a jelenlegi billentyűparancsok olvashatók.</p>
+<p>Az alábbi billentyűparancsok a Windowsra vonatkoznak. Ahol a macOS eltér, a megfelelő billentyűparancs zárójelben szerepel – főleg azért, mert ezen a platformon a Ctrl+G, a Ctrl+W és az Alt+Balra/Jobbra nyíl már más rendszer- vagy alkalmazáskonvenciókhoz tartozik. macOS-en a Ctrl helyett a Cmd billentyűt kell használni ott is, ahol nincs külön macOS-billentyűparancs feltüntetve: a <code>Ctrl+R</code> például <code>Cmd+R</code>.</p>
+<h3 id="fájl-menü">Fájl menü</h3>
+<ul>
+<li><code>Ctrl+O</code>: Dokumentum megnyitása.</li>
+<li><code>Ctrl+L</code> (macOS: <code>Cmd+Option+O</code>): Dokumentum megnyitása webcímről.</li>
+<li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Az aktuális dokumentum bezárása.</li>
+<li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Az összes megnyitott dokumentum bezárása.</li>
+<li><code>Ctrl+Shift+T</code>: A legutóbb bezárt dokumentum ismételt megnyitása.</li>
+<li><code>Ctrl+R</code>: Az „Összes dokumentum” párbeszédpanel megjelenítése (a Legutóbbi dokumentumok almenüből).</li>
+<li><code>Ctrl+Shift+C</code>: A fájl megjelenítése a mappájában.</li>
+<li><code>Ctrl+Shift+E</code>: Dokumentumadatok exportálása (<code>.paperback</code>).</li>
+<li><code>Ctrl+Shift+I</code>: Dokumentumadatok importálása (<code>.paperback</code>).</li>
+<li><code>Ctrl+E</code>: Az aktuális dokumentum exportálása egyszerű szövegként.</li>
+<li><code>Ctrl+Q</code>: Kilépés (Windowson és Linuxon; macOS-en az alkalmazásmenüben található, ott <code>Cmd+Q</code>).</li>
+</ul>
+<h3 id="szerkesztés-menü">Szerkesztés menü</h3>
+<ul>
+<li><code>Ctrl+F</code>: A Keresés párbeszédpanel megjelenítése.</li>
+<li><code>F3</code> (macOS: <code>Cmd+G</code>): Következő keresése.</li>
+<li><code>Shift+F3</code> (macOS: <code>Cmd+Shift+G</code>): Előző keresése.</li>
+<li><code>Alt+F9</code> (macOS: <code>Cmd+F9</code>): A kijelölés elejének megjelölése, hogy innen addig, ameddig eljut, egyetlen lépésben kimásolhasson mindent.</li>
+<li><code>Alt+F10</code> (macOS: <code>Cmd+F10</code>): Minden szöveg másolása a kijelölés megjelölt elejétől az aktuális pozícióig.</li>
+<li><code>Alt+Shift+F9</code> (macOS: <code>Cmd+Shift+F9</code>): Visszaugrás a kijelölés megjelölt elejére; a jelölés megmarad.</li>
+</ul>
+<h3 id="nézet-menü">Nézet menü</h3>
+<ul>
+<li><code>F5</code>: Az aktuális dokumentum ismételt beolvasása a lemezről, illetve újbóli letöltése, ha hivatkozásról nyitotta meg. Attól függetlenül működik, hogy a Beállításokban be van-e kapcsolva a „Módosult dokumentumok automatikus újratöltése” beállítás.</li>
+<li><code>Ctrl+Alt+W</code>: Sortörés be- és kikapcsolása.</li>
+<li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, azaz Control+Command+F): Teljes képernyő be- és kikapcsolása.</li>
+<li><code>Ctrl+Shift+V</code>: Az aktuális tartalom megnyitása webes nézetben.</li>
+<li><code>Ctrl+U</code>: A dokumentum forrásának megtekintése új lapon.</li>
+</ul>
+<h3 id="ugrás-menü">Ugrás menü</h3>
+<ul>
+<li><code>Ctrl+T</code>: A tartalomjegyzék megjelenítése.</li>
+<li><code>F7</code>: Az elemlista megjelenítése.</li>
+<li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Ugrás sorra.</li>
+<li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Ugrás adott százalékra.</li>
+<li><code>Ctrl+P</code>: Ugrás oldalra (ha az aktuális dokumentum támogatja).</li>
+<li><code>=</code>: Az aktuális olvasási százalék és oldal bejelentése, például „15%, 30. oldal”. Az oldalszám nélküli dokumentumoknál az oldal kimarad.</li>
+<li><code>Alt+Left</code> (macOS: <code>Cmd+[</code>): Visszalépés a navigációs előzményekben.</li>
+<li><code>Alt+Right</code> (macOS: <code>Cmd+]</code>): Előrelépés a navigációs előzményekben.</li>
+<li><code>[</code>: Előző szakasz.</li>
+<li><code>]</code>: Következő szakasz.</li>
+<li><code>Shift+H</code>: Előző címsor.</li>
+<li><code>H</code>: Következő címsor.</li>
+<li><code>Shift+1</code>-től <code>Shift+6</code>-ig: Előző 1–6. szintű címsor.</li>
+<li><code>1</code>-től <code>6</code>-ig: Következő 1–6. szintű címsor.</li>
+<li><code>Shift+P</code>: Előző oldal.</li>
+<li><code>P</code>: Következő oldal.</li>
+<li><code>Shift+K</code>: Előző hivatkozás.</li>
+<li><code>K</code>: Következő hivatkozás.</li>
+<li><code>Shift+G</code>: Előző kép.</li>
+<li><code>G</code>: Következő kép.</li>
+<li><code>Shift+F</code>: Előző ábra.</li>
+<li><code>F</code>: Következő ábra.</li>
+<li><code>Shift+T</code>: Előző táblázat.</li>
+<li><code>T</code>: Következő táblázat.</li>
+<li><code>Shift+M</code>: Előző képlet.</li>
+<li><code>M</code>: Következő képlet.</li>
+<li><code>Shift+S</code>: Előző elválasztó.</li>
+<li><code>S</code>: Következő elválasztó.</li>
+<li><code>Shift+L</code>: Előző lista.</li>
+<li><code>L</code>: Következő lista.</li>
+<li><code>Shift+I</code>: Előző listaelem.</li>
+<li><code>I</code>: Következő listaelem.</li>
+<li><code>Shift+,</code>: Ugrás az aktuális tároló (lista vagy táblázat) elejére.</li>
+<li><code>,</code>: Ugrás az aktuális tároló (lista vagy táblázat) vége mögé.</li>
+</ul>
+<h3 id="könyvjelzők-menü">Könyvjelzők menü</h3>
+<ul>
+<li><code>Ctrl+Shift+B</code>: Könyvjelző hozzáadása vagy eltávolítása az aktuális kijelölésnél vagy a kurzornál.</li>
+<li><code>Ctrl+Shift+N</code>: Könyvjelzőjegyzet hozzáadása vagy szerkesztése az aktuális kijelölésnél vagy a kurzornál.</li>
+<li><code>Shift+B</code>: Előző könyvjelző.</li>
+<li><code>B</code>: Következő könyvjelző.</li>
+<li><code>Shift+N</code>: Előző jegyzet.</li>
+<li><code>N</code>: Következő jegyzet.</li>
+<li><code>Ctrl+Shift+W</code> (macOS: <code>RawCtrl+Shift+W</code>, azaz a fizikai Control billentyű, nem a Cmd): Az aktuális pozíción lévő jegyzet szövegének megtekintése.</li>
+<li><code>Ctrl+B</code>: Ugrás könyvjelzőre vagy jegyzetre (az összes közül).</li>
+<li><code>Ctrl+Alt+B</code>: Ugrás könyvjelzőre (csak a könyvjelzők közül).</li>
+<li><code>Ctrl+Alt+M</code>: Ugrás jegyzetre (csak a jegyzetek közül).</li>
+<li><code>/</code>: Az ideiglenes könyvjelző beállítása.</li>
+<li><code>\</code>: Ugrás az ideiglenes könyvjelzőre.</li>
+</ul>
+<h3 id="hang-menü">Hang menü</h3>
+<ul>
+<li><code>Ctrl+Space</code> (macOS: <code>RawCtrl+Space</code>, azaz a fizikai Control billentyű, mivel a Cmd+Space a Spotlightot nyitja meg): Az audionarráció lejátszása vagy szüneteltetése.</li>
+<li><code>'</code>: Az audionarráció előretekerése.</li>
+<li><code>;</code>: Az audionarráció visszatekerése.</li>
+<li><code>Shift+'</code>: A léptetési időegység növelése.</li>
+<li><code>Shift+;</code>: A léptetési időegység csökkentése.</li>
+<li><code>Ctrl+Shift+.</code>: Az audionarráció gyorsítása.</li>
+<li><code>Ctrl+Shift+,</code>: Az audionarráció lassítása.</li>
+<li><code>Ctrl+'</code>: Az audionarráció hangosítása.</li>
+<li><code>Ctrl+;</code>: Az audionarráció halkítása.</li>
+</ul>
+<h3 id="eszközök-menü">Eszközök menü</h3>
+<ul>
+<li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, azaz a fizikai Control billentyű, nem a Cmd): Az aktuális dokumentum szavainak száma.</li>
+<li><code>Ctrl+I</code>: A dokumentuminformációk megjelenítése.</li>
+<li><code>Ctrl+Shift+O</code>: Szkennelt PDF-oldalak egy tartományának szövegfelismerése.</li>
+<li><code>Ctrl+Shift+S</code>: Az elalvási időzítő be- és kikapcsolása.</li>
+<li><code>Ctrl+,</code>: A Beállítások megnyitása (macOS-en az alkalmazásmenüben).</li>
+</ul>
+<h3 id="súgó-menü">Súgó menü</h3>
+<ul>
+<li><code>Ctrl+F1</code>: A Paperback névjegyének megjelenítése.</li>
+<li><code>F1</code>: A súgó megtekintése az alapértelmezett böngészőben.</li>
+<li><code>Shift+F1</code>: A súgó megtekintése a Paperbackben.</li>
+<li><code>Ctrl+Shift+U</code>: Frissítések keresése.</li>
+<li><code>Ctrl+D</code>: Az adományozási oldal megnyitása az alapértelmezett böngészőben.</li>
+</ul>
+<h3 id="további-billentyűk-a-dokumentumnézetben">További billentyűk a dokumentumnézetben</h3>
+<ul>
+<li><code>Delete</code> / <code>Numpad Delete</code> a lapsávon: A kijelölt dokumentumlap bezárása.</li>
+<li><code>Ctrl+1</code>-től <code>Ctrl+9</code>-ig (macOS: <code>Cmd+1</code>-től <code>Cmd+9</code>-ig) a dokumentum szövegében vagy a lapsávon: Ugrás az első kilenc megnyitott dokumentumra, a megnyitásuk sorrendjében.</li>
+<li><code>Ctrl+Tab</code> és <code>Ctrl+Shift+Tab</code>: Ugrás a következő vagy az előző megnyitott dokumentumra; az utolsó után az első, az első előtt az utolsó következik.</li>
+<li><code>Enter</code> vagy <code>Space</code> a dokumentum szövegében: A kurzornál lévő hivatkozás követése, illetve táblázat- vagy képletnézet megnyitása.</li>
+<li><code>Enter</code> egy szkennelt PDF-oldalon: Az oldal szövegfelismerése.</li>
+<li><code>Shift+F10</code> vagy a helyimenü-billentyű a dokumentum szövegében: A helyi menü megnyitása.</li>
+</ul>
+<h2 id="ios-és-android">iOS és Android</h2>
+<p>Az iOS- és az Android-alkalmazás ugyanazt az olvasómotort használja, mint az asztali változat, így ugyanazokat a formátumokat nyitja meg, és ugyanúgy jegyzi meg, hol tart. iOS-en a VoiceOverrel, Androidon a TalkBackkel való használatra készültek.</p>
+<h3 id="dokumentumok-megnyitása">Dokumentumok megnyitása</h3>
+<ul>
+<li>Használja a Könyv megnyitása gombot, vagy nyisson meg egy dokumentumot a Fájlok alkalmazásból vagy egy másik alkalmazásból, és válassza a Paperbacket.</li>
+<li>Androidon ehelyett a Beállításokban bekapcsolhatja a beépített fájlböngészőt. Ehhez a „Hozzáférés az összes fájlhoz” engedély szükséges, cserébe a nagy fájlokat azonnal megnyitja, és nem másolja át őket előbb.</li>
+<li>Ha hosszan megnyomja a Könyv megnyitása gombot, importálhatja vagy exportálhatja egy dokumentum adatait (<code>.paperback</code>); ezek ugyanazok a fájlok, amelyeket az asztali alkalmazás is használ.</li>
+</ul>
+<h3 id="olvasás-és-hallgatás">Olvasás és hallgatás</h3>
+<p>Mindkét alkalmazásban kétféleképpen olvashat egy dokumentumot. Szöveges módban a képernyőolvasóval olvassa a szöveget. Felolvasási módban a Paperback olvassa fel a szöveget a Beállításokban kiválasztott beszédhangon, és a háttérben, illetve a zárolási képernyőn is folytatja. A két mód között a További lehetőségek menüben válthat.</p>
+<p>A hangoskönyvek, például a DAISY-, M4B- és MP3-könyvek ehelyett a saját hangfelvételüket játsszák le.</p>
+<h3 id="az-olvasósáv">Az olvasósáv</h3>
+<p>A képernyő alján lévő sávon balról jobbra a következők találhatók:</p>
+<ul>
+<li>A navigációs egység, például bekezdés, címsor, oldal vagy hivatkozás. A módosításához legyintsen rajta felfelé vagy lefelé.</li>
+<li>Az előző, a lejátszás és a következő gomb. Az előző és a következő gomb navigációs egységenként léptet.</li>
+<li>A beszédsebesség. Felfelé vagy lefelé legyintve módosíthatja, milyen gyorsan olvas a Paperback.</li>
+</ul>
+<p>A lejátszás gombon felfelé vagy lefelé legyintve is léptethet navigációs egységenként, anélkül hogy az előző vagy a következő gombhoz kellene nyúlnia. Ha csak ezt használja, az „Előző és következő gomb elrejtése” beállítással ezek a gombok nem lesznek a képernyőolvasó útjában. A „Felfelé legyintés előre léptet” beállítással azt adhatja meg, merre léptessen a legyintés.</p>
+<h3 id="további-lehetőségek">További lehetőségek</h3>
+<p>A További lehetőségek menüben található minden más. Egyes elemek a két alkalmazásban kissé eltérően működnek.</p>
+<ul>
+<li><strong>Váltás felolvasási módra vagy Váltás szöveges módra:</strong> vált a fent leírt felolvasási és szöveges mód között. Szöveges módban a Felolvasás elem elindítja és szünetelteti a felolvasást anélkül, hogy kilépne a szöveges módból.</li>
+<li><strong>Tartalomjegyzék:</strong> a könyv fejezetei, az éppen olvasottnál megnyitva. Válasszon ki egyet, és közvetlenül odaugrik. Az alfejezeteket tartalmazó bejegyzések a képernyőolvasó műveleteivel kibonthatók és összecsukhatók.</li>
+<li><strong>Elemek:</strong> a dokumentum címsorainak vagy hivatkozásainak listája. iOS-en a Típus választóval, Androidon a lapokkal válthat a kettő között, majd válasszon ki egy elemet, és odaugrik.</li>
+<li><strong>Keresés:</strong> írja be, mit keres, vagy válasszon egy korábbi keresést a Keresési előzmények közül, és adja meg, hogy megkülönböztesse-e a kis- és nagybetűket, csak teljes szavakra keressen-e, illetve reguláris kifejezést használjon-e. Az Előző keresése és a Következő keresése a találatra ugrik, és bejelenti, hová került, a Keresés pedig nyitva marad, így folytathatja. Felolvasási módban a Keresés navigációs egységként is megjelenik az olvasósávon, így onnan is végiglépkedhet a találatokon. A Beállításokban a Szövegfelolvasás alatt található <strong>Felolvasás leállítása a keresési találatok után</strong> beállítás alapértelmezés szerint be van kapcsolva, és a találatot tartalmazó bekezdés felolvasása után leállítja a felolvasást. Kapcsolja ki, ha a találattól folytatni szeretné a felolvasást; az olvasósáv előző és következő gombja ekkor is a keresési találatok között navigál.</li>
+<li><strong>Ugrás:</strong> ugrás egy sorra, egy oldalra vagy a dokumentum adott százalékára. Hogy melyikre, azt a Mód választóval adhatja meg.</li>
+<li><strong>Legutóbbi dokumentumok:</strong> az összes dokumentum, amelyet valaha megnyitott; mindegyiknél ott áll, hogy „Jelenleg megnyitva”, „Bezárva” vagy „A fájl hiányzik”. Mindegyikhez két képernyőolvasó-művelet tartozik: az Eltávolítás leveszi a listáról, a Megkeresés segítségével pedig megkeresheti azt a dokumentumot, amelynek a fájlja máshová került. A Legutóbbi dokumentumok listájának kiürítése kiüríti a listát, de egyetlen dokumentumot sem töröl.</li>
+<li><strong>Szavak száma:</strong> a dokumentumban lévő szavak száma.</li>
+<li><strong>Dokumentuminformáció:</strong> a cím, a szerző, a fájlnév, iOS-en pedig a sorok és a karakterek száma is.</li>
+<li><strong>Exportálás:</strong> a dokumentum mentése egyszerű szövegként, HTML-ként vagy Markdownként.</li>
+<li><strong>Elalvási időzítő:</strong> 5, 10, 15, 30, 45 vagy 60 perc, illetve egy saját maga által megadott idő elteltével leállítja a felolvasást. Ha futás közben újra megnyitja, láthatja, mennyi idő van hátra, és le is állíthatja.</li>
+<li><strong>Súgó:</strong> megnyitja ezt a kézikönyvet.</li>
+<li><strong>Beállítások:</strong>
+<ul>
+<li><strong>Szövegfelolvasás:</strong> a beszédhang, a beszédsebesség és a hangmagasság, a meghallgatásukhoz egy Minta lejátszása gomb, valamint a bekezdések közötti szünet. Androidon a beszédmotor is kiválasztható. iOS-en itt található a kiejtési szótár is: szabályok, amelyek megváltoztatják bizonyos szavak kiejtését, akár minden beszédhangnál, akár csak egyeseknél.</li>
+<li><strong>Olvashatóság:</strong> szövegméret, sorköz, bekezdésköz, igazítás és nagy kontrasztú szöveg. iOS-en világos és sötét megjelenés is választható.</li>
+<li><strong>Működés:</strong> a dokumentumok újbóli megnyitása az alkalmazás indításakor, a lejátszás gombon végzett legyintés iránya, valamint az előző és a következő gomb elrejtése. Androidon itt kapcsolható be a beépített fájlböngésző is.</li>
+</ul>
+</li>
+</ul>
+<h3 id="billentyűzet-és-headset">Billentyűzet és headset</h3>
+<p>Billentyűzettel az asztali változat billentyűparancsai is működnek a könyvek megnyitásához, a legutóbbi dokumentumokhoz, a Kereséshez, az Ugráshoz, a tartalomjegyzékhez, a szavak számához, a dokumentuminformációkhoz, az exportáláshoz és az elalvási időzítőhöz; iOS-en a <code>Ctrl</code> helyett a <code>Cmd</code> billentyűvel. Ugyanígy működnek a címsorok, oldalak, hivatkozások és a többi elem közötti navigáció egybetűs billentyűi is, a <code>Space</code> pedig elindítja és szünetelteti a lejátszást. iOS-en az egybetűs billentyűk csak akkor jutnak el a Paperbackhez, ha a VoiceOver egybillentyűs gyorsnavigációja ki van kapcsolva.</p>
+<p>Androidon a headset gombjának egyszeri megnyomása elindítja vagy szünetelteti a lejátszást, a kétszeri előre, a háromszori pedig visszaléptet.</p>
+<h2 id="támogatott-nyelvek">Támogatott nyelvek</h2>
+<p>A Paperback számos nyelvre le van fordítva, és a sor folyamatosan bővül. Az alábbiakban a teljes lista olvasható.</p>
+<p>Ha szeretne részt venni a fordításban, olvassa el a <a href="translating.md">fordítási útmutatót</a>.</p>
+<ul>
+<li>Bosnyák</li>
+<li>Cseh</li>
+<li>Holland</li>
+<li>Finn</li>
+<li>Francia</li>
+<li>Német</li>
+<li>Magyar</li>
+<li>Japán</li>
+<li>Lengyel</li>
+<li>Portugál (brazíliai)</li>
+<li>Orosz</li>
+<li>Egyszerűsített kínai</li>
+<li>Szerb</li>
+<li>Spanyol</li>
+<li>Ukrán</li>
+<li>Vietnami</li>
+</ul>
+<h2 id="köszönetnyilvánítás">Köszönetnyilvánítás</h2>
+<h3 id="fejlesztés">Fejlesztés</h3>
+<ul>
+<li>Quin Gillespie: fő fejlesztő és a projekt alapítója.</li>
+<li>Aryan Choudhary: fő közreműködő.</li>
+</ul>
+<h3 id="adományok">Adományok</h3>
+<p>Az alábbiak kisebb-nagyobb összeggel támogatták a Paperback fejlesztését. Ha adományoz, a neve nem kerül fel automatikusan erre a listára: csak azokat veszem fel, akik szeretnék, hogy az adományuk nyilvános legyen.</p>
+<p>Megjegyzés: a nyilvános GitHub-támogatást (GitHub Sponsors) elegendő oknak tekintem ahhoz, hogy valaki automatikusan felkerüljön erre a listára.</p>
+<ul>
+<li>Alex Hall</li>
+<li>Brandon McGinty</li>
+<li>Brian Hartgen</li>
+<li>Debbie Yuille</li>
+<li>Devin Prater</li>
+<li>Felix Steindorff</li>
+<li>Hamish Mackenzie</li>
+<li>James Scholes</li>
+<li>Jayson Smith</li>
+<li>Jonathan Rodriguez</li>
+<li>Jonathan Schuster</li>
+<li>Keao Wright</li>
+<li>Michael Marshall</li>
+<li>Pratik Patel</li>
+<li>Roberto Perez</li>
+<li>Sean Randall</li>
+<li>Timothy Wynn</li>
+<li>Tyler Rodick</li>
+</ul>
+<h2 id="változásnapló">Változásnapló</h2>
+<h3 id="10-s-verzió">1.0-s verzió</h3>
+<p>Az 1.0 az első kiadás mind az öt platformon: Windowson, macOS-en, Linuxon, iOS-en és Androidon; az iOS- és az Android-alkalmazás az App Store-ban, illetve a Google Playen érhető el.</p>
+<h4 id="újdonságok">Újdonságok</h4>
+<h5 id="általános">Általános</h5>
+<ul>
+<li>Linux-támogatás AppImage- vagy tar.gz-csomagként, asztali integrációval, így a dokumentumok a fájlkezelőből is megnyithatók.</li>
+<li>Az <code>Alt+F9</code> billentyűparanccsal megjelölheti a kijelölés elejét, az <code>Alt+F10</code> billentyűparanccsal mindent kimásolhat onnan addig, ahová eljutott, az <code>Alt+Shift+F9</code> billentyűparanccsal pedig visszaugorhat a jelöléshez; így hosszú szövegrészt is másolhat anélkül, hogy a Shift és a nyílbillentyűk segítségével végig kellene jelölnie. Mindhárom a Szerkesztés menüben található.</li>
+<li>Az <code>=</code> billentyűparancs most már az oldalt is bejelenti a százalék mellett, például „15%, 30. oldal”; az oldalszám nélküli dokumentumoknál a korábbiak szerint működik.</li>
+<li>A névjegy most már megjeleníti a Paperback licencét és az összes fordítót.</li>
+<li>Ukrán fordítás.</li>
+</ul>
+<h5 id="új-formátumok">Új formátumok</h5>
+<ul>
+<li>Képregényarchívumok (<code>.cbz</code>).</li>
+<li>M4B-hangoskönyvek, fejezetekre bontva.</li>
+<li>Unix-kézikönyvoldalak, <code>man</code> és BSD <code>mdoc</code> formátumban is, gzippel tömörítve vagy anélkül.</li>
+<li>MP3-hangoskönyvek, fejezetekre bontva, ha a fájl tartalmaz fejezeteket.</li>
+<li>reStructuredText-dokumentumok.</li>
+<li>Windows Write-fájlok (<code>.wri</code>).</li>
+<li>WinHelp-fájlok (<code>.hlp</code>).</li>
+<li>Word 6- és Word 95-dokumentumok.</li>
+</ul>
+<h5 id="szövegfelismerés">Szövegfelismerés</h5>
+<ul>
+<li>A szkennelt PDF-oldalak most már felismerhetők a Windows és a macOS beépített szövegfelismerésével. Egy szkennelt oldal felismeréséhez nyomja meg rajta az <code>Enter</code> billentyűt, egy oldaltartományhoz pedig használja a Kötegelt szövegfelismerés funkciót (<code>Ctrl+Shift+O</code>).</li>
+</ul>
+<h5 id="navigáció">Navigáció</h5>
+<ul>
+<li>Az EPUB- és HTML-dokumentumokban lévő MathML-képleteket a Paperback a MathCAT segítségével AsciiMath formában jeleníti meg. A képletek között az <code>M</code> és a <code>Shift+M</code> billentyűvel navigálhat, majd az <code>Enter</code> vagy a <code>Space</code> billentyűvel megnyithatja az eredeti MathML-t a Képletnézetben.</li>
+<li>Összes keresése gomb a Keresés párbeszédpanelen, amely minden találatot tartalmazó sort listáz, így közvetlenül a kívánt sorra ugorhat.</li>
+<li>Táblázatok, Listák és Oldalak nézet az elemlistában (<code>F7</code>).</li>
+<li>Az Ugrás sorra, az Ugrás oldalra és az Ugrás adott százalékra most már a <code>+n</code> és a <code>-n</code> értéket is elfogadja, amellyel az aktuális helyhez képest léphet.</li>
+<li>A saját címsorok nélküli EPUB-, MOBI- és CHM-könyvekben most már a tartalomjegyzékük alapján működik a címsoronkénti navigáció.</li>
+<li>A KF8 (AZW3) könyvek most már támogatják a szakaszonkénti navigációt.</li>
+<li>Azoknál az EPUB-oldalaknál, amelyek csak egy képből állnak, most már megjelenik egy sor a képhez, így rájuk léphet ahelyett, hogy átugorná őket.</li>
+</ul>
+<h5 id="hangoskönyvek">Hangoskönyvek</h5>
+<ul>
+<li>A lejátszási sebesség szabályozása a fél sebességtől a háromszorosig. Használja a <code>Ctrl+Shift+.</code> és a <code>Ctrl+Shift+,</code> billentyűparancsot vagy a Hang menüt.</li>
+<li>A csak hangot tartalmazó könyvekben a könyvjelzők és a jegyzetek most már pontosan azt az időpontot jegyzik meg, amelynél létrehozta őket.</li>
+<li>A következő és az előző pozíció (<code>Alt+Left</code> és <code>Alt+Right</code>) most már a hangoskönyvekben is működik.</li>
+<li>A hangoskönyvekben való haladást a program most már a felvétel alapján méri, így az Ugrás adott százalékra és az állapotsor azt mutatja, valójában hol tart.</li>
+</ul>
+<h5 id="legutóbbi-dokumentumok">Legutóbbi dokumentumok</h5>
+<ul>
+<li>Lista kiürítése elem a Legutóbbi dokumentumok almenüben.</li>
+</ul>
+<h5 id="pdf-dokumentumok">PDF-dokumentumok</h5>
+<ul>
+<li>Beállítás, amellyel a PDF-ek minden sora különálló marad, és nem egyesülnek bekezdésekké.</li>
+<li>A PDF-ekben lévő képeket és ábrákat a program most már bejelenti.</li>
+<li>Azok a PDF-ek, amelyek tartalmaznak olvasási struktúrát, de egyetlen képüket sem címkézik, most már bejelentik ezeket a képeket, ahelyett hogy teljesen kihagynák őket a könyvből.</li>
+</ul>
+<h5 id="webes-nézet">Webes nézet</h5>
+<ul>
+<li>Most már bármely dokumentum megnyitható a webes nézetben, nem csak az EPUB, a HTML és a Markdown.</li>
+</ul>
+<h5 id="olvashatóság">Olvashatóság</h5>
+<ul>
+<li>A címsorok most már a szintjüknek megfelelő méretben jelennek meg, a képek és a táblázatok pedig elkülönülnek a környező szövegtől.</li>
+</ul>
+<h5 id="pb">pb</h5>
+<ul>
+<li>A <code>pb --list-formats</code> kilistázza az összes formátumot, amelyet a pb be tud olvasni.</li>
+<li>A pb most már megmondja, melyik fájlt nem tudta beolvasni, és miért.</li>
+</ul>
+<h4 id="javítások">Javítások</h4>
+<h5 id="általános-1">Általános</h5>
+<ul>
+<li>Az indításkor újra megnyitott könyv most már azonnal olvasható, és nem marad néma addig, amíg be nem zárják és újra meg nem nyitják.</li>
+<li>A hiányzó fájlú dokumentum most már eltávolítható az Összes dokumentum listából, és nem marad benne, akárhányszor erősíti is meg az eltávolítást.</li>
+<li>Megszűnt egy összeomlás, amely a Paperback bezárásakor történt.</li>
+<li>A Paperback bezárásakor az ablak most már azonnal eltűnik, és nem marad a képernyőn, amíg a mentés tart.</li>
+<li>A kevés formázást tartalmazó nagy könyvek most már nagyjából feleannyi idő alatt nyílnak meg.</li>
+<li>A menüből választott üzeneteket, például az „Ehhez a dokumentumhoz nem tartozik hang” üzenetet, a képernyőolvasó most már nem szakítja félbe, mielőtt meghallaná őket.</li>
+<li>Egy dokumentum megnyitása után a Legutóbb bezárt dokumentum megnyitása parancs most már nem marad engedélyezve, ha nincs mit újra megnyitni.</li>
+<li>A Paperback most már nem próbálja újra meg újra megnyitni a legutóbbi dokumentumok listájában szereplő, időközben eltűnt dokumentumokat, és korlátozza, hány legutóbbi dokumentumot tárol.</li>
+<li>A régi INI-beállításfájl most már törlődik, miután a beállítások átkerültek az új formátumba.</li>
+<li>A betűtípus- és a színválasztó párbeszédpanel címe, valamint a vietnami változatban az Exportálás másként menü most már le van fordítva.</li>
+<li>Frissítés után az újraindított ablak most már előtérbe kerül, és nem marad az összes többi ablak mögött az Alt+Tab listában.</li>
+<li>A sortörés most már nagy dokumentumoknál is azonnal érvénybe lép, és nem tölti újra az egész dokumentumot.</li>
+</ul>
+<h5 id="navigáció-1">Navigáció</h5>
+<ul>
+<li>Az <code>Alt+Left</code> most már oda viszi vissza, ahonnan ugrott, és nem egy régebbi pozícióra.</li>
+<li>A könyvjelzőhangok most már csak akkor szólalnak meg, amikor áthalad egy könyvjelzőn, és nem akkor, amikor arra a sorra lép, amelyben a könyvjelző van.</li>
+<li>A tartalomjegyzék, az elemlista és az Ugrás párbeszédpanelek bezárása után most már közvetlenül arra a sorra kerül, ahová érkezett, és nem kell végighallgatnia, ahogy a képernyőolvasó újra felolvassa az ablakot.</li>
+<li>Az Ugrás sorra, az Ugrás oldalra és az Ugrás adott százalékra most már elutasítja a dokumentumon kívül eső számokat, és nem ugrik szó nélkül máshová.</li>
+<li>Az NVDA most már nem vágja el a bejelentést, ha egy dokumentumnak nincsenek oldalai.</li>
+<li>Ha a tartalomjegyzékben mozgás nélkül nyomja meg az OK gombot, most már a már kijelölt bejegyzésre ugrik.</li>
+<li>A tartalomjegyzék, az elemlista és a könyvjelzők listája most már nem akad és nem fagy le a több ezer bejegyzést tartalmazó könyveknél.</li>
+<li>A felfelé és a lefelé nyíl most már dokumentumonként jegyzi meg az oszlopot, és nem viszi át, amikor lapot vált.</li>
+</ul>
+<h5 id="hangoskönyvek-1">Hangoskönyvek</h5>
+<ul>
+<li>A hanglejátszás macOS-en most már a <code>Control+Space</code> billentyűparancsot használja, mivel a <code>Command+Space</code> a Spotlighthoz tartozik.</li>
+</ul>
+<h5 id="pdf-dokumentumok-1">PDF-dokumentumok</h5>
+<ul>
+<li>Az Apple Pagesből exportált PDF-ek most már nem egyszerű szövegként jelennek meg, hanem megmaradnak bennük a címsorok és a listák, amelyekkel írták őket.</li>
+<li>A PDF-bekezdések és -címsorok most már nem törnek szét minden sornál, és a szavak belsejébe sem kerülnek szóközök.</li>
+<li>A számozott PDF-címsorok most már nem olvadnak össze egyetlen címsorrá.</li>
+<li>Azok a PDF-ek, amelyeknek a struktúrafája nem vezet szöveghez, most már nem nyílnak meg üresen.</li>
+<li>A nem proporcionális betűtípussal szedett sorokat, például a kódot, a program most már nem vonja össze bekezdésekké.</li>
+<li>A címkézetlen PDF-ekben az élőfejeket és élőlábakat a program most már nem olvassa fel minden oldalon.</li>
+<li>Azok a PDF-ek, amelyek az élőfejeiket és élőlábaikat közönséges szövegként címkézik, most már nem ismétlik meg minden oldalon a címet és az oldalszámot két bekezdés között.</li>
+<li>A PDF-ek most már a valódi címüket mutatják, nem a fájlnevüket.</li>
+</ul>
+<h5 id="mobiazw3-könyvek">MOBI/AZW3-könyvek</h5>
+<ul>
+<li>A nagy MOBI-könyveknél most már nem fogy el a memória, és 20 MB után sem vágódnak le.</li>
+<li>A MOBI- és AZW3-könyvek most már sokkal gyorsabban nyílnak meg.</li>
+<li>A MOBI-könyvek most már nem veszítik el a fejezetlistájukat.</li>
+<li>A MOBI-könyvekben most már nem torzul el a szöveg ott, ahol az egyik rekordból a következőbe lép át.</li>
+</ul>
+<h5 id="webes-nézet-1">Webes nézet</h5>
+<ul>
+<li>A webes nézet most már nem tölti be egyszerre egy hatalmas könyv egészét.</li>
+<li>A webes nézet most már egészben mutatja a dokumentumokat, ha a fő nézet is egészben mutatja őket, nem csak egy szeletüket.</li>
+</ul>
+<h5 id="egyéb-formátumok">Egyéb formátumok</h5>
+<ul>
+<li>A windows-1251 kódolású FictionBook (.fb2) könyvek – vagyis a legtöbb – most már megnyílnak, ahelyett hogy egyáltalán nem lehetne beolvasni őket.</li>
+<li>Azok a FictionBook-könyvek, amelyek nem deklarált névteret vagy HTML-entitást használnak, most már megnyílnak, és a program nem utasítja el őket sérültként.</li>
+<li>A régi kódolású könyvek most már sokkal gyorsabban nyílnak meg.</li>
+<li>Egyes kínai szövegfájlok most már nem nyílnak meg olvashatatlan karakterekkel.</li>
+<li>A jelszóval védett OpenDocument-fájlok most már kérik a jelszavukat, és a program nem jelzi őket sérültként.</li>
+<li>A jelszóval védett régi PowerPoint-fájlok most már megnyílnak, és a régi PowerPoint-diák most már nem veszítik el a szövegüket.</li>
+<li>Az <code>.rtf</code> kiterjesztéssel mentett egyszerű szöveges fájlok most már szövegként nyílnak meg, és nem jelenik meg hibaüzenet.</li>
+<li>Az RTF-vezérlőszavak most már nem jelennek meg szövegként.</li>
+</ul>
+<h4 id="ios-és-android-1">iOS és Android</h4>
+<p>Az iOS- és az Android-alkalmazás minden formátumot megnyit, amelyet az asztali változat, és a következőket kínálja:</p>
+<ul>
+<li>Felolvasás választható beszédhanggal, sebességgel és hangmagassággal, beszédsebesség-szabályzóval közvetlenül az olvasósávon, valamint választható szünettel a bekezdések között.</li>
+<li>DAISY-, M4B- és MP3-hangoskönyvek lejátszása, amely a háttérben és a zárolási képernyőn is folytatódik.</li>
+<li>Navigáció címsoronként, oldalanként, hivatkozásonként, táblázatonként, listánként és még sok más módon az olvasósávról, valamint tartalomjegyzék és keresés.</li>
+<li>Elalvási időzítő, szavak száma és dokumentumexportálás, iOS-en pedig kiejtési szótár is. iOS-en az exportálás a megosztási menün keresztül történik, így egy könyv más alkalmazásba vagy a Fájlokba is küldhető, más formátumban vagy pontosan úgy, ahogy van.</li>
+<li>Szövegméret, térköz és nagy kontrasztú szöveg beállítása.</li>
+<li>Az asztali változattal egyező billentyűparancsok.</li>
+</ul>
+<h3 id="092-es-verzió">0.9.2-es verzió</h3>
+<ul>
+<li>A hangoskönyveknél a képernyőolvasó most már nem olvas fel egy sor szóközt, amikor a szövegmezőre kerül a fókusz.</li>
+<li>A hangoskönyvek most már megnevezik a fájlt, amikor szakaszonként lépked bennük.</li>
+<li>A hangoskönyvek most már a valódi hosszukat jelentik, és nem állítják, hogy minden bennük lévő fájl 24 órás.</li>
+<li>A webes nézet Escape billentyűvel való bezárása most már nem dob fel hibakeresési üzenetet, ha előtte követett benne egy hivatkozást.</li>
+<li>Ha Az összes kijelölése után másol, most már a teljes dokumentum a vágólapra kerül, nem csak az éppen betöltött része.</li>
+<li>A keresés most már közvetlenül a megtalált sorra ugrik, és nem kell végighallgatnia, ahogy a képernyőolvasó újra felolvassa az ablakot, miközben a fókusz visszatér a könyvre.</li>
+<li>Azok az EPUB-ok, amelyekben egy kóbor ZIP64-blokk található, most már megnyílnak, és nem jelenik meg az „Invalid local file header” hiba.</li>
+<li>A hosszú dokumentumok most már nem ugranak vissza az elejükre, miközben a képernyőolvasó folyamatosan olvassa őket.</li>
+<li>A webes nézetben a hivatkozások most már arra a szakaszra visznek, amelyre mutatnak, és nem jelenik meg a „File not found” hiba.</li>
+<li>Az automatikus „Dokumentum újratöltve.” bejelentés most már nem szakítja félbe a képernyőolvasót mondat közben, hanem megvárja, amíg befejezi, amit mondott.</li>
+<li>A Beállítások párbeszédpanel Általános lapján a Tab billentyű most már a képernyőn látható sorrendben halad végig a beállításokon, és a frissítési csatorna közvetlenül a frissítések keresésére vonatkozó beállítás után következik.</li>
+<li>A Windows most már mindig „Paperback” néven jeleníti meg a programot a Társítás menüben, nem a program teljes szlogenjével.</li>
+<li>A Szavak száma és a Dokumentuminformáció most már megmutatja, hány fájlból áll egy hangoskönyv, és összesen milyen hosszú.</li>
+</ul>
+<h3 id="091-es-verzió">0.9.1-es verzió</h3>
+<ul>
+<li>A könyvjelző- és jegyzethangok most már macOS-en is megszólalnak.</li>
+<li>A DAISY-könyvek most már macOS-en is lejátsszák a hangjukat, és nem csak csendben megnyílnak és követik az idővonalukat.</li>
+<li>Az RTF-dokumentumokból most már nem tűnnek el a tipográfiai idézőjelek, a gondolatjelek és a hasonló karakterek, amelyek eltűnésükkel összefuttatták a környező szavakat.</li>
+<li>Az RTF-képek nyers adatai most már nem szivárognak át olvashatatlan szövegként a dokumentumba.</li>
+<li>A Legutóbbi dokumentumok almenü most már nem őrzi az elavult bejegyzéseket addig, amíg valami más újra fel nem építi.</li>
+<li>A gyorsbillentyűk visszakerültek minden fordításba, így az orosz menük is újra elérhetők a billentyűzetről.</li>
+<li>A nagy CHM-dokumentumok most már akár hétszer gyorsabban nyílnak meg.</li>
+<li>A megnyitott dokumentumokat a program most már regisztrálja a Windowsban, így megjelennek a tálca gyorslistájában és a Start menü legutóbbi elemei között.</li>
+<li>Az Options új neve Settings (magyarul mindkettő Beállítások), így egyezik a mobilalkalmazásokkal, macOS-en pedig a platform szokásaival.</li>
+<li>A Paperback most már megjegyzi az ablak helyét, méretét és teljes méretű állapotát két futtatás között.</li>
+<li>A többes számú alakok most már lefordíthatók, így a dolgokat megszámláló üzenetek helyesen hangzanak azokon a nyelveken is, amelyekben egynél több alak szükséges.</li>
+<li>Ha egy DAISY-könyv ncc.html fájlját választja ki, most már a teljes hangoskönyv nyílik meg, nem csak a szövege.</li>
+<li>A Billentyűparancsok testreszabása párbeszédpanel műveletnevei most már lefordíthatók.</li>
+<li>Az ablak címsorában most már a dokumentum címe áll elöl, így a megnyitott könyvek a tálcán és az Alt+Tab listában is megkülönböztethetők.</li>
+<li>A frissítési párbeszédpanel most már le van fordítva.</li>
+</ul>
+<h3 id="090-s-verzió">0.9.0-s verzió</h3>
+<h4 id="újdonságok-1">Újdonságok</h4>
+<h5 id="általános-2">Általános</h5>
+<ul>
+<li>Egy pb nevű parancssori eszköz, amellyel a Paperback által támogatott bármely formátum gyorsan HTML-, Markdown- vagy egyszerű szöveges formátumba alakítható.</li>
+<li>Beállítás a más programok által a lemezen módosított dokumentumok újratöltéséhez.</li>
+<li>Forrás megtekintése parancs, amellyel a dokumentum forrása új lapon nyitható meg; ez például Markdown szerkesztésekor hasznos.</li>
+<li>A dokumentum szövege most már részletekben töltődik be, így a több tízmillió szavas könyvek is mindössze néhány másodperc alatt betölthetők. Ha ezzel kapcsolatban bármilyen furcsaságot tapasztal, kérjük, jelezze.</li>
+</ul>
+<h5 id="platformtámogatás">Platformtámogatás</h5>
+<ul>
+<li>ARM64-es Windows-támogatás!</li>
+<li>Natív macOS-támogatás!</li>
+<li>Teljes képernyős mód.</li>
+</ul>
+<h5 id="összes-dokumentum-párbeszédpanel">Összes dokumentum párbeszédpanel</h5>
+<ul>
+<li>Fájl keresése gomb, amellyel megkeresheti azokat a hiányzó könyveket, amelyeknek csak az elérési útja változott meg.</li>
+<li>Állapotszűrő és állapotsor, így a dokumentumokat állapot szerint szűrheti, és láthatja, hány dokumentum látható és hány van kijelölve.</li>
+<li>A <code>Ctrl+Shift+A</code> billentyűparancs az összes dokumentum kijelölésének megszüntetéséhez.</li>
+</ul>
+<h5 id="beállítások-és-olvashatóság">Beállítások és olvashatóság</h5>
+<ul>
+<li>Olvashatóság lap a következő beállításokkal:
+<ul>
+<li>Sortörés (az Általános lapról áthelyezve);</li>
+<li>Táblázatok megjelenítése a szövegben (új ebben a kiadásban, lásd lent);</li>
+<li>Betűtípus;</li>
+<li>Háttérszín;</li>
+<li>Sorköz;</li>
+<li>Bekezdésköz;</li>
+<li>Betűköz;</li>
+<li>Szöveg igazítása.</li>
+</ul>
+</li>
+<li>Sortörés menüelem és hozzá tartozó billentyűparancs.</li>
+<li>Beállítás annak megadására, hogyan jelenjenek meg a táblázatok; emellett a táblázatok megjelenítése egységes lett minden dokumentumtípusban.</li>
+</ul>
+<h5 id="navigáció-2">Navigáció</h5>
+<ul>
+<li>Tárolónkénti navigáció.</li>
+<li>Beállítás, amellyel a kurzor a sorok közötti navigáláskor automatikusan a sor elejére kerül, a képernyőolvasók böngészési módjához hasonlóan.</li>
+<li>Az egyenlőségjel billentyűparancs, amely bejelenti, hány százaléknál tart a dokumentumban.</li>
+</ul>
+<h5 id="könyvjelzők">Könyvjelzők</h5>
+<ul>
+<li>Ideiglenes könyvjelzők: dokumentumonként egy lehet, és megmaradnak. A perjellel állíthat be egyet, a fordított perjellel ugorhat rá.</li>
+</ul>
+<h5 id="szavak-száma">Szavak száma</h5>
+<ul>
+<li>Becsült olvasási idő a Szavak száma párbeszédpanelen, valamint az olvasási sebesség beállításának lehetősége, hogy ez az adat valóban hasznos legyen.</li>
+<li>Ha a Szavak száma párbeszédpanel megnyitásakor van kijelölés, most már az is megjelenik, hány szót jelölt ki.</li>
+</ul>
+<h5 id="billentyűparancsok-1">Billentyűparancsok</h5>
+<ul>
+<li>Az alkalmazás minden billentyűparancsa testreszabható egy egyszerű párbeszédpanelen.</li>
+<li>Beállítható billentyűparancs a Paperback visszaállításához a rendszertálcáról.</li>
+</ul>
+<h5 id="nyelvek">Nyelvek</h5>
+<ul>
+<li>Holland, finn és lengyel.</li>
+</ul>
+<h5 id="exportálás">Exportálás</h5>
+<ul>
+<li>Az exportálás menüelem kibővült: az egyszerű szöveg mellett most már HTML-ként és Markdownként is exportálhat.</li>
+</ul>
+<h5 id="frissítő">Frissítő</h5>
+<ul>
+<li>Mégse gomb a frissítés folyamatát mutató párbeszédpanelen.</li>
+<li>A frissítő most már ellenőrzi, hogy a letöltött fájlt nem módosították-e illetéktelenül.</li>
+</ul>
+<h5 id="webes-nézet-2">Webes nézet</h5>
+<ul>
+<li>A webes nézet most már az aktuális olvasási pozíciónál nyílik meg.</li>
+</ul>
+<h5 id="daisy-könyvek">DAISY-könyvek</h5>
+<ul>
+<li>A DAISY 2.0 formátumú könyvek támogatása.</li>
+<li>A DAISY 2.02 formátumú hanganyagok lejátszásának támogatása.</li>
+</ul>
+<h5 id="hangoskönyvek-2">Hangoskönyvek</h5>
+<ul>
+<li>Hangoskönyvek lejátszása; jelenleg a DAISY-hanganyagok (a hangot és szöveget is tartalmazó DAISY-könyveket is beleértve) és a hangfájlokat tartalmazó ZIP-archívumok támogatottak.</li>
+<li>Billentyűparancsok és menüelemek az audionarráció lejátszásához és szüneteltetéséhez, előre- és visszatekeréséhez, valamint a léptetési időegység módosításához.</li>
+<li>Beállítások a kurzor hanglejátszással való szinkronizálásához, a léptetési időegység megadásához, valamint annak kiválasztásához, hogy a fejezet végén túltekerve a lejátszás a következő fejezettel folytatódjon-e.</li>
+</ul>
+<h5 id="chm-dokumentumok">CHM-dokumentumok</h5>
+<ul>
+<li>A listák, a listaelemek, az ábrák és a képek támogatása.</li>
+</ul>
+<h5 id="powerpoint">PowerPoint</h5>
+<ul>
+<li>A PowerPoint-dokumentumok most már támogatják a táblázatokat.</li>
+</ul>
+<h4 id="javítások-1">Javítások</h4>
+<h5 id="általános-3">Általános</h5>
+<ul>
+<li>A régi CJK-kódolású (például GBK, Big5 és Shift_JIS kódolású) dokumentumok most már helyesen jelennek meg, nem pedig értelmetlen karakterhalmazként (mojibake).</li>
+<li>A „Legutóbb bezárt dokumentum megnyitása” most már nem próbálja újra megnyitni a mellékelt kézikönyvet.</li>
+<li>A Paperback újraindítása után most már helyesen kap fókuszt a kijelölt lap.</li>
+<li>Javult a Windows hálózati meghajtóin lévő fájlok kezelése: a fájl mappában való megjelenítése most már helyesen kijelöli a fájlt a hálózati tárhelyen, és az elérési utakban sincsenek többé furcsa karakterek.</li>
+<li>A program most már nem tölti be kényszerítve a .paperback fájlokat a dokumentumok visszaállításakor; ehelyett megerősítést kér, ha talál egyet.</li>
+<li>A tartalmazó mappa megnyitása most már kijelöli az adott fájlt a Fájlkezelőben.</li>
+<li>A kézikönyv megnyitása most már figyelembe veszi a kiválasztott nyelvet.</li>
+<li>A Paperback felülete most már helyesen méreteződik a nagy DPI-értékű kijelzőkön.</li>
+<li>A menü most már helyesen frissül, és a fókusz a szövegmezőre kerül, amikor a súgót a Paperbackben nyitja meg.</li>
+<li>Windowson a folyamatok közötti kommunikáció (IPC) sokkal biztonságosabb módszerre váltott.</li>
+<li>Lapváltáskor a program most már felolvassa az aktív dokumentum címét.</li>
+<li>Kisebb a memóriahasználat nagy dokumentumoknál, mert a belső, karakterenkénti indextáblák mérete a felére csökkent.</li>
+</ul>
+<h5 id="összes-dokumentum-párbeszédpanel-1">Összes dokumentum párbeszédpanel</h5>
+<ul>
+<li>Az Escape billentyű most már bezárja a Dokumentuminformáció és az Összes dokumentum párbeszédpanelt.</li>
+<li>Az ablak címsora most már frissül, ha az Összes dokumentum párbeszédpanelről zár be egy dokumentumot.</li>
+<li>A Readme.html most már nem kerül fel az összes dokumentum listájára, ha a Shift+F1 billentyűparanccsal nyitja meg.</li>
+<li>Ha a legutóbbi dokumentumok párbeszédpanelén eltávolít egy dokumentumot, most már a hozzá tartozó lap is bezárul.</li>
+<li>A keresési szűrő most már megmarad egy dokumentum eltávolítása után.</li>
+</ul>
+<h5 id="navigáció-3">Navigáció</h5>
+<ul>
+<li>Az oldalankénti navigáció most már bizonyos helyzetekben sem jelent be hibás sorszöveget.</li>
+<li>Az Ugrás sorra, az Ugrás oldalra és az Ugrás adott százalékra most már nagy dokumentumokban sem teszi rossz helyre a kurzort.</li>
+<li>A Keresés és a Következő keresése most már nagy dokumentumokban is figyelembe veszi a betöltött dokumentumablakot.</li>
+</ul>
+<h5 id="könyvjelzők-1">Könyvjelzők</h5>
+<ul>
+<li>A könyvjelző- és jegyzethangok most már kizárólag akkor szólalnak meg, ha olyan szóra navigál, amelyhez könyvjelző vagy jegyzet tartozik.</li>
+</ul>
+<h5 id="olvashatóság-1">Olvashatóság</h5>
+<ul>
+<li>A sortörés bekapcsolása most már nem dobja vissza a dokumentum elejére.</li>
+</ul>
+<h5 id="webes-nézet-3">Webes nézet</h5>
+<ul>
+<li>A webes nézet párbeszédpanele most már átméretezhető, és nem nagyon kicsi méretben jelenik meg.</li>
+<li>A képek most már helyesen jelennek meg a beágyazott webes nézetben.</li>
+</ul>
+<h5 id="frissítő-1">Frissítő</h5>
+<ul>
+<li>A frissítő most már helyesen jeleníti meg a kiadási megjegyzésekben a Markdown kódcímkéinek tartalmát.</li>
+</ul>
+<h5 id="daisy-könyvek-1">DAISY-könyvek</h5>
+<ul>
+<li>A DAISY-könyvek most már nem jelenítenek meg hibás adatokat az állapotsorban.</li>
+<li>A hamis kódolási deklarációt tartalmazó DAISY-könyvek most már betölthetők.</li>
+</ul>
+<h5 id="rtf-dokumentumok">RTF-dokumentumok</h5>
+<ul>
+<li>A nem latin betűs karaktereket tartalmazó RTF-dokumentumok most már helyesen dolgozhatók fel.</li>
+<li>Az RTF <code>\pict</code> csoportjai: a beágyazott képadatok most már nem szivárognak át a dokumentum szövegébe.</li>
+</ul>
+<h5 id="mobiazw3-könyvek-1">Mobi/AZW3-könyvek</h5>
+<ul>
+<li>A Mobi-könyvekben a filepos horgonyok most már nem vágják ketté a HTML-címkéket, és nem kerül szemét a könyv szövegébe.</li>
+<li>A régi Mobi-könyvekben lévő hivatkozások most már működnek.</li>
+<li>Jelentősen javult az AZW3-könyvek feldolgozása.</li>
+</ul>
+<h5 id="word-dokumentumok">Word-dokumentumok</h5>
+<ul>
+<li>A területi beállításoktól függő stílusnevekkel készült Word-dokumentumok címsorai most már helyesen jelennek meg.</li>
+</ul>
+<h5 id="htmlxhtml-dokumentumok">HTML/XHTML-dokumentumok</h5>
+<ul>
+<li>A dl, dt és dd elemek most már sortörést eredményeznek az XHTML-dokumentumokban.</li>
+</ul>
+<h5 id="pdf-dokumentumok-2">PDF-dokumentumok</h5>
+<ul>
+<li>A hibásan címkézett PDF-eknél a Paperback most már egyszerű szöveg kinyerésére vált.</li>
+<li>A címükben vagy a könyvjelzőikben vezérlőkaraktereket tartalmazó PDF-dokumentumok most már nem okozzák a Paperback összeomlását megnyitáskor.</li>
+</ul>
+<h3 id="085-ös-verzió">0.8.5-ös verzió</h3>
+<ul>
+<li>Az EPUB-könyvek oldalainak támogatása.</li>
+<li>A titkosított Microsoft Office-dokumentumok támogatása. Jelenleg a régi Word, az új Word és az új PowerPoint formátum támogatott, a régi PowerPoint támogatása a jövőben várható.</li>
+<li>A régi Microsoft Word-dokumentumok támogatása!</li>
+<li>A régi PowerPoint-bemutatók támogatása!</li>
+<li>A MOBI- és AZW3-könyvek támogatása!</li>
+<li>A címkézett PDF-fájlok támogatása!</li>
+<li>Új billentyűparancs: ctrl+q az alkalmazásból való kilépéshez.</li>
+<li>A Bookshare-ről letöltött, ZIP-be tömörített könyvek támogatása (DAISY és Word formátumban is)!</li>
+<li>A beágyazott képek helyettesítő szövege most már helyesen jelenik meg.</li>
+<li>A CHM-dokumentumok most már helyesen támogatják a belső hivatkozásokkal való navigációt.</li>
+<li>Az ugrás oldalra most már nem téved egy oldalt.</li>
+<li>Az Escape billentyű most már bezárja a Megnyitás másként párbeszédpanelt (ez akkor jelenik meg, ha a Paperback nem ismeri fel a fájl formátumát).</li>
+<li>Az olvasó helyi menüje most már megjelenik jobb kattintásra és a helyimenü-billentyűre is.</li>
+<li>Ha a parancssorból nyit meg dokumentumokat, most már nem a rossz dokumentum kap fókuszt.</li>
+<li>A csak képeket tartalmazó PDF-eket a program ismét felismeri, és figyelmeztet rájuk.</li>
+<li>A képek és az ábrák között most már a g/shift+g, illetve az f/shift+f billentyűvel navigálhat.</li>
+<li>A Paperback most már követi az alkalmazások sötét módjára vonatkozó beállítást.</li>
+<li>A DAISY XML támogatása megszűnt, mivel már nincs rá szükség.</li>
+<li>A tartalomjegyzék fanézetében ismét a Win32 natív, első betű szerinti navigációja működik.</li>
+<li>A betöltési hibát jelző párbeszédpanel most már részletesebb hibaüzeneteket jelenít meg.</li>
+<li>A webes nézet most már sokkal gyorsabban és gördülékenyebben nyílik meg.</li>
+</ul>
+<h3 id="082-es-verzió">0.8.2-es verzió</h3>
+<ul>
+<li>Az RTF-dokumentumok oldalainak támogatása!</li>
+<li>Megszűnt az a hiba, amely miatt a külső hivatkozásokat tartalmazó EPUB-ok webes nézetének megnyitásakor ezek a hivatkozások automatikusan aktiválódtak.</li>
+<li>Megszűnt az a hiba, amely miatt az RTF-elemző ritkán nem tett szóközt a szavak közé.</li>
+<li>Egyes PDF-dokumentumokban a bekezdések most már nem esnek szét több rövid sorra.</li>
+<li>A PDF-dokumentumok most már alapszintű hivatkozás- és címsornavigációt támogatnak!</li>
+<li>Az RTF-tabulátorok és -soremelések most már pontosan úgy jelennek meg, ahogy a dokumentumban.</li>
+<li>A PDF-ek feldolgozása visszakerült a jól bevált pdfium könyvtárra, így a PDF-ek megjelenítése ismét sokkal megbízhatóbb.</li>
+</ul>
+<h3 id="081-es-verzió">0.8.1-es verzió</h3>
+<ul>
+<li>Új billentyűparancs: Ctrl+Shift+T a legutóbb bezárt dokumentum ismételt megnyitásához.</li>
+<li>Az Összes dokumentum párbeszédpanelen most már több dokumentum is kijelölhető és egyszerre megnyitható.</li>
+<li>Néhány hiba javítása az RTF-elemzőben.</li>
+<li>A nem ASCII karaktereket (például a bosnyák š, č, ć, ž betűket) tartalmazó elérési utak most már nem sérülnek meg, ha a fájlt egy második Paperback-példányon keresztül nyitja meg.</li>
+<li>A PDF-szöveg most már nem rossz sorrendben olvasódik fel, és a nagybetűs szavak körüli térközök is helyesek.</li>
+<li>Megszűnt a nagy fájlok lassú betöltése.</li>
+<li>A megerősítést kérő párbeszédpanelekben az Igen és a Nem gomb most már le van fordítva.</li>
+</ul>
+<h3 id="080-s-verzió">0.8.0-s verzió</h3>
+<ul>
+<li>Japán, egyszerűsített kínai és vietnami fordítás!</li>
+<li>Automatikus frissítő, amely most már lecseréli a telepített Paperback-verziót, és nem csak letölti az újat!</li>
+<li>Választható hangjelzés könyvjelzőhöz vagy jegyzethez érve – a hangok Andre Louis munkái, köszönjük!</li>
+<li>Az RTF-dokumentumok támogatása!</li>
+<li>A DAISY XML dokumentumok támogatása.</li>
+<li>A Flat OpenDocument-szövegfájlok támogatása!</li>
+<li>A Flat OpenDocument-bemutatók támogatása!</li>
+<li>Az elválasztók támogatása az s és a shift+s billentyűvel.</li>
+<li>Minden 300 karakternél nagyobb elmozdulás most már automatikusan bekerül a navigációs előzményekbe.</li>
+<li>Megszűnt a Paperback ablakának rendszertálcáról való visszaállításával kapcsolatos hiba.</li>
+<li>A Markdown-dokumentumok a webes nézetben most már nem nyers szövegként, hanem HTML-ként jelennek meg.</li>
+<li>A Markdown-fájlokban a táblázatok most már helyesen jelennek meg.</li>
+<li>A csak képeket tartalmazó PDF-ek most már figyelmeztetnek, ha megpróbál betölteni egyet.</li>
+<li>A verzióinformációk most már megfelelően be vannak ágyazva a Paperback programfájljába.</li>
+<li>A Beállítások párbeszédpanel a könnyebb használat és navigáció érdekében lapokra tagolódik.</li>
+<li>A PDF-ek feldolgozása a Hayro könyvtárra váltott, ami nagyobb megbízhatóságot, gyorsaságot és kevesebb DLL-t jelent.</li>
+<li>Az egész alkalmazás újra lett írva Rustban. Az új kódbázis biztonságosabb, gyorsabban tölti be a dokumentumokat, és könnyebb karbantartani és bővíteni.</li>
+<li>A szövegmező helyi menüje most már az olvasóra jellemző műveleteket tartalmazza az olyan általános elemek helyett, mint a kivágás és a beillesztés.</li>
+</ul>
+<h3 id="070-s-verzió">0.7.0-s verzió</h3>
+<ul>
+<li>A HTML- és XHTML-alapú dokumentumok táblázatainak támogatása! A táblázatok között a T és a Shift+T billentyűvel navigálhat, az Enter billentyűvel pedig webes nézetben tekinthet meg egyet.</li>
+<li>Alapszintű webes megjelenítés! A Ctrl+Shift+V billentyűparanccsal a dokumentum aktuális szakaszát webalapú megjelenítőben nyithatja meg; ez az összetett formázású tartalmakhoz vagy a kódmintákhoz hasznos.</li>
+<li>Orosz fordítás – köszönjük, Ruslan Gulmagomedov!</li>
+<li>Összes eltávolítása gomb az Összes dokumentum párbeszédpanelen.</li>
+<li>Ha új verzió érhető el, a frissítéskereső most már megjeleníti a kiadási megjegyzéseket.</li>
+<li>Megszűnt az ablak rendszertálcáról való visszaállításával kapcsolatos hiba.</li>
+<li>A megerősítést kérő párbeszédpanelek Igen és Nem gombjának fordítása most már helyes.</li>
+<li>A beállítások most már rendszergazdaként futtatva is betöltődnek.</li>
+<li>Javult a megjegyzések kezelése az XML- és HTML-dokumentumokban.</li>
+<li>Javult a tartalomjegyzék feldolgozása az EPUB 2-könyvekben.</li>
+<li>A tartalomjegyzékben most már működik a következő, azonos betűvel kezdődő elemre ugrás.</li>
+<li>A keresési párbeszédpanel most már megfelelően eltűnik, ha az előző/következő gombot használja.</li>
+<li>Az EPUB-tartalomjegyzékek most már nem visznek alkalmanként rossz elemre.</li>
+<li>Megszűnt több, a szóközök kezelésével kapcsolatos hiba az XML- és HTML-dokumentumokban, valamint a pre címkékben.</li>
+<li>Megszűnt egy eggyel való elcsúszási (off-by-one) hiba a hivatkozásonkénti navigációban.</li>
+<li>Egyes könyvek sorainak végéről most már eltűnnek a fölösleges szóközök.</li>
+<li>Különféle elemzőhibák javítása.</li>
+<li>A könyvjelzőkkel kapcsolatos menüelemek és az elemlista most már megfelelően le vannak tiltva, ha nincs megnyitott dokumentum.</li>
+<li>Javult a listák kezelése több dokumentumformátumban.</li>
+<li>Javult a fordítási munkafolyamat a közreműködők számára.</li>
+<li>Számos belső átalakítás: az alkalmazás üzleti logikájának nagy része C++-ból Rustba került a jobb teljesítmény és karbantarthatóság érdekében.</li>
+</ul>
+<h3 id="061-es-verzió">0.6.1-es verzió</h3>
+<ul>
+<li>A jelszóval védett PDF-ek támogatása!</li>
+<li>Nagyon egyszerű ugrás az előző/következő pozícióra. Ha egy belső hivatkozáson megnyomja az Enter billentyűt, és ez elmozdítja a kurzort, a program megjegyzi a pozíciót, és az alt+balra/jobbra nyíllal odaléphet.</li>
+<li>Elemlista! Jelenleg csak a dokumentum összes címsorának fáját vagy a hivatkozások listáját mutatja, de a jövőben bővül.</li>
+<li>Beállítás, amellyel a Paperback alapértelmezés szerint teljes méretű ablakban indul.</li>
+<li>Egyes EPUB-dokumentumokban most már helyesen működnek a hivatkozások.</li>
+<li>A relatív elérési utakat tartalmazó EPUB-tartalomjegyzékek most már helyesen dolgozhatók fel.</li>
+<li>Egyes EPUB-dokumentumok most már megjelenítik a címüket és a szerzőjüket.</li>
+<li>Egyes EPUB-fejezetek címe most már helyesen jelenik meg a tartalomjegyzékben.</li>
+<li>A tartalomjegyzék párbeszédpanel OK és Mégse gombja most már a szóköz billentyűvel is aktiválható.</li>
+<li>Javult a címsorok kezelése a Word-dokumentumokban.</li>
+<li>Ha a legutóbbi dokumentumok listája üres, a párbeszédpanel megnyitásakor most már hangos visszajelzést kap.</li>
+</ul>
+<h3 id="060-s-verzió">0.6.0-s verzió</h3>
+<ul>
+<li>Új beállítás a Beállítások párbeszédpanelen, amely sokkal tömörebb formában jeleníti meg az Ugrás menüt; alapértelmezés szerint be van jelölve.</li>
+<li>Beállítás, amellyel a szerkezeti elemek közötti navigáció körkörössé tehető.</li>
+<li>Új elem az Eszközök menüben, amellyel megnyitható az éppen fókuszban lévő dokumentumot tartalmazó mappa.</li>
+<li>Egészen egyszerű, de nagyon hatékony frissítési rendszer.</li>
+<li>Alapszintű elalvási időzítő, amely a Ctrl+Shift+S billentyűparanccsal érhető el.</li>
+<li>Az FB2 formátumú e-könyvek feldolgozásának támogatása!</li>
+<li>Az OpenDocument-bemutatók feldolgozásának támogatása!</li>
+<li>Az OpenDocument-szövegfájlok feldolgozásának támogatása!</li>
+<li>A könyvjelzők most már egy teljes sort vagy csak egy megadott szövegrészt is megjelölhetnek. Ha a könyvjelző elhelyezésekor nincs kijelölés, a működés a 0.6 előttivel egyezik, és a teljes sort jelöli meg. Ha viszont kijelöl egy szövegrészt, csak az kerül a könyvjelzőbe.</li>
+<li>A könyvjelzőkhöz most már szöveges jegyzetek is csatolhatók! A jegyzetet tartalmazó könyvjelzők között az N és a Shift+N billentyűvel navigálhat, vagy külön billentyűparancsokkal megnyithatja a könyvjelzők párbeszédpanelt úgy, hogy az összes könyvjelző, csak a jegyzetek vagy csak a jegyzet nélküli könyvjelzők jelenjenek meg.</li>
+<li>A könyvjelzők párbeszédpanelen a könyvjelzők előtt most már nem áll a zavaró „könyvjelző x” előtag.</li>
+<li>Az XML-nek álcázott HTML-tartalmat tartalmazó EPUB-könyveket a program most már helyesen kezeli.</li>
+<li>A nagy Markdown-dokumentumok most már betölthetők.</li>
+<li>A tartalomjegyzék fanézetében a szóköz most már nem aktiválja az OK gombot.</li>
+<li>Javult a pre címkék elején lévő szóközök kezelése a HTML- és XHTML-dokumentumokban.</li>
+<li>A szövegmező most már mindig visszakapja a fókuszt, amikor visszatér a Paperback ablakába.</li>
+<li>Az ugrás adott százalékra párbeszédpanel szövegmezője most már frissíti a csúszka értékét.</li>
+<li>A Markdown-dokumentumokban az egyéni HTML-azonosítók most már helyesen jelennek meg.</li>
+<li>A Markdown kódblokkjaiban lévő HTML most már helyesen jelenik meg.</li>
+<li>Ha egy már futó Paperback-példány mellett parancssori paraméterrel tölt be egy könyvet, most már akkor sem kap hibaüzenetet, ha a dokumentum betöltése 5 másodpercnél tovább tart.</li>
+<li>Ha a Paperbacket rendszergazdaként futtatja, a beállítások most már helyesen töltődnek be és mentődnek.</li>
+<li>Most már közvetlenül a könyvjelzők párbeszédpanelről is törölhet könyvjelzőt.</li>
+<li>Most már exportálhatja és importálhatja egy adott dokumentum könyvjelzőit és olvasási pozícióját. A létrehozott fájl neve a dokumentum fájlnevével egyezik, .paperback kiterjesztéssel. Ha betöltéskor ilyen fájl található a dokumentummal azonos mappában, a program automatikusan betölti. Ellenkező esetben az Eszközök menü egyik elemével kézzel importálhatja.</li>
+<li>A dokumentumokon belüli hivatkozások most már teljes körűen támogatottak! A k és a shift+k billentyűvel előre és hátra léphet közöttük, az Enter billentyűvel pedig megnyithat vagy aktiválhat egyet.</li>
+<li>Számos belső átalakítás, amely gyorsabbá tette az alkalmazást, és kisebbé a programfájlt.</li>
+<li>A Markdown-tartalmat a program most már a megjelenítés előtt CommonMark-kompatibilissé alakítja.</li>
+<li>A listák és a listaelemek közötti navigáció most már teljes körűen támogatott! Az L és a Shift+L billentyűvel a listák, az I és a Shift+I billentyűvel a listaelemek között léphet.</li>
+<li>A dokumentumokat most már a numerikus billentyűzet Delete billentyűjével is eltávolíthatja a lapsávról, nem csak a normál Delete billentyűvel.</li>
+<li>A Paperback most már a rendszertálcára is kicsinyíthető! Ez a beállítás alapértelmezés szerint ki van kapcsolva; ha bekapcsolja, a rendszermenü Kis méret parancsa a rendszertálcára helyezi a Paperbacket, ahonnan a megjelenő ikonra kattintva állíthatja vissza.</li>
+<li>A Paperback most már teljesen lefordítható! A támogatott nyelvek listája egyelőre elég rövid, de folyamatosan bővül!</li>
+<li>A Paperbacknek most már hivatalos webhelye van: <a href="https://paperback.dev">paperback.dev</a>!</li>
+<li>A PPTX-dokumentumok most már egyszerű tartalomjegyzéket jelenítenek meg, amely az összes diát tartalmazza.</li>
+<li>A dokumentuminformációs párbeszédpanel most már a megnyitott dokumentum teljes elérési útját is megmutatja.</li>
+<li>A telepítő most már felajánlja, hogy a telepítés után megnyitja a kézikönyvet a böngészőben.</li>
+<li>A legutóbbi dokumentumok listája jelentősen bővült! Ahelyett, hogy csak az utolsó 10 megnyitott dokumentumot mutatná, most már testreszabható számú dokumentumot jelenít meg, a valaha megnyitott többi dokumentum pedig egy kis párbeszédpanelen érhető el.</li>
+<li>Különféle kisebb fejlesztések az összes elemzőben, többek között üres sor a PPTX-bemutatók diái között, a Word-dokumentumok bekezdésein belüli sortörések helyes kezelése, valamint felsorolásjelek a listaelemek előtt.</li>
+</ul>
+<h3 id="050-s-verzió">0.5.0-s verzió</h3>
+<ul>
+<li>A Microsoft Word-dokumentumok támogatása!</li>
+<li>A PowerPoint-bemutatók támogatása!</li>
+<li>Bizonyos menüelemek most már le vannak tiltva, ha nincs megnyitott dokumentum.</li>
+<li>Az ugrás adott százalékra csúszka iránya most már helyes.</li>
+<li>Az URL-kódolású elérési utakat vagy töredékazonosítókat tartalmazó EPUB-könyvekben most már helyes a tartalomjegyzék.</li>
+<li>Az XHTML-címsorokból most már nem tűnnek el furcsa módon a szóközök.</li>
+<li>Javult a beágyazott pre címkéken belüli szóközök kezelése a HTML-dokumentumokban.</li>
+<li>A HTML- és Markdown-dokumentumok most már támogatják a tartalomjegyzéket! HTML- vagy Markdown-dokumentum betöltésekor a Paperback a dokumentum címsorainak szerkezetéből saját tartalomjegyzéket állít össze, és ezt mutatja meg a ctrl+t párbeszédpanelen.</li>
+<li>A HTML-dokumentumok címe most már a title címkében megadott cím, ha van ilyen. Ellenkező esetben továbbra is a kiterjesztés nélküli fájlnév.</li>
+<li>A beszéd továbbítása a UniversalSpeech helyett most már élő régión keresztül történik. Így a program mellett már nem kell képernyőolvasó-DLL-eket szállítani, és több képernyőolvasó is támogatott, például a Microsoft Narrátor.</li>
+<li>A program másik ZIP-könyvtárra váltott, így az EPUB-könyvek szélesebb köre nyitható meg.</li>
+<li>Teljesen megújult az a párbeszédpanel, amely megkérdezi, hogy egyszerű szövegként szeretné-e megnyitni a dokumentumot: most már egyszerű szövegként, HTML-ként vagy Markdownként is megnyithatja.</li>
+<li>Az ugrás adott százalékra párbeszédpanelen most már szövegmező is van, amelyben kézzel adhatja meg, melyik százalékra szeretne ugrani.</li>
+<li>A HTML-elemző most már listaelemként ismeri fel a dd, dt és dl elemeket.</li>
+<li>Az EPUB-könyvek tartalomjegyzéke ismét pontosan megmarad.</li>
+<li>Az üres sorok eltávolításakor a program most már a Unicode nem törő szóközt is figyelembe veszi.</li>
+<li>Most már nem kell minden betöltéskor megadnia, hogyan szeretne megnyitni egy fel nem ismert fájlt, csak az első alkalommal.</li>
+</ul>
+<h3 id="041-es-verzió">0.4.1-es verzió</h3>
+<ul>
+<li>A telepítő most már felajánlja, hogy ikont helyezzen el a Start menüben.</li>
+<li>A tartalomjegyzék néhány esetben átláthatóbb lett: ha például egy szülő- és egy gyermekelem ugyanazon a helyen ugyanazzal a szöveggel szerepel, most már csak a szülőelem jelenik meg.</li>
+<li>Egyes CHM-dokumentumokban most már helyes a tartalomjegyzék.</li>
+<li>Az abszolút elérési utakat tartalmazó EPUB 3-könyvekben most már helyes a tartalomjegyzék.</li>
+<li>A CHM-dokumentumok most már a metaadatfájlban megadott címüket jelenítik meg.</li>
+</ul>
+<h3 id="040-s-verzió">0.4.0-s verzió</h3>
+<ul>
+<li>A CHM-fájlok támogatása!</li>
+<li>Könyvjelzők! Tetszőleges számú dokumentumban tetszőleges számú könyvjelzőt helyezhet el. A b és a shift+b billentyűvel előre és hátra ugorhat közöttük, a control+shift+b billentyűparanccsal beállíthat egyet, a control+b billentyűparanccsal pedig megnyithat egy párbeszédpanelt, amelyben egy adott könyvjelzőre ugorhat.</li>
+<li>A hordozható ZIP-fájl mellett most már telepítő is van! A telepítő a Program Files mappába telepíti a Paperbacket, és automatikusan beállítja a fájltársításokat.</li>
+<li>A BOM-ot tartalmazó szövegfájlok most már helyesen dekódolódnak, és a BOM sem jelenik meg a szöveg elején.</li>
+<li>Sokkal több információ az állapotsorban: most már az aktuális sort, karaktert és olvasási százalékot is mutatja.</li>
+<li>A HTML-megjegyzések, valamint a script és style címkék tartalma most már nem jelenik meg a szövegben.</li>
+<li>Ha a parancssorban relatív elérési utat ad meg a Paperbacknek, most már helyesen oldja fel.</li>
+<li>A százalékos mozgást most már egy saját, csúszkás párbeszédpanel kezeli, amely a control+shift+g billentyűparanccsal érhető el.</li>
+<li>Az ismeretlen című vagy szerzőjű dokumentumoknak most már mindig van alapértelmezett címük és szerzőjük.</li>
+<li>A pozíciómentés logikája most már sokkal okosabb, és csak akkor ír a lemezre, ha feltétlenül szükséges.</li>
+<li>A Paperback bezárásakor fókuszban lévő dokumentumot a program most már az újraindítás után is megjegyzi.</li>
+<li>Az ugrás sorra és az ugrás oldalra párbeszédpanel most már szigorúbban ellenőrzi a beírt értékeket.</li>
+<li>A jegyzékükben relatív elérési utakat tartalmazó EPUB 3-könyvekben most már helyesen működik a tartalomjegyzékkel való navigáció.</li>
+</ul>
+<h3 id="030-s-verzió">0.3.0-s verzió</h3>
+<ul>
+<li>Az URL-kódolású jegyzéket tartalmazó EPUB-könyvekben most már helyes a tartalomjegyzék.</li>
+<li>A többbájtos Unicode-karaktereket tartalmazó HTML-dokumentumokban most már helyesen működik a címsoronkénti navigáció.</li>
+<li>Megszűnt a hosszú című dokumentumoknál a wxWidgets egy regressziója miatt jelentkező magas processzorhasználat.</li>
+<li>Az UTF-8 kódolású szövegfájlok most már helyesen töltődnek be.</li>
+<li>Az EPUB-könyvekben a beágyazott tartalomjegyzék-elemek most már nem rossz helyre teszik a kurzort.</li>
+<li>Megszűnt egy összeomlás, amely bizonyos esetekben az alkalmazásból való kilépéskor történt.</li>
+<li>Jelölőnégyzet a Beállítások párbeszédpanelen a sortörés be- és kikapcsolásához!</li>
+<li>Most már adományozhat a Paperback fejlesztésére: a Súgó menü új Adományozás elemével vagy a GitHub-tárház főoldalának alján található „Sponsor this project” hivatkozással.</li>
+<li>A Markdown-dokumentumoknak most már mindig van címük, és a Paperback gyakorlatilag bármilyen Markdown-fájlt be tud tölteni.</li>
+<li>A PDF-dokumentumoknak most már akkor is mindig van címük, ha hiányoznak a metaadatok.</li>
+<li>A Paperback a Chromiumban használt PDF-könyvtárra váltott, így a PDF-ek feldolgozása mindenhol sokkal megbízhatóbb.</li>
+<li>A Paperbackből most már egyszerre csak egy példány futhat. Ha a paperback.exe fájlt egy fájlnévvel futtatja, miközben a program már fut, a dokumentum a már futó példányban nyílik meg.</li>
+<li>A lapsávon most már a Delete billentyűvel bezárhat egy dokumentumot.</li>
+</ul>
+<h3 id="021-es-verzió">0.2.1-es verzió</h3>
+<ul>
+<li>Az ugrás oldalra párbeszédpanel oldalcímkéje most már az oldalak teljes számát is mutatja.</li>
+<li>A Tab billentyűvel most már a dokumentum tartalmából a megnyitott dokumentumok listájára léphet.</li>
+<li>A címsoronkénti navigáció billentyűi most már nem nyitnak meg legutóbbi dokumentumokat, ha elég sok van belőlük.</li>
+<li>A Paperback most már eltávolítja a fölösleges feltételes elválasztójeleket a szövegből.</li>
+<li>A címsoronkénti navigáció most már nem teszi néha rossz karakterre a kurzort.</li>
+</ul>
+<h3 id="020-s-verzió">0.2.0-s verzió</h3>
+<ul>
+<li>A Markdown-dokumentumok támogatása!</li>
+<li>A PDF-dokumentumok támogatása, az oldalak közötti navigációval együtt!</li>
+<li>Billentyűparancsok a HTML-tartalmak címsorai közötti navigáláshoz, az EPUB-könyveket és a Markdown-dokumentumokat is beleértve. Ezek a billentyűparancsok a képernyőolvasókéhoz hasonlóan működnek.</li>
+<li>Az URL-kódolású fájlneveket tartalmazó jegyzékű EPUB-ok most már betölthetők.</li>
+<li>A beágyazott XHTML-t tartalmazó EPUB 3-könyvek most már betölthetők.</li>
+<li>Ha a dokumentum nem támogatja a tartalomjegyzéket vagy a szakaszokat, a program most már egy kimondott üzenettel jelzi ezt, ahelyett hogy letiltaná a menüelemeket.</li>
+<li>Legutóbbi dokumentumok menü! Jelenleg az utolsó 10 megnyitott dokumentumot tárolja, és bármelyiket megnyithatja olvasásra az Enter billentyűvel.</li>
+<li>Teljesen újraírt Keresés párbeszédpanel: sokkal egyszerűbben használható, megjegyzi az utolsó 25 keresést, és támogatja a reguláris kifejezéseket!</li>
+<li>A korábban megnyitott dokumentumokat a program most már az újraindítások között is megjegyzi. Ez az Eszközök menü új Beállítások elemével módosítható.</li>
+<li>Új billentyűparancs: shift+f1 a kézikönyv közvetlenül a Paperbackben való megnyitásához.</li>
+</ul>
+<h3 id="010-s-verzió">0.1.0-s verzió</h3>
+<ul>
+<li>Első kiadás.</li>
+</ul>
+</main>
+</body>
+</html>
