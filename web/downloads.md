@@ -23,7 +23,9 @@ Free, for Windows, macOS and Linux.
 
 The mobile apps are paid, and buying one is what pays for the work on Paperback. The source is public either way, so you can build both yourself if you would rather.
 
-- **Android**: [Paperback on Google Play](https://play.google.com/store/apps/details?id=dev.paperback.android).
+- **Android**, version 7 and later: <a class="store-badge" href="https://play.google.com/store/apps/details?id=dev.paperback.android"><img src="/images/google-play-badge.png" alt="Get it on Google Play" width="155" height="60" /></a>
 - **iOS**: Paperback is on the App Store, for iPhone and iPad running iOS 17 or later.
+
+<p class="fine-print">Google Play and the Google Play logo are trademarks of Google LLC.</p>
 
 <script src="{{ "/js/downloads.js" }}"></script>
