@@ -45,6 +45,8 @@ pub struct ImageInfo {
 	pub alt_text: String,
 	/// Display-unit span of the emitted placeholder, brackets and label included.
 	pub length: usize,
+	/// Where the picture lives, as the markup wrote it: an `<img>`'s `src` or an SVG or FB2 `<image>`'s `href`. Empty when there is none.
+	pub source: String,
 }
 
 #[derive(Debug, Clone)]

@@ -127,7 +127,7 @@ pub(super) fn build_text_ctrl(
 		{
 			if (key == WXK_F10 && kbd.shift_down()) || key == WXK_WINDOWS_MENU {
 				kbd.event.skip(false);
-				show_reader_context_menu(text_ctrl_for_menu);
+				show_reader_context_menu(text_ctrl_for_menu, &dm_for_keys);
 				return;
 			}
 			// Ctrl+C and Ctrl+A are intercepted here because the reading control consumes them in its own window procedure, before wx consults the accelerator table, so neither ever becomes a menu command and the handlers Edit > Copy and Edit > Select All reach never run for the keystroke. Raising the same command a click produces is what makes the two ways of doing either behave identically - for the copy that is the announcement and the widening to the whole document, and for the select all it is the announcement alone, without which the command says nothing at all.
@@ -247,9 +247,10 @@ pub(super) fn build_text_ctrl(
 		event.skip(true);
 	});
 	let text_ctrl_for_right_click = text_ctrl;
+	let dm_for_right_click = Rc::clone(self_rc);
 	text_ctrl.bind_internal(EventType::RIGHT_UP, move |event| {
 		event.skip(false);
-		show_reader_context_menu(text_ctrl_for_right_click);
+		show_reader_context_menu(text_ctrl_for_right_click, &dm_for_right_click);
 	});
 	text_ctrl
 }
@@ -380,9 +381,17 @@ fn try_navigate_line_by_column(
 	macos::try_adjacent_line_start(tab.text_ctrl, going_down)
 }
 
-fn show_reader_context_menu(text_ctrl: TextCtrl) {
+fn show_reader_context_menu(text_ctrl: TextCtrl, dm: &Rc<Mutex<DocumentManager>>) {
 	text_ctrl.set_focus();
-	let mut menu = Menu::builder()
+	let on_image = dm.try_lock().is_ok_and(|dm| dm.image_file_name_at_caret().is_some());
+	let mut builder = Menu::builder();
+	if on_image {
+		builder = builder
+			// TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
+			.append_item(menu_ids::SAVE_IMAGE, &t("Save &image as..."), &t("Save image as"))
+			.append_separator();
+	}
+	let mut menu = builder
 		// TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 		.append_item(menu_ids::TOGGLE_BOOKMARK, &t("Create &bookmark"), &t("Create bookmark"))
 		// TRANSLATORS: Right-click context menu item and status text to bookmark the current position with an attached note

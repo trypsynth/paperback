@@ -11,6 +11,7 @@ use crate::{
 	parser::{
 		Parser, add_converter_markers_excluding_links, add_heading_markers_where, util::path::extract_title_from_path,
 	},
+	util::text::url_decode,
 };
 
 mod convert;
@@ -107,7 +108,9 @@ impl Parser for ChmParser {
 					.with_text(format!("Section {}", idx + 1))
 					.with_reference((*file_path).clone()),
 			);
-			add_converter_markers_excluding_links(&mut buffer, section, section_start);
+			add_converter_markers_excluding_links(&mut buffer, section, section_start, &|source| {
+				url_decode(resolve_chm_href(file_path, source).split('#').next().unwrap_or_default())
+			});
 			for link in &section.links {
 				let resolved_href = resolve_chm_href(file_path, &link.reference);
 				buffer.add_marker(

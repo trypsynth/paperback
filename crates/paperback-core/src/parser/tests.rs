@@ -212,7 +212,7 @@ fn add_converter_markers_transfers_all_marker_types_with_offset() {
 fn add_converter_markers_excluding_links_skips_link_markers() {
 	let converter = sample_converter();
 	let mut buffer = DocumentBuffer::new();
-	add_converter_markers_excluding_links(&mut buffer, &converter, 10);
+	add_converter_markers_excluding_links(&mut buffer, &converter, 10, &str::to_string);
 	assert_eq!(buffer.markers.len(), 6);
 	assert!(buffer.markers.iter().all(|marker| marker.mtype != MarkerType::Link));
 	assert!(buffer.markers.iter().any(|marker| marker.mtype == MarkerType::Formula && marker.position == 17));

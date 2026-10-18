@@ -5,6 +5,7 @@ mod accessors;
 mod audio;
 mod find_all;
 mod formula;
+mod images;
 mod links;
 mod navigation;
 mod ocr;

@@ -155,7 +155,12 @@ impl HtmlToText {
 						let image_text = format!("[{label}: {description}]");
 						let offset = self.text.get_current_text_position();
 						self.text.current_line.push_str(&image_text);
-						let info = ImageInfo { offset, alt_text: description, length: display_len(&image_text) };
+						let info = ImageInfo {
+							offset,
+							alt_text: description,
+							length: display_len(&image_text),
+							source: Self::image_source(node),
+						};
 						if is_figure {
 							self.figures.push(info);
 						} else {
@@ -367,6 +372,21 @@ impl HtmlToText {
 		} else {
 			self.text.current_line.push_str(&collapse_whitespace(&processed_text));
 		}
+	}
+
+	/// Where an image element's picture lives. A `<figure>` has none of its own, so it takes the first picture inside it. SVG writes `href` as `xlink:href` in older markup, which is why the attribute is matched by local name.
+	pub(crate) fn image_source(node: NodeRef<'_, Node>) -> String {
+		node.descendants()
+			.find_map(|descendant| {
+				let Node::Element(element) = descendant.value() else { return None };
+				match element.name() {
+					"img" => element.attr("src"),
+					"image" => element.attrs().find(|(name, _)| *name == "href").map(|(_, value)| value),
+					_ => None,
+				}
+			})
+			.map(|source| source.trim().to_string())
+			.unwrap_or_default()
 	}
 
 	fn get_element_text(node: NodeRef<'_, Node>, _document: &Html) -> String {

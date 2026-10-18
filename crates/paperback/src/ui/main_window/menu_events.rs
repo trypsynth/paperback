@@ -137,6 +137,9 @@ impl MainWindow {
 				menu_ids::EXPORT_TO_MARKDOWN => {
 					menu_file::handle_export_to_markdown(&frame_copy, &dm);
 				}
+				menu_ids::SAVE_IMAGE => {
+					menu_file::handle_save_image(&frame_copy, &dm);
+				}
 				menu_ids::EXPORT_DOCUMENT_DATA => {
 					menu_file::handle_export_document_data(&frame_copy, &dm, &config);
 				}
