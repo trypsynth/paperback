@@ -363,21 +363,33 @@ fn add_links(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offse
 	}
 }
 
-fn add_images(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+/// Images and figures carry where their picture lives as the marker's reference, so it can be saved. `resolve` turns the markup's source into a path in the document's own namespace, for formats whose sections each have their own base.
+fn add_images(
+	buffer: &mut DocumentBuffer,
+	converter: &dyn ConverterOutput,
+	offset: usize,
+	resolve: &dyn Fn(&str) -> String,
+) {
+	let reference = |image: &ImageInfo| {
+		if image.source.is_empty() || is_data_uri(&image.source) {
+			image.source.clone()
+		} else {
+			resolve(&image.source)
+		}
+	};
 	for image in converter.get_images() {
 		buffer.add_marker(
 			Marker::new(MarkerType::Image, offset + image.offset)
 				.with_text(image.alt_text.clone())
+				.with_reference(reference(image))
 				.with_length(image.length),
 		);
 	}
-}
-
-fn add_figures(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
 	for figure in converter.get_figures() {
 		buffer.add_marker(
 			Marker::new(MarkerType::Figure, offset + figure.offset)
 				.with_text(figure.alt_text.clone())
+				.with_reference(reference(figure))
 				.with_length(figure.length),
 		);
 	}
@@ -525,22 +537,21 @@ fn span_has_heading(spans: &[usize], existing: &[usize], offset: usize) -> bool 
 pub fn add_converter_markers(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
 	add_headings(buffer, converter, offset);
 	add_links(buffer, converter, offset);
-	add_images(buffer, converter, offset);
-	add_figures(buffer, converter, offset);
+	add_images(buffer, converter, offset, &str::to_string);
 	add_tables_separators_lists(buffer, converter, offset);
 	add_formulas(buffer, converter, offset);
 	add_formatting(buffer, converter, offset);
 }
 
-/// Like `add_converter_markers` but excludes links, for parsers that resolve link hrefs specially.
+/// Like `add_converter_markers` but excludes links, for parsers that resolve link hrefs specially. Those parsers resolve image sources too, with `resolve_image`.
 pub fn add_converter_markers_excluding_links(
 	buffer: &mut DocumentBuffer,
 	converter: &dyn ConverterOutput,
 	offset: usize,
+	resolve_image: &dyn Fn(&str) -> String,
 ) {
 	add_headings(buffer, converter, offset);
-	add_images(buffer, converter, offset);
-	add_figures(buffer, converter, offset);
+	add_images(buffer, converter, offset, resolve_image);
 	add_tables_separators_lists(buffer, converter, offset);
 	add_formulas(buffer, converter, offset);
 	add_formatting(buffer, converter, offset);
@@ -550,6 +561,12 @@ pub fn add_converter_markers_excluding_links(
 pub fn is_external_url(url: &str) -> bool {
 	let lower = url.to_ascii_lowercase();
 	lower.starts_with("http:") || lower.starts_with("https:") || lower.starts_with("mailto:")
+}
+
+/// Whether `source` is a `data:` URI, which carries its bytes inline rather than naming a file.
+#[must_use]
+pub fn is_data_uri(source: &str) -> bool {
+	source.get(..5).is_some_and(|scheme| scheme.eq_ignore_ascii_case("data:"))
 }
 
 /// Whether `text` is an http or https link.

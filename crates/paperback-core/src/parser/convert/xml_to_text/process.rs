@@ -185,7 +185,12 @@ impl XmlToText {
 				let image_text = format!("[{label}: {description}]");
 				let offset = self.text.get_current_text_position();
 				self.text.current_line.push_str(&image_text);
-				let info = ImageInfo { offset, alt_text: description, length: display_len(&image_text) };
+				let info = ImageInfo {
+					offset,
+					alt_text: description,
+					length: display_len(&image_text),
+					source: Self::image_source(node),
+				};
 				if is_figure {
 					self.figures.push(info);
 				} else {
@@ -370,6 +375,25 @@ impl XmlToText {
 
 	fn is_ignored_element(tag_name: &str) -> bool {
 		["script", "style", "noscript", "iframe", "object", "embed"].iter().any(|t| Self::tag_is(tag_name, t))
+	}
+
+	/// Where an image element's picture lives. A `<figure>` has none of its own, so it takes the first picture inside it. SVG and FB2 put `href` in the `xlink` namespace, which is why the attribute is matched by local name.
+	fn image_source(node: Node<'_, '_>) -> String {
+		node.descendants()
+			.filter(Node::is_element)
+			.find_map(|descendant| {
+				let tag_name = descendant.tag_name().name();
+				let wanted = if Self::tag_is(tag_name, "img") {
+					"src"
+				} else if Self::tag_is(tag_name, "image") {
+					"href"
+				} else {
+					return None;
+				};
+				descendant.attributes().find(|attribute| attribute.name() == wanted).map(|attribute| attribute.value())
+			})
+			.map(|source| source.trim().to_string())
+			.unwrap_or_default()
 	}
 
 	const fn tag_is(tag_name: &str, expected: &str) -> bool {

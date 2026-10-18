@@ -56,6 +56,33 @@ impl Parser for Fb2Parser {
 	}
 }
 
+/// The base64 text of the `<binary>` an FB2 image points at, by the `#id` its `href` gives.
+///
+/// # Errors
+///
+/// Returns an error when the file cannot be read or parsed, even after repair, or holds no binary with that id.
+pub fn binary_data(file_path: &str, href: &str) -> Result<String> {
+	const CLOSING_TAG: &str = "</FictionBook>";
+	let mut xml_content = read_xml_to_string(file_path)?;
+	if let Some(pos) = xml_content.rfind(CLOSING_TAG) {
+		xml_content.truncate(pos + CLOSING_TAG.len());
+	}
+	let repaired;
+	let doc = match XmlDocument::parse(&xml_content) {
+		Ok(doc) => doc,
+		Err(error) => {
+			repaired = repair_fb2_xml(&xml_content).ok_or(error)?;
+			XmlDocument::parse(&repaired)?
+		}
+	};
+	let id = href.strip_prefix('#').unwrap_or(href);
+	let binary = doc
+		.descendants()
+		.find(|node| node.tag_name().name() == "binary" && node.attribute("id") == Some(id))
+		.with_context(|| format!("no binary with id '{id}'"))?;
+	Ok(binary.descendants().filter(Node::is_text).filter_map(|node| node.text()).collect())
+}
+
 fn clean_fb2(xml_content: &str) -> Option<(String, Metadata)> {
 	let doc = XmlDocument::parse(xml_content).ok()?;
 	let mut result = String::new();

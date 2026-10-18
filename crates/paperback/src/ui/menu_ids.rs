@@ -121,6 +121,9 @@ seq_ids!(BASE + 460 => BATCH_OCR);
 // Edit menu: selection (BASE + 470..479)
 seq_ids!(BASE + 470 => SET_SELECTION_START, COPY_FROM_SELECTION_START, JUMP_TO_SELECTION_START);
 
+// Reader context menu (BASE + 480..489)
+seq_ids!(BASE + 480 => SAVE_IMAGE);
+
 // Help menu (BASE + 500..599)
 seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE);
 

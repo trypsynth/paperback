@@ -1,6 +1,6 @@
 //! The heavier File menu handlers: dynamic recent-document ids
 //! (`menu_ids::RECENT_DOCUMENT_BASE..=RECENT_DOCUMENT_MAX`), the "All Documents" dialog, exporting
-//! the document, and importing and exporting its data. `Open`/`Close`/`Close All`/`Reopen Last
+//! the document, saving a picture out of it, and importing and exporting its data. `Open`/`Close`/`Close All`/`Reopen Last
 //! Closed`/`Exit` are thin enough to stay inlined in `bind_menu_events`'s dispatch match.
 
 use std::{path::Path, rc::Rc, sync::Mutex};
@@ -264,6 +264,39 @@ pub(super) fn handle_import_document_data(
 		)
 		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
 		.build();
+		dialog.show_modal();
+	}
+}
+
+pub(super) fn handle_save_image(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>) {
+	let Ok(dm_ref) = dm.try_lock() else {
+		return;
+	};
+	let Some(tab) = dm_ref.active_tab() else {
+		return;
+	};
+	let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+	let Some(file_name) = tab.session.image_file_name_at(position) else {
+		return;
+	};
+	let dialog = FileDialog::builder(frame)
+		// TRANSLATORS: Title of the file save dialog when saving a picture from the document
+		.with_message(&t("Save image"))
+		.with_default_file(&file_name)
+		// TRANSLATORS: File filter shown in the "Save image" dialog
+		.with_wildcard(&t("All files (*.*)|*.*"))
+		.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
+		.build();
+	if dialog.show_modal() == ID_OK
+		&& let Some(path) = dialog.get_path()
+		&& let Err(e) = tab.session.save_image(position, &path)
+	{
+		tracing::error!(path = %path, error = %e, "failed to save image");
+		let dialog =
+			// TRANSLATORS: Error dialog shown when saving a picture from the document fails
+			MessageDialog::builder(frame, &t("Failed to save image."), &t("Error"))
+				.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+				.build();
 		dialog.show_modal();
 	}
 }
