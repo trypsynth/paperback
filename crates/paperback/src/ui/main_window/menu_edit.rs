@@ -66,7 +66,7 @@ pub fn handle_select_all(dm: &Rc<Mutex<DocumentManager>>, live_region_label: Sta
 /// Its own function of the count so the wording can be pinned without a document, which a test cannot build.
 fn selected_message(count: usize) -> String {
 	// TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
-	nt("Selected %d character.", "Selected %d characters.", u64::try_from(count).unwrap_or(0)).replacen(
+	nt("%d character selected.", "%d characters selected.", u64::try_from(count).unwrap_or(0)).replacen(
 		"%d",
 		&count.to_string(),
 		1,
@@ -80,13 +80,13 @@ mod tests {
 	/// The same wording as the mark-based copy, so the two commands are learned once.
 	#[test]
 	fn a_copy_says_how_many_characters_it_copied() {
-		assert_eq!(copy_message(CopyOutcome::Copied(42)), "Copied 42 characters.");
+		assert_eq!(copy_message(CopyOutcome::Copied(42)), "42 characters copied.");
 	}
 
 	/// One character is read aloud by a person, not measured by a buffer.
 	#[test]
 	fn a_copy_of_one_character_is_not_plural() {
-		assert_eq!(copy_message(CopyOutcome::Copied(1)), "Copied 1 character.");
+		assert_eq!(copy_message(CopyOutcome::Copied(1)), "1 character copied.");
 	}
 
 	/// A copy that copied nothing has to say so rather than leaving the reader to paste and find out.
@@ -102,12 +102,12 @@ mod tests {
 
 	#[test]
 	fn a_select_all_says_how_many_characters_the_document_has() {
-		assert_eq!(selected_message(42), "Selected 42 characters.");
+		assert_eq!(selected_message(42), "42 characters selected.");
 	}
 
 	/// One is read aloud by a person, not measured by a buffer.
 	#[test]
 	fn a_select_all_of_one_character_is_not_plural() {
-		assert_eq!(selected_message(1), "Selected 1 character.");
+		assert_eq!(selected_message(1), "1 character selected.");
 	}
 }

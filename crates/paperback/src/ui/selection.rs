@@ -37,7 +37,7 @@ const fn ordered_ends(mark: i64, caret: i64) -> (i64, i64) {
 /// Shared with the plain Ctrl+C copy, which copies a selection rather than a marked range; the two are the same action to the reader and are worded the same way.
 pub fn copied_announcement(count: usize) -> String {
 	// TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
-	nt("Copied %d character.", "Copied %d characters.", u64::try_from(count).unwrap_or(0)).replacen(
+	nt("%d character copied.", "%d characters copied.", u64::try_from(count).unwrap_or(0)).replacen(
 		"%d",
 		&count.to_string(),
 		1,
@@ -154,13 +154,13 @@ mod tests {
 
 	#[test]
 	fn copied_announcement_names_the_character_count() {
-		assert_eq!(copied_announcement(42), "Copied 42 characters.");
-		assert_eq!(copied_announcement(0), "Copied 0 characters.");
+		assert_eq!(copied_announcement(42), "42 characters copied.");
+		assert_eq!(copied_announcement(0), "0 characters copied.");
 	}
 
 	/// One is read aloud by a person, not measured by a buffer.
 	#[test]
 	fn copied_announcement_singular_for_one_character() {
-		assert_eq!(copied_announcement(1), "Copied 1 character.");
+		assert_eq!(copied_announcement(1), "1 character copied.");
 	}
 }
