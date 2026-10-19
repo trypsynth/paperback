@@ -32,11 +32,6 @@
       "allowedVersions": "<0.100.0"
     },
     {
-      "description": "math-core 0.8 turns on phf's ptrhash feature for the whole build, which breaks web_atoms (tmke8/math-core#1253). Lift this once that is fixed.",
-      "matchPackageNames": ["math-core"],
-      "allowedVersions": "<0.8.0"
-    },
-    {
       "description": "rodio-wsola, which time-stretches audiobook speed changes, is built against rodio 0.22 (axel10/rodio-wsola). Lift this together with a rodio-wsola release for 0.23.",
       "matchPackageNames": ["rodio"],
       "allowedVersions": "<0.23.0"

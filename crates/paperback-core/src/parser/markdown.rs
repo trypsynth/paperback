@@ -29,8 +29,9 @@ const fn markdown_options(dollar_math: bool) -> Options {
 pub fn markdown_to_html(markdown_text: &str, dollar_math: bool) -> String {
 	let parser = MarkdownParserImpl::new_ext(markdown_text, markdown_options(dollar_math)).into_offset_iter();
 	// Created per document so that equations and similar environments are numbered from (1) in each one.
-	let mut math = LatexToMathML::new(MathCoreConfig { xml_namespace: true, annotation: true, ..Default::default() })
-		.expect("math conversion configuration is valid");
+	let mut math =
+		LatexToMathML::new(MathCoreConfig { xml_namespace: true, annotation: true, ..Default::default() }, Vec::new())
+			.expect("math conversion configuration is valid");
 	let mut block_counter = 0usize;
 	let mut image_depth = 0usize;
 	let mut events = Vec::new();
