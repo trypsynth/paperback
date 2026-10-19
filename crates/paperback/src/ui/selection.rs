@@ -44,6 +44,18 @@ pub fn copied_announcement(count: usize) -> String {
 	)
 }
 
+/// Puts `text` on the clipboard so that it is still there after Paperback closes.
+///
+/// On Windows wx hands the clipboard a data object Paperback owns rather than the text itself, and the text goes with it when the app exits unless it is flushed. A failed flush still leaves the text on the clipboard while Paperback runs, so only the write decides whether the copy worked.
+pub fn copy_to_clipboard(text: &str) -> bool {
+	let clipboard = Clipboard::get();
+	let copied = clipboard.set_text(text);
+	if copied {
+		clipboard.flush();
+	}
+	copied
+}
+
 /// Marks the reader's current position as the beginning of a selection to copy from later.
 pub fn handle_set_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText, from_keyboard: bool) {
 	{
@@ -100,7 +112,7 @@ pub fn handle_copy_from_selection_start(
 			// count is for a person listening, and an astral-plane character is two display units
 			// but one character to everyone who is not a text buffer.
 			let count = text.chars().count();
-			if Clipboard::get().set_text(&text) {
+			if copy_to_clipboard(&text) {
 				copied_announcement(count)
 			} else {
 				// TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.

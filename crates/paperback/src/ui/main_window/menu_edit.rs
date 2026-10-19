@@ -3,12 +3,12 @@
 use std::{rc::Rc, sync::Mutex};
 
 use patois::{nt, t};
-use wxdragon::{clipboard::Clipboard, prelude::*};
+use wxdragon::prelude::*;
 
 use super::DocumentManager;
 use crate::ui::{
 	navigation::{announce_for_command, announce_for_selection_command},
-	selection::copied_announcement,
+	selection::{copied_announcement, copy_to_clipboard},
 };
 
 /// What the copy shortcut found when it went to copy.
@@ -26,11 +26,11 @@ enum CopyOutcome {
 ///
 /// Announces because it is the only feedback a copy gives this reader: there is no beep and nothing changes on screen, so a copy that copied nothing is otherwise silent and the reader finds out later, by pasting. The copy from a marked selection already announces, in these same words.
 pub fn handle_copy(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText, from_keyboard: bool) {
-	// `Clipboard::set_text` goes through OLE on Windows, which can pump messages, and the document manager's mutex is not reentrant, so the write and the announcement stay outside the lock.
+	// The clipboard write goes through OLE on Windows, which can pump messages, and the document manager's mutex is not reentrant, so the write and the announcement stay outside the lock.
 	let text = dm.lock().unwrap().text_to_copy();
 	let outcome = text.map_or(CopyOutcome::Nothing, |text| {
 		let count = text.chars().count();
-		if Clipboard::get().set_text(&text) { CopyOutcome::Copied(count) } else { CopyOutcome::Failed }
+		if copy_to_clipboard(&text) { CopyOutcome::Copied(count) } else { CopyOutcome::Failed }
 	});
 	announce_for_command(live_region_label, from_keyboard, copy_message(outcome));
 }
