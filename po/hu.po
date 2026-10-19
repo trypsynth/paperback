@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 22:23+0000\n"
+"POT-Creation-Date: 2026-10-19 00:35+0000\n"
 "PO-Revision-Date: 2026-10-17 12:00+0200\n"
 "Last-Translator: Torma Zsolt <torma.zsolt@gmail.com>\n"
 "Language-Team: Torma Zsolt <torma.zsolt@gmail.com>\n"
@@ -1278,8 +1278,8 @@ msgid "Normal"
 msgstr "Normál"
 
 #. TRANSLATORS: 1.5x line spacing option
-msgid "1.5\\u{00d7}"
-msgstr "1,5\\u{00d7}"
+msgid "1.5×"
+msgstr "1,5×"
 
 #. TRANSLATORS: Double line spacing option
 msgid "Double"
@@ -1703,6 +1703,21 @@ msgstr "A jegyzetek és könyvjelzők importálása sikerült."
 msgid "Import Successful"
 msgstr "Sikeres importálás"
 
+#. TRANSLATORS: Title of the file save dialog when saving a picture from the document
+#, fuzzy
+msgid "Save image"
+msgstr "Kép mentése"
+
+#. TRANSLATORS: File filter shown in the "Save image" dialog
+#, fuzzy
+msgid "All files (*.*)|*.*"
+msgstr "Minden fájl (*.*)|*.*"
+
+#. TRANSLATORS: Error dialog shown when saving a picture from the document fails
+#, fuzzy
+msgid "Failed to save image."
+msgstr "Nem sikerült menteni a képet."
+
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Nem sikerült exportálni a dokumentumot."
@@ -1711,9 +1726,6 @@ msgstr "Nem sikerült exportálni a dokumentumot."
 msgid "Line %d"
 msgstr "%d. sor"
 
-#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-#. A menu invocation returns focus to the book just like a closed dialog does,
-#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr "Nincsenek oldalak."
@@ -2317,6 +2329,15 @@ msgstr "Képletnézet"
 #. TRANSLATORS: Title of the dialog showing a table activated in the document
 msgid "Table View"
 msgstr "Táblázatnézet"
+
+#. TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
+#, fuzzy
+msgid "Save &image as..."
+msgstr "Kép mentése &másként..."
+
+#, fuzzy
+msgid "Save image as"
+msgstr "Kép mentése másként"
 
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
@@ -3132,6 +3153,11 @@ msgstr "Nincs feldolgozó ehhez a kiterjesztéshez: .{}"
 #. TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
 msgid "All parsers failed for extension: .{}"
 msgstr "Egyik feldolgozó sem tudta megnyitni ezt a kiterjesztést: .{}"
+
+#. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
+#, fuzzy
+msgid "image"
+msgstr "kép"
 
 msgid "Not running from an AppImage; cannot self-update."
 msgstr "A program nem AppImage-ből fut, ezért nem tudja frissíteni önmagát."
@@ -4194,7 +4220,6 @@ msgstr "Beépített fájlböngésző használata (az összes fájlhoz való hozz
 msgid "Text-to-Speech"
 msgstr "Szövegfelolvasás"
 
-#. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
 msgid "System Default"
 msgstr "Rendszer alapértelmezése"
@@ -4218,11 +4243,6 @@ msgstr "{} megadása"
 #: kt
 msgid "Error loading document: {}"
 msgstr "Hiba a dokumentum betöltésekor: {}"
-
-#. TRANSLATORS: 1.5x line spacing option
-#: kt
-msgid "1.5×"
-msgstr "1,5×"
 
 #. TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
 #: kt
@@ -4537,3 +4557,14 @@ msgstr "Felolvasás leállítása a keresési találatok után"
 #: swift kt
 msgid "Turn off to continue reading while navigating by search matches."
 msgstr "Kapcsolja ki, ha a keresési találatok közötti navigálás közben folytatni szeretné a felolvasást."
+
+#. TRANSLATORS: 1.5x line spacing option
+#: swift
+msgid "1.5\\u{00d7}"
+msgstr "1,5\\u{00d7}"
+
+#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
+#: swift
+#, fuzzy
+msgid "Progress"
+msgstr "Olvasási pozíció"

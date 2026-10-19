@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4b8c6a9acace3273; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,e611d7d9,3a4c3efe,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: cc466634600b58b4; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0ee39028,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - Version 1.0
 
@@ -194,7 +194,7 @@ Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet
 * `Ctrl+Tab` und `Ctrl+Shift+Tab`: Gehe zum nächsten oder vorherigen offenen Dokument und wechsle am Ende zur anderen Seite.
 * `Enter` oder `Space` im Dokumenttext: Folgt einem Link oder öffnet eine Tabellen- oder Formelansicht an der Cursorposition.
 * `Enter` auf einer gescannten PDF-Seite: Erkennt die Seite mit Texterkennung.
-* `Shift+F10` oder die Menü-/Anwendungstaste im Dokumenttext: Öffnet das Kontextmenü.
+* `Shift+F10` oder die Menü-/Anwendungstaste im Dokumenttext: Öffnet das Kontextmenü. Bei einem Bild in einem EPUB, HTML, Markdown, CHM, FB2 oder Comic-Buch bietet es auch an, das Bild in eine Datei zu speichern.
 
 ## iOS und Android
 
@@ -260,6 +260,7 @@ Um zu erfahren, wie du beitragen kannst, lies bitte unseren [Übersetzungsleitfa
 * Finnisch
 * Französisch
 * Deutsch
+* Ungarisch
 * Japanisch
 * Polnisch
 * Portugiesisch (Brasilien)

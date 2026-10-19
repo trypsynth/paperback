@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 22:23+0000\n"
+"POT-Creation-Date: 2026-10-19 00:35+0000\n"
 "PO-Revision-Date: 2026-09-24 20:59+0200\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
@@ -1318,8 +1318,8 @@ msgid "Normal"
 msgstr "Normal"
 
 #. TRANSLATORS: 1.5x line spacing option
-msgid "1.5\\u{00d7}"
-msgstr "1.5\\u{00d7}"
+msgid "1.5×"
+msgstr "1.5×"
 
 #. TRANSLATORS: Double line spacing option
 msgid "Double"
@@ -1755,6 +1755,21 @@ msgstr "Notizen und Lesezeichen wurden erfolgreich importiert."
 msgid "Import Successful"
 msgstr "Import erfolgreich"
 
+#. TRANSLATORS: Title of the file save dialog when saving a picture from the document
+#, fuzzy
+msgid "Save image"
+msgstr "Bild speichern"
+
+#. TRANSLATORS: File filter shown in the "Save image" dialog
+#, fuzzy
+msgid "All files (*.*)|*.*"
+msgstr "Alle Dateien (*.*)|*.*"
+
+#. TRANSLATORS: Error dialog shown when saving a picture from the document fails
+#, fuzzy
+msgid "Failed to save image."
+msgstr "Bild konnte nicht gespeichert werden."
+
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Das Dokument konnte nicht exportiert werden."
@@ -1763,9 +1778,6 @@ msgstr "Das Dokument konnte nicht exportiert werden."
 msgid "Line %d"
 msgstr "Zeile %d"
 
-#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-#. A menu invocation returns focus to the book just like a closed dialog does,
-#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr "Keine Seiten."
@@ -2381,6 +2393,15 @@ msgstr "Formelansicht"
 #. TRANSLATORS: Title of the dialog showing a table activated in the document
 msgid "Table View"
 msgstr "Tabellenansicht"
+
+#. TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
+#, fuzzy
+msgid "Save &image as..."
+msgstr "Bild &unter neuem Namen speichern..."
+
+#, fuzzy
+msgid "Save image as"
+msgstr "Bild speichern unter"
 
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
@@ -3213,6 +3234,11 @@ msgstr "Kein Parser für die Erweiterung .{} gefunden"
 #. TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
 msgid "All parsers failed for extension: .{}"
 msgstr "Alle Parser für die Erweiterung .{} fehlgeschlagen"
+
+#. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
+#, fuzzy
+msgid "image"
+msgstr "bild"
 
 #, fuzzy
 msgid "Not running from an AppImage; cannot self-update."
@@ -4304,7 +4330,6 @@ msgstr "Integrierten Dateibrowser verwenden (benötigt Berechtigung Zugriff auf 
 msgid "Text-to-Speech"
 msgstr "Sprachausgabe"
 
-#. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
 msgid "System Default"
 msgstr "Systemstandard"
@@ -4328,11 +4353,6 @@ msgstr "Eingabe {}"
 #: kt
 msgid "Error loading document: {}"
 msgstr "Das Dokument konnte nicht geladen werden: {}"
-
-#. TRANSLATORS: 1.5x line spacing option
-#: kt
-msgid "1.5×"
-msgstr "1.5×"
 
 #. TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
 #: kt
@@ -4661,6 +4681,17 @@ msgstr "Vorlesen nach Suchergebnissen stoppen"
 #, fuzzy
 msgid "Turn off to continue reading while navigating by search matches."
 msgstr "Ausschalten, um weiterzulesen und gleichzeitig nach Suchergebnissen zu navigieren."
+
+#. TRANSLATORS: 1.5x line spacing option
+#: swift
+msgid "1.5\\u{00d7}"
+msgstr "1.5\\u{00d7}"
+
+#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
+#: swift
+#, fuzzy
+msgid "Progress"
+msgstr "Fortschritt"
 
 #~ msgid "&Undo\tCtrl+Z"
 #~ msgstr "&Rückgängig\tCtrl+Z"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 22:23+0000\n"
+"POT-Creation-Date: 2026-10-19 00:35+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1277,7 +1277,7 @@ msgid "Normal"
 msgstr ""
 
 #. TRANSLATORS: 1.5x line spacing option
-msgid "1.5\\u{00d7}"
+msgid "1.5×"
 msgstr ""
 
 #. TRANSLATORS: Double line spacing option
@@ -1702,6 +1702,18 @@ msgstr ""
 msgid "Import Successful"
 msgstr ""
 
+#. TRANSLATORS: Title of the file save dialog when saving a picture from the document
+msgid "Save image"
+msgstr ""
+
+#. TRANSLATORS: File filter shown in the "Save image" dialog
+msgid "All files (*.*)|*.*"
+msgstr ""
+
+#. TRANSLATORS: Error dialog shown when saving a picture from the document fails
+msgid "Failed to save image."
+msgstr ""
+
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr ""
@@ -1710,9 +1722,6 @@ msgstr ""
 msgid "Line %d"
 msgstr ""
 
-#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-#. A menu invocation returns focus to the book just like a closed dialog does,
-#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr ""
@@ -2315,6 +2324,13 @@ msgstr ""
 
 #. TRANSLATORS: Title of the dialog showing a table activated in the document
 msgid "Table View"
+msgstr ""
+
+#. TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
+msgid "Save &image as..."
+msgstr ""
+
+msgid "Save image as"
 msgstr ""
 
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
@@ -3130,6 +3146,10 @@ msgstr ""
 
 #. TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
 msgid "All parsers failed for extension: .{}"
+msgstr ""
+
+#. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
+msgid "image"
 msgstr ""
 
 msgid "Not running from an AppImage; cannot self-update."
@@ -4253,7 +4273,6 @@ msgstr ""
 msgid "Text-to-Speech"
 msgstr ""
 
-#. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
 msgid "System Default"
 msgstr ""
@@ -4276,11 +4295,6 @@ msgstr ""
 #. TRANSLATORS: Shown in place of the document when it could not be opened; {} is the reason
 #: kt
 msgid "Error loading document: {}"
-msgstr ""
-
-#. TRANSLATORS: 1.5x line spacing option
-#: kt
-msgid "1.5×"
 msgstr ""
 
 #. TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
@@ -4617,4 +4631,14 @@ msgstr ""
 #: swift
 #: kt
 msgid "Turn off to continue reading while navigating by search matches."
+msgstr ""
+
+#. TRANSLATORS: 1.5x line spacing option
+#: swift
+msgid "1.5\\u{00d7}"
+msgstr ""
+
+#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
+#: swift
+msgid "Progress"
 msgstr ""
