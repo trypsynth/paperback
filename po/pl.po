@@ -4901,3 +4901,31 @@ msgstr "Wyłącz, aby czytać dalej podczas przechodzenia między wynikami wyszu
 
 #~ msgid "Copied (%d chars)."
 #~ msgstr "Skopiowano (liczba znaków: %d)."
+
+#. TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
+msgid "Save &image as..."
+msgstr "Zapisz &obraz jako..."
+
+msgid "Save image as"
+msgstr "Zapisz obraz jako"
+
+#. TRANSLATORS: Title of the file save dialog when saving a picture from the document
+msgid "Save image"
+msgstr "Zapisz obraz"
+
+#. TRANSLATORS: File filter shown in the "Save image" dialog
+msgid "All files (*.*)|*.*"
+msgstr "Wszystkie pliki (*.*)|*.*"
+
+#. TRANSLATORS: Error dialog shown when saving a picture from the document fails
+msgid "Failed to save image."
+msgstr "Nie udało się zapisać obrazu."
+
+#. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
+msgid "image"
+msgstr "obraz"
+
+#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
+#: swift
+msgid "Progress"
+msgstr "Postęp"
