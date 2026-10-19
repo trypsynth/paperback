@@ -14,7 +14,6 @@ import uniffi.paperback.SegmentTypeFfi
  * that quietly stops matching is not a small thing.
  */
 sealed interface ReaderShortcut {
-	/** Play, pause, or start reading, depending on what is happening now. */
 	object TogglePlayback : ReaderShortcut
 
 	/** Start playing, but leave playback alone if it is already going (the media Play key,
@@ -61,15 +60,9 @@ sealed interface ReaderShortcut {
 	object ImportSettings : ReaderShortcut
 
 	/** Opens Go To on one of its modes (line, page or percentage). */
-	data class OpenGoTo(
-		val mode: String
-	) : ReaderShortcut
+	data class OpenGoTo(val mode: String) : ReaderShortcut
 
-	/** Steps to the next or previous element of one kind. */
-	data class Navigate(
-		val type: SegmentTypeFfi,
-		val direction: SegmentDirectionFfi
-	) : ReaderShortcut
+	data class Navigate(val type: SegmentTypeFfi, val direction: SegmentDirectionFfi) : ReaderShortcut
 }
 
 /**
@@ -79,11 +72,7 @@ sealed interface ReaderShortcut {
  * belongs to either the Ctrl set or the unmodified set, and a key with Ctrl held that the Ctrl
  * set does not name is passed on rather than falling through to its unmodified meaning.
  */
-fun shortcutFor(
-	keyCode: Int,
-	ctrlPressed: Boolean,
-	shiftPressed: Boolean
-): ReaderShortcut? {
+fun shortcutFor(keyCode: Int, ctrlPressed: Boolean, shiftPressed: Boolean): ReaderShortcut? {
 	if (keyCode == KeyEvent.KEYCODE_F7) return ReaderShortcut.OpenElements
 	if (ctrlPressed) return ctrlShortcutFor(keyCode, shiftPressed)
 	if (keyCode == KeyEvent.KEYCODE_F3) {
@@ -93,33 +82,26 @@ fun shortcutFor(
 }
 
 /** The shortcuts held with Ctrl, which match the desktop app's. */
-private fun ctrlShortcutFor(
-	keyCode: Int,
-	shiftPressed: Boolean
-): ReaderShortcut? =
-	when (keyCode) {
-		KeyEvent.KEYCODE_F -> ReaderShortcut.OpenFind
-		KeyEvent.KEYCODE_COMMA -> ReaderShortcut.OpenSettings
-		KeyEvent.KEYCODE_O -> ReaderShortcut.OpenBook
-		KeyEvent.KEYCODE_T -> ReaderShortcut.OpenToc
-		KeyEvent.KEYCODE_P -> ReaderShortcut.OpenGoTo(GO_TO_PAGE)
-		KeyEvent.KEYCODE_G -> ReaderShortcut.OpenGoTo(if (shiftPressed) GO_TO_PERCENTAGE else GO_TO_LINE)
-		KeyEvent.KEYCODE_W -> ReaderShortcut.OpenWordCount
-		KeyEvent.KEYCODE_R -> ReaderShortcut.OpenAllDocuments
-		KeyEvent.KEYCODE_E -> if (shiftPressed) ReaderShortcut.ExportSettings else ReaderShortcut.ExportDocument
-		KeyEvent.KEYCODE_I -> if (shiftPressed) ReaderShortcut.ImportSettings else ReaderShortcut.OpenDocumentInfo
-		KeyEvent.KEYCODE_S -> if (shiftPressed) ReaderShortcut.OpenSleepTimer else null
-		else -> null
-	}
+private fun ctrlShortcutFor(keyCode: Int, shiftPressed: Boolean): ReaderShortcut? = when (keyCode) {
+	KeyEvent.KEYCODE_F -> ReaderShortcut.OpenFind
+	KeyEvent.KEYCODE_COMMA -> ReaderShortcut.OpenSettings
+	KeyEvent.KEYCODE_O -> ReaderShortcut.OpenBook
+	KeyEvent.KEYCODE_T -> ReaderShortcut.OpenToc
+	KeyEvent.KEYCODE_P -> ReaderShortcut.OpenGoTo(GO_TO_PAGE)
+	KeyEvent.KEYCODE_G -> ReaderShortcut.OpenGoTo(if (shiftPressed) GO_TO_PERCENTAGE else GO_TO_LINE)
+	KeyEvent.KEYCODE_W -> ReaderShortcut.OpenWordCount
+	KeyEvent.KEYCODE_R -> ReaderShortcut.OpenAllDocuments
+	KeyEvent.KEYCODE_E -> if (shiftPressed) ReaderShortcut.ExportSettings else ReaderShortcut.ExportDocument
+	KeyEvent.KEYCODE_I -> if (shiftPressed) ReaderShortcut.ImportSettings else ReaderShortcut.OpenDocumentInfo
+	KeyEvent.KEYCODE_S -> if (shiftPressed) ReaderShortcut.OpenSleepTimer else null
+	else -> null
+}
 
 /**
  * The shortcuts pressed on their own: playback keys, and one key per kind of element, where
  * Shift turns "go to the next one" into "go back to the previous one".
  */
-private fun readingShortcutFor(
-	keyCode: Int,
-	shiftPressed: Boolean
-): ReaderShortcut? {
+private fun readingShortcutFor(keyCode: Int, shiftPressed: Boolean): ReaderShortcut? {
 	val direction = if (shiftPressed) SegmentDirectionFfi.PREVIOUS else SegmentDirectionFfi.NEXT
 	return when (keyCode) {
 		KeyEvent.KEYCODE_HEADSETHOOK -> ReaderShortcut.HeadsetHook
@@ -144,7 +126,4 @@ private fun readingShortcutFor(
 	}
 }
 
-private fun navigate(
-	type: SegmentTypeFfi,
-	direction: SegmentDirectionFfi
-) = ReaderShortcut.Navigate(type, direction)
+private fun navigate(type: SegmentTypeFfi, direction: SegmentDirectionFfi) = ReaderShortcut.Navigate(type, direction)

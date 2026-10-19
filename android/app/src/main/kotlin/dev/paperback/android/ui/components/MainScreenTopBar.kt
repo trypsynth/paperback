@@ -29,24 +29,17 @@ import dev.paperback.android.ui.state.MainScreenUiState
  * A single menu entry, rendered as both a visible [DropdownMenuItem] and a TalkBack
  * [CustomAccessibilityAction] from one definition, so the two can't drift out of sync.
  */
-private data class MenuAction(
-	val label: String,
-	val onClick: () -> Unit
-)
+private data class MenuAction(val label: String, val onClick: () -> Unit)
 
-private fun List<MenuAction>.toCustomActions(): List<CustomAccessibilityAction> =
-	map { action ->
-		CustomAccessibilityAction(action.label) {
-			action.onClick()
-			true
-		}
+private fun List<MenuAction>.toCustomActions(): List<CustomAccessibilityAction> = map { action ->
+	CustomAccessibilityAction(action.label) {
+		action.onClick()
+		true
 	}
+}
 
 @Composable
-private fun MenuActionItems(
-	actions: List<MenuAction>,
-	onItemClick: () -> Unit
-) {
+private fun MenuActionItems(actions: List<MenuAction>, onItemClick: () -> Unit) {
 	actions.forEach { action ->
 		DropdownMenuItem(
 			text = { Text(action.label) },

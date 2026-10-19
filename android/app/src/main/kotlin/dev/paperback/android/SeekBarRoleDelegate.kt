@@ -33,82 +33,50 @@ internal fun installSeekBarRoleDelegate(view: View) {
 					return info
 				}
 
-				override fun performAction(
-					virtualViewId: Int,
-					action: Int,
-					arguments: Bundle?
-				): Boolean =
-					provider
-						.performAction(virtualViewId, action, arguments)
+				override fun performAction(virtualViewId: Int, action: Int, arguments: Bundle?): Boolean = provider
+					.performAction(virtualViewId, action, arguments)
 
 				override fun findAccessibilityNodeInfosByText(
 					text: String,
 					virtualViewId: Int
-				): MutableList<AccessibilityNodeInfo>? =
-					provider
-						.findAccessibilityNodeInfosByText(text, virtualViewId)
+				): MutableList<AccessibilityNodeInfo>? = provider
+					.findAccessibilityNodeInfosByText(text, virtualViewId)
 
 				override fun findFocus(focus: Int): AccessibilityNodeInfo? = provider.findFocus(focus)
 			}
 		}
 
-		override fun sendAccessibilityEvent(
-			host: View,
-			eventType: Int
-		) {
+		override fun sendAccessibilityEvent(host: View, eventType: Int) {
 			originalDelegate?.sendAccessibilityEvent(host, eventType) ?: super.sendAccessibilityEvent(host, eventType)
 		}
 
-		override fun sendAccessibilityEventUnchecked(
-			host: View,
-			event: AccessibilityEvent
-		) {
+		override fun sendAccessibilityEventUnchecked(host: View, event: AccessibilityEvent) {
 			originalDelegate?.sendAccessibilityEventUnchecked(host, event)
 				?: super.sendAccessibilityEventUnchecked(host, event)
 		}
 
-		override fun dispatchPopulateAccessibilityEvent(
-			host: View,
-			event: AccessibilityEvent
-		): Boolean =
+		override fun dispatchPopulateAccessibilityEvent(host: View, event: AccessibilityEvent): Boolean =
 			originalDelegate?.dispatchPopulateAccessibilityEvent(host, event)
 				?: super.dispatchPopulateAccessibilityEvent(host, event)
 
-		override fun onPopulateAccessibilityEvent(
-			host: View,
-			event: AccessibilityEvent
-		) {
+		override fun onPopulateAccessibilityEvent(host: View, event: AccessibilityEvent) {
 			originalDelegate?.onPopulateAccessibilityEvent(host, event) ?: super.onPopulateAccessibilityEvent(host, event)
 		}
 
-		override fun onInitializeAccessibilityEvent(
-			host: View,
-			event: AccessibilityEvent
-		) {
+		override fun onInitializeAccessibilityEvent(host: View, event: AccessibilityEvent) {
 			originalDelegate?.onInitializeAccessibilityEvent(host, event) ?: super.onInitializeAccessibilityEvent(host, event)
 		}
 
-		override fun onInitializeAccessibilityNodeInfo(
-			host: View,
-			info: AccessibilityNodeInfo
-		) {
+		override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfo) {
 			originalDelegate?.onInitializeAccessibilityNodeInfo(host, info)
 				?: super.onInitializeAccessibilityNodeInfo(host, info)
 		}
 
-		override fun onRequestSendAccessibilityEvent(
-			host: ViewGroup,
-			child: View,
-			event: AccessibilityEvent
-		): Boolean =
+		override fun onRequestSendAccessibilityEvent(host: ViewGroup, child: View, event: AccessibilityEvent): Boolean =
 			originalDelegate?.onRequestSendAccessibilityEvent(host, child, event)
 				?: super.onRequestSendAccessibilityEvent(host, child, event)
 
-		override fun performAccessibilityAction(
-			host: View,
-			action: Int,
-			args: Bundle?
-		): Boolean =
+		override fun performAccessibilityAction(host: View, action: Int, args: Bundle?): Boolean =
 			originalDelegate?.performAccessibilityAction(host, action, args)
 				?: super.performAccessibilityAction(host, action, args)
 	}

@@ -29,11 +29,7 @@ import uniffi.paperback.DocumentStatsFfi
 import java.text.NumberFormat
 
 @Composable
-private fun InfoRow(
-	icon: ImageVector,
-	label: String,
-	value: String
-) {
+private fun InfoRow(icon: ImageVector, label: String, value: String) {
 	ListItem(
 		leadingContent = { Icon(icon, contentDescription = null) },
 		overlineContent = { Text(label) },
@@ -43,11 +39,7 @@ private fun InfoRow(
 }
 
 @Composable
-fun DocumentInfoDialog(
-	docState: DocumentTabState,
-	stats: DocumentStatsFfi,
-	onDismiss: () -> Unit
-) {
+fun DocumentInfoDialog(docState: DocumentTabState, stats: DocumentStatsFfi, onDismiss: () -> Unit) {
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = t("Document Info") },

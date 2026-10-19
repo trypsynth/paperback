@@ -3,12 +3,12 @@
 use std::{rc::Rc, sync::Mutex};
 
 use patois::{nt, t};
-use wxdragon::{clipboard::Clipboard, prelude::*};
+use wxdragon::prelude::*;
 
 use super::DocumentManager;
 use crate::ui::{
 	navigation::{announce_for_command, announce_for_selection_command},
-	selection::copied_announcement,
+	selection::{copied_announcement, copy_to_clipboard},
 };
 
 /// What the copy shortcut found when it went to copy.
@@ -26,11 +26,11 @@ enum CopyOutcome {
 ///
 /// Announces because it is the only feedback a copy gives this reader: there is no beep and nothing changes on screen, so a copy that copied nothing is otherwise silent and the reader finds out later, by pasting. The copy from a marked selection already announces, in these same words.
 pub fn handle_copy(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText, from_keyboard: bool) {
-	// `Clipboard::set_text` goes through OLE on Windows, which can pump messages, and the document manager's mutex is not reentrant, so the write and the announcement stay outside the lock.
+	// The clipboard write goes through OLE on Windows, which can pump messages, and the document manager's mutex is not reentrant, so the write and the announcement stay outside the lock.
 	let text = dm.lock().unwrap().text_to_copy();
 	let outcome = text.map_or(CopyOutcome::Nothing, |text| {
 		let count = text.chars().count();
-		if Clipboard::get().set_text(&text) { CopyOutcome::Copied(count) } else { CopyOutcome::Failed }
+		if copy_to_clipboard(&text) { CopyOutcome::Copied(count) } else { CopyOutcome::Failed }
 	});
 	announce_for_command(live_region_label, from_keyboard, copy_message(outcome));
 }
@@ -66,7 +66,7 @@ pub fn handle_select_all(dm: &Rc<Mutex<DocumentManager>>, live_region_label: Sta
 /// Its own function of the count so the wording can be pinned without a document, which a test cannot build.
 fn selected_message(count: usize) -> String {
 	// TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
-	nt("Selected %d character.", "Selected %d characters.", u64::try_from(count).unwrap_or(0)).replacen(
+	nt("%d character selected.", "%d characters selected.", u64::try_from(count).unwrap_or(0)).replacen(
 		"%d",
 		&count.to_string(),
 		1,
@@ -80,13 +80,13 @@ mod tests {
 	/// The same wording as the mark-based copy, so the two commands are learned once.
 	#[test]
 	fn a_copy_says_how_many_characters_it_copied() {
-		assert_eq!(copy_message(CopyOutcome::Copied(42)), "Copied 42 characters.");
+		assert_eq!(copy_message(CopyOutcome::Copied(42)), "42 characters copied.");
 	}
 
 	/// One character is read aloud by a person, not measured by a buffer.
 	#[test]
 	fn a_copy_of_one_character_is_not_plural() {
-		assert_eq!(copy_message(CopyOutcome::Copied(1)), "Copied 1 character.");
+		assert_eq!(copy_message(CopyOutcome::Copied(1)), "1 character copied.");
 	}
 
 	/// A copy that copied nothing has to say so rather than leaving the reader to paste and find out.
@@ -102,12 +102,12 @@ mod tests {
 
 	#[test]
 	fn a_select_all_says_how_many_characters_the_document_has() {
-		assert_eq!(selected_message(42), "Selected 42 characters.");
+		assert_eq!(selected_message(42), "42 characters selected.");
 	}
 
 	/// One is read aloud by a person, not measured by a buffer.
 	#[test]
 	fn a_select_all_of_one_character_is_not_plural() {
-		assert_eq!(selected_message(1), "Selected 1 character.");
+		assert_eq!(selected_message(1), "1 character selected.");
 	}
 }

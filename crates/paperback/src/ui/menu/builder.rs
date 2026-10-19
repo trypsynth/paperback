@@ -1,3 +1,5 @@
+#[cfg(target_os = "windows")]
+use paperback_core::config::KeyChord;
 use paperback_core::config::{ActionId, ConfigManager};
 use wxdragon::prelude::*;
 
@@ -136,7 +138,15 @@ fn fold(c: char) -> char {
 }
 
 pub fn format_menu_label(base: &str, action: ActionId, config: &ConfigManager) -> String {
-	wx_utils::menu_label(base, &config.get_shortcut_menu_str(action))
+	let shortcut = config.get_shortcut_menu_str(action);
+	// A trailing no-break space keeps the shortcut on show but stops wxWidgets parsing it into an accelerator, as it is one character too many for a key.
+	#[cfg(target_os = "windows")]
+	let shortcut = if KeyChord::parse(&shortcut).is_some_and(|chord| super::is_punctuation_chord(&chord)) {
+		format!("{shortcut}\u{a0}")
+	} else {
+		shortcut
+	};
+	wx_utils::menu_label(base, &shortcut)
 }
 
 #[cfg(test)]
@@ -208,6 +218,14 @@ mod tests {
 		let mut entries = vec![item(1, "Avançar &Áudio".to_string()), item(2, "Retroceder &Áudio".to_string())];
 		deduplicate_access_keys(&mut entries);
 		assert_eq!(labels(&entries), vec!["Avançar &Áudio", "&Retroceder Áudio"]);
+	}
+
+	#[cfg(target_os = "windows")]
+	#[test]
+	fn a_punctuation_shortcut_is_shown_but_not_parsed_as_an_accelerator() {
+		let config = ConfigManager::new();
+		assert_eq!(format_menu_label("&Settings...", ActionId::Options, &config), "&Settings...\tCtrl+,\u{a0}");
+		assert_eq!(format_menu_label("&Find...", ActionId::Find, &config), "&Find...\tCtrl+F");
 	}
 
 	#[test]

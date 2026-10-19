@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use roxmltree::Document as XmlDocument;
 
-use super::{super::numbering::Numbering, Walk, traverse};
+use super::{super::numbering::Numbering, Walk, number_pages, traverse};
 use crate::{
 	document::{DocumentBuffer, MarkerType},
 	util::text::display_len,
@@ -28,6 +28,7 @@ fn walk(xml_doc: &XmlDocument, render_tables_inline: bool, numbering: Numbering)
 	};
 	traverse(xml_doc.root(), &mut walk);
 	walk.end_list();
+	number_pages(&mut buffer, 0, 0);
 	buffer
 }
 
@@ -184,4 +185,94 @@ fn run_format_offset_accounts_for_leading_whitespace_trim() {
 	let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");
 	assert_eq!(marker.position, 0, "Bold marker must point at the start of the trimmed content");
 	assert_eq!(marker.length, display_len("bold"));
+}
+
+fn pages(buffer: &DocumentBuffer) -> Vec<(usize, String)> {
+	let mut pages: Vec<(usize, String)> = buffer
+		.markers
+		.iter()
+		.filter(|m| m.mtype == MarkerType::PageBreak)
+		.map(|m| (m.position, m.text.clone()))
+		.collect();
+	pages.sort();
+	pages
+}
+
+/// #1121: a .docx has no pages of its own, so they come from where Word last broke them, and the first page, which Word records no break for, starts the document.
+#[test]
+fn pages_start_where_word_last_broke_them() {
+	let xml = r"<document><body><p><r><t>Cover</t></r></p><p><r><lastRenderedPageBreak/><t>Contents</t></r></p><p><r><t>More</t></r></p><p><r><lastRenderedPageBreak/><t>Body</t></r></p></body></document>";
+	let buffer = parse_run_props(xml);
+	assert_eq!(
+		buffer.content,
+		"Cover
+Contents
+More
+Body
+"
+	);
+	assert_eq!(pages(&buffer), [(0, "Page 1".to_string()), (6, "Page 2".to_string()), (20, "Page 3".to_string())]);
+}
+
+/// A document Word never laid out records no breaks, and claiming it is one page would be a guess.
+#[test]
+fn a_document_with_no_recorded_breaks_has_no_pages() {
+	let buffer = parse_run_props(r"<document><body><p><r><t>One</t></r></p><p><r><t>Two</t></r></p></body></document>");
+	assert_eq!(pages(&buffer), []);
+}
+
+/// A page that breaks partway through a paragraph starts at the words after the break.
+#[test]
+fn a_page_can_start_inside_a_paragraph() {
+	let xml = r"<document><body><p><r><t>Start</t></r></p><p><r><t>end of one </t></r><r><lastRenderedPageBreak/><t>top of two</t></r></p></body></document>";
+	let buffer = parse_run_props(xml);
+	assert_eq!(
+		pages(&buffer)[1],
+		(
+			display_len(
+				"Start
+end of one "
+			),
+			"Page 2".to_string()
+		)
+	);
+}
+
+/// A page inside a table starts with the table, so the pages after it keep their numbers.
+#[test]
+fn a_page_that_starts_inside_a_table_starts_with_it() {
+	let xml = r"<document><body><p><r><t>Intro</t></r></p><tbl><tr><tc><p><r><t>A</t></r></p></tc></tr><tr><tc><p><r><lastRenderedPageBreak/><t>B</t></r></p></tc></tr></tbl><p><r><lastRenderedPageBreak/><t>After</t></r></p></body></document>";
+	let buffer = parse_run_props(xml);
+	let after = buffer.content.find("After").unwrap();
+	assert_eq!(pages(&buffer), [(0, "Page 1".to_string()), (6, "Page 2".to_string()), (after, "Page 3".to_string())]);
+}
+
+/// Links and bookmarks are display positions, which differ from byte offsets once a character outside the Basic Multilingual Plane, such as an emoji, comes before them. The leading spaces are trimmed away, so they also check the positions move back with the trim.
+#[test]
+fn links_and_bookmarks_land_on_their_text_after_an_emoji() {
+	let xml = "<document><body><p><r><t xml:space=\"preserve\">  \u{1F600} see </t></r><bookmarkStart name=\"here\"/><hyperlink anchor=\"here\"><r><t>this</t></r></hyperlink><r><t xml:space=\"preserve\"> and </t></r><r><fldChar fldCharType=\"begin\"/></r><r><instrText> HYPERLINK \"https://example.com\" </instrText></r><r><fldChar fldCharType=\"separate\"/></r><r><t>that</t></r><r><fldChar fldCharType=\"end\"/></r></p></body></document>";
+	let xml_doc = XmlDocument::parse(xml).expect("valid xml");
+	let mut buffer = DocumentBuffer::new();
+	let mut headings = Vec::new();
+	let mut id_positions = HashMap::new();
+	let rels = HashMap::new();
+	let style_heading_map = HashMap::new();
+	let mut walk = Walk {
+		buffer: &mut buffer,
+		headings: &mut headings,
+		id_positions: &mut id_positions,
+		rels: &rels,
+		style_heading_map: &style_heading_map,
+		render_tables_inline: false,
+		numbering: Numbering::default(),
+		list: None,
+	};
+	traverse(xml_doc.root(), &mut walk);
+	let this = display_len("\u{1F600} see ");
+	assert_eq!(id_positions["here"], this, "the bookmark is where its text starts");
+	let links: Vec<(usize, &str)> =
+		buffer.markers.iter().filter(|m| m.mtype == MarkerType::Link).map(|m| (m.position, m.text.as_str())).collect();
+	assert_eq!(links[0], (this, "this"));
+	assert_eq!(links[1].0, display_len("\u{1F600} see this and "));
+	assert_eq!(buffer.content, "\u{1F600} see this and that\n");
 }

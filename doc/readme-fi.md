@@ -192,7 +192,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `Ctrl+Sarkain` ja `Ctrl+Vaihto+Sarkain`: Siirry seuraavaan tai edelliseen avoinna olevaan asiakirjaan. Viimeisen jälkeen siirrytään ensimmäiseen ja ensimmäistä edeltävästä viimeiseen.
 * `Enter` tai `Välilyönti` asiakirjan tekstissä: Avaa kohdistimen kohdalla oleva linkki tai näytä taulukko tai kaava omassa näkymässään.
 * `Enter` skannatun PDF-asiakirjan sivulla: Suorita sivun tekstintunnistus.
-* `Vaihto+F10` tai sovellusnäppäin asiakirjan tekstissä: Avaa pikavalikko.
+* `Vaihto+F10` tai sovellusnäppäin asiakirjan tekstissä: Avaa pikavalikko. EPUB-, HTML-, Markdown-, CHM-, FB2- ja sarjakuva-asiakirjoissa on lisäksi mahdollista tallentaa kohdistimen kohdalla oleva kuva tiedostoksi.
 
 ## iOS ja Android
 
@@ -204,7 +204,7 @@ iOS- ja Android-sovellukset käyttävät samaa lukumoottoria kuin työpöytäver
 * Androidissa voit ottaa asetuksista käyttöön sovelluksen sisäisen tiedostoselaimen. Se tarvitsee kaikkien tiedostojen käyttöoikeuden, minkä jälkeen suurikokoiset tiedostot voidaan avata suoraan kopioimatta niitä ensin.
 * Tuo tai vie asiakirjan tiedot (`.paperback`) painamalla pitkään Avaa kirja -painiketta. Samoja tiedostoja käytetään myös työpöytäsovelluksessa.
 
-### Reading and listening
+### Lukeminen ja kuunteleminen
 
 Asiakirjoja voi lukea sovelluksissa kahdella tavalla. Tekstitilassa teksti luetaan ruudunlukijalla. Tekstistä puheeksi -tilassa Paperback lukee tekstin asetuksista valitulla äänellä. Lukeminen jatkuu myös taustalla ja lukitusnäytössä. Tilaa voi vaihtaa Lisää vaihtoehtoja -valikosta.
 
@@ -264,6 +264,7 @@ Jos haluat osallistua kääntämiseen, katso ohjeet [käännösoppaasta](transla
 * suomi
 * tšekki
 * ukraina
+* unkari
 * venäjä
 * vietnam
 * yksinkertaistettu kiina

@@ -49,7 +49,7 @@ jobs:
       # deliberate change with the reformat in the same commit.
       - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: nightly-2026-10-13
+          toolchain: nightly-2026-10-19
           components: rustfmt
       - name: Check formatting
         run: cargo fmt --check
@@ -288,7 +288,7 @@ jobs:
       - name: Run UI tests
         run: |
           $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
-          cargo test --workspace --test opens_document --test status_bar --test restores_last_document --test heading_announcements -- --ignored
+          cargo test --workspace --test opens_document --test status_bar --test restores_last_document --test heading_announcements --test settings_shortcut --test shifted_character_shortcut -- --ignored
   test-macos:
     name: Tests (macOS)
     needs: changes

@@ -57,7 +57,7 @@ fun TtsBottomBar(
 	currentUnit: NavUnit,
 	navUnits: List<NavUnit>,
 	onNavUnitChange: (NavUnit) -> Unit,
-	// Null hides the rate control: the System default engine follows the rate set in Android's own settings.
+	// Null hides the rate control, for the moment before the speech engine has started and there is no rate to show.
 	speechRatePercent: Int?,
 	onSpeechRateChange: (Int) -> Unit,
 	modifier: Modifier = Modifier,

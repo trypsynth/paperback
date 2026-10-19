@@ -29,7 +29,7 @@ use crate::{
 
 mod paragraph;
 
-use paragraph::{extract_number_from_string, process_paragraph};
+use paragraph::{extract_number_from_string, process_paragraph, starts_page};
 
 use super::numbering::Numbering;
 
@@ -126,6 +126,8 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 	);
 	let doc_content = read_zip_entry_by_name(archive, "word/document.xml")?;
 	let doc_xml = XmlDocument::parse(&doc_content).context("Failed to parse word/document.xml")?;
+	let start = buffer.current_position();
+	let first_marker = buffer.markers.len();
 	let mut walk = Walk {
 		buffer,
 		headings,
@@ -138,7 +140,29 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 	};
 	traverse(doc_xml.root(), &mut walk);
 	walk.end_list();
+	number_pages(buffer, start, first_marker);
 	Ok(())
+}
+
+/// Names the page breaks the walk placed from `first_marker` on, and adds the first page at `start`, which Word records no break for.
+///
+/// A document Word never laid out records no breaks, and is left with no pages rather than given a single page that would claim more than is known.
+fn number_pages(buffer: &mut DocumentBuffer, start: usize, first_marker: usize) {
+	if !buffer.markers[first_marker..].iter().any(|marker| marker.mtype == MarkerType::PageBreak) {
+		return;
+	}
+	if !buffer.markers[first_marker..]
+		.iter()
+		.any(|marker| marker.mtype == MarkerType::PageBreak && marker.position == start)
+	{
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, start));
+	}
+	let mut pages: Vec<&mut Marker> =
+		buffer.markers[first_marker..].iter_mut().filter(|marker| marker.mtype == MarkerType::PageBreak).collect();
+	pages.sort_by_key(|marker| marker.position);
+	for (index, marker) in pages.into_iter().enumerate() {
+		marker.text = format!("Page {}", index + 1);
+	}
 }
 
 /// What a walk of `word/document.xml` writes into and consults.
@@ -275,6 +299,10 @@ fn process_table(
 	render_tables_inline: bool,
 ) {
 	let table_start = buffer.current_position();
+	// The table's text has no row positions to put a page on, so a page that starts inside it starts with it. Dropping it instead would number every later page one short.
+	for _ in element.descendants().filter(|node| node.tag_name().name() == "r" && starts_page(*node)) {
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, table_start));
+	}
 	let mut rows: Vec<Vec<String>> = Vec::new();
 	for child in element.children() {
 		if child.node_type() == NodeType::Element && child.tag_name().name() == "tr" {

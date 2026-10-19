@@ -12,7 +12,5 @@ package dev.paperback.android.ui.state
  *
  * @param previousMode the last mode this screen saw, or null if it has not seen one yet.
  */
-fun shouldSyncPositionFromList(
-	previousMode: Boolean?,
-	isTextMode: Boolean
-): Boolean = previousMode == true && !isTextMode
+fun shouldSyncPositionFromList(previousMode: Boolean?, isTextMode: Boolean): Boolean =
+	previousMode == true && !isTextMode

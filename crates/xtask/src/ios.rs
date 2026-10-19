@@ -2,25 +2,11 @@ use std::{
 	env,
 	error::Error,
 	fs,
-	io::{Cursor, Read},
 	path::{Path, PathBuf},
 	process::Command,
 };
 
-use flate2::read::GzDecoder;
-use tar::Archive;
-
-use crate::workspace::{build_host_ffi_library, project_root};
-
-// Pinned instead of `releases/latest`: whatever `latest` currently resolves to
-// crashes on real iOS devices (not the Simulator) with
-// `[FATAL:partition_address_space.cc(81)] Check failed: false.` inside
-// libpdfium.dylib the moment PDFium is initialized, even though the release
-// sets `pdf_use_partition_alloc = false` in its build args. chromium/7920 is
-// confirmed (by direct on-device test) not to hit this. Re-verify on a real
-// device before bumping this pin.
-const PDFIUM_IOS_ARM64_URL: &str =
-	"https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F7920/pdfium-ios-device-arm64.tgz";
+use crate::workspace::{build_host_ffi_library, fetch_pdfium, project_root};
 
 pub fn ios() -> Result<(), Box<dyn Error>> {
 	let release = env::args().any(|a| a == "--release");
@@ -29,7 +15,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	let generated_dir = root.join("ios/Paperback/Generated");
 	fs::create_dir_all(&generated_dir)?;
 	let pdfium_dest = root.join("ios/libpdfium.dylib");
-	download_pdfium_dylib(PDFIUM_IOS_ARM64_URL, &pdfium_dest)?;
+	fetch_pdfium(pdfium_fetch::IOS_ARM64, "libpdfium.dylib", &pdfium_dest)?;
 	wrap_pdfium_framework(&root, &pdfium_dest)?;
 	println!("Generating Swift bindings via uniffi-bindgen...");
 	let ffi_library = build_host_ffi_library(&cargo)?.to_string_lossy().into_owned();
@@ -235,38 +221,6 @@ fn upload_ipa(ipa: &Path) -> Result<(), Box<dyn Error>> {
 
 fn home_dir() -> PathBuf {
 	PathBuf::from(env::var("HOME").unwrap_or_default())
-}
-
-fn download_pdfium_dylib(url: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
-	let skip = env::var("PAPERBACK_SKIP_PDFIUM_DOWNLOAD").is_ok_and(|v| v == "1" || v.eq_ignore_ascii_case("true"));
-	if dest.exists() && !skip {
-		return Ok(());
-	}
-	if skip {
-		return Ok(());
-	}
-	if let Some(parent) = dest.parent() {
-		fs::create_dir_all(parent)?;
-	}
-	println!("Downloading {url} ...");
-	let response = ureq::get(url).call().map_err(|e| format!("download failed: {e}"))?;
-	let mut archive_bytes = Vec::new();
-	response.into_body().as_reader().read_to_end(&mut archive_bytes)?;
-	let mut archive = Archive::new(GzDecoder::new(Cursor::new(archive_bytes)));
-	for entry in archive.entries()? {
-		let mut entry = entry?;
-		if entry.path()?.file_name().and_then(|n| n.to_str()) == Some("libpdfium.dylib") {
-			let tmp = dest.with_extension("dylib.tmp");
-			entry.unpack(&tmp)?;
-			if dest.exists() {
-				fs::remove_file(dest)?;
-			}
-			fs::rename(&tmp, dest)?;
-			println!("Saved {}", dest.display());
-			return Ok(());
-		}
-	}
-	Err(format!("libpdfium.dylib not found in archive from {url}").into())
 }
 
 // Wraps libpdfium.dylib in a proper .framework bundle. iOS doesn't support standalone

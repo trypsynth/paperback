@@ -15,34 +15,30 @@ class ListScrollPositionTest {
 	// is rebuilt at the index the document was opened at, and saving that opening index sends
 	// read-aloud back to the start of the book.
 	@Test
-	fun `the index the list starts at is not saved`() =
-		runTest {
-			assertEquals(emptyList<Int>(), flowOf(120).scrollsWorthSaving().toList())
-		}
+	fun `the index the list starts at is not saved`() = runTest {
+		assertEquals(emptyList<Int>(), flowOf(120).scrollsWorthSaving().toList())
+	}
 
 	@Test
-	fun `a scroll after the starting index is saved`() =
-		runTest {
-			assertEquals(listOf(140), flowOf(120, 140).scrollsWorthSaving().toList())
-		}
+	fun `a scroll after the starting index is saved`() = runTest {
+		assertEquals(listOf(140), flowOf(120, 140).scrollsWorthSaving().toList())
+	}
 
 	@Test
-	fun `only where a scroll came to rest is saved`() =
-		runTest {
-			val scroll = flow {
-				emit(120)
-				emit(121)
-				emit(122)
-				delay(1000)
-				emit(200)
-				emit(201)
-			}
-			assertEquals(listOf(122, 201), scroll.scrollsWorthSaving().toList())
+	fun `only where a scroll came to rest is saved`() = runTest {
+		val scroll = flow {
+			emit(120)
+			emit(121)
+			emit(122)
+			delay(1000)
+			emit(200)
+			emit(201)
 		}
+		assertEquals(listOf(122, 201), scroll.scrollsWorthSaving().toList())
+	}
 
 	@Test
-	fun `a repeated index is reported once`() =
-		runTest {
-			assertEquals(listOf(140), flowOf(120, 140, 140).scrollsWorthSaving().toList())
-		}
+	fun `a repeated index is reported once`() = runTest {
+		assertEquals(listOf(140), flowOf(120, 140, 140).scrollsWorthSaving().toList())
+	}
 }

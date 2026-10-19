@@ -92,7 +92,7 @@ impl MainWindow {
 					menu_go::handle_go_to_line(&frame_copy, &dm, &config, live_region_label);
 				}
 				menu_ids::GO_TO_PAGE => {
-					menu_go::handle_go_to_page(&frame_copy, &dm, &config, live_region_label);
+					menu_go::handle_go_to_page(&frame_copy, &dm, &config, live_region_label, from_keyboard);
 				}
 				menu_ids::GO_TO_PERCENT => {
 					menu_go::handle_go_to_percent(&frame_copy, &dm, &config, live_region_label);
@@ -137,6 +137,9 @@ impl MainWindow {
 				menu_ids::EXPORT_TO_MARKDOWN => {
 					menu_file::handle_export_to_markdown(&frame_copy, &dm);
 				}
+				menu_ids::SAVE_IMAGE => {
+					menu_file::handle_save_image(&frame_copy, &dm);
+				}
 				menu_ids::EXPORT_DOCUMENT_DATA => {
 					menu_file::handle_export_document_data(&frame_copy, &dm, &config);
 				}
@@ -153,7 +156,7 @@ impl MainWindow {
 					menu_tools::handle_document_info(&frame_copy, &dm);
 				}
 				menu_ids::TABLE_OF_CONTENTS => {
-					menu_go::handle_table_of_contents(&frame_copy, &dm, &config, live_region_label);
+					menu_go::handle_table_of_contents(&frame_copy, &dm, &config, live_region_label, from_keyboard);
 				}
 				menu_ids::ELEMENTS_LIST => {
 					menu_go::handle_elements_list(&frame_copy, &dm, &config, live_region_label);
@@ -184,7 +187,7 @@ impl MainWindow {
 				}
 				#[cfg(any(target_os = "windows", target_os = "macos"))]
 				menu_ids::BATCH_OCR => {
-					menu_tools::handle_batch_ocr(&frame_copy, &dm, live_region_label);
+					menu_tools::handle_batch_ocr(&frame_copy, &dm, live_region_label, from_keyboard);
 				}
 				menu_ids::ABOUT => {
 					dialogs::show_about_dialog(&frame_copy);
@@ -230,7 +233,7 @@ impl MainWindow {
 					menu_edit::handle_select_all(&dm, live_region_label, from_keyboard);
 				}
 				_ => {
-					menu_file::handle_fallback(id, &frame_copy, &dm, &config, live_region_label);
+					menu_file::handle_fallback(id, &frame_copy, &dm, &config, live_region_label, from_keyboard);
 				}
 			}
 		});
@@ -253,19 +256,30 @@ impl MainWindow {
 /// on every command plus by the key handler for actions it runs itself, so a key that produces
 /// no command cannot leave it set for a later menu click.
 /// On macOS, `mac_shortcuts` runs menu shortcuts before Cocoa selects their items and sets the mark itself; this hook still covers keys left to wxWidgets.
+///
+/// On Windows a punctuation chord with Ctrl or Alt has no accelerator (see `menu::is_punctuation_chord`), so this hook runs it too. Plain and Shift-only punctuation stay with the book's own key handler, so typing into another control is never taken for a shortcut.
 pub(super) fn bind_key_source(frame: &Frame, config: &Rc<Mutex<ConfigManager>>, from_keyboard: Rc<Cell<bool>>) {
 	let config = Rc::clone(config);
+	#[cfg(target_os = "windows")]
+	let frame_for_hook = *frame;
 	frame.bind_internal(EventType::CHAR_HOOK, move |event| {
-		if let Some(key) = event.get_key_code()
-			&& let Ok(cfg) = config.try_lock()
-			&& cfg
-				.get_shortcuts()
-				.find_action(key, event.control_down(), event.alt_down(), event.shift_down())
-				.is_some()
-		{
+		let Some(key) = event.get_key_code() else { return };
+		let Ok(shortcuts) = config.try_lock().map(|cfg| cfg.get_shortcuts()) else { return };
+		let action = shortcuts.find_action(key, event.control_down(), event.alt_down(), event.shift_down());
+		if action.is_some() {
 			from_keyboard.set(true);
 		}
-		// Deliberately never skipped: the accelerator still has to run, since it is what
-		// delivers the command the mark will be read by.
+		// Otherwise deliberately never skipped: the accelerator still has to run, since it is what delivers the command the mark will be read by.
+		#[cfg(target_os = "windows")]
+		if let Some(action) = action
+			&& (event.control_down() || event.alt_down())
+			&& !menu::is_keyboard_only(action)
+			&& shortcuts.get_chord(action).is_some_and(|chord| menu::is_punctuation_chord(&chord))
+		{
+			event.skip(false);
+			if !frame_for_hook.process_menu_command(menu_ids::action_to_menu_id(action)) {
+				from_keyboard.set(false);
+			}
+		}
 	});
 }

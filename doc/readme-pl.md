@@ -194,7 +194,7 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 * `Ctrl+Tab` i `Ctrl+Shift+Tab`: przejdź do następnego lub poprzedniego otwartego dokumentu. Po ostatnim dokumencie przejdziesz do pierwszego, a przed pierwszym do ostatniego.
 * `Enter` albo `Spacja` w tekście dokumentu: otwórz odnośnik, Widok tabeli lub Widok wzoru pod kursorem.
 * `Enter` na zeskanowanej stronie PDF: rozpoznaj tekst na stronie za pomocą OCR.
-* `Shift+F10` albo klawisz Menu/Aplikacje w tekście dokumentu: otwórz menu kontekstowe.
+* `Shift+F10` albo klawisz menu aplikacji w tekście dokumentu: otwórz menu kontekstowe. Na obrazie w dokumencie EPUB, HTML, Markdown, CHM, FB2 lub w komiksie menu pozwala także zapisać obraz do pliku.
 
 ## iOS i Android
 
@@ -268,6 +268,7 @@ Aby dowiedzieć się, jak pomóc w tłumaczeniu, przeczytaj [Przewodnik po tłum
 * Rosyjski
 * Serbski
 * Ukraiński
+* Węgierski
 * Wietnamski
 
 ## Podziękowania

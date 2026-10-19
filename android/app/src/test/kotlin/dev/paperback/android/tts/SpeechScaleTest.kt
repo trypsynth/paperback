@@ -34,4 +34,21 @@ class SpeechScaleTest {
 		assertTrue(speechRateFor(50) < speechRateFor(90))
 		assertTrue(pitchFor(10) < pitchFor(90))
 	}
+
+	// The system default engine's sliders start where Android's own settings are, so reading one back has to land on the percentage that means the same speed.
+	@Test
+	fun `Android's normal rate and pitch read back as the percentages that mean them`() {
+		assertEquals(31, speechRatePercentageFor(1.0f))
+		assertEquals(47, pitchPercentageFor(1.0f))
+		for (percentage in listOf(0, 25, 50, 100)) {
+			assertEquals(percentage, speechRatePercentageFor(speechRateFor(percentage)))
+			assertEquals(percentage, pitchPercentageFor(pitchFor(percentage)))
+		}
+	}
+
+	@Test
+	fun `a system rate beyond the slider's range reads back as its end`() {
+		assertEquals(100, speechRatePercentageFor(6.0f))
+		assertEquals(0, pitchPercentageFor(0.01f))
+	}
 }

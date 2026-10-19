@@ -21,9 +21,7 @@ private const val POLL_INTERVAL_MS = 250L
  * caret to audio" toggle: `onClipChanged` always fires, so the caller keeps the existing
  * currently-spoken-text display in step with playback unconditionally.
  */
-class DaisyAudioPlayer(
-	private val context: Context
-) : RecordedPlayer {
+class DaisyAudioPlayer(private val context: Context) : RecordedPlayer {
 	private val scope = CoroutineScope(Dispatchers.Main)
 	private val cacheDir = File(context.cacheDir, "paperback_daisy_audio_cache")
 
@@ -64,10 +62,7 @@ class DaisyAudioPlayer(
 
 	/** Switches to narrating `session`, stopping whatever this player was previously doing.
 	 * `docKey` scopes the extracted-source cache so it doesn't collide with another document's. */
-	fun attach(
-		newSession: DocumentSession,
-		newDocKey: String
-	) {
+	fun attach(newSession: DocumentSession, newDocKey: String) {
 		stop()
 		session = newSession
 		docKey = newDocKey
@@ -223,10 +218,7 @@ class DaisyAudioPlayer(
 	/** Handles the part of `seekRelativeMs` that leaves the current file, loading the
 	 * neighbouring source at the leftover offset. False when the seek stays inside this file,
 	 * when there's no neighbour to spill into, or when no decoder is loaded to measure against. */
-	private fun spillAcrossFileBoundary(
-		session: DocumentSession,
-		deltaMs: Long
-	): Boolean {
+	private fun spillAcrossFileBoundary(session: DocumentSession, deltaMs: Long): Boolean {
 		val source = currentSource ?: return false
 		val player = mediaPlayer ?: return false
 		// A recorded-but-unapplied target means the loaded decoder isn't where we logically
@@ -266,10 +258,7 @@ class DaisyAudioPlayer(
 		startPolling()
 	}
 
-	private fun applySeek(
-		source: Int,
-		seekMs: Long
-	) {
+	private fun applySeek(source: Int, seekMs: Long) {
 		val player = mediaPlayer ?: return
 		val landedMs = seekWithinPlayer(player, seekMs)
 		lastSeekTarget = source to landedMs
@@ -288,10 +277,7 @@ class DaisyAudioPlayer(
 	/** Seeks `player` to `seekMs`, clamped to the file's real length, and reports where it
 	 * actually went. The clamp matters for a bundle of narration files, whose clips declare a
 	 * placeholder duration hours longer than the recording. */
-	private fun seekWithinPlayer(
-		player: MediaPlayer,
-		seekMs: Long
-	): Long {
+	private fun seekWithinPlayer(player: MediaPlayer, seekMs: Long): Long {
 		val lengthMs = try {
 			player.duration.toLong()
 		} catch (_: Exception) {
@@ -309,10 +295,7 @@ class DaisyAudioPlayer(
 		return target
 	}
 
-	private fun reportSeeked(
-		source: Int,
-		rawMs: Long
-	) {
+	private fun reportSeeked(source: Int, rawMs: Long) {
 		if (!reportNextSeek) return
 		reportNextSeek = false
 		val session = session ?: return
@@ -323,19 +306,12 @@ class DaisyAudioPlayer(
 	/** Where in a source to start: an absolute offset, or a distance back from its real end,
 	 * which only a prepared decoder knows. */
 	private sealed interface SourceSeek {
-		data class FromStart(
-			val ms: Long
-		) : SourceSeek
+		data class FromStart(val ms: Long) : SourceSeek
 
-		data class FromEnd(
-			val ms: Long
-		) : SourceSeek
+		data class FromEnd(val ms: Long) : SourceSeek
 	}
 
-	private fun loadSource(
-		sourceIndex: Int,
-		seek: SourceSeek
-	) {
+	private fun loadSource(sourceIndex: Int, seek: SourceSeek) {
 		val session = session ?: return
 		lastSeekTarget = null
 		currentSource = sourceIndex
@@ -378,12 +354,7 @@ class DaisyAudioPlayer(
 		onPlaybackStateChanged?.invoke(false)
 	}
 
-	private fun startPlayer(
-		path: String,
-		sourceIndex: Int,
-		seek: SourceSeek,
-		myGeneration: Int
-	) {
+	private fun startPlayer(path: String, sourceIndex: Int, seek: SourceSeek, myGeneration: Int) {
 		val player = MediaPlayer()
 		try {
 			player.setAudioAttributes(speechAudioAttributes())
@@ -464,10 +435,7 @@ class DaisyAudioPlayer(
 
 	/** Resolves source `index` to a real local file MediaPlayer can play: the document's own
 	 * path directly when it isn't zip-embedded, otherwise extracted once and cached. */
-	private fun resolveSourcePath(
-		session: DocumentSession,
-		index: Int
-	): String? {
+	private fun resolveSourcePath(session: DocumentSession, index: Int): String? {
 		val direct = session.audioSourceDirectPathFfi(index)
 		if (direct.isNotEmpty()) return direct
 		val key = docKey ?: return null
@@ -516,10 +484,7 @@ class DaisyAudioPlayer(
 
 	/** Reports whichever clip covers `rawMs` in `source`, for a seek that landed somewhere the
 	 * poll loop won't visit on its own (a paused one, most of all). */
-	private fun reportClipAtSourcePosition(
-		source: Int,
-		rawMs: Long
-	) {
+	private fun reportClipAtSourcePosition(source: Int, rawMs: Long) {
 		val session = session ?: return
 		val elapsed = session.audioElapsedForSourcePositionFfi(source, rawMs)
 		if (elapsed < 0) return
@@ -568,14 +533,10 @@ internal sealed interface SeekSpill {
 	object WithinFile : SeekSpill
 
 	/** The seek runs off the end, [overflowMs] into whatever plays next. */
-	data class PastEnd(
-		val overflowMs: Long
-	) : SeekSpill
+	data class PastEnd(val overflowMs: Long) : SeekSpill
 
 	/** The seek runs off the front, [underflowMs] back from the end of whatever plays before. */
-	data class BeforeStart(
-		val underflowMs: Long
-	) : SeekSpill
+	data class BeforeStart(val underflowMs: Long) : SeekSpill
 }
 
 /**
@@ -587,11 +548,7 @@ internal sealed interface SeekSpill {
  * back into the same file past its end, where a seek can only clamp. A file whose length is not
  * known yet ([lengthMs] of zero or less) can only be seeked within.
  */
-internal fun spillOf(
-	rawMs: Long,
-	lengthMs: Long,
-	deltaMs: Long
-): SeekSpill {
+internal fun spillOf(rawMs: Long, lengthMs: Long, deltaMs: Long): SeekSpill {
 	if (lengthMs <= 0) return SeekSpill.WithinFile
 	val naiveMs = rawMs + deltaMs
 	return when {

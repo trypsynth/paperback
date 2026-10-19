@@ -9,6 +9,12 @@ use crate::ui::{
 };
 
 impl DocumentManager {
+	/// The file name to offer for the picture under the caret, when there is one that can be saved.
+	pub fn image_file_name_at_caret(&self) -> Option<String> {
+		let tab = self.active_tab()?;
+		tab.session.image_file_name_at(tab.window.to_doc(tab.text_ctrl.get_insertion_point()))
+	}
+
 	pub fn update_status_bar(&self) {
 		let sleep_start = sleep_timer::start_ms();
 		let sleep_duration = sleep_timer::duration_minutes();

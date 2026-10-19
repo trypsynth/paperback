@@ -17,10 +17,7 @@ import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
 
 @Composable
-private fun ReasonRow(
-	icon: ImageVector,
-	text: String
-) {
+private fun ReasonRow(icon: ImageVector, text: String) {
 	Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
 		Icon(
 			icon,
@@ -33,10 +30,7 @@ private fun ReasonRow(
 }
 
 @Composable
-fun PermissionRationaleDialog(
-	onGrantClick: () -> Unit,
-	onDismiss: () -> Unit
-) {
+fun PermissionRationaleDialog(onGrantClick: () -> Unit, onDismiss: () -> Unit) {
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = t("All Files Access Required") },

@@ -33,7 +33,7 @@ use windows::{
 			Input::KeyboardAndMouse::{
 				INPUT, INPUT_0, INPUT_KEYBOARD, KEYBD_EVENT_FLAGS, KEYBDINPUT, KEYEVENTF_EXTENDEDKEY, KEYEVENTF_KEYUP,
 				KEYEVENTF_UNICODE, MAPVK_VK_TO_VSC, MapVirtualKeyW, SendInput, VIRTUAL_KEY, VK_CONTROL, VK_DOWN, VK_F4,
-				VK_F5, VK_MENU, VK_RETURN, VK_SHIFT,
+				VK_F5, VK_MENU, VK_OEM_1, VK_OEM_COMMA, VK_RETURN, VK_SHIFT,
 			},
 		},
 	},
@@ -283,6 +283,22 @@ pub fn main_window(pid: u32) -> UIElement {
 		.expect("app window")
 }
 
+/// Whether a window of the app titled `title` appears within `timeout`.
+pub fn window_appears(pid: u32, title: &str, timeout: Duration) -> bool {
+	let automation = automation();
+	let root = automation.get_root_element().expect("desktop root");
+	let title = title.to_string();
+	automation
+		.create_matcher()
+		.from(root)
+		.depth(3)
+		.filter_fn(Box::new(move |e: &UIElement| Ok(e.get_process_id()? == pid && e.get_name()? == title)))
+		.control_type(ControlType::Window)
+		.timeout(u64::try_from(timeout.as_millis()).expect("timeout"))
+		.find_first()
+		.is_ok()
+}
+
 /// Polls the main window's title until it reads `expected`; panics on timeout.
 pub fn wait_for_title(pid: u32, expected: &str) {
 	let window = main_window(pid);
@@ -372,6 +388,16 @@ pub fn press_ctrl(key: char) {
 /// Presses and releases a letter key with Ctrl and Shift held.
 pub fn press_ctrl_shift(key: char) {
 	chord(&[VK_CONTROL, VK_SHIFT], letter(key));
+}
+
+/// Presses and releases the key that types `key` on a US layout, `,` or `;`, with Ctrl held.
+pub fn press_ctrl_punctuation(key: char) {
+	let vk = match key {
+		',' => VK_OEM_COMMA,
+		';' => VK_OEM_1,
+		_ => panic!("no key for {key:?}"),
+	};
+	chord(&[VK_CONTROL], vk);
 }
 
 /// Presses and releases F4 with Ctrl held, closing the current document.

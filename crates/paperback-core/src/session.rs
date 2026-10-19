@@ -9,6 +9,7 @@ use crate::{
 mod audio;
 mod export;
 mod find_all;
+mod images;
 mod links;
 mod navigation;
 mod search;

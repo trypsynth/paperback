@@ -81,17 +81,16 @@ class DocumentSearchTest {
 	// One step is carried out before the next is asked for, which is also why the flow needs no
 	// more buffer than it has: MainScreen collects each request as it arrives.
 	@Test
-	fun `stepping reports the direction it was asked for`() =
-		runTest {
-			val search = DocumentSearch()
-			val seen = mutableListOf<Boolean>()
-			val collecting = backgroundScope.launch { search.stepRequests.collect { seen += it } }
-			runCurrent()
-			search.findNext()
-			runCurrent()
-			search.findPrevious()
-			runCurrent()
-			collecting.cancel()
-			assertEquals(listOf(true, false), seen)
-		}
+	fun `stepping reports the direction it was asked for`() = runTest {
+		val search = DocumentSearch()
+		val seen = mutableListOf<Boolean>()
+		val collecting = backgroundScope.launch { search.stepRequests.collect { seen += it } }
+		runCurrent()
+		search.findNext()
+		runCurrent()
+		search.findPrevious()
+		runCurrent()
+		collecting.cancel()
+		assertEquals(listOf(true, false), seen)
+	}
 }

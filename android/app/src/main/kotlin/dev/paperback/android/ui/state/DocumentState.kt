@@ -41,9 +41,7 @@ sealed class MainScreenUiState {
 		val activeTab: DocumentTabState? get() = tabs.getOrNull(activeTabIndex)
 	}
 
-	data class Error(
-		val message: String
-	) : MainScreenUiState()
+	data class Error(val message: String) : MainScreenUiState()
 }
 
 /**

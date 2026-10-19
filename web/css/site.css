@@ -107,6 +107,9 @@ a:hover {
 }
 
 .brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
 	font-size: 1.2rem;
 	font-weight: 700;
 	color: var(--text);
@@ -116,6 +119,10 @@ a:hover {
 
 .brand:hover {
 	color: var(--accent);
+}
+
+.brand img {
+	border-radius: 6px;
 }
 
 .site-nav ul {
@@ -193,6 +200,12 @@ ul, ol {
 
 li + li {
 	margin-top: 0.25rem;
+}
+
+/* The spacing above is for lists that run down the page. In one laid out in a row it drops every item after the first below it. */
+.site-nav li + li,
+.cta li + li {
+	margin-top: 0;
 }
 
 strong {
@@ -463,4 +476,14 @@ details > summary {
 		animation-duration: 0.01ms !important;
 		transition-duration: 0.01ms !important;
 	}
+}
+
+/* Google's badge carries its own transparent margin, so it sits in a line of text without any of its own. */
+.store-badge img {
+	vertical-align: middle;
+}
+
+.fine-print {
+	color: var(--muted);
+	font-size: 0.85rem;
 }

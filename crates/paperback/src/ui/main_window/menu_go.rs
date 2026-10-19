@@ -9,7 +9,7 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{DocumentManager, dialogs, navigation};
-use crate::ui::navigation::announce;
+use crate::ui::navigation::{announce, announce_for_command};
 
 pub(super) fn handle_go_to_line(
 	frame: &Frame,
@@ -78,6 +78,7 @@ pub(super) fn handle_go_to_page(
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
+	from_keyboard: bool,
 ) {
 	let (current_page, max_page) = {
 		let mut dm_guard = dm.lock().unwrap();
@@ -88,9 +89,7 @@ pub(super) fn handle_go_to_page(
 			let page_count = tab.session.page_count();
 			if page_count == 0 {
 				// TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-				// A menu invocation returns focus to the book just like a closed dialog does,
-				// so the announcement needs the same delay to cut off NVDA's focus-chain read.
-				announce(live_region_label, t("No pages."));
+				announce_for_command(live_region_label, from_keyboard, t("No pages."));
 				return;
 			}
 			let current_pos = navigation::doc_caret(tab);
@@ -177,6 +176,7 @@ pub(super) fn handle_table_of_contents(
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
+	from_keyboard: bool,
 ) {
 	let (message, update) = {
 		let mut dm_guard = dm.lock().unwrap();
@@ -187,7 +187,7 @@ pub(super) fn handle_table_of_contents(
 			let toc_items = &tab.session.handle().document().toc_items;
 			if toc_items.is_empty() {
 				// TRANSLATORS: Announced when opening the Table of Contents for a document that has none
-				announce(live_region_label, t("No table of contents."));
+				announce_for_command(live_region_label, from_keyboard, t("No table of contents."));
 				return;
 			}
 			let current_pos = navigation::doc_caret(tab);

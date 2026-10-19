@@ -11,12 +11,11 @@ import android.os.Build
  * the user expects a book to, and speech content, so the system knows it is talking rather than
  * playing music.
  */
-fun speechAudioAttributes(): AudioAttributes =
-	AudioAttributes
-		.Builder()
-		.setUsage(AudioAttributes.USAGE_MEDIA)
-		.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-		.build()
+fun speechAudioAttributes(): AudioAttributes = AudioAttributes
+	.Builder()
+	.setUsage(AudioAttributes.USAGE_MEDIA)
+	.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+	.build()
 
 /**
  * Audio focus for one player. Something else taking focus (a call, another app starting up)

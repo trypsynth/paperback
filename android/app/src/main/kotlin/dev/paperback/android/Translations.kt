@@ -41,21 +41,15 @@ object Translations {
  * `translations/zh_CN.json`. Names not fitting that shape (`readmes/readme.html`, the English
  * original) are left out.
  */
-fun assetLocaleTags(
-	context: Context,
-	dir: String,
-	prefix: String,
-	suffix: String
-): List<String> =
-	try {
-		context.assets
-			.list(dir)
-			.orEmpty()
-			.filter { it.startsWith(prefix) && it.endsWith(suffix) && it.length > prefix.length + suffix.length }
-			.map { it.substring(prefix.length, it.length - suffix.length) }
-	} catch (_: Exception) {
-		emptyList()
-	}
+fun assetLocaleTags(context: Context, dir: String, prefix: String, suffix: String): List<String> = try {
+	context.assets
+		.list(dir)
+		.orEmpty()
+		.filter { it.startsWith(prefix) && it.endsWith(suffix) && it.length > prefix.length + suffix.length }
+		.map { it.substring(prefix.length, it.length - suffix.length) }
+} catch (_: Exception) {
+	emptyList()
+}
 
 /**
  * The tag in [available] that best fits [locale], or null when none does and English should stand.
@@ -70,10 +64,7 @@ fun assetLocaleTags(
  * what lets a zh_TW or pt_PT device fall to the one Chinese or Portuguese catalogue there is
  * instead of all the way back to English.
  */
-fun bestLocaleMatch(
-	available: List<String>,
-	locale: Locale
-): String? {
+fun bestLocaleMatch(available: List<String>, locale: Locale): String? {
 	val language = locale.language.lowercase()
 	if (language.isEmpty()) {
 		return null
@@ -102,7 +93,6 @@ private const val PLURAL_MANY_MARKER = "⁣"
 
 fun t(str: String): String = Translations.map[str] ?: str.removeSuffix(PLURAL_MANY_MARKER)
 
-/** The marker a translatable string uses where an argument goes. */
 private const val PLACEHOLDER = "{}"
 
 /**
@@ -113,10 +103,7 @@ private const val PLACEHOLDER = "{}"
  * containing "{}" would otherwise stay the leftmost placeholder and swallow the argument
  * meant for the one after it. Spare placeholders and spare arguments are both left alone.
  */
-fun t(
-	str: String,
-	vararg args: String
-): String {
+fun t(str: String, vararg args: String): String {
 	val translated = t(str)
 	if (args.isEmpty()) {
 		return translated
@@ -149,10 +136,7 @@ fun t(
  * `?:` — which covers every language Paperback ships. Anything else parses to null and [nt]
  * falls back to its previous behaviour rather than guessing.
  */
-internal class PluralRule private constructor(
-	private val nplurals: Int,
-	private val expression: String
-) {
+internal class PluralRule private constructor(private val nplurals: Int, private val expression: String) {
 	/** The 0-based form index for [count], or null when the expression doesn't evaluate. */
 	fun formIndex(count: Long): Int? {
 		val value = evalTernary(expression, count) ?: return null
@@ -194,10 +178,7 @@ internal class PluralRule private constructor(
 		 * is the whole of what gettext plural rules use. Returning null on the unexpected keeps a
 		 * malformed header from silently selecting form 0 for every count.
 		 */
-		private fun evalTernary(
-			expr: String,
-			n: Long
-		): Int? {
+		private fun evalTernary(expr: String, n: Long): Int? {
 			val text = expr.trim().removeSurroundingParens()
 			val question = text.indexOfTopLevel('?')
 			if (question == -1) {
@@ -213,10 +194,7 @@ internal class PluralRule private constructor(
 			return evalTernary(branch, n)
 		}
 
-		private fun evalBoolean(
-			expr: String,
-			n: Long
-		): Boolean? {
+		private fun evalBoolean(expr: String, n: Long): Boolean? {
 			val text = expr.trim().removeSurroundingParens()
 			text.splitTopLevel("||")?.let { (left, right) ->
 				val l = evalBoolean(left, n) ?: return null
@@ -248,10 +226,7 @@ internal class PluralRule private constructor(
 			return null
 		}
 
-		private fun evalArithmetic(
-			expr: String,
-			n: Long
-		): Long? {
+		private fun evalArithmetic(expr: String, n: Long): Long? {
 			val text = expr.trim().removeSurroundingParens()
 			val modulo = text.indexOfTopLevel('%')
 			if (modulo != -1) {
@@ -298,10 +273,7 @@ internal class PluralRule private constructor(
 		}
 
 		/** The index of [char] outside any parentheses, or -1. */
-		private fun String.indexOfTopLevel(
-			char: Char,
-			from: Int = 0
-		): Int {
+		private fun String.indexOfTopLevel(char: Char, from: Int = 0): Int {
 			var depth = 0
 			for (i in from until length) {
 				val c = this[i]
@@ -364,12 +336,7 @@ internal class PluralRule private constructor(
  * because the pot scanner only recognizes plain `t("...")` calls; a bare string literal handed
  * straight to `nt()` would never be extracted and could never be translated.
  */
-fun nt(
-	one: String,
-	few: String,
-	many: String,
-	count: Long
-): String {
+fun nt(one: String, few: String, many: String, count: Long): String {
 	val forms = listOf(one, few, many)
 	Translations.pluralRule?.let { rule ->
 		rule.formIndex(count)?.let { index ->

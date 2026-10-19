@@ -47,19 +47,6 @@ const fn is_discarded_by_rich_edit(ch: char) -> bool {
 	matches!(ch, '\u{FFF9}'..='\u{FFFF}')
 }
 
-/// How many display units `content` occupies once `RichEdit` has stored it, which is what
-/// `wxTextCtrl::GetLastPosition` reports back.
-///
-/// A wholly-trailing `\par` - one with no content after it - doesn't manifest as a stored
-/// character, since `RichEdit`'s document model implicitly terminates the buffer, so a trailing
-/// newline is not counted.
-#[must_use]
-pub fn stored_display_len(content: &str) -> i64 {
-	let total: usize = content.chars().map(ch_width).sum();
-	let trailing_newline = usize::from(content.ends_with('\n'));
-	i64::try_from(total.saturating_sub(trailing_newline)).unwrap_or(i64::MAX)
-}
-
 pub struct RtfFontInfo {
 	pub face_name: String,
 	/// Same units as `wxdragon::widgets::font::Font::get_point_size()`.
@@ -118,6 +105,22 @@ pub fn build_rtf(content: &str, segments: &[FormatSegment], font: &RtfFontInfo) 
 	out
 }
 
+/// [`build_rtf`] for an RTF stream that replaces everything the control holds, as
+/// `stream_rtf_into_ctrl` does; text appended after existing content uses [`build_rtf`] itself.
+///
+/// `RichEdit` takes the last paragraph mark of a replacing stream as the end of its story and
+/// stores nothing for it. A window ending in one would then load a display unit short, and text
+/// appended to it later would run into its last paragraph. One more paragraph mark keeps it.
+#[must_use]
+pub fn build_rtf_for_whole_control(content: &str, segments: &[FormatSegment], font: &RtfFontInfo) -> String {
+	let mut rtf = build_rtf(content, segments, font);
+	if content.ends_with('\n') {
+		// Before the closing brace.
+		rtf.insert_str(rtf.len() - 1, "\\par");
+	}
+	rtf
+}
+
 fn escape_font_name(name: &str, out: &mut String) {
 	for ch in name.chars() {
 		match ch {
@@ -162,6 +165,8 @@ fn append_escaped_char(ch: char, out: &mut String) {
 mod tests {
 	use std::{env, fs, process};
 
+	use paperback_core::util::text::display_len;
+
 	use super::*;
 
 	fn font() -> RtfFontInfo {
@@ -192,7 +197,7 @@ mod tests {
 			let content = format!("a{ch}b");
 			let sanitized = sanitize_for_rich_edit(&content);
 			assert_eq!(sanitized, "a b", "U+{cp:04X} should become a space");
-			assert_eq!(stored_display_len(&sanitized), stored_display_len(&content), "U+{cp:04X} changed width");
+			assert_eq!(display_len(&sanitized), display_len(&content), "U+{cp:04X} changed width");
 		}
 	}
 
@@ -202,22 +207,6 @@ mod tests {
 		// would be a silent, pointless downgrade of the text.
 		let content = "a\u{FFF8}b\u{FFF0}c";
 		assert!(matches!(sanitize_for_rich_edit(content), Cow::Borrowed(_)));
-	}
-
-	#[test]
-	fn stored_display_len_drops_only_a_wholly_trailing_newline() {
-		assert_eq!(stored_display_len("abc"), 3);
-		assert_eq!(stored_display_len("abc\n"), 3);
-		assert_eq!(stored_display_len("abc\n\n"), 4);
-		assert_eq!(stored_display_len("a\nb"), 3);
-		assert_eq!(stored_display_len(""), 0);
-	}
-
-	#[test]
-	fn stored_display_len_counts_display_units_not_chars() {
-		// Astral characters are two display units where the app measures in UTF-16.
-		let expected = i64::try_from(ch_width('a') + ch_width('\u{1D538}') + ch_width('b')).unwrap();
-		assert_eq!(stored_display_len("a\u{1D538}b"), expected);
 	}
 
 	#[test]
@@ -288,6 +277,17 @@ mod tests {
 		assert!(bold_on < italic_on);
 		// Bold never closes because it's active through the end of the text.
 		assert!(!rtf.contains("\\b0 "));
+	}
+
+	#[test]
+	fn rtf_for_the_whole_control_writes_one_more_paragraph_mark_after_a_trailing_one() {
+		let rtf = build_rtf_for_whole_control("Intro\n", &[], &font());
+		assert!(rtf.ends_with("Intro\\par\n\\par}"));
+	}
+
+	#[test]
+	fn rtf_for_the_whole_control_adds_nothing_to_text_without_a_trailing_paragraph_mark() {
+		assert_eq!(build_rtf_for_whole_control("Intro", &[], &font()), build_rtf("Intro", &[], &font()));
 	}
 
 	#[test]

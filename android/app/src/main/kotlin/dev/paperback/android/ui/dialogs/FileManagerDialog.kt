@@ -235,10 +235,7 @@ fun FileManagerDialog(
 }
 
 @Composable
-fun FileListItem(
-	file: File,
-	onClick: () -> Unit
-) {
+fun FileListItem(file: File, onClick: () -> Unit) {
 	val context = LocalContext.current
 	val dateFormat = remember(context) { DateFormat.getMediumDateFormat(context) }
 	val dateString = remember(file, dateFormat) { dateFormat.format(Date(file.lastModified())) }

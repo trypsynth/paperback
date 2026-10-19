@@ -13,11 +13,7 @@ import uniffi.paperback.ConfigManagerFfi
  * [sanitize] applies to the stored value as well as to every write, so a config file holding
  * something outside the accepted range comes back in range rather than reaching the UI.
  */
-class Setting<T>(
-	stored: T,
-	private val sanitize: (T) -> T = { it },
-	private val persist: (T) -> Unit
-) {
+class Setting<T>(stored: T, private val sanitize: (T) -> T = { it }, private val persist: (T) -> Unit) {
 	private val _state = MutableStateFlow(sanitize(stored))
 	val state: StateFlow<T> = _state.asStateFlow()
 
@@ -38,9 +34,7 @@ class Setting<T>(
  * One-shot flags that nothing observes (the onboarding marker, the last file-manager directory)
  * stay on `ConfigManagerFfi` itself rather than becoming settings here.
  */
-class ReaderSettings(
-	private val config: ConfigManagerFfi
-) {
+class ReaderSettings(private val config: ConfigManagerFfi) {
 	val restorePreviousDocuments = boolSetting("restore_previous_documents", true)
 
 	val useInAppFileBrowser = boolSetting("use_in_app_file_browser", false)
@@ -69,22 +63,16 @@ class ReaderSettings(
 
 	val textMode = boolSetting("text_mode", false)
 
-	private fun boolSetting(
-		key: String,
-		default: Boolean
-	) = Setting(config.getAppBool(key, default)) {
+	private fun boolSetting(key: String, default: Boolean) = Setting(config.getAppBool(key, default)) {
 		config.setAppBool(key, it)
 		config.flush()
 	}
 
-	private fun intSetting(
-		key: String,
-		default: Int,
-		sanitize: (Int) -> Int = { it }
-	) = Setting(config.getAppInt(key, default), sanitize) {
-		config.setAppInt(key, it)
-		config.flush()
-	}
+	private fun intSetting(key: String, default: Int, sanitize: (Int) -> Int = { it }) =
+		Setting(config.getAppInt(key, default), sanitize) {
+			config.setAppInt(key, it)
+			config.flush()
+		}
 
 	companion object {
 		/** Bounds of the readability text size multiplier, shared with the settings slider. */

@@ -29,11 +29,7 @@ import dev.paperback.android.t
  * returns an item's nesting depth by index; an item has children when the next item's
  * level is greater than its own.
  */
-fun flattenVisibleTreeIndices(
-	itemCount: Int,
-	levelAt: (Int) -> Int,
-	expandedIndices: Set<Int>
-): List<Int> {
+fun flattenVisibleTreeIndices(itemCount: Int, levelAt: (Int) -> Int, expandedIndices: Set<Int>): List<Int> {
 	val result = mutableListOf<Int>()
 	var skipLevelGreaterThan = Int.MAX_VALUE
 	for (index in 0 until itemCount) {
@@ -52,19 +48,12 @@ fun flattenVisibleTreeIndices(
 }
 
 /** True when the item at [index] is immediately followed by a more deeply nested item. */
-fun hasTreeChildren(
-	itemCount: Int,
-	levelAt: (Int) -> Int,
-	index: Int
-): Boolean = index + 1 < itemCount && levelAt(index + 1) > levelAt(index)
+fun hasTreeChildren(itemCount: Int, levelAt: (Int) -> Int, index: Int): Boolean =
+	index + 1 < itemCount && levelAt(index + 1) > levelAt(index)
 
 /** The expand/collapse chevron (or a same-width blank spacer for leaf rows) shared by TOC and heading tree rows. */
 @Composable
-fun TreeExpandChevron(
-	hasChildren: Boolean,
-	isExpanded: Boolean,
-	onToggle: () -> Unit
-) {
+fun TreeExpandChevron(hasChildren: Boolean, isExpanded: Boolean, onToggle: () -> Unit) {
 	if (hasChildren) {
 		Box(
 			modifier = Modifier

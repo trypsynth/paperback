@@ -11,20 +11,11 @@ private class FindPlaybackConfig : ConfigManagerFfi(NoHandle) {
 	val booleans = mutableMapOf<String, Boolean>()
 	var flushes = 0
 
-	override fun getAppBool(
-		key: String,
-		defaultValue: Boolean
-	): Boolean = booleans[key] ?: defaultValue
+	override fun getAppBool(key: String, defaultValue: Boolean): Boolean = booleans[key] ?: defaultValue
 
-	override fun getAppInt(
-		key: String,
-		defaultValue: Int
-	): Int = defaultValue
+	override fun getAppInt(key: String, defaultValue: Int): Int = defaultValue
 
-	override fun setAppBool(
-		key: String,
-		value: Boolean
-	) {
+	override fun setAppBool(key: String, value: Boolean) {
 		booleans[key] = value
 	}
 
