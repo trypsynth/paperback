@@ -1,5 +1,6 @@
-//! Saving the picture under the caret: finding the image or figure there, and reading its bytes
-//! out of wherever the document keeps them, unchanged.
+//! The picture under the caret: finding the image or figure there, and reading its bytes out of
+//! wherever the document keeps them, unchanged. Saving one writes those bytes to a file; reading
+//! the text off one hands them to the OCR engine.
 
 use std::{
 	fs::{self, File},
@@ -42,9 +43,21 @@ impl DocumentSession {
 	///
 	/// Returns an error when there is no saveable image at `position`, or its picture cannot be read or written.
 	pub fn save_image(&self, position: i64, output_path: &str) -> Result<()> {
-		let source = self.image_source_at(position).context("no saveable image at this position")?;
-		let bytes = self.image_bytes(&source)?;
+		let bytes = self.image_bytes_at(position)?;
 		fs::write(output_path, bytes).with_context(|| format!("failed to write '{output_path}'"))
+	}
+
+	/// The picture of the image at `position`, as the bytes the document stores it in.
+	///
+	/// Both saving a picture and reading the text off one go through here, so the two agree about
+	/// which picture the caret is on.
+	///
+	/// # Errors
+	///
+	/// Returns an error when there is no image at `position`, or its picture cannot be read.
+	pub fn image_bytes_at(&self, position: i64) -> Result<Vec<u8>> {
+		let source = self.image_source_at(position).context("no image at this position")?;
+		self.image_bytes(&source)
 	}
 
 	/// Where the picture of the image or figure at `position` lives. A described image covers its placeholder text; a picture page carries no length and covers its whole line.

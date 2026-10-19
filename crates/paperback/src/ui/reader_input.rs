@@ -44,15 +44,24 @@ pub(super) fn build_text_ctrl(
 		#[cfg(not(any(target_os = "windows", target_os = "macos")))]
 		let _ = enter;
 		// Enter on an image-only page runs OCR instead of the table/link activation
-		// below. Enter only; Space always falls through to that activation.
+		// below, and Enter on a picture reads the text in it into a view of its own.
+		// Enter only; Space always falls through to that activation, so a picture that
+		// is also a link still follows the link on Space.
 		#[cfg(any(target_os = "windows", target_os = "macos"))]
 		if enter {
-			let on_placeholder = {
-				let dm = dm_for_enter.lock().unwrap();
-				dm.image_only_page_at_caret().is_some()
+			let handled = {
+				let mut dm = dm_for_enter.lock().unwrap();
+				if dm.image_only_page_at_caret().is_some() {
+					dm.start_ocr_for_current_page();
+					true
+				} else if dm.image_file_name_at_caret().is_some() {
+					dm.read_picture_at_caret();
+					true
+				} else {
+					false
+				}
 			};
-			if on_placeholder {
-				dm_for_enter.lock().unwrap().start_ocr_for_current_page();
+			if handled {
 				return;
 			}
 		}

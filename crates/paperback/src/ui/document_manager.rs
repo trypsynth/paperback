@@ -17,6 +17,8 @@ use crate::{audio_player::AudioPlayer, text_window::TextWindow, ui::navigation::
 
 mod appearance;
 mod audio;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+mod image_ocr;
 mod lifecycle;
 mod ocr;
 mod position;
@@ -127,6 +129,10 @@ pub struct DocumentManager {
 	pub(super) from_keyboard: Rc<Cell<bool>>,
 	/// Hands out an id per OCR job, so a worker whose tab has been closed is recognisable as stale rather than mistaken for one on a reopened tab.
 	next_job_id: Cell<u64>,
+	/// The picture whose text is being recognized, if one is, with the document it was read out
+	/// of. One at a time, and cleared when its view opens or its result is dropped.
+	#[cfg(any(target_os = "windows", target_os = "macos"))]
+	image_ocr_job: Option<(u64, PathBuf)>,
 }
 
 impl DocumentManager {
@@ -150,6 +156,8 @@ impl DocumentManager {
 			recently_closed: Vec::new(),
 			from_keyboard,
 			next_job_id: Cell::new(0),
+			#[cfg(any(target_os = "windows", target_os = "macos"))]
+			image_ocr_job: None,
 		}
 	}
 

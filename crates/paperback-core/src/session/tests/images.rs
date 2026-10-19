@@ -155,3 +155,43 @@ fn a_comic_page_is_saved_from_the_archive() {
 	assert_eq!(fs::read(&out).unwrap(), PICTURE);
 	fs::remove_dir_all(&dir).ok();
 }
+
+/// The bytes have to be readable without writing a file, because that is what reading the text
+/// off a picture does with them.
+#[test]
+fn a_picture_beside_an_html_page_offers_its_bytes() {
+	let dir = unique_temp_dir();
+	fs::create_dir_all(dir.join("pics")).unwrap();
+	fs::write(dir.join("pics/map 1.png"), PICTURE).unwrap();
+	fs::write(
+		dir.join("page.html"),
+		r#"<html><body><p>Before</p><p><img src="pics/map%201.png" alt="A map"></p></body></html>"#,
+	)
+	.unwrap();
+	let session = open(&dir.join("page.html"));
+	let at = position_of(&session, "[Image: A map]") + 3;
+	assert_eq!(session.image_bytes_at(at).unwrap(), PICTURE);
+	fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
+fn an_epub_picture_offers_its_bytes() {
+	let dir = unique_temp_dir();
+	let epub = dir.join("book.epub");
+	write_epub(&epub);
+	let session = open(&epub);
+	let at = position_of(&session, "[Image: Figure one]");
+	assert_eq!(session.image_bytes_at(at).unwrap(), PICTURE);
+	fs::remove_dir_all(&dir).ok();
+}
+
+/// A line that is not a picture has nothing to hand the OCR engine, and saying so is better than
+/// recognizing whatever happened to be there.
+#[test]
+fn text_that_is_not_an_image_has_no_bytes() {
+	let dir = unique_temp_dir();
+	fs::write(dir.join("page.html"), r#"<html><body><p>Before</p></body></html>"#).unwrap();
+	let session = open(&dir.join("page.html"));
+	assert!(session.image_bytes_at(position_of(&session, "Before")).is_err());
+	fs::remove_dir_all(&dir).ok();
+}
