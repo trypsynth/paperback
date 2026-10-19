@@ -5,9 +5,8 @@
 //! this purpose, so [`super::structure`] places one by walking the tree and calls
 //! [`append_image`] as it meets one.
 //!
-//! An untagged PDF says neither. All it has is image objects with page coordinates, so
-//! [`page_image_tops`] collects those and the caller places each one among the page's text lines
-//! by how far down the page it sits.
+//! An untagged PDF says neither. All it has is image objects with page coordinates, so the
+//! caller places each one among the page's text lines by how far down the page it sits.
 //!
 //! A tagged PDF that tags none of its images gets the same treatment through
 //! [`UnclaimedImages`]. A page like that draws pictures and claims not to have any, so trusting
@@ -26,13 +25,7 @@ use crate::{
 /// chain of them this deep is a malformed file rather than a page anyone meant to draw.
 const MAX_FORM_DEPTH: u32 = 8;
 
-/// Shortest side, in PDF user units, an image must have to be worth a line of its own. A page
-/// laid out from HTML draws its spacers and its hairline rules as images a fraction of a point
-/// across; announcing one of those as an image gives the reader a stop with nothing at it.
-const MIN_IMAGE_SIDE: f32 = 4.0;
-
-/// How much of the page one image can cover and still be a picture on the page rather than the page itself. A scanned book with an OCR text layer draws each sheet as one image under its invisible text, and announcing that put an "[Image]" with nothing behind it on every page (#1046).
-pub(super) const PAGE_IMAGE_COVERAGE: f64 = 0.9;
+pub(super) use crate::pdfium::PAGE_IMAGE_COVERAGE;
 
 /// Writes one image's line into the page, with a marker spanning it.
 ///
@@ -45,37 +38,25 @@ pub(super) fn append_image(
 	description: &str,
 	page_display_text: &mut String,
 	current_lines_info: &mut Vec<(usize, String)>,
+	reference: &str,
 ) {
 	// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 	let label = if mtype == MarkerType::Figure { t("Figure") } else { t("Image") };
 	let line = if description.is_empty() { format!("[{label}]") } else { format!("[{label}: {description}]") };
 	let offset = buffer.current_position();
 	current_lines_info.push((offset, line.clone()));
-	buffer.add_marker(Marker::new(mtype, offset).with_text(description.to_string()).with_length(display_len(&line)));
+	buffer.add_marker(
+		Marker::new(mtype, offset)
+			.with_text(description.to_string())
+			.with_length(display_len(&line))
+			.with_reference(reference.to_string()),
+	);
 	buffer.append(&line);
 	buffer.append("\n");
 	// Kept in step with the buffer because `place_links` measures its offsets against this, and
 	// a line written to one and not the other moves every link on the page.
 	page_display_text.push_str(&line);
 	page_display_text.push('\n');
-}
-
-/// The top edge, in PDF user units, of every image the page draws, ordered down the page.
-///
-/// Images reached through a form `XObject` count. A page whose content is wrapped in one form (a
-/// scanner's output and a placed-artwork export both look like this) draws no image object of its
-/// own, so stopping at the top level would find nothing on it at all.
-pub(super) fn page_image_tops(page: &PdfPage) -> Vec<f64> {
-	let page_area = f64::from(page.width()) * f64::from(page.height());
-	let mut tops = Vec::new();
-	for i in 0..page.object_count() {
-		if let Some(object) = page.object(i) {
-			collect_image_tops(&object, 0, page_area, &mut tops);
-		}
-	}
-	// Y grows up the page, so the image nearest the top of it has the largest one.
-	tops.sort_unstable_by(|a, b| b.total_cmp(a));
-	tops
 }
 
 /// The fraction of the page one single image covers at most, from 0.0 to 1.0.
@@ -119,43 +100,6 @@ fn collect_largest_image_area(object: &PageObject, depth: u32, largest: &mut f64
 	}
 }
 
-fn collect_image_tops(object: &PageObject, depth: u32, page_area: f64, tops: &mut Vec<f64>) {
-	match object.kind() {
-		ObjectKind::Image => {
-			if let Some(bounds) = object.bounds()
-				&& is_announced_image((bounds.right - bounds.left).abs(), (bounds.top - bounds.bottom).abs(), page_area)
-			{
-				tops.push(f64::from(bounds.top));
-			}
-		}
-		ObjectKind::Form if depth < MAX_FORM_DEPTH => {
-			for i in 0..object.form_object_count() {
-				if let Some(child) = object.form_object(i) {
-					collect_image_tops(&child, depth + 1, page_area, tops);
-				}
-			}
-		}
-		_ => {}
-	}
-}
-
-fn is_announced_image(width: f32, height: f32, page_area: f64) -> bool {
-	let covers_page = page_area > 0.0 && f64::from(width) * f64::from(height) / page_area >= PAGE_IMAGE_COVERAGE;
-	width >= MIN_IMAGE_SIDE && height >= MIN_IMAGE_SIDE && !covers_page
-}
-
-/// Writes `count` undescribed images into the page, one line each.
-pub(super) fn append_images(
-	count: usize,
-	buffer: &mut DocumentBuffer,
-	page_display_text: &mut String,
-	current_lines_info: &mut Vec<(usize, String)>,
-) {
-	for _ in 0..count {
-		append_image(buffer, MarkerType::Image, "", page_display_text, current_lines_info);
-	}
-}
-
 /// The images a page draws that its structure tree never claimed, waiting to go out among the
 /// page's blocks.
 ///
@@ -165,18 +109,21 @@ pub(super) fn append_images(
 /// block that starts below it.
 pub(super) struct UnclaimedImages {
 	/// Down the page, nearest the top first, and drained from the front as they are placed.
-	tops: std::collections::VecDeque<f64>,
+	images: std::collections::VecDeque<(f64, String)>,
+	/// The page they were found on, which is part of the reference that saves one.
+	page_index: i32,
 }
 
 impl UnclaimedImages {
-	/// The images to place. Empty for a page whose tree claims its figures, which is every tagged
-	/// page written the usual way, and the walk then does none of this.
-	pub(super) fn new(tops: &[f64]) -> Self {
-		Self { tops: tops.iter().copied().collect() }
+	/// The images to place, as their tops and content-stream paths. Empty for a page whose tree
+	/// claims its figures, which is every tagged page written the usual way, and the walk then
+	/// does none of this.
+	pub(super) fn new(tops: &[f64], paths: &[String], page_index: i32) -> Self {
+		Self { images: tops.iter().copied().zip(paths.iter().cloned()).collect(), page_index }
 	}
 
 	pub(super) fn is_empty(&self) -> bool {
-		self.tops.is_empty()
+		self.images.is_empty()
 	}
 
 	/// Writes every image drawn above `top`. Called with the top edge of each block just before
@@ -188,9 +135,11 @@ impl UnclaimedImages {
 		page_display_text: &mut String,
 		current_lines_info: &mut Vec<(usize, String)>,
 	) {
-		while self.tops.front().is_some_and(|image_top| *image_top > top) {
-			self.tops.pop_front();
-			append_image(buffer, MarkerType::Image, "", page_display_text, current_lines_info);
+		while self.images.front().is_some_and(|(image_top, _)| *image_top > top) {
+			if let Some((_, path)) = self.images.pop_front() {
+				let reference = format!("pdf:{}:{path}", self.page_index);
+				append_image(buffer, MarkerType::Image, "", page_display_text, current_lines_info, &reference);
+			}
 		}
 	}
 }
@@ -218,26 +167,8 @@ pub(super) fn images_before_each_paragraph(image_tops: &[f64], paragraph_tops: &
 
 #[cfg(test)]
 mod tests {
-	use super::{UnclaimedImages, append_image, images_before_each_paragraph, is_announced_image};
+	use super::{UnclaimedImages, append_image, images_before_each_paragraph};
 	use crate::document::{DocumentBuffer, MarkerType};
-
-	/// The page from #1046: 323 by 518 points, under a 323 by 496 point scan.
-	const PAGE_AREA: f64 = 323.0 * 518.0;
-
-	#[test]
-	fn a_scan_under_the_whole_page_is_not_announced() {
-		assert!(!is_announced_image(323.0, 496.0, PAGE_AREA));
-	}
-
-	#[test]
-	fn a_figure_on_the_page_is_announced() {
-		assert!(is_announced_image(250.0, 300.0, PAGE_AREA));
-	}
-
-	#[test]
-	fn a_hairline_rule_is_not_announced() {
-		assert!(!is_announced_image(300.0, 0.5, PAGE_AREA));
-	}
 
 	/// A described figure reads as its description, and the marker spans the whole line so that
 	/// arrowing onto any part of it lands on the figure.
@@ -246,7 +177,7 @@ mod tests {
 		let mut buffer = DocumentBuffer::new();
 		let mut page_text = String::new();
 		let mut lines_info = Vec::new();
-		append_image(&mut buffer, MarkerType::Figure, "a cat sleeping", &mut page_text, &mut lines_info);
+		append_image(&mut buffer, MarkerType::Figure, "a cat sleeping", &mut page_text, &mut lines_info, "pdf:2:0/1");
 		assert_eq!(buffer.content, "[Figure: a cat sleeping]\n");
 		assert_eq!(page_text, buffer.content, "the display text has to mirror the buffer for link placement");
 		assert_eq!(lines_info.len(), 1);
@@ -254,6 +185,7 @@ mod tests {
 		assert_eq!(marker.position, 0);
 		assert_eq!(marker.text, "a cat sleeping", "the marker keeps the description on its own");
 		assert_eq!(marker.length, "[Figure: a cat sleeping]".len());
+		assert_eq!(marker.reference, "pdf:2:0/1", "the marker names where the picture sits so it can be saved");
 	}
 
 	/// An image nobody described still gets a line: it is the only sign a reader who cannot see
@@ -263,7 +195,7 @@ mod tests {
 		let mut buffer = DocumentBuffer::new();
 		let mut page_text = String::new();
 		let mut lines_info = Vec::new();
-		append_image(&mut buffer, MarkerType::Image, "", &mut page_text, &mut lines_info);
+		append_image(&mut buffer, MarkerType::Image, "", &mut page_text, &mut lines_info, "");
 		assert_eq!(buffer.content, "[Image]\n");
 		assert!(buffer.markers.iter().any(|m| m.mtype == MarkerType::Image));
 	}
@@ -298,7 +230,8 @@ mod tests {
 	/// sits below every block and goes out when the page ends.
 	#[test]
 	fn unclaimed_images_go_in_front_of_the_first_block_below_each() {
-		let mut images = UnclaimedImages::new(&[700.0, 500.0, 100.0]);
+		let mut images =
+			UnclaimedImages::new(&[700.0, 500.0, 100.0], &["0".to_string(), "1".to_string(), "2".to_string()], 0);
 		let mut buffer = DocumentBuffer::new();
 		let mut page_text = String::new();
 		let mut lines_info = Vec::new();
@@ -324,7 +257,7 @@ mod tests {
 	/// writes an image line of its own.
 	#[test]
 	fn a_page_whose_tree_claims_its_figures_places_nothing() {
-		let mut images = UnclaimedImages::new(&[]);
+		let mut images = UnclaimedImages::new(&[], &[], 0);
 		let mut buffer = DocumentBuffer::new();
 		let mut page_text = String::new();
 		let mut lines_info = Vec::new();
