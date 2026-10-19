@@ -84,6 +84,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `Ctrl+R`: Näytä ”Kaikki asiakirjat” -valintaikkuna (Viimeksi avatut -valikosta).
 * `Ctrl+Vaihto+C`: Avaa asiakirjan kansio.
 * `Ctrl+Vaihto+E`: Vie asiakirjan tiedot `.paperback`-tiedostoon.
+* `Ctrl+Alt+E`: Vie kirjanmerkit ja muistiinpanot luettavaan teksti- tai HTML-tiedostoon.
 * `Ctrl+Vaihto+I`: Tuo asiakirjan tiedot `.paperback`-tiedostosta.
 * `Ctrl+E`: Vie nykyinen asiakirja pelkkänä tekstinä.
 * `Ctrl+Q`: Lopeta (vain Windowsissa; macOSia käytettäessä tämä komento löytyy sovellusvalikosta).
