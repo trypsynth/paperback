@@ -288,7 +288,7 @@ jobs:
       - name: Run UI tests
         run: |
           $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
-          cargo test --workspace --test opens_document --test status_bar --test restores_last_document --test heading_announcements -- --ignored
+          cargo test --workspace --test opens_document --test status_bar --test restores_last_document --test heading_announcements --test punctuation_shortcuts -- --ignored
   test-macos:
     name: Tests (macOS)
     needs: changes
