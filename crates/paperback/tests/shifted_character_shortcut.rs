@@ -16,5 +16,8 @@ fn a_chord_on_a_shifted_character_does_not_take_the_unshifted_key() {
 	});
 	common::wait_for_reader_focus(app.pid);
 	common::press_ctrl_punctuation(';');
-	assert!(!common::window_appears(app.pid, "Settings", Duration::from_secs(3)), "Ctrl+; opened Settings, bound to Ctrl+:");
+	assert!(
+		!common::window_appears(app.pid, "Settings", Duration::from_secs(3)),
+		"Ctrl+; opened Settings, bound to Ctrl+:"
+	);
 }
