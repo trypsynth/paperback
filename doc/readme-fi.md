@@ -192,7 +192,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `Ctrl+Sarkain` ja `Ctrl+Vaihto+Sarkain`: Siirry seuraavaan tai edelliseen avoinna olevaan asiakirjaan. Viimeisen jälkeen siirrytään ensimmäiseen ja ensimmäistä edeltävästä viimeiseen.
 * `Enter` tai `Välilyönti` asiakirjan tekstissä: Avaa kohdistimen kohdalla oleva linkki tai näytä taulukko tai kaava omassa näkymässään.
 * `Enter` skannatun PDF-asiakirjan sivulla: Suorita sivun tekstintunnistus.
-* `Vaihto+F10` tai sovellusnäppäin asiakirjan tekstissä: Avaa pikavalikko.
+* `Vaihto+F10` tai sovellusnäppäin asiakirjan tekstissä: Avaa pikavalikko. EPUB-, HTML-, Markdown-, CHM-, FB2- ja sarjakuva-asiakirjoissa on lisäksi mahdollista tallentaa kohdistimen kohdalla oleva kuva tiedostoksi.
 
 ## iOS ja Android
 
