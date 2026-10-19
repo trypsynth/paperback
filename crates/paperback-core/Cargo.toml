@@ -32,7 +32,7 @@ libchm = "0.3.0"
 libhlp = "0.2.0"
 lofty = "0.25.4"
 mp4ameta = "0.13.0"
-odf-crypto = { version = "0.1.0-rc.11", features = ["crypto-ops"] }
+odf-crypto = { version = "0.1.0-rc.12", features = ["crypto-ops"] }
 office-crypto = "0.4.0"
 paperback-formats = { path = "../paperback-formats" }
 patois = "0.2.3"
