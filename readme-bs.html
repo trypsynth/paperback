@@ -149,6 +149,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Čita skenirane PDF stranice pomoću OCR-a ugrađenog u Windows i macOS.</li>
 <li>Podržava oznake i bilješke, pa možete obilježiti mjesto do kojeg ste stigli i kasnije mu se vratiti.</li>
 <li>Svaka prečica na tastaturi može se promijeniti.</li>
+<li>Otvara dokumente direktno s http i https poveznica i ponovo ih preuzima kada ih ponovo otvorite ili pritisnete <code>F5</code>, uz zadržavanje položaja čitanja i oznaka. Pri vraćanju dokumenata koje ste imali otvorene ponovo preuzima one s poveznica koji nisu veći od 2 MB.</li>
 <li>Uključuje <code>pb</code>, alat za komandnu liniju koji bilo koji podržani dokument pretvara u HTML, Markdown ili običan tekst. Prihvata onoliko dokumenata koliko mu navedete, sam proširuje obrasce poput <code>*.pdf</code>, tako da ista komandna linija radi i na Windowsu, i može upisati po jednu datoteku za svaki dokument u mapu. Može pročitati i popis dokumenata iz datoteke ili sa standardnog ulaza pomoću <code>--files-from</code>, te pretvarati dokumente direktno s http i https poveznica.</li>
 </ul>
 <h2 id="kompatibilnost-s-čitačima-zaslona">Kompatibilnost s čitačima zaslona</h2>
@@ -190,6 +191,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="izbornik-datoteka">Izbornik <code>Datoteka</code></h3>
 <ul>
 <li><code>Ctrl+O</code>: Otvara dokument.</li>
+<li><code>Ctrl+L</code> (macOS: <code>Cmd+Option+O</code>): Otvara dokument s web poveznice.</li>
 <li><code>Ctrl+F4</code> (macOS: <code>Cmd+W</code>): Zatvara trenutni dokument.</li>
 <li><code>Ctrl+Shift+F4</code> (macOS: <code>Cmd+Shift+W</code>): Zatvara sve otvorene dokumente.</li>
 <li><code>Ctrl+Shift+T</code>: Ponovo otvara posljednji zatvoreni dokument.</li>
@@ -211,7 +213,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h3 id="izbornik-prikaz">Izbornik <code>Prikaz</code></h3>
 <ul>
-<li><code>F5</code>: Ponovo učitava trenutni dokument s diska. Radi bez obzira na to da li je u postavkama uključena opcija “Automatski ponovo učitaj izmijenjene dokumente”.</li>
+<li><code>F5</code>: Ponovo učitava trenutni dokument s diska ili ga ponovo preuzima ako je otvoren s poveznice. Radi bez obzira na to da li je u postavkama uključena opcija “Automatski ponovo učitaj izmijenjene dokumente”.</li>
 <li><code>Ctrl+Alt+W</code>: Uključuje i isključuje prelamanje riječi.</li>
 <li><code>F11</code> (macOS: <code>RawCtrl+Ctrl+F</code>, tj. Ctrl+Command+F): Uključuje i isključuje prikaz preko cijelog zaslona.</li>
 <li><code>Ctrl+Shift+V</code>: Otvara trenutni sadržaj u web prikazu.</li>
@@ -278,6 +280,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+;</code>: Smanjuje korak premotavanja.</li>
 <li><code>Ctrl+Shift+.</code>: Ubrzava zvučnu naraciju.</li>
 <li><code>Ctrl+Shift+,</code>: Usporava zvučnu naraciju.</li>
+<li><code>Ctrl+'</code>: Pojačava zvučnu naraciju.</li>
+<li><code>Ctrl+;</code>: Utišava zvučnu naraciju.</li>
 </ul>
 <h3 id="izbornik-alati">Izbornik <code>Alati</code></h3>
 <ul>
@@ -302,7 +306,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+Tab</code> i <code>Ctrl+Shift+Tab</code>: Prelaze na sljedeći ili prethodni otvoreni dokument; nakon posljednjeg dokumenta prelazi se na prvi i obrnuto.</li>
 <li><code>Enter</code> ili <code>Razmak</code> u dokumentu: Otvara poveznicu na položaju kursora ili otvara prikaz tabele ili formule.</li>
 <li><code>Enter</code> na skeniranoj PDF stranici: Prepoznaje stranicu pomoću OCR-a.</li>
-<li><code>Shift+F10</code> ili taster <code>Aplikacije</code> u dokumentu: Otvara kontekstni izbornik.</li>
+<li><code>Shift+F10</code> ili taster <code>Aplikacije</code> u dokumentu: Otvara kontekstni izbornik. Kada je kursor na slici u EPUB, HTML, Markdown, CHM ili FB2 dokumentu ili u stripu, nudi i spremanje slike u datoteku.</li>
 </ul>
 <h2 id="ios-i-android">iOS i Android</h2>
 <p>Aplikacije za iOS i Android koriste isti mehanizam za čitanje kao i verzija za računare, pa otvaraju iste formate i na isti način pamte gdje ste stali. Napravljene su za korištenje s VoiceOverom na iOS-u i TalkBackom na Androidu.</p>
@@ -329,7 +333,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>Prebaci na čitanje naglas ili Prebaci na tekstualni način:</strong> prebacuje između načina čitanja naglas i tekstualnog načina rada, opisanih iznad. U tekstualnom načinu rada stavka “Čitaj naglas” pokreće i pauzira čitanje naglas bez napuštanja tekstualnog načina rada.</li>
 <li><strong>Sadržaj:</strong> poglavlja knjige, otvorena na poglavlju koje trenutno čitate. Odaberite poglavlje da biste odmah prešli na njega. Stavke koje sadrže podređena poglavlja mogu se proširiti i sažeti pomoću radnji čitača zaslona.</li>
 <li><strong>Elementi:</strong> popis naslova ili poveznica u dokumentu. Između njih se prebacujete biračem “Vrsta” na iOS-u ili karticama na Androidu, a zatim odaberete stavku da biste prešli na nju.</li>
-<li><strong>Traži:</strong> upišite šta tražite ili odaberite raniju pretragu iz historije pretraživanja te odaberite želite li razlikovati velika i mala slova, tražiti samo cijele riječi ili koristiti regularni izraz. “Traži prethodno” i “Traži sljedeće” prelaze na podudaranje i izgovaraju gdje ste se našli, a pretraga ostaje otvorena kako biste mogli nastaviti. U načinu čitanja naglas traženje se pojavljuje i kao jedinica kretanja na traci za čitanje, pa se i odatle možete kretati kroz podudaranja.</li>
+<li><strong>Traži:</strong> upišite šta tražite ili odaberite raniju pretragu iz historije pretraživanja te odaberite želite li razlikovati velika i mala slova, tražiti samo cijele riječi ili koristiti regularni izraz. “Traži prethodno” i “Traži sljedeće” prelaze na rezultat i izgovaraju gdje ste se našli, a pretraga ostaje otvorena kako biste mogli nastaviti. U načinu čitanja naglas traženje se pojavljuje i kao jedinica kretanja na traci za čitanje, pa se i odatle možete kretati kroz rezultate. Opcija <strong>Zaustavi čitanje nakon rezultata pretrage</strong> u postavkama, pod “Tekst u govor”, podrazumijevano je uključena i zaustavlja čitanje nakon odlomka koji sadrži rezultat. Isključite je ako želite da se čitanje nastavi od rezultata, a da se kontrolama za prethodno i sljedeće na traci za čitanje i dalje krećete po pretrazi.</li>
 <li><strong>Idi na:</strong> prelazi na red, stranicu ili postotak dokumenta. Šta od toga želite, birate biračem “Način”.</li>
 <li><strong>Nedavni dokumenti:</strong> svi dokumenti koje ste otvorili, pri čemu svaki ima status “Trenutno otvoreno”, “Zatvoreno” ili “Datoteka nedostaje”. Svaki od njih ima dvije radnje čitača zaslona: “Ukloni” ga uklanja s popisa, a “Pronađi” vam omogućava da pronađete dokument čija je datoteka premještena. “Očisti nedavne dokumente” prazni popis bez brisanja ijednog dokumenta.</li>
 <li><strong>Broj riječi:</strong> broj riječi u dokumentu.</li>
@@ -358,6 +362,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Francuski</li>
 <li>Japanski</li>
 <li>Kineski (pojednostavljeni)</li>
+<li>Mađarski</li>
 <li>Nizozemski</li>
 <li>Njemački</li>
 <li>Poljski</li>
@@ -427,7 +432,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h5 id="kretanje">Kretanje</h5>
 <ul>
 <li>MathML formule u EPUB i HTML dokumentima prikazuju se kao AsciiMath pomoću alata MathCAT. Koristite <code>M</code> ili <code>Shift+M</code> za kretanje po formulama, a zatim <code>Enter</code> ili <code>Razmak</code> da biste izvorni MathML otvorili u prikazu formule.</li>
-<li>Dugme “Traži sve” u dijalogu “Traži”, koje prikazuje popis svih redova s podudaranjem, tako da možete odmah preći na onaj koji želite.</li>
+<li>Dugme “Traži sve” u dijalogu “Traži”, koje prikazuje popis svih redova s rezultatima, tako da možete odmah preći na onaj koji želite.</li>
 <li>Prikazi tabela, popisa i stranica u popisu elemenata (<code>F7</code>).</li>
 <li>Dijalozi “Idi na red”, “Idi na stranicu” i “Idi na postotak” sada prihvataju <code>+n</code> i <code>-n</code> za pomjeranje u odnosu na trenutni položaj.</li>
 <li>EPUB, MOBI i CHM knjige koje nemaju vlastite naslove sada dobijaju kretanje po naslovima na osnovu sadržaja.</li>
