@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 22:23+0000\n"
+"POT-Creation-Date: 2026-10-19 00:35+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1482,8 +1482,8 @@ msgstr "Normal"
 
 #. TRANSLATORS: 1.5x line spacing option
 #, fuzzy
-msgid "1.5\\u{00d7}"
-msgstr "1,5\\u{00d7}"
+msgid "1.5×"
+msgstr "1,5×"
 
 #. TRANSLATORS: Double line spacing option
 #, fuzzy
@@ -1970,6 +1970,21 @@ msgstr "Notes et signets importés avec succès."
 msgid "Import Successful"
 msgstr "Importation réussie"
 
+#. TRANSLATORS: Title of the file save dialog when saving a picture from the document
+#, fuzzy
+msgid "Save image"
+msgstr "Enregistrer l'image"
+
+#. TRANSLATORS: File filter shown in the "Save image" dialog
+#, fuzzy
+msgid "All files (*.*)|*.*"
+msgstr "Tous les fichiers (*.*)|*.*"
+
+#. TRANSLATORS: Error dialog shown when saving a picture from the document fails
+#, fuzzy
+msgid "Failed to save image."
+msgstr "Échec de l'enregistrement de l'image."
+
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Impossible d'exporter le document."
@@ -1979,9 +1994,6 @@ msgstr "Impossible d'exporter le document."
 msgid "Line %d"
 msgstr "Ligne %d"
 
-#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-#. A menu invocation returns focus to the book just like a closed dialog does,
-#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr "Aucune page."
@@ -2658,6 +2670,15 @@ msgstr "Affichage des formules"
 #. TRANSLATORS: Title of the dialog showing a table activated in the document
 msgid "Table View"
 msgstr "Vue tableau"
+
+#. TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
+#, fuzzy
+msgid "Save &image as..."
+msgstr "Enregistrer l'&image sous..."
+
+#, fuzzy
+msgid "Save image as"
+msgstr "Enregistrer l'image sous"
 
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
@@ -3655,6 +3676,11 @@ msgstr "Aucun analyseur syntaxique n'a été trouvé pour l'extension : .{}"
 #, fuzzy
 msgid "All parsers failed for extension: .{}"
 msgstr "Tous les analyseurs ont échoué pour l'extension : . {}"
+
+#. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
+#, fuzzy
+msgid "image"
+msgstr "image"
 
 #, fuzzy
 msgid "Not running from an AppImage; cannot self-update."
@@ -4941,7 +4967,6 @@ msgstr "Utiliser l'explorateur de fichiers intégré à l'application (nécessit
 msgid "Text-to-Speech"
 msgstr "Synthèse vocale"
 
-#. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
 #, fuzzy
 msgid "System Default"
@@ -4970,12 +4995,6 @@ msgstr "Entrez {}"
 #, fuzzy
 msgid "Error loading document: {}"
 msgstr "Erreur au chargement du document : {}"
-
-#. TRANSLATORS: 1.5x line spacing option
-#: kt
-#, fuzzy
-msgid "1.5×"
-msgstr "1,5×"
 
 #. TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
 #: kt
@@ -5351,6 +5370,18 @@ msgstr "Arrêter la lecture après les résultats de recherche"
 #, fuzzy
 msgid "Turn off to continue reading while navigating by search matches."
 msgstr "Désactiver pour continuer la lecture en naviguant par les résultats de recherche."
+
+#. TRANSLATORS: 1.5x line spacing option
+#: swift
+#, fuzzy
+msgid "1.5\\u{00d7}"
+msgstr "1,5\\u{00d7}"
+
+#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
+#: swift
+#, fuzzy
+msgid "Progress"
+msgstr "Progression"
 
 #, fuzzy
 #~ msgid "&Undo\tCtrl+Z"

@@ -8,6 +8,18 @@ use std::{
 	process::Command,
 };
 
+/// Fetches `PDFium`'s library for a mobile build into `dest`, unless it is already there or `PAPERBACK_SKIP_PDFIUM_DOWNLOAD` is set. Delete the file to pick up a newer pin.
+pub fn fetch_pdfium(archive: pdfium_fetch::Archive, file_name: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
+	let skip = env::var("PAPERBACK_SKIP_PDFIUM_DOWNLOAD").is_ok_and(|v| v == "1" || v.eq_ignore_ascii_case("true"));
+	if skip || dest.exists() {
+		return Ok(());
+	}
+	println!("Downloading {} ...", archive.url());
+	archive.fetch(file_name, dest)?;
+	println!("Saved {}", dest.display());
+	Ok(())
+}
+
 pub(crate) fn project_root() -> PathBuf {
 	Path::new(&env!("CARGO_MANIFEST_DIR")).ancestors().nth(2).unwrap().to_path_buf()
 }
