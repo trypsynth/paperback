@@ -1,5 +1,4 @@
-//! The `.paperback` sidecar only moves bookmarks and notes between installs and cannot be read
-//! on its own, so this is the listing for reading them on a machine that has no Paperback or book.
+//! The `.paperback` sidecar only moves bookmarks and notes between installs and cannot be read on its own, so this is the listing for reading them on a machine that has no Paperback or book.
 
 use std::fmt::Write;
 

@@ -8,7 +8,7 @@ use super::{
 use crate::{
 	config::ConfigManager,
 	document::{self, MarkerType},
-	export::annotations::{AnnotationEntry, AnnotationFormat, AnnotationOptions, render_annotations},
+	export::annotations::AnnotationEntry,
 	reader_core::{get_filtered_bookmarks, resolve_link},
 	types::{self as ffi},
 };
@@ -83,18 +83,15 @@ impl DocumentSession {
 }
 
 impl DocumentSession {
-	/// The bookmark at `position` among those kept under `path`, which is where the document's
-	/// settings are: the link for a document opened from one.
+	/// The bookmarks kept under `path`, each with the text it marks, for an export that has to be readable without the book.
 	#[must_use]
-	pub fn render_annotations_export(
+	pub fn annotation_entries(
 		&self,
 		config: &ConfigManager,
-		title: &str,
+		path: &str,
 		filter: ffi::BookmarkFilterType,
-		options: AnnotationOptions,
-		format: AnnotationFormat,
-	) -> String {
-		let entries: Vec<AnnotationEntry> = get_filtered_bookmarks(config, &self.file_path, 0, filter)
+	) -> Vec<AnnotationEntry> {
+		get_filtered_bookmarks(config, path, 0, filter)
 			.items
 			.into_iter()
 			.map(|b| AnnotationEntry {
@@ -106,10 +103,11 @@ impl DocumentSession {
 				note: b.note,
 				audio_ms: b.audio_ms,
 			})
-			.collect();
-		render_annotations(title, &entries, options, format)
+			.collect()
 	}
 
+	/// The bookmark at `position` among those kept under `path`, which is where the document's
+	/// settings are: the link for a document opened from one.
 	#[must_use]
 	pub fn bookmark_display_at_position(
 		&self,
