@@ -61,10 +61,6 @@ zip = { version = "9.0.3", default-features = false, features = ["deflate"] }
 mathcat = { version = "0.7.5", features = ["include-zip"] }
 math-core = "0.7.0"
 
-# Not used directly. Held below 0.2.190, which drops the `_dyld_*` functions `backtrace` needs on iOS (rust-lang/libc#5606), so lock file updates can't pull it in. Renovate skips only 0.2.190, so the fixed release replaces this.
-[target.'cfg(target_os = "ios")'.dependencies]
-libc = "=0.2.189"
-
 [build-dependencies]
 shipfitter = "0.2.2"
 uniffi = { version = "0.32.2", features = ["build"], optional = true }
