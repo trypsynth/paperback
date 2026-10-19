@@ -25,6 +25,7 @@ const DOCUMENT_DEPENDENT_IDS: &[i32] = &[
 	menu_ids::IMPORT_DOCUMENT_DATA,
 	menu_ids::EXPORT_DOCUMENT_DATA,
 	menu_ids::EXPORT_TO_PLAIN_TEXT,
+	menu_ids::EXPORT_NOTES_AND_BOOKMARKS,
 ];
 
 /// Edit > Copy and Select All, which macOS leaves to its native Edit menu.

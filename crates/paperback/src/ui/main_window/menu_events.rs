@@ -143,6 +143,9 @@ impl MainWindow {
 				menu_ids::EXPORT_DOCUMENT_DATA => {
 					menu_file::handle_export_document_data(&frame_copy, &dm, &config);
 				}
+				menu_ids::EXPORT_NOTES_AND_BOOKMARKS => {
+					menu_file::handle_export_notes_and_bookmarks(&frame_copy, &dm, &config);
+				}
 				menu_ids::IMPORT_DOCUMENT_DATA => {
 					menu_file::handle_import_document_data(&frame_copy, &dm, &config);
 				}

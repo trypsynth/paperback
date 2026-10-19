@@ -84,6 +84,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Ctrl+R`: Show the "All Documents" dialog (from Recent Documents).
 * `Ctrl+Shift+C`: Open containing folder.
 * `Ctrl+Shift+E`: Export document data (`.paperback`).
+* `Ctrl+Alt+E`: Export bookmarks and notes as a readable text or HTML file.
 * `Ctrl+Shift+I`: Import document data (`.paperback`).
 * `Ctrl+E`: Export the current document to plain text.
 * `Ctrl+Q`: Exit (Windows only; on macOS this is under the app menu instead).
