@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4b8c6a9acace3273; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,e611d7d9,3a4c3efe,a9eba369,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: cc466634600b58b4; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0ee39028,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - версия 1.0
 
@@ -194,7 +194,7 @@ Paperback разработан для работы в первую очеред�
 * `Ctrl+Tab` и `Ctrl+Shift+Tab`: перейти к следующему или предыдущему открытому документу, циклически переходя на одном из концов.
 * `Enter` или `Space` в тексте документа: следовать по ссылке или открыть представление таблицы или формулы на позиции курсора.
 * `Enter` на отсканированной странице PDF: распознать страницу с помощью OCR.
-* `Shift+F10` или клавиша Menu/Application в тексте документа: открыть контекстное меню.
+* `Shift+F10` или клавиша Menu/Application в тексте документа: открыть контекстное меню. На изображении в EPUB, HTML, Markdown, CHM, FB2 или комиксе также предлагается сохранить изображение в файл.
 
 ## iOS и Android
 
@@ -260,6 +260,7 @@ Paperback переведён на множество различных язык
 * Финский
 * Французский
 * Немецкий
+* Венгерский
 * Японский
 * Польский
 * Португальский (Бразилия)

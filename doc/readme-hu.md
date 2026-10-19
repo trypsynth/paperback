@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 777c1c245c2562a5; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,e611d7d9,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: cc466634600b58b4; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0ee39028,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback – 1.0-s verzió
 
@@ -194,7 +194,7 @@ Az alábbi billentyűparancsok a Windowsra vonatkoznak. Ahol a macOS eltér, a m
 * `Ctrl+Tab` és `Ctrl+Shift+Tab`: Ugrás a következő vagy az előző megnyitott dokumentumra; az utolsó után az első, az első előtt az utolsó következik.
 * `Enter` vagy `Space` a dokumentum szövegében: A kurzornál lévő hivatkozás követése, illetve táblázat- vagy képletnézet megnyitása.
 * `Enter` egy szkennelt PDF-oldalon: Az oldal szövegfelismerése.
-* `Shift+F10` vagy a helyimenü-billentyű a dokumentum szövegében: A helyi menü megnyitása.
+* `Shift+F10` vagy a helyimenü-billentyű a dokumentum szövegében: A helyi menü megnyitása. EPUB, HTML, Markdown, CHM, FB2 vagy képregényfájl képe esetén lehetőség van a kép fájlba mentésére is.
 
 ## iOS és Android
 
