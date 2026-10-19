@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 00:35+0000\n"
+"POT-Creation-Date: 2026-10-19 22:03+0000\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -1105,6 +1105,47 @@ msgstr "Sin título"
 msgid "OK"
 msgstr "Aceptar"
 
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+msgid "Export notes and bookmarks"
+msgstr "Exportar notas y marcadores"
+
+#. TRANSLATORS: Label for the dropdown choosing which entries to export
+#, fuzzy
+msgid "&Export:"
+msgstr "&Exportar:"
+
+#. TRANSLATORS: Option to export both bookmarks and notes
+#, fuzzy
+msgid "Bookmarks and notes"
+msgstr "Marcapáginas y notas"
+
+#. TRANSLATORS: Option to export only bookmarks that have no note
+#, fuzzy
+msgid "Bookmarks only"
+msgstr "Solo marcapáginas"
+
+#. TRANSLATORS: Option to export only bookmarks that have a note
+#, fuzzy
+msgid "Notes only"
+msgstr "Solo notas"
+
+#. TRANSLATORS: Checkbox to include the bookmarked text next to each note
+#, fuzzy
+msgid "Include the &passage each note is attached to"
+msgstr "Incluir el &pasaje al que está adjunta cada nota"
+
+#. TRANSLATORS: Checkbox to number the exported entries
+#, fuzzy
+msgid "&Number the entries"
+msgstr "&Numerar las entradas"
+
+#. TRANSLATORS: Label for the button that continues to the save dialog
+#, fuzzy
+msgid "Export"
+msgstr "Exportar"
+
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 #, fuzzy
@@ -1884,10 +1925,10 @@ msgstr "No se pudo copiar al portapapeles."
 
 #. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
 #, fuzzy
-msgid "Selected %d character."
-msgid_plural "Selected %d characters."
-msgstr[0] "Seleccionado %d carácter."
-msgstr[1] "Seleccionados %d caracteres."
+msgid "%d character selected."
+msgid_plural "%d characters selected."
+msgstr[0] "%d carácter seleccionado."
+msgstr[1] "%d caracteres seleccionados."
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 #, fuzzy
@@ -1943,10 +1984,6 @@ msgstr "documento"
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Archivos de Paperback (*.paperback)|*.paperback"
 
-#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
-msgid "Export notes and bookmarks"
-msgstr "Exportar notas y marcadores"
-
 #. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 msgid "Notes and bookmarks exported successfully."
 msgstr "Notas y marcadores exportados correctamente."
@@ -1954,6 +1991,16 @@ msgstr "Notas y marcadores exportados correctamente."
 #. TRANSLATORS: Title of the export-succeeded dialog
 msgid "Export Successful"
 msgstr "Exportación correcta"
+
+#. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+#, fuzzy
+msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
+msgstr "Archivos de texto (*.txt)|*.txt|Archivos HTML (*.html)|*.html"
+
+#. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+#, fuzzy
+msgid "Failed to export notes and bookmarks."
+msgstr "Error al exportar marcapáginas y notas."
 
 #. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 msgid "Import notes and bookmarks"
@@ -2154,6 +2201,16 @@ msgstr "&Exportar Datos del Documento..."
 #. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
 msgid "Export bookmarks and position"
 msgstr "Exportar marcadores y posición"
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+#, fuzzy
+msgid "Export &Notes and Bookmarks as Text or HTML..."
+msgstr "Exportar &Notas y Marcapáginas como Texto o HTML..."
+
+#. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
+#, fuzzy
+msgid "Export bookmarks and notes in a readable format"
+msgstr "Exportar marcapáginas y notas en formato legible"
 
 #. TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
 #, fuzzy
@@ -2732,10 +2789,10 @@ msgstr "Ir al porcentaje"
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
 #, fuzzy
-msgid "Copied %d character."
-msgid_plural "Copied %d characters."
-msgstr[0] "Copiado %d carácter."
-msgstr[1] "Copiados %d caracteres."
+msgid "%d character copied."
+msgid_plural "%d characters copied."
+msgstr[0] "%d carácter copiado."
+msgstr[1] "%d caracteres copiados."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 #, fuzzy
@@ -3200,6 +3257,11 @@ msgstr "Importar datos de documentos"
 #, fuzzy
 msgid "Export Document Data..."
 msgstr "Exportar datos del documento..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Export Notes and Bookmarks as Text or HTML..."
+msgstr "Exportar Notas y Marcapáginas como Texto o HTML..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -3978,6 +4040,11 @@ msgstr "¿Restablecer todos los atajos en esta pestaña a sus valores predetermi
 #, fuzzy
 msgid "Reset Shortcuts"
 msgstr "Restablecer accesos directos"
+
+#. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
+#, fuzzy
+msgid "{} (not on this keyboard layout)"
+msgstr "{} (no disponible en este diseño de teclado)"
 
 #: kt swift
 #, fuzzy
@@ -5379,6 +5446,18 @@ msgstr "1,5\\u{00d7}"
 #, fuzzy
 msgid "Progress"
 msgstr "Progreso"
+
+#, fuzzy
+#~ msgid "Selected %d character."
+#~ msgid_plural "Selected %d characters."
+#~ msgstr[0] "Seleccionado %d carácter."
+#~ msgstr[1] "Seleccionados %d caracteres."
+
+#, fuzzy
+#~ msgid "Copied %d character."
+#~ msgid_plural "Copied %d characters."
+#~ msgstr[0] "Copiado %d carácter."
+#~ msgstr[1] "Copiados %d caracteres."
 
 #, fuzzy
 #~ msgid "&Undo\tCtrl+Z"

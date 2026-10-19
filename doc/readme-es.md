@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: cc466634600b58b4; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0ee39028,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 17c984e898b7674c; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,f94368d9,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versión 1.0
 
@@ -86,6 +86,7 @@ Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, e
 * `Ctrl+R`: Muestra el diálogo "Todos los documentos" (desde Documentos recientes).
 * `Ctrl+Shift+C`: Abre la carpeta contenedora.
 * `Ctrl+Shift+E`: Exporta datos del documento (`.paperback`).
+* `Ctrl+Alt+E`: Exporta marcadores y notas como archivo de texto legible o HTML.
 * `Ctrl+Shift+I`: Importa datos del documento (`.paperback`).
 * `Ctrl+E`: Exporta el documento actual a texto sin formato.
 * `Ctrl+Q`: Sale (solo en Windows; en macOS está en el menú de la aplicación).
