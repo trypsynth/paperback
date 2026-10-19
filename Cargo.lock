@@ -2797,7 +2797,6 @@ dependencies = [
  "bitflags 2.13.2",
  "block",
  "dunce",
- "flate2",
  "image",
  "live-region",
  "native-ocr",
@@ -2806,19 +2805,18 @@ dependencies = [
  "paperback-formats",
  "patois",
  "patois-build",
+ "pdfium-fetch",
  "rodio",
  "rodio-wsola",
  "rstest",
  "ship-shape",
  "shipfitter",
- "tar",
  "tempfile",
  "toml 1.1.8+spec-1.1.0",
  "tracing",
  "tracing-appender",
  "tracing-subscriber",
  "uiautomation",
- "ureq",
  "windows",
  "windows-core",
  "wx-utils",
@@ -2999,6 +2997,16 @@ checksum = "112d82ceb8c5bf524d9af484d4e4970c9fd5a0cc15ba14ad93dccd28873b0629"
 dependencies = [
  "digest 0.11.3",
  "hmac 0.13.0",
+]
+
+[[package]]
+name = "pdfium-fetch"
+version = "0.1.0"
+dependencies = [
+ "flate2",
+ "sha2 0.11.1",
+ "tar",
+ "ureq",
 ]
 
 [[package]]
@@ -5610,14 +5618,12 @@ dependencies = [
 name = "xtask"
 version = "0.1.0"
 dependencies = [
- "flate2",
  "patois",
  "patois-build",
  "patois-translate",
+ "pdfium-fetch",
  "serde_json",
  "shipfitter",
- "tar",
- "ureq",
 ]
 
 [[package]]
