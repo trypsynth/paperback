@@ -41,6 +41,11 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	let export_data_label = format_menu_label(&t("&Export Document Data..."), ActionId::ExportDocumentData, config);
 	// TRANSLATORS: Status-bar help text for the Export Document Data menu item.
 	let export_data_help = t("Export bookmarks and position");
+	// TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+	let export_notes_text = t("Export &Notes and Bookmarks as Text or HTML...");
+	let export_notes_label = format_menu_label(&export_notes_text, ActionId::ExportNotesAndBookmarks, config);
+	// TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
+	let export_notes_help = t("Export bookmarks and notes in a readable format");
 	// TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
 	let reveal_label = format_menu_label(&t("Reveal &File in Folder"), ActionId::RevealFileInFolder, config);
 	// TRANSLATORS: Status-bar help text for the Reveal File in Folder menu item.
@@ -58,6 +63,7 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 		submenu(export_label, String::new(), export_formats),
 		item_with_help(menu_ids::IMPORT_DOCUMENT_DATA, import_label, import_help),
 		item_with_help(menu_ids::EXPORT_DOCUMENT_DATA, export_data_label, export_data_help),
+		item_with_help(menu_ids::EXPORT_NOTES_AND_BOOKMARKS, export_notes_label, export_notes_help),
 		item_with_help(menu_ids::REVEAL_FILE_IN_FOLDER, reveal_label, reveal_help),
 		MenuEntry::Separator,
 	]);

@@ -37,11 +37,23 @@ const fn ordered_ends(mark: i64, caret: i64) -> (i64, i64) {
 /// Shared with the plain Ctrl+C copy, which copies a selection rather than a marked range; the two are the same action to the reader and are worded the same way.
 pub fn copied_announcement(count: usize) -> String {
 	// TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
-	nt("Copied %d character.", "Copied %d characters.", u64::try_from(count).unwrap_or(0)).replacen(
+	nt("%d character copied.", "%d characters copied.", u64::try_from(count).unwrap_or(0)).replacen(
 		"%d",
 		&count.to_string(),
 		1,
 	)
+}
+
+/// Puts `text` on the clipboard so that it is still there after Paperback closes.
+///
+/// On Windows wx hands the clipboard a data object Paperback owns rather than the text itself, and the text goes with it when the app exits unless it is flushed. A failed flush still leaves the text on the clipboard while Paperback runs, so only the write decides whether the copy worked.
+pub fn copy_to_clipboard(text: &str) -> bool {
+	let clipboard = Clipboard::get();
+	let copied = clipboard.set_text(text);
+	if copied {
+		clipboard.flush();
+	}
+	copied
 }
 
 /// Marks the reader's current position as the beginning of a selection to copy from later.
@@ -100,7 +112,7 @@ pub fn handle_copy_from_selection_start(
 			// count is for a person listening, and an astral-plane character is two display units
 			// but one character to everyone who is not a text buffer.
 			let count = text.chars().count();
-			if Clipboard::get().set_text(&text) {
+			if copy_to_clipboard(&text) {
 				copied_announcement(count)
 			} else {
 				// TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
@@ -154,13 +166,13 @@ mod tests {
 
 	#[test]
 	fn copied_announcement_names_the_character_count() {
-		assert_eq!(copied_announcement(42), "Copied 42 characters.");
-		assert_eq!(copied_announcement(0), "Copied 0 characters.");
+		assert_eq!(copied_announcement(42), "42 characters copied.");
+		assert_eq!(copied_announcement(0), "0 characters copied.");
 	}
 
 	/// One is read aloud by a person, not measured by a buffer.
 	#[test]
 	fn copied_announcement_singular_for_one_character() {
-		assert_eq!(copied_announcement(1), "Copied 1 character.");
+		assert_eq!(copied_announcement(1), "1 character copied.");
 	}
 }

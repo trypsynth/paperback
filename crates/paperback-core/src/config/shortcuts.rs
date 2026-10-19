@@ -268,6 +268,7 @@ mod tests {
 				ActionId::RevealFileInFolder,
 				ActionId::ImportDocumentData,
 				ActionId::ExportDocumentData,
+				ActionId::ExportNotesAndBookmarks,
 				ActionId::ExportToPlainText,
 				ActionId::ExportToHtml,
 				ActionId::ExportToMarkdown,
