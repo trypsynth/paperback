@@ -2645,9 +2645,9 @@ dependencies = [
 
 [[package]]
 name = "odf-crypto"
-version = "0.1.0-rc.12"
+version = "0.1.0-rc.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47987862f4f67b7ab675d9e96dbfff86d92eb28032ee6dfb2f04c43aae3c27f8"
+checksum = "20bfcd32b7847b08e255a529626a3f0221b58d40aacd7b2e6a7e3b1372565ca0"
 dependencies = [
  "aes 0.8.4",
  "aes-gcm",
@@ -3961,9 +3961,9 @@ dependencies = [
 
 [[package]]
 name = "shipfitter"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ca28cb1e794e450a34dde48c3766c99d35d9ed706653a05bd8a86f79728ded0"
+checksum = "b83e6e576eb2735a36051a15fec07c0fedede422d74d550ac46f4128182bd0d7"
 dependencies = [
  "embed-manifest",
  "finl_unicode",
