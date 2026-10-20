@@ -179,3 +179,13 @@ fn raw_codepage_quotes_decode_like_escaped_ones() {
 	let escaped = escape_raw_bytes(b"\\par\x93Hi.\x94");
 	assert_eq!(normalize_escapes(&escaped, encoding_rs::WINDOWS_1252, &HashMap::new()), "\\par “Hi.”");
 }
+
+#[test]
+fn normalize_escapes_keeps_utf8_text_intact() {
+	assert_eq!(normalize_escapes("Café “x”", encoding_rs::WINDOWS_1252, &HashMap::new()), "Café “x”");
+}
+
+#[test]
+fn normalize_wrapped_space_lines_keeps_utf8_text_intact() {
+	assert_eq!(normalize_wrapped_space_lines("naïve\n \nCafé"), "naïve Café");
+}

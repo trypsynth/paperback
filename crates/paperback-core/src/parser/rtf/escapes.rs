@@ -58,8 +58,9 @@ pub(super) fn normalize_wrapped_space_lines(input: &str) -> String {
 				}
 			}
 		}
-		out.push(bytes[i] as char);
-		i += 1;
+		let ch = input[i..].chars().next().unwrap_or_default();
+		out.push(ch);
+		i += ch.len_utf8();
 	}
 	out
 }
@@ -274,8 +275,9 @@ pub(super) fn normalize_escapes(
 				continue;
 			}
 		}
-		result.push(bytes[i] as char);
-		i += 1;
+		let ch = rtf[i..].chars().next().unwrap_or_default();
+		result.push(ch);
+		i += ch.len_utf8();
 	}
 	result
 }
