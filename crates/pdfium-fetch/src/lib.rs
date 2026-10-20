@@ -19,54 +19,54 @@ pub struct Archive {
 }
 
 pub const WIN_X64: Archive = Archive {
-	tag: "chromium/8100",
+	tag: "chromium/8111",
 	name: "pdfium-win-x64.tgz",
-	sha256: "51621bcc1d9be9ea448f4b84b0516862b928e3968d3fca899af1a6d6e2848d6d",
+	sha256: "3452d11031050ec65e57f180215b57b9e6d465e3fbedafa8a77ad90885c7d23e",
 };
 pub const WIN_X86: Archive = Archive {
-	tag: "chromium/8100",
+	tag: "chromium/8111",
 	name: "pdfium-win-x86.tgz",
-	sha256: "bdab604368d0116adf84eaab452521a5f200dfa3f97001193d63edb35e75378e",
+	sha256: "ef298314d6e71b08e38dc90724111e37e1d29d668f739ad656e2329d491e533a",
 };
 pub const WIN_ARM64: Archive = Archive {
-	tag: "chromium/8100",
+	tag: "chromium/8111",
 	name: "pdfium-win-arm64.tgz",
-	sha256: "cca9b28d406ae2a902b0b710a92ab699c4c2931564ab6efe44630014d492a9ca",
+	sha256: "99ec8b76d5ac30602a8488da745397393ff6cddc824ef36f398146f6b4f76d4e",
 };
 pub const MAC_X64: Archive = Archive {
-	tag: "chromium/8100",
+	tag: "chromium/8111",
 	name: "pdfium-mac-x64.tgz",
-	sha256: "d513a0530a0f0c1ca9929ded06660e27edb9a108a7d18d9df55a5fb060b091c8",
+	sha256: "e7fece4693f65a7e47f84fa38099068d573d4dcbd46b1a3c8d2c26581c308466",
 };
 pub const MAC_ARM64: Archive = Archive {
-	tag: "chromium/8100",
+	tag: "chromium/8111",
 	name: "pdfium-mac-arm64.tgz",
-	sha256: "7ea647c7a7a9c1169be3f947000bc071ece2fade2cd6bd7e401e3675c6560cce",
+	sha256: "46c674298c60123f1195c2a03c65ee08c4783c84874ce4f5b3a054abb3ecaf30",
 };
 pub const LINUX_X64: Archive = Archive {
-	tag: "chromium/8100",
+	tag: "chromium/8111",
 	name: "pdfium-linux-x64.tgz",
-	sha256: "1c1894a12d4d96ee01400c3874444126254180c5c7d2ab628576b67f8120320a",
+	sha256: "bdc60126399f39fe768566a18d4be055a7b3681bc9e248e8a6656b4f6cae0aa2",
 };
 pub const LINUX_ARM64: Archive = Archive {
-	tag: "chromium/8100",
+	tag: "chromium/8111",
 	name: "pdfium-linux-arm64.tgz",
-	sha256: "58c87a95a40a24c914a9c755fae798843f46f06adf9e5e9f2c893302d4bdb040",
+	sha256: "042de247138f96341534cccf24ed21c2550a7245b936bb4a60d2340120000f05",
 };
 pub const ANDROID_ARM64: Archive = Archive {
-	tag: "chromium/8100",
+	tag: "chromium/8111",
 	name: "pdfium-android-arm64.tgz",
-	sha256: "e9bab2929443d3d881166af9ec1d191c76ecdd37effb07a58743a7d7b507e149",
+	sha256: "727cb2645ece75d28d0b72f2ec05b82858ca3bfb6712cd333ffc248807016e2c",
 };
 pub const ANDROID_ARM: Archive = Archive {
-	tag: "chromium/8100",
+	tag: "chromium/8111",
 	name: "pdfium-android-arm.tgz",
-	sha256: "876a8c44bb8d10b19ce816af11f1c527f101c4f714ef5670d885457b451846bb",
+	sha256: "fc6a54e286a46a52e45d5bd52803f59f3b86dfcff73ba8f458939872f5466de3",
 };
 pub const ANDROID_X64: Archive = Archive {
-	tag: "chromium/8100",
+	tag: "chromium/8111",
 	name: "pdfium-android-x64.tgz",
-	sha256: "b5cd96bc81c3414a84ce1f3eb928d6fe6981b13fe555f21bfa931bc478f51876",
+	sha256: "e2c31cffe42ee3a34e2b9d6c6c254ddf5da1541ce2d82216171e9354c86f0a7c",
 };
 
 // Held back by hand, and kept out of Renovate's pattern by its name: later releases crash on real iOS devices (not the Simulator) with `[FATAL:partition_address_space.cc(81)] Check failed: false.` inside libpdfium.dylib the moment PDFium is initialized, even though they set `pdf_use_partition_alloc = false`. chromium/7920 is confirmed on a device not to. Re-verify on a real device before moving it.
