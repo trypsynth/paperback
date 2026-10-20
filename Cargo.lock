@@ -2327,10 +2327,11 @@ checksum = "743fb55ba31b18fb1ecef6bdc9aa2743314978ac084044301a7eee33fb99a20d"
 
 [[package]]
 name = "native-ocr"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c231a38c8918ce0d3ba9a3768c93be775128d3bbd8ea775148ecd12477ca1697"
+checksum = "c1f158a2570da9532675afbacfc97fcb02acfceee5b416360cc088ae0b482c88"
 dependencies = [
+ "libloading 0.9.0",
  "objc2",
  "objc2-core-foundation",
  "objc2-core-graphics",

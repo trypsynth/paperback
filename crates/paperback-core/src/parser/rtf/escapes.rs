@@ -2,9 +2,27 @@
 //! hard-wrapped inter-word spaces, and rewriting `\'xx`/`\uN` escapes and literal tabs into
 //! forms the lexer tokenizes correctly (see [`normalize_escapes`] for the full rationale).
 
-use std::{collections::HashMap, str};
+use std::{borrow::Cow, collections::HashMap, fmt::Write as _, str};
 
 use encoding_rs::Encoding;
+
+/// RTF is 7-bit, but plenty of writers put text bytes in raw, in the document codepage. As `\'xx`
+/// escapes they decode under whichever font is active, like the escapes the spec asks for. Valid
+/// UTF-8 is left as it is: a codepage byte run practically never validates.
+pub(super) fn escape_raw_bytes(bytes: &[u8]) -> Cow<'_, str> {
+	if let Ok(text) = str::from_utf8(bytes) {
+		return Cow::Borrowed(text);
+	}
+	let mut out = String::with_capacity(bytes.len() + bytes.len() / 8);
+	for &byte in bytes {
+		if byte.is_ascii() {
+			out.push(byte as char);
+		} else {
+			let _ = write!(out, "\\'{byte:02x}");
+		}
+	}
+	Cow::Owned(out)
+}
 
 /// Some writers hard-wrap lines and occasionally place an inter-word space on
 /// its own line (`word\r\n \r\nnext`). Preserve that as a single space so words
@@ -40,8 +58,9 @@ pub(super) fn normalize_wrapped_space_lines(input: &str) -> String {
 				}
 			}
 		}
-		out.push(bytes[i] as char);
-		i += 1;
+		let ch = input[i..].chars().next().unwrap_or_default();
+		out.push(ch);
+		i += ch.len_utf8();
 	}
 	out
 }
@@ -256,8 +275,9 @@ pub(super) fn normalize_escapes(
 				continue;
 			}
 		}
-		result.push(bytes[i] as char);
-		i += 1;
+		let ch = rtf[i..].chars().next().unwrap_or_default();
+		result.push(ch);
+		i += ch.len_utf8();
 	}
 	result
 }

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 00:35+0000\n"
+"POT-Creation-Date: 2026-10-19 22:03+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1132,6 +1132,47 @@ msgstr "Chưa đặt tên"
 msgid "OK"
 msgstr "Được rồi"
 
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+msgid "Export notes and bookmarks"
+msgstr "Xuất ghi chú và dấu trang"
+
+#. TRANSLATORS: Label for the dropdown choosing which entries to export
+#, fuzzy
+msgid "&Export:"
+msgstr "&Xuất:"
+
+#. TRANSLATORS: Option to export both bookmarks and notes
+#, fuzzy
+msgid "Bookmarks and notes"
+msgstr "Dấu trang và ghi chú"
+
+#. TRANSLATORS: Option to export only bookmarks that have no note
+#, fuzzy
+msgid "Bookmarks only"
+msgstr "Chỉ dấu trang"
+
+#. TRANSLATORS: Option to export only bookmarks that have a note
+#, fuzzy
+msgid "Notes only"
+msgstr "Chỉ ghi chú"
+
+#. TRANSLATORS: Checkbox to include the bookmarked text next to each note
+#, fuzzy
+msgid "Include the &passage each note is attached to"
+msgstr "Bao gồm &đoạn văn bản mà ghi chú được gắn vào"
+
+#. TRANSLATORS: Checkbox to number the exported entries
+#, fuzzy
+msgid "&Number the entries"
+msgstr "&Đánh số các mục"
+
+#. TRANSLATORS: Label for the button that continues to the save dialog
+#, fuzzy
+msgid "Export"
+msgstr "Xuất"
+
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 #, fuzzy
@@ -1915,9 +1956,9 @@ msgstr "Không thể sao chép vào bảng nhớ tạm."
 
 #. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
 #, fuzzy
-msgid "Selected %d character."
-msgid_plural "Selected %d characters."
-msgstr[0] "Đã chọn %d ký tự."
+msgid "%d character selected."
+msgid_plural "%d characters selected."
+msgstr[0] "%d ký tự được chọn."
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 #, fuzzy
@@ -1976,10 +2017,6 @@ msgstr "tài liệu"
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Tệp Paperback (*.paperback)|*.paperback"
 
-#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
-msgid "Export notes and bookmarks"
-msgstr "Xuất ghi chú và dấu trang"
-
 #. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 msgid "Notes and bookmarks exported successfully."
 msgstr "Đã xuất ghi chú và dấu trang thành công."
@@ -1987,6 +2024,16 @@ msgstr "Đã xuất ghi chú và dấu trang thành công."
 #. TRANSLATORS: Title of the export-succeeded dialog
 msgid "Export Successful"
 msgstr "Xuất thành công"
+
+#. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+#, fuzzy
+msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
+msgstr "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
+
+#. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+#, fuzzy
+msgid "Failed to export notes and bookmarks."
+msgstr "Không thể xuất ghi chú và dấu trang."
 
 #. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 msgid "Import notes and bookmarks"
@@ -2199,6 +2246,16 @@ msgstr "&Xuất dữ liệu tài liệu..."
 #, fuzzy
 msgid "Export bookmarks and position"
 msgstr "Xuất dấu trang và vị trí"
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+#, fuzzy
+msgid "Export &Notes and Bookmarks as Text or HTML..."
+msgstr "Xuất &Ghi chú và Dấu trang dưới dạng Text hoặc HTML..."
+
+#. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
+#, fuzzy
+msgid "Export bookmarks and notes in a readable format"
+msgstr "Xuất dấu trang và ghi chú ở định dạng có thể đọc được"
 
 #. TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
 #, fuzzy
@@ -2827,9 +2884,9 @@ msgstr "Đi tới phần trăm"
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
 #, fuzzy
-msgid "Copied %d character."
-msgid_plural "Copied %d characters."
-msgstr[0] "Đã sao chép %d ký tự."
+msgid "%d character copied."
+msgid_plural "%d characters copied."
+msgstr[0] "%d ký tự được sao chép."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 #, fuzzy
@@ -3299,6 +3356,11 @@ msgstr "Nhập dữ liệu tài liệu"
 #, fuzzy
 msgid "Export Document Data..."
 msgstr "Xuất dữ liệu tài liệu..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Export Notes and Bookmarks as Text or HTML..."
+msgstr "Export Notes and Bookmarks as Text or HTML..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -4081,6 +4143,11 @@ msgstr "Đặt lại tất cả phím tắt trong tab này về giá trị mặc
 #, fuzzy
 msgid "Reset Shortcuts"
 msgstr "Đặt lại các phím tắt"
+
+#. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
+#, fuzzy
+msgid "{} (not on this keyboard layout)"
+msgstr "{} (không có trên bố cục bàn phím này)"
 
 #: kt swift
 #, fuzzy
@@ -5482,6 +5549,16 @@ msgstr "1,5\\u{00d7}"
 #, fuzzy
 msgid "Progress"
 msgstr "Tiến độ"
+
+#, fuzzy
+#~ msgid "Selected %d character."
+#~ msgid_plural "Selected %d characters."
+#~ msgstr[0] "Đã chọn %d ký tự."
+
+#, fuzzy
+#~ msgid "Copied %d character."
+#~ msgid_plural "Copied %d characters."
+#~ msgstr[0] "Đã sao chép %d ký tự."
 
 #, fuzzy
 #~ msgid "&Undo\tCtrl+Z"
