@@ -6,7 +6,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	ocr::image_only_placeholder,
 	parser::{Parser, add_heading_markers, util::path::extract_title_from_path},
-	pdfium::PdfDocument,
+	pdfium::{PAGE_IMAGE_COVERAGE, PdfDocument},
 };
 
 mod images;
@@ -20,9 +20,7 @@ mod tagged;
 mod text;
 mod toc;
 
-use images::{
-	PAGE_IMAGE_COVERAGE, append_images, images_before_each_paragraph, page_image_tops, page_largest_image_coverage,
-};
+use images::{append_image, images_before_each_paragraph, page_largest_image_coverage};
 use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
 use metadata::{map_load_error, metadata_title, metadata_value};
 pub use paragraphs::join_wrapped_lines;
@@ -53,6 +51,8 @@ struct PageContent {
 	annotation_links: Vec<PendingLink>,
 	/// The top edge of each image the page draws, ordered down the page.
 	image_tops: Vec<f64>,
+	/// Where each of those images sits in the page's content stream, in the same order, so the picture behind an image line can be saved later.
+	image_paths: Vec<String>,
 	/// The fraction of the page the largest single image covers. Near 1.0 marks a scanned page.
 	largest_image_coverage: f64,
 }
@@ -76,8 +76,10 @@ fn read_page(
 	// because each page places its own images and because an image-only page still needs its OCR
 	// placeholder when earlier pages contributed text. Taken before the text so that a tagged
 	// page whose tree names no figure can place them among its blocks as it writes them.
+	let announced = page.announced_images();
 	let mut content = PageContent {
-		image_tops: page_image_tops(&page),
+		image_tops: announced.iter().map(|image| image.top).collect(),
+		image_paths: announced.into_iter().map(|image| image.path).collect(),
 		largest_image_coverage: page_largest_image_coverage(&page),
 		..Default::default()
 	};
@@ -97,6 +99,7 @@ fn read_page(
 		&mut tagged.toc_items,
 		render_tables_inline,
 		&content.image_tops,
+		&content.image_paths,
 		evidence,
 	) {
 		content.tagged = Some(tagged);
@@ -183,8 +186,8 @@ fn looks_like_page_number(text: &str) -> bool {
 enum UntaggedLine {
 	/// A paragraph, and whether the size it was set in marked it out as a heading.
 	Text(String, bool),
-	/// An image the page drew here. An untagged page has no description to give for one.
-	Image,
+	/// An image the page drew here, and where its picture sits in the content stream. An untagged page has no description to give for one.
+	Image(String),
 }
 
 /// Work out what an untagged page contributes: its running headers dropped, its wrapped lines
@@ -215,11 +218,21 @@ fn untagged_page_lines(page: &PageContent, running_text: &RunningText, join: boo
 		.collect();
 	let image_counts = images_before_each_paragraph(&page.image_tops, &paragraph_tops);
 	let mut lines = Vec::with_capacity(paragraphs.len());
+	let mut next_image = 0usize;
+	let take_image = |next_image: &mut usize| {
+		let path = page.image_paths.get(*next_image).cloned().unwrap_or_default();
+		*next_image += 1;
+		UntaggedLine::Image(path)
+	};
 	for (index, (text, is_heading, _)) in paragraphs.iter().enumerate() {
-		lines.extend((0..image_counts[index]).map(|_| UntaggedLine::Image));
+		for _ in 0..image_counts[index] {
+			lines.push(take_image(&mut next_image));
+		}
 		lines.push(UntaggedLine::Text(text.clone(), *is_heading));
 	}
-	lines.extend((0..image_counts[paragraphs.len()]).map(|_| UntaggedLine::Image));
+	for _ in 0..image_counts[paragraphs.len()] {
+		lines.push(take_image(&mut next_image));
+	}
 	lines
 }
 
@@ -436,8 +449,16 @@ impl Parser for PdfParser {
 			} else {
 				for line in untagged_page_lines(&page, &running_text, context.join_pdf_paragraphs) {
 					match line {
-						UntaggedLine::Image => {
-							append_images(1, &mut buffer, &mut page_display_text, &mut current_lines_info);
+						UntaggedLine::Image(path) => {
+							let reference = format!("pdf:{page_index}:{path}");
+							append_image(
+								&mut buffer,
+								MarkerType::Image,
+								"",
+								&mut page_display_text,
+								&mut current_lines_info,
+								&reference,
+							);
 						}
 						UntaggedLine::Text(text, is_heading) => {
 							has_any_text = true;

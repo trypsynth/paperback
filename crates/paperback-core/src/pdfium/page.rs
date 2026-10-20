@@ -68,6 +68,48 @@ impl<'doc> PdfPage<'doc> {
 		PageObject::of(unsafe { bindings().FPDFPage_GetObject(self.handle, index) })
 	}
 
+	/// Every image the page draws that is worth a line of its own, nearest the top first.
+	///
+	/// This is the one list the parser places image lines from, so a page's images are announced in a fixed order.
+	pub fn announced_images(&self) -> Vec<PageImage<'_>> {
+		let page_area = f64::from(self.width()) * f64::from(self.height());
+		let mut images = Vec::new();
+		for i in 0..self.object_count() {
+			if let Some(object) = self.object(i) {
+				collect_images(&object, 0, page_area, true, &i.to_string(), &mut images);
+			}
+		}
+		images.sort_by(|a: &PageImage<'_>, b| b.top.total_cmp(&a.top));
+		images
+	}
+
+	/// The picture at `path`, encoded as PNG. `path` is the one an announced image carries in [`PageImage::path`], as it was written into an image marker's reference.
+	pub fn image_png(&self, path: &str) -> Option<Vec<u8>> {
+		let mut parts = path.split('/');
+		let first = i32::try_from(parts.next()?.parse::<usize>().ok()?).ok()?;
+		let object = self.object(first)?;
+		let handle = descend_object(&object, parts)?;
+		encode_image_png(handle)
+	}
+
+	/// The image path for each marked-content id on the page. A tagged PDF's `Figure` element points at its picture by marked-content id, and this is what turns that into a reference that can be saved, whether or not the picture is one Paperback announces.
+	pub fn image_paths_by_mcid(&self) -> std::collections::HashMap<i32, String> {
+		let page_area = f64::from(self.width()) * f64::from(self.height());
+		let mut all = Vec::new();
+		for i in 0..self.object_count() {
+			if let Some(object) = self.object(i) {
+				collect_images(&object, 0, page_area, false, &i.to_string(), &mut all);
+			}
+		}
+		let mut paths = std::collections::HashMap::new();
+		for image in all {
+			for mcid in image.marked_content_ids() {
+				paths.entry(mcid).or_insert_with(|| image.path.clone());
+			}
+		}
+		paths
+	}
+
 	/// Rasterizes the page `width` pixels across, keeping its aspect ratio, as RGBA8.
 	///
 	/// Pdfium draws BGRA, so the channels are swapped on the way out rather than leaving every
@@ -88,10 +130,10 @@ impl<'doc> PdfPage<'doc> {
 		unsafe { bindings().FPDF_RenderPageBitmap(bitmap, self.handle, 0, 0, width, height, 0, 0) };
 		let stride = unsafe { bindings().FPDFBitmap_GetStride(bitmap) };
 		let buffer = unsafe { bindings().FPDFBitmap_GetBuffer(bitmap) };
-		let rgba = bgra_to_rgba(buffer, width, height, stride);
+		let rgba = bitmap_to_rgba(buffer, width, height, stride, BITMAP_BGRA);
 		unsafe { bindings().FPDFBitmap_Destroy(bitmap) };
-		let rgba = rgba?;
-		Some(PageBitmap { width: u32::try_from(width).ok()?, height: u32::try_from(height).ok()?, rgba })
+		let (width, height, rgba) = rgba?;
+		Some(PageBitmap { width, height, rgba })
 	}
 
 	/// Every link annotation on the page, with the box it covers and where it points.
@@ -183,28 +225,177 @@ impl Drop for PdfPage<'_> {
 	}
 }
 
-/// Copies pdfium's BGRA rows out into a tight RGBA buffer.
+/// Shortest side, in PDF user units, an image must have to be worth a line of its own. A page laid out from HTML draws its spacers and its hairline rules as images a fraction of a point across; announcing one of those as an image gives the reader a stop with nothing at it.
+const MIN_IMAGE_SIDE: f32 = 4.0;
+
+/// How much of the page one image can cover and still be a picture on the page rather than the page itself. A scanned book with an OCR text layer draws each sheet as one image under its invisible text, and announcing that put an "[Image]" with nothing behind it on every page (#1046).
+pub const PAGE_IMAGE_COVERAGE: f64 = 0.9;
+
+/// How far to follow form `XObject`s into each other looking for the images they draw. A form holding a form is ordinary enough (a placed logo, an annotation's appearance stream), while a chain of them this deep is a malformed file rather than a page anyone meant to draw.
+pub const MAX_FORM_DEPTH: u32 = 8;
+
+/// `FPDFBitmap_BGRA`, `FPDFBitmap_BGRx`, `FPDFBitmap_BGR` and `FPDFBitmap_Gray`, the four bitmap layouts pdfium hands back.
+const BITMAP_GRAY: i32 = 1;
+const BITMAP_BGR: i32 = 2;
+const BITMAP_BGRX: i32 = 3;
+
+/// One image a page draws, as Paperback announces it.
 ///
-/// The rows are padded to a stride, so this cannot be one flat copy; each row is taken at its
-/// own offset and the padding left behind.
-fn bgra_to_rgba(buffer: *const c_void, width: i32, height: i32, stride: i32) -> Option<Vec<u8>> {
-	if buffer.is_null() || stride < width * 4 {
+/// Borrows the page it came from. Nothing is closed here; the page owns the object.
+pub struct PageImage<'page> {
+	/// The image's top edge, in PDF user units. Y grows up the page, so the nearest the top has the largest one.
+	pub top: f64,
+	/// Where the image object sits in the page's content stream, as slash-separated indices. This is what an image marker's reference carries, so [`PdfPage::image_png`] can find the picture again without depending on the order images were listed in.
+	pub path: String,
+	handle: FPDF_PAGEOBJECT,
+	_page: std::marker::PhantomData<&'page ()>,
+}
+
+impl PageImage<'_> {
+	/// The marked-content ids this image carries, which is how a tagged `Figure` names it.
+	fn marked_content_ids(&self) -> Vec<i32> {
+		let bindings = bindings();
+		let mut ids = Vec::new();
+		if let Some(id) = marked_content_id(self.handle) {
+			ids.push(id);
+		}
+		for index in 0..unsafe { bindings.FPDFPageObj_CountMarks(self.handle) } {
+			let mark = unsafe { bindings.FPDFPageObj_GetMark(self.handle, c_ulong::try_from(index).unwrap_or(0)) };
+			if mark.is_null() {
+				continue;
+			}
+			let mut value = 0;
+			if unsafe { bindings.FPDFPageObjMark_GetParamIntValue(mark, "MCID", &raw mut value) } != 0 {
+				ids.push(value);
+			}
+		}
+		ids.sort_unstable();
+		ids.dedup();
+		ids
+	}
+}
+
+fn marked_content_id(handle: FPDF_PAGEOBJECT) -> Option<i32> {
+	let id = unsafe { bindings().FPDFPageObj_GetMarkedContentID(handle) };
+	(id >= 0).then_some(id)
+}
+
+/// Follows the rest of a content-stream path into a form's children.
+fn descend_object<'p, 'a>(object: &PageObject<'p>, mut path: impl Iterator<Item = &'a str>) -> Option<FPDF_PAGEOBJECT> {
+	let Some(component) = path.next() else { return Some(object.handle()) };
+	let index = i32::try_from(component.parse::<usize>().ok()?).ok()?;
+	let child = object.form_object(index)?;
+	descend_object(&child, path)
+}
+
+/// The image's own pixels, encoded as PNG.
+///
+/// The picture is taken at the resolution the file stores rather than as it is drawn on the page, so a photo placed small still saves at full size. An image mask is not applied: the PDF keeps the mask as a separate object, and the picture on its own is what was asked for.
+fn encode_image_png(handle: FPDF_PAGEOBJECT) -> Option<Vec<u8>> {
+	let bindings = bindings();
+	let bitmap = unsafe { bindings.FPDFImageObj_GetBitmap(handle) };
+	if bitmap.is_null() {
 		return None;
 	}
-	let (w, h, stride) = (width as usize, height as usize, stride as usize);
+	let width = unsafe { bindings.FPDFBitmap_GetWidth(bitmap) };
+	let height = unsafe { bindings.FPDFBitmap_GetHeight(bitmap) };
+	let stride = unsafe { bindings.FPDFBitmap_GetStride(bitmap) };
+	let format = unsafe { bindings.FPDFBitmap_GetFormat(bitmap) };
+	let buffer = unsafe { bindings.FPDFBitmap_GetBuffer(bitmap) };
+	let rgba = bitmap_to_rgba(buffer, width, height, stride, format);
+	unsafe { bindings.FPDFBitmap_Destroy(bitmap) };
+	let (width, height, rgba) = rgba?;
+	let mut out = Vec::new();
+	image::RgbaImage::from_raw(width, height, rgba)?
+		.write_to(&mut std::io::Cursor::new(&mut out), image::ImageFormat::Png)
+		.ok()?;
+	Some(out)
+}
+
+/// Copies an image's bitmap into RGBA8, whatever layout pdfium handed back.
+fn bitmap_to_rgba(
+	buffer: *const c_void,
+	width: i32,
+	height: i32,
+	stride: i32,
+	format: i32,
+) -> Option<(u32, u32, Vec<u8>)> {
+	if buffer.is_null() || width <= 0 || height <= 0 {
+		return None;
+	}
+	let (w, h) = (usize::try_from(width).ok()?, usize::try_from(height).ok()?);
+	let stride = usize::try_from(stride).ok()?;
+	let bytes_per_pixel = match format {
+		BITMAP_GRAY => 1,
+		BITMAP_BGR => 3,
+		BITMAP_BGRX | BITMAP_BGRA => 4,
+		_ => return None,
+	};
+	if stride < w * bytes_per_pixel {
+		return None;
+	}
 	let source = unsafe { std::slice::from_raw_parts(buffer.cast::<u8>(), stride * h) };
-	let mut rgba = vec![0u8; w * h * 4];
+	let mut rgba = vec![255u8; w * h * 4];
 	for row in 0..h {
 		for column in 0..w {
-			let from = row * stride + column * 4;
+			let from = row * stride + column * bytes_per_pixel;
 			let to = (row * w + column) * 4;
-			rgba[to] = source[from + 2];
-			rgba[to + 1] = source[from + 1];
-			rgba[to + 2] = source[from];
-			rgba[to + 3] = source[from + 3];
+			if format == BITMAP_GRAY {
+				let gray = source[from];
+				rgba[to] = gray;
+				rgba[to + 1] = gray;
+				rgba[to + 2] = gray;
+			} else {
+				rgba[to] = source[from + 2];
+				rgba[to + 1] = source[from + 1];
+				rgba[to + 2] = source[from];
+				if format == BITMAP_BGRA {
+					rgba[to + 3] = source[from + 3];
+				}
+			}
 		}
 	}
-	Some(rgba)
+	Some((u32::try_from(width).ok()?, u32::try_from(height).ok()?, rgba))
+}
+
+/// Collects the image objects under `object`, walking into form `XObject`s and recording where each one sits in the content stream. `only_announced` leaves out the images that are too small to be worth a line or that cover the page themselves.
+fn collect_images(
+	object: &PageObject<'_>,
+	depth: u32,
+	page_area: f64,
+	only_announced: bool,
+	path: &str,
+	images: &mut Vec<PageImage<'_>>,
+) {
+	match object.kind() {
+		ObjectKind::Image => {
+			let announced = object.bounds().is_some_and(|bounds| {
+				is_announced_image((bounds.right - bounds.left).abs(), (bounds.top - bounds.bottom).abs(), page_area)
+			});
+			if !only_announced || announced {
+				let top = object.bounds().map_or(0.0, |bounds| f64::from(bounds.top));
+				images.push(PageImage {
+					top,
+					path: path.to_string(),
+					handle: object.handle(),
+					_page: std::marker::PhantomData,
+				});
+			}
+		}
+		ObjectKind::Form if depth < MAX_FORM_DEPTH => {
+			for i in 0..object.form_object_count() {
+				if let Some(child) = object.form_object(i) {
+					collect_images(&child, depth + 1, page_area, only_announced, &format!("{path}/{i}"), images);
+				}
+			}
+		}
+		_ => {}
+	}
+}
+
+fn is_announced_image(width: f32, height: f32, page_area: f64) -> bool {
+	let covers_page = page_area > 0.0 && f64::from(width) * f64::from(height) / page_area >= PAGE_IMAGE_COVERAGE;
+	width >= MIN_IMAGE_SIDE && height >= MIN_IMAGE_SIDE && !covers_page
 }
 
 /// A rasterized page.
@@ -258,6 +449,10 @@ impl PageObject<'_> {
 		} else {
 			ObjectKind::Other
 		}
+	}
+
+	pub const fn handle(&self) -> FPDF_PAGEOBJECT {
+		self.handle
 	}
 
 	pub fn bounds(&self) -> Option<Bounds> {
@@ -317,5 +512,64 @@ impl ObjectMark<'_> {
 		let mut value = 0;
 		let ok = unsafe { bindings().FPDFPageObjMark_GetParamIntValue(self.handle, key, &mut value) };
 		(ok != 0).then_some(value)
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::{BITMAP_BGR, BITMAP_BGRA, BITMAP_GRAY, bitmap_to_rgba, is_announced_image};
+
+	/// The page from #1046: 323 by 518 points, under a 323 by 496 point scan.
+	const PAGE_AREA: f64 = 323.0 * 518.0;
+
+	#[test]
+	fn a_scan_under_the_whole_page_is_not_announced() {
+		assert!(!is_announced_image(323.0, 496.0, PAGE_AREA));
+	}
+
+	#[test]
+	fn a_figure_on_the_page_is_announced() {
+		assert!(is_announced_image(250.0, 300.0, PAGE_AREA));
+	}
+
+	#[test]
+	fn a_hairline_rule_is_not_announced() {
+		assert!(!is_announced_image(300.0, 0.5, PAGE_AREA));
+	}
+
+	/// Pdfium hands BGRA back, and a PNG wants RGBA.
+	#[test]
+	fn a_bgra_bitmap_becomes_rgba() {
+		// One pixel: blue, green, red, alpha.
+		let mut pixels = [0u8, 0, 255, 128];
+		let (width, height, rgba) = bitmap_to_rgba(pixels.as_mut_ptr().cast(), 1, 1, 4, BITMAP_BGRA).unwrap();
+		assert_eq!((width, height), (1, 1));
+		assert_eq!(rgba, vec![255, 0, 0, 128]);
+	}
+
+	/// Rows are padded to a stride, so the padding must not be read as pixels.
+	#[test]
+	fn a_padded_row_does_not_shift_the_next_one() {
+		// Two rows of two BGRA pixels with four bytes of padding between them.
+		let mut pixels = [1u8, 2, 3, 4, 5, 6, 7, 8, 0, 0, 0, 0, 9, 10, 11, 12, 13, 14, 15, 16];
+		let (_, _, rgba) = bitmap_to_rgba(pixels.as_mut_ptr().cast(), 2, 2, 12, BITMAP_BGRA).unwrap();
+		assert_eq!(&rgba[0..4], &[3, 2, 1, 4]);
+		assert_eq!(&rgba[8..12], &[11, 10, 9, 12], "the first pixel of the second row");
+	}
+
+	/// A grayscale bitmap, which an image PDF can hold, widens to RGBA.
+	#[test]
+	fn a_gray_bitmap_widens_to_rgba() {
+		let mut pixels = [17u8, 34];
+		let (_, _, rgba) = bitmap_to_rgba(pixels.as_mut_ptr().cast(), 2, 1, 2, BITMAP_GRAY).unwrap();
+		assert_eq!(rgba, vec![17, 17, 17, 255, 34, 34, 34, 255]);
+	}
+
+	/// Three channels and no alpha, which pdfium can return for an image without transparency.
+	#[test]
+	fn a_bgr_bitmap_is_opaque() {
+		let mut pixels = [1u8, 2, 3];
+		let (_, _, rgba) = bitmap_to_rgba(pixels.as_mut_ptr().cast(), 1, 1, 3, BITMAP_BGR).unwrap();
+		assert_eq!(rgba, vec![3, 2, 1, 255]);
 	}
 }

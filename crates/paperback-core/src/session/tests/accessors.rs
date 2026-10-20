@@ -105,6 +105,7 @@ fn get_formatting_markers_returns_only_bold_italic_underline_markers() {
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
 		parse_settings: ParseSettings::default(),
+		password: String::new(),
 	};
 	let markers = session.get_formatting_markers();
 	assert_eq!(markers.len(), 3);
@@ -154,6 +155,7 @@ fn heading_tree_builds_parent_links_and_closest_index() {
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
 		parse_settings: ParseSettings::default(),
+		password: String::new(),
 	};
 	let tree = session.heading_tree(3);
 	assert_eq!(tree.items.len(), 3);
@@ -176,6 +178,7 @@ fn get_current_section_path_returns_none_when_reference_empty() {
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
 		parse_settings: ParseSettings::default(),
+		password: String::new(),
 	};
 	assert!(session.get_current_section_path(0).is_none());
 }
@@ -200,6 +203,7 @@ fn table_session() -> DocumentSession {
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
 		parse_settings: ParseSettings::default(),
+		password: String::new(),
 	}
 }
 
@@ -237,6 +241,7 @@ fn get_table_at_position_handles_multibyte_extent() {
 		history_index: 0,
 		parser_flags: ParserFlags::NONE,
 		parse_settings: ParseSettings::default(),
+		password: String::new(),
 	};
 	// Position 5 is within [0, 6) by display length but would be outside [0, 1) by char count.
 	assert_eq!(session.get_table_at_position(5).as_deref(), Some("<table/>"));

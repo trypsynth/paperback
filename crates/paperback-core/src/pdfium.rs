@@ -33,7 +33,10 @@ mod text;
 // touch. Some of these are only ever reached as the return type of a method rather than named
 // outright, which is what the allow is for.
 #[allow(unused_imports)]
-pub use page::{AnnotationLink, Bounds, LinkTarget, ObjectKind, PageBitmap, PageObject, PdfPage};
+pub use page::{
+	AnnotationLink, Bounds, LinkTarget, MAX_FORM_DEPTH, ObjectKind, PAGE_IMAGE_COVERAGE, PageBitmap, PageImage,
+	PageObject, PdfPage,
+};
 use pdfium_render::prelude::{FPDF_BOOKMARK, FPDF_DOCUMENT, Pdfium, PdfiumLibraryBindings};
 #[allow(unused_imports)]
 pub use tags::{Tag, TagTree};
