@@ -51,7 +51,8 @@ fn build_mac_dmg(root: &std::path::Path) -> Result<(), Box<dyn Error>> {
 	// One package per invocation, for the reason given in `release`.
 	for target in TARGETS {
 		for package in ["paperback", "pb"] {
-			run(Command::new(&cargo).current_dir(root).args(["build", "--release", "-p", package, "--target", target]))?;
+			let args = ["build", "--release", "-p", package, "--target", target];
+			run(Command::new(&cargo).current_dir(root).args(args))?;
 		}
 	}
 	let slices = TARGETS.map(|target| root.join("target").join(target).join("release"));
