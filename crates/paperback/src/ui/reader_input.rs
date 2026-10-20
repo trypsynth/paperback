@@ -238,7 +238,7 @@ pub(super) fn build_text_ctrl(
 			// needs in order to announce at all.
 			if let Some(index) = tab_index_for_key(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down()) {
 				kbd.event.skip(false);
-				if let Ok(dm) = dm_for_keys.try_lock() {
+				if let Ok(mut dm) = dm_for_keys.try_lock() {
 					dm.switch_to_tab(index);
 				}
 				return;

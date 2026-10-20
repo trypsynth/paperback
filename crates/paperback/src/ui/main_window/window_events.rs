@@ -22,7 +22,6 @@ pub(super) fn bind_document_events(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	live_region_label: StaticText,
 ) {
-	let frame_copy = frame;
 	let notebook = *doc_manager.lock().unwrap().notebook();
 	let dm = Rc::clone(doc_manager);
 	notebook.on_page_changing(move |event| {
@@ -44,26 +43,11 @@ pub(super) fn bind_document_events(
 		let Ok(mut dm_ref) = dm.try_lock() else {
 			return;
 		};
-		if !page_reload_guard.get() {
-			page_reload_guard.set(true);
-			if let Some(index) = dm_ref.active_tab_index()
-				&& dm_ref.reload_tab_if_changed(index)
-			{
-				// Medium rather than the default high: a file changing on disk is not
-				// something the user asked for, so it waits for the current utterance to
-				// finish instead of cutting them off mid sentence.
-				// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
-				live_region::announce_with_priority(
-					live_region_label,
-					&t("Document reloaded."),
-					live_region::Priority::Medium,
-				);
-			}
+		let check_disk = !page_reload_guard.replace(true);
+		dm_ref.finish_page_change(check_disk);
+		if check_disk {
 			page_reload_guard.set(false);
 		}
-		update_title_from_manager(&frame_copy, &dm_ref);
-		dm_ref.reset_sound_line();
-		dm_ref.pause_inactive_audio();
 	});
 	let dm_for_activate = Rc::clone(doc_manager);
 	let activate_reload_guard = Rc::clone(&reload_guard);
@@ -126,7 +110,7 @@ pub(super) fn bind_document_events(
 			// because it cannot rely on that handler, whose lock this call already holds.
 			if let Some(index) =
 				tab_index_for_key(key, key_event.control_down(), key_event.alt_down(), key_event.shift_down())
-				&& let Ok(dm) = dm.try_lock()
+				&& let Ok(mut dm) = dm.try_lock()
 			{
 				key_event.event.skip(false);
 				dm.switch_to_tab(index);
@@ -254,7 +238,7 @@ pub(super) fn bind_tab_cycling(frame: &Frame, doc_manager: &Rc<Mutex<DocumentMan
 		if event.get_key_code() != Some(WXK_TAB) || !control || event.alt_down() {
 			return;
 		}
-		let Ok(dm) = dm.try_lock() else { return };
+		let Ok(mut dm) = dm.try_lock() else { return };
 		event.skip(false);
 		dm.cycle_tab(!event.shift_down());
 	});
