@@ -478,17 +478,24 @@ jobs:
         echo "/opt/homebrew/opt/gettext/bin" >> $GITHUB_PATH
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: aarch64-apple-darwin,x86_64-apple-darwin
     - name: Cache Rust build artifacts
       uses: Swatinem/rust-cache@v2
     # Why these two steps exist: see build-windows.
     - name: Cache wxWidgets translations
       uses: actions/cache@v6
       with:
-        path: target/release/wxdragon_sys_cmake_build/share/locale
+        path: |
+          target/aarch64-apple-darwin/release/wxdragon_sys_cmake_build/share/locale
+          target/x86_64-apple-darwin/release/wxdragon_sys_cmake_build/share/locale
         key: wx-locale-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
     - name: Rebuild wxWidgets if its translations are missing
       shell: bash
-      run: test -d target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys
+      run: |
+        for target in aarch64-apple-darwin x86_64-apple-darwin; do
+          test -d target/$target/release/wxdragon_sys_cmake_build/share/locale || cargo clean --release -p wxdragon-sys --target $target
+        done
     - name: Import signing certificate
       if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
       env:
@@ -521,11 +528,19 @@ jobs:
     - name: Check wxWidgets translations were embedded
       shell: bash
       run: |
-        exe=target/release/paperback${{ runner.os == 'Windows' && '.exe' || '' }}
+        exe=target/release/Paperback.app/Contents/MacOS/paperback
         if ! grep -aq "Project-Id-Version: wxWidgets" "$exe"; then
           echo "::error::$exe embeds no wxWidgets catalogs, so stock wx strings would ship untranslated"
           exit 1
         fi
+    # No Intel Mac runs this job, so Rosetta is the only check that the Intel half of the
+    # universal binaries starts at all.
+    - name: Check the app is universal
+      run: |
+        for binary in paperback pb libpdfium.dylib; do
+          lipo target/release/Paperback.app/Contents/MacOS/$binary -verify_arch arm64 x86_64
+        done
+        arch -x86_64 target/release/Paperback.app/Contents/MacOS/pb --list-formats > /dev/null
     - name: Notarize and staple DMG
       if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
       env:

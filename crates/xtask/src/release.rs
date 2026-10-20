@@ -1,5 +1,6 @@
 use std::error::Error;
 
+#[cfg(not(target_os = "macos"))]
 use shipfitter::package::cargo_build_release;
 
 use crate::workspace::project_root;
@@ -13,12 +14,12 @@ pub fn release() -> Result<(), Box<dyn Error>> {
 	// launch on end-user machines with "entry point not found" since it never gets the
 	// comctl32-v6 manifest paperback.exe's build.rs embeds. cargo_build_release builds one
 	// package per invocation, which keeps each link step's inputs isolated.
-	cargo_build_release(&project_root(), &["paperback", "pb"])?;
-	let target_dir = project_root().join("target/release");
 	#[cfg(target_os = "macos")]
-	return build_mac_dmg(&target_dir);
+	return build_mac_dmg(&project_root());
 	#[cfg(not(target_os = "macos"))]
 	{
+		cargo_build_release(&project_root(), &["paperback", "pb"])?;
+		let target_dir = project_root().join("target/release");
 		let exe_name = if cfg!(windows) { "paperback.exe" } else { "paperback" };
 		let pb_exe_name = if cfg!(windows) { "pb.exe" } else { "pb" };
 		let exe_path = target_dir.join(exe_name);
@@ -37,31 +38,43 @@ pub fn release() -> Result<(), Box<dyn Error>> {
 	}
 }
 
+/// One universal app rather than a DMG per architecture, so Intel Macs get the same single
+/// `paperback.dmg` the updater and the website already look for.
 #[cfg(target_os = "macos")]
-fn build_mac_dmg(target_dir: &std::path::Path) -> Result<(), Box<dyn Error>> {
-	use std::fs;
+fn build_mac_dmg(root: &std::path::Path) -> Result<(), Box<dyn Error>> {
+	use std::{env, fs, process::Command};
 
 	use shipfitter::macos::{dmg, sign};
 
-	// build.rs lays out the bundle and its Info.plist, but runs before the binaries are linked, so
-	// the freshly linked GUI and CLI binaries are copied in now.
+	const TARGETS: [&str; 2] = ["aarch64-apple-darwin", "x86_64-apple-darwin"];
+	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
+	// One package per invocation, for the reason given in `release`.
+	for target in TARGETS {
+		for package in ["paperback", "pb"] {
+			run(Command::new(&cargo).current_dir(root).args(["build", "--release", "-p", package, "--target", target]))?;
+		}
+	}
+	let slices = TARGETS.map(|target| root.join("target").join(target).join("release"));
+	let target_dir = root.join("target/release");
 	let bundle = target_dir.join("Paperback.app");
+	if bundle.exists() {
+		fs::remove_dir_all(&bundle)?;
+	}
+	fs::create_dir_all(&target_dir)?;
+	// build.rs lays out the bundle and its Info.plist, but runs before the binaries are linked, so
+	// the freshly linked binaries are merged into it now.
+	run(Command::new("ditto").arg(slices[0].join("Paperback.app")).arg(&bundle))?;
 	let macos_dir = bundle.join("Contents/MacOS");
-	let exe = target_dir.join("paperback");
-	if !exe.exists() {
-		return Err("paperback binary not found after build".into());
-	}
-	let pb_exe = target_dir.join("pb");
-	if !pb_exe.exists() {
-		return Err("pb binary not found after build".into());
-	}
-	fs::copy(&exe, macos_dir.join("paperback"))?;
-	fs::copy(&pb_exe, macos_dir.join("pb"))?;
-	let dylib = target_dir.join("libpdfium.dylib");
-	if dylib.exists() {
-		fs::copy(&dylib, macos_dir.join("libpdfium.dylib"))?;
-	} else {
-		println!("Warning: libpdfium.dylib not found in target directory; PDF support will be unavailable.");
+	for name in ["paperback", "pb", "libpdfium.dylib"] {
+		let inputs = slices.each_ref().map(|dir| dir.join(name));
+		if !inputs.iter().all(|input| input.exists()) {
+			if name == "libpdfium.dylib" {
+				println!("Warning: libpdfium.dylib is missing for an architecture; PDF support will be unavailable.");
+				continue;
+			}
+			return Err(format!("{name} not found for every architecture after build").into());
+		}
+		run(Command::new("lipo").arg("-create").args(&inputs).arg("-output").arg(macos_dir.join(name)))?;
 	}
 	println!("Built app: {}", bundle.display());
 	sign(&bundle, &[])?;
@@ -69,6 +82,11 @@ fn build_mac_dmg(target_dir: &std::path::Path) -> Result<(), Box<dyn Error>> {
 	dmg(&bundle, &dmg_path)?;
 	println!("Created DMG: {}", dmg_path.display());
 	Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn run(command: &mut std::process::Command) -> Result<(), Box<dyn Error>> {
+	if command.status()?.success() { Ok(()) } else { Err(format!("{command:?} failed").into()) }
 }
 
 #[cfg(not(target_os = "macos"))]
