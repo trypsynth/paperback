@@ -229,8 +229,7 @@ pub struct DocumentSession {
 	parser_flags: ParserFlags,
 	/// The settings the document was parsed with, which views that re-render its source must follow too.
 	parse_settings: ParseSettings,
-	/// The password the document was opened with, so a second look at the file for something the
-	/// parse did not keep (the picture behind an image line) can get past the same lock.
+	/// The password the document was opened with, so a second look at the file for something the parse did not keep (the picture behind an image line) can get past the same lock.
 	password: String,
 }
 

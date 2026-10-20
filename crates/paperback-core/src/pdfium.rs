@@ -34,7 +34,8 @@ mod text;
 // outright, which is what the allow is for.
 #[allow(unused_imports)]
 pub use page::{
-	AnnotationLink, Bounds, LinkTarget, ObjectKind, PAGE_IMAGE_COVERAGE, PageBitmap, PageImage, PageObject, PdfPage,
+	AnnotationLink, Bounds, LinkTarget, MAX_FORM_DEPTH, ObjectKind, PAGE_IMAGE_COVERAGE, PageBitmap, PageImage,
+	PageObject, PdfPage,
 };
 use pdfium_render::prelude::{FPDF_BOOKMARK, FPDF_DOCUMENT, Pdfium, PdfiumLibraryBindings};
 #[allow(unused_imports)]

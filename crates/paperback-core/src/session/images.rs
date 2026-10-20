@@ -71,8 +71,7 @@ impl DocumentSession {
 		if is_data_uri(source) {
 			return decode_data_uri(source);
 		}
-		// A PDF names its pictures by where their objects sit rather than by a file path, so the
-		// reference itself says which reader they need and the document's extension cannot.
+		// A PDF names its pictures by where their objects sit rather than by a file path, so the reference itself says which reader they need and the document's extension cannot.
 		if source.starts_with("pdf:") {
 			let (page_index, path) = parse_pdf_image_reference(source)?;
 			let password = (!self.password.is_empty()).then_some(self.password.as_str());
@@ -112,8 +111,7 @@ fn local_image_path(document_path: &str, source: &str) -> std::path::PathBuf {
 	Path::new(document_path).parent().unwrap_or_else(|| Path::new("")).join(source)
 }
 
-/// The page and content-stream path a PDF image marker's reference names, which the parser
-/// writes as `pdf:<page>:<path>`.
+/// The page and content-stream path a PDF image marker's reference names, which the parser writes as `pdf:<page>:<path>`.
 fn parse_pdf_image_reference(source: &str) -> Result<(i32, String)> {
 	let mut parts = source.splitn(3, ':');
 	let bad = || anyhow::anyhow!("malformed pdf image reference");
@@ -157,8 +155,7 @@ fn image_file_name(source: &str) -> String {
 	if name.is_empty() { fallback } else { name }
 }
 
-/// The name a PDF picture is offered under: the page it was found on, and where it sat in that
-/// page's content stream, so a second picture from the same book does not land on the first.
+/// The name a PDF picture is offered under: the page it was found on, and where it sat in that page's content stream, so a second picture from the same book does not land on the first.
 fn pdf_image_file_name(source: &str, fallback: &str) -> String {
 	let Some((page, path)) = source.strip_prefix("pdf:").and_then(|rest| rest.split_once(':')) else {
 		return format!("{fallback}.png");

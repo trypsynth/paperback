@@ -94,8 +94,7 @@ pub(super) fn extract_tagged_page_text(
 	let mut current_block = String::new();
 	let mut pending_label = String::new();
 	let mut page_text = PageText::new(&content.text);
-	// Only a tree that names figures can ask for one's picture, so the walk over the page's
-	// objects that answers where each image sits is skipped for the rest.
+	// Only a tree that names figures can ask for one's picture, so the walk over the page's objects that answers where each image sits is skipped for the rest.
 	let figure_images = if facts.claims_figures { page.image_paths_by_mcid() } else { HashMap::new() };
 	let mut images = ImagePlacement {
 		mcid_tops: &content.tops,
@@ -136,8 +135,7 @@ struct ImagePlacement<'a> {
 	unclaimed: UnclaimedImages,
 	/// The page the images belong to, which a marker's reference names so its picture can be saved.
 	page_index: i32,
-	/// Where each marked-content id's picture sits in the content stream. A `Figure` element
-	/// points at its picture by marked-content id, and this is what turns that into a reference.
+	/// Where each marked-content id's picture sits in the content stream. A `Figure` element points at its picture by marked-content id, and this is what turns that into a reference.
 	figure_images: &'a HashMap<i32, String>,
 	/// The top edge of the block being built, from the first piece of text in it.
 	block_top: Option<f64>,
@@ -180,8 +178,7 @@ impl ImagePlacement<'_> {
 		self.unclaimed.place_above(top, buffer, page_display_text, current_lines_info);
 	}
 
-	/// The reference that saves the picture behind `elem`, or an empty string when its content
-	/// names no image Paperback can find on the page.
+	/// The reference that saves the picture behind `elem`, or an empty string when its content names no image Paperback can find on the page.
 	fn figure_reference(&self, elem: &Tag) -> String {
 		find_image_path(elem, self.figure_images)
 			.map_or_else(String::new, |path| format!("pdf:{}:{path}", self.page_index))
@@ -198,9 +195,7 @@ impl ImagePlacement<'_> {
 	}
 }
 
-/// The content-stream path of the first image under `elem`, found by the marked-content ids its
-/// leaves carry. A figure's picture is usually a direct child, but a maker that wraps it in a
-/// `Div` or a `Caption`'s sibling nests it a level or two down, so the whole subtree is searched.
+/// The content-stream path of the first image under `elem`, found by the marked-content ids its leaves carry. A figure's picture is usually a direct child, but a maker that wraps it in a `Div` or a `Caption`'s sibling nests it a level or two down, so the whole subtree is searched.
 fn find_image_path(elem: &Tag, image_paths: &HashMap<i32, String>) -> Option<String> {
 	let count = elem.child_count();
 	for i in 0..count {

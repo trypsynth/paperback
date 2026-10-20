@@ -5,8 +5,7 @@
 //! this purpose, so [`super::structure`] places one by walking the tree and calls
 //! [`append_image`] as it meets one.
 //!
-//! An untagged PDF says neither. All it has is image objects with page coordinates, so the
-//! caller places each one among the page's text lines by how far down the page it sits.
+//! An untagged PDF says neither. All it has is image objects with page coordinates, so the caller places each one among the page's text lines by how far down the page it sits.
 //!
 //! A tagged PDF that tags none of its images gets the same treatment through
 //! [`UnclaimedImages`]. A page like that draws pictures and claims not to have any, so trusting
@@ -15,17 +14,10 @@
 
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType},
-	pdfium::{ObjectKind, PageObject, PdfPage},
+	pdfium::{MAX_FORM_DEPTH, ObjectKind, PageObject, PdfPage},
 	t,
 	util::text::display_len,
 };
-
-/// How far to follow form `XObject`s into each other looking for the images they draw. A form
-/// holding a form is ordinary enough (a placed logo, an annotation's appearance stream), while a
-/// chain of them this deep is a malformed file rather than a page anyone meant to draw.
-const MAX_FORM_DEPTH: u32 = 8;
-
-pub(super) use crate::pdfium::PAGE_IMAGE_COVERAGE;
 
 /// Writes one image's line into the page, with a marker spanning it.
 ///
@@ -115,9 +107,7 @@ pub(super) struct UnclaimedImages {
 }
 
 impl UnclaimedImages {
-	/// The images to place, as their tops and content-stream paths. Empty for a page whose tree
-	/// claims its figures, which is every tagged page written the usual way, and the walk then
-	/// does none of this.
+	/// The images to place, as their tops and content-stream paths. Empty for a page whose tree claims its figures, which is every tagged page written the usual way, and the walk then does none of this.
 	pub(super) fn new(tops: &[f64], paths: &[String], page_index: i32) -> Self {
 		Self { images: tops.iter().copied().zip(paths.iter().cloned()).collect(), page_index }
 	}

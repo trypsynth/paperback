@@ -6,7 +6,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	ocr::image_only_placeholder,
 	parser::{Parser, add_heading_markers, util::path::extract_title_from_path},
-	pdfium::PdfDocument,
+	pdfium::{PAGE_IMAGE_COVERAGE, PdfDocument},
 };
 
 mod images;
@@ -20,7 +20,7 @@ mod tagged;
 mod text;
 mod toc;
 
-use images::{PAGE_IMAGE_COVERAGE, append_image, images_before_each_paragraph, page_largest_image_coverage};
+use images::{append_image, images_before_each_paragraph, page_largest_image_coverage};
 use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
 use metadata::{map_load_error, metadata_title, metadata_value};
 pub use paragraphs::join_wrapped_lines;
@@ -51,8 +51,7 @@ struct PageContent {
 	annotation_links: Vec<PendingLink>,
 	/// The top edge of each image the page draws, ordered down the page.
 	image_tops: Vec<f64>,
-	/// Where each of those images sits in the page's content stream, in the same order, so the
-	/// picture behind an image line can be saved later.
+	/// Where each of those images sits in the page's content stream, in the same order, so the picture behind an image line can be saved later.
 	image_paths: Vec<String>,
 	/// The fraction of the page the largest single image covers. Near 1.0 marks a scanned page.
 	largest_image_coverage: f64,
@@ -187,8 +186,7 @@ fn looks_like_page_number(text: &str) -> bool {
 enum UntaggedLine {
 	/// A paragraph, and whether the size it was set in marked it out as a heading.
 	Text(String, bool),
-	/// An image the page drew here, and where its picture sits in the content stream. An
-	/// untagged page has no description to give for one.
+	/// An image the page drew here, and where its picture sits in the content stream. An untagged page has no description to give for one.
 	Image(String),
 }
 
