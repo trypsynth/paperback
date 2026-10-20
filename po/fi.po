@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 00:35+0000\n"
-"PO-Revision-Date: 2026-10-19 16:11+0300\n"
+"POT-Creation-Date: 2026-10-19 22:03+0000\n"
+"PO-Revision-Date: 2026-10-20 23:02+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -980,6 +980,46 @@ msgstr "Nimetön"
 msgid "OK"
 msgstr "OK"
 
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+msgid "Export notes and bookmarks"
+msgstr "Vie muistiinpanot ja kirjanmerkit"
+
+#. TRANSLATORS: Label for the dropdown choosing which entries to export
+#| msgid "Ex&port"
+msgid "&Export:"
+msgstr "V&ie:"
+
+#. TRANSLATORS: Option to export both bookmarks and notes
+#| msgid "Show all bookmarks and notes"
+msgid "Bookmarks and notes"
+msgstr "Kirjanmerkit ja muistiinpanot"
+
+#. TRANSLATORS: Option to export only bookmarks that have no note
+#| msgid "Show bookmarks only"
+msgid "Bookmarks only"
+msgstr "Vain kirjanmerkit"
+
+#. TRANSLATORS: Option to export only bookmarks that have a note
+#| msgid "Show notes only"
+msgid "Notes only"
+msgstr "Vain muistiinpanot"
+
+#. TRANSLATORS: Checkbox to include the bookmarked text next to each note
+msgid "Include the &passage each note is attached to"
+msgstr "Vie myös muistiinpanoihin liittyvät te&kstikatkelmat"
+
+#. TRANSLATORS: Checkbox to number the exported entries
+#| msgid "Number of files:"
+msgid "&Number the entries"
+msgstr "&Numeroi kohteet"
+
+#. TRANSLATORS: Label for the button that continues to the save dialog
+#| msgid "Ex&port"
+msgid "Export"
+msgstr "Vie"
+
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Go"
@@ -1660,10 +1700,12 @@ msgid "Could not copy to the clipboard."
 msgstr "Leikepöydälle ei voi kopioida."
 
 #. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
-msgid "Selected %d character."
-msgid_plural "Selected %d characters."
-msgstr[0] "%d merkki valittu."
-msgstr[1] "%d merkkiä valittu."
+#| msgid "All %d document selected."
+#| msgid_plural "All %d documents selected."
+msgid "%d character selected."
+msgid_plural "%d characters selected."
+msgstr[0] "%d merkki valittuna."
+msgstr[1] "%d merkkiä valittuna."
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
@@ -1711,10 +1753,6 @@ msgstr "asiakirja"
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback-tiedostot (*.paperback)|*.paperback"
 
-#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
-msgid "Export notes and bookmarks"
-msgstr "Vie muistiinpanot ja kirjanmerkit"
-
 #. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 msgid "Notes and bookmarks exported successfully."
 msgstr "Muistiinpanot ja kirjanmerkit viety onnistuneesti."
@@ -1722,6 +1760,16 @@ msgstr "Muistiinpanot ja kirjanmerkit viety onnistuneesti."
 #. TRANSLATORS: Title of the export-succeeded dialog
 msgid "Export Successful"
 msgstr "Vienti onnistui"
+
+#. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+#| msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
+msgstr "Tekstitiedostot (*.txt)|*.txt|HTML-tiedostot (*.html)|*.html"
+
+#. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+#| msgid "Export notes and bookmarks"
+msgid "Failed to export notes and bookmarks."
+msgstr "Muistiinpanojen ja kirjanmerkkien vienti epäonnistui."
 
 #. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 msgid "Import notes and bookmarks"
@@ -1736,7 +1784,6 @@ msgid "Import Successful"
 msgstr "Tuonti onnistui"
 
 #. TRANSLATORS: Title of the file save dialog when saving a picture from the document
-#| msgid "Navigate by images"
 msgid "Save image"
 msgstr "Kuvan tallennus"
 
@@ -1745,7 +1792,6 @@ msgid "All files (*.*)|*.*"
 msgstr "Kaikki tiedostot (*.*)|*.*"
 
 #. TRANSLATORS: Error dialog shown when saving a picture from the document fails
-#| msgid "Failed to open disk image"
 msgid "Failed to save image."
 msgstr "Kuvan tallennus epäonnistui."
 
@@ -1899,6 +1945,16 @@ msgstr "&Vie asiakirjan tiedot..."
 #. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
 msgid "Export bookmarks and position"
 msgstr "Vie kirjanmerkit ja sijainti"
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+#| msgid "Export notes and bookmarks"
+msgid "Export &Notes and Bookmarks as Text or HTML..."
+msgstr "Vie &muistiinpanot ja kirjanmerkit teksti- tai HTML-muodossa..."
+
+#. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
+#| msgid "Export bookmarks and position"
+msgid "Export bookmarks and notes in a readable format"
+msgstr "Vie muistiinpanot ja kirjanmerkit luettavassa muodossa"
 
 #. TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
 msgid "Reveal &File in Folder"
@@ -2365,7 +2421,6 @@ msgstr "Taulukkonäkymä"
 msgid "Save &image as..."
 msgstr "Tallenna &kuva nimellä..."
 
-#| msgid "Navigate by images"
 msgid "Save image as"
 msgstr "Tallenna kuva nimellä"
 
@@ -2423,10 +2478,12 @@ msgid "Go to percent"
 msgstr "Siirry prosenttiin"
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
-msgid "Copied %d character."
-msgid_plural "Copied %d characters."
-msgstr[0] "Kopioitu %d merkki."
-msgstr[1] "Kopioitu %d merkkiä."
+#| msgid "Copied %d character."
+#| msgid_plural "Copied %d characters."
+msgid "%d character copied."
+msgid_plural "%d characters copied."
+msgstr[0] "%d merkki kopioitu."
+msgstr[1] "%d merkkiä kopioitu."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 msgid "Beginning of selection set."
@@ -2804,6 +2861,11 @@ msgstr "Tuo asiakirjan tiedot..."
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export Document Data..."
 msgstr "Vie asiakirjan tiedot..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "Export notes and bookmarks"
+msgid "Export Notes and Bookmarks as Text or HTML..."
+msgstr "Vie muistiinpanot ja kirjanmerkit teksti- tai HTML-muodossa..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export to Plain Text..."
@@ -3199,7 +3261,6 @@ msgid "All parsers failed for extension: .{}"
 msgstr "Tiedostotunnistetta .{} ei voitu käsitellä millään jäsentimellä"
 
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
-#| msgid "Image"
 msgid "image"
 msgstr "kuva"
 
@@ -3464,6 +3525,10 @@ msgstr "Palautetaanko kaikki tämän välilehden oletuspikanäppäimet?"
 #. TRANSLATORS: Title of the confirmation dialog for resetting keyboard shortcuts to their defaults.
 msgid "Reset Shortcuts"
 msgstr "Oletuspikanäppäinten palautus"
+
+#. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
+msgid "{} (not on this keyboard layout)"
+msgstr "{} (ei käytettävissä tässä näppäimistöasettelussa)"
 
 #: kt swift
 msgid "Export Document Data"
