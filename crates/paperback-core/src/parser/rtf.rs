@@ -50,8 +50,10 @@ impl Parser for RtfParser {
 		tracing::debug!(path = %context.file_path, encoding = %encoding.name(), "resolved rtf document encoding");
 		let font_table = extract_font_table(&content_str, encoding);
 		let content_str = normalize_escapes(&content_str, encoding, &font_table);
-		// Strip \r so that \r\n line endings don't leave stray carriage returns in text tokens
-		let content_str = content_str.replace('\r', "");
+		// Fold every line ending to \n so none leaves a stray carriage return in text tokens. A bare
+		// \r (classic Mac) has to become \n rather than vanish: dropping it from `\<CR>}`, a
+		// paragraph break before the closing brace, leaves `\}`, an escaped brace.
+		let content_str = content_str.replace("\r\n", "\n").replace('\r', "\n");
 		let tokens = Lexer::scan(&content_str).map_err(|e| {
 			tracing::warn!(path = %context.file_path, error = %e, "failed to scan rtf document tokens");
 			// TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
