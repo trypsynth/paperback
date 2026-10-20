@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 22:03+0000\n"
+"POT-Creation-Date: 2026-10-20 18:19+0000\n"
 "PO-Revision-Date: 2026-10-17 12:00+0200\n"
 "Last-Translator: Torma Zsolt <torma.zsolt@gmail.com>\n"
 "Language-Team: Torma Zsolt <torma.zsolt@gmail.com>\n"
@@ -64,9 +64,10 @@ msgstr "A pb parancssori eszköz hozzáadása a PATH változóhoz"
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP-archívumok (.zip)"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "Nincs telepítve szövegfelismerési nyelv. Adjon hozzá egyet a rendszer nyelvi beállításaiban."
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
+#, fuzzy
+msgid "OCR needs Tesseract. Install it from your package manager."
+msgstr "A szövegfelismeréshez Tesseract szükséges. Telepítse a csomagkezelőből."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 msgid "OCR failed."
@@ -75,6 +76,15 @@ msgstr "A szövegfelismerés nem sikerült."
 #. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
 msgid "OCR is not available on this system."
 msgstr "Ezen a rendszeren nem érhető el szövegfelismerés."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "Nincs telepítve szövegfelismerési nyelv. Adjon hozzá egyet a rendszer nyelvi beállításaiban."
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+#, fuzzy
+msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
+msgstr "Nincs szövegfelismerési nyelv telepítve. Telepítsen egy Tesseract-nyelvcsomagot a csomagkezelőből."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"

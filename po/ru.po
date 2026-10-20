@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 22:03+0000\n"
+"POT-Creation-Date: 2026-10-20 18:19+0000\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -76,10 +76,10 @@ msgstr "Добавить инструмент командной строки pb
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP-архивы (.zip)"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
 #, fuzzy
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "Язык OCR не установлен. Добавьте язык в параметры языка системы."
+msgid "OCR needs Tesseract. Install it from your package manager."
+msgstr "Для OCR требуется Tesseract. Установите его из менеджера пакетов."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 #, fuzzy
@@ -90,6 +90,16 @@ msgstr "Ошибка распознавания."
 #, fuzzy
 msgid "OCR is not available on this system."
 msgstr "OCR недоступен на этой системе."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+#, fuzzy
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "Язык OCR не установлен. Добавьте язык в параметры языка системы."
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+#, fuzzy
+msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
+msgstr "Языковые данные OCR не установлены. Установите языковой пакет Tesseract из менеджера пакетов."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"

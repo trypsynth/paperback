@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 22:03+0000\n"
+"POT-Creation-Date: 2026-10-20 18:19+0000\n"
 "PO-Revision-Date: 2026-09-24 20:59+0200\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
@@ -83,9 +83,10 @@ msgstr "PB-Kommandozeilenwerkzeug zum Umgebungspfad hinzufügen"
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP-Archive (.zip)"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "Es ist keine Texterkennungssprache installiert. Füge eine in den Spracheinstellungen des Systems hinzu."
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
+#, fuzzy
+msgid "OCR needs Tesseract. Install it from your package manager."
+msgstr "Texterkennung benötigt Tesseract. Installiere es von deinem Paketmanager."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 msgid "OCR failed."
@@ -94,6 +95,15 @@ msgstr "Texterkennung fehlgeschlagen."
 #. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
 msgid "OCR is not available on this system."
 msgstr "Texterkennung ist auf diesem System nicht verfügbar."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "Es ist keine Texterkennungssprache installiert. Füge eine in den Spracheinstellungen des Systems hinzu."
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+#, fuzzy
+msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
+msgstr "Keine Sprache für Texterkennung installiert. Installiere ein Tesseract-Sprachpaket von deinem Paketmanager."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -1978,8 +1988,9 @@ msgid "Export bookmarks and position"
 msgstr "Lesezeichen und Position exportieren"
 
 #. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+#, fuzzy
 msgid "Export &Notes and Bookmarks as Text or HTML..."
-msgstr ""
+msgstr "&Notizen und Lesezeichen als Text oder HTML exportieren..."
 
 #. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
 #, fuzzy
