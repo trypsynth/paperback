@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: cc466634600b58b4; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0ee39028,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 17c984e898b7674c; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,f94368d9,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versie 1.0
 
@@ -86,6 +86,7 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 * `Ctrl+R`: Het venster "Alle documenten" tonen (vanuit Recente documenten).
 * `Ctrl+Shift+C`: Bovenliggende map openen.
 * `Ctrl+Shift+E`: Documentgegevens exporteren (`.paperback`).
+* `Ctrl+Alt+E`: Bladwijzers en notities exporteren als een leesbare tekst- of HTML-bestand.
 * `Ctrl+Shift+I`: Documentgegevens importeren (`.paperback`).
 * `Ctrl+E`: Het huidige document exporteren naar platte tekst.
 * `Ctrl+Q`: Afsluiten (alleen Windows; op macOS staat dit in het appmenu).
