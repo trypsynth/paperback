@@ -18,7 +18,7 @@ dunce = "1.0.5"
 # Decodes the embedded application icon in `ui::icon`; already in the tree via pdfium.
 image = { version = "0.25.10", default-features = false, features = ["png"] }
 live-region = "0.3.3"
-native-ocr = "0.1.0"
+native-ocr = "0.2.0"
 # `fetch` downloads documents opened from links.
 paperback-core = { path = "../paperback-core", features = ["fetch"] }
 paperback-formats = { path = "../paperback-formats" }
