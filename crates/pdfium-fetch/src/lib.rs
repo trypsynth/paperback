@@ -151,14 +151,12 @@ fn extract(archive_bytes: &[u8], file_name: &str, dest: &Path) -> io::Result<()>
 
 #[cfg(test)]
 mod tests {
-	use super::{Archive, WIN_X64};
+	use super::Archive;
 
 	#[test]
 	fn a_tag_with_a_slash_is_escaped_in_the_url() {
-		assert_eq!(
-			WIN_X64.url(),
-			"https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F8100/pdfium-win-x64.tgz"
-		);
+		let archive = Archive { tag: "chromium/1", name: "x.tgz", sha256: "" };
+		assert_eq!(archive.url(), "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F1/x.tgz");
 	}
 
 	#[test]
