@@ -14,7 +14,7 @@ mod escapes;
 mod tokens;
 
 use encoding::{extract_codepage, extract_font_table};
-use escapes::{normalize_escapes, normalize_wrapped_space_lines};
+use escapes::{escape_raw_bytes, normalize_escapes, normalize_wrapped_space_lines};
 use tokens::extract_content_from_tokens;
 
 /// Whether the bytes are Rich Text Format: `{\rtf` at the start, past a byte order mark or
@@ -42,7 +42,7 @@ impl Parser for RtfParser {
 			tracing::debug!(path = %context.file_path, "rtf file has no rtf header, routing to the text parser");
 			return TextParser.parse(context);
 		}
-		let content_str = String::from_utf8_lossy(&bytes);
+		let content_str = escape_raw_bytes(&bytes);
 		// Some RTF files have garbage at the end
 		let content_str = content_str.trim_end_matches(|c: char| c == '\0' || c.is_whitespace());
 		let content_str = normalize_wrapped_space_lines(content_str);
