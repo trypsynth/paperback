@@ -25,7 +25,6 @@ use crate::{
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 mod ipc;
 mod links;
-#[cfg(not(target_os = "macos"))]
 mod menu_edit;
 mod menu_events;
 mod menu_file;
@@ -132,7 +131,12 @@ impl MainWindow {
 		);
 		menu_events::bind_key_source(&frame, &config, Rc::clone(&from_keyboard));
 		#[cfg(target_os = "macos")]
-		super::mac_shortcuts::install(frame, Rc::clone(&config), Rc::clone(&from_keyboard));
+		{
+			let dm = Rc::clone(&doc_manager);
+			super::mac_shortcuts::install(frame, Rc::clone(&config), Rc::clone(&from_keyboard), move || {
+				dm.try_lock().is_ok_and(|dm| dm.active_tab().is_some_and(|tab| tab.text_ctrl.has_focus()))
+			});
+		}
 		#[cfg(not(target_os = "windows"))]
 		window_events::bind_tab_cycling(&frame, &doc_manager);
 		window_events::bind_document_events(frame, &doc_manager, live_region_label);
