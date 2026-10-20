@@ -61,7 +61,7 @@ objc = "0.2.7"
 paperback-formats = { path = "../paperback-formats" }
 patois-build = "0.1.16"
 pdfium-fetch = { path = "../pdfium-fetch" }
-shipfitter = { version = "0.2.2", features = ["docs", "windows-resources"] }
+shipfitter = { version = "0.2.3", features = ["docs", "windows-resources"] }
 
 [dev-dependencies]
 rstest = { workspace = true }
