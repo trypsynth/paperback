@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 22:03+0000\n"
+"POT-Creation-Date: 2026-10-20 18:19+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -76,10 +76,10 @@ msgstr "Thêm công cụ dòng lệnh pb vào PATH"
 msgid "ZIP Archives (.zip)"
 msgstr "Kho lưu trữ ZIP (.zip)"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
 #, fuzzy
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "Không có ngôn ngữ OCR nào được cài đặt. Thêm một ngôn ngữ trong cài đặt ngôn ngữ hệ thống của bạn."
+msgid "OCR needs Tesseract. Install it from your package manager."
+msgstr "OCR cần Tesseract. Cài đặt nó từ trình quản lý gói của bạn."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 #, fuzzy
@@ -90,6 +90,16 @@ msgstr "OCR không thành công."
 #, fuzzy
 msgid "OCR is not available on this system."
 msgstr "OCR không có sẵn trên hệ thống này."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+#, fuzzy
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "Không có ngôn ngữ OCR nào được cài đặt. Thêm một ngôn ngữ trong cài đặt ngôn ngữ hệ thống của bạn."
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+#, fuzzy
+msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
+msgstr "Không có ngôn ngữ OCR nào được cài đặt. Cài đặt gói ngôn ngữ Tesseract từ trình quản lý gói của bạn."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"

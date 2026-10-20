@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 22:03+0000\n"
+"POT-Creation-Date: 2026-10-20 18:19+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -85,10 +85,10 @@ msgstr "Ajouter l'outil de ligne de commande pb au PATH"
 msgid "ZIP Archives (.zip)"
 msgstr "Archives ZIP (.zip)"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
 #, fuzzy
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "Aucune langue OCR n'est installée. Ajoutez-en une dans les paramètres linguistiques de votre système."
+msgid "OCR needs Tesseract. Install it from your package manager."
+msgstr "La ROC nécessite Tesseract. Installez-le à partir de votre gestionnaire de paquets."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 #, fuzzy
@@ -99,6 +99,16 @@ msgstr "L'OCR a échoué."
 #, fuzzy
 msgid "OCR is not available on this system."
 msgstr "La reconnaissance optique de caractères n'est pas disponible sur ce système."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+#, fuzzy
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "Aucune langue OCR n'est installée. Ajoutez-en une dans les paramètres linguistiques de votre système."
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+#, fuzzy
+msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
+msgstr "Aucune langue ROC n'est installée. Installez un paquet de langue Tesseract à partir de votre gestionnaire de paquets."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -1927,10 +1937,11 @@ msgid "Could not copy to the clipboard."
 msgstr "Impossible de copier dans le presse-papiers."
 
 #. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
+#, fuzzy
 msgid "%d character selected."
 msgid_plural "%d characters selected."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%d caractère sélectionné."
+msgstr[1] "%d caractères sélectionnés."
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 #, fuzzy
@@ -2790,10 +2801,11 @@ msgid "Go to percent"
 msgstr "Aller au pourcentage"
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
+#, fuzzy
 msgid "%d character copied."
 msgid_plural "%d characters copied."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%d caractère copié."
+msgstr[1] "%d caractères copiés."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 #, fuzzy
