@@ -111,7 +111,14 @@ fn a_list_label_joins_the_line_that_follows_it() {
 	let mut label = "\u{2022}".to_string();
 	let mut block = String::new();
 	let tops = HashMap::new();
-	let mut no_images = ImagePlacement { mcid_tops: &tops, unclaimed: UnclaimedImages::new(&[]), block_top: None };
+	let figure_images = HashMap::new();
+	let mut no_images = ImagePlacement {
+		mcid_tops: &tops,
+		unclaimed: UnclaimedImages::new(&[], &[], 0),
+		page_index: 0,
+		figure_images: &figure_images,
+		block_top: None,
+	};
 	// The paragraph inside the LBody starts by flushing, with nothing yet collected.
 	flush_block(&mut label, &mut block, &mut buffer, &mut page_text, &mut lines_info, &mut no_images);
 	assert_eq!(buffer.content, "", "an empty block emits nothing and keeps the label waiting");

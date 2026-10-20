@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 22:03+0000\n"
+"POT-Creation-Date: 2026-10-20 18:19+0000\n"
 "PO-Revision-Date: 2026-09-22 08:22+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -65,9 +65,10 @@ msgstr "Het terminalprogramma pb toevoegen aan PATH"
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP-archieven (.zip)"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "Geen OCR-taal geïnstalleerd. Voeg een taal toe in je systeeminstellingen."
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
+#, fuzzy
+msgid "OCR needs Tesseract. Install it from your package manager."
+msgstr "OCR vereist Tesseract. Installeer dit via je pakketbeheerder."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 msgid "OCR failed."
@@ -76,6 +77,15 @@ msgstr "OCR mislukt."
 #. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
 msgid "OCR is not available on this system."
 msgstr "OCR is niet beschikbaar op dit systeem."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "Geen OCR-taal geïnstalleerd. Voeg een taal toe in je systeeminstellingen."
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+#, fuzzy
+msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
+msgstr "Geen OCR-taal is geïnstalleerd. Installeer een Tesseract-taalpakket via je pakketbeheerder."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"

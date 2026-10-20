@@ -71,6 +71,14 @@ impl DocumentSession {
 		if is_data_uri(source) {
 			return decode_data_uri(source);
 		}
+		// A PDF names its pictures by where their objects sit rather than by a file path, so the reference itself says which reader they need and the document's extension cannot.
+		if source.starts_with("pdf:") {
+			let (page_index, path) = parse_pdf_image_reference(source)?;
+			let password = (!self.password.is_empty()).then_some(self.password.as_str());
+			let document = crate::pdfium::PdfDocument::open(&self.file_path, password)?;
+			let page = document.page(page_index)?;
+			return page.image_png(&path).context("the picture could not be read from the pdf");
+		}
 		let extension = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
 		match extension.as_deref() {
 			Some("epub" | "cbz" | "cbr") => {
@@ -103,6 +111,15 @@ fn local_image_path(document_path: &str, source: &str) -> std::path::PathBuf {
 	Path::new(document_path).parent().unwrap_or_else(|| Path::new("")).join(source)
 }
 
+/// The page and content-stream path a PDF image marker's reference names, which the parser writes as `pdf:<page>:<path>`.
+fn parse_pdf_image_reference(source: &str) -> Result<(i32, String)> {
+	let mut parts = source.splitn(3, ':');
+	let bad = || anyhow::anyhow!("malformed pdf image reference");
+	let page = parts.nth(1).and_then(|text| text.parse().ok()).ok_or_else(bad)?;
+	let path = parts.next().filter(|path| !path.is_empty()).ok_or_else(bad)?;
+	Ok((page, path.to_string()))
+}
+
 fn decode_data_uri(uri: &str) -> Result<Vec<u8>> {
 	let (header, data) = uri.split_once(',').context("malformed data URI")?;
 	if header.to_ascii_lowercase().ends_with(";base64") {
@@ -120,6 +137,9 @@ fn strip_whitespace(text: &str) -> String {
 fn image_file_name(source: &str) -> String {
 	// TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 	let fallback = t("image");
+	if source.starts_with("pdf:") {
+		return pdf_image_file_name(source, &fallback);
+	}
 	if is_data_uri(source) {
 		let media_type = source[5..].split([';', ',']).next().unwrap_or_default().to_ascii_lowercase();
 		let subtype = media_type.strip_prefix("image/").unwrap_or_default().split('+').next().unwrap_or_default();
@@ -133,6 +153,15 @@ fn image_file_name(source: &str) -> String {
 	let path = if path.is_empty() { source.trim_start_matches('#') } else { path };
 	let name = url_decode(path.rsplit(['/', '\\']).next().unwrap_or_default());
 	if name.is_empty() { fallback } else { name }
+}
+
+/// The name a PDF picture is offered under: the page it was found on, and where it sat in that page's content stream, so a second picture from the same book does not land on the first.
+fn pdf_image_file_name(source: &str, fallback: &str) -> String {
+	let Some((page, path)) = source.strip_prefix("pdf:").and_then(|rest| rest.split_once(':')) else {
+		return format!("{fallback}.png");
+	};
+	let page = page.parse::<u32>().map_or(0, |page| page + 1);
+	format!("{fallback} {page} {}.png", path.replace('/', "-"))
 }
 
 #[cfg(test)]
@@ -150,6 +179,7 @@ mod tests {
 	#[case("data:image/jpeg;base64,AAAA", "image.jpg")]
 	#[case("data:image/svg+xml,%3Csvg%3E", "image.svg")]
 	#[case("data:;base64,AAAA", "image")]
+	#[case("pdf:2:0/1", "image 3 0-1.png")]
 	fn a_picture_is_offered_under_its_own_name(#[case] source: &str, #[case] expected: &str) {
 		assert_eq!(image_file_name(source), expected);
 	}
