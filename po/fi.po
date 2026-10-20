@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 22:03+0000\n"
-"PO-Revision-Date: 2026-10-20 23:02+0300\n"
+"POT-Creation-Date: 2026-10-20 18:19+0000\n"
+"PO-Revision-Date: 2026-10-20 23:10+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -69,11 +69,11 @@ msgstr "Lisää pb-komentorivityökalu PATH-ympäristömuuttujaan"
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP-paketit (.zip)"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
+msgid "OCR needs Tesseract. Install it from your package manager."
 msgstr ""
-"Tekstintunnistuskieltä ei ole asennettuna. Lisää kieli järjestelmän "
-"kieliasetuksissa."
+"Tekstintunnistus tarvitsee Tesseractin toimiakseen. Asenna se "
+"pakettienhallinnasta."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 msgid "OCR failed."
@@ -82,6 +82,22 @@ msgstr "Tekstintunnistus epäonnistui."
 #. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
 msgid "OCR is not available on this system."
 msgstr "Tekstintunnistus ei ole käytettävissä tässä järjestelmässä."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr ""
+"Tekstintunnistuskieltä ei ole asennettuna. Lisää kieli järjestelmän "
+"kieliasetuksissa."
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+#| msgid ""
+#| "No OCR language is installed. Add one in your system language settings."
+msgid ""
+"No OCR language is installed. Install a Tesseract language package from your "
+"package manager."
+msgstr ""
+"Tekstintunnistuksen kieltä ei ole asennettuna. Asenna Tesseractin "
+"kielipaketti pakettienhallinnasta."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -987,22 +1003,18 @@ msgid "Export notes and bookmarks"
 msgstr "Vie muistiinpanot ja kirjanmerkit"
 
 #. TRANSLATORS: Label for the dropdown choosing which entries to export
-#| msgid "Ex&port"
 msgid "&Export:"
 msgstr "V&ie:"
 
 #. TRANSLATORS: Option to export both bookmarks and notes
-#| msgid "Show all bookmarks and notes"
 msgid "Bookmarks and notes"
 msgstr "Kirjanmerkit ja muistiinpanot"
 
 #. TRANSLATORS: Option to export only bookmarks that have no note
-#| msgid "Show bookmarks only"
 msgid "Bookmarks only"
 msgstr "Vain kirjanmerkit"
 
 #. TRANSLATORS: Option to export only bookmarks that have a note
-#| msgid "Show notes only"
 msgid "Notes only"
 msgstr "Vain muistiinpanot"
 
@@ -1011,12 +1023,10 @@ msgid "Include the &passage each note is attached to"
 msgstr "Vie myös muistiinpanoihin liittyvät te&kstikatkelmat"
 
 #. TRANSLATORS: Checkbox to number the exported entries
-#| msgid "Number of files:"
 msgid "&Number the entries"
 msgstr "&Numeroi kohteet"
 
 #. TRANSLATORS: Label for the button that continues to the save dialog
-#| msgid "Ex&port"
 msgid "Export"
 msgstr "Vie"
 
@@ -1700,8 +1710,6 @@ msgid "Could not copy to the clipboard."
 msgstr "Leikepöydälle ei voi kopioida."
 
 #. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
-#| msgid "All %d document selected."
-#| msgid_plural "All %d documents selected."
 msgid "%d character selected."
 msgid_plural "%d characters selected."
 msgstr[0] "%d merkki valittuna."
@@ -1762,12 +1770,10 @@ msgid "Export Successful"
 msgstr "Vienti onnistui"
 
 #. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
-#| msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
 msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
 msgstr "Tekstitiedostot (*.txt)|*.txt|HTML-tiedostot (*.html)|*.html"
 
 #. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
-#| msgid "Export notes and bookmarks"
 msgid "Failed to export notes and bookmarks."
 msgstr "Muistiinpanojen ja kirjanmerkkien vienti epäonnistui."
 
@@ -1947,12 +1953,10 @@ msgid "Export bookmarks and position"
 msgstr "Vie kirjanmerkit ja sijainti"
 
 #. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
-#| msgid "Export notes and bookmarks"
 msgid "Export &Notes and Bookmarks as Text or HTML..."
 msgstr "Vie &muistiinpanot ja kirjanmerkit teksti- tai HTML-muodossa..."
 
 #. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
-#| msgid "Export bookmarks and position"
 msgid "Export bookmarks and notes in a readable format"
 msgstr "Vie muistiinpanot ja kirjanmerkit luettavassa muodossa"
 
@@ -2478,8 +2482,6 @@ msgid "Go to percent"
 msgstr "Siirry prosenttiin"
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
-#| msgid "Copied %d character."
-#| msgid_plural "Copied %d characters."
 msgid "%d character copied."
 msgid_plural "%d characters copied."
 msgstr[0] "%d merkki kopioitu."
@@ -2863,7 +2865,6 @@ msgid "Export Document Data..."
 msgstr "Vie asiakirjan tiedot..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#| msgid "Export notes and bookmarks"
 msgid "Export Notes and Bookmarks as Text or HTML..."
 msgstr "Vie muistiinpanot ja kirjanmerkit teksti- tai HTML-muodossa..."
 
