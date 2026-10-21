@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 17c984e898b7674c; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,f94368d9,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: a826a433e1c8cd2e; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,a836ba19,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - version 1.0
 
@@ -195,7 +195,7 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 * `Ctrl+Tab` et `Ctrl+Shift+Tab` : Aller au document ouvert suivant ou précédent, en passant d'un bout à l'autre.
 * `Enter` ou `Space` dans le texte du document : Suivre un lien ou ouvrir une vue de tableau ou de formule au curseur.
 * `Enter` sur une page PDF numérisée : Reconnaître la page avec OCR.
-* `Shift+F10` ou la touche Menu/Application dans le texte du document : Ouvrir le menu contextuel. Sur une image dans un EPUB, HTML, Markdown, CHM, FB2 ou bande dessinée, il propose également d'enregistrer l'image dans un fichier.
+* `Shift+F10` ou la touche Menu/Application dans le texte du document : Ouvrir le menu contextuel. Sur une image dans un PDF, EPUB, HTML, Markdown, CHM, FB2 ou bande dessinée, il propose également d'enregistrer l'image dans un fichier.
 
 ## iOS et Android
 

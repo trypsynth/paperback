@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 17c984e898b7674c; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,f94368d9,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: a826a433e1c8cd2e; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,a836ba19,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versie 1.0
 
@@ -195,7 +195,7 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 * `Ctrl+Tab` en `Ctrl+Shift+Tab`: Ga naar het volgende of vorige geopende document; na het laatste kom je weer bij het eerste en andersom.
 * `Enter` of `Spatie` in de documenttekst: Een link volgen of een tabel- of formuleweergave openen op de cursor.
 * `Enter` op een gescande PDF-pagina: De pagina herkennen met OCR.
-* `Shift+F10` of de menu- of applicatietoets in de documenttekst: Het contextmenu openen. Op een afbeelding in een EPUB, HTML, Markdown, CHM, FB2 of comicarchief biedt het ook de mogelijkheid om de afbeelding op te slaan in een bestand.
+* `Shift+F10` of de menu- of applicatietoets in de documenttekst: Het contextmenu openen. Op een afbeelding in een PDF, EPUB, HTML, Markdown, CHM, FB2 of comicarchief biedt het ook de mogelijkheid om de afbeelding op te slaan in een bestand.
 
 ## iOS en Android
 
