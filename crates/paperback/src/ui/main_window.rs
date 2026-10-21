@@ -46,8 +46,6 @@ use hotkey::{HotkeyHandle, re_register_hotkey, start_hotkey_listener};
 mod foreground;
 #[cfg(target_os = "windows")]
 use foreground::claim_foreground;
-#[cfg(target_os = "windows")]
-pub(crate) use foreground::{frame_is_disabled, own_dialog_is_up, remember_frame_hwnd};
 
 use crate::ui::navigation::announce;
 
@@ -85,8 +83,6 @@ impl MainWindow {
 		let app_title = t("Paperback");
 		let frame = Frame::builder().with_title(&app_title).build();
 		window_geometry::apply_defaults(&frame);
-		#[cfg(target_os = "windows")]
-		remember_frame_hwnd(&frame);
 		// The title bar and Alt+Tab entry. On Windows the executable's own icon resource
 		// (embedded by build.rs) already covers the taskbar and the shell; this is what the
 		// window itself carries, and is the only icon at all on the other platforms.
