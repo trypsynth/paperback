@@ -1,7 +1,5 @@
 //! The loaded-window management for a document: keeping the text control's slice of a large document ahead of a forward read, compacting it when the caret runs out of text behind it or the layout changes, copying the whole document when a windowed Select All only reached a slice, and jumping to the true document edges rather than the loaded window's. Split out of the main `DocumentManager` impl; see [`super`] for the windowing model in `text_window`.
 
-#[cfg(target_os = "macos")]
-use wxdragon::clipboard::Clipboard;
 use wxdragon::prelude::*;
 
 use super::{DocumentManager, DocumentTab};
@@ -97,36 +95,9 @@ impl DocumentManager {
 		tab.text_ctrl.show_position(local);
 	}
 
-	/// Copies the current selection, widening it to the whole document when everything loaded is selected but only part of the document is. Select All can only ever reach what the control holds, which for a windowed document is a slice of the book rather than the book, so a selection covering all of it means all of it in the only sense the user has. Keyed off the selection rather than a remembered Select All, so clicking anywhere collapses it and this stops applying on its own with no flag to keep in step.
-	///
-	/// macOS only, where the copy is the native one and this is what widens it. Elsewhere the copy runs through `menu_edit::handle_copy`, which reaches the whole document through `text_to_copy` instead. Returns whether it copied; false means the caller should let the control's own copy run.
-	#[cfg(target_os = "macos")]
-	pub fn copy_whole_document_if_all_selected(&self) -> bool {
-		let Some(tab) = self.active_tab() else {
-			return false;
-		};
-		let doc_len = tab.session.document_len();
-		// Only the widened case is handled here. Anything else is left to the control's own copy,
-		// which is better tested than anything this could put in its place.
-		let source = copy_source(
-			tab.text_ctrl.get_selection(),
-			tab.text_ctrl.get_last_position(),
-			tab.window.is_whole_document(doc_len),
-		);
-		if source != CopySource::WholeDocument {
-			return false;
-		}
-		let text = tab.session.content();
-		if text.is_empty() {
-			return false;
-		}
-		Clipboard::get().set_text(&text)
-	}
-
 	/// The text Edit > Copy puts on the clipboard: the control's selection, or the whole document
 	/// when everything loaded is selected but only part of the document is loaded. `None` when
 	/// nothing is selected.
-	#[cfg(not(target_os = "macos"))]
 	pub fn text_to_copy(&self) -> Option<String> {
 		let tab = self.active_tab()?;
 		let doc_len = tab.session.document_len();

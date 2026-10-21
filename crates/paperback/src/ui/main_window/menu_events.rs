@@ -11,11 +11,9 @@ use wxdragon::{prelude::*, timer::Timer};
 
 #[cfg(target_os = "windows")]
 use super::HotkeyHandle;
-#[cfg(not(target_os = "macos"))]
-use super::menu_edit;
 use super::{
 	DocumentManager, FindDialogState, MainWindow, background, commands, dialogs, find, get_update_channel, help, menu,
-	menu_file, menu_go, menu_ids, menu_tools, menu_view, sleep_timer, update_title_from_manager, updater,
+	menu_edit, menu_file, menu_go, menu_ids, menu_tools, menu_view, sleep_timer, update_title_from_manager, updater,
 };
 use crate::ui::navigation::announce_for_command;
 
@@ -217,15 +215,14 @@ impl MainWindow {
 					help::handle_donate(&frame_copy);
 				}
 				menu_ids::COPY => {
-					// On macOS the native copy runs unless the copy widened to the whole document.
+					// Other macOS controls keep Cocoa's responder-chain copy. Only the reader
+					// needs our document-window handling and character-count announcement.
 					#[cfg(target_os = "macos")]
-					{
-						let widened = dm.lock().unwrap().copy_whole_document_if_all_selected();
-						if !widened {
-							event.skip(true);
-						}
+					if !dm.lock().unwrap().active_tab().is_some_and(|tab| tab.text_ctrl.has_focus()) {
+						event.skip(true);
+						return;
 					}
-					#[cfg(not(target_os = "macos"))]
+					event.skip(false);
 					menu_edit::handle_copy(&dm, live_region_label, from_keyboard);
 				}
 				#[cfg(not(target_os = "macos"))]

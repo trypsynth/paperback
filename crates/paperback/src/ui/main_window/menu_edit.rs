@@ -1,13 +1,17 @@
-//! Edit > Copy and Edit > Select All on Windows and Linux.
+//! Edit > Copy on every desktop platform, and Edit > Select All on Windows and Linux.
 
 use std::{rc::Rc, sync::Mutex};
 
-use patois::{nt, t};
+#[cfg(not(target_os = "macos"))]
+use patois::nt;
+use patois::t;
 use wxdragon::prelude::*;
 
 use super::DocumentManager;
+#[cfg(not(target_os = "macos"))]
+use crate::ui::navigation::announce_for_selection_command;
 use crate::ui::{
-	navigation::{announce_for_command, announce_for_selection_command},
+	navigation::announce_for_command,
 	selection::{copied_announcement, copy_to_clipboard},
 };
 
@@ -56,6 +60,7 @@ fn copy_message(outcome: CopyOutcome) -> String {
 /// The shortcut waits as well, which the copy's does not. Selecting is not silent: the change is
 /// itself reported, and a message raised the moment the command runs is spoken first and leaves that
 /// report hanging on the end.
+#[cfg(not(target_os = "macos"))]
 pub fn handle_select_all(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText, from_keyboard: bool) {
 	let Some(count) = dm.lock().unwrap().select_all_and_count() else {
 		return;
@@ -64,6 +69,7 @@ pub fn handle_select_all(dm: &Rc<Mutex<DocumentManager>>, live_region_label: Sta
 }
 
 /// Its own function of the count so the wording can be pinned without a document, which a test cannot build.
+#[cfg(not(target_os = "macos"))]
 fn selected_message(count: usize) -> String {
 	// TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
 	nt("%d character selected.", "%d characters selected.", u64::try_from(count).unwrap_or(0)).replacen(
@@ -101,12 +107,14 @@ mod tests {
 	}
 
 	#[test]
+	#[cfg(not(target_os = "macos"))]
 	fn a_select_all_says_how_many_characters_the_document_has() {
 		assert_eq!(selected_message(42), "42 characters selected.");
 	}
 
 	/// One is read aloud by a person, not measured by a buffer.
 	#[test]
+	#[cfg(not(target_os = "macos"))]
 	fn a_select_all_of_one_character_is_not_plural() {
 		assert_eq!(selected_message(1), "1 character selected.");
 	}
