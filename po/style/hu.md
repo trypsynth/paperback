@@ -145,7 +145,8 @@ English → Hungarian. Use these consistently.
   forward/backward → előretekerés/visszatekerés
 - batch OCR → kötegelt szövegfelismerés
 - bookmark → könyvjelző; note → jegyzet; bookmark note → könyvjelzőjegyzet; bookmark with note →
-  könyvjelző jegyzettel; temporary bookmark → ideiglenes könyvjelző
+  könyvjelző jegyzettel; temporary bookmark → ideiglenes könyvjelző; notes and bookmarks →
+  jegyzetek és könyvjelzők, bookmarks and notes → könyvjelzők és jegyzetek (keep the English order)
 - braille display → braille-kijelző
 - clipboard → vágólap
 - container → tároló; list → lista; list item → listaelem; table → táblázat; figure → ábra;
@@ -164,12 +165,17 @@ English → Hungarian. Use these consistently.
 - log → napló; log level → naplózási szint
 - OCR → szövegfelismerés (the acronym `OCR` is fine where space is short)
 - open from URL → megnyitás webcímről; URL (on its own) → webcím
+- package manager → csomagkezelő; install it from your package manager → telepítse a
+  csomagkezelővel
 - page → oldal; line → sor; paragraph → bekezdés; word → szó; character → karakter
+- passage (the text a note is attached to) → szövegrész
 - percent → százalék
+- progress (how far through the document) → haladás; "{}% through" → `{}%-nál tart`
 - reading position → olvasási pozíció, never `olvasási hely`
 - read aloud → felolvasás; speech rate → beszédsebesség; pitch → hangmagasság; voice (a
   text-to-speech voice) → beszédhang, never `hang`; text to speech → szövegfelolvasás
 - recent documents → legutóbbi dokumentumok
+- save image as → kép mentése másként
 - screen reader → képernyőolvasó
 - section → szakasz
 - selection → kijelölés; selection start → kijelölés eleje
