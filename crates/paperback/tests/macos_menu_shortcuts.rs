@@ -85,16 +85,6 @@ mod native {
 	pub const CONTROL: usize = 1 << 18;
 	pub const OPTION: usize = 1 << 19;
 
-	pub fn activate(frame: Frame) {
-		unsafe {
-			let app: *mut Object = msg_send![class!(NSApplication), sharedApplication];
-			let _: () = msg_send![app, activateIgnoringOtherApps: true];
-			let view = frame.get_handle().cast::<Object>();
-			let window: *mut Object = msg_send![view, window];
-			let _: () = msg_send![window, makeKeyAndOrderFront: std::ptr::null_mut::<Object>()];
-		}
-	}
-
 	pub fn send_key(frame: impl WxWidget + Copy, text: &str, modifiers: usize, hardware_key: u16) {
 		let text = CString::new(text).unwrap();
 		unsafe {
@@ -143,7 +133,7 @@ fn main() {
 		sync::Mutex,
 	};
 
-	use native::{COMMAND, CONTROL, OPTION, SHIFT, activate, expect_command, send_key};
+	use native::{COMMAND, CONTROL, OPTION, SHIFT, expect_command, send_key};
 	use paperback_core::config::{ActionId, ConfigManager, KeyChord};
 	use wxdragon::prelude::*;
 
@@ -188,10 +178,13 @@ fn main() {
 			}
 			activated_for_key.borrow_mut().push((enter, result));
 		});
+		// CI runners never make the test window key, so the reader's focus is stood in for rather than read from AppKit.
+		let reader_focused = Rc::new(Cell::new(true));
+		let reader_focused_for_menu = Rc::clone(&reader_focused);
 		let received_for_menu = Rc::clone(&received);
 		let source_for_menu = Rc::clone(&from_keyboard);
 		frame.on_menu(move |event| {
-			if event.get_id() == menu_ids::COPY && !text.has_focus() {
+			if event.get_id() == menu_ids::COPY && !reader_focused_for_menu.get() {
 				event.skip(true);
 				return;
 			}
@@ -225,7 +218,10 @@ fn main() {
 			.append_item(menu_ids::PLAY_PAUSE_AUDIO, "Play/Pause\tRawCtrl+Space", "")
 			.build();
 		frame.set_menu_bar(MenuBar::builder().append(menu, "Commands").build());
-		mac_shortcuts::install(frame, Rc::clone(&config), Rc::clone(&from_keyboard), move || text.has_focus());
+		let reader_focused_for_shortcuts = Rc::clone(&reader_focused);
+		mac_shortcuts::install(frame, Rc::clone(&config), Rc::clone(&from_keyboard), move || {
+			reader_focused_for_shortcuts.get()
+		});
 		frame.show(true);
 		text.set_focus();
 		expect_command(&received, frame, "g", COMMAND, 5, menu_ids::FIND_NEXT);
@@ -361,36 +357,20 @@ fn main() {
 		config.lock().unwrap().set_shortcuts(&shortcuts);
 		expect_command(&received, frame, "?", COMMAND | SHIFT, 44, menu_ids::NEXT_HEADING);
 		assert_eq!(bar.find_item(menu_ids::FIND_NEXT).unwrap().get_label(), "Find Next\tCtrl+G");
-		// Copy needs real focus, which AppKit establishes after application initialization.
-		let timer_holder = Rc::new(RefCell::new(None));
-		let holder = Rc::clone(&timer_holder);
-		let timer = wxdragon::timer::Timer::new(&frame);
-		timer.on_tick(move |_| {
-			holder.borrow_mut().take();
-			activate(frame);
-			text.set_focus();
-			text.set_selection(0, 5);
-			assert!(text.has_focus(), "the reader must have focus before testing Copy");
-			assert!(frame.get_menu_bar().unwrap().find_item(menu_ids::COPY).unwrap().is_enabled());
-			expect_command(&received, frame, "c", COMMAND, 8, menu_ids::COPY);
-			assert_eq!(wxdragon::clipboard::Clipboard::get().get_text().as_deref(), Some("Start"));
-			assert_eq!(text.get_selection(), (0, 5), "copy must preserve the reader's selection");
-			assert!(!from_keyboard.get(), "copy must clear its keyboard source");
-			let edit = TextCtrl::builder(&panel).with_value("Native copy").build();
-			edit.set_focus();
-			edit.set_selection(0, 6);
-			received.borrow_mut().clear();
-			send_key(frame, "c", COMMAND, 8);
-			assert!(received.borrow().is_empty(), "editable text must keep native copy");
-			assert_eq!(wxdragon::clipboard::Clipboard::get().get_text().as_deref(), Some("Native"));
-			edit.destroy();
-			text.set_focus();
-			passed_for_app.set(true);
-			frame.close(true);
-			wxdragon::call_after(Box::new(|| wxdragon::app::get_app_instance().unwrap().exit_main_loop()));
-		});
-		assert!(timer.start(100, true));
-		*timer_holder.borrow_mut() = Some(timer);
+		text.set_selection(0, 5);
+		assert!(bar.find_item(menu_ids::COPY).unwrap().is_enabled());
+		expect_command(&received, frame, "c", COMMAND, 8, menu_ids::COPY);
+		assert_eq!(wxdragon::clipboard::Clipboard::get().get_text().as_deref(), Some("Start"));
+		assert_eq!(text.get_selection(), (0, 5), "copy must preserve the reader's selection");
+		assert!(!from_keyboard.get(), "copy must clear its keyboard source");
+		reader_focused.set(false);
+		received.borrow_mut().clear();
+		send_key(frame, "c", COMMAND, 8);
+		assert!(received.borrow().is_empty(), "copy outside the reader must stay native");
+		assert!(!from_keyboard.get(), "a native copy must not leave the keyboard source set");
+		passed_for_app.set(true);
+		frame.close(true);
+		wxdragon::call_after(Box::new(|| wxdragon::app::get_app_instance().unwrap().exit_main_loop()));
 	})
 	.unwrap();
 	std::fs::remove_file(config_path).unwrap();
