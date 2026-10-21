@@ -7,15 +7,15 @@ use wxdragon::prelude::*;
 use super::{document_manager::DocumentManager, navigation};
 
 pub fn format_status_text(info: &StatusInfo) -> String {
-	// TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
+	// TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Progress 45%"
 	let line_label = t("Line");
 	// TRANSLATORS: Status bar label for the current character offset within the line
 	let char_label = t("Character");
-	// TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
-	let reading_label = t("Reading");
+	// TRANSLATORS: Status bar label for how far through the document the reader has got, e.g. "Line 5, Character 120, Progress 45%"
+	let progress_label = t("Progress");
 	format!(
 		"{} {}, {} {}, {} {}%",
-		line_label, info.line_number, char_label, info.character_number, reading_label, info.percentage
+		line_label, info.line_number, char_label, info.character_number, progress_label, info.percentage
 	)
 }
 
