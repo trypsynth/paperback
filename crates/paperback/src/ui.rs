@@ -14,6 +14,8 @@ mod main_window;
 mod menu;
 mod menu_ids;
 mod navigation;
+#[cfg(target_os = "windows")]
+mod paragraph_format;
 mod readability;
 mod reader_input;
 #[cfg(target_os = "windows")]
