@@ -245,6 +245,10 @@ pub struct DocumentConfig {
 	/// whether it is downloaded again at startup. `None` for files.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub download_size: Option<u64>,
+	/// The file name the last download of a document opened from a link was saved under, which
+	/// names it in document lists better than its link can. `None` for files.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub download_name: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -330,5 +334,19 @@ mod tests {
 		let bare: DocumentConfig = toml::from_str("path = \"book.epub\"\n").unwrap();
 		assert_eq!(bare.download_size, None);
 		assert!(!toml::to_string(&bare).unwrap().contains("download_size"));
+	}
+
+	#[test]
+	fn download_name_round_trips_and_defaults_to_none_when_missing() {
+		let doc = DocumentConfig {
+			path: "https://example.org/download?id=7".into(),
+			download_name: Some("Moby Dick.epub".into()),
+			..DocumentConfig::default()
+		};
+		let parsed: DocumentConfig = toml::from_str(&toml::to_string(&doc).unwrap()).unwrap();
+		assert_eq!(parsed.download_name.as_deref(), Some("Moby Dick.epub"));
+		let bare: DocumentConfig = toml::from_str("path = \"book.epub\"\n").unwrap();
+		assert_eq!(bare.download_name, None);
+		assert!(!toml::to_string(&bare).unwrap().contains("download_name"));
 	}
 }
