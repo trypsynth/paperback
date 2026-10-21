@@ -122,7 +122,6 @@ pub fn run_update_check(parent: &Frame, silent: bool, channel: UpdateChannel) {
 		UpdateChannel::Dev => ShipChannel::Dev,
 	};
 	let trigger = if silent { CheckTrigger::Automatic } else { CheckTrigger::Manual };
-	#[cfg(target_os = "macos")]
 	ship_shape::ui::run_update_check_with_exit_handler(
 		config,
 		parent,
@@ -130,8 +129,6 @@ pub fn run_update_check(parent: &Frame, silent: bool, channel: UpdateChannel) {
 		trigger,
 		crate::ui::quit_for_update,
 	);
-	#[cfg(not(target_os = "macos"))]
-	ship_shape::ui::run_update_check(config, parent, ship_channel, trigger);
 }
 
 pub fn is_installer_distribution() -> bool {

@@ -49,16 +49,15 @@ pub(crate) use foreground::{frame_is_disabled, own_dialog_is_up, remember_frame_
 
 use crate::ui::navigation::announce;
 
+/// When the last instance quit to install an update, in seconds since the Unix epoch.
+pub(super) const UPDATE_RELAUNCH_KEY: &str = "update_relaunch_at";
+
 pub struct MainWindow {
 	frame: Frame,
 	doc_manager: Rc<Mutex<DocumentManager>>,
 	config: Rc<Mutex<ConfigManager>>,
 	#[cfg(target_os = "windows")]
 	tray_state: Rc<Mutex<Option<tray::TrayState>>>,
-	#[cfg_attr(
-		not(target_os = "macos"),
-		allow(dead_code, reason = "keeps the announcement label with the main window")
-	)]
 	live_region_label: StaticText,
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
 	#[cfg(target_os = "windows")]
@@ -222,8 +221,10 @@ impl MainWindow {
 		&self.frame
 	}
 
-	#[cfg(target_os = "macos")]
-	pub(super) fn announce_update_restart(&self) {
+	/// The marker lets the instance the update starts know it replaced this one.
+	pub(super) fn prepare_update_restart(&self) {
+		let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |since| since.as_secs());
+		self.config.lock().unwrap().set_app_string(UPDATE_RELAUNCH_KEY, &now.to_string());
 		live_region::announce(self.live_region_label, &t("Installing the update. Paperback will restart."));
 	}
 

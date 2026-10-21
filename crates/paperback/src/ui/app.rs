@@ -360,15 +360,15 @@ fn send_ipc_command(command: &IpcCommand) {
 }
 
 /// The updater calls this on the UI thread only once its helper is ready. Force-close runs the
-/// normal persistence and audio cleanup without macOS's hide-on-close veto.
-#[cfg(target_os = "macos")]
+/// normal persistence and audio cleanup, which the updater's default `process::exit` would skip,
+/// without macOS's hide-on-close veto.
 pub fn quit_for_update() {
 	if let Some(window) = main_window_from_ptr() {
 		window.frame().enable(false);
-		window.announce_update_restart();
+		window.prepare_update_restart();
 	}
 	// macOS posts live-region announcements on the next main run-loop iteration. Keep the
-	// window alive briefly so VoiceOver can receive it; never block the UI thread.
+	// window alive briefly so the screen reader can receive it; never block the UI thread.
 	std::thread::spawn(|| {
 		std::thread::sleep(std::time::Duration::from_secs(2));
 		wxdragon::call_after(Box::new(finish_quit_for_update));
@@ -376,7 +376,6 @@ pub fn quit_for_update() {
 	});
 }
 
-#[cfg(target_os = "macos")]
 fn finish_quit_for_update() {
 	if let Some(window) = main_window_from_ptr() {
 		window.frame().close(true);
@@ -384,4 +383,10 @@ fn finish_quit_for_update() {
 	if let Some(app) = wxdragon::app::get_app_instance() {
 		app.exit_main_loop();
 	}
+	// The updater's helper waits on this process with no timeout before it installs anything, so a shutdown that stalls would stall the update with it.
+	std::thread::spawn(|| {
+		std::thread::sleep(std::time::Duration::from_secs(10));
+		tracing::warn!("still running 10 seconds after quitting for an update, exiting");
+		std::process::exit(0);
+	});
 }
