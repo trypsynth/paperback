@@ -82,6 +82,11 @@ harness = false
 name = "macos_menu_shortcuts"
 harness = false
 
+# wxWidgets runs its windows on the main thread, which the default test harness does not use.
 [[test]]
 name = "windows_rtf_window_append"
+harness = false
+
+[[test]]
+name = "windows_paragraph_styles"
 harness = false
