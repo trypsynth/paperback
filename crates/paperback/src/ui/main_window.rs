@@ -45,12 +45,16 @@ use hotkey::{HotkeyHandle, re_register_hotkey, start_hotkey_listener};
 #[cfg(target_os = "windows")]
 mod foreground;
 #[cfg(target_os = "windows")]
+use foreground::claim_foreground;
+#[cfg(target_os = "windows")]
 pub(crate) use foreground::{frame_is_disabled, own_dialog_is_up, remember_frame_hwnd};
 
 use crate::ui::navigation::announce;
 
 /// When the last instance quit to install an update, in seconds since the Unix epoch.
-pub(super) const UPDATE_RELAUNCH_KEY: &str = "update_relaunch_at";
+const UPDATE_RELAUNCH_KEY: &str = "update_relaunch_at";
+/// How long after quitting for an update a start still counts as its relaunch: long enough for a slow installer, short enough that an update which never relaunched does not leave the next ordinary start taking the foreground.
+const UPDATE_RELAUNCH_WINDOW_SECS: u64 = 10 * 60;
 
 pub struct MainWindow {
 	frame: Frame,
@@ -171,6 +175,25 @@ impl MainWindow {
 	pub fn show(&self) {
 		window_geometry::restore(&self.frame, &self.config.lock().unwrap());
 		self.frame.show(true);
+		let relaunched = self.take_update_relaunch();
+		#[cfg(target_os = "windows")]
+		if relaunched {
+			claim_foreground(&self.frame);
+		}
+		#[cfg(not(target_os = "windows"))]
+		let _ = relaunched;
+	}
+
+	/// Whether an update this instance replaces quit moments ago. The marker is cleared either way, so it answers yes once.
+	fn take_update_relaunch(&self) -> bool {
+		let cfg = self.config.lock().unwrap();
+		let quit_at = cfg.get_app_string(UPDATE_RELAUNCH_KEY, "");
+		if quit_at.is_empty() {
+			return false;
+		}
+		cfg.remove_app_value(UPDATE_RELAUNCH_KEY);
+		cfg.flush();
+		quit_at.parse::<u64>().is_ok_and(|quit_at| unix_now().saturating_sub(quit_at) <= UPDATE_RELAUNCH_WINDOW_SECS)
 	}
 
 	#[cfg(target_os = "macos")]
@@ -223,8 +246,7 @@ impl MainWindow {
 
 	/// The marker lets the instance the update starts know it replaced this one.
 	pub(super) fn prepare_update_restart(&self) {
-		let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |since| since.as_secs());
-		self.config.lock().unwrap().set_app_string(UPDATE_RELAUNCH_KEY, &now.to_string());
+		self.config.lock().unwrap().set_app_string(UPDATE_RELAUNCH_KEY, &unix_now().to_string());
 		live_region::announce(self.live_region_label, &t("Installing the update. Paperback will restart."));
 	}
 
@@ -310,4 +332,8 @@ pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		}
 		frame.set_status_text(&status_text, 0);
 	}
+}
+
+fn unix_now() -> u64 {
+	std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |since| since.as_secs())
 }
