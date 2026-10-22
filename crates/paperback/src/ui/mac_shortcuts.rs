@@ -72,7 +72,12 @@ fn shortcut_action(shortcuts: &ShortcutsConfig, key: i32, modifiers: usize) -> O
 	})
 }
 
-pub fn install(frame: Frame, config: Rc<Mutex<ConfigManager>>, from_keyboard: Rc<Cell<bool>>) {
+pub fn install(
+	frame: Frame,
+	config: Rc<Mutex<ConfigManager>>,
+	from_keyboard: Rc<Cell<bool>>,
+	reader_has_focus: impl Fn() -> bool + 'static,
+) {
 	let monitor = ConcreteBlock::new(move |event: *mut Object| -> *mut Object {
 		if !frame.is_valid() || !frame.is_enabled() {
 			return event;
@@ -88,12 +93,20 @@ pub fn install(frame: Frame, config: Rc<Mutex<ConfigManager>>, from_keyboard: Rc
 		}
 		let Some((modifiers, key)) = event_key(event) else { return event };
 		let action = config.try_lock().ok().and_then(|cfg| shortcut_action(&cfg.get_shortcuts(), key, modifiers));
-		let Some(action) = action else { return event };
 		// Percentage announcements have no menu item and already run in the reader's key handler.
-		if action == ActionId::AnnouncePercent {
+		if action == Some(ActionId::AnnouncePercent) {
 			return event;
 		}
-		let id = if action == ActionId::Options { menu_ids::PREFERENCES } else { menu_ids::action_to_menu_id(action) };
+		let copy_key = key == 'C' as i32 && modifiers & (COMMAND | CONTROL | OPTION | SHIFT) == COMMAND;
+		let id = if let Some(action) = action {
+			if action == ActionId::Options { menu_ids::PREFERENCES } else { menu_ids::action_to_menu_id(action) }
+		} else if copy_key && reader_has_focus() {
+			// Copy is a stock wx command, outside ActionId. Catch it before Cocoa reads
+			// "Copy" and let the app announce the character count instead.
+			menu_ids::COPY
+		} else {
+			return event;
+		};
 		let item = frame.get_menu_bar().and_then(|bar| bar.find_item(id));
 		if !item.is_some_and(|item| item.is_enabled()) {
 			return event;

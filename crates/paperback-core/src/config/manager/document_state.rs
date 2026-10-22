@@ -176,17 +176,27 @@ impl ConfigManager {
 		self.data.borrow().documents.get(&key).map(|d| d.password.clone()).unwrap_or_default()
 	}
 
-	/// Records how many bytes the last download of the document at the link `path` was.
-	pub fn set_document_download_size(&self, path: &str, size: u64) {
+	/// Records the file name and size in bytes of the last download of the document at the link `path`.
+	pub fn set_document_download(&self, path: &str, name: &str, size: u64) {
 		if !self.initialized {
 			return;
 		}
 		{
 			let key = self.get_doc_key(path);
 			let mut data = self.data.borrow_mut();
-			Self::doc_entry_mut(&mut data, key, path).download_size = Some(size);
+			let entry = Self::doc_entry_mut(&mut data, key, path);
+			entry.download_size = Some(size);
+			entry.download_name = Some(name.to_string());
 		}
 		self.dirty.set(true);
+	}
+
+	pub fn get_document_download_name(&self, path: &str) -> Option<String> {
+		if !self.initialized {
+			return None;
+		}
+		let key = self.get_doc_key(path);
+		self.data.borrow().documents.get(&key).and_then(|d| d.download_name.clone())
 	}
 
 	pub fn get_document_download_size(&self, path: &str) -> Option<u64> {
@@ -212,10 +222,23 @@ mod tests {
 	fn the_download_size_is_kept_for_each_link() {
 		let config = ConfigManager::in_memory();
 		assert_eq!(config.get_document_download_size("https://example.org/a.epub"), None);
-		config.set_document_download_size("https://example.org/a.epub", 1_500_000);
-		config.set_document_download_size("https://example.org/a.epub", 1_600_000);
+		config.set_document_download("https://example.org/a.epub", "a.epub", 1_500_000);
+		config.set_document_download("https://example.org/a.epub", "a.epub", 1_600_000);
 		assert_eq!(config.get_document_download_size("https://example.org/a.epub"), Some(1_600_000));
 		assert_eq!(config.get_document_download_size("https://example.org/b.epub"), None);
+	}
+
+	#[test]
+	fn the_download_name_is_kept_for_each_link() {
+		let config = ConfigManager::in_memory();
+		assert_eq!(config.get_document_download_name("https://example.org/get?id=1"), None);
+		config.set_document_download("https://example.org/get?id=1", "Old.epub", 10);
+		config.set_document_download("https://example.org/get?id=1", "Moby Dick.epub", 10);
+		assert_eq!(
+			config.get_document_download_name("https://example.org/get?id=1").as_deref(),
+			Some("Moby Dick.epub")
+		);
+		assert_eq!(config.get_document_download_name("https://example.org/get?id=2"), None);
 	}
 
 	#[test]

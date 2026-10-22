@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 17c984e898b7674c; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,f94368d9,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: a826a433e1c8cd2e; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,a836ba19,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versión 1.0
 
@@ -195,7 +195,7 @@ Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, e
 * `Ctrl+Tab` y `Ctrl+Shift+Tab`: Ir al documento abierto siguiente o anterior, envolviendo en cualquiera de los extremos.
 * `Enter` o `Space` en el texto del documento: Sigue un enlace o abre una vista de tabla o fórmula en el cursor.
 * `Enter` en una página PDF escaneada: Reconoce la página con OCR.
-* `Shift+F10` o la tecla Menú/Aplicación en el texto del documento: Abre el menú contextual. En una imagen en EPUB, HTML, Markdown, CHM, FB2 o cómic, también ofrece guardar la imagen en un archivo.
+* `Shift+F10` o la tecla Menú/Aplicación en el texto del documento: Abre el menú contextual. En una imagen en un PDF, EPUB, HTML, Markdown, CHM, FB2 o cómic, también ofrece guardar la imagen en un archivo.
 
 ## iOS y Android
 

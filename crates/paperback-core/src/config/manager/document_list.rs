@@ -29,7 +29,7 @@ pub fn get_sorted_document_list(
 	}
 	let mut rest: Vec<String> = all_docs.iter().filter(|path| !doc_paths.contains(path)).cloned().collect();
 	rest.sort_by_cached_key(|path| {
-		let name = document_name(path).unwrap_or_else(|| path.clone());
+		let name = document_name(config, path);
 		(name.to_lowercase(), path.to_lowercase())
 	});
 	doc_paths.extend(rest);
@@ -37,7 +37,7 @@ pub fn get_sorted_document_list(
 	doc_paths
 		.into_iter()
 		.filter_map(|path| {
-			let filename = document_name(&path).unwrap_or_default();
+			let filename = document_name(config, &path);
 			if !filter.is_empty() && !filename.to_lowercase().contains(&filter_lower) {
 				return None;
 			}
@@ -57,13 +57,17 @@ pub fn get_sorted_document_list(
 }
 
 /// The name a document is listed, sorted and searched by: the file's own name, or for a link the
-/// file name it ends in.
+/// name its last download was saved under, else the file name the link ends in. A link's own
+/// segment can be a script like `download` or nothing at all, which is why the download's name
+/// wins. Falls back to `path` itself rather than listing a document with no name.
 #[must_use]
-pub fn document_name(path: &str) -> Option<String> {
-	if is_remote_url(path) {
-		return url_file_name(path);
-	}
-	Path::new(path).file_name().and_then(|name| name.to_str()).map(str::to_string)
+pub fn document_name(config: &ConfigManager, path: &str) -> String {
+	let name = if is_remote_url(path) {
+		config.get_document_download_name(path).or_else(|| url_file_name(path))
+	} else {
+		Path::new(path).file_name().and_then(|name| name.to_str()).map(str::to_string)
+	};
+	name.unwrap_or_else(|| path.to_string())
 }
 
 /// Whether the document's file is gone. A link never is: opening it downloads it again.
@@ -176,6 +180,21 @@ mod tests {
 		let found = get_sorted_document_list(&config, &[], "moby", None);
 		assert_eq!(found.iter().map(|item| item.filename.as_str()).collect::<Vec<_>>(), vec!["Moby Dick.epub"]);
 		assert!(get_sorted_document_list(&config, &[], "aardvark", None).is_empty());
+	}
+
+	#[test]
+	fn a_link_is_named_and_found_by_the_name_it_was_downloaded_under() {
+		let config = ConfigManager::in_memory();
+		config.add_recent_document("https://example.org/download?id=7");
+		config.set_document_download("https://example.org/download?id=7", "Moby Dick.epub", 10);
+		let found = get_sorted_document_list(&config, &[], "moby", None);
+		assert_eq!(found.iter().map(|item| item.filename.as_str()).collect::<Vec<_>>(), vec!["Moby Dick.epub"]);
+	}
+
+	#[test]
+	fn a_link_ending_in_no_file_name_is_named_by_the_link() {
+		let config = ConfigManager::in_memory();
+		assert_eq!(document_name(&config, "https://example.org/"), "https://example.org/");
 	}
 
 	#[test]

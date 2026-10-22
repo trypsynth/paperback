@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-20 18:19+0000\n"
+"POT-Creation-Date: 2026-10-21 23:51+0000\n"
 "PO-Revision-Date: 2026-09-24 20:59+0200\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
@@ -1421,7 +1421,6 @@ msgid "General"
 msgstr "Allgemein"
 
 #. TRANSLATORS: Tab label for the Reading options panel
-#. TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Reading"
 msgstr "Lesen"
 
@@ -2555,13 +2554,18 @@ msgid_plural "Sleep timer set for %d minutes."
 msgstr[0] "Einschlaftimer auf %d Minute gesetzt."
 msgstr[1] "Einschlaftimer auf %d Minuten gesetzt."
 
-#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Progress 45%"
 msgid "Line"
 msgstr "Zeile"
 
 #. TRANSLATORS: Status bar label for the current character offset within the line
 msgid "Character"
 msgstr "Zeichen"
+
+#. TRANSLATORS: Status bar label for how far through the document the reader has got, e.g. "Line 5, Character 120, Progress 45%"
+#, fuzzy
+msgid "Progress"
+msgstr "Fortschritt"
 
 #. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 msgid "Sleep timer"
@@ -4763,12 +4767,6 @@ msgstr "Ausschalten, um weiterzulesen und gleichzeitig nach Suchergebnissen zu n
 #: swift
 msgid "1.5\\u{00d7}"
 msgstr "1.5\\u{00d7}"
-
-#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
-#: swift
-#, fuzzy
-msgid "Progress"
-msgstr "Fortschritt"
 
 #, fuzzy
 #~ msgid "Selected %d character."

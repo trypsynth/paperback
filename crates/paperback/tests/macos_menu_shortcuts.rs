@@ -178,10 +178,22 @@ fn main() {
 			}
 			activated_for_key.borrow_mut().push((enter, result));
 		});
+		// CI runners never make the test window key, so the reader's focus is stood in for rather than read from AppKit.
+		let reader_focused = Rc::new(Cell::new(true));
+		let reader_focused_for_menu = Rc::clone(&reader_focused);
 		let received_for_menu = Rc::clone(&received);
 		let source_for_menu = Rc::clone(&from_keyboard);
 		frame.on_menu(move |event| {
+			if event.get_id() == menu_ids::COPY && !reader_focused_for_menu.get() {
+				event.skip(true);
+				return;
+			}
 			received_for_menu.borrow_mut().push((event.get_id(), source_for_menu.replace(false)));
+			if event.get_id() == menu_ids::COPY {
+				event.skip(false);
+				assert!(wxdragon::clipboard::Clipboard::get().set_text(&text.get_string_selection()));
+				return;
+			}
 			let position = text.get_insertion_point();
 			let result = match event.get_id() {
 				menu_ids::NEXT_LINK => Some(session_for_menu.navigate_link(position, false, true)),
@@ -195,6 +207,7 @@ fn main() {
 			}
 		});
 		let menu = Menu::builder()
+			.append_item(menu_ids::COPY, "Copy\tCtrl+C", "")
 			.append_item(menu_ids::FIND_NEXT, "Find Next\tCtrl+G", "")
 			.append_item(menu_ids::FIND_PREVIOUS, "Find Previous\tCtrl+Shift+G", "")
 			.append_item(menu_ids::NEXT_HEADING, "Next Heading\tH", "")
@@ -205,7 +218,10 @@ fn main() {
 			.append_item(menu_ids::PLAY_PAUSE_AUDIO, "Play/Pause\tRawCtrl+Space", "")
 			.build();
 		frame.set_menu_bar(MenuBar::builder().append(menu, "Commands").build());
-		mac_shortcuts::install(frame, Rc::clone(&config), Rc::clone(&from_keyboard));
+		let reader_focused_for_shortcuts = Rc::clone(&reader_focused);
+		mac_shortcuts::install(frame, Rc::clone(&config), Rc::clone(&from_keyboard), move || {
+			reader_focused_for_shortcuts.get()
+		});
 		frame.show(true);
 		text.set_focus();
 		expect_command(&received, frame, "g", COMMAND, 5, menu_ids::FIND_NEXT);
@@ -341,6 +357,17 @@ fn main() {
 		config.lock().unwrap().set_shortcuts(&shortcuts);
 		expect_command(&received, frame, "?", COMMAND | SHIFT, 44, menu_ids::NEXT_HEADING);
 		assert_eq!(bar.find_item(menu_ids::FIND_NEXT).unwrap().get_label(), "Find Next\tCtrl+G");
+		text.set_selection(0, 5);
+		assert!(bar.find_item(menu_ids::COPY).unwrap().is_enabled());
+		expect_command(&received, frame, "c", COMMAND, 8, menu_ids::COPY);
+		assert_eq!(wxdragon::clipboard::Clipboard::get().get_text().as_deref(), Some("Start"));
+		assert_eq!(text.get_selection(), (0, 5), "copy must preserve the reader's selection");
+		assert!(!from_keyboard.get(), "copy must clear its keyboard source");
+		reader_focused.set(false);
+		received.borrow_mut().clear();
+		send_key(frame, "c", COMMAND, 8);
+		assert!(received.borrow().is_empty(), "copy outside the reader must stay native");
+		assert!(!from_keyboard.get(), "a native copy must not leave the keyboard source set");
 		passed_for_app.set(true);
 		frame.close(true);
 		wxdragon::call_after(Box::new(|| wxdragon::app::get_app_instance().unwrap().exit_main_loop()));
