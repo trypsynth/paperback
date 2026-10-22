@@ -138,6 +138,10 @@ impl MainWindow {
 				menu_ids::SAVE_IMAGE => {
 					menu_file::handle_save_image(&frame_copy, &dm);
 				}
+				#[cfg(any(target_os = "windows", target_os = "macos"))]
+				menu_ids::READ_IMAGE_TEXT => {
+					dm.lock().unwrap().read_picture_at_caret();
+				}
 				menu_ids::EXPORT_DOCUMENT_DATA => {
 					menu_file::handle_export_document_data(&frame_copy, &dm, &config);
 				}

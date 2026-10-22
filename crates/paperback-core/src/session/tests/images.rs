@@ -190,7 +190,7 @@ fn an_epub_picture_offers_its_bytes() {
 #[test]
 fn text_that_is_not_an_image_has_no_bytes() {
 	let dir = unique_temp_dir();
-	fs::write(dir.join("page.html"), r#"<html><body><p>Before</p></body></html>"#).unwrap();
+	fs::write(dir.join("page.html"), r"<html><body><p>Before</p></body></html>").unwrap();
 	let session = open(&dir.join("page.html"));
 	assert!(session.image_bytes_at(position_of(&session, "Before")).is_err());
 	fs::remove_dir_all(&dir).ok();
