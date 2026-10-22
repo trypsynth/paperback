@@ -17,6 +17,14 @@ fn activate_link_resolves_external_links() {
 	assert_eq!(result.url, "https://example.com");
 }
 
+/// Enter on a picture follows its link instead of reading it, so the reader asks this first.
+#[test]
+fn is_on_link_matches_where_activation_finds_a_link() {
+	let session = sample_session(ParserFlags::NONE);
+	assert!(session.is_on_link(7));
+	assert!(!session.is_on_link(2));
+}
+
 #[test]
 fn link_list_reports_closest_index_and_text() {
 	let session = sample_session(ParserFlags::NONE);

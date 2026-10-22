@@ -45,26 +45,28 @@ impl DocumentSession {
 		}
 	}
 
+	/// Whether `position` is on a link that activating would follow.
+	#[must_use]
+	pub fn is_on_link(&self, position: i64) -> bool {
+		self.link_href_at(position).is_some()
+	}
+
+	/// The href of the link `position` is on, if any.
+	fn link_href_at(&self, position: i64) -> Option<String> {
+		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
+		let link_index = self.handle.current_marker_index(pos_usize, MarkerType::Link)?;
+		let marker = self.handle.document().buffer.markers.get(link_index)?;
+		let link_end = marker.position + marker.text.chars().count();
+		if pos_usize < marker.position || pos_usize > link_end || marker.reference.is_empty() {
+			return None;
+		}
+		Some(marker.reference.clone())
+	}
+
 	#[must_use]
 	pub fn activate_link(&self, position: i64) -> LinkActivationResult {
-		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
-		let href = {
-			let link_index = self.handle.current_marker_index(pos_usize, MarkerType::Link);
-			let Some(link_index) = link_index else {
-				return LinkActivationResult::not_found();
-			};
-			let Some(marker) = self.handle.document().buffer.markers.get(link_index) else {
-				return LinkActivationResult::not_found();
-			};
-			let link_end = marker.position + marker.text.chars().count();
-			if pos_usize < marker.position || pos_usize > link_end {
-				return LinkActivationResult::not_found();
-			}
-			if marker.reference.is_empty() {
-				return LinkActivationResult::not_found();
-			}
-			// Clone the href so we can drop the borrow on self.handle.
-			marker.reference.clone()
+		let Some(href) = self.link_href_at(position) else {
+			return LinkActivationResult::not_found();
 		};
 		let resolution = resolve_link(&self.handle, &href, position);
 		if !resolution.found {

@@ -15,6 +15,11 @@ impl DocumentManager {
 		tab.session.image_file_name_at(tab.window.to_doc(tab.text_ctrl.get_insertion_point()))
 	}
 
+	pub fn link_at_caret(&self) -> bool {
+		self.active_tab()
+			.is_some_and(|tab| tab.session.is_on_link(tab.window.to_doc(tab.text_ctrl.get_insertion_point())))
+	}
+
 	pub fn update_status_bar(&self) {
 		let sleep_start = sleep_timer::start_ms();
 		let sleep_duration = sleep_timer::duration_minutes();

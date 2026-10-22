@@ -193,7 +193,8 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Ctrl+Tab` and `Ctrl+Shift+Tab`: Go to the next or previous open document, wrapping around at either end.
 * `Enter` or `Space` in the document text: Follow a link or open a table or formula view at the cursor.
 * `Enter` on a scanned PDF page: Recognize the page with OCR.
-* `Shift+F10` or the Menu/Application key in the document text: Open the context menu. On a picture in a PDF, EPUB, HTML, Markdown, CHM, FB2 or comic book, it also offers to save the picture to a file.
+* `Enter` on a picture that is not a link: Show the text recognized in the picture, in a view `Escape` closes. The picture itself is left alone, and the document's text is not changed.
+* `Shift+F10` or the Menu/Application key in the document text: Open the context menu. On a picture in a PDF, EPUB, HTML, Markdown, CHM, FB2 or comic book, it also offers to save the picture to a file, and on Windows and macOS to read the text in it, which is how to read a picture that is also a link.
 
 ## iOS and Android
 

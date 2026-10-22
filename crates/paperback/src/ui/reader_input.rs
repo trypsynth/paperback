@@ -44,15 +44,24 @@ pub(super) fn build_text_ctrl(
 		#[cfg(not(any(target_os = "windows", target_os = "macos")))]
 		let _ = enter;
 		// Enter on an image-only page runs OCR instead of the table/link activation
-		// below. Enter only; Space always falls through to that activation.
+		// below, and Enter on a picture reads the text in it into a view of its own.
+		// A picture that is also a link follows the link instead, as Enter always has;
+		// the context menu reads that one. Space always falls through to the activation.
 		#[cfg(any(target_os = "windows", target_os = "macos"))]
 		if enter {
-			let on_placeholder = {
-				let dm = dm_for_enter.lock().unwrap();
-				dm.image_only_page_at_caret().is_some()
+			let handled = {
+				let mut dm = dm_for_enter.lock().unwrap();
+				if dm.image_only_page_at_caret().is_some() {
+					dm.start_ocr_for_current_page();
+					true
+				} else if dm.image_file_name_at_caret().is_some() && !dm.link_at_caret() {
+					dm.read_picture_at_caret();
+					true
+				} else {
+					false
+				}
 			};
-			if on_placeholder {
-				dm_for_enter.lock().unwrap().start_ocr_for_current_page();
+			if handled {
 				return;
 			}
 		}
@@ -386,10 +395,18 @@ fn show_reader_context_menu(text_ctrl: TextCtrl, dm: &Rc<Mutex<DocumentManager>>
 	let on_image = dm.try_lock().is_ok_and(|dm| dm.image_file_name_at_caret().is_some());
 	let mut builder = Menu::builder();
 	if on_image {
-		builder = builder
-			// TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
-			.append_item(menu_ids::SAVE_IMAGE, &t("Save &image as..."), &t("Save image as"))
-			.append_separator();
+		// TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
+		builder = builder.append_item(menu_ids::SAVE_IMAGE, &t("Save &image as..."), &t("Save image as"));
+		#[cfg(any(target_os = "windows", target_os = "macos"))]
+		{
+			// TRANSLATORS: Right-click context menu item and status text to show the text recognized in the picture under the caret
+			builder = builder.append_item(
+				menu_ids::READ_IMAGE_TEXT,
+				&t("Read &text in picture"),
+				&t("Read the text in the picture"),
+			);
+		}
+		builder = builder.append_separator();
 	}
 	let mut menu = builder
 		// TRANSLATORS: Right-click context menu item and status text to bookmark the current position
