@@ -11,11 +11,9 @@ use wxdragon::{prelude::*, timer::Timer};
 
 #[cfg(target_os = "windows")]
 use super::HotkeyHandle;
-#[cfg(not(target_os = "macos"))]
-use super::menu_edit;
 use super::{
 	DocumentManager, FindDialogState, MainWindow, background, commands, dialogs, find, get_update_channel, help, menu,
-	menu_file, menu_go, menu_ids, menu_tools, menu_view, sleep_timer, update_title_from_manager, updater,
+	menu_edit, menu_file, menu_go, menu_ids, menu_tools, menu_view, sleep_timer, update_title_from_manager, updater,
 };
 use crate::ui::navigation::announce_for_command;
 
@@ -143,6 +141,9 @@ impl MainWindow {
 				menu_ids::EXPORT_DOCUMENT_DATA => {
 					menu_file::handle_export_document_data(&frame_copy, &dm, &config);
 				}
+				menu_ids::EXPORT_NOTES_AND_BOOKMARKS => {
+					menu_file::handle_export_notes_and_bookmarks(&frame_copy, &dm, &config);
+				}
 				menu_ids::IMPORT_DOCUMENT_DATA => {
 					menu_file::handle_import_document_data(&frame_copy, &dm, &config);
 				}
@@ -214,15 +215,14 @@ impl MainWindow {
 					help::handle_donate(&frame_copy);
 				}
 				menu_ids::COPY => {
-					// On macOS the native copy runs unless the copy widened to the whole document.
+					// Other macOS controls keep Cocoa's responder-chain copy. Only the reader
+					// needs our document-window handling and character-count announcement.
 					#[cfg(target_os = "macos")]
-					{
-						let widened = dm.lock().unwrap().copy_whole_document_if_all_selected();
-						if !widened {
-							event.skip(true);
-						}
+					if !dm.lock().unwrap().active_tab().is_some_and(|tab| tab.text_ctrl.has_focus()) {
+						event.skip(true);
+						return;
 					}
-					#[cfg(not(target_os = "macos"))]
+					event.skip(false);
 					menu_edit::handle_copy(&dm, live_region_label, from_keyboard);
 				}
 				#[cfg(not(target_os = "macos"))]
@@ -253,19 +253,30 @@ impl MainWindow {
 /// on every command plus by the key handler for actions it runs itself, so a key that produces
 /// no command cannot leave it set for a later menu click.
 /// On macOS, `mac_shortcuts` runs menu shortcuts before Cocoa selects their items and sets the mark itself; this hook still covers keys left to wxWidgets.
+///
+/// On Windows a punctuation chord with Ctrl or Alt has no accelerator (see `menu::is_punctuation_chord`), so this hook runs it too. Plain and Shift-only punctuation stay with the book's own key handler, so typing into another control is never taken for a shortcut.
 pub(super) fn bind_key_source(frame: &Frame, config: &Rc<Mutex<ConfigManager>>, from_keyboard: Rc<Cell<bool>>) {
 	let config = Rc::clone(config);
+	#[cfg(target_os = "windows")]
+	let frame_for_hook = *frame;
 	frame.bind_internal(EventType::CHAR_HOOK, move |event| {
-		if let Some(key) = event.get_key_code()
-			&& let Ok(cfg) = config.try_lock()
-			&& cfg
-				.get_shortcuts()
-				.find_action(key, event.control_down(), event.alt_down(), event.shift_down())
-				.is_some()
-		{
+		let Some(key) = event.get_key_code() else { return };
+		let Ok(shortcuts) = config.try_lock().map(|cfg| cfg.get_shortcuts()) else { return };
+		let action = shortcuts.find_action(key, event.control_down(), event.alt_down(), event.shift_down());
+		if action.is_some() {
 			from_keyboard.set(true);
 		}
-		// Deliberately never skipped: the accelerator still has to run, since it is what
-		// delivers the command the mark will be read by.
+		// Otherwise deliberately never skipped: the accelerator still has to run, since it is what delivers the command the mark will be read by.
+		#[cfg(target_os = "windows")]
+		if let Some(action) = action
+			&& (event.control_down() || event.alt_down())
+			&& !menu::is_keyboard_only(action)
+			&& shortcuts.get_chord(action).is_some_and(|chord| menu::is_punctuation_chord(&chord))
+		{
+			event.skip(false);
+			if !frame_for_hook.process_menu_command(menu_ids::action_to_menu_id(action)) {
+				from_keyboard.set(false);
+			}
+		}
 	});
 }

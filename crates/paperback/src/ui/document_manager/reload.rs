@@ -71,7 +71,7 @@ impl DocumentManager {
 	}
 
 	/// Reads the tab at `index` again from `copy`, a new download of the link it was opened from,
-	/// keeping the reading position, and records the download's size. The previous copy is
+	/// keeping the reading position, and records the download's name and size. The previous copy is
 	/// deleted when that works; otherwise the tab keeps it and stays as it was.
 	pub fn reload_link(&mut self, index: usize, copy: WorkingCopy) -> bool {
 		let Some(tab) = self.tabs.get_mut(index) else {
@@ -84,11 +84,14 @@ impl DocumentManager {
 			return false;
 		}
 		let tab = &self.tabs[index];
-		if let Some(size) = tab.disk_fingerprint.map(FileFingerprint::len) {
+		if let (Some(copy), Some(size)) = (&tab.working_copy, tab.disk_fingerprint.map(FileFingerprint::len)) {
 			let link = tab.file_path.to_string_lossy();
+			let name = copy.file_name();
 			let config = self.config.lock().unwrap();
-			if config.get_document_download_size(&link) != Some(size) {
-				config.set_document_download_size(&link, size);
+			if config.get_document_download_size(&link) != Some(size)
+				|| config.get_document_download_name(&link).as_deref() != Some(name.as_str())
+			{
+				config.set_document_download(&link, &name, size);
 				config.flush();
 			}
 		}

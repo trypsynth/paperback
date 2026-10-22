@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 00:35+0000\n"
+"POT-Creation-Date: 2026-10-21 23:51+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -65,8 +65,8 @@ msgstr ""
 msgid "ZIP Archives (.zip)"
 msgstr ""
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
+msgid "OCR needs Tesseract. Install it from your package manager."
 msgstr ""
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
@@ -75,6 +75,14 @@ msgstr ""
 
 #. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
 msgid "OCR is not available on this system."
+msgstr ""
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr ""
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
 msgstr ""
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
@@ -958,6 +966,40 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+msgid "Export notes and bookmarks"
+msgstr ""
+
+#. TRANSLATORS: Label for the dropdown choosing which entries to export
+msgid "&Export:"
+msgstr ""
+
+#. TRANSLATORS: Option to export both bookmarks and notes
+msgid "Bookmarks and notes"
+msgstr ""
+
+#. TRANSLATORS: Option to export only bookmarks that have no note
+msgid "Bookmarks only"
+msgstr ""
+
+#. TRANSLATORS: Option to export only bookmarks that have a note
+msgid "Notes only"
+msgstr ""
+
+#. TRANSLATORS: Checkbox to include the bookmarked text next to each note
+msgid "Include the &passage each note is attached to"
+msgstr ""
+
+#. TRANSLATORS: Checkbox to number the exported entries
+msgid "&Number the entries"
+msgstr ""
+
+#. TRANSLATORS: Label for the button that continues to the save dialog
+msgid "Export"
+msgstr ""
+
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Go"
@@ -1329,7 +1371,6 @@ msgid "General"
 msgstr ""
 
 #. TRANSLATORS: Tab label for the Reading options panel
-#. TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Reading"
 msgstr ""
 
@@ -1627,8 +1668,8 @@ msgid "Could not copy to the clipboard."
 msgstr ""
 
 #. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
-msgid "Selected %d character."
-msgid_plural "Selected %d characters."
+msgid "%d character selected."
+msgid_plural "%d characters selected."
 msgstr[0] ""
 msgstr[1] ""
 
@@ -1678,16 +1719,20 @@ msgstr ""
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr ""
 
-#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
-msgid "Export notes and bookmarks"
-msgstr ""
-
 #. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 msgid "Notes and bookmarks exported successfully."
 msgstr ""
 
 #. TRANSLATORS: Title of the export-succeeded dialog
 msgid "Export Successful"
+msgstr ""
+
+#. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
+msgstr ""
+
+#. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+msgid "Failed to export notes and bookmarks."
 msgstr ""
 
 #. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
@@ -1863,6 +1908,14 @@ msgstr ""
 
 #. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
 msgid "Export bookmarks and position"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+msgid "Export &Notes and Bookmarks as Text or HTML..."
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
+msgid "Export bookmarks and notes in a readable format"
 msgstr ""
 
 #. TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
@@ -2387,8 +2440,8 @@ msgid "Go to percent"
 msgstr ""
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
-msgid "Copied %d character."
-msgid_plural "Copied %d characters."
+msgid "%d character copied."
+msgid_plural "%d characters copied."
 msgstr[0] ""
 msgstr[1] ""
 
@@ -2417,12 +2470,16 @@ msgid_plural "Sleep timer set for %d minutes."
 msgstr[0] ""
 msgstr[1] ""
 
-#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Progress 45%"
 msgid "Line"
 msgstr ""
 
 #. TRANSLATORS: Status bar label for the current character offset within the line
 msgid "Character"
+msgstr ""
+
+#. TRANSLATORS: Status bar label for how far through the document the reader has got, e.g. "Line 5, Character 120, Progress 45%"
+msgid "Progress"
 msgstr ""
 
 #. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
@@ -2767,6 +2824,10 @@ msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export Document Data..."
+msgstr ""
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Export Notes and Bookmarks as Text or HTML..."
 msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
@@ -3388,6 +3449,10 @@ msgstr ""
 
 #. TRANSLATORS: Title of the confirmation dialog for resetting keyboard shortcuts to their defaults.
 msgid "Reset Shortcuts"
+msgstr ""
+
+#. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
+msgid "{} (not on this keyboard layout)"
 msgstr ""
 
 #: kt
@@ -4636,9 +4701,4 @@ msgstr ""
 #. TRANSLATORS: 1.5x line spacing option
 #: swift
 msgid "1.5\\u{00d7}"
-msgstr ""
-
-#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
-#: swift
-msgid "Progress"
 msgstr ""

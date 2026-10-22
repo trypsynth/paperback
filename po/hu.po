@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 00:35+0000\n"
-"PO-Revision-Date: 2026-10-17 12:00+0200\n"
+"POT-Creation-Date: 2026-10-21 23:51+0000\n"
+"PO-Revision-Date: 2026-10-21 12:00+0200\n"
 "Last-Translator: Torma Zsolt <torma.zsolt@gmail.com>\n"
 "Language-Team: Torma Zsolt <torma.zsolt@gmail.com>\n"
 "Language: hu\n"
@@ -64,9 +64,9 @@ msgstr "A pb parancssori eszköz hozzáadása a PATH változóhoz"
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP-archívumok (.zip)"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "Nincs telepítve szövegfelismerési nyelv. Adjon hozzá egyet a rendszer nyelvi beállításaiban."
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
+msgid "OCR needs Tesseract. Install it from your package manager."
+msgstr "A szövegfelismeréshez a Tesseract szükséges. Telepítse a csomagkezelővel."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 msgid "OCR failed."
@@ -75,6 +75,14 @@ msgstr "A szövegfelismerés nem sikerült."
 #. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
 msgid "OCR is not available on this system."
 msgstr "Ezen a rendszeren nem érhető el szövegfelismerés."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "Nincs telepítve szövegfelismerési nyelv. Adjon hozzá egyet a rendszer nyelvi beállításaiban."
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
+msgstr "Nincs telepítve szövegfelismerési nyelv. Telepítsen egy Tesseract-nyelvcsomagot a csomagkezelővel."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -957,6 +965,40 @@ msgstr "Névtelen"
 msgid "OK"
 msgstr "OK"
 
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+msgid "Export notes and bookmarks"
+msgstr "Jegyzetek és könyvjelzők exportálása"
+
+#. TRANSLATORS: Label for the dropdown choosing which entries to export
+msgid "&Export:"
+msgstr "&Exportálás:"
+
+#. TRANSLATORS: Option to export both bookmarks and notes
+msgid "Bookmarks and notes"
+msgstr "Könyvjelzők és jegyzetek"
+
+#. TRANSLATORS: Option to export only bookmarks that have no note
+msgid "Bookmarks only"
+msgstr "Csak könyvjelzők"
+
+#. TRANSLATORS: Option to export only bookmarks that have a note
+msgid "Notes only"
+msgstr "Csak jegyzetek"
+
+#. TRANSLATORS: Checkbox to include the bookmarked text next to each note
+msgid "Include the &passage each note is attached to"
+msgstr "A jegyzethez tartozó &szövegrész is kerüljön bele"
+
+#. TRANSLATORS: Checkbox to number the exported entries
+msgid "&Number the entries"
+msgstr "&Bejegyzések sorszámozása"
+
+#. TRANSLATORS: Label for the button that continues to the save dialog
+msgid "Export"
+msgstr "Exportálás"
+
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Go"
@@ -1330,7 +1372,6 @@ msgid "General"
 msgstr "Általános"
 
 #. TRANSLATORS: Tab label for the Reading options panel
-#. TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Reading"
 msgstr "Olvasás"
 
@@ -1628,8 +1669,8 @@ msgid "Could not copy to the clipboard."
 msgstr "Nem sikerült a vágólapra másolni."
 
 #. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
-msgid "Selected %d character."
-msgid_plural "Selected %d characters."
+msgid "%d character selected."
+msgid_plural "%d characters selected."
 msgstr[0] "%d karakter kijelölve."
 msgstr[1] "%d karakter kijelölve."
 
@@ -1679,10 +1720,6 @@ msgstr "dokumentum"
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback-fájlok (*.paperback)|*.paperback"
 
-#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
-msgid "Export notes and bookmarks"
-msgstr "Jegyzetek és könyvjelzők exportálása"
-
 #. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 msgid "Notes and bookmarks exported successfully."
 msgstr "A jegyzetek és könyvjelzők exportálása sikerült."
@@ -1690,6 +1727,14 @@ msgstr "A jegyzetek és könyvjelzők exportálása sikerült."
 #. TRANSLATORS: Title of the export-succeeded dialog
 msgid "Export Successful"
 msgstr "Sikeres exportálás"
+
+#. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
+msgstr "Szövegfájlok (*.txt)|*.txt|HTML-fájlok (*.html)|*.html"
+
+#. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+msgid "Failed to export notes and bookmarks."
+msgstr "Nem sikerült exportálni a jegyzeteket és könyvjelzőket."
 
 #. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 msgid "Import notes and bookmarks"
@@ -1704,17 +1749,14 @@ msgid "Import Successful"
 msgstr "Sikeres importálás"
 
 #. TRANSLATORS: Title of the file save dialog when saving a picture from the document
-#, fuzzy
 msgid "Save image"
 msgstr "Kép mentése"
 
 #. TRANSLATORS: File filter shown in the "Save image" dialog
-#, fuzzy
 msgid "All files (*.*)|*.*"
 msgstr "Minden fájl (*.*)|*.*"
 
 #. TRANSLATORS: Error dialog shown when saving a picture from the document fails
-#, fuzzy
 msgid "Failed to save image."
 msgstr "Nem sikerült menteni a képet."
 
@@ -1868,6 +1910,14 @@ msgstr "&Dokumentumadatok exportálása..."
 #. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
 msgid "Export bookmarks and position"
 msgstr "Könyvjelzők és pozíció exportálása"
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+msgid "Export &Notes and Bookmarks as Text or HTML..."
+msgstr "&Jegyzetek és könyvjelzők exportálása szövegként vagy HTML-ként..."
+
+#. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
+msgid "Export bookmarks and notes in a readable format"
+msgstr "Könyvjelzők és jegyzetek exportálása olvasható formátumban"
 
 #. TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
 msgid "Reveal &File in Folder"
@@ -2331,17 +2381,15 @@ msgid "Table View"
 msgstr "Táblázatnézet"
 
 #. TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
-#, fuzzy
 msgid "Save &image as..."
 msgstr "Kép mentése &másként..."
 
-#, fuzzy
 msgid "Save image as"
 msgstr "Kép mentése másként"
 
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
-msgstr "&Könyvjelző létrehozása"
+msgstr "Könyvjelző &létrehozása"
 
 msgid "Create bookmark"
 msgstr "Könyvjelző létrehozása"
@@ -2362,7 +2410,7 @@ msgstr "Szöveg keresése"
 
 #. TRANSLATORS: Right-click context menu item and status text to repeat the last search forward
 msgid "Find &next"
-msgstr "&Következő keresése"
+msgstr "Kö&vetkező keresése"
 
 msgid "Find next match"
 msgstr "A következő találat keresése"
@@ -2393,8 +2441,8 @@ msgid "Go to percent"
 msgstr "Ugrás adott százalékra"
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
-msgid "Copied %d character."
-msgid_plural "Copied %d characters."
+msgid "%d character copied."
+msgid_plural "%d characters copied."
 msgstr[0] "%d karakter másolva."
 msgstr[1] "%d karakter másolva."
 
@@ -2423,13 +2471,17 @@ msgid_plural "Sleep timer set for %d minutes."
 msgstr[0] "Elalvási időzítő beállítva %d percre."
 msgstr[1] "Elalvási időzítő beállítva %d percre."
 
-#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Progress 45%"
 msgid "Line"
 msgstr "Sor"
 
 #. TRANSLATORS: Status bar label for the current character offset within the line
 msgid "Character"
 msgstr "Karakter"
+
+#. TRANSLATORS: Status bar label for how far through the document the reader has got, e.g. "Line 5, Character 120, Progress 45%"
+msgid "Progress"
+msgstr "Haladás"
 
 #. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 msgid "Sleep timer"
@@ -2774,6 +2826,10 @@ msgstr "Dokumentumadatok importálása..."
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export Document Data..."
 msgstr "Dokumentumadatok exportálása..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Export Notes and Bookmarks as Text or HTML..."
+msgstr "Jegyzetek és könyvjelzők exportálása szövegként vagy HTML-ként..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export to Plain Text..."
@@ -3155,7 +3211,6 @@ msgid "All parsers failed for extension: .{}"
 msgstr "Egyik feldolgozó sem tudta megnyitni ezt a kiterjesztést: .{}"
 
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
-#, fuzzy
 msgid "image"
 msgstr "kép"
 
@@ -3398,6 +3453,10 @@ msgstr "Visszaállítja ezen a lapon az összes billentyűparancsot az alapérte
 #. TRANSLATORS: Title of the confirmation dialog for resetting keyboard shortcuts to their defaults.
 msgid "Reset Shortcuts"
 msgstr "Billentyűparancsok visszaállítása"
+
+#. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
+msgid "{} (not on this keyboard layout)"
+msgstr "{} (ezen a billentyűzetkiosztáson nem érhető el)"
 
 #: kt swift
 msgid "Export Document Data"
@@ -4348,7 +4407,7 @@ msgstr "Fájlkezelő"
 #. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
 #: swift kt
 msgid "{}% through"
-msgstr "Haladás: {}%"
+msgstr "{}%-nál tart"
 
 #. TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
 #: swift
@@ -4563,8 +4622,12 @@ msgstr "Kapcsolja ki, ha a keresési találatok közötti navigálás közben fo
 msgid "1.5\\u{00d7}"
 msgstr "1,5\\u{00d7}"
 
-#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
-#: swift
-#, fuzzy
-msgid "Progress"
-msgstr "Olvasási pozíció"
+#~ msgid "Selected %d character."
+#~ msgid_plural "Selected %d characters."
+#~ msgstr[0] "%d karakter kijelölve."
+#~ msgstr[1] "%d karakter kijelölve."
+
+#~ msgid "Copied %d character."
+#~ msgid_plural "Copied %d characters."
+#~ msgstr[0] "%d karakter másolva."
+#~ msgstr[1] "%d karakter másolva."

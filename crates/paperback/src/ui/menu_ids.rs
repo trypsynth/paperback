@@ -97,7 +97,7 @@ seq_ids!(BASE + 400 =>
 );
 
 // File menu: export and document data (BASE + 410..419)
-seq_ids!(BASE + 410 => IMPORT_DOCUMENT_DATA, EXPORT_DOCUMENT_DATA, EXPORT_TO_PLAIN_TEXT, EXPORT_TO_HTML, EXPORT_TO_MARKDOWN);
+seq_ids!(BASE + 410 => IMPORT_DOCUMENT_DATA, EXPORT_DOCUMENT_DATA, EXPORT_TO_PLAIN_TEXT, EXPORT_TO_HTML, EXPORT_TO_MARKDOWN, EXPORT_NOTES_AND_BOOKMARKS);
 
 // Bookmarks menu: creating bookmarks (BASE + 420..429)
 seq_ids!(BASE + 420 => TOGGLE_BOOKMARK, BOOKMARK_WITH_NOTE);
@@ -226,6 +226,7 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::CustomizeShortcuts => CUSTOMIZE_SHORTCUTS,
 		ActionId::ImportDocumentData => IMPORT_DOCUMENT_DATA,
 		ActionId::ExportDocumentData => EXPORT_DOCUMENT_DATA,
+		ActionId::ExportNotesAndBookmarks => EXPORT_NOTES_AND_BOOKMARKS,
 		ActionId::ExportToPlainText => EXPORT_TO_PLAIN_TEXT,
 		ActionId::ExportToHtml => EXPORT_TO_HTML,
 		ActionId::ExportToMarkdown => EXPORT_TO_MARKDOWN,

@@ -2259,12 +2259,11 @@ msgstr "Przejdź do &procentu"
 msgid "Go to percent"
 msgstr "Przejdź do procentu"
 
-#. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
-msgid "Copied %d character."
-msgid_plural "Copied %d characters."
-msgstr[0] "Skopiowano %d znak."
-msgstr[1] "Skopiowano %d znaki."
-msgstr[2] "Skopiowano %d znaków."
+#~ msgid "Copied %d character."
+#~ msgid_plural "Copied %d characters."
+#~ msgstr[0] "Skopiowano %d znak."
+#~ msgstr[1] "Skopiowano %d znaki."
+#~ msgstr[2] "Skopiowano %d znaków."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 msgid "Beginning of selection set."
@@ -2282,12 +2281,11 @@ msgstr "Nie ma nic do skopiowania."
 msgid "Could not copy to the clipboard."
 msgstr "Nie udało się skopiować tekstu do schowka."
 
-#. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
-msgid "Selected %d character."
-msgid_plural "Selected %d characters."
-msgstr[0] "Zaznaczono %d znak."
-msgstr[1] "Zaznaczono %d znaki."
-msgstr[2] "Zaznaczono %d znaków."
+#~ msgid "Selected %d character."
+#~ msgid_plural "Selected %d characters."
+#~ msgstr[0] "Zaznaczono %d znak."
+#~ msgstr[1] "Zaznaczono %d znaki."
+#~ msgstr[2] "Zaznaczono %d znaków."
 
 #. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
 msgid "Cannot jump; set beginning of selection first."
@@ -4901,3 +4899,105 @@ msgstr "Wyłącz, aby czytać dalej podczas przechodzenia między wynikami wyszu
 
 #~ msgid "Copied (%d chars)."
 #~ msgstr "Skopiowano (liczba znaków: %d)."
+
+#. TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
+msgid "Save &image as..."
+msgstr "Zapisz &obraz jako..."
+
+msgid "Save image as"
+msgstr "Zapisz obraz jako"
+
+#. TRANSLATORS: Title of the file save dialog when saving a picture from the document
+msgid "Save image"
+msgstr "Zapisz obraz"
+
+#. TRANSLATORS: File filter shown in the "Save image" dialog
+msgid "All files (*.*)|*.*"
+msgstr "Wszystkie pliki (*.*)|*.*"
+
+#. TRANSLATORS: Error dialog shown when saving a picture from the document fails
+msgid "Failed to save image."
+msgstr "Nie udało się zapisać obrazu."
+
+#. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
+msgid "image"
+msgstr "obraz"
+
+#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
+#: swift
+msgid "Progress"
+msgstr "Postęp"
+
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
+msgid "OCR needs Tesseract. Install it from your package manager."
+msgstr "OCR wymaga programu Tesseract. Zainstaluj go za pomocą menedżera pakietów."
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
+msgstr "Nie zainstalowano żadnego języka OCR. Zainstaluj pakiet językowy programu Tesseract za pomocą menedżera pakietów."
+
+#. TRANSLATORS: Label for the dropdown choosing which entries to export
+msgid "&Export:"
+msgstr "&Eksportuj:"
+
+#. TRANSLATORS: Option to export both bookmarks and notes
+msgid "Bookmarks and notes"
+msgstr "Zakładki i notatki"
+
+#. TRANSLATORS: Option to export only bookmarks that have no note
+msgid "Bookmarks only"
+msgstr "Tylko zakładki"
+
+#. TRANSLATORS: Option to export only bookmarks that have a note
+msgid "Notes only"
+msgstr "Tylko notatki"
+
+#. TRANSLATORS: Checkbox to include the bookmarked text next to each note
+msgid "Include the &passage each note is attached to"
+msgstr "Dołącz &fragment tekstu, do którego przypięta jest każda notatka"
+
+#. TRANSLATORS: Checkbox to number the exported entries
+msgid "&Number the entries"
+msgstr "&Numeruj wpisy"
+
+#. TRANSLATORS: Label for the button that continues to the save dialog
+msgid "Export"
+msgstr "Eksportuj"
+
+#. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
+msgid "%d character selected."
+msgid_plural "%d characters selected."
+msgstr[0] "Zaznaczono %d znak."
+msgstr[1] "Zaznaczono %d znaki."
+msgstr[2] "Zaznaczono %d znaków."
+
+#. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
+msgstr "Pliki tekstowe (*.txt)|*.txt|Pliki HTML (*.html)|*.html"
+
+#. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+msgid "Failed to export notes and bookmarks."
+msgstr "Nie udało się wyeksportować zakładek i notatek."
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+msgid "Export &Notes and Bookmarks as Text or HTML..."
+msgstr "Eksportuj zakładki i no&tatki jako tekst lub HTML..."
+
+#. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
+msgid "Export bookmarks and notes in a readable format"
+msgstr "Eksportuj zakładki i notatki w czytelnym formacie"
+
+#. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
+msgid "%d character copied."
+msgid_plural "%d characters copied."
+msgstr[0] "Skopiowano %d znak."
+msgstr[1] "Skopiowano %d znaki."
+msgstr[2] "Skopiowano %d znaków."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Export Notes and Bookmarks as Text or HTML..."
+msgstr "Eksportuj zakładki i notatki jako tekst lub HTML..."
+
+#. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
+msgid "{} (not on this keyboard layout)"
+msgstr "{} (niedostępny w tym układzie klawiatury)"

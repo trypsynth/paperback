@@ -1,9 +1,10 @@
 //! Which document has focus and which tab is showing. Split out of the main `DocumentManager` impl.
 
+use patois::t;
 use wxdragon::prelude::*;
 
 use super::{DocumentManager, display_title};
-use crate::ui::navigation::announce;
+use crate::ui::{main_window::update_title_from_manager, navigation::announce};
 
 impl DocumentManager {
 	/// Puts focus on the freshly opened document's text, and makes that the target a later
@@ -77,7 +78,7 @@ impl DocumentManager {
 
 	/// Moves to the next document, or the previous one, wrapping around at either end.
 	#[cfg(not(target_os = "windows"))]
-	pub fn cycle_tab(&self, forward: bool) {
+	pub fn cycle_tab(&mut self, forward: bool) {
 		let count = self.tabs.len();
 		let Some(active) = self.active_tab_index() else { return };
 		let index = if forward { (active + 1) % count } else { (active + count - 1) % count };
@@ -86,10 +87,11 @@ impl DocumentManager {
 
 	/// Selects the tab at `index`, reporting whether there was such a tab.
 	///
-	/// Goes through the notebook rather than setting state directly, which is what makes this
-	/// behave exactly like the notebook's own Ctrl+Tab: the tab strip repaints, the page-changed
-	/// handler updates the title bar, pauses the other document's audio and checks whether the
-	/// file changed on disk.
+	/// Goes through the notebook rather than setting state directly, so the tab strip repaints
+	/// exactly as it does for the notebook's own Ctrl+Tab. What the page-changed handler does
+	/// after that - title bar, the other document's audio, the check for a file changed on disk -
+	/// is done here by [`Self::finish_page_change`] instead, because that handler needs the lock
+	/// too and, on Windows, where the notebook fires it synchronously, finds it taken.
 	///
 	/// The title is announced here rather than left to the page-changing handler, and that is the
 	/// part which is easy to get wrong. That handler takes the manager lock before it announces
@@ -109,7 +111,7 @@ impl DocumentManager {
 	/// alternative - saying so - would mean a new translatable string for a key that is mostly
 	/// pressed by habit, and a reader who is nine documents deep is not going to wonder what
 	/// went wrong.
-	pub fn switch_to_tab(&self, index: usize) -> bool {
+	pub fn switch_to_tab(&mut self, index: usize) -> bool {
 		let Some(tab) = self.tabs.get(index) else {
 			return false;
 		};
@@ -121,6 +123,7 @@ impl DocumentManager {
 			return true;
 		}
 		self.notebook.set_selection(index);
+		self.finish_page_change(true);
 		// The same condition the page-changing handler uses. From the reading control the notebook
 		// does not have focus, the handler cannot get in to say anything, and the title is the
 		// only thing this gesture should be heard saying. From the tab strip the notebook does
@@ -133,5 +136,32 @@ impl DocumentManager {
 			announce(self.live_region_label, display_title(&self.tabs[index]));
 		}
 		true
+	}
+
+	/// Brings the window up to date with the tab that has just become active: re-reads it if its
+	/// file changed on disk (only when `check_disk` is set), then updates the title bar and stops
+	/// the audio of every other document.
+	///
+	/// Called by the notebook's page-changed handler and by [`Self::switch_to_tab`]. Running it
+	/// twice for one switch - which happens where the notebook delivers the page-changed event
+	/// after the lock is released - is harmless: the second run finds nothing left to do.
+	pub fn finish_page_change(&mut self, check_disk: bool) {
+		if check_disk
+			&& let Some(index) = self.active_tab_index()
+			&& self.reload_tab_if_changed(index)
+		{
+			// Medium rather than the default high: a file changing on disk is not something the
+			// user asked for, so it waits for the current utterance to finish instead of cutting
+			// them off mid sentence.
+			// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
+			live_region::announce_with_priority(
+				self.live_region_label,
+				&t("Document reloaded."),
+				live_region::Priority::Medium,
+			);
+		}
+		update_title_from_manager(&self.frame, self);
+		self.reset_sound_line();
+		self.pause_inactive_audio();
 	}
 }

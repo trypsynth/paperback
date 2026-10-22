@@ -52,6 +52,7 @@ pub(super) fn extract_tagged_page_text(
 	flat_toc_items: &mut Vec<(u32, TocItem)>,
 	render_tables_inline: bool,
 	image_tops: &[f64],
+	image_paths: &[String],
 	evidence: &mut HyphenEvidence,
 ) -> bool {
 	let Some(struct_tree) = page.tags() else { return false };
@@ -63,7 +64,11 @@ pub(super) fn extract_tagged_page_text(
 	// A tree that names its figures is trusted with them, and the page's own image objects are
 	// then left alone: a `Figure` is not always one drawn image, so counting both would announce
 	// some of them twice.
-	let unclaimed = UnclaimedImages::new(if facts.claims_figures { &[] } else { image_tops });
+	let unclaimed = UnclaimedImages::new(
+		if facts.claims_figures { &[] } else { image_tops },
+		if facts.claims_figures { &[] } else { image_paths },
+		page_index,
+	);
 	let content = marked_content::read(text_page, &facts, !unclaimed.is_empty(), evidence);
 	let coverage = content.coverage;
 	let tagged_trusted = coverage >= MIN_MCID_COVERAGE;
@@ -89,7 +94,15 @@ pub(super) fn extract_tagged_page_text(
 	let mut current_block = String::new();
 	let mut pending_label = String::new();
 	let mut page_text = PageText::new(&content.text);
-	let mut images = ImagePlacement { mcid_tops: &content.tops, unclaimed, block_top: None };
+	// Only a tree that names figures can ask for one's picture, so the walk over the page's objects that answers where each image sits is skipped for the rest.
+	let figure_images = if facts.claims_figures { page.image_paths_by_mcid() } else { HashMap::new() };
+	let mut images = ImagePlacement {
+		mcid_tops: &content.tops,
+		unclaimed,
+		page_index,
+		figure_images: &figure_images,
+		block_top: None,
+	};
 	for i in 0..child_count {
 		if let Some(child) = struct_tree.child(i) {
 			process_struct_element(
@@ -120,6 +133,10 @@ pub(super) fn extract_tagged_page_text(
 struct ImagePlacement<'a> {
 	mcid_tops: &'a HashMap<i32, f64>,
 	unclaimed: UnclaimedImages,
+	/// The page the images belong to, which a marker's reference names so its picture can be saved.
+	page_index: i32,
+	/// Where each marked-content id's picture sits in the content stream. A `Figure` element points at its picture by marked-content id, and this is what turns that into a reference.
+	figure_images: &'a HashMap<i32, String>,
 	/// The top edge of the block being built, from the first piece of text in it.
 	block_top: Option<f64>,
 }
@@ -161,6 +178,12 @@ impl ImagePlacement<'_> {
 		self.unclaimed.place_above(top, buffer, page_display_text, current_lines_info);
 	}
 
+	/// The reference that saves the picture behind `elem`, or an empty string when its content names no image Paperback can find on the page.
+	fn figure_reference(&self, elem: &Tag) -> String {
+		find_image_path(elem, self.figure_images)
+			.map_or_else(String::new, |path| format!("pdf:{}:{path}", self.page_index))
+	}
+
 	/// Write the images left below everything the page wrote.
 	fn after_page(
 		&mut self,
@@ -170,6 +193,23 @@ impl ImagePlacement<'_> {
 	) {
 		self.unclaimed.place_above(f64::NEG_INFINITY, buffer, page_display_text, current_lines_info);
 	}
+}
+
+/// The content-stream path of the first image under `elem`, found by the marked-content ids its leaves carry. A figure's picture is usually a direct child, but a maker that wraps it in a `Div` or a `Caption`'s sibling nests it a level or two down, so the whole subtree is searched.
+fn find_image_path(elem: &Tag, image_paths: &HashMap<i32, String>) -> Option<String> {
+	let count = elem.child_count();
+	for i in 0..count {
+		if let Some(child) = elem.child(i) {
+			if let Some(path) = find_image_path(&child, image_paths) {
+				return Some(path);
+			}
+		} else if let Some(mcid) = elem.child_mcid(i)
+			&& let Some(path) = image_paths.get(&mcid)
+		{
+			return Some(path.clone());
+		}
+	}
+	None
 }
 
 /// Replaces a list label made only of private-use characters with a plain bullet.
@@ -303,7 +343,8 @@ fn process_struct_element(
 			.unwrap_or_default();
 		images.note_element(elem);
 		images.before_line(buffer, page_display_text, current_lines_info);
-		append_image(buffer, MarkerType::Figure, &description, page_display_text, current_lines_info);
+		let reference = images.figure_reference(elem);
+		append_image(buffer, MarkerType::Figure, &description, page_display_text, current_lines_info, &reference);
 		// The description goes in beside what the figure draws rather than in place of it, which
 		// is what a PDF reader following /Alt to the letter would do. A figure is not always only
 		// a picture: a travel guide measured for this wraps its page numbers, its offers and the

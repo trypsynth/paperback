@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 00:35+0000\n"
+"POT-Creation-Date: 2026-10-21 23:51+0000\n"
 "PO-Revision-Date: 2026-09-22 08:22+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -65,9 +65,10 @@ msgstr "Het terminalprogramma pb toevoegen aan PATH"
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP-archieven (.zip)"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "Geen OCR-taal geïnstalleerd. Voeg een taal toe in je systeeminstellingen."
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
+#, fuzzy
+msgid "OCR needs Tesseract. Install it from your package manager."
+msgstr "OCR vereist Tesseract. Installeer dit via je pakketbeheerder."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 msgid "OCR failed."
@@ -76,6 +77,15 @@ msgstr "OCR mislukt."
 #. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
 msgid "OCR is not available on this system."
 msgstr "OCR is niet beschikbaar op dit systeem."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "Geen OCR-taal geïnstalleerd. Voeg een taal toe in je systeeminstellingen."
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+#, fuzzy
+msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
+msgstr "Geen OCR-taal is geïnstalleerd. Installeer een Tesseract-taalpakket via je pakketbeheerder."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -962,6 +972,47 @@ msgstr "Naamloos"
 msgid "OK"
 msgstr "OK"
 
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+msgid "Export notes and bookmarks"
+msgstr "Notities en bladwijzers exporteren"
+
+#. TRANSLATORS: Label for the dropdown choosing which entries to export
+#, fuzzy
+msgid "&Export:"
+msgstr "&Exporteren:"
+
+#. TRANSLATORS: Option to export both bookmarks and notes
+#, fuzzy
+msgid "Bookmarks and notes"
+msgstr "Bladwijzers en notities"
+
+#. TRANSLATORS: Option to export only bookmarks that have no note
+#, fuzzy
+msgid "Bookmarks only"
+msgstr "Alleen bladwijzers"
+
+#. TRANSLATORS: Option to export only bookmarks that have a note
+#, fuzzy
+msgid "Notes only"
+msgstr "Alleen notities"
+
+#. TRANSLATORS: Checkbox to include the bookmarked text next to each note
+#, fuzzy
+msgid "Include the &passage each note is attached to"
+msgstr "De &passage opnemen waar elke notitie aan is gekoppeld"
+
+#. TRANSLATORS: Checkbox to number the exported entries
+#, fuzzy
+msgid "&Number the entries"
+msgstr "&De items nummeren"
+
+#. TRANSLATORS: Label for the button that continues to the save dialog
+#, fuzzy
+msgid "Export"
+msgstr "Exporteren"
+
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Go"
@@ -1335,7 +1386,6 @@ msgid "General"
 msgstr "Algemeen"
 
 #. TRANSLATORS: Tab label for the Reading options panel
-#. TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Reading"
 msgstr "Lezen"
 
@@ -1633,8 +1683,9 @@ msgid "Could not copy to the clipboard."
 msgstr "Kan niet naar het klembord kopiëren."
 
 #. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
-msgid "Selected %d character."
-msgid_plural "Selected %d characters."
+#, fuzzy
+msgid "%d character selected."
+msgid_plural "%d characters selected."
 msgstr[0] "%d teken geselecteerd."
 msgstr[1] "%d tekens geselecteerd."
 
@@ -1684,10 +1735,6 @@ msgstr "document"
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback-bestanden (*.paperback)|*.paperback"
 
-#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
-msgid "Export notes and bookmarks"
-msgstr "Notities en bladwijzers exporteren"
-
 #. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 msgid "Notes and bookmarks exported successfully."
 msgstr "Notities en bladwijzers succesvol geëxporteerd."
@@ -1695,6 +1742,16 @@ msgstr "Notities en bladwijzers succesvol geëxporteerd."
 #. TRANSLATORS: Title of the export-succeeded dialog
 msgid "Export Successful"
 msgstr "Exporteren geslaagd"
+
+#. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+#, fuzzy
+msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
+msgstr "Tekstbestanden (*.txt)|*.txt|HTML-bestanden (*.html)|*.html"
+
+#. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+#, fuzzy
+msgid "Failed to export notes and bookmarks."
+msgstr "Notities en bladwijzers exporteren mislukt."
 
 #. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 msgid "Import notes and bookmarks"
@@ -1873,6 +1930,16 @@ msgstr "Documentgegevens &exporteren..."
 #. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
 msgid "Export bookmarks and position"
 msgstr "Bladwijzers en positie exporteren"
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+#, fuzzy
+msgid "Export &Notes and Bookmarks as Text or HTML..."
+msgstr "Bladwijzers en &notities als tekst of HTML exporteren..."
+
+#. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
+#, fuzzy
+msgid "Export bookmarks and notes in a readable format"
+msgstr "Bladwijzers en notities in leesbare indeling exporteren"
 
 #. TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
 msgid "Reveal &File in Folder"
@@ -2398,8 +2465,9 @@ msgid "Go to percent"
 msgstr "Ga naar percentage"
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
-msgid "Copied %d character."
-msgid_plural "Copied %d characters."
+#, fuzzy
+msgid "%d character copied."
+msgid_plural "%d characters copied."
 msgstr[0] "%d teken gekopieerd."
 msgstr[1] "%d tekens gekopieerd."
 
@@ -2428,13 +2496,18 @@ msgid_plural "Sleep timer set for %d minutes."
 msgstr[0] "Slaaptimer ingesteld op %d minuut."
 msgstr[1] "Slaaptimer ingesteld op %d minuten."
 
-#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Progress 45%"
 msgid "Line"
 msgstr "Regel"
 
 #. TRANSLATORS: Status bar label for the current character offset within the line
 msgid "Character"
 msgstr "Teken"
+
+#. TRANSLATORS: Status bar label for how far through the document the reader has got, e.g. "Line 5, Character 120, Progress 45%"
+#, fuzzy
+msgid "Progress"
+msgstr "Voortgang"
 
 #. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 msgid "Sleep timer"
@@ -2781,6 +2854,11 @@ msgstr "Documentgegevens importeren..."
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export Document Data..."
 msgstr "Documentgegevens exporteren..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Export Notes and Bookmarks as Text or HTML..."
+msgstr "Bladwijzers en notities als tekst of HTML exporteren..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export to Plain Text..."
@@ -3405,6 +3483,11 @@ msgstr "Alle sneltoetsen op dit tabblad naar de standaardwaarden herstellen?"
 #. TRANSLATORS: Title of the confirmation dialog for resetting keyboard shortcuts to their defaults.
 msgid "Reset Shortcuts"
 msgstr "Sneltoetsen herstellen"
+
+#. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
+#, fuzzy
+msgid "{} (not on this keyboard layout)"
+msgstr "{} (niet op deze toetsenbordindeling)"
 
 #: kt swift
 msgid "Export Document Data"
@@ -4570,11 +4653,15 @@ msgstr "Schakel dit uit om door te blijven lezen terwijl je per zoekovereenkomst
 msgid "1.5\\u{00d7}"
 msgstr "1,5\\u{00d7}"
 
-#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
-#: swift
-#, fuzzy
-msgid "Progress"
-msgstr "Voortgang"
+#~ msgid "Selected %d character."
+#~ msgid_plural "Selected %d characters."
+#~ msgstr[0] "%d teken geselecteerd."
+#~ msgstr[1] "%d tekens geselecteerd."
+
+#~ msgid "Copied %d character."
+#~ msgid_plural "Copied %d characters."
+#~ msgstr[0] "%d teken gekopieerd."
+#~ msgstr[1] "%d tekens gekopieerd."
 
 #~ msgid "&Undo\tCtrl+Z"
 #~ msgstr "&Ongedaan maken\tCtrl+Z"

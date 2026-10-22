@@ -25,7 +25,6 @@ use crate::{
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 mod ipc;
 mod links;
-#[cfg(not(target_os = "macos"))]
 mod menu_edit;
 mod menu_events;
 mod menu_file;
@@ -43,11 +42,6 @@ mod hotkey;
 #[cfg(target_os = "windows")]
 use hotkey::{HotkeyHandle, re_register_hotkey, start_hotkey_listener};
 
-#[cfg(target_os = "windows")]
-mod foreground;
-#[cfg(target_os = "windows")]
-pub(crate) use foreground::{frame_is_disabled, own_dialog_is_up, remember_frame_hwnd};
-
 use crate::ui::navigation::announce;
 
 pub struct MainWindow {
@@ -56,10 +50,6 @@ pub struct MainWindow {
 	config: Rc<Mutex<ConfigManager>>,
 	#[cfg(target_os = "windows")]
 	tray_state: Rc<Mutex<Option<tray::TrayState>>>,
-	#[cfg_attr(
-		not(target_os = "macos"),
-		allow(dead_code, reason = "keeps the announcement label with the main window")
-	)]
 	live_region_label: StaticText,
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
 	#[cfg(target_os = "windows")]
@@ -83,8 +73,6 @@ impl MainWindow {
 		let app_title = t("Paperback");
 		let frame = Frame::builder().with_title(&app_title).build();
 		window_geometry::apply_defaults(&frame);
-		#[cfg(target_os = "windows")]
-		remember_frame_hwnd(&frame);
 		// The title bar and Alt+Tab entry. On Windows the executable's own icon resource
 		// (embedded by build.rs) already covers the taskbar and the shell; this is what the
 		// window itself carries, and is the only icon at all on the other platforms.
@@ -132,7 +120,12 @@ impl MainWindow {
 		);
 		menu_events::bind_key_source(&frame, &config, Rc::clone(&from_keyboard));
 		#[cfg(target_os = "macos")]
-		super::mac_shortcuts::install(frame, Rc::clone(&config), Rc::clone(&from_keyboard));
+		{
+			let dm = Rc::clone(&doc_manager);
+			super::mac_shortcuts::install(frame, Rc::clone(&config), Rc::clone(&from_keyboard), move || {
+				dm.try_lock().is_ok_and(|dm| dm.active_tab().is_some_and(|tab| tab.text_ctrl.has_focus()))
+			});
+		}
 		#[cfg(not(target_os = "windows"))]
 		window_events::bind_tab_cycling(&frame, &doc_manager);
 		window_events::bind_document_events(frame, &doc_manager, live_region_label);
@@ -168,6 +161,10 @@ impl MainWindow {
 	pub fn show(&self) {
 		window_geometry::restore(&self.frame, &self.config.lock().unwrap());
 		self.frame.show(true);
+		let raised = ship_shape::ui::bring_to_front_after_update(&self.frame);
+		if ship_shape::relaunched_after_update() {
+			tracing::info!(raised, "relaunched after an update");
+		}
 	}
 
 	#[cfg(target_os = "macos")]
@@ -218,7 +215,6 @@ impl MainWindow {
 		&self.frame
 	}
 
-	#[cfg(target_os = "macos")]
 	pub(super) fn announce_update_restart(&self) {
 		live_region::announce(self.live_region_label, &t("Installing the update. Paperback will restart."));
 	}

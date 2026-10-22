@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/paperback", "crates/paperback-core", "crates/paperback-formats", "crates/pb", "crates/xtask"]
+members = ["crates/paperback", "crates/paperback-core", "crates/paperback-formats", "crates/pb", "crates/pdfium-fetch", "crates/xtask"]
 resolver = "2"
 
 [workspace.package]
@@ -14,7 +14,7 @@ repository = "https://github.com/trypsynth/paperback"
 anyhow = "1.0.104"
 base64 = "0.23.1"
 bitflags = "2.13.2"
-rstest = "0.27.0"
+rstest = "0.28.0"
 toml = "1.1.8"
 
 # Lint policy for every crate in the workspace; each member opts in with `[lints] workspace = true`.
@@ -51,8 +51,3 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
-
-[patch.crates-io]
-# Pinned to wxDragon main for the binary-size work (its #224 and #225), the tree item data fix
-# (#241), and wxWidgets 3.3.4 with its accessibility fixes, none of it released yet. Swap back to a plain version requirement once a release carries them.
-wxdragon = { git = "https://github.com/AllenDang/wxDragon", rev = "e32baf6060b9ad6fde8cda1a1bc5449d16039cbe" }

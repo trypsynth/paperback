@@ -141,7 +141,7 @@ pub(super) fn build_text_ctrl(
 			}
 			// Ctrl+C and Ctrl+A are intercepted here because the reading control consumes them in its own window procedure, before wx consults the accelerator table, so neither ever becomes a menu command and the handlers Edit > Copy and Edit > Select All reach never run for the keystroke. Raising the same command a click produces is what makes the two ways of doing either behave identically - for the copy that is the announcement and the widening to the whole document, and for the select all it is the announcement alone, without which the command says nothing at all.
 			// The mark is set here rather than by `bind_key_source`'s CHAR_HOOK, which resolves a key through the ActionIds and finds nothing for a wxWidgets stock command; without it the announcement is deferred as though a menu had been clicked, and read over by the focus chain returning to the book. It is cleared again when the command goes unhandled, so a chord that reaches nothing cannot leave the mark set for the next click.
-			// macOS leaves both to the native Edit menu, which is reached before this handler.
+			// macOS handles Copy in `mac_shortcuts` before Cocoa's Edit menu; Select All stays native.
 			#[cfg(not(target_os = "macos"))]
 			if let Some(stock_id) = stock_edit_command(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down()) {
 				kbd.event.skip(false);
@@ -247,7 +247,7 @@ pub(super) fn build_text_ctrl(
 			// needs in order to announce at all.
 			if let Some(index) = tab_index_for_key(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down()) {
 				kbd.event.skip(false);
-				if let Ok(dm) = dm_for_keys.try_lock() {
+				if let Ok(mut dm) = dm_for_keys.try_lock() {
 					dm.switch_to_tab(index);
 				}
 				return;

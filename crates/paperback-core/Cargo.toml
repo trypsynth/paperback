@@ -32,8 +32,7 @@ libchm = "0.3.0"
 libhlp = "0.2.0"
 lofty = "0.25.4"
 mp4ameta = "0.13.0"
-# Pinned exactly: it is still a release candidate, and its API may change before 0.1.0.
-odf-crypto = { version = "=0.1.0-rc.10", features = ["crypto-ops"] }
+odf-crypto = { version = "0.1.0-rc.13", features = ["crypto-ops"] }
 office-crypto = "0.4.0"
 paperback-formats = { path = "../paperback-formats" }
 patois = "0.2.3"
@@ -57,12 +56,12 @@ tracing = "0.1.44"
 unicode-bidi = "0.3.18"
 uniffi = { version = "0.32.2", features = ["cli"], optional = true }
 ureq = { version = "3.4.2", default-features = false, features = ["rustls"], optional = true }
-zip = { version = "9.0.3", default-features = false, features = ["deflate"] }
+zip = { version = "9.0.5", default-features = false, features = ["deflate"] }
 mathcat = { version = "0.7.5", features = ["include-zip"] }
 math-core = "0.9.0"
 
 [build-dependencies]
-shipfitter = "0.2.2"
+shipfitter = "0.2.3"
 uniffi = { version = "0.32.2", features = ["build"], optional = true }
 
 [dev-dependencies]
@@ -70,7 +69,7 @@ rstest = { workspace = true }
 # Only for constructing password-protected archives in tests; matches the main `zip`
 # dependency's default-features = false, adding just aes-crypto rather than the full
 # default bundle (bzip2, lzma, ppmd, zstd).
-zip = { version = "9.0.3", default-features = false, features = ["deflate", "aes-crypto"] }
+zip = { version = "9.0.5", default-features = false, features = ["deflate", "aes-crypto"] }
 
 [features]
 fetch = ["dep:ureq"]

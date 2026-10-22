@@ -14,6 +14,8 @@ mod main_window;
 mod menu;
 mod menu_ids;
 mod navigation;
+#[cfg(target_os = "windows")]
+mod paragraph_format;
 mod readability;
 mod reader_input;
 #[cfg(target_os = "windows")]
@@ -27,11 +29,7 @@ mod text_render;
 mod tray;
 mod window_geometry;
 
-pub use app::PaperbackApp;
-#[cfg(target_os = "macos")]
-pub use app::quit_for_update;
+pub use app::{PaperbackApp, quit_for_update};
 #[cfg(target_os = "linux")]
 pub use dialogs::{AssociationChoice, ChoiceAction, show_linux_setup_dialog};
 pub use main_window::MainWindow;
-#[cfg(target_os = "windows")]
-pub(crate) use main_window::{frame_is_disabled, own_dialog_is_up};

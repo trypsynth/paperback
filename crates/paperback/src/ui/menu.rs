@@ -1,3 +1,5 @@
+#[cfg(target_os = "windows")]
+use paperback_core::config::KeyChord;
 use paperback_core::config::{ActionId, ConfigManager, ShortcutCategory};
 use patois::t;
 use wxdragon::prelude::*;
@@ -82,6 +84,15 @@ fn title(category: ShortcutCategory) -> String {
 /// Commands reachable only through their keyboard shortcut.
 pub const fn is_keyboard_only(action: ActionId) -> bool {
 	matches!(action, ActionId::AnnouncePercent)
+}
+
+/// Whether `chord` is on a punctuation key, which on Windows is run by the frame's char hook rather than by a menu accelerator.
+///
+/// wxMSW finds a punctuation accelerator's key with `VkKeyScan`, drops the modifiers it reports the character needing, and does it once, for the layout active when the menu is built. Where `;` is Shift+, as on Finnish, German and Bosnian keyboards, Ctrl+; lands on Ctrl+, and runs in its place (#1134). The char hook matches the key as the live layout reports it, so these chords are kept out of the accelerator table.
+#[cfg(target_os = "windows")]
+pub fn is_punctuation_chord(chord: &KeyChord) -> bool {
+	let mut chars = chord.key.chars();
+	matches!((chars.next(), chars.next()), (Some(ch), None) if !ch.is_ascii_alphanumeric())
 }
 
 pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {

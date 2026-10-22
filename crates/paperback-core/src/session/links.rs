@@ -8,7 +8,8 @@ use super::{
 use crate::{
 	config::ConfigManager,
 	document::{self, MarkerType},
-	reader_core::resolve_link,
+	export::annotations::AnnotationEntry,
+	reader_core::{get_filtered_bookmarks, resolve_link},
 	types::{self as ffi},
 };
 
@@ -82,6 +83,29 @@ impl DocumentSession {
 }
 
 impl DocumentSession {
+	/// The bookmarks kept under `path`, each with the text it marks, for an export that has to be readable without the book.
+	#[must_use]
+	pub fn annotation_entries(
+		&self,
+		config: &ConfigManager,
+		path: &str,
+		filter: ffi::BookmarkFilterType,
+	) -> Vec<AnnotationEntry> {
+		get_filtered_bookmarks(config, path, 0, filter)
+			.items
+			.into_iter()
+			.map(|b| AnnotationEntry {
+				passage: if b.is_whole_line {
+					self.get_line_text(b.start)
+				} else {
+					self.get_text_range_display(b.start, b.end)
+				},
+				note: b.note,
+				audio_ms: b.audio_ms,
+			})
+			.collect()
+	}
+
 	/// The bookmark at `position` among those kept under `path`, which is where the document's
 	/// settings are: the link for a document opened from one.
 	#[must_use]

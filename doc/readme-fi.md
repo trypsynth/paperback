@@ -84,6 +84,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `Ctrl+R`: Näytä ”Kaikki asiakirjat” -valintaikkuna (Viimeksi avatut -valikosta).
 * `Ctrl+Vaihto+C`: Avaa asiakirjan kansio.
 * `Ctrl+Vaihto+E`: Vie asiakirjan tiedot `.paperback`-tiedostoon.
+* `Ctrl+Alt+E`: Vie kirjanmerkit ja muistiinpanot luettavaan teksti- tai HTML-tiedostoon.
 * `Ctrl+Vaihto+I`: Tuo asiakirjan tiedot `.paperback`-tiedostosta.
 * `Ctrl+E`: Vie nykyinen asiakirja pelkkänä tekstinä.
 * `Ctrl+Q`: Lopeta (vain Windowsissa; macOSia käytettäessä tämä komento löytyy sovellusvalikosta).
@@ -192,7 +193,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `Ctrl+Sarkain` ja `Ctrl+Vaihto+Sarkain`: Siirry seuraavaan tai edelliseen avoinna olevaan asiakirjaan. Viimeisen jälkeen siirrytään ensimmäiseen ja ensimmäistä edeltävästä viimeiseen.
 * `Enter` tai `Välilyönti` asiakirjan tekstissä: Avaa kohdistimen kohdalla oleva linkki tai näytä taulukko tai kaava omassa näkymässään.
 * `Enter` skannatun PDF-asiakirjan sivulla: Suorita sivun tekstintunnistus.
-* `Vaihto+F10` tai sovellusnäppäin asiakirjan tekstissä: Avaa pikavalikko.
+* `Vaihto+F10` tai sovellusnäppäin asiakirjan tekstissä: Avaa pikavalikko. PDF-, EPUB-, HTML-, Markdown-, CHM-, FB2- ja sarjakuva-asiakirjoissa on lisäksi mahdollista tallentaa kohdistimen kohdalla oleva kuva tiedostoksi.
 
 ## iOS ja Android
 

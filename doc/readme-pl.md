@@ -86,6 +86,7 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 * `Ctrl+R`: Pokaż dialog Wszystkie dokumenty (z menu Ostatnie dokumenty).
 * `Ctrl+Shift+C`: Otwórz folder zawierający.
 * `Ctrl+Shift+E`: Eksportuj dane dokumentu (`.paperback`).
+* `Ctrl+Alt+E`: Eksportuj zakładki i notatki do czytelnego pliku tekstowego lub HTML.
 * `Ctrl+Shift+I`: Importuj dane dokumentu (`.paperback`).
 * `Ctrl+E`: Eksportuj bieżący dokument do zwykłego tekstu.
 * `Ctrl+Q`: Zakończ (tylko Windows; w systemie macOS znajduje się w menu aplikacji).
@@ -194,7 +195,7 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 * `Ctrl+Tab` i `Ctrl+Shift+Tab`: przejdź do następnego lub poprzedniego otwartego dokumentu. Po ostatnim dokumencie przejdziesz do pierwszego, a przed pierwszym do ostatniego.
 * `Enter` albo `Spacja` w tekście dokumentu: otwórz odnośnik, Widok tabeli lub Widok wzoru pod kursorem.
 * `Enter` na zeskanowanej stronie PDF: rozpoznaj tekst na stronie za pomocą OCR.
-* `Shift+F10` albo klawisz Menu/Aplikacje w tekście dokumentu: otwórz menu kontekstowe.
+* `Shift+F10` albo klawisz menu aplikacji w tekście dokumentu: otwórz menu kontekstowe. Na obrazie w dokumencie PDF, EPUB, HTML, Markdown, CHM, FB2 lub w komiksie menu pozwala także zapisać obraz do pliku.
 
 ## iOS i Android
 
@@ -268,6 +269,7 @@ Aby dowiedzieć się, jak pomóc w tłumaczeniu, przeczytaj [Przewodnik po tłum
 * Rosyjski
 * Serbski
 * Ukraiński
+* Węgierski
 * Wietnamski
 
 ## Podziękowania

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-13 22:23+0000\n"
-"PO-Revision-Date: 2026-10-14 20:04+0300\n"
+"POT-Creation-Date: 2026-10-20 18:19+0000\n"
+"PO-Revision-Date: 2026-10-20 23:10+0300\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -69,11 +69,11 @@ msgstr "Lisää pb-komentorivityökalu PATH-ympäristömuuttujaan"
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP-paketit (.zip)"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
+msgid "OCR needs Tesseract. Install it from your package manager."
 msgstr ""
-"Tekstintunnistuskieltä ei ole asennettuna. Lisää kieli järjestelmän "
-"kieliasetuksissa."
+"Tekstintunnistus tarvitsee Tesseractin toimiakseen. Asenna se "
+"pakettienhallinnasta."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 msgid "OCR failed."
@@ -82,6 +82,22 @@ msgstr "Tekstintunnistus epäonnistui."
 #. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
 msgid "OCR is not available on this system."
 msgstr "Tekstintunnistus ei ole käytettävissä tässä järjestelmässä."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr ""
+"Tekstintunnistuskieltä ei ole asennettuna. Lisää kieli järjestelmän "
+"kieliasetuksissa."
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+#| msgid ""
+#| "No OCR language is installed. Add one in your system language settings."
+msgid ""
+"No OCR language is installed. Install a Tesseract language package from your "
+"package manager."
+msgstr ""
+"Tekstintunnistuksen kieltä ei ole asennettuna. Asenna Tesseractin "
+"kielipaketti pakettienhallinnasta."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -662,12 +678,10 @@ msgid "Increase Audio &Volume"
 msgstr "Nosta äänitteen äänen&voimakkuutta"
 
 #. TRANSLATORS: Status-bar help text for the Increase Audio Volume menu item.
-#| msgid "Skip the audio narration forward"
 msgid "Make the audio narration louder"
 msgstr "Lisää äänitteen äänenvoimakkuutta"
 
 #. TRANSLATORS: Menu item in the Audio menu to make the audio narration quieter.
-#| msgid "Decrease Audio Speed"
 msgid "Decrease Audio Vo&lume"
 msgstr "Laske äänitteen äänenvo&imakkuutta"
 
@@ -981,6 +995,40 @@ msgstr "Nimetön"
 #. TRANSLATORS: OK button that saves the customized shortcuts in the Keyboard Shortcuts dialog.
 msgid "OK"
 msgstr "OK"
+
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+msgid "Export notes and bookmarks"
+msgstr "Vie muistiinpanot ja kirjanmerkit"
+
+#. TRANSLATORS: Label for the dropdown choosing which entries to export
+msgid "&Export:"
+msgstr "V&ie:"
+
+#. TRANSLATORS: Option to export both bookmarks and notes
+msgid "Bookmarks and notes"
+msgstr "Kirjanmerkit ja muistiinpanot"
+
+#. TRANSLATORS: Option to export only bookmarks that have no note
+msgid "Bookmarks only"
+msgstr "Vain kirjanmerkit"
+
+#. TRANSLATORS: Option to export only bookmarks that have a note
+msgid "Notes only"
+msgstr "Vain muistiinpanot"
+
+#. TRANSLATORS: Checkbox to include the bookmarked text next to each note
+msgid "Include the &passage each note is attached to"
+msgstr "Vie myös muistiinpanoihin liittyvät te&kstikatkelmat"
+
+#. TRANSLATORS: Checkbox to number the exported entries
+msgid "&Number the entries"
+msgstr "&Numeroi kohteet"
+
+#. TRANSLATORS: Label for the button that continues to the save dialog
+msgid "Export"
+msgstr "Vie"
 
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
@@ -1307,8 +1355,8 @@ msgid "Normal"
 msgstr "Normaali"
 
 #. TRANSLATORS: 1.5x line spacing option
-msgid "1.5\\u{00d7}"
-msgstr "1,5\\u{00d7}"
+msgid "1.5×"
+msgstr "1,5×"
 
 #. TRANSLATORS: Double line spacing option
 msgid "Double"
@@ -1662,10 +1710,10 @@ msgid "Could not copy to the clipboard."
 msgstr "Leikepöydälle ei voi kopioida."
 
 #. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
-msgid "Selected %d character."
-msgid_plural "Selected %d characters."
-msgstr[0] "%d merkki valittu."
-msgstr[1] "%d merkkiä valittu."
+msgid "%d character selected."
+msgid_plural "%d characters selected."
+msgstr[0] "%d merkki valittuna."
+msgstr[1] "%d merkkiä valittuna."
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
@@ -1713,10 +1761,6 @@ msgstr "asiakirja"
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback-tiedostot (*.paperback)|*.paperback"
 
-#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
-msgid "Export notes and bookmarks"
-msgstr "Vie muistiinpanot ja kirjanmerkit"
-
 #. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 msgid "Notes and bookmarks exported successfully."
 msgstr "Muistiinpanot ja kirjanmerkit viety onnistuneesti."
@@ -1724,6 +1768,14 @@ msgstr "Muistiinpanot ja kirjanmerkit viety onnistuneesti."
 #. TRANSLATORS: Title of the export-succeeded dialog
 msgid "Export Successful"
 msgstr "Vienti onnistui"
+
+#. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
+msgstr "Tekstitiedostot (*.txt)|*.txt|HTML-tiedostot (*.html)|*.html"
+
+#. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+msgid "Failed to export notes and bookmarks."
+msgstr "Muistiinpanojen ja kirjanmerkkien vienti epäonnistui."
 
 #. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 msgid "Import notes and bookmarks"
@@ -1737,6 +1789,18 @@ msgstr "Muistiinpanot ja kirjanmerkit tuotu onnistuneesti."
 msgid "Import Successful"
 msgstr "Tuonti onnistui"
 
+#. TRANSLATORS: Title of the file save dialog when saving a picture from the document
+msgid "Save image"
+msgstr "Kuvan tallennus"
+
+#. TRANSLATORS: File filter shown in the "Save image" dialog
+msgid "All files (*.*)|*.*"
+msgstr "Kaikki tiedostot (*.*)|*.*"
+
+#. TRANSLATORS: Error dialog shown when saving a picture from the document fails
+msgid "Failed to save image."
+msgstr "Kuvan tallennus epäonnistui."
+
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Asiakirjan vienti epäonnistui."
@@ -1745,9 +1809,6 @@ msgstr "Asiakirjan vienti epäonnistui."
 msgid "Line %d"
 msgstr "Rivi %d"
 
-#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-#. A menu invocation returns focus to the book just like a closed dialog does,
-#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr "Sivuja ei ole."
@@ -1890,6 +1951,14 @@ msgstr "&Vie asiakirjan tiedot..."
 #. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
 msgid "Export bookmarks and position"
 msgstr "Vie kirjanmerkit ja sijainti"
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+msgid "Export &Notes and Bookmarks as Text or HTML..."
+msgstr "Vie &muistiinpanot ja kirjanmerkit teksti- tai HTML-muodossa..."
+
+#. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
+msgid "Export bookmarks and notes in a readable format"
+msgstr "Vie muistiinpanot ja kirjanmerkit luettavassa muodossa"
 
 #. TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
 msgid "Reveal &File in Folder"
@@ -2352,6 +2421,13 @@ msgstr "Kaavanäkymä"
 msgid "Table View"
 msgstr "Taulukkonäkymä"
 
+#. TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
+msgid "Save &image as..."
+msgstr "Tallenna &kuva nimellä..."
+
+msgid "Save image as"
+msgstr "Tallenna kuva nimellä"
+
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
 msgstr "Luo &kirjanmerkki"
@@ -2406,10 +2482,10 @@ msgid "Go to percent"
 msgstr "Siirry prosenttiin"
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
-msgid "Copied %d character."
-msgid_plural "Copied %d characters."
-msgstr[0] "Kopioitu %d merkki."
-msgstr[1] "Kopioitu %d merkkiä."
+msgid "%d character copied."
+msgid_plural "%d characters copied."
+msgstr[0] "%d merkki kopioitu."
+msgstr[1] "%d merkkiä kopioitu."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 msgid "Beginning of selection set."
@@ -2757,7 +2833,6 @@ msgid "Increase Audio Volume"
 msgstr "Nosta äänitteen äänenvoimakkuutta"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#| msgid "Decrease Audio Speed"
 msgid "Decrease Audio Volume"
 msgstr "Laske äänitteen äänenvoimakkuutta"
 
@@ -2788,6 +2863,10 @@ msgstr "Tuo asiakirjan tiedot..."
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export Document Data..."
 msgstr "Vie asiakirjan tiedot..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Export Notes and Bookmarks as Text or HTML..."
+msgstr "Vie muistiinpanot ja kirjanmerkit teksti- tai HTML-muodossa..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export to Plain Text..."
@@ -3182,6 +3261,10 @@ msgstr "Tiedostotunnisteelle .{} ei löydy jäsennintä"
 msgid "All parsers failed for extension: .{}"
 msgstr "Tiedostotunnistetta .{} ei voitu käsitellä millään jäsentimellä"
 
+#. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
+msgid "image"
+msgstr "kuva"
+
 msgid "Not running from an AppImage; cannot self-update."
 msgstr ""
 "Automaattinen päivitys ei ole mahdollista, koska sovellusta ei ole "
@@ -3443,6 +3526,10 @@ msgstr "Palautetaanko kaikki tämän välilehden oletuspikanäppäimet?"
 #. TRANSLATORS: Title of the confirmation dialog for resetting keyboard shortcuts to their defaults.
 msgid "Reset Shortcuts"
 msgstr "Oletuspikanäppäinten palautus"
+
+#. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
+msgid "{} (not on this keyboard layout)"
+msgstr "{} (ei käytettävissä tässä näppäimistöasettelussa)"
 
 #: kt swift
 msgid "Export Document Data"
@@ -4281,7 +4368,6 @@ msgstr "Käytä sovelluksen sisäistä tiedostoselainta"
 msgid "Text-to-Speech"
 msgstr "Tekstistä puheeksi"
 
-#. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
 msgid "System Default"
 msgstr "Järjestelmän oletus"
@@ -4305,11 +4391,6 @@ msgstr "Syötä {}"
 #: kt
 msgid "Error loading document: {}"
 msgstr "Virhe avattaessa asiakirjaa: {}"
-
-#. TRANSLATORS: 1.5x line spacing option
-#: kt
-msgid "1.5×"
-msgstr "1,5×"
 
 #. TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
 #: kt
@@ -4656,3 +4737,13 @@ msgid "Turn off to continue reading while navigating by search matches."
 msgstr ""
 "Poista asetus käytöstä, jos haluat tekstistä puheeksi -toiminnolla lukemisen "
 "jatkuvan hakutuloksittain navigoitaessa."
+
+#. TRANSLATORS: 1.5x line spacing option
+#: swift
+msgid "1.5\\u{00d7}"
+msgstr "1,5\\u{00d7}"
+
+#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
+#: swift
+msgid "Progress"
+msgstr "Edistyminen"

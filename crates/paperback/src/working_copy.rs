@@ -28,6 +28,10 @@ impl WorkingCopy {
 	pub fn path(&self) -> &Path {
 		&self.path
 	}
+
+	pub fn file_name(&self) -> String {
+		self.path.file_name().map(|name| name.to_string_lossy().into_owned()).unwrap_or_default()
+	}
 }
 
 #[cfg(test)]
@@ -40,7 +44,7 @@ mod tests {
 	fn each_copy_gets_a_new_folder_of_its_own() {
 		let first = WorkingCopy::new("book.epub").unwrap();
 		let second = WorkingCopy::new("book.epub").unwrap();
-		assert_eq!(first.path().file_name().unwrap(), "book.epub");
+		assert_eq!(first.file_name(), "book.epub");
 		assert_eq!(second.path().file_name().unwrap(), "book.epub");
 		assert!(first.path().parent().unwrap().is_dir());
 		assert_ne!(first.path().parent(), second.path().parent());

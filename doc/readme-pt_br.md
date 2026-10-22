@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: cc466634600b58b4; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0ee39028,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: a826a433e1c8cd2e; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,a836ba19,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versão 1.0
 
@@ -86,6 +86,7 @@ Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é ano
 * `Ctrl+R`: Mostrar o diálogo "Todos os Documentos" (de Documentos Recentes).
 * `Ctrl+Shift+C`: Abrir pasta contendo.
 * `Ctrl+Shift+E`: Exportar dados do documento (`.paperback`).
+* `Ctrl+Alt+E`: Exportar marcadores e notas como arquivo de texto legível ou HTML.
 * `Ctrl+Shift+I`: Importar dados do documento (`.paperback`).
 * `Ctrl+E`: Exportar o documento atual para texto simples.
 * `Ctrl+Q`: Sair (apenas Windows; no macOS está no menu do aplicativo).
@@ -194,7 +195,7 @@ Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é ano
 * `Ctrl+Tab` e `Ctrl+Shift+Tab`: Ir para o próximo ou documento aberto anterior, voltando ao início ou fim.
 * `Enter` ou `Space` no texto do documento: Seguir um link ou abrir visualização de tabela ou fórmula no cursor.
 * `Enter` em uma página de PDF digitalizada: Reconhecer a página com OCR.
-* `Shift+F10` ou a tecla Menu/Aplicativo no texto do documento: Abrir o menu de contexto. Em uma imagem em EPUB, HTML, Markdown, CHM, FB2 ou história em quadrinhos, também oferece salvar a imagem em um arquivo.
+* `Shift+F10` ou a tecla Menu/Aplicativo no texto do documento: Abrir o menu de contexto. Em uma imagem em PDF, EPUB, HTML, Markdown, CHM, FB2 ou história em quadrinhos, também oferece salvar a imagem em um arquivo.
 
 ## iOS e Android
 

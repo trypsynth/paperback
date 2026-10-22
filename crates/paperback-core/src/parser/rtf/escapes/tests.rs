@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use rstest::rstest;
 
-use super::{hex_digit, normalize_escapes, normalize_wrapped_space_lines, parse_hex_pair};
+use super::{escape_raw_bytes, hex_digit, normalize_escapes, normalize_wrapped_space_lines, parse_hex_pair};
 
 #[rstest]
 #[case(b'0', Some(0))]
@@ -161,4 +161,31 @@ fn normalize_escapes_keeps_a_control_word_terminated_after_replacing_an_escape()
 	// Text that only looks like a control word, after an escaped backslash, gets no space.
 	let output = normalize_escapes(r"C:\\dir\'e9", encoding_rs::WINDOWS_1252, &HashMap::new());
 	assert_eq!(output, r"C:\\diré");
+}
+
+#[test]
+fn escape_raw_bytes_turns_codepage_bytes_into_escapes() {
+	assert_eq!(escape_raw_bytes(b"do \x93my thing.\x94"), r"do \'93my thing.\'94");
+}
+
+#[test]
+fn escape_raw_bytes_leaves_utf8_alone() {
+	assert_eq!(escape_raw_bytes("Café “x”".as_bytes()), "Café “x”");
+}
+
+/// The quotes of a book whose writer left them as raw Windows-1252 bytes.
+#[test]
+fn raw_codepage_quotes_decode_like_escaped_ones() {
+	let escaped = escape_raw_bytes(b"\\par\x93Hi.\x94");
+	assert_eq!(normalize_escapes(&escaped, encoding_rs::WINDOWS_1252, &HashMap::new()), "\\par “Hi.”");
+}
+
+#[test]
+fn normalize_escapes_keeps_utf8_text_intact() {
+	assert_eq!(normalize_escapes("Café “x”", encoding_rs::WINDOWS_1252, &HashMap::new()), "Café “x”");
+}
+
+#[test]
+fn normalize_wrapped_space_lines_keeps_utf8_text_intact() {
+	assert_eq!(normalize_wrapped_space_lines("naïve\n \nCafé"), "naïve Café");
 }

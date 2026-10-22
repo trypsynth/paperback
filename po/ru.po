@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 00:35+0000\n"
+"POT-Creation-Date: 2026-10-21 23:51+0000\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -76,10 +76,10 @@ msgstr "Добавить инструмент командной строки pb
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP-архивы (.zip)"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
 #, fuzzy
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "Язык OCR не установлен. Добавьте язык в параметры языка системы."
+msgid "OCR needs Tesseract. Install it from your package manager."
+msgstr "Для OCR требуется Tesseract. Установите его из менеджера пакетов."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 #, fuzzy
@@ -90,6 +90,16 @@ msgstr "Ошибка распознавания."
 #, fuzzy
 msgid "OCR is not available on this system."
 msgstr "OCR недоступен на этой системе."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+#, fuzzy
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "Язык OCR не установлен. Добавьте язык в параметры языка системы."
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+#, fuzzy
+msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
+msgstr "Языковые данные OCR не установлены. Установите языковой пакет Tesseract из менеджера пакетов."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -1111,6 +1121,47 @@ msgstr "Без заголовков"
 msgid "OK"
 msgstr "OK"
 
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+msgid "Export notes and bookmarks"
+msgstr "Экспорт заметок и закладок"
+
+#. TRANSLATORS: Label for the dropdown choosing which entries to export
+#, fuzzy
+msgid "&Export:"
+msgstr "&Экспорт:"
+
+#. TRANSLATORS: Option to export both bookmarks and notes
+#, fuzzy
+msgid "Bookmarks and notes"
+msgstr "Закладки и заметки"
+
+#. TRANSLATORS: Option to export only bookmarks that have no note
+#, fuzzy
+msgid "Bookmarks only"
+msgstr "Только закладки"
+
+#. TRANSLATORS: Option to export only bookmarks that have a note
+#, fuzzy
+msgid "Notes only"
+msgstr "Только заметки"
+
+#. TRANSLATORS: Checkbox to include the bookmarked text next to each note
+#, fuzzy
+msgid "Include the &passage each note is attached to"
+msgstr "Включить &текст рядом с каждой заметкой"
+
+#. TRANSLATORS: Checkbox to number the exported entries
+#, fuzzy
+msgid "&Number the entries"
+msgstr "&Нумеровать записи"
+
+#. TRANSLATORS: Label for the button that continues to the save dialog
+#, fuzzy
+msgid "Export"
+msgstr "Экспорт"
+
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 #, fuzzy
@@ -1542,7 +1593,6 @@ msgid "General"
 msgstr "Общие"
 
 #. TRANSLATORS: Tab label for the Reading options panel
-#. TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Reading"
 msgstr "Чтения"
 
@@ -1895,11 +1945,11 @@ msgstr "Не удалось скопировать в буфер обмена."
 
 #. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
 #, fuzzy
-msgid "Selected %d character."
-msgid_plural "Selected %d characters."
-msgstr[0] "Выделен %d символ."
-msgstr[1] "Выделено %d символа."
-msgstr[2] "Выделено %d символов."
+msgid "%d character selected."
+msgid_plural "%d characters selected."
+msgstr[0] "%d символ выбран."
+msgstr[1] "%d символа выбрано."
+msgstr[2] "%d символов выбрано."
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 #, fuzzy
@@ -1956,10 +2006,6 @@ msgstr "Документы"
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback файлы (*.paperback)|*.paperback"
 
-#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
-msgid "Export notes and bookmarks"
-msgstr "Экспорт заметок и закладок"
-
 #. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 msgid "Notes and bookmarks exported successfully."
 msgstr "Заметки и закладки успешно экспортированы."
@@ -1967,6 +2013,16 @@ msgstr "Заметки и закладки успешно экспортиров
 #. TRANSLATORS: Title of the export-succeeded dialog
 msgid "Export Successful"
 msgstr "Успешно экспортировано"
+
+#. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+#, fuzzy
+msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
+msgstr "Текстовые файлы (*.txt)|*.txt|HTML файлы (*.html)|*.html"
+
+#. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+#, fuzzy
+msgid "Failed to export notes and bookmarks."
+msgstr "Не удалось экспортировать заметки и закладки."
 
 #. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 msgid "Import notes and bookmarks"
@@ -2169,6 +2225,16 @@ msgstr "&Экспортировать данные документа..."
 #. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
 msgid "Export bookmarks and position"
 msgstr "Экспорт закладок и их позиции"
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+#, fuzzy
+msgid "Export &Notes and Bookmarks as Text or HTML..."
+msgstr "Экспортировать &заметки и закладки в текст или HTML..."
+
+#. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
+#, fuzzy
+msgid "Export bookmarks and notes in a readable format"
+msgstr "Экспортировать закладки и заметки в удобном формате"
 
 #. TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
 #, fuzzy
@@ -2759,11 +2825,11 @@ msgstr "Перейти к процентом"
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
 #, fuzzy
-msgid "Copied %d character."
-msgid_plural "Copied %d characters."
-msgstr[0] "Скопирован %d символ."
-msgstr[1] "Скопировано %d символа."
-msgstr[2] "Скопировано %d символов."
+msgid "%d character copied."
+msgid_plural "%d characters copied."
+msgstr[0] "%d символ скопирован."
+msgstr[1] "%d символа скопировано."
+msgstr[2] "%d символов скопировано."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 #, fuzzy
@@ -2796,13 +2862,18 @@ msgstr[0] "Таймер сна установлен на %d минут."
 msgstr[1] "Таймер сна установлен на %d минут."
 msgstr[2] "Таймер сна установлен на %d минут."
 
-#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Progress 45%"
 msgid "Line"
 msgstr "Строка"
 
 #. TRANSLATORS: Status bar label for the current character offset within the line
 msgid "Character"
 msgstr "Символ"
+
+#. TRANSLATORS: Status bar label for how far through the document the reader has got, e.g. "Line 5, Character 120, Progress 45%"
+#, fuzzy
+msgid "Progress"
+msgstr "Прогресс"
 
 #. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 msgid "Sleep timer"
@@ -3230,6 +3301,11 @@ msgstr "Импорт данных из документа"
 #, fuzzy
 msgid "Export Document Data..."
 msgstr "Экспортировать данные документа..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Export Notes and Bookmarks as Text or HTML..."
+msgstr "Экспортировать заметки и закладки в текст или HTML..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -4009,6 +4085,11 @@ msgstr "Сбросить все сочетания клавиш на этой в
 #, fuzzy
 msgid "Reset Shortcuts"
 msgstr "Сброс сочетаний клавиш"
+
+#. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
+#, fuzzy
+msgid "{} (not on this keyboard layout)"
+msgstr "{} (отсутствует на этой раскладке клавиатуры)"
 
 #: kt swift
 #, fuzzy
@@ -5403,11 +5484,19 @@ msgstr "Отключите, чтобы продолжить чтение при 
 msgid "1.5\\u{00d7}"
 msgstr "1.5\\u{00d7}"
 
-#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
-#: swift
 #, fuzzy
-msgid "Progress"
-msgstr "Прогресс"
+#~ msgid "Selected %d character."
+#~ msgid_plural "Selected %d characters."
+#~ msgstr[0] "Выделен %d символ."
+#~ msgstr[1] "Выделено %d символа."
+#~ msgstr[2] "Выделено %d символов."
+
+#, fuzzy
+#~ msgid "Copied %d character."
+#~ msgid_plural "Copied %d characters."
+#~ msgstr[0] "Скопирован %d символ."
+#~ msgstr[1] "Скопировано %d символа."
+#~ msgstr[2] "Скопировано %d символов."
 
 #, fuzzy
 #~ msgid "&Undo\tCtrl+Z"

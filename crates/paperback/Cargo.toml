@@ -18,7 +18,7 @@ dunce = "1.0.5"
 # Decodes the embedded application icon in `ui::icon`; already in the tree via pdfium.
 image = { version = "0.25.10", default-features = false, features = ["png"] }
 live-region = "0.3.3"
-native-ocr = "0.1.0"
+native-ocr = "0.2.0"
 # `fetch` downloads documents opened from links.
 paperback-core = { path = "../paperback-core", features = ["fetch"] }
 paperback-formats = { path = "../paperback-formats" }
@@ -36,11 +36,11 @@ rodio-wsola = "0.2.0"
 tracing = "0.1.44"
 tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
-ship-shape = "0.4.1"
+ship-shape = "0.5.0"
 # The temporary folder a document opened from a link is downloaded into.
 tempfile = "3.27.0"
 toml = { workspace = true }
-wx-utils = { version = "0.4.3", features = ["shortcuts"] }
+wx-utils = { version = "0.4.4", features = ["shortcuts"] }
 # `default-features = false` turns off the seven size knobs wxdragon enables by default, all of
 # which Paperback pays for and none of which it uses: it never prints, it decodes its own icon
 # with the `image` crate and hands wx raw pixels rather than going through wx's JPEG, TIFF, GIF
@@ -48,7 +48,7 @@ wx-utils = { version = "0.4.3", features = ["shortcuts"] }
 # than the Tango set built into wxArtProvider. Asserts go too, since a release build cannot act
 # on them.
 wxdragon = { version = "0.9.23", default-features = false, features = ["webview"] }
-zip = { version = "9.0.3", default-features = false, features = ["deflate"] }
+zip = { version = "9.0.5", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Pipes", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading", "Win32_UI_Shell"] }
@@ -58,12 +58,10 @@ block = "0.1.6"
 objc = "0.2.7"
 
 [build-dependencies]
-flate2 = { version = "1.1.10", default-features = false }
 paperback-formats = { path = "../paperback-formats" }
 patois-build = "0.1.16"
-shipfitter = { version = "0.2.2", features = ["docs", "windows-resources"] }
-tar = "0.4.46"
-ureq = { version = "3.4.2", default-features = false, features = ["rustls"] }
+pdfium-fetch = { path = "../pdfium-fetch" }
+shipfitter = { version = "0.2.3", features = ["docs", "windows-resources"] }
 
 [dev-dependencies]
 rstest = { workspace = true }
@@ -84,6 +82,11 @@ harness = false
 name = "macos_menu_shortcuts"
 harness = false
 
+# wxWidgets runs its windows on the main thread, which the default test harness does not use.
 [[test]]
 name = "windows_rtf_window_append"
+harness = false
+
+[[test]]
+name = "windows_paragraph_styles"
 harness = false

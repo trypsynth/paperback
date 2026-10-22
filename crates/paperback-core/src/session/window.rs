@@ -2,8 +2,13 @@
 //! GUI text control that can't hold an entire huge document without perceptible cost - see
 //! `crates/paperback/src/ui/text_window.rs` for the caller-side half of this.
 
+use std::collections::BTreeMap;
+
 use super::{DocumentSession, LineMarker};
-use crate::document::{ContentBytePos, DocumentBuffer, MarkerType};
+use crate::{
+	document::{ContentBytePos, DocumentBuffer, MarkerType, is_heading_marker},
+	parser::util::toc::marker_type_to_heading_level,
+};
 
 /// How much of a document, in display units, is shown at once when it is too long to show
 /// whole: the width of the reader's loaded window, and of the slice the web view is handed.
@@ -21,7 +26,8 @@ pub const WINDOW_DISPLAY_LEN: i64 = 500_000;
 pub const WHOLE_DOCUMENT_DISPLAY_LEN: i64 = WINDOW_DISPLAY_LEN + WINDOW_DISPLAY_LEN / 2;
 
 /// A contiguous slice of a document's text, in display units, plus the Bold/Italic/Underline
-/// markers that fall within it, rebased to window-local display-unit positions.
+/// markers and the heading and list paragraphs that fall within it, rebased to window-local
+/// display-unit positions.
 #[derive(Debug, Clone)]
 pub struct WindowSlice {
 	/// Document-absolute display-unit offset of the first char of `text`, after boundary
@@ -33,6 +39,21 @@ pub struct WindowSlice {
 	pub text: String,
 	/// Positions/lengths are window-local (relative to `start`), not document-absolute.
 	pub markers: Vec<LineMarker>,
+	/// The headings and lists in `text`, as the whole paragraphs they cover, sorted and
+	/// non-overlapping. Paragraphs that are neither have no entry.
+	pub paragraphs: Vec<ParagraphFormat>,
+}
+
+/// A run of one or more whole paragraphs of a [`WindowSlice`] sharing a heading level and list
+/// membership, so the reading control can carry them as paragraph formatting.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ParagraphFormat {
+	/// Window-local display-unit offset of the first paragraph's start.
+	pub start: i64,
+	/// Window-local display-unit offset one past the last paragraph's `\n`, or the window's end.
+	pub end: i64,
+	pub heading_level: Option<u8>,
+	pub list_item: bool,
 }
 
 impl DocumentSession {
@@ -88,7 +109,8 @@ impl DocumentSession {
 	/// Slices `[raw_start, raw_end)` (display units, clamped to the document) out of the
 	/// content, snapping both edges outward to the nearest paragraph boundary so a window
 	/// never starts or ends mid-paragraph, then collects the Bold/Italic/Underline markers
-	/// that overlap it, clipped and rebased to window-local positions.
+	/// that overlap it, clipped and rebased to window-local positions, and its heading and list
+	/// paragraphs.
 	#[must_use]
 	pub fn get_window(&self, raw_start: i64, raw_end: i64) -> WindowSlice {
 		let buf = &self.handle.document().buffer;
@@ -122,8 +144,65 @@ impl DocumentSession {
 				})
 			})
 			.collect();
-		WindowSlice { start: i64::try_from(start).unwrap_or(0), end: i64::try_from(end).unwrap_or(0), text, markers }
+		WindowSlice {
+			start: i64::try_from(start).unwrap_or(0),
+			end: i64::try_from(end).unwrap_or(0),
+			text,
+			markers,
+			paragraphs: paragraph_formats(buf, start, end),
+		}
 	}
+}
+
+/// The paragraphs within the display-unit window `[start, end)` of `buf` that are headings or part
+/// of a list, merged into runs and rebased to window-local positions. Both bounds must sit on
+/// paragraph boundaries, which [`DocumentSession::get_window`]'s snapping guarantees.
+///
+/// A heading or list item marks the whole paragraph its position falls in: headings resolved from
+/// a table of contents can point partway into a line. A list marks every paragraph its span
+/// overlaps, so a line continuing an item stays inside the list.
+fn paragraph_formats(buf: &DocumentBuffer, start: usize, end: usize) -> Vec<ParagraphFormat> {
+	// Keyed by paragraph start byte: (paragraph end byte, heading level, list item).
+	let mut by_paragraph: BTreeMap<ContentBytePos, (ContentBytePos, Option<u8>, bool)> = BTreeMap::new();
+	for marker in &buf.markers {
+		let (length, heading_level, list_item) = match marker.mtype {
+			MarkerType::List => (marker.length, None, true),
+			MarkerType::ListItem => (1, None, true),
+			mtype if is_heading_marker(mtype) => (1, u8::try_from(marker_type_to_heading_level(mtype)).ok(), false),
+			_ => continue,
+		};
+		let span_start = marker.position.max(start);
+		let span_end = marker.position.saturating_add(length).min(end);
+		if span_start >= span_end {
+			continue;
+		}
+		let span_end = buf.byte_index_for_display(span_end);
+		let mut paragraph_start = snap_start_to_paragraph_boundary(buf, buf.byte_index_for_display(span_start));
+		loop {
+			let paragraph_end = snap_end_to_paragraph_boundary(buf, paragraph_start);
+			let (_, level, item) = by_paragraph.entry(paragraph_start).or_insert((paragraph_end, None, false));
+			*level = level.or(heading_level);
+			*item |= list_item;
+			if paragraph_end >= span_end {
+				break;
+			}
+			paragraph_start = paragraph_end;
+		}
+	}
+	let local = |byte| i64::try_from(buf.display_index_for_byte(byte) - start).unwrap_or(0);
+	let mut runs: Vec<ParagraphFormat> = Vec::new();
+	for (paragraph_start, (paragraph_end, heading_level, list_item)) in by_paragraph {
+		let (run_start, run_end) = (local(paragraph_start), local(paragraph_end));
+		match runs.last_mut() {
+			Some(last)
+				if last.end == run_start && last.heading_level == heading_level && last.list_item == list_item =>
+			{
+				last.end = run_end;
+			}
+			_ => runs.push(ParagraphFormat { start: run_start, end: run_end, heading_level, list_item }),
+		}
+	}
+	runs
 }
 
 /// Extends `byte_idx` backward to the start of the paragraph it's in - the byte right after
@@ -157,6 +236,7 @@ mod tests {
 			history_index: 0,
 			parser_flags: ParserFlags::empty(),
 			parse_settings: ParseSettings::default(),
+			password: String::new(),
 		}
 	}
 
@@ -233,6 +313,87 @@ mod tests {
 		let slice = session.get_window(0, session.document_len());
 		assert_eq!(slice.markers.len(), 1);
 		assert_eq!(slice.markers[0].mtype, MarkerType::Bold);
+	}
+
+	fn paragraph(start: i64, end: i64, heading_level: Option<u8>, list_item: bool) -> ParagraphFormat {
+		ParagraphFormat { start, end, heading_level, list_item }
+	}
+
+	fn whole_window_paragraphs(content: &str, markers: &[Marker]) -> Vec<ParagraphFormat> {
+		let session = session_with(content, markers);
+		session.get_window(0, session.document_len()).paragraphs
+	}
+
+	#[test]
+	fn heading_marks_its_whole_paragraph_with_its_level() {
+		let content = "intro\nTitle\nbody\n";
+		let markers = [Marker::new(MarkerType::Heading2, 6)];
+		assert_eq!(whole_window_paragraphs(content, &markers), vec![paragraph(6, 12, Some(2), false)]);
+	}
+
+	// Headings found through the table of contents sit wherever their anchor was, which can be
+	// partway into a line.
+	#[test]
+	fn heading_marker_mid_line_marks_the_containing_paragraph() {
+		let content = "intro\nsome Title here\nbody";
+		let markers = [Marker::new(MarkerType::Heading1, content.find("Title").unwrap())];
+		assert_eq!(whole_window_paragraphs(content, &markers), vec![paragraph(6, 22, Some(1), false)]);
+	}
+
+	#[test]
+	fn list_span_marks_every_paragraph_it_covers_as_one_run() {
+		// The "b" line continues the first item: it is in the list without a bullet of its own.
+		let content = "before\n• a\nb\n• c\nafter\n";
+		let markers = [Marker::new(MarkerType::List, 7).with_length(10)];
+		assert_eq!(whole_window_paragraphs(content, &markers), vec![paragraph(7, 17, None, true)]);
+	}
+
+	// Tagged PDF lists carry no length, so their items are all there is to go on.
+	#[test]
+	fn list_item_without_a_list_span_marks_its_paragraph() {
+		let content = "x\n• item\ny";
+		let markers = [Marker::new(MarkerType::ListItem, 2)];
+		assert_eq!(whole_window_paragraphs(content, &markers), vec![paragraph(2, 9, None, true)]);
+	}
+
+	#[test]
+	fn heading_inside_a_list_carries_both() {
+		let content = "• a\nHead\n• b\n";
+		let markers = [Marker::new(MarkerType::List, 0).with_length(13), Marker::new(MarkerType::Heading3, 4)];
+		assert_eq!(
+			whole_window_paragraphs(content, &markers),
+			vec![paragraph(0, 4, None, true), paragraph(4, 9, Some(3), true), paragraph(9, 13, None, true)]
+		);
+	}
+
+	#[test]
+	fn paragraph_formats_outside_the_window_are_dropped_and_straddling_lists_are_clipped() {
+		let content = "Head\n• a\n• b\n• c\ntail\n";
+		let markers = [Marker::new(MarkerType::Heading1, 0), Marker::new(MarkerType::List, 5).with_length(12)];
+		let session = session_with(content, &markers);
+		// Display units, not bytes: each bullet is one unit but three bytes.
+		let slice = session.get_window(9, 10);
+		assert_eq!(slice.text, "• b\n");
+		assert_eq!(slice.paragraphs, vec![paragraph(0, 4, None, true)]);
+	}
+
+	#[test]
+	fn paragraph_formats_are_window_local() {
+		let content = "aaa\nbbb\nHead\nccc";
+		let markers = [Marker::new(MarkerType::Heading6, 8)];
+		let session = session_with(content, &markers);
+		let slice = session.get_window(4, session.document_len());
+		assert_eq!(slice.text, "bbb\nHead\nccc");
+		assert_eq!(slice.paragraphs, vec![paragraph(4, 9, Some(6), false)]);
+	}
+
+	/// Gated to the platforms where an astral-plane character is two display units.
+	#[cfg(any(windows, target_os = "macos"))]
+	#[test]
+	fn paragraph_positions_count_astral_characters_as_two_units() {
+		let content = "a\u{1F600}b\nHead\n";
+		let markers = [Marker::new(MarkerType::Heading1, 5)];
+		assert_eq!(whole_window_paragraphs(content, &markers), vec![paragraph(5, 10, Some(1), false)]);
 	}
 	// The UI grows a document window forward by asking for the range starting at the one it
 	// already has loaded, and appending the result. That only works because an existing window's

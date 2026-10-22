@@ -17,7 +17,7 @@ mod stats;
 mod window;
 
 pub use find_all::{FindAllLine, FindSpan};
-pub use window::{WHOLE_DOCUMENT_DISPLAY_LEN, WINDOW_DISPLAY_LEN, WindowSlice};
+pub use window::{ParagraphFormat, WHOLE_DOCUMENT_DISPLAY_LEN, WINDOW_DISPLAY_LEN, WindowSlice};
 
 const MAX_HISTORY_LEN: usize = 10;
 const HISTORY_DISTANCE_THRESHOLD: i64 = 300;
@@ -229,6 +229,8 @@ pub struct DocumentSession {
 	parser_flags: ParserFlags,
 	/// The settings the document was parsed with, which views that re-render its source must follow too.
 	parse_settings: ParseSettings,
+	/// The password the document was opened with, so a second look at the file for something the parse did not keep (the picture behind an image line) can get past the same lock.
+	password: String,
 }
 
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
@@ -356,6 +358,7 @@ impl DocumentSession {
 			history_index: 0,
 			parser_flags,
 			parse_settings: settings,
+			password: password.to_string(),
 		})
 	}
 
