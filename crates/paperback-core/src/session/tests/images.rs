@@ -195,3 +195,22 @@ fn text_that_is_not_an_image_has_no_bytes() {
 	assert!(session.image_bytes_at(position_of(&session, "Before")).is_err());
 	fs::remove_dir_all(&dir).ok();
 }
+
+/// Enter follows a picture's link when it has one, so a linked picture has to read as both.
+#[test]
+fn a_linked_picture_is_on_a_link_and_a_plain_one_is_not() {
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	fs::write(dir.join("map.png"), PICTURE).unwrap();
+	fs::write(
+		dir.join("page.html"),
+		r#"<html><body><p><a href="https://example.com"><img src="map.png" alt="Linked"></a></p><p><img src="map.png" alt="Plain"></p></body></html>"#,
+	)
+	.unwrap();
+	let session = open(&dir.join("page.html"));
+	let linked = position_of(&session, "[Image: Linked]") + 3;
+	let plain = position_of(&session, "[Image: Plain]") + 3;
+	assert!(session.image_file_name_at(linked).is_some() && session.is_on_link(linked));
+	assert!(session.image_file_name_at(plain).is_some() && !session.is_on_link(plain));
+	fs::remove_dir_all(&dir).ok();
+}

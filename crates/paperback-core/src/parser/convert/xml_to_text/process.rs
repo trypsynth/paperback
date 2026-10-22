@@ -125,11 +125,23 @@ impl XmlToText {
 			self.section_offsets.push(self.text.get_current_text_position());
 		}
 		if Self::tag_is(tag_name, "a") {
-			let link_text = collect_element_text(node);
+			let mut link_text = String::new();
+			let mut link_images = Vec::new();
+			Self::collect_link_content(node, &mut link_text, &mut link_images);
+			let link_text = link_text.trim();
 			if !link_text.is_empty() {
 				let href = node.attribute("href").unwrap_or("").to_string();
-				let processed_link_text = collapse_whitespace(&link_text);
+				let processed_link_text = collapse_whitespace(link_text);
 				let link_offset = self.text.get_current_text_position();
+				// Found in the finished text, since collapsing its whitespace can move them.
+				let mut searched = 0;
+				for (image_text, mut info, is_figure) in link_images {
+					let Some(found) = processed_link_text[searched..].find(&image_text) else { continue };
+					let start = searched + found;
+					info.offset = link_offset + display_len(&processed_link_text[..start]);
+					searched = start + image_text.len();
+					self.push_image(info, is_figure);
+				}
 				self.text.current_line.push_str(&processed_link_text);
 				self.links.push(LinkInfo { offset: link_offset, text: processed_link_text, reference: href });
 				self.record_descendant_ids(node, link_offset);
@@ -161,44 +173,75 @@ impl XmlToText {
 			self.format_spans.open(&FormatKind::Underline, self.text.get_current_text_position());
 		}
 		if self.in_body
-			&& (Self::tag_is(tag_name, "img") || Self::tag_is(tag_name, "image") || Self::tag_is(tag_name, "figure"))
+			&& let Some((image_text, mut info, is_figure)) = Self::described_image(node)
 		{
-			let mut description = node
-				.attribute("alt")
-				.or_else(|| node.attribute("aria-label"))
-				.or_else(|| node.attribute("aria-description"))
-				.or_else(|| node.attribute("title"))
-				.map(collapse_whitespace)
-				.unwrap_or_default();
-			if description.is_empty() && Self::tag_is(tag_name, "figure") {
-				for child in node.children() {
-					if child.is_element() && Self::tag_is(child.tag_name().name(), "figcaption") {
-						description = collapse_whitespace(&collect_element_text(child));
-						break;
-					}
-				}
+			info.offset = self.text.get_current_text_position();
+			self.text.current_line.push_str(&image_text);
+			self.push_image(info, is_figure);
+		}
+		skip_children
+	}
+
+	/// A link's text as it reads: its text nodes, with each described image's placeholder where the image sits, so a link made of a picture is still a link. The images come back with the placeholders they show.
+	fn collect_link_content(node: Node<'_, '_>, text: &mut String, images: &mut Vec<(String, ImageInfo, bool)>) {
+		for child in node.children() {
+			if let Some(child_text) = child.text().filter(|_| child.is_text()) {
+				text.push_str(child_text);
+			} else if let Some((image_text, info, is_figure)) = Self::described_image(child) {
+				text.push_str(&image_text);
+				images.push((image_text, info, is_figure));
+			} else {
+				Self::collect_link_content(child, text, images);
 			}
-			if !description.is_empty() {
-				let is_figure = Self::tag_is(tag_name, "figure");
-				// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
-				let label = if is_figure { t("Figure") } else { t("Image") };
-				let image_text = format!("[{label}: {description}]");
-				let offset = self.text.get_current_text_position();
-				self.text.current_line.push_str(&image_text);
-				let info = ImageInfo {
-					offset,
-					alt_text: description,
-					length: display_len(&image_text),
-					source: Self::image_source(node),
-				};
-				if is_figure {
-					self.figures.push(info);
-				} else {
-					self.images.push(info);
+		}
+	}
+
+	/// The placeholder an image or figure shows, such as `[Image: a cat]`, with its info (offset still unset) and whether it is a figure. `None` for anything else, and for a picture with no description, which shows nothing.
+	fn described_image(node: Node<'_, '_>) -> Option<(String, ImageInfo, bool)> {
+		if !node.is_element() {
+			return None;
+		}
+		let tag_name = node.tag_name().name();
+		let is_figure = Self::tag_is(tag_name, "figure");
+		if !is_figure && !Self::tag_is(tag_name, "img") && !Self::tag_is(tag_name, "image") {
+			return None;
+		}
+		let mut description = node
+			.attribute("alt")
+			.or_else(|| node.attribute("aria-label"))
+			.or_else(|| node.attribute("aria-description"))
+			.or_else(|| node.attribute("title"))
+			.map(collapse_whitespace)
+			.unwrap_or_default();
+		if description.is_empty() && is_figure {
+			for child in node.children() {
+				if child.is_element() && Self::tag_is(child.tag_name().name(), "figcaption") {
+					description = collapse_whitespace(&collect_element_text(child));
+					break;
 				}
 			}
 		}
-		skip_children
+		if description.is_empty() {
+			return None;
+		}
+		// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
+		let label = if is_figure { t("Figure") } else { t("Image") };
+		let image_text = format!("[{label}: {description}]");
+		let info = ImageInfo {
+			offset: 0,
+			alt_text: description,
+			length: display_len(&image_text),
+			source: Self::image_source(node),
+		};
+		Some((image_text, info, is_figure))
+	}
+
+	fn push_image(&mut self, info: ImageInfo, is_figure: bool) {
+		if is_figure {
+			self.figures.push(info);
+		} else {
+			self.images.push(info);
+		}
 	}
 
 	fn handle_formula_xml(&mut self, node: Node<'_, '_>) {

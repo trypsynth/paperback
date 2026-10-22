@@ -130,42 +130,15 @@ impl HtmlToText {
 				if let Some(id) = element.attr("id").or_else(|| element.attr("name")) {
 					self.id_positions.insert(id.to_string(), self.text.get_current_text_position());
 				}
-				if tag_name == "img" || tag_name == "image" || tag_name == "figure" {
-					let mut description = element
-						.attr("alt")
-						.or_else(|| element.attr("aria-label"))
-						.or_else(|| element.attr("aria-description"))
-						.or_else(|| element.attr("title"))
-						.map(collapse_whitespace)
-						.unwrap_or_default();
-					if description.is_empty() && tag_name == "figure" {
-						for child in node.children() {
-							if let Node::Element(child_elem) = child.value()
-								&& child_elem.name() == "figcaption"
-							{
-								description = collapse_whitespace(&Self::collect_text(child));
-								break;
-							}
-						}
-					}
-					if !description.is_empty() {
-						let is_figure = tag_name == "figure";
-						// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
-						let label = if is_figure { t("Figure") } else { t("Image") };
-						let image_text = format!("[{label}: {description}]");
-						let offset = self.text.get_current_text_position();
+				if let Some((image_text, mut info, is_figure)) = Self::described_image(tag_name, node) {
+					if self.flags.contains(ProcessingFlags::IN_LINK) {
+						// Placed once the link's text is known, since collapsing its whitespace can move it.
+						self.current_link_text.push_str(&image_text);
+						self.current_link_images.push((image_text, info, is_figure));
+					} else {
+						info.offset = self.text.get_current_text_position();
 						self.text.current_line.push_str(&image_text);
-						let info = ImageInfo {
-							offset,
-							alt_text: description,
-							length: display_len(&image_text),
-							source: Self::image_source(node),
-						};
-						if is_figure {
-							self.figures.push(info);
-						} else {
-							self.images.push(info);
-						}
+						self.push_image(info, is_figure);
 					}
 				}
 			}
@@ -306,6 +279,14 @@ impl HtmlToText {
 			self.flags.remove(ProcessingFlags::IN_LINK);
 			if !self.current_link_text.is_empty() {
 				let collapsed_text = collapse_whitespace(&self.current_link_text);
+				let mut searched = 0;
+				for (image_text, mut info, is_figure) in std::mem::take(&mut self.current_link_images) {
+					let Some(found) = collapsed_text[searched..].find(&image_text) else { continue };
+					let start = searched + found;
+					info.offset = self.link_start_pos + display_len(&collapsed_text[..start]);
+					searched = start + image_text.len();
+					self.push_image(info, is_figure);
+				}
 				self.links.push(LinkInfo {
 					offset: self.link_start_pos,
 					text: collapsed_text.clone(),
@@ -315,6 +296,7 @@ impl HtmlToText {
 			}
 			self.current_link_href.clear();
 			self.current_link_text.clear();
+			self.current_link_images.clear();
 		}
 		if tag_name == "code" {
 			self.flags.remove(ProcessingFlags::IN_CODE);
@@ -371,6 +353,53 @@ impl HtmlToText {
 			self.current_link_text.push_str(&collapse_whitespace(&processed_text));
 		} else {
 			self.text.current_line.push_str(&collapse_whitespace(&processed_text));
+		}
+	}
+
+	/// The placeholder an image or figure shows, such as `[Image: a cat]`, with its info (offset still unset) and whether it is a figure. `None` when it has no description, since an undescribed picture shows nothing.
+	fn described_image(tag_name: &str, node: NodeRef<'_, Node>) -> Option<(String, ImageInfo, bool)> {
+		if tag_name != "img" && tag_name != "image" && tag_name != "figure" {
+			return None;
+		}
+		let element = ElementRef::wrap(node)?;
+		let mut description = element
+			.attr("alt")
+			.or_else(|| element.attr("aria-label"))
+			.or_else(|| element.attr("aria-description"))
+			.or_else(|| element.attr("title"))
+			.map(collapse_whitespace)
+			.unwrap_or_default();
+		let is_figure = tag_name == "figure";
+		if description.is_empty() && is_figure {
+			for child in node.children() {
+				if let Node::Element(child_elem) = child.value()
+					&& child_elem.name() == "figcaption"
+				{
+					description = collapse_whitespace(&Self::collect_text(child));
+					break;
+				}
+			}
+		}
+		if description.is_empty() {
+			return None;
+		}
+		// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
+		let label = if is_figure { t("Figure") } else { t("Image") };
+		let image_text = format!("[{label}: {description}]");
+		let info = ImageInfo {
+			offset: 0,
+			alt_text: description,
+			length: display_len(&image_text),
+			source: Self::image_source(node),
+		};
+		Some((image_text, info, is_figure))
+	}
+
+	fn push_image(&mut self, info: ImageInfo, is_figure: bool) {
+		if is_figure {
+			self.figures.push(info);
+		} else {
+			self.images.push(info);
 		}
 	}
 
