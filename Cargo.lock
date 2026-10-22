@@ -3944,9 +3944,9 @@ dependencies = [
 
 [[package]]
 name = "ship-shape"
-version = "0.4.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b0b7c20aa2e52b4bc6836cae11b8ac863a0263139522d11f8b09ee123dcd3a4"
+checksum = "6ce8fbe060ee50d27fa6ecbe67a266e79a547257c5452ac87dbb6382d5d98e51"
 dependencies = [
  "homeport",
  "minisign-verify",
@@ -3955,6 +3955,7 @@ dependencies = [
  "serde",
  "tempfile",
  "ureq",
+ "windows",
  "wx-utils",
  "wxdragon",
 ]

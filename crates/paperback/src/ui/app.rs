@@ -365,7 +365,7 @@ fn send_ipc_command(command: &IpcCommand) {
 pub fn quit_for_update() {
 	if let Some(window) = main_window_from_ptr() {
 		window.frame().enable(false);
-		window.prepare_update_restart();
+		window.announce_update_restart();
 	}
 	// macOS posts live-region announcements on the next main run-loop iteration. Keep the
 	// window alive briefly so the screen reader can receive it; never block the UI thread.
@@ -383,10 +383,4 @@ fn finish_quit_for_update() {
 	if let Some(app) = wxdragon::app::get_app_instance() {
 		app.exit_main_loop();
 	}
-	// The updater's helper waits on this process with no timeout before it installs anything, so a shutdown that stalls would stall the update with it.
-	std::thread::spawn(|| {
-		std::thread::sleep(std::time::Duration::from_secs(10));
-		tracing::warn!("still running 10 seconds after quitting for an update, exiting");
-		std::process::exit(0);
-	});
 }

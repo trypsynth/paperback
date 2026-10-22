@@ -122,30 +122,11 @@ impl ConfigManager {
 			self.trim_recent_documents();
 		}
 	}
-
-	/// Removes a setting stored under a key of the caller's own, one none of the typed settings use.
-	pub fn remove_app_value(&self, key: &str) {
-		if !self.initialized {
-			return;
-		}
-		if self.data.borrow_mut().app.extra.remove(key).is_some() {
-			self.dirty.set(true);
-		}
-	}
 }
 
 #[cfg(test)]
 mod tests {
 	use super::*;
-
-	#[test]
-	fn a_removed_value_reads_as_its_default() {
-		let mut config = ConfigManager::new();
-		config.initialized = true;
-		config.set_app_string("update_relaunch_at", "1700000000");
-		config.remove_app_value("update_relaunch_at");
-		assert_eq!(config.get_app_string("update_relaunch_at", ""), "");
-	}
 
 	#[test]
 	fn join_pdf_paragraphs_round_trips() {
