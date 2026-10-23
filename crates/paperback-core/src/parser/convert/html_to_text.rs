@@ -43,6 +43,8 @@ pub struct HtmlToText {
 	flags: ProcessingFlags,
 	current_link_href: String,
 	current_link_text: String,
+	/// The described images inside the link being read: the placeholder each shows in the link's text, its info with the offset still to be found, and whether it is a figure.
+	current_link_images: Vec<(String, ImageInfo, bool)>,
 	list_style_stack: Vec<ListStyle>,
 	list_level: i32,
 	/// Indices into `lists` for currently open `<ul>`/`<ol>` elements, in nesting order.
@@ -162,6 +164,7 @@ impl HtmlToText {
 		self.flags = ProcessingFlags::empty();
 		self.current_link_href.clear();
 		self.current_link_text.clear();
+		self.current_link_images.clear();
 		self.list_style_stack.clear();
 		self.list_level = 0;
 		self.open_lists.clear();

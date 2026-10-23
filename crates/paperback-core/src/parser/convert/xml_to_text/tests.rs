@@ -346,3 +346,32 @@ fn test_no_format_spans_without_formatting_tags() {
 	assert!(converter.get_italics().is_empty());
 	assert!(converter.get_underlines().is_empty());
 }
+
+/// A link made only of a picture, such as a cover linking to the first chapter, has to be a link the reader can reach and follow, with the picture's marker on the same text.
+#[test]
+fn a_link_made_of_a_picture_alone_is_a_link() {
+	let xml = r#"<root><body><p>Go <a href="ch1.xhtml"><img src="cover.png" alt="Cover"/></a> now</p></body></root>"#;
+	let mut converter = XmlToText::new();
+	assert!(converter.convert(xml));
+	assert_eq!(converter.get_text(), "Go [Image: Cover] now");
+	let links = converter.get_links();
+	assert_eq!(links.len(), 1);
+	assert_eq!(
+		(links[0].offset, links[0].text.as_str(), links[0].reference.as_str()),
+		(3, "[Image: Cover]", "ch1.xhtml")
+	);
+	let images = converter.get_images();
+	assert_eq!(images.len(), 1);
+	assert_eq!((images[0].offset, images[0].source.as_str()), (3, "cover.png"));
+}
+
+/// A picture inside a link with text used to be dropped, since only the link's text was read.
+#[test]
+fn a_picture_inside_a_link_with_text_is_kept_in_its_place() {
+	let xml = r#"<root><body><p><a href="ch1.xhtml">Back  to <img alt="Logo"/> home</a></p></body></root>"#;
+	let mut converter = XmlToText::new();
+	assert!(converter.convert(xml));
+	assert_eq!(converter.get_text(), "Back to [Image: Logo] home");
+	assert_eq!(converter.get_links()[0].text, "Back to [Image: Logo] home");
+	assert_eq!(converter.get_images()[0].offset, "Back to ".len());
+}

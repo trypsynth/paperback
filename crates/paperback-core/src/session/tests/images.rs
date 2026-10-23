@@ -155,3 +155,62 @@ fn a_comic_page_is_saved_from_the_archive() {
 	assert_eq!(fs::read(&out).unwrap(), PICTURE);
 	fs::remove_dir_all(&dir).ok();
 }
+
+/// The bytes have to be readable without writing a file, because that is what reading the text
+/// off a picture does with them.
+#[test]
+fn a_picture_beside_an_html_page_offers_its_bytes() {
+	let dir = unique_temp_dir();
+	fs::create_dir_all(dir.join("pics")).unwrap();
+	fs::write(dir.join("pics/map 1.png"), PICTURE).unwrap();
+	fs::write(
+		dir.join("page.html"),
+		r#"<html><body><p>Before</p><p><img src="pics/map%201.png" alt="A map"></p></body></html>"#,
+	)
+	.unwrap();
+	let session = open(&dir.join("page.html"));
+	let at = position_of(&session, "[Image: A map]") + 3;
+	assert_eq!(session.image_bytes_at(at).unwrap(), PICTURE);
+	fs::remove_dir_all(&dir).ok();
+}
+
+#[test]
+fn an_epub_picture_offers_its_bytes() {
+	let dir = unique_temp_dir();
+	let epub = dir.join("book.epub");
+	write_epub(&epub);
+	let session = open(&epub);
+	let at = position_of(&session, "[Image: Figure one]");
+	assert_eq!(session.image_bytes_at(at).unwrap(), PICTURE);
+	fs::remove_dir_all(&dir).ok();
+}
+
+/// A line that is not a picture has nothing to hand the OCR engine, and saying so is better than
+/// recognizing whatever happened to be there.
+#[test]
+fn text_that_is_not_an_image_has_no_bytes() {
+	let dir = unique_temp_dir();
+	fs::write(dir.join("page.html"), r"<html><body><p>Before</p></body></html>").unwrap();
+	let session = open(&dir.join("page.html"));
+	assert!(session.image_bytes_at(position_of(&session, "Before")).is_err());
+	fs::remove_dir_all(&dir).ok();
+}
+
+/// Enter follows a picture's link when it has one, so a linked picture has to read as both.
+#[test]
+fn a_linked_picture_is_on_a_link_and_a_plain_one_is_not() {
+	let dir = unique_temp_dir();
+	fs::create_dir_all(&dir).unwrap();
+	fs::write(dir.join("map.png"), PICTURE).unwrap();
+	fs::write(
+		dir.join("page.html"),
+		r#"<html><body><p><a href="https://example.com"><img src="map.png" alt="Linked"></a></p><p><img src="map.png" alt="Plain"></p></body></html>"#,
+	)
+	.unwrap();
+	let session = open(&dir.join("page.html"));
+	let linked = position_of(&session, "[Image: Linked]") + 3;
+	let plain = position_of(&session, "[Image: Plain]") + 3;
+	assert!(session.image_file_name_at(linked).is_some() && session.is_on_link(linked));
+	assert!(session.image_file_name_at(plain).is_some() && !session.is_on_link(plain));
+	fs::remove_dir_all(&dir).ok();
+}

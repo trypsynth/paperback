@@ -300,3 +300,32 @@ fn html_converter_gives_the_image_marker_the_placeholder_span() {
 	assert_eq!(marker.position, images[0].offset);
 	assert_eq!(marker.length, display_len("[Image: a cat]"));
 }
+
+/// A link made only of a picture, such as a logo linking home, has to be a link the reader can reach and follow, with the picture's marker on the same text.
+#[test]
+fn html_converter_makes_a_link_of_a_picture_alone() {
+	let html = "<html><body><p>Go <a href=\"/home\"><img src=\"logo.png\" alt=\"Logo\"></a> now</p></body></html>";
+	let mut converter = HtmlToText::new();
+	assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+	assert_eq!(converter.get_text(), "Go [Image: Logo] now");
+	let links = converter.get_links();
+	assert_eq!(links.len(), 1);
+	assert_eq!(
+		(links[0].offset, links[0].text.as_str(), links[0].reference.as_str()),
+		(display_len("Go "), "[Image: Logo]", "/home")
+	);
+	let images = converter.get_images();
+	assert_eq!(images.len(), 1);
+	assert_eq!((images[0].offset, images[0].source.as_str()), (display_len("Go "), "logo.png"));
+}
+
+/// The picture stays where it sits in the link rather than ending up in front of its text.
+#[test]
+fn html_converter_keeps_a_picture_in_its_place_inside_a_link() {
+	let html = "<html><body><p><a href=\"/home\">Back  to <img alt=\"Logo\"> home</a></p></body></html>";
+	let mut converter = HtmlToText::new();
+	assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+	assert_eq!(converter.get_text(), "Back to [Image: Logo] home");
+	assert_eq!(converter.get_links()[0].text, "Back to [Image: Logo] home");
+	assert_eq!(converter.get_images()[0].offset, display_len("Back to "));
+}

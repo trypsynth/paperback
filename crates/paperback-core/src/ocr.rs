@@ -170,7 +170,21 @@ impl PageRenderer {
 
 /// Decode one comic page and shrink it to fit `max_dimension`.
 fn decode_page(bytes: &[u8], max_dimension: u32) -> Result<RenderedPage> {
-	let image = image::load_from_memory(bytes).context("failed to decode a comic archive page")?;
+	decode_image(bytes, max_dimension).context("failed to decode a comic archive page")
+}
+
+/// Decodes an encoded picture into RGBA8, shrunk so its longest side fits `max_dimension`.
+///
+/// This is what a picture embedded in a document goes through before an OCR engine sees it: the
+/// bytes are whatever the document stores (PNG, JPEG, GIF, WebP or BMP, and a PDF's picture as
+/// PNG), and a picture the decoder does not know — an SVG, or a file that is not really an image —
+/// comes back as an error for the caller to report.
+///
+/// # Errors
+///
+/// Returns an error if the bytes are not an image this build can decode.
+pub fn decode_image(bytes: &[u8], max_dimension: u32) -> Result<RenderedPage> {
+	let image = image::load_from_memory(bytes).context("failed to decode the image")?;
 	// Scanned artwork is routinely bigger than the engines accept, and they downscale it
 	// themselves anyway, so shrinking here only saves carrying the pixels around.
 	let longest = image.width().max(image.height());
@@ -257,6 +271,28 @@ mod tests {
 		let page = renderer.render(0, 100).unwrap();
 		assert_eq!(page.width, 100);
 		assert_eq!(page.height, 50);
+	}
+
+	/// A picture embedded in a document arrives as its own bytes, not as a page of a comic, and
+	/// has to come back at its own size for the engine to read it.
+	#[test]
+	fn a_picture_decodes_to_rgba_of_its_own_size() {
+		let page = decode_image(&png(8, 4), 4000).unwrap();
+		assert_eq!((page.width, page.height), (8, 4));
+		assert_eq!(page.rgba.len(), 8 * 4 * 4);
+	}
+
+	#[test]
+	fn an_oversized_picture_is_shrunk_to_the_cap() {
+		let page = decode_image(&png(400, 200), 100).unwrap();
+		assert_eq!((page.width, page.height), (100, 50));
+	}
+
+	/// A picture the decoder does not know is the caller's to report, not a crash and not an
+	/// empty page handed to the engine.
+	#[test]
+	fn a_picture_that_is_not_an_image_is_an_error() {
+		assert!(decode_image(b"<svg xmlns=\"http://www.w3.org/2000/svg\"/>", 4000).is_err());
 	}
 
 	#[test]

@@ -55,6 +55,10 @@ mod go_to_page;
 pub use go_to_page::show_go_to_page_dialog;
 mod go_to_percent;
 pub use go_to_percent::show_go_to_percent_dialog;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+mod image_text;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+pub use image_text::show_image_text_dialog;
 #[cfg(target_os = "linux")]
 mod linux_setup;
 #[cfg(target_os = "linux")]

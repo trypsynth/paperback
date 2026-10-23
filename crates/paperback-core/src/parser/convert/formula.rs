@@ -46,14 +46,14 @@ fn init() -> bool {
 	// TODO: make the output code configurable when math preferences are implemented.
 	// `rules` is embedded in the zip vfs in the binary; it does not represent an on-disk directory.
 	// It is nevertheless required for MathCAT initialization.
-	let result = libmathcat::set_rules_dir("Rules".to_string())
+	let result = libmathcat::set_rules_dir("Rules")
 		// Without this, MathCAT re-reads its preference files on every get_braille call, which
 		// resets BrailleCode to its shipped default (Nemeth) and discards the ASCIIMath set below,
 		// so the reader hears Nemeth braille cells instead of AsciiMath.
-		.and_then(|()| libmathcat::set_preference("CheckRuleFiles".to_string(), "None".to_string()))
-		.and_then(|()| libmathcat::set_preference("Language".to_string(), "en".to_string()))
+		.and_then(|()| libmathcat::set_preference("CheckRuleFiles", "None"))
+		.and_then(|()| libmathcat::set_preference("Language", "en"))
 		// ASCIIMath is a text notation, despite being exposed through MathCAT's braille API.
-		.and_then(|()| libmathcat::set_preference("BrailleCode".to_string(), "ASCIIMath".to_string()));
+		.and_then(|()| libmathcat::set_preference("BrailleCode", "ASCIIMath"));
 	if let Err(error) = result {
 		tracing::warn!(%error, "failed to initialize embedded MathCAT rules");
 		return false;
@@ -86,7 +86,7 @@ fn asciimath(mathml: &str) -> Option<String> {
 		return hit.clone();
 	}
 	// Convert outside the lock so independent EPUB sections remain parallel.
-	let result = libmathcat::set_mathml(mathml.to_string()).and_then(|_| libmathcat::get_braille(String::new()));
+	let result = libmathcat::set_mathml(mathml).and_then(|_| libmathcat::get_braille(""));
 	let rendered = match result {
 		Ok(text) => normalized_text(&text),
 		Err(error) => {
