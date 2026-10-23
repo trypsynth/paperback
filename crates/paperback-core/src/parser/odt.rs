@@ -10,6 +10,7 @@ use crate::{
 		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 		odf_crypto::read_odf_content,
 		util::{
+			comments::{self, Comment},
 			odf,
 			path::extract_title_from_path,
 			toc::{build_toc_from_buffer, heading_level_to_marker_type},
@@ -17,7 +18,7 @@ use crate::{
 		},
 	},
 	t,
-	util::text::{collapse_whitespace, display_len},
+	util::text::display_len,
 };
 
 pub struct OdtParser;
@@ -122,20 +123,8 @@ struct Walk<'w, 'a, 'input> {
 	format_style_map: &'w HashMap<String, (bool, bool, bool)>,
 	/// The notes cited so far, by the id their citation links to, with their number and body. Read in the middle of a sentence they interrupted it, so they are written after the text instead.
 	notes: Vec<(String, String, Option<Node<'a, 'input>>)>,
-	/// The comments met so far. Read where they sit they interrupted the text, and dropped they lost what reviewers said, so they are written after it, each linking back to its place.
-	comments: Vec<Comment>,
-}
-
-struct Comment {
-	/// The id of the place the comment was made, which its entry links back to.
-	id: String,
-	author: String,
-	text: String,
-	/// Where the commented text starts, and where it ends when the comment covers a range rather than a point.
-	start: usize,
-	end: Option<usize>,
-	/// What the range's closing `office:annotation-end` names it by.
-	name: Option<String>,
+	/// The comments met so far, each with the name its range's closing `office:annotation-end` uses, when it covers words.
+	comments: Vec<(Comment, Option<String>)>,
 }
 
 impl<'a, 'input> Walk<'_, 'a, 'input> {
@@ -159,8 +148,8 @@ impl<'a, 'input> Walk<'_, 'a, 'input> {
 		}
 		if tag_name == "annotation-end" {
 			let position = self.buffer.current_position();
-			if let Some(comment) =
-				self.comments.iter_mut().rev().find(|comment| comment.name.as_deref() == node.attribute("name"))
+			if let Some((comment, _)) =
+				self.comments.iter_mut().rev().find(|(_, name)| name.as_deref() == node.attribute("name"))
 			{
 				comment.end = Some(position);
 			}
@@ -281,64 +270,17 @@ impl<'a, 'input> Walk<'_, 'a, 'input> {
 		if text.is_empty() {
 			return;
 		}
-		let id = format!("comment-{}", self.comments.len() + 1);
+		let key = format!("comment-{}", self.comments.len() + 1);
 		let start = self.buffer.current_position();
-		self.id_positions.insert(id.clone(), start);
+		self.id_positions.insert(key.clone(), start);
 		let author = child_text("creator").join(" ");
 		let name = annotation.attribute("name").map(str::to_string);
-		self.comments.push(Comment { id, author, text, start, end: None, name });
+		self.comments.push((Comment { key, author, text, start, end: None }, name));
 	}
 
-	/// Writes the comments under a heading of their own after the text and notes, each naming its author and, for a comment on a range, the words it was made on, as a link back to them.
 	fn write_comments(&mut self) {
-		if self.comments.is_empty() {
-			return;
-		}
-		if !self.buffer.content.is_empty() && !self.buffer.content.ends_with('\n') {
-			self.buffer.append("\n");
-		}
-		// TRANSLATORS: Heading over the comments reviewers left on a document, written after its text
-		let heading = t("Comments");
-		let heading_offset = self.buffer.current_position();
-		self.buffer.append(&heading);
-		self.buffer.append("\n");
-		self.buffer
-			.add_marker(Marker::new(heading_level_to_marker_type(1), heading_offset).with_text(heading).with_level(1));
-		for comment in std::mem::take(&mut self.comments) {
-			// TRANSLATORS: Names a comment's author when the document does not say who wrote it
-			let author = if comment.author.is_empty() { t("Comment") } else { comment.author };
-			let quote = comment.end.filter(|end| *end > comment.start).map(|end| self.quoted(comment.start, end));
-			let entry = match quote {
-				// TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
-				Some(quote) => t("{} on \u{201c}{}\u{201d}: {}")
-					.replacen("{}", &author, 1)
-					.replacen("{}", &quote, 1)
-					.replacen("{}", &comment.text, 1),
-				// TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
-				None => t("{}: {}").replacen("{}", &author, 1).replacen("{}", &comment.text, 1),
-			};
-			let offset = self.buffer.current_position();
-			self.buffer.append(&entry);
-			self.buffer.append("\n");
-			self.buffer.add_marker(
-				Marker::new(MarkerType::Link, offset).with_text(entry).with_reference(format!("#{}", comment.id)),
-			);
-		}
-	}
-
-	/// The words between two positions in what has been written, cut short when they run long, since the entry only has to say which words.
-	fn quoted(&self, start: usize, end: usize) -> String {
-		const LONGEST: usize = 60;
-		let words =
-			self.buffer.slice(self.buffer.byte_index_for_display(start)..self.buffer.byte_index_for_display(end));
-		let words = collapse_whitespace(words).trim().to_string();
-		if words.chars().count() <= LONGEST {
-			return words;
-		}
-		let mut short: String = words.chars().take(LONGEST).collect();
-		short.truncate(short.trim_end().len());
-		short.push('\u{2026}');
-		short
+		let comments = std::mem::take(&mut self.comments).into_iter().map(|(comment, _)| comment).collect();
+		comments::write_comments(self.buffer, comments);
 	}
 
 	fn write_notes(&mut self) {

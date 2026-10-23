@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use roxmltree::Document as XmlDocument;
 
-use super::{super::numbering::Numbering, Citations, PageSource, Walk, number_pages, traverse};
+use super::{super::numbering::Numbering, Annotations, PageSource, Walk, number_pages, traverse};
 use crate::{
 	document::{DocumentBuffer, MarkerType},
 	util::text::display_len,
@@ -26,7 +26,7 @@ fn walk(xml_doc: &XmlDocument, render_tables_inline: bool, numbering: Numbering)
 		numbering,
 		list: None,
 		page_source: PageSource::for_document(xml_doc.input_text()),
-		citations: Citations::default(),
+		annotations: Annotations::default(),
 	};
 	traverse(xml_doc.root(), &mut walk);
 	walk.end_list();
@@ -269,7 +269,7 @@ fn links_and_bookmarks_land_on_their_text_after_an_emoji() {
 		numbering: Numbering::default(),
 		list: None,
 		page_source: PageSource::for_document(xml),
-		citations: Citations::default(),
+		annotations: Annotations::default(),
 	};
 	traverse(xml_doc.root(), &mut walk);
 	let this = display_len("\u{1F600} see ");
@@ -370,4 +370,22 @@ fn footnotes_and_endnotes_are_cited_in_the_text_and_written_after_it() {
 	let target = id_positions[reference.trim_start_matches('#')];
 	assert_eq!(target, buffer.content.find("1. At").unwrap());
 	assert!(headings.iter().any(|heading| heading.text == "Notes"));
+}
+
+/// #1123: Word comments used to be dropped. They now follow the text, naming their author and the words they are on, and link back to those words.
+#[test]
+fn comments_follow_the_text_with_their_authors_and_link_back() {
+	let document = r#"<document><body><p><r><t xml:space="preserve">Sales </t></r><commentRangeStart id="0"/><r><t>grew fast</t></r><commentRangeEnd id="0"/><r><commentReference id="0"/></r><r><t xml:space="preserve"> this year.</t></r></p><p><r><t>Done.</t></r><r><commentReference id="1"/></r></p></body></document>"#;
+	let comments = r#"<comments><comment id="0" author="Ann" date="2026-10-23T00:00:00Z"><p><r><annotationRef/></r><r><t>Check this figure.</t></r></p></comment><comment id="1"><p><r><t>Nice.</t></r></p></comment></comments>"#;
+	let mut archive = docx(&[("word/document.xml", document), ("word/comments.xml", comments)]);
+	let mut buffer = DocumentBuffer::new();
+	let mut id_positions = HashMap::new();
+	let mut headings = Vec::new();
+	super::parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, &mut headings, false).unwrap();
+	assert_eq!(
+		buffer.content,
+		"Sales grew fast this year.\nDone.\nComments\nAnn on \u{201c}grew fast\u{201d}: Check this figure.\nComment: Nice.\n"
+	);
+	let link = buffer.markers.iter().find(|m| m.mtype == MarkerType::Link).expect("comment link");
+	assert_eq!(id_positions[link.reference.trim_start_matches('#')], display_len("Sales "));
 }

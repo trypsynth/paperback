@@ -1,5 +1,6 @@
 pub mod bidi;
 pub mod chapters;
+pub mod comments;
 pub mod odf;
 pub mod ooxml;
 pub mod path;

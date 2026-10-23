@@ -17,6 +17,7 @@ use crate::{
 	parser::{
 		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 		util::{
+			comments::{self, Comment},
 			ooxml::{collect_ooxml_run_text, read_ooxml_relationships, try_decrypt_office_file},
 			path::extract_title_from_path,
 			toc::build_toc_from_buffer,
@@ -27,10 +28,10 @@ use crate::{
 	util::zip::read_zip_entry_by_name,
 };
 
-mod notes;
+mod annotations;
 mod paragraph;
 
-use notes::{Citations, NoteKind};
+use annotations::{Annotations, NoteKind};
 use paragraph::{PageSource, extract_number_from_string, process_paragraph, starts_page};
 
 use super::numbering::Numbering;
@@ -130,7 +131,7 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 	let doc_xml = XmlDocument::parse(&doc_content).context("Failed to parse word/document.xml")?;
 	let start = buffer.current_position();
 	let first_marker = buffer.markers.len();
-	let citations = Citations::new(read_zip_entry_by_name(archive, "word/settings.xml").ok().as_deref(), start);
+	let annotations = Annotations::new(read_zip_entry_by_name(archive, "word/settings.xml").ok().as_deref(), start);
 	let mut walk = Walk {
 		buffer,
 		headings,
@@ -141,18 +142,19 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 		numbering,
 		list: None,
 		page_source: PageSource::for_document(&doc_content),
-		citations,
+		annotations,
 	};
 	traverse(doc_xml.root(), &mut walk);
 	walk.end_list();
 	write_notes(archive, &mut walk);
+	write_word_comments(archive, &mut walk);
 	number_pages(buffer, start, first_marker);
 	Ok(())
 }
 
 /// Writes the footnotes and endnotes the document cites after its text, under a heading of their own, each where its citation's link lands. Read where Word shows them, at the foot of a page, they would interrupt the text; dropped, as they used to be, the citation numbers led nowhere.
 fn write_notes<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
-	let cited = std::mem::take(&mut walk.citations.cited);
+	let cited = std::mem::take(&mut walk.annotations.cited);
 	if cited.is_empty() {
 		return;
 	}
@@ -199,13 +201,54 @@ fn write_notes<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
 				walk.style_heading_map,
 				&mut walk.numbering,
 				walk.page_source,
-				&mut walk.citations,
+				&mut walk.annotations,
 			);
 		}
 		if !walk.buffer.content.ends_with('\n') {
 			walk.buffer.append("\n");
 		}
 	}
+}
+
+/// Writes the comments the document's text carries after it, from `word/comments.xml`, each with its author and the words it was made on.
+fn write_word_comments<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
+	let placed = std::mem::take(&mut walk.annotations.comments);
+	if placed.is_empty() {
+		return;
+	}
+	let Ok(xml) = read_zip_entry_by_name(archive, "word/comments.xml") else { return };
+	let Ok(document) = XmlDocument::parse(&xml) else { return };
+	let comments = placed
+		.into_iter()
+		.filter_map(|(id, start, end)| {
+			let comment = document
+				.descendants()
+				.find(|node| node.tag_name().name() == "comment" && node.attribute("id") == Some(id.as_str()))?;
+			let text = comment
+				.children()
+				.filter(|child| child.tag_name().name() == "p")
+				.map(|paragraph| {
+					paragraph
+						.descendants()
+						.filter(|node| node.tag_name().name() == "r")
+						.map(collect_ooxml_run_text)
+						.collect::<String>()
+						.trim()
+						.to_string()
+				})
+				.filter(|paragraph| !paragraph.is_empty())
+				.collect::<Vec<_>>()
+				.join(" ");
+			(!text.is_empty()).then(|| Comment {
+				key: walk.annotations.comment_key(&id),
+				author: comment.attribute("author").unwrap_or_default().trim().to_string(),
+				text,
+				start,
+				end,
+			})
+		})
+		.collect();
+	comments::write_comments(walk.buffer, comments);
 }
 
 /// Names the page breaks the walk placed from `first_marker` on, and adds the first page at `start`, which Word records no break for.
@@ -249,7 +292,7 @@ struct Walk<'a> {
 	/// it has, and where its last item ends. Any other paragraph, or a table, ends it.
 	list: Option<ListRun>,
 	page_source: PageSource,
-	citations: Citations,
+	annotations: Annotations,
 }
 
 struct ListRun {
@@ -345,7 +388,7 @@ fn traverse(node: Node, walk: &mut Walk) {
 				walk.style_heading_map,
 				&mut walk.numbering,
 				walk.page_source,
-				&mut walk.citations,
+				&mut walk.annotations,
 			);
 			if is_list_item {
 				let end = walk.buffer.current_position();

@@ -4,7 +4,7 @@ use roxmltree::{Node, NodeType};
 
 use super::{
 	super::numbering::Numbering,
-	notes::{Citations, NoteKind},
+	annotations::{Annotations, NoteKind},
 };
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, format_marker_types},
@@ -41,7 +41,7 @@ pub(super) fn process_paragraph(
 	style_heading_map: &HashMap<String, i32>,
 	numbering: &mut Numbering,
 	page_source: PageSource,
-	citations: &mut Citations,
+	annotations: &mut Annotations,
 ) -> bool {
 	let paragraph_start = buffer.current_position();
 	// Word keeps list numbers and bullets out of the text and generates them; without this a
@@ -56,6 +56,9 @@ pub(super) fn process_paragraph(
 	let mut next_starts_page = false;
 	let mut bookmarks: Vec<(String, usize)> = Vec::new();
 	let mut links: Vec<(usize, String, String)> = Vec::new();
+	// Where comments start and end in this paragraph, by id, placed once the paragraph's text is final.
+	let mut comment_starts: Vec<(String, usize)> = Vec::new();
+	let mut comment_ends: Vec<(String, usize)> = Vec::new();
 	let mut heading_level = 0;
 	let mut is_paragraph_style_heading = false;
 	let mut format_spans: Vec<(MarkerType, usize, usize)> = Vec::new();
@@ -76,6 +79,14 @@ pub(super) fn process_paragraph(
 					page_starts.push(0);
 				}
 				next_starts_page = find_child_element(child, "sectPr").is_some_and(section_starts_page);
+			}
+		} else if tag_name == "commentRangeStart" {
+			if let Some(id) = child.attribute("id") {
+				comment_starts.push((id.to_string(), para_display_len));
+			}
+		} else if tag_name == "commentRangeEnd" {
+			if let Some(id) = child.attribute("id") {
+				comment_ends.push((id.to_string(), para_display_len));
 			}
 		} else if tag_name == "bookmarkStart" {
 			if let Some(name) = child.attribute("name") {
@@ -104,11 +115,16 @@ pub(super) fn process_paragraph(
 			{
 				heading_level = get_run_heading_level(rpr_node);
 			}
+			if let Some(id) =
+				find_child_element(child, "commentReference").and_then(|reference| reference.attribute("id"))
+			{
+				comment_starts.push((id.to_string(), para_display_len));
+			}
 			if let Some((kind, reference)) = NoteKind::cited_by(child) {
 				// A custom mark is typed in the run itself, in place of the number Word would generate.
 				let custom = matches!(reference.attribute("customMarkFollows"), Some("1" | "true" | "on"))
 					.then(|| collect_ooxml_run_text(child).trim().to_string());
-				let citation = citations.cite(kind, reference.attribute("id").unwrap_or_default(), custom);
+				let citation = annotations.cite(kind, reference.attribute("id").unwrap_or_default(), custom);
 				let cited = format!("[{}]", citation.label);
 				links.push((para_display_len, cited.clone(), format!("#{}", citation.key)));
 				para_display_len += display_len(&cited);
@@ -170,6 +186,16 @@ pub(super) fn process_paragraph(
 	}
 	for (name, offset) in bookmarks {
 		id_positions.insert(name, at_words(offset));
+	}
+	for (id, offset) in comment_starts {
+		let position = in_trimmed(offset);
+		if !annotations.comments.iter().any(|(known, _, _)| *known == id) {
+			id_positions.insert(annotations.comment_key(&id), position);
+		}
+		annotations.comment_starts(&id, position);
+	}
+	for (id, offset) in comment_ends {
+		annotations.comment_ends(&id, in_trimmed(offset));
 	}
 	for (offset, text, reference) in links {
 		buffer.add_marker(Marker::new(MarkerType::Link, in_trimmed(offset)).with_text(text).with_reference(reference));

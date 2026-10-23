@@ -1,4 +1,4 @@
-//! Footnotes and endnotes. Word keeps their text in parts of their own, `footnotes.xml` and `endnotes.xml`, and cites each in the document by an id, numbering them in the order they are cited.
+//! Footnotes, endnotes and comments: text Word keeps in parts of their own, `footnotes.xml`, `endnotes.xml` and `comments.xml`, tied to places in the document by id.
 
 use roxmltree::{Document as XmlDocument, Node};
 
@@ -36,9 +36,9 @@ pub(super) struct Citation {
 	pub key: String,
 }
 
-/// The notes cited so far, in the order their citations appear, which is also how Word numbers them.
+/// What the walk finds tied to places in the text: the notes cited so far, in the order their citations appear, which is also how Word numbers them, and where each comment's words are.
 #[derive(Debug, Default)]
-pub(super) struct Citations {
+pub(super) struct Annotations {
 	footnote_format: String,
 	endnote_format: String,
 	footnotes: usize,
@@ -46,9 +46,11 @@ pub(super) struct Citations {
 	/// Tells one document's notes from another's when a zip holds several, since each numbers its own from one.
 	document_start: usize,
 	pub cited: Vec<Citation>,
+	/// Each comment's id, where its words start and, for a comment on words rather than a point, where they end. In the order the comments start.
+	pub comments: Vec<(String, usize, Option<usize>)>,
 }
 
-impl Citations {
+impl Annotations {
 	/// Numbered as `word/settings.xml` says, or as Word does by default: footnotes 1, 2, 3 and endnotes i, ii, iii.
 	pub(super) fn new(settings_xml: Option<&str>, document_start: usize) -> Self {
 		let settings = settings_xml.and_then(|xml| XmlDocument::parse(xml).ok());
@@ -66,6 +68,24 @@ impl Citations {
 			endnote_format: format("endnotePr", "lowerRoman"),
 			document_start,
 			..Self::default()
+		}
+	}
+
+	/// The id a comment's entry links back to, told apart from another document's as note keys are.
+	pub(super) fn comment_key(&self, id: &str) -> String {
+		format!("comment-{}-{id}", self.document_start)
+	}
+
+	/// Records where comment `id`'s words start. A comment on a point, which has only its reference, starts there.
+	pub(super) fn comment_starts(&mut self, id: &str, position: usize) {
+		if !self.comments.iter().any(|(known, _, _)| known == id) {
+			self.comments.push((id.to_string(), position, None));
+		}
+	}
+
+	pub(super) fn comment_ends(&mut self, id: &str, position: usize) {
+		if let Some((_, _, end)) = self.comments.iter_mut().find(|(known, _, _)| known == id) {
+			*end = Some(position);
 		}
 	}
 
@@ -138,25 +158,25 @@ mod tests {
 
 	#[test]
 	fn notes_number_as_word_does_by_default() {
-		let mut citations = Citations::new(None, 0);
-		assert_eq!(citations.cite(NoteKind::Footnote, "2", None).label, "1");
-		assert_eq!(citations.cite(NoteKind::Endnote, "1", None).label, "i");
-		assert_eq!(citations.cite(NoteKind::Footnote, "3", None).label, "2");
-		assert_eq!(citations.cite(NoteKind::Endnote, "2", None).label, "ii");
+		let mut annotations = Annotations::new(None, 0);
+		assert_eq!(annotations.cite(NoteKind::Footnote, "2", None).label, "1");
+		assert_eq!(annotations.cite(NoteKind::Endnote, "1", None).label, "i");
+		assert_eq!(annotations.cite(NoteKind::Footnote, "3", None).label, "2");
+		assert_eq!(annotations.cite(NoteKind::Endnote, "2", None).label, "ii");
 	}
 
 	#[test]
 	fn the_documents_settings_choose_the_numbering() {
 		let settings = r#"<settings><footnotePr><numFmt val="upperLetter"/></footnotePr><endnotePr><numFmt val="decimal"/></endnotePr></settings>"#;
-		let mut citations = Citations::new(Some(settings), 0);
-		assert_eq!(citations.cite(NoteKind::Footnote, "1", None).label, "A");
-		assert_eq!(citations.cite(NoteKind::Endnote, "1", None).label, "1");
+		let mut annotations = Annotations::new(Some(settings), 0);
+		assert_eq!(annotations.cite(NoteKind::Footnote, "1", None).label, "A");
+		assert_eq!(annotations.cite(NoteKind::Endnote, "1", None).label, "1");
 	}
 
 	#[test]
 	fn a_custom_mark_is_the_label_and_keys_tell_documents_apart() {
-		let mut first = Citations::new(None, 0);
-		let mut second = Citations::new(None, 500);
+		let mut first = Annotations::new(None, 0);
+		let mut second = Annotations::new(None, 500);
 		assert_eq!(first.cite(NoteKind::Footnote, "1", Some("*".to_string())).label, "*");
 		assert_ne!(first.cite(NoteKind::Footnote, "2", None).key, second.cite(NoteKind::Footnote, "2", None).key);
 	}
