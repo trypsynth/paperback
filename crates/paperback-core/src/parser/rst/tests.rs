@@ -49,12 +49,6 @@ fn embedded_external_link_resolves_as_external() {
 }
 
 #[test]
-fn takes_the_title_from_the_file_name_not_the_heading() {
-	let doc = parse_bytes("My Book.rst", "Heading\n=======\n\nText.\n");
-	assert_eq!(doc.title, "My Book");
-}
-
-#[test]
 fn reports_the_path_when_the_file_is_missing() {
 	let dir = TempDir::new("rst-parser");
 	let missing = dir.join_str("nope.rst");
@@ -104,4 +98,32 @@ fn never_panics_on_malformed_input() {
 		let result = RstParser.parse(&ParserContext::new(path));
 		assert!(result.is_ok(), "sample must parse without error: {sample:?}");
 	}
+}
+
+/// A title opening the document, and its `:Author:` field, name it the way docutils does.
+#[test]
+fn an_opening_title_and_author_field_name_the_document() {
+	let doc = parse_bytes(
+		"notes.rst",
+		"Field Notes
+===========
+
+:Author: Ann Smith
+:Date: 2026
+
+Text.
+",
+	);
+	assert_eq!(doc.title, "Field Notes");
+	assert_eq!(doc.author, "Ann Smith");
+	let untitled = parse_bytes(
+		"notes.rst",
+		"Just text.
+
+Section
+=======
+",
+	);
+	assert_eq!(untitled.title, "notes");
+	assert_eq!(untitled.author, "");
 }
