@@ -146,7 +146,7 @@ formats! {
 		name: "Word Documents",
 		extensions: ["docx", "docm", "doc", "zip"],
 		mime_types: ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"],
-		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS,
+		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_LISTS,
 	},
 	EPUB {
 		name: "EPUB Books",
@@ -327,5 +327,11 @@ mod tests {
 		assert!(!TEXT.installer.default_checked, "unspecified installer settings default to OPT_IN");
 		assert!(EPUB.installer.default_checked && EPUB.installer.default_handler);
 		assert!(!FB2.installer.default_checked && FB2.installer.default_handler);
+	}
+
+	/// The Word parser marks lists and their items, and list navigation only runs for a format that claims them.
+	#[test]
+	fn word_documents_offer_list_navigation() {
+		assert!(WORD.flags.contains(ParserFlags::SUPPORTS_LISTS));
 	}
 }
