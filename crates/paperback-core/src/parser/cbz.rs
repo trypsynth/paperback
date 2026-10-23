@@ -47,7 +47,7 @@ impl Parser for CbzParser {
 	}
 }
 
-/// What a comic's `ComicInfo.xml` says about it: the metadata file ComicRack defined and most comic tools now write beside the pages.
+/// What a comic's `ComicInfo.xml` says about it: the metadata file `ComicRack` defined and most comic tools now write beside the pages.
 #[derive(Debug, Default)]
 pub(super) struct ComicInfo {
 	title: Option<String>,
