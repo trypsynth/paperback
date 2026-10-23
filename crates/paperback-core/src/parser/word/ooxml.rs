@@ -32,7 +32,7 @@ mod annotations;
 mod paragraph;
 
 use annotations::{Annotations, NoteKind};
-use paragraph::{PageSource, extract_number_from_string, process_paragraph, starts_page};
+use paragraph::{PageSource, extract_number_from_string, paragraph_plain_text, process_paragraph, starts_page};
 
 use super::numbering::Numbering;
 
@@ -428,18 +428,14 @@ fn process_table(
 			let mut cells: Vec<String> = Vec::new();
 			for tc in child.children() {
 				if tc.node_type() == NodeType::Element && tc.tag_name().name() == "tc" {
-					let mut cell_text = String::new();
-					for p in tc.children() {
-						if p.node_type() == NodeType::Element && p.tag_name().name() == "p" {
-							for r in p.children() {
-								if r.node_type() == NodeType::Element && r.tag_name().name() == "r" {
-									cell_text.push_str(&collect_ooxml_run_text(r));
-								}
-							}
-							cell_text.push(' ');
-						}
-					}
-					cells.push(cell_text.trim().to_string());
+					// Every paragraph in the cell, a nested table's and a content control's included, rather than only those directly in it.
+					let cell_text: Vec<String> = tc
+						.descendants()
+						.filter(|node| node.tag_name().name() == "p")
+						.map(|paragraph| paragraph_plain_text(paragraph).trim().to_string())
+						.filter(|text| !text.is_empty())
+						.collect();
+					cells.push(cell_text.join(" "));
 				}
 			}
 			rows.push(cells);

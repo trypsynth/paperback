@@ -389,3 +389,30 @@ fn comments_follow_the_text_with_their_authors_and_link_back() {
 	let link = buffer.markers.iter().find(|m| m.mtype == MarkerType::Link).expect("comment link");
 	assert_eq!(id_positions[link.reference.trim_start_matches('#')], display_len("Sales "));
 }
+
+/// #1123: tracked insertions were dropped along with deletions, so the text matched neither version: "Kept text  and  end". It now reads as it does with every change accepted.
+#[test]
+fn tracked_changes_read_as_accepted() {
+	let buffer = parse_run_props(
+		r#"<document><body><p><r><t xml:space="preserve">Kept text </t></r><del><r><delText xml:space="preserve">old </delText></r></del><ins><r><t xml:space="preserve">new </t></r></ins><r><t>and end.</t></r></p></body></document>"#,
+	);
+	assert_eq!(buffer.content, "Kept text new and end.\n");
+}
+
+/// Forms and templates put their text in content controls, and smart tags and simple fields wrap runs too; all of it was lost.
+#[test]
+fn text_inside_content_controls_smart_tags_and_fields_is_read() {
+	let buffer = parse_run_props(
+		r#"<document><body><p><r><t xml:space="preserve">Name: </t></r><sdt><sdtPr><alias val="Name"/></sdtPr><sdtContent><r><t>Ann Smith</t></r></sdtContent></sdt><r><t xml:space="preserve">, in </t></r><smartTag><r><t>Paris</t></r></smartTag><r><t xml:space="preserve">, page </t></r><fldSimple instr="PAGE"><r><t>3</t></r></fldSimple></p></body></document>"#,
+	);
+	assert_eq!(buffer.content, "Name: Ann Smith, in Paris, page 3\n");
+}
+
+/// A table cell read only the runs directly in its paragraphs, losing links, content controls and nested tables.
+#[test]
+fn a_table_cell_reads_links_content_controls_and_nested_tables() {
+	let buffer = parse_run_props(
+		r#"<document><body><tbl><tr><tc><p><hyperlink anchor="x"><r><t>Linked</t></r></hyperlink></p></tc><tc><p><sdt><sdtContent><r><t>Filled</t></r></sdtContent></sdt></p></tc><tc><tbl><tr><tc><p><r><t>Inner</t></r></p></tc></tr></tbl></tc></tr></tbl></body></document>"#,
+	);
+	assert!(buffer.content.starts_with("[Table]: Linked Filled Inner"), "{:?}", buffer.content);
+}

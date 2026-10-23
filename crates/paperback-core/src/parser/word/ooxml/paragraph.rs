@@ -64,7 +64,7 @@ pub(super) fn process_paragraph(
 	let mut format_spans: Vec<(MarkerType, usize, usize)> = Vec::new();
 	// A hyperlink field's displayed text was already taken whole when its instruction was read, so its runs are skipped until the field ends rather than read a second time.
 	let mut in_taken_field = false;
-	for child in element.children() {
+	for child in content_children(element) {
 		if child.node_type() != NodeType::Element {
 			continue;
 		}
@@ -224,6 +224,42 @@ pub(super) fn process_paragraph(
 		Marker::new(MarkerType::ListItem, paragraph_start).with_text(trimmed.to_string()).with_level(label.level),
 	);
 	true
+}
+
+/// A paragraph's content with the wrappers Word puts around runs looked through: tracked insertions, content controls, smart tags, simple fields and the like. Read as they stand, the paragraph lost all of their text. Tracked deletions, and text moved away from here, are left out, so the text reads as it does with every change accepted.
+pub(super) fn content_children<'a, 'input>(node: Node<'a, 'input>) -> Vec<Node<'a, 'input>> {
+	let mut children = Vec::new();
+	for child in node.children().filter(Node::is_element) {
+		match child.tag_name().name() {
+			"ins" | "smartTag" | "fldSimple" | "customXml" | "moveTo" | "dir" | "bdo" => {
+				children.extend(content_children(child));
+			}
+			"sdt" => {
+				if let Some(content) = find_child_element(child, "sdtContent") {
+					children.extend(content_children(content));
+				}
+			}
+			"del" | "moveFrom" | "sdtPr" | "sdtEndPr" => {}
+			_ => children.push(child),
+		}
+	}
+	children
+}
+
+/// A paragraph's words, wrappers looked through and links included, for the places that read a paragraph as plain text, such as a table cell.
+pub(super) fn paragraph_plain_text(paragraph: Node) -> String {
+	content_children(paragraph)
+		.into_iter()
+		.map(|child| match child.tag_name().name() {
+			"r" => collect_ooxml_run_text(child),
+			"hyperlink" => content_children(child)
+				.into_iter()
+				.filter(|run| run.tag_name().name() == "r")
+				.map(collect_ooxml_run_text)
+				.collect(),
+			_ => String::new(),
+		})
+		.collect()
 }
 
 /// Whether a page begins at `run`.
