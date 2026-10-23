@@ -15,9 +15,47 @@ use crate::{
 	util::encoding::convert_to_utf8,
 };
 
-/// The grammar for both rendering and source lookup, which must agree to keep block anchors in sync.
+/// The grammar for both rendering and source lookup, which must agree to keep block anchors in sync. YAML front matter is recognised so it is read as the document's metadata rather than shown as text.
 const fn markdown_options(dollar_math: bool) -> Options {
-	if dollar_math { Options::ENABLE_TABLES.union(Options::ENABLE_MATH) } else { Options::ENABLE_TABLES }
+	let options = Options::ENABLE_TABLES.union(Options::ENABLE_YAML_STYLE_METADATA_BLOCKS);
+	if dollar_math { options.union(Options::ENABLE_MATH) } else { options }
+}
+
+/// The YAML front matter a file opens with, between its `---` lines, without them.
+fn front_matter(markdown: &str) -> Option<&str> {
+	let rest = markdown.trim_start_matches('\u{feff}').strip_prefix("---")?;
+	let rest = rest.strip_prefix("\r\n").or_else(|| rest.strip_prefix('\n'))?;
+	let mut offset = 0;
+	for line in rest.split_inclusive('\n') {
+		if matches!(line.trim_end(), "---" | "...") {
+			return Some(&rest[..offset]);
+		}
+		offset += line.len();
+	}
+	None
+}
+
+/// A top-level `key: value` from front matter, unquoted. A list, written on the lines below the key as `- item`, comes back joined with commas, as authors often are.
+fn front_matter_field(front_matter: &str, key: &str) -> Option<String> {
+	let mut lines = front_matter.lines().peekable();
+	while let Some(line) = lines.next() {
+		let Some(value) = line.strip_prefix(key).and_then(|rest| rest.strip_prefix(':')) else { continue };
+		let unquote = |text: &str| text.trim().trim_matches(['"', '\'']).trim().to_string();
+		let value = value.trim();
+		let value = if value.is_empty() {
+			let mut items = Vec::new();
+			while let Some(item) = lines.next_if(|next| next.trim_start().starts_with("- ")) {
+				items.push(unquote(&item.trim_start()[2..]));
+			}
+			items.join(", ")
+		} else if let Some(list) = value.strip_prefix('[').and_then(|inner| inner.strip_suffix(']')) {
+			list.split(',').map(unquote).collect::<Vec<_>>().join(", ")
+		} else {
+			unquote(value)
+		};
+		return Some(value).filter(|value| !value.is_empty());
+	}
+	None
 }
 
 /// Converts Markdown to HTML with an empty `<span id="pb-block-N"></span>` before each block.
@@ -127,13 +165,24 @@ impl Parser for MarkdownParser {
 			// TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
 			anyhow::bail!(t("Failed to convert Markdown to text: {}").replace("{}", &context.file_path));
 		}
-		let title = extract_title_from_path(&context.file_path);
+		let metadata = front_matter(&markdown_content);
+		// A level-one heading opening the file names it, as it does most READMEs, when there is no front matter to say.
+		let opening_heading = converter
+			.get_headings()
+			.first()
+			.filter(|heading| heading.level == 1 && heading.offset == 0)
+			.map(|heading| heading.text.clone());
+		let title = metadata
+			.and_then(|metadata| front_matter_field(metadata, "title"))
+			.or(opening_heading)
+			.unwrap_or_else(|| extract_title_from_path(&context.file_path));
+		let author = metadata.and_then(|metadata| front_matter_field(metadata, "author")).unwrap_or_default();
 		let text = converter.get_text();
 		let mut buffer = DocumentBuffer::with_content(text);
 		let id_positions = converter.get_id_positions().clone();
 		add_converter_markers(&mut buffer, &converter, 0);
 		let toc_items = build_toc_from_headings(converter.get_headings());
-		let mut doc = Document::new().with_title(title);
+		let mut doc = Document::new().with_title(title).with_author(author);
 		doc.set_buffer(buffer);
 		doc.toc_items = toc_items;
 		doc.id_positions = id_positions;
@@ -309,5 +358,75 @@ mod tests {
 		assert_eq!(ids.get("pb-block-1"), Some(&text.find("Title").unwrap()), "ids: {ids:?} text: {text:?}");
 		assert_eq!(ids.get("pb-block-3"), Some(&text.find("Second").unwrap()), "ids: {ids:?} text: {text:?}");
 		assert!(!text.contains("pb-block"), "anchors must not leak into text: {text:?}");
+	}
+
+	/// Front matter names the document, and is its metadata rather than text to read.
+	#[test]
+	fn front_matter_gives_the_title_and_authors_and_is_not_read_as_text() {
+		let document = parse_markdown(
+			"---
+title: \"Field Notes\"
+author:
+  - Ann Smith
+  - Bob Jones
+---
+
+# Chapter
+
+Text.
+",
+		);
+		assert_eq!(document.title, "Field Notes");
+		assert_eq!(document.author, "Ann Smith, Bob Jones");
+		assert!(document.buffer.content.starts_with("Chapter"), "{:?}", document.buffer.content);
+	}
+
+	/// Most READMEs open with a level-one heading naming the project, which names the document better than README does.
+	#[test]
+	fn an_opening_level_one_heading_is_the_title_when_there_is_no_front_matter() {
+		assert_eq!(
+			parse_markdown(
+				"# Paperback
+
+A reader.
+"
+			)
+			.title,
+			"Paperback"
+		);
+		assert_eq!(
+			parse_markdown(
+				"Intro.
+
+# Later
+"
+			)
+			.title,
+			"formulas"
+		);
+		assert_eq!(
+			parse_markdown(
+				"## Section
+
+Text.
+"
+			)
+			.title,
+			"formulas"
+		);
+	}
+
+	#[test]
+	fn front_matter_lists_and_quotes() {
+		assert_eq!(front_matter_field("author: [Ann, 'Bob']", "author").as_deref(), Some("Ann, Bob"));
+		assert_eq!(
+			front_matter_field(
+				"subtitle: x
+title: ''",
+				"title"
+			),
+			None
+		);
+		assert_eq!(front_matter("no front matter"), None);
 	}
 }
