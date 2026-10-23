@@ -80,7 +80,7 @@ fn parse_comic_info(xml: &str) -> Option<ComicInfo> {
 	let root = document.root_element();
 	let field = |name: &str| {
 		root.children()
-			.find(|child| child.has_tag_name(name))
+			.find(|child| child.tag_name().name() == name)
 			.and_then(|child| child.text())
 			.map(str::trim)
 			.filter(|text| !text.is_empty())
@@ -96,7 +96,7 @@ fn parse_comic_info(xml: &str) -> Option<ComicInfo> {
 		(series, title) => series.or(title),
 	};
 	let mut pages = HashMap::new();
-	for page in root.descendants().filter(|node| node.has_tag_name("Page")) {
+	for page in root.descendants().filter(|node| node.tag_name().name() == "Page") {
 		let Some(index) = page.attribute("Image").and_then(|image| image.trim().parse::<usize>().ok()) else {
 			continue;
 		};
