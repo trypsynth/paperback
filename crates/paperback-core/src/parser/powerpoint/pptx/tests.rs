@@ -129,3 +129,41 @@ fn extract_slide_text_places_a_link_after_an_emoji_in_display_units() {
 	extract_slide_text(doc.root(), &mut links, &mut tables, 0, &rels, true);
 	assert_eq!(links[0].offset, crate::util::text::display_len("\u{1F600} see "));
 }
+
+/// Real decks put the link in the run's properties, beside its text, and split a link into several runs where its formatting changes.
+#[test]
+fn a_link_in_a_runs_properties_covers_its_text_once() {
+	let xml = r#"<root><p><r><t>Visit </t></r><r><rPr><hlinkClick id="rId1"/></rPr><t>our </t></r><r><rPr><b/><hlinkClick id="rId1"/></rPr><t>site</t></r><r><t> today</t></r></p></root>"#;
+	let doc = XmlDocument::parse(xml).expect("xml parse");
+	let mut links = Vec::new();
+	let mut tables = Vec::new();
+	let rels = HashMap::from([("rId1".to_string(), "https://example.com".to_string())]);
+	let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0, &rels, true);
+	assert_eq!(
+		text,
+		"Visit our site today
+"
+	);
+	assert_eq!(links.len(), 1);
+	assert_eq!(
+		(links[0].offset, links[0].text.as_str(), links[0].reference.as_str()),
+		(6, "our site", "https://example.com")
+	);
+}
+
+/// A link written directly in the run, as some tools do, still covers the run's text without writing it twice.
+#[test]
+fn a_link_directly_in_a_run_does_not_repeat_its_text() {
+	let xml = r#"<root><p><r><hlinkClick id="rId1"/><t>this</t></r></p></root>"#;
+	let doc = XmlDocument::parse(xml).expect("xml parse");
+	let mut links = Vec::new();
+	let mut tables = Vec::new();
+	let rels = HashMap::from([("rId1".to_string(), "https://example.com".to_string())]);
+	let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0, &rels, true);
+	assert_eq!(
+		text,
+		"this
+"
+	);
+	assert_eq!(links[0].text, "this");
+}

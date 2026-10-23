@@ -203,24 +203,31 @@ fn traverse_for_text(
 					}
 					return;
 				}
-				"hlinkClick" => {
-					if let Some(r_id) = node.attribute("id")
-						&& let Some(link_target) = rels.get(r_id)
-						&& let Some(parent) = node.parent()
-					{
-						let link_text = collect_text_from_tagged_elements(parent, "t");
-						if !link_text.is_empty() {
-							let link_offset = slide_start + display_len(text);
-							text.push_str(&link_text);
-							links.push(LinkInfo {
-								offset: link_offset,
-								text: link_text,
-								reference: link_target.clone(),
-							});
+				"r" => {
+					let link_target = run_link(node).and_then(|id| rels.get(id));
+					let start = text.len();
+					for child in node.children() {
+						traverse_for_text(child, text, links, tables, slide_start, rels, render_tables_inline);
+					}
+					if let Some(target) = link_target {
+						let link_text = text[start..].to_string();
+						let offset = slide_start + display_len(&text[..start]);
+						// PowerPoint splits one link across runs wherever the formatting changes, each carrying the same link.
+						match links.last_mut() {
+							Some(last)
+								if last.reference == *target && last.offset + display_len(&last.text) == offset =>
+							{
+								last.text.push_str(&link_text);
+							}
+							_ if !link_text.is_empty() => {
+								links.push(LinkInfo { offset, text: link_text, reference: target.clone() });
+							}
+							_ => {}
 						}
 					}
 					return;
 				}
+				"hlinkClick" => return,
 				_ => {}
 			}
 		}
@@ -230,6 +237,17 @@ fn traverse_for_text(
 	for child in node.children() {
 		traverse_for_text(child, text, links, tables, slide_start, rels, render_tables_inline);
 	}
+}
+
+/// The relationship id a run links to. PowerPoint writes the link in the run's properties, `<a:r><a:rPr><a:hlinkClick r:id="..."/></a:rPr><a:t>...</a:t></a:r>`, beside its text rather than around it.
+fn run_link<'a>(run: Node<'a, '_>) -> Option<&'a str> {
+	let properties = run.children().find(|child| child.tag_name().name() == "rPr");
+	properties
+		.into_iter()
+		.flat_map(|properties| properties.children())
+		.chain(run.children())
+		.find(|child| child.tag_name().name() == "hlinkClick")
+		.and_then(|link| link.attribute("id"))
 }
 
 /// Convert a `DrawingML` `<a:tbl>` into the shared HTML-table representation, append its display text
