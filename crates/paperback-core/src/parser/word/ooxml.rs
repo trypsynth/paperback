@@ -18,7 +18,10 @@ use crate::{
 		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 		util::{
 			comments::{self, Comment},
-			ooxml::{Relationships, collect_ooxml_run_text, read_relationships, try_decrypt_office_file},
+			ooxml::{
+				Relationships, collect_ooxml_run_text, read_core_properties, read_relationships,
+				try_decrypt_office_file,
+			},
 			path::extract_title_from_path,
 			toc::build_toc_from_buffer,
 		},
@@ -98,9 +101,10 @@ pub(super) fn parse_ooxml_doc(context: &ParserContext, render_tables_inline: boo
 	let mut id_positions = HashMap::new();
 	let mut headings = Vec::new();
 	parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, &mut headings, render_tables_inline)?;
-	let title = extract_title_from_path(&context.file_path);
+	let (title, author) = read_core_properties(&mut archive);
+	let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
 	let toc_items = build_toc_from_buffer(&buffer);
-	let mut document = Document::new().with_title(title);
+	let mut document = Document::new().with_title(title).with_author(author.unwrap_or_default());
 	document.set_buffer(buffer);
 	document.id_positions = id_positions;
 	document.toc_items = toc_items;

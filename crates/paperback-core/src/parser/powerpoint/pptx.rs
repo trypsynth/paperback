@@ -15,7 +15,7 @@ use crate::{
 			build_html_table_from_grid, display_lines_and_length, html_table_to_display, table_caption_from_html,
 		},
 		util::{
-			ooxml::{read_ooxml_relationships, try_decrypt_office_file},
+			ooxml::{read_core_properties, read_ooxml_relationships, try_decrypt_office_file},
 			path::extract_title_from_path,
 			slides::no_text_placeholder,
 			xml::collect_text_from_tagged_elements,
@@ -108,8 +108,9 @@ pub(super) fn parse_pptx(context: &ParserContext) -> Result<Document> {
 		let toc_name = if slide_title.is_empty() { format!("Slide {}", index + 1) } else { slide_title.clone() };
 		toc_items.push(TocItem::new(toc_name, String::new(), slide_start));
 	}
-	let title = extract_title_from_path(&context.file_path);
-	let mut document = Document::new().with_title(title);
+	let (title, author) = read_core_properties(&mut archive);
+	let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
+	let mut document = Document::new().with_title(title).with_author(author.unwrap_or_default());
 	document.set_buffer(buffer);
 	document.id_positions = id_positions;
 	document.toc_items = toc_items;

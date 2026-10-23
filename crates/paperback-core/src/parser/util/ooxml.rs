@@ -47,6 +47,22 @@ pub fn read_relationships<R: Read + Seek>(archive: &mut ZipArchive<R>, rels_path
 	Relationships { links, images }
 }
 
+/// A document's own title and author, from `docProps/core.xml`, each `None` when the document leaves it out or empty.
+pub fn read_core_properties<R: Read + Seek>(archive: &mut ZipArchive<R>) -> (Option<String>, Option<String>) {
+	let Ok(content) = read_zip_entry_by_name(archive, "docProps/core.xml") else { return (None, None) };
+	let Ok(document) = roxmltree::Document::parse(&content) else { return (None, None) };
+	let field = |name: &str| {
+		document
+			.descendants()
+			.find(|node| node.tag_name().name() == name)
+			.and_then(|node| node.text())
+			.map(str::trim)
+			.filter(|text| !text.is_empty())
+			.map(str::to_string)
+	};
+	(field("title"), field("creator"))
+}
+
 pub fn read_ooxml_relationships<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	rels_path: &str,
@@ -148,6 +164,15 @@ mod tests {
 		}
 		cursor.set_position(0);
 		ZipArchive::new(cursor).expect("open zip")
+	}
+
+	#[test]
+	fn the_core_properties_give_the_title_and_author() {
+		let core = r#"<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Annual Report</dc:title><dc:creator>Ann Smith</dc:creator></cp:coreProperties>"#;
+		let mut archive = archive_containing("docProps/core.xml", core);
+		assert_eq!(read_core_properties(&mut archive), (Some("Annual Report".into()), Some("Ann Smith".into())));
+		let mut blank = archive_containing("docProps/core.xml", "<coreProperties><title> </title></coreProperties>");
+		assert_eq!(read_core_properties(&mut blank), (None, None));
 	}
 
 	fn rels_xml(body: &str) -> String {
