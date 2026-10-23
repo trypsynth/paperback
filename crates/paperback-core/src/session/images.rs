@@ -19,9 +19,12 @@ use zip::ZipArchive;
 use super::DocumentSession;
 use crate::{
 	document::MarkerType,
-	parser::{fb2, is_data_uri, is_external_url},
+	parser::{cbz, fb2, is_data_uri, is_external_url},
 	t,
-	util::{text::url_decode, zip::read_zip_entry_bytes},
+	util::{
+		text::url_decode,
+		zip::{read_zip_entry_bytes, read_zip_entry_bytes_with_password},
+	},
 };
 
 /// Books write base64 with and without padding, and with line breaks, and none of it is worth refusing a picture over.
@@ -104,6 +107,12 @@ impl DocumentSession {
 				Ok(chm.read(&entry)?)
 			}
 			Some("fb2") => Ok(LENIENT_BASE64.decode(strip_whitespace(&fb2::binary_data(&self.file_path, source)?))?),
+			// A zipped DAISY book, whatever its name: its parser has already pointed each picture at its entry, and the archive may need the book's password.
+			_ if cbz::is_zip(&self.file_path) => {
+				let mut archive = ZipArchive::new(BufReader::new(File::open(&self.file_path)?))?;
+				let password = (!self.password.is_empty()).then_some(self.password.as_str());
+				read_zip_entry_bytes_with_password(&mut archive, source, password)
+			}
 			_ => {
 				let path = local_image_path(&self.file_path, source);
 				fs::read(&path).with_context(|| format!("failed to read '{}'", path.display()))

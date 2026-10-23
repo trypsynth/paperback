@@ -214,3 +214,20 @@ fn a_linked_picture_is_on_a_link_and_a_plain_one_is_not() {
 	assert!(session.image_file_name_at(plain).is_some() && !session.is_on_link(plain));
 	fs::remove_dir_all(&dir).ok();
 }
+
+/// #1166: a zipped DAISY book, as Bookshare sends them, names its pictures relative to the `DTBook` inside the archive, so reading one has to find it there rather than on disk.
+#[test]
+fn a_picture_in_a_zipped_daisy_book_offers_its_bytes() {
+	let dir = unique_temp_dir();
+	let book = dir.join("book.zip");
+	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package unique-identifier="uid"><metadata><dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:Title>Maps</dc:Title></dc-metadata></metadata>
+<manifest><item id="text" href="book.xml" media-type="application/x-dtbook+xml"/></manifest><spine><itemref idref="text"/></spine></package>"#;
+	let dtbook = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter><p>Before</p><imggroup><img src="images/map.png" alt="A map"/></imggroup></bodymatter></book></dtbook>"#;
+	write_zip(&book, &[("content/book.opf", opf), ("content/book.xml", dtbook), ("content/images/map.png", PICTURE)]);
+	let session = open(&book);
+	let at = position_of(&session, "[Image: A map]") + 3;
+	assert_eq!(session.image_bytes_at(at).unwrap(), PICTURE);
+	fs::remove_dir_all(&dir).ok();
+}
