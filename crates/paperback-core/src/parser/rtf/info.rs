@@ -52,7 +52,7 @@ fn decode(group: &str) -> String {
 	let mut high_surrogate = None;
 	while let Some(ch) = chars.next() {
 		match ch {
-			'{' | '}' => {}
+			'{' | '}' | '\n' => {}
 			'\\' => match chars.peek().copied() {
 				Some(escaped @ ('\\' | '{' | '}')) => {
 					chars.next();
@@ -91,7 +91,6 @@ fn decode(group: &str) -> String {
 				}
 				_ => {}
 			},
-			'\n' => {}
 			other => text.push(other),
 		}
 	}
