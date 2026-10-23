@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-21 23:51+0000\n"
+"POT-Creation-Date: 2026-10-23 23:23+0000\n"
 "PO-Revision-Date: 2026-10-21 12:00+0200\n"
 "Last-Translator: Torma Zsolt <torma.zsolt@gmail.com>\n"
 "Language-Team: Torma Zsolt <torma.zsolt@gmail.com>\n"
@@ -826,6 +826,7 @@ msgid "Bookmarks"
 msgstr "Könyvjelzők"
 
 #. TRANSLATORS: Option in the filter dropdown to show notes only
+#. TRANSLATORS: Heading over the footnotes and endnotes of a document, written after its text
 msgid "Notes"
 msgstr "Jegyzetek"
 
@@ -1049,6 +1050,11 @@ msgstr "&Százalék"
 #. TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
 msgid "Percent out of range."
 msgstr "A százalékérték a tartományon kívül esik."
+
+#. TRANSLATORS: Title of the view showing the text recognized in a picture
+#, fuzzy
+msgid "Image Text"
+msgstr "Képből felismert szöveg"
 
 #. TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
 msgid "Set Up Paperback"
@@ -1469,6 +1475,22 @@ msgstr "Az archívum &dokumentumai:"
 msgid "{} to {}"
 msgstr "{} – {}"
 
+#. TRANSLATORS: Announced when Enter is pressed on a picture while its text is already being recognized
+#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
+msgid "OCR in progress."
+msgstr "Szövegfelismerés folyamatban."
+
+#. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
+#. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
+#, fuzzy
+msgid "The picture could not be read."
+msgstr "A képet nem sikerült beolvasni."
+
+#. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
+#, fuzzy
+msgid "No text was found in the picture."
+msgstr "A képben nem található szöveg."
+
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr "A fájl nem található: {}"
@@ -1504,10 +1526,6 @@ msgstr "Fájl: {}"
 #. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
 msgid "Details: {}"
 msgstr "Részletek: {}"
-
-#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
-msgid "OCR in progress."
-msgstr "Szövegfelismerés folyamatban."
 
 #. TRANSLATORS: Announced when batch OCR is triggered with no document open
 #. TRANSLATORS: Announced when Batch OCR is chosen with no document open
@@ -2387,6 +2405,14 @@ msgstr "Kép mentése &másként..."
 msgid "Save image as"
 msgstr "Kép mentése másként"
 
+#, fuzzy
+msgid "Read &text in picture"
+msgstr "Képben lévő &szöveg olvasása"
+
+#, fuzzy
+msgid "Read the text in the picture"
+msgstr "A képben lévő szöveg olvasása"
+
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
 msgstr "Könyvjelző &létrehozása"
@@ -2939,10 +2965,51 @@ msgstr "A Paperback nem tudja olvasni a RAR formátumú képregényarchívumokat
 msgid "Failed to parse comic archive: {}"
 msgstr "Nem sikerült feldolgozni a képregényarchívumot: {}"
 
+#. TRANSLATORS: Spoken for a comic book page that is its front cover
+#, fuzzy
+msgid "Front cover"
+msgstr "Elülső borító"
+
+#. TRANSLATORS: Spoken for a comic book page that is an inside cover
+#, fuzzy
+msgid "Inside cover"
+msgstr "Belső borító"
+
+#. TRANSLATORS: Spoken for a comic book page that recaps the story so far
+#, fuzzy
+msgid "Recap"
+msgstr "Történetöszszefoglalás"
+
+#. TRANSLATORS: Spoken for a comic book page that is an advertisement
+#, fuzzy
+msgid "Advertisement"
+msgstr "Hirdetés"
+
+#. TRANSLATORS: Spoken for a comic book page written by the editors
+#, fuzzy
+msgid "Editorial"
+msgstr "Szerkesztői rovata"
+
+#. TRANSLATORS: Spoken for a comic book page of letters from readers
+#, fuzzy
+msgid "Letters"
+msgstr "Levelek"
+
+#. TRANSLATORS: Spoken for a comic book page previewing another comic
+#, fuzzy
+msgid "Preview"
+msgstr "Előnézet"
+
+#. TRANSLATORS: Spoken for a comic book page that is its back cover
+#, fuzzy
+msgid "Back cover"
+msgstr "Hátsó borító"
+
 #. TRANSLATORS: Error shown when a comic book archive holds no page images at all
 msgid "This comic archive contains no pages."
 msgstr "Ez a képregényarchívum nem tartalmaz oldalakat."
 
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]", and on its own, "[Image]", for a picture with none
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr "Ábra"
@@ -3124,6 +3191,21 @@ msgstr "Ez a dokumentum olyan titkosítást használ, amelyet a Paperback nem tu
 msgid "ODP file does not contain any pages"
 msgstr "Az ODP-fájl nem tartalmaz oldalakat"
 
+#. TRANSLATORS: Written after a presentation slide's text, before the presenter's notes for that slide; {} is the notes
+#, fuzzy
+msgid "Speaker notes: {}"
+msgstr "Előadói jegyzetek: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it without a name; {} is the comment
+#, fuzzy
+msgid "Comment: {}"
+msgstr "Megjegyzés: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it: the first {} is the reviewer, the second the comment
+#, fuzzy
+msgid "Comment from {}: {}"
+msgstr "{} megjegyzése: {}"
+
 #. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
 msgid "FODP file does not contain any pages"
 msgstr "Az FODP-fájl nem tartalmaz oldalakat"
@@ -3165,6 +3247,28 @@ msgstr "Nem sikerült feldolgozni az RTF-dokumentumot: {}"
 #. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
 msgid "Chapter {}"
 msgstr "{}. fejezet"
+
+#. TRANSLATORS: Heading over the comments reviewers left on a document, written after its text
+#, fuzzy
+msgid "Comments"
+msgstr "Megjegyzések"
+
+#. TRANSLATORS: Names a comment's author when the document does not say who wrote it
+#, fuzzy
+msgid "Comment"
+msgstr "Megjegyzés"
+
+#. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
+msgid "{} on \\u{201c}{}\\u{201d}: {}"
+msgstr ""
+
+#. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
+msgid "{}: {}"
+msgstr ""
+
+#. TRANSLATORS: Shown in place of a presentation slide that has no text, such as one holding only pictures
+msgid "This slide has no text."
+msgstr ""
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
@@ -3214,8 +3318,62 @@ msgstr "Egyik feldolgozó sem tudta megnyitni ezt a kiterjesztést: .{}"
 msgid "image"
 msgstr "kép"
 
+msgid "Current version is not a valid semver."
+msgstr ""
+
+msgid "Latest release tag is not a valid semver."
+msgstr ""
+
+msgid "Invalid public key"
+msgstr ""
+
+msgid "Failed to read signature"
+msgstr ""
+
+msgid "Invalid signature"
+msgstr ""
+
+msgid "Failed to create private download directory"
+msgstr ""
+
+msgid "Failed to create file"
+msgstr ""
+
+msgid "Failed to write file"
+msgstr ""
+
+msgid "Failed to read file for verification"
+msgstr ""
+
+msgid "Signature verification failed"
+msgstr ""
+
+msgid "Failed to rename verified file"
+msgstr ""
+
+msgid "Failed to parse release JSON"
+msgstr ""
+
+msgid "Latest release does not include downloadable assets."
+msgstr ""
+
+msgid "Update is available but no matching download asset or signature was found."
+msgstr ""
+
 msgid "Not running from an AppImage; cannot self-update."
 msgstr "A program nem AppImage-ből fut, ezért nem tudja frissíteni önmagát."
+
+msgid "Failed to determine exe path"
+msgstr ""
+
+msgid "Failed to get exe directory"
+msgstr ""
+
+msgid "Could not determine a cache directory: neither XDG_CACHE_HOME nor HOME is set"
+msgstr ""
+
+msgid "Failed to create cache directory"
+msgstr ""
 
 msgid "Failed to get current exe path"
 msgstr "Nem sikerült lekérdezni a futó program elérési útját"
@@ -3328,9 +3486,6 @@ msgstr "A %s frissítése"
 msgid "Downloading update..."
 msgstr "A frissítés letöltése..."
 
-msgid "Update failed"
-msgstr "A frissítés nem sikerült"
-
 msgid "Preparing update..."
 msgstr "A frissítés előkészítése..."
 
@@ -3351,6 +3506,12 @@ msgstr "A biztonsági ellenőrzés nem sikerült. Lehet, hogy a frissítést ill
 
 msgid "Security Error"
 msgstr "Biztonsági hiba"
+
+msgid "The update server returned HTTP error %s."
+msgstr ""
+
+msgid "Could not reach the update server: %s"
+msgstr ""
 
 #. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 msgid "%d hour"
@@ -4621,6 +4782,9 @@ msgstr "Kapcsolja ki, ha a keresési találatok közötti navigálás közben fo
 #: swift
 msgid "1.5\\u{00d7}"
 msgstr "1,5\\u{00d7}"
+
+#~ msgid "Update failed"
+#~ msgstr "A frissítés nem sikerült"
 
 #~ msgid "Selected %d character."
 #~ msgid_plural "Selected %d characters."
