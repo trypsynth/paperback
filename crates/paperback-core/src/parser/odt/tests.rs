@@ -199,13 +199,26 @@ fn a_footnote_is_cited_in_its_sentence_and_written_after_the_text() {
 	assert!(buffer.markers.iter().any(|m| m.mtype == MarkerType::Heading1 && m.text == "Notes"));
 }
 
-/// Comments are review notes with an author and a date, not part of the text.
+/// A comment read where it sits breaks the sentence, and dropped it loses what the reviewer said, so it goes after the text, naming its author and the words it is on, and linking back to them.
 #[test]
-fn a_comment_is_left_out_of_the_text() {
-	let (buffer, _) = walk_text(
-		"<text:p>Keep<office:annotation><dc:creator>Ann</dc:creator><dc:date>2026-10-23</dc:date><text:p>Rephrase?</text:p></office:annotation> going.<office:annotation-end/></text:p>",
+fn a_comment_goes_after_the_text_and_links_back_to_its_words() {
+	let (buffer, ids) = walk_text(
+		"<text:p>Sales <office:annotation office:name=\"c1\"><dc:creator>Ann</dc:creator><dc:date>2026-10-23</dc:date><text:p>Check this figure.</text:p></office:annotation>grew fast<office:annotation-end office:name=\"c1\"/> this year.</text:p>",
 	);
-	assert_eq!(buffer.content, "Keep going.\n");
+	assert_eq!(
+		buffer.content,
+		"Sales grew fast this year.\nComments\nAnn on \u{201c}grew fast\u{201d}: Check this figure.\n"
+	);
+	let link = buffer.markers.iter().find(|m| m.mtype == MarkerType::Link).expect("comment link");
+	assert_eq!(link.reference, "#comment-1");
+	assert_eq!(ids["comment-1"], display_len("Sales "));
+}
+
+/// A comment on a point rather than on words has nothing to quote, and one with no author is still a comment.
+#[test]
+fn a_comment_on_a_point_names_only_its_author() {
+	let (buffer, _) = walk_text("<text:p>Done.<office:annotation><text:p>Nice.</text:p></office:annotation></text:p>");
+	assert_eq!(buffer.content, "Done.\nComments\nComment: Nice.\n");
 }
 
 /// ODF writes repeated spaces, tabs and line breaks as elements, and without them words run together.

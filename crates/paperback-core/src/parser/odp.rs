@@ -59,6 +59,17 @@ fn build_slides(pages: &[Node], buffer: &mut DocumentBuffer) {
 			buffer.append(&t("Speaker notes: {}").replace("{}", &slide.notes.join("\n")));
 			buffer.append("\n");
 		}
+		for (author, text) in slide.comments {
+			let comment = if author.is_empty() {
+				// TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it without a name; {} is the comment
+				t("Comment: {}").replace("{}", &text)
+			} else {
+				// TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it: the first {} is the reviewer, the second the comment
+				t("Comment from {}: {}").replacen("{}", &author, 1).replacen("{}", &text, 1)
+			};
+			buffer.append(&comment);
+			buffer.append("\n");
+		}
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, slide_start).with_text(format!("Slide {}", index + 1)));
 		for (offset, description, length) in slide.images {
 			buffer.add_marker(Marker::new(MarkerType::Image, offset).with_text(description).with_length(length));
@@ -112,7 +123,7 @@ fn collect_pages<'a, 'input>(node: Node<'a, 'input>, pages: &mut Vec<Node<'a, 'i
 	}
 }
 
-/// What one slide holds: its text with the links and pictures in it, and the presenter's notes, kept apart from the text they used to run into.
+/// What one slide holds: its text with the links and pictures in it, and the presenter's notes and reviewers' comments, kept apart from the text they used to run into.
 #[derive(Default)]
 struct Slide {
 	text: String,
@@ -120,6 +131,8 @@ struct Slide {
 	/// Each picture's position, description and length.
 	images: Vec<(usize, String, usize)>,
 	notes: Vec<String>,
+	/// Each comment's author, which may be empty, and text.
+	comments: Vec<(String, String)>,
 }
 
 fn get_page_text(page_node: Node, slide_start: usize) -> Slide {
@@ -138,10 +151,25 @@ fn traverse_page(node: Node, slide: &mut Slide, slide_start: usize) {
 			slide.text.push_str(&spaces);
 			return;
 		}
+		let tag_name = node.tag_name().name();
+		if tag_name == "annotation" {
+			let child_text = |name: &str| {
+				node.children()
+					.filter(|child| child.is_element() && child.tag_name().name() == name)
+					.map(|child| odf::plain_text(child).trim().to_string())
+					.filter(|text| !text.is_empty())
+					.collect::<Vec<_>>()
+					.join(" ")
+			};
+			let text = child_text("p");
+			if !text.is_empty() {
+				slide.comments.push((child_text("creator"), text));
+			}
+			return;
+		}
 		if odf::is_hidden(node) {
 			return;
 		}
-		let tag_name = node.tag_name().name();
 		if tag_name == "notes" {
 			slide.notes.extend(
 				node.descendants()
@@ -336,6 +364,7 @@ mod tests {
 [Image: Bar chart]
 Speaker notes: Mention Q3.
 Pause here.
+Comment from Ann: Check this
 "
 		);
 		let image = doc.buffer.markers.iter().find(|m| m.mtype == MarkerType::Image).expect("image marker");
