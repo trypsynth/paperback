@@ -10,6 +10,7 @@ use crate::{
 		odf_crypto::read_odf_content,
 		util::{
 			path::extract_title_from_path,
+			slides::no_text_placeholder,
 			xml::{collect_element_text, read_xml_to_string},
 		},
 	},
@@ -34,33 +35,36 @@ impl Parser for OdpParser {
 			// TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 			anyhow::bail!(t("ODP file does not contain any pages"));
 		}
-		for (index, page_node) in pages.iter().enumerate() {
-			let slide_start = buffer.current_position();
-			let mut links = Vec::new();
-			let slide_text = get_page_text(*page_node, &mut links, slide_start);
-			if !slide_text.trim().is_empty() {
-				buffer.append(&slide_text);
-				if !buffer.content.ends_with('\n') {
-					buffer.append("\n");
-				}
-				buffer.add_marker(
-					Marker::new(MarkerType::PageBreak, slide_start).with_text(format!("Slide {}", index + 1)),
-				);
-				for link in links {
-					buffer.add_marker(
-						Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
-					);
-				}
-			} else {
-				tracing::debug!(slide = index + 1, "skipped odp slide with no text");
-			}
-		}
+		build_slides(&pages, &mut buffer);
 		let title = extract_title_from_path(&context.file_path);
 		let mut document = Document::new().with_title(title);
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		tracing::debug!(path = %context.file_path, "parsed odp file successfully");
 		Ok(document)
+	}
+}
+
+/// One slide per page, each opening with its page break, and a slide with no text still there to be reached.
+fn build_slides(pages: &[Node], buffer: &mut DocumentBuffer) {
+	for (index, page_node) in pages.iter().enumerate() {
+		let slide_start = buffer.current_position();
+		let mut links = Vec::new();
+		let slide_text = get_page_text(*page_node, &mut links, slide_start);
+		if slide_text.trim().is_empty() {
+			buffer.append(&no_text_placeholder());
+		} else {
+			buffer.append(&slide_text);
+		}
+		if !buffer.content.ends_with('\n') {
+			buffer.append("\n");
+		}
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, slide_start).with_text(format!("Slide {}", index + 1)));
+		for link in links {
+			buffer.add_marker(
+				Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
+			);
+		}
 	}
 }
 
@@ -80,27 +84,7 @@ impl Parser for FodpParser {
 			// TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
 			anyhow::bail!(t("FODP file does not contain any pages"));
 		}
-		for (index, page_node) in pages.iter().enumerate() {
-			let slide_start = buffer.current_position();
-			let mut links = Vec::new();
-			let slide_text = get_page_text(*page_node, &mut links, slide_start);
-			if !slide_text.trim().is_empty() {
-				buffer.append(&slide_text);
-				if !buffer.content.ends_with('\n') {
-					buffer.append("\n");
-				}
-				buffer.add_marker(
-					Marker::new(MarkerType::PageBreak, slide_start).with_text(format!("Slide {}", index + 1)),
-				);
-				for link in links {
-					buffer.add_marker(
-						Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
-					);
-				}
-			} else {
-				tracing::debug!(slide = index + 1, "skipped fodp slide with no text");
-			}
-		}
+		build_slides(&pages, &mut buffer);
 		let title = extract_title_from_path(&context.file_path);
 		let mut document = Document::new().with_title(title);
 		document.set_buffer(buffer);
@@ -243,10 +227,9 @@ mod tests {
 		assert_eq!(link.position, display_len("\u{1F600} "));
 	}
 
-	/// A deck can hold empty layout placeholder slides; they'd otherwise each contribute a page
-	/// break the reader would stop on with nothing to read out.
+	/// A slide with no text, usually one of pictures alone, is still a slide of the deck: it says so rather than vanishing, which would also leave the reader jumping from one slide number to the one after next.
 	#[test]
-	fn skips_slides_with_no_text() {
+	fn a_slide_with_no_text_says_so() {
 		let slides = format!("{}{}", page("<text:p>   </text:p>"), page("<text:p>Real content</text:p>"));
 		let doc = parse_ok(&fodp_document(&slides));
 		let labels: Vec<_> = doc
@@ -256,8 +239,8 @@ mod tests {
 			.filter(|marker| marker.mtype == MarkerType::PageBreak)
 			.map(|marker| marker.text.as_str())
 			.collect();
-		assert_eq!(labels, vec!["Slide 2"]);
-		assert_eq!(doc.buffer.content, "Real content\n");
+		assert_eq!(labels, vec!["Slide 1", "Slide 2"]);
+		assert_eq!(doc.buffer.content, "This slide has no text.\nReal content\n");
 	}
 
 	#[test]

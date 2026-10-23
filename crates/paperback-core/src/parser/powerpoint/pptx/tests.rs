@@ -167,3 +167,30 @@ fn a_link_directly_in_a_run_does_not_repeat_its_text() {
 	);
 	assert_eq!(links[0].text, "this");
 }
+
+/// A slide of pictures alone has no text, and still has to be there to reach, under its own number.
+#[test]
+fn a_slide_with_no_text_is_kept_and_says_so() {
+	use std::{fs::File, io::Write};
+	let dir = crate::util::test_support::TempDir::new("pptx-empty-slide");
+	let path = dir.join_str("deck.pptx");
+	let mut zip = zip::ZipWriter::new(File::create(&path).unwrap());
+	for (name, body) in [
+		("ppt/slides/slide1.xml", "<sld><pic/></sld>"),
+		("ppt/slides/slide2.xml", "<sld><sp><txBody><p><r><t>Words</t></r></p></txBody></sp></sld>"),
+	] {
+		zip.start_file(name, zip::write::SimpleFileOptions::default()).unwrap();
+		zip.write_all(body.as_bytes()).unwrap();
+	}
+	zip.finish().unwrap();
+	let document = super::parse_pptx(&crate::document::ParserContext::new(path)).unwrap();
+	assert_eq!(document.buffer.content, "This slide has no text.\n\nWords\n");
+	let slides: Vec<(usize, &str)> = document
+		.buffer
+		.markers
+		.iter()
+		.filter(|marker| marker.mtype == crate::document::MarkerType::PageBreak)
+		.map(|marker| (marker.position, marker.text.as_str()))
+		.collect();
+	assert_eq!(slides, [(0, "Slide 1"), (display_len("This slide has no text.\n\n"), "Slide 2")]);
+}

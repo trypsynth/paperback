@@ -14,7 +14,10 @@ use office_crypto::decrypt_from_file;
 use super::persist::Presentation;
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
-	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, util::path::extract_title_from_path},
+	parser::{
+		PASSWORD_REQUIRED_ERROR_PREFIX,
+		util::{path::extract_title_from_path, slides::no_text_placeholder},
+	},
 	t,
 };
 
@@ -74,10 +77,12 @@ pub(super) fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 		let label = format!("Slide {slide_number}");
 		id_positions.insert(format!("slide_{slide_number}"), slide_start);
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, slide_start).with_text(label.clone()));
-		if !slide_text.is_empty() {
+		if slide_text.is_empty() {
+			buffer.append(&no_text_placeholder());
+		} else {
 			buffer.append(slide_text);
-			buffer.append("\n");
 		}
+		buffer.append("\n");
 		if slide_number < slide_texts.len() {
 			buffer.append("\n");
 		}

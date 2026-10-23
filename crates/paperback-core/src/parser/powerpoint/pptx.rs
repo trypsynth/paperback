@@ -17,6 +17,7 @@ use crate::{
 		util::{
 			ooxml::{read_ooxml_relationships, try_decrypt_office_file},
 			path::extract_title_from_path,
+			slides::no_text_placeholder,
 			xml::collect_text_from_tagged_elements,
 		},
 	},
@@ -82,34 +83,30 @@ pub(super) fn parse_pptx(context: &ParserContext) -> Result<Document> {
 			&rels,
 			context.render_tables_inline,
 		);
-		if !slide_text.trim().is_empty() {
-			buffer.append(&slide_text);
-			if !buffer.content.ends_with('\n') {
-				buffer.append("\n");
-			}
-			if index + 1 < slides.len() {
-				buffer.append("\n");
-			}
-			buffer
-				.add_marker(Marker::new(MarkerType::PageBreak, slide_start).with_text(format!("Slide {}", index + 1)));
-			for link in links {
-				buffer.add_marker(
-					Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
-				);
-			}
-			for table in tables {
-				buffer.add_marker(
-					Marker::new(MarkerType::Table, table.offset)
-						.with_text(table.caption)
-						.with_reference(table.html)
-						.with_length(table.length),
-				);
-			}
-			let toc_name = if slide_title.is_empty() { format!("Slide {}", index + 1) } else { slide_title.clone() };
-			toc_items.push(TocItem::new(toc_name, String::new(), slide_start));
-		} else {
-			tracing::debug!(slide = index + 1, "skipped pptx slide with no text");
+		let slide_text = if slide_text.trim().is_empty() { no_text_placeholder() } else { slide_text };
+		buffer.append(&slide_text);
+		if !buffer.content.ends_with('\n') {
+			buffer.append("\n");
 		}
+		if index + 1 < slides.len() {
+			buffer.append("\n");
+		}
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, slide_start).with_text(format!("Slide {}", index + 1)));
+		for link in links {
+			buffer.add_marker(
+				Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
+			);
+		}
+		for table in tables {
+			buffer.add_marker(
+				Marker::new(MarkerType::Table, table.offset)
+					.with_text(table.caption)
+					.with_reference(table.html)
+					.with_length(table.length),
+			);
+		}
+		let toc_name = if slide_title.is_empty() { format!("Slide {}", index + 1) } else { slide_title.clone() };
+		toc_items.push(TocItem::new(toc_name, String::new(), slide_start));
 	}
 	let title = extract_title_from_path(&context.file_path);
 	let mut document = Document::new().with_title(title);
