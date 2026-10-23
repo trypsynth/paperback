@@ -115,7 +115,7 @@ formats! {
 		name: "Comic book archives",
 		extensions: ["cbz"],
 		mime_types: ["application/vnd.comicbook+zip"],
-		flags: SUPPORTS_PAGES | SUPPORTS_IMAGES,
+		flags: SUPPORTS_PAGES | SUPPORTS_IMAGES | SUPPORTS_TOC,
 	},
 	CHM {
 		name: "Compiled HTML Help files",
