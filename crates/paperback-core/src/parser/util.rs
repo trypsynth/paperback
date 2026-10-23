@@ -2,6 +2,7 @@ pub mod bidi;
 pub mod chapters;
 pub mod comments;
 pub mod odf;
+pub mod ole;
 pub mod ooxml;
 pub mod path;
 pub mod slides;

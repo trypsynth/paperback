@@ -4,7 +4,7 @@ use anyhow::Result;
 
 use crate::{
 	document::{Document, ParserContext},
-	parser::Parser,
+	parser::{Parser, util::ole::apply_summary_information},
 };
 
 mod legacy;
@@ -27,7 +27,9 @@ impl Parser for PowerpointParser {
 		);
 		if extension == "ppt" {
 			tracing::debug!(path = %context.file_path, "parsing powerpoint file as legacy ppt");
-			return legacy::parse_legacy_ppt(context);
+			let mut document = legacy::parse_legacy_ppt(context)?;
+			apply_summary_information(&mut document, &context.file_path);
+			return Ok(document);
 		}
 		tracing::debug!(path = %context.file_path, "parsing powerpoint file as pptx");
 		pptx::parse_pptx(context)
