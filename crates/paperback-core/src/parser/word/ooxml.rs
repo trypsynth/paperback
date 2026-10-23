@@ -27,8 +27,10 @@ use crate::{
 	util::zip::read_zip_entry_by_name,
 };
 
+mod notes;
 mod paragraph;
 
+use notes::{Citations, NoteKind};
 use paragraph::{PageSource, extract_number_from_string, process_paragraph, starts_page};
 
 use super::numbering::Numbering;
@@ -128,6 +130,7 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 	let doc_xml = XmlDocument::parse(&doc_content).context("Failed to parse word/document.xml")?;
 	let start = buffer.current_position();
 	let first_marker = buffer.markers.len();
+	let citations = Citations::new(read_zip_entry_by_name(archive, "word/settings.xml").ok().as_deref(), start);
 	let mut walk = Walk {
 		buffer,
 		headings,
@@ -138,11 +141,71 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 		numbering,
 		list: None,
 		page_source: PageSource::for_document(&doc_content),
+		citations,
 	};
 	traverse(doc_xml.root(), &mut walk);
 	walk.end_list();
+	write_notes(archive, &mut walk);
 	number_pages(buffer, start, first_marker);
 	Ok(())
+}
+
+/// Writes the footnotes and endnotes the document cites after its text, under a heading of their own, each where its citation's link lands. Read where Word shows them, at the foot of a page, they would interrupt the text; dropped, as they used to be, the citation numbers led nowhere.
+fn write_notes<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
+	let cited = std::mem::take(&mut walk.citations.cited);
+	if cited.is_empty() {
+		return;
+	}
+	let mut parts = HashMap::new();
+	for kind in [NoteKind::Footnote, NoteKind::Endnote] {
+		let (part, rels_part, _) = kind.part();
+		if let Ok(xml) = read_zip_entry_by_name(archive, part) {
+			parts.insert(kind, (xml, read_ooxml_relationships(archive, rels_part)));
+		}
+	}
+	let documents: HashMap<NoteKind, XmlDocument> =
+		parts.iter().filter_map(|(kind, (xml, _))| Some((*kind, XmlDocument::parse(xml).ok()?))).collect();
+	if !walk.buffer.content.is_empty() && !walk.buffer.content.ends_with('\n') {
+		walk.buffer.append("\n");
+	}
+	// TRANSLATORS: Heading over the footnotes and endnotes of a document, written after its text
+	let heading = t("Notes");
+	let heading_offset = walk.buffer.current_position();
+	walk.buffer.append(&heading);
+	walk.buffer.append("\n");
+	walk.buffer.add_marker(Marker::new(MarkerType::Heading1, heading_offset).with_text(heading.clone()).with_level(1));
+	walk.headings.push(HeadingInfo { offset: heading_offset, level: 1, text: heading });
+	for citation in cited {
+		let (_, _, element) = citation.kind.part();
+		let Some(note) = documents.get(&citation.kind).and_then(|document| {
+			document
+				.descendants()
+				.find(|node| node.tag_name().name() == element && node.attribute("id") == Some(citation.id.as_str()))
+		}) else {
+			continue;
+		};
+		let rels = &parts[&citation.kind].1;
+		walk.id_positions.insert(citation.key, walk.buffer.current_position());
+		// A number or letter reads as "1." before its note, and a typed mark such as an asterisk as itself.
+		let separator = if citation.label.chars().all(char::is_alphanumeric) { ". " } else { " " };
+		walk.buffer.append(&format!("{}{separator}", citation.label));
+		for paragraph in note.children().filter(|child| child.tag_name().name() == "p") {
+			process_paragraph(
+				paragraph,
+				walk.buffer,
+				walk.headings,
+				walk.id_positions,
+				rels,
+				walk.style_heading_map,
+				&mut walk.numbering,
+				walk.page_source,
+				&mut walk.citations,
+			);
+		}
+		if !walk.buffer.content.ends_with('\n') {
+			walk.buffer.append("\n");
+		}
+	}
 }
 
 /// Names the page breaks the walk placed from `first_marker` on, and adds the first page at `start`, which Word records no break for.
@@ -186,6 +249,7 @@ struct Walk<'a> {
 	/// it has, and where its last item ends. Any other paragraph, or a table, ends it.
 	list: Option<ListRun>,
 	page_source: PageSource,
+	citations: Citations,
 }
 
 struct ListRun {
@@ -281,6 +345,7 @@ fn traverse(node: Node, walk: &mut Walk) {
 				walk.style_heading_map,
 				&mut walk.numbering,
 				walk.page_source,
+				&mut walk.citations,
 			);
 			if is_list_item {
 				let end = walk.buffer.current_position();

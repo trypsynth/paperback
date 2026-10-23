@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use roxmltree::{Node, NodeType};
 
-use super::super::numbering::Numbering;
+use super::{
+	super::numbering::Numbering,
+	notes::{Citations, NoteKind},
+};
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, format_marker_types},
 	parser::util::{ooxml::collect_ooxml_run_text, toc::heading_level_to_marker_type, xml::find_child_element},
@@ -38,6 +41,7 @@ pub(super) fn process_paragraph(
 	style_heading_map: &HashMap<String, i32>,
 	numbering: &mut Numbering,
 	page_source: PageSource,
+	citations: &mut Citations,
 ) -> bool {
 	let paragraph_start = buffer.current_position();
 	// Word keeps list numbers and bullets out of the text and generates them; without this a
@@ -86,7 +90,7 @@ pub(super) fn process_paragraph(
 			match page_source {
 				PageSource::Rendered if starts_page(child, page_source) => page_starts.push(para_display_len),
 				PageSource::Explicit => {
-					breaks_after.extend(page_break_offsets(child).map(|offset| para_display_len + offset))
+					breaks_after.extend(page_break_offsets(child).map(|offset| para_display_len + offset));
 				}
 				PageSource::Rendered => {}
 			}
@@ -99,6 +103,17 @@ pub(super) fn process_paragraph(
 				&& let Some(rpr_node) = find_child_element(child, "rPr")
 			{
 				heading_level = get_run_heading_level(rpr_node);
+			}
+			if let Some((kind, reference)) = NoteKind::cited_by(child) {
+				// A custom mark is typed in the run itself, in place of the number Word would generate.
+				let custom = matches!(reference.attribute("customMarkFollows"), Some("1" | "true" | "on"))
+					.then(|| collect_ooxml_run_text(child).trim().to_string());
+				let citation = citations.cite(kind, reference.attribute("id").unwrap_or_default(), custom);
+				let cited = format!("[{}]", citation.label);
+				links.push((para_display_len, cited.clone(), format!("#{}", citation.key)));
+				para_display_len += display_len(&cited);
+				paragraph_text.push_str(&cited);
+				continue;
 			}
 			if let Some(instr_text_node) = find_child_element(child, "instrText")
 				&& let Some(instruction) = instr_text_node.text()
