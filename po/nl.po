@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-21 23:51+0000\n"
+"POT-Creation-Date: 2026-10-23 23:23+0000\n"
 "PO-Revision-Date: 2026-09-22 08:22+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -833,6 +833,7 @@ msgid "Bookmarks"
 msgstr "Bladwijzers"
 
 #. TRANSLATORS: Option in the filter dropdown to show notes only
+#. TRANSLATORS: Heading over the footnotes and endnotes of a document, written after its text
 msgid "Notes"
 msgstr "Notities"
 
@@ -1063,6 +1064,11 @@ msgstr "&Percentage"
 #. TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
 msgid "Percent out of range."
 msgstr "Percentage buiten bereik."
+
+#. TRANSLATORS: Title of the view showing the text recognized in a picture
+#, fuzzy
+msgid "Image Text"
+msgstr "Afbeeldingstekst"
 
 #. TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
 msgid "Set Up Paperback"
@@ -1483,6 +1489,22 @@ msgstr "&Documenten in dit archief:"
 msgid "{} to {}"
 msgstr "{} tot en met {}"
 
+#. TRANSLATORS: Announced when Enter is pressed on a picture while its text is already being recognized
+#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
+msgid "OCR in progress."
+msgstr "OCR wordt uitgevoerd."
+
+#. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
+#. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
+#, fuzzy
+msgid "The picture could not be read."
+msgstr "De afbeelding kon niet worden gelezen."
+
+#. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
+#, fuzzy
+msgid "No text was found in the picture."
+msgstr "Geen tekst gevonden in de afbeelding."
+
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr "Bestand niet gevonden: {}"
@@ -1518,10 +1540,6 @@ msgstr "Bestand: {}"
 #. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
 msgid "Details: {}"
 msgstr "Details: {}"
-
-#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
-msgid "OCR in progress."
-msgstr "OCR wordt uitgevoerd."
 
 #. TRANSLATORS: Announced when batch OCR is triggered with no document open
 #. TRANSLATORS: Announced when Batch OCR is chosen with no document open
@@ -2411,6 +2429,13 @@ msgstr "Afbeelding opslaan &als..."
 msgid "Save image as"
 msgstr "Afbeelding opslaan als"
 
+msgid "Read &text in picture"
+msgstr ""
+
+#, fuzzy
+msgid "Read the text in the picture"
+msgstr "Tekst in de afbeelding lezen"
+
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
 msgstr "&Bladwijzer maken"
@@ -2968,10 +2993,51 @@ msgstr "Paperback kan geen RAR-comicarchieven lezen. Pak het opnieuw in als .cbz
 msgid "Failed to parse comic archive: {}"
 msgstr "Comicarchief verwerken mislukt: {}"
 
+#. TRANSLATORS: Spoken for a comic book page that is its front cover
+#, fuzzy
+msgid "Front cover"
+msgstr "Voorkant"
+
+#. TRANSLATORS: Spoken for a comic book page that is an inside cover
+#, fuzzy
+msgid "Inside cover"
+msgstr "Binnenkant"
+
+#. TRANSLATORS: Spoken for a comic book page that recaps the story so far
+#, fuzzy
+msgid "Recap"
+msgstr "Terugblik"
+
+#. TRANSLATORS: Spoken for a comic book page that is an advertisement
+#, fuzzy
+msgid "Advertisement"
+msgstr "Advertentie"
+
+#. TRANSLATORS: Spoken for a comic book page written by the editors
+#, fuzzy
+msgid "Editorial"
+msgstr "Redactioneel"
+
+#. TRANSLATORS: Spoken for a comic book page of letters from readers
+#, fuzzy
+msgid "Letters"
+msgstr "Brieven"
+
+#. TRANSLATORS: Spoken for a comic book page previewing another comic
+#, fuzzy
+msgid "Preview"
+msgstr "Voorbeeld"
+
+#. TRANSLATORS: Spoken for a comic book page that is its back cover
+#, fuzzy
+msgid "Back cover"
+msgstr "Achterkant"
+
 #. TRANSLATORS: Error shown when a comic book archive holds no page images at all
 msgid "This comic archive contains no pages."
 msgstr "Dit comicarchief bevat geen pagina's."
 
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]", and on its own, "[Image]", for a picture with none
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr "Figuur"
@@ -3153,6 +3219,21 @@ msgstr "Dit document is versleuteld op een manier die Paperback niet kan openen:
 msgid "ODP file does not contain any pages"
 msgstr "ODP-bestand bevat geen pagina's"
 
+#. TRANSLATORS: Written after a presentation slide's text, before the presenter's notes for that slide; {} is the notes
+#, fuzzy
+msgid "Speaker notes: {}"
+msgstr "Sprekersnotities: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it without a name; {} is the comment
+#, fuzzy
+msgid "Comment: {}"
+msgstr "Opmerking: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it: the first {} is the reviewer, the second the comment
+#, fuzzy
+msgid "Comment from {}: {}"
+msgstr "Opmerking van {}: {}"
+
 #. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
 msgid "FODP file does not contain any pages"
 msgstr "FODP-bestand bevat geen pagina's"
@@ -3194,6 +3275,31 @@ msgstr "RTF-document verwerken mislukt: {}"
 #. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
 msgid "Chapter {}"
 msgstr "Hoofdstuk {}"
+
+#. TRANSLATORS: Heading over the comments reviewers left on a document, written after its text
+#, fuzzy
+msgid "Comments"
+msgstr "Opmerkingen"
+
+#. TRANSLATORS: Names a comment's author when the document does not say who wrote it
+#, fuzzy
+msgid "Comment"
+msgstr "Opmerking"
+
+#. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
+#, fuzzy
+msgid "{} on \\u{201c}{}\\u{201d}: {}"
+msgstr "{} over \\u{201c}{}\\u{201d}: {}"
+
+#. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
+#, fuzzy
+msgid "{}: {}"
+msgstr "{}: {}"
+
+#. TRANSLATORS: Shown in place of a presentation slide that has no text, such as one holding only pictures
+#, fuzzy
+msgid "This slide has no text."
+msgstr "Deze dia bevat geen tekst."
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
@@ -3244,8 +3350,80 @@ msgstr "Alle verwerkers zijn mislukt voor extensie: .{}"
 msgid "image"
 msgstr "afbeelding"
 
+#, fuzzy
+msgid "Current version is not a valid semver."
+msgstr "Huidige versie is geen geldige semver."
+
+#, fuzzy
+msgid "Latest release tag is not a valid semver."
+msgstr "Laatste releasetag is geen geldige semver."
+
+#, fuzzy
+msgid "Invalid public key"
+msgstr "Ongeldige openbare sleutel"
+
+#, fuzzy
+msgid "Failed to read signature"
+msgstr "Handtekening lezen mislukt"
+
+#, fuzzy
+msgid "Invalid signature"
+msgstr "Ongeldige handtekening"
+
+#, fuzzy
+msgid "Failed to create private download directory"
+msgstr "Downloadmap maken mislukt"
+
+#, fuzzy
+msgid "Failed to create file"
+msgstr "Bestand maken mislukt"
+
+#, fuzzy
+msgid "Failed to write file"
+msgstr "Bestand schrijven mislukt"
+
+#, fuzzy
+msgid "Failed to read file for verification"
+msgstr "Bestand lezen voor verificatie mislukt"
+
+#, fuzzy
+msgid "Signature verification failed"
+msgstr "Verificatie van handtekening mislukt"
+
+#, fuzzy
+msgid "Failed to rename verified file"
+msgstr "Geverifieerd bestand hernoemen mislukt"
+
+#, fuzzy
+msgid "Failed to parse release JSON"
+msgstr "Release-JSON verwerken mislukt"
+
+#, fuzzy
+msgid "Latest release does not include downloadable assets."
+msgstr "Laatste release bevat geen downloadbare onderdelen."
+
+#, fuzzy
+msgid "Update is available but no matching download asset or signature was found."
+msgstr "Update beschikbaar maar geen overeenkomstig downloadbestand of handtekening gevonden."
+
 msgid "Not running from an AppImage; cannot self-update."
 msgstr "Draait niet vanuit een AppImage; zichzelf bijwerken is niet mogelijk."
+
+#, fuzzy
+msgid "Failed to determine exe path"
+msgstr "Uitvoeringsprogrammapad bepalen mislukt"
+
+#, fuzzy
+msgid "Failed to get exe directory"
+msgstr "Uitvoeringsmap ophalen mislukt"
+
+#, fuzzy
+msgid "Could not determine a cache directory: neither XDG_CACHE_HOME nor HOME is set"
+msgstr "Cachemap kon niet worden bepaald: noch XDG_CACHE_HOME noch HOME is ingesteld"
+
+#, fuzzy
+msgid "Failed to create cache directory"
+msgstr "Cachemap maken mislukt"
 
 msgid "Failed to get current exe path"
 msgstr "Ophalen van huidig exe-pad mislukt"
@@ -3358,9 +3536,6 @@ msgstr "%s-update"
 msgid "Downloading update..."
 msgstr "Update downloaden..."
 
-msgid "Update failed"
-msgstr "Update mislukt"
-
 msgid "Preparing update..."
 msgstr "Update voorbereiden..."
 
@@ -3381,6 +3556,14 @@ msgstr "Veiligheidsverificatie mislukt. Mogelijk is met de update geknoeid: %s"
 
 msgid "Security Error"
 msgstr "Veiligheidsfout"
+
+#, fuzzy
+msgid "The update server returned HTTP error %s."
+msgstr "Updateserver gaf HTTP-fout %s."
+
+#, fuzzy
+msgid "Could not reach the update server: %s"
+msgstr "Updateserver bereiken mislukt: %s"
 
 #. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 msgid "%d hour"
@@ -4652,6 +4835,9 @@ msgstr "Schakel dit uit om door te blijven lezen terwijl je per zoekovereenkomst
 #: swift
 msgid "1.5\\u{00d7}"
 msgstr "1,5\\u{00d7}"
+
+#~ msgid "Update failed"
+#~ msgstr "Update mislukt"
 
 #~ msgid "Selected %d character."
 #~ msgid_plural "Selected %d characters."

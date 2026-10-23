@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: a826a433e1c8cd2e; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,a836ba19,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2867c9344accdcad; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0822f58d,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback – 1.0-s verzió
 
@@ -195,7 +195,8 @@ Az alábbi billentyűparancsok a Windowsra vonatkoznak. Ahol a macOS eltér, a m
 * `Ctrl+Tab` és `Ctrl+Shift+Tab`: Ugrás a következő vagy az előző megnyitott dokumentumra; az utolsó után az első, az első előtt az utolsó következik.
 * `Enter` vagy `Space` a dokumentum szövegében: A kurzornál lévő hivatkozás követése, illetve táblázat- vagy képletnézet megnyitása.
 * `Enter` egy szkennelt PDF-oldalon: Az oldal szövegfelismerése.
-* `Shift+F10` vagy a helyimenü-billentyű a dokumentum szövegében: A helyi menü megnyitása. Ha a kurzor egy PDF-, EPUB-, HTML-, Markdown-, CHM- vagy FB2-dokumentum, illetve képregény képén áll, a kép fájlba is menthető.
+* `Enter` egy olyan képen, amely nem hivatkozás: A képben felismert szöveget egy nézetben jeleníti meg, amelyet az `Escape` bezár. Maga a kép érintetlen marad, és a dokumentum szövege nem változik.
+* `Shift+F10` vagy a helyimenü-billentyű a dokumentum szövegében: A helyi menü megnyitása. Ha a kurzor egy PDF-, EPUB-, HTML-, Markdown-, CHM- vagy FB2-dokumentum, illetve képregény képén áll, a kép fájlba is menthető, és Windowson valamint macOS-en a kép szövege is olvasható, amely így lehetővé teszi egy olyan kép olvasását, amely egyben hivatkozás is.
 
 ## iOS és Android
 

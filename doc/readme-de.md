@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: a826a433e1c8cd2e; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,a836ba19,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2867c9344accdcad; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0822f58d,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - Version 1.0
 
@@ -195,7 +195,8 @@ Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet
 * `Ctrl+Tab` und `Ctrl+Shift+Tab`: Gehe zum nächsten oder vorherigen offenen Dokument und wechsle am Ende zur anderen Seite.
 * `Enter` oder `Space` im Dokumenttext: Folgt einem Link oder öffnet eine Tabellen- oder Formelansicht an der Cursorposition.
 * `Enter` auf einer gescannten PDF-Seite: Erkennt die Seite mit Texterkennung.
-* `Shift+F10` oder die Menü-/Anwendungstaste im Dokumenttext: Öffnet das Kontextmenü. Bei einem Bild in einem PDF, EPUB, HTML, Markdown, CHM, FB2 oder Comic-Buch bietet es auch an, das Bild in eine Datei zu speichern.
+* `Enter` auf einem Bild, das kein Link ist: Zeigt den im Bild erkannten Text in einer Ansicht an, die `Escape` schließt. Das Bild selbst wird nicht verändert, und der Text des Dokuments bleibt unverändert.
+* `Shift+F10` oder die Menü-/Anwendungstaste im Dokumenttext: Öffnet das Kontextmenü. Bei einem Bild in einem PDF, EPUB, HTML, Markdown, CHM, FB2 oder Comic-Buch bietet es auch an, das Bild in eine Datei zu speichern, und unter Windows und macOS den Text darin zu lesen – so liest man ein Bild, das auch ein Link ist.
 
 ## iOS und Android
 
