@@ -11,11 +11,11 @@ use crate::{
 		block_elements::is_block_element,
 		format_spans::FormatKind,
 		formula::{formula_text, is_dom_formula},
+		image_text,
 		line_builder::LineBuilder,
 		list_style::ListStyle,
 		table_text::{collect_dom_text, table_render_bundle},
 	},
-	t,
 	types::{FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 	util::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
 };
@@ -362,13 +362,8 @@ impl HtmlToText {
 			return None;
 		}
 		let element = ElementRef::wrap(node)?;
-		let mut description = element
-			.attr("alt")
-			.or_else(|| element.attr("aria-label"))
-			.or_else(|| element.attr("aria-description"))
-			.or_else(|| element.attr("title"))
-			.map(collapse_whitespace)
-			.unwrap_or_default();
+		let attribute = |name: &str| element.attr(name).map(str::to_string);
+		let mut description = image_text::description(&attribute);
 		let is_figure = tag_name == "figure";
 		if description.is_empty() && is_figure {
 			for child in node.children() {
@@ -380,12 +375,11 @@ impl HtmlToText {
 				}
 			}
 		}
-		if description.is_empty() {
+		// A figure with no caption says nothing itself: the picture inside it is announced instead.
+		if description.is_empty() && (is_figure || image_text::is_decorative(&attribute)) {
 			return None;
 		}
-		// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
-		let label = if is_figure { t("Figure") } else { t("Image") };
-		let image_text = format!("[{label}: {description}]");
+		let image_text = image_text::placeholder(is_figure, &description);
 		let info = ImageInfo {
 			offset: 0,
 			alt_text: description,

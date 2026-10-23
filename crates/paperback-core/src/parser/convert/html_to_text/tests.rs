@@ -329,3 +329,25 @@ fn html_converter_keeps_a_picture_in_its_place_inside_a_link() {
 	assert_eq!(converter.get_links()[0].text, "Back to [Image: Logo] home");
 	assert_eq!(converter.get_images()[0].offset, display_len("Back to "));
 }
+
+/// A picture nobody described is still a picture the reader can find, save and read with OCR, while one marked as decoration stays out of the way.
+#[test]
+fn html_converter_shows_an_undescribed_picture_and_skips_decoration() {
+	let html = "<html><body><p>A <img src=\"chart.png\"> B <img src=\"rule.png\" alt=\"\"> C <img src=\"x.gif\" width=\"1\" height=\"1\"></p></body></html>";
+	let mut converter = HtmlToText::new();
+	assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+	assert_eq!(converter.get_text(), "A [Image] B C");
+	let images = converter.get_images();
+	assert_eq!(images.len(), 1);
+	assert_eq!((images[0].offset, images[0].source.as_str()), (display_len("A "), "chart.png"));
+}
+
+/// A link made of an undescribed picture, such as a logo with no alt text, is still a link.
+#[test]
+fn html_converter_makes_a_link_of_an_undescribed_picture() {
+	let html = "<html><body><p><a href=\"/home\"><img src=\"logo.png\"></a></p></body></html>";
+	let mut converter = HtmlToText::new();
+	assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
+	assert_eq!(converter.get_text(), "[Image]");
+	assert_eq!(converter.get_links()[0].text, "[Image]");
+}

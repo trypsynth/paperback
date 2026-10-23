@@ -375,3 +375,16 @@ fn a_picture_inside_a_link_with_text_is_kept_in_its_place() {
 	assert_eq!(converter.get_links()[0].text, "Back to [Image: Logo] home");
 	assert_eq!(converter.get_images()[0].offset, "Back to ".len());
 }
+
+/// FB2 and most EPUB pictures carry no alt text, and they are still pictures the reader can find, save and read with OCR.
+#[test]
+fn an_undescribed_picture_is_shown_and_decoration_is_not() {
+	let xml =
+		r#"<root><body><p>A <img src="chart.png"/> B <img src="rule.png" role="presentation"/> C</p></body></root>"#;
+	let mut converter = XmlToText::new();
+	assert!(converter.convert(xml));
+	assert_eq!(converter.get_text(), "A [Image] B C");
+	let images = converter.get_images();
+	assert_eq!(images.len(), 1);
+	assert_eq!((images[0].offset, images[0].source.as_str()), (2, "chart.png"));
+}
