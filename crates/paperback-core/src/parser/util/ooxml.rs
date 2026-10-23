@@ -10,7 +10,42 @@ use office_crypto::decrypt_from_file;
 use roxmltree::{Node, NodeType};
 use zip::ZipArchive;
 
-use crate::{parser::PASSWORD_REQUIRED_ERROR_PREFIX, t, util::zip::read_zip_entry_by_name};
+use crate::{
+	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, util::path::resolve_relative_path},
+	t,
+	util::zip::read_zip_entry_by_name,
+};
+
+/// A part's relationships that its text needs: where its links go, and which archive entry each picture is.
+#[derive(Debug, Default)]
+pub struct Relationships {
+	pub links: HashMap<String, String>,
+	/// By relationship id, the picture's entry in the archive, resolved against the part's own folder: `media/image1.png` beside `word/document.xml` is `word/media/image1.png`.
+	pub images: HashMap<String, String>,
+}
+
+/// Reads the relationships at `rels_path`, such as `word/_rels/document.xml.rels`, for the part it belongs to.
+pub fn read_relationships<R: Read + Seek>(archive: &mut ZipArchive<R>, rels_path: &str) -> Relationships {
+	let links = read_ooxml_relationships(archive, rels_path);
+	let mut images = HashMap::new();
+	let part_folder = rels_path.rsplit_once("/_rels/").map_or("", |(folder, _)| folder);
+	if let Ok(content) = read_zip_entry_by_name(archive, rels_path)
+		&& let Ok(document) = roxmltree::Document::parse(&content)
+	{
+		for relationship in document.descendants().filter(|node| node.tag_name().name() == "Relationship") {
+			let is_image = relationship.attribute("Type").is_some_and(|kind| kind.ends_with("/image"));
+			if !is_image || relationship.attribute("TargetMode") == Some("External") {
+				continue;
+			}
+			if let (Some(id), Some(target)) = (relationship.attribute("Id"), relationship.attribute("Target")) {
+				let entry =
+					target.strip_prefix('/').map_or_else(|| resolve_relative_path(part_folder, target), str::to_string);
+				images.insert(id.to_string(), entry);
+			}
+		}
+	}
+	Relationships { links, images }
+}
 
 pub fn read_ooxml_relationships<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,

@@ -18,7 +18,7 @@ use crate::{
 		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 		util::{
 			comments::{self, Comment},
-			ooxml::{collect_ooxml_run_text, read_ooxml_relationships, try_decrypt_office_file},
+			ooxml::{Relationships, collect_ooxml_run_text, read_relationships, try_decrypt_office_file},
 			path::extract_title_from_path,
 			toc::build_toc_from_buffer,
 		},
@@ -122,7 +122,7 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 	render_tables_inline: bool,
 ) -> Result<()> {
 	let style_heading_map = build_style_heading_map(archive);
-	let rels = read_ooxml_relationships(archive, "word/_rels/document.xml.rels");
+	let rels = read_relationships(archive, "word/_rels/document.xml.rels");
 	let numbering = Numbering::load(
 		read_zip_entry_by_name(archive, "word/numbering.xml").ok().as_deref(),
 		read_zip_entry_by_name(archive, "word/styles.xml").ok().as_deref(),
@@ -162,7 +162,7 @@ fn write_notes<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
 	for kind in [NoteKind::Footnote, NoteKind::Endnote] {
 		let (part, rels_part, _) = kind.part();
 		if let Ok(xml) = read_zip_entry_by_name(archive, part) {
-			parts.insert(kind, (xml, read_ooxml_relationships(archive, rels_part)));
+			parts.insert(kind, (xml, read_relationships(archive, rels_part)));
 		}
 	}
 	let documents: HashMap<NoteKind, XmlDocument> =
@@ -284,7 +284,7 @@ struct Walk<'a> {
 	buffer: &'a mut DocumentBuffer,
 	headings: &'a mut Vec<HeadingInfo>,
 	id_positions: &'a mut HashMap<String, usize>,
-	rels: &'a HashMap<String, String>,
+	rels: &'a Relationships,
 	style_heading_map: &'a HashMap<String, i32>,
 	render_tables_inline: bool,
 	numbering: Numbering,
@@ -413,7 +413,7 @@ fn traverse(node: Node, walk: &mut Walk) {
 fn process_table(
 	element: Node,
 	buffer: &mut DocumentBuffer,
-	_rels: &HashMap<String, String>,
+	_rels: &Relationships,
 	render_tables_inline: bool,
 	page_source: PageSource,
 ) {

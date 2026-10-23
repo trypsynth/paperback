@@ -8,7 +8,14 @@ use super::{
 };
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, format_marker_types},
-	parser::util::{ooxml::collect_ooxml_run_text, toc::heading_level_to_marker_type, xml::find_child_element},
+	parser::{
+		convert::image_text,
+		util::{
+			ooxml::{Relationships, collect_ooxml_run_text},
+			toc::heading_level_to_marker_type,
+			xml::find_child_element,
+		},
+	},
 	types::HeadingInfo,
 	util::text::display_len,
 };
@@ -37,7 +44,7 @@ pub(super) fn process_paragraph(
 	buffer: &mut DocumentBuffer,
 	headings: &mut Vec<HeadingInfo>,
 	id_positions: &mut HashMap<String, usize>,
-	rels: &HashMap<String, String>,
+	rels: &Relationships,
 	style_heading_map: &HashMap<String, i32>,
 	numbering: &mut Numbering,
 	page_source: PageSource,
@@ -56,6 +63,8 @@ pub(super) fn process_paragraph(
 	let mut next_starts_page = false;
 	let mut bookmarks: Vec<(String, usize)> = Vec::new();
 	let mut links: Vec<(usize, String, String)> = Vec::new();
+	// Each picture's offset, placeholder length, description and archive entry.
+	let mut pictures: Vec<(usize, usize, String, String)> = Vec::new();
 	// Where comments start and end in this paragraph, by id, placed once the paragraph's text is final.
 	let mut comment_starts: Vec<(String, usize)> = Vec::new();
 	let mut comment_ends: Vec<(String, usize)> = Vec::new();
@@ -96,7 +105,8 @@ pub(super) fn process_paragraph(
 			if child.children().any(|run| run.tag_name().name() == "r" && starts_page(run, page_source)) {
 				page_starts.push(para_display_len);
 			}
-			para_display_len += process_hyperlink(child, &mut paragraph_text, &mut links, rels, para_display_len);
+			para_display_len +=
+				process_hyperlink(child, &mut paragraph_text, &mut links, &rels.links, para_display_len);
 		} else if tag_name == "r" {
 			match page_source {
 				PageSource::Rendered if starts_page(child, page_source) => page_starts.push(para_display_len),
@@ -119,6 +129,13 @@ pub(super) fn process_paragraph(
 				find_child_element(child, "commentReference").and_then(|reference| reference.attribute("id"))
 			{
 				comment_starts.push((id.to_string(), para_display_len));
+			}
+			if let Some((placeholder, description, entry)) = picture(child, rels) {
+				let length = display_len(&placeholder);
+				pictures.push((para_display_len, length, description, entry));
+				para_display_len += length;
+				paragraph_text.push_str(&placeholder);
+				continue;
 			}
 			if let Some((kind, reference)) = NoteKind::cited_by(child) {
 				// A custom mark is typed in the run itself, in place of the number Word would generate.
@@ -187,6 +204,14 @@ pub(super) fn process_paragraph(
 	for (name, offset) in bookmarks {
 		id_positions.insert(name, at_words(offset));
 	}
+	for (offset, length, description, entry) in pictures {
+		buffer.add_marker(
+			Marker::new(MarkerType::Image, in_trimmed(offset))
+				.with_text(description)
+				.with_reference(entry)
+				.with_length(length),
+		);
+	}
 	for (id, offset) in comment_starts {
 		let position = in_trimmed(offset);
 		if !annotations.comments.iter().any(|(known, _, _)| *known == id) {
@@ -224,6 +249,38 @@ pub(super) fn process_paragraph(
 		Marker::new(MarkerType::ListItem, paragraph_start).with_text(trimmed.to_string()).with_level(label.level),
 	);
 	true
+}
+
+/// The placeholder a picture in `run` shows, its description, and its entry in the archive, for a picture Word draws (`w:drawing`) or an older VML one (`w:pict`). `None` for a run with no picture, for a drawing that is not a picture, such as a chart, and for a picture its author marked as decorative.
+fn picture(run: Node, rels: &Relationships) -> Option<(String, String, String)> {
+	let (description, embed) = if let Some(drawing) = find_child_element(run, "drawing") {
+		let properties = named(drawing, "docPr")?;
+		let decorative =
+			named(properties, "decorative").is_some_and(|mark| matches!(mark.attribute("val"), Some("1" | "true")));
+		if decorative {
+			return None;
+		}
+		let description = ["descr", "title"]
+			.into_iter()
+			.find_map(|name| properties.attribute(name).map(str::trim).filter(|text| !text.is_empty()));
+		(description, named(drawing, "blip")?.attribute("embed"))
+	} else {
+		let picture = find_child_element(run, "pict")?;
+		let data = named(picture, "imagedata")?;
+		let description = data
+			.attribute("title")
+			.or_else(|| named(picture, "shape").and_then(|shape| shape.attribute("alt")))
+			.map(str::trim)
+			.filter(|text| !text.is_empty());
+		(description, data.attribute("id"))
+	};
+	let description = description.unwrap_or_default().to_string();
+	let entry = embed.and_then(|id| rels.images.get(id)).cloned().unwrap_or_default();
+	Some((image_text::placeholder(false, &description), description, entry))
+}
+
+fn named<'a, 'input>(node: Node<'a, 'input>, name: &str) -> Option<Node<'a, 'input>> {
+	node.descendants().find(|descendant| descendant.tag_name().name() == name)
 }
 
 /// A paragraph's content with the wrappers Word puts around runs looked through: tracked insertions, content controls, smart tags, simple fields and the like. Read as they stand, the paragraph lost all of their text. Tracked deletions, and text moved away from here, are left out, so the text reads as it does with every change accepted.

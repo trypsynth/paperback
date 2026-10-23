@@ -231,3 +231,22 @@ fn a_picture_in_a_zipped_daisy_book_offers_its_bytes() {
 	assert_eq!(session.image_bytes_at(at).unwrap(), PICTURE);
 	fs::remove_dir_all(&dir).ok();
 }
+
+/// Word pictures were dropped without a trace. A picture now reads as its alt text, can be saved and read with OCR from the `.docx` itself, and one its author marked as decorative stays out of the way.
+#[test]
+fn a_word_picture_reads_as_its_alt_text_and_offers_its_bytes() {
+	let dir = unique_temp_dir();
+	let document = dir.join("report.docx");
+	let body = br#"<document><body><p><r><t xml:space="preserve">See </t></r><r><drawing><inline><docPr id="1" name="Picture 1" descr="Sales by region"/><graphic><graphicData><pic><blipFill><blip embed="rId5"/></blipFill></pic></graphicData></graphic></inline></drawing></r></p><p><r><drawing><inline><docPr id="2" name="Rule"><extLst><ext><decorative val="1"/></ext></extLst></docPr><graphic><graphicData><pic><blipFill><blip embed="rId5"/></blipFill></pic></graphicData></graphic></inline></drawing></r><r><t>After.</t></r></p><p><r><pict><shape alt="Old logo"><imagedata id="rId5"/></shape></pict></r></p></body></document>"#;
+	let rels = br#"<Relationships><Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png"/></Relationships>"#;
+	write_zip(
+		&document,
+		&[("word/document.xml", body), ("word/_rels/document.xml.rels", rels), ("word/media/image1.png", PICTURE)],
+	);
+	let session = open(&document);
+	assert_eq!(session.content(), "See [Image: Sales by region]\nAfter.\n[Image: Old logo]\n");
+	let at = position_of(&session, "[Image: Sales by region]") + 3;
+	assert_eq!(session.image_bytes_at(at).unwrap(), PICTURE);
+	assert_eq!(session.image_bytes_at(position_of(&session, "[Image: Old logo]")).unwrap(), PICTURE);
+	fs::remove_dir_all(&dir).ok();
+}

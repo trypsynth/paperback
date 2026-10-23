@@ -146,7 +146,7 @@ formats! {
 		name: "Word Documents",
 		extensions: ["docx", "docm", "doc", "zip"],
 		mime_types: ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"],
-		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_LISTS | SUPPORTS_PAGES,
+		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_LISTS | SUPPORTS_PAGES | SUPPORTS_IMAGES,
 	},
 	EPUB {
 		name: "EPUB Books",
@@ -219,25 +219,25 @@ formats! {
 		name: "Flat OpenDocument Presentations",
 		extensions: ["fodp"],
 		mime_types: ["application/vnd.oasis.opendocument.presentation-flat-xml"],
-		flags: NONE,
+		flags: SUPPORTS_IMAGES,
 	},
 	ODP {
 		name: "OpenDocument Presentations",
 		extensions: ["odp"],
 		mime_types: ["application/vnd.oasis.opendocument.presentation"],
-		flags: NONE,
+		flags: SUPPORTS_IMAGES,
 	},
 	FODT {
 		name: "Flat OpenDocument Text Files",
 		extensions: ["fodt"],
 		mime_types: ["application/vnd.oasis.opendocument.text-flat-xml"],
-		flags: SUPPORTS_TOC,
+		flags: SUPPORTS_TOC | SUPPORTS_IMAGES,
 	},
 	ODT {
 		name: "OpenDocument Text Files",
 		extensions: ["odt"],
 		mime_types: ["application/vnd.oasis.opendocument.text"],
-		flags: SUPPORTS_TOC,
+		flags: SUPPORTS_TOC | SUPPORTS_IMAGES,
 	},
 	POWERPOINT {
 		name: "PowerPoint Presentations",

@@ -5,6 +5,7 @@ use roxmltree::Document as XmlDocument;
 use super::{super::numbering::Numbering, Annotations, PageSource, Walk, number_pages, traverse};
 use crate::{
 	document::{DocumentBuffer, MarkerType},
+	parser::util::ooxml::Relationships,
 	util::text::display_len,
 };
 
@@ -14,7 +15,7 @@ fn walk(xml_doc: &XmlDocument, render_tables_inline: bool, numbering: Numbering)
 	let mut buffer = DocumentBuffer::new();
 	let mut headings = Vec::new();
 	let mut id_positions = HashMap::new();
-	let rels = HashMap::new();
+	let rels = Relationships::default();
 	let style_heading_map = HashMap::new();
 	let mut walk = Walk {
 		buffer: &mut buffer,
@@ -257,7 +258,7 @@ fn links_and_bookmarks_land_on_their_text_after_an_emoji() {
 	let mut buffer = DocumentBuffer::new();
 	let mut headings = Vec::new();
 	let mut id_positions = HashMap::new();
-	let rels = HashMap::new();
+	let rels = Relationships::default();
 	let style_heading_map = HashMap::new();
 	let mut walk = Walk {
 		buffer: &mut buffer,
