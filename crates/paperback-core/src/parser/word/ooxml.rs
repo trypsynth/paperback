@@ -29,7 +29,7 @@ use crate::{
 
 mod paragraph;
 
-use paragraph::{extract_number_from_string, process_paragraph, starts_page};
+use paragraph::{PageSource, extract_number_from_string, process_paragraph, starts_page};
 
 use super::numbering::Numbering;
 
@@ -137,6 +137,7 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 		render_tables_inline,
 		numbering,
 		list: None,
+		page_source: PageSource::for_document(&doc_content),
 	};
 	traverse(doc_xml.root(), &mut walk);
 	walk.end_list();
@@ -148,6 +149,13 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 ///
 /// A document Word never laid out records no breaks, and is left with no pages rather than given a single page that would claim more than is known.
 fn number_pages(buffer: &mut DocumentBuffer, start: usize, first_marker: usize) {
+	// A break after the last words, such as one closing the document, would start a page with nothing on it.
+	let end = buffer.current_position();
+	let mut index = 0;
+	buffer.markers.retain(|marker| {
+		index += 1;
+		index <= first_marker || marker.mtype != MarkerType::PageBreak || marker.position < end
+	});
 	if !buffer.markers[first_marker..].iter().any(|marker| marker.mtype == MarkerType::PageBreak) {
 		return;
 	}
@@ -177,6 +185,7 @@ struct Walk<'a> {
 	/// The run of numbered or bulleted paragraphs being built: where it starts, how many items
 	/// it has, and where its last item ends. Any other paragraph, or a table, ends it.
 	list: Option<ListRun>,
+	page_source: PageSource,
 }
 
 struct ListRun {
@@ -271,6 +280,7 @@ fn traverse(node: Node, walk: &mut Walk) {
 				walk.rels,
 				walk.style_heading_map,
 				&mut walk.numbering,
+				walk.page_source,
 			);
 			if is_list_item {
 				let end = walk.buffer.current_position();
@@ -283,7 +293,7 @@ fn traverse(node: Node, walk: &mut Walk) {
 			return;
 		} else if tag_name == "tbl" {
 			walk.end_list();
-			process_table(node, walk.buffer, walk.rels, walk.render_tables_inline);
+			process_table(node, walk.buffer, walk.rels, walk.render_tables_inline, walk.page_source);
 			return;
 		}
 	}
@@ -297,10 +307,11 @@ fn process_table(
 	buffer: &mut DocumentBuffer,
 	_rels: &HashMap<String, String>,
 	render_tables_inline: bool,
+	page_source: PageSource,
 ) {
 	let table_start = buffer.current_position();
 	// The table's text has no row positions to put a page on, so a page that starts inside it starts with it. Dropping it instead would number every later page one short.
-	for _ in element.descendants().filter(|node| node.tag_name().name() == "r" && starts_page(*node)) {
+	for _ in element.descendants().filter(|node| node.tag_name().name() == "r" && starts_page(*node, page_source)) {
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, table_start));
 	}
 	let mut rows: Vec<Vec<String>> = Vec::new();

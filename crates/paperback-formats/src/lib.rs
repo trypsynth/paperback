@@ -146,7 +146,7 @@ formats! {
 		name: "Word Documents",
 		extensions: ["docx", "docm", "doc", "zip"],
 		mime_types: ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"],
-		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_LISTS,
+		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_LISTS | SUPPORTS_PAGES,
 	},
 	EPUB {
 		name: "EPUB Books",
@@ -329,9 +329,9 @@ mod tests {
 		assert!(!FB2.installer.default_checked && FB2.installer.default_handler);
 	}
 
-	/// The Word parser marks lists and their items, and list navigation only runs for a format that claims them.
+	/// The Word parser marks lists, their items and pages, and the mobile apps only offer those to step through for a format that claims them.
 	#[test]
-	fn word_documents_offer_list_navigation() {
-		assert!(WORD.flags.contains(ParserFlags::SUPPORTS_LISTS));
+	fn word_documents_offer_list_and_page_navigation() {
+		assert!(WORD.flags.contains(ParserFlags::SUPPORTS_LISTS | ParserFlags::SUPPORTS_PAGES));
 	}
 }

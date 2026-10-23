@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use roxmltree::Document as XmlDocument;
 
-use super::{super::numbering::Numbering, Walk, number_pages, traverse};
+use super::{super::numbering::Numbering, PageSource, Walk, number_pages, traverse};
 use crate::{
 	document::{DocumentBuffer, MarkerType},
 	util::text::display_len,
@@ -25,6 +25,7 @@ fn walk(xml_doc: &XmlDocument, render_tables_inline: bool, numbering: Numbering)
 		render_tables_inline,
 		numbering,
 		list: None,
+		page_source: PageSource::for_document(xml_doc.input_text()),
 	};
 	traverse(xml_doc.root(), &mut walk);
 	walk.end_list();
@@ -266,6 +267,7 @@ fn links_and_bookmarks_land_on_their_text_after_an_emoji() {
 		render_tables_inline: false,
 		numbering: Numbering::default(),
 		list: None,
+		page_source: PageSource::for_document(xml),
 	};
 	traverse(xml_doc.root(), &mut walk);
 	let this = display_len("\u{1F600} see ");
@@ -275,4 +277,54 @@ fn links_and_bookmarks_land_on_their_text_after_an_emoji() {
 	assert_eq!(links[0], (this, "this"));
 	assert_eq!(links[1].0, display_len("\u{1F600} see this and "));
 	assert_eq!(buffer.content, "\u{1F600} see this and that\n");
+}
+
+/// A file Word never laid out, such as one from Google Docs or pandoc, has only the breaks its author wrote, and they are its pages.
+#[test]
+fn a_document_word_never_laid_out_takes_its_pages_from_its_explicit_breaks() {
+	let xml = r#"<document><body><p><r><t>Cover</t></r></p><p><r><br type="page"/></r></p><p><r><t>Contents</t></r></p><p><pPr><pageBreakBefore/></pPr><r><t>Body</t></r></p></body></document>"#;
+	let buffer = parse_run_props(xml);
+	let body = buffer.content.find("Body").unwrap();
+	let contents = buffer.content.find("Contents").unwrap();
+	assert_eq!(
+		pages(&buffer),
+		[(0, "Page 1".to_string()), (contents, "Page 2".to_string()), (body, "Page 3".to_string())]
+	);
+}
+
+/// A break partway through a paragraph starts the page at the words after it, and one closing the document starts no page at all.
+#[test]
+fn an_explicit_break_inside_a_paragraph_starts_the_page_at_the_words_after_it() {
+	let xml = r#"<document><body><p><r><t>one</t><br type="page"/><t>two</t></r></p><p><r><t>end</t><br type="page"/></r></p></body></document>"#;
+	let buffer = parse_run_props(xml);
+	assert_eq!(
+		pages(&buffer),
+		[
+			(0, "Page 1".to_string()),
+			(
+				display_len(
+					"one
+"
+				),
+				"Page 2".to_string()
+			)
+		]
+	);
+}
+
+/// A section that starts a new page does so after the paragraph that ends it, unless it is continuous.
+#[test]
+fn a_new_page_section_starts_a_page_and_a_continuous_one_does_not() {
+	let xml = r#"<document><body><p><pPr><sectPr><type val="continuous"/></sectPr></pPr><r><t>A</t></r></p><p><pPr><sectPr/></pPr><r><t>B</t></r></p><p><r><t>C</t></r></p></body></document>"#;
+	let buffer = parse_run_props(xml);
+	let c = buffer.content.find('C').unwrap();
+	assert_eq!(pages(&buffer), [(0, "Page 1".to_string()), (c, "Page 2".to_string())]);
+}
+
+/// Word records a rendered break after each explicit one, so counting both would give every explicit break two pages.
+#[test]
+fn explicit_breaks_are_not_counted_on_top_of_rendered_ones() {
+	let xml = r#"<document><body><p><r><t>One</t><br type="page"/></r></p><p><r><lastRenderedPageBreak/><t>Two</t></r></p></body></document>"#;
+	let buffer = parse_run_props(xml);
+	assert_eq!(pages(&buffer), [(0, "Page 1".to_string()), (4, "Page 2".to_string())]);
 }
