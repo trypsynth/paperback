@@ -43,7 +43,7 @@ impl Parser for CbzParser {
 		let pages = page_names(&mut archive);
 		let info = comic_info(&mut archive);
 		tracing::debug!(path = %context.file_path, pages = pages.len(), has_info = info.is_some(), "cbz structure read");
-		comic_document(&pages, info.unwrap_or_default(), &context.file_path)
+		comic_document(&pages, &info.unwrap_or_default(), &context.file_path)
 	}
 }
 
@@ -138,14 +138,14 @@ fn page_kind(kind: &str) -> Option<String> {
 /// # Errors
 ///
 /// Returns an error if the archive holds no pages at all.
-pub(super) fn comic_document(pages: &[String], info: ComicInfo, file_path: &str) -> Result<Document> {
+pub(super) fn comic_document(pages: &[String], info: &ComicInfo, file_path: &str) -> Result<Document> {
 	if pages.is_empty() {
 		// TRANSLATORS: Error shown when a comic book archive holds no page images at all
 		return Err(anyhow::anyhow!(t("This comic archive contains no pages.")));
 	}
 	let title = info.title.clone().unwrap_or_else(|| extract_title_from_path(file_path));
 	let mut document = Document::new().with_title(title).with_author(info.author.clone().unwrap_or_default());
-	let (buffer, toc_items) = build(pages, &info);
+	let (buffer, toc_items) = build(pages, info);
 	document.set_buffer(buffer);
 	document.toc_items = toc_items;
 	tracing::debug!(path = %file_path, "parsed comic archive successfully");
