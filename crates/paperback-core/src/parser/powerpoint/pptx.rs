@@ -236,7 +236,7 @@ fn traverse_for_text(
 	}
 }
 
-/// The relationship id a run links to. PowerPoint writes the link in the run's properties, `<a:r><a:rPr><a:hlinkClick r:id="..."/></a:rPr><a:t>...</a:t></a:r>`, beside its text rather than around it.
+/// The relationship id a run links to. A deck writes the link in the run's properties, `<a:r><a:rPr><a:hlinkClick r:id="..."/></a:rPr><a:t>...</a:t></a:r>`, beside its text rather than around it.
 fn run_link<'a>(run: Node<'a, '_>) -> Option<&'a str> {
 	let properties = run.children().find(|child| child.tag_name().name() == "rPr");
 	properties

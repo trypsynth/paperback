@@ -1,4 +1,4 @@
-//! What presentations share: PowerPoint, legacy PowerPoint and OpenDocument slides.
+//! What the presentation parsers share, for `.pptx`, `.ppt` and `.odp` slides alike.
 
 use crate::t;
 
