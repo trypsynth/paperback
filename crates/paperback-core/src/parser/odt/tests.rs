@@ -169,3 +169,58 @@ fn odt_span_without_style_name_falls_through_unformatted() {
 		"span without style-name must not add any formatting marker"
 	);
 }
+
+const NAMESPACES: &str = r#"xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/""#;
+
+fn walk_text(body: &str) -> (DocumentBuffer, HashMap<String, usize>) {
+	let xml = format!(
+		"<office:document-content {NAMESPACES}><office:body><office:text>{body}</office:text></office:body></office:document-content>"
+	);
+	let xml_doc = XmlDocument::parse(&xml).expect("valid xml");
+	let mut buffer = DocumentBuffer::new();
+	let mut id_positions = HashMap::new();
+	traverse(xml_doc.root(), &mut buffer, &mut id_positions, false, &HashMap::new());
+	(buffer, id_positions)
+}
+
+/// A footnote read where it sits breaks its sentence in two, so its citation stays in the sentence as a link and the note goes after the text, where the link lands.
+#[test]
+fn a_footnote_is_cited_in_its_sentence_and_written_after_the_text() {
+	let (buffer, ids) = walk_text(
+		"<text:p>Water boils<text:note text:id=\"ftn1\" text:note-class=\"footnote\"><text:note-citation>1</text:note-citation><text:note-body><text:p>At sea level.</text:p></text:note-body></text:note> at 100 degrees.</text:p><text:p>More text.</text:p>",
+	);
+	assert_eq!(buffer.content, "Water boils[1] at 100 degrees.\nMore text.\nNotes\n1. At sea level.\n");
+	let link = buffer.markers.iter().find(|m| m.mtype == MarkerType::Link).expect("citation link");
+	assert_eq!(
+		(link.position, link.text.as_str(), link.reference.as_str()),
+		(display_len("Water boils"), "[1]", "#ftn1")
+	);
+	assert_eq!(ids["ftn1"], buffer.content.find("1. At sea").unwrap());
+	assert!(buffer.markers.iter().any(|m| m.mtype == MarkerType::Heading1 && m.text == "Notes"));
+}
+
+/// Comments are review notes with an author and a date, not part of the text.
+#[test]
+fn a_comment_is_left_out_of_the_text() {
+	let (buffer, _) = walk_text(
+		"<text:p>Keep<office:annotation><dc:creator>Ann</dc:creator><dc:date>2026-10-23</dc:date><text:p>Rephrase?</text:p></office:annotation> going.<office:annotation-end/></text:p>",
+	);
+	assert_eq!(buffer.content, "Keep going.\n");
+}
+
+/// ODF writes repeated spaces, tabs and line breaks as elements, and without them words run together.
+#[test]
+fn spacing_elements_keep_words_apart() {
+	let (buffer, _) = walk_text("<text:p>Name:<text:tab/>Ann<text:line-break/>Age:<text:s text:c=\"2\"/>40</text:p>");
+	assert_eq!(buffer.content, "Name:\tAnn\nAge:  40\n");
+}
+
+/// A picture reads as its placeholder rather than its alt text running into the words around it.
+#[test]
+fn a_picture_reads_as_its_placeholder_and_can_be_found() {
+	let (buffer, _) =
+		walk_text("<text:p>See <draw:frame><draw:image/><svg:title>A map</svg:title></draw:frame> below.</text:p>");
+	assert_eq!(buffer.content, "See [Image: A map] below.\n");
+	let image = buffer.markers.iter().find(|m| m.mtype == MarkerType::Image).expect("image marker");
+	assert_eq!((image.position, image.text.as_str()), (display_len("See "), "A map"));
+}

@@ -32,7 +32,7 @@ pub(super) fn is_decorative(attribute: &dyn Fn(&str) -> Option<String>) -> bool 
 }
 
 /// `[Image: a cat]`, or `[Image]` for a picture with no description.
-pub(super) fn placeholder(is_figure: bool, description: &str) -> String {
+pub fn placeholder(is_figure: bool, description: &str) -> String {
 	// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]", and on its own, "[Image]", for a picture with none
 	let label = if is_figure { t("Figure") } else { t("Image") };
 	if description.is_empty() { format!("[{label}]") } else { format!("[{label}: {description}]") }

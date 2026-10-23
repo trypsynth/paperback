@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::{Context, Result};
-use roxmltree::{Document as XmlDocument, Node, NodeType};
+use roxmltree::{Document as XmlDocument, Node};
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, format_marker_types},
@@ -10,11 +10,14 @@ use crate::{
 		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 		odf_crypto::read_odf_content,
 		util::{
+			odf,
 			path::extract_title_from_path,
 			toc::{build_toc_from_buffer, heading_level_to_marker_type},
-			xml::{collect_element_text, read_xml_to_string},
+			xml::read_xml_to_string,
 		},
 	},
+	t,
+	util::text::display_len,
 };
 
 pub struct OdtParser;
@@ -96,87 +99,172 @@ fn build_odt_format_style_map(root: Node) -> HashMap<String, (bool, bool, bool)>
 	map
 }
 
+/// Writes the content under `root` into `buffer`, then the footnotes and endnotes it cites, each where its citation links to.
 fn traverse(
-	node: Node,
+	root: Node,
 	buffer: &mut DocumentBuffer,
 	id_positions: &mut HashMap<String, usize>,
 	render_tables_inline: bool,
 	format_style_map: &HashMap<String, (bool, bool, bool)>,
 ) {
-	if node.node_type() == NodeType::Element {
+	let mut walk = Walk { buffer, id_positions, render_tables_inline, format_style_map, notes: Vec::new() };
+	walk.node(root);
+	walk.write_notes();
+}
+
+/// What a walk of an ODT's content writes into and consults.
+struct Walk<'w, 'a, 'input> {
+	buffer: &'w mut DocumentBuffer,
+	id_positions: &'w mut HashMap<String, usize>,
+	render_tables_inline: bool,
+	format_style_map: &'w HashMap<String, (bool, bool, bool)>,
+	/// The notes cited so far, by the id their citation links to, with their number and body. Read in the middle of a sentence they interrupted it, so they are written after the text instead.
+	notes: Vec<(String, String, Option<Node<'a, 'input>>)>,
+}
+
+impl<'a, 'input> Walk<'_, 'a, 'input> {
+	fn node(&mut self, node: Node<'a, 'input>) {
+		if node.is_text() {
+			self.buffer.append(node.text().unwrap_or_default());
+			return;
+		}
+		if !node.is_element() {
+			self.children(node);
+			return;
+		}
+		if let Some(spaces) = odf::spacing(node) {
+			self.buffer.append(&spaces);
+			return;
+		}
+		if odf::is_hidden(node) {
+			return;
+		}
 		let tag_name = node.tag_name().name();
 		if tag_name == "h" {
 			let level = node.attribute("outline-level").and_then(|s| s.parse::<i32>().ok()).unwrap_or(1);
-			let heading_offset = buffer.current_position();
-			let heading_text = collect_element_text(node);
+			let heading_offset = self.buffer.current_position();
+			let heading_text = odf::plain_text(node);
 			if !heading_text.is_empty() {
-				buffer.append(&heading_text);
-				buffer.append("\n");
+				self.buffer.append(&heading_text);
+				self.buffer.append("\n");
 				let marker_type = heading_level_to_marker_type(level);
-				buffer.add_marker(Marker::new(marker_type, heading_offset).with_text(heading_text).with_level(level));
+				self.buffer
+					.add_marker(Marker::new(marker_type, heading_offset).with_text(heading_text).with_level(level));
 			}
-			return; // Don't traverse children, we already got the text
+			self.keep_notes_inside(node);
+			return;
 		}
 		if tag_name == "p" {
-			traverse_children(node, buffer, id_positions, render_tables_inline, format_style_map);
-			buffer.append("\n");
+			self.children(node);
+			self.buffer.append("\n");
 			return;
 		}
 		if tag_name == "a" {
 			if let Some(href) = node.attribute("href") {
-				let link_offset = buffer.current_position();
-				let link_text = collect_element_text(node);
+				let link_offset = self.buffer.current_position();
+				let link_text = odf::plain_text(node);
 				if !link_text.is_empty() {
-					buffer.append(&link_text);
-					buffer.add_marker(
+					self.buffer.append(&link_text);
+					self.buffer.add_marker(
 						Marker::new(MarkerType::Link, link_offset)
 							.with_text(link_text)
 							.with_reference(href.to_string()),
 					);
 				}
 			}
-			return; // Don't traverse children, we already got the text
+			self.keep_notes_inside(node);
+			return;
+		}
+		if tag_name == "note" {
+			let id = node.attribute("id").map_or_else(|| format!("note-{}", self.notes.len() + 1), str::to_string);
+			let citation = odf::note_citation(node);
+			let cited = format!("[{citation}]");
+			let offset = self.buffer.current_position();
+			self.buffer.append(&cited);
+			self.buffer
+				.add_marker(Marker::new(MarkerType::Link, offset).with_text(cited).with_reference(format!("#{id}")));
+			let body = node.children().find(|child| child.is_element() && child.tag_name().name() == "note-body");
+			self.notes.push((id, citation, body));
+			return;
 		}
 		if let Some(id) = node.attribute("id") {
-			id_positions.insert(id.to_string(), buffer.current_position());
+			self.id_positions.insert(id.to_string(), self.buffer.current_position());
+		}
+		if let Some((placeholder, description)) = odf::picture(node) {
+			let offset = self.buffer.current_position();
+			self.buffer.append(&placeholder);
+			self.buffer.add_marker(
+				Marker::new(MarkerType::Image, offset).with_text(description).with_length(display_len(&placeholder)),
+			);
+			return;
 		}
 		if tag_name == "span"
 			&& let Some(style_name) = node.attribute("style-name")
-			&& let Some(&(bold, italic, underline)) = format_style_map.get(style_name)
+			&& let Some(&(bold, italic, underline)) = self.format_style_map.get(style_name)
 			&& (bold || italic || underline)
 		{
-			let start = buffer.current_position();
-			traverse_children(node, buffer, id_positions, render_tables_inline, format_style_map);
-			let end = buffer.current_position();
+			let start = self.buffer.current_position();
+			self.children(node);
+			let end = self.buffer.current_position();
 			if end > start {
 				for kind in format_marker_types(bold, italic, underline) {
-					buffer.add_marker(Marker::new(kind, start).with_length(end - start));
+					self.buffer.add_marker(Marker::new(kind, start).with_length(end - start));
 				}
 			}
 			return;
 		}
 		if tag_name == "table" {
-			process_table(node, buffer, id_positions, render_tables_inline);
+			process_table(node, self.buffer, self.id_positions, self.render_tables_inline);
+			self.keep_notes_inside(node);
 			return;
 		}
-	} else if node.node_type() == NodeType::Text {
-		if let Some(text) = node.text() {
-			buffer.append(text);
-		}
-		return;
+		self.children(node);
 	}
-	traverse_children(node, buffer, id_positions, render_tables_inline, format_style_map);
-}
 
-fn traverse_children(
-	node: Node,
-	buffer: &mut DocumentBuffer,
-	id_positions: &mut HashMap<String, usize>,
-	render_tables_inline: bool,
-	format_style_map: &HashMap<String, (bool, bool, bool)>,
-) {
-	for child in node.children() {
-		traverse(child, buffer, id_positions, render_tables_inline, format_style_map);
+	fn children(&mut self, node: Node<'a, 'input>) {
+		for child in node.children() {
+			self.node(child);
+		}
+	}
+
+	/// Keeps the notes cited inside an element that is read as plain text, such as a heading or a table, whose citations show as text rather than links, so their bodies are still written with the rest.
+	fn keep_notes_inside(&mut self, node: Node<'a, 'input>) {
+		for note in
+			node.descendants().filter(|descendant| descendant.is_element() && descendant.tag_name().name() == "note")
+		{
+			let id = note.attribute("id").map_or_else(|| format!("note-{}", self.notes.len() + 1), str::to_string);
+			let body = note.children().find(|child| child.is_element() && child.tag_name().name() == "note-body");
+			self.notes.push((id, odf::note_citation(note), body));
+		}
+	}
+
+	/// Writes the notes under a heading of their own after the text, each where its citation's link lands. A note can cite another, so this runs until none are left.
+	fn write_notes(&mut self) {
+		if self.notes.is_empty() {
+			return;
+		}
+		if !self.buffer.content.is_empty() && !self.buffer.content.ends_with('\n') {
+			self.buffer.append("\n");
+		}
+		// TRANSLATORS: Heading over the footnotes and endnotes of a document, written after its text
+		let heading = t("Notes");
+		let heading_offset = self.buffer.current_position();
+		self.buffer.append(&heading);
+		self.buffer.append("\n");
+		self.buffer
+			.add_marker(Marker::new(heading_level_to_marker_type(1), heading_offset).with_text(heading).with_level(1));
+		while !self.notes.is_empty() {
+			for (id, citation, body) in std::mem::take(&mut self.notes) {
+				self.id_positions.insert(id, self.buffer.current_position());
+				self.buffer.append(&format!("{citation}. "));
+				if let Some(body) = body {
+					self.children(body);
+				}
+				if !self.buffer.content.ends_with('\n') {
+					self.buffer.append("\n");
+				}
+			}
+		}
 	}
 }
 
@@ -208,7 +296,7 @@ fn process_table(
 			let mut cells: Vec<String> = Vec::new();
 			for cell in child.children() {
 				if cell.is_element() && cell.tag_name().name() == "table-cell" {
-					let cell_text = collect_element_text(cell);
+					let cell_text = odf::plain_text(cell);
 					if !cell_text.trim().is_empty() {
 						has_content = true;
 					}

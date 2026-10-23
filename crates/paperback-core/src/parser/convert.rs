@@ -6,7 +6,7 @@
 pub(crate) mod block_elements;
 mod format_spans;
 mod formula;
-mod image_text;
+pub(crate) mod image_text;
 mod line_builder;
 mod list_style;
 
