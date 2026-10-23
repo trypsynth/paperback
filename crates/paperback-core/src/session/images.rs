@@ -19,7 +19,7 @@ use zip::ZipArchive;
 use super::DocumentSession;
 use crate::{
 	document::MarkerType,
-	parser::{cbz, fb2, is_data_uri, is_external_url},
+	parser::{cbz, fb2, is_data_uri, is_external_url, mobi},
 	t,
 	util::{
 		text::url_decode,
@@ -86,6 +86,16 @@ impl DocumentSession {
 	fn image_bytes(&self, source: &str) -> Result<Vec<u8>> {
 		if is_data_uri(source) {
 			return decode_data_uri(source);
+		}
+		// A MOBI book's picture is a record of the file, which its parser named by number.
+		if let Some(record) = source.strip_prefix("mobi-record:") {
+			let index: usize =
+				record.split('.').next().unwrap_or_default().parse().context("malformed mobi picture reference")?;
+			let data = fs::read(&self.file_path)?;
+			let offsets = mobi::pictures::record_offsets(&data);
+			return mobi::pictures::record_bytes(&data, &offsets, index)
+				.map(<[u8]>::to_vec)
+				.context("the book has no such picture");
 		}
 		// A PDF names its pictures by where their objects sit rather than by a file path, so the reference itself says which reader they need and the document's extension cannot.
 		if source.starts_with("pdf:") {
@@ -162,6 +172,9 @@ fn image_file_name(source: &str) -> String {
 	if source.starts_with("pdf:") {
 		return pdf_image_file_name(source, &fallback);
 	}
+	if let Some(record) = source.strip_prefix("mobi-record:") {
+		return format!("{fallback} {record}");
+	}
 	if is_data_uri(source) {
 		let media_type = source[5..].split([';', ',']).next().unwrap_or_default().to_ascii_lowercase();
 		let subtype = media_type.strip_prefix("image/").unwrap_or_default().split('+').next().unwrap_or_default();
@@ -202,6 +215,7 @@ mod tests {
 	#[case("data:image/svg+xml,%3Csvg%3E", "image.svg")]
 	#[case("data:;base64,AAAA", "image")]
 	#[case("pdf:2:0/1", "image 3 0-1.png")]
+	#[case("mobi-record:57.jpg", "image 57.jpg")]
 	fn a_picture_is_offered_under_its_own_name(#[case] source: &str, #[case] expected: &str) {
 		assert_eq!(image_file_name(source), expected);
 	}
