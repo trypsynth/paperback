@@ -32,8 +32,9 @@ impl Parser for OdpParser {
 			anyhow::bail!(t("ODP file does not contain any pages"));
 		}
 		build_slides(&pages, &mut buffer);
-		let title = extract_title_from_path(&context.file_path);
-		let mut document = Document::new().with_title(title);
+		let (title, author) = odf::packaged_metadata(&context.file_path, context.password.as_deref());
+		let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
+		let mut document = Document::new().with_title(title).with_author(author.unwrap_or_default());
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		tracing::debug!(path = %context.file_path, "parsed odp file successfully");
@@ -99,8 +100,9 @@ impl Parser for FodpParser {
 			anyhow::bail!(t("FODP file does not contain any pages"));
 		}
 		build_slides(&pages, &mut buffer);
-		let title = extract_title_from_path(&context.file_path);
-		let mut document = Document::new().with_title(title);
+		let (title, author) = odf::metadata(&xml_doc);
+		let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
+		let mut document = Document::new().with_title(title).with_author(author.unwrap_or_default());
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		tracing::debug!(path = %context.file_path, "parsed fodp file successfully");

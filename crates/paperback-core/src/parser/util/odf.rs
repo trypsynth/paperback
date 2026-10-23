@@ -4,7 +4,7 @@ use std::fmt::Write as _;
 
 use roxmltree::Node;
 
-use crate::parser::convert::image_text;
+use crate::parser::{convert::image_text, odf_crypto::read_odf_content};
 
 /// The text a spacing element stands for: `<text:s text:c="3"/>` for three spaces, a tab, or a line break. ODF writes runs of spaces this way because XML collapses them, so without it words run together.
 #[must_use]
@@ -29,6 +29,35 @@ pub fn is_hidden(node: Node) -> bool {
 	let name = node.tag_name().name();
 	let is_svg = node.tag_name().namespace().is_some_and(|namespace| namespace.contains("svg"));
 	(is_svg && matches!(name, "title" | "desc")) || matches!(name, "annotation" | "annotation-end")
+}
+
+/// A document's own title and author, from its `office:meta`: the title, and whoever created the document, or failing that whoever last saved it. Each is `None` when the document leaves it out. Looked for only inside the metadata, since a picture's alt text and a title field in the text are also named `title`.
+#[must_use]
+pub fn metadata(document: &roxmltree::Document) -> (Option<String>, Option<String>) {
+	let Some(meta) = document.descendants().find(|node| {
+		node.tag_name().name() == "meta"
+			&& node.tag_name().namespace().is_some_and(|namespace| namespace.contains(":office:"))
+	}) else {
+		return (None, None);
+	};
+	let field = |name: &str| {
+		meta.children()
+			.find(|child| child.tag_name().name() == name)
+			.and_then(|child| child.text())
+			.map(str::trim)
+			.filter(|text| !text.is_empty())
+			.map(str::to_string)
+	};
+	(field("title"), field("initial-creator").or_else(|| field("creator")))
+}
+
+/// [`metadata`] from the `meta.xml` of a packaged file. Nothing when the file has none or it will not read.
+#[must_use]
+pub fn packaged_metadata(path: &str, password: Option<&str>) -> (Option<String>, Option<String>) {
+	read_odf_content(path, "meta.xml", password)
+		.ok()
+		.and_then(|xml| roxmltree::Document::parse(&xml).ok().map(|document| metadata(&document)))
+		.unwrap_or_default()
 }
 
 /// The number a footnote or endnote shows where it is cited.
@@ -121,5 +150,18 @@ mod tests {
 	#[test]
 	fn a_title_field_is_text() {
 		assert_eq!(text_of("By <text:title>My Report</text:title>"), "By My Report");
+	}
+
+	#[test]
+	fn metadata_gives_the_title_and_creator_and_ignores_titles_elsewhere() {
+		let xml = format!(
+			"<office:document {NAMESPACES} xmlns:meta=\"urn:oasis:names:tc:opendocument:xmlns:meta:1.0\"><office:meta><dc:title>Field Notes</dc:title><meta:initial-creator>Ann</meta:initial-creator><dc:creator>Bob</dc:creator></office:meta><office:body><svg:title>Not this</svg:title></office:body></office:document>"
+		);
+		let document = Document::parse(&xml).unwrap();
+		assert_eq!(metadata(&document), (Some("Field Notes".into()), Some("Ann".into())));
+		let bare = format!(
+			"<office:document {NAMESPACES}><office:body><svg:title>Not this</svg:title></office:body></office:document>"
+		);
+		assert_eq!(metadata(&Document::parse(&bare).unwrap()), (None, None));
 	}
 }

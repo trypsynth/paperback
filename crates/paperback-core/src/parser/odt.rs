@@ -33,9 +33,10 @@ impl Parser for OdtParser {
 		let mut buffer = DocumentBuffer::new();
 		let mut id_positions = HashMap::new();
 		traverse(xml_doc.root(), &mut buffer, &mut id_positions, context.render_tables_inline, &format_style_map);
-		let title = extract_title_from_path(&context.file_path);
+		let (title, author) = odf::packaged_metadata(&context.file_path, context.password.as_deref());
+		let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
 		let toc_items = build_toc_from_buffer(&buffer);
-		let mut document = Document::new().with_title(title);
+		let mut document = Document::new().with_title(title).with_author(author.unwrap_or_default());
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		document.toc_items = toc_items;
@@ -56,9 +57,10 @@ impl Parser for FodtParser {
 		let mut buffer = DocumentBuffer::new();
 		let mut id_positions = HashMap::new();
 		traverse(xml_doc.root(), &mut buffer, &mut id_positions, context.render_tables_inline, &format_style_map);
-		let title = extract_title_from_path(&context.file_path);
+		let (title, author) = odf::metadata(&xml_doc);
+		let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
 		let toc_items = build_toc_from_buffer(&buffer);
-		let mut document = Document::new().with_title(title);
+		let mut document = Document::new().with_title(title).with_author(author.unwrap_or_default());
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		document.toc_items = toc_items;
