@@ -491,6 +491,12 @@ impl TextObject {
 		self.rect
 	}
 
+	/// pdfium's `CFX_FloatRect::Inflate`, for a stroked object's box.
+	pub(super) fn inflate(&mut self, by: f32) {
+		let rect = self.rect.normalized();
+		self.rect = FRect::new(rect.left - by, rect.bottom - by, rect.right + by, rect.top + by);
+	}
+
 	/// pdfium's `CPDF_TextObject::GetCharWidth`.
 	fn char_width(&self, code: u32) -> f32 {
 		self.font.char_width(code) as f32 * self.font_size / 1000.0

@@ -406,15 +406,31 @@ impl<'a> Device<'a> for Collector {
 		);
 		let repeated = matches!(draw_mode, DrawMode::Stroke(_)) && self.last_run == Some(identity);
 		self.last_run = Some(identity);
+		// pdfium widens a stroked text object's box by half the line width, which is what keeps a stroked space, as a faked bold sets one, from reading as an empty object and being dropped.
+		let stroke = match draw_mode {
+			DrawMode::Stroke(stroke) | DrawMode::FillAndStroke(_, stroke) => Some(stroke.line_width / 2.0),
+			_ => None,
+		};
 		if repeated {
+			if let (Some(half), Some(text_object)) = (stroke, self.text_objects.last_mut()) {
+				text_object.inflate(half);
+				let rect = text_object.rect();
+				if let Some(object) = self.objects.get_mut(text_object.object) {
+					object.bounds =
+						Some(Bounds { left: rect.left, bottom: rect.bottom, right: rect.right, top: rect.top });
+				}
+			}
 			return;
 		}
 		let marks = self.marks();
 		let object = self.objects.len();
-		let Some(text_object) = TextObject::from_run(run, props.transform, marks.clone(), object, &mut self.fonts)
+		let Some(mut text_object) = TextObject::from_run(run, props.transform, marks.clone(), object, &mut self.fonts)
 		else {
 			return;
 		};
+		if let Some(half) = stroke {
+			text_object.inflate(half);
+		}
 		let rect = text_object.rect();
 		let bounds = Bounds { left: rect.left, bottom: rect.bottom, right: rect.right, top: rect.top };
 		self.objects.push(ObjectData { kind: ObjectKind::Other, bounds: Some(bounds), marks, image: None });
