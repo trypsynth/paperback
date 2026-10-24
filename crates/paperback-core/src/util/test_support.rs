@@ -6,6 +6,7 @@
 
 use std::{
 	env, fs,
+	ops::Deref,
 	path::{Path, PathBuf},
 	process,
 	sync::atomic::{AtomicU64, Ordering},
@@ -57,6 +58,20 @@ impl TempDir {
 	#[must_use]
 	pub fn join_str(&self, name: &str) -> String {
 		self.path.join(name).to_string_lossy().into_owned()
+	}
+}
+
+impl Deref for TempDir {
+	type Target = Path;
+
+	fn deref(&self) -> &Path {
+		&self.path
+	}
+}
+
+impl AsRef<Path> for TempDir {
+	fn as_ref(&self) -> &Path {
+		&self.path
 	}
 }
 

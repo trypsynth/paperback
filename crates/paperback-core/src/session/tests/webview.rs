@@ -1,12 +1,11 @@
 use std::{
-	env,
 	fs::{self, File},
 	io::Write,
 	path::{Path, PathBuf},
-	time::{SystemTime, UNIX_EPOCH},
 };
 
 use super::*;
+use crate::util::test_support::TempDir;
 
 #[test]
 fn webview_target_path_returns_none_for_missing_markdown_file() {
@@ -27,22 +26,19 @@ fn webview_target_path_returns_none_for_missing_markdown_file() {
 // the web view now gets.
 #[test]
 fn webview_target_path_renders_a_format_without_markup_as_html() {
-	let dir = unique_temp_dir();
-	fs::create_dir_all(&dir).unwrap();
+	let dir = TempDir::new("webview");
 	let session = session_with_path("book.mobi");
 	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
 	assert!(target.path.ends_with("document.html"), "{}", target.path);
 	let html = fs::read_to_string(&target.path).unwrap();
 	assert!(html.contains("<h1>"), "headings are rendered: {html}");
 	assert!(html.contains("line1"), "content is rendered: {html}");
-	let _ = fs::remove_dir_all(&dir);
 }
 
 // The rendering is all the web view has, so the reading position has to be an anchor in it.
 #[test]
 fn webview_target_path_anchors_the_reading_position_in_the_rendering() {
-	let dir = unique_temp_dir();
-	fs::create_dir_all(&dir).unwrap();
+	let dir = TempDir::new("webview");
 	let mut session = session_with_path("book.mobi");
 	let mut document = Document::new();
 	document.set_buffer(DocumentBuffer::with_content(
@@ -59,26 +55,25 @@ second line
 	let anchor = html.find(r#"id="pos-11""#).unwrap_or_else(|| panic!("no anchor in {html}"));
 	let line = html.find("second line").unwrap_or_else(|| panic!("no second line in {html}"));
 	assert!(anchor < line, "the anchor opens the line it marks: {html}");
-	let _ = fs::remove_dir_all(&dir);
 }
 
 // An audio book has no text to render, and an empty page in a web view is worse than being
 // told there is nothing to show.
 #[test]
 fn webview_target_path_returns_none_for_a_document_with_no_text() {
-	let dir = unique_temp_dir();
+	let dir = TempDir::new("webview");
+	let out = dir.join("view");
 	let mut session = session_with_path("book.m4b");
 	session.handle = DocumentHandle::new(Document::new());
-	assert!(session.webview_target_path(0, &dir.to_string_lossy()).is_none());
-	assert!(!dir.exists(), "nothing is written for a document with no text");
+	assert!(session.webview_target_path(0, &out.to_string_lossy()).is_none());
+	assert!(!out.exists(), "nothing is written for a document with no text");
 }
 
 // #861: a book of tens of millions of characters rendered whole locks the machine up while the
 // web view lays it out, so a book past the window size gets the part around the reading position.
 #[test]
 fn webview_target_path_renders_only_a_window_of_a_very_long_document() {
-	let dir = unique_temp_dir();
-	fs::create_dir_all(&dir).unwrap();
+	let dir = TempDir::new("webview");
 	let mut session = session_with_path("book.mobi");
 	let mut content = String::new();
 	for i in 0..60_000 {
@@ -96,19 +91,16 @@ fn webview_target_path_renders_only_a_window_of_a_very_long_document() {
 	assert!(html.contains(&format!(r#"id="pos-{middle}""#)), "the reading position is anchored");
 	assert!(!html.contains("paragraph number 0 "), "the far start of the book is left out");
 	assert!(!html.contains("paragraph number 59999 "), "the far end of the book is left out");
-	let _ = fs::remove_dir_all(&dir);
 }
 
 // A book that fits is still rendered whole, so nothing changes for an ordinary one.
 #[test]
 fn webview_target_path_renders_a_short_document_whole() {
-	let dir = unique_temp_dir();
-	fs::create_dir_all(&dir).unwrap();
+	let dir = TempDir::new("webview");
 	let session = session_with_path("book.mobi");
 	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
 	let html = fs::read_to_string(&target.path).unwrap();
 	assert_eq!(html, crate::export::html::render_with_anchor(&session.handle, Some(0)));
-	let _ = fs::remove_dir_all(&dir);
 }
 
 #[test]
@@ -137,11 +129,6 @@ fn session_with_path(file_path: &str) -> DocumentSession {
 	}
 }
 
-fn unique_temp_dir() -> PathBuf {
-	let nanos = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
-	env::temp_dir().join(format!("paperback_source_test_{nanos}"))
-}
-
 #[test]
 fn source_view_available_matches_text_source_formats() {
 	assert!(session_with_path("book.epub").source_view_available());
@@ -157,19 +144,16 @@ fn source_view_available_matches_text_source_formats() {
 
 #[test]
 fn view_source_returns_none_for_unsupported_format() {
-	let dir = unique_temp_dir();
+	let dir = TempDir::new("webview");
 	let src = dir.join("doc.pdf");
-	fs::create_dir_all(&dir).unwrap();
 	fs::write(&src, b"%PDF-1.7").unwrap();
 	let session = session_with_path(&src.to_string_lossy());
 	assert!(session.view_source(0, &dir.to_string_lossy()).is_none());
-	let _ = fs::remove_dir_all(&dir);
 }
 
 #[test]
 fn view_source_writes_html_source_and_maps_caret_forward() {
-	let dir = unique_temp_dir();
-	fs::create_dir_all(&dir).unwrap();
+	let dir = TempDir::new("webview");
 	let html = "<html><body><p id=\"a\">Alpha</p><p id=\"b\">Bravo</p></body></html>";
 	let src = dir.join("page.html");
 	fs::write(&src, html.as_bytes()).unwrap();
@@ -183,13 +167,11 @@ fn view_source_writes_html_source_and_maps_caret_forward() {
 	assert!(at_bravo.caret > at_start.caret);
 	let tail: String = html.chars().skip(usize::try_from(at_bravo.caret).unwrap()).collect();
 	assert!(tail.contains("Bravo"), "caret should land at/before the second paragraph: {tail}");
-	let _ = fs::remove_dir_all(&dir);
 }
 
 #[test]
 fn view_source_for_markdown_maps_caret_to_current_block() {
-	let dir = unique_temp_dir();
-	fs::create_dir_all(&dir).unwrap();
+	let dir = TempDir::new("webview");
 	let md = "# Title\n\nFirst paragraph.\n\nSecond paragraph.\n";
 	let src = dir.join("notes.md");
 	fs::write(&src, md.as_bytes()).unwrap();
@@ -204,7 +186,6 @@ fn view_source_for_markdown_maps_caret_to_current_block() {
 	// Caret lands at the start of the second paragraph in the raw Markdown.
 	let tail: String = md.chars().skip(usize::try_from(view.caret).unwrap()).collect();
 	assert!(tail.starts_with("Second paragraph."), "caret should be at the current block: {tail}");
-	let _ = fs::remove_dir_all(&dir);
 }
 
 #[test]
@@ -284,9 +265,7 @@ fn build_epub_with_relative_image(dir: &Path) -> PathBuf {
 
 #[test]
 fn webview_target_path_extracts_sibling_image_resources() {
-	let temp_root = env::temp_dir()
-		.join(format!("paperback_webview_test_{}", SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()));
-	fs::create_dir_all(&temp_root).unwrap();
+	let temp_root = TempDir::new("webview_test");
 	let epub_path = build_epub_with_relative_image(&temp_root);
 	let session =
 		DocumentSession::new(&epub_path.to_string_lossy(), "", "", ParseSettings::default()).expect("parse test epub");
@@ -297,7 +276,6 @@ fn webview_target_path_extracts_sibling_image_resources() {
 	// extracted alongside it at the same relative location.
 	let image_path = Path::new(&target.path).parent().unwrap().parent().unwrap().join("Images/cover.jpg");
 	assert!(image_path.exists(), "expected image extracted at {}", image_path.display());
-	fs::remove_dir_all(&temp_root).ok();
 }
 
 /// Builds a minimal real EPUB whose first spine section is a table of contents
@@ -363,9 +341,7 @@ fn build_epub_with_linked_sections(dir: &Path) -> PathBuf {
 /// that link in the web view fails with ERR_FILE_NOT_FOUND (issue #719).
 #[test]
 fn webview_target_path_extracts_linked_sibling_sections() {
-	let temp_root = env::temp_dir()
-		.join(format!("paperback_webview_toc_{}", SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()));
-	fs::create_dir_all(&temp_root).unwrap();
+	let temp_root = TempDir::new("webview_toc");
 	let epub_path = build_epub_with_linked_sections(&temp_root);
 	let session =
 		DocumentSession::new(&epub_path.to_string_lossy(), "", "", ParseSettings::default()).expect("parse test epub");
@@ -374,7 +350,6 @@ fn webview_target_path_extracts_linked_sibling_sections() {
 	assert!(toc_content.contains("chapter1.xhtml"), "expected the toc to link to the chapter");
 	let linked = Path::new(&target.path).parent().unwrap().join("chapter1.xhtml");
 	assert!(linked.exists(), "expected linked section extracted at {}", linked.display());
-	fs::remove_dir_all(&temp_root).ok();
 }
 
 /// <https://github.com/trypsynth/paperback/issues/873>: the reader shows a document whole up to
@@ -394,8 +369,7 @@ fn a_document_the_reader_shows_whole_is_not_sliced_by_the_web_view() {
 		"the fixture has to sit in the band the reader shows whole, got {len}"
 	);
 
-	let dir = unique_temp_dir();
-	fs::create_dir_all(&dir).unwrap();
+	let dir = TempDir::new("webview");
 	let mut session = session_with_content(&content);
 	session.file_path = "book.mobi".to_string();
 	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
@@ -406,7 +380,6 @@ fn a_document_the_reader_shows_whole_is_not_sliced_by_the_web_view() {
 		!html.contains("This view shows the part of the document you are reading."),
 		"a whole document must not announce itself as partial"
 	);
-	let _ = fs::remove_dir_all(&dir);
 }
 
 /// Past the threshold the web view does still slice, which is the behaviour the cap exists for.
@@ -418,13 +391,11 @@ fn a_document_past_the_threshold_is_still_sliced() {
 	let len = i64::try_from(content.chars().count()).unwrap();
 	assert!(len > WHOLE_DOCUMENT_DISPLAY_LEN, "the fixture has to outrun the threshold, got {len}");
 
-	let dir = unique_temp_dir();
-	fs::create_dir_all(&dir).unwrap();
+	let dir = TempDir::new("webview");
 	let mut session = session_with_content(&content);
 	session.file_path = "book.mobi".to_string();
 	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
 	let html = fs::read_to_string(&target.path).unwrap();
 
 	assert!(html.contains("This view shows the part of the document you are reading."), "a sliced document says so");
-	let _ = fs::remove_dir_all(&dir);
 }
