@@ -74,12 +74,13 @@ jobs:
       run: |
         $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
         cargo release
-    - name: Check wxWidgets translations were embedded
+    # The app embeds wxWidgets' catalogs deflated, so the binary has no plain text to look for.
+    # It embeds whatever this tree holds, and an empty tree is how they went missing (#958).
+    - name: Check wxWidgets translations were built
       shell: bash
       run: |
-        exe=target/release/paperback${{ runner.os == 'Windows' && '.exe' || '' }}
-        if ! grep -aq "Project-Id-Version: wxWidgets" "$exe"; then
-          echo "::error::$exe embeds no wxWidgets catalogs, so stock wx strings would ship untranslated"
+        if ! compgen -G "target/release/wxdragon_sys_cmake_build/share/locale/de/LC_MESSAGES/wxstd*.mo" > /dev/null; then
+          echo "::error::wxWidgets built no catalogs to embed, so stock wx strings would ship untranslated"
           exit 1
         fi
     - name: Sign artifacts
@@ -163,12 +164,13 @@ jobs:
       run: |
         $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
         cargo release
-    - name: Check wxWidgets translations were embedded
+    # The app embeds wxWidgets' catalogs deflated, so the binary has no plain text to look for.
+    # It embeds whatever this tree holds, and an empty tree is how they went missing (#958).
+    - name: Check wxWidgets translations were built
       shell: bash
       run: |
-        exe=target/release/paperback${{ runner.os == 'Windows' && '.exe' || '' }}
-        if ! grep -aq "Project-Id-Version: wxWidgets" "$exe"; then
-          echo "::error::$exe embeds no wxWidgets catalogs, so stock wx strings would ship untranslated"
+        if ! compgen -G "target/release/wxdragon_sys_cmake_build/share/locale/de/LC_MESSAGES/wxstd*.mo" > /dev/null; then
+          echo "::error::wxWidgets built no catalogs to embed, so stock wx strings would ship untranslated"
           exit 1
         fi
     - name: Sign artifacts
@@ -241,12 +243,13 @@ jobs:
         chmod +x /usr/local/bin/appimagetool
     - name: Build
       run: cargo release
-    - name: Check wxWidgets translations were embedded
+    # The app embeds wxWidgets' catalogs deflated, so the binary has no plain text to look for.
+    # It embeds whatever this tree holds, and an empty tree is how they went missing (#958).
+    - name: Check wxWidgets translations were built
       shell: bash
       run: |
-        exe=target/release/paperback${{ runner.os == 'Windows' && '.exe' || '' }}
-        if ! grep -aq "Project-Id-Version: wxWidgets" "$exe"; then
-          echo "::error::$exe embeds no wxWidgets catalogs, so stock wx strings would ship untranslated"
+        if ! compgen -G "target/release/wxdragon_sys_cmake_build/share/locale/de/LC_MESSAGES/wxstd*.mo" > /dev/null; then
+          echo "::error::wxWidgets built no catalogs to embed, so stock wx strings would ship untranslated"
           exit 1
         fi
     - name: Sign artifacts
@@ -318,12 +321,13 @@ jobs:
         chmod +x /usr/local/bin/appimagetool
     - name: Build
       run: cargo release
-    - name: Check wxWidgets translations were embedded
+    # The app embeds wxWidgets' catalogs deflated, so the binary has no plain text to look for.
+    # It embeds whatever this tree holds, and an empty tree is how they went missing (#958).
+    - name: Check wxWidgets translations were built
       shell: bash
       run: |
-        exe=target/release/paperback${{ runner.os == 'Windows' && '.exe' || '' }}
-        if ! grep -aq "Project-Id-Version: wxWidgets" "$exe"; then
-          echo "::error::$exe embeds no wxWidgets catalogs, so stock wx strings would ship untranslated"
+        if ! compgen -G "target/release/wxdragon_sys_cmake_build/share/locale/de/LC_MESSAGES/wxstd*.mo" > /dev/null; then
+          echo "::error::wxWidgets built no catalogs to embed, so stock wx strings would ship untranslated"
           exit 1
         fi
     - name: Sign artifacts
@@ -525,14 +529,16 @@ jobs:
       env:
         MACOSX_DEPLOYMENT_TARGET: "15.0"
       run: cargo release
-    - name: Check wxWidgets translations were embedded
+    # Why this checks the catalog tree and not the binary: see build-windows.
+    - name: Check wxWidgets translations were built
       shell: bash
       run: |
-        exe=target/release/Paperback.app/Contents/MacOS/paperback
-        if ! grep -aq "Project-Id-Version: wxWidgets" "$exe"; then
-          echo "::error::$exe embeds no wxWidgets catalogs, so stock wx strings would ship untranslated"
-          exit 1
-        fi
+        for target in aarch64-apple-darwin x86_64-apple-darwin; do
+          if ! compgen -G "target/$target/release/wxdragon_sys_cmake_build/share/locale/de/LC_MESSAGES/wxstd*.mo" > /dev/null; then
+            echo "::error::wxWidgets built no catalogs to embed for $target, so stock wx strings would ship untranslated"
+            exit 1
+          fi
+        done
     # No Intel Mac runs this job, so Rosetta is the only check that the Intel half of the
     # universal binaries starts at all.
     - name: Check the app is universal
