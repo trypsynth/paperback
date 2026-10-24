@@ -9,8 +9,6 @@ mod installer;
 mod macos;
 #[path = "build/paths.rs"]
 mod paths;
-#[path = "build/pdfium.rs"]
-mod pdfium;
 #[path = "build/translations.rs"]
 mod translations;
 #[path = "build/version.rs"]
@@ -29,20 +27,15 @@ fn main() {
 	let translators = PathBuf::from(env::var("OUT_DIR").unwrap_or_default()).join("translators.rs");
 	patois_build::credits::write_translators_module(Path::new("../../po"), &translators)
 		.expect("writing the translator credits");
-	pdfium::copy_dll();
 	docs::build();
 	installer::configure();
 	let target = env::var("TARGET").unwrap_or_default();
 	version::embed_commit_hash();
 	if target.contains("apple") {
-		pdfium::copy_dylib();
 		macos::generate_app_bundle();
 	}
 	if target.contains("windows") {
 		windows::embed_app_manifest();
 		windows::embed_version_info();
-	}
-	if target.contains("linux") {
-		pdfium::copy_so();
 	}
 }

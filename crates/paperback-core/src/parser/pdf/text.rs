@@ -11,7 +11,7 @@ use std::{cell::Cell, cmp::Ordering, collections::HashSet};
 
 use crate::{
 	parser::util::bidi,
-	pdfium::{CharBox, PdfTextPage},
+	pdf_engine::{CharBox, PdfTextPage},
 };
 
 pub(super) fn sanitize_pdf_text(input: &str) -> String {
@@ -159,7 +159,7 @@ const NO_ADVANCE_RATIO: f64 = 0.25;
 /// underneath that glyph rather than after it. The same page measured 58% at most for real
 /// spaces (an `f` overhangs the space after it) and 92% at least for the spurious ones.
 const SWALLOWED_RATIO: f64 = 0.8;
-/// How many of a page's spaces are measured to decide whether a covered space means anything there. Enough to see the font's habit, few enough that the pdfium calls stay a fixed cost per page.
+/// How many of a page's spaces are measured to decide whether a covered space means anything there. Enough to see the font's habit, few enough that the lookups stay a fixed cost per page.
 const COVER_SAMPLE: usize = 64;
 
 /// Whether a U+0020 in the text layer renders as no space at all, judged from where pdfium puts
@@ -218,7 +218,7 @@ pub(super) fn char_top(text_page: &PdfTextPage, index: i32) -> Option<f64> {
 	text_page.char_box(index).map(|boxed| boxed.top)
 }
 
-/// [`space_is_invisible`] for the spaces of one page, fetching only the geometry each test actually needs. Costs three or four pdfium calls per space character and none at all for anything else, so a page pays for it in proportion to its spaces rather than its length - the per-character cost that #747 had to undo.
+/// [`space_is_invisible`] for the spaces of one page, fetching only the geometry each test actually needs. Costs three or four lookups per space character and none at all for anything else, so a page pays for it in proportion to its spaces rather than its length - the per-character cost that #747 had to undo.
 pub(super) struct SpaceFilter {
 	char_count: i32,
 	/// [`covering_hides`] for this page, measured the first time a covered space turns up, so a page without one never pays for it.
@@ -377,7 +377,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32, evide
 /// its images and sets its text in the same coordinates and says nothing about the order of the
 /// two. The first character is measured rather than the tallest, because a couple of points
 /// either way decides nothing about which line an image falls between and every character
-/// measured costs another call into pdfium.
+/// measured costs another lookup.
 /// The top and bottom edges of a line.
 ///
 /// The top comes from the first character, because a couple of points either way decides

@@ -23,7 +23,7 @@ use super::{
 /// How much of the page one image can cover and still be a picture on the page rather than the page itself. A scanned book with an OCR text layer draws each sheet as one image under its invisible text, and announcing that put an "[Image]" with nothing behind it on every page (#1046).
 pub const PAGE_IMAGE_COVERAGE: f64 = 0.9;
 
-/// How far pdfium's backend follows form `XObject`s into each other. hayro draws a form's contents as if they were the page's own, so no object here is ever a form and this only exists to keep the two backends' surfaces the same.
+/// How far the parser follows form `XObject`s into each other. hayro already draws a form's contents as the page's own objects, so no object here is ever a form and the parser never gets that far.
 pub const MAX_FORM_DEPTH: u32 = 8;
 
 /// Shortest side, in PDF user units, an image must have to be worth a line of its own. A page laid out from HTML draws its spacers and its hairline rules as images a fraction of a point across.
@@ -72,7 +72,7 @@ impl<'doc> PdfPage<'doc> {
 		self.height
 	}
 
-	/// The page's text layer. Always there, but kept an `Option` because pdfium's can fail to load and the parser is written for both.
+	/// The page's text layer. Always there; an `Option` because the parser is written for a page whose text cannot be read.
 	#[allow(clippy::unnecessary_wraps)]
 	pub fn text(&self) -> Option<PdfTextPage<'_>> {
 		Some(PdfTextPage::of(self))
@@ -264,7 +264,7 @@ pub struct PageBitmap {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ObjectKind {
 	Image,
-	/// A form `XObject`. hayro draws a form's contents in its place, so no object is ever one, but the parser matches on it.
+	/// A form `XObject`. hayro draws a form's contents in its place, so no object is ever one, but the parser's walk through forms matches on it.
 	#[allow(dead_code)]
 	Form,
 	Other,

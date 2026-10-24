@@ -1,4 +1,4 @@
-//! Mapping pdfium's document-open errors to user-facing messages, and reading sanitized
+//! Mapping the PDF engine's document-open errors to user-facing messages, and reading sanitized
 //! metadata fields (title/author) off an opened document.
 
 use anyhow::anyhow;
@@ -6,7 +6,7 @@ use anyhow::anyhow;
 use super::text::sanitize_pdf_text;
 use crate::{
 	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
-	pdfium::{PdfDocument, PdfError},
+	pdf_engine::{PdfDocument, PdfError},
 	t,
 	util::text::trim_string,
 };

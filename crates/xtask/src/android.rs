@@ -2,7 +2,7 @@ use std::{env, error::Error, process::Command};
 
 use crate::{
 	print_help,
-	workspace::{build_host_ffi_library, fetch_pdfium, project_root},
+	workspace::{build_host_ffi_library, project_root},
 };
 
 pub fn android() -> Result<(), Box<dyn Error>> {
@@ -23,10 +23,6 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 		}
 	}
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
-	let jni_libs = project_root().join("android/app/src/main/jniLibs");
-	fetch_pdfium(pdfium_fetch::ANDROID_ARM64, "libpdfium.so", &jni_libs.join("arm64-v8a/libpdfium.so"))?;
-	fetch_pdfium(pdfium_fetch::ANDROID_ARM, "libpdfium.so", &jni_libs.join("armeabi-v7a/libpdfium.so"))?;
-	fetch_pdfium(pdfium_fetch::ANDROID_X64, "libpdfium.so", &jni_libs.join("x86_64/libpdfium.so"))?;
 	println!("Generating Kotlin bindings via uniffi-bindgen...");
 	let ffi_library = build_host_ffi_library(&cargo)?.to_string_lossy().into_owned();
 	let status = Command::new(&cargo)

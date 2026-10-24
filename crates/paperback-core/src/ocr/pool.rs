@@ -1,6 +1,6 @@
 //! Reading a document's pages on several threads at once.
 //!
-//! Recognizing scales across threads but rasterizing does not, because `pdfium-render`'s `thread_safe` feature serializes every call through one process-wide lock. So each worker both rasterizes and reads its own pages with a renderer of its own, and one worker's rasterizing overlaps another's reading.
+//! Each worker both rasterizes and reads its own pages with a renderer of its own, so rasterizing and recognizing both run on every worker at once.
 //!
 //! Pages are handed back in page order however they finish, because the app refreshes the reader's window and counts progress on the assumption that pages land in ascending order.
 
@@ -16,7 +16,7 @@ use std::{
 
 use crate::ocr::PageRenderer;
 
-/// Past this, pages queue behind pdfium's lock, so more threads buy memory and contention rather than throughput.
+/// Every worker holds a page drawn at OCR resolution, tens of megabytes each, so past this more threads buy memory pressure rather than throughput.
 const MAX_WORKERS: usize = 4;
 
 /// One core is left free so the UI and the screen reader stay responsive while the pages are read.

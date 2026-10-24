@@ -3,7 +3,7 @@
 //! A PDF says where every glyph sits and nothing about what any of it means, so where one
 //! paragraph ends and the next begins has to be worked out from how the page is set: the
 //! clear space above a line, the size it is set in, the face it is set in, and how far the
-//! line before it fell short of the measure. Nothing here talks to pdfium; it all reads
+//! line before it fell short of the measure. Nothing here talks to the PDF engine; it all reads
 //! [`Line`]s that [`super::text`] has already measured.
 
 use std::mem;

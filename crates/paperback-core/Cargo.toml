@@ -25,15 +25,15 @@ cfb = "0.15.0"
 chardetng = "1.0.0"
 ego-tree = "0.11.1"
 flate2 = "1.1.10"
-# Finds the installed fonts the `hayro` backend draws a PDF's missing fonts with. Without fontconfig and memory mapping, which a scan of the font folders does not need.
-fontdb = { version = "0.23.0", default-features = false, features = ["fs"], optional = true }
-# The `hayro` feature reads PDFs with these instead of pdfium. Pinned to a fork branch that combines LaurenzV/hayro#1620 to #1623 until they land upstream.
-hayro = { git = "https://github.com/trypsynth/hayro", branch = "paperback", optional = true }
-hayro-interpret = { git = "https://github.com/trypsynth/hayro", branch = "paperback", optional = true }
-hayro-syntax = { git = "https://github.com/trypsynth/hayro", branch = "paperback", optional = true }
+# Finds the installed fonts a PDF's missing fonts are drawn with. Without fontconfig and memory mapping, which a scan of the font folders does not need.
+fontdb = { version = "0.23.0", default-features = false, features = ["fs"] }
+# Reads and renders PDFs. Pinned to a fork branch that combines LaurenzV/hayro#1620 to #1623 until they land upstream.
+hayro = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
+hayro-interpret = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
+hayro-syntax = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
 key-chord = "0.2.2"
 encoding_rs = "0.8.42"
-icu_normalizer = { version = "2.4.0", optional = true }
+icu_normalizer = "2.4.0"
 icu_properties = { version = "2.4.0", features = ["unicode_bidi"] }
 # Only the codecs comic archives actually use; the default feature set pulls in a dozen more.
 image = { version = "0.25.10", default-features = false, features = ["jpeg", "png", "gif", "webp", "bmp"] }
@@ -45,7 +45,6 @@ odf-crypto = { version = "0.1.0-rc.14", features = ["crypto-ops"] }
 office-crypto = "0.4.0"
 paperback-formats = { path = "../paperback-formats" }
 patois = "0.2.4"
-pdfium-render = { version = "0.9.4", default-features = false, features = ["pdfium_latest", "thread_safe"] }
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.5", default-features = false, features = ["html"] }
 rayon = "1.12.0"
@@ -82,7 +81,6 @@ zip = { version = "9.0.5", default-features = false, features = ["deflate", "aes
 
 [features]
 fetch = ["dep:ureq"]
-hayro = ["dep:fontdb", "dep:hayro", "dep:hayro-interpret", "dep:hayro-syntax", "dep:icu_normalizer"]
 uniffi = ["dep:uniffi"]
 
 [[bin]]

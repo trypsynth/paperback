@@ -4,15 +4,9 @@ pub mod document;
 pub mod export;
 pub mod fetch;
 pub mod ffi_config;
-#[cfg(feature = "hayro")]
-mod hayro_backend;
 pub mod ocr;
 pub mod parser;
-// The parser reaches its PDF library as `crate::pdfium` either way, so swapping the library is one feature flag and no change to the parser.
-#[cfg(feature = "hayro")]
-use hayro_backend as pdfium;
-#[cfg(not(feature = "hayro"))]
-mod pdfium;
+mod pdf_engine;
 pub mod reader_core;
 pub mod session;
 pub mod types;
@@ -34,16 +28,9 @@ pub use crate::{
 #[cfg(feature = "uniffi")]
 uniffi::setup_scaffolding!("paperback");
 
-// `path: String` (not `&str`) because that is the signature UniFFI generates for.
-#[cfg_attr(feature = "uniffi", uniffi::export)]
-#[allow(clippy::needless_pass_by_value)]
-pub fn set_pdfium_library_path(path: String) {
-	pdfium::set_library_path(&path);
-}
-
 pub(crate) use patois::t;
 
-/// Every character the PDF library reads off one page, a line each: what it is, whether it was generated, where it sits and what it is set in. For comparing one PDF backend's text layer against the other's; nothing in the app calls it.
+/// Every character the PDF engine reads off one page, a line each: what it is, whether it was generated, where it sits and what it is set in, followed by the page's objects and tag tree. For chasing down how a PDF's text layer was read; nothing in the app calls it.
 ///
 /// # Errors
 ///
@@ -51,12 +38,12 @@ pub(crate) use patois::t;
 #[doc(hidden)]
 pub fn dump_pdf_page_chars(path: &str, password: Option<&str>, page: i32) -> Result<String, String> {
 	use std::fmt::Write as _;
-	let document = pdfium::PdfDocument::open(path, password).map_err(|error| error.to_string())?;
+	let document = pdf_engine::PdfDocument::open(path, password).map_err(|error| error.to_string())?;
 	let page = document.page(page).map_err(|error| error.to_string())?;
 	let mut out = String::new();
 	for i in 0..page.object_count() {
 		if let Some(object) = page.object(i)
-			&& object.kind() != pdfium::ObjectKind::Other
+			&& object.kind() != pdf_engine::ObjectKind::Other
 		{
 			let _ = writeln!(out, "object {i} {:?} {:?}", object.kind(), object.bounds());
 		}
@@ -64,7 +51,7 @@ pub fn dump_pdf_page_chars(path: &str, password: Option<&str>, page: i32) -> Res
 	for image in page.announced_images() {
 		let _ = writeln!(out, "announced image {} top {:.2}", image.path, image.top);
 	}
-	fn walk(tag: &pdfium::Tag<'_>, depth: usize, out: &mut String) {
+	fn walk(tag: &pdf_engine::Tag<'_>, depth: usize, out: &mut String) {
 		let mut line = format!("{}{}", "  ".repeat(depth), tag.kind().unwrap_or_default());
 		for i in 0..tag.child_count() {
 			if let Some(child) = tag.child(i) {

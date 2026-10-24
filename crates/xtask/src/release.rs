@@ -66,13 +66,9 @@ fn build_mac_dmg(root: &std::path::Path) -> Result<(), Box<dyn Error>> {
 	// the freshly linked binaries are merged into it now.
 	run(Command::new("ditto").arg(slices[0].join("Paperback.app")).arg(&bundle))?;
 	let macos_dir = bundle.join("Contents/MacOS");
-	for name in ["paperback", "pb", "libpdfium.dylib"] {
+	for name in ["paperback", "pb"] {
 		let inputs = slices.each_ref().map(|dir| dir.join(name));
 		if !inputs.iter().all(|input| input.exists()) {
-			if name == "libpdfium.dylib" {
-				println!("Warning: libpdfium.dylib is missing for an architecture; PDF support will be unavailable.");
-				continue;
-			}
 			return Err(format!("{name} not found for every architecture after build").into());
 		}
 		run(Command::new("lipo").arg("-create").args(&inputs).arg("-output").arg(macos_dir.join(name)))?;
@@ -104,14 +100,6 @@ fn build_zip_package(
 	} else {
 		println!("Warning: pb binary not found, skipping.");
 	}
-	let pdfium_dll_path = target_dir.join("pdfium.dll");
-	if !pdfium_dll_path.exists() {
-		return Err(
-			"pdfium.dll not found in target directory. Set PDFIUM_DLL_PATH (or PAPERBACK_PDFIUM_DLL) before building."
-				.into(),
-		);
-	}
-	zip.file(&pdfium_dll_path, "pdfium.dll")?;
 	zip.finish()?;
 	println!("Created zip: {}", package_path.display());
 	Ok(())
@@ -126,17 +114,11 @@ fn build_linux_packages(
 ) -> Result<(), Box<dyn Error>> {
 	use shipfitter::package::{AppImage, TarGz};
 
-	let pdfium_so_path = target_dir.join("libpdfium.so");
 	let mut binaries = vec![exe_path];
 	if pb_exe_path.exists() {
 		binaries.push(pb_exe_path);
 	} else {
 		println!("Warning: pb binary not found, skipping.");
-	}
-	if pdfium_so_path.exists() {
-		binaries.push(&pdfium_so_path);
-	} else {
-		println!("Warning: libpdfium.so not found in target directory; PDF support will be unavailable.");
 	}
 	let package_path = target_dir.join("paperback.tar.gz");
 	let mut tarball = TarGz::create(&package_path)?;

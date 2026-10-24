@@ -13,7 +13,7 @@
 use super::text::sanitize_pdf_text;
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType},
-	pdfium::{LinkTarget, PdfPage, PdfTextPage},
+	pdf_engine::{LinkTarget, PdfPage, PdfTextPage},
 	util::text::{collapse_whitespace, display_len, trim_string},
 };
 
