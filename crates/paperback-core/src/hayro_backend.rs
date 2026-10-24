@@ -67,6 +67,8 @@ pub struct PdfDocument {
 	page_numbers: HashMap<ObjectIdentifier, i32>,
 	/// The structure tree, read once the first time a page asks for its tags rather than once per page.
 	structure: OnceLock<Option<tags::Structure>>,
+	/// Each named destination's page, read from the catalog's `/Names` tree the first time a link names one. Walking the tree again for every link made a few hundred hyperlinked pages take a minute.
+	named_destinations: OnceLock<HashMap<Vec<u8>, i32>>,
 }
 
 impl PdfDocument {
@@ -96,7 +98,7 @@ impl PdfDocument {
 			.enumerate()
 			.filter_map(|(index, page)| Some((page.raw().obj_id()?, i32::try_from(index).ok()?)))
 			.collect();
-		Ok(Self { pdf, page_numbers, structure: OnceLock::new() })
+		Ok(Self { pdf, page_numbers, structure: OnceLock::new(), named_destinations: OnceLock::new() })
 	}
 
 	pub fn page_count(&self) -> i32 {
@@ -172,7 +174,7 @@ impl PdfDocument {
 	/// Where an outline item or link annotation points: its `/Dest`, or failing that the destination of a `GoTo` action in its `/A`, which is the order pdfium tries them in.
 	fn destination_page(&self, item: &Dict<'_>) -> Option<i32> {
 		if let Some(destination) = item.get::<Object<'_>>(b"Dest")
-			&& let Some(page) = self.resolve_destination(destination, 0)
+			&& let Some(page) = self.resolve_destination(destination, 0, true)
 		{
 			return Some(page);
 		}
@@ -180,28 +182,45 @@ impl PdfDocument {
 		if action.get::<Name<'_>>(b"S").as_deref() != Some(b"GoTo".as_slice()) {
 			return None;
 		}
-		self.resolve_destination(action.get::<Object<'_>>(b"D")?, 0)
+		self.resolve_destination(action.get::<Object<'_>>(b"D")?, 0, true)
 	}
 
-	/// The page a destination names, following named destinations through the catalog's `/Dests` dictionary and its `/Names` tree.
-	fn resolve_destination(&self, destination: Object<'_>, depth: u32) -> Option<i32> {
+	/// The page a destination names, following named destinations through the catalog's `/Dests` dictionary and its `/Names` tree. `named` is off while the tree itself is being read, so a value that is itself a name does not ask for the tree it is part of.
+	fn resolve_destination(&self, destination: Object<'_>, depth: u32, named: bool) -> Option<i32> {
 		if depth > 8 {
 			return None;
 		}
 		match destination {
 			Object::Array(array) => self.page_of_explicit_destination(&array),
-			Object::Dict(dict) => self.resolve_destination(dict.get::<Object<'_>>(b"D")?, depth + 1),
+			Object::Dict(dict) => self.resolve_destination(dict.get::<Object<'_>>(b"D")?, depth + 1, named),
 			Object::Name(name) => {
 				let target = self.catalog()?.get::<Dict<'_>>(b"Dests")?.get::<Object<'_>>(name.as_ref())?;
-				self.resolve_destination(target, depth + 1)
+				self.resolve_destination(target, depth + 1, named)
 			}
-			Object::String(name) => {
-				let tree = self.catalog()?.get::<Dict<'_>>(b"Names")?.get::<Dict<'_>>(b"Dests")?;
-				let target = lookup_name_tree(&tree, name.as_bytes(), 0)?;
-				self.resolve_destination(target, depth + 1)
-			}
+			Object::String(name) if named => self.named_destinations().get(name.as_bytes()).copied(),
 			_ => None,
 		}
+	}
+
+	fn named_destinations(&self) -> &HashMap<Vec<u8>, i32> {
+		self.named_destinations.get_or_init(|| {
+			let mut pairs = Vec::new();
+			if let Some(tree) =
+				self.catalog().and_then(|catalog| catalog.get::<Dict<'_>>(b"Names")?.get::<Dict<'_>>(b"Dests"))
+			{
+				collect_name_tree(&tree, 0, &mut pairs);
+			}
+			let mut pages = HashMap::with_capacity(pairs.len());
+			for (name, value) in pairs {
+				// The first entry for a name is the one a search of the tree finds.
+				if !pages.contains_key(&name)
+					&& let Some(page) = self.resolve_destination(value, 0, false)
+				{
+					pages.insert(name, page);
+				}
+			}
+			pages
+		})
 	}
 
 	fn page_of_explicit_destination(&self, array: &Array<'_>) -> Option<i32> {
@@ -240,23 +259,24 @@ pub struct OutlineEntry {
 	pub page: i32,
 }
 
-/// Finds `key` in a name tree, descending its `/Kids` and searching each leaf's `/Names` pairs.
-fn lookup_name_tree<'a>(node: &Dict<'a>, key: &[u8], depth: u32) -> Option<Object<'a>> {
+/// Every name and value in a name tree, in the order a search of it would meet them: each node's own `/Names` pairs, then its `/Kids`.
+fn collect_name_tree<'a>(node: &Dict<'a>, depth: u32, out: &mut Vec<(Vec<u8>, Object<'a>)>) {
 	if depth > 32 {
-		return None;
+		return;
 	}
 	if let Some(names) = node.get::<Array<'a>>(b"Names") {
 		let mut items = names.iter::<Object<'a>>();
 		while let (Some(name), Some(value)) = (items.next(), items.next()) {
-			if let Object::String(name) = name
-				&& name.as_bytes() == key
-			{
-				return Some(value);
+			if let Object::String(name) = name {
+				out.push((name.as_bytes().to_vec(), value));
 			}
 		}
 	}
-	let kids = node.get::<Array<'a>>(b"Kids")?;
-	kids.iter::<Dict<'a>>().find_map(|kid| lookup_name_tree(&kid, key, depth + 1))
+	if let Some(kids) = node.get::<Array<'a>>(b"Kids") {
+		for kid in kids.iter::<Dict<'a>>() {
+			collect_name_tree(&kid, depth + 1, out);
+		}
+	}
 }
 
 /// Decodes a PDF text string: UTF-16 or UTF-8 when it opens with that encoding's byte order mark, `PDFDocEncoding` otherwise.
