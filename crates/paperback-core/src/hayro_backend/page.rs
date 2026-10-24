@@ -8,7 +8,7 @@ use std::rc::Rc;
 use hayro::{PixmapSettings, RenderCache, RenderSettings, vello_cpu::color::palette::css::WHITE};
 use hayro_interpret::{
 	BlendMode, ClipPath, Context, Device, DrawMode, DrawProps, Image, ImageData, ImageDrawProps, InterpreterCache,
-	InterpreterSettings, MarkedContentProperties, SoftMask,
+	MarkedContentProperties, SoftMask,
 	font::GlyphRun,
 	interpret_page,
 	kurbo::{Affine, BezPath, Point, Rect},
@@ -16,7 +16,7 @@ use hayro_interpret::{
 use hayro_syntax::object::{Array, Dict, Name};
 
 use super::{
-	PdfDocument, PdfError, PdfTextPage, TagTree, decode_text_string,
+	PdfDocument, PdfError, PdfTextPage, TagTree, decode_text_string, fonts,
 	text::{FontCache, TextObject},
 };
 
@@ -56,7 +56,7 @@ impl<'doc> PdfPage<'doc> {
 			Rect::new(-1e7, -1e7, 1e7, 1e7),
 			&cache,
 			document.pdf().xref(),
-			InterpreterSettings::default(),
+			fonts::settings(),
 		);
 		let mut collector = Collector::default();
 		interpret_page(page, &mut context, &mut collector);
@@ -125,7 +125,7 @@ impl<'doc> PdfPage<'doc> {
 			Rect::new(-1e7, -1e7, 1e7, 1e7),
 			&cache,
 			self.document.pdf().xref(),
-			InterpreterSettings::default(),
+			fonts::settings(),
 		);
 		let mut extractor = ImageExtractor { wanted: ordinal, seen: 0, png: None };
 		interpret_page(page, &mut context, &mut extractor);
@@ -151,13 +151,8 @@ impl<'doc> PdfPage<'doc> {
 		let page = self.document.pdf().pages().get(self.index)?;
 		let scale = width as f32 / self.width;
 		let settings = PixmapSettings { x_scale: scale, y_scale: scale, bg_color: WHITE };
-		let pixmap = hayro::render(
-			page,
-			&RenderCache::new(),
-			&InterpreterSettings::default(),
-			&RenderSettings::default(),
-			&settings,
-		);
+		let pixmap =
+			hayro::render(page, &RenderCache::new(), &fonts::settings(), &RenderSettings::default(), &settings);
 		let (width, height) = (u32::from(pixmap.width()), u32::from(pixmap.height()));
 		if width == 0 || height == 0 {
 			return None;

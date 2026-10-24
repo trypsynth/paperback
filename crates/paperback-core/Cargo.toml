@@ -25,6 +25,8 @@ cfb = "0.15.0"
 chardetng = "1.0.0"
 ego-tree = "0.11.1"
 flate2 = "1.1.10"
+# Finds the installed fonts the `hayro` backend draws a PDF's missing fonts with. Without fontconfig and memory mapping, which a scan of the font folders does not need.
+fontdb = { version = "0.23.0", default-features = false, features = ["fs"], optional = true }
 # The `hayro` feature reads PDFs with these instead of pdfium. Pinned to a fork branch that combines LaurenzV/hayro#1620 to #1623 until they land upstream.
 hayro = { git = "https://github.com/trypsynth/hayro", branch = "paperback", optional = true }
 hayro-interpret = { git = "https://github.com/trypsynth/hayro", branch = "paperback", optional = true }
@@ -80,7 +82,7 @@ zip = { version = "9.0.5", default-features = false, features = ["deflate", "aes
 
 [features]
 fetch = ["dep:ureq"]
-hayro = ["dep:hayro", "dep:hayro-interpret", "dep:hayro-syntax", "dep:icu_normalizer"]
+hayro = ["dep:fontdb", "dep:hayro", "dep:hayro-interpret", "dep:hayro-syntax", "dep:icu_normalizer"]
 uniffi = ["dep:uniffi"]
 
 [[bin]]

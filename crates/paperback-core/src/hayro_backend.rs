@@ -15,6 +15,7 @@ use hayro_syntax::{
 };
 
 mod bidi;
+mod fonts;
 mod links;
 mod page;
 mod tags;
