@@ -15,7 +15,7 @@ use zip::ZipArchive;
 
 use crate::{
 	parser::{cbr, cbz},
-	pdfium::PdfDocument,
+	pdf_engine::PdfDocument,
 	t,
 };
 
@@ -67,9 +67,8 @@ pub struct RenderedPage {
 /// A document held open for repeated page rendering.
 ///
 /// Batch OCR renders many pages from one file, so the file is opened once here rather than per
-/// page. It need not live on the UI thread, since every pdfium call takes the library's global
-/// lock. Each pool worker opens its own rather than sharing one, so one worker's rasterizing can
-/// overlap another's reading.
+/// page. It need not live on the UI thread. Each pool worker opens its own rather than sharing
+/// one, so the workers rasterize in parallel.
 pub struct PageRenderer {
 	source: Source,
 }

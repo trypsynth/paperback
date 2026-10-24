@@ -109,6 +109,11 @@ fn database() -> &'static Database {
 	DATABASE.get_or_init(|| {
 		let mut database = Database::new();
 		database.load_system_fonts();
+		// fontdb looks nowhere on Android, and on iOS only where Linux keeps its fonts, so those systems' own font folders are named here.
+		#[cfg(target_os = "android")]
+		database.load_fonts_dir("/system/fonts");
+		#[cfg(target_os = "ios")]
+		database.load_fonts_dir("/System/Library/Fonts");
 		database
 	})
 }

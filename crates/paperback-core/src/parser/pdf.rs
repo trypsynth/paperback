@@ -6,7 +6,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	ocr::image_only_placeholder,
 	parser::{Parser, add_heading_markers, util::path::extract_title_from_path},
-	pdfium::{PAGE_IMAGE_COVERAGE, PdfDocument},
+	pdf_engine::{PAGE_IMAGE_COVERAGE, PdfDocument},
 };
 
 mod images;
@@ -31,9 +31,9 @@ use tagged::{TaggedPage, append_tagged_page, tagged_running_lines, without_lines
 use text::{HyphenEvidence, Line, extract_text_lines, median_line_font_size};
 use toc::{build_toc_tree, extract_toc};
 
-/// Everything one page contributes, as read from pdfium and before any of it is placed in the
+/// Everything one page contributes, as read from the PDF engine and before any of it is placed in the
 /// document. The whole document is read before the first page is assembled, because which lines
-/// are running headers is only known once every page's edges have been seen - and pdfium is
+/// are running headers is only known once every page's edges have been seen - and the engine is
 /// asked for each page exactly once, since loading a page and its text is the bulk of what
 /// parsing a PDF costs.
 #[derive(Default)]
@@ -57,7 +57,7 @@ struct PageContent {
 	largest_image_coverage: f64,
 }
 
-/// Read one page from pdfium: its text, its links, and the images it draws.
+/// Read one page from the PDF engine: its text, its links, and the images it draws.
 fn read_page(
 	document: &PdfDocument,
 	page_index: i32,

@@ -93,10 +93,6 @@ pub fn generate_app_bundle() {
 	if exe_path.exists() {
 		let _ = fs::copy(&exe_path, &bundle_exe);
 	}
-	let dylib_path = target_dir.join("libpdfium.dylib");
-	if dylib_path.exists() {
-		let _ = fs::copy(&dylib_path, macos_dir.join("libpdfium.dylib"));
-	}
 	// Named to match CFBundleIconFile above; without it the Dock, Finder and the app switcher
 	// all fall back to the blank generic-application icon.
 	let icns = paths::manifest_dir().join("assets/paperback.icns");

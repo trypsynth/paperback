@@ -27,7 +27,7 @@ use super::{
 };
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, TocItem},
-	pdfium::{PdfPage, PdfTextPage, Tag},
+	pdf_engine::{PdfPage, PdfTextPage, Tag},
 	util::text::{collapse_leaders, collapse_whitespace, display_len, trim_string},
 };
 

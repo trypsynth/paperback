@@ -1428,7 +1428,7 @@ impl<'page> PdfTextPage<'page> {
 		Some(&self.page.content().text_objects[self.info(index)?.text_object?])
 	}
 
-	/// How many characters the page holds. pdfium can fail to say; this cannot, but keeps its signature so the parser is written once for both.
+	/// How many characters the page holds. Never `None`, but the parser still handles a page whose count cannot be told.
 	#[allow(clippy::unnecessary_wraps)]
 	pub fn char_count(&self) -> Option<i32> {
 		Some(i32::try_from(self.chars.len()).unwrap_or(i32::MAX))

@@ -78,8 +78,6 @@ final class AppViewModel {
 	@ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
 	init() {
-		setPdfiumLibraryPath(path: Bundle.main.bundlePath + "/Frameworks/libpdfium.framework")
-
 		let configPath = configFilePath()
 		_ = configManager.initialize(configPath: configPath)
 		restorePreviousDocuments = configManager.getAppBool(key: "restore_previous_documents", defaultValue: true)

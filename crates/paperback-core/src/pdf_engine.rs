@@ -1,8 +1,8 @@
-//! Everything Paperback asks of a PDF library, answered by hayro instead of pdfium when the `hayro` feature is on.
+//! Everything Paperback asks of a PDF: opening it, walking its outline and tag tree, reading text with glyph positions, finding its images and links, and rendering a page for OCR, all on hayro, a PDF interpreter written in Rust.
 //!
-//! The surface is the same as [`crate::pdfium`]'s, type for type and method for method, so the parser compiles against either without knowing which it has. What differs is underneath. pdfium is asked one question at a time through handles; hayro interprets a page's content stream once into a device. So a page here is read in full when it is loaded, and every question after that is answered from what was collected.
+//! hayro interprets a page's content stream once into a device rather than answering questions one at a time, so a page here is read in full when it is loaded, and every question after that is answered from what was collected.
 //!
-//! The text layer is a port of pdfium's own (`core/fpdftext`), not a fresh design: the parser's heuristics were measured against the characters, inferred spaces and line breaks pdfium produces, and they only hold if those come out the same.
+//! Paperback read PDFs with pdfium before this, and the text layer is a port of pdfium's own (`core/fpdftext`) rather than a fresh design: the parser's heuristics were measured against the characters, inferred spaces and line breaks pdfium produces, and they only hold if those come out the same.
 
 use std::{
 	collections::{HashMap, HashSet},
@@ -31,17 +31,11 @@ pub use tags::{Tag, TagTree};
 #[allow(unused_imports)]
 pub use text::{CharBox, FontInfo, PdfTextPage, TextMatrix};
 
-/// There is no library to find: hayro is compiled in. Kept so the callers that point pdfium at its binary need no feature checks of their own.
-pub const fn set_library_path(_path: &str) {}
-
 /// Why a PDF could not be read.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PdfError {
 	/// The file is encrypted and the password was missing or wrong. Kept separate from the rest because it is the one failure the reader can do something about.
 	PasswordRequired,
-	/// Never produced by this backend, since there is no library to fail to load. Kept so callers match the same set of errors either way.
-	#[allow(dead_code)]
-	LibraryUnavailable,
 	/// The file could not be opened or parsed.
 	CouldNotOpen,
 	/// A request on a document that did open failed, such as a page that does not exist.
@@ -52,9 +46,8 @@ impl std::fmt::Display for PdfError {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		match self {
 			Self::PasswordRequired => write!(f, "the document is password protected"),
-			Self::LibraryUnavailable => write!(f, "the pdf library could not be loaded"),
 			Self::CouldNotOpen => write!(f, "the document could not be opened"),
-			Self::Failed => write!(f, "the pdf library rejected the request"),
+			Self::Failed => write!(f, "the request on the document failed"),
 		}
 	}
 }

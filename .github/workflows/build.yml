@@ -543,7 +543,7 @@ jobs:
     # universal binaries starts at all.
     - name: Check the app is universal
       run: |
-        for binary in paperback pb libpdfium.dylib; do
+        for binary in paperback pb; do
           lipo target/release/Paperback.app/Contents/MacOS/$binary -verify_arch arm64 x86_64
         done
         arch -x86_64 target/release/Paperback.app/Contents/MacOS/pb --list-formats > /dev/null

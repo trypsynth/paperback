@@ -59,7 +59,7 @@ fn is_pdf(file_path: &Path) -> bool {
 }
 
 /// Whether [`PageRenderer::open`] can actually open this document. It rasterizes PDFs and decodes
-/// comic archive pages, and hands anything else to pdfium, which will not read an EPUB or a DOCX.
+/// comic archive pages, and hands anything else to the PDF engine, which will not read an EPUB or a DOCX.
 /// "Include text pages" collects every page in the range, so without this a book with no
 /// image-only pages at all would send a job straight into a renderer that cannot open it.
 fn is_ocr_able(file_path: &Path) -> bool {

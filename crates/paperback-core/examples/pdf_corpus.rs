@@ -18,7 +18,6 @@ use std::{
 use paperback_core::{
 	document::{Document, MarkerType, ParserContext, TocItem},
 	parser::parse_document,
-	set_pdfium_library_path,
 };
 
 fn main() -> ExitCode {
@@ -28,7 +27,6 @@ fn main() -> ExitCode {
 		eprintln!("usage: pdf_corpus <folder> [--bless]");
 		return ExitCode::FAILURE;
 	};
-	point_at_pdfium();
 	let snapshots = folder.join("snapshots");
 	let mut pdfs = Vec::new();
 	collect_pdfs(&folder, &snapshots, &mut pdfs);
@@ -75,17 +73,6 @@ fn main() -> ExitCode {
 	}
 	println!("{} pdfs: {same} same, {changed} changed, {new} new, {failed} failed to open", pdfs.len());
 	if changed > 0 && !bless { ExitCode::FAILURE } else { ExitCode::SUCCESS }
-}
-
-// An example binary lands in `target/<profile>/examples`, one folder below the pdfium library the desktop build puts in `target/<profile>`.
-fn point_at_pdfium() {
-	if let Ok(dir) = env::var("PAPERBACK_PDFIUM_DIR") {
-		set_pdfium_library_path(dir);
-	} else if let Ok(exe) = env::current_exe()
-		&& let Some(profile) = exe.parent().and_then(Path::parent)
-	{
-		set_pdfium_library_path(profile.to_string_lossy().into_owned());
-	}
 }
 
 fn collect_pdfs(folder: &Path, snapshots: &Path, out: &mut Vec<PathBuf>) {

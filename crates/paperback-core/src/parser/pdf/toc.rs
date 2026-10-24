@@ -8,7 +8,7 @@ use std::collections::HashSet;
 use super::text::sanitize_pdf_text;
 use crate::{
 	document::TocItem,
-	pdfium::PdfDocument,
+	pdf_engine::PdfDocument,
 	util::text::{collapse_whitespace, trim_string},
 };
 
