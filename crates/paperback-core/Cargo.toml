@@ -26,7 +26,7 @@ chardetng = "1.0.0"
 ego-tree = "0.11.1"
 flate2 = "1.1.10"
 # Finds the installed fonts a PDF's missing fonts are drawn with. Without fontconfig and memory mapping, which a scan of the font folders does not need.
-fontdb = { version = "0.23.0", default-features = false, features = ["fs"] }
+fontdb = { version = "0.24.0", default-features = false, features = ["fs"] }
 # Reads and renders PDFs. Pinned to a fork branch that combines LaurenzV/hayro#1620 to #1623 until they land upstream.
 hayro = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
 hayro-interpret = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
@@ -64,7 +64,7 @@ tracing = "0.1.44"
 unicode-bidi = "0.3.18"
 uniffi = { version = "0.32.2", features = ["cli"], optional = true }
 ureq = { version = "3.5.0", default-features = false, features = ["rustls"], optional = true }
-zip = { version = "9.0.5", default-features = false, features = ["deflate"] }
+zip = { version = "9.1.0", default-features = false, features = ["deflate"] }
 mathcat = { version = "0.7.7", features = ["include-zip"] }
 math-core = "0.9.0"
 
@@ -77,7 +77,7 @@ rstest = { workspace = true }
 # Only for constructing password-protected archives in tests; matches the main `zip`
 # dependency's default-features = false, adding just aes-crypto rather than the full
 # default bundle (bzip2, lzma, ppmd, zstd).
-zip = { version = "9.0.5", default-features = false, features = ["deflate", "aes-crypto"] }
+zip = { version = "9.1.0", default-features = false, features = ["deflate", "aes-crypto"] }
 
 [features]
 fetch = ["dep:ureq"]
