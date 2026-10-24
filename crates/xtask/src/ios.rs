@@ -44,7 +44,8 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 		return Err("uniffi-bindgen Swift generation failed".into());
 	}
 	let profile = if release { "release" } else { "debug" };
-	let mut build_args = vec!["build", "-p", "paperback-core", "--features", "uniffi"];
+	let mut build_args =
+		vec!["rustc", "-p", "paperback-core", "--features", "uniffi", "--lib", "--crate-type", "staticlib"];
 	if release {
 		build_args.push("--release");
 	}

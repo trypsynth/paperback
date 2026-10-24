@@ -83,7 +83,7 @@ jobs:
       # interface is read from.
       - name: Generate Kotlin bindings
         run: |
-          cargo build -p paperback-core --features uniffi --lib
+          cargo rustc -p paperback-core --features uniffi --lib --crate-type cdylib
           LIB=$(ls target/debug/libpaperback_core.so target/debug/libpaperback_core.dylib target/debug/paperback_core.dll 2>/dev/null | head -1)
           cargo run -p paperback-core --features uniffi --bin uniffi-bindgen --             generate --library "$LIB"             --language kotlin --out-dir android/app/src/main/kotlin --no-format
       - name: Cache Gradle packages
@@ -138,7 +138,7 @@ jobs:
       # interface is read from.
       - name: Generate Kotlin bindings
         run: |
-          cargo build -p paperback-core --features uniffi --lib
+          cargo rustc -p paperback-core --features uniffi --lib --crate-type cdylib
           LIB=$(ls target/debug/libpaperback_core.so target/debug/libpaperback_core.dylib target/debug/paperback_core.dll 2>/dev/null | head -1)
           cargo run -p paperback-core --features uniffi --bin uniffi-bindgen --             generate --library "$LIB"             --language kotlin --out-dir android/app/src/main/kotlin --no-format
       - name: Cache Gradle packages

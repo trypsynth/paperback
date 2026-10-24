@@ -66,12 +66,15 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 			"x86_64",
 			"-o",
 			"android/app/src/main/jniLibs",
-			"build",
+			"rustc",
 			"--release",
 			"-p",
 			"paperback-core",
 			"--features",
 			"uniffi",
+			"--lib",
+			"--crate-type",
+			"cdylib",
 		])
 		.status()?;
 	if !status.success() {

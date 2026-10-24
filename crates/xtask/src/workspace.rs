@@ -73,7 +73,7 @@ pub fn build_host_ffi_library(cargo: &str) -> Result<PathBuf, Box<dyn Error>> {
 		.current_dir(project_root())
 		// Debug, not release: uniffi reads the interface out of the library's symbols, and the
 		// release profile strips them. This build exists only to be read, never to be shipped.
-		.args(["build", "-p", "paperback-core", "--features", "uniffi", "--lib"])
+		.args(["rustc", "-p", "paperback-core", "--features", "uniffi", "--lib", "--crate-type", "cdylib"])
 		.status()?;
 	if !status.success() {
 		return Err("building paperback-core for the host failed".into());
