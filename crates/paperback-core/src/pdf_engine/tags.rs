@@ -1,6 +1,6 @@
 //! A tagged PDF's structure tree: the author's own account of what the page means.
 //!
-//! pdfium reaches a page's elements through the tree root's `/ParentTree`, which is why a PDF exported without one needs [`crate::parser::pdf`]'s repair first. Here the whole tree is read once from `/StructTreeRoot` down, and each element records which pages its content lands on, so the parent tree is never consulted. What a page sees is still what pdfium shows it: the root's children by position, an element only where its content is on the page, and a marked-content reference only where it names the page.
+//! pdfium reaches a page's elements through the tree root's `/ParentTree`, so it loses the whole tree of a PDF exported without one, as Apple Pages exports are. Here the whole tree is read once from `/StructTreeRoot` down, and each element records which pages its content lands on, so the parent tree is never consulted. What a page sees is still what pdfium shows it: the root's children by position, an element only where its content is on the page, and a marked-content reference only where it names the page.
 
 use std::collections::HashMap;
 

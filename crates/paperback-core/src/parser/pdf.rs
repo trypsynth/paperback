@@ -13,7 +13,6 @@ mod images;
 mod links;
 mod metadata;
 mod paragraphs;
-mod repair;
 mod running;
 mod structure;
 mod tagged;
@@ -307,46 +306,12 @@ fn strip_running_text(lines: &mut Vec<Line>, running_text: &RunningText) {
 	}
 }
 
-/// Opens the document, and opens it a second time over a repaired copy when the first one hands
-/// back a structure tree nothing can be loaded from. See [`repair`] for what is repaired and why.
 fn load_document(context: &ParserContext) -> Result<PdfDocument> {
-	let document = PdfDocument::open(&context.file_path, context.password.as_deref()).map_err(|err| {
+	PdfDocument::open(&context.file_path, context.password.as_deref()).map_err(|err| {
 		let mapped = map_load_error(err);
 		tracing::warn!(path = %context.file_path, error = %mapped, "failed to load pdf document");
 		mapped
-	})?;
-	if !structure_tree_unreachable(&document) {
-		return Ok(document);
-	}
-	let Some(bytes) = repair::repaired_bytes(&context.file_path) else { return Ok(document) };
-	match PdfDocument::from_bytes(bytes, context.password.as_deref()) {
-		Ok(repaired) if !structure_tree_unreachable(&repaired) => {
-			tracing::debug!(path = %context.file_path, "gave the pdf a parent tree to reach its structure through");
-			Ok(repaired)
-		}
-		Ok(_) => Ok(document),
-		Err(err) => {
-			tracing::warn!(path = %context.file_path, error = %err, "failed to load the repaired pdf document");
-			Ok(document)
-		}
-	}
-}
-
-/// Whether the document advertises a structure tree whose top-level elements pdfium cannot load,
-/// which is what a missing parent tree looks like from here. Only the first few pages are asked,
-/// enough to meet a page that has a tree at all without walking a long document to find one.
-fn structure_tree_unreachable(document: &PdfDocument) -> bool {
-	const PROBED_PAGES: i32 = 10;
-	for page_index in 0..document.page_count().min(PROBED_PAGES) {
-		let Ok(page) = document.page(page_index) else { continue };
-		let Some(tree) = page.tags() else { continue };
-		let count = tree.child_count();
-		if count == 0 {
-			continue;
-		}
-		return (0..count).all(|index| tree.child(index).is_none());
-	}
-	false
+	})
 }
 
 /// Settle which of the three sources of headings the document ends up with, and make sure the

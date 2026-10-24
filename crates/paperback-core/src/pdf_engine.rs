@@ -76,7 +76,7 @@ impl PdfDocument {
 		Self::from_bytes(bytes, password)
 	}
 
-	/// Opens a PDF already in memory, which is how the repaired copy of a broken file is read.
+	/// Opens a PDF already in memory.
 	///
 	/// # Errors
 	///
