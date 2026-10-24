@@ -26,7 +26,7 @@ pub(super) fn is_xml_formula(node: Node<'_, '_>) -> bool {
 pub(super) fn is_dom_formula(element: &scraper::node::Element) -> bool {
 	// HTML parsing assigns the MathML namespace to bare <math> even without xmlns. Checking
 	// that parsed namespace excludes same-named elements in other contexts, such as SVG.
-	element.name() == "math" && element.name.ns.as_ref() == MATHML_NAMESPACE
+	element.name() == "math" && &*element.name.ns == MATHML_NAMESPACE
 }
 
 #[derive(Default)]
