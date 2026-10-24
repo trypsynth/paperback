@@ -1,0 +1,16 @@
+[package]
+name = "pdf-compare"
+description = "Compares the characters pdfium reads off each PDF page with the glyphs hayro interprets there"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# Its own workspace, so hayro never enters the app's lock file or build.
+[workspace]
+
+[dependencies]
+# GlyphRun::font() is on this branch until it lands upstream.
+hayro-interpret = { git = "https://github.com/trypsynth/hayro", branch = "glyph-run-font" }
+hayro-syntax = { git = "https://github.com/trypsynth/hayro", branch = "glyph-run-font" }
+pdfium-render = { version = "0.9.4", default-features = false, features = ["pdfium_latest"] }
+similar = "2.7.0"
