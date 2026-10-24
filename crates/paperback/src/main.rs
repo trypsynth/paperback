@@ -81,7 +81,7 @@ fn promote_unbundled_to_regular_app() {
 fn cleanup_legacy_files() {
 	let Ok(exe) = env::current_exe() else { return };
 	let Some(dir) = exe.parent() else { return };
-	for name in ["nvdaControllerClient64.dll", "SAAPI64.dll"] {
+	for name in ["nvdaControllerClient64.dll", "SAAPI64.dll", "pdfium.dll", "libpdfium.so"] {
 		let path = dir.join(name);
 		if let Err(e) = fs::remove_file(&path)
 			&& e.kind() != io::ErrorKind::NotFound
