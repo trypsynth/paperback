@@ -2,24 +2,53 @@ use std::collections::HashMap;
 
 use roxmltree::{Node, NodeType};
 
-use super::super::numbering::Numbering;
+use super::{
+	super::numbering::Numbering,
+	annotations::{Annotations, NoteKind},
+};
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, format_marker_types},
-	parser::util::{ooxml::collect_ooxml_run_text, toc::heading_level_to_marker_type, xml::find_child_element},
+	parser::{
+		convert::image_text,
+		util::{
+			ooxml::{Relationships, collect_ooxml_run_text},
+			toc::heading_level_to_marker_type,
+			xml::find_child_element,
+		},
+	},
 	types::HeadingInfo,
 	util::text::display_len,
 };
 
+/// Where a document's pages come from.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum PageSource {
+	/// Where Word last laid the pages out, which it records with `lastRenderedPageBreak`. Explicit breaks are not counted on top, because Word records one of these after each of those too.
+	Rendered,
+	/// The breaks written into the file, for one Word never laid out, such as a file from Google Docs, pandoc or python-docx: page breaks, paragraphs set to start a page, and section breaks that start a new page.
+	Explicit,
+}
+
+impl PageSource {
+	/// Rendered breaks when the document has any, since Word wrote them, and the explicit ones otherwise.
+	pub(super) fn for_document(document_xml: &str) -> Self {
+		if document_xml.contains("lastRenderedPageBreak") { Self::Rendered } else { Self::Explicit }
+	}
+}
+
 /// Writes one paragraph into the buffer. Returns whether it is an item of a numbered or
 /// bulleted list, so the caller can mark where the list it belongs to starts and ends.
+#[allow(clippy::too_many_arguments)]
 pub(super) fn process_paragraph(
 	element: Node,
 	buffer: &mut DocumentBuffer,
 	headings: &mut Vec<HeadingInfo>,
 	id_positions: &mut HashMap<String, usize>,
-	rels: &HashMap<String, String>,
+	rels: &Relationships,
 	style_heading_map: &HashMap<String, i32>,
 	numbering: &mut Numbering,
+	page_source: PageSource,
+	annotations: &mut Annotations,
 ) -> bool {
 	let paragraph_start = buffer.current_position();
 	// Word keeps list numbers and bullets out of the text and generates them; without this a
@@ -29,14 +58,22 @@ pub(super) fn process_paragraph(
 	let mut para_display_len = display_len(&paragraph_text);
 	let label_len = para_display_len;
 	let mut page_starts: Vec<usize> = Vec::new();
+	// Explicit breaks fall after their own text, so one at the end of the paragraph starts the page on the next line instead.
+	let mut breaks_after: Vec<usize> = Vec::new();
+	let mut next_starts_page = false;
 	let mut bookmarks: Vec<(String, usize)> = Vec::new();
 	let mut links: Vec<(usize, String, String)> = Vec::new();
+	// Each picture's offset, placeholder length, description and archive entry.
+	let mut pictures: Vec<(usize, usize, String, String)> = Vec::new();
+	// Where comments start and end in this paragraph, by id, placed once the paragraph's text is final.
+	let mut comment_starts: Vec<(String, usize)> = Vec::new();
+	let mut comment_ends: Vec<(String, usize)> = Vec::new();
 	let mut heading_level = 0;
 	let mut is_paragraph_style_heading = false;
 	let mut format_spans: Vec<(MarkerType, usize, usize)> = Vec::new();
 	// A hyperlink field's displayed text was already taken whole when its instruction was read, so its runs are skipped until the field ends rather than read a second time.
 	let mut in_taken_field = false;
-	for child in element.children() {
+	for child in content_children(element) {
 		if child.node_type() != NodeType::Element {
 			continue;
 		}
@@ -46,18 +83,37 @@ pub(super) fn process_paragraph(
 			if heading_level > 0 {
 				is_paragraph_style_heading = true;
 			}
+			if page_source == PageSource::Explicit {
+				if find_child_element(child, "pageBreakBefore").is_some_and(is_on) {
+					page_starts.push(0);
+				}
+				next_starts_page = find_child_element(child, "sectPr").is_some_and(section_starts_page);
+			}
+		} else if tag_name == "commentRangeStart" {
+			if let Some(id) = child.attribute("id") {
+				comment_starts.push((id.to_string(), para_display_len));
+			}
+		} else if tag_name == "commentRangeEnd" {
+			if let Some(id) = child.attribute("id") {
+				comment_ends.push((id.to_string(), para_display_len));
+			}
 		} else if tag_name == "bookmarkStart" {
 			if let Some(name) = child.attribute("name") {
 				bookmarks.push((name.to_string(), para_display_len));
 			}
 		} else if tag_name == "hyperlink" {
-			if child.children().any(|run| run.tag_name().name() == "r" && starts_page(run)) {
+			if child.children().any(|run| run.tag_name().name() == "r" && starts_page(run, page_source)) {
 				page_starts.push(para_display_len);
 			}
-			para_display_len += process_hyperlink(child, &mut paragraph_text, &mut links, rels, para_display_len);
+			para_display_len +=
+				process_hyperlink(child, &mut paragraph_text, &mut links, &rels.links, para_display_len);
 		} else if tag_name == "r" {
-			if starts_page(child) {
-				page_starts.push(para_display_len);
+			match page_source {
+				PageSource::Rendered if starts_page(child, page_source) => page_starts.push(para_display_len),
+				PageSource::Explicit => {
+					breaks_after.extend(page_break_offsets(child).map(|offset| para_display_len + offset));
+				}
+				PageSource::Rendered => {}
 			}
 			if in_taken_field {
 				in_taken_field = find_child_element(child, "fldChar").and_then(|field| field.attribute("fldCharType"))
@@ -68,6 +124,29 @@ pub(super) fn process_paragraph(
 				&& let Some(rpr_node) = find_child_element(child, "rPr")
 			{
 				heading_level = get_run_heading_level(rpr_node);
+			}
+			if let Some(id) =
+				find_child_element(child, "commentReference").and_then(|reference| reference.attribute("id"))
+			{
+				comment_starts.push((id.to_string(), para_display_len));
+			}
+			if let Some((placeholder, description, entry)) = picture(child, rels) {
+				let length = display_len(&placeholder);
+				pictures.push((para_display_len, length, description, entry));
+				para_display_len += length;
+				paragraph_text.push_str(&placeholder);
+				continue;
+			}
+			if let Some((kind, reference)) = NoteKind::cited_by(child) {
+				// A custom mark is typed in the run itself, in place of the number Word would generate.
+				let custom = matches!(reference.attribute("customMarkFollows"), Some("1" | "true" | "on"))
+					.then(|| collect_ooxml_run_text(child).trim().to_string());
+				let citation = annotations.cite(kind, reference.attribute("id").unwrap_or_default(), custom);
+				let cited = format!("[{}]", citation.label);
+				links.push((para_display_len, cited.clone(), format!("#{}", citation.key)));
+				para_display_len += display_len(&cited);
+				paragraph_text.push_str(&cited);
+				continue;
 			}
 			if let Some(instr_text_node) = find_child_element(child, "instrText")
 				&& let Some(instruction) = instr_text_node.text()
@@ -114,8 +193,34 @@ pub(super) fn process_paragraph(
 	for offset in page_starts {
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, at_words(offset)));
 	}
+	let next_line = buffer.current_position();
+	for offset in breaks_after {
+		let position = if offset.saturating_sub(leading_trim) >= trimmed_len { next_line } else { at_words(offset) };
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, position));
+	}
+	if next_starts_page {
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, next_line));
+	}
 	for (name, offset) in bookmarks {
 		id_positions.insert(name, at_words(offset));
+	}
+	for (offset, length, description, entry) in pictures {
+		buffer.add_marker(
+			Marker::new(MarkerType::Image, in_trimmed(offset))
+				.with_text(description)
+				.with_reference(entry)
+				.with_length(length),
+		);
+	}
+	for (id, offset) in comment_starts {
+		let position = in_trimmed(offset);
+		if !annotations.comments.iter().any(|(known, _, _)| *known == id) {
+			id_positions.insert(annotations.comment_key(&id), position);
+		}
+		annotations.comment_starts(&id, position);
+	}
+	for (id, offset) in comment_ends {
+		annotations.comment_ends(&id, in_trimmed(offset));
 	}
 	for (offset, text, reference) in links {
 		buffer.add_marker(Marker::new(MarkerType::Link, in_trimmed(offset)).with_text(text).with_reference(reference));
@@ -146,11 +251,111 @@ pub(super) fn process_paragraph(
 	true
 }
 
-/// Whether Word began a new page at `run` the last time it laid the document out.
+/// The placeholder a picture in `run` shows, its description, and its entry in the archive, for a picture Word draws (`w:drawing`) or an older VML one (`w:pict`). `None` for a run with no picture, for a drawing that is not a picture, such as a chart, and for a picture its author marked as decorative.
+fn picture(run: Node, rels: &Relationships) -> Option<(String, String, String)> {
+	let (description, embed) = if let Some(drawing) = find_child_element(run, "drawing") {
+		let properties = named(drawing, "docPr")?;
+		let decorative =
+			named(properties, "decorative").is_some_and(|mark| matches!(mark.attribute("val"), Some("1" | "true")));
+		if decorative {
+			return None;
+		}
+		let description = ["descr", "title"]
+			.into_iter()
+			.find_map(|name| properties.attribute(name).map(str::trim).filter(|text| !text.is_empty()));
+		(description, named(drawing, "blip")?.attribute("embed"))
+	} else {
+		let picture = find_child_element(run, "pict")?;
+		let data = named(picture, "imagedata")?;
+		let description = data
+			.attribute("title")
+			.or_else(|| named(picture, "shape").and_then(|shape| shape.attribute("alt")))
+			.map(str::trim)
+			.filter(|text| !text.is_empty());
+		(description, data.attribute("id"))
+	};
+	let description = description.unwrap_or_default().to_string();
+	let entry = embed.and_then(|id| rels.images.get(id)).cloned().unwrap_or_default();
+	Some((image_text::placeholder(false, &description), description, entry))
+}
+
+fn named<'a, 'input>(node: Node<'a, 'input>, name: &str) -> Option<Node<'a, 'input>> {
+	node.descendants().find(|descendant| descendant.tag_name().name() == name)
+}
+
+/// A paragraph's content with the wrappers Word puts around runs looked through: tracked insertions, content controls, smart tags, simple fields and the like. Read as they stand, the paragraph lost all of their text. Tracked deletions, and text moved away from here, are left out, so the text reads as it does with every change accepted.
+pub(super) fn content_children<'a, 'input>(node: Node<'a, 'input>) -> Vec<Node<'a, 'input>> {
+	let mut children = Vec::new();
+	for child in node.children().filter(Node::is_element) {
+		match child.tag_name().name() {
+			"ins" | "smartTag" | "fldSimple" | "customXml" | "moveTo" | "dir" | "bdo" => {
+				children.extend(content_children(child));
+			}
+			"sdt" => {
+				if let Some(content) = find_child_element(child, "sdtContent") {
+					children.extend(content_children(content));
+				}
+			}
+			"del" | "moveFrom" | "sdtPr" | "sdtEndPr" => {}
+			_ => children.push(child),
+		}
+	}
+	children
+}
+
+/// A paragraph's words, wrappers looked through and links included, for the places that read a paragraph as plain text, such as a table cell.
+pub(super) fn paragraph_plain_text(paragraph: Node) -> String {
+	content_children(paragraph)
+		.into_iter()
+		.map(|child| match child.tag_name().name() {
+			"r" => collect_ooxml_run_text(child),
+			"hyperlink" => content_children(child)
+				.into_iter()
+				.filter(|run| run.tag_name().name() == "r")
+				.map(collect_ooxml_run_text)
+				.collect(),
+			_ => String::new(),
+		})
+		.collect()
+}
+
+/// Whether a page begins at `run`.
 ///
-/// A .docx has no pages of its own: Word paginates as it lays the document out, and saves where each page after the first began with this element, so it is the closest a saved file comes to Word's own page numbers. Explicit page breaks are not counted on top, because Word records one of these after each of those too.
-pub(super) fn starts_page(run: Node) -> bool {
-	find_child_element(run, "lastRenderedPageBreak").is_some()
+/// A .docx has no pages of its own: Word paginates as it lays the document out, and saves where each page after the first began with `lastRenderedPageBreak`, so for a file Word laid out that is the closest it comes to Word's own page numbers.
+pub(super) fn starts_page(run: Node, page_source: PageSource) -> bool {
+	match page_source {
+		PageSource::Rendered => find_child_element(run, "lastRenderedPageBreak").is_some(),
+		PageSource::Explicit => page_break_offsets(run).next().is_some(),
+	}
+}
+
+/// Where in `run`'s text each explicit page break leaves off, counted in display units the way [`collect_ooxml_run_text`] writes the run, the break's own newline included.
+fn page_break_offsets(run: Node) -> impl Iterator<Item = usize> {
+	let mut offset = 0;
+	run.children().filter(|child| child.node_type() == NodeType::Element).filter_map(move |child| {
+		match child.tag_name().name() {
+			"t" => offset += child.text().map_or(0, display_len),
+			"tab" => offset += 1,
+			"br" => {
+				offset += 1;
+				if child.attribute("type") == Some("page") {
+					return Some(offset);
+				}
+			}
+			_ => {}
+		}
+		None
+	})
+}
+
+/// Whether an on-off property such as `<w:pageBreakBefore/>` is on: present with no value, or with one that is not off.
+fn is_on(property: Node) -> bool {
+	!matches!(property.attribute("val"), Some("0" | "false" | "off"))
+}
+
+/// Whether a section ending at this paragraph starts the next one on a new page, which every kind but a continuous section does, including one that names no kind.
+fn section_starts_page(section: Node) -> bool {
+	find_child_element(section, "type").and_then(|kind| kind.attribute("val")) != Some("continuous")
 }
 
 /// Appends the hyperlink's display text to `paragraph_text`, records the link at `offset` into the paragraph, and returns the number of display units appended.

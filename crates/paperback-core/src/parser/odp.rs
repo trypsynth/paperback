@@ -8,10 +8,7 @@ use crate::{
 	parser::{
 		Parser,
 		odf_crypto::read_odf_content,
-		util::{
-			path::extract_title_from_path,
-			xml::{collect_element_text, read_xml_to_string},
-		},
+		util::{odf, path::extract_title_from_path, slides::no_text_placeholder, xml::read_xml_to_string},
 	},
 	t,
 	types::LinkInfo,
@@ -34,33 +31,55 @@ impl Parser for OdpParser {
 			// TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 			anyhow::bail!(t("ODP file does not contain any pages"));
 		}
-		for (index, page_node) in pages.iter().enumerate() {
-			let slide_start = buffer.current_position();
-			let mut links = Vec::new();
-			let slide_text = get_page_text(*page_node, &mut links, slide_start);
-			if !slide_text.trim().is_empty() {
-				buffer.append(&slide_text);
-				if !buffer.content.ends_with('\n') {
-					buffer.append("\n");
-				}
-				buffer.add_marker(
-					Marker::new(MarkerType::PageBreak, slide_start).with_text(format!("Slide {}", index + 1)),
-				);
-				for link in links {
-					buffer.add_marker(
-						Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
-					);
-				}
-			} else {
-				tracing::debug!(slide = index + 1, "skipped odp slide with no text");
-			}
-		}
-		let title = extract_title_from_path(&context.file_path);
-		let mut document = Document::new().with_title(title);
+		build_slides(&pages, &mut buffer);
+		let (title, author) = odf::packaged_metadata(&context.file_path, context.password.as_deref());
+		let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
+		let mut document = Document::new().with_title(title).with_author(author.unwrap_or_default());
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		tracing::debug!(path = %context.file_path, "parsed odp file successfully");
 		Ok(document)
+	}
+}
+
+/// One slide per page, each opening with its page break, and a slide with no text still there to be reached.
+fn build_slides(pages: &[Node], buffer: &mut DocumentBuffer) {
+	for (index, page_node) in pages.iter().enumerate() {
+		let slide_start = buffer.current_position();
+		let slide = get_page_text(*page_node, slide_start);
+		if slide.text.trim().is_empty() {
+			buffer.append(&no_text_placeholder());
+		} else {
+			buffer.append(&slide.text);
+		}
+		if !buffer.content.ends_with('\n') {
+			buffer.append("\n");
+		}
+		if !slide.notes.is_empty() {
+			// TRANSLATORS: Written after a presentation slide's text, before the presenter's notes for that slide; {} is the notes
+			buffer.append(&t("Speaker notes: {}").replace("{}", &slide.notes.join("\n")));
+			buffer.append("\n");
+		}
+		for (author, text) in slide.comments {
+			let comment = if author.is_empty() {
+				// TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it without a name; {} is the comment
+				t("Comment: {}").replace("{}", &text)
+			} else {
+				// TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it: the first {} is the reviewer, the second the comment
+				t("Comment from {}: {}").replacen("{}", &author, 1).replacen("{}", &text, 1)
+			};
+			buffer.append(&comment);
+			buffer.append("\n");
+		}
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, slide_start).with_text(format!("Slide {}", index + 1)));
+		for (offset, description, length) in slide.images {
+			buffer.add_marker(Marker::new(MarkerType::Image, offset).with_text(description).with_length(length));
+		}
+		for link in slide.links {
+			buffer.add_marker(
+				Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
+			);
+		}
 	}
 }
 
@@ -80,29 +99,10 @@ impl Parser for FodpParser {
 			// TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
 			anyhow::bail!(t("FODP file does not contain any pages"));
 		}
-		for (index, page_node) in pages.iter().enumerate() {
-			let slide_start = buffer.current_position();
-			let mut links = Vec::new();
-			let slide_text = get_page_text(*page_node, &mut links, slide_start);
-			if !slide_text.trim().is_empty() {
-				buffer.append(&slide_text);
-				if !buffer.content.ends_with('\n') {
-					buffer.append("\n");
-				}
-				buffer.add_marker(
-					Marker::new(MarkerType::PageBreak, slide_start).with_text(format!("Slide {}", index + 1)),
-				);
-				for link in links {
-					buffer.add_marker(
-						Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
-					);
-				}
-			} else {
-				tracing::debug!(slide = index + 1, "skipped fodp slide with no text");
-			}
-		}
-		let title = extract_title_from_path(&context.file_path);
-		let mut document = Document::new().with_title(title);
+		build_slides(&pages, &mut buffer);
+		let (title, author) = odf::metadata(&xml_doc);
+		let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
+		let mut document = Document::new().with_title(title).with_author(author.unwrap_or_default());
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		tracing::debug!(path = %context.file_path, "parsed fodp file successfully");
@@ -125,45 +125,92 @@ fn collect_pages<'a, 'input>(node: Node<'a, 'input>, pages: &mut Vec<Node<'a, 'i
 	}
 }
 
-fn get_page_text(page_node: Node, links: &mut Vec<LinkInfo>, slide_start: usize) -> String {
-	let mut text = String::new();
-	traverse_page(page_node, &mut text, links, slide_start);
-	text
+/// What one slide holds: its text with the links and pictures in it, and the presenter's notes and reviewers' comments, kept apart from the text they used to run into.
+#[derive(Default)]
+struct Slide {
+	text: String,
+	links: Vec<LinkInfo>,
+	/// Each picture's position, description and length.
+	images: Vec<(usize, String, usize)>,
+	notes: Vec<String>,
+	/// Each comment's author, which may be empty, and text.
+	comments: Vec<(String, String)>,
 }
 
-fn traverse_page(node: Node, text: &mut String, links: &mut Vec<LinkInfo>, slide_start: usize) {
-	if node.node_type() == NodeType::Element {
+fn get_page_text(page_node: Node, slide_start: usize) -> Slide {
+	let mut slide = Slide::default();
+	traverse_page(page_node, &mut slide, slide_start);
+	slide
+}
+
+fn traverse_page(node: Node, slide: &mut Slide, slide_start: usize) {
+	if node.is_text() {
+		slide.text.push_str(node.text().unwrap_or_default());
+		return;
+	}
+	if node.is_element() {
+		if let Some(spaces) = odf::spacing(node) {
+			slide.text.push_str(&spaces);
+			return;
+		}
 		let tag_name = node.tag_name().name();
+		if tag_name == "annotation" {
+			let child_text = |name: &str| {
+				node.children()
+					.filter(|child| child.is_element() && child.tag_name().name() == name)
+					.map(|child| odf::plain_text(child).trim().to_string())
+					.filter(|text| !text.is_empty())
+					.collect::<Vec<_>>()
+					.join(" ")
+			};
+			let text = child_text("p");
+			if !text.is_empty() {
+				slide.comments.push((child_text("creator"), text));
+			}
+			return;
+		}
+		if odf::is_hidden(node) {
+			return;
+		}
+		if tag_name == "notes" {
+			slide.notes.extend(
+				node.descendants()
+					.filter(|descendant| descendant.is_element() && descendant.tag_name().name() == "p")
+					.map(|paragraph| odf::plain_text(paragraph).trim().to_string())
+					.filter(|paragraph| !paragraph.is_empty()),
+			);
+			return;
+		}
+		if let Some((placeholder, description)) = odf::picture(node) {
+			slide.images.push((slide_start + display_len(&slide.text), description, display_len(&placeholder)));
+			slide.text.push_str(&placeholder);
+			return;
+		}
 		if tag_name == "a" {
 			if let Some(href) = node.attribute("href") {
-				let link_offset = slide_start + display_len(text);
-				let link_text = collect_element_text(node);
+				let link_offset = slide_start + display_len(&slide.text);
+				let link_text = odf::plain_text(node);
 				if !link_text.is_empty() {
-					text.push_str(&link_text);
-					links.push(LinkInfo { offset: link_offset, text: link_text, reference: href.to_string() });
+					slide.text.push_str(&link_text);
+					slide.links.push(LinkInfo { offset: link_offset, text: link_text, reference: href.to_string() });
 				}
 			}
 			return;
 		}
-		if tag_name == "p" || tag_name == "span" {
-			traverse_children(node, text, links, slide_start);
-			if tag_name == "p" && !text.ends_with('\n') {
-				text.push('\n');
+		if tag_name == "p" {
+			traverse_children(node, slide, slide_start);
+			if !slide.text.ends_with('\n') {
+				slide.text.push('\n');
 			}
 			return;
 		}
-	} else if node.node_type() == NodeType::Text {
-		if let Some(t) = node.text() {
-			text.push_str(t);
-		}
-		return;
 	}
-	traverse_children(node, text, links, slide_start);
+	traverse_children(node, slide, slide_start);
 }
 
-fn traverse_children(node: Node, text: &mut String, links: &mut Vec<LinkInfo>, slide_start: usize) {
+fn traverse_children(node: Node, slide: &mut Slide, slide_start: usize) {
 	for child in node.children() {
-		traverse_page(child, text, links, slide_start);
+		traverse_page(child, slide, slide_start);
 	}
 }
 
@@ -183,7 +230,10 @@ mod tests {
 <office:document xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
 	xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0"
 	xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
-	xmlns:xlink="http://www.w3.org/1999/xlink">
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
+	xmlns:presentation="urn:oasis:names:tc:opendocument:xmlns:presentation:1.0"
+	xmlns:dc="http://purl.org/dc/elements/1.1/">
 <office:body><office:presentation>{pages}</office:presentation></office:body></office:document>"#
 		)
 	}
@@ -243,10 +293,9 @@ mod tests {
 		assert_eq!(link.position, display_len("\u{1F600} "));
 	}
 
-	/// A deck can hold empty layout placeholder slides; they'd otherwise each contribute a page
-	/// break the reader would stop on with nothing to read out.
+	/// A slide with no text, usually one of pictures alone, is still a slide of the deck: it says so rather than vanishing, which would also leave the reader jumping from one slide number to the one after next.
 	#[test]
-	fn skips_slides_with_no_text() {
+	fn a_slide_with_no_text_says_so() {
 		let slides = format!("{}{}", page("<text:p>   </text:p>"), page("<text:p>Real content</text:p>"));
 		let doc = parse_ok(&fodp_document(&slides));
 		let labels: Vec<_> = doc
@@ -256,8 +305,8 @@ mod tests {
 			.filter(|marker| marker.mtype == MarkerType::PageBreak)
 			.map(|marker| marker.text.as_str())
 			.collect();
-		assert_eq!(labels, vec!["Slide 2"]);
-		assert_eq!(doc.buffer.content, "Real content\n");
+		assert_eq!(labels, vec!["Slide 1", "Slide 2"]);
+		assert_eq!(doc.buffer.content, "This slide has no text.\nReal content\n");
 	}
 
 	#[test]
@@ -304,5 +353,43 @@ mod tests {
 	fn rejects_malformed_xml() {
 		let err = parse_fodp("<office:document><unclosed>").expect_err("malformed xml must fail");
 		assert!(err.to_string().contains("Invalid FODP document"), "unexpected error: {err}");
+	}
+
+	/// Alt text, comments and the presenter's notes all used to run into the slide's words unlabelled.
+	#[test]
+	fn a_slide_keeps_its_own_words_and_labels_its_notes() {
+		let slide = r"<draw:page><draw:frame><draw:text-box><text:p>Sales<text:s/>grew<office:annotation><dc:creator>Ann</dc:creator><text:p>Check this</text:p></office:annotation> fast</text:p></draw:text-box></draw:frame><draw:frame><draw:image/><svg:title>Bar chart</svg:title></draw:frame><presentation:notes><draw:frame><draw:text-box><text:p>Mention Q3.</text:p><text:p>Pause here.</text:p></draw:text-box></draw:frame></presentation:notes></draw:page>";
+		let doc = parse_ok(&fodp_document(slide));
+		assert_eq!(
+			doc.buffer.content,
+			"Sales grew fast
+[Image: Bar chart]
+Speaker notes: Mention Q3.
+Pause here.
+Comment from Ann: Check this
+"
+		);
+		let image = doc.buffer.markers.iter().find(|m| m.mtype == MarkerType::Image).expect("image marker");
+		assert_eq!(
+			(image.position, image.text.as_str()),
+			(
+				display_len(
+					"Sales grew fast
+"
+				),
+				"Bar chart"
+			)
+		);
+	}
+
+	/// A slide of one picture reads as that picture, not as a slide with no text.
+	#[test]
+	fn a_picture_slide_reads_as_its_picture() {
+		let doc = parse_ok(&fodp_document("<draw:page><draw:frame><draw:image/></draw:frame></draw:page>"));
+		assert_eq!(
+			doc.buffer.content,
+			"[Image]
+"
+		);
 	}
 }

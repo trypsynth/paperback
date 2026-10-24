@@ -16,16 +16,81 @@ use crate::{
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, add_converter_markers,
 		convert::xml_to_text::XmlToText,
-		util::{path::extract_title_from_path, toc::build_toc_from_headings},
+		is_data_uri, is_external_url,
+		util::{
+			path::{extract_title_from_path, resolve_relative_path},
+			toc::build_toc_from_headings,
+		},
 	},
 	t,
-	util::zip::{read_zip_entry_by_name_with_password, zip_entry_name_resolver},
+	util::{
+		text::url_decode,
+		zip::{read_zip_entry_by_name_with_password, zip_entry_name_resolver},
+	},
 };
 
 /// Parses a DAISY book packaged as a zip archive: DAISY 3 (OPF manifest plus DTBook XML, with
 /// or without a SMIL audio layer), DAISY 2.02 (`ncc.html`), or, failing both, a bare bundle of
 /// audio files with no markup at all.
 pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
+	let mut document = parse_archive(context, path)?;
+	resolve_picture_entries(&mut document, path);
+	Ok(document)
+}
+
+/// Points each picture at the archive entry it lives in, so it can be saved and read with OCR. The markup names a picture relative to the text file it appears in, which nothing reading the picture later can know, so the name is settled here, while the archive's layout is at hand.
+fn resolve_picture_entries(document: &mut Document, path: &Path) {
+	let Ok(archive) =
+		File::open(path).map(BufReader::new).and_then(|file| ZipArchive::new(file).map_err(std::io::Error::other))
+	else {
+		return;
+	};
+	let names: Vec<String> = archive.file_names().flatten().map(String::from).collect();
+	let mut folders: Vec<String> = names
+		.iter()
+		.filter(|name| {
+			Path::new(name.as_str()).extension().is_some_and(|ext| {
+				["opf", "xml", "html", "htm", "xhtml", "ncx", "smil"]
+					.iter()
+					.any(|known| ext.eq_ignore_ascii_case(known))
+			})
+		})
+		.map(|name| name.rsplit_once('/').map_or_else(String::new, |(folder, _)| folder.to_string()))
+		.collect();
+	folders.sort();
+	folders.dedup();
+	for marker in &mut document.buffer.markers {
+		if !matches!(marker.mtype, MarkerType::Image | MarkerType::Figure)
+			|| marker.reference.is_empty()
+			|| is_data_uri(&marker.reference)
+			|| is_external_url(&marker.reference)
+		{
+			continue;
+		}
+		if let Some(entry) = picture_entry(&names, &folders, &marker.reference) {
+			marker.reference = entry;
+		}
+	}
+}
+
+/// The archive entry a picture's `src` names: the name itself, or the name beside one of the book's text files, or failing those the only entry ending in it. Matched without regard to case, as the rest of the book's files are.
+fn picture_entry(names: &[String], folders: &[String], source: &str) -> Option<String> {
+	let source = url_decode(source.split(['#', '?']).next().unwrap_or_default());
+	let find = |wanted: &str| names.iter().find(|name| name.eq_ignore_ascii_case(wanted)).cloned();
+	std::iter::once(source.trim_start_matches('/').to_string())
+		.chain(folders.iter().map(|folder| resolve_relative_path(folder, &source)))
+		.find_map(|candidate| find(&candidate))
+		.or_else(|| {
+			let ending = format!("/{}", source.trim_start_matches(['.', '/']).to_lowercase());
+			let mut matches = names.iter().filter(|name| name.to_lowercase().ends_with(&ending));
+			match (matches.next(), matches.next()) {
+				(Some(only), None) => Some(only.clone()),
+				_ => None,
+			}
+		})
+}
+
+fn parse_archive(context: &ParserContext, path: &Path) -> Result<Document> {
 	let mut title = extract_title_from_path(&context.file_path);
 	let mut author = String::new();
 	let buffer;

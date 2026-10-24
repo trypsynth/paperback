@@ -2,9 +2,10 @@ use std::collections::HashMap;
 
 use roxmltree::Document as XmlDocument;
 
-use super::{super::numbering::Numbering, Walk, number_pages, traverse};
+use super::{super::numbering::Numbering, Annotations, PageSource, Walk, number_pages, traverse};
 use crate::{
 	document::{DocumentBuffer, MarkerType},
+	parser::util::ooxml::Relationships,
 	util::text::display_len,
 };
 
@@ -14,7 +15,7 @@ fn walk(xml_doc: &XmlDocument, render_tables_inline: bool, numbering: Numbering)
 	let mut buffer = DocumentBuffer::new();
 	let mut headings = Vec::new();
 	let mut id_positions = HashMap::new();
-	let rels = HashMap::new();
+	let rels = Relationships::default();
 	let style_heading_map = HashMap::new();
 	let mut walk = Walk {
 		buffer: &mut buffer,
@@ -25,6 +26,8 @@ fn walk(xml_doc: &XmlDocument, render_tables_inline: bool, numbering: Numbering)
 		render_tables_inline,
 		numbering,
 		list: None,
+		page_source: PageSource::for_document(xml_doc.input_text()),
+		annotations: Annotations::default(),
 	};
 	traverse(xml_doc.root(), &mut walk);
 	walk.end_list();
@@ -255,7 +258,7 @@ fn links_and_bookmarks_land_on_their_text_after_an_emoji() {
 	let mut buffer = DocumentBuffer::new();
 	let mut headings = Vec::new();
 	let mut id_positions = HashMap::new();
-	let rels = HashMap::new();
+	let rels = Relationships::default();
 	let style_heading_map = HashMap::new();
 	let mut walk = Walk {
 		buffer: &mut buffer,
@@ -266,6 +269,8 @@ fn links_and_bookmarks_land_on_their_text_after_an_emoji() {
 		render_tables_inline: false,
 		numbering: Numbering::default(),
 		list: None,
+		page_source: PageSource::for_document(xml),
+		annotations: Annotations::default(),
 	};
 	traverse(xml_doc.root(), &mut walk);
 	let this = display_len("\u{1F600} see ");
@@ -275,4 +280,140 @@ fn links_and_bookmarks_land_on_their_text_after_an_emoji() {
 	assert_eq!(links[0], (this, "this"));
 	assert_eq!(links[1].0, display_len("\u{1F600} see this and "));
 	assert_eq!(buffer.content, "\u{1F600} see this and that\n");
+}
+
+/// A file Word never laid out, such as one from Google Docs or pandoc, has only the breaks its author wrote, and they are its pages.
+#[test]
+fn a_document_word_never_laid_out_takes_its_pages_from_its_explicit_breaks() {
+	let xml = r#"<document><body><p><r><t>Cover</t></r></p><p><r><br type="page"/></r></p><p><r><t>Contents</t></r></p><p><pPr><pageBreakBefore/></pPr><r><t>Body</t></r></p></body></document>"#;
+	let buffer = parse_run_props(xml);
+	let body = buffer.content.find("Body").unwrap();
+	let contents = buffer.content.find("Contents").unwrap();
+	assert_eq!(
+		pages(&buffer),
+		[(0, "Page 1".to_string()), (contents, "Page 2".to_string()), (body, "Page 3".to_string())]
+	);
+}
+
+/// A break partway through a paragraph starts the page at the words after it, and one closing the document starts no page at all.
+#[test]
+fn an_explicit_break_inside_a_paragraph_starts_the_page_at_the_words_after_it() {
+	let xml = r#"<document><body><p><r><t>one</t><br type="page"/><t>two</t></r></p><p><r><t>end</t><br type="page"/></r></p></body></document>"#;
+	let buffer = parse_run_props(xml);
+	assert_eq!(
+		pages(&buffer),
+		[
+			(0, "Page 1".to_string()),
+			(
+				display_len(
+					"one
+"
+				),
+				"Page 2".to_string()
+			)
+		]
+	);
+}
+
+/// A section that starts a new page does so after the paragraph that ends it, unless it is continuous.
+#[test]
+fn a_new_page_section_starts_a_page_and_a_continuous_one_does_not() {
+	let xml = r#"<document><body><p><pPr><sectPr><type val="continuous"/></sectPr></pPr><r><t>A</t></r></p><p><pPr><sectPr/></pPr><r><t>B</t></r></p><p><r><t>C</t></r></p></body></document>"#;
+	let buffer = parse_run_props(xml);
+	let c = buffer.content.find('C').unwrap();
+	assert_eq!(pages(&buffer), [(0, "Page 1".to_string()), (c, "Page 2".to_string())]);
+}
+
+/// Word records a rendered break after each explicit one, so counting both would give every explicit break two pages.
+#[test]
+fn explicit_breaks_are_not_counted_on_top_of_rendered_ones() {
+	let xml = r#"<document><body><p><r><t>One</t><br type="page"/></r></p><p><r><lastRenderedPageBreak/><t>Two</t></r></p></body></document>"#;
+	let buffer = parse_run_props(xml);
+	assert_eq!(pages(&buffer), [(0, "Page 1".to_string()), (4, "Page 2".to_string())]);
+}
+
+fn docx(entries: &[(&str, &str)]) -> zip::ZipArchive<std::io::Cursor<Vec<u8>>> {
+	use std::io::Write;
+	let mut writer = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
+	for (name, contents) in entries {
+		writer.start_file(*name, zip::write::SimpleFileOptions::default()).unwrap();
+		writer.write_all(contents.as_bytes()).unwrap();
+	}
+	zip::ZipArchive::new(std::io::Cursor::new(writer.finish().unwrap().into_inner())).unwrap()
+}
+
+/// #1123: Word keeps its notes in parts of their own, and reading only the document lost both the numbers and the notes. A citation now links to its note, written after the text and numbered as Word shows it.
+#[test]
+fn footnotes_and_endnotes_are_cited_in_the_text_and_written_after_it() {
+	let document = r#"<document><body><p><r><t>Water boils</t></r><r><footnoteReference id="2"/></r><r><t> at sea level</t></r><r><endnoteReference id="1"/></r><r><t>.</t></r></p><p><r><t>Marked</t></r><r><footnoteReference customMarkFollows="1" id="3"/><t>*</t></r></p></body></document>"#;
+	let footnotes = r#"<footnotes><footnote type="separator" id="-1"><p><r><separator/></r></p></footnote><footnote id="2"><p><r><footnoteRef/></r><r><t xml:space="preserve"> At 100 degrees.</t></r></p></footnote><footnote id="3"><p><r><t>A starred note.</t></r></p></footnote></footnotes>"#;
+	let endnotes =
+		r#"<endnotes><endnote id="1"><p><r><endnoteRef/></r><r><t>See the appendix.</t></r></p></endnote></endnotes>"#;
+	let mut archive =
+		docx(&[("word/document.xml", document), ("word/footnotes.xml", footnotes), ("word/endnotes.xml", endnotes)]);
+	let mut buffer = DocumentBuffer::new();
+	let mut id_positions = HashMap::new();
+	let mut headings = Vec::new();
+	super::parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, &mut headings, false).unwrap();
+	assert_eq!(
+		buffer.content,
+		"Water boils[1] at sea level[i].\nMarked[*]\nNotes\n1. At 100 degrees.\ni. See the appendix.\n* A starred note.\n"
+	);
+	let links: Vec<(usize, &str)> = buffer
+		.markers
+		.iter()
+		.filter(|m| m.mtype == MarkerType::Link)
+		.map(|m| (m.position, m.reference.as_str()))
+		.collect();
+	assert_eq!(links.len(), 3);
+	let (first, reference) = links[0];
+	assert_eq!(first, display_len("Water boils"));
+	let target = id_positions[reference.trim_start_matches('#')];
+	assert_eq!(target, buffer.content.find("1. At").unwrap());
+	assert!(headings.iter().any(|heading| heading.text == "Notes"));
+}
+
+/// #1123: Word comments used to be dropped. They now follow the text, naming their author and the words they are on, and link back to those words.
+#[test]
+fn comments_follow_the_text_with_their_authors_and_link_back() {
+	let document = r#"<document><body><p><r><t xml:space="preserve">Sales </t></r><commentRangeStart id="0"/><r><t>grew fast</t></r><commentRangeEnd id="0"/><r><commentReference id="0"/></r><r><t xml:space="preserve"> this year.</t></r></p><p><r><t>Done.</t></r><r><commentReference id="1"/></r></p></body></document>"#;
+	let comments = r#"<comments><comment id="0" author="Ann" date="2026-10-23T00:00:00Z"><p><r><annotationRef/></r><r><t>Check this figure.</t></r></p></comment><comment id="1"><p><r><t>Nice.</t></r></p></comment></comments>"#;
+	let mut archive = docx(&[("word/document.xml", document), ("word/comments.xml", comments)]);
+	let mut buffer = DocumentBuffer::new();
+	let mut id_positions = HashMap::new();
+	let mut headings = Vec::new();
+	super::parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, &mut headings, false).unwrap();
+	assert_eq!(
+		buffer.content,
+		"Sales grew fast this year.\nDone.\nComments\nAnn on \u{201c}grew fast\u{201d}: Check this figure.\nComment: Nice.\n"
+	);
+	let link = buffer.markers.iter().find(|m| m.mtype == MarkerType::Link).expect("comment link");
+	assert_eq!(id_positions[link.reference.trim_start_matches('#')], display_len("Sales "));
+}
+
+/// #1123: tracked insertions were dropped along with deletions, so the text matched neither version: "Kept text  and  end". It now reads as it does with every change accepted.
+#[test]
+fn tracked_changes_read_as_accepted() {
+	let buffer = parse_run_props(
+		r#"<document><body><p><r><t xml:space="preserve">Kept text </t></r><del><r><delText xml:space="preserve">old </delText></r></del><ins><r><t xml:space="preserve">new </t></r></ins><r><t>and end.</t></r></p></body></document>"#,
+	);
+	assert_eq!(buffer.content, "Kept text new and end.\n");
+}
+
+/// Forms and templates put their text in content controls, and smart tags and simple fields wrap runs too; all of it was lost.
+#[test]
+fn text_inside_content_controls_smart_tags_and_fields_is_read() {
+	let buffer = parse_run_props(
+		r#"<document><body><p><r><t xml:space="preserve">Name: </t></r><sdt><sdtPr><alias val="Name"/></sdtPr><sdtContent><r><t>Ann Smith</t></r></sdtContent></sdt><r><t xml:space="preserve">, in </t></r><smartTag><r><t>Paris</t></r></smartTag><r><t xml:space="preserve">, page </t></r><fldSimple instr="PAGE"><r><t>3</t></r></fldSimple></p></body></document>"#,
+	);
+	assert_eq!(buffer.content, "Name: Ann Smith, in Paris, page 3\n");
+}
+
+/// A table cell read only the runs directly in its paragraphs, losing links, content controls and nested tables.
+#[test]
+fn a_table_cell_reads_links_content_controls_and_nested_tables() {
+	let buffer = parse_run_props(
+		r#"<document><body><tbl><tr><tc><p><hyperlink anchor="x"><r><t>Linked</t></r></hyperlink></p></tc><tc><p><sdt><sdtContent><r><t>Filled</t></r></sdtContent></sdt></p></tc><tc><tbl><tr><tc><p><r><t>Inner</t></r></p></tc></tr></tbl></tc></tr></tbl></body></document>"#,
+	);
+	assert!(buffer.content.starts_with("[Table]: Linked Filled Inner"), "{:?}", buffer.content);
 }

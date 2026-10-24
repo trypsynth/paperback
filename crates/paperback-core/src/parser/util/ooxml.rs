@@ -10,7 +10,58 @@ use office_crypto::decrypt_from_file;
 use roxmltree::{Node, NodeType};
 use zip::ZipArchive;
 
-use crate::{parser::PASSWORD_REQUIRED_ERROR_PREFIX, t, util::zip::read_zip_entry_by_name};
+use crate::{
+	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, util::path::resolve_relative_path},
+	t,
+	util::zip::read_zip_entry_by_name,
+};
+
+/// A part's relationships that its text needs: where its links go, and which archive entry each picture is.
+#[derive(Debug, Default)]
+pub struct Relationships {
+	pub links: HashMap<String, String>,
+	/// By relationship id, the picture's entry in the archive, resolved against the part's own folder: `media/image1.png` beside `word/document.xml` is `word/media/image1.png`.
+	pub images: HashMap<String, String>,
+}
+
+/// Reads the relationships at `rels_path`, such as `word/_rels/document.xml.rels`, for the part it belongs to.
+pub fn read_relationships<R: Read + Seek>(archive: &mut ZipArchive<R>, rels_path: &str) -> Relationships {
+	let links = read_ooxml_relationships(archive, rels_path);
+	let mut images = HashMap::new();
+	let part_folder = rels_path.rsplit_once("/_rels/").map_or("", |(folder, _)| folder);
+	if let Ok(content) = read_zip_entry_by_name(archive, rels_path)
+		&& let Ok(document) = roxmltree::Document::parse(&content)
+	{
+		for relationship in document.descendants().filter(|node| node.tag_name().name() == "Relationship") {
+			let is_image = relationship.attribute("Type").is_some_and(|kind| kind.ends_with("/image"));
+			if !is_image || relationship.attribute("TargetMode") == Some("External") {
+				continue;
+			}
+			if let (Some(id), Some(target)) = (relationship.attribute("Id"), relationship.attribute("Target")) {
+				let entry =
+					target.strip_prefix('/').map_or_else(|| resolve_relative_path(part_folder, target), str::to_string);
+				images.insert(id.to_string(), entry);
+			}
+		}
+	}
+	Relationships { links, images }
+}
+
+/// A document's own title and author, from `docProps/core.xml`, each `None` when the document leaves it out or empty.
+pub fn read_core_properties<R: Read + Seek>(archive: &mut ZipArchive<R>) -> (Option<String>, Option<String>) {
+	let Ok(content) = read_zip_entry_by_name(archive, "docProps/core.xml") else { return (None, None) };
+	let Ok(document) = roxmltree::Document::parse(&content) else { return (None, None) };
+	let field = |name: &str| {
+		document
+			.descendants()
+			.find(|node| node.tag_name().name() == name)
+			.and_then(|node| node.text())
+			.map(str::trim)
+			.filter(|text| !text.is_empty())
+			.map(str::to_string)
+	};
+	(field("title"), field("creator"))
+}
 
 pub fn read_ooxml_relationships<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
@@ -113,6 +164,15 @@ mod tests {
 		}
 		cursor.set_position(0);
 		ZipArchive::new(cursor).expect("open zip")
+	}
+
+	#[test]
+	fn the_core_properties_give_the_title_and_author() {
+		let core = r#"<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Annual Report</dc:title><dc:creator>Ann Smith</dc:creator></cp:coreProperties>"#;
+		let mut archive = archive_containing("docProps/core.xml", core);
+		assert_eq!(read_core_properties(&mut archive), (Some("Annual Report".into()), Some("Ann Smith".into())));
+		let mut blank = archive_containing("docProps/core.xml", "<coreProperties><title> </title></coreProperties>");
+		assert_eq!(read_core_properties(&mut blank), (None, None));
 	}
 
 	fn rels_xml(body: &str) -> String {

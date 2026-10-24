@@ -9,13 +9,13 @@ use crate::{
 			block_elements::is_block_element,
 			format_spans::FormatKind,
 			formula::{formula_text, is_xml_formula, xml_formula_fragment},
+			image_text,
 			line_builder::LineBuilder,
 			list_style::ListStyle,
 			table_text::table_render_bundle,
 		},
 		util::xml::collect_element_text,
 	},
-	t,
 	types::{
 		FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo, SeparatorInfo, TableInfo,
 	},
@@ -206,13 +206,8 @@ impl XmlToText {
 		if !is_figure && !Self::tag_is(tag_name, "img") && !Self::tag_is(tag_name, "image") {
 			return None;
 		}
-		let mut description = node
-			.attribute("alt")
-			.or_else(|| node.attribute("aria-label"))
-			.or_else(|| node.attribute("aria-description"))
-			.or_else(|| node.attribute("title"))
-			.map(collapse_whitespace)
-			.unwrap_or_default();
+		let attribute = |name: &str| node.attribute(name).map(str::to_string);
+		let mut description = image_text::description(&attribute);
 		if description.is_empty() && is_figure {
 			for child in node.children() {
 				if child.is_element() && Self::tag_is(child.tag_name().name(), "figcaption") {
@@ -221,12 +216,11 @@ impl XmlToText {
 				}
 			}
 		}
-		if description.is_empty() {
+		// A figure with no caption says nothing itself: the picture inside it is announced instead.
+		if description.is_empty() && (is_figure || image_text::is_decorative(&attribute)) {
 			return None;
 		}
-		// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
-		let label = if is_figure { t("Figure") } else { t("Image") };
-		let image_text = format!("[{label}: {description}]");
+		let image_text = image_text::placeholder(is_figure, &description);
 		let info = ImageInfo {
 			offset: 0,
 			alt_text: description,

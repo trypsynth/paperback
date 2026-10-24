@@ -4,7 +4,7 @@ use anyhow::Result;
 
 use crate::{
 	document::{Document, ParserContext},
-	parser::Parser,
+	parser::{Parser, util::ole::apply_summary_information},
 	t,
 };
 
@@ -34,7 +34,10 @@ impl Parser for WordParser {
 		}
 		if extension == "doc" {
 			match legacy::parse_legacy_doc(context) {
-				Ok(document) => return Ok(document),
+				Ok(mut document) => {
+					apply_summary_information(&mut document, &context.file_path);
+					return Ok(document);
+				}
 				Err(legacy_err) => {
 					tracing::warn!(path = %context.file_path, error = %legacy_err, "legacy doc parsing failed, falling back to ooxml parsing");
 					match ooxml::parse_ooxml_doc(context, render_tables_inline) {

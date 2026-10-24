@@ -15,8 +15,9 @@ use crate::{
 			build_html_table_from_grid, display_lines_and_length, html_table_to_display, table_caption_from_html,
 		},
 		util::{
-			ooxml::{read_ooxml_relationships, try_decrypt_office_file},
+			ooxml::{read_core_properties, read_ooxml_relationships, try_decrypt_office_file},
 			path::extract_title_from_path,
+			slides::no_text_placeholder,
 			xml::collect_text_from_tagged_elements,
 		},
 	},
@@ -82,37 +83,34 @@ pub(super) fn parse_pptx(context: &ParserContext) -> Result<Document> {
 			&rels,
 			context.render_tables_inline,
 		);
-		if !slide_text.trim().is_empty() {
-			buffer.append(&slide_text);
-			if !buffer.content.ends_with('\n') {
-				buffer.append("\n");
-			}
-			if index + 1 < slides.len() {
-				buffer.append("\n");
-			}
-			buffer
-				.add_marker(Marker::new(MarkerType::PageBreak, slide_start).with_text(format!("Slide {}", index + 1)));
-			for link in links {
-				buffer.add_marker(
-					Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
-				);
-			}
-			for table in tables {
-				buffer.add_marker(
-					Marker::new(MarkerType::Table, table.offset)
-						.with_text(table.caption)
-						.with_reference(table.html)
-						.with_length(table.length),
-				);
-			}
-			let toc_name = if slide_title.is_empty() { format!("Slide {}", index + 1) } else { slide_title.clone() };
-			toc_items.push(TocItem::new(toc_name, String::new(), slide_start));
-		} else {
-			tracing::debug!(slide = index + 1, "skipped pptx slide with no text");
+		let slide_text = if slide_text.trim().is_empty() { no_text_placeholder() } else { slide_text };
+		buffer.append(&slide_text);
+		if !buffer.content.ends_with('\n') {
+			buffer.append("\n");
 		}
+		if index + 1 < slides.len() {
+			buffer.append("\n");
+		}
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, slide_start).with_text(format!("Slide {}", index + 1)));
+		for link in links {
+			buffer.add_marker(
+				Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
+			);
+		}
+		for table in tables {
+			buffer.add_marker(
+				Marker::new(MarkerType::Table, table.offset)
+					.with_text(table.caption)
+					.with_reference(table.html)
+					.with_length(table.length),
+			);
+		}
+		let toc_name = if slide_title.is_empty() { format!("Slide {}", index + 1) } else { slide_title.clone() };
+		toc_items.push(TocItem::new(toc_name, String::new(), slide_start));
 	}
-	let title = extract_title_from_path(&context.file_path);
-	let mut document = Document::new().with_title(title);
+	let (title, author) = read_core_properties(&mut archive);
+	let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
+	let mut document = Document::new().with_title(title).with_author(author.unwrap_or_default());
 	document.set_buffer(buffer);
 	document.id_positions = id_positions;
 	document.toc_items = toc_items;
@@ -203,24 +201,31 @@ fn traverse_for_text(
 					}
 					return;
 				}
-				"hlinkClick" => {
-					if let Some(r_id) = node.attribute("id")
-						&& let Some(link_target) = rels.get(r_id)
-						&& let Some(parent) = node.parent()
-					{
-						let link_text = collect_text_from_tagged_elements(parent, "t");
-						if !link_text.is_empty() {
-							let link_offset = slide_start + display_len(text);
-							text.push_str(&link_text);
-							links.push(LinkInfo {
-								offset: link_offset,
-								text: link_text,
-								reference: link_target.clone(),
-							});
+				"r" => {
+					let link_target = run_link(node).and_then(|id| rels.get(id));
+					let start = text.len();
+					for child in node.children() {
+						traverse_for_text(child, text, links, tables, slide_start, rels, render_tables_inline);
+					}
+					if let Some(target) = link_target {
+						let link_text = text[start..].to_string();
+						let offset = slide_start + display_len(&text[..start]);
+						// PowerPoint splits one link across runs wherever the formatting changes, each carrying the same link.
+						match links.last_mut() {
+							Some(last)
+								if last.reference == *target && last.offset + display_len(&last.text) == offset =>
+							{
+								last.text.push_str(&link_text);
+							}
+							_ if !link_text.is_empty() => {
+								links.push(LinkInfo { offset, text: link_text, reference: target.clone() });
+							}
+							_ => {}
 						}
 					}
 					return;
 				}
+				"hlinkClick" => return,
 				_ => {}
 			}
 		}
@@ -230,6 +235,17 @@ fn traverse_for_text(
 	for child in node.children() {
 		traverse_for_text(child, text, links, tables, slide_start, rels, render_tables_inline);
 	}
+}
+
+/// The relationship id a run links to. A deck writes the link in the run's properties, `<a:r><a:rPr><a:hlinkClick r:id="..."/></a:rPr><a:t>...</a:t></a:r>`, beside its text rather than around it.
+fn run_link<'a>(run: Node<'a, '_>) -> Option<&'a str> {
+	let properties = run.children().find(|child| child.tag_name().name() == "rPr");
+	properties
+		.into_iter()
+		.flat_map(|properties| properties.children())
+		.chain(run.children())
+		.find(|child| child.tag_name().name() == "hlinkClick")
+		.and_then(|link| link.attribute("id"))
 }
 
 /// Convert a `DrawingML` `<a:tbl>` into the shared HTML-table representation, append its display text

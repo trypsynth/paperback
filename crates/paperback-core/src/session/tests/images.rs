@@ -214,3 +214,96 @@ fn a_linked_picture_is_on_a_link_and_a_plain_one_is_not() {
 	assert!(session.image_file_name_at(plain).is_some() && !session.is_on_link(plain));
 	fs::remove_dir_all(&dir).ok();
 }
+
+/// #1166: a zipped DAISY book, as Bookshare sends them, names its pictures relative to the `DTBook` inside the archive, so reading one has to find it there rather than on disk.
+#[test]
+fn a_picture_in_a_zipped_daisy_book_offers_its_bytes() {
+	let dir = unique_temp_dir();
+	let book = dir.join("book.zip");
+	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
+<package unique-identifier="uid"><metadata><dc-metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:Title>Maps</dc:Title></dc-metadata></metadata>
+<manifest><item id="text" href="book.xml" media-type="application/x-dtbook+xml"/></manifest><spine><itemref idref="text"/></spine></package>"#;
+	let dtbook = br#"<?xml version="1.0" encoding="UTF-8"?>
+<dtbook><book><bodymatter><p>Before</p><imggroup><img src="images/map.png" alt="A map"/></imggroup></bodymatter></book></dtbook>"#;
+	write_zip(&book, &[("content/book.opf", opf), ("content/book.xml", dtbook), ("content/images/map.png", PICTURE)]);
+	let session = open(&book);
+	let at = position_of(&session, "[Image: A map]") + 3;
+	assert_eq!(session.image_bytes_at(at).unwrap(), PICTURE);
+	fs::remove_dir_all(&dir).ok();
+}
+
+/// Word pictures were dropped without a trace. A picture now reads as its alt text, can be saved and read with OCR from the `.docx` itself, and one its author marked as decorative stays out of the way.
+#[test]
+fn a_word_picture_reads_as_its_alt_text_and_offers_its_bytes() {
+	let dir = unique_temp_dir();
+	let document = dir.join("report.docx");
+	let body = br#"<document><body><p><r><t xml:space="preserve">See </t></r><r><drawing><inline><docPr id="1" name="Picture 1" descr="Sales by region"/><graphic><graphicData><pic><blipFill><blip embed="rId5"/></blipFill></pic></graphicData></graphic></inline></drawing></r></p><p><r><drawing><inline><docPr id="2" name="Rule"><extLst><ext><decorative val="1"/></ext></extLst></docPr><graphic><graphicData><pic><blipFill><blip embed="rId5"/></blipFill></pic></graphicData></graphic></inline></drawing></r><r><t>After.</t></r></p><p><r><pict><shape alt="Old logo"><imagedata id="rId5"/></shape></pict></r></p></body></document>"#;
+	let rels = br#"<Relationships><Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png"/></Relationships>"#;
+	write_zip(
+		&document,
+		&[("word/document.xml", body), ("word/_rels/document.xml.rels", rels), ("word/media/image1.png", PICTURE)],
+	);
+	let session = open(&document);
+	assert_eq!(session.content(), "See [Image: Sales by region]\nAfter.\n[Image: Old logo]\n");
+	let at = position_of(&session, "[Image: Sales by region]") + 3;
+	assert_eq!(session.image_bytes_at(at).unwrap(), PICTURE);
+	assert_eq!(session.image_bytes_at(position_of(&session, "[Image: Old logo]")).unwrap(), PICTURE);
+	fs::remove_dir_all(&dir).ok();
+}
+
+/// An uncompressed MOBI book of one text record holding `html`, followed by `pictures`, each a record of its own.
+fn mobi_book(html: &str, pictures: &[&[u8]]) -> Vec<u8> {
+	let mut mobi = vec![0u8; 232];
+	mobi[..4].copy_from_slice(b"MOBI");
+	mobi[4..8].copy_from_slice(&232u32.to_be_bytes());
+	mobi[12..16].copy_from_slice(&65001u32.to_be_bytes());
+	mobi[20..24].copy_from_slice(&6u32.to_be_bytes());
+	// Every optional index the header can point at is absent, and the pictures start at record 2.
+	for at in (24..232).step_by(4) {
+		mobi[at..at + 4].copy_from_slice(&u32::MAX.to_be_bytes());
+	}
+	mobi[92..96].copy_from_slice(&2u32.to_be_bytes());
+	mobi[112..116].copy_from_slice(&0u32.to_be_bytes());
+	mobi[226..228].copy_from_slice(&0u16.to_be_bytes());
+	let mut record0 = Vec::new();
+	record0.extend_from_slice(&1u16.to_be_bytes());
+	record0.extend_from_slice(&[0, 0]);
+	record0.extend_from_slice(&u32::try_from(html.len()).unwrap().to_be_bytes());
+	record0.extend_from_slice(&1u16.to_be_bytes());
+	record0.extend_from_slice(&4096u16.to_be_bytes());
+	record0.extend_from_slice(&[0, 0, 0, 0]);
+	record0.extend(mobi);
+	let records: Vec<&[u8]> =
+		[record0.as_slice(), html.as_bytes()].into_iter().chain(pictures.iter().copied()).collect();
+	let mut data = vec![0u8; 76];
+	data[..4].copy_from_slice(b"Book");
+	data.extend_from_slice(&u16::try_from(records.len()).unwrap().to_be_bytes());
+	let mut offset = 78 + records.len() * 8;
+	for record in &records {
+		data.extend_from_slice(&u32::try_from(offset).unwrap().to_be_bytes());
+		data.extend_from_slice(&[0, 0, 0, 0]);
+		offset += record.len();
+	}
+	for record in &records {
+		data.extend_from_slice(record);
+	}
+	data
+}
+
+/// MOBI pictures are records of the book, named by number, and nothing reached them: they could not be saved or read with OCR.
+#[test]
+fn a_mobi_picture_offers_its_bytes_from_its_record() {
+	let dir = unique_temp_dir();
+	let path = dir.join("book.mobi");
+	let gif: &[u8] = b"GIF89a-not-really";
+	fs::write(
+		&path,
+		mobi_book(r#"<html><body><p>Before</p><p><img recindex="00001" alt="A map"></p></body></html>"#, &[gif]),
+	)
+	.unwrap();
+	let session = open(&path);
+	let at = position_of(&session, "[Image: A map]") + 3;
+	assert_eq!(session.image_file_name_at(at).as_deref(), Some("image 2.gif"));
+	assert_eq!(session.image_bytes_at(at).unwrap(), gif);
+	fs::remove_dir_all(&dir).ok();
+}

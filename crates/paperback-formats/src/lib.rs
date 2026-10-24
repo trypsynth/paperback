@@ -115,7 +115,7 @@ formats! {
 		name: "Comic book archives",
 		extensions: ["cbz"],
 		mime_types: ["application/vnd.comicbook+zip"],
-		flags: SUPPORTS_PAGES | SUPPORTS_IMAGES,
+		flags: SUPPORTS_PAGES | SUPPORTS_IMAGES | SUPPORTS_TOC,
 	},
 	CHM {
 		name: "Compiled HTML Help files",
@@ -146,7 +146,7 @@ formats! {
 		name: "Word Documents",
 		extensions: ["docx", "docm", "doc", "zip"],
 		mime_types: ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"],
-		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS,
+		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_LISTS | SUPPORTS_PAGES | SUPPORTS_IMAGES,
 	},
 	EPUB {
 		name: "EPUB Books",
@@ -219,25 +219,25 @@ formats! {
 		name: "Flat OpenDocument Presentations",
 		extensions: ["fodp"],
 		mime_types: ["application/vnd.oasis.opendocument.presentation-flat-xml"],
-		flags: NONE,
+		flags: SUPPORTS_IMAGES,
 	},
 	ODP {
 		name: "OpenDocument Presentations",
 		extensions: ["odp"],
 		mime_types: ["application/vnd.oasis.opendocument.presentation"],
-		flags: NONE,
+		flags: SUPPORTS_IMAGES,
 	},
 	FODT {
 		name: "Flat OpenDocument Text Files",
 		extensions: ["fodt"],
 		mime_types: ["application/vnd.oasis.opendocument.text-flat-xml"],
-		flags: SUPPORTS_TOC,
+		flags: SUPPORTS_TOC | SUPPORTS_IMAGES,
 	},
 	ODT {
 		name: "OpenDocument Text Files",
 		extensions: ["odt"],
 		mime_types: ["application/vnd.oasis.opendocument.text"],
-		flags: SUPPORTS_TOC,
+		flags: SUPPORTS_TOC | SUPPORTS_IMAGES,
 	},
 	POWERPOINT {
 		name: "PowerPoint Presentations",
@@ -327,5 +327,11 @@ mod tests {
 		assert!(!TEXT.installer.default_checked, "unspecified installer settings default to OPT_IN");
 		assert!(EPUB.installer.default_checked && EPUB.installer.default_handler);
 		assert!(!FB2.installer.default_checked && FB2.installer.default_handler);
+	}
+
+	/// The Word parser marks lists, their items and pages, and the mobile apps only offer those to step through for a format that claims them.
+	#[test]
+	fn word_documents_offer_list_and_page_navigation() {
+		assert!(WORD.flags.contains(ParserFlags::SUPPORTS_LISTS | ParserFlags::SUPPORTS_PAGES));
 	}
 }

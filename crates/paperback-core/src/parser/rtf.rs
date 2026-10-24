@@ -11,6 +11,7 @@ use crate::{
 
 mod encoding;
 mod escapes;
+mod info;
 mod tokens;
 
 use encoding::{extract_codepage, extract_font_table};
@@ -60,8 +61,9 @@ impl Parser for RtfParser {
 			anyhow::anyhow!(t("Failed to parse RTF document: {}").replace("{}", &e.to_string()))
 		})?;
 		let buffer = extract_content_from_tokens(&tokens);
-		let title = extract_title_from_path(&context.file_path);
-		let mut doc = Document::new().with_title(title);
+		let (title, author) = info::title_and_author(&content_str);
+		let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
+		let mut doc = Document::new().with_title(title).with_author(author.unwrap_or_default());
 		doc.set_buffer(buffer);
 		tracing::debug!(path = %context.file_path, "parsed rtf document successfully");
 		Ok(doc)

@@ -29,6 +29,7 @@ mod huffman;
 mod index;
 mod kf8;
 mod links;
+pub mod pictures;
 mod toc;
 mod varint;
 
@@ -120,6 +121,7 @@ impl Parser for MobiParser {
 		// Old-style Mobipocket files use <font size="N"> instead of <h1>-<h6>.
 		// Rewrite them so the heading-based TOC builder can pick them up.
 		text = rewrite_font_size_headings(&text);
+		text = pictures::point_pictures_at_records(&text, &data, &header.record_offsets, header.mobi_header());
 		let mut document_title = header.document_title;
 		if document_title.trim().is_empty() {
 			document_title = extract_title_from_path(&context.file_path);

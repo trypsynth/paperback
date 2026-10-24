@@ -42,17 +42,34 @@ impl Parser for RstParser {
 		let html_content = translate::rst_to_html(&source);
 		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
 		converter.convert(&html_content, HtmlSourceMode::NativeHtml);
-		let title = extract_title_from_path(&context.file_path);
+		// A title opening the document is its title, as docutils reads it.
+		let title = converter
+			.get_headings()
+			.first()
+			.filter(|heading| heading.offset == 0)
+			.map_or_else(|| extract_title_from_path(&context.file_path), |heading| heading.text.clone());
 		let mut buffer = DocumentBuffer::with_content(converter.get_text());
 		add_converter_markers(&mut buffer, &converter, 0);
 		let toc_items = build_toc_from_headings(converter.get_headings());
-		let mut doc = Document::new().with_title(title);
+		let mut doc = Document::new().with_title(title).with_author(author(&source));
 		doc.set_buffer(buffer);
 		doc.toc_items = toc_items;
 		doc.id_positions.clone_from(converter.get_id_positions());
 		tracing::debug!(path = %context.file_path, chars = doc.buffer.content.chars().count(), "parsed reStructuredText file");
 		Ok(doc)
 	}
+}
+
+/// The `:Author:` or `:Authors:` field of the document's bibliographic fields, which docutils reads as its author.
+fn author(source: &str) -> String {
+	source
+		.lines()
+		.find_map(|line| {
+			let (name, value) = line.strip_prefix(':')?.split_once(':')?;
+			(name.eq_ignore_ascii_case("author") || name.eq_ignore_ascii_case("authors"))
+				.then(|| value.trim().to_string())
+		})
+		.unwrap_or_default()
 }
 
 pub mod translate;

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Write as _};
 
 use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, Node, NodeType};
@@ -8,9 +8,13 @@ use crate::{
 	parser::{
 		Parser, add_converter_markers,
 		convert::xml_to_text::XmlToText,
-		util::xml::{collect_element_text, find_child_element, read_xml_to_string},
+		util::{
+			toc::build_toc_from_headings,
+			xml::{collect_element_text, find_child_element, read_xml_to_string},
+		},
 	},
 	t,
+	util::text::collapse_whitespace,
 };
 
 type Metadata = (String, String);
@@ -51,6 +55,7 @@ impl Parser for Fb2Parser {
 		let mut document = Document::new().with_title(title).with_author(author);
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
+		document.toc_items = build_toc_from_headings(converter.get_headings());
 		tracing::debug!(path = %context.file_path, "parsed fb2 file successfully");
 		Ok(document)
 	}
@@ -86,16 +91,29 @@ pub fn binary_data(file_path: &str, href: &str) -> Result<String> {
 fn clean_fb2(xml_content: &str) -> Option<(String, Metadata)> {
 	let doc = XmlDocument::parse(xml_content).ok()?;
 	let mut result = String::new();
-	serialize_without_binary(doc.root(), &mut result);
+	serialize_without_binary(doc.root(), &mut result, Place::default());
 	let meta = extract_metadata_from_doc(&doc);
 	Some((result, meta))
 }
 
-fn serialize_without_binary(node: Node, output: &mut String) {
+/// Where the serializer is in the book, which decides what an FB2 element becomes.
+#[derive(Clone, Copy, Default)]
+struct Place {
+	/// How many `<section>`s deep, which sets a title's heading level.
+	sections: usize,
+	in_body: bool,
+	/// Inside a named `<body>`, such as the notes, whose numbered sections would fill the contents with numbers if their titles were headings.
+	in_notes: bool,
+	/// Inside a poem, stanza, epigraph or quotation, whose titles are part of the text rather than the book's structure.
+	in_verse: bool,
+}
+
+/// Writes the book back out as XML without its `<binary>` image data, with FB2's structure in the names the converter knows: titles as headings, verse lines and subtitles as paragraphs, stanzas and quotations as blocks.
+fn serialize_without_binary(node: Node, output: &mut String, place: Place) {
 	match node.node_type() {
 		NodeType::Root => {
 			for child in node.children() {
-				serialize_without_binary(child, output);
+				serialize_without_binary(child, output, place);
 			}
 		}
 		NodeType::Element => {
@@ -103,6 +121,36 @@ fn serialize_without_binary(node: Node, output: &mut String) {
 			if tag_name == "binary" {
 				return;
 			}
+			let mut place = place;
+			let tag_name = match tag_name {
+				"body" => {
+					place.in_body = true;
+					place.in_notes = node.attribute("name").is_some();
+					tag_name
+				}
+				"section" => {
+					place.sections += 1;
+					tag_name
+				}
+				"title" if place.in_body && !place.in_verse => {
+					let text = escape_xml(&title_text(node));
+					if place.in_notes && place.sections > 0 {
+						let _ = write!(output, "<p>{text}</p>");
+					} else {
+						let level = (place.sections + 1).min(6);
+						let _ = write!(output, "<h{level}>{text}</h{level}>");
+					}
+					return;
+				}
+				"poem" | "stanza" | "epigraph" | "cite" => {
+					place.in_verse = true;
+					"div"
+				}
+				"title" | "annotation" => "div",
+				"v" | "subtitle" | "text-author" => "p",
+				"empty-line" => "br",
+				_ => tag_name,
+			};
 			output.push('<');
 			output.push_str(tag_name);
 			for attr in node.attributes() {
@@ -117,7 +165,7 @@ fn serialize_without_binary(node: Node, output: &mut String) {
 			} else {
 				output.push('>');
 				for child in node.children() {
-					serialize_without_binary(child, output);
+					serialize_without_binary(child, output, place);
 				}
 				output.push_str("</");
 				output.push_str(tag_name);
@@ -144,6 +192,28 @@ fn serialize_without_binary(node: Node, output: &mut String) {
 			}
 		}
 	}
+}
+
+/// A title's lines as one heading: FB2 often splits "Chapter 1" and its name into two paragraphs, which run together into "Chapter 1The Beginning" if simply joined.
+fn title_text(title: Node) -> String {
+	let lines: Vec<String> = title
+		.children()
+		.filter(|child| child.tag_name().name() == "p")
+		.map(|line| collapse_whitespace(&collect_element_text(line)).trim().to_string())
+		.filter(|line| !line.is_empty())
+		.collect();
+	if lines.is_empty() {
+		return collapse_whitespace(&collect_element_text(title)).trim().to_string();
+	}
+	let mut text = String::new();
+	for line in lines {
+		if !text.is_empty() {
+			let ends_a_sentence = text.ends_with(['.', ':', '!', '?', ';', '\u{2014}', '-']);
+			text.push_str(if ends_a_sentence { " " } else { ": " });
+		}
+		text.push_str(&line);
+	}
+	text
 }
 
 fn escape_xml(s: &str) -> String {
@@ -539,5 +609,60 @@ mod tests {
 		let missing = dir.join_str("nope.fb2");
 		let err = Fb2Parser.parse(&ParserContext::new(missing.clone())).expect_err("missing file must fail");
 		assert!(err.to_string().contains(&missing), "error should name the file: {err}");
+	}
+
+	fn headings(document: &Document) -> Vec<(i32, String)> {
+		document
+			.buffer
+			.markers
+			.iter()
+			.filter(|m| crate::document::is_heading_marker(m.mtype))
+			.map(|m| (crate::parser::util::toc::marker_type_to_heading_level(m.mtype), m.text.clone()))
+			.collect()
+	}
+
+	/// FB2 marks a chapter with a section and its title, not with HTML's h1 to h6, so without this a book has no headings to move between and no contents.
+	#[test]
+	fn section_titles_are_headings_by_depth_and_make_the_contents() {
+		let body = r#"<body><title><p>The Book</p></title><section><title><p>Part One</p></title><section><title><p>Chapter 1</p><p>The Beginning</p></title><p>Text.</p></section></section></body><body name="notes"><title><p>Notes</p></title><section id="n1"><title><p>1</p></title><p>A note.</p></section></body>"#;
+		let document = parse_ok(&fb2_document("", body));
+		assert_eq!(
+			headings(&document),
+			[
+				(1, "The Book".to_string()),
+				(2, "Part One".to_string()),
+				(3, "Chapter 1: The Beginning".to_string()),
+				(1, "Notes".to_string())
+			]
+		);
+		let top: Vec<&str> = document.toc_items.iter().map(|item| item.name.as_str()).collect();
+		assert_eq!(top, ["The Book", "Notes"]);
+		assert!(
+			document.buffer.content.contains(
+				"
+1
+A note."
+			),
+			"a note keeps its number as text: {:?}",
+			document.buffer.content
+		);
+	}
+
+	/// Each line of verse is a line, and a poem's own title is part of the text rather than a heading.
+	#[test]
+	fn verse_keeps_its_lines_and_its_title_is_not_a_heading() {
+		let body = r"<body><section><title><p>Chapter</p></title><poem><title><p>Ode</p></title><stanza><v>Line one</v><v>Line two</v></stanza><text-author>Someone</text-author></poem></section></body>";
+		let document = parse_ok(&fb2_document("", body));
+		assert!(
+			document.buffer.content.contains(
+				"Ode
+Line one
+Line two
+Someone"
+			),
+			"{:?}",
+			document.buffer.content
+		);
+		assert_eq!(headings(&document), [(2, "Chapter".to_string())]);
 	}
 }

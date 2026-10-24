@@ -17,7 +17,11 @@ use crate::{
 	parser::{
 		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 		util::{
-			ooxml::{collect_ooxml_run_text, read_ooxml_relationships, try_decrypt_office_file},
+			comments::{self, Comment},
+			ooxml::{
+				Relationships, collect_ooxml_run_text, read_core_properties, read_relationships,
+				try_decrypt_office_file,
+			},
 			path::extract_title_from_path,
 			toc::build_toc_from_buffer,
 		},
@@ -27,9 +31,11 @@ use crate::{
 	util::zip::read_zip_entry_by_name,
 };
 
+mod annotations;
 mod paragraph;
 
-use paragraph::{extract_number_from_string, process_paragraph, starts_page};
+use annotations::{Annotations, NoteKind};
+use paragraph::{PageSource, extract_number_from_string, paragraph_plain_text, process_paragraph, starts_page};
 
 use super::numbering::Numbering;
 
@@ -95,9 +101,10 @@ pub(super) fn parse_ooxml_doc(context: &ParserContext, render_tables_inline: boo
 	let mut id_positions = HashMap::new();
 	let mut headings = Vec::new();
 	parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, &mut headings, render_tables_inline)?;
-	let title = extract_title_from_path(&context.file_path);
+	let (title, author) = read_core_properties(&mut archive);
+	let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
 	let toc_items = build_toc_from_buffer(&buffer);
-	let mut document = Document::new().with_title(title);
+	let mut document = Document::new().with_title(title).with_author(author.unwrap_or_default());
 	document.set_buffer(buffer);
 	document.id_positions = id_positions;
 	document.toc_items = toc_items;
@@ -119,7 +126,7 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 	render_tables_inline: bool,
 ) -> Result<()> {
 	let style_heading_map = build_style_heading_map(archive);
-	let rels = read_ooxml_relationships(archive, "word/_rels/document.xml.rels");
+	let rels = read_relationships(archive, "word/_rels/document.xml.rels");
 	let numbering = Numbering::load(
 		read_zip_entry_by_name(archive, "word/numbering.xml").ok().as_deref(),
 		read_zip_entry_by_name(archive, "word/styles.xml").ok().as_deref(),
@@ -128,6 +135,7 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 	let doc_xml = XmlDocument::parse(&doc_content).context("Failed to parse word/document.xml")?;
 	let start = buffer.current_position();
 	let first_marker = buffer.markers.len();
+	let annotations = Annotations::new(read_zip_entry_by_name(archive, "word/settings.xml").ok().as_deref(), start);
 	let mut walk = Walk {
 		buffer,
 		headings,
@@ -137,17 +145,127 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 		render_tables_inline,
 		numbering,
 		list: None,
+		page_source: PageSource::for_document(&doc_content),
+		annotations,
 	};
 	traverse(doc_xml.root(), &mut walk);
 	walk.end_list();
+	write_notes(archive, &mut walk);
+	write_word_comments(archive, &mut walk);
 	number_pages(buffer, start, first_marker);
 	Ok(())
+}
+
+/// Writes the footnotes and endnotes the document cites after its text, under a heading of their own, each where its citation's link lands. Read where Word shows them, at the foot of a page, they would interrupt the text; dropped, as they used to be, the citation numbers led nowhere.
+fn write_notes<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
+	let cited = std::mem::take(&mut walk.annotations.cited);
+	if cited.is_empty() {
+		return;
+	}
+	let mut parts = HashMap::new();
+	for kind in [NoteKind::Footnote, NoteKind::Endnote] {
+		let (part, rels_part, _) = kind.part();
+		if let Ok(xml) = read_zip_entry_by_name(archive, part) {
+			parts.insert(kind, (xml, read_relationships(archive, rels_part)));
+		}
+	}
+	let documents: HashMap<NoteKind, XmlDocument> =
+		parts.iter().filter_map(|(kind, (xml, _))| Some((*kind, XmlDocument::parse(xml).ok()?))).collect();
+	if !walk.buffer.content.is_empty() && !walk.buffer.content.ends_with('\n') {
+		walk.buffer.append("\n");
+	}
+	// TRANSLATORS: Heading over the footnotes and endnotes of a document, written after its text
+	let heading = t("Notes");
+	let heading_offset = walk.buffer.current_position();
+	walk.buffer.append(&heading);
+	walk.buffer.append("\n");
+	walk.buffer.add_marker(Marker::new(MarkerType::Heading1, heading_offset).with_text(heading.clone()).with_level(1));
+	walk.headings.push(HeadingInfo { offset: heading_offset, level: 1, text: heading });
+	for citation in cited {
+		let (_, _, element) = citation.kind.part();
+		let Some(note) = documents.get(&citation.kind).and_then(|document| {
+			document
+				.descendants()
+				.find(|node| node.tag_name().name() == element && node.attribute("id") == Some(citation.id.as_str()))
+		}) else {
+			continue;
+		};
+		let rels = &parts[&citation.kind].1;
+		walk.id_positions.insert(citation.key, walk.buffer.current_position());
+		// A number or letter reads as "1." before its note, and a typed mark such as an asterisk as itself.
+		let separator = if citation.label.chars().all(char::is_alphanumeric) { ". " } else { " " };
+		walk.buffer.append(&format!("{}{separator}", citation.label));
+		for paragraph in note.children().filter(|child| child.tag_name().name() == "p") {
+			process_paragraph(
+				paragraph,
+				walk.buffer,
+				walk.headings,
+				walk.id_positions,
+				rels,
+				walk.style_heading_map,
+				&mut walk.numbering,
+				walk.page_source,
+				&mut walk.annotations,
+			);
+		}
+		if !walk.buffer.content.ends_with('\n') {
+			walk.buffer.append("\n");
+		}
+	}
+}
+
+/// Writes the comments the document's text carries after it, from `word/comments.xml`, each with its author and the words it was made on.
+fn write_word_comments<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
+	let placed = std::mem::take(&mut walk.annotations.comments);
+	if placed.is_empty() {
+		return;
+	}
+	let Ok(xml) = read_zip_entry_by_name(archive, "word/comments.xml") else { return };
+	let Ok(document) = XmlDocument::parse(&xml) else { return };
+	let comments = placed
+		.into_iter()
+		.filter_map(|(id, start, end)| {
+			let comment = document
+				.descendants()
+				.find(|node| node.tag_name().name() == "comment" && node.attribute("id") == Some(id.as_str()))?;
+			let text = comment
+				.children()
+				.filter(|child| child.tag_name().name() == "p")
+				.map(|paragraph| {
+					paragraph
+						.descendants()
+						.filter(|node| node.tag_name().name() == "r")
+						.map(collect_ooxml_run_text)
+						.collect::<String>()
+						.trim()
+						.to_string()
+				})
+				.filter(|paragraph| !paragraph.is_empty())
+				.collect::<Vec<_>>()
+				.join(" ");
+			(!text.is_empty()).then(|| Comment {
+				key: walk.annotations.comment_key(&id),
+				author: comment.attribute("author").unwrap_or_default().trim().to_string(),
+				text,
+				start,
+				end,
+			})
+		})
+		.collect();
+	comments::write_comments(walk.buffer, comments);
 }
 
 /// Names the page breaks the walk placed from `first_marker` on, and adds the first page at `start`, which Word records no break for.
 ///
 /// A document Word never laid out records no breaks, and is left with no pages rather than given a single page that would claim more than is known.
 fn number_pages(buffer: &mut DocumentBuffer, start: usize, first_marker: usize) {
+	// A break after the last words, such as one closing the document, would start a page with nothing on it.
+	let end = buffer.current_position();
+	let mut index = 0;
+	buffer.markers.retain(|marker| {
+		index += 1;
+		index <= first_marker || marker.mtype != MarkerType::PageBreak || marker.position < end
+	});
 	if !buffer.markers[first_marker..].iter().any(|marker| marker.mtype == MarkerType::PageBreak) {
 		return;
 	}
@@ -170,13 +288,15 @@ struct Walk<'a> {
 	buffer: &'a mut DocumentBuffer,
 	headings: &'a mut Vec<HeadingInfo>,
 	id_positions: &'a mut HashMap<String, usize>,
-	rels: &'a HashMap<String, String>,
+	rels: &'a Relationships,
 	style_heading_map: &'a HashMap<String, i32>,
 	render_tables_inline: bool,
 	numbering: Numbering,
 	/// The run of numbered or bulleted paragraphs being built: where it starts, how many items
 	/// it has, and where its last item ends. Any other paragraph, or a table, ends it.
 	list: Option<ListRun>,
+	page_source: PageSource,
+	annotations: Annotations,
 }
 
 struct ListRun {
@@ -271,6 +391,8 @@ fn traverse(node: Node, walk: &mut Walk) {
 				walk.rels,
 				walk.style_heading_map,
 				&mut walk.numbering,
+				walk.page_source,
+				&mut walk.annotations,
 			);
 			if is_list_item {
 				let end = walk.buffer.current_position();
@@ -283,7 +405,7 @@ fn traverse(node: Node, walk: &mut Walk) {
 			return;
 		} else if tag_name == "tbl" {
 			walk.end_list();
-			process_table(node, walk.buffer, walk.rels, walk.render_tables_inline);
+			process_table(node, walk.buffer, walk.rels, walk.render_tables_inline, walk.page_source);
 			return;
 		}
 	}
@@ -295,12 +417,13 @@ fn traverse(node: Node, walk: &mut Walk) {
 fn process_table(
 	element: Node,
 	buffer: &mut DocumentBuffer,
-	_rels: &HashMap<String, String>,
+	_rels: &Relationships,
 	render_tables_inline: bool,
+	page_source: PageSource,
 ) {
 	let table_start = buffer.current_position();
 	// The table's text has no row positions to put a page on, so a page that starts inside it starts with it. Dropping it instead would number every later page one short.
-	for _ in element.descendants().filter(|node| node.tag_name().name() == "r" && starts_page(*node)) {
+	for _ in element.descendants().filter(|node| node.tag_name().name() == "r" && starts_page(*node, page_source)) {
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, table_start));
 	}
 	let mut rows: Vec<Vec<String>> = Vec::new();
@@ -309,18 +432,14 @@ fn process_table(
 			let mut cells: Vec<String> = Vec::new();
 			for tc in child.children() {
 				if tc.node_type() == NodeType::Element && tc.tag_name().name() == "tc" {
-					let mut cell_text = String::new();
-					for p in tc.children() {
-						if p.node_type() == NodeType::Element && p.tag_name().name() == "p" {
-							for r in p.children() {
-								if r.node_type() == NodeType::Element && r.tag_name().name() == "r" {
-									cell_text.push_str(&collect_ooxml_run_text(r));
-								}
-							}
-							cell_text.push(' ');
-						}
-					}
-					cells.push(cell_text.trim().to_string());
+					// Every paragraph in the cell, a nested table's and a content control's included, rather than only those directly in it.
+					let cell_text: Vec<String> = tc
+						.descendants()
+						.filter(|node| node.tag_name().name() == "p")
+						.map(|paragraph| paragraph_plain_text(paragraph).trim().to_string())
+						.filter(|text| !text.is_empty())
+						.collect();
+					cells.push(cell_text.join(" "));
 				}
 			}
 			rows.push(cells);
