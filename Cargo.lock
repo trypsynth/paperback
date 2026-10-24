@@ -2783,6 +2783,7 @@ dependencies = [
  "dunce",
  "image",
  "live-region",
+ "miniz_oxide 0.9.1",
  "native-ocr",
  "objc",
  "paperback-core",
@@ -2905,11 +2906,12 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "patois"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75b8d37756e8066067907b01d2cb1ffb7f2886707af4909280a523b2f98f59cc"
+checksum = "a04888353dc28fa9dc61f52c0f937b00c8c132c1df9c55001faa30f7ed56a779"
 dependencies = [
  "inventory",
+ "miniz_oxide 0.9.1",
  "patois-macros",
  "sys-locale",
  "wxdragon",
@@ -2926,10 +2928,11 @@ dependencies = [
 
 [[package]]
 name = "patois-macros"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d1d2d62df9932eb304bdff8cf9c33e886b95f00a58b5c682ab5b8ef3724b425"
+checksum = "68df9747a4a037862dfffcb646d2faebfa237b4a0d8a9f6b7f612188aacf138b"
 dependencies = [
+ "miniz_oxide 0.9.1",
  "proc-macro2 1.0.107",
  "quote 1.0.47",
  "syn 3.0.9",
@@ -3944,9 +3947,9 @@ dependencies = [
 
 [[package]]
 name = "shipfitter"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b83e6e576eb2735a36051a15fec07c0fedede422d74d550ac46f4128182bd0d7"
+checksum = "91ac0595a8daf8c8e137fd328a71fbe7a61dfc2721dc676a17060cf448731300"
 dependencies = [
  "embed-manifest",
  "finl_unicode",
