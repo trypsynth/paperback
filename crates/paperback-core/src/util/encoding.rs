@@ -135,6 +135,20 @@ pub fn decode_html(bytes: &[u8], fallback: Option<&'static Encoding>) -> String 
 		.map_or_else(|| convert_to_utf8(bytes), |encoding| encoding.decode_without_bom_handling(bytes).0.into_owned())
 }
 
+/// [`convert_to_utf8`] for bytes the caller is done with, which become the text without a copy when they are UTF-8 already. A whole text file is read this way, and a copy of one costs as much memory again as the file.
+#[must_use]
+pub fn convert_owned_to_utf8(mut bytes: Vec<u8>) -> String {
+	let bom = bytes.starts_with(&[0xEF, 0xBB, 0xBF]);
+	if bom {
+		bytes.drain(..3);
+	}
+	match String::from_utf8(bytes) {
+		Ok(text) => text,
+		Err(error) if bom => String::from_utf8_lossy(error.as_bytes()).into_owned(),
+		Err(error) => convert_to_utf8(error.as_bytes()),
+	}
+}
+
 fn decode_utf32_le(input: &[u8]) -> String {
 	input
 		.as_chunks::<4>()
@@ -205,6 +219,20 @@ mod tests {
 	#[case(b"", "")]
 	fn test_convert_to_utf8_known_inputs(#[case] input: &[u8], #[case] expected: &str) {
 		assert_eq!(convert_to_utf8(input), expected);
+	}
+
+	/// Bytes handed over whole decode exactly as borrowed ones do, whether they are UTF-8 kept as they are or anything else.
+	#[rstest]
+	#[case(b"\xEF\xBB\xBFHello")]
+	#[case(b"\xEF\xBB\xBFbad \xFF byte")]
+	#[case(b"Hello World")]
+	#[case(b"caf\xE9")]
+	#[case(b"\xFF\xFEH\x00e\x00l\x00l\x00o\x00")]
+	#[case(b"\x00\x00\xFE\xFF\x00\x00\x00H\x00\x00\x00i")]
+	#[case(b"\xC4\xE3\xBA\xC3\xA3\xAC\xCA\xC0\xBD\xE7")]
+	#[case(b"")]
+	fn owned_bytes_decode_as_borrowed_ones_do(#[case] input: &[u8]) {
+		assert_eq!(convert_owned_to_utf8(input.to_vec()), convert_to_utf8(input));
 	}
 
 	/// <https://github.com/trypsynth/paperback/issues/886>: the statistical detector and the

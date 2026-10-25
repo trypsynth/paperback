@@ -36,7 +36,7 @@ use crate::{
 
 /// How long a batch OCR job goes between folding its pages into the document and announcing progress.
 ///
-/// Time rather than a page count, because a page takes several times longer on a two-core laptop than on a desktop with a pool of workers, and a count tuned for one is either chatty or silent on the other. Every apply rebuilds the buffer's per-char index tables, which is linear in the whole document, so this also keeps a long scan from going quadratic. Both happen together so the text has landed by the time the announcement says it has.
+/// Time rather than a page count, because a page takes several times longer on a two-core laptop than on a desktop with a pool of workers, and a count tuned for one is either chatty or silent on the other. Every apply rebuilds the buffer's checkpoints, which is linear in the whole document, so this also keeps a long scan from going quadratic. Both happen together so the text has landed by the time the announcement says it has.
 const BATCH_OCR_UPDATE_EVERY: Duration = Duration::from_secs(4);
 
 /// A running OCR job, one per tab. Owned by the UI thread; the worker sees only `cancel`.

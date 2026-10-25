@@ -3039,6 +3039,7 @@ dependencies = [
  "lofty",
  "math-core",
  "mathcat",
+ "memchr",
  "mp4ameta",
  "odf-crypto",
  "office-crypto",

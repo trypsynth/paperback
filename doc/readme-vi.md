@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2867c9344accdcad; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0822f58d,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: b0171dfc874af9e8; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,808d00fb,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - phiên bản 1.0
 
@@ -177,6 +177,7 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 * `Ctrl+W` (macOS: `RawCtrl+W`, tức là phím Control vật lý chứ không phải Cmd): Hiển thị số từ cho tài liệu hiện tại.
 * `Ctrl+I`: Hiển thị thông tin tài liệu.
 * `Ctrl+Shift+O`: Nhận diện một loạt các trang PDF được quét bằng OCR.
+* `Ctrl+Shift+R`: Nhận diện trang PDF hoặc truyện tranh mà con trỏ đang ở bằng OCR, thay thế bất kỳ văn bản nào nó đã có.
 * `Ctrl+Shift+S`: Bật/tắt bộ hẹn giờ ngủ.
 * `Ctrl+,`: Mở Cài đặt (macOS: trong menu ứng dụng).
 

@@ -1,7 +1,4 @@
-//! [`DocumentBuffer`]: the assembled document text plus its markers and the per-char index
-//! tables ([`char_to_byte_map`](DocumentBuffer), `display_len_at_char`) that translate between
-//! byte, char, and display-unit offsets, the three coordinate systems a caret position can be
-//! expressed in (see the fields' own docs for why all three are needed).
+//! [`DocumentBuffer`]: the assembled document text plus its markers and the checkpoints that translate between byte, char, and display-unit offsets, the three coordinate systems a caret position can be expressed in (see the fields' own docs for why all three are needed).
 
 use std::ops::{Add, RangeBounds};
 
@@ -15,11 +12,10 @@ use crate::util::text::{ch_width, display_len};
 /// an offset belongs to, so that it can't be used to slice the wrong one.
 ///
 /// Every value comes from the buffer's conversions or from a search of `content` itself, so it
-/// sits on a char boundary. The buffer refuses content longer than `u32::MAX` bytes (see
-/// `assert_addressable`), which is what lets the offset be stored in a `u32`.
+/// sits on a char boundary.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
-pub struct ContentBytePos(u32);
+pub struct ContentBytePos(usize);
 
 impl ContentBytePos {
 	pub const ZERO: Self = Self(0);
@@ -27,15 +23,13 @@ impl ContentBytePos {
 	/// Wraps a byte offset taken from a `str` operation on [`DocumentBuffer::content`] (a regex
 	/// match, a `find`), which is the only kind of `usize` that may become a `ContentBytePos`.
 	#[must_use]
-	#[allow(clippy::cast_possible_truncation)]
-	pub fn from_raw(raw: usize) -> Self {
-		debug_assert!(u32::try_from(raw).is_ok(), "ContentBytePos exceeds u32::MAX");
-		Self(raw as u32)
+	pub const fn from_raw(raw: usize) -> Self {
+		Self(raw)
 	}
 
 	#[must_use]
 	pub const fn get(self) -> usize {
-		self.0 as usize
+		self.0
 	}
 }
 
@@ -73,6 +67,16 @@ impl PartialEq<ContentBytePos> for usize {
 	}
 }
 
+/// How many chars apart the buffer notes where a char starts. Any other char is found by walking forward from the one noted before it, which decodes at most this many. Noting every char instead costs eight bytes a char, eight times the text itself for a book in English, which is what kept a text file of a gigabyte or so from opening in 8 GB of memory (#929).
+const CHECKPOINT_CHARS: usize = 64;
+
+/// Where a noted char starts, in bytes and in display units.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+struct Checkpoint {
+	byte: usize,
+	display: usize,
+}
+
 #[derive(Debug, Clone)]
 pub struct DocumentBuffer {
 	pub content: String,
@@ -80,38 +84,12 @@ pub struct DocumentBuffer {
 	content_display_len: usize,
 	content_char_count: usize,
 	newline_char_positions: Vec<usize>,
-	/// Byte offset of the `i`-th char. [`ContentBytePos`] is a `u32`, half the size of a
-	/// `usize`, which matters because the table has one entry per char in the whole document (a
-	/// large book can have hundreds of millions of chars).
-	char_to_byte_map: Vec<ContentBytePos>,
-	/// `display_len_at_char[i]` is the display-unit offset (UTF-16 code units on
-	/// Windows/macOS, Unicode scalars on GTK, see `util::text::display_len`) of the `i`-th
-	/// char, with a trailing end-boundary entry equal to `content_display_len`, mirroring
-	/// `char_to_byte_map`'s shape. Needed because `Marker.position`/the GUI caret use display
-	/// units while `char_to_byte_map`/`newline_char_positions` use char units. On Windows and
-	/// macOS these two diverge for any character outside the Basic Multilingual Plane. Stored
-	/// as `u32` for the same reason as `char_to_byte_map`; display length never exceeds byte
-	/// length so the same bound applies.
-	display_len_at_char: Vec<u32>,
-}
-
-/// Narrows a byte/display offset to `u32` for storage in `DocumentBuffer`'s per-char index
-/// tables. The bounds check is debug-only because [`assert_addressable`] has already bounded
-/// the whole content, and checking every char in release builds would cost real time on large
-/// books.
-#[inline]
-#[allow(clippy::cast_possible_truncation)]
-fn to_u32(value: usize) -> u32 {
-	debug_assert!(u32::try_from(value).is_ok(), "DocumentBuffer offset exceeds u32::MAX");
-	value as u32
-}
-
-/// Refuses content of `byte_len` bytes if the per-char tables' `u32` offsets couldn't address
-/// all of it. Checked once per change to the content rather than per char, so it stays in
-/// release builds. No real document gets near 4 GiB of text, and a panic beats offsets that
-/// silently wrap.
-fn assert_addressable(byte_len: usize) {
-	assert!(u32::try_from(byte_len).is_ok(), "document text exceeds the 4 GiB a u32 offset can address");
+	/// `checkpoints[i]` is where char `i * CHECKPOINT_CHARS` starts. Display units (UTF-16 code
+	/// units on Windows/macOS, Unicode scalars on GTK, see `util::text::display_len`) are needed
+	/// because `Marker.position`/the GUI caret use them while `newline_char_positions` uses char
+	/// units, and on Windows and macOS the two diverge for any character outside the Basic
+	/// Multilingual Plane.
+	checkpoints: Vec<Checkpoint>,
 }
 
 /// A part's `[start, end)` span in the assembled buffer's display units (the same units as
@@ -123,50 +101,55 @@ pub struct PartSpan {
 	pub end: usize,
 }
 
-/// The per-char indexing for one [`DocumentBuffer::from_parts`] part, computed independently of
-/// every other part so it can run on a rayon worker in parallel. All offsets are local to the
-/// part's own text (byte 0 / char 0 / display 0 is the part's first char), not including the
-/// optional trailing newline `from_parts` adds when placing the part into the buffer.
-struct PartIndex {
-	/// `char_to_byte[i]` is the local byte offset of the part's `i`-th char.
-	char_to_byte: Vec<u32>,
-	/// `display_len_at_char[i]` is the local display-unit offset of the part's `i`-th char.
-	display_len_at_char: Vec<u32>,
-	/// Local char indices of every `\n` in the part's own text.
-	newline_chars: Vec<usize>,
-	byte_len: usize,
-	char_len: usize,
-	display_len: usize,
-	/// Whether `from_parts` needs to add a `\n` after this part. Mirrors `append`'s callers that
-	/// append a separator when the just-appended text didn't already end with one.
-	trailing_newline: bool,
+/// How much text one worker indexes at a time. A whole buffer is indexed across every core, since a text file of several gigabytes takes a single core longer than the reader should wait.
+const INDEX_CHUNK_BYTES: usize = 1 << 20;
+
+/// Notes `text`'s checkpoints and newlines as they fall in the buffer, where it starts at char `first_char` and at `start`, and returns its length in chars and in display units.
+fn scan(
+	text: &str,
+	first_char: usize,
+	start: Checkpoint,
+	mut checkpoint: impl FnMut(Checkpoint),
+	mut newline: impl FnMut(usize),
+) -> (usize, usize) {
+	let mut chars = 0usize;
+	let mut display = 0usize;
+	for (byte, c) in text.char_indices() {
+		let index = first_char + chars;
+		if index.is_multiple_of(CHECKPOINT_CHARS) {
+			checkpoint(Checkpoint { byte: start.byte + byte, display: start.display + display });
+		}
+		if c == '\n' {
+			newline(index);
+		}
+		chars += 1;
+		display += ch_width(c);
+	}
+	(chars, display)
 }
 
-fn index_part(text: &str) -> PartIndex {
-	let mut char_to_byte = Vec::with_capacity(text.len());
-	let mut display_len_at_char = Vec::with_capacity(text.len());
-	let mut newline_chars = Vec::new();
-	let mut char_len = 0usize;
-	let mut display_len = 0usize;
-	for (byte_idx, c) in text.char_indices() {
-		char_to_byte.push(to_u32(byte_idx));
-		display_len_at_char.push(to_u32(display_len));
-		if c == '\n' {
-			newline_chars.push(char_len);
+/// How many checkpoints fall among the `chars` chars starting at char `first_char`.
+const fn checkpoints_among(first_char: usize, chars: usize) -> usize {
+	(first_char + chars).div_ceil(CHECKPOINT_CHARS) - first_char.div_ceil(CHECKPOINT_CHARS)
+}
+
+/// `text` cut into pieces of about `size` bytes, each ending on a char boundary.
+fn chunks(text: &str, size: usize) -> Vec<&str> {
+	let mut out = Vec::with_capacity(text.len() / size + 1);
+	let mut rest = text;
+	while rest.len() > size {
+		let mut at = size;
+		while !rest.is_char_boundary(at) {
+			at += 1;
 		}
-		char_len += 1;
-		display_len += ch_width(c);
+		let (head, tail) = rest.split_at(at);
+		out.push(head);
+		rest = tail;
 	}
-	let trailing_newline = !text.is_empty() && !text.ends_with('\n');
-	PartIndex {
-		char_to_byte,
-		display_len_at_char,
-		newline_chars,
-		byte_len: text.len(),
-		char_len,
-		display_len,
-		trailing_newline,
+	if !rest.is_empty() {
+		out.push(rest);
 	}
+	out
 }
 
 /// Splits `slice` into consecutive, disjoint sub-slices with the given lengths (which must sum to
@@ -190,56 +173,71 @@ impl DocumentBuffer {
 			content_display_len: 0,
 			content_char_count: 0,
 			newline_char_positions: Vec::new(),
-			char_to_byte_map: Vec::new(),
-			display_len_at_char: Vec::new(),
+			checkpoints: Vec::new(),
 		}
 	}
 
 	#[must_use]
 	pub fn with_content(content: String) -> Self {
-		let mut buffer = Self {
-			content,
-			markers: Vec::new(),
-			content_display_len: 0,
-			content_char_count: 0,
-			newline_char_positions: Vec::new(),
-			char_to_byte_map: Vec::new(),
-			display_len_at_char: Vec::new(),
-		};
+		let mut buffer = Self { content, ..Self::new() };
 		buffer.rebuild_indexes();
 		buffer
 	}
 
-	/// Rebuilds every per-char index table from `self.content`, which is the single source of
-	/// truth for all of them. Called by [`Self::with_content`] and after any in-place content
+	/// Rebuilds the checkpoints and newline positions from `self.content`, which is the single
+	/// source of truth for both. Called by [`Self::with_content`] and after any in-place content
 	/// mutation (currently only [`Self::replace_ranges`]).
+	///
+	/// Done a chunk to a worker: one pass measures each chunk, which places them, and a second notes each chunk's checkpoints and newlines straight into where they go, so the two lists are never held twice.
 	fn rebuild_indexes(&mut self) {
-		// The content is only checked here: `with_content` hands over a caller's string unchecked,
-		// and `replace_ranges` has already spliced its edits in. This is the last point before
-		// every offset gets narrowed to `u32`.
-		assert_addressable(self.content.len());
-		let mut char_count = 0usize;
-		let mut display_count = 0usize;
-		let mut newline_char_positions = Vec::new();
-		let mut char_to_byte_map = Vec::with_capacity(self.content.len().min(1024));
-		let mut display_len_at_char = Vec::with_capacity(self.content.len().min(1024));
-		for (byte_idx, c) in self.content.char_indices() {
-			char_to_byte_map.push(ContentBytePos::from_raw(byte_idx));
-			display_len_at_char.push(to_u32(display_count));
-			if c == '\n' {
-				newline_char_positions.push(char_count);
-			}
-			char_count += 1;
-			display_count += ch_width(c);
+		self.rebuild_indexes_in(INDEX_CHUNK_BYTES);
+	}
+
+	/// [`Self::rebuild_indexes`], a chunk of about `chunk_bytes` to a worker.
+	fn rebuild_indexes_in(&mut self, chunk_bytes: usize) {
+		let chunks = chunks(&self.content, chunk_bytes);
+		let measured: Vec<(usize, usize, usize)> = chunks
+			.par_iter()
+			.map(|chunk| {
+				(chunk.chars().count(), display_len(chunk), memchr::memchr_iter(b'\n', chunk.as_bytes()).count())
+			})
+			.collect();
+		let mut starts = Vec::with_capacity(chunks.len());
+		let (mut byte, mut char, mut display, mut checkpoint_count, mut newline_count) = (0, 0, 0, 0, 0);
+		for (chunk, &(chars, width, newlines)) in chunks.iter().zip(&measured) {
+			starts.push((char, Checkpoint { byte, display }));
+			checkpoint_count += checkpoints_among(char, chars);
+			newline_count += newlines;
+			byte += chunk.len();
+			char += chars;
+			display += width;
 		}
-		char_to_byte_map.push(ContentBytePos::from_raw(self.content.len())); // append end boundary
-		display_len_at_char.push(to_u32(display_count));
-		debug_assert_eq!(display_count, display_len(&self.content));
-		self.content_display_len = display_count;
-		self.content_char_count = char_count;
-		self.newline_char_positions = newline_char_positions;
-		self.char_to_byte_map = char_to_byte_map;
-		self.display_len_at_char = display_len_at_char;
+		let mut checkpoints = vec![Checkpoint::default(); checkpoint_count];
+		let mut newlines = vec![0; newline_count];
+		let checkpoint_lens: Vec<usize> =
+			measured.iter().zip(&starts).map(|(&(chars, _, _), &(first, _))| checkpoints_among(first, chars)).collect();
+		let newline_lens: Vec<usize> = measured.iter().map(|&(_, _, newlines)| newlines).collect();
+		chunks
+			.par_iter()
+			.zip(&starts)
+			.zip(split_mut_slices(&mut checkpoints, &checkpoint_lens))
+			.zip(split_mut_slices(&mut newlines, &newline_lens))
+			.for_each(|(((chunk, &(first, start)), checkpoint_slots), newline_slots)| {
+				let mut checkpoint_slots = checkpoint_slots.iter_mut();
+				let mut newline_slots = newline_slots.iter_mut();
+				scan(
+					chunk,
+					first,
+					start,
+					|checkpoint| *checkpoint_slots.next().expect("counted when the chunk was measured") = checkpoint,
+					|newline| *newline_slots.next().expect("counted when the chunk was measured") = newline,
+				);
+			});
+		debug_assert_eq!(display, display_len(&self.content));
+		self.content_display_len = display;
+		self.content_char_count = char;
+		self.newline_char_positions = newlines;
+		self.checkpoints = checkpoints;
 	}
 
 	/// Replaces the text spanning `start..end` (display units) with `replacement`, in place.
@@ -249,7 +247,7 @@ impl DocumentBuffer {
 		self.replace_ranges(vec![Edit { start, end, text: replacement.to_string() }]).total_delta
 	}
 
-	/// Applies several replacements in one pass and rebuilds the per-char index tables **once**.
+	/// Applies several replacements in one pass and rebuilds the checkpoints **once**.
 	///
 	/// Rebuilding is linear in the whole document, so applying edits one at a time is quadratic in
 	/// the number of edits. Batch OCR of a long scan produces one edit per page, which is exactly
@@ -275,10 +273,13 @@ impl DocumentBuffer {
 		for edit in &edits {
 			deltas.push(display_len(&edit.text) as i64 - (edit.end - edit.start) as i64);
 		}
-		for edit in edits.iter().rev() {
-			let start_byte = self.byte_index_for_display(edit.start);
-			let end_byte = self.byte_index_for_display(edit.end);
-			self.content.replace_range(start_byte.get()..end_byte.get(), &edit.text);
+		// Every edit's span is looked up before any is applied, since the checkpoints describe the content as it was.
+		let spans: Vec<(usize, usize)> = edits
+			.iter()
+			.map(|edit| (self.byte_index_for_display(edit.start).get(), self.byte_index_for_display(edit.end).get()))
+			.collect();
+		for (edit, (start_byte, end_byte)) in edits.iter().zip(spans).rev() {
+			self.content.replace_range(start_byte..end_byte, &edit.text);
 		}
 		self.rebuild_indexes();
 		self.markers.retain_mut(|marker| shift_marker(marker, &edits, &deltas));
@@ -299,32 +300,17 @@ impl DocumentBuffer {
 	}
 
 	pub fn append(&mut self, text: &str) {
-		assert_addressable(self.content.len() + text.len());
-		let base = self.content_char_count;
-		let mut count = 0usize;
-		let mut display_count = self.content_display_len;
-		// Remove the end boundary temporarily
-		if !self.char_to_byte_map.is_empty() {
-			self.char_to_byte_map.pop();
-		}
-		if !self.display_len_at_char.is_empty() {
-			self.display_len_at_char.pop();
-		}
-		let start_byte = self.content.len();
-		for (byte_idx, c) in text.char_indices() {
-			self.char_to_byte_map.push(ContentBytePos::from_raw(start_byte + byte_idx));
-			self.display_len_at_char.push(to_u32(display_count));
-			if c == '\n' {
-				self.newline_char_positions.push(base + count);
-			}
-			count += 1;
-			display_count += ch_width(c);
-		}
+		let start = Checkpoint { byte: self.content.len(), display: self.content_display_len };
+		let (chars, display) = scan(
+			text,
+			self.content_char_count,
+			start,
+			|checkpoint| self.checkpoints.push(checkpoint),
+			|newline| self.newline_char_positions.push(newline),
+		);
 		self.content.push_str(text);
-		self.char_to_byte_map.push(ContentBytePos::from_raw(self.content.len())); // append end boundary back
-		self.display_len_at_char.push(to_u32(display_count));
-		self.content_display_len = display_count;
-		self.content_char_count += count;
+		self.content_display_len += display;
+		self.content_char_count += chars;
 	}
 
 	/// Builds a buffer from independent parts (e.g. one EPUB spine item's converted text each) in
@@ -336,147 +322,102 @@ impl DocumentBuffer {
 	/// those offsets come from the buffer's running position) don't need to re-derive them.
 	///
 	/// This trades `append`'s single incremental pass over the whole document for: a parallel pass
-	/// indexing each part's own chars, a cheap sequential prefix-sum over parts (not chars) to place
-	/// them, and a parallel pass filling preallocated buffers at those positions.
+	/// measuring each part, a cheap sequential prefix-sum over parts (not chars) to place them, a
+	/// parallel copy of each part into place, and the same parallel indexing any buffer gets.
 	#[must_use]
 	pub fn from_parts(parts: Vec<String>) -> (Self, Vec<PartSpan>) {
-		let indexed: Vec<(String, PartIndex)> = parts
-			.into_par_iter()
-			.map(|text| {
-				let idx = index_part(&text);
-				(text, idx)
-			})
+		// Each part's length in bytes and display units, and whether `from_parts` needs to add a `\n` after it, as `append`'s callers do when the text they appended didn't end with one.
+		let measured: Vec<(usize, usize, bool)> = parts
+			.par_iter()
+			.map(|text| (text.len(), display_len(text), !text.is_empty() && !text.ends_with('\n')))
 			.collect();
-		struct PartStart {
-			byte: usize,
-			char: usize,
-			display: usize,
-		}
-		let mut starts = Vec::with_capacity(indexed.len());
-		let mut spans = Vec::with_capacity(indexed.len());
-		let mut byte_acc = 0usize;
-		let mut char_acc = 0usize;
+		let mut spans = Vec::with_capacity(parts.len());
+		let mut byte_lens = Vec::with_capacity(parts.len());
 		let mut display_acc = 0usize;
-		for (_, idx) in &indexed {
-			let extra = usize::from(idx.trailing_newline);
-			starts.push(PartStart { byte: byte_acc, char: char_acc, display: display_acc });
-			spans.push(PartSpan { start: display_acc, end: display_acc + idx.display_len + extra });
-			byte_acc += idx.byte_len + extra;
-			char_acc += idx.char_len + extra;
-			display_acc += idx.display_len + extra; // ch_width('\n') == 1 on every platform
+		for &(byte_len, display_len, trailing_newline) in &measured {
+			let extra = usize::from(trailing_newline);
+			spans.push(PartSpan { start: display_acc, end: display_acc + display_len + extra });
+			byte_lens.push(byte_len + extra);
+			display_acc += display_len + extra; // ch_width('\n') == 1 on every platform
 		}
-		if char_acc == 0 {
-			// No part contributed any text, so no `append` equivalent ever ran; match `new()`'s
-			// all-empty (not one-boundary-entry) shape rather than building degenerate arrays.
-			return (Self::new(), spans);
-		}
-		assert_addressable(byte_acc);
-		let mut content_bytes = vec![0u8; byte_acc];
-		let mut char_to_byte_map = vec![ContentBytePos::ZERO; char_acc + 1];
-		let mut display_len_at_char = vec![0u32; char_acc + 1];
-		let (char_to_byte_main, char_to_byte_boundary) = char_to_byte_map.split_at_mut(char_acc);
-		let (display_main, display_boundary) = display_len_at_char.split_at_mut(char_acc);
-		char_to_byte_boundary[0] = ContentBytePos::from_raw(byte_acc);
-		display_boundary[0] = to_u32(display_acc);
-		let byte_lens: Vec<usize> =
-			indexed.iter().map(|(_, idx)| idx.byte_len + usize::from(idx.trailing_newline)).collect();
-		let char_lens: Vec<usize> =
-			indexed.iter().map(|(_, idx)| idx.char_len + usize::from(idx.trailing_newline)).collect();
-		let content_slices = split_mut_slices(content_bytes.as_mut_slice(), &byte_lens);
-		let char_to_byte_slices = split_mut_slices(char_to_byte_main, &char_lens);
-		let display_slices = split_mut_slices(display_main, &char_lens);
-		let mut newline_char_positions = Vec::new();
-		for ((_, idx), start) in indexed.iter().zip(&starts) {
-			for &pos in &idx.newline_chars {
-				newline_char_positions.push(start.char + pos);
-			}
-			if idx.trailing_newline {
-				newline_char_positions.push(start.char + idx.char_len);
-			}
-		}
-		struct PartWork<'a> {
-			text: &'a str,
-			idx: &'a PartIndex,
-			start_byte: usize,
-			start_display: usize,
-			content: &'a mut [u8],
-			char_to_byte: &'a mut [ContentBytePos],
-			display: &'a mut [u32],
-		}
-		let work: Vec<PartWork<'_>> = indexed
-			.iter()
-			.zip(&starts)
-			.zip(content_slices)
-			.zip(char_to_byte_slices)
-			.zip(display_slices)
-			.map(|((((entry, start), content), char_to_byte), display)| {
-				let (text, idx) = entry;
-				PartWork {
-					text,
-					idx,
-					start_byte: start.byte,
-					start_display: start.display,
-					content,
-					char_to_byte,
-					display,
+		let mut content_bytes = vec![0u8; byte_lens.iter().sum()];
+		parts.par_iter().zip(&measured).zip(split_mut_slices(content_bytes.as_mut_slice(), &byte_lens)).for_each(
+			|((text, &(byte_len, _, trailing_newline)), content)| {
+				content[..byte_len].copy_from_slice(text.as_bytes());
+				if trailing_newline {
+					content[byte_len] = b'\n';
 				}
-			})
-			.collect();
-		work.into_par_iter().for_each(|w| {
-			w.content[..w.idx.byte_len].copy_from_slice(w.text.as_bytes());
-			if w.idx.trailing_newline {
-				w.content[w.idx.byte_len] = b'\n';
-			}
-			for i in 0..w.idx.char_len {
-				w.char_to_byte[i] = ContentBytePos::from_raw(w.start_byte + w.idx.char_to_byte[i] as usize);
-				w.display[i] = to_u32(w.start_display + w.idx.display_len_at_char[i] as usize);
-			}
-			if w.idx.trailing_newline {
-				w.char_to_byte[w.idx.char_len] = ContentBytePos::from_raw(w.start_byte + w.idx.byte_len);
-				w.display[w.idx.char_len] = to_u32(w.start_display + w.idx.display_len);
-			}
-		});
+			},
+		);
+		drop(parts);
 		let content = String::from_utf8(content_bytes)
 			.expect("each part is a valid &str and concatenating valid UTF-8 stays valid UTF-8");
-		(
-			Self {
-				content,
-				markers: Vec::new(),
-				content_display_len: display_acc,
-				content_char_count: char_acc,
-				newline_char_positions,
-				char_to_byte_map,
-				display_len_at_char,
-			},
-			spans,
-		)
+		(Self::with_content(content), spans)
+	}
+
+	/// The checkpoint at or before char `char_index`, and how many chars past it that char is.
+	fn checkpoint_for_char(&self, char_index: usize) -> (Checkpoint, usize) {
+		(self.checkpoints[char_index / CHECKPOINT_CHARS], char_index % CHECKPOINT_CHARS)
+	}
+
+	/// The last checkpoint whose `key` is at or before `target`, and the number of chars it is.
+	fn checkpoint_before(&self, target: usize, key: impl Fn(&Checkpoint) -> usize) -> (Checkpoint, usize) {
+		let at = self.checkpoints.partition_point(|checkpoint| key(checkpoint) <= target).saturating_sub(1);
+		(self.checkpoints[at], at * CHECKPOINT_CHARS)
 	}
 
 	#[must_use]
 	pub fn byte_index_for_char(&self, char_index: usize) -> ContentBytePos {
-		self.char_to_byte_map.get(char_index).copied().unwrap_or_else(|| self.content_end())
+		if char_index >= self.content_char_count {
+			return self.content_end();
+		}
+		let (from, skip) = self.checkpoint_for_char(char_index);
+		let offset = self.content[from.byte..].char_indices().nth(skip).map_or(0, |(offset, _)| offset);
+		ContentBytePos::from_raw(from.byte + offset)
 	}
 
+	/// The index of the char that starts at `byte_index`. A `byte_index` inside a char rounds
+	/// forward to the char after it, and anything past the end maps to `char_count() + 1`.
 	#[must_use]
 	pub fn char_index_for_byte(&self, byte_index: ContentBytePos) -> usize {
-		self.char_to_byte_map.binary_search(&byte_index).unwrap_or_else(|idx| idx)
+		let byte = byte_index.get();
+		if byte >= self.content.len() {
+			return self.content_char_count + usize::from(byte > self.content.len());
+		}
+		let (from, index) = self.checkpoint_before(byte, |checkpoint| checkpoint.byte);
+		index + self.content[from.byte..].char_indices().take_while(|(offset, _)| from.byte + offset < byte).count()
 	}
 
 	/// The display-unit offset of the `char_index`-th char (or the document's total display
 	/// length, for a char index at or past the end).
 	#[must_use]
 	pub fn display_index_for_char(&self, char_index: usize) -> usize {
-		self.display_len_at_char.get(char_index).map_or(self.content_display_len, |&v| v as usize)
+		if char_index >= self.content_char_count {
+			return self.content_display_len;
+		}
+		let (from, skip) = self.checkpoint_for_char(char_index);
+		from.display + self.content[from.byte..].chars().take(skip).map(ch_width).sum::<usize>()
 	}
 
 	/// The index of the char that starts at `display_index`. A `display_index` inside a surrogate
 	/// pair, where no caret can sit, rounds forward to the char after the pair. Anything past the
-	/// end of the document maps to `char_count() + 1`; callers clamp to
-	/// [`Self::total_display_len`] first, since `to_u32` truncates offsets beyond `u32::MAX` in
-	/// release builds.
+	/// end of the document maps to `char_count() + 1`.
 	#[must_use]
 	pub fn char_index_for_display(&self, display_index: usize) -> usize {
-		self.display_len_at_char.binary_search(&to_u32(display_index)).unwrap_or_else(|idx| idx)
+		if display_index >= self.content_display_len {
+			return self.content_char_count + usize::from(display_index > self.content_display_len);
+		}
+		let (from, index) = self.checkpoint_before(display_index, |checkpoint| checkpoint.display);
+		let mut display = from.display;
+		let walked = self.content[from.byte..]
+			.chars()
+			.take_while(|&c| {
+				let starts_before = display < display_index;
+				display += ch_width(c);
+				starts_before
+			})
+			.count();
+		index + walked
 	}
 
 	/// The byte offset corresponding to `display_index`, composing [`Self::char_index_for_display`]
@@ -495,7 +436,7 @@ impl DocumentBuffer {
 
 	/// The byte offset one past the last byte of `content`.
 	#[must_use]
-	pub fn content_end(&self) -> ContentBytePos {
+	pub const fn content_end(&self) -> ContentBytePos {
 		ContentBytePos::from_raw(self.content.len())
 	}
 
@@ -655,6 +596,61 @@ mod tests {
 	fn display_index_for_char_clamps_past_the_end() {
 		let buffer = DocumentBuffer::with_content("abc".to_string());
 		assert_eq!(buffer.display_index_for_char(999), buffer.total_display_len());
+	}
+
+	/// Every lookup agrees with a table of every char, across many checkpoints and with wide chars falling on either side of them, however the buffer was built and however finely it was cut up to be indexed.
+	#[test]
+	fn lookups_between_checkpoints_match_a_table_of_every_char() {
+		let piece = "ab\u{1F600}日本\nc\u{00E9}\u{1F389}d\n";
+		let text = piece.repeat(40);
+		let starts: Vec<(usize, char)> = text.char_indices().collect();
+		let mut displays = Vec::with_capacity(starts.len() + 1);
+		let mut display = 0;
+		for &(_, c) in &starts {
+			displays.push(display);
+			display += ch_width(c);
+		}
+		displays.push(display);
+		let newlines: Vec<usize> =
+			starts.iter().enumerate().filter(|(_, (_, c))| *c == '\n').map(|(index, _)| index).collect();
+		let mut appended = DocumentBuffer::new();
+		for chunk in text.split_inclusive('\n') {
+			appended.append(chunk);
+		}
+		let parts: Vec<String> = text.split_inclusive('\n').map(ToString::to_string).collect();
+		let (from_parts, _) = DocumentBuffer::from_parts(parts);
+		let mut chunked = Vec::new();
+		for chunk_bytes in [1, 5, 64] {
+			let mut buffer = DocumentBuffer::with_content(text.clone());
+			buffer.rebuild_indexes_in(chunk_bytes);
+			chunked.push(buffer);
+		}
+		for buffer in [DocumentBuffer::with_content(text.clone()), appended, from_parts].into_iter().chain(chunked) {
+			assert_eq!(buffer.content, text);
+			assert_eq!(buffer.char_count(), starts.len());
+			assert_eq!(buffer.newline_positions(), newlines);
+			for (index, &(byte, c)) in starts.iter().enumerate() {
+				assert_eq!(buffer.byte_index_for_char(index), byte, "byte of char {index}");
+				assert_eq!(buffer.display_index_for_char(index), displays[index], "display of char {index}");
+				assert_eq!(buffer.char_index_for_byte(byte.into()), index, "char at byte {byte}");
+				assert_eq!(
+					buffer.char_index_for_display(displays[index]),
+					index,
+					"char at display {}",
+					displays[index]
+				);
+				for inside in byte + 1..byte + c.len_utf8() {
+					assert_eq!(buffer.char_index_for_byte(inside.into()), index + 1, "char inside byte {inside}");
+				}
+				for inside in displays[index] + 1..displays[index + 1] {
+					assert_eq!(buffer.char_index_for_display(inside), index + 1, "char inside display {inside}");
+				}
+			}
+			assert_eq!(buffer.char_index_for_byte(text.len().into()), starts.len());
+			assert_eq!(buffer.char_index_for_byte((text.len() + 1).into()), starts.len() + 1);
+			assert_eq!(buffer.char_index_for_display(display + 1), starts.len() + 1);
+			assert_eq!(buffer.byte_index_for_char(starts.len()), text.len());
+		}
 	}
 
 	#[test]

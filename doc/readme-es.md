@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2867c9344accdcad; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0822f58d,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: b0171dfc874af9e8; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,808d00fb,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versión 1.0
 
@@ -177,6 +177,7 @@ Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, e
 * `Ctrl+W` (macOS: `RawCtrl+W`, es decir, la tecla Control física en lugar de Cmd): Muestra el conteo de palabras del documento actual.
 * `Ctrl+I`: Muestra información del documento.
 * `Ctrl+Shift+O`: Reconoce un rango de páginas PDF escaneadas con OCR.
+* `Ctrl+Shift+R`: Reconoce la página PDF o cómic en la que está el cursor con OCR, reemplazando cualquier texto que ya tenga.
 * `Ctrl+Shift+S`: Alterna el temporizador de reposo.
 * `Ctrl+,`: Abre Configuración (macOS: en el menú de la aplicación).
 

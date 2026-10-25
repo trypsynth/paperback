@@ -49,7 +49,7 @@ impl Parser for ManParser {
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open manual page '{}'", context.file_path))?;
 		let bytes = if is_gzipped(&bytes) { gunzip(&bytes, &context.file_path)? } else { bytes };
-		let source = remove_soft_hyphens(&normalize_line_endings(&convert_to_utf8(&bytes)));
+		let source = remove_soft_hyphens(normalize_line_endings(convert_to_utf8(&bytes)));
 		if !looks_like_roff(&source) {
 			anyhow::bail!("'{}' is not a manual page", context.file_path);
 		}

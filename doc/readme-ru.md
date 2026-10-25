@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2867c9344accdcad; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0822f58d,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: b0171dfc874af9e8; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,808d00fb,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - версия 1.0
 
@@ -177,6 +177,7 @@ Paperback разработан для работы в первую очеред�
 * `Ctrl+W` (macOS: `RawCtrl+W`, то есть физическая клавиша Control, а не Cmd): показать каличество  слов для текущего документа.
 * `Ctrl+I`: показать информацию о документе.
 * `Ctrl+Shift+O`: распознать диапазон отсканированных страниц PDF с помощью OCR.
+* `Ctrl+Shift+R`: распознать страницу PDF или комикса на позиции курсора с помощью OCR, заменяя любой текст, который уже там есть.
 * `Ctrl+Shift+S`: переключить таймер сна.
 * `Ctrl+,`: открыть Параметры (macOS: в меню приложения).
 

@@ -340,7 +340,7 @@ impl HtmlToText {
 		if text_content.is_empty() {
 			return;
 		}
-		let processed_text = remove_soft_hyphens(&text_content);
+		let processed_text = remove_soft_hyphens(text_content);
 		if self.text.is_preserving_whitespace() {
 			let lines: Vec<&str> = processed_text.split('\n').collect();
 			for (i, line) in lines.iter().enumerate() {

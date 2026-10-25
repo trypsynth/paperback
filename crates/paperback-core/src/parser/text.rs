@@ -6,7 +6,7 @@ use crate::{
 	document::{Document, DocumentBuffer, ParserContext},
 	parser::{Parser, util::path::extract_title_from_path},
 	util::{
-		encoding::convert_to_utf8,
+		encoding::convert_owned_to_utf8,
 		text::{normalize_line_endings, remove_soft_hyphens},
 	},
 };
@@ -18,13 +18,14 @@ impl Parser for TextParser {
 		tracing::debug!(path = %context.file_path, "parsing text file");
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open text file '{}'", context.file_path))?;
-		let utf8_content = convert_to_utf8(&bytes);
-		let processed = remove_soft_hyphens(&normalize_line_endings(&utf8_content));
+		let byte_len = bytes.len();
+		let processed = remove_soft_hyphens(normalize_line_endings(convert_owned_to_utf8(bytes)));
 		let title = extract_title_from_path(&context.file_path);
 		let mut doc = Document::new().with_title(title);
-		let char_len = processed.chars().count();
-		doc.set_buffer(DocumentBuffer::with_content(processed));
-		tracing::debug!(path = %context.file_path, bytes = bytes.len(), chars = char_len, "parsed text file");
+		let buffer = DocumentBuffer::with_content(processed);
+		let char_len = buffer.char_count();
+		doc.set_buffer(buffer);
+		tracing::debug!(path = %context.file_path, bytes = byte_len, chars = char_len, "parsed text file");
 		Ok(doc)
 	}
 }
