@@ -53,6 +53,16 @@ const ALIGNED_HEIGHTS: f32 = 1.0;
 /// A line this many characters long is a line of a book, longer than any box or slide sets.
 const PROSE_LINE_CHARS: usize = 40;
 
+/// The text of a page's lines: put in reading order and joined into paragraphs when `arranged` is set (see [`arrange`]), otherwise one to a line in the order the engine read them.
+#[must_use]
+pub fn page_text(lines: &[RecognizedLine], arranged: bool) -> String {
+	if arranged {
+		arrange(lines, true)
+	} else {
+		lines.iter().map(|line| line.text.as_str()).collect::<Vec<_>>().join("\n")
+	}
+}
+
 /// The text of `lines` in reading order, with each block's wrapped lines joined into paragraphs when `join` is set.
 ///
 /// An engine that reports no word boxes leaves nothing to arrange by, so its lines are taken in the order it read them.

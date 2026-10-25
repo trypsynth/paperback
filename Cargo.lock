@@ -3054,6 +3054,7 @@ dependencies = [
  "rtf-parser",
  "scraper",
  "serde",
+ "serde_json",
  "sha1 0.11.0",
  "shipfitter",
  "thiserror 2.0.21",

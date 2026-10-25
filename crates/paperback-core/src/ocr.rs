@@ -21,9 +21,11 @@ use crate::{
 
 mod layout;
 mod pool;
+mod saved;
 
-pub use layout::{RecognizedLine, RecognizedWord, arrange};
+pub use layout::{RecognizedLine, RecognizedWord, arrange, page_text};
 pub use pool::{Run, default_workers, recognize_pages};
+pub use saved::{load_pages, save_pages, saved_pages_file};
 
 /// The placeholder line the PDF parser inserts for a page that has an image but no extractable
 /// text. Purely what the reader sees: the OCR flow locates these pages by their
