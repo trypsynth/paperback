@@ -26,11 +26,11 @@
 [Files]
 	Source: "paperback.exe"; DestDir: "{app}"; Flags: ignoreversion
 	Source: "pb.exe"; DestDir: "{app}"; Flags: ignoreversion
-	Source: "pdfium.dll"; DestDir: "{app}"; Flags: ignoreversion
 
 [InstallDelete]
 	Type: files; Name: "{app}\nvdaControllerClient64.dll"
 	Type: files; Name: "{app}\SAAPI64.dll"
+	Type: files; Name: "{app}\pdfium.dll"
 	Type: filesandordirs; Name: "{app}\langs"
 	Type: files; Name: "{app}\readme.html"
 	Type: filesandordirs; Name: "{app}\sounds"

@@ -4,8 +4,39 @@
 //! (remote, paid, whole document, structured), which is a different feature on a different path
 //! rather than another engine here.
 
-pub use native_ocr::{Error as OcrError, max_image_dimension, recognize_rgba};
+use std::path::PathBuf;
+
+use native_ocr::Line;
+pub use native_ocr::{Error as OcrError, max_image_dimension};
+use paperback_core::ocr::{RecognizedLine, RecognizedWord};
 use patois::t;
+
+use crate::config_ext::config_dir;
+
+/// Reads the lines in an RGBA8 bitmap, with where each of their words was read.
+pub fn recognize_lines(rgba: &[u8], width: u32, height: u32) -> Result<Vec<RecognizedLine>, OcrError> {
+	Ok(native_ocr::recognize_lines(rgba, width, height)?.into_iter().map(recognized).collect())
+}
+
+/// The folder the pages OCR has read are kept in, beside the settings; see [`paperback_core::ocr::save_pages`].
+pub fn saved_pages_dir() -> PathBuf {
+	config_dir().join("ocr")
+}
+
+fn recognized(line: Line) -> RecognizedLine {
+	let words = line
+		.words
+		.into_iter()
+		.map(|word| RecognizedWord {
+			text: word.text,
+			x: word.bounds.x,
+			y: word.bounds.y,
+			width: word.bounds.width,
+			height: word.bounds.height,
+		})
+		.collect();
+	RecognizedLine { text: line.text, words }
+}
 
 /// The message to announce when OCR fails.
 pub fn message(error: &OcrError) -> String {

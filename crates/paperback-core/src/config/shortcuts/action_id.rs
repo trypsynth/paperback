@@ -96,6 +96,7 @@ pub enum ActionId {
 	Options,
 	SleepTimer,
 	BatchOcr,
+	RecognizeCurrentPage,
 	CustomizeShortcuts,
 	ImportDocumentData,
 	ExportDocumentData,
@@ -203,6 +204,7 @@ impl ActionId {
 			Self::Options,
 			Self::SleepTimer,
 			Self::BatchOcr,
+			Self::RecognizeCurrentPage,
 			Self::CustomizeShortcuts,
 			Self::ImportDocumentData,
 			Self::ExportDocumentData,
@@ -305,6 +307,7 @@ impl ActionId {
 			| Self::Options
 			| Self::SleepTimer
 			| Self::BatchOcr
+			| Self::RecognizeCurrentPage
 			| Self::CustomizeShortcuts => ShortcutCategory::Tools,
 			Self::PlayPauseAudio
 			| Self::SeekAudioForward
@@ -504,6 +507,8 @@ impl ActionId {
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::BatchOcr => crate::t("Batch OCR..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::RecognizeCurrentPage => crate::t("Recognize Current Page"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::CustomizeShortcuts => crate::t("Customize Keyboard Shortcuts..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ImportDocumentData => crate::t("Import Document Data..."),
@@ -638,6 +643,7 @@ impl ActionId {
 			Self::Options => Some(KeyChord::new(true, false, false, ",")),
 			Self::SleepTimer => Some(KeyChord::new(true, false, true, "S")),
 			Self::BatchOcr => Some(KeyChord::new(true, false, true, "O")),
+			Self::RecognizeCurrentPage => Some(KeyChord::new(true, false, true, "R")),
 			Self::CustomizeShortcuts => None,
 			Self::ImportDocumentData => Some(KeyChord::new(true, false, true, "I")),
 			Self::ExportDocumentData => Some(KeyChord::new(true, false, true, "E")),
@@ -748,6 +754,7 @@ impl ActionId {
 			Self::Options => Some(KeyChord::new(true, false, false, ",")),
 			Self::SleepTimer => Some(KeyChord::new(true, false, true, "S")),
 			Self::BatchOcr => Some(KeyChord::new(true, false, true, "O")),
+			Self::RecognizeCurrentPage => Some(KeyChord::new(true, false, true, "R")),
 			Self::CustomizeShortcuts => None,
 			Self::ImportDocumentData => Some(KeyChord::new(true, false, true, "I")),
 			Self::ExportDocumentData => Some(KeyChord::new(true, false, true, "E")),

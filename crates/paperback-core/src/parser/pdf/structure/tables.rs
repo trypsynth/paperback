@@ -12,7 +12,7 @@ use super::marked_content::collect_text;
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType},
 	parser::convert::table_text::{display_lines_and_length, html_table_to_display},
-	pdfium::Tag,
+	pdf_engine::Tag,
 	util::text::{collapse_whitespace, trim_string},
 };
 
@@ -64,7 +64,7 @@ fn html_escape(s: &str) -> String {
 /// `render_tables_inline` is set, otherwise a `"[Table]: <first row>"` placeholder. The helper
 /// output may span multiple lines (one per table row); each line is recorded as its own
 /// `current_lines_info` / `page_display_text` line, mirroring the rest of the PDF line tracking.
-/// Kept apart from the walk so the logic is unit-testable without live pdfium objects.
+/// Kept apart from the walk so the logic is unit-testable without a live PDF page.
 pub(super) fn append_pdf_table_to_buffer(
 	buffer: &mut DocumentBuffer,
 	html: String,

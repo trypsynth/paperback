@@ -11,11 +11,12 @@
 use std::{collections::HashMap, sync::atomic::AtomicBool};
 
 use anyhow::{Context, Result};
-use native_ocr::{Error as OcrError, max_image_dimension, recognize_rgba};
+use native_ocr::{Error as OcrError, Line, max_image_dimension, recognize_lines};
 use paperback_core::{
 	document::{ContentBytePos, Document, Edit, Marker, MarkerType},
-	ocr::{PageRenderer, default_workers, image_only_placeholder, recognize_pages},
-	parser::pdf::join_wrapped_lines,
+	ocr::{
+		PageRenderer, RecognizedLine, RecognizedWord, arrange, default_workers, image_only_placeholder, recognize_pages,
+	},
 };
 
 /// Whether a file has pages worth rendering for OCR at all.
@@ -91,7 +92,7 @@ pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, select
 		let Ok(page) = i32::try_from(edit.page) else { continue };
 		match results.remove(&page) {
 			Some(Ok(text)) => {
-				let text = join_wrapped_lines(text.trim());
+				let text = text.trim().to_string();
 				// A page the engine read nothing from keeps what it had. Blanking it would turn an
 				// instruction the reader cannot follow into a page that reads as blank, which is a
 				// claim about the scan that was never made.
@@ -123,11 +124,28 @@ pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, select
 	Ok(())
 }
 
-/// Renders one 1-based page and recognizes the text on it.
+/// Renders one 1-based page and recognizes the text on it, put back in reading order and joined into paragraphs (see [`arrange`]).
 fn recognize_page(renderer: &mut PageRenderer, page: i32, max_dimension: u32) -> Result<String, OcrError> {
 	// `render` takes a 0-based page index; the document numbers its pages from one.
 	let rendered = renderer.render(page - 1, max_dimension).map_err(|error| OcrError::Failed(error.to_string()))?;
-	recognize_rgba(&rendered.rgba, rendered.width, rendered.height)
+	let lines: Vec<RecognizedLine> =
+		recognize_lines(&rendered.rgba, rendered.width, rendered.height)?.into_iter().map(recognized).collect();
+	Ok(arrange(&lines, true))
+}
+
+fn recognized(line: Line) -> RecognizedLine {
+	let words = line
+		.words
+		.into_iter()
+		.map(|word| RecognizedWord {
+			text: word.text,
+			x: word.bounds.x,
+			y: word.bounds.y,
+			width: word.bounds.width,
+			height: word.bounds.height,
+		})
+		.collect();
+	RecognizedLine { text: line.text, words }
 }
 
 /// One page's replacement, and which page it belongs to.

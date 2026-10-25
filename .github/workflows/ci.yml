@@ -49,7 +49,7 @@ jobs:
       # deliberate change with the reformat in the same commit.
       - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: nightly-2026-10-20
+          toolchain: nightly-2026-10-24
           components: rustfmt
       - name: Check formatting
         run: cargo fmt --check
@@ -75,7 +75,7 @@ jobs:
       # The unit tests run on the host JVM and never call into the native library, but the code
       # they cover is compiled against the uniffi types, so the bindings have to exist for the
       # app module to compile at all. Generating them is a host build of paperback-core alone:
-      # no NDK or cargo-ndk, and none of the pdfium, translation, or Help assets that the APK
+      # no NDK or cargo-ndk, and none of the translation or Help assets that the APK
       # build in build.yml needs on top. ktlint skips the generated file either way.
       # The interface lives in the Rust now rather than in a .udl, so uniffi reads it from the
       # compiled library's own metadata. That means building the library first, and building it
@@ -83,7 +83,7 @@ jobs:
       # interface is read from.
       - name: Generate Kotlin bindings
         run: |
-          cargo build -p paperback-core --features uniffi --lib
+          cargo rustc -p paperback-core --features uniffi --lib --crate-type cdylib
           LIB=$(ls target/debug/libpaperback_core.so target/debug/libpaperback_core.dylib target/debug/paperback_core.dll 2>/dev/null | head -1)
           cargo run -p paperback-core --features uniffi --bin uniffi-bindgen --             generate --library "$LIB"             --language kotlin --out-dir android/app/src/main/kotlin --no-format
       - name: Cache Gradle packages
@@ -138,7 +138,7 @@ jobs:
       # interface is read from.
       - name: Generate Kotlin bindings
         run: |
-          cargo build -p paperback-core --features uniffi --lib
+          cargo rustc -p paperback-core --features uniffi --lib --crate-type cdylib
           LIB=$(ls target/debug/libpaperback_core.so target/debug/libpaperback_core.dylib target/debug/paperback_core.dll 2>/dev/null | head -1)
           cargo run -p paperback-core --features uniffi --bin uniffi-bindgen --             generate --library "$LIB"             --language kotlin --out-dir android/app/src/main/kotlin --no-format
       - name: Cache Gradle packages
@@ -202,8 +202,6 @@ jobs:
         with:
           path: |
             ios/paperbackFFI.xcframework
-            ios/libpdfium.framework
-            ios/libpdfium.dylib
             ios/Paperback/Generated
             ios/Paperback/Readmes
             ios/Paperback/*.lproj

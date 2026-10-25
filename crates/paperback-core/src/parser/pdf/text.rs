@@ -7,11 +7,15 @@
 //! [`super::structure`]), and its [`sanitize_pdf_text`] helper is shared by the metadata and
 //! table of contents readers as well.
 
-use std::{cell::Cell, cmp::Ordering, collections::HashSet};
+use std::{
+	cell::Cell,
+	cmp::Ordering,
+	collections::{HashMap, HashSet},
+};
 
 use crate::{
 	parser::util::bidi,
-	pdfium::{CharBox, PdfTextPage},
+	pdf_engine::{CharBox, PdfTextPage},
 };
 
 pub(super) fn sanitize_pdf_text(input: &str) -> String {
@@ -20,7 +24,8 @@ pub(super) fn sanitize_pdf_text(input: &str) -> String {
 	let mut out = String::with_capacity(input.len());
 	for (i, &ch) in chars.iter().enumerate() {
 		if ch == LINE_END_HYPHEN {
-			if keeps_line_end_hyphen(&chars, i, &evidence) {
+			let (left, right) = line_end_halves(&chars, i);
+			if keeps_hyphen(&left, &right, Some(&evidence)) {
 				out.push('-');
 			}
 		} else if (!ch.is_control() || matches!(ch, '\n' | '\r' | '\t')) && ch != '\u{00AD}' {
@@ -36,7 +41,7 @@ pub(super) fn page_chars(text_page: &PdfTextPage, char_count: i32) -> Vec<Option
 	(0..char_count).map(|i| char::from_u32(text_page.unicode_at(i))).collect()
 }
 
-/// The page's characters as plain text for [`HyphenEvidence`] and [`keeps_line_end_hyphen`],
+/// The page's characters as plain text for [`HyphenEvidence`] and [`PageEvidence::keeps_line_end_hyphen`],
 /// with a space standing in for anything that is not a character.
 pub(super) fn context_chars(page: &[Option<char>]) -> Vec<char> {
 	page.iter().map(|c| c.unwrap_or(' ')).collect()
@@ -63,9 +68,7 @@ impl HyphenEvidence {
 		evidence
 	}
 
-	/// Adds a page's words. A document keeps one of these across its pages, so a word split at a
-	/// line end is judged by how the whole document so far writes it, not only that page: a book
-	/// that writes "OpenSolaris" or "MTBF" on one page joins them when they wrap on a later one.
+	/// Adds a page's words.
 	pub(super) fn add_chars(&mut self, chars: &[char]) {
 		let evidence = self;
 		let mut word = String::new();
@@ -95,14 +98,123 @@ impl HyphenEvidence {
 	}
 }
 
-/// Whether the line-end hyphen at `at` in `chars` belongs to the word.
-pub(super) fn keeps_line_end_hyphen(chars: &[char], at: usize, evidence: &HyphenEvidence) -> bool {
+/// What a document writes of the word a line-end hyphen splits: the halves joined by a hyphen somewhere other than a line end, or written whole.
+#[derive(Clone, Copy, Default)]
+struct Written {
+	hyphenated: bool,
+	whole: bool,
+}
+
+impl Written {
+	fn of(evidence: &HyphenEvidence, hyphenated: &str, whole: &str) -> Self {
+		Self { hyphenated: evidence.hyphenated.contains(hyphenated), whole: evidence.words.contains(whole) }
+	}
+
+	const fn or(self, other: Self) -> Self {
+		Self { hyphenated: self.hyphenated || other.hyphenated, whole: self.whole || other.whole }
+	}
+}
+
+/// The page each word is first written on, over the pages one thread has read.
+#[derive(Default)]
+pub(super) struct WordPages {
+	hyphenated: HashMap<String, i32>,
+	words: HashMap<String, i32>,
+}
+
+impl WordPages {
+	/// Adds the words of `page`. A thread reads its pages in order, so the first page a word is added for is the first one of them it is written on.
+	pub(super) fn add(&mut self, page: i32, evidence: HyphenEvidence) {
+		for word in evidence.hyphenated {
+			self.hyphenated.entry(word).or_insert(page);
+		}
+		for word in evidence.words {
+			self.words.entry(word).or_insert(page);
+		}
+	}
+}
+
+/// What `pages` write of a word on the pages before `page`.
+fn written_before(pages: &[WordPages], page: i32, hyphenated: &str, whole: &str) -> Written {
+	let before = |words: &HashMap<String, i32>, word: &str| words.get(word).is_some_and(|&first| first < page);
+	Written {
+		hyphenated: pages.iter().any(|words| before(&words.hyphenated, hyphenated)),
+		whole: pages.iter().any(|words| before(&words.words, whole)),
+	}
+}
+
+/// How one line-end hyphen was judged, kept so the judgement can be checked against every page before it once all of them are read.
+pub(super) struct Judgement {
+	left: String,
+	right: String,
+	/// What the hyphen's own page writes, which is all the check cannot look up afterwards.
+	own: Written,
+	kept: bool,
+}
+
+/// The words a line-end hyphen on one page is judged by: that page's own, and those of the pages before it.
+///
+/// A word split at a line end is judged by how the whole document so far writes it, not only that page: a book that writes "OpenSolaris" or "MTBF" on one page joins them when they wrap on a later one. Pages are read on several threads at once, though, and a thread has seen only some of the pages before the one in hand. So a page is first judged against the pages its own thread has read, and every judgement is kept. Once all the pages are read, [`confirms`] checks each judgement against every page before it, and a page with one that comes out differently is read again. What comes out is what reading the pages one after another gives.
+pub(super) struct PageEvidence<'a> {
+	page: i32,
+	earlier: &'a [WordPages],
+	own: HyphenEvidence,
+	judgements: Vec<Judgement>,
+}
+
+impl<'a> PageEvidence<'a> {
+	/// Evidence for `page`, with the pages before it as `earlier` records them.
+	pub(super) fn new(page: i32, earlier: &'a [WordPages]) -> Self {
+		Self { page, earlier, own: HyphenEvidence::default(), judgements: Vec::new() }
+	}
+
+	pub(super) fn add_chars(&mut self, chars: &[char]) {
+		self.own.add_chars(chars);
+	}
+
+	/// Whether the line-end hyphen at `at` in `chars` belongs to the word.
+	pub(super) fn keeps_line_end_hyphen(&mut self, chars: &[char], at: usize) -> bool {
+		let (left, right) = line_end_halves(chars, at);
+		if left.is_empty() || right.is_empty() {
+			return false;
+		}
+		let (hyphenated, whole) = written_forms(&left, &right);
+		let own = Written::of(&self.own, &hyphenated, &whole);
+		let kept =
+			keeps_written_hyphen(&left, &right, own.or(written_before(self.earlier, self.page, &hyphenated, &whole)));
+		self.judgements.push(Judgement { left, right, own, kept });
+		kept
+	}
+
+	/// The page's own words, and how its hyphens were judged.
+	pub(super) fn finish(self) -> (HyphenEvidence, Vec<Judgement>) {
+		(self.own, self.judgements)
+	}
+}
+
+/// Whether every hyphen on `page` was judged as `pages` judge it, which once every page is read is how reading the pages in order would have judged it.
+pub(super) fn confirms(judgements: &[Judgement], page: i32, pages: &[WordPages]) -> bool {
+	judgements.iter().all(|judgement| {
+		let (hyphenated, whole) = written_forms(&judgement.left, &judgement.right);
+		let written = judgement.own.or(written_before(pages, page, &hyphenated, &whole));
+		keeps_written_hyphen(&judgement.left, &judgement.right, written) == judgement.kept
+	})
+}
+
+/// The word before the line-end hyphen at `at` in `chars`, and the one it continues into.
+fn line_end_halves(chars: &[char], at: usize) -> (String, String) {
 	let left_start = chars[..at].iter().rposition(|c| !c.is_alphanumeric()).map_or(0, |p| p + 1);
 	let left: String = chars[left_start..at].iter().collect();
 	let right_start =
 		chars[at + 1..].iter().position(|c| !c.is_whitespace() && !c.is_control()).map_or(chars.len(), |p| at + 1 + p);
 	let right: String = chars[right_start..].iter().take_while(|c| c.is_alphanumeric()).collect();
-	keeps_hyphen(&left, &right, Some(evidence))
+	(left, right)
+}
+
+/// The two ways a document may write the word split between `left` and `right`, lower-cased as [`HyphenEvidence`] keeps them.
+fn written_forms(left: &str, right: &str) -> (String, String) {
+	let (l, r) = (left.to_lowercase(), right.to_lowercase());
+	(format!("{l}-{r}"), format!("{l}{r}"))
 }
 
 /// Whether a hyphen between `left` and `right` at a line break is part of the word.
@@ -115,14 +227,20 @@ pub(super) fn keeps_hyphen(left: &str, right: &str, evidence: Option<&HyphenEvid
 	if left.is_empty() || right.is_empty() {
 		return false;
 	}
-	if let Some(evidence) = evidence {
-		let (l, r) = (left.to_lowercase(), right.to_lowercase());
-		if evidence.hyphenated.contains(&format!("{l}-{r}")) {
-			return true;
-		}
-		if evidence.words.contains(&format!("{l}{r}")) {
-			return false;
-		}
+	let written = evidence.map_or_else(Written::default, |evidence| {
+		let (hyphenated, whole) = written_forms(left, right);
+		Written::of(evidence, &hyphenated, &whole)
+	});
+	keeps_written_hyphen(left, right, written)
+}
+
+/// [`keeps_hyphen`] for two halves that are not empty, given what the document writes of them.
+fn keeps_written_hyphen(left: &str, right: &str, written: Written) -> bool {
+	if written.hyphenated {
+		return true;
+	}
+	if written.whole {
+		return false;
 	}
 	let left_is_abbreviation =
 		left.chars().count() >= 2 && left.chars().all(|c| c.is_uppercase() || c.is_ascii_digit());
@@ -159,7 +277,7 @@ const NO_ADVANCE_RATIO: f64 = 0.25;
 /// underneath that glyph rather than after it. The same page measured 58% at most for real
 /// spaces (an `f` overhangs the space after it) and 92% at least for the spurious ones.
 const SWALLOWED_RATIO: f64 = 0.8;
-/// How many of a page's spaces are measured to decide whether a covered space means anything there. Enough to see the font's habit, few enough that the pdfium calls stay a fixed cost per page.
+/// How many of a page's spaces are measured to decide whether a covered space means anything there. Enough to see the font's habit, few enough that the lookups stay a fixed cost per page.
 const COVER_SAMPLE: usize = 64;
 
 /// Whether a U+0020 in the text layer renders as no space at all, judged from where pdfium puts
@@ -218,7 +336,7 @@ pub(super) fn char_top(text_page: &PdfTextPage, index: i32) -> Option<f64> {
 	text_page.char_box(index).map(|boxed| boxed.top)
 }
 
-/// [`space_is_invisible`] for the spaces of one page, fetching only the geometry each test actually needs. Costs three or four pdfium calls per space character and none at all for anything else, so a page pays for it in proportion to its spaces rather than its length - the per-character cost that #747 had to undo.
+/// [`space_is_invisible`] for the spaces of one page, fetching only the geometry each test actually needs. Costs three or four lookups per space character and none at all for anything else, so a page pays for it in proportion to its spaces rather than its length - the per-character cost that #747 had to undo.
 pub(super) struct SpaceFilter {
 	char_count: i32,
 	/// [`covering_hides`] for this page, measured the first time a covered space turns up, so a page without one never pays for it.
@@ -316,9 +434,8 @@ fn measure_line(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Line {
 	}
 }
 
-/// The page's visual lines. `evidence` holds the words of the pages read so far, for judging the
-/// hyphens pdfium finds at line ends (see [`keeps_line_end_hyphen`]); this page's are added to it.
-pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32, evidence: &mut HyphenEvidence) -> Vec<Line> {
+/// The page's visual lines. `evidence` judges the hyphens pdfium finds at line ends; this page's words are added to it.
+pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32, evidence: &mut PageEvidence) -> Vec<Line> {
 	let Some(char_count) = text_page.char_count() else {
 		tracing::warn!(
 			page_index,
@@ -353,7 +470,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32, evide
 			current_chars.clear();
 			result.push(line);
 		} else if ch == LINE_END_HYPHEN {
-			if keeps_line_end_hyphen(&context, at, evidence) {
+			if evidence.keeps_line_end_hyphen(&context, at) {
 				current_chars.push(('-', i));
 			}
 		} else if ch == '\n' || (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
@@ -377,7 +494,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32, evide
 /// its images and sets its text in the same coordinates and says nothing about the order of the
 /// two. The first character is measured rather than the tallest, because a couple of points
 /// either way decides nothing about which line an image falls between and every character
-/// measured costs another call into pdfium.
+/// measured costs another lookup.
 /// The top and bottom edges of a line.
 ///
 /// The top comes from the first character, because a couple of points either way decides
@@ -555,8 +672,8 @@ fn restore_reading_order(lines: Vec<Line>) -> Vec<Line> {
 #[cfg(test)]
 mod tests {
 	use super::{
-		CharBox, Line, covering_hides, ends_line, keeps_hyphen, looks_monospaced, restore_reading_order,
-		sanitize_pdf_text, space_is_invisible,
+		CharBox, Line, PageEvidence, WordPages, confirms, covering_hides, ends_line, keeps_hyphen, looks_monospaced,
+		restore_reading_order, sanitize_pdf_text, space_is_invisible,
 	};
 
 	/// pdfium marks a hyphen it finds at the end of a line with U+0002. An ordinary word split
@@ -578,6 +695,26 @@ mod tests {
 		// The page writes the word whole elsewhere, so the split is joined even next to a capital.
 		assert_eq!(sanitize_pdf_text("Braille notes. Braille\u{0002}Note"), "Braille notes. Braille-Note");
 		assert_eq!(sanitize_pdf_text("BrailleNote and Braille\u{0002}Note"), "BrailleNote and BrailleNote");
+	}
+
+	/// A thread reading page 1 has not seen page 0 if another thread read it. Page 0 writes "OpenSolaris" whole, so the "Open-Solaris" wrapping on page 1 is one word, but without page 0 the capital keeps the hyphen. The check has to catch that, or the page keeps a hyphen that reading the pages in order would drop.
+	#[test]
+	fn a_hyphen_judged_without_an_earlier_page_is_caught() {
+		let chars = |text: &str| text.chars().collect::<Vec<char>>();
+		let mut first = PageEvidence::new(0, &[]);
+		first.add_chars(&chars("Built on OpenSolaris."));
+		let mut every_page = WordPages::default();
+		every_page.add(0, first.finish().0);
+		let every_page = std::slice::from_ref(&every_page);
+		let wrapped = chars("Open\u{0002}Solaris");
+		let mut alone = PageEvidence::new(1, &[]);
+		alone.add_chars(&wrapped);
+		assert!(alone.keeps_line_end_hyphen(&wrapped, 4));
+		assert!(!confirms(&alone.finish().1, 1, every_page));
+		let mut in_order = PageEvidence::new(1, every_page);
+		in_order.add_chars(&wrapped);
+		assert!(!in_order.keeps_line_end_hyphen(&wrapped, 4));
+		assert!(confirms(&in_order.finish().1, 1, every_page));
 	}
 
 	#[test]

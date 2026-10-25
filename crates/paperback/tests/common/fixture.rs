@@ -26,3 +26,19 @@ pub fn write_html(dir: &Path) -> PathBuf {
 	std::fs::write(&path, html).expect("write fixture");
 	path
 }
+
+pub const COMIC_NAME: &str = "ui-test.cbz";
+/// Words on the comic's one page, which is a picture of two lines of text.
+pub const COMIC_WORDS: &str = "quick brown fox";
+
+/// Writes a comic of one page into `dir`, a picture with text on it and nothing else, which the comic reader offers to OCR.
+pub fn write_comic(dir: &Path) -> PathBuf {
+	use std::io::Write as _;
+	std::fs::create_dir_all(dir).expect("create fixture dir");
+	let path = dir.join(COMIC_NAME);
+	let mut zip = zip::ZipWriter::new(std::fs::File::create(&path).expect("create comic"));
+	zip.start_file("001.png", zip::write::SimpleFileOptions::default()).expect("start page");
+	zip.write_all(include_bytes!("ocr-sample.png")).expect("write page");
+	zip.finish().expect("finish comic");
+	path
+}

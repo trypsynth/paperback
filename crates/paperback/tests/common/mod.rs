@@ -107,6 +107,17 @@ pub fn launch_with(test_name: &str, configure: impl FnOnce(&mut ConfigData)) -> 
 	start(base, fixture.as_os_str())
 }
 
+/// Launches the app on the document `write` puts in the folder it is given, rather than on the HTML fixture; `configure` adjusts the seeded config before it is written.
+pub fn launch_on(
+	test_name: &str,
+	write: impl FnOnce(&Path) -> PathBuf,
+	configure: impl FnOnce(&mut ConfigData),
+) -> App {
+	let (base, _) = prepare(test_name, configure);
+	let document = write(&base.join("fixture"));
+	start(base, document.as_os_str())
+}
+
 /// Serves the fixture over http on 127.0.0.1 and launches the app with its link instead of its
 /// path; `configure` adjusts the seeded config before it is written.
 pub fn launch_with_link(test_name: &str, configure: impl FnOnce(&mut ConfigData)) -> (App, FixtureServer) {
@@ -259,6 +270,15 @@ pub fn wait_for_focus(
 		std::thread::sleep(Duration::from_millis(250));
 		last = focused(pid);
 	}
+}
+
+/// The text of the focused reading control, or None while it does not have focus.
+pub fn reader_text(pid: u32) -> Option<String> {
+	let element = automation().get_focused_element().ok()?;
+	if element.get_process_id().ok()? != pid || element.get_control_type().ok()? != ControlType::Document {
+		return None;
+	}
+	element.get_pattern::<uiautomation::patterns::UITextPattern>().ok()?.get_document_range().ok()?.get_text(-1).ok()
 }
 
 /// Waits until the reading control has focus and still has it a second later.

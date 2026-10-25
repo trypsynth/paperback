@@ -27,14 +27,13 @@ mod working_copy;
 
 use std::{env, fs, io};
 
-use paperback_core::{set_pdfium_library_path, version};
+use paperback_core::version;
 use ui::PaperbackApp;
 use wxdragon::prelude::{Appearance, set_appearance};
 
 fn main() {
 	let _log_guard = logging::init(&config_ext::config_dir(), config_ext::log_level_from_disk());
 	tracing::info!(version = env!("CARGO_PKG_VERSION"), commit = version::COMMIT_HASH, "starting");
-	set_pdfium_path_from_exe();
 	cleanup_legacy_files();
 	// When running in dev via `cargo run`, make sure the app gets a proper menu bar on Mac OS.
 	// Binaries not inside an app bundle are essentially treated as background processes of Terminal.app, which leads to all sorts of nastiness.
@@ -79,18 +78,10 @@ fn promote_unbundled_to_regular_app() {
 	}
 }
 
-fn set_pdfium_path_from_exe() {
-	if let Ok(exe) = env::current_exe()
-		&& let Some(dir) = exe.parent()
-	{
-		set_pdfium_library_path(dir.to_string_lossy().into_owned());
-	}
-}
-
 fn cleanup_legacy_files() {
 	let Ok(exe) = env::current_exe() else { return };
 	let Some(dir) = exe.parent() else { return };
-	for name in ["nvdaControllerClient64.dll", "SAAPI64.dll"] {
+	for name in ["nvdaControllerClient64.dll", "SAAPI64.dll", "pdfium.dll", "libpdfium.so"] {
 		let path = dir.join(name);
 		if let Err(e) = fs::remove_file(&path)
 			&& e.kind() != io::ErrorKind::NotFound

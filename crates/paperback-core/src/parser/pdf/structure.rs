@@ -12,8 +12,7 @@
 //! [`extract_tagged_page_text`] first checks how much of the page's text is actually covered
 //! by a marked-content id and bails out to the caller's plain-text fallback below
 //! [`MIN_MCID_COVERAGE`]. It bails out the same way when the tree it is handed leads to no text
-//! at all, which is what a file pdfium cannot read the structure of is left looking like once
-//! [`super::repair`] has had its chance at it.
+//! at all.
 
 use std::collections::HashMap;
 
@@ -23,11 +22,11 @@ use self::{
 };
 use super::{
 	images::{UnclaimedImages, append_image},
-	text::HyphenEvidence,
+	text::PageEvidence,
 };
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, TocItem},
-	pdfium::{PdfPage, PdfTextPage, Tag},
+	pdf_engine::{PdfPage, PdfTextPage, Tag},
 	util::text::{collapse_leaders, collapse_whitespace, display_len, trim_string},
 };
 
@@ -53,7 +52,7 @@ pub(super) fn extract_tagged_page_text(
 	render_tables_inline: bool,
 	image_tops: &[f64],
 	image_paths: &[String],
-	evidence: &mut HyphenEvidence,
+	evidence: &mut PageEvidence,
 ) -> bool {
 	let Some(struct_tree) = page.tags() else { return false };
 	let child_count = struct_tree.child_count();
@@ -81,12 +80,10 @@ pub(super) fn extract_tagged_page_text(
 		);
 		return false;
 	}
-	// pdfium hands back a null child for a top-level element it cannot load, so a page whose only
-	// element is one of those walks to nothing at all. That is what a missing parent tree looks
-	// like: every glyph carries a marked-content id, the tree reports one child, and that child
-	// cannot be reached. [`super::repair`] gets such a file its tree back where it can; where it
-	// cannot, reporting the tagged path as used would hand the caller an empty page and stop
-	// plain extraction from ever running over text that is there.
+	// A top-level element with nothing on this page comes back as no child at all, so a page whose
+	// only element is one of those walks to nothing. Reporting the tagged path as used then would
+	// hand the caller an empty page and stop plain extraction from ever running over text that is
+	// there.
 	if content.text.is_empty() || (0..child_count).all(|i| struct_tree.child(i).is_none()) {
 		tracing::warn!(page_index, "page structure tree leads to no text, falling back to plain extraction");
 		return false;

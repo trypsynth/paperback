@@ -1,19 +1,19 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
+use rayon::prelude::*;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	ocr::image_only_placeholder,
 	parser::{Parser, add_heading_markers, util::path::extract_title_from_path},
-	pdfium::{PAGE_IMAGE_COVERAGE, PdfDocument},
+	pdf_engine::{PAGE_IMAGE_COVERAGE, PdfDocument, PdfError, PdfPage},
 };
 
 mod images;
 mod links;
 mod metadata;
 mod paragraphs;
-mod repair;
 mod running;
 mod structure;
 mod tagged;
@@ -23,19 +23,19 @@ mod toc;
 use images::{append_image, images_before_each_paragraph, page_largest_image_coverage};
 use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
 use metadata::{map_load_error, metadata_title, metadata_value};
-pub use paragraphs::join_wrapped_lines;
 use paragraphs::{join_paragraphs, split_lines};
+pub use paragraphs::{join_wrapped_lines, join_wrapped_runs};
 use running::{EDGE_LINES, PageEdges, RunningText};
 use structure::extract_tagged_page_text;
 use tagged::{TaggedPage, append_tagged_page, tagged_running_lines, without_lines};
-use text::{HyphenEvidence, Line, extract_text_lines, median_line_font_size};
+use text::{Line, PageEvidence, WordPages, confirms, extract_text_lines, median_line_font_size};
 use toc::{build_toc_tree, extract_toc};
 
-/// Everything one page contributes, as read from pdfium and before any of it is placed in the
+/// Everything one page contributes, as read from the PDF engine and before any of it is placed in the
 /// document. The whole document is read before the first page is assembled, because which lines
-/// are running headers is only known once every page's edges have been seen - and pdfium is
-/// asked for each page exactly once, since loading a page and its text is the bulk of what
-/// parsing a PDF costs.
+/// are running headers is only known once every page's edges have been seen - and the engine is
+/// asked for each page once, again only for the few whose hyphens [`read_pages`] has to judge
+/// again, since loading a page and its text is the bulk of what parsing a PDF costs.
 #[derive(Default)]
 struct PageContent {
 	/// A page with a trustworthy structure tree arrives already laid out, in a buffer of its
@@ -57,14 +57,14 @@ struct PageContent {
 	largest_image_coverage: f64,
 }
 
-/// Read one page from pdfium: its text, its links, and the images it draws.
+/// Read one page from the PDF engine: its text, its links, and the images it draws.
 fn read_page(
-	document: &PdfDocument,
+	page: Result<PdfPage<'_>, PdfError>,
 	page_index: i32,
 	render_tables_inline: bool,
-	evidence: &mut HyphenEvidence,
+	evidence: &mut PageEvidence,
 ) -> PageContent {
-	let Ok(page) = document.page(page_index) else {
+	let Ok(page) = page else {
 		tracing::warn!(page_index, "failed to load pdf page, skipping its text");
 		return PageContent::default();
 	};
@@ -91,7 +91,7 @@ fn read_page(
 	};
 	if extract_tagged_page_text(
 		&page,
-		&text_page,
+		text_page,
 		page_index,
 		&mut tagged.buffer,
 		&mut tagged.display_text,
@@ -104,10 +104,10 @@ fn read_page(
 	) {
 		content.tagged = Some(tagged);
 	} else {
-		content.lines = extract_text_lines(&text_page, page_index, evidence);
+		content.lines = extract_text_lines(text_page, page_index, evidence);
 	}
-	content.web_links = collect_web_links(&text_page);
-	content.annotation_links = collect_annotation_links(&page, &text_page);
+	content.web_links = collect_web_links(text_page);
+	content.annotation_links = collect_annotation_links(&page, text_page);
 	content
 }
 
@@ -307,46 +307,12 @@ fn strip_running_text(lines: &mut Vec<Line>, running_text: &RunningText) {
 	}
 }
 
-/// Opens the document, and opens it a second time over a repaired copy when the first one hands
-/// back a structure tree nothing can be loaded from. See [`repair`] for what is repaired and why.
 fn load_document(context: &ParserContext) -> Result<PdfDocument> {
-	let document = PdfDocument::open(&context.file_path, context.password.as_deref()).map_err(|err| {
+	PdfDocument::open(&context.file_path, context.password.as_deref()).map_err(|err| {
 		let mapped = map_load_error(err);
 		tracing::warn!(path = %context.file_path, error = %mapped, "failed to load pdf document");
 		mapped
-	})?;
-	if !structure_tree_unreachable(&document) {
-		return Ok(document);
-	}
-	let Some(bytes) = repair::repaired_bytes(&context.file_path) else { return Ok(document) };
-	match PdfDocument::from_bytes(bytes, context.password.as_deref()) {
-		Ok(repaired) if !structure_tree_unreachable(&repaired) => {
-			tracing::debug!(path = %context.file_path, "gave the pdf a parent tree to reach its structure through");
-			Ok(repaired)
-		}
-		Ok(_) => Ok(document),
-		Err(err) => {
-			tracing::warn!(path = %context.file_path, error = %err, "failed to load the repaired pdf document");
-			Ok(document)
-		}
-	}
-}
-
-/// Whether the document advertises a structure tree whose top-level elements pdfium cannot load,
-/// which is what a missing parent tree looks like from here. Only the first few pages are asked,
-/// enough to meet a page that has a tree at all without walking a long document to find one.
-fn structure_tree_unreachable(document: &PdfDocument) -> bool {
-	const PROBED_PAGES: i32 = 10;
-	for page_index in 0..document.page_count().min(PROBED_PAGES) {
-		let Ok(page) = document.page(page_index) else { continue };
-		let Some(tree) = page.tags() else { continue };
-		let count = tree.child_count();
-		if count == 0 {
-			continue;
-		}
-		return (0..count).all(|index| tree.child(index).is_none());
-	}
-	false
+	})
 }
 
 /// Settle which of the three sources of headings the document ends up with, and make sure the
@@ -380,6 +346,78 @@ fn resolve_headings(
 	}
 }
 
+/// How many neighbouring pages a reading thread takes at a time, so that the pages it judges hyphens by lie close to the ones it reads.
+const RUN_LENGTH: i32 = 16;
+
+/// Reads every page, on every core.
+///
+/// Loading a page is most of what reading a PDF costs, so one thread per core reads, each keeping its own cache for the whole document so the fonts a book sets every page in are read once per thread. Each takes every so many runs of neighbouring pages in turn, so it reads its pages in order and has seen pages close before each one, which is what lets [`PageEvidence`] judge almost every hyphen right from that thread's pages alone. The few pages it judges differently from reading the pages one after another are read again once every page is in, against all of them.
+fn read_pages(document: &PdfDocument, page_count: i32, render_tables_inline: bool) -> Vec<PageContent> {
+	let runs = usize::try_from((page_count + RUN_LENGTH - 1) / RUN_LENGTH).unwrap_or(0);
+	let threads = std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get).clamp(1, runs.max(1));
+	let (read, words): (Vec<_>, Vec<_>) = std::thread::scope(|scope| {
+		let handles: Vec<_> = (0..threads)
+			.map(|thread| {
+				scope.spawn(move || {
+					let cache = document.page_cache();
+					let mut words = WordPages::default();
+					let mut pages = Vec::new();
+					for run in (thread..runs).step_by(threads) {
+						let start = i32::try_from(run).unwrap_or(i32::MAX).saturating_mul(RUN_LENGTH);
+						for index in start..(start + RUN_LENGTH).min(page_count) {
+							let mut evidence = PageEvidence::new(index, std::slice::from_ref(&words));
+							let content = read_page(
+								document.page_with(index, &cache),
+								index,
+								render_tables_inline,
+								&mut evidence,
+							);
+							let (own, judgements) = evidence.finish();
+							words.add(index, own);
+							pages.push((index, content, judgements));
+						}
+					}
+					(pages, words)
+				})
+			})
+			.collect();
+		// Collected first so that every thread is started before the first one is waited on.
+		handles.into_iter().map(|handle| handle.join().unwrap_or_else(|panic| std::panic::resume_unwind(panic))).unzip()
+	});
+	let mut read: Vec<_> = read.into_iter().flatten().collect();
+	read.sort_unstable_by_key(|(index, ..)| *index);
+	let misjudged: Vec<i32> = read
+		.iter()
+		.filter(|(index, _, judgements)| !confirms(judgements, *index, &words))
+		.map(|(index, ..)| *index)
+		.collect();
+	tracing::debug!(misjudged = misjudged.len(), "pdf pages read again for their hyphens");
+	let reread: Vec<PageContent> = misjudged
+		.par_iter()
+		.map_init(
+			|| document.page_cache(),
+			|cache, &index| {
+				read_page(
+					document.page_with(index, cache),
+					index,
+					render_tables_inline,
+					&mut PageEvidence::new(index, &words),
+				)
+			},
+		)
+		.collect();
+	let mut pages: Vec<PageContent> = read.into_iter().map(|(_, content, _)| content).collect();
+	for (index, content) in misjudged.into_iter().zip(reread) {
+		pages[usize::try_from(index).unwrap_or(usize::MAX)] = content;
+	}
+	pages
+}
+
+/// Whether a hyphen that ends a line between `left` and `right` belongs to the word, judged by the shape of the word alone; see [`text::keeps_hyphen`].
+pub(crate) fn keeps_line_end_hyphen(left: &str, right: &str) -> bool {
+	text::keeps_hyphen(left, right, None)
+}
+
 pub struct PdfParser;
 
 impl Parser for PdfParser {
@@ -397,21 +435,25 @@ impl Parser for PdfParser {
 		let mut has_any_text = false;
 		let mut has_any_images = false;
 		let mut detected_heading_positions: Vec<(usize, String)> = Vec::new();
-		let mut pages: Vec<PageContent> = {
-			// Words of the pages read so far, for telling a hyphen that belongs to a word from one that
-			// only splits it at a line end.
-			let mut evidence = HyphenEvidence::default();
-			(0..page_count)
-				.map(|page_index| read_page(&document, page_index, render_tables_inline, &mut evidence))
-				.collect()
-		};
+		let mut pages = read_pages(&document, page_count, render_tables_inline);
 		// The survey runs either way, because it is also what measures the body text, which is what
 		// tells a heading from body text and has nothing to do with furniture. What the caller asked
 		// for is whether its answer is used: a document converted as it is keeps every line, and one
 		// converted as a reader would like it loses the ones that repeat.
 		let survey = strip_tagged_running_text(&mut pages, context.strip_running_text);
 		let running_text = if context.strip_running_text { survey } else { survey.recognizing_nothing() };
-		for (page_index, page) in pages.into_iter().enumerate() {
+		// Laying out an untagged page is what putting the document together spends its time on, and it needs only the page and the survey, so every page is laid out at once.
+		let untagged: Vec<Vec<UntaggedLine>> = pages
+			.par_iter()
+			.map(|page| {
+				if page.tagged.is_none() {
+					untagged_page_lines(page, &running_text, context.join_pdf_paragraphs)
+				} else {
+					Vec::new()
+				}
+			})
+			.collect();
+		for ((page_index, page), untagged) in pages.into_iter().enumerate().zip(untagged) {
 			let marker_position = buffer.current_position();
 			page_offsets.push(marker_position);
 			id_positions.insert(format!("page_{page_index}"), marker_position);
@@ -447,7 +489,7 @@ impl Parser for PdfParser {
 					(level, item)
 				}));
 			} else {
-				for line in untagged_page_lines(&page, &running_text, context.join_pdf_paragraphs) {
+				for line in untagged {
 					match line {
 						UntaggedLine::Image(path) => {
 							let reference = format!("pdf:{page_index}:{path}");

@@ -9,7 +9,7 @@
 
 use std::{path::PathBuf, thread};
 
-use paperback_core::ocr::decode_image;
+use paperback_core::ocr::{decode_image, page_text};
 use patois::t;
 
 use super::DocumentManager;
@@ -83,11 +83,13 @@ impl DocumentManager {
 /// Decodes one picture and reads it, off the UI thread.
 fn run_image_ocr(bytes: &[u8], max_dimension: u32, id: u64) {
 	let outcome = match decode_image(bytes, max_dimension) {
-		Ok(page) => match ocr::recognize_rgba(&page.rgba, page.width, page.height) {
-			Ok(text) if text.trim().is_empty() => ImageOcrOutcome::NoText,
-			Ok(text) => ImageOcrOutcome::Text(text),
-			Err(error) => ImageOcrOutcome::Failed(error),
-		},
+		Ok(page) => {
+			match ocr::recognize_lines(&page.rgba, page.width, page.height).map(|lines| page_text(&lines, true)) {
+				Ok(text) if text.trim().is_empty() => ImageOcrOutcome::NoText,
+				Ok(text) => ImageOcrOutcome::Text(text),
+				Err(error) => ImageOcrOutcome::Failed(error),
+			}
+		}
 		Err(error) => {
 			tracing::warn!(%error, "the picture under the caret could not be decoded for ocr");
 			ImageOcrOutcome::Unreadable

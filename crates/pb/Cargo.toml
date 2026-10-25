@@ -15,7 +15,7 @@ clap = { version = "4.6.7", features = ["derive"] }
 glob = "0.3.4"
 # The OCR engine itself, for --ocr-image-pages. Core renders the pages; recognizing them is the
 # engine's job, and the desktop crate depends on this the same way rather than through core.
-native-ocr = "0.2.0"
+native-ocr = "0.2.1"
 paperback-core = { path = "../paperback-core", features = ["fetch"] }
 rpassword = "7.5.4"
 tempfile = "3.27.0"

@@ -133,7 +133,7 @@ mod tests {
 		if cfg!(target_os = "macos") {
 			matches!(action, ActionId::Exit | ActionId::Options)
 		} else if cfg!(target_os = "linux") {
-			matches!(action, ActionId::BatchOcr)
+			matches!(action, ActionId::BatchOcr | ActionId::RecognizeCurrentPage)
 		} else {
 			false
 		}

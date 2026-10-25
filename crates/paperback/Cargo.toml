@@ -15,14 +15,16 @@ anyhow = { workspace = true }
 base64 = { workspace = true }
 bitflags = { workspace = true }
 dunce = "1.0.5"
-# Decodes the embedded application icon in `ui::icon`; already in the tree via pdfium.
+# Decodes the embedded application icon in `ui::icon`; already in the tree via paperback-core.
 image = { version = "0.25.10", default-features = false, features = ["png"] }
 live-region = "0.3.3"
-native-ocr = "0.2.0"
+# Inflates the embedded Help pages; already in the tree via flate2 and patois.
+miniz_oxide = "0.9.1"
+native-ocr = "0.2.1"
 # `fetch` downloads documents opened from links.
 paperback-core = { path = "../paperback-core", features = ["fetch"] }
 paperback-formats = { path = "../paperback-formats" }
-patois = { version = "0.2.3", features = ["ui"] }
+patois = { version = "0.2.4", features = ["ui"] }
 # Decodes and plays DAISY narration in process. Recording and dithering are off: neither is
 # used, and both pull dependencies of their own. The symphonia extras cover the formats a
 # DAISY book can name that rodio's defaults leave out.
@@ -48,7 +50,7 @@ wx-utils = { version = "0.4.4", features = ["shortcuts"] }
 # than the Tango set built into wxArtProvider. Asserts go too, since a release build cannot act
 # on them.
 wxdragon = { version = "0.9.23", default-features = false, features = ["webview"] }
-zip = { version = "9.0.5", default-features = false, features = ["deflate"] }
+zip = { version = "9.1.0", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Pipes", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading", "Win32_UI_Shell"] }
@@ -60,8 +62,7 @@ objc = "0.2.7"
 [build-dependencies]
 paperback-formats = { path = "../paperback-formats" }
 patois-build = "0.1.16"
-pdfium-fetch = { path = "../pdfium-fetch" }
-shipfitter = { version = "0.2.3", features = ["docs", "windows-resources"] }
+shipfitter = { version = "0.2.4", features = ["docs", "windows-resources"] }
 
 [dev-dependencies]
 rstest = { workspace = true }

@@ -14,7 +14,7 @@
 
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType},
-	pdfium::{MAX_FORM_DEPTH, ObjectKind, PageObject, PdfPage},
+	pdf_engine::{MAX_FORM_DEPTH, ObjectKind, PageObject, PdfPage},
 	t,
 	util::text::display_len,
 };

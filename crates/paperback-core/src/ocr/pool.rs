@@ -1,6 +1,6 @@
 //! Reading a document's pages on several threads at once.
 //!
-//! Recognizing scales across threads but rasterizing does not, because `pdfium-render`'s `thread_safe` feature serializes every call through one process-wide lock. So each worker both rasterizes and reads its own pages with a renderer of its own, and one worker's rasterizing overlaps another's reading.
+//! Each worker both rasterizes and reads its own pages with a renderer of its own, so rasterizing and recognizing both run on every worker at once.
 //!
 //! Pages are handed back in page order however they finish, because the app refreshes the reader's window and counts progress on the assumption that pages land in ascending order.
 
@@ -16,7 +16,7 @@ use std::{
 
 use crate::ocr::PageRenderer;
 
-/// Past this, pages queue behind pdfium's lock, so more threads buy memory and contention rather than throughput.
+/// Every worker holds a page drawn at OCR resolution, tens of megabytes each, so past this more threads buy memory pressure rather than throughput.
 const MAX_WORKERS: usize = 4;
 
 /// One core is left free so the UI and the screen reader stay responsive while the pages are read.
@@ -39,16 +39,17 @@ pub struct Run {
 /// # Errors
 ///
 /// Returns an error if the document cannot be opened for rendering.
-pub fn recognize_pages<E>(
+pub fn recognize_pages<T, E>(
 	file_path: &str,
 	password: Option<&str>,
 	pages: &[i32],
 	workers: usize,
 	cancel: &AtomicBool,
-	recognize_page: impl Fn(&mut PageRenderer, i32) -> Result<String, E> + Sync,
-	mut on_page: impl FnMut(i32, Result<String, E>),
+	recognize_page: impl Fn(&mut PageRenderer, i32) -> Result<T, E> + Sync,
+	mut on_page: impl FnMut(i32, Result<T, E>),
 ) -> anyhow::Result<Run>
 where
+	T: Send,
 	E: Send,
 {
 	if pages.is_empty() {
@@ -59,7 +60,7 @@ where
 	// Every other worker would fail to open the document too, so one failure sends them all home.
 	let stop = AtomicBool::new(false);
 	let open_failure: Mutex<Option<anyhow::Error>> = Mutex::new(None);
-	let (sender, receiver) = mpsc::channel::<(usize, Result<String, E>)>();
+	let (sender, receiver) = mpsc::channel::<(usize, Result<T, E>)>();
 	let emitted = thread::scope(|scope| {
 		// Borrowed so each `move` closure captures a reference rather than the first one taking the call.
 		let recognize_page = &recognize_page;
@@ -101,12 +102,12 @@ where
 }
 
 /// Returns how many pages were handed over. A short count means the job stopped, since every claimed page is sent.
-fn collect<E>(
-	receiver: mpsc::Receiver<(usize, Result<String, E>)>,
+fn collect<T, E>(
+	receiver: mpsc::Receiver<(usize, Result<T, E>)>,
 	pages: &[i32],
-	on_page: &mut impl FnMut(i32, Result<String, E>),
+	on_page: &mut impl FnMut(i32, Result<T, E>),
 ) -> usize {
-	let mut held: HashMap<usize, Result<String, E>> = HashMap::new();
+	let mut held: HashMap<usize, Result<T, E>> = HashMap::new();
 	let mut next = 0usize;
 	let mut emitted = 0usize;
 	for (index, result) in receiver {
@@ -118,7 +119,7 @@ fn collect<E>(
 		}
 	}
 	// A stop can leave read pages behind an unread gap. They are still handed over, since the app reports how much was read.
-	let mut rest: Vec<(usize, Result<String, E>)> = held.into_iter().collect();
+	let mut rest: Vec<(usize, Result<T, E>)> = held.into_iter().collect();
 	rest.sort_unstable_by_key(|(index, _)| *index);
 	for (index, result) in rest {
 		on_page(pages[index], result);

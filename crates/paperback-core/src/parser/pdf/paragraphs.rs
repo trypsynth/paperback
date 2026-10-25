@@ -3,7 +3,7 @@
 //! A PDF says where every glyph sits and nothing about what any of it means, so where one
 //! paragraph ends and the next begins has to be worked out from how the page is set: the
 //! clear space above a line, the size it is set in, the face it is set in, and how far the
-//! line before it fell short of the measure. Nothing here talks to pdfium; it all reads
+//! line before it fell short of the measure. Nothing here talks to the PDF engine; it all reads
 //! [`Line`]s that [`super::text`] has already measured.
 
 use std::mem;
@@ -209,6 +209,37 @@ const RECOGNIZED_TEXT_SIZE: f64 = 12.0;
 /// ends with.
 #[must_use]
 pub fn join_wrapped_lines(text: &str) -> String {
+	join_paragraphs(&recognized_lines(text), RECOGNIZED_TEXT_SIZE)
+		.into_iter()
+		.map(|(paragraph, ..)| paragraph)
+		.collect::<Vec<String>>()
+		.join("\n")
+}
+
+/// Joins each of several runs of recognized text into paragraphs of its own, as [`join_wrapped_lines`] does, but judges where a line falls short against the measure of all of them together. A page whose prose comes in runs between headings and boxes has one measure, and a run of a few short lines has none of its own.
+#[must_use]
+pub fn join_wrapped_runs(runs: &[&str]) -> Vec<String> {
+	let runs: Vec<Vec<Line>> = runs.iter().map(|text| recognized_lines(text)).collect();
+	let every_line: Vec<Line> = runs.iter().flatten().cloned().collect();
+	let trimmed: Vec<(Line, bool)> = every_line
+		.iter()
+		.zip(trimmed_lines(&every_line))
+		.map(|(line, (text, _))| (Line { text, ..line.clone() }, false))
+		.collect();
+	let measure = full_line_len(&trimmed);
+	runs.iter()
+		.map(|lines| {
+			join_paragraphs_measured(lines, RECOGNIZED_TEXT_SIZE, Some(measure))
+				.into_iter()
+				.map(|(paragraph, ..)| paragraph)
+				.collect::<Vec<String>>()
+				.join("\n")
+		})
+		.collect()
+}
+
+/// Recognized text as lines laid out one under another, all one size with no gap between any two.
+fn recognized_lines(text: &str) -> Vec<Line> {
 	let mut lines: Vec<Line> = Vec::new();
 	let mut top = 0.0;
 	for line in text.lines() {
@@ -222,17 +253,22 @@ pub fn join_wrapped_lines(text: &str) -> String {
 		});
 		top -= RECOGNIZED_TEXT_SIZE;
 	}
-	join_paragraphs(&lines, RECOGNIZED_TEXT_SIZE)
-		.into_iter()
-		.map(|(paragraph, ..)| paragraph)
-		.collect::<Vec<String>>()
-		.join("\n")
+	lines
 }
 
 /// The third field of each paragraph is the index, into `raw_lines`, of the line it starts
 /// with. An untagged page needs it to place its images: the paragraphs no longer say where on
 /// the page they were set, and that line does.
 pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
+	join_paragraphs_measured(raw_lines, body_font_size, None)
+}
+
+/// [`join_paragraphs`], judging where a line falls short against `measure` when it is given rather than against these lines' own.
+fn join_paragraphs_measured(
+	raw_lines: &[Line],
+	body_font_size: f64,
+	measure: Option<usize>,
+) -> Vec<(String, bool, usize)> {
 	let raw_lines = merge_drop_caps(raw_lines, body_font_size);
 	let trimmed = trimmed_lines(&raw_lines);
 	let marked = HeadingRule::for_page(&raw_lines, body_font_size).mark(&raw_lines, &trimmed);
@@ -246,7 +282,7 @@ pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(S
 	// ends a sentence and stops any way short of the measure has ended the paragraph with it. A
 	// line that ends mid-sentence has to fall well short before the next line starting like a
 	// fresh sentence counts for anything, since a capital there is as likely to open a name.
-	let full_line = full_line_len(&lines);
+	let full_line = measure.unwrap_or_else(|| full_line_len(&lines));
 	let ended_sentence_threshold = full_line * 19 / 20;
 	let short_line_threshold = full_line * 3 / 4;
 	let mut paragraphs: Vec<(String, bool, usize)> = Vec::new();
