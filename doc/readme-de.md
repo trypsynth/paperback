@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2867c9344accdcad; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0822f58d,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: b0171dfc874af9e8; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,808d00fb,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - Version 1.0
 
@@ -177,6 +177,7 @@ Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet
 * `Ctrl+W` (macOS: `RawCtrl+W`, d. h. die physische Strg-Taste statt Cmd): Wortanzahl für das aktuelle Dokument anzeigen.
 * `Ctrl+I`: Dokumentinfo anzeigen.
 * `Ctrl+Shift+O`: Einen Bereich gescannter PDF-Seiten mit Texterkennung erkennen.
+* `Ctrl+Shift+R`: Erkennt die PDF- oder Comic-Buchseite, auf der sich der Cursor befindet, mit Texterkennung und ersetzt vorhandenen Text.
 * `Ctrl+Shift+S`: Schlaf-Timer umschalten.
 * `Ctrl+,`: Einstellungen öffnen (macOS: im App-Menü).
 

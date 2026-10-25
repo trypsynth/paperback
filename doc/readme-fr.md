@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2867c9344accdcad; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0822f58d,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: b0171dfc874af9e8; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,808d00fb,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - version 1.0
 
@@ -177,6 +177,7 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 * `Ctrl+W` (macOS : `RawCtrl+W`, c'est-à-dire la touche Control physique plutôt que Cmd) : Afficher le nombre de mots du document actif.
 * `Ctrl+I` : Afficher les informations du document.
 * `Ctrl+Shift+O` : Reconnaître une plage de pages PDF numérisées avec OCR.
+* `Ctrl+Shift+R` : Reconnaître la page PDF ou bande dessinée sur laquelle se trouve le curseur avec OCR, en remplaçant tout texte qu'elle contient déjà.
 * `Ctrl+Shift+S` : Basculer la minuterie de sommeil.
 * `Ctrl+,` : Ouvrir Paramètres (macOS : dans le menu de l'application).
 

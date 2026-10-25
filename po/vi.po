@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 15:50+0000\n"
+"POT-Creation-Date: 2026-10-25 18:07+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1803,16 +1803,23 @@ msgstr "Tệp: {}"
 msgid "Details: {}"
 msgstr "Chi tiết: {}"
 
+#. TRANSLATORS: Announced when Recognize Current Page is chosen with no document open
 #. TRANSLATORS: Announced when batch OCR is triggered with no document open
 #. TRANSLATORS: Announced when Batch OCR is chosen with no document open
 #, fuzzy
 msgid "No document open."
 msgstr "Không có tài liệu nào đang mở"
 
+#. TRANSLATORS: Announced when Recognize Current Page is chosen while OCR is already running
 #. TRANSLATORS: Announced when batch OCR is started while another OCR job is running
 #, fuzzy
 msgid "OCR already in progress."
 msgstr "OCR đã đang xử lý."
+
+#. TRANSLATORS: Announced when Recognize Current Page is chosen in a document that is not a PDF or a comic book
+#, fuzzy
+msgid "Only PDF and comic book pages can be recognized."
+msgstr "Chỉ có các trang PDF và sách truyện tranh mới có thể được nhận dạng."
 
 #. TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
 #, fuzzy
@@ -2547,6 +2554,11 @@ msgstr "&Cài đặt"
 #, fuzzy
 msgid "&Batch OCR..."
 msgstr "&Batch OCR..."
+
+#. TRANSLATORS: Tools menu item that recognizes the page the cursor is on with OCR, replacing any text it already has
+#, fuzzy
+msgid "&Recognize Current Page"
+msgstr "&Nhận dạng trang hiện tại"
 
 #. TRANSLATORS: Checkable menu item in the View menu that toggles whether word wrap is enabled.
 #, fuzzy
@@ -3381,6 +3393,11 @@ msgstr "Hẹn giờ ngủ"
 #, fuzzy
 msgid "Batch OCR..."
 msgstr "Batch OCR..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Recognize Current Page"
+msgstr "Nhận dạng trang hiện tại"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy

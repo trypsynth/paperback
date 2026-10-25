@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 15:50+0000\n"
+"POT-Creation-Date: 2026-10-25 18:07+0000\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -1772,16 +1772,23 @@ msgstr "Файл: {}"
 msgid "Details: {}"
 msgstr "Подробности: {}"
 
+#. TRANSLATORS: Announced when Recognize Current Page is chosen with no document open
 #. TRANSLATORS: Announced when batch OCR is triggered with no document open
 #. TRANSLATORS: Announced when Batch OCR is chosen with no document open
 #, fuzzy
 msgid "No document open."
 msgstr "Документы не открыты"
 
+#. TRANSLATORS: Announced when Recognize Current Page is chosen while OCR is already running
 #. TRANSLATORS: Announced when batch OCR is started while another OCR job is running
 #, fuzzy
 msgid "OCR already in progress."
 msgstr "Распознавание текста уже выполняется."
+
+#. TRANSLATORS: Announced when Recognize Current Page is chosen in a document that is not a PDF or a comic book
+#, fuzzy
+msgid "Only PDF and comic book pages can be recognized."
+msgstr "Распознавать могут только страницы PDF и комиксов."
 
 #. TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
 #, fuzzy
@@ -2501,6 +2508,11 @@ msgstr "&Параметры"
 #, fuzzy
 msgid "&Batch OCR..."
 msgstr "&Пакетное OCR..."
+
+#. TRANSLATORS: Tools menu item that recognizes the page the cursor is on with OCR, replacing any text it already has
+#, fuzzy
+msgid "&Recognize Current Page"
+msgstr "&Распознать текущую страницу"
 
 #. TRANSLATORS: Checkable menu item in the View menu that toggles whether word wrap is enabled.
 #, fuzzy
@@ -3312,6 +3324,11 @@ msgstr "Таймер сна"
 #, fuzzy
 msgid "Batch OCR..."
 msgstr "Пакетное OCR..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Recognize Current Page"
+msgstr "Распознать текущую страницу"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
