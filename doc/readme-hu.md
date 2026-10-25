@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2867c9344accdcad; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0822f58d,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: b0171dfc874af9e8; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,808d00fb,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback – 1.0-s verzió
 
@@ -177,6 +177,7 @@ Az alábbi billentyűparancsok a Windowsra vonatkoznak. Ahol a macOS eltér, a m
 * `Ctrl+W` (macOS: `RawCtrl+W`, azaz a fizikai Control billentyű, nem a Cmd): Az aktuális dokumentum szavainak száma.
 * `Ctrl+I`: A dokumentuminformációk megjelenítése.
 * `Ctrl+Shift+O`: Szkennelt PDF-oldalak egy tartományának szövegfelismerése.
+* `Ctrl+Shift+R`: A kurzornál lévő PDF- vagy képregénylap szövegfelismerése, az esetleges meglévő szöveg helyettesítésével.
 * `Ctrl+Shift+S`: Az elalvási időzítő be- és kikapcsolása.
 * `Ctrl+,`: A Beállítások megnyitása (macOS-en az alkalmazásmenüben).
 

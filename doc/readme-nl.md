@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2867c9344accdcad; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0822f58d,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: b0171dfc874af9e8; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,808d00fb,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versie 1.0
 
@@ -177,6 +177,7 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 * `Ctrl+W` (macOS: `RawCtrl+W`, oftewel de fysieke Control-toets in plaats van Cmd): Woordenaantal van het huidige document tonen.
 * `Ctrl+I`: Documentinformatie tonen.
 * `Ctrl+Shift+O`: Een reeks gescande PDF-pagina's herkennen met OCR.
+* `Ctrl+Shift+R`: De PDF- of comicbookpagina waarop de cursor staat herkennen met OCR, waarbij eventuele bestaande tekst wordt vervangen.
 * `Ctrl+Shift+S`: Slaaptimer in-/uitschakelen.
 * `Ctrl+,`: Instellingen openen (macOS: in het appmenu).
 
