@@ -87,10 +87,9 @@ pub(super) fn handle_view_source(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>)
 			let title = format!("{} {orig_name}", t("Source:"));
 			let opened = dm.lock().unwrap().open_source_file(dm, Path::new(&view.path), &title);
 			if opened {
-				let dm_ref = dm.lock().unwrap();
-				if let Some(tab) = dm_ref.active_tab() {
-					tab.text_ctrl.set_insertion_point(view.caret);
-					tab.text_ctrl.show_position(view.caret);
+				let mut dm_ref = dm.lock().unwrap();
+				if let Some(tab) = dm_ref.active_tab_mut() {
+					navigation::set_caret_to_doc_offset(tab, view.caret);
 				}
 			}
 		}

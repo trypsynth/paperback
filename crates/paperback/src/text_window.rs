@@ -31,6 +31,32 @@ const EXTEND_CHUNK: i64 = TARGET_WINDOW_SIZE / 2;
 /// the web view, which has to agree about what counts as a whole document.
 const WHOLE_DOCUMENT_THRESHOLD: i64 = paperback_core::WHOLE_DOCUMENT_DISPLAY_LEN;
 
+/// A position in a tab's `text_ctrl`: counted from the start of what is loaded into it, in the control's own units. Only [`TextWindow`] turns one into a document position or back, so a position of one kind can't be passed where the other is meant (#1062).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct CtrlPos(i64);
+
+impl CtrlPos {
+	pub const ZERO: Self = Self(0);
+
+	/// Wraps a position the control or a native API on it gave out.
+	pub const fn from_raw(raw: i64) -> Self {
+		Self(raw)
+	}
+
+	pub const fn get(self) -> i64 {
+		self.0
+	}
+}
+
+/// Moves along the control by a count of its units, such as a column within a line it measured.
+impl std::ops::Add<i64> for CtrlPos {
+	type Output = Self;
+
+	fn add(self, units: i64) -> Self {
+		Self(self.0 + units)
+	}
+}
+
 /// The document-absolute bounds of whatever's currently loaded into a tab's `text_ctrl`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TextWindow {
@@ -115,13 +141,13 @@ impl TextWindow {
 	/// clamped into this window's bounds (a position outside the window has no valid
 	/// ctrl-local representation until the window is reloaded - callers must check
 	/// `needs_reload_for` first if that matters).
-	pub fn to_local(self, doc_pos: i64) -> i64 {
-		(doc_pos - self.start).clamp(0, self.end - self.start)
+	pub fn to_local(self, doc_pos: i64) -> CtrlPos {
+		CtrlPos((doc_pos - self.start).clamp(0, self.end - self.start))
 	}
 
 	/// Translates a `text_ctrl`-local position back to document-absolute.
-	pub const fn to_doc(self, local_pos: i64) -> i64 {
-		local_pos + self.start
+	pub const fn to_doc(self, local_pos: CtrlPos) -> i64 {
+		local_pos.0 + self.start
 	}
 
 	/// Whether reaching `doc_pos` requires loading a different window first: either it's
@@ -176,15 +202,15 @@ mod tests {
 	#[test]
 	fn to_local_and_to_doc_round_trip_within_bounds() {
 		let window = TextWindow::new(1000, 2000);
-		assert_eq!(window.to_local(1500), 500);
-		assert_eq!(window.to_doc(500), 1500);
+		assert_eq!(window.to_local(1500), CtrlPos(500));
+		assert_eq!(window.to_doc(CtrlPos(500)), 1500);
 	}
 
 	#[test]
 	fn to_local_clamps_outside_the_window() {
 		let window = TextWindow::new(1000, 2000);
-		assert_eq!(window.to_local(0), 0);
-		assert_eq!(window.to_local(5000), 1000);
+		assert_eq!(window.to_local(0), CtrlPos(0));
+		assert_eq!(window.to_local(5000), CtrlPos(1000));
 	}
 
 	#[test]
@@ -339,7 +365,7 @@ mod tests {
 		let mut window = TextWindow::new(start, start + TARGET_WINDOW_SIZE);
 		// Seeded just inside RELOAD_MARGIN of the loaded start, the position most likely to look
 		// like it needs a compaction and so the worst case for a pump that must not do one.
-		let mut reader_local = RELOAD_MARGIN - 25_000;
+		let mut reader_local = CtrlPos(RELOAD_MARGIN - 25_000);
 		for _ in 0..500 {
 			let before = window.to_doc(reader_local);
 			if window.wants_extension_for(before, doc_len) {
@@ -347,10 +373,10 @@ mod tests {
 				assert_eq!(from, window.end, "an extension must begin exactly at the loaded end");
 				window.extend_end_to(to);
 			}
-			assert_eq!(window.to_doc(0), start, "the pump must never move the loaded start");
+			assert_eq!(window.to_doc(CtrlPos::ZERO), start, "the pump must never move the loaded start");
 			assert_eq!(window.to_doc(reader_local), before, "a held offset must still mean the same character");
 			// The reader speaks a line and advances its own offset.
-			reader_local += 200;
+			reader_local = reader_local + 200;
 		}
 		// And it stayed ahead of the reader the whole way rather than running out of text.
 		assert!(window.to_doc(reader_local) <= window.end, "extension must keep up with the reader");
@@ -370,7 +396,7 @@ mod tests {
 	fn extension_leaves_a_held_offset_alone_and_compaction_moves_it() {
 		let doc_len = 5_000_000;
 		let window = TextWindow::new(1_750_000, 1_750_000 + TARGET_WINDOW_SIZE);
-		let held_local = RELOAD_MARGIN - 25_000;
+		let held_local = CtrlPos(RELOAD_MARGIN - 25_000);
 		let before = window.to_doc(held_local);
 		let mut extended = window;
 		extended.extend_end_to(window.end + EXTEND_CHUNK);

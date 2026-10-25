@@ -25,7 +25,6 @@ use paperback_core::{
 	session::DocumentSession,
 };
 use patois::{nt, t};
-use wxdragon::prelude::*;
 
 use super::{DocumentManager, DocumentTab};
 use crate::{

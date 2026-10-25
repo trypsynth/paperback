@@ -177,10 +177,10 @@ impl DocumentManager {
 		if let Some(font) = build_font_from_readability(&rf) {
 			text_ctrl.set_font(&font);
 		}
-		apply_foreground_color_to_ctrl(text_ctrl, rf.color);
-		apply_bg_color_to_ctrl(text_ctrl, config.get_bg_color());
+		apply_foreground_color_to_ctrl(text_ctrl.widget(), rf.color);
+		apply_bg_color_to_ctrl(text_ctrl.widget(), config.get_bg_color());
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
-		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
+		sizer.add(&text_ctrl.widget(), 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
 		let path_str = path.to_string_lossy();
 		let doc_len = session.document_len();
@@ -188,7 +188,7 @@ impl DocumentManager {
 		let initial_pos = if saved_pos >= 0 { saved_pos } else { 0 };
 		let window = load_window_into_ctrl(text_ctrl, &session, initial_pos, doc_len);
 		apply_readability_format_to_ctrl(
-			text_ctrl,
+			text_ctrl.widget(),
 			config.get_line_spacing(),
 			config.get_paragraph_spacing(),
 			config.get_letter_spacing(),

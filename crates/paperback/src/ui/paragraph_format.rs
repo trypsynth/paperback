@@ -18,7 +18,9 @@ use windows::{
 };
 use wxdragon::prelude::*;
 
-/// Gives each of `paragraphs`, offset by `base`, its heading style and list membership, leaving
+use crate::{text_window::CtrlPos, ui::reader_ctrl::ReaderCtrl};
+
+/// Gives each of `paragraphs`, whose offsets `place` puts in the control, its heading style and list membership, leaving
 /// the text looking exactly as it did.
 ///
 /// Each paragraph's whole format is copied, changed and applied in one go: setting only the style
@@ -27,18 +29,18 @@ use wxdragon::prelude::*;
 ///
 /// The Text Object Model refuses to change a read-only control, so the control is made editable
 /// for the duration. That raises no accessibility event, and nothing here moves the caret.
-pub fn apply_paragraph_formats(text_ctrl: TextCtrl, base: i64, paragraphs: &[ParagraphFormat]) {
+pub fn apply_paragraph_formats(text_ctrl: ReaderCtrl, place: impl Fn(i64) -> CtrlPos, paragraphs: &[ParagraphFormat]) {
 	if paragraphs.is_empty() {
 		return;
 	}
-	let Some(document) = text_document(text_ctrl) else {
+	let Some(document) = text_document(text_ctrl.widget()) else {
 		return;
 	};
 	let editable = text_ctrl.is_editable();
 	text_ctrl.freeze();
 	text_ctrl.set_editable(true);
 	for paragraph in paragraphs {
-		if let Err(error) = apply(&document, base, paragraph) {
+		if let Err(error) = apply(&document, &place, paragraph) {
 			tracing::warn!(%error, "could not set a paragraph's heading or list formatting");
 		}
 	}
@@ -61,8 +63,12 @@ fn text_document(text_ctrl: TextCtrl) -> Option<ITextDocument> {
 	unsafe { IRichEditOle::from_raw(ole) }.cast().ok()
 }
 
-fn apply(document: &ITextDocument, base: i64, paragraph: &ParagraphFormat) -> windows::core::Result<()> {
-	let position = |offset: i64| i32::try_from(base + offset).unwrap_or(i32::MAX);
+fn apply(
+	document: &ITextDocument,
+	place: &impl Fn(i64) -> CtrlPos,
+	paragraph: &ParagraphFormat,
+) -> windows::core::Result<()> {
+	let position = |offset: i64| i32::try_from(place(offset).get()).unwrap_or(i32::MAX);
 	unsafe {
 		let para = document.Range(position(paragraph.start), position(paragraph.end))?.GetPara()?;
 		let format = para.GetDuplicate()?;

@@ -6,9 +6,10 @@ use wxdragon::prelude::*;
 
 use super::{
 	document_manager::{DocumentManager, DocumentTab},
+	reader_ctrl::ReaderCtrl,
 	text_render::reload_window_around,
 };
-use crate::audio_player::AudioPlayer;
+use crate::{audio_player::AudioPlayer, text_window::CtrlPos};
 
 mod announce;
 
@@ -357,7 +358,7 @@ pub fn handle_container_navigation(
 	persist_navigation_history(config, history_update.as_ref());
 }
 
-pub fn selected_range(text_ctrl: TextCtrl) -> (i64, i64) {
+pub fn selected_range(text_ctrl: ReaderCtrl) -> (CtrlPos, CtrlPos) {
 	let (start, end) = text_ctrl.get_selection();
 	if start == end {
 		let pos = text_ctrl.get_insertion_point();

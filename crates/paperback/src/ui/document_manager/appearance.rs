@@ -30,42 +30,42 @@ impl DocumentManager {
 
 	pub fn apply_color(&self, color: i32) {
 		for tab in &self.tabs {
-			apply_foreground_color_to_ctrl(tab.text_ctrl, color);
+			apply_foreground_color_to_ctrl(tab.text_ctrl.widget(), color);
 			tab.text_ctrl.refresh(true, None);
 		}
 	}
 
 	pub fn apply_bg_color(&self, color: i32) {
 		for tab in &self.tabs {
-			apply_bg_color_to_ctrl(tab.text_ctrl, color);
+			apply_bg_color_to_ctrl(tab.text_ctrl.widget(), color);
 			tab.text_ctrl.refresh(true, None);
 		}
 	}
 
 	pub fn apply_text_alignment(&self, alignment: i32) {
 		for tab in &self.tabs {
-			apply_text_alignment_to_ctrl(tab.text_ctrl, alignment);
+			apply_text_alignment_to_ctrl(tab.text_ctrl.widget(), alignment);
 			tab.text_ctrl.refresh(true, None);
 		}
 	}
 
 	pub fn apply_letter_spacing(&self, spacing: i32) {
 		for tab in &self.tabs {
-			apply_letter_spacing_to_ctrl(tab.text_ctrl, spacing);
+			apply_letter_spacing_to_ctrl(tab.text_ctrl.widget(), spacing);
 			tab.text_ctrl.refresh(true, None);
 		}
 	}
 
 	pub fn apply_paragraph_spacing(&self, spacing: i32) {
 		for tab in &self.tabs {
-			apply_paragraph_spacing_to_ctrl(tab.text_ctrl, spacing);
+			apply_paragraph_spacing_to_ctrl(tab.text_ctrl.widget(), spacing);
 			tab.text_ctrl.refresh(true, None);
 		}
 	}
 
 	pub fn apply_line_spacing(&self, line_spacing: i32) {
 		for tab in &self.tabs {
-			apply_line_spacing_to_ctrl(tab.text_ctrl, line_spacing);
+			apply_line_spacing_to_ctrl(tab.text_ctrl.widget(), line_spacing);
 			tab.text_ctrl.refresh(true, None);
 		}
 	}
@@ -91,24 +91,24 @@ impl DocumentManager {
 			let text_ctrl =
 				reader_input::build_text_ctrl(tab.panel, word_wrap, self_rc, self.frame, self.from_keyboard.clone());
 			let sizer = BoxSizer::builder(Orientation::Vertical).build();
-			sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
+			sizer.add(&text_ctrl.widget(), 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
-			fill_text_ctrl_with_formatting(text_ctrl, &slice);
 			tab.window = TextWindow::new(slice.start, slice.end);
+			fill_text_ctrl_with_formatting(text_ctrl, &slice, tab.window);
 			if let Some(font) = build_font_from_readability(&rf) {
 				text_ctrl.set_font(&font);
 			}
-			apply_foreground_color_to_ctrl(text_ctrl, rf.color);
-			apply_bg_color_to_ctrl(text_ctrl, bg_color);
+			apply_foreground_color_to_ctrl(text_ctrl.widget(), rf.color);
+			apply_bg_color_to_ctrl(text_ctrl.widget(), bg_color);
 			apply_readability_format_to_ctrl(
-				text_ctrl,
+				text_ctrl.widget(),
 				line_spacing,
 				paragraph_spacing,
 				letter_spacing,
 				text_alignment,
 			);
 			let max_pos = text_ctrl.get_last_position();
-			let pos = tab.window.to_local(current_doc_pos).clamp(0, max_pos);
+			let pos = tab.window.to_local(current_doc_pos).min(max_pos);
 			tab.panel.layout();
 			text_ctrl.set_insertion_point(pos);
 			text_ctrl.show_position(pos);

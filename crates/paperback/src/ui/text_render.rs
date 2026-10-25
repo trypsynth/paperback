@@ -3,11 +3,12 @@
 //! the headings and lists a screen reader reports.
 
 use paperback_core::session::{DocumentSession, WindowSlice};
-#[cfg(target_os = "windows")]
-use paperback_core::util::text::display_len;
 use wxdragon::prelude::*;
 
-use super::document_manager::DocumentTab;
+use super::{
+	document_manager::DocumentTab,
+	reader_ctrl::{ReaderCtrl, ctrl_len},
+};
 #[cfg(target_os = "windows")]
 use super::{
 	paragraph_format::apply_paragraph_formats,
@@ -17,10 +18,10 @@ use super::{
 use crate::rtf::{RtfFontInfo, build_rtf, build_rtf_for_whole_control, sanitize_for_rich_edit};
 use crate::{
 	text_format::{FormatSegment, merge_formatting_markers},
-	text_window::{self, TextWindow},
+	text_window::{self, CtrlPos, TextWindow},
 };
 
-pub(super) fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
+pub(super) fn fill_text_ctrl(text_ctrl: ReaderCtrl, content: &str) {
 	text_ctrl.set_value(content);
 }
 
@@ -29,7 +30,7 @@ pub(super) fn fill_text_ctrl(text_ctrl: TextCtrl, content: &str) {
 /// (identical to the app's pre-windowing behavior), otherwise a bounded window centered on
 /// `target_pos`. Returns the `TextWindow` describing what's now actually loaded.
 pub(super) fn load_window_into_ctrl(
-	text_ctrl: TextCtrl,
+	text_ctrl: ReaderCtrl,
 	session: &DocumentSession,
 	target_pos: i64,
 	doc_len: i64,
@@ -41,7 +42,7 @@ pub(super) fn load_window_into_ctrl(
 		session.get_window(raw_start, raw_end)
 	};
 	let window = TextWindow::new(slice.start, slice.end);
-	fill_text_ctrl_with_formatting(text_ctrl, &slice);
+	fill_text_ctrl_with_formatting(text_ctrl, &slice, window);
 	window
 }
 
@@ -84,12 +85,12 @@ pub fn reload_window_around(tab: &mut DocumentTab, doc_offset: i64, reason: &'st
 	}
 }
 
-/// Appends `slice` to whatever the control already holds, preserving existing offsets.
+/// Appends `slice` to whatever the control already holds, preserving existing offsets. `window` is what will be loaded once it has, which places the slice's formatting in the control.
 ///
 /// The counterpart to [`fill_text_ctrl_with_formatting`], which replaces everything. Returns
 /// false if the append did not complete, so the caller can rebuild instead of trusting a control
 /// that is now part-way through a chunk.
-pub(super) fn append_slice_to_ctrl(text_ctrl: TextCtrl, slice: &WindowSlice) -> bool {
+pub(super) fn append_slice_to_ctrl(text_ctrl: ReaderCtrl, slice: &WindowSlice, window: TextWindow) -> bool {
 	let content = slice.text.as_str();
 	let segments = merge_formatting_markers(&slice.markers);
 	#[cfg(target_os = "windows")]
@@ -103,24 +104,23 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: TextCtrl, slice: &WindowSlice) -> 
 			&slice.paragraphs,
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
 		);
-		if append_rtf_into_ctrl(text_ctrl, &rtf) {
+		if append_rtf_into_ctrl(text_ctrl.widget(), &rtf) {
 			return true;
 		}
 		tracing::warn!("RTF append did not complete");
 		return false;
 	}
 	// Plain-text path: the same one `fill_text_ctrl_with_formatting` falls back to, with the
-	// segments shifted past what is already loaded so they land on the text just appended.
+	// segments placed past what is already loaded so they land on the text just appended.
 	let base = text_ctrl.get_last_position();
 	text_ctrl.append_text(content);
 	if text_ctrl.get_last_position() <= base {
 		return false;
 	}
+	let place = |offset: i64| window.to_local(slice.start + offset);
 	#[cfg(target_os = "windows")]
-	apply_paragraph_formats(text_ctrl, base, &slice.paragraphs);
-	let shifted: Vec<FormatSegment> =
-		segments.iter().map(|seg| FormatSegment { start: seg.start + base, end: seg.end + base, ..*seg }).collect();
-	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &shifted);
+	apply_paragraph_formats(text_ctrl, place, &slice.paragraphs);
+	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &segments, place);
 	true
 }
 
@@ -149,7 +149,8 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: TextCtrl, slice: &WindowSlice) -> 
 #[cfg(target_os = "windows")]
 const RTF_STREAM_MIN_SEGMENTS: usize = 128;
 
-pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &WindowSlice) {
+/// Fills `text_ctrl` with `slice`, which `window` describes once it is loaded.
+pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: ReaderCtrl, slice: &WindowSlice, window: TextWindow) {
 	let content = slice.text.as_str();
 	let segments = merge_formatting_markers(&slice.markers);
 	#[cfg(target_os = "windows")]
@@ -166,7 +167,7 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &Window
 			&slice.paragraphs,
 			&RtfFontInfo { face_name: font.get_face_name(), point_size: font.get_point_size() },
 		);
-		if stream_rtf_into_ctrl(text_ctrl, &rtf) {
+		if stream_rtf_into_ctrl(text_ctrl.widget(), &rtf) {
 			if text_ctrl.get_value() == *expected {
 				return;
 			}
@@ -179,13 +180,20 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &Window
 			// length check is still decisive against the failure this guards: unparsed RTF
 			// stored as literal text would be tens of thousands of display units longer than
 			// the content it encodes.
-			let expected_len = i64::try_from(display_len(&expected)).unwrap_or(i64::MAX);
+			let expected_len = ctrl_len(&expected);
 			let stored_len = text_ctrl.get_last_position();
 			if stored_len == expected_len {
-				tracing::debug!(expected_len, "RTF round-trip was substituted but not resized; keeping it");
+				tracing::debug!(
+					expected_len = expected_len.get(),
+					"RTF round-trip was substituted but not resized; keeping it"
+				);
 				return;
 			}
-			tracing::warn!(stored_len, expected_len, "RTF fast path changed the content's length; falling back");
+			tracing::warn!(
+				stored_len = stored_len.get(),
+				expected_len = expected_len.get(),
+				"RTF fast path changed the content's length; falling back"
+			);
 		} else {
 			tracing::warn!("RTF stream-in did not complete; falling back");
 		}
@@ -193,12 +201,18 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: TextCtrl, slice: &Window
 		// fall back below to the plain-text + segment-loop path.
 	}
 	fill_text_ctrl(text_ctrl, content);
+	let place = |offset: i64| window.to_local(slice.start + offset);
 	#[cfg(target_os = "windows")]
-	apply_paragraph_formats(text_ctrl, 0, &slice.paragraphs);
-	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &segments);
+	apply_paragraph_formats(text_ctrl, place, &slice.paragraphs);
+	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &segments, place);
 }
 
-fn apply_formatting_markers_to_ctrl_from_segments(text_ctrl: TextCtrl, segments: &[FormatSegment]) {
+/// Styles each of `segments`, whose offsets `place` puts in the control.
+fn apply_formatting_markers_to_ctrl_from_segments(
+	text_ctrl: ReaderCtrl,
+	segments: &[FormatSegment],
+	place: impl Fn(i64) -> CtrlPos,
+) {
 	if segments.is_empty() {
 		return;
 	}
@@ -239,7 +253,7 @@ fn apply_formatting_markers_to_ctrl_from_segments(text_ctrl: TextCtrl, segments:
 				attr.set_font_underlined(true);
 			}
 		}
-		text_ctrl.set_style(seg.start, seg.end, &attr);
+		text_ctrl.set_style(place(seg.start), place(seg.end), &attr);
 	}
 	text_ctrl.thaw();
 }
