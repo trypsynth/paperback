@@ -19,10 +19,7 @@ use std::{
 	time::{Duration, Instant},
 };
 
-use paperback_core::{
-	ocr::{default_workers, recognize_pages},
-	parser::pdf::join_wrapped_lines,
-};
+use paperback_core::ocr::{default_workers, recognize_pages};
 use patois::{nt, t};
 use wxdragon::prelude::*;
 
@@ -185,6 +182,10 @@ impl DocumentManager {
 		let password = self.config.lock().unwrap().get_document_password(&path.to_string_lossy());
 		let password = (!password.is_empty()).then_some(password);
 		let path_str = tab.local_path().to_string_lossy().to_string();
+		// An OCR engine reads a page a printed line at a time, so its text arrives broken at
+		// every line end. The reader who asked for wrapped lines to be joined asked about the
+		// text of a page, not about where it was read from.
+		let join = is_pdf(tab.local_path()) && self.config.lock().unwrap().get_app_bool("join_pdf_paragraphs", true);
 		let cancel = Arc::new(AtomicBool::new(false));
 		let worker_cancel = Arc::clone(&cancel);
 		let id = self.next_job_id.get();
@@ -192,7 +193,7 @@ impl DocumentManager {
 		let job = OcrJob { id, cancel, batch, recognized: 0, quiet_cancel: false };
 		let worker = thread::Builder::new()
 			.name("paperback-ocr".into())
-			.spawn(move || run_ocr(&path_str, password.as_deref(), &pages, &path, &worker_cancel, batch, id));
+			.spawn(move || run_ocr(&path_str, password.as_deref(), &pages, &path, &worker_cancel, batch, join, id));
 		match worker {
 			Ok(_) => {
 				if let Some(tab) = self.active_tab_mut() {
@@ -231,11 +232,6 @@ impl DocumentManager {
 			return;
 		}
 		let is_active = self.active_tab_index() == Some(index);
-		// An OCR engine reads a page a printed line at a time, so its text arrives broken at
-		// every line end. The reader who asked for wrapped lines to be joined asked about the
-		// text of a page, not about where it was read from.
-		let join_paragraphs = is_pdf(self.tabs[index].local_path())
-			&& self.config.lock().unwrap().get_app_bool("join_pdf_paragraphs", true);
 		let tab = &mut self.tabs[index];
 		let mut pages = Vec::with_capacity(results.len());
 		// Where each page being replaced starts, read before the edit for the same reason the
@@ -259,7 +255,6 @@ impl DocumentManager {
 			if text.trim().is_empty() {
 				continue;
 			}
-			let text = if join_paragraphs { join_wrapped_lines(&text) } else { text };
 			// `page_offset` answers -1 for a page this document does not have, which is how a
 			// result for a page the session no longer holds gets dropped instead of panicking.
 			let start = tab.session.page_offset(page);
@@ -361,7 +356,8 @@ fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[i64], window: TextWindow, 
 
 /// The worker thread: renders and recognizes pages on a pool of threads, posting results back to the UI thread in flushes.
 ///
-/// `id` travels with every message so the UI thread can tell this run apart from any other job on the same document, which may by now be open again under a new tab.
+/// `id` travels with every message so the UI thread can tell this run apart from any other job on the same document, which may by now be open again under a new tab. `join` puts each page's lines back in reading order and joins them into paragraphs.
+#[allow(clippy::too_many_arguments)]
 fn run_ocr(
 	path_str: &str,
 	password: Option<&str>,
@@ -369,6 +365,7 @@ fn run_ocr(
 	file_path: &Path,
 	cancel: &AtomicBool,
 	batch: bool,
+	join: bool,
 	id: u64,
 ) {
 	let max_dimension = ocr::max_image_dimension();
@@ -387,7 +384,7 @@ fn run_ocr(
 			renderer
 				.render(page - 1, max_dimension)
 				.map_err(|error| OcrError::Failed(error.to_string()))
-				.and_then(|rendered| ocr::recognize_rgba(&rendered.rgba, rendered.width, rendered.height))
+				.and_then(|rendered| ocr::recognize_text(&rendered.rgba, rendered.width, rendered.height, join))
 		},
 		|page, result| {
 			done += 1;

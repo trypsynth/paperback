@@ -83,7 +83,7 @@ impl DocumentManager {
 /// Decodes one picture and reads it, off the UI thread.
 fn run_image_ocr(bytes: &[u8], max_dimension: u32, id: u64) {
 	let outcome = match decode_image(bytes, max_dimension) {
-		Ok(page) => match ocr::recognize_rgba(&page.rgba, page.width, page.height) {
+		Ok(page) => match ocr::recognize_text(&page.rgba, page.width, page.height, true) {
 			Ok(text) if text.trim().is_empty() => ImageOcrOutcome::NoText,
 			Ok(text) => ImageOcrOutcome::Text(text),
 			Err(error) => ImageOcrOutcome::Failed(error),

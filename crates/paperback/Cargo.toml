@@ -20,7 +20,7 @@ image = { version = "0.25.10", default-features = false, features = ["png"] }
 live-region = "0.3.3"
 # Inflates the embedded Help pages; already in the tree via flate2 and patois.
 miniz_oxide = "0.9.1"
-native-ocr = "0.2.0"
+native-ocr = "0.2.1"
 # `fetch` downloads documents opened from links.
 paperback-core = { path = "../paperback-core", features = ["fetch"] }
 paperback-formats = { path = "../paperback-formats" }

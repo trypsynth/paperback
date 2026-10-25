@@ -4,8 +4,34 @@
 //! (remote, paid, whole document, structured), which is a different feature on a different path
 //! rather than another engine here.
 
-pub use native_ocr::{Error as OcrError, max_image_dimension, recognize_rgba};
+pub use native_ocr::{Error as OcrError, max_image_dimension};
+use native_ocr::{Line, recognize_lines, recognize_rgba};
+use paperback_core::ocr::{RecognizedLine, RecognizedWord, arrange};
 use patois::t;
+
+/// Reads the text in an RGBA8 bitmap. With `arranged`, its lines are put back in reading order from where each word was read and joined into paragraphs (see [`arrange`]); without, they come as the engine read them, one to a line.
+pub fn recognize_text(rgba: &[u8], width: u32, height: u32, arranged: bool) -> Result<String, OcrError> {
+	if !arranged {
+		return recognize_rgba(rgba, width, height);
+	}
+	let lines: Vec<RecognizedLine> = recognize_lines(rgba, width, height)?.into_iter().map(recognized).collect();
+	Ok(arrange(&lines, true))
+}
+
+fn recognized(line: Line) -> RecognizedLine {
+	let words = line
+		.words
+		.into_iter()
+		.map(|word| RecognizedWord {
+			text: word.text,
+			x: word.bounds.x,
+			y: word.bounds.y,
+			width: word.bounds.width,
+			height: word.bounds.height,
+		})
+		.collect();
+	RecognizedLine { text: line.text, words }
+}
 
 /// The message to announce when OCR fails.
 pub fn message(error: &OcrError) -> String {
