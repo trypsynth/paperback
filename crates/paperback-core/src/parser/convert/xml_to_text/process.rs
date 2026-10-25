@@ -393,7 +393,7 @@ impl XmlToText {
 			if text.is_empty() {
 				return;
 			}
-			let processed_text = remove_soft_hyphens(text);
+			let processed_text = remove_soft_hyphens(text.to_string());
 			if self.text.is_preserving_whitespace() {
 				self.text.current_line.push_str(&processed_text);
 			} else {

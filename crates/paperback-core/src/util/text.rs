@@ -18,9 +18,13 @@ pub fn collapse_leaders(input: &str) -> String {
 	LEADERS.replace_all(input, " $1").into_owned()
 }
 
+/// Takes the soft hyphens out of `text`, in place, so a whole text file is not copied to find it has none.
 #[must_use]
-pub fn remove_soft_hyphens(input: &str) -> String {
-	input.replace("\u{00AD}", "")
+pub fn remove_soft_hyphens(mut text: String) -> String {
+	if text.contains('\u{00AD}') {
+		text.retain(|c| c != '\u{00AD}');
+	}
+	text
 }
 
 /// Normalizes `\r\n` and bare `\r` line endings to `\n`, matching every other parser's output
@@ -32,23 +36,29 @@ pub fn remove_soft_hyphens(input: &str) -> String {
 /// all, since every other parser builds its output text itself rather than passing source bytes
 /// through.
 #[must_use]
-pub fn normalize_line_endings(input: &str) -> String {
-	if !input.contains('\r') {
-		return input.to_string();
+pub fn normalize_line_endings(text: String) -> String {
+	if !text.contains('\r') {
+		return text;
 	}
-	let mut result = String::with_capacity(input.len());
-	let mut chars = input.chars().peekable();
-	while let Some(ch) = chars.next() {
-		if ch == '\r' {
-			if chars.peek() == Some(&'\n') {
-				chars.next();
-			}
-			result.push('\n');
-		} else {
-			result.push(ch);
+	// Done on the bytes and in place, as a whole text file is read through here: `\r` and `\n` are ASCII, so no other char is touched and the text stays valid UTF-8.
+	let mut bytes = text.into_bytes();
+	let mut write = 0;
+	let mut read = 0;
+	while let Some(found) = memchr::memchr(b'\r', &bytes[read..]) {
+		let at = read + found;
+		bytes.copy_within(read..at, write);
+		write += at - read;
+		bytes[write] = b'\n';
+		write += 1;
+		read = at + 1;
+		if bytes.get(read) == Some(&b'\n') {
+			read += 1;
 		}
 	}
-	result
+	let end = bytes.len();
+	bytes.copy_within(read..end, write);
+	bytes.truncate(write + end - read);
+	String::from_utf8(bytes).expect("only ASCII bytes were moved, which keeps UTF-8 valid")
 }
 
 #[must_use]
@@ -147,7 +157,7 @@ mod tests {
 	#[case("no hyphens", "no hyphens")]
 	#[case("mul\u{00AD}ti\u{00AD}ple", "multiple")]
 	fn test_remove_soft_hyphens(#[case] input: &str, #[case] expected: &str) {
-		assert_eq!(remove_soft_hyphens(input), expected);
+		assert_eq!(remove_soft_hyphens(input.to_string()), expected);
 	}
 
 	#[rstest]
@@ -157,8 +167,12 @@ mod tests {
 	#[case("mixed\r\nline\rother\nline", "mixed\nline\nother\nline")]
 	#[case("no newlines at all", "no newlines at all")]
 	#[case("", "")]
+	#[case("\r", "\n")]
+	#[case("ends with cr\r", "ends with cr\n")]
+	#[case("\r\n\r\nafter two\r\n\r", "\n\nafter two\n\n")]
+	#[case("caf\u{00E9}\r\n\u{65E5}\u{672C}\r\u{1F600}", "caf\u{00E9}\n\u{65E5}\u{672C}\n\u{1F600}")]
 	fn test_normalize_line_endings(#[case] input: &str, #[case] expected: &str) {
-		assert_eq!(normalize_line_endings(input), expected);
+		assert_eq!(normalize_line_endings(input.to_string()), expected);
 	}
 
 	#[rstest]
