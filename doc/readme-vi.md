@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: a826a433e1c8cd2e; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,a836ba19,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2867c9344accdcad; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0822f58d,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - phiên bản 1.0
 
@@ -195,7 +195,8 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 * `Ctrl+Tab` và `Ctrl+Shift+Tab`: Đi đến tài liệu đang mở tiếp theo hoặc trước đó, quấn quanh ở một trong hai đầu.
 * `Enter` hoặc `Space` trong văn bản tài liệu: Theo dõi liên kết hoặc mở chế độ xem bảng hoặc công thức ở con trỏ.
 * `Enter` trên trang PDF được quét: Nhận diện trang bằng OCR.
-* `Shift+F10` hoặc phím Menu/Ứng dụng trong văn bản tài liệu: Mở menu ngữ cảnh. Trên một hình ảnh trong PDF, EPUB, HTML, Markdown, CHM, FB2 hoặc truyện tranh, nó cũng cung cấp lựa chọn để lưu hình ảnh vào một tệp.
+* `Enter` trên một hình ảnh không phải là liên kết: Hiển thị văn bản được nhận diện trong hình ảnh, trong một chế độ xem mà `Escape` đóng. Hình ảnh chính nó được để yên, và văn bản của tài liệu không thay đổi.
+* `Shift+F10` hoặc phím Menu/Ứng dụng trong văn bản tài liệu: Mở menu ngữ cảnh. Trên một hình ảnh trong PDF, EPUB, HTML, Markdown, CHM, FB2 hoặc truyện tranh, nó cũng cung cấp lựa chọn để lưu hình ảnh vào một tệp, và trên Windows và macOS để đọc văn bản trong đó, đó là cách đọc một hình ảnh cũng là liên kết.
 
 ## iOS và Android
 

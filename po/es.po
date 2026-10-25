@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-21 23:51+0000\n"
+"POT-Creation-Date: 2026-10-25 15:50+0000\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -968,6 +968,7 @@ msgid "Bookmarks"
 msgstr "Marcadores"
 
 #. TRANSLATORS: Option in the filter dropdown to show notes only
+#. TRANSLATORS: Heading over the footnotes and endnotes of a document, written after its text
 msgid "Notes"
 msgstr "Notas"
 
@@ -1212,6 +1213,11 @@ msgstr "&Porcentaje"
 #, fuzzy
 msgid "Percent out of range."
 msgstr "Porcentaje fuera de rango."
+
+#. TRANSLATORS: Title of the view showing the text recognized in a picture
+#, fuzzy
+msgid "Image Text"
+msgstr "Texto de imagen"
 
 #. TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
 #, fuzzy
@@ -1707,6 +1713,23 @@ msgstr "&Documentos en este archivo:"
 msgid "{} to {}"
 msgstr "{} a {}"
 
+#. TRANSLATORS: Announced when Enter is pressed on a picture while its text is already being recognized
+#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
+#, fuzzy
+msgid "OCR in progress."
+msgstr "OCR en progreso."
+
+#. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
+#. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
+#, fuzzy
+msgid "The picture could not be read."
+msgstr "No se pudo leer la imagen."
+
+#. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
+#, fuzzy
+msgid "No text was found in the picture."
+msgstr "No se encontró texto en la imagen."
+
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr "Archivo no encontrado: {}"
@@ -1746,11 +1769,6 @@ msgstr "Archivo: {}"
 #, fuzzy
 msgid "Details: {}"
 msgstr "Detalles: {}"
-
-#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
-#, fuzzy
-msgid "OCR in progress."
-msgstr "OCR en progreso."
 
 #. TRANSLATORS: Announced when batch OCR is triggered with no document open
 #. TRANSLATORS: Announced when Batch OCR is chosen with no document open
@@ -2743,6 +2761,14 @@ msgstr "Guardar &imagen como..."
 msgid "Save image as"
 msgstr "Guardar imagen como"
 
+#, fuzzy
+msgid "Read &text in picture"
+msgstr "Leer &texto en imagen"
+
+#, fuzzy
+msgid "Read the text in the picture"
+msgstr "Leer el texto en la imagen"
+
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
 msgstr "Crear &marcador"
@@ -3412,11 +3438,52 @@ msgstr "Paperback no puede leer archivos de cómics RAR en este dispositivo. Ree
 msgid "Failed to parse comic archive: {}"
 msgstr "Error al analizar archivo de cómic: {}"
 
+#. TRANSLATORS: Spoken for a comic book page that is its front cover
+#, fuzzy
+msgid "Front cover"
+msgstr "Portada"
+
+#. TRANSLATORS: Spoken for a comic book page that is an inside cover
+#, fuzzy
+msgid "Inside cover"
+msgstr "Contraportada interior"
+
+#. TRANSLATORS: Spoken for a comic book page that recaps the story so far
+#, fuzzy
+msgid "Recap"
+msgstr "Resumen"
+
+#. TRANSLATORS: Spoken for a comic book page that is an advertisement
+#, fuzzy
+msgid "Advertisement"
+msgstr "Publicidad"
+
+#. TRANSLATORS: Spoken for a comic book page written by the editors
+#, fuzzy
+msgid "Editorial"
+msgstr "Editorial"
+
+#. TRANSLATORS: Spoken for a comic book page of letters from readers
+#, fuzzy
+msgid "Letters"
+msgstr "Cartas"
+
+#. TRANSLATORS: Spoken for a comic book page previewing another comic
+#, fuzzy
+msgid "Preview"
+msgstr "Adelanto"
+
+#. TRANSLATORS: Spoken for a comic book page that is its back cover
+#, fuzzy
+msgid "Back cover"
+msgstr "Contraportada"
+
 #. TRANSLATORS: Error shown when a comic book archive holds no page images at all
 #, fuzzy
 msgid "This comic archive contains no pages."
 msgstr "Este archivo de cómics no contiene páginas."
 
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]", and on its own, "[Image]", for a picture with none
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 #, fuzzy
 msgid "Figure"
@@ -3643,6 +3710,21 @@ msgstr "Este documento está cifrado de una forma que Paperback no puede abrir: 
 msgid "ODP file does not contain any pages"
 msgstr "El archivo ODP no contiene ninguna página"
 
+#. TRANSLATORS: Written after a presentation slide's text, before the presenter's notes for that slide; {} is the notes
+#, fuzzy
+msgid "Speaker notes: {}"
+msgstr "Notas del orador: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it without a name; {} is the comment
+#, fuzzy
+msgid "Comment: {}"
+msgstr "Comentario: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it: the first {} is the reviewer, the second the comment
+#, fuzzy
+msgid "Comment from {}: {}"
+msgstr "Comentario de {}: {}"
+
 #. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
 #, fuzzy
 msgid "FODP file does not contain any pages"
@@ -3694,6 +3776,31 @@ msgstr "No se pudo analizar el documento RTF: {}"
 #, fuzzy
 msgid "Chapter {}"
 msgstr "Capítulo {}"
+
+#. TRANSLATORS: Heading over the comments reviewers left on a document, written after its text
+#, fuzzy
+msgid "Comments"
+msgstr "Comentarios"
+
+#. TRANSLATORS: Names a comment's author when the document does not say who wrote it
+#, fuzzy
+msgid "Comment"
+msgstr "Comentario"
+
+#. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
+#, fuzzy
+msgid "{} on \\u{201c}{}\\u{201d}: {}"
+msgstr "{} en \\u{201c}{}\\u{201d}: {}"
+
+#. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
+#, fuzzy
+msgid "{}: {}"
+msgstr "{}: {}"
+
+#. TRANSLATORS: Shown in place of a presentation slide that has no text, such as one holding only pictures
+#, fuzzy
+msgid "This slide has no text."
+msgstr "Esta diapositiva no tiene texto."
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 #, fuzzy
@@ -3756,8 +3863,80 @@ msgid "image"
 msgstr "imagen"
 
 #, fuzzy
+msgid "Current version is not a valid semver."
+msgstr "La versión actual no es un semver válido."
+
+#, fuzzy
+msgid "Latest release tag is not a valid semver."
+msgstr "La etiqueta de versión más reciente no es un semver válido."
+
+#, fuzzy
+msgid "Invalid public key"
+msgstr "Clave pública no válida"
+
+#, fuzzy
+msgid "Failed to read signature"
+msgstr "No se pudo leer la firma"
+
+#, fuzzy
+msgid "Invalid signature"
+msgstr "Firma no válida"
+
+#, fuzzy
+msgid "Failed to create private download directory"
+msgstr "No se pudo crear el directorio de descarga privada"
+
+#, fuzzy
+msgid "Failed to create file"
+msgstr "No se pudo crear el archivo"
+
+#, fuzzy
+msgid "Failed to write file"
+msgstr "No se pudo escribir el archivo"
+
+#, fuzzy
+msgid "Failed to read file for verification"
+msgstr "No se pudo leer el archivo para verificación"
+
+#, fuzzy
+msgid "Signature verification failed"
+msgstr "Error al verificar la firma"
+
+#, fuzzy
+msgid "Failed to rename verified file"
+msgstr "No se pudo renombrar el archivo verificado"
+
+#, fuzzy
+msgid "Failed to parse release JSON"
+msgstr "No se pudo analizar el JSON de lanzamiento"
+
+#, fuzzy
+msgid "Latest release does not include downloadable assets."
+msgstr "La versión más reciente no incluye activos descargables."
+
+#, fuzzy
+msgid "Update is available but no matching download asset or signature was found."
+msgstr "Hay una actualización disponible pero no se encontró ningún recurso de descarga o firma coincidente."
+
+#, fuzzy
 msgid "Not running from an AppImage; cannot self-update."
 msgstr "No se ejecuta desde una AppImage; no se puede actualizar automáticamente."
+
+#, fuzzy
+msgid "Failed to determine exe path"
+msgstr "No se pudo determinar la ruta del ejecutable"
+
+#, fuzzy
+msgid "Failed to get exe directory"
+msgstr "No se pudo obtener el directorio del ejecutable"
+
+#, fuzzy
+msgid "Could not determine a cache directory: neither XDG_CACHE_HOME nor HOME is set"
+msgstr "No se pudo determinar un directorio de caché: ni XDG_CACHE_HOME ni HOME están establecidos"
+
+#, fuzzy
+msgid "Failed to create cache directory"
+msgstr "No se pudo crear el directorio de caché"
 
 msgid "Failed to get current exe path"
 msgstr "No se pudo obtener la ruta del ejecutable actual"
@@ -3899,9 +4078,6 @@ msgstr "%s Actualización"
 msgid "Downloading update..."
 msgstr "Descargando actualización..."
 
-msgid "Update failed"
-msgstr "Error de actualización"
-
 #, fuzzy
 msgid "Preparing update..."
 msgstr "Preparando actualización..."
@@ -3927,6 +4103,14 @@ msgstr "La verificación de seguridad ha fallado. Es posible que la actualizaci�
 #, fuzzy
 msgid "Security Error"
 msgstr "Error de seguridad"
+
+#, fuzzy
+msgid "The update server returned HTTP error %s."
+msgstr "El servidor de actualización devolvió un error HTTP %s."
+
+#, fuzzy
+msgid "Could not reach the update server: %s"
+msgstr "No se pudo contactar al servidor de actualización: %s"
 
 #. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 #, fuzzy
@@ -5454,6 +5638,9 @@ msgstr "Desactiva para continuar leyendo mientras se navega por resultados de b�
 #, fuzzy
 msgid "1.5\\u{00d7}"
 msgstr "1,5\\u{00d7}"
+
+#~ msgid "Update failed"
+#~ msgstr "Error de actualización"
 
 #, fuzzy
 #~ msgid "Selected %d character."

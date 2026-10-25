@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: a826a433e1c8cd2e; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,a836ba19,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2867c9344accdcad; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,0822f58d,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versão 1.0
 
@@ -195,7 +195,8 @@ Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é ano
 * `Ctrl+Tab` e `Ctrl+Shift+Tab`: Ir para o próximo ou documento aberto anterior, voltando ao início ou fim.
 * `Enter` ou `Space` no texto do documento: Seguir um link ou abrir visualização de tabela ou fórmula no cursor.
 * `Enter` em uma página de PDF digitalizada: Reconhecer a página com OCR.
-* `Shift+F10` ou a tecla Menu/Aplicativo no texto do documento: Abrir o menu de contexto. Em uma imagem em PDF, EPUB, HTML, Markdown, CHM, FB2 ou história em quadrinhos, também oferece salvar a imagem em um arquivo.
+* `Enter` em uma imagem que não é um link: Mostrar o texto reconhecido na imagem, em uma visualização que `Escape` fecha. A imagem em si é deixada inalterada e o texto do documento não é alterado.
+* `Shift+F10` ou a tecla Menu/Aplicativo no texto do documento: Abrir o menu de contexto. Em uma imagem em PDF, EPUB, HTML, Markdown, CHM, FB2 ou história em quadrinhos, também oferece salvar a imagem em um arquivo e no Windows e macOS ler o texto nela, que é como ler uma imagem que também é um link.
 
 ## iOS e Android
 
