@@ -32,10 +32,14 @@ pub mod paragraph_format;
 pub mod text_window;
 
 #[cfg(target_os = "windows")]
+#[allow(dead_code)]
+#[path = "../src/ui/reader_ctrl.rs"]
+pub mod reader_ctrl;
+
+// Where the included modules look for the reader control.
+#[cfg(target_os = "windows")]
 pub mod ui {
-	#[allow(dead_code)]
-	#[path = "../../src/ui/reader_ctrl.rs"]
-	pub mod reader_ctrl;
+	pub use super::reader_ctrl;
 }
 
 #[cfg(not(target_os = "windows"))]

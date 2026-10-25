@@ -8,10 +8,14 @@ pub mod macos;
 pub mod text_window;
 
 #[cfg(target_os = "macos")]
+#[allow(dead_code)]
+#[path = "../src/ui/reader_ctrl.rs"]
+pub mod reader_ctrl;
+
+// Where the included modules look for the reader control.
+#[cfg(target_os = "macos")]
 pub mod ui {
-	#[allow(dead_code)]
-	#[path = "../../src/ui/reader_ctrl.rs"]
-	pub mod reader_ctrl;
+	pub use super::reader_ctrl;
 }
 
 #[cfg(target_os = "macos")]
