@@ -175,6 +175,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Ctrl+W` (macOS: `RawCtrl+W`, i.e. the physical Control key rather than Cmd): Show word count for the current document.
 * `Ctrl+I`: Show document info.
 * `Ctrl+Shift+O`: Recognize a range of scanned PDF pages with OCR.
+* `Ctrl+Shift+R`: Recognize the PDF or comic book page the cursor is on with OCR, replacing any text it already has.
 * `Ctrl+Shift+S`: Toggle sleep timer.
 * `Ctrl+,`: Open Settings (macOS: under the app menu).
 

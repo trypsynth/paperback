@@ -116,7 +116,7 @@ seq_ids!(BASE + 450 =>
 );
 
 // Tools menu: OCR (BASE + 460..469)
-seq_ids!(BASE + 460 => BATCH_OCR);
+seq_ids!(BASE + 460 => BATCH_OCR, RECOGNIZE_CURRENT_PAGE);
 
 // Edit menu: selection (BASE + 470..479)
 seq_ids!(BASE + 470 => SET_SELECTION_START, COPY_FROM_SELECTION_START, JUMP_TO_SELECTION_START);
@@ -223,6 +223,7 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::Options => OPTIONS,
 		ActionId::SleepTimer => SLEEP_TIMER,
 		ActionId::BatchOcr => BATCH_OCR,
+		ActionId::RecognizeCurrentPage => RECOGNIZE_CURRENT_PAGE,
 		ActionId::CustomizeShortcuts => CUSTOMIZE_SHORTCUTS,
 		ActionId::ImportDocumentData => IMPORT_DOCUMENT_DATA,
 		ActionId::ExportDocumentData => EXPORT_DOCUMENT_DATA,

@@ -191,6 +191,10 @@ impl MainWindow {
 				menu_ids::BATCH_OCR => {
 					menu_tools::handle_batch_ocr(&frame_copy, &dm, live_region_label, from_keyboard);
 				}
+				#[cfg(any(target_os = "windows", target_os = "macos"))]
+				menu_ids::RECOGNIZE_CURRENT_PAGE => {
+					dm.lock().unwrap().recognize_current_page();
+				}
 				menu_ids::ABOUT => {
 					dialogs::show_about_dialog(&frame_copy);
 				}

@@ -160,6 +160,30 @@ impl DocumentManager {
 		self.spawn_ocr(vec![page], false);
 	}
 
+	/// Runs OCR on the page the caret is on, whether or not it already has text, for a page whose text came from an older or worse OCR pass (#814).
+	pub fn recognize_current_page(&mut self) {
+		let label = self.live_region_label;
+		let Some(tab) = self.active_tab() else {
+			// TRANSLATORS: Announced when Recognize Current Page is chosen with no document open
+			announce(label, t("No document open."));
+			return;
+		};
+		if tab.ocr_job.is_some() {
+			// TRANSLATORS: Announced when Recognize Current Page is chosen while OCR is already running
+			announce(label, t("OCR already in progress."));
+			return;
+		}
+		if !is_ocr_able(tab.local_path()) {
+			// TRANSLATORS: Announced when Recognize Current Page is chosen in a document that is not a PDF or a comic book
+			announce(label, t("Only PDF and comic book pages can be recognized."));
+			return;
+		}
+		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		// Text before the first page break still belongs to the first page.
+		let page = tab.session.current_page(position).max(1);
+		self.spawn_ocr(vec![page], false);
+	}
+
 	/// Runs OCR on every image-only page in `start..=end` (1-based page numbers), or on every
 	/// page in the range when `include_text_pages` is set.
 	///

@@ -277,7 +277,7 @@ mod tests {
 	}
 
 	#[test]
-	fn tools_category_holds_the_remaining_six() {
+	fn tools_category_holds_the_remaining_seven() {
 		assert_eq!(
 			ShortcutCategory::Tools.actions(),
 			[
@@ -286,6 +286,7 @@ mod tests {
 				ActionId::Options,
 				ActionId::SleepTimer,
 				ActionId::BatchOcr,
+				ActionId::RecognizeCurrentPage,
 				ActionId::CustomizeShortcuts,
 			]
 		);
