@@ -82,7 +82,7 @@ impl DocumentSession {
 		if start_display >= end_display {
 			return String::new();
 		}
-		// Slicing on `char_to_byte_map` entries, so both bounds are char boundaries.
+		// The buffer answers with the start of a char, so both bounds are char boundaries.
 		let start_byte = buf.byte_index_for_display(start_display);
 		let end_byte = buf.byte_index_for_display(end_display);
 		buf.slice(start_byte..end_byte).to_string()
