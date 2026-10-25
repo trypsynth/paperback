@@ -41,8 +41,8 @@ pub(super) fn load_window_into_ctrl(
 		let (raw_start, raw_end) = text_window::target_window_bounds(target_pos, doc_len);
 		session.get_window(raw_start, raw_end)
 	};
-	let window = TextWindow::new(slice.start, slice.end);
-	fill_text_ctrl_with_formatting(text_ctrl, &slice, window);
+	let window = TextWindow::of(&slice);
+	fill_text_ctrl_with_formatting(text_ctrl, &slice, &window);
 	window
 }
 
@@ -69,14 +69,14 @@ pub(super) fn load_window_into_ctrl(
 /// line here is evidence the window is not what moved, which is worth just as much.
 pub fn reload_window_around(tab: &mut DocumentTab, doc_offset: i64, reason: &'static str) {
 	let doc_len = tab.session.document_len();
-	let before = tab.window;
+	let (from_start, from_end) = (tab.window.start(), tab.window.end());
 	tab.window = load_window_into_ctrl(tab.text_ctrl, &tab.session, doc_offset, doc_len);
-	if before.start() != tab.window.start() {
+	if from_start != tab.window.start() {
 		tracing::info!(
 			reason,
 			caret = doc_offset,
-			from_start = before.start(),
-			from_end = before.end(),
+			from_start,
+			from_end,
 			to_start = tab.window.start(),
 			to_end = tab.window.end(),
 			doc_len,
@@ -90,7 +90,7 @@ pub fn reload_window_around(tab: &mut DocumentTab, doc_offset: i64, reason: &'st
 /// The counterpart to [`fill_text_ctrl_with_formatting`], which replaces everything. Returns
 /// false if the append did not complete, so the caller can rebuild instead of trusting a control
 /// that is now part-way through a chunk.
-pub(super) fn append_slice_to_ctrl(text_ctrl: ReaderCtrl, slice: &WindowSlice, window: TextWindow) -> bool {
+pub(super) fn append_slice_to_ctrl(text_ctrl: ReaderCtrl, slice: &WindowSlice, window: &TextWindow) -> bool {
 	let content = slice.text.as_str();
 	let segments = merge_formatting_markers(&slice.markers);
 	#[cfg(target_os = "windows")]
@@ -150,7 +150,7 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: ReaderCtrl, slice: &WindowSlice, w
 const RTF_STREAM_MIN_SEGMENTS: usize = 128;
 
 /// Fills `text_ctrl` with `slice`, which `window` describes once it is loaded.
-pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: ReaderCtrl, slice: &WindowSlice, window: TextWindow) {
+pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: ReaderCtrl, slice: &WindowSlice, window: &TextWindow) {
 	let content = slice.text.as_str();
 	let segments = merge_formatting_markers(&slice.markers);
 	#[cfg(target_os = "windows")]

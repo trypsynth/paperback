@@ -10,8 +10,8 @@ use crate::{
 	reader_core::SearchOptions,
 };
 
-/// One match's extent, in the same display units (UTF-16 code units on Windows/macOS) as the
-/// GUI caret and page markers, so a caller can hand it straight to a range selector.
+/// One match's extent, in the same display units as the caret's document position and page
+/// markers, so a caller can hand it straight to a range selector.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FindSpan {
 	pub start: i64,

@@ -280,8 +280,7 @@ impl AudioTimelineBuilder {
 
 	/// Binds `[clip_begin_ms, clip_end_ms)` of `source` to display units
 	/// `[start, end)`. Positions must be display units, from the same counting
-	/// as marker positions (see `util::text::display_len`, which is UTF-16 code
-	/// units on Windows and macOS).
+	/// as marker positions (see `util::text::display_len`).
 	pub fn add_clip(&mut self, source: usize, clip_begin_ms: u64, clip_end_ms: u64, start: usize, end: usize) {
 		self.clips.push(AudioClip { source, clip_begin_ms, clip_end_ms, start, end });
 	}

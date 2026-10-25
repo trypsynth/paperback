@@ -258,8 +258,8 @@ fn reparse_tab_in_place(
 	// centered on `restored_pos` instead.
 	let doc_len = tab.session.document_len();
 	let slice = tab.session.get_window(0, doc_len);
-	tab.window = TextWindow::whole(doc_len);
-	fill_text_ctrl_with_formatting(tab.text_ctrl, &slice, tab.window);
+	tab.window = TextWindow::of(&slice);
+	fill_text_ctrl_with_formatting(tab.text_ctrl, &slice, &tab.window);
 	if let Some(font) = build_font_from_readability(&style.rf) {
 		tab.text_ctrl.set_font(&font);
 	}

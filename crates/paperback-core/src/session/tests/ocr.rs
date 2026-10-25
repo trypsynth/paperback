@@ -208,9 +208,8 @@ fn replace_ocr_pages_ignores_pages_the_document_does_not_have() {
 
 #[test]
 fn replace_ocr_pages_measures_spans_in_display_units() {
-	// An emoji is two UTF-16 code units on Windows and macOS but one Unicode scalar on GTK, so
-	// nothing here hardcodes an offset. What is being checked is that the page span, the page
-	// break it starts on and the caret are all measured in the same units whatever those are.
+	// An emoji is one position but four bytes. What is being checked is that the page span, the
+	// page break it starts on and the caret are all measured in positions.
 	let mut session = session_with_paged_lines(&["\u{1F600} one", "page two", "page three"]);
 	let third = session.page_offset(3);
 	assert_eq!(session.line_text_at(third), "page three");

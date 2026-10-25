@@ -146,18 +146,10 @@ mod tests {
 		assert_eq!(spans, vec![(first, first + 2), (second, second + 2)]);
 	}
 
-	#[cfg(not(any(windows, target_os = "macos")))]
 	#[test]
-	fn reader_search_counts_scalars_off_windows_and_macos() {
+	fn reader_search_counts_an_astral_char_as_one_position() {
 		let buffer = DocumentBuffer::with_content("a😀b".to_string());
 		assert_eq!(reader_search(&buffer, "b", 0, SearchOptions::FORWARD), 2);
-	}
-
-	#[cfg(any(windows, target_os = "macos"))]
-	#[test]
-	fn reader_search_counts_utf16_units_on_windows_and_macos() {
-		let buffer = DocumentBuffer::with_content("a😀b".to_string());
-		assert_eq!(reader_search(&buffer, "b", 0, SearchOptions::FORWARD), 3);
 	}
 
 	#[test]

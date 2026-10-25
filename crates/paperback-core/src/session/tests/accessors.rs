@@ -219,15 +219,14 @@ fn get_table_at_position_uses_display_length() {
 
 #[test]
 fn get_table_at_position_handles_multibyte_extent() {
-	// A table marker whose display extent exceeds its char-count would have been mis-measured
-	// by the old `text.chars().count()` logic. Here the displayed text is shorter (in chars)
-	// than the display extent, so the caret near the end is only inside the table when using
-	// `marker.length`.
+	// A table's extent is its marker's length, not the length of the text the marker carries.
+	// Here that text is shorter than the extent, so the caret near the end is only inside the
+	// table when using `marker.length`.
 	let mut buffer = DocumentBuffer::with_content("\u{1F600}\u{1F600}\u{1F600}".to_string());
-	// Three non-BMP emoji: 3 chars but 6 display (UTF-16) units. Marker spans the whole range.
+	// Three non-BMP emoji: three positions and twelve bytes. Marker spans the whole range.
 	buffer.add_marker(
 		Marker::new(MarkerType::Table, 0)
-			.with_length(6)
+			.with_length(3)
 			.with_text("x".to_string())
 			.with_reference("<table/>".to_string()),
 	);
@@ -243,9 +242,9 @@ fn get_table_at_position_handles_multibyte_extent() {
 		parse_settings: ParseSettings::default(),
 		password: String::new(),
 	};
-	// Position 5 is within [0, 6) by display length but would be outside [0, 1) by char count.
-	assert_eq!(session.get_table_at_position(5).as_deref(), Some("<table/>"));
-	assert!(session.get_table_at_position(6).is_none());
+	// Position 2 is within [0, 3) by the marker's length but would be outside [0, 1) by its text.
+	assert_eq!(session.get_table_at_position(2).as_deref(), Some("<table/>"));
+	assert!(session.get_table_at_position(3).is_none());
 }
 
 #[test]

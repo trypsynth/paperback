@@ -101,18 +101,16 @@ pub fn trim_string(s: &str) -> String {
 	s.trim_matches(is_space_like).to_string()
 }
 
-/// Display units match the index space of the platform text control that the
-/// document text is loaded into: UTF-16 code units on Windows (Win32 edit
-/// control) and macOS (`NSTextView`'s `NSRange`, which wxWidgets passes through
-/// unconverted); Unicode characters on GTK (`GtkTextIter` offsets).
+/// How many positions `s` takes up in a document: one for each Unicode scalar, on every platform, so a saved position means the same place wherever it is read (#1062). A text control that counts otherwise, as Windows and macOS count UTF-16 code units, is converted for where the desktop app loads text into it.
 #[must_use]
 pub fn display_len(s: &str) -> usize {
-	if cfg!(any(windows, target_os = "macos")) { s.encode_utf16().count() } else { s.chars().count() }
+	s.chars().count()
 }
 
+/// How many positions `ch` takes up in a document: one, as every char does. See [`display_len`].
 #[must_use]
-pub const fn ch_width(ch: char) -> usize {
-	if cfg!(any(windows, target_os = "macos")) { ch.len_utf16() } else { 1 }
+pub const fn ch_width(_ch: char) -> usize {
+	1
 }
 
 #[must_use]
@@ -223,17 +221,8 @@ mod tests {
 		assert_eq!(trim_string(input), expected);
 	}
 
-	#[cfg(any(windows, target_os = "macos"))]
 	#[test]
-	fn test_display_len_utf16_platforms() {
-		assert_eq!(display_len("abc"), 3);
-		assert_eq!(display_len("💖"), 2);
-		assert_eq!(display_len("line\nwrap"), 9);
-	}
-
-	#[cfg(not(any(windows, target_os = "macos")))]
-	#[test]
-	fn test_display_len_char_platforms() {
+	fn test_display_len_counts_scalars() {
 		assert_eq!(display_len("abc"), 3);
 		assert_eq!(display_len("💖"), 1);
 		assert_eq!(display_len("line\nwrap"), 9);

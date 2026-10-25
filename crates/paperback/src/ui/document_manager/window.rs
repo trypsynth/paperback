@@ -167,9 +167,9 @@ impl DocumentManager {
 		if slice.end <= from {
 			return true;
 		}
-		let mut extended = tab.window;
-		extended.extend_end_to(slice.end);
-		if !append_slice_to_ctrl(tab.text_ctrl, &slice, extended) {
+		let mut extended = tab.window.clone();
+		extended.extend_with(&slice);
+		if !append_slice_to_ctrl(tab.text_ctrl, &slice, &extended) {
 			return false;
 		}
 		let previous_end = tab.window.end();

@@ -84,11 +84,8 @@ pub struct DocumentBuffer {
 	content_display_len: usize,
 	content_char_count: usize,
 	newline_char_positions: Vec<usize>,
-	/// `checkpoints[i]` is where char `i * CHECKPOINT_CHARS` starts. Display units (UTF-16 code
-	/// units on Windows/macOS, Unicode scalars on GTK, see `util::text::display_len`) are needed
-	/// because `Marker.position`/the GUI caret use them while `newline_char_positions` uses char
-	/// units, and on Windows and macOS the two diverge for any character outside the Basic
-	/// Multilingual Plane.
+	/// `checkpoints[i]` is where char `i * CHECKPOINT_CHARS` starts, in bytes and in display units
+	/// (see `util::text::display_len`), the unit `Marker.position` uses.
 	checkpoints: Vec<Checkpoint>,
 }
 
@@ -452,8 +449,8 @@ impl DocumentBuffer {
 		self.content_display_len
 	}
 
-	/// Total document length in display units (UTF-16 code units on Windows/macOS, Unicode
-	/// scalars on GTK), the same unit the GUI caret and `Marker.position` use. An alias of
+	/// Total document length in display units (see `util::text::display_len`), the same unit
+	/// `Marker.position` uses. An alias of
 	/// [`Self::current_position`] under the name callers building a window/range API actually
 	/// want; `current_position` is kept for the parser-cursor callers already using that name.
 	#[must_use]
@@ -552,10 +549,8 @@ mod tests {
 		assert_eq!(buffer.current_position(), 5);
 	}
 
-	// `ch_width`/`display_len` return UTF-16 code-unit counts on Windows/macOS and Unicode
-	// scalar counts on GTK, so a BMP-only string ("abc") behaves identically on every
-	// platform and is the right fixture for testing the display<->char<->byte bridge itself
-	// without also depending on which platform the test runs on.
+	// An ASCII string, where positions, chars and bytes all line up, so what is tested is the
+	// display<->char<->byte bridge itself.
 	#[test]
 	fn display_char_byte_indices_agree_for_bmp_only_content() {
 		let buffer = DocumentBuffer::with_content("abc".to_string());
@@ -568,28 +563,20 @@ mod tests {
 		assert_eq!(buffer.total_display_len(), 3);
 	}
 
-	#[cfg(any(windows, target_os = "macos"))]
+	/// An astral char is one position like any other, on every platform, so that a saved position means the same place wherever it is read (#1062).
 	#[test]
-	fn display_index_accounts_for_surrogate_pairs_on_windows_and_macos() {
-		// U+1F600 (an astral-plane emoji) is 1 char, 4 UTF-8 bytes, but 2 UTF-16 code units.
+	fn an_astral_char_takes_one_position() {
+		// U+1F600 is one char and four UTF-8 bytes.
 		let buffer = DocumentBuffer::with_content("a\u{1F600}b".to_string());
-		// chars: 'a' (char 0), emoji (char 1), 'b' (char 2), end boundary (char 3)
-		assert_eq!(buffer.display_index_for_char(0), 0); // 'a' starts at display 0
-		assert_eq!(buffer.display_index_for_char(1), 1); // emoji starts at display 1
-		assert_eq!(buffer.display_index_for_char(2), 3); // 'b' starts at display 3 (emoji took 2 units)
-		assert_eq!(buffer.total_display_len(), 4);
-		assert_eq!(buffer.char_index_for_display(0), 0);
-		assert_eq!(buffer.char_index_for_display(1), 1);
-		assert_eq!(buffer.char_index_for_display(2), 2); // inside the emoji: rounds forward to 'b'
-		assert_eq!(buffer.char_index_for_display(3), 2);
+		for i in 0..=3 {
+			assert_eq!(buffer.display_index_for_char(i), i);
+			assert_eq!(buffer.char_index_for_display(i), i);
+		}
+		assert_eq!(buffer.total_display_len(), 3);
 		assert_eq!(buffer.char_index_for_display(5), 4); // past the end: char_count() + 1
-		// byte<->display composition round-trips through the char index for every char start.
-		assert_eq!(buffer.byte_index_for_display(0), 0);
-		assert_eq!(buffer.byte_index_for_display(1), 1);
-		assert_eq!(buffer.byte_index_for_display(3), 5); // 1 byte 'a' + 4 byte emoji
-		assert_eq!(buffer.display_index_for_byte(0.into()), 0);
-		assert_eq!(buffer.display_index_for_byte(1.into()), 1);
-		assert_eq!(buffer.display_index_for_byte(5.into()), 3);
+		assert_eq!(buffer.byte_index_for_display(2), 5); // 1 byte 'a' + 4 byte emoji
+		assert_eq!(buffer.display_index_for_byte(5.into()), 2);
+		assert_eq!(buffer.display_index_for_byte(2.into()), 2); // inside the emoji's bytes: rounds forward to 'b'
 	}
 
 	#[test]
@@ -765,24 +752,23 @@ mod tests {
 		assert_eq!(buffer.markers[0].position, 8);
 	}
 
-	#[cfg(any(windows, target_os = "macos"))]
 	#[test]
-	fn replace_range_preserves_surrogate_pair_display_units() {
-		// "a" then an astral emoji (1 char but 2 display units) before the replaced span, so the
-		// display/char conversion must stay correct through the mutation.
+	fn replace_range_after_an_astral_char() {
+		// "a" then an astral emoji (one position but four bytes) before the replaced span, so the
+		// position/byte conversion must stay correct through the mutation.
 		let mut buffer = DocumentBuffer::with_content("a\u{1F600}b\nXYZ\nc".to_string());
-		// display offsets: a=0, emoji=1..2, b=3, \n=4, X=5, Y=6, Z=7, \n=8, c=9 (len 10).
-		buffer.add_marker(Marker::new(MarkerType::PageBreak, 5));
-		buffer.add_marker(Marker::new(MarkerType::PageBreak, 9));
-		let delta = buffer.replace_range(5, 8, "Q");
+		// positions: a=0, emoji=1, b=2, \n=3, X=4, Y=5, Z=6, \n=7, c=8 (len 9).
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 4));
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 8));
+		let delta = buffer.replace_range(4, 7, "Q");
 		assert_eq!(delta, -2);
 		let expected = DocumentBuffer::with_content("a\u{1F600}b\nQ\nc".to_string());
 		assert_buffers_equivalent(&buffer, &expected);
-		// The marker at 5 (== start) stays; the marker at 9 shifts by -2 to 7.
+		// The marker at 4 (== start) stays; the marker at 8 shifts by -2 to 6.
 		let positions: Vec<usize> = buffer.markers.iter().map(|m| m.position).collect();
-		assert_eq!(positions, vec![5, 7]);
-		assert_eq!(buffer.total_display_len(), 8);
-		assert_eq!(buffer.byte_index_for_display(5), 7);
+		assert_eq!(positions, vec![4, 6]);
+		assert_eq!(buffer.total_display_len(), 7);
+		assert_eq!(buffer.byte_index_for_display(4), 7);
 	}
 	#[test]
 	fn replace_ranges_applies_every_edit_in_one_pass() {

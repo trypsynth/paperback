@@ -21,7 +21,7 @@ fn bare_list_labels_are_recognised_and_words_are_not() {
 
 /// OFF mode: the PDF table helper emits a single `"[Table]: <first row>"` placeholder line and
 /// the Table marker's length equals the emitted display extent. The HTML has a non-BMP char
-/// (U+1D11E, G Clef) in a cell to lock display-unit math (it takes 2 UTF-16 units).
+/// (U+1D11E, G Clef) in a cell to lock display-unit math (one position, four bytes).
 #[test]
 fn pdf_table_helper_emits_placeholder_when_off() {
 	use crate::util::text::display_len;

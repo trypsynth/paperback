@@ -113,14 +113,12 @@ fn find_all_keeps_the_whole_line_across_an_astral_char() {
 	assert_eq!(rows[0].matches.len(), 2);
 }
 
-#[cfg(any(target_os = "windows", target_os = "macos"))]
 #[test]
-fn find_all_reports_utf16_spans_past_an_astral_char() {
-	// On Windows/macOS the display unit is a UTF-16 code unit, so the emoji is two units and the
-	// second match starts at 8.
+fn find_all_counts_an_astral_char_as_one_position() {
+	// The emoji is one position, so the second match starts at 7.
 	let session = session_with_content("beta 😀 beta\n");
 	let rows = session.find_all_lines("beta", SearchOptions::empty());
-	assert_eq!((rows[0].matches[1].start, rows[0].matches[1].end), (8, 12));
+	assert_eq!((rows[0].matches[1].start, rows[0].matches[1].end), (7, 11));
 }
 
 #[test]

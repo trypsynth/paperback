@@ -36,7 +36,7 @@ fn walk(xml_doc: &XmlDocument, render_tables_inline: bool, numbering: Numbering)
 }
 
 /// Parse a Word table. The second cell contains U+1D11E (MUSICAL SYMBOL G CLEF, non-BMP,
-/// UTF-16 width 2) to lock the display-unit arithmetic. OFF mode emits the placeholder; ON mode
+/// one position but four bytes) to lock the display-unit arithmetic. OFF mode emits the placeholder; ON mode
 /// emits the full TSV. In both cases the Table marker keeps the caption as text and its length
 /// equals the emitted display extent.
 #[test]
@@ -165,7 +165,7 @@ fn run_bold_zero_cancels_bold() {
 /// Bold marker at the wrong position if `String::len()` (bytes) were used instead of `display_len`.
 #[test]
 fn run_format_offset_uses_display_units_not_bytes() {
-	// "é" is 2 bytes in UTF-8 but 1 display unit (single UTF-16 code unit / one char).
+	// "é" is 2 bytes in UTF-8 but 1 display unit.
 	let buffer =
 		parse_run_props(r"<document><body><p><r><t>é</t></r><r><rPr><b/></rPr><t>bold</t></r></p></body></document>");
 	let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");

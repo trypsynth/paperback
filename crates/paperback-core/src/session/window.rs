@@ -387,13 +387,11 @@ mod tests {
 		assert_eq!(slice.paragraphs, vec![paragraph(4, 9, Some(6), false)]);
 	}
 
-	/// Gated to the platforms where an astral-plane character is two display units.
-	#[cfg(any(windows, target_os = "macos"))]
 	#[test]
-	fn paragraph_positions_count_astral_characters_as_two_units() {
+	fn paragraph_positions_count_an_astral_character_as_one() {
 		let content = "a\u{1F600}b\nHead\n";
-		let markers = [Marker::new(MarkerType::Heading1, 5)];
-		assert_eq!(whole_window_paragraphs(content, &markers), vec![paragraph(5, 10, Some(1), false)]);
+		let markers = [Marker::new(MarkerType::Heading1, 4)];
+		assert_eq!(whole_window_paragraphs(content, &markers), vec![paragraph(4, 9, Some(1), false)]);
 	}
 	// The UI grows a document window forward by asking for the range starting at the one it
 	// already has loaded, and appending the result. That only works because an existing window's
@@ -486,29 +484,24 @@ epsilon";
 		assert_eq!(end(10_000), session.document_len());
 	}
 
-	/// An astral-plane character is one character the reader hears and two display units, so the
-	/// end bound has to clear the whole pair rather than land inside it.
-	#[cfg(any(windows, target_os = "macos"))]
+	/// An astral-plane character is one character the reader hears, and one position.
 	#[test]
-	fn display_pos_after_char_at_spans_a_whole_astral_pair() {
+	fn display_pos_after_char_at_spans_an_astral_character() {
 		let session = session_with("a\u{1F600}bc", &[]);
 		let end = |pos| session.display_pos_after_char_at(pos);
 		assert_eq!(session.get_text_range_display(0, end(0)), "a");
 		assert_eq!(session.get_text_range_display(1, end(1)), "\u{1F600}");
-		assert_eq!(session.get_text_range_display(3, end(3)), "b");
-		assert_eq!(session.get_text_range_display(0, end(4)), "a\u{1F600}bc");
+		assert_eq!(session.get_text_range_display(2, end(2)), "b");
+		assert_eq!(session.get_text_range_display(0, end(3)), "a\u{1F600}bc");
 	}
 
-	/// An astral-plane character is one char but two display units on Windows and macOS.
-	/// Gated to the platforms where the two units differ; GTK display units are scalars.
-	#[cfg(any(windows, target_os = "macos"))]
 	#[test]
 	fn get_text_range_display_agrees_with_the_buffer_on_astral_characters() {
 		let session = session_with("a\u{1F600}bc", &[]);
-		// Display units: 'a' at 0, the emoji across 1..3, 'b' at 3, 'c' at 4.
-		assert_eq!(session.document_len(), 5);
-		assert_eq!(session.get_text_range_display(0, 5), "a\u{1F600}bc");
-		assert_eq!(session.get_text_range_display(1, 3), "\u{1F600}");
-		assert_eq!(session.get_text_range_display(3, 5), "bc");
+		// Positions: 'a' at 0, the emoji at 1, 'b' at 2, 'c' at 3.
+		assert_eq!(session.document_len(), 4);
+		assert_eq!(session.get_text_range_display(0, 4), "a\u{1F600}bc");
+		assert_eq!(session.get_text_range_display(1, 2), "\u{1F600}");
+		assert_eq!(session.get_text_range_display(2, 4), "bc");
 	}
 }

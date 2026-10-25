@@ -93,8 +93,8 @@ impl DocumentManager {
 			let sizer = BoxSizer::builder(Orientation::Vertical).build();
 			sizer.add(&text_ctrl.widget(), 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
-			tab.window = TextWindow::new(slice.start, slice.end);
-			fill_text_ctrl_with_formatting(text_ctrl, &slice, tab.window);
+			tab.window = TextWindow::of(&slice);
+			fill_text_ctrl_with_formatting(text_ctrl, &slice, &tab.window);
 			if let Some(font) = build_font_from_readability(&rf) {
 				text_ctrl.set_font(&font);
 			}

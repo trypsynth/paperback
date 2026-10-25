@@ -8,9 +8,14 @@ use wxdragon::{prelude::*, widgets::textctrl::TextAttr};
 
 use crate::text_window::CtrlPos;
 
-/// How far `text` reaches in the control: how many of the control's units it takes up.
+/// How far `text` reaches in the control: how many of the control's units it takes up, which on Windows and macOS are UTF-16 code units.
 pub fn ctrl_len(text: &str) -> CtrlPos {
-	CtrlPos::from_raw(i64::try_from(paperback_core::util::text::display_len(text)).unwrap_or(i64::MAX))
+	let units = if cfg!(any(target_os = "windows", target_os = "macos")) {
+		text.encode_utf16().count()
+	} else {
+		text.chars().count()
+	};
+	CtrlPos::from_raw(i64::try_from(units).unwrap_or(i64::MAX))
 }
 
 #[derive(Clone, Copy)]
