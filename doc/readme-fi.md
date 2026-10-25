@@ -175,6 +175,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `Ctrl+W` (macOSissa `RawCtrl+W` eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä nykyisen asiakirjan sanamäärä.
 * `Ctrl+I`: Näytä asiakirjan tiedot.
 * `Ctrl+Vaihto+O`: Suorita tekstintunnistus skannatun PDF-asiakirjan valituille sivuille.
+* `Ctrl+Vaihto+R`: Tunnista kohdistimen kohdalla olevan PDF-asiakirjan tai sarjakuvakirjan sivun teksti ja korvaa sivun mahdollinen aiempi teksti tunnistetulla tekstillä.
 * `Ctrl+Vaihto+S`: Ota uniajastin käyttöön tai poista se käytöstä.
 * `Ctrl+,`: Avaa asetukset (löytyy macOSia käytettäessä sovellusvalikosta).
 

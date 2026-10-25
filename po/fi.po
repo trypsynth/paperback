@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-20 18:19+0000\n"
-"PO-Revision-Date: 2026-10-20 23:10+0300\n"
+"POT-Creation-Date: 2026-10-25 15:50+0000\n"
+"PO-Revision-Date: 2026-10-25 21:52+0200\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -90,8 +90,6 @@ msgstr ""
 "kieliasetuksissa."
 
 #. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
-#| msgid ""
-#| "No OCR language is installed. Add one in your system language settings."
 msgid ""
 "No OCR language is installed. Install a Tesseract language package from your "
 "package manager."
@@ -857,6 +855,7 @@ msgid "Bookmarks"
 msgstr "Kirjanmerkit"
 
 #. TRANSLATORS: Option in the filter dropdown to show notes only
+#. TRANSLATORS: Heading over the footnotes and endnotes of a document, written after its text
 msgid "Notes"
 msgstr "Muistiinpanot"
 
@@ -1080,6 +1079,11 @@ msgstr "&Prosentti"
 #. TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
 msgid "Percent out of range."
 msgstr "Virheellinen prosenttiarvo."
+
+#. TRANSLATORS: Title of the view showing the text recognized in a picture
+#| msgid "Image"
+msgid "Image Text"
+msgstr "Kuvan teksti"
 
 #. TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
 msgid "Set Up Paperback"
@@ -1407,7 +1411,6 @@ msgid "General"
 msgstr "Yleiset"
 
 #. TRANSLATORS: Tab label for the Reading options panel
-#. TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Reading"
 msgstr "Lukeminen"
 
@@ -1505,6 +1508,21 @@ msgstr "Paketin as&iakirjat:"
 msgid "{} to {}"
 msgstr "{} / {}"
 
+#. TRANSLATORS: Announced when Enter is pressed on a picture while its text is already being recognized
+#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
+msgid "OCR in progress."
+msgstr "Tekstintunnistus on käynnissä."
+
+#. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
+#. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
+#| msgid "the server could not be reached: {}"
+msgid "The picture could not be read."
+msgstr "Kuvaa ei voitu lukea."
+
+#. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
+msgid "No text was found in the picture."
+msgstr "Kuvasta ei löydy tekstiä."
+
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr "Tiedostoa {} ei löydy"
@@ -1541,10 +1559,6 @@ msgstr "Tiedosto: {}"
 #. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
 msgid "Details: {}"
 msgstr "Tiedot: {}"
-
-#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
-msgid "OCR in progress."
-msgstr "Tekstintunnistus on käynnissä."
 
 #. TRANSLATORS: Announced when batch OCR is triggered with no document open
 #. TRANSLATORS: Announced when Batch OCR is chosen with no document open
@@ -2428,6 +2442,13 @@ msgstr "Tallenna &kuva nimellä..."
 msgid "Save image as"
 msgstr "Tallenna kuva nimellä"
 
+msgid "Read &text in picture"
+msgstr "Lue kuvan te&ksti"
+
+#| msgid "Find text in the document"
+msgid "Read the text in the picture"
+msgstr "Lue kuvan teksti"
+
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
 msgstr "Luo &kirjanmerkki"
@@ -2512,13 +2533,17 @@ msgid_plural "Sleep timer set for %d minutes."
 msgstr[0] "Uniajastin %d minuutti."
 msgstr[1] "Uniajastin %d minuuttia."
 
-#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Progress 45%"
 msgid "Line"
 msgstr "Rivi"
 
 #. TRANSLATORS: Status bar label for the current character offset within the line
 msgid "Character"
 msgstr "Merkki"
+
+#. TRANSLATORS: Status bar label for how far through the document the reader has got, e.g. "Line 5, Character 120, Progress 45%"
+msgid "Progress"
+msgstr "Edistyminen"
 
 #. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 msgid "Sleep timer"
@@ -2984,10 +3009,46 @@ msgstr ""
 msgid "Failed to parse comic archive: {}"
 msgstr "Sarjakuvapaketin jäsennys epäonnistui: {}"
 
+#. TRANSLATORS: Spoken for a comic book page that is its front cover
+msgid "Front cover"
+msgstr "Etukansi"
+
+#. TRANSLATORS: Spoken for a comic book page that is an inside cover
+msgid "Inside cover"
+msgstr "Kannen sisälehti"
+
+#. TRANSLATORS: Spoken for a comic book page that recaps the story so far
+msgid "Recap"
+msgstr "Tapahtunut aiemmin"
+
+#. TRANSLATORS: Spoken for a comic book page that is an advertisement
+msgid "Advertisement"
+msgstr "Mainos"
+
+#. TRANSLATORS: Spoken for a comic book page written by the editors
+#| msgid "Edit"
+msgid "Editorial"
+msgstr "Toimituksen puheenvuoro"
+
+#. TRANSLATORS: Spoken for a comic book page of letters from readers
+#| msgid "L&etter spacing:"
+msgid "Letters"
+msgstr "Lukijakirjeet"
+
+#. TRANSLATORS: Spoken for a comic book page previewing another comic
+#| msgid "Previous Page"
+msgid "Preview"
+msgstr "Ennakkomaistiainen"
+
+#. TRANSLATORS: Spoken for a comic book page that is its back cover
+msgid "Back cover"
+msgstr "Takakansi"
+
 #. TRANSLATORS: Error shown when a comic book archive holds no page images at all
 msgid "This comic archive contains no pages."
 msgstr "Sarjakuvapaketissa ei ole sivuja."
 
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]", and on its own, "[Image]", for a picture with none
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr "Kuvio"
@@ -3173,6 +3234,20 @@ msgstr "Paperback ei tue asiakirjan salausmenetelmää: {}"
 msgid "ODP file does not contain any pages"
 msgstr "ODP-tiedostossa ei ole sivuja"
 
+#. TRANSLATORS: Written after a presentation slide's text, before the presenter's notes for that slide; {} is the notes
+#| msgid "Sleep timer: {}"
+msgid "Speaker notes: {}"
+msgstr "Esittäjän muistiinpanot: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it without a name; {} is the comment
+#| msgid "Font: {}"
+msgid "Comment: {}"
+msgstr "Kommentti: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it: the first {} is the reviewer, the second the comment
+msgid "Comment from {}: {}"
+msgstr "Kommentti käyttäjältä {}: {}"
+
 #. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
 msgid "FODP file does not contain any pages"
 msgstr "FODP-tiedostossa ei ole sivuja"
@@ -3214,6 +3289,29 @@ msgstr "RTF-asiakirjan jäsennys epäonnistui: {}"
 #. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
 msgid "Chapter {}"
 msgstr "Luku {}"
+
+#. TRANSLATORS: Heading over the comments reviewers left on a document, written after its text
+#| msgid "Contents"
+msgid "Comments"
+msgstr "Kommentit"
+
+#. TRANSLATORS: Names a comment's author when the document does not say who wrote it
+#| msgid "document"
+msgid "Comment"
+msgstr "Kommentti"
+
+#. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
+msgid "{} on \\u{201c}{}\\u{201d}: {}"
+msgstr "{} kommentoi tekstin kohtaa \\u{201c}{}\\u{201d}: {}"
+
+#. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
+msgid "{}: {}"
+msgstr "{} kommentoi: {}"
+
+#. TRANSLATORS: Shown in place of a presentation slide that has no text, such as one holding only pictures
+#| msgid "This document has no audio."
+msgid "This slide has no text."
+msgstr "Diassa ei ole tekstiä."
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
@@ -3265,10 +3363,82 @@ msgstr "Tiedostotunnistetta .{} ei voitu käsitellä millään jäsentimellä"
 msgid "image"
 msgstr "kuva"
 
+msgid "Current version is not a valid semver."
+msgstr "Sovelluksen versionumero ei ole semanttisen versioinnin mukainen."
+
+msgid "Latest release tag is not a valid semver."
+msgstr "Uusin julkaisutunniste ei ole semanttisen versioinnin mukainen."
+
+#| msgid "Invalid application metadata"
+msgid "Invalid public key"
+msgstr "Julkinen avain on virheellinen"
+
+#| msgid "Failed to create IPC server"
+msgid "Failed to read signature"
+msgstr "Allekirjoituksen lukeminen epäonnistui"
+
+#| msgid "Invalid MOBI identifier"
+msgid "Invalid signature"
+msgstr "Allekirjoitus on virheellinen"
+
+#| msgid "Could not determine the update log directory."
+msgid "Failed to create private download directory"
+msgstr "Yksityisen lataushakemiston luonti epäonnistui"
+
+#| msgid "Failed to create IPC server"
+msgid "Failed to create file"
+msgstr "Tiedoston luonti epäonnistui"
+
+#| msgid "Failed to parse WinHelp file: {}"
+msgid "Failed to write file"
+msgstr "Tiedostoon kirjoittaminen epäonnistui"
+
+#| msgid "Failed to reveal file in folder."
+msgid "Failed to read file for verification"
+msgstr "Tiedoston lukeminen tarkistusta varten epäonnistui"
+
+#| msgid "Application signature verification failed"
+msgid "Signature verification failed"
+msgstr "Allekirjoituksen tarkistus epäonnistui"
+
+#| msgid "Failed to reveal file in folder."
+msgid "Failed to rename verified file"
+msgstr "Tarkistetun tiedoston uudelleennimeäminen epäonnistui"
+
+#| msgid "Failed to parse WinHelp file: {}"
+msgid "Failed to parse release JSON"
+msgstr "Julkaisun JSON-tiedoston jäsennys epäonnistui"
+
+msgid "Latest release does not include downloadable assets."
+msgstr "Uusimmassa julkaisussa ei ole ladattavia tiedostoja."
+
+msgid ""
+"Update is available but no matching download asset or signature was found."
+msgstr ""
+"Päivitys on saatavilla, mutta vastaavaa ladattavaa tiedostoa tai "
+"allekirjoitusta ei löydy."
+
 msgid "Not running from an AppImage; cannot self-update."
 msgstr ""
 "Automaattinen päivitys ei ole mahdollista, koska sovellusta ei ole "
 "käynnistetty AppImage-tiedostosta."
+
+#| msgid "Failed to get current exe path"
+msgid "Failed to determine exe path"
+msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
+
+msgid "Failed to get exe directory"
+msgstr "Sovelluksen exe-tiedoston hakemistoa ei voitu selvittää"
+
+msgid ""
+"Could not determine a cache directory: neither XDG_CACHE_HOME nor HOME is set"
+msgstr ""
+"Välimuistihakemistoa ei löytynyt: XDG_CACHE_HOME- tai HOME-"
+"ympäristömuuttujaa ei ole määritetty"
+
+#| msgid "Failed to create IPC server"
+msgid "Failed to create cache directory"
+msgstr "Välimuistihakemiston luonti epäonnistui"
 
 msgid "Failed to get current exe path"
 msgstr "Sovelluksen exe-tiedoston sijaintia ei voitu määrittää"
@@ -3392,9 +3562,6 @@ msgstr "%sin päivitys"
 msgid "Downloading update..."
 msgstr "Päivitystä ladataan..."
 
-msgid "Update failed"
-msgstr "Päivitys epäonnistui"
-
 msgid "Preparing update..."
 msgstr "Päivitystä valmistellaan..."
 
@@ -3416,6 +3583,13 @@ msgstr "Tietoturvatarkistus epäonnistui. Päivitystä on saatettu peukaloida: %
 
 msgid "Security Error"
 msgstr "Suojausvirhe"
+
+msgid "The update server returned HTTP error %s."
+msgstr "Päivityspalvelin palautti HTTP-virheen %s."
+
+#| msgid "Could not determine the update log directory."
+msgid "Could not reach the update server: %s"
+msgstr "Päivityspalvelimeen ei saatu yhteyttä: %s"
 
 #. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 msgid "%d hour"
@@ -4742,8 +4916,3 @@ msgstr ""
 #: swift
 msgid "1.5\\u{00d7}"
 msgstr "1,5\\u{00d7}"
-
-#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
-#: swift
-msgid "Progress"
-msgstr "Edistyminen"
