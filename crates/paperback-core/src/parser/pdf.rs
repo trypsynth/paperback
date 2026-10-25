@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
+use rayon::prelude::*;
 
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
@@ -27,14 +28,14 @@ use paragraphs::{join_paragraphs, split_lines};
 use running::{EDGE_LINES, PageEdges, RunningText};
 use structure::extract_tagged_page_text;
 use tagged::{TaggedPage, append_tagged_page, tagged_running_lines, without_lines};
-use text::{HyphenEvidence, Line, extract_text_lines, median_line_font_size};
+use text::{Line, PageEvidence, WordPages, confirms, extract_text_lines, median_line_font_size};
 use toc::{build_toc_tree, extract_toc};
 
 /// Everything one page contributes, as read from the PDF engine and before any of it is placed in the
 /// document. The whole document is read before the first page is assembled, because which lines
 /// are running headers is only known once every page's edges have been seen - and the engine is
-/// asked for each page exactly once, since loading a page and its text is the bulk of what
-/// parsing a PDF costs.
+/// asked for each page once, again only for the few whose hyphens [`read_pages`] has to judge
+/// again, since loading a page and its text is the bulk of what parsing a PDF costs.
 #[derive(Default)]
 struct PageContent {
 	/// A page with a trustworthy structure tree arrives already laid out, in a buffer of its
@@ -61,7 +62,7 @@ fn read_page(
 	page: Result<PdfPage<'_>, PdfError>,
 	page_index: i32,
 	render_tables_inline: bool,
-	evidence: &mut HyphenEvidence,
+	evidence: &mut PageEvidence,
 ) -> PageContent {
 	let Ok(page) = page else {
 		tracing::warn!(page_index, "failed to load pdf page, skipping its text");
@@ -345,48 +346,71 @@ fn resolve_headings(
 	}
 }
 
-/// How many neighbouring pages a loading thread takes at a time. Enough that handing them over costs nothing next to loading them, few enough that the parser is never kept waiting for long.
+/// How many neighbouring pages a reading thread takes at a time, so that the pages it judges hyphens by lie close to the ones it reads.
 const RUN_LENGTH: i32 = 16;
 
-/// How many runs a loading thread may finish ahead of the parser, which bounds how many loaded pages wait in memory.
-const RUNS_AHEAD: usize = 2;
-
-/// Loads every page and hands each to `read` in page order.
+/// Reads every page, on every core.
 ///
-/// Loading a page is most of what reading a PDF costs and depends on nothing read before it, unlike [`read_page`], which has to see the pages in order. So one thread per core loads, each keeping its own cache for the whole document so the fonts a book sets every page in are read once per thread, and each taking every so many runs of pages in turn. The parser takes the runs back in order, one thread's queue after the next, and reads them while the loading threads go on to the next ones.
-fn load_pages<'doc>(
-	document: &'doc PdfDocument,
-	page_count: i32,
-	mut read: impl FnMut(i32, Result<PdfPage<'doc>, PdfError>),
-) {
+/// Loading a page is most of what reading a PDF costs, so one thread per core reads, each keeping its own cache for the whole document so the fonts a book sets every page in are read once per thread. Each takes every so many runs of neighbouring pages in turn, so it reads its pages in order and has seen pages close before each one, which is what lets [`PageEvidence`] judge almost every hyphen right from that thread's pages alone. The few pages it judges differently from reading the pages one after another are read again once every page is in, against all of them.
+fn read_pages(document: &PdfDocument, page_count: i32, render_tables_inline: bool) -> Vec<PageContent> {
 	let runs = usize::try_from((page_count + RUN_LENGTH - 1) / RUN_LENGTH).unwrap_or(0);
 	let threads = std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get).clamp(1, runs.max(1));
-	std::thread::scope(|scope| {
-		let queues: Vec<_> = (0..threads)
+	let (read, words): (Vec<_>, Vec<_>) = std::thread::scope(|scope| {
+		let handles: Vec<_> = (0..threads)
 			.map(|thread| {
-				let (sender, receiver) = std::sync::mpsc::sync_channel(RUNS_AHEAD);
 				scope.spawn(move || {
 					let cache = document.page_cache();
+					let mut words = WordPages::default();
+					let mut pages = Vec::new();
 					for run in (thread..runs).step_by(threads) {
 						let start = i32::try_from(run).unwrap_or(i32::MAX).saturating_mul(RUN_LENGTH);
-						let pages: Vec<_> = (start..(start + RUN_LENGTH).min(page_count))
-							.map(|index| (index, document.page_with(index, &cache)))
-							.collect();
-						if sender.send(pages).is_err() {
-							return;
+						for index in start..(start + RUN_LENGTH).min(page_count) {
+							let mut evidence = PageEvidence::new(index, std::slice::from_ref(&words));
+							let content = read_page(
+								document.page_with(index, &cache),
+								index,
+								render_tables_inline,
+								&mut evidence,
+							);
+							let (own, judgements) = evidence.finish();
+							words.add(index, own);
+							pages.push((index, content, judgements));
 						}
 					}
-				});
-				receiver
+					(pages, words)
+				})
 			})
 			.collect();
-		for run in 0..runs {
-			let Ok(pages) = queues[run % threads].recv() else { break };
-			for (index, page) in pages {
-				read(index, page);
-			}
-		}
+		// Collected first so that every thread is started before the first one is waited on.
+		handles.into_iter().map(|handle| handle.join().unwrap_or_else(|panic| std::panic::resume_unwind(panic))).unzip()
 	});
+	let mut read: Vec<_> = read.into_iter().flatten().collect();
+	read.sort_unstable_by_key(|(index, ..)| *index);
+	let misjudged: Vec<i32> = read
+		.iter()
+		.filter(|(index, _, judgements)| !confirms(judgements, *index, &words))
+		.map(|(index, ..)| *index)
+		.collect();
+	tracing::debug!(misjudged = misjudged.len(), "pdf pages read again for their hyphens");
+	let reread: Vec<PageContent> = misjudged
+		.par_iter()
+		.map_init(
+			|| document.page_cache(),
+			|cache, &index| {
+				read_page(
+					document.page_with(index, cache),
+					index,
+					render_tables_inline,
+					&mut PageEvidence::new(index, &words),
+				)
+			},
+		)
+		.collect();
+	let mut pages: Vec<PageContent> = read.into_iter().map(|(_, content, _)| content).collect();
+	for (index, content) in misjudged.into_iter().zip(reread) {
+		pages[usize::try_from(index).unwrap_or(usize::MAX)] = content;
+	}
+	pages
 }
 
 pub struct PdfParser;
@@ -406,16 +430,7 @@ impl Parser for PdfParser {
 		let mut has_any_text = false;
 		let mut has_any_images = false;
 		let mut detected_heading_positions: Vec<(usize, String)> = Vec::new();
-		let mut pages: Vec<PageContent> = {
-			// Words of the pages read so far, for telling a hyphen that belongs to a word from one that
-			// only splits it at a line end.
-			let mut evidence = HyphenEvidence::default();
-			let mut pages = Vec::with_capacity(usize::try_from(page_count).unwrap_or(0));
-			load_pages(&document, page_count, |page_index, page| {
-				pages.push(read_page(page, page_index, render_tables_inline, &mut evidence));
-			});
-			pages
-		};
+		let mut pages = read_pages(&document, page_count, render_tables_inline);
 		// The survey runs either way, because it is also what measures the body text, which is what
 		// tells a heading from body text and has nothing to do with furniture. What the caller asked
 		// for is whether its answer is used: a document converted as it is keeps every line, and one

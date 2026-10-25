@@ -22,7 +22,7 @@ use self::{
 };
 use super::{
 	images::{UnclaimedImages, append_image},
-	text::HyphenEvidence,
+	text::PageEvidence,
 };
 use crate::{
 	document::{DocumentBuffer, Marker, MarkerType, TocItem},
@@ -52,7 +52,7 @@ pub(super) fn extract_tagged_page_text(
 	render_tables_inline: bool,
 	image_tops: &[f64],
 	image_paths: &[String],
-	evidence: &mut HyphenEvidence,
+	evidence: &mut PageEvidence,
 ) -> bool {
 	let Some(struct_tree) = page.tags() else { return false };
 	let child_count = struct_tree.child_count();
