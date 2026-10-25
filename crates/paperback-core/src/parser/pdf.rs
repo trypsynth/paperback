@@ -437,7 +437,18 @@ impl Parser for PdfParser {
 		// converted as a reader would like it loses the ones that repeat.
 		let survey = strip_tagged_running_text(&mut pages, context.strip_running_text);
 		let running_text = if context.strip_running_text { survey } else { survey.recognizing_nothing() };
-		for (page_index, page) in pages.into_iter().enumerate() {
+		// Laying out an untagged page is what putting the document together spends its time on, and it needs only the page and the survey, so every page is laid out at once.
+		let untagged: Vec<Vec<UntaggedLine>> = pages
+			.par_iter()
+			.map(|page| {
+				if page.tagged.is_none() {
+					untagged_page_lines(page, &running_text, context.join_pdf_paragraphs)
+				} else {
+					Vec::new()
+				}
+			})
+			.collect();
+		for ((page_index, page), untagged) in pages.into_iter().enumerate().zip(untagged) {
 			let marker_position = buffer.current_position();
 			page_offsets.push(marker_position);
 			id_positions.insert(format!("page_{page_index}"), marker_position);
@@ -473,7 +484,7 @@ impl Parser for PdfParser {
 					(level, item)
 				}));
 			} else {
-				for line in untagged_page_lines(&page, &running_text, context.join_pdf_paragraphs) {
+				for line in untagged {
 					match line {
 						UntaggedLine::Image(path) => {
 							let reference = format!("pdf:{page_index}:{path}");
