@@ -23,8 +23,8 @@ mod text;
 
 #[allow(unused_imports)]
 pub use page::{
-	AnnotationLink, Bounds, LinkTarget, MAX_FORM_DEPTH, ObjectKind, PAGE_IMAGE_COVERAGE, PageBitmap, PageImage,
-	PageObject, PdfPage,
+	AnnotationLink, Bounds, LinkTarget, MAX_FORM_DEPTH, ObjectKind, PAGE_IMAGE_COVERAGE, PageBitmap, PageCache,
+	PageImage, PageObject, PdfPage,
 };
 #[allow(unused_imports)]
 pub use tags::{Tag, TagTree};
@@ -105,7 +105,21 @@ impl PdfDocument {
 	///
 	/// [`PdfError::Failed`] when there is no such page.
 	pub fn page(&self, index: i32) -> Result<PdfPage<'_>, PdfError> {
-		PdfPage::load(self, index)
+		PdfPage::load(self, index, &PageCache::new())
+	}
+
+	/// A cache for loading many pages on one thread, so the fonts they share are read once.
+	pub fn page_cache(&self) -> PageCache<'_> {
+		PageCache::new()
+	}
+
+	/// Loads one page, reusing what `cache` already read from earlier pages.
+	///
+	/// # Errors
+	///
+	/// [`PdfError::Failed`] when there is no such page.
+	pub fn page_with<'doc>(&'doc self, index: i32, cache: &PageCache<'doc>) -> Result<PdfPage<'doc>, PdfError> {
+		PdfPage::load(self, index, cache)
 	}
 
 	/// One of the document's metadata fields, such as `Title` or `Author`.

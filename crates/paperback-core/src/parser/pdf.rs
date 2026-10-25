@@ -6,7 +6,7 @@ use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	ocr::image_only_placeholder,
 	parser::{Parser, add_heading_markers, util::path::extract_title_from_path},
-	pdf_engine::{PAGE_IMAGE_COVERAGE, PdfDocument},
+	pdf_engine::{PAGE_IMAGE_COVERAGE, PdfDocument, PdfError, PdfPage},
 };
 
 mod images;
@@ -58,12 +58,12 @@ struct PageContent {
 
 /// Read one page from the PDF engine: its text, its links, and the images it draws.
 fn read_page(
-	document: &PdfDocument,
+	page: Result<PdfPage<'_>, PdfError>,
 	page_index: i32,
 	render_tables_inline: bool,
 	evidence: &mut HyphenEvidence,
 ) -> PageContent {
-	let Ok(page) = document.page(page_index) else {
+	let Ok(page) = page else {
 		tracing::warn!(page_index, "failed to load pdf page, skipping its text");
 		return PageContent::default();
 	};
@@ -90,7 +90,7 @@ fn read_page(
 	};
 	if extract_tagged_page_text(
 		&page,
-		&text_page,
+		text_page,
 		page_index,
 		&mut tagged.buffer,
 		&mut tagged.display_text,
@@ -103,10 +103,10 @@ fn read_page(
 	) {
 		content.tagged = Some(tagged);
 	} else {
-		content.lines = extract_text_lines(&text_page, page_index, evidence);
+		content.lines = extract_text_lines(text_page, page_index, evidence);
 	}
-	content.web_links = collect_web_links(&text_page);
-	content.annotation_links = collect_annotation_links(&page, &text_page);
+	content.web_links = collect_web_links(text_page);
+	content.annotation_links = collect_annotation_links(&page, text_page);
 	content
 }
 
@@ -345,6 +345,50 @@ fn resolve_headings(
 	}
 }
 
+/// How many neighbouring pages a loading thread takes at a time. Enough that handing them over costs nothing next to loading them, few enough that the parser is never kept waiting for long.
+const RUN_LENGTH: i32 = 16;
+
+/// How many runs a loading thread may finish ahead of the parser, which bounds how many loaded pages wait in memory.
+const RUNS_AHEAD: usize = 2;
+
+/// Loads every page and hands each to `read` in page order.
+///
+/// Loading a page is most of what reading a PDF costs and depends on nothing read before it, unlike [`read_page`], which has to see the pages in order. So one thread per core loads, each keeping its own cache for the whole document so the fonts a book sets every page in are read once per thread, and each taking every so many runs of pages in turn. The parser takes the runs back in order, one thread's queue after the next, and reads them while the loading threads go on to the next ones.
+fn load_pages<'doc>(
+	document: &'doc PdfDocument,
+	page_count: i32,
+	mut read: impl FnMut(i32, Result<PdfPage<'doc>, PdfError>),
+) {
+	let runs = usize::try_from((page_count + RUN_LENGTH - 1) / RUN_LENGTH).unwrap_or(0);
+	let threads = std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get).clamp(1, runs.max(1));
+	std::thread::scope(|scope| {
+		let queues: Vec<_> = (0..threads)
+			.map(|thread| {
+				let (sender, receiver) = std::sync::mpsc::sync_channel(RUNS_AHEAD);
+				scope.spawn(move || {
+					let cache = document.page_cache();
+					for run in (thread..runs).step_by(threads) {
+						let start = i32::try_from(run).unwrap_or(i32::MAX).saturating_mul(RUN_LENGTH);
+						let pages: Vec<_> = (start..(start + RUN_LENGTH).min(page_count))
+							.map(|index| (index, document.page_with(index, &cache)))
+							.collect();
+						if sender.send(pages).is_err() {
+							return;
+						}
+					}
+				});
+				receiver
+			})
+			.collect();
+		for run in 0..runs {
+			let Ok(pages) = queues[run % threads].recv() else { break };
+			for (index, page) in pages {
+				read(index, page);
+			}
+		}
+	});
+}
+
 pub struct PdfParser;
 
 impl Parser for PdfParser {
@@ -366,9 +410,11 @@ impl Parser for PdfParser {
 			// Words of the pages read so far, for telling a hyphen that belongs to a word from one that
 			// only splits it at a line end.
 			let mut evidence = HyphenEvidence::default();
-			(0..page_count)
-				.map(|page_index| read_page(&document, page_index, render_tables_inline, &mut evidence))
-				.collect()
+			let mut pages = Vec::with_capacity(usize::try_from(page_count).unwrap_or(0));
+			load_pages(&document, page_count, |page_index, page| {
+				pages.push(read_page(page, page_index, render_tables_inline, &mut evidence));
+			});
+			pages
 		};
 		// The survey runs either way, because it is also what measures the body text, which is what
 		// tells a heading from body text and has nothing to do with furniture. What the caller asked

@@ -18,6 +18,7 @@ use std::{
 	cell::{Cell, RefCell},
 	collections::HashMap,
 	rc::Rc,
+	sync::Arc,
 };
 
 use hayro_interpret::{
@@ -30,7 +31,7 @@ use hayro_syntax::object::{Array, Name};
 use super::{
 	bidi::{self, Direction},
 	links,
-	page::{Mark, PageObject, PdfPage},
+	page::{Mark, ObjectData, PageObject},
 };
 
 /// pdfium's `CPDF_Font::kInvalidCharCode`: the code a generated character carries.
@@ -206,11 +207,15 @@ struct GlyphBox {
 	top: i32,
 }
 
-/// What pdfium's `CPDF_Font` would answer about one font, gathered from its dictionary and from the glyphs drawn in it.
-pub(super) struct FontData {
+/// What the parser asks about a glyph's font once the page is laid out, shared by every text object set in it.
+struct FontSummary {
 	name: String,
 	flags: i32,
-	stem_v: i32,
+	weight: i32,
+}
+
+/// What pdfium's `CPDF_Font` would answer about one font, gathered from its dictionary and from the glyphs drawn in it.
+pub(super) struct FontData {
 	simple: bool,
 	first_char: u32,
 	widths: Vec<f32>,
@@ -221,15 +226,13 @@ pub(super) struct FontData {
 	/// The descriptor's ascent and descent, in thousandths of the font size, for a glyph whose outline is missing.
 	ascent: i32,
 	descent: i32,
+	summary: Arc<FontSummary>,
 }
 
 impl FontData {
 	fn of(properties: Option<&FontProperties<'_>>) -> Self {
 		let Some(properties) = properties else {
 			return Self {
-				name: String::new(),
-				flags: FONT_FLAG_NONSYMBOLIC,
-				stem_v: 0,
 				simple: true,
 				first_char: 0,
 				widths: Vec::new(),
@@ -238,6 +241,7 @@ impl FontData {
 				space_code: Cell::new(None),
 				ascent: 800,
 				descent: -200,
+				summary: Arc::new(FontSummary { name: String::new(), flags: FONT_FLAG_NONSYMBOLIC, weight: 0 }),
 			};
 		};
 		let dict = properties.dict();
@@ -262,10 +266,8 @@ impl FontData {
 		let widths = dict.get::<Array<'_>>(b"Widths").map(|widths| widths.iter::<f32>().collect()).unwrap_or_default();
 		let missing_width =
 			properties.descriptor().and_then(|descriptor| descriptor.get::<f32>(b"MissingWidth")).unwrap_or(0.0);
+		let summary = Arc::new(FontSummary { name, flags, weight: weight_from_stem(stem_v) });
 		Self {
-			name,
-			flags,
-			stem_v,
 			simple,
 			first_char: dict.get::<u32>(b"FirstChar").unwrap_or(0),
 			widths,
@@ -277,6 +279,7 @@ impl FontData {
 				.descent()
 				.filter(|descent| *descent < 0.0)
 				.map_or(-200, |descent| descent.round() as i32),
+			summary,
 		}
 	}
 
@@ -304,15 +307,11 @@ impl FontData {
 	fn space_code(&self) -> Option<u32> {
 		self.space_code.get().or_else(|| self.simple.then_some(32))
 	}
+}
 
-	/// pdfium's `CPDF_Font::GetFontWeight`, which it works out from the stem width rather than reading `/FontWeight`.
-	const fn weight(&self) -> i32 {
-		if self.stem_v < 140 {
-			self.stem_v.saturating_mul(5)
-		} else {
-			self.stem_v.saturating_mul(4).saturating_add(140)
-		}
-	}
+/// pdfium's `CPDF_Font::GetFontWeight`, which it works out from the stem width rather than reading `/FontWeight`.
+const fn weight_from_stem(stem_v: i32) -> i32 {
+	if stem_v < 140 { stem_v.saturating_mul(5) } else { stem_v.saturating_mul(4).saturating_add(140) }
 }
 
 /// The textpage's `GetCharWidth` helper: the width, failing that the width of the glyph's box.
@@ -372,7 +371,7 @@ pub(super) struct TextObject {
 	/// The `TJ` adjustment after each item, in thousandths of text space; pdfium's `GetCharKernings`.
 	kernings: Vec<f32>,
 	rect: FRect,
-	marks: Rc<[Mark]>,
+	marks: Arc<[Mark]>,
 }
 
 impl TextObject {
@@ -380,7 +379,7 @@ impl TextObject {
 	pub(super) fn from_run(
 		run: &GlyphRun<'_, '_>,
 		ctm: Affine,
-		marks: Rc<[Mark]>,
+		marks: Arc<[Mark]>,
 		object: usize,
 		fonts: &mut FontCache,
 	) -> Option<Self> {
@@ -1383,19 +1382,33 @@ impl<'p> Builder<'p> {
 	}
 }
 
+/// What the text layer keeps of one text object once the page is laid out.
+struct ObjectSummary {
+	data: ObjectData,
+	font: Arc<FontSummary>,
+	font_size: f32,
+}
+
 /// A page's text, laid out the way pdfium lays it out.
-pub struct PdfTextPage<'page> {
-	page: &'page PdfPage<'page>,
+///
+/// It owns everything it answers from, the fonts reduced to what the parser asks of them, so a page read on one thread can be handed to another.
+pub struct PdfTextPage {
 	chars: Vec<CharInfo>,
 	text: Vec<u32>,
 	/// pdfium's `char_indices_`: runs of characters that have a place in [`PdfTextPage::text`], as (first index, count).
 	segments: Vec<(i32, i32)>,
+	objects: Vec<ObjectSummary>,
 }
 
-impl<'page> PdfTextPage<'page> {
-	pub(super) fn of(page: &'page PdfPage<'page>) -> Self {
-		let display = Matrix::from_array(page.display_matrix());
-		let mut builder = Builder::new(&page.content().text_objects, page.width(), page.height(), display);
+impl PdfTextPage {
+	pub(super) fn build(
+		text_objects: &[TextObject],
+		objects: &[ObjectData],
+		width: f32,
+		height: f32,
+		display: [f32; 6],
+	) -> Self {
+		let mut builder = Builder::new(text_objects, width, height, Matrix::from_array(display));
 		builder.process_object();
 		let chars = builder.char_list;
 		let text = builder.text_buf;
@@ -1417,15 +1430,23 @@ impl<'page> PdfTextPage<'page> {
 				last.0 = next;
 			}
 		}
-		Self { page, chars, text, segments }
+		let objects = text_objects
+			.iter()
+			.map(|object| ObjectSummary {
+				data: objects[object.object].clone(),
+				font: object.font.summary.clone(),
+				font_size: object.font_size,
+			})
+			.collect();
+		Self { chars, text, segments, objects }
 	}
 
 	fn info(&self, index: i32) -> Option<&CharInfo> {
 		self.chars.get(usize::try_from(index).ok()?)
 	}
 
-	fn object_of(&self, index: i32) -> Option<&TextObject> {
-		Some(&self.page.content().text_objects[self.info(index)?.text_object?])
+	fn object_of(&self, index: i32) -> Option<&ObjectSummary> {
+		self.objects.get(self.info(index)?.text_object?)
 	}
 
 	/// How many characters the page holds. Never `None`, but the parser still handles a page whose count cannot be told.
@@ -1508,7 +1529,7 @@ impl<'page> PdfTextPage<'page> {
 
 	/// The weight of a glyph's font, 400 for regular and 700 for bold, or `None` where it cannot be told.
 	pub fn font_weight(&self, index: i32) -> Option<i32> {
-		let weight = self.object_of(index)?.font.weight();
+		let weight = self.object_of(index)?.font.weight;
 		(weight > 0).then_some(weight)
 	}
 
@@ -1535,8 +1556,7 @@ impl<'page> PdfTextPage<'page> {
 
 	/// The object that drew the glyph at `index`, which carries the marked-content id linking it to the tag tree.
 	pub fn text_object(&self, index: i32) -> Option<PageObject<'_>> {
-		let object = self.object_of(index)?.object;
-		Some(PageObject::new(&self.page.content().objects[object]))
+		Some(PageObject::new(&self.object_of(index)?.data))
 	}
 
 	/// The text inside a rectangle on the page, which is how a link annotation's words are read: pdfium's `GetTextByRect`.

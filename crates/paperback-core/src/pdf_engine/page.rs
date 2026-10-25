@@ -3,7 +3,7 @@
 // The surface hands coordinates out as `f32`, as pdfium's does, while hayro works in `f64`.
 #![allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
 
-use std::rc::Rc;
+use std::sync::Arc;
 
 use hayro::{PixmapSettings, RenderCache, RenderSettings, vello_cpu::color::palette::css::WHITE};
 use hayro_interpret::{
@@ -30,38 +30,43 @@ pub const MAX_FORM_DEPTH: u32 = 8;
 const MIN_IMAGE_SIDE: f32 = 4.0;
 
 /// A page, read in full when it is loaded and borrowed from the document it belongs to.
+///
+/// It owns what was read, the text layer included, so pages can be read on several threads at once and handed back to one.
 pub struct PdfPage<'doc> {
 	document: &'doc PdfDocument,
 	index: usize,
 	width: f32,
 	height: f32,
-	content: PageContent,
+	objects: Vec<ObjectData>,
+	text: PdfTextPage,
 }
 
-/// What interpreting the page collected, which is everything the rest of this module answers from.
-pub(super) struct PageContent {
-	pub(super) objects: Vec<ObjectData>,
-	pub(super) text_objects: Vec<TextObject>,
+/// The fonts and objects hayro has already read, kept across the pages one thread loads. A book sets every page in the same few fonts, and reading them again for each page was half of what loading a page cost.
+pub struct PageCache<'doc>(InterpreterCache<'doc>);
+
+impl PageCache<'_> {
+	pub(super) fn new() -> Self {
+		Self(InterpreterCache::new())
+	}
 }
 
 impl<'doc> PdfPage<'doc> {
-	pub(super) fn load(document: &'doc PdfDocument, index: i32) -> Result<Self, PdfError> {
+	pub(super) fn load(document: &'doc PdfDocument, index: i32, cache: &PageCache<'doc>) -> Result<Self, PdfError> {
 		let index = usize::try_from(index).map_err(|_| PdfError::Failed)?;
 		let page = document.pdf().pages().get(index).ok_or(PdfError::Failed)?;
 		let (width, height) = page.render_dimensions();
-		let cache = InterpreterCache::new();
 		// The bounds only decide what gets drawn, and text off the page is still text to pdfium, so they are made too large to leave anything out.
 		let mut context = Context::new(
 			Affine::IDENTITY,
 			Rect::new(-1e7, -1e7, 1e7, 1e7),
-			&cache,
+			&cache.0,
 			document.pdf().xref(),
 			fonts::settings(),
 		);
 		let mut collector = Collector::default();
 		interpret_page(page, &mut context, &mut collector);
-		let content = PageContent { objects: collector.objects, text_objects: collector.text_objects };
-		Ok(Self { document, index, width, height, content })
+		let text = PdfTextPage::build(&collector.text_objects, &collector.objects, width, height, display_matrix(page));
+		Ok(Self { document, index, width, height, objects: collector.objects, text })
 	}
 
 	pub const fn width(&self) -> f32 {
@@ -74,8 +79,8 @@ impl<'doc> PdfPage<'doc> {
 
 	/// The page's text layer. Always there; an `Option` because the parser is written for a page whose text cannot be read.
 	#[allow(clippy::unnecessary_wraps)]
-	pub fn text(&self) -> Option<PdfTextPage<'_>> {
-		Some(PdfTextPage::of(self))
+	pub const fn text(&self) -> Option<&PdfTextPage> {
+		Some(&self.text)
 	}
 
 	/// The page's structure tree, or `None` when the document is not tagged.
@@ -84,11 +89,11 @@ impl<'doc> PdfPage<'doc> {
 	}
 
 	pub fn object_count(&self) -> i32 {
-		i32::try_from(self.content.objects.len()).unwrap_or(i32::MAX)
+		i32::try_from(self.objects.len()).unwrap_or(i32::MAX)
 	}
 
 	pub fn object(&self, index: i32) -> Option<PageObject<'_>> {
-		let data = self.content.objects.get(usize::try_from(index).ok()?)?;
+		let data = self.objects.get(usize::try_from(index).ok()?)?;
 		Some(PageObject { data })
 	}
 
@@ -117,7 +122,7 @@ impl<'doc> PdfPage<'doc> {
 	/// The picture is taken at the resolution the file stores rather than as it is drawn on the page, so a photo placed small still saves at full size.
 	pub fn image_png(&self, path: &str) -> Option<Vec<u8>> {
 		let index: usize = path.parse().ok()?;
-		let ordinal = self.content.objects.get(index)?.image?;
+		let ordinal = self.objects.get(index)?.image?;
 		let page = self.document.pdf().pages().get(self.index)?;
 		let cache = InterpreterCache::new();
 		let mut context = Context::new(
@@ -195,24 +200,19 @@ impl<'doc> PdfPage<'doc> {
 	}
 
 	fn images(&self) -> impl Iterator<Item = (usize, &ObjectData)> {
-		self.content.objects.iter().enumerate().filter(|(_, data)| data.kind == ObjectKind::Image)
+		self.objects.iter().enumerate().filter(|(_, data)| data.kind == ObjectKind::Image)
 	}
+}
 
-	pub(super) const fn content(&self) -> &PageContent {
-		&self.content
-	}
-
-	pub(super) fn display_matrix(&self) -> [f32; 6] {
-		let Some(page) = self.document.pdf().pages().get(self.index) else { return [1.0, 0.0, 0.0, -1.0, 0.0, 0.0] };
-		let crop = page.intersected_crop_box();
-		let (x0, y0, x1, y1) = (crop.x0 as f32, crop.y0 as f32, crop.x1 as f32, crop.y1 as f32);
-		// pdfium's display matrix: page space to a device whose y grows downward, turned by the page's /Rotate.
-		match page.rotation() {
-			hayro_syntax::page::Rotation::Horizontal => [0.0, 1.0, 1.0, 0.0, -y0, -x0],
-			hayro_syntax::page::Rotation::Flipped => [-1.0, 0.0, 0.0, 1.0, x1, -y0],
-			hayro_syntax::page::Rotation::FlippedHorizontal => [0.0, -1.0, -1.0, 0.0, y1, x1],
-			hayro_syntax::page::Rotation::None => [1.0, 0.0, 0.0, -1.0, -x0, y1],
-		}
+/// pdfium's display matrix: page space to a device whose y grows downward, turned by the page's /Rotate.
+fn display_matrix(page: &hayro_syntax::page::Page<'_>) -> [f32; 6] {
+	let crop = page.intersected_crop_box();
+	let (x0, y0, x1, y1) = (crop.x0 as f32, crop.y0 as f32, crop.x1 as f32, crop.y1 as f32);
+	match page.rotation() {
+		hayro_syntax::page::Rotation::Horizontal => [0.0, 1.0, 1.0, 0.0, -y0, -x0],
+		hayro_syntax::page::Rotation::Flipped => [-1.0, 0.0, 0.0, 1.0, x1, -y0],
+		hayro_syntax::page::Rotation::FlippedHorizontal => [0.0, -1.0, -1.0, 0.0, y1, x1],
+		hayro_syntax::page::Rotation::None => [1.0, 0.0, 0.0, -1.0, -x0, y1],
 	}
 }
 
@@ -290,11 +290,12 @@ pub(super) struct Mark {
 }
 
 /// One object the page draws: a text run or an image.
+#[derive(Clone)]
 pub(super) struct ObjectData {
 	pub(super) kind: ObjectKind,
 	pub(super) bounds: Option<Bounds>,
 	/// Outermost first, the order pdfium lists an object's marks in.
-	pub(super) marks: Rc<[Mark]>,
+	pub(super) marks: Arc<[Mark]>,
 	/// For an image, how many images the page drew before it, which is how [`PdfPage::image_png`] finds it again.
 	image: Option<usize>,
 }
@@ -380,7 +381,7 @@ struct Collector {
 	text_objects: Vec<TextObject>,
 	marks: Vec<Mark>,
 	/// The open marks as one shared list, rebuilt only when a mark opens or closes, since a page's objects mostly sit inside the same few.
-	current_marks: Option<Rc<[Mark]>>,
+	current_marks: Option<Arc<[Mark]>>,
 	sequences: usize,
 	images: usize,
 	fonts: FontCache,
@@ -388,7 +389,7 @@ struct Collector {
 }
 
 impl Collector {
-	fn marks(&mut self) -> Rc<[Mark]> {
+	fn marks(&mut self) -> Arc<[Mark]> {
 		self.current_marks.get_or_insert_with(|| self.marks.as_slice().into()).clone()
 	}
 }
