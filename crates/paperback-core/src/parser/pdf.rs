@@ -23,8 +23,8 @@ mod toc;
 use images::{append_image, images_before_each_paragraph, page_largest_image_coverage};
 use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
 use metadata::{map_load_error, metadata_title, metadata_value};
-pub use paragraphs::join_wrapped_lines;
 use paragraphs::{join_paragraphs, split_lines};
+pub use paragraphs::{join_wrapped_lines, join_wrapped_runs};
 use running::{EDGE_LINES, PageEdges, RunningText};
 use structure::extract_tagged_page_text;
 use tagged::{TaggedPage, append_tagged_page, tagged_running_lines, without_lines};
@@ -411,6 +411,11 @@ fn read_pages(document: &PdfDocument, page_count: i32, render_tables_inline: boo
 		pages[usize::try_from(index).unwrap_or(usize::MAX)] = content;
 	}
 	pages
+}
+
+/// Whether a hyphen that ends a line between `left` and `right` belongs to the word, judged by the shape of the word alone; see [`text::keeps_hyphen`].
+pub(crate) fn keeps_line_end_hyphen(left: &str, right: &str) -> bool {
+	text::keeps_hyphen(left, right, None)
 }
 
 pub struct PdfParser;

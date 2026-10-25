@@ -19,8 +19,10 @@ use crate::{
 	t,
 };
 
+mod layout;
 mod pool;
 
+pub use layout::{RecognizedLine, RecognizedWord, arrange};
 pub use pool::{Run, default_workers, recognize_pages};
 
 /// The placeholder line the PDF parser inserts for a page that has an image but no extractable
