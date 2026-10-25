@@ -19,7 +19,11 @@ use std::{
 	time::{Duration, Instant},
 };
 
-use paperback_core::ocr::{default_workers, recognize_pages};
+use paperback_core::{
+	config::ConfigManager,
+	ocr::{RecognizedLine, default_workers, load_pages, page_text, recognize_pages, save_pages, saved_pages_file},
+	session::DocumentSession,
+};
 use patois::{nt, t};
 use wxdragon::prelude::*;
 
@@ -47,11 +51,13 @@ pub(super) struct OcrJob {
 	recognized: usize,
 	/// Stopped by a re-read rather than by the reader, so its remaining flushes are dropped and nothing is announced.
 	quiet_cancel: bool,
+	/// Where the pages this job reads are kept for the next time the document is opened, named when the job starts for the file the pages are read from.
+	saved_as: PathBuf,
 }
 
 /// Whether a document is a PDF, which is what the paragraph joining setting is about. The
 /// other thing OCR runs on is a comic, whose lines are the balloons and belong apart.
-fn is_pdf(file_path: &Path) -> bool {
+pub(super) fn is_pdf(file_path: &Path) -> bool {
 	file_path.extension().is_some_and(|extension| extension.eq_ignore_ascii_case("pdf"))
 }
 
@@ -67,8 +73,34 @@ fn is_ocr_able(file_path: &Path) -> bool {
 	})
 }
 
+/// Whether the recognized text of the document at `local_path` is put back in reading order and joined into paragraphs.
+///
+/// An OCR engine reads a page a printed line at a time, so its text arrives broken at every line end. The reader who asked for wrapped lines to be joined asked about the text of a page, not about where it was read from.
+pub(super) fn joins_recognized_text(local_path: &Path, config: &ConfigManager) -> bool {
+	is_pdf(local_path) && config.get_app_bool("join_pdf_paragraphs", true)
+}
+
+/// Where the pages OCR reads off the document at `local_path` are kept.
+pub(super) fn saved_pages_of(local_path: &Path) -> PathBuf {
+	saved_pages_file(&ocr::saved_pages_dir(), local_path)
+}
+
+/// Puts back the pages `saved` keeps from the last time the document was open, so it opens with their text rather than with their placeholders. Done before the reading position is restored, since the position was kept against that text.
+pub(super) fn restore_saved_pages(session: &mut DocumentSession, saved: &Path, join: bool) {
+	let saved_pages = load_pages(saved);
+	let pages: Vec<(i32, String)> = saved_pages
+		.into_iter()
+		.map(|(page, lines)| (page, page_text(&lines, join)))
+		.filter(|(_, text)| !text.trim().is_empty())
+		.collect();
+	if !pages.is_empty() {
+		session.replace_ocr_pages(&pages);
+		tracing::debug!(path = %saved.display(), pages = pages.len(), "put back the pages ocr read before");
+	}
+}
+
 /// One page's outcome, as the worker reports it.
-type PageResult = (i32, Result<String, OcrError>);
+type PageResult = (i32, Result<Vec<RecognizedLine>, OcrError>);
 
 /// The position of the tab whose current OCR job is `id`, over each tab's job id.
 ///
@@ -182,18 +214,15 @@ impl DocumentManager {
 		let password = self.config.lock().unwrap().get_document_password(&path.to_string_lossy());
 		let password = (!password.is_empty()).then_some(password);
 		let path_str = tab.local_path().to_string_lossy().to_string();
-		// An OCR engine reads a page a printed line at a time, so its text arrives broken at
-		// every line end. The reader who asked for wrapped lines to be joined asked about the
-		// text of a page, not about where it was read from.
-		let join = is_pdf(tab.local_path()) && self.config.lock().unwrap().get_app_bool("join_pdf_paragraphs", true);
+		let saved_as = saved_pages_of(tab.local_path());
 		let cancel = Arc::new(AtomicBool::new(false));
 		let worker_cancel = Arc::clone(&cancel);
 		let id = self.next_job_id.get();
 		self.next_job_id.set(id.wrapping_add(1));
-		let job = OcrJob { id, cancel, batch, recognized: 0, quiet_cancel: false };
+		let job = OcrJob { id, cancel, batch, recognized: 0, quiet_cancel: false, saved_as };
 		let worker = thread::Builder::new()
 			.name("paperback-ocr".into())
-			.spawn(move || run_ocr(&path_str, password.as_deref(), &pages, &path, &worker_cancel, batch, join, id));
+			.spawn(move || run_ocr(&path_str, password.as_deref(), &pages, &path, &worker_cancel, batch, id));
 		match worker {
 			Ok(_) => {
 				if let Some(tab) = self.active_tab_mut() {
@@ -232,15 +261,17 @@ impl DocumentManager {
 			return;
 		}
 		let is_active = self.active_tab_index() == Some(index);
+		let join = joins_recognized_text(self.tabs[index].local_path(), &self.config.lock().unwrap());
 		let tab = &mut self.tabs[index];
 		let mut pages = Vec::with_capacity(results.len());
+		let mut read = Vec::with_capacity(results.len());
 		// Where each page being replaced starts, read before the edit for the same reason the
 		// session re-resolves the span rather than trusting a captured offset: earlier applies in
 		// this job have already moved everything after them.
 		let mut starts = Vec::with_capacity(results.len());
 		for (page, result) in results {
-			let text = match result {
-				Ok(text) => text,
+			let lines = match result {
+				Ok(lines) => lines,
 				Err(err) => {
 					tracing::warn!(page, error = %err, "ocr failed on page");
 					if matches!(err, OcrError::NoLanguage) {
@@ -249,6 +280,7 @@ impl DocumentManager {
 					continue;
 				}
 			};
+			let text = page_text(&lines, join);
 			// A page that came back empty keeps the text it had. For an image-only page that is
 			// the placeholder; for a text page it is the text the reader is distrusting, and
 			// blanking it would be strictly worse than leaving it alone.
@@ -261,6 +293,7 @@ impl DocumentManager {
 			if start >= 0 {
 				starts.push(start);
 				pages.push((page, text));
+				read.push((page, lines));
 			}
 		}
 		if pages.is_empty() {
@@ -271,6 +304,9 @@ impl DocumentManager {
 		let outcome = tab.session.replace_ocr_pages(&pages);
 		if let Some(job) = tab.ocr_job.as_mut() {
 			job.recognized += pages.len();
+			if let Err(error) = save_pages(&job.saved_as, &read) {
+				tracing::warn!(path = %job.saved_as.display(), %error, "failed to keep the recognized pages");
+			}
 		}
 		let caret = i64::try_from(outcome.shift(usize::try_from(caret.max(0)).unwrap_or(0))).unwrap_or(caret);
 		// The mark is a document-absolute offset like the caret's, so the insertions above moved
@@ -356,8 +392,7 @@ fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[i64], window: TextWindow, 
 
 /// The worker thread: renders and recognizes pages on a pool of threads, posting results back to the UI thread in flushes.
 ///
-/// `id` travels with every message so the UI thread can tell this run apart from any other job on the same document, which may by now be open again under a new tab. `join` puts each page's lines back in reading order and joins them into paragraphs.
-#[allow(clippy::too_many_arguments)]
+/// `id` travels with every message so the UI thread can tell this run apart from any other job on the same document, which may by now be open again under a new tab.
 fn run_ocr(
 	path_str: &str,
 	password: Option<&str>,
@@ -365,7 +400,6 @@ fn run_ocr(
 	file_path: &Path,
 	cancel: &AtomicBool,
 	batch: bool,
-	join: bool,
 	id: u64,
 ) {
 	let max_dimension = ocr::max_image_dimension();
@@ -384,7 +418,7 @@ fn run_ocr(
 			renderer
 				.render(page - 1, max_dimension)
 				.map_err(|error| OcrError::Failed(error.to_string()))
-				.and_then(|rendered| ocr::recognize_text(&rendered.rgba, rendered.width, rendered.height, join))
+				.and_then(|rendered| ocr::recognize_lines(&rendered.rgba, rendered.width, rendered.height))
 		},
 		|page, result| {
 			done += 1;
@@ -441,7 +475,46 @@ fn run_on_ui_thread(action: impl FnOnce(&mut DocumentManager) + Send + 'static) 
 
 #[cfg(test)]
 mod tests {
-	use super::index_running_job;
+	use std::io::{Cursor, Write as _};
+
+	use paperback_core::{
+		document::ParseSettings,
+		ocr::{RecognizedLine, RecognizedWord, save_pages},
+		session::DocumentSession,
+	};
+
+	use super::{index_running_job, restore_saved_pages};
+
+	/// A comic of `pages` blank pages, which the comic reader leaves as placeholders to OCR.
+	fn comic(dir: &std::path::Path, pages: usize) -> String {
+		let mut png = Vec::new();
+		image::RgbaImage::new(4, 4).write_to(&mut Cursor::new(&mut png), image::ImageFormat::Png).unwrap();
+		let path = dir.join("comic.cbz");
+		let mut zip = zip::ZipWriter::new(std::fs::File::create(&path).unwrap());
+		for page in 1..=pages {
+			zip.start_file(format!("{page:03}.png"), zip::write::SimpleFileOptions::default()).unwrap();
+			zip.write_all(&png).unwrap();
+		}
+		zip.finish().unwrap();
+		path.to_string_lossy().into_owned()
+	}
+
+	/// The kept page comes back in place of its placeholder, and the page that was never read keeps its own.
+	#[test]
+	fn a_kept_page_comes_back_in_place_of_its_placeholder() {
+		let dir = std::env::temp_dir().join(format!("paperback-restore-saved-{}", std::process::id()));
+		let _ = std::fs::remove_dir_all(&dir);
+		std::fs::create_dir_all(&dir).unwrap();
+		let path = comic(&dir, 2);
+		let mut session = DocumentSession::new(&path, "", "", ParseSettings::default()).unwrap();
+		assert_eq!(session.image_only_pages().len(), 2);
+		let saved = dir.join("comic.ocr");
+		let word = RecognizedWord { text: "Recognized".to_string(), x: 0.0, y: 0.0, width: 80.0, height: 16.0 };
+		save_pages(&saved, &[(2, vec![RecognizedLine { text: "Recognized".to_string(), words: vec![word] }])]).unwrap();
+		restore_saved_pages(&mut session, &saved, false);
+		assert!(session.content().contains("Recognized"), "{}", session.content());
+		assert_eq!(session.image_only_pages().iter().map(|(page, _)| *page).collect::<Vec<_>>(), vec![1]);
+	}
 
 	/// The case that needs the id: a batch is running, the reader closes the document with Ctrl+F4, and opens it again before the worker reaches its next page boundary.
 	#[test]

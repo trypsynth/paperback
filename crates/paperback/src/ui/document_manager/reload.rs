@@ -11,6 +11,7 @@ use wxdragon::prelude::*;
 use super::{
 	DocumentManager, DocumentTab,
 	lifecycle::{build_document_load_error_message, prompt_for_password, show_error_dialog},
+	ocr::{is_pdf, restore_saved_pages, saved_pages_of},
 };
 use crate::{
 	text_window::TextWindow,
@@ -246,6 +247,12 @@ fn reparse_tab_in_place(
 		}
 	};
 	tab.session = new_session;
+	let local_path = tab.local_path().to_path_buf();
+	restore_saved_pages(
+		&mut tab.session,
+		&saved_pages_of(&local_path),
+		is_pdf(&local_path) && settings.join_pdf_paragraphs,
+	);
 	// TODO(windowing): still whole-document on every reparse, see
 	// C:\Users\Quin\.claude\plans\fluffy-hugging-crystal.md Phase 2 - should load a window
 	// centered on `restored_pos` instead.

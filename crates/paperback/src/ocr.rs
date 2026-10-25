@@ -4,18 +4,23 @@
 //! (remote, paid, whole document, structured), which is a different feature on a different path
 //! rather than another engine here.
 
+use std::path::PathBuf;
+
+use native_ocr::Line;
 pub use native_ocr::{Error as OcrError, max_image_dimension};
-use native_ocr::{Line, recognize_lines, recognize_rgba};
-use paperback_core::ocr::{RecognizedLine, RecognizedWord, arrange};
+use paperback_core::ocr::{RecognizedLine, RecognizedWord};
 use patois::t;
 
-/// Reads the text in an RGBA8 bitmap. With `arranged`, its lines are put back in reading order from where each word was read and joined into paragraphs (see [`arrange`]); without, they come as the engine read them, one to a line.
-pub fn recognize_text(rgba: &[u8], width: u32, height: u32, arranged: bool) -> Result<String, OcrError> {
-	if !arranged {
-		return recognize_rgba(rgba, width, height);
-	}
-	let lines: Vec<RecognizedLine> = recognize_lines(rgba, width, height)?.into_iter().map(recognized).collect();
-	Ok(arrange(&lines, true))
+use crate::config_ext::config_dir;
+
+/// Reads the lines in an RGBA8 bitmap, with where each of their words was read.
+pub fn recognize_lines(rgba: &[u8], width: u32, height: u32) -> Result<Vec<RecognizedLine>, OcrError> {
+	Ok(native_ocr::recognize_lines(rgba, width, height)?.into_iter().map(recognized).collect())
+}
+
+/// The folder the pages OCR has read are kept in, beside the settings; see [`paperback_core::ocr::save_pages`].
+pub fn saved_pages_dir() -> PathBuf {
+	config_dir().join("ocr")
 }
 
 fn recognized(line: Line) -> RecognizedLine {
