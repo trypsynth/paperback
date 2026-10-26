@@ -2,7 +2,10 @@
 //! extending it, and rendering the bold, italic and underline runs the parser found, along with
 //! the headings and lists a screen reader reports.
 
-use paperback_core::session::{DocumentSession, WindowSlice};
+use paperback_core::{
+	document::{DocLen, DocPos},
+	session::{DocumentSession, WindowSlice},
+};
 use wxdragon::prelude::*;
 
 use super::{
@@ -32,11 +35,11 @@ pub(super) fn fill_text_ctrl(text_ctrl: ReaderCtrl, content: &str) {
 pub(super) fn load_window_into_ctrl(
 	text_ctrl: ReaderCtrl,
 	session: &DocumentSession,
-	target_pos: i64,
-	doc_len: i64,
+	target_pos: DocPos,
+	doc_len: DocLen,
 ) -> TextWindow {
 	let slice = if text_window::should_use_whole_document(doc_len) {
-		session.get_window(0, doc_len)
+		session.get_window(DocPos::ZERO, doc_len.as_pos())
 	} else {
 		let (raw_start, raw_end) = text_window::target_window_bounds(target_pos, doc_len);
 		session.get_window(raw_start, raw_end)
@@ -67,19 +70,19 @@ pub(super) fn load_window_into_ctrl(
 /// when someone reports a Say-All losing its place, the log says whether the window moved and
 /// which path moved it, without anyone having to reproduce it first. Equally, a report with no
 /// line here is evidence the window is not what moved, which is worth just as much.
-pub fn reload_window_around(tab: &mut DocumentTab, doc_offset: i64, reason: &'static str) {
+pub fn reload_window_around(tab: &mut DocumentTab, doc_offset: DocPos, reason: &'static str) {
 	let doc_len = tab.session.document_len();
 	let (from_start, from_end) = (tab.window.start(), tab.window.end());
 	tab.window = load_window_into_ctrl(tab.text_ctrl, &tab.session, doc_offset, doc_len);
 	if from_start != tab.window.start() {
 		tracing::info!(
 			reason,
-			caret = doc_offset,
-			from_start,
-			from_end,
-			to_start = tab.window.start(),
-			to_end = tab.window.end(),
-			doc_len,
+			caret = doc_offset.get(),
+			from_start = from_start.get(),
+			from_end = from_end.get(),
+			to_start = tab.window.start().get(),
+			to_end = tab.window.end().get(),
+			doc_len = doc_len.get(),
 			"loaded window start moved"
 		);
 	}
@@ -117,7 +120,7 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: ReaderCtrl, slice: &WindowSlice, w
 	if text_ctrl.get_last_position() <= base {
 		return false;
 	}
-	let place = |offset: i64| window.to_local(slice.start + offset);
+	let place = |offset: DocPos| window.to_local(slice.start + offset.from_start());
 	#[cfg(target_os = "windows")]
 	apply_paragraph_formats(text_ctrl, place, &slice.paragraphs);
 	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &segments, place);
@@ -171,14 +174,14 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: ReaderCtrl, slice: &Wind
 			if text_ctrl.get_value() == *expected {
 				return;
 			}
-			// Not identical, but harmless as long as it cost no display units: every position
+			// Not identical, but harmless as long as it cost no units: every position
 			// the app hands the control is an offset into this buffer, so a length change
 			// breaks the caret, bookmarks and `text_window`'s translation alike, whereas a
 			// same-width substitution is only cosmetic. RichEdit does make a few of those on
 			// its own - U+2028 comes back as a vertical tab, U+FDD0..=U+FDEF as spaces - and
 			// falling back over those would cost seconds per window load to fix nothing. A
 			// length check is still decisive against the failure this guards: unparsed RTF
-			// stored as literal text would be tens of thousands of display units longer than
+			// stored as literal text would be tens of thousands of units longer than
 			// the content it encodes.
 			let expected_len = ctrl_len(&expected);
 			let stored_len = text_ctrl.get_last_position();
@@ -201,7 +204,7 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: ReaderCtrl, slice: &Wind
 		// fall back below to the plain-text + segment-loop path.
 	}
 	fill_text_ctrl(text_ctrl, content);
-	let place = |offset: i64| window.to_local(slice.start + offset);
+	let place = |offset: DocPos| window.to_local(slice.start + offset.from_start());
 	#[cfg(target_os = "windows")]
 	apply_paragraph_formats(text_ctrl, place, &slice.paragraphs);
 	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &segments, place);
@@ -211,7 +214,7 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: ReaderCtrl, slice: &Wind
 fn apply_formatting_markers_to_ctrl_from_segments(
 	text_ctrl: ReaderCtrl,
 	segments: &[FormatSegment],
-	place: impl Fn(i64) -> CtrlPos,
+	place: impl Fn(DocPos) -> CtrlPos,
 ) {
 	if segments.is_empty() {
 		return;

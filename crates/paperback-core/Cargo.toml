@@ -39,7 +39,7 @@ icu_properties = { version = "2.4.0", features = ["unicode_bidi"] }
 image = { version = "0.25.10", default-features = false, features = ["jpeg", "png", "gif", "webp", "bmp"] }
 libchm = "0.3.0"
 libhlp = "0.2.0"
-lofty = "0.25.4"
+lofty = "0.25.5"
 memchr = "2.8.3"
 mp4ameta = "0.13.0"
 odf-crypto = { version = "0.1.0-rc.14", features = ["crypto-ops"] }
@@ -66,7 +66,7 @@ tracing = "0.1.44"
 unicode-bidi = "0.3.18"
 uniffi = { version = "0.32.2", features = ["cli"], optional = true }
 ureq = { version = "3.5.0", default-features = false, features = ["rustls"], optional = true }
-zip = { version = "9.1.0", default-features = false, features = ["deflate"] }
+zip = { version = "9.1.2", default-features = false, features = ["deflate"] }
 mathcat = { version = "0.7.7", features = ["include-zip"] }
 math-core = "0.9.0"
 
@@ -79,7 +79,7 @@ rstest = { workspace = true }
 # Only for constructing password-protected archives in tests; matches the main `zip`
 # dependency's default-features = false, adding just aes-crypto rather than the full
 # default bundle (bzip2, lzma, ppmd, zstd).
-zip = { version = "9.1.0", default-features = false, features = ["deflate", "aes-crypto"] }
+zip = { version = "9.1.2", default-features = false, features = ["deflate", "aes-crypto"] }
 
 [features]
 fetch = ["dep:ureq"]

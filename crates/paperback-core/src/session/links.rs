@@ -7,7 +7,7 @@ use super::{
 };
 use crate::{
 	config::ConfigManager,
-	document::{self, DocLen, MarkerType},
+	document::{self, DocLen, DocPos, MarkerType},
 	export::annotations::AnnotationEntry,
 	reader_core::{get_filtered_bookmarks, resolve_link},
 	types::{self as ffi},
@@ -16,44 +16,36 @@ use crate::{
 #[cfg_attr(feature = "uniffi", uniffi::export)]
 impl DocumentSession {
 	#[must_use]
-	pub fn get_heading_tree_ffi(&self, position: i64) -> HeadingTreeFfi {
+	pub fn get_heading_tree_ffi(&self, position: DocPos) -> HeadingTreeFfi {
 		let tree = self.heading_tree(position);
 		HeadingTreeFfi {
 			items: tree
 				.items
 				.into_iter()
-				.map(|i| HeadingTreeItemFfi {
-					offset: i64::try_from(i.offset).unwrap_or(i64::MAX),
-					text: i.text,
-					parent_index: i.parent_index,
-				})
+				.map(|i| HeadingTreeItemFfi { offset: i.offset, text: i.text, parent_index: i.parent_index })
 				.collect(),
 			closest_index: tree.closest_index,
 		}
 	}
 
 	#[must_use]
-	pub fn get_link_list_ffi(&self, position: i64) -> LinkListFfi {
+	pub fn get_link_list_ffi(&self, position: DocPos) -> LinkListFfi {
 		let list = self.link_list(position);
 		LinkListFfi {
-			items: list
-				.items
-				.into_iter()
-				.map(|i| LinkListItemFfi { offset: i64::try_from(i.offset).unwrap_or(i64::MAX), text: i.text })
-				.collect(),
+			items: list.items.into_iter().map(|i| LinkListItemFfi { offset: i.offset, text: i.text }).collect(),
 			closest_index: list.closest_index,
 		}
 	}
 
 	/// Whether `position` is on a link that activating would follow.
 	#[must_use]
-	pub fn is_on_link(&self, position: i64) -> bool {
+	pub fn is_on_link(&self, position: DocPos) -> bool {
 		self.link_href_at(position).is_some()
 	}
 
 	/// The href of the link `position` is on, if any.
-	fn link_href_at(&self, position: i64) -> Option<String> {
-		let pos = self.handle.document().buffer.nearest_pos(position);
+	fn link_href_at(&self, position: DocPos) -> Option<String> {
+		let pos = position.min(self.handle.document().buffer.end());
 		let link_index = self.handle.current_marker_index(pos, MarkerType::Link)?;
 		let marker = self.handle.document().buffer.markers.get(link_index)?;
 		let link_end = marker.position + DocLen::of(&marker.text);
@@ -64,7 +56,7 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn activate_link(&self, position: i64) -> LinkActivationResult {
+	pub fn activate_link(&self, position: DocPos) -> LinkActivationResult {
 		let Some(href) = self.link_href_at(position) else {
 			return LinkActivationResult::not_found();
 		};
@@ -72,12 +64,17 @@ impl DocumentSession {
 		if !resolution.found {
 			LinkActivationResult::not_found()
 		} else if resolution.is_external {
-			LinkActivationResult { found: true, action: LinkAction::External, offset: 0, url: resolution.url }
+			LinkActivationResult {
+				found: true,
+				action: LinkAction::External,
+				offset: DocPos::ZERO,
+				url: resolution.url,
+			}
 		} else {
 			LinkActivationResult {
 				found: true,
 				action: LinkAction::Internal,
-				offset: i64::try_from(resolution.offset).unwrap_or(0),
+				offset: resolution.offset,
 				url: String::new(),
 			}
 		}
@@ -93,15 +90,11 @@ impl DocumentSession {
 		path: &str,
 		filter: ffi::BookmarkFilterType,
 	) -> Vec<AnnotationEntry> {
-		get_filtered_bookmarks(config, path, 0, filter)
+		get_filtered_bookmarks(config, path, DocPos::ZERO, filter)
 			.items
 			.into_iter()
 			.map(|b| AnnotationEntry {
-				passage: if b.is_whole_line {
-					self.get_line_text(b.start)
-				} else {
-					self.get_text_range_display(b.start, b.end)
-				},
+				passage: if b.is_whole_line { self.get_line_text(b.start) } else { self.text_range(b.start, b.end) },
 				note: b.note,
 				audio_ms: b.audio_ms,
 			})
@@ -115,17 +108,16 @@ impl DocumentSession {
 		&self,
 		config: &ConfigManager,
 		path: &str,
-		position: i64,
+		position: DocPos,
 	) -> ffi::BookmarkDisplayAtPosition {
 		let bookmark = config.get_bookmarks(path).into_iter().find(|bm| bm.start == position);
 		let Some(bookmark) = bookmark else {
 			return ffi::BookmarkDisplayAtPosition { found: false, note: String::new(), snippet: String::new() };
 		};
-		// Bookmark bounds are caret positions, so read them in display units, not chars.
 		let snippet = if bookmark.start == bookmark.end {
 			self.line_text_at(bookmark.start)
 		} else {
-			self.get_text_range_display(bookmark.start, bookmark.end)
+			self.text_range(bookmark.start, bookmark.end)
 		};
 		ffi::BookmarkDisplayAtPosition { found: true, note: bookmark.note, snippet }
 	}
@@ -136,16 +128,12 @@ impl DocumentSession {
 	/// navigation announces for it. `closest_index` is the index of the last row whose marker is
 	/// at or before `position`.
 	#[must_use]
-	pub fn element_list(&self, mtype: MarkerType, position: i64) -> ffi::ElementList {
-		let pos = self.handle.document().buffer.nearest_pos(position);
+	pub fn element_list(&self, mtype: MarkerType, position: DocPos) -> ffi::ElementList {
+		let pos = position.min(self.handle.document().buffer.end());
 		let mut closest_index = -1;
 		let mut items = Vec::new();
 		for marker in self.handle.document().buffer.markers.iter().filter(|marker| marker.mtype == mtype) {
-			let text = if marker.text.is_empty() {
-				self.get_line_text(i64::try_from(marker.position).unwrap_or(0))
-			} else {
-				marker.text.clone()
-			};
+			let text = if marker.text.is_empty() { self.get_line_text(marker.position) } else { marker.text.clone() };
 			if marker.position <= pos {
 				closest_index = i32::try_from(items.len()).unwrap_or(-1);
 			}
@@ -155,7 +143,7 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn link_list(&self, position: i64) -> ffi::LinkList {
+	pub fn link_list(&self, position: DocPos) -> ffi::LinkList {
 		let list = self.element_list(MarkerType::Link, position);
 		ffi::LinkList {
 			items: list
@@ -168,8 +156,8 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn heading_tree(&self, position: i64) -> ffi::HeadingTree {
-		let pos = self.handle.document().buffer.nearest_pos(position);
+	pub fn heading_tree(&self, position: DocPos) -> ffi::HeadingTree {
+		let pos = position.min(self.handle.document().buffer.end());
 		let mut items = Vec::new();
 		let mut closest_index = -1;
 		let mut min_distance: Option<DocLen> = None;
@@ -185,11 +173,7 @@ impl DocumentSession {
 			}
 			let parent_index = item_stack.last().map_or(-1, |(_, idx)| *idx);
 			let current_index = i32::try_from(items.len()).unwrap_or(-1);
-			let text = if marker.text.is_empty() {
-				self.get_line_text(i64::try_from(marker.position).unwrap_or(0))
-			} else {
-				marker.text.clone()
-			};
+			let text = if marker.text.is_empty() { self.get_line_text(marker.position) } else { marker.text.clone() };
 			items.push(ffi::HeadingTreeItem { offset: marker.position, text, parent_index });
 			item_stack.push((level, current_index));
 			if marker.position <= pos {

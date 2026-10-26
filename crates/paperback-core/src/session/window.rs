@@ -10,34 +10,34 @@ use crate::{
 	parser::util::toc::marker_type_to_heading_level,
 };
 
-/// How much of a document, in display units, is shown at once when it is too long to show
+/// How much of a document is shown at once when it is too long to show
 /// whole: the width of the reader's loaded window, and of the slice the web view is handed.
-pub const WINDOW_DISPLAY_LEN: i64 = 500_000;
+pub const WINDOW_LEN: DocLen = DocLen::from_raw(500_000);
 
 /// The document length up to which the whole thing is shown rather than a window around the
-/// reading position. One extension chunk above [`WINDOW_DISPLAY_LEN`], so a document a little
+/// reading position. One extension chunk above [`WINDOW_LEN`], so a document a little
 /// over a window's width is still shown whole rather than windowed from the outset.
 ///
 /// Shared between the reader and the web view deliberately. They used to decide separately,
-/// the reader against this and the web view against [`WINDOW_DISPLAY_LEN`], so a document
+/// the reader against this and the web view against [`WINDOW_LEN`], so a document
 /// between the two was loaded whole by one and sliced by the other: the web view dropped the
 /// text past its slice, dropped any link whose target lay outside it, and announced itself as
 /// a partial view of a document the reader was showing in full.
-pub const WHOLE_DOCUMENT_DISPLAY_LEN: i64 = WINDOW_DISPLAY_LEN + WINDOW_DISPLAY_LEN / 2;
+pub const WHOLE_DOCUMENT_LEN: DocLen = DocLen::from_raw(WINDOW_LEN.get() + WINDOW_LEN.get() / 2);
 
-/// A contiguous slice of a document's text, in display units, plus the Bold/Italic/Underline
-/// markers and the heading and list paragraphs that fall within it, rebased to window-local
-/// display-unit positions.
+/// A contiguous slice of a document's text, plus the Bold/Italic/Underline
+/// markers and the heading and list paragraphs that fall within it, rebased to positions in
+/// `text` itself.
 #[derive(Debug, Clone)]
 pub struct WindowSlice {
-	/// Document-absolute display-unit offset of the first char of `text`, after boundary
+	/// Document position of the first char of `text`, after boundary
 	/// snapping - may differ from whatever raw start [`DocumentSession::get_window`] was asked
 	/// for.
-	pub start: i64,
-	/// Document-absolute display-unit offset one past the last char of `text`.
-	pub end: i64,
+	pub start: DocPos,
+	/// Document position one past the last char of `text`.
+	pub end: DocPos,
 	pub text: String,
-	/// Positions/lengths are window-local (relative to `start`), not document-absolute.
+	/// Positions are in `text` (`start` is the document position of 0), not in the document.
 	pub markers: Vec<LineMarker>,
 	/// The headings and lists in `text`, as the whole paragraphs they cover, sorted and
 	/// non-overlapping. Paragraphs that are neither have no entry.
@@ -48,60 +48,56 @@ pub struct WindowSlice {
 /// membership, so the reading control can carry them as paragraph formatting.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ParagraphFormat {
-	/// Window-local display-unit offset of the first paragraph's start.
-	pub start: i64,
-	/// Window-local display-unit offset one past the last paragraph's `\n`, or the window's end.
-	pub end: i64,
+	/// Position in the slice's text of the first paragraph's start.
+	pub start: DocPos,
+	/// Position in the slice's text one past the last paragraph's `\n`, or the window's end.
+	pub end: DocPos,
 	pub heading_level: Option<u8>,
 	pub list_item: bool,
 }
 
 impl DocumentSession {
-	/// Total document length in display units - the same unit [`Self::get_window`]'s bounds,
-	/// the GUI caret, and `Marker.position` all use.
+	/// How long the document is.
 	#[must_use]
-	pub fn document_len(&self) -> i64 {
-		i64::try_from(self.handle.document().buffer.end()).unwrap_or(i64::MAX)
+	pub const fn document_len(&self) -> DocLen {
+		self.handle.document().buffer.len()
 	}
 
-	/// The text between two display-unit positions, `start` inclusive and `end` exclusive - the
-	/// same unit [`Self::document_len`], the GUI caret and `Marker.position` all use.
+	/// The text between two positions, `start` inclusive and `end` exclusive.
 	///
 	/// Nothing is snapped to a paragraph boundary: a bound landing mid-word cuts the word, which
 	/// is the point when the caller is naming two caret positions.
 	///
 	/// Both bounds are clamped to the document; an empty or reversed range is an empty string.
 	#[must_use]
-	pub fn get_text_range_display(&self, start: i64, end: i64) -> String {
-		let buf = &self.handle.document().buffer;
-		buf.text(buf.nearest_pos(start)..buf.nearest_pos(end)).to_string()
+	pub fn text_range(&self, start: DocPos, end: DocPos) -> String {
+		self.handle.document().buffer.text(start..end).to_string()
 	}
 
-	/// The display-unit position just past the character at `display_pos`, so that
-	/// `get_text_range_display(x, session.display_pos_after_char_at(y))` covers every character
+	/// The position just past the character at `position`, so that
+	/// `text_range(x, session.pos_after_char_at(y))` covers every character
 	/// from `x` through the one a caret at `y` is sitting on.
 	///
 	/// A caret sits at the *start* of the character it names - which is the character a screen
-	/// reader is speaking - so an exclusive end bound drops it. This spans the whole character,
-	/// an astral-plane pair included, rather than the single display unit its start sits on.
+	/// reader is speaking - so an exclusive end bound drops it.
 	/// Past the last character it is the document length, so "the character at the caret" at the
 	/// very end of a document stays clamped instead of running off it.
 	#[must_use]
-	pub fn display_pos_after_char_at(&self, display_pos: i64) -> i64 {
+	pub fn pos_after_char_at(&self, position: DocPos) -> DocPos {
 		let buf = &self.handle.document().buffer;
-		i64::try_from((buf.nearest_pos(display_pos) + DocLen::ONE).min(buf.end())).unwrap_or(i64::MAX)
+		(position.min(buf.end()) + DocLen::ONE).min(buf.end())
 	}
 
-	/// Slices `[raw_start, raw_end)` (display units, clamped to the document) out of the
+	/// Slices `[raw_start, raw_end)` (clamped to the document) out of the
 	/// content, snapping both edges outward to the nearest paragraph boundary so a window
 	/// never starts or ends mid-paragraph, then collects the Bold/Italic/Underline markers
-	/// that overlap it, clipped and rebased to window-local positions, and its heading and list
+	/// that overlap it, clipped and rebased to positions in the slice's text, and its heading and list
 	/// paragraphs.
 	#[must_use]
-	pub fn get_window(&self, raw_start: i64, raw_end: i64) -> WindowSlice {
+	pub fn get_window(&self, raw_start: DocPos, raw_end: DocPos) -> WindowSlice {
 		let buf = &self.handle.document().buffer;
-		let raw_start = buf.nearest_pos(raw_start);
-		let raw_end = buf.nearest_pos(raw_end).max(raw_start);
+		let raw_start = raw_start.min(buf.end());
+		let raw_end = raw_end.min(buf.end()).max(raw_start);
 		let byte_start = snap_start_to_paragraph_boundary(buf, buf.byte_at(raw_start));
 		let byte_end = snap_end_to_paragraph_boundary(buf, buf.byte_at(raw_end));
 		let start = buf.pos_at_byte(byte_start);
@@ -121,26 +117,20 @@ impl DocumentSession {
 				let clipped_end = marker_end.min(end);
 				(clipped_end > clipped_start).then(|| LineMarker {
 					mtype: m.mtype,
-					position: i64::try_from(clipped_start - start).unwrap_or(0),
+					position: (clipped_start - start).as_pos(),
 					text: String::new(),
 					reference: String::new(),
 					level: 0,
-					length: i64::try_from(clipped_end - clipped_start).unwrap_or(0),
+					length: clipped_end - clipped_start,
 				})
 			})
 			.collect();
-		WindowSlice {
-			start: i64::try_from(start).unwrap_or(0),
-			end: i64::try_from(end).unwrap_or(0),
-			text,
-			markers,
-			paragraphs: paragraph_formats(buf, start, end),
-		}
+		WindowSlice { start, end, text, markers, paragraphs: paragraph_formats(buf, start, end) }
 	}
 }
 
 /// The paragraphs within the window `[start, end)` of `buf` that are headings or part
-/// of a list, merged into runs and rebased to window-local positions. Both bounds must sit on
+/// of a list, merged into runs and rebased to positions in the window's text. Both bounds must sit on
 /// paragraph boundaries, which [`DocumentSession::get_window`]'s snapping guarantees.
 ///
 /// A heading or list item marks the whole paragraph its position falls in: headings resolved from
@@ -176,7 +166,7 @@ fn paragraph_formats(buf: &DocumentBuffer, start: DocPos, end: DocPos) -> Vec<Pa
 			paragraph_start = paragraph_end;
 		}
 	}
-	let local = |byte| i64::try_from(buf.pos_at_byte(byte) - start).unwrap_or(0);
+	let local = |byte| (buf.pos_at_byte(byte) - start).as_pos();
 	let mut runs: Vec<ParagraphFormat> = Vec::new();
 	for (paragraph_start, (paragraph_end, heading_level, list_item)) in by_paragraph {
 		let (run_start, run_end) = (local(paragraph_start), local(paragraph_end));
@@ -230,8 +220,8 @@ mod tests {
 	#[test]
 	fn get_window_full_range_round_trips_whole_document() {
 		let session = session_with("first paragraph\nsecond paragraph\nthird paragraph", &[]);
-		let len = session.document_len();
-		let slice = session.get_window(0, len);
+		let len = session.document_len().as_pos();
+		let slice = session.get_window(0.into(), len);
 		assert_eq!(slice.start, 0);
 		assert_eq!(slice.end, len);
 		assert_eq!(slice.text, "first paragraph\nsecond paragraph\nthird paragraph");
@@ -242,8 +232,8 @@ mod tests {
 		let content = "first paragraph\nsecond paragraph\nthird paragraph";
 		let session = session_with(content, &[]);
 		// Ask for a range landing mid-word in both "second paragraph" (start) and itself (end).
-		let mid_second_start = content.find("second").unwrap() as i64 + 3;
-		let mid_second_end = content.find("second paragraph").unwrap() as i64 + 10;
+		let mid_second_start = DocPos::from(content.find("second").unwrap() + 3);
+		let mid_second_end = DocPos::from(content.find("second paragraph").unwrap() + 10);
 		let slice = session.get_window(mid_second_start, mid_second_end);
 		assert_eq!(slice.text, "second paragraph\n");
 	}
@@ -251,8 +241,8 @@ mod tests {
 	#[test]
 	fn get_window_clamps_out_of_range_bounds() {
 		let session = session_with("hello world", &[]);
-		let len = session.document_len();
-		let slice = session.get_window(-100, 100_000);
+		let len = session.document_len().as_pos();
+		let slice = session.get_window(0.into(), 100_000.into());
 		assert_eq!(slice.start, 0);
 		assert_eq!(slice.end, len);
 		assert_eq!(slice.text, "hello world");
@@ -270,13 +260,13 @@ mod tests {
 		let session = session_with(content, &markers);
 		// A request landing inside "beta gamma" should snap to just that paragraph, not pull
 		// in "alpha" too.
-		let raw_start = content.find("beta").unwrap() as i64;
-		let slice = session.get_window(raw_start, raw_start + 2);
+		let raw_start = DocPos::from(content.find("beta").unwrap());
+		let slice = session.get_window(raw_start, raw_start + 2.into());
 		assert_eq!(slice.text, "beta gamma\n");
 		// The marker is clipped to only the portion that falls inside this window.
 		assert_eq!(slice.markers.len(), 1);
 		let m = &slice.markers[0];
-		let clipped = &slice.text[m.position as usize..(m.position + m.length) as usize];
+		let clipped = &slice.text[m.position.get()..(m.position + m.length).get()];
 		assert_eq!(clipped, "beta g");
 	}
 
@@ -285,8 +275,8 @@ mod tests {
 		let content = "alpha\nbeta gamma\ndelta";
 		let markers = [Marker::new(MarkerType::Italic, 0.into()).with_length(5.into())]; // "alpha"
 		let session = session_with(content, &markers);
-		let raw_start = content.find("delta").unwrap() as i64;
-		let slice = session.get_window(raw_start, raw_start + 2);
+		let raw_start = DocPos::from(content.find("delta").unwrap());
+		let slice = session.get_window(raw_start, raw_start + 2.into());
 		assert_eq!(slice.text, "delta");
 		assert!(slice.markers.is_empty());
 	}
@@ -299,18 +289,18 @@ mod tests {
 			Marker::new(MarkerType::Bold, 0.into()).with_length(4.into()),
 		];
 		let session = session_with(content, &markers);
-		let slice = session.get_window(0, session.document_len());
+		let slice = session.get_window(0.into(), session.document_len().as_pos());
 		assert_eq!(slice.markers.len(), 1);
 		assert_eq!(slice.markers[0].mtype, MarkerType::Bold);
 	}
 
-	fn paragraph(start: i64, end: i64, heading_level: Option<u8>, list_item: bool) -> ParagraphFormat {
-		ParagraphFormat { start, end, heading_level, list_item }
+	fn paragraph(start: usize, end: usize, heading_level: Option<u8>, list_item: bool) -> ParagraphFormat {
+		ParagraphFormat { start: start.into(), end: end.into(), heading_level, list_item }
 	}
 
 	fn whole_window_paragraphs(content: &str, markers: &[Marker]) -> Vec<ParagraphFormat> {
 		let session = session_with(content, markers);
-		session.get_window(0, session.document_len()).paragraphs
+		session.get_window(0.into(), session.document_len().as_pos()).paragraphs
 	}
 
 	#[test]
@@ -366,8 +356,8 @@ mod tests {
 			Marker::new(MarkerType::List, 5.into()).with_length(12.into()),
 		];
 		let session = session_with(content, &markers);
-		// Display units, not bytes: each bullet is one unit but three bytes.
-		let slice = session.get_window(9, 10);
+		// Positions, not bytes: each bullet is one position but three bytes.
+		let slice = session.get_window(9.into(), 10.into());
 		assert_eq!(slice.text, "• b\n");
 		assert_eq!(slice.paragraphs, vec![paragraph(0, 4, None, true)]);
 	}
@@ -377,7 +367,7 @@ mod tests {
 		let content = "aaa\nbbb\nHead\nccc";
 		let markers = [Marker::new(MarkerType::Heading6, 8.into())];
 		let session = session_with(content, &markers);
-		let slice = session.get_window(4, session.document_len());
+		let slice = session.get_window(4.into(), session.document_len().as_pos());
 		assert_eq!(slice.text, "bbb\nHead\nccc");
 		assert_eq!(slice.paragraphs, vec![paragraph(4, 9, Some(6), false)]);
 	}
@@ -401,14 +391,14 @@ gamma paragraph
 delta paragraph
 epsilon";
 		let session = session_with(content, &[]);
-		let len = session.document_len();
-		let first = session.get_window(0, 20);
-		assert!(first.end > 0 && first.end < len, "need a window that stops short of the end");
+		let len = session.document_len().as_pos();
+		let first = session.get_window(0.into(), 20.into());
+		assert!(first.end > 0.into() && first.end < len, "need a window that stops short of the end");
 		let second = session.get_window(first.end, len);
 		assert_eq!(second.start, first.end, "the next window must begin where the last one ended");
 		assert_eq!(
 			format!("{}{}", first.text, second.text),
-			session.get_window(0, len).text,
+			session.get_window(0.into(), len).text,
 			"appending the two must reconstruct the document exactly"
 		);
 	}
@@ -422,11 +412,11 @@ epsilon";
 			let _ = writeln!(content, "paragraph number {i} with some words in it");
 		}
 		let session = session_with(&content, &[]);
-		let len = session.document_len();
+		let len = session.document_len().as_pos();
 		let mut assembled = String::new();
-		let mut cursor = 0;
+		let mut cursor = DocPos::ZERO;
 		while cursor < len {
-			let slice = session.get_window(cursor, cursor + 30);
+			let slice = session.get_window(cursor, cursor + 30.into());
 			assert_eq!(slice.start, cursor, "extension must abut the previous window");
 			assert!(slice.end > cursor, "extension must make progress");
 			assembled.push_str(&slice.text);
@@ -436,67 +426,67 @@ epsilon";
 	}
 
 	#[test]
-	fn get_text_range_display_round_trips_the_whole_document() {
+	fn text_range_round_trips_the_whole_document() {
 		let content = "first paragraph\nsecond paragraph\nthird paragraph";
 		let session = session_with(content, &[]);
-		assert_eq!(session.get_text_range_display(0, session.document_len()), content);
+		assert_eq!(session.text_range(0.into(), session.document_len().as_pos()), content);
 	}
 
 	/// The property that separates this from `get_window`: what was asked for is what comes back,
 	/// even when it starts and ends mid-word.
 	#[test]
-	fn get_text_range_display_extracts_an_interior_range_without_snapping() {
+	fn text_range_extracts_an_interior_range_without_snapping() {
 		let content = "first paragraph\nsecond paragraph\nthird paragraph";
 		let session = session_with(content, &[]);
-		let start = content.find("second").unwrap() as i64 + 3;
-		let end = content.find("second paragraph").unwrap() as i64 + 10;
-		assert_eq!(session.get_text_range_display(start, end), "ond par");
+		let start = DocPos::from(content.find("second").unwrap() + 3);
+		let end = DocPos::from(content.find("second paragraph").unwrap() + 10);
+		assert_eq!(session.text_range(start, end), "ond par");
 		// The window call on the same bounds swallows both paragraphs whole.
 		assert_eq!(session.get_window(start, end).text, "second paragraph\n");
 	}
 
 	#[test]
-	fn get_text_range_display_clamps_and_handles_empty_or_reversed_ranges() {
+	fn text_range_clamps_and_handles_empty_or_reversed_ranges() {
 		let session = session_with("hello world", &[]);
-		let len = session.document_len();
-		assert_eq!(session.get_text_range_display(-100, 100_000), "hello world");
-		assert_eq!(session.get_text_range_display(0, len), "hello world");
-		assert_eq!(session.get_text_range_display(3, 3), "");
-		assert_eq!(session.get_text_range_display(7, 2), "");
-		assert_eq!(session.get_text_range_display(len + 5, len + 9), "");
+		let len = session.document_len().as_pos();
+		assert_eq!(session.text_range(0.into(), 100_000.into()), "hello world");
+		assert_eq!(session.text_range(0.into(), len), "hello world");
+		assert_eq!(session.text_range(3.into(), 3.into()), "");
+		assert_eq!(session.text_range(7.into(), 2.into()), "");
+		assert_eq!(session.text_range(len + 5.into(), len + 9.into()), "");
 	}
 
 	/// The inclusive end bound: a caret names the character it sits on, so a range ending at the
 	/// caret has to reach past that character rather than up to its start.
 	#[test]
-	fn display_pos_after_char_at_covers_the_character_the_caret_is_on() {
+	fn pos_after_char_at_covers_the_character_the_caret_is_on() {
 		let session = session_with("hello world", &[]);
-		let end = |pos| session.display_pos_after_char_at(pos);
-		assert_eq!(session.get_text_range_display(0, end(0)), "h");
-		assert_eq!(session.get_text_range_display(0, end(6)), "hello w");
+		let end = |pos| session.pos_after_char_at(pos);
+		assert_eq!(session.text_range(0.into(), end(0.into())), "h");
+		assert_eq!(session.text_range(0.into(), end(6.into())), "hello w");
 		// Past the last character it is the document length, never one beyond it.
-		assert_eq!(end(session.document_len()), session.document_len());
-		assert_eq!(end(10_000), session.document_len());
+		assert_eq!(end(session.document_len().as_pos()), session.document_len().as_pos());
+		assert_eq!(end(10_000.into()), session.document_len().as_pos());
 	}
 
 	/// An astral-plane character is one character the reader hears, and one position.
 	#[test]
-	fn display_pos_after_char_at_spans_an_astral_character() {
+	fn pos_after_char_at_spans_an_astral_character() {
 		let session = session_with("a\u{1F600}bc", &[]);
-		let end = |pos| session.display_pos_after_char_at(pos);
-		assert_eq!(session.get_text_range_display(0, end(0)), "a");
-		assert_eq!(session.get_text_range_display(1, end(1)), "\u{1F600}");
-		assert_eq!(session.get_text_range_display(2, end(2)), "b");
-		assert_eq!(session.get_text_range_display(0, end(3)), "a\u{1F600}bc");
+		let end = |pos| session.pos_after_char_at(pos);
+		assert_eq!(session.text_range(0.into(), end(0.into())), "a");
+		assert_eq!(session.text_range(1.into(), end(1.into())), "\u{1F600}");
+		assert_eq!(session.text_range(2.into(), end(2.into())), "b");
+		assert_eq!(session.text_range(0.into(), end(3.into())), "a\u{1F600}bc");
 	}
 
 	#[test]
-	fn get_text_range_display_agrees_with_the_buffer_on_astral_characters() {
+	fn text_range_agrees_with_the_buffer_on_astral_characters() {
 		let session = session_with("a\u{1F600}bc", &[]);
 		// Positions: 'a' at 0, the emoji at 1, 'b' at 2, 'c' at 3.
 		assert_eq!(session.document_len(), 4);
-		assert_eq!(session.get_text_range_display(0, 4), "a\u{1F600}bc");
-		assert_eq!(session.get_text_range_display(1, 2), "\u{1F600}");
-		assert_eq!(session.get_text_range_display(2, 4), "bc");
+		assert_eq!(session.text_range(0.into(), 4.into()), "a\u{1F600}bc");
+		assert_eq!(session.text_range(1.into(), 2.into()), "\u{1F600}");
+		assert_eq!(session.text_range(2.into(), 4.into()), "bc");
 	}
 }

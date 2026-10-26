@@ -7,7 +7,7 @@
 use super::{DocumentSession, MAX_HISTORY_LEN, NavigationResult, TocEntry};
 use crate::{
 	config::ConfigManager,
-	document::{self, MarkerType, ParserFlags},
+	document::{self, DocPos, MarkerType, ParserFlags},
 	reader_core::{
 		bookmark_navigate, history_go_next, history_go_previous, reader_container_navigate, reader_navigate,
 	},
@@ -16,7 +16,7 @@ use crate::{
 
 #[derive(Copy, Clone)]
 struct NavigateParams {
-	position: i64,
+	position: DocPos,
 	wrap: bool,
 	next: bool,
 	target: NavTarget,
@@ -29,7 +29,7 @@ impl DocumentSession {
 	}
 
 	pub(super) const fn nav_request(
-		position: i64,
+		position: DocPos,
 		wrap: bool,
 		next: bool,
 		target: NavTarget,
@@ -65,7 +65,7 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn navigate_section(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+	pub fn navigate_section(&self, position: DocPos, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported = self.parser_flags.contains(ParserFlags::SUPPORTS_SECTIONS);
 		self.navigate_with_post(
 			NavigateParams { position, wrap, next, target: NavTarget::Section, level_filter: 0 },
@@ -77,7 +77,7 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn navigate_heading(&self, position: i64, wrap: bool, next: bool, level: i32) -> NavigationResult {
+	pub fn navigate_heading(&self, position: DocPos, wrap: bool, next: bool, level: i32) -> NavigationResult {
 		let is_supported = self.has_headings(if level > 0 { Some(level) } else { None });
 		self.navigate_with_post(
 			NavigateParams { position, wrap, next, target: NavTarget::Heading, level_filter: level },
@@ -87,15 +87,14 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn navigate_page(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+	pub fn navigate_page(&self, position: DocPos, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported = self.has_marker(MarkerType::PageBreak);
 		self.navigate_with_post(
 			NavigateParams { position, wrap, next, target: NavTarget::Page, level_filter: 0 },
 			is_supported,
 			|s, nav_result| {
 				if nav_result.found {
-					let offset = s.handle.document().buffer.nearest_pos(nav_result.offset);
-					nav_result.marker_index = s.handle.page_index(offset).unwrap_or(-1);
+					nav_result.marker_index = s.handle.page_index(nav_result.offset).unwrap_or(-1);
 				}
 				s.fill_marker_text_if_empty(nav_result);
 			},
@@ -103,7 +102,7 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn navigate_link(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+	pub fn navigate_link(&self, position: DocPos, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported = self.has_marker(MarkerType::Link);
 		self.navigate_with_post(
 			NavigateParams { position, wrap, next, target: NavTarget::Link, level_filter: 0 },
@@ -115,7 +114,7 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn navigate_list(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+	pub fn navigate_list(&self, position: DocPos, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported = self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) && self.has_marker(MarkerType::List);
 		self.navigate_with_post(
 			NavigateParams { position, wrap, next, target: NavTarget::List, level_filter: 0 },
@@ -127,7 +126,7 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn navigate_list_item(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+	pub fn navigate_list_item(&self, position: DocPos, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported =
 			self.parser_flags.contains(ParserFlags::SUPPORTS_LISTS) && self.has_marker(MarkerType::ListItem);
 		self.navigate_with_post(
@@ -140,7 +139,7 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn navigate_table(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+	pub fn navigate_table(&self, position: DocPos, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported = self.has_marker(MarkerType::Table);
 		self.navigate_with_post(
 			NavigateParams { position, wrap, next, target: NavTarget::Table, level_filter: 0 },
@@ -154,7 +153,7 @@ impl DocumentSession {
 	/// Move relative to the container (list/table) the caret is currently inside: `to_end` jumps
 	/// just past its end, otherwise to its start. Not found when the caret is not in a container.
 	#[must_use]
-	pub fn navigate_container(&self, position: i64, to_end: bool) -> NavigationResult {
+	pub fn navigate_container(&self, position: DocPos, to_end: bool) -> NavigationResult {
 		if !(self.has_marker(MarkerType::List) || self.has_marker(MarkerType::Table)) {
 			return NavigationResult::not_supported();
 		}
@@ -163,7 +162,7 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn navigate_separator(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+	pub fn navigate_separator(&self, position: DocPos, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported = self.has_marker(MarkerType::Separator);
 		self.navigate_with_post(
 			NavigateParams { position, wrap, next, target: NavTarget::Separator, level_filter: 0 },
@@ -175,7 +174,7 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn navigate_image(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+	pub fn navigate_image(&self, position: DocPos, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported = self.has_marker(MarkerType::Image);
 		self.navigate_with_post(
 			NavigateParams { position, wrap, next, target: NavTarget::Image, level_filter: 0 },
@@ -187,7 +186,7 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn navigate_figure(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+	pub fn navigate_figure(&self, position: DocPos, wrap: bool, next: bool) -> NavigationResult {
 		let is_supported = self.has_marker(MarkerType::Figure);
 		self.navigate_with_post(
 			NavigateParams { position, wrap, next, target: NavTarget::Figure, level_filter: 0 },
@@ -199,7 +198,7 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn navigate_formula(&self, position: i64, wrap: bool, next: bool) -> NavigationResult {
+	pub fn navigate_formula(&self, position: DocPos, wrap: bool, next: bool) -> NavigationResult {
 		self.navigate_with_post(
 			NavigateParams { position, wrap, next, target: NavTarget::Formula, level_filter: 0 },
 			self.has_marker(MarkerType::Formula),
@@ -208,9 +207,10 @@ impl DocumentSession {
 	}
 
 	fn navigate_bookmark_inner(
+		&self,
 		config: &ConfigManager,
 		path: &str,
-		position: i64,
+		position: DocPos,
 		wrap: bool,
 		next: bool,
 		notes_only: bool,
@@ -220,7 +220,7 @@ impl DocumentSession {
 			NavigationResult {
 				found: true,
 				wrapped: result.wrapped,
-				offset: result.start,
+				offset: result.start.min(self.handle.document().buffer.end()),
 				marker_text: result.note.clone(),
 				marker_level: 0,
 				marker_index: result.index,
@@ -238,11 +238,11 @@ impl DocumentSession {
 		&self,
 		config: &ConfigManager,
 		path: &str,
-		position: i64,
+		position: DocPos,
 		wrap: bool,
 		next: bool,
 	) -> NavigationResult {
-		Self::navigate_bookmark_inner(config, path, position, wrap, next, false)
+		self.navigate_bookmark_inner(config, path, position, wrap, next, false)
 	}
 
 	/// [`Self::navigate_bookmark`] for the bookmarks that have a note.
@@ -251,14 +251,14 @@ impl DocumentSession {
 		&self,
 		config: &ConfigManager,
 		path: &str,
-		position: i64,
+		position: DocPos,
 		wrap: bool,
 		next: bool,
 	) -> NavigationResult {
-		Self::navigate_bookmark_inner(config, path, position, wrap, next, true)
+		self.navigate_bookmark_inner(config, path, position, wrap, next, true)
 	}
 
-	fn history_navigate(&mut self, current_pos: i64, forward: bool) -> NavigationResult {
+	fn history_navigate(&mut self, current_pos: DocPos, forward: bool) -> NavigationResult {
 		if self.history.is_empty() {
 			return NavigationResult::not_found();
 		}
@@ -269,26 +269,22 @@ impl DocumentSession {
 		};
 		self.history = result.positions;
 		self.history_index = result.index;
-		if result.found {
-			NavigationResult {
-				found: true,
-				wrapped: false,
-				offset: result.target,
-				marker_text: String::new(),
-				marker_level: 0,
-				marker_index: -1,
-				not_supported: false,
-			}
-		} else {
-			NavigationResult::not_found()
-		}
+		result.target.map_or_else(NavigationResult::not_found, |offset| NavigationResult {
+			found: true,
+			wrapped: false,
+			offset,
+			marker_text: String::new(),
+			marker_level: 0,
+			marker_index: -1,
+			not_supported: false,
+		})
 	}
 
-	pub fn history_go_back(&mut self, current_pos: i64) -> NavigationResult {
+	pub fn history_go_back(&mut self, current_pos: DocPos) -> NavigationResult {
 		self.history_navigate(current_pos, false)
 	}
 
-	pub fn history_go_forward(&mut self, current_pos: i64) -> NavigationResult {
+	pub fn history_go_forward(&mut self, current_pos: DocPos) -> NavigationResult {
 		self.history_navigate(current_pos, true)
 	}
 
@@ -322,11 +318,7 @@ impl DocumentSession {
 		let mut flat = Vec::new();
 		fn flatten(items: &[document::TocItem], level: i32, flat: &mut Vec<TocEntry>) {
 			for item in items {
-				flat.push(TocEntry {
-					title: item.name.clone(),
-					position: i64::try_from(item.offset).unwrap_or(0),
-					level,
-				});
+				flat.push(TocEntry { title: item.name.clone(), position: item.offset, level });
 				flatten(&item.children, level + 1, flat);
 			}
 		}

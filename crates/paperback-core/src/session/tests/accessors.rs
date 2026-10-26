@@ -1,19 +1,22 @@
 use super::*;
 use crate::document::DocLen;
 
-/// The session API takes positions as `i64`, while `DocLen::of` measures a `DocLen`.
-fn display_len_i64(s: &str) -> i64 {
-	i64::try_from(DocLen::of(s)).unwrap()
+/// The position just past `s` in a document that starts with it.
+fn pos_after(s: &str) -> DocPos {
+	DocLen::of(s).as_pos()
 }
+
+/// Further than any test document goes.
+const PAST_THE_END: DocPos = DocPos::from_raw(usize::MAX);
 
 #[test]
 fn status_and_percent_helpers_handle_bounds() {
 	let session = sample_session(ParserFlags::NONE);
-	let start = session.get_status_info(-5);
+	let start = session.get_status_info(0.into());
 	assert_eq!(start.line_number, 1);
 	assert_eq!(start.character_number, 1);
 	assert_eq!(start.percentage, 0);
-	let end = session.get_status_info(999);
+	let end = session.get_status_info(999.into());
 	assert_eq!(end.percentage, 100);
 	assert_eq!(session.position_from_percent(-10), 0);
 	assert_eq!(session.position_from_percent(101), 17);
@@ -33,12 +36,15 @@ fn line_and_position_helpers_are_consistent() {
 fn page_helpers_report_counts_and_offsets() {
 	let session = sample_session(ParserFlags::NONE);
 	assert_eq!(session.page_count(), 2);
-	assert!(session.current_page(0) > 0);
-	assert!(session.current_page(8) >= session.current_page(0));
+	assert!(session.current_page(0.into()) > 0);
+	assert!(session.current_page(8.into()) >= session.current_page(0.into()));
 	assert_eq!(session.page_offset(1), 0);
 	assert_eq!(session.page_offset(2), 8);
 	assert_eq!(session.page_offset(0), -1);
 	assert_eq!(session.page_offset(-1), -1);
+	assert_eq!(session.page_position(2), Some(8.into()));
+	assert_eq!(session.page_position(0), None);
+	assert_eq!(session.page_position(3), None);
 }
 
 #[test]
@@ -49,7 +55,7 @@ fn page_offsets_returns_every_page_break_in_document_order() {
 	assert_eq!(offsets.len(), session.page_count());
 	for (index, &offset) in offsets.iter().enumerate() {
 		let page = i32::try_from(index).unwrap_or(0) + 1;
-		assert_eq!(offset, session.page_offset(page), "page {page} offset must match page_offset");
+		assert_eq!(Some(offset), session.page_position(page), "page {page} offset must match page_position");
 	}
 }
 
@@ -73,11 +79,11 @@ fn page_offsets_are_in_document_order_even_for_unsorted_insertion() {
 #[test]
 fn text_range_and_line_text_extract_expected_content() {
 	let session = sample_session(ParserFlags::NONE);
-	assert_eq!(session.get_text_range_display(0, 5), "line1");
-	assert_eq!(session.get_text_range_display(5, 5), "");
-	assert_eq!(session.get_line_text(0), "line1");
-	assert_eq!(session.get_line_text(7), "line2");
-	assert_eq!(session.get_line_text(999), "line3");
+	assert_eq!(session.text_range(0.into(), 5.into()), "line1");
+	assert_eq!(session.text_range(5.into(), 5.into()), "");
+	assert_eq!(session.get_line_text(0.into()), "line1");
+	assert_eq!(session.get_line_text(7.into()), "line2");
+	assert_eq!(session.get_line_text(999.into()), "line3");
 }
 
 #[test]
@@ -123,9 +129,9 @@ fn get_formatting_markers_returns_only_bold_italic_underline_markers() {
 #[test]
 fn table_and_section_accessors_require_in_range_and_reference() {
 	let session = sample_session(ParserFlags::NONE);
-	assert_eq!(session.get_table_at_position(13).as_deref(), Some("<table/>"));
-	assert!(session.get_table_at_position(2).is_none());
-	assert_eq!(session.get_current_section_path(0).as_deref(), Some("chapter1.xhtml"));
+	assert_eq!(session.get_table_at_position(13.into()).as_deref(), Some("<table/>"));
+	assert!(session.get_table_at_position(2.into()).is_none());
+	assert_eq!(session.get_current_section_path(0.into()).as_deref(), Some("chapter1.xhtml"));
 }
 
 #[test]
@@ -134,7 +140,7 @@ fn get_text_segment_current_direction_finds_enclosing_paragraph_start() {
 	// embedded in the middle of a sentence would sit. The Current direction must still
 	// return the full enclosing paragraph, not a suffix truncated from the given position.
 	let session = sample_session(ParserFlags::NONE);
-	let seg = session.get_text_segment(8, SegmentTypeFfi::Paragraph, SegmentDirectionFfi::Current);
+	let seg = session.get_text_segment(8.into(), SegmentTypeFfi::Paragraph, SegmentDirectionFfi::Current);
 	assert_eq!(seg.text, "line2");
 	assert_eq!(seg.start_pos, 6);
 	assert_eq!(seg.end_pos, 11);
@@ -157,7 +163,7 @@ fn heading_tree_builds_parent_links_and_closest_index() {
 		parse_settings: ParseSettings::default(),
 		password: String::new(),
 	};
-	let tree = session.heading_tree(3);
+	let tree = session.heading_tree(3.into());
 	assert_eq!(tree.items.len(), 3);
 	assert_eq!(tree.items[0].parent_index, -1);
 	assert_eq!(tree.items[1].parent_index, 0);
@@ -180,16 +186,16 @@ fn get_current_section_path_returns_none_when_reference_empty() {
 		parse_settings: ParseSettings::default(),
 		password: String::new(),
 	};
-	assert!(session.get_current_section_path(0).is_none());
+	assert!(session.get_current_section_path(0.into()).is_none());
 }
 
-/// Builds a session whose buffer contains a table marker spanning a display range, used to
+/// Builds a session whose buffer contains a table marker spanning a range of positions, used to
 /// exercise `get_table_at_position`'s half-open `[position, position + length)` check.
 fn table_session() -> DocumentSession {
-	// Layout (display units): "before\n" (0..7), table span "tbl\n" (7..11), "after\n" (11..17).
+	// Layout (positions): "before\n" (0..7), table span "tbl\n" (7..11), "after\n" (11..17).
 	let html = "<table><tr><td>a</td><td>b</td></tr></table>";
 	let mut buffer = DocumentBuffer::with_content("before\ntbl\nafter\n".to_string());
-	// Table marker length is the DISPLAY extent of the emitted span ("tbl\n" -> 4).
+	// Table marker length is the emitted span's, in positions ("tbl\n" -> 4).
 	buffer.add_marker(
 		Marker::new(MarkerType::Table, 7.into())
 			.with_length(4.into())
@@ -211,13 +217,19 @@ fn table_session() -> DocumentSession {
 }
 
 #[test]
-fn get_table_at_position_uses_display_length() {
+fn get_table_at_position_uses_the_marker_length() {
 	let session = table_session();
-	// Table marker at display position 7 with length 4 -> half-open range [7, 11).
-	assert_eq!(session.get_table_at_position(7).as_deref(), Some("<table><tr><td>a</td><td>b</td></tr></table>"));
-	assert_eq!(session.get_table_at_position(10).as_deref(), Some("<table><tr><td>a</td><td>b</td></tr></table>"));
-	assert!(session.get_table_at_position(11).is_none());
-	assert!(session.get_table_at_position(2).is_none());
+	// Table marker at position 7 with length 4 -> half-open range [7, 11).
+	assert_eq!(
+		session.get_table_at_position(7.into()).as_deref(),
+		Some("<table><tr><td>a</td><td>b</td></tr></table>")
+	);
+	assert_eq!(
+		session.get_table_at_position(10.into()).as_deref(),
+		Some("<table><tr><td>a</td><td>b</td></tr></table>")
+	);
+	assert!(session.get_table_at_position(11.into()).is_none());
+	assert!(session.get_table_at_position(2.into()).is_none());
 }
 
 #[test]
@@ -246,18 +258,18 @@ fn get_table_at_position_handles_multibyte_extent() {
 		password: String::new(),
 	};
 	// Position 2 is within [0, 3) by the marker's length but would be outside [0, 1) by its text.
-	assert_eq!(session.get_table_at_position(2).as_deref(), Some("<table/>"));
-	assert!(session.get_table_at_position(3).is_none());
+	assert_eq!(session.get_table_at_position(2.into()).as_deref(), Some("<table/>"));
+	assert!(session.get_table_at_position(3.into()).is_none());
 }
 
 #[test]
-fn line_and_status_helpers_use_display_positions_after_emoji() {
+fn line_and_status_helpers_use_positions_after_emoji() {
 	let content = "😀😀😀😀\nab\ncdefgh\nij\n";
 	let ab = DocLen::of("😀😀😀😀\n");
 	let next = DocLen::of("😀😀😀😀\nab\n");
-	let ab_pos = display_len_i64("😀😀😀😀\n");
-	let next_pos = display_len_i64("😀😀😀😀\nab\n");
-	let end = display_len_i64(content);
+	let ab_pos = pos_after("😀😀😀😀\n");
+	let next_pos = pos_after("😀😀😀😀\nab\n");
+	let end = pos_after(content);
 	let mut buffer = DocumentBuffer::with_content(content.to_string());
 	buffer.add_marker(Marker::new(MarkerType::Bold, ab.as_pos()).with_length(DocLen::of("ab")));
 	buffer.add_marker(Marker::new(MarkerType::Italic, next.as_pos()).with_length(DocLen::of("cdefgh")));
@@ -272,25 +284,25 @@ fn line_and_status_helpers_use_display_positions_after_emoji() {
 	assert_eq!(status.character_number, 6);
 	assert_eq!(status.percentage, 27);
 	assert_eq!(session.position_from_percent(27), ab_pos);
-	assert_eq!(session.position_from_percent(1), display_len_i64("😀"));
+	assert_eq!(session.position_from_percent(1), pos_after("😀"));
 	let markers = session.get_line_markers(2);
 	assert_eq!(markers.len(), 1);
 	assert_eq!(markers[0].mtype, MarkerType::Bold);
 	assert_eq!(markers[0].position, ab_pos);
-	assert_eq!(markers[0].length, display_len_i64("ab"));
+	assert_eq!(markers[0].length, DocLen::of("ab"));
 	assert_eq!(session.get_line_markers(3)[0].mtype, MarkerType::Italic);
-	assert_eq!(session.line_from_position(ab_pos - 1), 1);
-	assert_eq!(session.get_line_text(ab_pos - 1), "😀😀😀😀");
-	assert_eq!(session.get_line_text(-1), "😀😀😀😀");
-	assert_eq!(session.line_from_position(-1), 1);
+	assert_eq!(session.line_from_position(ab_pos - DocLen::ONE), 1);
+	assert_eq!(session.get_line_text(ab_pos - DocLen::ONE), "😀😀😀😀");
+	assert_eq!(session.get_line_text(0.into()), "😀😀😀😀");
+	assert_eq!(session.line_from_position(0.into()), 1);
 	assert_eq!(session.position_from_line(0), 0);
 	assert_eq!(session.position_from_line(999), end);
 	assert_eq!(session.position_from_percent(-1), 0);
 	assert_eq!(session.position_from_percent(101), end);
-	assert_eq!(session.get_line_text(i64::MAX), "");
-	assert_eq!(session.first_content_line_after(i64::MAX), "");
-	assert_eq!(session.line_from_position(i64::MAX), 5);
-	let status = session.get_status_info(i64::MAX);
+	assert_eq!(session.get_line_text(PAST_THE_END), "");
+	assert_eq!(session.first_content_line_after(PAST_THE_END), "");
+	assert_eq!(session.line_from_position(PAST_THE_END), 5);
+	let status = session.get_status_info(PAST_THE_END);
 	assert_eq!(status.line_number, 5);
 	assert_eq!(status.character_number, 19);
 	assert_eq!(status.percentage, 100);
@@ -299,29 +311,29 @@ fn line_and_status_helpers_use_display_positions_after_emoji() {
 #[test]
 fn line_helpers_handle_empty_and_unterminated_documents() {
 	let empty = session_with_content("");
-	assert_eq!(empty.get_line_text(100), "");
-	assert_eq!(empty.first_content_line_after(100), "");
-	assert_eq!(empty.line_from_position(100), 1);
+	assert_eq!(empty.get_line_text(100.into()), "");
+	assert_eq!(empty.first_content_line_after(100.into()), "");
+	assert_eq!(empty.line_from_position(100.into()), 1);
 	assert_eq!(empty.position_from_line(100), 0);
 	assert_eq!(empty.position_from_percent(100), 0);
-	assert_eq!(empty.get_status_info(100).percentage, 0);
+	assert_eq!(empty.get_status_info(100.into()).percentage, 0);
 	let session = session_with_content("😀\nab");
-	assert_eq!(session.get_line_text(i64::MAX), "ab");
-	assert_eq!(session.first_content_line_after(i64::MAX), "ab");
-	assert_eq!(session.position_from_line(2), display_len_i64("😀\n"));
-	assert_eq!(session.position_from_line(3), display_len_i64("😀\nab"));
+	assert_eq!(session.get_line_text(PAST_THE_END), "ab");
+	assert_eq!(session.first_content_line_after(PAST_THE_END), "ab");
+	assert_eq!(session.position_from_line(2), pos_after("😀\n"));
+	assert_eq!(session.position_from_line(3), pos_after("😀\nab"));
 }
 
 #[test]
 fn first_content_line_after_skips_headers_after_emoji() {
 	let session = session_with_content("😀\nPage 27\n\nab\n");
-	assert_eq!(session.first_content_line_after(display_len_i64("😀\n")), "ab");
+	assert_eq!(session.first_content_line_after(pos_after("😀\n")), "ab");
 }
 
 #[test]
-fn line_segments_keep_char_indices_when_line_helpers_use_display_units() {
+fn line_segments_count_an_emoji_as_one_position() {
 	let session = session_with_content("😀😀😀😀\nab\ncdefgh\nij\n");
-	let segment = session.get_text_segment(5, SegmentTypeFfi::Line, SegmentDirectionFfi::Current);
+	let segment = session.get_text_segment(5.into(), SegmentTypeFfi::Line, SegmentDirectionFfi::Current);
 	assert_eq!(segment.text, "ab");
 	assert_eq!(segment.start_pos, 5);
 	assert_eq!(segment.end_pos, 8);

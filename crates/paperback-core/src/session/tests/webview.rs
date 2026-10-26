@@ -18,7 +18,7 @@ fn webview_target_path_returns_none_for_missing_markdown_file() {
 		parse_settings: ParseSettings::default(),
 		password: String::new(),
 	};
-	assert!(session.webview_target_path(0, "C:\\temp").is_none());
+	assert!(session.webview_target_path(0.into(), "C:\\temp").is_none());
 }
 
 // #774: every format that is not EPUB, HTML or Markdown used to report that its content
@@ -28,7 +28,7 @@ fn webview_target_path_returns_none_for_missing_markdown_file() {
 fn webview_target_path_renders_a_format_without_markup_as_html() {
 	let dir = TempDir::new("webview");
 	let session = session_with_path("book.mobi");
-	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
+	let target = session.webview_target_path(0.into(), &dir.to_string_lossy()).expect("a web view target");
 	assert!(target.path.ends_with("document.html"), "{}", target.path);
 	let html = fs::read_to_string(&target.path).unwrap();
 	assert!(html.contains("<h1>"), "headings are rendered: {html}");
@@ -48,7 +48,7 @@ second line
 		.to_string(),
 	));
 	session.handle = DocumentHandle::new(document);
-	let second_line = i64::try_from(session.content().find("second").unwrap()).unwrap();
+	let second_line = DocPos::from(session.content().find("second").unwrap());
 	let target = session.webview_target_path(second_line, &dir.to_string_lossy()).expect("a web view target");
 	assert_eq!(target.fragment.as_deref(), Some("pos-11"));
 	let html = fs::read_to_string(&target.path).unwrap();
@@ -65,7 +65,7 @@ fn webview_target_path_returns_none_for_a_document_with_no_text() {
 	let out = dir.join("view");
 	let mut session = session_with_path("book.m4b");
 	session.handle = DocumentHandle::new(Document::new());
-	assert!(session.webview_target_path(0, &out.to_string_lossy()).is_none());
+	assert!(session.webview_target_path(0.into(), &out.to_string_lossy()).is_none());
 	assert!(!out.exists(), "nothing is written for a document with no text");
 }
 
@@ -83,8 +83,8 @@ fn webview_target_path_renders_only_a_window_of_a_very_long_document() {
 	document.set_buffer(DocumentBuffer::with_content(content.clone()));
 	session.handle = DocumentHandle::new(document);
 	let doc_len = session.document_len();
-	assert!(doc_len > 1_000_000, "the test document has to be longer than one window");
-	let middle = doc_len / 2;
+	assert!(doc_len.get() > 1_000_000, "the test document has to be longer than one window");
+	let middle = DocPos::from(doc_len.get() / 2);
 	let target = session.webview_target_path(middle, &dir.to_string_lossy()).expect("a web view target");
 	let html = fs::read_to_string(&target.path).unwrap();
 	assert!(html.len() < content.len() / 2, "only a window is rendered: {} of {}", html.len(), content.len());
@@ -98,7 +98,7 @@ fn webview_target_path_renders_only_a_window_of_a_very_long_document() {
 fn webview_target_path_renders_a_short_document_whole() {
 	let dir = TempDir::new("webview");
 	let session = session_with_path("book.mobi");
-	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
+	let target = session.webview_target_path(0.into(), &dir.to_string_lossy()).expect("a web view target");
 	let html = fs::read_to_string(&target.path).unwrap();
 	assert_eq!(html, crate::export::html::render_with_anchor(&session.handle, Some(0.into())));
 }
@@ -148,7 +148,7 @@ fn view_source_returns_none_for_unsupported_format() {
 	let src = dir.join("doc.pdf");
 	fs::write(&src, b"%PDF-1.7").unwrap();
 	let session = session_with_path(&src.to_string_lossy());
-	assert!(session.view_source(0, &dir.to_string_lossy()).is_none());
+	assert!(session.view_source(0.into(), &dir.to_string_lossy()).is_none());
 }
 
 #[test]
@@ -158,14 +158,14 @@ fn view_source_writes_html_source_and_maps_caret_forward() {
 	let src = dir.join("page.html");
 	fs::write(&src, html.as_bytes()).unwrap();
 	let session = session_with_path(&src.to_string_lossy());
-	let at_start = session.view_source(0, &dir.to_string_lossy()).expect("source at start");
+	let at_start = session.view_source(0.into(), &dir.to_string_lossy()).expect("source at start");
 	// Source written verbatim to a .txt file.
 	assert!(at_start.path.ends_with("page.html.source.txt"));
 	assert_eq!(fs::read_to_string(&at_start.path).unwrap(), html);
 	// A later reading position maps to a caret deeper in the source.
-	let at_bravo = session.view_source(6, &dir.to_string_lossy()).expect("source at bravo");
+	let at_bravo = session.view_source(6.into(), &dir.to_string_lossy()).expect("source at bravo");
 	assert!(at_bravo.caret > at_start.caret);
-	let tail: String = html.chars().skip(usize::try_from(at_bravo.caret).unwrap()).collect();
+	let tail: String = html.chars().skip(at_bravo.caret.get()).collect();
 	assert!(tail.contains("Bravo"), "caret should land at/before the second paragraph: {tail}");
 }
 
@@ -179,12 +179,12 @@ fn view_source_for_markdown_maps_caret_to_current_block() {
 	let session =
 		DocumentSession::new(&src.to_string_lossy(), "", "", ParseSettings::default()).expect("open markdown");
 	let rendered = session.content();
-	let pos = i64::try_from(rendered.find("Second").expect("second block rendered")).unwrap();
+	let pos = DocPos::from(rendered.find("Second").expect("second block rendered"));
 	let view = session.view_source(pos, &dir.to_string_lossy()).expect("markdown source");
 	assert!(view.path.ends_with("notes.md.source.txt"));
 	assert_eq!(fs::read_to_string(&view.path).unwrap(), md);
 	// Caret lands at the start of the second paragraph in the raw Markdown.
-	let tail: String = md.chars().skip(usize::try_from(view.caret).unwrap()).collect();
+	let tail: String = md.chars().skip(view.caret.get()).collect();
 	assert!(tail.starts_with("Second paragraph."), "caret should be at the current block: {tail}");
 }
 
@@ -269,7 +269,7 @@ fn webview_target_path_extracts_sibling_image_resources() {
 	let epub_path = build_epub_with_relative_image(&temp_root);
 	let session =
 		DocumentSession::new(&epub_path.to_string_lossy(), "", "", ParseSettings::default()).expect("parse test epub");
-	let target = session.webview_target_path(0, &temp_root.to_string_lossy()).expect("webview target");
+	let target = session.webview_target_path(0.into(), &temp_root.to_string_lossy()).expect("webview target");
 	let section_content = fs::read_to_string(&target.path).expect("read extracted section");
 	assert!(section_content.contains("Images/cover.jpg"));
 	// The image referenced relatively from the section must have been
@@ -345,7 +345,7 @@ fn webview_target_path_extracts_linked_sibling_sections() {
 	let epub_path = build_epub_with_linked_sections(&temp_root);
 	let session =
 		DocumentSession::new(&epub_path.to_string_lossy(), "", "", ParseSettings::default()).expect("parse test epub");
-	let target = session.webview_target_path(0, &temp_root.to_string_lossy()).expect("webview target");
+	let target = session.webview_target_path(0.into(), &temp_root.to_string_lossy()).expect("webview target");
 	let toc_content = fs::read_to_string(&target.path).expect("read extracted toc");
 	assert!(toc_content.contains("chapter1.xhtml"), "expected the toc to link to the chapter");
 	let linked = Path::new(&target.path).parent().unwrap().join("chapter1.xhtml");
@@ -360,19 +360,19 @@ fn webview_target_path_extracts_linked_sibling_sections() {
 #[test]
 fn a_document_the_reader_shows_whole_is_not_sliced_by_the_web_view() {
 	let paragraph = "The quick brown fox jumps over the lazy dog and keeps on running.\n";
-	let repeats = usize::try_from(WHOLE_DOCUMENT_DISPLAY_LEN).unwrap() / paragraph.len() - 200;
+	let repeats = WHOLE_DOCUMENT_LEN.get() / paragraph.len() - 200;
 	let mut content = paragraph.repeat(repeats);
 	content.push_str("THE VERY LAST PARAGRAPH OF THE BOOK\n");
-	let len = i64::try_from(content.chars().count()).unwrap();
+	let len = DocLen::of(&content);
 	assert!(
-		len > WINDOW_DISPLAY_LEN && len <= WHOLE_DOCUMENT_DISPLAY_LEN,
+		len > WINDOW_LEN && len <= WHOLE_DOCUMENT_LEN,
 		"the fixture has to sit in the band the reader shows whole, got {len}"
 	);
 
 	let dir = TempDir::new("webview");
 	let mut session = session_with_content(&content);
 	session.file_path = "book.mobi".to_string();
-	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
+	let target = session.webview_target_path(0.into(), &dir.to_string_lossy()).expect("a web view target");
 	let html = fs::read_to_string(&target.path).unwrap();
 
 	assert!(html.contains("THE VERY LAST PARAGRAPH OF THE BOOK"), "the end of the book is rendered");
@@ -386,15 +386,15 @@ fn a_document_the_reader_shows_whole_is_not_sliced_by_the_web_view() {
 #[test]
 fn a_document_past_the_threshold_is_still_sliced() {
 	let paragraph = "The quick brown fox jumps over the lazy dog and keeps on running.\n";
-	let repeats = usize::try_from(WHOLE_DOCUMENT_DISPLAY_LEN).unwrap() / paragraph.len() * 2;
+	let repeats = WHOLE_DOCUMENT_LEN.get() / paragraph.len() * 2;
 	let content = paragraph.repeat(repeats);
-	let len = i64::try_from(content.chars().count()).unwrap();
-	assert!(len > WHOLE_DOCUMENT_DISPLAY_LEN, "the fixture has to outrun the threshold, got {len}");
+	let len = DocLen::of(&content);
+	assert!(len > WHOLE_DOCUMENT_LEN, "the fixture has to outrun the threshold, got {len}");
 
 	let dir = TempDir::new("webview");
 	let mut session = session_with_content(&content);
 	session.file_path = "book.mobi".to_string();
-	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
+	let target = session.webview_target_path(0.into(), &dir.to_string_lossy()).expect("a web view target");
 	let html = fs::read_to_string(&target.path).unwrap();
 
 	assert!(html.contains("This view shows the part of the document you are reading."), "a sliced document says so");

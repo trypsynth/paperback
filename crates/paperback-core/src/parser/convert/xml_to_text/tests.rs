@@ -221,7 +221,7 @@ fn dl_dt_dd_produce_separate_lines() {
 /// emitted text's byte length. Prefix text ensures `start_offset` > 0. With inline rendering the
 /// emitted row is the TSV "A\t𝄞"; its non-BMP character distinguishes display and byte lengths.
 #[test]
-fn xml_table_display_length_is_display_extent_not_byte_length() {
+fn xml_table_length_counts_positions_not_bytes() {
 	let xml =
 		concat!("<root><body><p>Intro</p>", "<table><tr><td>A</td><td>\u{1D11E}</td></tr></table>", "</body></root>");
 	let mut converter = XmlToText::with_render_tables_inline(true);
@@ -246,7 +246,7 @@ fn xml_table_emits_placeholder_or_tsv_by_flag() {
 	assert_eq!(on.get_text(), "A\tB\nc\td");
 }
 
-/// Two XML tables: second table's offset equals first offset + first `display_length`.
+/// Two XML tables: second table's offset equals first offset + first length.
 #[test]
 fn xml_two_tables_offsets_are_cumulative() {
 	let xml = concat!(
@@ -260,15 +260,11 @@ fn xml_two_tables_offsets_are_cumulative() {
 	let tables = converter.get_tables();
 	assert_eq!(tables.len(), 2, "expected two tables");
 	let t1_offset = tables[0].offset;
-	let t1_display_length = tables[0].length;
+	let t1_length = tables[0].length;
 	let t2_offset = tables[1].offset;
 	assert_eq!(t1_offset, 0, "first table starts at 0");
-	assert!(t1_display_length > 0.into(), "first table has non-zero display_length");
-	assert_eq!(
-		t2_offset,
-		t1_offset + t1_display_length,
-		"second table offset must equal first offset + first display_length"
-	);
+	assert!(t1_length > 0.into(), "first table has a non-zero length");
+	assert_eq!(t2_offset, t1_offset + t1_length, "second table offset must equal first offset + first length");
 }
 
 #[rstest]

@@ -327,10 +327,10 @@ pub(super) fn handle_import_document_data(
 		let pos = {
 			let config = config.lock().unwrap();
 			config.import_settings_from_file(&path_str, &path);
-			config.get_validated_document_position(&path_str, tab.session.document_len())
+			config.get_validated_document_position(&path_str, tab.session.document_len().as_pos())
 		};
 		tracing::info!(doc = %tab.file_path.display(), import = %path, "document data imported");
-		if pos >= 0 {
+		if let Some(pos) = pos {
 			set_caret_to_doc_offset(tab, pos);
 		}
 		let dialog = MessageDialog::builder(

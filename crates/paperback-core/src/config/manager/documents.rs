@@ -201,7 +201,7 @@ mod tests {
 		let path = dir.write_str("gone.txt", "content");
 		let config = config_with_limit(10);
 		config.add_recent_document(&path);
-		config.set_document_position(&path, 42);
+		config.set_document_position(&path, 42.into());
 		assert_eq!(config.get_all_documents(), vec![path.clone()]);
 		std::fs::remove_file(&path).expect("remove the document's file");
 		// The mapping from path to key is what would otherwise paper over the mismatch, and it

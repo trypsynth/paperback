@@ -104,9 +104,8 @@ impl DocumentManager {
 		// window-aware jump, see C:\Users\Quin\.claude\plans\fluffy-hugging-crystal.md - a
 		// scrub target outside the loaded window is silently clamped instead of reloading.
 		let current = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-		if i64::try_from(position).ok() != Some(current) {
-			let target = i64::try_from(position).unwrap_or(current);
-			let local = tab.window.to_local(target);
+		if position != current {
+			let local = tab.window.to_local(position);
 			tab.text_ctrl.set_insertion_point(local);
 			tab.text_ctrl.show_position(local);
 		}

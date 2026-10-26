@@ -4,7 +4,7 @@
 //!
 //! Reading a link out of pdfium and placing it in the assembled text are two separate steps.
 //! pdfium reports a link's location as a character range in its own indexing rather than as a
-//! display offset, so a link is found in the page's rendered text by searching for the text it
+//! document position, so a link is found in the page's rendered text by searching for the text it
 //! covers - and that text is not settled until the page has been through paragraph joining and
 //! had its running headers removed, which happens after every page has been read (see
 //! [`super::running`]). So [`collect_web_links`] and [`collect_annotation_links`] gather what

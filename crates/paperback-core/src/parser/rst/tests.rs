@@ -30,7 +30,7 @@ fn cross_reference_to_a_section_resolves_as_an_internal_link() {
 	let doc = parse_bytes("book.rst", "See Details_ below.\n\nDetails\n=======\n\nBody text here.\n");
 	let handle = DocumentHandle::new(doc);
 	let heading_offset = handle.document().buffer.content.find("Details\n").expect("heading text present");
-	let nav = resolve_link(&handle, "#details", 0);
+	let nav = resolve_link(&handle, "#details", DocPos::ZERO);
 	assert!(nav.found, "reference to the section must resolve");
 	assert!(!nav.is_external, "an in-book cross-reference must not be treated as external");
 	assert_eq!(nav.offset, heading_offset);
@@ -42,7 +42,7 @@ fn cross_reference_to_a_section_resolves_as_an_internal_link() {
 fn embedded_external_link_resolves_as_external() {
 	let doc = parse_bytes("book.rst", "See `the docs <https://example.com/>`_ for details.\n");
 	let handle = DocumentHandle::new(doc);
-	let nav = resolve_link(&handle, "https://example.com/", 0);
+	let nav = resolve_link(&handle, "https://example.com/", DocPos::ZERO);
 	assert!(nav.found);
 	assert!(nav.is_external);
 	assert_eq!(nav.url, "https://example.com/");

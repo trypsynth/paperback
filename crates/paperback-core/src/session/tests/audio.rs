@@ -142,7 +142,7 @@ fn audio_cursor_at_elapsed_ffi_resolves_the_containing_clip() {
 #[test]
 fn audio_point_for_position_ffi_anchors_to_the_clip_start() {
 	let session = session_with_audio(two_source_timeline());
-	let point = session.audio_point_for_position_ffi(15);
+	let point = session.audio_point_for_position_ffi(15.into());
 	assert!(point.found);
 	assert_eq!(point.position, 10);
 	assert_eq!(point.time_ms, 9000);
@@ -151,7 +151,7 @@ fn audio_point_for_position_ffi_anchors_to_the_clip_start() {
 #[test]
 fn audio_point_for_position_ffi_is_not_found_in_a_gap() {
 	let session = session_with_audio(two_source_timeline());
-	assert!(!session.audio_point_for_position_ffi(30).found);
+	assert!(!session.audio_point_for_position_ffi(30.into()).found);
 }
 
 #[test]
@@ -266,7 +266,7 @@ fn adjacent_tracks_timeline() -> AudioTimeline {
 #[test]
 fn record_jump_uses_audio_distance_when_text_distance_is_too_sparse_to_tell() {
 	let mut session = session_with_audio(adjacent_tracks_timeline());
-	session.record_jump(0, 1);
+	session.record_jump(0.into(), 1.into());
 	let (history, index) = session.get_history();
 	assert_eq!(history, &[0]);
 	assert_eq!(index, 0);
@@ -277,7 +277,7 @@ fn record_jump_uses_audio_distance_when_text_distance_is_too_sparse_to_tell() {
 #[test]
 fn record_jump_still_ignores_a_short_audio_seek() {
 	let mut session = session_with_audio(adjacent_tracks_timeline());
-	session.record_jump(0, 0);
+	session.record_jump(0.into(), 0.into());
 	let (history, _) = session.get_history();
 	assert!(history.is_empty());
 }

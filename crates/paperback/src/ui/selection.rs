@@ -1,13 +1,13 @@
 //! The marked selection and the copy it makes possible: a reader's stand-in for dragging a
 //! selection across text they cannot see, in place of shift-arrowing through it a line at a time.
 //!
-//! The mark is a document-absolute display-unit position rather than a text-control position, so
+//! The mark is a document position rather than a text-control position, so
 //! it survives the window reloads a huge document goes through on the way, and the text is read
 //! back out of the session rather than out of the control, which only ever holds a slice of one.
 
 use std::{rc::Rc, sync::Mutex};
 
-use paperback_core::config::ConfigManager;
+use paperback_core::{config::ConfigManager, document::DocPos};
 use patois::{nt, t};
 use wxdragon::{clipboard::Clipboard, prelude::*};
 
@@ -30,7 +30,7 @@ enum CopyOutcome {
 /// the two rather than nothing: the two presses name a range, the same way dragging a selection
 /// upwards does. Both of these are positions the reader is *on* rather than bounds - the caller
 /// turns them into a range that can be extracted.
-const fn ordered_ends(mark: i64, caret: i64) -> (i64, i64) {
+fn ordered_ends(mark: DocPos, caret: DocPos) -> (DocPos, DocPos) {
 	if mark <= caret { (mark, caret) } else { (caret, mark) }
 }
 
@@ -96,8 +96,8 @@ pub fn handle_copy_from_selection_start(
 				// ending the range there would drop the last character read - the one the
 				// reader deliberately stopped on. This reaches past it instead, spanning the
 				// whole character where one is an astral-plane pair.
-				let end = tab.session.display_pos_after_char_at(to);
-				let text = tab.session.get_text_range_display(from, end);
+				let end = tab.session.pos_after_char_at(to);
+				let text = tab.session.text_range(from, end);
 				if text.is_empty() { CopyOutcome::Empty } else { CopyOutcome::Text(text) }
 			}
 		}
@@ -108,9 +108,9 @@ pub fn handle_copy_from_selection_start(
 		// TRANSLATORS: Announced when a copy had nothing to copy: no text was selected, or the marked beginning of a selection is at the reader's own position, leaving nothing between the two.
 		CopyOutcome::Empty => t("Nothing to copy."),
 		CopyOutcome::Text(text) => {
-			// Counted in characters, not in the display units the range is measured in: a spoken
-			// count is for a person listening, and an astral-plane character is two display units
-			// but one character to everyone who is not a text buffer.
+			// Counted in characters, which are also what the range is measured in: a spoken count is for a
+			// person listening, and an astral-plane character is one character to them, though two of a
+			// Windows or macOS text control's units.
 			let count = text.chars().count();
 			if copy_to_clipboard(&text) {
 				copied_announcement(count)
@@ -159,9 +159,10 @@ mod tests {
 
 	#[test]
 	fn ordered_ends_normalizes_to_document_order() {
-		assert_eq!(ordered_ends(5, 9), (5, 9));
-		assert_eq!(ordered_ends(9, 5), (5, 9));
-		assert_eq!(ordered_ends(4, 4), (4, 4));
+		let (four, five, nine) = (DocPos::from_raw(4), DocPos::from_raw(5), DocPos::from_raw(9));
+		assert_eq!(ordered_ends(five, nine), (five, nine));
+		assert_eq!(ordered_ends(nine, five), (five, nine));
+		assert_eq!(ordered_ends(four, four), (four, four));
 	}
 
 	#[test]

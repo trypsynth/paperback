@@ -4,7 +4,11 @@ use std::{
 	sync::Mutex,
 };
 
-use paperback_core::{config::ConfigManager, document::DocLen, session::FindAllLine};
+use paperback_core::{
+	config::ConfigManager,
+	document::{DocLen, DocPos},
+	session::FindAllLine,
+};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -51,11 +55,11 @@ pub struct FindDialogState {
 	go_btn: Button,
 	in_progress: Rc<Cell<bool>>,
 	view: Rc<Cell<FindView>>,
-	origin: Rc<Cell<i64>>,
+	origin: Rc<Cell<DocPos>>,
 	/// The document-absolute span of the match the last Find jumped to, when found text is not
 	/// left selected. See [`FindDialogState::search_origin`] for why the span is kept rather than
 	/// read back off the widget.
-	last_match: Rc<Cell<Option<(i64, i64)>>>,
+	last_match: Rc<Cell<Option<(DocPos, DocPos)>>>,
 	result_rows: Rc<RefCell<Vec<FindAllLine>>>,
 	result_labels: Rc<RefCell<Vec<String>>>,
 }
@@ -116,7 +120,7 @@ impl FindDialogState {
 			go_btn,
 			in_progress: Rc::new(Cell::new(false)),
 			view: Rc::new(Cell::new(FindView::Query)),
-			origin: Rc::new(Cell::new(0)),
+			origin: Rc::new(Cell::new(DocPos::ZERO)),
 			last_match: Rc::new(Cell::new(None)),
 			result_rows,
 			result_labels,
@@ -186,7 +190,7 @@ impl FindDialogState {
 	/// straight back on the match the reader is already sitting on, so Find Next would never move.
 	/// The span of the last match is used instead, but only while the caret still sits at one of
 	/// its ends: anywhere else means the reader has moved, and the caret is the origin.
-	fn search_origin(&self, tab: &DocumentTab) -> (i64, i64) {
+	fn search_origin(&self, tab: &DocumentTab) -> (DocPos, DocPos) {
 		let (start, end) = navigation::doc_selected_range(tab);
 		if start != end {
 			return (start, end);
@@ -202,7 +206,7 @@ impl FindDialogState {
 	/// An unselected match leaves nothing in the widget for [`Self::search_origin`] to read the
 	/// next search's starting point from, so its span is remembered here at the same time. A
 	/// selected one is its own record, and is left to be one.
-	fn reveal_match(&self, tab: &mut DocumentTab, start: i64, end: i64, highlight: bool) {
+	fn reveal_match(&self, tab: &mut DocumentTab, start: DocPos, end: DocPos, highlight: bool) {
 		navigation::reveal_doc_range(tab, start, end, highlight);
 		if !highlight {
 			self.last_match.set(Some((start, end)));
@@ -435,16 +439,12 @@ fn do_find(
 	// does dismissing a menu; both start a chain NVDA reads over the message. The dialog's
 	// chain starts early, the menu's later, which is why the two wait different lengths of time.
 	let dialog_was_shown = state.dialog.is_shown();
-	if result.position < 0 {
-		return;
-	}
 	let doc_len = tab.session.document_len();
-	if doc_len <= 0 {
+	if doc_len.is_zero() {
 		return;
 	}
-	let len = i64::try_from(DocLen::of(&query)).unwrap_or(i64::MAX);
-	let start = result.position.clamp(0, doc_len);
-	let end = (start + len).min(doc_len);
+	let start = result.position.min(doc_len.as_pos());
+	let end = (start + DocLen::of(&query)).min(doc_len.as_pos());
 	// Capture the line containing the match while the document lock is held; it is
 	// announced after focus has returned to the book.
 	let found_line = tab.session.get_line_text(start);

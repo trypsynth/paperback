@@ -79,8 +79,8 @@ impl DocumentSession {
 			source: i32::try_from(clip.source).unwrap_or(0),
 			clip_begin_ms: i64::try_from(clip.clip_begin_ms).unwrap_or(0),
 			clip_end_ms: i64::try_from(clip.clip_end_ms).unwrap_or(0),
-			start: i64::try_from(clip.start).unwrap_or(0),
-			end: i64::try_from(clip.end).unwrap_or(0),
+			start: clip.start,
+			end: clip.end,
 		}
 	}
 
@@ -104,15 +104,11 @@ impl DocumentSession {
 
 	/// See `AudioTimeline::point_for_position`.
 	#[must_use]
-	pub fn audio_point_for_position_ffi(&self, position: i64) -> AudioPointFfi {
+	pub fn audio_point_for_position_ffi(&self, position: DocPos) -> AudioPointFfi {
 		let Some(timeline) = self.audio() else { return AudioPointFfi::default() };
-		let position = self.handle.document().buffer.nearest_pos(position);
+		let position = position.min(self.handle.document().buffer.end());
 		let Some(point) = timeline.point_for_position(position) else { return AudioPointFfi::default() };
-		AudioPointFfi {
-			found: true,
-			position: i64::try_from(point.position).unwrap_or(0),
-			time_ms: i64::try_from(point.time_ms).unwrap_or(0),
-		}
+		AudioPointFfi { found: true, position: point.position, time_ms: i64::try_from(point.time_ms).unwrap_or(0) }
 	}
 
 	/// `-1` when the source is unknown or the position falls before any recorded clip. See

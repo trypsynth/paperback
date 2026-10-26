@@ -12,8 +12,8 @@ impl ConfigManager {
 	/// edited in place. Covers the reading position, the navigation history, the temporary
 	/// bookmark, and every bookmark range.
 	///
-	/// Without this, editing the buffer silently drifts all of them: they are document-absolute
-	/// display offsets, so inserting OCR text on page 40 moves everything after it. OCR is the
+	/// Without this, editing the buffer silently drifts all of them: they are document
+	/// positions, so inserting OCR text on page 40 moves everything after it. OCR is the
 	/// only thing that mutates a parsed document today, and it goes through here.
 	pub fn shift_document_positions(&self, path: &str, outcome: &ReplaceOutcome) {
 		if !self.initialized || outcome.is_empty() {
@@ -23,23 +23,23 @@ impl ConfigManager {
 			let key = self.get_doc_key(path);
 			let mut data = self.data.borrow_mut();
 			let doc = Self::doc_entry_mut(&mut data, key, path);
-			doc.last_position = shift(outcome, doc.last_position);
+			doc.last_position = outcome.shift(doc.last_position);
 			for position in &mut doc.navigation_history {
-				*position = shift(outcome, *position);
+				*position = outcome.shift(*position);
 			}
 			if let Some(position) = doc.temporary_bookmark.as_mut() {
-				*position = shift(outcome, *position);
+				*position = outcome.shift(*position);
 			}
 			for bookmark in &mut doc.bookmarks {
-				bookmark.start = shift(outcome, bookmark.start);
-				bookmark.end = shift(outcome, bookmark.end);
+				bookmark.start = outcome.shift(bookmark.start);
+				bookmark.end = outcome.shift(bookmark.end);
 			}
 			doc.bookmarks.sort_by_key(|bookmark| bookmark.start);
 		}
 		self.dirty.set(true);
 	}
 
-	pub fn set_document_position(&self, path: &str, position: i64) {
+	pub fn set_document_position(&self, path: &str, position: DocPos) {
 		if !self.initialized {
 			return;
 		}
@@ -76,22 +76,23 @@ impl ConfigManager {
 	}
 
 	#[must_use]
-	pub fn get_document_position(&self, path: &str) -> i64 {
+	pub fn get_document_position(&self, path: &str) -> DocPos {
 		if !self.initialized {
-			return 0;
+			return DocPos::ZERO;
 		}
 		let key = self.get_doc_key(path);
-		self.data.borrow().documents.get(&key).map_or(0, |d| d.last_position)
+		self.data.borrow().documents.get(&key).map_or(DocPos::ZERO, |d| d.last_position)
 	}
 
+	/// The saved position, when there is one past the start and no further than `max_position`.
 	#[must_use]
-	pub fn get_validated_document_position(&self, path: &str, max_position: i64) -> i64 {
+	pub fn get_validated_document_position(&self, path: &str, max_position: DocPos) -> Option<DocPos> {
 		let saved = self.get_document_position(path);
-		if saved > 0 && saved <= max_position { saved } else { -1 }
+		(saved > DocPos::ZERO && saved <= max_position).then_some(saved)
 	}
 
 	/// Sets the single per-document temporary bookmark position (`None` clears it).
-	pub fn set_temporary_bookmark(&self, path: &str, position: Option<i64>) {
+	pub fn set_temporary_bookmark(&self, path: &str, position: Option<DocPos>) {
 		if !self.initialized {
 			return;
 		}
@@ -104,7 +105,7 @@ impl ConfigManager {
 	}
 
 	#[must_use]
-	pub fn get_temporary_bookmark(&self, path: &str) -> Option<i64> {
+	pub fn get_temporary_bookmark(&self, path: &str) -> Option<DocPos> {
 		if !self.initialized {
 			return None;
 		}
@@ -112,7 +113,7 @@ impl ConfigManager {
 		self.data.borrow().documents.get(&key).and_then(|d| d.temporary_bookmark)
 	}
 
-	pub fn set_navigation_history(&self, path: &str, history: &[i64], history_index: usize) {
+	pub fn set_navigation_history(&self, path: &str, history: &[DocPos], history_index: usize) {
 		if !self.initialized {
 			return;
 		}
@@ -211,12 +212,6 @@ impl ConfigManager {
 	}
 }
 
-/// [`ReplaceOutcome::shift`] over the `i64` offsets the config stores.
-fn shift(outcome: &ReplaceOutcome, position: i64) -> i64 {
-	let shifted = outcome.shift(DocPos::from_raw(usize::try_from(position.max(0)).unwrap_or(0)));
-	i64::try_from(shifted).unwrap_or(position)
-}
-
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -250,10 +245,10 @@ mod tests {
 		config.initialized = true;
 		let path = "book.epub";
 		assert_eq!(config.get_temporary_bookmark(path), None);
-		config.set_temporary_bookmark(path, Some(42_000));
-		assert_eq!(config.get_temporary_bookmark(path), Some(42_000));
-		config.set_temporary_bookmark(path, Some(43_000));
-		assert_eq!(config.get_temporary_bookmark(path), Some(43_000));
+		config.set_temporary_bookmark(path, Some(42_000.into()));
+		assert_eq!(config.get_temporary_bookmark(path), Some(42_000.into()));
+		config.set_temporary_bookmark(path, Some(43_000.into()));
+		assert_eq!(config.get_temporary_bookmark(path), Some(43_000.into()));
 		config.set_temporary_bookmark(path, None);
 		assert_eq!(config.get_temporary_bookmark(path), None);
 	}

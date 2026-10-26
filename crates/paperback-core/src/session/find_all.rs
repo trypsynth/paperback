@@ -6,16 +6,15 @@
 
 use super::DocumentSession;
 use crate::{
-	document::{ContentBytePos, MarkerType},
+	document::{ContentBytePos, DocPos, MarkerType},
 	reader_core::SearchOptions,
 };
 
-/// One match's extent, in the same display units as the caret's document position and page
-/// markers, so a caller can hand it straight to a range selector.
+/// One match's extent in the document, so a caller can hand it straight to a range selector.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FindSpan {
-	pub start: i64,
-	pub end: i64,
+	pub start: DocPos,
+	pub end: DocPos,
 }
 
 /// One result line: the trimmed text of a line holding at least one match, the page it is on
@@ -29,8 +28,8 @@ pub struct FindAllLine {
 
 impl DocumentSession {
 	/// Every line that contains at least one match of `query`, one row per distinct line in
-	/// document order (a line holding several matches appears once). Match spans and the `page`
-	/// are computed in display units, so a caller can compare spans against the caret and select
+	/// document order (a line holding several matches appears once). Match spans are document
+	/// positions, so a caller can compare spans against the caret and select
 	/// ranges without further conversion. Returns an empty list for an empty query, an invalid
 	/// regex, or a document with no matches.
 	#[must_use]
@@ -45,16 +44,16 @@ impl DocumentSession {
 		let content_end = buffer.content_end();
 		// The page-break offsets once, so each result line's page is a binary search instead of
 		// recounting every marker per line (which would scale with lines x markers).
-		let pagebreak_offsets: Vec<i64> = buffer
+		let pagebreak_offsets: Vec<DocPos> = buffer
 			.markers
 			.iter()
 			.filter(|marker| marker.mtype == MarkerType::PageBreak)
-			.map(|marker| i64::try_from(marker.position).unwrap_or(i64::MAX))
+			.map(|marker| marker.position)
 			.collect();
 		let mut rows: Vec<FindAllLine> = Vec::new();
 		let mut open_line_start: Option<ContentBytePos> = None;
 		for (start, end) in matches {
-			let start_byte = buffer.byte_at(buffer.nearest_pos(start)).min(content_end);
+			let start_byte = buffer.byte_at(start);
 			let line_idx = newline_bytes.partition_point(|&p| p < start_byte);
 			let line_start = if line_idx == 0 { ContentBytePos::ZERO } else { newline_bytes[line_idx - 1] + 1 };
 			let line_end = newline_bytes.get(line_idx).copied().unwrap_or(content_end);

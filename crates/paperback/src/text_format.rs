@@ -2,12 +2,14 @@
 //! reading control and the RTF fast path both draw from. Neither the merge nor the segments it
 //! produces touch a widget, so both sides can be tested without one.
 
+use paperback_core::document::DocPos;
+
 /// A non-overlapping run of text with the union of bold/italic/underline
-/// styles active over it.
+/// styles active over it, in positions within the text the markers came with.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct FormatSegment {
-	pub start: i64,
-	pub end: i64,
+	pub start: DocPos,
+	pub end: DocPos,
 	pub bold: bool,
 	pub italic: bool,
 	pub underline: bool,
@@ -32,13 +34,13 @@ pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker])
 	use paperback_core::document::MarkerType;
 	#[derive(Clone, Copy)]
 	struct Event {
-		position: i64,
+		position: DocPos,
 		delta: i32,
 		style_idx: usize,
 	}
 	let mut events: Vec<Event> = Vec::new();
 	for m in markers {
-		if m.length <= 0 {
+		if m.length.is_zero() {
 			continue;
 		}
 		let style_idx = match m.mtype {
@@ -90,12 +92,22 @@ pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker])
 
 #[cfg(test)]
 mod tests {
-	use paperback_core::{document::MarkerType, session::LineMarker};
+	use paperback_core::{
+		document::{DocLen, DocPos, MarkerType},
+		session::LineMarker,
+	};
 
 	use super::{FormatSegment, merge_formatting_markers};
 
-	fn marker(mtype: MarkerType, position: i64, length: i64) -> LineMarker {
-		LineMarker { mtype, position, text: String::new(), reference: String::new(), level: 0, length }
+	fn marker(mtype: MarkerType, position: usize, length: usize) -> LineMarker {
+		LineMarker {
+			mtype,
+			position: DocPos::from_raw(position),
+			text: String::new(),
+			reference: String::new(),
+			level: 0,
+			length: DocLen::from_raw(length),
+		}
 	}
 
 	#[test]
@@ -120,7 +132,13 @@ mod tests {
 		let markers = [marker(MarkerType::Bold, 0, 4)];
 		assert_eq!(
 			merge_formatting_markers(&markers),
-			vec![FormatSegment { start: 0, end: 4, bold: true, italic: false, underline: false }]
+			vec![FormatSegment {
+				start: DocPos::from_raw(0),
+				end: DocPos::from_raw(4),
+				bold: true,
+				italic: false,
+				underline: false
+			}]
 		);
 	}
 
@@ -131,9 +149,27 @@ mod tests {
 		assert_eq!(
 			merge_formatting_markers(&markers),
 			vec![
-				FormatSegment { start: 0, end: 4, bold: true, italic: false, underline: false },
-				FormatSegment { start: 4, end: 7, bold: true, italic: true, underline: false },
-				FormatSegment { start: 7, end: 10, bold: true, italic: false, underline: false },
+				FormatSegment {
+					start: DocPos::from_raw(0),
+					end: DocPos::from_raw(4),
+					bold: true,
+					italic: false,
+					underline: false
+				},
+				FormatSegment {
+					start: DocPos::from_raw(4),
+					end: DocPos::from_raw(7),
+					bold: true,
+					italic: true,
+					underline: false
+				},
+				FormatSegment {
+					start: DocPos::from_raw(7),
+					end: DocPos::from_raw(10),
+					bold: true,
+					italic: false,
+					underline: false
+				},
 			]
 		);
 	}
@@ -143,7 +179,13 @@ mod tests {
 		let markers = [marker(MarkerType::Bold, 0, 4), marker(MarkerType::Bold, 4, 4)];
 		assert_eq!(
 			merge_formatting_markers(&markers),
-			vec![FormatSegment { start: 0, end: 8, bold: true, italic: false, underline: false }]
+			vec![FormatSegment {
+				start: DocPos::from_raw(0),
+				end: DocPos::from_raw(8),
+				bold: true,
+				italic: false,
+				underline: false
+			}]
 		);
 	}
 
@@ -153,7 +195,13 @@ mod tests {
 			[marker(MarkerType::Bold, 0, 6), marker(MarkerType::Italic, 0, 6), marker(MarkerType::Underline, 0, 6)];
 		assert_eq!(
 			merge_formatting_markers(&markers),
-			vec![FormatSegment { start: 0, end: 6, bold: true, italic: true, underline: true }]
+			vec![FormatSegment {
+				start: DocPos::from_raw(0),
+				end: DocPos::from_raw(6),
+				bold: true,
+				italic: true,
+				underline: true
+			}]
 		);
 	}
 }

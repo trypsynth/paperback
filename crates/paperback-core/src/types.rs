@@ -100,7 +100,7 @@ pub struct PageBreakInfo {
 
 #[derive(Debug, Clone)]
 pub struct NavRequest {
-	pub position: i64,
+	pub position: DocPos,
 	pub wrap: bool,
 	pub direction: NavDirection,
 	pub target: NavTarget,
@@ -120,7 +120,8 @@ pub struct NavResult {
 pub struct SearchResult {
 	pub found: bool,
 	pub wrapped: bool,
-	pub position: i64,
+	/// Where the match starts; the start of the document when nothing was found.
+	pub position: DocPos,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -133,7 +134,7 @@ pub enum BookmarkFilterType {
 #[derive(Debug, Clone)]
 pub struct BookmarkNavResult {
 	pub found: bool,
-	pub start: i64,
+	pub start: DocPos,
 	pub note: String,
 	pub index: i32,
 	pub wrapped: bool,
@@ -141,8 +142,8 @@ pub struct BookmarkNavResult {
 
 #[derive(Debug, Clone)]
 pub struct BookmarkDisplayItem {
-	pub start: i64,
-	pub end: i64,
+	pub start: DocPos,
+	pub end: DocPos,
 	pub note: String,
 	pub is_whole_line: bool,
 	/// See [`BookmarkDisplayEntry::audio_ms`].
@@ -201,8 +202,8 @@ pub struct HeadingTree {
 
 #[derive(Debug, Clone)]
 pub struct BookmarkDisplayEntry {
-	pub start: i64,
-	pub end: i64,
+	pub start: DocPos,
+	pub end: DocPos,
 	/// The playback time of an audio bookmark, which is what tells two in one chapter apart.
 	pub audio_ms: Option<u64>,
 }

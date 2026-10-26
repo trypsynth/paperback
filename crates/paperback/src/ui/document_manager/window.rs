@@ -179,10 +179,10 @@ impl DocumentManager {
 		// pinned at the loaded end is the signature of the caret being moved by the append itself,
 		// which is what `append_rtf_into_ctrl` saves and restores the selection to prevent.
 		tracing::debug!(
-			caret = tab.window.to_doc(tab.text_ctrl.get_insertion_point()),
-			from_end = previous_end,
-			to_end = tab.window.end(),
-			loaded = tab.window.loaded_len(),
+			caret = tab.window.to_doc(tab.text_ctrl.get_insertion_point()).get(),
+			from_end = previous_end.get(),
+			to_end = tab.window.end().get(),
+			loaded = tab.window.loaded_len().get(),
 			"extended loaded window"
 		);
 		// The control and the window have to agree on how much is loaded. Any drift would offset
@@ -210,7 +210,8 @@ impl DocumentManager {
 			let Some(tab) = self.active_tab_mut() else {
 				return;
 			};
-			let offset = if to_end { tab.session.document_len().max(0) } else { 0 };
+			let offset =
+				if to_end { tab.session.document_len().as_pos() } else { paperback_core::document::DocPos::ZERO };
 			let update = move_to_offset_and_record_history(tab, offset);
 			(tab.track, update)
 		};

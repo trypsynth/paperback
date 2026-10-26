@@ -159,7 +159,7 @@ fn run_bold_zero_cancels_bold() {
 	assert!(!buffer.markers.iter().any(|m| m.mtype == MarkerType::Bold), "b val=0 must not produce a Bold marker");
 }
 
-/// The offset of a format marker must be computed in DISPLAY units, not byte length. A paragraph
+/// The offset of a format marker must be computed in positions, not bytes. A paragraph
 /// beginning with a multi-byte (but display-stable) character before the bold run would place the
 /// Bold marker at the wrong position if `String::len()` (bytes) were used instead of `DocLen::of`.
 #[test]
@@ -250,7 +250,7 @@ fn a_page_that_starts_inside_a_table_starts_with_it() {
 	assert_eq!(pages(&buffer), [(0, "Page 1".to_string()), (6, "Page 2".to_string()), (after, "Page 3".to_string())]);
 }
 
-/// Links and bookmarks are display positions, which differ from byte offsets once a character outside the Basic Multilingual Plane, such as an emoji, comes before them. The leading spaces are trimmed away, so they also check the positions move back with the trim.
+/// Links and bookmarks are positions, which differ from byte offsets once a character outside the Basic Multilingual Plane, such as an emoji, comes before them. The leading spaces are trimmed away, so they also check the positions move back with the trim.
 #[test]
 fn links_and_bookmarks_land_on_their_text_after_an_emoji() {
 	let xml = "<document><body><p><r><t xml:space=\"preserve\">  \u{1F600} see </t></r><bookmarkStart name=\"here\"/><hyperlink anchor=\"here\"><r><t>this</t></r></hyperlink><r><t xml:space=\"preserve\"> and </t></r><r><fldChar fldCharType=\"begin\"/></r><r><instrText> HYPERLINK \"https://example.com\" </instrText></r><r><fldChar fldCharType=\"separate\"/></r><r><t>that</t></r><r><fldChar fldCharType=\"end\"/></r></p></body></document>";

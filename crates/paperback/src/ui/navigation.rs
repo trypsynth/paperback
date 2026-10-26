@@ -1,6 +1,6 @@
 use std::{rc::Rc, sync::Mutex};
 
-use paperback_core::{config::ConfigManager, session::NavigationResult};
+use paperback_core::{config::ConfigManager, document::DocPos, session::NavigationResult};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -20,7 +20,7 @@ use announce::{format_nav_found_message, nav_announcements};
 /// [`persist_navigation_history`]. Kept as an owned tuple (rather than borrowing
 /// from the tab) so it can outlive the `DocumentManager` lock: callers build it
 /// while a tab is borrowed, drop the lock, then persist it against `config`.
-pub(super) type HistoryUpdate = (String, Vec<i64>, usize);
+pub(super) type HistoryUpdate = (String, Vec<DocPos>, usize);
 
 /// Snapshots `tab`'s current position history as a [`HistoryUpdate`], if `tab.track`
 /// is set. Use this when the caller has already updated the history itself (e.g. via
@@ -39,7 +39,7 @@ fn tracked_history_update(tab: &DocumentTab) -> Option<HistoryUpdate> {
 /// Records a jump from `from` to `to` in `tab`'s position history and returns the resulting
 /// snapshot unconditionally. Callers that should only persist it when `tab.track` is set
 /// (most callers) should gate with `tab.track.then_some(update)`.
-fn record_history(tab: &mut DocumentTab, from: i64, to: i64) -> HistoryUpdate {
+fn record_history(tab: &mut DocumentTab, from: DocPos, to: DocPos) -> HistoryUpdate {
 	tab.session.record_jump(from, to);
 	let (history, history_index) = tab.session.get_history();
 	(tab.file_path.to_string_lossy().to_string(), history.to_vec(), history_index)
@@ -48,7 +48,7 @@ fn record_history(tab: &mut DocumentTab, from: i64, to: i64) -> HistoryUpdate {
 /// Reads the caret's document-absolute position, translating it out of `tab`'s currently
 /// loaded window. Use this instead of `tab.text_ctrl.get_insertion_point()` directly - that
 /// method only knows about whatever window is currently loaded, not the document as a whole.
-pub fn doc_caret(tab: &DocumentTab) -> i64 {
+pub fn doc_caret(tab: &DocumentTab) -> DocPos {
 	tab.window.to_doc(tab.text_ctrl.get_insertion_point())
 }
 
@@ -59,13 +59,12 @@ pub fn doc_caret(tab: &DocumentTab) -> i64 {
 /// position is the whole point: the text of a bundle of whole-file recordings is one blank line
 /// per file, so mapping a percentage through it lands on a file boundary chosen by file count
 /// rather than by how long any of them runs.
-pub fn seek_audio_to_percent(tab: &mut DocumentTab, percent: i32) -> Option<i64> {
+pub fn seek_audio_to_percent(tab: &mut DocumentTab, percent: i32) -> Option<DocPos> {
 	let target_ms = tab.session.audio_elapsed_for_percent(percent)?;
 	let player = tab.audio_player.as_mut()?;
 	player.seek_to_ms(target_ms);
 	let cursor = player.timeline().cursor_at_elapsed(target_ms)?;
-	let start = player.timeline().clip(cursor.clip).map(|clip| clip.start)?;
-	i64::try_from(start).ok()
+	player.timeline().clip(cursor.clip).map(|clip| clip.start)
 }
 
 /// How far the reader has got through `tab`, as a whole percent.
@@ -78,7 +77,7 @@ pub fn seek_audio_to_percent(tab: &mut DocumentTab, percent: i32) -> Option<i64>
 ///
 /// Falls back to the character-count percentage for text, for audio the player has not started,
 /// and for audio whose lengths could not all be established.
-pub fn reading_percent(tab: &DocumentTab, position: i64) -> i32 {
+pub fn reading_percent(tab: &DocumentTab, position: DocPos) -> i32 {
 	let audio_percent = tab
 		.audio_player
 		.as_ref()
@@ -91,7 +90,7 @@ pub fn reading_percent(tab: &DocumentTab, position: i64) -> i32 {
 /// document-absolute positions. Use this instead of `selected_range(tab.text_ctrl)` directly
 /// for anything that persists the result (bookmarks) or otherwise treats it as a document
 /// position rather than a ctrl-local one.
-pub fn doc_selected_range(tab: &DocumentTab) -> (i64, i64) {
+pub fn doc_selected_range(tab: &DocumentTab) -> (DocPos, DocPos) {
 	let (start, end) = selected_range(tab.text_ctrl);
 	(tab.window.to_doc(start), tab.window.to_doc(end))
 }
@@ -103,7 +102,7 @@ pub fn doc_selected_range(tab: &DocumentTab) -> (i64, i64) {
 /// `handle_seek_audio`), where re-seeking audio from the position we just derived it from would
 /// undo whatever precision produced that position (a mid-clip offset, or one "spilled" into the
 /// next file).
-pub(super) fn set_caret_to_doc_offset(tab: &mut DocumentTab, offset: i64) {
+pub(super) fn set_caret_to_doc_offset(tab: &mut DocumentTab, offset: DocPos) {
 	if tab.window.needs_reload_for(offset, tab.session.document_len()) {
 		reload_window_around(tab, offset, "caret jump");
 	}
@@ -118,7 +117,7 @@ pub(super) fn set_caret_to_doc_offset(tab: &mut DocumentTab, offset: i64) {
 /// `DocumentTab::window`). This is the one chokepoint every caret-jump in the app routes
 /// through, directly or via [`move_to_offset_and_record_history`], so callers never need to
 /// think about the window themselves.
-fn jump_to_doc_offset(tab: &mut DocumentTab, offset: i64) {
+fn jump_to_doc_offset(tab: &mut DocumentTab, offset: DocPos) {
 	set_caret_to_doc_offset(tab, offset);
 	seek_audio_to_position(tab, offset);
 }
@@ -132,7 +131,7 @@ fn jump_to_doc_offset(tab: &mut DocumentTab, offset: i64) {
 ///
 /// Only `start` is checked against the window: a match is expected to be far shorter than a
 /// window's `RELOAD_MARGIN`, so `end` lands safely inside whatever window `start` triggers.
-pub fn reveal_doc_range(tab: &mut DocumentTab, start: i64, end: i64, highlight: bool) {
+pub fn reveal_doc_range(tab: &mut DocumentTab, start: DocPos, end: DocPos, highlight: bool) {
 	if tab.window.needs_reload_for(start, tab.session.document_len()) {
 		reload_window_around(tab, start, "selection jump");
 	}
@@ -158,7 +157,7 @@ pub fn reveal_doc_range(tab: &mut DocumentTab, start: i64, end: i64, highlight: 
 /// Where the caret was is read before it moves, because that is the position going back has
 /// to return to. #835: recording it from anywhere else lands the reader at the top of
 /// whatever section they had jumped into last, rather than at the line they left.
-pub fn move_to_offset_and_record_history(tab: &mut DocumentTab, offset: i64) -> HistoryUpdate {
+pub fn move_to_offset_and_record_history(tab: &mut DocumentTab, offset: DocPos) -> HistoryUpdate {
 	let from = doc_caret(tab);
 	jump_to_doc_offset(tab, offset);
 	record_history(tab, from, offset)
@@ -166,8 +165,8 @@ pub fn move_to_offset_and_record_history(tab: &mut DocumentTab, offset: i64) -> 
 
 /// Keeps a document's audio in step with the caret, called after every jump that moves the
 /// insertion point. A no-op for documents with no recorded audio.
-fn seek_audio_to_position(tab: &mut DocumentTab, offset: i64) {
-	let offset = tab.session.handle().document().buffer.nearest_pos(offset);
+fn seek_audio_to_position(tab: &mut DocumentTab, offset: DocPos) {
+	let offset = offset.min(tab.session.handle().document().buffer.end());
 	if let Some(player) = tab.audio_player.as_mut() {
 		player.seek_to_position(offset);
 	}

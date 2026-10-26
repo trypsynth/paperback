@@ -7,7 +7,7 @@
 
 use std::{rc::Rc, sync::Mutex};
 
-use paperback_core::{config::ConfigManager, reader_core, types::BookmarkFilterType};
+use paperback_core::{config::ConfigManager, document::DocPos, reader_core, types::BookmarkFilterType};
 use patois::t;
 use wx_utils::format_duration_ms;
 use wxdragon::prelude::*;
@@ -219,7 +219,7 @@ pub fn handle_bookmark_dialog(
 }
 
 /// Where a new bookmark would go: the selection, and the playback time in an audio-only document.
-fn bookmark_target(doc_manager: &Rc<Mutex<DocumentManager>>) -> Option<(i64, i64, String, Option<u64>)> {
+fn bookmark_target(doc_manager: &Rc<Mutex<DocumentManager>>) -> Option<(DocPos, DocPos, String, Option<u64>)> {
 	let mut dm = doc_manager.lock().unwrap();
 	let tab = dm.active_tab_mut()?;
 	let (start, end) = doc_selected_range(tab);

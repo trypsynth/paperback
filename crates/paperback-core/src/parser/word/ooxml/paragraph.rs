@@ -54,8 +54,8 @@ pub(super) fn process_paragraph(
 	// numbered procedure reads as a run of unnumbered paragraphs.
 	let label = numbering.label_for(find_child_element(element, "pPr"));
 	let mut paragraph_text = label.as_ref().map_or_else(String::new, |label| format!("{} ", label.text));
-	let mut para_display_len = DocLen::of(&paragraph_text);
-	let label_len = para_display_len;
+	let mut para_len = DocLen::of(&paragraph_text);
+	let label_len = para_len;
 	let mut page_starts: Vec<DocLen> = Vec::new();
 	// Explicit breaks fall after their own text, so one at the end of the paragraph starts the page on the next line instead.
 	let mut breaks_after: Vec<DocLen> = Vec::new();
@@ -90,27 +90,26 @@ pub(super) fn process_paragraph(
 			}
 		} else if tag_name == "commentRangeStart" {
 			if let Some(id) = child.attribute("id") {
-				comment_starts.push((id.to_string(), para_display_len));
+				comment_starts.push((id.to_string(), para_len));
 			}
 		} else if tag_name == "commentRangeEnd" {
 			if let Some(id) = child.attribute("id") {
-				comment_ends.push((id.to_string(), para_display_len));
+				comment_ends.push((id.to_string(), para_len));
 			}
 		} else if tag_name == "bookmarkStart" {
 			if let Some(name) = child.attribute("name") {
-				bookmarks.push((name.to_string(), para_display_len));
+				bookmarks.push((name.to_string(), para_len));
 			}
 		} else if tag_name == "hyperlink" {
 			if child.children().any(|run| run.tag_name().name() == "r" && starts_page(run, page_source)) {
-				page_starts.push(para_display_len);
+				page_starts.push(para_len);
 			}
-			para_display_len +=
-				process_hyperlink(child, &mut paragraph_text, &mut links, &rels.links, para_display_len);
+			para_len += process_hyperlink(child, &mut paragraph_text, &mut links, &rels.links, para_len);
 		} else if tag_name == "r" {
 			match page_source {
-				PageSource::Rendered if starts_page(child, page_source) => page_starts.push(para_display_len),
+				PageSource::Rendered if starts_page(child, page_source) => page_starts.push(para_len),
 				PageSource::Explicit => {
-					breaks_after.extend(page_break_offsets(child).map(|offset| para_display_len + offset));
+					breaks_after.extend(page_break_offsets(child).map(|offset| para_len + offset));
 				}
 				PageSource::Rendered => {}
 			}
@@ -127,12 +126,12 @@ pub(super) fn process_paragraph(
 			if let Some(id) =
 				find_child_element(child, "commentReference").and_then(|reference| reference.attribute("id"))
 			{
-				comment_starts.push((id.to_string(), para_display_len));
+				comment_starts.push((id.to_string(), para_len));
 			}
 			if let Some((placeholder, description, entry)) = picture(child, rels) {
 				let length = DocLen::of(&placeholder);
-				pictures.push((para_display_len, length, description, entry));
-				para_display_len += length;
+				pictures.push((para_len, length, description, entry));
+				para_len += length;
 				paragraph_text.push_str(&placeholder);
 				continue;
 			}
@@ -142,8 +141,8 @@ pub(super) fn process_paragraph(
 					.then(|| collect_ooxml_run_text(child).trim().to_string());
 				let citation = annotations.cite(kind, reference.attribute("id").unwrap_or_default(), custom);
 				let cited = format!("[{}]", citation.label);
-				links.push((para_display_len, cited.clone(), format!("#{}", citation.key)));
-				para_display_len += DocLen::of(&cited);
+				links.push((para_len, cited.clone(), format!("#{}", citation.key)));
+				para_len += DocLen::of(&cited);
 				paragraph_text.push_str(&cited);
 				continue;
 			}
@@ -155,16 +154,16 @@ pub(super) fn process_paragraph(
 				if !link_target.is_empty() {
 					let (display_text, _) = extract_field_display_text(element, child);
 					if !display_text.is_empty() {
-						links.push((para_display_len, display_text.clone(), link_target));
+						links.push((para_len, display_text.clone(), link_target));
 						paragraph_text.push_str(&display_text);
-						para_display_len += DocLen::of(&display_text);
+						para_len += DocLen::of(&display_text);
 						in_taken_field = true;
 					}
 				}
 			}
 			let run_text = collect_ooxml_run_text(child);
 			if !run_text.is_empty() {
-				let run_start = para_display_len;
+				let run_start = para_len;
 				let run_len = DocLen::of(&run_text);
 				if let Some(rpr_node) = find_child_element(child, "rPr") {
 					let (bold, italic, underline) = get_run_format_flags(rpr_node);
@@ -176,7 +175,7 @@ pub(super) fn process_paragraph(
 					}
 				}
 				paragraph_text.push_str(&run_text);
-				para_display_len += run_len;
+				para_len += run_len;
 			}
 		}
 	}

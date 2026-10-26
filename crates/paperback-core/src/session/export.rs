@@ -15,10 +15,7 @@ use zip::ZipArchive;
 
 use super::{
 	DocumentSession, SourceView, WebviewTarget,
-	window::{
-		WHOLE_DOCUMENT_DISPLAY_LEN, WINDOW_DISPLAY_LEN, snap_end_to_paragraph_boundary,
-		snap_start_to_paragraph_boundary,
-	},
+	window::{WHOLE_DOCUMENT_LEN, WINDOW_LEN, snap_end_to_paragraph_boundary, snap_start_to_paragraph_boundary},
 };
 use crate::{
 	config::compute_document_hash,
@@ -33,12 +30,12 @@ use crate::{
 /// an ordinary book without trouble, but a book of tens of millions of characters locks the
 /// machine up while the engine works through all of it, so past this size it is given the part
 /// around the reading position instead.
-const MAX_WEBVIEW_LEN: DocLen = DocLen::from_raw(WINDOW_DISPLAY_LEN as usize);
+const MAX_WEBVIEW_LEN: DocLen = WINDOW_LEN;
 
 /// Up to here the web view gets the whole document. Shares the reader's threshold rather than
 /// slicing as soon as one window's worth is exceeded, so the two always agree about whether a
 /// document is being shown whole.
-const WHOLE_WEBVIEW_LEN: DocLen = DocLen::from_raw(WHOLE_DOCUMENT_DISPLAY_LEN as usize);
+const WHOLE_WEBVIEW_LEN: DocLen = WHOLE_DOCUMENT_LEN;
 
 #[cfg_attr(feature = "uniffi", uniffi::export)]
 impl DocumentSession {
@@ -55,7 +52,7 @@ impl DocumentSession {
 
 impl DocumentSession {
 	#[must_use]
-	pub fn webview_target_path(&self, position: i64, temp_dir: &str) -> Option<WebviewTarget> {
+	pub fn webview_target_path(&self, position: DocPos, temp_dir: &str) -> Option<WebviewTarget> {
 		let section_path = self.get_current_section_path(position).filter(|path| !path.is_empty());
 		if let Some(section_path) = section_path
 			&& let Some(doc_temp_dir) = self.document_temp_dir(temp_dir)
@@ -109,7 +106,7 @@ impl DocumentSession {
 				}
 				let doc_temp_dir = self.document_temp_dir(temp_dir)?;
 				let html_path = doc_temp_dir.join("document.html");
-				let offset = self.handle.document().buffer.nearest_pos(position);
+				let offset = position.min(self.handle.document().buffer.end());
 				let html = export_html::render_range(&self.handle, self.webview_range(offset), Some(offset));
 				fs::write(&html_path, html.as_bytes()).ok()?;
 				Some(WebviewTarget {
@@ -151,9 +148,9 @@ impl DocumentSession {
 
 	/// Inserts an empty anchor element at the current reading position into the
 	/// extracted section file and returns its id, for use as a URL `#fragment`.
-	fn inject_reading_anchor(&self, position: i64, file_path: &str) -> Option<String> {
+	fn inject_reading_anchor(&self, position: DocPos, file_path: &str) -> Option<String> {
 		const READING_POS_ANCHOR_ID: &str = "paperback-reading-pos";
-		let pos = self.handle.document().buffer.nearest_pos(position);
+		let pos = position.min(self.handle.document().buffer.end());
 		let section_index = self.handle.current_marker_index(pos, MarkerType::SectionBreak)?;
 		let section_start = self.handle.document().buffer.markers.get(section_index)?.position;
 		let relative = (pos >= section_start).then(|| (pos - section_start).as_pos())?;
@@ -167,8 +164,8 @@ impl DocumentSession {
 	/// Returns the id of the element closest at-or-before `position` in the current
 	/// section, for use as a `#fragment` when opening the section in a web view.
 	#[must_use]
-	pub fn webview_fragment_for_position(&self, position: i64) -> Option<String> {
-		let pos = self.handle.document().buffer.nearest_pos(position);
+	pub fn webview_fragment_for_position(&self, position: DocPos) -> Option<String> {
+		let pos = position.min(self.handle.document().buffer.end());
 		nearest_fragment_before(&self.handle, pos).map(|id| encode_url_fragment(&id))
 	}
 
@@ -195,18 +192,18 @@ impl DocumentSession {
 	/// offset of the element at the reading position, Markdown via the nearest
 	/// block anchor. Returns `None` for formats without a meaningful text source.
 	#[must_use]
-	pub fn view_source(&self, position: i64, temp_dir: &str) -> Option<SourceView> {
+	pub fn view_source(&self, position: DocPos, temp_dir: &str) -> Option<SourceView> {
 		let (content, caret, name) = self.source_content_for_position(position)?;
 		let doc_temp_dir = self.document_temp_dir(temp_dir)?;
 		let output_path = doc_temp_dir.join(format!("{name}.source.txt"));
 		fs::write(&output_path, content.as_bytes()).ok()?;
-		Some(SourceView { path: output_path.to_string_lossy().to_string(), caret: i64::try_from(caret).unwrap_or(0) })
+		Some(SourceView { path: output_path.to_string_lossy().to_string(), caret })
 	}
 
-	/// Returns `(source_text, caret_char_offset, file_name)` for the document at
-	/// `position`. The caret is mapped into the returned source text.
-	fn source_content_for_position(&self, position: i64) -> Option<(String, usize, String)> {
-		let pos = self.handle.document().buffer.nearest_pos(position);
+	/// Returns `(source_text, caret, file_name)` for the document at
+	/// `position`. The caret is a position in the returned source text.
+	fn source_content_for_position(&self, position: DocPos) -> Option<(String, DocPos, String)> {
+		let pos = position.min(self.handle.document().buffer.end());
 		if self.is_epub() {
 			let section_path = self.get_current_section_path(position).filter(|path| !path.is_empty())?;
 			let file = File::open(&self.file_path).ok()?;
@@ -232,23 +229,23 @@ impl DocumentSession {
 
 	/// Maps a position in the section's rendered text to a caret offset in XML/HTML source
 	/// via the byte offset of the element at that position.
-	fn xml_caret(content: &str, relative: DocPos) -> usize {
+	fn xml_caret(content: &str, relative: DocPos) -> DocPos {
 		parser::convert::xml_to_text::XmlToText::new()
 			.find_anchor_byte_offset(content, relative)
-			.and_then(|byte| Some(content.get(..byte)?.chars().count()))
-			.unwrap_or(0)
+			.and_then(|byte| Some(DocLen::of(content.get(..byte)?).as_pos()))
+			.unwrap_or_default()
 	}
 
 	/// Maps a rendered character position to a caret offset in Markdown source
 	/// via the nearest `pb-block-N` anchor recorded during parsing.
-	fn markdown_caret(&self, content: &str, pos: DocPos) -> usize {
+	fn markdown_caret(&self, content: &str, pos: DocPos) -> DocPos {
 		nearest_fragment_before(&self.handle, pos)
 			.and_then(|id| id.strip_prefix("pb-block-").and_then(|n| n.parse::<usize>().ok()))
 			.and_then(|index| {
 				parser::markdown::block_source_offset(content, index, self.parse_settings.markdown_dollar_math)
 			})
-			.and_then(|byte| Some(content.get(..byte)?.chars().count()))
-			.unwrap_or(0)
+			.and_then(|byte| Some(DocLen::of(content.get(..byte)?).as_pos()))
+			.unwrap_or_default()
 	}
 
 	/// Extracts every entry of the EPUB into `doc_temp_dir`, preserving the

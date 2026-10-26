@@ -3,7 +3,10 @@
 
 use std::{cell::RefCell, rc::Rc};
 
-use paperback_core::{document::MarkerType, session::DocumentSession};
+use paperback_core::{
+	document::{DocPos, MarkerType},
+	session::DocumentSession,
+};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -12,7 +15,7 @@ use super::{FLAT_POPULATE_DELAY_MS, VIEW_LINKS, VIEW_LISTS, VIEW_PAGES, VIEW_TAB
 /// A page entry for the Pages view: the page's marker offset (where a jump lands) and the
 /// label to show, mirroring what page navigation announces for the page.
 struct PageEntry {
-	offset: i64,
+	offset: DocPos,
 	label: String,
 }
 
@@ -47,7 +50,7 @@ fn page_label(page: i32, content: &str) -> String {
 /// jumps to, and which row is nearest the current position. The Links, Pages, Tables and Lists
 /// views each have one; the shared list pane is repopulated from whichever is selected.
 struct FlatView {
-	entries: Vec<(String, i64)>,
+	entries: Vec<(String, DocPos)>,
 	closest: Option<u32>,
 }
 
@@ -55,27 +58,26 @@ struct FlatView {
 /// reading navigation announces for that element, and the row nearest the current position is
 /// preselected. A marker with its own text (a table's caption, a link's label) uses it; a
 /// text-less marker (a list) reads the line it sits on.
-fn marker_flat_view(session: &DocumentSession, mtype: MarkerType, position: i64) -> FlatView {
+fn marker_flat_view(session: &DocumentSession, mtype: MarkerType, position: DocPos) -> FlatView {
 	let data = session.element_list(mtype, position);
-	let entries =
-		data.items.iter().map(|item| (item.text.clone(), i64::try_from(item.offset).unwrap_or(i64::MAX))).collect();
+	let entries = data.items.iter().map(|item| (item.text.clone(), item.offset)).collect();
 	let closest = if data.closest_index >= 0 { u32::try_from(data.closest_index).ok() } else { None };
 	FlatView { entries, closest }
 }
 
-fn link_flat_view(session: &DocumentSession, position: i64) -> FlatView {
+fn link_flat_view(session: &DocumentSession, position: DocPos) -> FlatView {
 	marker_flat_view(session, MarkerType::Link, position)
 }
 
-fn table_flat_view(session: &DocumentSession, position: i64) -> FlatView {
+fn table_flat_view(session: &DocumentSession, position: DocPos) -> FlatView {
 	marker_flat_view(session, MarkerType::Table, position)
 }
 
-fn list_flat_view(session: &DocumentSession, position: i64) -> FlatView {
+fn list_flat_view(session: &DocumentSession, position: DocPos) -> FlatView {
 	marker_flat_view(session, MarkerType::List, position)
 }
 
-fn page_flat_view(session: &DocumentSession, position: i64) -> FlatView {
+fn page_flat_view(session: &DocumentSession, position: DocPos) -> FlatView {
 	let entries = page_entries(session).iter().map(|page| (page.label.clone(), page.offset)).collect();
 	let closest = {
 		let page = session.current_page(position);
@@ -96,7 +98,7 @@ pub(super) struct FlatViews {
 }
 
 impl FlatViews {
-	pub(super) fn for_session(session: &DocumentSession, position: i64) -> Self {
+	pub(super) fn for_session(session: &DocumentSession, position: DocPos) -> Self {
 		Self {
 			links: link_flat_view(session, position),
 			pages: page_flat_view(session, position),
@@ -290,7 +292,7 @@ fn fill_flat_view(
 }
 
 /// The offset of the row selected in the flat list pane for `view`, if any.
-pub(super) fn flat_selected_offset(view: u32, list: FlatList, views: &FlatViews) -> Option<i64> {
+pub(super) fn flat_selected_offset(view: u32, list: FlatList, views: &FlatViews) -> Option<DocPos> {
 	let entries = &views.view(view)?.entries;
 	flat_list_selected_index(list).and_then(|index| entries.get(index)).map(|(_, offset)| *offset)
 }

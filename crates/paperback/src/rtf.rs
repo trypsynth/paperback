@@ -9,12 +9,12 @@
 
 use std::{borrow::Cow, fmt::Write as _};
 
-use paperback_core::session::ParagraphFormat;
+use paperback_core::{document::DocPos, session::ParagraphFormat};
 
 use crate::text_format::FormatSegment;
 
 /// Replaces every character `RichEdit` silently discards instead of storing with a space, so
-/// its buffer holds exactly one display unit per display unit of `content`. Borrows unchanged
+/// its buffer holds exactly one of its units for each of `content`. Borrows unchanged
 /// when there is nothing to replace, which is the overwhelmingly common case.
 ///
 /// Every position the app hands the control is an offset into that buffer - the caret, a
@@ -97,7 +97,7 @@ pub fn build_rtf(
 	// written where they change.
 	let mut current_paragraph = (None, false);
 	let mut at_paragraph_start = true;
-	for (position, ch) in (0_i64..).zip(content.chars()) {
+	for (position, ch) in (0..).map(DocPos::from_raw).zip(content.chars()) {
 		if at_paragraph_start {
 			while paragraph_idx < paragraphs.len() && paragraphs[paragraph_idx].end <= position {
 				paragraph_idx += 1;
@@ -153,7 +153,7 @@ pub fn build_rtf(
 /// `stream_rtf_into_ctrl` does; text appended after existing content uses [`build_rtf`] itself.
 ///
 /// `RichEdit` takes the last paragraph mark of a replacing stream as the end of its story and
-/// stores nothing for it. A window ending in one would then load a display unit short, and text
+/// stores nothing for it. A window ending in one would then load a unit short, and text
 /// appended to it later would run into its last paragraph. One more paragraph mark keeps it.
 #[must_use]
 pub fn build_rtf_for_whole_control(
@@ -234,8 +234,8 @@ mod tests {
 		parse_result.expect("generated RTF should parse back cleanly")
 	}
 
-	fn seg(start: i64, end: i64, bold: bool, italic: bool, underline: bool) -> FormatSegment {
-		FormatSegment { start, end, bold, italic, underline }
+	fn seg(start: usize, end: usize, bold: bool, italic: bool, underline: bool) -> FormatSegment {
+		FormatSegment { start: DocPos::from_raw(start), end: DocPos::from_raw(end), bold, italic, underline }
 	}
 
 	#[test]
@@ -358,8 +358,8 @@ mod tests {
 		assert_eq!(rtf.matches("\\i").count(), 1); // just the header's \i0
 	}
 
-	fn paragraph(start: i64, end: i64, heading_level: Option<u8>, list_item: bool) -> ParagraphFormat {
-		ParagraphFormat { start, end, heading_level, list_item }
+	fn paragraph(start: usize, end: usize, heading_level: Option<u8>, list_item: bool) -> ParagraphFormat {
+		ParagraphFormat { start: DocPos::from_raw(start), end: DocPos::from_raw(end), heading_level, list_item }
 	}
 
 	/// Only the built-in style names make `RichEdit` report a paragraph as a heading.
@@ -417,10 +417,10 @@ mod tests {
 	fn round_trips_through_paperback_cores_own_rtf_parser() {
 		use paperback_core::document::MarkerType;
 		let text = "plain bold plain italic plain underline plain both plain";
-		let idx = |needle: &str| i64::try_from(text.find(needle).unwrap()).unwrap();
+		let idx = |needle: &str| text.find(needle).unwrap();
 		let seg_for = |needle: &str, bold: bool, italic: bool, underline: bool| {
 			let start = idx(needle);
-			let end = start + i64::try_from(needle.chars().count()).unwrap();
+			let end = start + needle.chars().count();
 			seg(start, end, bold, italic, underline)
 		};
 		let segments = [

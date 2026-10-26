@@ -5,7 +5,7 @@ use std::{
 #[cfg(not(target_os = "windows"))]
 use std::{collections::HashMap, ffi::c_void};
 
-use paperback_core::session::DocumentSession;
+use paperback_core::{document::DocPos, session::DocumentSession};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -50,8 +50,8 @@ impl ElementsKind {
 pub fn show_elements_dialog(
 	parent: &Frame,
 	session: &DocumentSession,
-	current_pos: i64,
-) -> Option<(i64, ElementsKind)> {
+	current_pos: DocPos,
+) -> Option<(DocPos, ElementsKind)> {
 	#[cfg(not(target_os = "windows"))]
 	return show_elements_dialog_dv(parent, session, current_pos);
 	#[cfg(target_os = "windows")]
@@ -71,7 +71,11 @@ struct ElementsDialogUiDv {
 }
 
 #[cfg(not(target_os = "windows"))]
-fn show_elements_dialog_dv(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<(i64, ElementsKind)> {
+fn show_elements_dialog_dv(
+	parent: &Frame,
+	session: &DocumentSession,
+	current_pos: DocPos,
+) -> Option<(DocPos, ElementsKind)> {
 	// TRANSLATORS: Title of the Elements dialog
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
 	let flat_labels = Rc::new(RefCell::new(Vec::new()));
@@ -108,9 +112,8 @@ fn show_elements_dialog_dv(parent: &Frame, session: &DocumentSession, current_po
 	// tree is the visible pane.
 	headings_tree.set_focus();
 	if dialog.show_modal() == wxdragon::id::ID_OK {
-		let offset = selected_offset.get();
 		let kind = ElementsKind::from_view(view_choice.get_selection().unwrap_or(VIEW_HEADINGS));
-		if offset >= 0 { Some((offset, kind)) } else { None }
+		selected_offset.get().map(|offset| (offset, kind))
 	} else {
 		None
 	}
@@ -161,11 +164,11 @@ fn build_elements_dialog_ui_dv(dialog: Dialog, flat_labels: Rc<RefCell<Vec<Strin
 #[cfg(not(target_os = "windows"))]
 fn populate_elements_dialog_dv(
 	session: &DocumentSession,
-	current_pos: i64,
+	current_pos: DocPos,
 	headings_tree: DataViewTreeCtrl,
-) -> (Rc<Cell<i64>>, HashMap<usize, i64>) {
-	let selected_offset = Rc::new(Cell::new(-1i64));
-	let mut item_offsets: HashMap<usize, i64> = HashMap::new();
+) -> (Rc<Cell<Option<DocPos>>>, HashMap<usize, DocPos>) {
+	let selected_offset = Rc::new(Cell::new(None));
+	let mut item_offsets: HashMap<usize, DocPos> = HashMap::new();
 	let tree_data = session.heading_tree(current_pos);
 	// Precompute which items have children (single pass over items) so we can use append_container
 	// vs append_item.
@@ -188,7 +191,7 @@ fn populate_elements_dialog_dv(
 		};
 		// TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 		let display_text = if item.text.is_empty() { t("Untitled") } else { item.text.clone() };
-		let offset = i64::try_from(item.offset).unwrap_or(i64::MAX);
+		let offset = item.offset;
 		let node = if has_children_vec[current_idx] {
 			headings_tree.append_container(parent, &display_text, -1, -1)
 		} else {
@@ -265,9 +268,9 @@ fn bind_elements_activation_dv(
 	view_choice: Choice,
 	headings_tree: DataViewTreeCtrl,
 	content_list: FlatList,
-	item_offsets: &Rc<HashMap<usize, i64>>,
+	item_offsets: &Rc<HashMap<usize, DocPos>>,
 	views: &Rc<FlatViews>,
-	selected_offset: &Rc<Cell<i64>>,
+	selected_offset: &Rc<Cell<Option<DocPos>>>,
 ) {
 	let offsets_for_tree = Rc::clone(item_offsets);
 	let selected_for_tree = Rc::clone(selected_offset);
@@ -278,7 +281,7 @@ fn bind_elements_activation_dv(
 			&& let Some(&offset) = offsets_for_tree.get(&(id_ptr as usize))
 		{
 			event.event.skip(false);
-			selected_for_tree.set(offset);
+			selected_for_tree.set(Some(offset));
 			dialog_for_tree.end_modal(wxdragon::id::ID_OK);
 		}
 	});
@@ -296,7 +299,7 @@ fn bind_elements_activation_dv(
 			// Consumed so the row's activation doesn't confirm the dialog a second time. Only macOS's DataViewListCtrl hands over its event; the ListCtrl used on Linux exposes none to consume.
 			#[cfg(target_os = "macos")]
 			event.event.skip(false);
-			selected_for_list.set(offset);
+			selected_for_list.set(Some(offset));
 			dialog_for_list.end_modal(wxdragon::id::ID_OK);
 		}
 	});
@@ -308,9 +311,9 @@ fn bind_elements_ok_action_dv(
 	view_choice: Choice,
 	headings_tree: DataViewTreeCtrl,
 	content_list: FlatList,
-	item_offsets: &Rc<HashMap<usize, i64>>,
+	item_offsets: &Rc<HashMap<usize, DocPos>>,
 	views: &Rc<FlatViews>,
-	selected_offset: &Rc<Cell<i64>>,
+	selected_offset: &Rc<Cell<Option<DocPos>>>,
 	ok_button: Button,
 ) {
 	let offsets_for_ok = Rc::clone(item_offsets);
@@ -326,11 +329,11 @@ fn bind_elements_ok_action_dv(
 				&& let Some(id_ptr) = item.get_id::<c_void>()
 				&& let Some(&offset) = offsets_for_ok.get(&(id_ptr as usize))
 			{
-				selected_for_ok.set(offset);
+				selected_for_ok.set(Some(offset));
 				dialog_for_ok.end_modal(wxdragon::id::ID_OK);
 			}
 		} else if let Some(offset) = flat_selected_offset(selection, list_for_ok, &views_for_ok) {
-			selected_for_ok.set(offset);
+			selected_for_ok.set(Some(offset));
 			dialog_for_ok.end_modal(wxdragon::id::ID_OK);
 		}
 	});
@@ -349,7 +352,11 @@ struct ElementsDialogUi {
 }
 
 #[cfg(target_os = "windows")]
-fn show_elements_dialog_wx(parent: &Frame, session: &DocumentSession, current_pos: i64) -> Option<(i64, ElementsKind)> {
+fn show_elements_dialog_wx(
+	parent: &Frame,
+	session: &DocumentSession,
+	current_pos: DocPos,
+) -> Option<(DocPos, ElementsKind)> {
 	// TRANSLATORS: Title of the Elements dialog
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
 	let flat_labels = Rc::new(RefCell::new(Vec::new()));
@@ -366,9 +373,8 @@ fn show_elements_dialog_wx(parent: &Frame, session: &DocumentSession, current_po
 	// tree is the visible pane.
 	headings_tree.set_focus();
 	if dialog.show_modal() == ID_OK {
-		let offset = selected_offset.get();
 		let kind = ElementsKind::from_view(view_choice.get_selection().unwrap_or(VIEW_HEADINGS));
-		if offset >= 0 { Some((offset, kind)) } else { None }
+		selected_offset.get().map(|offset| (offset, kind))
 	} else {
 		None
 	}
@@ -424,8 +430,12 @@ fn build_elements_dialog_ui(dialog: Dialog, flat_labels: Rc<RefCell<Vec<String>>
 }
 
 #[cfg(target_os = "windows")]
-fn populate_elements_dialog(session: &DocumentSession, current_pos: i64, headings_tree: TreeCtrl) -> Rc<Cell<i64>> {
-	let selected_offset = Rc::new(Cell::new(-1i64));
+fn populate_elements_dialog(
+	session: &DocumentSession,
+	current_pos: DocPos,
+	headings_tree: TreeCtrl,
+) -> Rc<Cell<Option<DocPos>>> {
+	let selected_offset = Rc::new(Cell::new(None));
 	let root = headings_tree.add_root("Root", None, None).unwrap();
 	let tree_data = session.heading_tree(current_pos);
 	let mut item_ids: Vec<TreeItemId> = Vec::new();
@@ -466,7 +476,7 @@ fn populate_elements_dialog(session: &DocumentSession, current_pos: i64, heading
 			}
 		}
 		let display_text = label(&item.text);
-		let offset = i64::try_from(item.offset).unwrap_or(i64::MAX);
+		let offset = item.offset;
 		if let Some(id) = headings_tree.append_item_with_data(&parent_id, &display_text, offset, None, None) {
 			item_ids.push(id);
 		} else if let Some(root_child) = headings_tree.append_item_with_data(&root, &display_text, offset, None, None) {
@@ -538,7 +548,7 @@ fn bind_elements_activation(
 	view_choice: Choice,
 	headings_tree: TreeCtrl,
 	content_list: FlatList,
-	selected_offset: &Rc<Cell<i64>>,
+	selected_offset: &Rc<Cell<Option<DocPos>>>,
 	views: &Rc<FlatViews>,
 ) {
 	let selected_offset_for_tree = Rc::clone(selected_offset);
@@ -547,9 +557,9 @@ fn bind_elements_activation(
 	headings_tree.on_item_activated(move |event| {
 		if let Some(item) = event.get_item()
 			&& let Some(data) = tree_for_activate.get_custom_data_direct(&item)
-			&& let Some(offset) = data.downcast_ref::<i64>()
+			&& let Some(offset) = data.downcast_ref::<DocPos>()
 		{
-			selected_offset_for_tree.set(*offset);
+			selected_offset_for_tree.set(Some(*offset));
 			dialog_for_tree.end_modal(ID_OK);
 		}
 	});
@@ -564,7 +574,7 @@ fn bind_elements_activation(
 			list_for_click,
 			&views_for_click,
 		) {
-			selected_for_list.set(offset);
+			selected_for_list.set(Some(offset));
 			dialog_for_list.end_modal(ID_OK);
 		}
 	});
@@ -576,7 +586,7 @@ fn bind_elements_ok_action(
 	view_choice: Choice,
 	headings_tree: TreeCtrl,
 	content_list: FlatList,
-	selected_offset: &Rc<Cell<i64>>,
+	selected_offset: &Rc<Cell<Option<DocPos>>>,
 	views: &Rc<FlatViews>,
 	ok_button: Button,
 ) {
@@ -590,13 +600,13 @@ fn bind_elements_ok_action(
 		if selection == VIEW_HEADINGS {
 			if let Some(item) = headings_tree.get_selection()
 				&& let Some(data) = headings_tree.get_custom_data_direct(&item)
-				&& let Some(offset) = data.downcast_ref::<i64>()
+				&& let Some(offset) = data.downcast_ref::<DocPos>()
 			{
-				selected_offset_for_ok.set(*offset);
+				selected_offset_for_ok.set(Some(*offset));
 				dialog_for_ok.end_modal(ID_OK);
 			}
 		} else if let Some(offset) = flat_selected_offset(selection, list_for_ok, &views_for_ok) {
-			selected_offset_for_ok.set(offset);
+			selected_offset_for_ok.set(Some(offset));
 			dialog_for_ok.end_modal(ID_OK);
 		}
 	});

@@ -184,8 +184,7 @@ impl DocumentManager {
 		panel.set_sizer(sizer, true);
 		let path_str = path.to_string_lossy();
 		let doc_len = session.document_len();
-		let saved_pos = config.get_validated_document_position(&path_str, doc_len);
-		let initial_pos = if saved_pos >= 0 { saved_pos } else { 0 };
+		let initial_pos = config.get_validated_document_position(&path_str, doc_len.as_pos()).unwrap_or_default();
 		let window = load_window_into_ctrl(text_ctrl, &session, initial_pos, doc_len);
 		apply_readability_format_to_ctrl(
 			text_ctrl.widget(),
@@ -241,7 +240,6 @@ impl DocumentManager {
 		// position, so it loses however much of that clip had already played, and loses
 		// everything since the last explicit jump if the caret wasn't following the audio.
 		let saved_audio_time = config.get_document_audio_time(&path_str);
-		let initial_pos = self.tabs[tab_index].session.handle().document().buffer.nearest_pos(initial_pos);
 		if let Some(player) = self.tabs[tab_index].audio_player.as_mut() {
 			match saved_audio_time {
 				Some(time_ms) => {
