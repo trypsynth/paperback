@@ -22,6 +22,18 @@ mod ui {
 #[cfg(not(target_os = "macos"))]
 fn main() {}
 
+/// Where a position of the test document is in the control, which holds nothing outside the Basic Multilingual Plane, so the two count alike.
+#[cfg(target_os = "macos")]
+fn ctrl(position: paperback_core::document::DocPos) -> i64 {
+	i64::try_from(position).unwrap()
+}
+
+/// The document position of a place in the control.
+#[cfg(target_os = "macos")]
+fn doc(units: i64) -> paperback_core::document::DocPos {
+	paperback_core::document::DocPos::from_raw(usize::try_from(units).unwrap())
+}
+
 #[cfg(target_os = "macos")]
 fn link_session() -> paperback_core::session::DocumentSession {
 	use std::{fs::File, io::Write};
@@ -155,7 +167,7 @@ fn main() {
 		let from_keyboard = Rc::new(Cell::new(false));
 		let received = Rc::new(RefCell::new(Vec::new()));
 		let session = Rc::new(link_session());
-		text.set_value(&session.text_range(0, session.document_len()));
+		text.set_value(&session.text_range(doc(0), session.document_len().as_pos()));
 		let session_for_menu = Rc::clone(&session);
 		let activated = Rc::new(RefCell::new(Vec::new()));
 		let opened_elements = Rc::new(RefCell::new(Vec::new()));
@@ -163,7 +175,7 @@ fn main() {
 		let activated_for_key = Rc::clone(&activated);
 		let session_for_key = Rc::clone(&session);
 		activation::bind_activation(text, move |enter| {
-			let position = text.get_insertion_point();
+			let position = doc(text.get_insertion_point());
 			if let Some(html) = session_for_key.get_formula_at_position(position) {
 				opened_for_key.borrow_mut().push(("formula", html));
 				return;
@@ -174,7 +186,7 @@ fn main() {
 			}
 			let result = session_for_key.activate_link(position);
 			if result.action == paperback_core::session::LinkAction::Internal {
-				text.set_insertion_point(result.offset);
+				text.set_insertion_point(ctrl(result.offset));
 			}
 			activated_for_key.borrow_mut().push((enter, result));
 		});
@@ -194,7 +206,7 @@ fn main() {
 				assert!(wxdragon::clipboard::Clipboard::get().set_text(&text.get_string_selection()));
 				return;
 			}
-			let position = text.get_insertion_point();
+			let position = doc(text.get_insertion_point());
 			let result = match event.get_id() {
 				menu_ids::NEXT_LINK => Some(session_for_menu.navigate_link(position, false, true)),
 				menu_ids::NEXT_TABLE => Some(session_for_menu.navigate_table(position, false, true)),
@@ -203,7 +215,7 @@ fn main() {
 			};
 			if let Some(result) = result {
 				assert!(result.found);
-				text.set_insertion_point(result.offset);
+				text.set_insertion_point(ctrl(result.offset));
 			}
 		});
 		let menu = Menu::builder()
@@ -234,7 +246,7 @@ fn main() {
 		for (character, hardware_key, enter) in [("\r", 36, true), ("\u{3}", 76, true), (" ", 49, false)] {
 			text.set_insertion_point(0);
 			expect_command(&received, frame, "k", 0, 40, menu_ids::NEXT_LINK);
-			let link_position = text.get_insertion_point();
+			let link_position = doc(text.get_insertion_point());
 			activated.borrow_mut().clear();
 			send_key(frame, character, 0, hardware_key);
 			let results = activated.borrow();
@@ -242,7 +254,7 @@ fn main() {
 			assert_eq!(results[0].0, enter);
 			assert_eq!(results[0].1.action, paperback_core::session::LinkAction::Internal);
 			assert!(results[0].1.offset > link_position);
-			assert_eq!(text.get_insertion_point(), results[0].1.offset);
+			assert_eq!(text.get_insertion_point(), ctrl(results[0].1.offset));
 			assert!(session.get_line_text(results[0].1.offset).contains("Destination"));
 			drop(results);
 			text.set_insertion_point(0);
