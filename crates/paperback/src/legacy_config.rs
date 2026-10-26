@@ -8,7 +8,10 @@
 use std::{fs, path::Path};
 
 use base64::{Engine, engine::general_purpose::STANDARD};
-use paperback_core::config::{ConfigData, DocumentConfig, StoredBookmark};
+use paperback_core::{
+	config::{ConfigData, DocumentConfig, StoredBookmark},
+	document::DocPos,
+};
 use toml::Value as TomlValue;
 use wxdragon::config::{Config, ConfigStyle};
 
@@ -159,7 +162,7 @@ fn read_ini(ini_path: &Path) -> ConfigData {
 		}
 		let mut doc = DocumentConfig {
 			path: path.clone(),
-			last_position: config.read_long("last_position", 0),
+			last_position: saved_position(config.read_long("last_position", 0)),
 			opened: config.read_bool("opened", false),
 			format: config.read_string("format", ""),
 			password: config.read_string("password", ""),
@@ -167,7 +170,8 @@ fn read_ini(ini_path: &Path) -> ConfigData {
 		};
 		let history_str = config.read_string("navigation_history", "");
 		if !history_str.is_empty() {
-			doc.navigation_history = history_str.split(',').filter_map(|t| t.trim().parse::<i64>().ok()).collect();
+			doc.navigation_history =
+				history_str.split(',').filter_map(|t| t.trim().parse::<i64>().ok()).map(saved_position).collect();
 		}
 		let history_index = config.read_long("navigation_history_index", 0);
 		doc.navigation_history_index = usize::try_from(history_index).unwrap_or(0);
@@ -184,9 +188,15 @@ fn read_ini(ini_path: &Path) -> ConfigData {
 					let end_str = parts.next().unwrap_or_default();
 					let note_str = parts.next().unwrap_or_default();
 					if let (Ok(start), Ok(end)) = (start_str.parse::<i64>(), end_str.parse::<i64>()) {
-						doc.bookmarks.push(StoredBookmark { start, end, note: decode_note(note_str), audio_ms: None });
+						doc.bookmarks.push(StoredBookmark {
+							start: saved_position(start),
+							end: saved_position(end),
+							note: decode_note(note_str),
+							audio_ms: None,
+						});
 					}
 				} else if let Ok(pos) = trimmed.parse::<i64>() {
+					let pos = saved_position(pos);
 					doc.bookmarks.push(StoredBookmark { start: pos, end: pos, note: String::new(), audio_ms: None });
 				}
 			}
@@ -196,6 +206,11 @@ fn read_ini(ini_path: &Path) -> ConfigData {
 		config.set_path("/");
 	}
 	data
+}
+
+/// A position from the old config, which held them as signed integers.
+fn saved_position(raw: i64) -> DocPos {
+	DocPos::from_raw(usize::try_from(raw).unwrap_or(0))
 }
 
 fn decode_note(encoded: &str) -> String {

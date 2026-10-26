@@ -372,7 +372,7 @@ impl DocumentSession {
 		&self.handle
 	}
 
-	/// The position in this document nearest `raw`, for a value from the config or the text control, which hold positions as `i64`.
+	/// The position in this document nearest `raw`, for a value from a control or a dialog, which hold positions as integers.
 	#[must_use]
 	pub fn nearest_pos(&self, raw: i64) -> DocPos {
 		self.handle.document().buffer.nearest_pos(raw)

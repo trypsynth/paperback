@@ -200,8 +200,8 @@ mod tests {
 	#[test]
 	fn a_link_is_sorted_by_its_file_name() {
 		let config = ConfigManager::in_memory();
-		config.set_document_position("b.epub-notes.txt", 1);
-		config.set_document_position("https://example.org/b.epub?ref=zzz", 1);
+		config.set_document_position("b.epub-notes.txt", 1.into());
+		config.set_document_position("https://example.org/b.epub?ref=zzz", 1.into());
 		let order: Vec<_> =
 			get_sorted_document_list(&config, &[], "", None).into_iter().map(|item| item.filename).collect();
 		assert_eq!(order, vec!["b.epub", "b.epub-notes.txt"]);

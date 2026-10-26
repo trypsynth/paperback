@@ -10,14 +10,15 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use super::shortcuts::{HotkeyConfig, ShortcutsConfig};
+use crate::document::DocPos;
 
 const CONFIG_VERSION: u32 = 4;
 const DEFAULT_RECENT_DOCUMENTS_TO_SHOW: i64 = 25;
 
 #[derive(Clone, Debug, Default)]
 pub struct Bookmark {
-	pub start: i64,
-	pub end: i64,
+	pub start: DocPos,
+	pub end: DocPos,
 	pub note: String,
 	/// Where in the recording the bookmark was set, for a document that is only audio. See
 	/// [`StoredBookmark::audio_ms`].
@@ -26,7 +27,7 @@ pub struct Bookmark {
 
 #[derive(Clone, Debug, Default)]
 pub struct NavigationHistory {
-	pub positions: Vec<i64>,
+	pub positions: Vec<DocPos>,
 	pub index: usize,
 }
 
@@ -76,8 +77,8 @@ impl ReadabilityFont {
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct StoredBookmark {
-	pub start: i64,
-	pub end: i64,
+	pub start: DocPos,
+	pub end: DocPos,
 	#[serde(default)]
 	pub note: String,
 	/// Where in the recording the bookmark was set, for a document that is only audio.
@@ -220,7 +221,7 @@ impl Default for AppSettings {
 pub struct DocumentConfig {
 	pub path: String,
 	#[serde(default)]
-	pub last_position: i64,
+	pub last_position: DocPos,
 	/// Elapsed milliseconds into a recorded narration, for documents that have one. Kept
 	/// separately from `last_position` because the caret and the audio are independent axes:
 	/// resuming an audiobook should return to what was last *heard*, which a text position can
@@ -228,13 +229,13 @@ pub struct DocumentConfig {
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub audio_time_ms: Option<u64>,
 	#[serde(default)]
-	pub navigation_history: Vec<i64>,
+	pub navigation_history: Vec<DocPos>,
 	#[serde(default)]
 	pub navigation_history_index: usize,
 	#[serde(default)]
 	pub bookmarks: Vec<StoredBookmark>,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
-	pub temporary_bookmark: Option<i64>,
+	pub temporary_bookmark: Option<DocPos>,
 	#[serde(default, skip_serializing_if = "String::is_empty")]
 	pub format: String,
 	#[serde(default, skip_serializing_if = "String::is_empty")]
@@ -288,11 +289,14 @@ mod tests {
 
 	#[test]
 	fn temporary_bookmark_serializes_and_loads() {
-		let doc =
-			DocumentConfig { path: "book.epub".into(), temporary_bookmark: Some(12_345), ..DocumentConfig::default() };
+		let doc = DocumentConfig {
+			path: "book.epub".into(),
+			temporary_bookmark: Some(12_345.into()),
+			..DocumentConfig::default()
+		};
 		let serialized = toml::to_string(&doc).unwrap();
 		let parsed: DocumentConfig = toml::from_str(&serialized).unwrap();
-		assert_eq!(parsed.temporary_bookmark, Some(12_345));
+		assert_eq!(parsed.temporary_bookmark, Some(12_345.into()));
 	}
 
 	/// Every config file written before this setting existed has no such key, and all of them
@@ -301,6 +305,27 @@ mod tests {
 	fn highlight_found_text_defaults_to_true_when_missing() {
 		let parsed: AppSettings = toml::from_str("word_wrap = true\n").unwrap();
 		assert!(parsed.highlight_found_text);
+	}
+
+	/// Positions are written as the plain integers they always were, so a config file reads the same in either direction.
+	#[test]
+	fn positions_round_trip_as_plain_integers() {
+		let saved = "path = \"book.epub\"\nlast_position = 4321\nnavigation_history = [10, 200, 4321]\nnavigation_history_index = 2\ntemporary_bookmark = 77\nopened = false\n\n[[bookmarks]]\nstart = 5\nend = 9\nnote = \"a note\"\n";
+		let doc: DocumentConfig = toml::from_str(saved).unwrap();
+		assert_eq!(doc.last_position, 4321);
+		assert_eq!(doc.navigation_history, vec![10, 200, 4321]);
+		assert_eq!(doc.temporary_bookmark, Some(77.into()));
+		assert_eq!((doc.bookmarks[0].start, doc.bookmarks[0].end), (5.into(), 9.into()));
+		assert_eq!(toml::to_string(&doc).unwrap(), saved);
+	}
+
+	/// Nothing saves a negative position, but one in an edited file loads as the start rather than losing the whole config.
+	#[test]
+	fn a_negative_position_loads_as_the_start() {
+		let doc: DocumentConfig =
+			toml::from_str("path = \"book.epub\"\nlast_position = -1\nnavigation_history = [-5, 30]\n").unwrap();
+		assert_eq!(doc.last_position, DocPos::ZERO);
+		assert_eq!(doc.navigation_history, vec![0, 30]);
 	}
 
 	#[test]

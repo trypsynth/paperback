@@ -215,13 +215,12 @@ impl DocumentSession {
 		next: bool,
 		notes_only: bool,
 	) -> NavigationResult {
-		let result =
-			bookmark_navigate(config, path, i64::try_from(position).unwrap_or(i64::MAX), wrap, next, notes_only);
+		let result = bookmark_navigate(config, path, position, wrap, next, notes_only);
 		if result.found {
 			NavigationResult {
 				found: true,
 				wrapped: result.wrapped,
-				offset: self.handle.document().buffer.nearest_pos(result.start),
+				offset: result.start.min(self.handle.document().buffer.end()),
 				marker_text: result.note.clone(),
 				marker_level: 0,
 				marker_index: result.index,

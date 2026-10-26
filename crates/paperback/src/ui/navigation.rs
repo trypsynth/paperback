@@ -45,11 +45,6 @@ fn record_history(tab: &mut DocumentTab, from: DocPos, to: DocPos) -> HistoryUpd
 	(tab.file_path.to_string_lossy().to_string(), history.to_vec(), history_index)
 }
 
-/// `position` as the config keeps it, which is still as an `i64`.
-pub fn config_pos(position: DocPos) -> i64 {
-	i64::try_from(position).unwrap_or(i64::MAX)
-}
-
 /// Reads the caret's document-absolute position, translating it out of `tab`'s currently
 /// loaded window. Use this instead of `tab.text_ctrl.get_insertion_point()` directly - that
 /// method only knows about whatever window is currently loaded, not the document as a whole.
@@ -182,9 +177,8 @@ fn seek_audio_to_position(tab: &mut DocumentTab, offset: DocPos) {
 /// result directly.
 pub fn persist_navigation_history(config: &Rc<Mutex<ConfigManager>>, update: Option<&HistoryUpdate>) {
 	if let Some((path_str, history, history_index)) = update {
-		let history: Vec<i64> = history.iter().copied().map(config_pos).collect();
 		let cfg = config.lock().unwrap();
-		cfg.set_navigation_history(path_str, &history, *history_index);
+		cfg.set_navigation_history(path_str, history, *history_index);
 	}
 }
 

@@ -264,8 +264,8 @@ fn navigate_bookmark_and_note_return_not_found_with_empty_config() {
 fn navigate_bookmark_reads_the_bookmarks_of_the_path_given() {
 	let session = sample_session(ParserFlags::NONE);
 	let config = ConfigManager::in_memory();
-	config.add_bookmark("https://example.org/book.epub", 6, 6, "");
-	config.add_bookmark("book.epub", 12, 12, "");
+	config.add_bookmark("https://example.org/book.epub", 6.into(), 6.into(), "");
+	config.add_bookmark("book.epub", 12.into(), 12.into(), "");
 	let first = session.navigate_bookmark(&config, "https://example.org/book.epub", 0.into(), false, true);
 	assert_eq!((true, DocPos::from(6)), (first.found, first.offset));
 	assert!(!session.navigate_bookmark(&config, "https://example.org/book.epub", 6.into(), false, true).found);
@@ -275,8 +275,8 @@ fn navigate_bookmark_reads_the_bookmarks_of_the_path_given() {
 fn bookmark_display_at_position_reads_the_bookmarks_of_the_path_given() {
 	let session = sample_session(ParserFlags::NONE);
 	let config = ConfigManager::in_memory();
-	config.add_bookmark("https://example.org/book.epub", 6, 6, "saved under the link");
-	config.add_bookmark("book.epub", 12, 12, "saved under the copy");
+	config.add_bookmark("https://example.org/book.epub", 6.into(), 6.into(), "saved under the link");
+	config.add_bookmark("book.epub", 12.into(), 12.into(), "saved under the copy");
 	let display = session.bookmark_display_at_position(&config, "https://example.org/book.epub", 6.into());
 	assert_eq!((true, "saved under the link"), (display.found, display.note.as_str()));
 	assert!(!session.bookmark_display_at_position(&config, "https://example.org/book.epub", 12.into()).found);
@@ -299,13 +299,12 @@ fn bookmark_display_at_position_reads_snippet_in_positions() {
 	let content = "\u{1F600} intro\nfirst line\nsecond \u{1F600} line\nthird";
 	let session = session_with_content(content);
 	let pos = |needle: &str| DocLen::of(&content[..content.find(needle).unwrap()]).as_pos();
-	let saved = |position: DocPos| i64::try_from(position).unwrap();
 	let config = ConfigManager::in_memory();
 	let range_start = pos("line\nsecond");
 	let range_end = pos("\nsecond");
-	config.add_bookmark("book.epub", saved(range_start), saved(range_end), "");
-	config.add_bookmark("book.epub", saved(pos("third")), saved(pos("third")), "");
-	config.add_bookmark("book.epub", saved(pos("second")), saved(pos("second")), "");
+	config.add_bookmark("book.epub", range_start, range_end, "");
+	config.add_bookmark("book.epub", pos("third"), pos("third"), "");
+	config.add_bookmark("book.epub", pos("second"), pos("second"), "");
 	assert_eq!(session.bookmark_display_at_position(&config, "book.epub", range_start).snippet, "line");
 	assert_eq!(session.bookmark_display_at_position(&config, "book.epub", pos("third")).snippet, "third");
 	assert_eq!(
