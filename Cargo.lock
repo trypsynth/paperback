@@ -975,9 +975,9 @@ dependencies = [
 
 [[package]]
 name = "ctutils"
-version = "0.4.5"
+version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38d28fb6aa7dd680b3ffd1a3e64e115c177bdba63c0ae7f9cd48129ff05c4fa0"
+checksum = "fe3e9d21d39e6f39ff46e03d5b621424f88ee23d8a1672c6bfc9ccc7f2da4f6a"
 dependencies = [
  "cmov",
 ]
@@ -1292,9 +1292,9 @@ checksum = "f4beca3cb2444e3304ac30843cc091f44ed58932353cd492ce740067bfce6b12"
 
 [[package]]
 name = "fearless_simd"
-version = "1.1.0"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3296eb97d869113eaf148a6bdf01884e90b3828ad7ae2340b0f93362fc158611"
+checksum = "629c9d6b6f30b5604089e0980f4d924a013aacb1654a6cdf5d3d852224f68651"
 
 [[package]]
 name = "filetime"
@@ -1596,7 +1596,7 @@ version = "0.8.0"
 source = "git+https://github.com/trypsynth/hayro?branch=paperback#203a3b180763ab4d4a6583b12485750a418f868d"
 dependencies = [
  "bytemuck",
- "fearless_simd 1.1.0",
+ "fearless_simd 1.2.0",
  "hayro-interpret",
  "image",
  "kurbo",
@@ -1642,7 +1642,7 @@ name = "hayro-jbig2"
 version = "0.3.1"
 source = "git+https://github.com/trypsynth/hayro?branch=paperback#203a3b180763ab4d4a6583b12485750a418f868d"
 dependencies = [
- "fearless_simd 1.1.0",
+ "fearless_simd 1.2.0",
  "hayro-ccitt",
 ]
 
@@ -1651,7 +1651,7 @@ name = "hayro-jpeg2000"
 version = "0.4.1"
 source = "git+https://github.com/trypsynth/hayro?branch=paperback#203a3b180763ab4d4a6583b12485750a418f868d"
 dependencies = [
- "fearless_simd 1.1.0",
+ "fearless_simd 1.2.0",
 ]
 
 [[package]]
@@ -2934,9 +2934,9 @@ dependencies = [
 
 [[package]]
 name = "openssl-probe"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c87def4c32ab89d880effc9e097653c8da5d6ef28e6b539d313baaacfbafcbe"
+checksum = "7e036b411754132fd6b74e94b74e9a13c5cf606fa93d1885c35860d3060820b1"
 
 [[package]]
 name = "openssl-sys"
