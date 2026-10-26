@@ -85,7 +85,7 @@ impl SleepTimer {
 					if let Some(tab) = dm.get_tab(i) {
 						let current_pos = navigation::doc_caret(tab);
 						let path_str = tab.file_path.to_string_lossy();
-						cfg.set_document_position(&path_str, current_pos);
+						cfg.set_document_position(&path_str, navigation::config_pos(current_pos));
 					}
 				}
 				cfg.flush();

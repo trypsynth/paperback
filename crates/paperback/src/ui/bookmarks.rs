@@ -16,7 +16,8 @@ use super::{
 	dialogs,
 	document_manager::{DocumentManager, DocumentTab},
 	navigation::{
-		HistoryUpdate, doc_caret, doc_selected_range, move_to_offset_and_record_history, persist_navigation_history,
+		HistoryUpdate, config_pos, doc_caret, doc_selected_range, move_to_offset_and_record_history,
+		persist_navigation_history,
 	},
 };
 use crate::ui::navigation::{announce, announce_for_command};
@@ -98,7 +99,7 @@ fn navigate_audio_bookmark(
 			.any(|bm| bm.audio_ms.is_some() && (!notes_only || !bm.note.is_empty()));
 		return (nothing_to_navigate_to(has_items, next, notes_only), None);
 	};
-	let update = move_to_offset_and_record_history(tab, hit.start);
+	let update = move_to_offset_and_record_history(tab, tab.session.nearest_pos(hit.start));
 	seek_to_audio_bookmark(tab, hit.audio_ms);
 	if config.get_app_bool("bookmark_sounds", true) {
 		super::sounds::play_bookmark_sound(!hit.note.is_empty());
@@ -182,12 +183,18 @@ pub fn handle_bookmark_dialog(
 		};
 		let current_pos = doc_caret(tab);
 		let path_str = tab.file_path.to_string_lossy().to_string();
-		let selection =
-			dialogs::show_bookmark_dialog(frame, &tab.session, &path_str, &Rc::clone(config), current_pos, filter);
+		let selection = dialogs::show_bookmark_dialog(
+			frame,
+			&tab.session,
+			&path_str,
+			&Rc::clone(config),
+			config_pos(current_pos),
+			filter,
+		);
 		let Some(selection) = selection else {
 			return;
 		};
-		let update = move_to_offset_and_record_history(tab, selection.start);
+		let update = move_to_offset_and_record_history(tab, tab.session.nearest_pos(selection.start));
 		let message = if let Some(audio_ms) = selection.audio_ms {
 			seek_to_audio_bookmark(tab, audio_ms);
 			let note = config
@@ -202,7 +209,7 @@ pub fn handle_bookmark_dialog(
 		} else {
 			let info = {
 				let cfg = config.lock().unwrap();
-				tab.session.bookmark_display_at_position(&cfg, &path_str, selection.start)
+				tab.session.bookmark_display_at_position(&cfg, &path_str, tab.session.nearest_pos(selection.start))
 			};
 			let text =
 				if info.found { if info.note.is_empty() { info.snippet } else { info.note } } else { String::new() };
@@ -223,7 +230,7 @@ fn bookmark_target(doc_manager: &Rc<Mutex<DocumentManager>>) -> Option<(i64, i64
 	let mut dm = doc_manager.lock().unwrap();
 	let tab = dm.active_tab_mut()?;
 	let (start, end) = doc_selected_range(tab);
-	Some((start, end, tab.file_path.to_string_lossy().to_string(), audio_bookmark_time(tab)))
+	Some((config_pos(start), config_pos(end), tab.file_path.to_string_lossy().to_string(), audio_bookmark_time(tab)))
 }
 
 pub fn handle_toggle_bookmark(
@@ -315,7 +322,7 @@ pub fn handle_view_note_text(
 		let cfg = config.lock().unwrap();
 		match audio_ms {
 			Some(ms) => cfg.audio_bookmark_near(&path_str, ms, TOGGLE_REACH_MS).map(|bm| bm.note).unwrap_or_default(),
-			None => reader_core::bookmark_note_at_position(&cfg, &path_str, current_pos),
+			None => reader_core::bookmark_note_at_position(&cfg, &path_str, config_pos(current_pos)),
 		}
 	};
 	if note.is_empty() {

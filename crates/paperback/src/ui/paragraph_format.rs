@@ -5,7 +5,7 @@
 
 use std::{ffi::c_void, ptr::null_mut};
 
-use paperback_core::session::ParagraphFormat;
+use paperback_core::{document::DocPos, session::ParagraphFormat};
 use windows::{
 	Win32::{
 		Foundation::{HWND, LPARAM, WPARAM},
@@ -29,7 +29,11 @@ use crate::{text_window::CtrlPos, ui::reader_ctrl::ReaderCtrl};
 ///
 /// The Text Object Model refuses to change a read-only control, so the control is made editable
 /// for the duration. That raises no accessibility event, and nothing here moves the caret.
-pub fn apply_paragraph_formats(text_ctrl: ReaderCtrl, place: impl Fn(i64) -> CtrlPos, paragraphs: &[ParagraphFormat]) {
+pub fn apply_paragraph_formats(
+	text_ctrl: ReaderCtrl,
+	place: impl Fn(DocPos) -> CtrlPos,
+	paragraphs: &[ParagraphFormat],
+) {
 	if paragraphs.is_empty() {
 		return;
 	}
@@ -65,10 +69,10 @@ fn text_document(text_ctrl: TextCtrl) -> Option<ITextDocument> {
 
 fn apply(
 	document: &ITextDocument,
-	place: &impl Fn(i64) -> CtrlPos,
+	place: &impl Fn(DocPos) -> CtrlPos,
 	paragraph: &ParagraphFormat,
 ) -> windows::core::Result<()> {
-	let position = |offset: i64| i32::try_from(place(offset).get()).unwrap_or(i32::MAX);
+	let position = |offset: DocPos| i32::try_from(place(offset).get()).unwrap_or(i32::MAX);
 	unsafe {
 		let para = document.Range(position(paragraph.start), position(paragraph.end))?.GetPara()?;
 		let format = para.GetDuplicate()?;

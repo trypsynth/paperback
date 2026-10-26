@@ -92,7 +92,7 @@ fn spine_section_bounds(doc: &DocumentHandle, spine_index: usize) -> (DocPos, Do
 }
 
 #[must_use]
-pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> LinkNavigation {
+pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: DocPos) -> LinkNavigation {
 	let href_trimmed = href.trim();
 	if href_trimmed.is_empty() {
 		return LinkNavigation { found: false, is_external: false, offset: DocPos::ZERO, url: String::new() };
@@ -100,7 +100,7 @@ pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: i64) -> 
 	if is_external_url(href_trimmed) {
 		return LinkNavigation { found: true, is_external: true, offset: DocPos::ZERO, url: href_trimmed.to_string() };
 	}
-	let current_section = current_section_path(doc, doc.document().buffer.nearest_pos(current_position));
+	let current_section = current_section_path(doc, current_position.min(doc.document().buffer.end()));
 	if let Some(fragment) = href_trimmed.strip_prefix('#') {
 		if let Some(offset) = find_fragment_offset(doc, fragment, current_section.as_deref()) {
 			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
@@ -171,9 +171,9 @@ mod tests {
 	#[test]
 	fn resolve_link_handles_empty_and_external_hrefs() {
 		let doc = sample_link_doc_handle();
-		let empty = resolve_link(&doc, "  ", 0);
+		let empty = resolve_link(&doc, "  ", 0.into());
 		assert!(!empty.found);
-		let ext = resolve_link(&doc, "https://example.com", 0);
+		let ext = resolve_link(&doc, "https://example.com", 0.into());
 		assert!(ext.found);
 		assert!(ext.is_external);
 		assert_eq!(ext.url, "https://example.com");
@@ -182,7 +182,7 @@ mod tests {
 	#[test]
 	fn resolve_link_fragment_prefers_current_section_scoped_id() {
 		let doc = sample_link_doc_handle();
-		let result = resolve_link(&doc, "#target", 150);
+		let result = resolve_link(&doc, "#target", 150.into());
 		assert!(result.found);
 		assert!(!result.is_external);
 		assert_eq!(result.offset, 120);
@@ -191,7 +191,7 @@ mod tests {
 	#[test]
 	fn resolve_link_fragment_falls_back_to_global_id() {
 		let doc = sample_link_doc_handle();
-		let result = resolve_link(&doc, "#global", 150);
+		let result = resolve_link(&doc, "#global", 150.into());
 		assert!(result.found);
 		assert_eq!(result.offset, 180);
 	}
@@ -199,7 +199,7 @@ mod tests {
 	#[test]
 	fn resolve_link_file_path_uses_section_start_when_no_fragment() {
 		let doc = sample_link_doc_handle();
-		let result = resolve_link(&doc, "chapter2.xhtml", 0);
+		let result = resolve_link(&doc, "chapter2.xhtml", 0.into());
 		assert!(result.found);
 		assert_eq!(result.offset, 100);
 	}
@@ -207,7 +207,7 @@ mod tests {
 	#[test]
 	fn resolve_link_file_path_uses_fragment_within_section_bounds() {
 		let doc = sample_link_doc_handle();
-		let result = resolve_link(&doc, "chapter2.xhtml#target", 0);
+		let result = resolve_link(&doc, "chapter2.xhtml#target", 0.into());
 		assert!(result.found);
 		assert_eq!(result.offset, 120);
 	}
@@ -215,7 +215,7 @@ mod tests {
 	#[test]
 	fn resolve_link_file_path_ignores_fragment_outside_section_bounds() {
 		let doc = sample_link_doc_handle();
-		let result = resolve_link(&doc, "chapter2.xhtml#intro", 0);
+		let result = resolve_link(&doc, "chapter2.xhtml#intro", 0.into());
 		assert!(result.found);
 		assert_eq!(result.offset, 100);
 	}
@@ -223,7 +223,7 @@ mod tests {
 	#[test]
 	fn resolve_link_returns_not_found_for_unknown_targets() {
 		let doc = sample_link_doc_handle();
-		let result = resolve_link(&doc, "missing.xhtml#none", 0);
+		let result = resolve_link(&doc, "missing.xhtml#none", 0.into());
 		assert!(!result.found);
 	}
 

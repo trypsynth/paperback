@@ -7,7 +7,7 @@
 
 use std::{rc::Rc, sync::Mutex};
 
-use paperback_core::config::ConfigManager;
+use paperback_core::{config::ConfigManager, document::DocPos};
 use patois::{nt, t};
 use wxdragon::{clipboard::Clipboard, prelude::*};
 
@@ -30,7 +30,7 @@ enum CopyOutcome {
 /// the two rather than nothing: the two presses name a range, the same way dragging a selection
 /// upwards does. Both of these are positions the reader is *on* rather than bounds - the caller
 /// turns them into a range that can be extracted.
-const fn ordered_ends(mark: i64, caret: i64) -> (i64, i64) {
+fn ordered_ends(mark: DocPos, caret: DocPos) -> (DocPos, DocPos) {
 	if mark <= caret { (mark, caret) } else { (caret, mark) }
 }
 
@@ -159,9 +159,10 @@ mod tests {
 
 	#[test]
 	fn ordered_ends_normalizes_to_document_order() {
-		assert_eq!(ordered_ends(5, 9), (5, 9));
-		assert_eq!(ordered_ends(9, 5), (5, 9));
-		assert_eq!(ordered_ends(4, 4), (4, 4));
+		let (four, five, nine) = (DocPos::from_raw(4), DocPos::from_raw(5), DocPos::from_raw(9));
+		assert_eq!(ordered_ends(five, nine), (five, nine));
+		assert_eq!(ordered_ends(nine, five), (five, nine));
+		assert_eq!(ordered_ends(four, four), (four, four));
 	}
 
 	#[test]

@@ -1,6 +1,7 @@
 //! Playing a document's recorded narration, and the sounds that mark a bookmark or a note.
 
 use super::DocumentManager;
+use crate::ui::navigation::config_pos;
 
 impl DocumentManager {
 	/// Stops every tab's audio ahead of the app closing, winding playback down deliberately
@@ -43,6 +44,7 @@ impl DocumentManager {
 		let path_str = tab.file_path.to_string_lossy().to_string();
 		let bookmarks = config.get_bookmarks(&path_str);
 		drop(config);
+		let (prev, position) = (config_pos(prev), config_pos(position));
 		let mut has_note = false;
 		let mut has_bookmark = false;
 		for bm in &bookmarks {
@@ -104,9 +106,8 @@ impl DocumentManager {
 		// window-aware jump, see C:\Users\Quin\.claude\plans\fluffy-hugging-crystal.md - a
 		// scrub target outside the loaded window is silently clamped instead of reloading.
 		let current = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-		if i64::try_from(position).ok() != Some(current) {
-			let target = i64::try_from(position).unwrap_or(current);
-			let local = tab.window.to_local(target);
+		if position != current {
+			let local = tab.window.to_local(position);
 			tab.text_ctrl.set_insertion_point(local);
 			tab.text_ctrl.show_position(local);
 		}

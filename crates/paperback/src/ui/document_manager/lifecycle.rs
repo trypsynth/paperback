@@ -18,6 +18,7 @@ use crate::{
 	audio_player::AudioPlayer,
 	shell,
 	ui::{
+		navigation::config_pos,
 		readability::{
 			apply_bg_color_to_ctrl, apply_foreground_color_to_ctrl, apply_readability_format_to_ctrl,
 			build_font_from_readability,
@@ -184,8 +185,8 @@ impl DocumentManager {
 		panel.set_sizer(sizer, true);
 		let path_str = path.to_string_lossy();
 		let doc_len = session.document_len();
-		let saved_pos = config.get_validated_document_position(&path_str, doc_len);
-		let initial_pos = if saved_pos >= 0 { saved_pos } else { 0 };
+		let saved_pos = config.get_validated_document_position(&path_str, config_pos(doc_len.as_pos()));
+		let initial_pos = session.nearest_pos(saved_pos);
 		let window = load_window_into_ctrl(text_ctrl, &session, initial_pos, doc_len);
 		apply_readability_format_to_ctrl(
 			text_ctrl.widget(),
@@ -204,7 +205,8 @@ impl DocumentManager {
 		self.notebook.add_page(&panel, &title, true, None);
 		let config = self.config.lock().unwrap();
 		let nav_history = config.get_navigation_history(&path_str);
-		session.set_history(&nav_history.positions, nav_history.index);
+		let positions: Vec<_> = nav_history.positions.iter().map(|&position| session.nearest_pos(position)).collect();
+		session.set_history(&positions, nav_history.index);
 		let audio_player = session.audio().cloned().and_then(|timeline| match AudioPlayer::new(timeline) {
 			Ok(player) => Some(player),
 			Err(err) => {
@@ -241,7 +243,6 @@ impl DocumentManager {
 		// position, so it loses however much of that clip had already played, and loses
 		// everything since the last explicit jump if the caret wasn't following the audio.
 		let saved_audio_time = config.get_document_audio_time(&path_str);
-		let initial_pos = self.tabs[tab_index].session.handle().document().buffer.nearest_pos(initial_pos);
 		if let Some(player) = self.tabs[tab_index].audio_player.as_mut() {
 			match saved_audio_time {
 				Some(time_ms) => {
@@ -283,13 +284,14 @@ impl DocumentManager {
 			let config = self.config.lock().unwrap();
 			if save_state && tab.track {
 				let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-				config.set_document_position(&path_str, position);
+				config.set_document_position(&path_str, config_pos(position));
 				config.set_document_audio_time(
 					&path_str,
 					tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms),
 				);
 				let (history, history_index) = tab.session.get_history();
-				config.set_navigation_history(&path_str, history, history_index);
+				let history: Vec<i64> = history.iter().copied().map(config_pos).collect();
+				config.set_navigation_history(&path_str, &history, history_index);
 				config.set_document_opened(&path_str, false);
 			}
 			config.remove_opened_document(&path_str);
@@ -341,10 +343,11 @@ impl DocumentManager {
 			}
 			let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 			let path_str = tab.file_path.to_string_lossy();
-			config.set_document_position(&path_str, position);
+			config.set_document_position(&path_str, config_pos(position));
 			config.set_document_audio_time(&path_str, tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms));
 			let (history, history_index) = tab.session.get_history();
-			config.set_navigation_history(&path_str, history, history_index);
+			let history: Vec<i64> = history.iter().copied().map(config_pos).collect();
+			config.set_navigation_history(&path_str, &history, history_index);
 		}
 		config.flush();
 	}
@@ -370,7 +373,7 @@ impl DocumentManager {
 			let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();
-			config.set_document_position(&path_str, position);
+			config.set_document_position(&path_str, config_pos(position));
 			config.set_document_audio_time(&path_str, tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms));
 			config.flush();
 		}

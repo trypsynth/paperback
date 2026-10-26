@@ -40,8 +40,8 @@ fn find_all_dedupes_by_line_identity_not_text() {
 	assert_eq!(rows[1].text, "same word same");
 	assert_eq!(rows[0].matches.len(), 2, "both occurrences on the line are kept on its one row");
 	assert_eq!(rows[1].matches.len(), 2);
-	assert_eq!((rows[0].matches[0].start, rows[0].matches[0].end), (0, 4));
-	assert_eq!((rows[0].matches[1].start, rows[0].matches[1].end), (10, 14));
+	assert_eq!((rows[0].matches[0].start, rows[0].matches[0].end), (0.into(), 4.into()));
+	assert_eq!((rows[0].matches[1].start, rows[0].matches[1].end), (10.into(), 14.into()));
 }
 
 #[test]
@@ -51,9 +51,9 @@ fn find_all_multiple_matches_on_a_line_preserve_order() {
 	assert_eq!(rows.len(), 1);
 	let spans = &rows[0].matches;
 	assert_eq!(spans.len(), 3);
-	assert_eq!((spans[0].start, spans[0].end), (0, 1));
-	assert_eq!((spans[1].start, spans[1].end), (2, 3));
-	assert_eq!((spans[2].start, spans[2].end), (4, 5));
+	assert_eq!((spans[0].start, spans[0].end), (0.into(), 1.into()));
+	assert_eq!((spans[1].start, spans[1].end), (2.into(), 3.into()));
+	assert_eq!((spans[2].start, spans[2].end), (4.into(), 5.into()));
 }
 
 #[test]
@@ -72,9 +72,9 @@ fn find_all_uses_regex_and_real_spans() {
 	assert_eq!(rows.len(), 1);
 	let spans = &rows[0].matches;
 	assert_eq!(spans.len(), 3);
-	assert_eq!((spans[0].start, spans[0].end), (1, 3));
-	assert_eq!((spans[1].start, spans[1].end), (5, 8));
-	assert_eq!((spans[2].start, spans[2].end), (10, 11));
+	assert_eq!((spans[0].start, spans[0].end), (1.into(), 3.into()));
+	assert_eq!((spans[1].start, spans[1].end), (5.into(), 8.into()));
+	assert_eq!((spans[2].start, spans[2].end), (10.into(), 11.into()));
 }
 
 #[test]
@@ -118,7 +118,7 @@ fn find_all_counts_an_astral_char_as_one_position() {
 	// The emoji is one position, so the second match starts at 7.
 	let session = session_with_content("beta 😀 beta\n");
 	let rows = session.find_all_lines("beta", SearchOptions::empty());
-	assert_eq!((rows[0].matches[1].start, rows[0].matches[1].end), (7, 11));
+	assert_eq!((rows[0].matches[1].start, rows[0].matches[1].end), (7.into(), 11.into()));
 }
 
 #[test]

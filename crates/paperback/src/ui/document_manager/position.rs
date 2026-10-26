@@ -1,5 +1,6 @@
 //! The reader's place in the active document: the status bar, the spoken position, and the temporary bookmark. Split out of the main `DocumentManager` impl.
 
+use paperback_core::document::DocPos;
 use patois::t;
 
 use super::{DocumentManager, DocumentTab};
@@ -69,7 +70,7 @@ impl DocumentManager {
 		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		let path_str = tab.file_path.to_string_lossy().to_string();
 		let config = self.config.lock().unwrap();
-		config.set_temporary_bookmark(&path_str, Some(position));
+		config.set_temporary_bookmark(&path_str, Some(navigation::config_pos(position)));
 		config.flush();
 		drop(config);
 		// TRANSLATORS: Announced after setting a temporary bookmark at the current position
@@ -96,7 +97,7 @@ impl DocumentManager {
 		};
 		let (message, track, update) = {
 			let tab = self.active_tab_mut().unwrap();
-			let position = position.clamp(0, tab.session.document_len().max(0));
+			let position = tab.session.nearest_pos(position);
 			let line_text = tab.session.get_line_text(position);
 			let message = if line_text.trim().is_empty() {
 				// TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line
@@ -128,7 +129,7 @@ impl DocumentManager {
 /// (`dialogs::elements`), and iOS's Go To sheet shows it to the reader as a plain 0. This agrees
 /// with Go to Page, the one other place that speaks a page number; the fix that would stop it being
 /// forgotten belongs in `current_page` itself.
-fn page_at(tab: &DocumentTab, position: i64) -> Option<i32> {
+fn page_at(tab: &DocumentTab, position: DocPos) -> Option<i32> {
 	if tab.session.page_count() == 0 {
 		return None;
 	}

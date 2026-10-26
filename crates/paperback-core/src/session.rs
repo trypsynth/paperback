@@ -1,7 +1,8 @@
 use crate::{
 	audio::AudioTimeline,
 	document::{
-		self, DocPos, DocumentHandle, Edit, MarkerType, ParseSettings, ParserContext, ParserFlags, ReplaceOutcome,
+		self, DocLen, DocPos, DocumentHandle, Edit, MarkerType, ParseSettings, ParserContext, ParserFlags,
+		ReplaceOutcome,
 	},
 	parser,
 	reader_core::record_history_position,
@@ -22,7 +23,7 @@ pub use find_all::{FindAllLine, FindSpan};
 pub use window::{ParagraphFormat, WHOLE_DOCUMENT_DISPLAY_LEN, WINDOW_DISPLAY_LEN, WindowSlice};
 
 const MAX_HISTORY_LEN: usize = 10;
-const HISTORY_DISTANCE_THRESHOLD: i64 = 300;
+const HISTORY_DISTANCE_THRESHOLD: DocLen = DocLen::from_raw(300);
 /// The audio-time counterpart to [`HISTORY_DISTANCE_THRESHOLD`], for documents (plain audio
 /// bundles in particular) whose text spine is too sparse for a character count to tell a real
 /// jump from a step to the next line. 30 seconds is comfortably past a single seek keypress
@@ -44,7 +45,7 @@ pub struct SearchOptionsFfi {
 pub struct SearchResultFfi {
 	pub found: bool,
 	pub wrapped: bool,
-	pub position: i64,
+	pub position: DocPos,
 }
 
 #[derive(Debug, Clone)]
@@ -56,7 +57,8 @@ pub struct WebviewTarget {
 #[derive(Debug, Clone)]
 pub struct SourceView {
 	pub path: String,
-	pub caret: i64,
+	/// The reading position's place in the source, which opens as a document of its own.
+	pub caret: DocPos,
 }
 
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
@@ -71,7 +73,7 @@ pub struct StatusInfo {
 pub struct NavigationResult {
 	pub found: bool,
 	pub wrapped: bool,
-	pub offset: i64,
+	pub offset: DocPos,
 	pub marker_text: String,
 	pub marker_level: i32,
 	pub marker_index: i32,
@@ -83,7 +85,7 @@ impl NavigationResult {
 		Self {
 			found: false,
 			wrapped: false,
-			offset: 0,
+			offset: DocPos::ZERO,
 			marker_text: String::new(),
 			marker_level: 0,
 			marker_index: -1,
@@ -95,7 +97,7 @@ impl NavigationResult {
 		Self {
 			found: false,
 			wrapped: false,
-			offset: 0,
+			offset: DocPos::ZERO,
 			marker_text: String::new(),
 			marker_level: 0,
 			marker_index: -1,
@@ -107,7 +109,7 @@ impl NavigationResult {
 		Self {
 			found: result.found,
 			wrapped: result.wrapped,
-			offset: i64::try_from(result.offset).unwrap_or(0),
+			offset: result.offset,
 			marker_text: result.marker_text.clone(),
 			marker_level: result.marker_level,
 			marker_index: -1,
@@ -121,7 +123,7 @@ impl NavigationResult {
 pub struct LinkActivationResult {
 	pub found: bool,
 	pub action: LinkAction,
-	pub offset: i64,
+	pub offset: DocPos,
 	pub url: String,
 }
 
@@ -167,8 +169,8 @@ pub enum SegmentDirectionFfi {
 #[derive(Debug, Clone)]
 pub struct TextSegmentFfi {
 	pub text: String,
-	pub start_pos: i64,
-	pub end_pos: i64,
+	pub start_pos: DocPos,
+	pub end_pos: DocPos,
 	pub found: bool,
 }
 
@@ -181,8 +183,8 @@ pub struct AudioClipFfi {
 	pub source: i32,
 	pub clip_begin_ms: i64,
 	pub clip_end_ms: i64,
-	pub start: i64,
-	pub end: i64,
+	pub start: DocPos,
+	pub end: DocPos,
 }
 
 /// See `AudioTimeline::cursor_at_elapsed`.
@@ -199,7 +201,7 @@ pub struct AudioCursorFfi {
 #[derive(Debug, Clone, Copy, Default)]
 pub struct AudioPointFfi {
 	pub found: bool,
-	pub position: i64,
+	pub position: DocPos,
 	pub time_ms: i64,
 }
 
@@ -218,7 +220,7 @@ impl From<String> for DocumentError {
 
 impl LinkActivationResult {
 	const fn not_found() -> Self {
-		Self { found: false, action: LinkAction::NotFound, offset: 0, url: String::new() }
+		Self { found: false, action: LinkAction::NotFound, offset: DocPos::ZERO, url: String::new() }
 	}
 }
 
@@ -226,7 +228,7 @@ impl LinkActivationResult {
 pub struct DocumentSession {
 	handle: DocumentHandle,
 	file_path: String,
-	history: Vec<i64>,
+	history: Vec<DocPos>,
 	history_index: usize,
 	parser_flags: ParserFlags,
 	/// The settings the document was parsed with, which views that re-render its source must follow too.
@@ -239,7 +241,7 @@ pub struct DocumentSession {
 #[derive(Debug, Clone)]
 pub struct TocEntry {
 	pub title: String,
-	pub position: i64,
+	pub position: DocPos,
 	pub level: i32,
 }
 
@@ -247,11 +249,11 @@ pub struct TocEntry {
 #[derive(Debug, Clone)]
 pub struct LineMarker {
 	pub mtype: MarkerType,
-	pub position: i64,
+	pub position: DocPos,
 	pub text: String,
 	pub reference: String,
 	pub level: i32,
-	pub length: i64,
+	pub length: DocLen,
 }
 
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
@@ -268,7 +270,7 @@ pub struct DocumentStatsFfi {
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct HeadingTreeItemFfi {
-	pub offset: i64,
+	pub offset: DocPos,
 	pub text: String,
 	pub parent_index: i32,
 }
@@ -283,7 +285,7 @@ pub struct HeadingTreeFfi {
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct LinkListItemFfi {
-	pub offset: i64,
+	pub offset: DocPos,
 	pub text: String,
 }
 
@@ -370,14 +372,19 @@ impl DocumentSession {
 		&self.handle
 	}
 
-	/// Replaces the text spanning `start..end` (display units) with `text`, keeping the buffer
-	/// indexes, markers, and `id_positions` in sync. Returns the display-unit length delta so the
+	/// The position in this document nearest `raw`, for a value from the config or the text control, which hold positions as `i64`.
+	#[must_use]
+	pub fn nearest_pos(&self, raw: i64) -> DocPos {
+		self.handle.document().buffer.nearest_pos(raw)
+	}
+
+	/// Replaces the text spanning `start..end` with `text`, keeping the buffer
+	/// indexes, markers, and `id_positions` in sync. Returns how many positions longer the document got, negative when shorter, so the
 	/// caller can adjust its sliding window. Used by the OCR flow to swap an image-only
 	/// placeholder line for recognized text.
-	pub fn replace_range(&mut self, start: i64, end: i64, text: &str) -> i64 {
-		let start = self.handle.document().buffer.nearest_pos(start);
-		let end = self.handle.document().buffer.nearest_pos(end);
-		self.handle.replace_range(start..end, text)
+	pub fn replace_range(&mut self, start: DocPos, end: DocPos, text: &str) -> i64 {
+		let doc_end = self.handle.document().buffer.end();
+		self.handle.replace_range(start.min(doc_end)..end.min(doc_end), text)
 	}
 
 	/// Every page still awaiting OCR, as `(1-based page number, placeholder offset)` pairs in
@@ -385,24 +392,21 @@ impl DocumentSession {
 	/// [`Self::replace_image_only_pages`] removes as it consumes them, so a page already
 	/// recognized in this session never appears here twice.
 	#[must_use]
-	pub fn image_only_pages(&self) -> Vec<(i32, i64)> {
+	pub fn image_only_pages(&self) -> Vec<(i32, DocPos)> {
 		self.handle
 			.document()
 			.buffer
 			.markers
 			.iter()
 			.filter(|marker| marker.mtype == MarkerType::ImageOnlyPage)
-			.map(|marker| {
-				let offset = i64::try_from(marker.position).unwrap_or(0);
-				(self.current_page(offset), offset)
-			})
+			.map(|marker| (self.current_page(marker.position), marker.position))
 			.collect()
 	}
 
 	/// The offset of the OCR placeholder on the line containing `position`, if that line is one.
 	/// This is what Enter keys off, so pressing it anywhere on the placeholder line works.
 	#[must_use]
-	pub fn image_only_page_at(&self, position: i64) -> Option<i64> {
+	pub fn image_only_page_at(&self, position: DocPos) -> Option<DocPos> {
 		let (start, end) = self.line_bounds_at(position)?;
 		self.handle
 			.document()
@@ -410,33 +414,28 @@ impl DocumentSession {
 			.markers
 			.iter()
 			.find(|marker| {
-				marker.mtype == MarkerType::ImageOnlyPage
-					&& i64::try_from(marker.position).is_ok_and(|p| p >= start && p <= end)
+				marker.mtype == MarkerType::ImageOnlyPage && marker.position >= start && marker.position <= end
 			})
-			.map(|marker| i64::try_from(marker.position).unwrap_or(start))
+			.map(|marker| marker.position)
 	}
 
 	/// Swaps each `(placeholder offset, recognized text)` pair for the whole placeholder line,
 	/// in one pass. Offsets must be ones [`Self::image_only_pages`] or
 	/// [`Self::image_only_page_at`] reported and must still be placeholders; anything else is
 	/// skipped. Returns the outcome so callers can remap positions they hold themselves.
-	pub fn replace_image_only_pages(&mut self, pages: &[(i64, String)]) -> ReplaceOutcome {
+	pub fn replace_image_only_pages(&mut self, pages: &[(DocPos, String)]) -> ReplaceOutcome {
 		let edits: Vec<Edit> = pages
 			.iter()
 			.filter(|(offset, _)| self.image_only_page_at(*offset).is_some())
 			.filter_map(|(offset, text)| {
 				let (start, end) = self.line_bounds_at(*offset)?;
-				Some(Edit {
-					start: self.handle.document().buffer.nearest_pos(start),
-					end: self.handle.document().buffer.nearest_pos(end),
-					text: text.clone(),
-				})
+				Some(Edit { start, end, text: text.clone() })
 			})
 			.collect();
 		self.handle.replace_ranges(edits)
 	}
 
-	/// The display-unit `[start, end)` span of the text belonging to `page` (1-based): from that
+	/// The `[start, end)` span of the text belonging to `page` (1-based): from that
 	/// page's own `PageBreak` marker up to the next page's, or the end of the document for the
 	/// last one. A page with neither text nor an image sits between two page breaks at the same
 	/// offset, so its span is empty; replacing one is a pure insertion.
@@ -447,11 +446,11 @@ impl DocumentSession {
 	/// no longer starts a line. The span always *starts* on the page-break marker, which is what
 	/// keeps the marker alive across the edit (see [`DocumentBuffer::replace_ranges`]).
 	#[must_use]
-	pub fn page_text_bounds(&self, page: i32) -> Option<(i64, i64)> {
+	pub fn page_text_bounds(&self, page: i32) -> Option<(DocPos, DocPos)> {
 		let index = usize::try_from(page.checked_sub(1)?).ok()?;
 		let offsets = self.page_offsets();
 		let start = *offsets.get(index)?;
-		let end = offsets.get(index + 1).copied().unwrap_or_else(|| self.document_len());
+		let end = offsets.get(index + 1).copied().unwrap_or_else(|| self.handle.document().buffer.end());
 		Some((start, end.max(start)))
 	}
 
@@ -485,19 +484,12 @@ impl DocumentSession {
 					// The placeholder line, and only that line. `line_bounds_at` stops before
 					// the newline, so the recognized text goes in without one.
 					let (line_start, line_end) = self.line_bounds_at(placeholder)?;
-					return Some(Edit {
-						start: self.handle.document().buffer.nearest_pos(line_start),
-						end: self.handle.document().buffer.nearest_pos(line_end),
-						text: text.clone(),
-					});
+					return Some(Edit { start: line_start, end: line_end, text: text.clone() });
 				}
 				// The page's whole span, newline included, so the replacement carries one.
 				let text = if text.ends_with('\n') { text.clone() } else { format!("{text}\n") };
-				Some(Edit {
-					start: self.handle.document().buffer.nearest_pos(start),
-					end: self.handle.document().buffer.nearest_pos(end),
-					text,
-				})
+				let doc_end = self.handle.document().buffer.end();
+				Some(Edit { start: start.min(doc_end), end: end.min(doc_end), text })
 			})
 			.collect();
 		self.handle.replace_ranges(edits)
@@ -521,11 +513,11 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn get_history(&self) -> (&[i64], usize) {
+	pub fn get_history(&self) -> (&[DocPos], usize) {
 		(&self.history, self.history_index)
 	}
 
-	pub fn set_history(&mut self, positions: &[i64], index: usize) {
+	pub fn set_history(&mut self, positions: &[DocPos], index: usize) {
 		self.history = positions.to_vec();
 		self.history_index = index.min(self.history.len().saturating_sub(1));
 	}
@@ -543,8 +535,8 @@ impl DocumentSession {
 	/// recording separates them. Falling back to the audio distance between `from` and `to`
 	/// when it is available catches those jumps too - covering large distances and following
 	/// links should record a returnable position in an audiobook exactly as they do in text.
-	pub fn record_jump(&mut self, from: i64, to: i64) {
-		let text_distance_worth_recording = (to - from).abs() >= HISTORY_DISTANCE_THRESHOLD;
+	pub fn record_jump(&mut self, from: DocPos, to: DocPos) {
+		let text_distance_worth_recording = to.since(from).max(from.since(to)) >= HISTORY_DISTANCE_THRESHOLD;
 		let audio_distance_worth_recording =
 			self.audio_distance_ms(from, to).is_some_and(|ms| ms >= AUDIO_HISTORY_DISTANCE_THRESHOLD_MS);
 		if text_distance_worth_recording || audio_distance_worth_recording {
@@ -554,10 +546,10 @@ impl DocumentSession {
 
 	/// The elapsed-time distance between `from` and `to`, for documents with a timeline. `None`
 	/// without audio, or where either offset falls outside every clip.
-	fn audio_distance_ms(&self, from: i64, to: i64) -> Option<u64> {
+	fn audio_distance_ms(&self, from: DocPos, to: DocPos) -> Option<u64> {
 		let audio = self.audio()?;
-		let from_ms = audio.point_for_position(DocPos::from_raw(usize::try_from(from).ok()?))?.time_ms;
-		let to_ms = audio.point_for_position(DocPos::from_raw(usize::try_from(to).ok()?))?.time_ms;
+		let from_ms = audio.point_for_position(from)?.time_ms;
+		let to_ms = audio.point_for_position(to)?.time_ms;
 		Some(from_ms.abs_diff(to_ms))
 	}
 }

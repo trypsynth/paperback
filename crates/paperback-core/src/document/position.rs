@@ -184,6 +184,19 @@ impl TryFrom<DocLen> for i64 {
 	}
 }
 
+/// The `usize` an `i64` from outside the core stands for, with a negative one at the start.
+#[cfg(feature = "uniffi")]
+fn saturating_usize(raw: i64) -> usize {
+	usize::try_from(raw.max(0)).unwrap_or(usize::MAX)
+}
+
+// The apps take positions and lengths as the `i64` the FFI has always carried, so their bindings don't change. A negative one lifts to the start rather than failing the call, since iOS's Go to page can pass back the -1 of a page that isn't there.
+#[cfg(feature = "uniffi")]
+uniffi::custom_type!(DocPos, i64, { lower: |pos| i64::try_from(pos).unwrap_or(i64::MAX), try_lift: |raw| Ok(DocPos(saturating_usize(raw))) });
+
+#[cfg(feature = "uniffi")]
+uniffi::custom_type!(DocLen, i64, { lower: |len| i64::try_from(len).unwrap_or(i64::MAX), try_lift: |raw| Ok(DocLen(saturating_usize(raw))) });
+
 /// A byte offset into [`super::DocumentBuffer::content`]. Byte offsets into any other string, such as
 /// a parser's own output before it is appended, stay plain `usize`: this type says which string
 /// an offset belongs to, so that it can't be used to slice the wrong one.

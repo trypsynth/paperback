@@ -100,7 +100,7 @@ pub struct PageBreakInfo {
 
 #[derive(Debug, Clone)]
 pub struct NavRequest {
-	pub position: i64,
+	pub position: DocPos,
 	pub wrap: bool,
 	pub direction: NavDirection,
 	pub target: NavTarget,
@@ -120,7 +120,8 @@ pub struct NavResult {
 pub struct SearchResult {
 	pub found: bool,
 	pub wrapped: bool,
-	pub position: i64,
+	/// Where the match starts; the start of the document when nothing was found.
+	pub position: DocPos,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

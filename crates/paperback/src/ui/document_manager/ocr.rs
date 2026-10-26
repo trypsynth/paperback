@@ -21,6 +21,7 @@ use std::{
 
 use paperback_core::{
 	config::ConfigManager,
+	document::DocPos,
 	ocr::{RecognizedLine, default_workers, load_pages, page_text, recognize_pages, save_pages, saved_pages_file},
 	session::DocumentSession,
 };
@@ -109,7 +110,7 @@ fn index_running_job(job_ids: &[Option<u64>], id: u64) -> Option<usize> {
 
 impl DocumentManager {
 	/// The offset of the OCR placeholder the caret is sitting on, if it is on one.
-	pub fn image_only_page_at_caret(&self) -> Option<i64> {
+	pub fn image_only_page_at_caret(&self) -> Option<DocPos> {
 		let tab = self.active_tab()?;
 		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		tab.session.image_only_page_at(position)
@@ -309,10 +310,9 @@ impl DocumentManager {
 			if text.trim().is_empty() {
 				continue;
 			}
-			// `page_offset` answers -1 for a page this document does not have, which is how a
+			// A page this document does not have has no position, which is how a
 			// result for a page the session no longer holds gets dropped instead of panicking.
-			let start = tab.session.page_offset(page);
-			if start >= 0 {
+			if let Some(start) = tab.session.page_position(page) {
 				starts.push(start);
 				pages.push((page, text));
 				read.push((page, lines));
@@ -331,12 +331,11 @@ impl DocumentManager {
 			}
 		}
 		let buffer = &tab.session.handle().document().buffer;
-		let caret = i64::try_from(outcome.shift(buffer.nearest_pos(caret))).unwrap_or(caret);
+		let caret = outcome.shift(caret.min(buffer.end()));
 		// The mark is a document-absolute offset like the caret's, so the insertions above moved
 		// it the same way. Left where it was it would name different text once OCR had finished.
 		if let Some(mark) = tab.selection_mark.get() {
-			let shifted = outcome.shift(buffer.nearest_pos(mark));
-			tab.selection_mark.set(Some(i64::try_from(shifted).unwrap_or(mark)));
+			tab.selection_mark.set(Some(outcome.shift(mark.min(buffer.end()))));
 		}
 		refresh_after_ocr(tab, &starts, loaded_end, caret, is_active);
 		// The config stores document-absolute offsets (reading position, navigation history,
@@ -400,11 +399,11 @@ impl DocumentManager {
 
 /// Reloads the on-screen window when a replaced page was in or before `loaded_end`, where the window ended before the pages were replaced, so the recognized text
 /// appears and local offsets keep matching document ones.
-fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[i64], loaded_end: i64, caret: i64, is_active: bool) {
+fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[DocPos], loaded_end: DocPos, caret: DocPos, is_active: bool) {
 	if !starts.iter().any(|start| *start < loaded_end) {
 		return;
 	}
-	let caret = caret.clamp(0, tab.session.document_len());
+	let caret = caret.min(tab.session.document_len().as_pos());
 	reload_window_around(tab, caret, "ocr");
 	if is_active {
 		let local = tab.window.to_local(caret);

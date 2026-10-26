@@ -116,7 +116,7 @@ pub fn handle_seek_audio(
 	let sync_position = sync_enabled
 		.then(|| player.timeline().cursor_at_elapsed(target_ms))
 		.flatten()
-		.and_then(|cursor| player.timeline().clip(cursor.clip).map(|clip| i64::try_from(clip.start).unwrap_or(0)));
+		.and_then(|cursor| player.timeline().clip(cursor.clip).map(|clip| clip.start));
 	if let Some(position) = sync_position {
 		set_caret_to_doc_offset(tab, position);
 	}

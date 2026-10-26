@@ -1,11 +1,14 @@
 use bitflags::bitflags;
-use paperback_core::{document::DocumentBuffer, reader_core};
+use paperback_core::{
+	document::{DocPos, DocumentBuffer},
+	reader_core,
+};
 
 #[derive(Clone, Debug, Default)]
 pub struct SearchResult {
 	pub found: bool,
 	pub wrapped: bool,
-	pub position: i64,
+	pub position: DocPos,
 }
 
 bitflags! {
@@ -19,7 +22,7 @@ bitflags! {
 	}
 }
 
-pub fn find_text_with_wrap(buffer: &DocumentBuffer, needle: &str, start: i64, options: FindOptions) -> SearchResult {
+pub fn find_text_with_wrap(buffer: &DocumentBuffer, needle: &str, start: DocPos, options: FindOptions) -> SearchResult {
 	if needle.is_empty() {
 		return SearchResult::default();
 	}
