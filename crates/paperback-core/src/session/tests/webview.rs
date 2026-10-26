@@ -360,12 +360,12 @@ fn webview_target_path_extracts_linked_sibling_sections() {
 #[test]
 fn a_document_the_reader_shows_whole_is_not_sliced_by_the_web_view() {
 	let paragraph = "The quick brown fox jumps over the lazy dog and keeps on running.\n";
-	let repeats = WHOLE_DOCUMENT_DISPLAY_LEN.get() / paragraph.len() - 200;
+	let repeats = WHOLE_DOCUMENT_LEN.get() / paragraph.len() - 200;
 	let mut content = paragraph.repeat(repeats);
 	content.push_str("THE VERY LAST PARAGRAPH OF THE BOOK\n");
 	let len = DocLen::of(&content);
 	assert!(
-		len > WINDOW_DISPLAY_LEN && len <= WHOLE_DOCUMENT_DISPLAY_LEN,
+		len > WINDOW_LEN && len <= WHOLE_DOCUMENT_LEN,
 		"the fixture has to sit in the band the reader shows whole, got {len}"
 	);
 
@@ -386,10 +386,10 @@ fn a_document_the_reader_shows_whole_is_not_sliced_by_the_web_view() {
 #[test]
 fn a_document_past_the_threshold_is_still_sliced() {
 	let paragraph = "The quick brown fox jumps over the lazy dog and keeps on running.\n";
-	let repeats = WHOLE_DOCUMENT_DISPLAY_LEN.get() / paragraph.len() * 2;
+	let repeats = WHOLE_DOCUMENT_LEN.get() / paragraph.len() * 2;
 	let content = paragraph.repeat(repeats);
 	let len = DocLen::of(&content);
-	assert!(len > WHOLE_DOCUMENT_DISPLAY_LEN, "the fixture has to outrun the threshold, got {len}");
+	assert!(len > WHOLE_DOCUMENT_LEN, "the fixture has to outrun the threshold, got {len}");
 
 	let dir = TempDir::new("webview");
 	let mut session = session_with_content(&content);

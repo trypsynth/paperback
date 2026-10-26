@@ -94,11 +94,7 @@ impl DocumentSession {
 			.items
 			.into_iter()
 			.map(|b| AnnotationEntry {
-				passage: if b.is_whole_line {
-					self.get_line_text(b.start)
-				} else {
-					self.get_text_range_display(b.start, b.end)
-				},
+				passage: if b.is_whole_line { self.get_line_text(b.start) } else { self.text_range(b.start, b.end) },
 				note: b.note,
 				audio_ms: b.audio_ms,
 			})
@@ -121,7 +117,7 @@ impl DocumentSession {
 		let snippet = if bookmark.start == bookmark.end {
 			self.line_text_at(bookmark.start)
 		} else {
-			self.get_text_range_display(bookmark.start, bookmark.end)
+			self.text_range(bookmark.start, bookmark.end)
 		};
 		ffi::BookmarkDisplayAtPosition { found: true, note: bookmark.note, snippet }
 	}

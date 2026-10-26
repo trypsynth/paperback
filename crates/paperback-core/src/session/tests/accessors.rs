@@ -79,8 +79,8 @@ fn page_offsets_are_in_document_order_even_for_unsorted_insertion() {
 #[test]
 fn text_range_and_line_text_extract_expected_content() {
 	let session = sample_session(ParserFlags::NONE);
-	assert_eq!(session.get_text_range_display(0.into(), 5.into()), "line1");
-	assert_eq!(session.get_text_range_display(5.into(), 5.into()), "");
+	assert_eq!(session.text_range(0.into(), 5.into()), "line1");
+	assert_eq!(session.text_range(5.into(), 5.into()), "");
 	assert_eq!(session.get_line_text(0.into()), "line1");
 	assert_eq!(session.get_line_text(7.into()), "line2");
 	assert_eq!(session.get_line_text(999.into()), "line3");
@@ -189,13 +189,13 @@ fn get_current_section_path_returns_none_when_reference_empty() {
 	assert!(session.get_current_section_path(0.into()).is_none());
 }
 
-/// Builds a session whose buffer contains a table marker spanning a display range, used to
+/// Builds a session whose buffer contains a table marker spanning a range of positions, used to
 /// exercise `get_table_at_position`'s half-open `[position, position + length)` check.
 fn table_session() -> DocumentSession {
-	// Layout (display units): "before\n" (0..7), table span "tbl\n" (7..11), "after\n" (11..17).
+	// Layout (positions): "before\n" (0..7), table span "tbl\n" (7..11), "after\n" (11..17).
 	let html = "<table><tr><td>a</td><td>b</td></tr></table>";
 	let mut buffer = DocumentBuffer::with_content("before\ntbl\nafter\n".to_string());
-	// Table marker length is the DISPLAY extent of the emitted span ("tbl\n" -> 4).
+	// Table marker length is the emitted span's, in positions ("tbl\n" -> 4).
 	buffer.add_marker(
 		Marker::new(MarkerType::Table, 7.into())
 			.with_length(4.into())
@@ -217,9 +217,9 @@ fn table_session() -> DocumentSession {
 }
 
 #[test]
-fn get_table_at_position_uses_display_length() {
+fn get_table_at_position_uses_the_marker_length() {
 	let session = table_session();
-	// Table marker at display position 7 with length 4 -> half-open range [7, 11).
+	// Table marker at position 7 with length 4 -> half-open range [7, 11).
 	assert_eq!(
 		session.get_table_at_position(7.into()).as_deref(),
 		Some("<table><tr><td>a</td><td>b</td></tr></table>")
@@ -263,7 +263,7 @@ fn get_table_at_position_handles_multibyte_extent() {
 }
 
 #[test]
-fn line_and_status_helpers_use_display_positions_after_emoji() {
+fn line_and_status_helpers_use_positions_after_emoji() {
 	let content = "😀😀😀😀\nab\ncdefgh\nij\n";
 	let ab = DocLen::of("😀😀😀😀\n");
 	let next = DocLen::of("😀😀😀😀\nab\n");
@@ -331,7 +331,7 @@ fn first_content_line_after_skips_headers_after_emoji() {
 }
 
 #[test]
-fn line_segments_keep_char_indices_when_line_helpers_use_display_units() {
+fn line_segments_count_an_emoji_as_one_position() {
 	let session = session_with_content("😀😀😀😀\nab\ncdefgh\nij\n");
 	let segment = session.get_text_segment(5.into(), SegmentTypeFfi::Line, SegmentDirectionFfi::Current);
 	assert_eq!(segment.text, "ab");

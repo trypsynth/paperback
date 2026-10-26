@@ -452,12 +452,12 @@ fn process_table(
 	let display_text = html_table_to_display(&html_content, render_tables_inline);
 	buffer.append(&display_text);
 	buffer.append("\n");
-	let display_len = buffer.end() - table_start;
+	let table_len = buffer.end() - table_start;
 	buffer.add_marker(
 		Marker::new(MarkerType::Table, table_start)
 			.with_text(final_caption)
 			.with_reference(html_content)
-			.with_length(display_len),
+			.with_length(table_len),
 	);
 }
 

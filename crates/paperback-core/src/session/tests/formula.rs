@@ -87,7 +87,7 @@ fn formula_session() -> DocumentSession {
 }
 
 #[test]
-fn reference_uses_half_open_display_extent() {
+fn reference_uses_the_half_open_extent() {
 	let session = formula_session();
 	assert_eq!(session.get_formula_at_position(7.into()).as_deref(), Some(MATHML));
 	assert_eq!(session.get_formula_at_position(11.into()).as_deref(), Some(MATHML));

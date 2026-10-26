@@ -85,6 +85,6 @@ pub(super) fn append_pdf_table_to_buffer(
 		page_display_text.push_str(&line);
 		page_display_text.push('\n');
 	}
-	let display_len = buffer.end() - pos;
-	buffer.add_marker(Marker::new(MarkerType::Table, pos).with_reference(html).with_length(display_len));
+	let table_len = buffer.end() - pos;
+	buffer.add_marker(Marker::new(MarkerType::Table, pos).with_reference(html).with_length(table_len));
 }

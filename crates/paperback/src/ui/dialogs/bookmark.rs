@@ -211,11 +211,8 @@ fn text_snippets(session: &DocumentSession, bookmarks: &[Bookmark]) -> HashMap<(
 		.iter()
 		.filter(|bm| bm.audio_ms.is_none())
 		.map(|bm| {
-			let text = if bm.start == bm.end {
-				session.line_text_at(bm.start)
-			} else {
-				session.get_text_range_display(bm.start, bm.end)
-			};
+			let text =
+				if bm.start == bm.end { session.line_text_at(bm.start) } else { session.text_range(bm.start, bm.end) };
 			((bm.start, bm.end), text)
 		})
 		.collect()

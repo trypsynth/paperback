@@ -15,10 +15,7 @@ use zip::ZipArchive;
 
 use super::{
 	DocumentSession, SourceView, WebviewTarget,
-	window::{
-		WHOLE_DOCUMENT_DISPLAY_LEN, WINDOW_DISPLAY_LEN, snap_end_to_paragraph_boundary,
-		snap_start_to_paragraph_boundary,
-	},
+	window::{WHOLE_DOCUMENT_LEN, WINDOW_LEN, snap_end_to_paragraph_boundary, snap_start_to_paragraph_boundary},
 };
 use crate::{
 	config::compute_document_hash,
@@ -33,12 +30,12 @@ use crate::{
 /// an ordinary book without trouble, but a book of tens of millions of characters locks the
 /// machine up while the engine works through all of it, so past this size it is given the part
 /// around the reading position instead.
-const MAX_WEBVIEW_LEN: DocLen = WINDOW_DISPLAY_LEN;
+const MAX_WEBVIEW_LEN: DocLen = WINDOW_LEN;
 
 /// Up to here the web view gets the whole document. Shares the reader's threshold rather than
 /// slicing as soon as one window's worth is exceeded, so the two always agree about whether a
 /// document is being shown whole.
-const WHOLE_WEBVIEW_LEN: DocLen = WHOLE_DOCUMENT_DISPLAY_LEN;
+const WHOLE_WEBVIEW_LEN: DocLen = WHOLE_DOCUMENT_LEN;
 
 #[cfg_attr(feature = "uniffi", uniffi::export)]
 impl DocumentSession {

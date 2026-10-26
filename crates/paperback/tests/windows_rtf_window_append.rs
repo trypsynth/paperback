@@ -41,7 +41,7 @@ mod checks {
 	fn load_window(text_ctrl: TextCtrl) {
 		assert!(stream_rtf_into_ctrl(text_ctrl, &build_rtf_for_whole_control(WINDOW, &[], &[], &font_info(text_ctrl))));
 		assert_eq!(text_ctrl.get_value(), WINDOW, "the loaded window keeps its last paragraph mark");
-		assert_eq!(text_ctrl.get_last_position(), 6, "the loaded window stores every display unit");
+		assert_eq!(text_ctrl.get_last_position(), 6, "the loaded window stores every unit");
 	}
 
 	fn assert_extended(text_ctrl: TextCtrl, path: &str) {
@@ -50,7 +50,7 @@ mod checks {
 			"Intro\nTitle\nBody\n",
 			"{path}: the extension starts a paragraph of its own"
 		);
-		assert_eq!(text_ctrl.get_last_position(), 17, "{path}: every display unit is stored");
+		assert_eq!(text_ctrl.get_last_position(), 17, "{path}: every unit is stored");
 	}
 
 	pub fn run(text_ctrl: TextCtrl) {

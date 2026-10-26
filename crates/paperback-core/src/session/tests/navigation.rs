@@ -28,7 +28,7 @@ fn first_content_line_after_returns_empty_without_content() {
 }
 
 #[test]
-fn first_content_line_after_reads_display_ranges_after_astral_characters() {
+fn first_content_line_after_reads_ranges_after_astral_characters() {
 	let session = session_with_content("😀\n\n27\nA 😀 paragraph.\nLast line");
 	assert_eq!(session.first_content_line_after(0.into()), "A 😀 paragraph.");
 }

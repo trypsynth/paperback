@@ -20,7 +20,7 @@ mod stats;
 mod window;
 
 pub use find_all::{FindAllLine, FindSpan};
-pub use window::{ParagraphFormat, WHOLE_DOCUMENT_DISPLAY_LEN, WINDOW_DISPLAY_LEN, WindowSlice};
+pub use window::{ParagraphFormat, WHOLE_DOCUMENT_LEN, WINDOW_LEN, WindowSlice};
 
 const MAX_HISTORY_LEN: usize = 10;
 const HISTORY_DISTANCE_THRESHOLD: DocLen = DocLen::from_raw(300);

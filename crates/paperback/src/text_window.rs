@@ -18,7 +18,7 @@ use paperback_core::{
 /// (30-90ms at the very start of a 16.5M-char document, 13s at 50% in, 27s at the end), so a
 /// 500K window's worst case should land in the tens-of-ms range. Re-tune against a real
 /// maximize/restore benchmark once this is in use.
-const TARGET_WINDOW_SIZE: DocLen = paperback_core::WINDOW_DISPLAY_LEN;
+const TARGET_WINDOW_SIZE: DocLen = paperback_core::WINDOW_LEN;
 
 /// How close to a loaded edge the caret has to get before a reload is triggered. A quarter of
 /// the window size, so a single caret-right press at the boundary doesn't cause a reload on
@@ -34,7 +34,7 @@ const EXTEND_CHUNK: DocLen = DocLen::from_raw(TARGET_WINDOW_SIZE.get() / 2);
 /// app's behavior before windowing existed, so ordinary documents are completely unaffected by
 /// this feature (new-path risk is isolated to documents that actually need it). Shared with
 /// the web view, which has to agree about what counts as a whole document.
-const WHOLE_DOCUMENT_THRESHOLD: DocLen = paperback_core::WHOLE_DOCUMENT_DISPLAY_LEN;
+const WHOLE_DOCUMENT_THRESHOLD: DocLen = paperback_core::WHOLE_DOCUMENT_LEN;
 
 /// A position in a tab's `text_ctrl`: counted from the start of what is loaded into it, in the control's own units. Only [`TextWindow`] turns one into a document position or back, so a position of one kind can't be passed where the other is meant (#1062).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]

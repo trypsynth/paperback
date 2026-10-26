@@ -155,7 +155,7 @@ fn main() {
 		let from_keyboard = Rc::new(Cell::new(false));
 		let received = Rc::new(RefCell::new(Vec::new()));
 		let session = Rc::new(link_session());
-		text.set_value(&session.get_text_range_display(0, session.document_len()));
+		text.set_value(&session.text_range(0, session.document_len()));
 		let session_for_menu = Rc::clone(&session);
 		let activated = Rc::new(RefCell::new(Vec::new()));
 		let opened_elements = Rc::new(RefCell::new(Vec::new()));
