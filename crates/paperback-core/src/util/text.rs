@@ -101,20 +101,6 @@ pub fn trim_string(s: &str) -> String {
 	s.trim_matches(is_space_like).to_string()
 }
 
-/// Display units match the index space of the platform text control that the
-/// document text is loaded into: UTF-16 code units on Windows (Win32 edit
-/// control) and macOS (`NSTextView`'s `NSRange`, which wxWidgets passes through
-/// unconverted); Unicode characters on GTK (`GtkTextIter` offsets).
-#[must_use]
-pub fn display_len(s: &str) -> usize {
-	if cfg!(any(windows, target_os = "macos")) { s.encode_utf16().count() } else { s.chars().count() }
-}
-
-#[must_use]
-pub const fn ch_width(ch: char) -> usize {
-	if cfg!(any(windows, target_os = "macos")) { ch.len_utf16() } else { 1 }
-}
-
 #[must_use]
 pub const fn is_space_like(ch: char) -> bool {
 	ch.is_whitespace() || matches!(ch, '\u{00A0}' | '\u{200B}')
@@ -223,22 +209,6 @@ mod tests {
 		assert_eq!(trim_string(input), expected);
 	}
 
-	#[cfg(any(windows, target_os = "macos"))]
-	#[test]
-	fn test_display_len_utf16_platforms() {
-		assert_eq!(display_len("abc"), 3);
-		assert_eq!(display_len("💖"), 2);
-		assert_eq!(display_len("line\nwrap"), 9);
-	}
-
-	#[cfg(not(any(windows, target_os = "macos")))]
-	#[test]
-	fn test_display_len_char_platforms() {
-		assert_eq!(display_len("abc"), 3);
-		assert_eq!(display_len("💖"), 1);
-		assert_eq!(display_len("line\nwrap"), 9);
-	}
-
 	#[rstest]
 	#[case(1, "1", "1")]
 	#[case(5, "1", "5")]
@@ -283,22 +253,5 @@ mod tests {
 	#[test]
 	fn collapse_whitespace_no_whitespace_unchanged() {
 		assert_eq!(collapse_whitespace("hello"), "hello");
-	}
-
-	#[test]
-	fn display_len_empty_string_is_zero() {
-		assert_eq!(display_len(""), 0);
-	}
-
-	// \r and \n are each one code unit on every platform, so \r\n counts as 2.
-	// This property underlies the find-navigation coordinate system.
-	#[test]
-	fn display_len_crlf_counts_as_two_units() {
-		assert_eq!(display_len("\r\n"), 2);
-	}
-
-	#[test]
-	fn display_len_plain_newline_counts_as_one_unit() {
-		assert_eq!(display_len("\n"), 1);
 	}
 }

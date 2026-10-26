@@ -13,6 +13,7 @@ use std::{
 use anyhow::{Context, Result};
 use paperback_core::{
 	audio::{AudioLocation, AudioTimeline, TimelinePoint},
+	document::DocPos,
 	util::zip::extract_zip_entry_to_file_with_password,
 };
 use rodio::{Decoder, DeviceSinkBuilder, MixerDeviceSink, Player, Source};
@@ -266,9 +267,9 @@ impl AudioPlayer {
 
 	/// Seeks playback to the point covering `position` in the text, if the timeline
 	/// narrates it. Leaves the transport running or paused as it already was.
-	pub fn seek_to_position(&mut self, position: usize) -> bool {
+	pub fn seek_to_position(&mut self, position: DocPos) -> bool {
 		let target = self.timeline.point_for_position(position);
-		tracing::debug!(position, ?target, "audio: seek_to_position");
+		tracing::debug!(%position, ?target, "audio: seek_to_position");
 		target.is_some_and(|point| self.seek_to_ms(point.time_ms))
 	}
 
@@ -280,7 +281,7 @@ impl AudioPlayer {
 			self.pending_target_ms = Some(elapsed_ms);
 			return true;
 		}
-		let Some(cursor) = self.timeline.resolve(TimelinePoint::new(0, elapsed_ms)) else {
+		let Some(cursor) = self.timeline.resolve(TimelinePoint::new(DocPos::ZERO, elapsed_ms)) else {
 			tracing::debug!(elapsed_ms, "audio: seek_to_ms found no cursor for this elapsed time");
 			return false;
 		};
@@ -606,8 +607,8 @@ mod tests {
 		let mut builder = AudioTimelineBuilder::new();
 		let one = builder.add_source(AudioLocation::File(first.to_string_lossy().to_string()), Some(1000));
 		let two = builder.add_source(AudioLocation::File(second.to_string_lossy().to_string()), Some(1000));
-		builder.add_clip(one, 0, 1000, 0, 1);
-		builder.add_clip(two, 0, 1000, 1, 2);
+		builder.add_clip(one, 0, 1000, DocPos::from_raw(0), DocPos::from_raw(1));
+		builder.add_clip(two, 0, 1000, DocPos::from_raw(1), DocPos::from_raw(2));
 		let mut player = AudioPlayer::new(builder.build()).unwrap();
 
 		player.play();
@@ -651,7 +652,7 @@ mod tests {
 		write_wav(&path, 5000);
 		let mut builder = AudioTimelineBuilder::new();
 		let source = builder.add_source(AudioLocation::File(path.to_string_lossy().to_string()), Some(5000));
-		builder.add_clip(source, 0, 5000, 0, 1);
+		builder.add_clip(source, 0, 5000, DocPos::from_raw(0), DocPos::from_raw(1));
 		let mut player = AudioPlayer::new(builder.build()).unwrap();
 
 		player.play();
@@ -690,7 +691,7 @@ mod tests {
 		let mut builder = AudioTimelineBuilder::new();
 		// A placeholder duration hours longer than the real file, as a plain audio zip has.
 		let source = builder.add_source(AudioLocation::File(path.to_string_lossy().to_string()), Some(86_400_000));
-		builder.add_clip(source, 0, 86_400_000, 0, 1);
+		builder.add_clip(source, 0, 86_400_000, DocPos::from_raw(0), DocPos::from_raw(1));
 		let mut player = AudioPlayer::new(builder.build()).unwrap();
 		player.play();
 		let (reported_source, _, length_ms) = player.current_file_position_and_length_ms().unwrap();

@@ -2,6 +2,8 @@
 
 use roxmltree::{Document as XmlDocument, Node};
 
+use crate::document::DocPos;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(super) enum NoteKind {
 	Footnote,
@@ -44,15 +46,15 @@ pub(super) struct Annotations {
 	footnotes: usize,
 	endnotes: usize,
 	/// Tells one document's notes from another's when a zip holds several, since each numbers its own from one.
-	document_start: usize,
+	document_start: DocPos,
 	pub cited: Vec<Citation>,
 	/// Each comment's id, where its words start and, for a comment on words rather than a point, where they end. In the order the comments start.
-	pub comments: Vec<(String, usize, Option<usize>)>,
+	pub comments: Vec<(String, DocPos, Option<DocPos>)>,
 }
 
 impl Annotations {
 	/// Numbered as `word/settings.xml` says, or as Word does by default: footnotes 1, 2, 3 and endnotes i, ii, iii.
-	pub(super) fn new(settings_xml: Option<&str>, document_start: usize) -> Self {
+	pub(super) fn new(settings_xml: Option<&str>, document_start: DocPos) -> Self {
 		let settings = settings_xml.and_then(|xml| XmlDocument::parse(xml).ok());
 		let format = |properties: &str, default: &str| {
 			settings
@@ -77,13 +79,13 @@ impl Annotations {
 	}
 
 	/// Records where comment `id`'s words start. A comment on a point, which has only its reference, starts there.
-	pub(super) fn comment_starts(&mut self, id: &str, position: usize) {
+	pub(super) fn comment_starts(&mut self, id: &str, position: DocPos) {
 		if !self.comments.iter().any(|(known, _, _)| known == id) {
 			self.comments.push((id.to_string(), position, None));
 		}
 	}
 
-	pub(super) fn comment_ends(&mut self, id: &str, position: usize) {
+	pub(super) fn comment_ends(&mut self, id: &str, position: DocPos) {
 		if let Some((_, _, end)) = self.comments.iter_mut().find(|(known, _, _)| known == id) {
 			*end = Some(position);
 		}
@@ -158,7 +160,7 @@ mod tests {
 
 	#[test]
 	fn notes_number_as_word_does_by_default() {
-		let mut annotations = Annotations::new(None, 0);
+		let mut annotations = Annotations::new(None, 0.into());
 		assert_eq!(annotations.cite(NoteKind::Footnote, "2", None).label, "1");
 		assert_eq!(annotations.cite(NoteKind::Endnote, "1", None).label, "i");
 		assert_eq!(annotations.cite(NoteKind::Footnote, "3", None).label, "2");
@@ -168,15 +170,15 @@ mod tests {
 	#[test]
 	fn the_documents_settings_choose_the_numbering() {
 		let settings = r#"<settings><footnotePr><numFmt val="upperLetter"/></footnotePr><endnotePr><numFmt val="decimal"/></endnotePr></settings>"#;
-		let mut annotations = Annotations::new(Some(settings), 0);
+		let mut annotations = Annotations::new(Some(settings), 0.into());
 		assert_eq!(annotations.cite(NoteKind::Footnote, "1", None).label, "A");
 		assert_eq!(annotations.cite(NoteKind::Endnote, "1", None).label, "1");
 	}
 
 	#[test]
 	fn a_custom_mark_is_the_label_and_keys_tell_documents_apart() {
-		let mut first = Annotations::new(None, 0);
-		let mut second = Annotations::new(None, 500);
+		let mut first = Annotations::new(None, 0.into());
+		let mut second = Annotations::new(None, 500.into());
 		assert_eq!(first.cite(NoteKind::Footnote, "1", Some("*".to_string())).label, "*");
 		assert_ne!(first.cite(NoteKind::Footnote, "2", None).key, second.cite(NoteKind::Footnote, "2", None).key);
 	}

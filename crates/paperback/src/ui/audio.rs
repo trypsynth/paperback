@@ -273,7 +273,10 @@ pub fn handle_change_seek_amount(
 
 #[cfg(test)]
 mod tests {
-	use paperback_core::audio::{AudioLocation, AudioTimelineBuilder};
+	use paperback_core::{
+		audio::{AudioLocation, AudioTimelineBuilder},
+		document::DocPos,
+	};
 
 	use super::*;
 
@@ -292,8 +295,8 @@ mod tests {
 		let mut builder = AudioTimelineBuilder::new();
 		let file1 = builder.add_source(AudioLocation::File("chapter1.mp3".to_string()), None);
 		let file2 = builder.add_source(AudioLocation::File("chapter2.mp3".to_string()), None);
-		builder.add_clip(file1, 0, PLACEHOLDER_MS, 0, 1);
-		builder.add_clip(file2, 0, PLACEHOLDER_MS, 1, 2);
+		builder.add_clip(file1, 0, PLACEHOLDER_MS, DocPos::from_raw(0), DocPos::from_raw(1));
+		builder.add_clip(file2, 0, PLACEHOLDER_MS, DocPos::from_raw(1), DocPos::from_raw(2));
 		builder.build()
 	}
 

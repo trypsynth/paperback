@@ -3,11 +3,12 @@ use std::collections::HashMap;
 use rstest::rstest;
 
 use super::*;
+use crate::document::DocPos;
 
 fn sections() -> Vec<SectionMeta> {
 	vec![
-		SectionMeta { path: "OEBPS/chapter1.xhtml".to_string(), start: 0, end: 100 },
-		SectionMeta { path: "OEBPS/chapter2.xhtml".to_string(), start: 100, end: 250 },
+		SectionMeta { path: "OEBPS/chapter1.xhtml".to_string(), start: 0.into(), end: 100.into() },
+		SectionMeta { path: "OEBPS/chapter2.xhtml".to_string(), start: 100.into(), end: 250.into() },
 	]
 }
 
@@ -20,7 +21,7 @@ fn returns_the_matching_sections_start_when_reference_has_no_fragment() {
 #[rstest]
 fn resolves_a_fragment_within_its_section_via_qualified_id() {
 	let mut id_positions = HashMap::new();
-	id_positions.insert("OEBPS/chapter2.xhtml#section1".to_string(), 150);
+	id_positions.insert("OEBPS/chapter2.xhtml#section1".to_string(), DocPos::from_raw(150));
 	let offset = compute_nav_offset("OEBPS/chapter2.xhtml#section1", &sections(), &id_positions);
 	assert_eq!(offset, 150);
 }
@@ -30,7 +31,7 @@ fn falls_back_to_section_start_when_fragment_id_is_outside_the_section_bounds() 
 	// An id that happens to collide with another section's offset must not be trusted for this
 	// section's fragment: it lies outside [start, end), so this should fall back to section start.
 	let mut id_positions = HashMap::new();
-	id_positions.insert("OEBPS/chapter2.xhtml#section1".to_string(), 5);
+	id_positions.insert("OEBPS/chapter2.xhtml#section1".to_string(), DocPos::from_raw(5));
 	let offset = compute_nav_offset("OEBPS/chapter2.xhtml#section1", &sections(), &id_positions);
 	assert_eq!(offset, 100);
 }
@@ -44,7 +45,7 @@ fn falls_back_to_section_start_when_fragment_id_is_missing() {
 #[rstest]
 fn resolves_a_bare_fragment_when_the_path_does_not_match_any_section() {
 	let mut id_positions = HashMap::new();
-	id_positions.insert("section1".to_string(), 42);
+	id_positions.insert("section1".to_string(), DocPos::from_raw(42));
 	let offset = compute_nav_offset("unknown.xhtml#section1", &sections(), &id_positions);
 	assert_eq!(offset, 42);
 }

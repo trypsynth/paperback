@@ -1,10 +1,8 @@
 //! The loaded-window management for a document: keeping the text control's slice of a large document ahead of a forward read, compacting it when the caret runs out of text behind it or the layout changes, copying the whole document when a windowed Select All only reached a slice, and jumping to the true document edges rather than the loaded window's. Split out of the main `DocumentManager` impl; see [`super`] for the windowing model in `text_window`.
 
-use wxdragon::prelude::*;
-
 use super::{DocumentManager, DocumentTab};
 use crate::{
-	text_window,
+	text_window::{self, CtrlPos},
 	ui::{
 		navigation::{move_to_offset_and_record_history, persist_navigation_history},
 		text_render::{append_slice_to_ctrl, reload_window_around},
@@ -124,7 +122,7 @@ impl DocumentManager {
 	pub fn select_all_and_count(&self) -> Option<usize> {
 		let tab = self.active_tab()?;
 		tab.text_ctrl.select_all();
-		Some(tab.session.handle().document().buffer.char_count())
+		Some(tab.session.handle().document().buffer.len().get())
 	}
 
 	/// Collapses a window that grew during a long read back to target size around the caret.
@@ -169,11 +167,13 @@ impl DocumentManager {
 		if slice.end <= from {
 			return true;
 		}
-		if !append_slice_to_ctrl(tab.text_ctrl, &slice) {
+		let mut extended = tab.window.clone();
+		extended.extend_with(&slice);
+		if !append_slice_to_ctrl(tab.text_ctrl, &slice, &extended) {
 			return false;
 		}
 		let previous_end = tab.window.end();
-		tab.window.extend_end_to(slice.end);
+		tab.window = extended;
 		// The safe half, logged at debug so a report can be read alongside the window moves above.
 		// A healthy forward read extends about once per chunk; a burst of these with the caret
 		// pinned at the loaded end is the signature of the caret being moved by the append itself,
@@ -187,7 +187,7 @@ impl DocumentManager {
 		);
 		// The control and the window have to agree on how much is loaded. Any drift would offset
 		// every translation from here on.
-		let drift = tab.text_ctrl.get_last_position() - tab.window.loaded_len();
+		let drift = tab.text_ctrl.get_last_position().get() - tab.window.to_local(tab.window.end()).get();
 		if drift != 0 {
 			tracing::warn!(drift, "window extension left the control and the window disagreeing");
 			return false;
@@ -230,11 +230,15 @@ pub enum CopySource {
 
 /// What copying `selection` takes, for a control holding text up to `last_position` that is the
 /// whole document or only part of it.
-pub const fn copy_source(selection: (i64, i64), last_position: i64, window_is_whole_document: bool) -> CopySource {
-	let (from, to) = selection;
+pub const fn copy_source(
+	selection: (CtrlPos, CtrlPos),
+	last_position: CtrlPos,
+	window_is_whole_document: bool,
+) -> CopySource {
+	let (from, to) = (selection.0.get(), selection.1.get());
 	if from >= to {
 		CopySource::Nothing
-	} else if from <= 0 && to >= last_position && !window_is_whole_document {
+	} else if from <= 0 && to >= last_position.get() && !window_is_whole_document {
 		CopySource::WholeDocument
 	} else {
 		CopySource::Selection
@@ -243,25 +247,29 @@ pub const fn copy_source(selection: (i64, i64), last_position: i64, window_is_wh
 
 #[cfg(test)]
 mod tests {
-	use super::{CopySource, copy_source};
+	use super::{CopySource, CtrlPos, copy_source};
+
+	fn copying(from: i64, to: i64, last: i64, whole: bool) -> CopySource {
+		copy_source((CtrlPos::from_raw(from), CtrlPos::from_raw(to)), CtrlPos::from_raw(last), whole)
+	}
 
 	#[test]
 	fn nothing_selected_copies_nothing() {
-		assert_eq!(copy_source((5, 5), 100, false), CopySource::Nothing);
+		assert_eq!(copying(5, 5, 100, false), CopySource::Nothing);
 	}
 
 	#[test]
 	fn part_of_the_loaded_text_copies_the_selection() {
-		assert_eq!(copy_source((10, 20), 100, false), CopySource::Selection);
+		assert_eq!(copying(10, 20, 100, false), CopySource::Selection);
 	}
 
 	#[test]
 	fn all_loaded_text_of_a_partly_loaded_document_copies_the_whole_document() {
-		assert_eq!(copy_source((0, 100), 100, false), CopySource::WholeDocument);
+		assert_eq!(copying(0, 100, 100, false), CopySource::WholeDocument);
 	}
 
 	#[test]
 	fn all_text_of_a_fully_loaded_document_copies_the_selection() {
-		assert_eq!(copy_source((0, 100), 100, true), CopySource::Selection);
+		assert_eq!(copying(0, 100, 100, true), CopySource::Selection);
 	}
 }

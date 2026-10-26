@@ -15,7 +15,7 @@ use super::{
 };
 use crate::{
 	audio::{AudioLocation, AudioTimelineBuilder},
-	document::{Document, DocumentBuffer},
+	document::{DocPos, Document, DocumentBuffer},
 	parser::{
 		add_converter_markers,
 		convert::html_to_text::{HtmlSourceMode, HtmlToText},
@@ -30,9 +30,9 @@ fn convert_html_file(
 	read_text: &mut dyn FnMut(&str) -> Result<String>,
 	render_tables_inline: bool,
 	buffer: &mut DocumentBuffer,
-	id_positions: &mut HashMap<String, usize>,
-	file_offsets: &mut HashMap<String, usize>,
-	file_ids: &mut HashMap<String, HashMap<String, usize>>,
+	id_positions: &mut HashMap<String, DocPos>,
+	file_offsets: &mut HashMap<String, DocPos>,
+	file_ids: &mut HashMap<String, HashMap<String, DocPos>>,
 ) -> Result<()> {
 	if file_offsets.contains_key(href) {
 		return Ok(());
@@ -40,13 +40,13 @@ fn convert_html_file(
 	let html_content = read_text(href)?;
 	let mut converter = HtmlToText::with_render_tables_inline(render_tables_inline);
 	converter.convert(&html_content, HtmlSourceMode::NativeHtml);
-	let offset = buffer.current_position();
+	let offset = buffer.end();
 	buffer.append(&converter.get_text());
 	add_converter_markers(buffer, &converter, offset);
 	for (id, pos) in converter.get_id_positions() {
 		// Bare ids are only unique within their own file, so keep the first file's position
 		// and expose a path-qualified key alongside it.
-		let absolute = offset + pos;
+		let absolute = offset + pos.from_start();
 		id_positions.entry(id.clone()).or_insert(absolute);
 		id_positions.insert(format!("{href}#{id}"), absolute);
 	}
@@ -77,16 +77,16 @@ pub(super) fn build_daisy2_document(
 		return None;
 	}
 	let mut buffer = DocumentBuffer::new();
-	let mut id_positions: HashMap<String, usize> = HashMap::new();
-	let mut file_offsets: HashMap<String, usize> = HashMap::new();
-	let mut file_ids: HashMap<String, HashMap<String, usize>> = HashMap::new();
+	let mut id_positions: HashMap<String, DocPos> = HashMap::new();
+	let mut file_offsets: HashMap<String, DocPos> = HashMap::new();
+	let mut file_ids: HashMap<String, HashMap<String, DocPos>> = HashMap::new();
 	let mut source_indices: HashMap<String, usize> = HashMap::new();
 	let mut audio_builder = AudioTimelineBuilder::new();
 	let mut pending_clips: Vec<PendingClip> = Vec::new();
 	// Where each id *inside the SMIL files* lands in the text, which is what an `ncc.html`
 	// heading link points at. Keyed both bare and path-qualified (against the link text as
 	// written in `ncc.html`), first occurrence winning.
-	let mut smil_anchors: HashMap<String, usize> = HashMap::new();
+	let mut smil_anchors: HashMap<String, DocPos> = HashMap::new();
 	let mut converted_any = false;
 	for smil_link in &smil_links {
 		let smil_href = resolve_relative_path(&ncc_dir, smil_link);
@@ -127,7 +127,7 @@ pub(super) fn build_daisy2_document(
 			else {
 				continue;
 			};
-			let position = base + local_pos;
+			let position = base + local_pos.from_start();
 			for anchor in &par.anchor_ids {
 				smil_anchors.entry(anchor.clone()).or_insert(position);
 				smil_anchors.entry(format!("{smil_link}#{anchor}")).or_insert(position);
@@ -150,7 +150,7 @@ pub(super) fn build_daisy2_document(
 	let headings = parse_daisy2_ncc_headings(ncc_content, &id_positions, &smil_anchors);
 	let toc_items = build_toc_from_headings(&headings);
 	let resolved_clips = bound_open_ended_clips(&pending_clips);
-	let doc_end = buffer.current_position();
+	let doc_end = buffer.end();
 	for index in 0..resolved_clips.len() {
 		let clip = &resolved_clips[index];
 		let end = resolved_clips.get(index + 1).map_or(doc_end, |next| next.start);
@@ -199,7 +199,7 @@ pub(super) fn build_daisy2_text_only_document(
 	let mut converter = HtmlToText::with_render_tables_inline(render_tables_inline);
 	converter.convert(&combined_html, HtmlSourceMode::NativeHtml);
 	let mut buffer = DocumentBuffer::with_content(converter.get_text());
-	add_converter_markers(&mut buffer, &converter, 0);
+	add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 	let toc_items = build_toc_from_headings(converter.get_headings());
 	Some(Document {
 		title,

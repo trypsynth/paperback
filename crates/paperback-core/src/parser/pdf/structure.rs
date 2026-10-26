@@ -25,9 +25,9 @@ use super::{
 	text::PageEvidence,
 };
 use crate::{
-	document::{DocumentBuffer, Marker, MarkerType, TocItem},
+	document::{DocLen, DocPos, DocumentBuffer, Marker, MarkerType, TocItem},
 	pdf_engine::{PdfPage, PdfTextPage, Tag},
-	util::text::{collapse_leaders, collapse_whitespace, display_len, trim_string},
+	util::text::{collapse_leaders, collapse_whitespace, trim_string},
 };
 
 mod marked_content;
@@ -47,7 +47,7 @@ pub(super) fn extract_tagged_page_text(
 	page_index: i32,
 	buffer: &mut DocumentBuffer,
 	page_display_text: &mut String,
-	current_lines_info: &mut Vec<(usize, String)>,
+	current_lines_info: &mut Vec<(DocPos, String)>,
 	flat_toc_items: &mut Vec<(u32, TocItem)>,
 	render_tables_inline: bool,
 	image_tops: &[f64],
@@ -166,7 +166,7 @@ impl ImagePlacement<'_> {
 		&mut self,
 		buffer: &mut DocumentBuffer,
 		page_display_text: &mut String,
-		current_lines_info: &mut Vec<(usize, String)>,
+		current_lines_info: &mut Vec<(DocPos, String)>,
 	) {
 		if self.unclaimed.is_empty() {
 			return;
@@ -186,7 +186,7 @@ impl ImagePlacement<'_> {
 		&mut self,
 		buffer: &mut DocumentBuffer,
 		page_display_text: &mut String,
-		current_lines_info: &mut Vec<(usize, String)>,
+		current_lines_info: &mut Vec<(DocPos, String)>,
 	) {
 		self.unclaimed.place_above(f64::NEG_INFINITY, buffer, page_display_text, current_lines_info);
 	}
@@ -248,7 +248,7 @@ fn flush_block(
 	current_block: &mut String,
 	buffer: &mut DocumentBuffer,
 	page_display_text: &mut String,
-	current_lines_info: &mut Vec<(usize, String)>,
+	current_lines_info: &mut Vec<(DocPos, String)>,
 	images: &mut ImagePlacement,
 ) {
 	let trimmed = collapse_leaders(&trim_string(&collapse_whitespace(current_block)));
@@ -261,7 +261,7 @@ fn flush_block(
 	let line = if pending_label.is_empty() { trimmed } else { format!("{pending_label} {trimmed}") };
 	pending_label.clear();
 	images.before_line(buffer, page_display_text, current_lines_info);
-	let offset = buffer.current_position();
+	let offset = buffer.end();
 	current_lines_info.push((offset, line.clone()));
 	buffer.append(&line);
 	buffer.append("\n");
@@ -275,7 +275,7 @@ fn flush_block_lines(
 	current_block: &mut String,
 	buffer: &mut DocumentBuffer,
 	page_display_text: &mut String,
-	current_lines_info: &mut Vec<(usize, String)>,
+	current_lines_info: &mut Vec<(DocPos, String)>,
 	images: &mut ImagePlacement,
 ) {
 	let text = current_block.clone();
@@ -284,7 +284,7 @@ fn flush_block_lines(
 		let trimmed = trim_string(&collapse_whitespace(line));
 		if !trimmed.is_empty() {
 			images.before_line(buffer, page_display_text, current_lines_info);
-			let offset = buffer.current_position();
+			let offset = buffer.end();
 			current_lines_info.push((offset, trimmed.clone()));
 			buffer.append(&trimmed);
 			buffer.append("\n");
@@ -302,7 +302,7 @@ fn process_struct_element(
 	page_display_text: &mut String,
 	current_block: &mut String,
 	pending_label: &mut String,
-	current_lines_info: &mut Vec<(usize, String)>,
+	current_lines_info: &mut Vec<(DocPos, String)>,
 	toc_items: &mut Vec<(u32, TocItem)>,
 	render_tables_inline: bool,
 	images: &mut ImagePlacement,
@@ -327,7 +327,7 @@ fn process_struct_element(
 		let html = build_html_table(elem, page_text.text);
 		images.note_element(elem);
 		images.before_line(buffer, page_display_text, current_lines_info);
-		let pos = buffer.current_position();
+		let pos = buffer.end();
 		append_pdf_table_to_buffer(buffer, html, pos, current_lines_info, page_display_text, render_tables_inline);
 		return;
 	}
@@ -378,7 +378,7 @@ fn process_struct_element(
 		images.note_element(elem);
 		images.before_line(buffer, page_display_text, current_lines_info);
 	}
-	let block_start_pos = buffer.current_position() + display_len(current_block);
+	let block_start_pos = buffer.end() + DocLen::of(current_block);
 	let count = elem.child_count();
 	for i in 0..count {
 		if let Some(child) = elem.child(i) {

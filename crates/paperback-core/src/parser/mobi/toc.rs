@@ -5,7 +5,7 @@
 use std::collections::HashMap;
 
 use super::index::{IndexEntry, read_index};
-use crate::document::TocItem;
+use crate::document::{DocPos, TocItem};
 
 /// Tag giving an entry's position when it has no fragment of its own.
 const TAG_POSITION: u8 = 1;
@@ -89,7 +89,7 @@ pub(super) fn parse_ncx(
 			stack.pop();
 			levels.pop();
 		}
-		let item = TocItem::new(title, reference, 0);
+		let item = TocItem::new(title, reference, DocPos::ZERO);
 		let mut current = &mut toc;
 		for &idx in &stack {
 			current = &mut current[idx].children;

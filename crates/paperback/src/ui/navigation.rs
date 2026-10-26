@@ -6,9 +6,10 @@ use wxdragon::prelude::*;
 
 use super::{
 	document_manager::{DocumentManager, DocumentTab},
+	reader_ctrl::ReaderCtrl,
 	text_render::reload_window_around,
 };
-use crate::audio_player::AudioPlayer;
+use crate::{audio_player::AudioPlayer, text_window::CtrlPos};
 
 mod announce;
 
@@ -166,8 +167,9 @@ pub fn move_to_offset_and_record_history(tab: &mut DocumentTab, offset: i64) -> 
 /// Keeps a document's audio in step with the caret, called after every jump that moves the
 /// insertion point. A no-op for documents with no recorded audio.
 fn seek_audio_to_position(tab: &mut DocumentTab, offset: i64) {
+	let offset = tab.session.handle().document().buffer.nearest_pos(offset);
 	if let Some(player) = tab.audio_player.as_mut() {
-		player.seek_to_position(usize::try_from(offset).unwrap_or(0));
+		player.seek_to_position(offset);
 	}
 }
 
@@ -357,7 +359,7 @@ pub fn handle_container_navigation(
 	persist_navigation_history(config, history_update.as_ref());
 }
 
-pub fn selected_range(text_ctrl: TextCtrl) -> (i64, i64) {
+pub fn selected_range(text_ctrl: ReaderCtrl) -> (CtrlPos, CtrlPos) {
 	let (start, end) = text_ctrl.get_selection();
 	if start == end {
 		let pos = text_ctrl.get_insertion_point();

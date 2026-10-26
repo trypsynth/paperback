@@ -7,7 +7,7 @@ use super::{
 };
 use crate::{
 	config::ConfigManager,
-	document::{self, MarkerType},
+	document::{self, DocLen, MarkerType},
 	export::annotations::AnnotationEntry,
 	reader_core::{get_filtered_bookmarks, resolve_link},
 	types::{self as ffi},
@@ -53,11 +53,11 @@ impl DocumentSession {
 
 	/// The href of the link `position` is on, if any.
 	fn link_href_at(&self, position: i64) -> Option<String> {
-		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
-		let link_index = self.handle.current_marker_index(pos_usize, MarkerType::Link)?;
+		let pos = self.handle.document().buffer.nearest_pos(position);
+		let link_index = self.handle.current_marker_index(pos, MarkerType::Link)?;
 		let marker = self.handle.document().buffer.markers.get(link_index)?;
-		let link_end = marker.position + marker.text.chars().count();
-		if pos_usize < marker.position || pos_usize > link_end || marker.reference.is_empty() {
+		let link_end = marker.position + DocLen::of(&marker.text);
+		if pos < marker.position || pos > link_end || marker.reference.is_empty() {
 			return None;
 		}
 		Some(marker.reference.clone())
@@ -137,7 +137,7 @@ impl DocumentSession {
 	/// at or before `position`.
 	#[must_use]
 	pub fn element_list(&self, mtype: MarkerType, position: i64) -> ffi::ElementList {
-		let pos = usize::try_from(position.max(0)).unwrap_or(0);
+		let pos = self.handle.document().buffer.nearest_pos(position);
 		let mut closest_index = -1;
 		let mut items = Vec::new();
 		for marker in self.handle.document().buffer.markers.iter().filter(|marker| marker.mtype == mtype) {
@@ -169,10 +169,10 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn heading_tree(&self, position: i64) -> ffi::HeadingTree {
-		let pos = usize::try_from(position.max(0)).unwrap_or(0);
+		let pos = self.handle.document().buffer.nearest_pos(position);
 		let mut items = Vec::new();
 		let mut closest_index = -1;
-		let mut min_distance = usize::MAX;
+		let mut min_distance: Option<DocLen> = None;
 		let markers = &self.handle.document().buffer.markers;
 		let mut item_stack: Vec<(i32, i32)> = Vec::new(); // (level, index)
 		for marker in markers {
@@ -194,8 +194,8 @@ impl DocumentSession {
 			item_stack.push((level, current_index));
 			if marker.position <= pos {
 				let dist = pos - marker.position;
-				if dist < min_distance {
-					min_distance = dist;
+				if min_distance.is_none_or(|min| dist < min) {
+					min_distance = Some(dist);
 					closest_index = current_index;
 				}
 			}

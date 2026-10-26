@@ -13,7 +13,7 @@ use encoding_rs::WINDOWS_1252;
 use office_crypto::decrypt_from_file;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
+	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX,
 		util::{
@@ -360,8 +360,8 @@ fn finish_doc(text: String, file_path: &str) -> Result<Document> {
 /// heading marker and each [`LIST_ITEM_MARK`] into a list-item marker, and each run of list items
 /// into one list the reader can step over, as HTML and `.docx` headings and lists are.
 fn append_marked(buffer: &mut DocumentBuffer, text: &str) {
-	let mut run: Option<(usize, i32, usize)> = None; // start, items, end of last item
-	let close = |buffer: &mut DocumentBuffer, run: &mut Option<(usize, i32, usize)>| {
+	let mut run: Option<(DocPos, i32, DocPos)> = None; // start, items, end of last item
+	let close = |buffer: &mut DocumentBuffer, run: &mut Option<(DocPos, i32, DocPos)>| {
 		if let Some((start, items, end)) = run.take()
 			&& end > start
 		{
@@ -375,7 +375,7 @@ fn append_marked(buffer: &mut DocumentBuffer, text: &str) {
 		let (heading, item) = (level_of(HEADING_MARK), level_of(LIST_ITEM_MARK));
 		let body: String =
 			if heading.or(item).is_some() { chars.as_str() } else { line }.chars().filter(|&c| !is_mark(c)).collect();
-		let start = buffer.current_position();
+		let start = buffer.end();
 		buffer.append(&body);
 		if let Some(level) = heading.filter(|_| !body.trim().is_empty()) {
 			close(buffer, &mut run);
@@ -393,7 +393,7 @@ fn append_marked(buffer: &mut DocumentBuffer, text: &str) {
 				);
 				let (_, items, end) = run.get_or_insert((start, 0, start));
 				*items += 1;
-				*end = buffer.current_position();
+				*end = buffer.end();
 			}
 			_ if body.trim().is_empty() => {}
 			_ => close(buffer, &mut run),

@@ -25,12 +25,10 @@ use paperback_core::{
 	session::DocumentSession,
 };
 use patois::{nt, t};
-use wxdragon::prelude::*;
 
 use super::{DocumentManager, DocumentTab};
 use crate::{
 	ocr::{self, OcrError},
-	text_window::TextWindow,
 	ui::{navigation::announce, text_render::reload_window_around},
 };
 
@@ -324,7 +322,7 @@ impl DocumentManager {
 			return;
 		}
 		let caret = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-		let window = tab.window;
+		let loaded_end = tab.window.end();
 		let outcome = tab.session.replace_ocr_pages(&pages);
 		if let Some(job) = tab.ocr_job.as_mut() {
 			job.recognized += pages.len();
@@ -332,14 +330,15 @@ impl DocumentManager {
 				tracing::warn!(path = %job.saved_as.display(), %error, "failed to keep the recognized pages");
 			}
 		}
-		let caret = i64::try_from(outcome.shift(usize::try_from(caret.max(0)).unwrap_or(0))).unwrap_or(caret);
+		let buffer = &tab.session.handle().document().buffer;
+		let caret = i64::try_from(outcome.shift(buffer.nearest_pos(caret))).unwrap_or(caret);
 		// The mark is a document-absolute offset like the caret's, so the insertions above moved
 		// it the same way. Left where it was it would name different text once OCR had finished.
 		if let Some(mark) = tab.selection_mark.get() {
-			let shifted = outcome.shift(usize::try_from(mark.max(0)).unwrap_or(0));
+			let shifted = outcome.shift(buffer.nearest_pos(mark));
 			tab.selection_mark.set(Some(i64::try_from(shifted).unwrap_or(mark)));
 		}
-		refresh_after_ocr(tab, &starts, window, caret, is_active);
+		refresh_after_ocr(tab, &starts, loaded_end, caret, is_active);
 		// The config stores document-absolute offsets (reading position, navigation history,
 		// bookmarks), every one of which the edits above just moved.
 		self.config.lock().unwrap().shift_document_positions(&file_path.to_string_lossy(), &outcome);
@@ -399,10 +398,10 @@ impl DocumentManager {
 	}
 }
 
-/// Reloads the on-screen window when a replaced page was in or before it, so the recognized text
+/// Reloads the on-screen window when a replaced page was in or before `loaded_end`, where the window ended before the pages were replaced, so the recognized text
 /// appears and local offsets keep matching document ones.
-fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[i64], window: TextWindow, caret: i64, is_active: bool) {
-	if !starts.iter().any(|start| *start < window.end()) {
+fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[i64], loaded_end: i64, caret: i64, is_active: bool) {
+	if !starts.iter().any(|start| *start < loaded_end) {
 		return;
 	}
 	let caret = caret.clamp(0, tab.session.document_len());

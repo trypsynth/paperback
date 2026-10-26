@@ -21,7 +21,10 @@ use super::{
 	DocumentManager, DocumentTab, dialogs, ensure_parser_ready_for_path, menu, menu_ids, open_links, resolve_zip_path,
 	update_title_from_manager,
 };
-use crate::ui::{document_manager::display_title, navigation::announce_for_command};
+use crate::ui::{
+	document_manager::display_title,
+	navigation::{announce_for_command, set_caret_to_doc_offset},
+};
 
 /// Handles every menu id not covered by `bind_menu_events`'s own dispatch match: dynamic
 /// recent-document entries and "Show All Documents". Does nothing if `id` matches neither.
@@ -303,10 +306,10 @@ pub(super) fn handle_import_document_data(
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 ) {
-	let Ok(dm_ref) = dm.try_lock() else {
+	let Ok(mut dm_ref) = dm.try_lock() else {
 		return;
 	};
-	let Some(tab) = dm_ref.active_tab() else {
+	let Some(tab) = dm_ref.active_tab_mut() else {
 		return;
 	};
 	// TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
@@ -324,13 +327,11 @@ pub(super) fn handle_import_document_data(
 		let pos = {
 			let config = config.lock().unwrap();
 			config.import_settings_from_file(&path_str, &path);
-			let max_pos = tab.text_ctrl.get_last_position();
-			config.get_validated_document_position(&path_str, max_pos)
+			config.get_validated_document_position(&path_str, tab.session.document_len())
 		};
 		tracing::info!(doc = %tab.file_path.display(), import = %path, "document data imported");
 		if pos >= 0 {
-			tab.text_ctrl.set_insertion_point(pos);
-			tab.text_ctrl.show_position(pos);
+			set_caret_to_doc_offset(tab, pos);
 		}
 		let dialog = MessageDialog::builder(
 			frame,

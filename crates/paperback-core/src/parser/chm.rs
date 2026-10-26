@@ -7,7 +7,7 @@ use anyhow::{Context, Result};
 use libchm::{ChmFile, Entry, EntryCategory, EntrySel};
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, is_heading_marker},
+	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, is_heading_marker},
 	parser::{
 		Parser, add_converter_markers_excluding_links, add_heading_markers_where, util::path::extract_title_from_path,
 	},
@@ -101,7 +101,7 @@ impl Parser for ChmParser {
 			// Store file-level position so fragment-less internal links can be resolved.
 			id_positions.insert(normalized_path.clone(), section_start);
 			for (id, relative_pos) in &section.id_positions {
-				id_positions.insert(format!("{normalized_path}#{id}"), section_start + relative_pos);
+				id_positions.insert(format!("{normalized_path}#{id}"), section_start + relative_pos.from_start());
 			}
 			buffer.add_marker(
 				Marker::new(MarkerType::SectionBreak, section_start)
@@ -114,7 +114,7 @@ impl Parser for ChmParser {
 			for link in &section.links {
 				let resolved_href = resolve_chm_href(file_path, &link.reference);
 				buffer.add_marker(
-					Marker::new(MarkerType::Link, section_start + link.offset)
+					Marker::new(MarkerType::Link, section_start + link.offset.from_start())
 						.with_text(link.text.clone())
 						.with_reference(resolved_href),
 				);
@@ -142,12 +142,12 @@ impl Parser for ChmParser {
 
 /// The start of the section an offset falls in, which is how a heading already in the text is
 /// matched up with the table of contents entry that names the same topic.
-fn section_start(file_positions: &HashMap<String, usize>, offset: usize) -> usize {
-	file_positions.values().copied().filter(|start| *start <= offset).max().unwrap_or(0)
+fn section_start(file_positions: &HashMap<String, DocPos>, offset: DocPos) -> DocPos {
+	file_positions.values().copied().filter(|start| *start <= offset).max().unwrap_or_default()
 }
 
 /// The sections whose own text already carries a heading, which need no other.
-fn sections_with_headings(buffer: &DocumentBuffer, file_positions: &HashMap<String, usize>) -> HashSet<usize> {
+fn sections_with_headings(buffer: &DocumentBuffer, file_positions: &HashMap<String, DocPos>) -> HashSet<DocPos> {
 	buffer
 		.markers
 		.iter()

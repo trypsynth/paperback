@@ -4,7 +4,7 @@ use flate2::{Compression, write::GzEncoder};
 
 use super::*;
 use crate::{
-	document::{Document, MarkerType},
+	document::{DocLen, DocPos, Document, MarkerType},
 	util::test_support::TempDir,
 };
 
@@ -23,7 +23,7 @@ fn page(body: &str) -> String {
 	format!(".TH TEST 1 \"1 January 2026\" \"Paperback\" \"Test Pages\"\n.SH NAME\ntest \\- a page\n{body}")
 }
 
-fn markers_of(document: &Document, mtype: MarkerType) -> Vec<(usize, String, usize)> {
+fn markers_of(document: &Document, mtype: MarkerType) -> Vec<(DocPos, String, DocLen)> {
 	document
 		.buffer
 		.markers
@@ -40,7 +40,7 @@ fn covered(document: &Document, mtype: MarkerType) -> Vec<String> {
 		.markers
 		.iter()
 		.filter(|marker| marker.mtype == mtype)
-		.map(|marker| document.buffer.content.chars().skip(marker.position).take(marker.length).collect())
+		.map(|marker| document.buffer.text(marker.position..marker.position + marker.length).to_string())
 		.collect()
 }
 
@@ -120,7 +120,7 @@ fn a_run_of_tagged_paragraphs_is_one_list() {
 	let document = parse_source(&page(".SH OPTIONS\n.TP\n.B \\-a\nFirst.\n.TP\n.B \\-b\nSecond.\n.SH FILES\nDone.\n"));
 	let lists = markers_of(&document, MarkerType::List);
 	assert_eq!(lists.len(), 1, "{lists:?}");
-	assert!(lists[0].2 > 0, "the list covers the items in it");
+	assert!(lists[0].2 > 0.into(), "the list covers the items in it");
 }
 
 /// A lone tagged paragraph is not a list worth navigating into.

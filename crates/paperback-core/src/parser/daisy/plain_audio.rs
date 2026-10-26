@@ -11,7 +11,7 @@ use zip::ZipArchive;
 
 use crate::{
 	audio::{AudioLocation, AudioTimelineBuilder},
-	document::{Document, DocumentBuffer, Marker, MarkerType, TocItem},
+	document::{DocLen, Document, DocumentBuffer, Marker, MarkerType, TocItem},
 	util::zip::read_zip_entry_bytes_with_password,
 };
 
@@ -110,7 +110,7 @@ pub(super) fn build_plain_audio_zip_document<R: Read + Seek>(
 	for entry in &entries {
 		let name =
 			Path::new(entry).file_stem().map_or_else(|| entry.clone(), |stem| stem.to_string_lossy().to_string());
-		let position = buffer.current_position();
+		let position = buffer.end();
 		// A bare newline, not a space: this is what the reading area shows for an audio-only
 		// document, and a genuine blank line reads and navigates like any other blank line
 		// elsewhere in the app, unlike a run of space characters (which screen readers announce
@@ -130,7 +130,7 @@ pub(super) fn build_plain_audio_zip_document<R: Read + Seek>(
 			},
 			probed_ms,
 		);
-		audio_builder.add_clip(source, 0, clip_duration_ms, position, position + 1);
+		audio_builder.add_clip(source, 0, clip_duration_ms, position, position + DocLen::ONE);
 		toc_items.push(TocItem::new(name, entry.clone(), position));
 	}
 	let audio = audio_builder.build();

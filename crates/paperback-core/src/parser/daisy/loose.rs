@@ -10,7 +10,7 @@ use super::{
 };
 use crate::{
 	audio::AudioLocation,
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
+	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
 		add_converter_markers,
 		convert::xml_to_text::XmlToText,
@@ -71,7 +71,7 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 		let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
 		if converter.convert(&xml_content) {
 			let mut buffer = DocumentBuffer::with_content(converter.get_text());
-			add_converter_markers(&mut buffer, &converter, 0);
+			add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 			for pb in converter.get_page_breaks() {
 				buffer.add_marker(Marker::new(MarkerType::PageBreak, pb.offset).with_text(pb.text.clone()));
 			}

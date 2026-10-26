@@ -1,19 +1,22 @@
 //! Shared line/position-tracking core for [`super::xml_to_text::XmlToText`] and
 //! [`super::html_to_text::HtmlToText`]: both converters build their output by accumulating text
 //! into `current_line`, flushing finished lines into `lines`, and tracking
-//! `get_current_text_position()` (the display-unit offset markers/headings/links anchor to) via
+//! `get_current_text_position()` (the position markers/headings/links anchor to) via
 //! a running `cached_char_length` rather than recomputing it from `lines` on every call.
 
 use std::mem;
 
 use super::table_text::push_finalized_line;
-use crate::util::text::{collapse_whitespace, display_len};
+use crate::{
+	document::{DocLen, DocPos},
+	util::text::collapse_whitespace,
+};
 
 #[derive(Default)]
 pub(super) struct LineBuilder {
 	pub(super) lines: Vec<String>,
 	pub(super) current_line: String,
-	cached_char_length: usize,
+	cached_char_length: DocLen,
 	preserve_whitespace_depth: usize,
 }
 
@@ -21,7 +24,7 @@ impl LineBuilder {
 	pub(super) fn clear(&mut self) {
 		self.lines.clear();
 		self.current_line.clear();
-		self.cached_char_length = 0;
+		self.cached_char_length = DocLen::ZERO;
 		self.preserve_whitespace_depth = 0;
 	}
 
@@ -51,7 +54,7 @@ impl LineBuilder {
 			while line.ends_with(['\n', '\r']) {
 				line.pop();
 			}
-			self.cached_char_length += display_len(&line) + 1;
+			self.cached_char_length += DocLen::of(&line) + DocLen::ONE;
 			self.lines.push(line);
 		} else {
 			let collapsed = collapse_whitespace(&line);
@@ -59,7 +62,7 @@ impl LineBuilder {
 			if collapsed.is_empty() {
 				return;
 			}
-			self.cached_char_length += display_len(&collapsed) + 1;
+			self.cached_char_length += DocLen::of(&collapsed) + DocLen::ONE;
 			self.lines.push(collapsed);
 		}
 	}
@@ -76,20 +79,20 @@ impl LineBuilder {
 		self.add_line(line);
 	}
 
-	fn current_display_len(&self) -> usize {
+	fn current_len(&self) -> DocLen {
 		if self.is_preserving_whitespace() {
-			return display_len(&self.current_line);
+			return DocLen::of(&self.current_line);
 		}
 		let collapsed = collapse_whitespace(&self.current_line);
 		// Use trim_start() not trim(): trailing whitespace before an inline element (e.g. a
 		// space before a link) IS preserved in the output line, so including it in the position
 		// count keeps link/anchor offsets correctly aligned with the final text.
 		let trimmed = collapsed.trim_start();
-		display_len(trimmed)
+		DocLen::of(trimmed)
 	}
 
-	pub(super) fn get_current_text_position(&self) -> usize {
-		self.cached_char_length + self.current_display_len()
+	pub(super) fn get_current_text_position(&self) -> DocPos {
+		(self.cached_char_length + self.current_len()).as_pos()
 	}
 
 	pub(super) const fn separator_line() -> &'static str {

@@ -199,7 +199,7 @@ fn build(pages: &[String], info: &ComicInfo) -> (DocumentBuffer, Vec<TocItem>) {
 	let mut toc_items = Vec::new();
 	let placeholder = image_only_placeholder();
 	for (index, name) in pages.iter().enumerate() {
-		let position = buffer.current_position();
+		let position = buffer.end();
 		let page = info.pages.get(&index);
 		// The label stays "Page N" whatever the page is: the OCR pass reads the page number back out of it.
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, position).with_text(format!("Page {}", index + 1)));
@@ -424,7 +424,7 @@ mod tests {
 			.chain(buffer.content.char_indices().filter(|(_, c)| *c == '\n').map(|(i, _)| i + 1))
 			.collect();
 		for marker in buffer.markers.iter().filter(|m| m.mtype == MarkerType::ImageOnlyPage) {
-			assert!(line_starts.contains(&marker.position), "marker at {} is not a line start", marker.position);
+			assert!(line_starts.contains(&marker.position.get()), "marker at {} is not a line start", marker.position);
 		}
 	}
 

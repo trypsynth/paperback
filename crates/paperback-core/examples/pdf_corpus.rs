@@ -132,9 +132,9 @@ fn annotated_text(document: &Document) -> String {
 			let _ = write!(open, " ref={}", marker.reference);
 		}
 		open.push('⟧');
-		tags.push(Tag { at: buffer.char_index_for_display(marker.position), opens: true, order, text: open });
-		if marker.length > 0 {
-			let at = buffer.char_index_for_display(marker.position + marker.length);
+		tags.push(Tag { at: marker.position.get(), opens: true, order, text: open });
+		if !marker.length.is_zero() {
+			let at = (marker.position + marker.length).get();
 			tags.push(Tag { at, opens: false, order, text: format!("⟦/{kind}⟧") });
 		}
 	}

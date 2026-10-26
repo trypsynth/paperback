@@ -2,7 +2,10 @@
 //! navigation history, and the detected format/password used to reopen it.
 
 use super::ConfigManager;
-use crate::{config::settings::NavigationHistory, document::ReplaceOutcome};
+use crate::{
+	config::settings::NavigationHistory,
+	document::{DocPos, ReplaceOutcome},
+};
 
 impl ConfigManager {
 	/// Remaps every stored position for `path` through `outcome`, after the document buffer was
@@ -210,7 +213,7 @@ impl ConfigManager {
 
 /// [`ReplaceOutcome::shift`] over the `i64` offsets the config stores.
 fn shift(outcome: &ReplaceOutcome, position: i64) -> i64 {
-	let shifted = outcome.shift(usize::try_from(position.max(0)).unwrap_or(0));
+	let shifted = outcome.shift(DocPos::from_raw(usize::try_from(position.max(0)).unwrap_or(0)));
 	i64::try_from(shifted).unwrap_or(position)
 }
 

@@ -56,7 +56,7 @@ struct Cluster {
 ///
 /// The returned string contains exactly the same multiset of scalar values as the
 /// input (marks re-attached, clusters reordered, mirrored brackets swap for their
-/// pair), so its display length is unchanged and downstream marker offsets stay
+/// pair), so its length is unchanged and downstream marker offsets stay
 /// valid.
 #[must_use]
 pub fn reorder_line(chars: &[(char, f32)]) -> String {

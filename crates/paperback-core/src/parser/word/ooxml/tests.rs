@@ -4,9 +4,8 @@ use roxmltree::Document as XmlDocument;
 
 use super::{super::numbering::Numbering, Annotations, PageSource, Walk, number_pages, traverse};
 use crate::{
-	document::{DocumentBuffer, MarkerType},
+	document::{DocLen, DocPos, DocumentBuffer, MarkerType},
 	parser::util::ooxml::Relationships,
-	util::text::display_len,
 };
 
 /// Walks a parsed `document.xml` the way `parse_ooxml_from_archive` does, with the given
@@ -31,12 +30,12 @@ fn walk(xml_doc: &XmlDocument, render_tables_inline: bool, numbering: Numbering)
 	};
 	traverse(xml_doc.root(), &mut walk);
 	walk.end_list();
-	number_pages(&mut buffer, 0, 0);
+	number_pages(&mut buffer, 0.into(), 0);
 	buffer
 }
 
 /// Parse a Word table. The second cell contains U+1D11E (MUSICAL SYMBOL G CLEF, non-BMP,
-/// UTF-16 width 2) to lock the display-unit arithmetic. OFF mode emits the placeholder; ON mode
+/// one position but four bytes) to lock the position arithmetic. OFF mode emits the placeholder; ON mode
 /// emits the full TSV. In both cases the Table marker keeps the caption as text and its length
 /// equals the emitted display extent.
 #[test]
@@ -56,13 +55,13 @@ fn word_table_emits_placeholder_or_tsv_by_flag() {
 	assert_eq!(buffer.content, "[Table]: Kop \u{1D11E}\n");
 	let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
 	assert_eq!(table_marker.text, "Kop \u{1D11E}", "marker caption is the first-row text, no prefix");
-	assert_eq!(table_marker.length, display_len("[Table]: Kop \u{1D11E}") + 1, "marker length in display units");
+	assert_eq!(table_marker.length, DocLen::of("[Table]: Kop \u{1D11E}") + 1.into(), "marker length in positions");
 	assert!(table_marker.reference.contains("<td>Kop</td>"), "marker reference is the table HTML");
 	// ON: full TSV "Kop\t𝄞".
 	let buffer = walk(&xml_doc, true, Numbering::default());
 	assert_eq!(buffer.content, "Kop\t\u{1D11E}\n");
 	let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
-	assert_eq!(table_marker.length, display_len("Kop\t\u{1D11E}") + 1, "marker length spans the TSV");
+	assert_eq!(table_marker.length, DocLen::of("Kop\t\u{1D11E}") + 1.into(), "marker length spans the TSV");
 }
 
 /// Parse a single paragraph and return the buffer, so run-property (`<w:rPr>`) format markers
@@ -94,10 +93,10 @@ fn numbered_paragraphs_get_their_labels_and_list_markers() {
 	assert_eq!(buffer.content, "Before.\n1. Press Power.\n2. Wait for the beep.\nAfter.\n");
 	let items: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::ListItem).collect();
 	assert_eq!(items.len(), 2);
-	assert_eq!((items[0].position, items[0].text.as_str(), items[0].level), (8, "1. Press Power.", 1));
+	assert_eq!((items[0].position, items[0].text.as_str(), items[0].level), (8.into(), "1. Press Power.", 1));
 	let list = buffer.markers.iter().find(|m| m.mtype == MarkerType::List).expect("List marker");
-	assert_eq!((list.position, list.level), (8, 2));
-	assert_eq!(list.length, display_len("1. Press Power.\n2. Wait for the beep.\n"));
+	assert_eq!((list.position, list.level), (8.into(), 2));
+	assert_eq!(list.length, DocLen::of("1. Press Power.\n2. Wait for the beep.\n"));
 }
 
 #[test]
@@ -105,7 +104,7 @@ fn run_bold_property_emits_bold_marker() {
 	let buffer = parse_run_props(r"<document><body><p><r><rPr><b/></rPr><t>bold</t></r></p></body></document>");
 	let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");
 	assert_eq!(marker.position, 0);
-	assert_eq!(marker.length, display_len("bold"));
+	assert_eq!(marker.length, DocLen::of("bold"));
 }
 
 #[test]
@@ -113,7 +112,7 @@ fn run_italic_property_emits_italic_marker() {
 	let buffer = parse_run_props(r"<document><body><p><r><rPr><i/></rPr><t>italic</t></r></p></body></document>");
 	let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Italic).expect("Italic marker");
 	assert_eq!(marker.position, 0);
-	assert_eq!(marker.length, display_len("italic"));
+	assert_eq!(marker.length, DocLen::of("italic"));
 }
 
 #[test]
@@ -122,7 +121,7 @@ fn run_underline_property_emits_underline_marker() {
 		parse_run_props(r#"<document><body><p><r><rPr><u val="single"/></rPr><t>under</t></r></p></body></document>"#);
 	let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Underline).expect("Underline marker");
 	assert_eq!(marker.position, 0);
-	assert_eq!(marker.length, display_len("under"));
+	assert_eq!(marker.length, DocLen::of("under"));
 }
 
 #[test]
@@ -133,7 +132,7 @@ fn run_bold_and_italic_together_emit_both_spanning_same_range() {
 	assert_eq!(bold.position, italic.position);
 	assert_eq!(bold.length, italic.length);
 	assert_eq!(bold.position, 0);
-	assert_eq!(bold.length, display_len("both"));
+	assert_eq!(bold.length, DocLen::of("both"));
 }
 
 #[test]
@@ -162,16 +161,16 @@ fn run_bold_zero_cancels_bold() {
 
 /// The offset of a format marker must be computed in DISPLAY units, not byte length. A paragraph
 /// beginning with a multi-byte (but display-stable) character before the bold run would place the
-/// Bold marker at the wrong position if `String::len()` (bytes) were used instead of `display_len`.
+/// Bold marker at the wrong position if `String::len()` (bytes) were used instead of `DocLen::of`.
 #[test]
-fn run_format_offset_uses_display_units_not_bytes() {
-	// "é" is 2 bytes in UTF-8 but 1 display unit (single UTF-16 code unit / one char).
+fn run_format_offset_uses_positions_not_bytes() {
+	// "é" is 2 bytes in UTF-8 but 1 position.
 	let buffer =
 		parse_run_props(r"<document><body><p><r><t>é</t></r><r><rPr><b/></rPr><t>bold</t></r></p></body></document>");
 	let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");
-	assert_eq!(marker.position, display_len("é"), "offset must be display-unit, not byte length");
+	assert_eq!(marker.position, DocLen::of("é").as_pos(), "offset must be in positions, not bytes");
 	assert_ne!(marker.position, "é".len(), "byte length (2) would be the bug");
-	assert_eq!(marker.length, display_len("bold"));
+	assert_eq!(marker.length, DocLen::of("bold"));
 }
 
 /// A paragraph starting with a whitespace-only unformatted run before a bold run must not
@@ -187,7 +186,7 @@ fn run_format_offset_accounts_for_leading_whitespace_trim() {
 	assert_eq!(buffer.content, "bold\n", "leading whitespace run must be trimmed from the final content");
 	let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");
 	assert_eq!(marker.position, 0, "Bold marker must point at the start of the trimmed content");
-	assert_eq!(marker.length, display_len("bold"));
+	assert_eq!(marker.length, DocLen::of("bold"));
 }
 
 fn pages(buffer: &DocumentBuffer) -> Vec<(usize, String)> {
@@ -195,7 +194,7 @@ fn pages(buffer: &DocumentBuffer) -> Vec<(usize, String)> {
 		.markers
 		.iter()
 		.filter(|m| m.mtype == MarkerType::PageBreak)
-		.map(|m| (m.position, m.text.clone()))
+		.map(|m| (m.position.get(), m.text.clone()))
 		.collect();
 	pages.sort();
 	pages
@@ -232,10 +231,11 @@ fn a_page_can_start_inside_a_paragraph() {
 	assert_eq!(
 		pages(&buffer)[1],
 		(
-			display_len(
+			DocLen::of(
 				"Start
 end of one "
-			),
+			)
+			.get(),
 			"Page 2".to_string()
 		)
 	);
@@ -273,12 +273,12 @@ fn links_and_bookmarks_land_on_their_text_after_an_emoji() {
 		annotations: Annotations::default(),
 	};
 	traverse(xml_doc.root(), &mut walk);
-	let this = display_len("\u{1F600} see ");
+	let this = DocLen::of("\u{1F600} see ").as_pos();
 	assert_eq!(id_positions["here"], this, "the bookmark is where its text starts");
-	let links: Vec<(usize, &str)> =
+	let links: Vec<(DocPos, &str)> =
 		buffer.markers.iter().filter(|m| m.mtype == MarkerType::Link).map(|m| (m.position, m.text.as_str())).collect();
 	assert_eq!(links[0], (this, "this"));
-	assert_eq!(links[1].0, display_len("\u{1F600} see this and "));
+	assert_eq!(links[1].0, DocLen::of("\u{1F600} see this and ").as_pos());
 	assert_eq!(buffer.content, "\u{1F600} see this and that\n");
 }
 
@@ -305,10 +305,11 @@ fn an_explicit_break_inside_a_paragraph_starts_the_page_at_the_words_after_it() 
 		[
 			(0, "Page 1".to_string()),
 			(
-				display_len(
+				DocLen::of(
 					"one
 "
-				),
+				)
+				.get(),
 				"Page 2".to_string()
 			)
 		]
@@ -359,7 +360,7 @@ fn footnotes_and_endnotes_are_cited_in_the_text_and_written_after_it() {
 		buffer.content,
 		"Water boils[1] at sea level[i].\nMarked[*]\nNotes\n1. At 100 degrees.\ni. See the appendix.\n* A starred note.\n"
 	);
-	let links: Vec<(usize, &str)> = buffer
+	let links: Vec<(DocPos, &str)> = buffer
 		.markers
 		.iter()
 		.filter(|m| m.mtype == MarkerType::Link)
@@ -367,7 +368,7 @@ fn footnotes_and_endnotes_are_cited_in_the_text_and_written_after_it() {
 		.collect();
 	assert_eq!(links.len(), 3);
 	let (first, reference) = links[0];
-	assert_eq!(first, display_len("Water boils"));
+	assert_eq!(first, DocLen::of("Water boils").as_pos());
 	let target = id_positions[reference.trim_start_matches('#')];
 	assert_eq!(target, buffer.content.find("1. At").unwrap());
 	assert!(headings.iter().any(|heading| heading.text == "Notes"));
@@ -388,7 +389,7 @@ fn comments_follow_the_text_with_their_authors_and_link_back() {
 		"Sales grew fast this year.\nDone.\nComments\nAnn on \u{201c}grew fast\u{201d}: Check this figure.\nComment: Nice.\n"
 	);
 	let link = buffer.markers.iter().find(|m| m.mtype == MarkerType::Link).expect("comment link");
-	assert_eq!(id_positions[link.reference.trim_start_matches('#')], display_len("Sales "));
+	assert_eq!(id_positions[link.reference.trim_start_matches('#')], DocLen::of("Sales ").as_pos());
 }
 
 /// #1123: tracked insertions were dropped along with deletions, so the text matched neither version: "Kept text  and  end". It now reads as it does with every change accepted.

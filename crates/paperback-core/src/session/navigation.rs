@@ -94,7 +94,7 @@ impl DocumentSession {
 			is_supported,
 			|s, nav_result| {
 				if nav_result.found {
-					let offset = usize::try_from(nav_result.offset).unwrap_or(0);
+					let offset = s.handle.document().buffer.nearest_pos(nav_result.offset);
 					nav_result.marker_index = s.handle.page_index(offset).unwrap_or(-1);
 				}
 				s.fill_marker_text_if_empty(nav_result);

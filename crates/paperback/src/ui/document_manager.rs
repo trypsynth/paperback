@@ -13,7 +13,12 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::navigation::{move_to_offset_and_record_history, persist_navigation_history};
-use crate::{audio_player::AudioPlayer, text_window::TextWindow, ui::navigation::announce, working_copy::WorkingCopy};
+use crate::{
+	audio_player::AudioPlayer,
+	text_window::TextWindow,
+	ui::{navigation::announce, reader_ctrl::ReaderCtrl},
+	working_copy::WorkingCopy,
+};
 
 mod appearance;
 mod audio;
@@ -30,7 +35,7 @@ use reload::{FileFingerprint, parse_settings, read_fingerprint};
 
 pub struct DocumentTab {
 	pub panel: Panel,
-	pub text_ctrl: TextCtrl,
+	pub text_ctrl: ReaderCtrl,
 	pub session: DocumentSession,
 	/// What the reader opened: a file, or for a document opened from a link the link itself. Its
 	/// settings, its place in the recent documents and its tab are all found by this.

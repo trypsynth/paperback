@@ -1,7 +1,10 @@
 //! Locating and replacing the image-only page placeholders the PDF parser leaves behind.
 
 use super::*;
-use crate::{ocr::image_only_placeholder, util::text::display_len};
+use crate::{
+	document::{DocLen, DocPos},
+	ocr::image_only_placeholder,
+};
 
 /// Two pages of text with an image-only page between them, shaped the way the PDF parser builds
 /// one: a page break at the start of each page, and an `ImageOnlyPage` marker sharing the
@@ -9,13 +12,13 @@ use crate::{ocr::image_only_placeholder, util::text::display_len};
 fn session_with_image_only_page() -> DocumentSession {
 	let placeholder = image_only_placeholder();
 	// The wording depends on the platform's OCR support and can be translated.
-	let page_three_offset = 9 + display_len(&placeholder) + 1;
+	let page_three_offset = 9 + DocLen::of(&placeholder).get() + 1;
 	let content = format!("page one\n{placeholder}\npage three\n");
 	let mut buffer = DocumentBuffer::with_content(content);
-	buffer.add_marker(Marker::new(MarkerType::PageBreak, 0));
-	buffer.add_marker(Marker::new(MarkerType::PageBreak, 9));
-	buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, 9));
-	buffer.add_marker(Marker::new(MarkerType::PageBreak, page_three_offset));
+	buffer.add_marker(Marker::new(MarkerType::PageBreak, 0.into()));
+	buffer.add_marker(Marker::new(MarkerType::PageBreak, 9.into()));
+	buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, 9.into()));
+	buffer.add_marker(Marker::new(MarkerType::PageBreak, page_three_offset.into()));
 	session_from_buffer(buffer)
 }
 
@@ -84,7 +87,7 @@ fn replace_image_only_pages_ignores_offsets_that_are_not_placeholders() {
 fn session_with_paged_lines(lines: &[&str]) -> DocumentSession {
 	let mut buffer = DocumentBuffer::new();
 	for line in lines {
-		buffer.add_marker(Marker::new(MarkerType::PageBreak, buffer.current_position()));
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, buffer.end()));
 		buffer.append(line);
 		buffer.append("\n");
 	}
@@ -95,10 +98,10 @@ fn session_with_paged_lines(lines: &[&str]) -> DocumentSession {
 /// leaves for a blank page: two breaks at the same offset, so the page's span is empty.
 fn session_with_blank_middle_page() -> DocumentSession {
 	let mut buffer = DocumentBuffer::new();
-	buffer.add_marker(Marker::new(MarkerType::PageBreak, 0));
+	buffer.add_marker(Marker::new(MarkerType::PageBreak, 0.into()));
 	buffer.append("page one\n");
-	buffer.add_marker(Marker::new(MarkerType::PageBreak, buffer.current_position()));
-	buffer.add_marker(Marker::new(MarkerType::PageBreak, buffer.current_position()));
+	buffer.add_marker(Marker::new(MarkerType::PageBreak, buffer.end()));
+	buffer.add_marker(Marker::new(MarkerType::PageBreak, buffer.end()));
 	buffer.append("page three\n");
 	session_from_buffer(buffer)
 }
@@ -163,15 +166,15 @@ fn replace_ocr_pages_leaves_the_next_page_starting_on_its_own_line() {
 #[test]
 fn replace_ocr_pages_discards_the_markers_inside_a_replaced_text_page() {
 	let mut buffer = DocumentBuffer::with_content("page one\npage two\npage three\n".to_string());
-	buffer.add_marker(Marker::new(MarkerType::PageBreak, 0));
-	buffer.add_marker(Marker::new(MarkerType::PageBreak, 9));
-	buffer.add_marker(Marker::new(MarkerType::Heading1, 10).with_level(1).with_text("Two".to_string()));
+	buffer.add_marker(Marker::new(MarkerType::PageBreak, 0.into()));
+	buffer.add_marker(Marker::new(MarkerType::PageBreak, 9.into()));
+	buffer.add_marker(Marker::new(MarkerType::Heading1, 10.into()).with_level(1).with_text("Two".to_string()));
 	buffer.add_marker(
-		Marker::new(MarkerType::Link, 12)
+		Marker::new(MarkerType::Link, 12.into())
 			.with_text("two".to_string())
 			.with_reference("https://example.com".to_string()),
 	);
-	buffer.add_marker(Marker::new(MarkerType::PageBreak, 18));
+	buffer.add_marker(Marker::new(MarkerType::PageBreak, 18.into()));
 	let mut session = session_from_buffer(buffer);
 	session.replace_ocr_pages(&[(2, "NEW".to_string())]);
 	// A page re-read because its text was untrusted should not keep markers pointing into text
@@ -185,7 +188,7 @@ fn replace_ocr_pages_discards_the_markers_inside_a_replaced_text_page() {
 #[test]
 fn replace_ocr_pages_still_takes_the_placeholder_path_for_an_image_only_page() {
 	let mut session = session_with_image_only_page();
-	let placeholder_len = i64::try_from(display_len(&image_only_placeholder())).unwrap();
+	let placeholder_len = i64::try_from(DocLen::of(&image_only_placeholder())).unwrap();
 	let outcome = session.replace_ocr_pages(&[(2, "recognized".to_string())]);
 	assert_eq!(session.line_text_at(9), "recognized");
 	assert_eq!(outcome.total_delta, 10 - placeholder_len);
@@ -208,9 +211,8 @@ fn replace_ocr_pages_ignores_pages_the_document_does_not_have() {
 
 #[test]
 fn replace_ocr_pages_measures_spans_in_display_units() {
-	// An emoji is two UTF-16 code units on Windows and macOS but one Unicode scalar on GTK, so
-	// nothing here hardcodes an offset. What is being checked is that the page span, the page
-	// break it starts on and the caret are all measured in the same units whatever those are.
+	// An emoji is one position but four bytes. What is being checked is that the page span, the
+	// page break it starts on and the caret are all measured in positions.
 	let mut session = session_with_paged_lines(&["\u{1F600} one", "page two", "page three"]);
 	let third = session.page_offset(3);
 	assert_eq!(session.line_text_at(third), "page three");
@@ -226,7 +228,7 @@ fn a_comic_page_stays_page_aligned_after_being_recognized() {
 	// `ImageOnlyPage` marker all sharing the placeholder line's start.
 	let content = format!("{}\n{}\n", image_only_placeholder(), image_only_placeholder());
 	let mut buffer = DocumentBuffer::with_content(content);
-	for position in [0, image_only_placeholder().len() + 1] {
+	for position in [DocPos::ZERO, (DocLen::of(&image_only_placeholder()) + DocLen::ONE).as_pos()] {
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, position));
 		buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, position));
 	}

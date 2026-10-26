@@ -8,6 +8,8 @@
 //! (bookmarks, saved position, navigation history, `Marker.position` are all untouched); only
 //! `text_ctrl`'s own position calls need translating through a `TextWindow`.
 
+use paperback_core::session::WindowSlice;
+
 /// Target size of a loaded window, in display units. A starting hypothesis, not a measured
 /// optimum - the original perf problem scaled roughly linearly with loaded-content position
 /// (30-90ms at the very start of a 16.5M-char document, 13s at 50% in, 27s at the end), so a
@@ -31,22 +33,61 @@ const EXTEND_CHUNK: i64 = TARGET_WINDOW_SIZE / 2;
 /// the web view, which has to agree about what counts as a whole document.
 const WHOLE_DOCUMENT_THRESHOLD: i64 = paperback_core::WHOLE_DOCUMENT_DISPLAY_LEN;
 
-/// The document-absolute bounds of whatever's currently loaded into a tab's `text_ctrl`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// A position in a tab's `text_ctrl`: counted from the start of what is loaded into it, in the control's own units. Only [`TextWindow`] turns one into a document position or back, so a position of one kind can't be passed where the other is meant (#1062).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct CtrlPos(i64);
+
+impl CtrlPos {
+	pub const ZERO: Self = Self(0);
+
+	/// Wraps a position the control or a native API on it gave out.
+	pub const fn from_raw(raw: i64) -> Self {
+		Self(raw)
+	}
+
+	pub const fn get(self) -> i64 {
+		self.0
+	}
+}
+
+/// Moves along the control by a count of its units, such as a column within a line it measured.
+impl std::ops::Add<i64> for CtrlPos {
+	type Output = Self;
+
+	fn add(self, units: i64) -> Self {
+		Self(self.0 + units)
+	}
+}
+
+/// The document-absolute bounds of whatever's currently loaded into a tab's `text_ctrl`, and what it takes to translate a position between the two.
+///
+/// A document counts one position for every char, on every platform (#1062). The control on Windows and macOS counts UTF-16 code units instead, two for every char outside the Basic Multilingual Plane, so the window notes where each of those sits in what it holds. Most text has none, and then a control position is just an offset from `start`.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TextWindow {
 	start: i64,
 	end: i64,
+	/// Each loaded char that takes two of the control's units, as its offset from `start` in positions and in the control's units.
+	wide: Vec<(i64, i64)>,
 }
 
 impl TextWindow {
+	#[cfg(test)]
 	pub const fn new(start: i64, end: i64) -> Self {
-		Self { start, end }
+		Self { start, end, wide: Vec::new() }
+	}
+
+	/// A window holding `slice`, as it is loaded into the control.
+	pub fn of(slice: &WindowSlice) -> Self {
+		let mut window = Self { start: slice.start, end: slice.start, wide: Vec::new() };
+		window.extend_with(slice);
+		window
 	}
 
 	/// A window covering the entire document - the pre-windowing behavior, used for documents
 	/// under `WHOLE_DOCUMENT_THRESHOLD` and as the fallback when a window can't be computed.
+	#[cfg(test)]
 	pub const fn whole(doc_len: i64) -> Self {
-		Self { start: 0, end: doc_len }
+		Self { start: 0, end: doc_len, wide: Vec::new() }
 	}
 
 	pub const fn start(&self) -> i64 {
@@ -92,8 +133,26 @@ impl TextWindow {
 		(self.end, (self.end + EXTEND_CHUNK).min(doc_len))
 	}
 
+	/// Takes in `slice`, which has just been appended to the control and starts where this window ends. Never moves `start`.
+	pub fn extend_with(&mut self, slice: &WindowSlice) {
+		if slice.end <= self.end {
+			return;
+		}
+		if cfg!(any(target_os = "windows", target_os = "macos")) {
+			let (mut position, mut units) = (slice.start - self.start, self.to_local(slice.start).0);
+			for c in slice.text.chars() {
+				if c.len_utf16() == 2 {
+					self.wide.push((position, units));
+				}
+				position += 1;
+				units += i64::try_from(c.len_utf16()).unwrap_or(1);
+			}
+		}
+		self.extend_end_to(slice.end);
+	}
+
 	/// Moves the loaded end forward after an append. Never moves `start`.
-	pub const fn extend_end_to(&mut self, end: i64) {
+	const fn extend_end_to(&mut self, end: i64) {
 		if end > self.end {
 			self.end = end;
 		}
@@ -115,13 +174,16 @@ impl TextWindow {
 	/// clamped into this window's bounds (a position outside the window has no valid
 	/// ctrl-local representation until the window is reloaded - callers must check
 	/// `needs_reload_for` first if that matters).
-	pub fn to_local(self, doc_pos: i64) -> i64 {
-		(doc_pos - self.start).clamp(0, self.end - self.start)
+	pub fn to_local(&self, doc_pos: i64) -> CtrlPos {
+		let position = (doc_pos - self.start).clamp(0, self.end - self.start);
+		let wide_before = self.wide.partition_point(|&(at, _)| at < position);
+		CtrlPos(position + i64::try_from(wide_before).unwrap_or(0))
 	}
 
-	/// Translates a `text_ctrl`-local position back to document-absolute.
-	pub const fn to_doc(self, local_pos: i64) -> i64 {
-		local_pos + self.start
+	/// Translates a `text_ctrl`-local position back to document-absolute. A position between the two units of one char, where no caret can sit, rounds forward to the char after it, as the document does.
+	pub fn to_doc(&self, local_pos: CtrlPos) -> i64 {
+		let passed = self.wide.partition_point(|&(_, at)| at + 2 <= local_pos.0);
+		self.start + local_pos.0 - i64::try_from(passed).unwrap_or(0)
 	}
 
 	/// Whether reaching `doc_pos` requires loading a different window first: either it's
@@ -176,15 +238,55 @@ mod tests {
 	#[test]
 	fn to_local_and_to_doc_round_trip_within_bounds() {
 		let window = TextWindow::new(1000, 2000);
-		assert_eq!(window.to_local(1500), 500);
-		assert_eq!(window.to_doc(500), 1500);
+		assert_eq!(window.to_local(1500), CtrlPos(500));
+		assert_eq!(window.to_doc(CtrlPos(500)), 1500);
+	}
+
+	fn slice(start: i64, text: &str) -> WindowSlice {
+		let end = start + i64::try_from(text.chars().count()).unwrap();
+		WindowSlice { start, end, text: text.to_string(), markers: Vec::new(), paragraphs: Vec::new() }
+	}
+
+	/// The control units at each of five positions: on Windows and macOS an emoji before a position takes two, elsewhere one, as the document counts.
+	fn units(utf16: [i64; 5], scalars: [i64; 5]) -> [i64; 5] {
+		if cfg!(any(target_os = "windows", target_os = "macos")) { utf16 } else { scalars }
+	}
+
+	#[test]
+	fn a_char_outside_the_bmp_is_one_position_and_as_many_units_as_the_control_counts() {
+		// "a😀b😀c" from position 100: a=100, 😀=101, b=102, 😀=103, c=104.
+		let window = TextWindow::of(&slice(100, "a\u{1F600}b\u{1F600}c"));
+		let expected = units([0, 1, 3, 4, 6], [0, 1, 2, 3, 4]);
+		for (position, units) in (100..105).zip(expected) {
+			assert_eq!(window.to_local(position), CtrlPos(units), "position {position}");
+			assert_eq!(window.to_doc(CtrlPos(units)), position, "units {units}");
+		}
+		assert_eq!(window.to_local(105), CtrlPos(units([7, 0, 0, 0, 0], [5, 0, 0, 0, 0])[0]));
+		if cfg!(any(target_os = "windows", target_os = "macos")) {
+			// Between the two units of an emoji, where no caret can sit: the char after it.
+			assert_eq!(window.to_doc(CtrlPos(2)), 102);
+			assert_eq!(window.to_doc(CtrlPos(5)), 104);
+		}
+	}
+
+	/// Text appended to a window is placed after everything already loaded, emoji included.
+	#[test]
+	fn an_extended_window_counts_what_was_loaded_before() {
+		let mut window = TextWindow::of(&slice(0, "a\u{1F600}"));
+		window.extend_with(&slice(2, "b\u{1F600}c"));
+		let expected = units([0, 1, 3, 4, 6], [0, 1, 2, 3, 4]);
+		for (position, units) in (0..5).zip(expected) {
+			assert_eq!(window.to_local(position), CtrlPos(units), "position {position}");
+			assert_eq!(window.to_doc(CtrlPos(units)), position, "units {units}");
+		}
+		assert_eq!(window, TextWindow::of(&slice(0, "a\u{1F600}b\u{1F600}c")));
 	}
 
 	#[test]
 	fn to_local_clamps_outside_the_window() {
 		let window = TextWindow::new(1000, 2000);
-		assert_eq!(window.to_local(0), 0);
-		assert_eq!(window.to_local(5000), 1000);
+		assert_eq!(window.to_local(0), CtrlPos(0));
+		assert_eq!(window.to_local(5000), CtrlPos(1000));
 	}
 
 	#[test]
@@ -339,7 +441,7 @@ mod tests {
 		let mut window = TextWindow::new(start, start + TARGET_WINDOW_SIZE);
 		// Seeded just inside RELOAD_MARGIN of the loaded start, the position most likely to look
 		// like it needs a compaction and so the worst case for a pump that must not do one.
-		let mut reader_local = RELOAD_MARGIN - 25_000;
+		let mut reader_local = CtrlPos(RELOAD_MARGIN - 25_000);
 		for _ in 0..500 {
 			let before = window.to_doc(reader_local);
 			if window.wants_extension_for(before, doc_len) {
@@ -347,10 +449,10 @@ mod tests {
 				assert_eq!(from, window.end, "an extension must begin exactly at the loaded end");
 				window.extend_end_to(to);
 			}
-			assert_eq!(window.to_doc(0), start, "the pump must never move the loaded start");
+			assert_eq!(window.to_doc(CtrlPos::ZERO), start, "the pump must never move the loaded start");
 			assert_eq!(window.to_doc(reader_local), before, "a held offset must still mean the same character");
 			// The reader speaks a line and advances its own offset.
-			reader_local += 200;
+			reader_local = reader_local + 200;
 		}
 		// And it stayed ahead of the reader the whole way rather than running out of text.
 		assert!(window.to_doc(reader_local) <= window.end, "extension must keep up with the reader");
@@ -370,9 +472,9 @@ mod tests {
 	fn extension_leaves_a_held_offset_alone_and_compaction_moves_it() {
 		let doc_len = 5_000_000;
 		let window = TextWindow::new(1_750_000, 1_750_000 + TARGET_WINDOW_SIZE);
-		let held_local = RELOAD_MARGIN - 25_000;
+		let held_local = CtrlPos(RELOAD_MARGIN - 25_000);
 		let before = window.to_doc(held_local);
-		let mut extended = window;
+		let mut extended = window.clone();
 		extended.extend_end_to(window.end + EXTEND_CHUNK);
 		assert_eq!(extended.to_doc(held_local), before, "extension must leave a held offset meaning the same place");
 		let (start, end) = target_window_bounds(before, doc_len);

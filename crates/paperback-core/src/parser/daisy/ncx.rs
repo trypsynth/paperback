@@ -2,7 +2,11 @@ use std::collections::HashMap;
 
 use roxmltree::{Document as XmlDocument, Node, NodeType, ParsingOptions};
 
-use crate::{document::TocItem, parser::util::path::resolve_relative_path, types::HeadingInfo};
+use crate::{
+	document::{DocPos, TocItem},
+	parser::util::path::resolve_relative_path,
+	types::HeadingInfo,
+};
 
 /// Reads `dc:title`/`dc:creator` out of `ncc.html`'s `<meta>` tags (case-insensitively, since some
 /// producers write `dc:Title`), the same metadata a DAISY 3 OPF carries in `<dc-metadata>`.
@@ -51,8 +55,8 @@ pub(super) fn extract_daisy2_links(ncc_content: &str) -> Vec<String> {
 /// dropped rather than stranding them at position 0.
 pub(super) fn parse_daisy2_ncc_headings(
 	ncc_content: &str,
-	id_positions: &HashMap<String, usize>,
-	smil_anchors: &HashMap<String, usize>,
+	id_positions: &HashMap<String, DocPos>,
+	smil_anchors: &HashMap<String, DocPos>,
 ) -> Vec<HeadingInfo> {
 	let doc = scraper::Html::parse_document(ncc_content);
 	let heading_selector = scraper::Selector::parse("h1, h2, h3, h4, h5, h6").unwrap();
@@ -85,8 +89,8 @@ pub(super) fn parse_daisy2_ncc_headings(
 pub(super) fn parse_daisy_ncx(
 	ncx_content: &str,
 	ncx_dir: &str,
-	id_positions: &HashMap<String, usize>,
-	smil_anchors: &HashMap<String, usize>,
+	id_positions: &HashMap<String, DocPos>,
+	smil_anchors: &HashMap<String, DocPos>,
 ) -> Option<Vec<TocItem>> {
 	let ncx_doc =
 		XmlDocument::parse_with_options(ncx_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
@@ -112,9 +116,9 @@ pub(super) fn parse_daisy_ncx(
 fn resolve_navpoint_offset(
 	content_src: &str,
 	ncx_dir: &str,
-	id_positions: &HashMap<String, usize>,
-	smil_anchors: &HashMap<String, usize>,
-) -> Option<usize> {
+	id_positions: &HashMap<String, DocPos>,
+	smil_anchors: &HashMap<String, DocPos>,
+) -> Option<DocPos> {
 	let (file_part, fragment) = content_src.split_once('#')?;
 	let qualified =
 		(!file_part.is_empty()).then(|| format!("{}#{fragment}", resolve_relative_path(ncx_dir, file_part)));
@@ -129,8 +133,8 @@ fn resolve_navpoint_offset(
 fn convert_daisy_navpoint(
 	nav: Node,
 	ncx_dir: &str,
-	id_positions: &HashMap<String, usize>,
-	smil_anchors: &HashMap<String, usize>,
+	id_positions: &HashMap<String, DocPos>,
+	smil_anchors: &HashMap<String, DocPos>,
 	resolved_any: &mut bool,
 ) -> Option<TocItem> {
 	let label = nav
@@ -157,7 +161,7 @@ fn convert_daisy_navpoint(
 		.or_else(|| id_positions.get(target_id).copied())
 		.or_else(|| nav.attribute("id").and_then(|id| id_positions.get(id)).copied());
 	*resolved_any |= offset.is_some();
-	let mut item = TocItem::new(label, target_id.to_string(), offset.unwrap_or(0));
+	let mut item = TocItem::new(label, target_id.to_string(), offset.unwrap_or(DocPos::ZERO));
 	for child in nav.children() {
 		if child.node_type() == NodeType::Element
 			&& child.tag_name().name() == "navPoint"

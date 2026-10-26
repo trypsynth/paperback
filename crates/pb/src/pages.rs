@@ -20,7 +20,7 @@
 //! `--pages 80-end` mean "through to the last page" without the reader counting first.
 
 use anyhow::{Result, bail};
-use paperback_core::document::{Document, DocumentBuffer, Marker, MarkerType, TocItem};
+use paperback_core::document::{DocLen, DocPos, Document, DocumentBuffer, Marker, MarkerType, TocItem};
 
 /// What one element of a `--pages` specification asks for, before the page count is known.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -278,12 +278,12 @@ fn merge(ranges: Vec<PageRange>) -> Vec<PageRange> {
 	merged
 }
 
-/// The display-unit positions of every page-break marker, in document order.
+/// The positions of every page-break marker, in document order.
 ///
 /// Sorted rather than taken in buffer order, because a parser may add its markers in any order
 /// and page 5 has to be the fifth page of the book, not the fifth marker added.
-fn page_breaks(doc: &Document) -> Vec<usize> {
-	let mut positions: Vec<usize> = doc
+fn page_breaks(doc: &Document) -> Vec<DocPos> {
+	let mut positions: Vec<DocPos> = doc
 		.buffer
 		.markers
 		.iter()
@@ -321,15 +321,15 @@ fn no_pages_message(doc: &Document) -> String {
 
 /// A kept stretch of the original document, and where it ended up.
 ///
-/// `start`/`end` are display-unit positions in the original; `offset` is how far the start of this
+/// `start`/`end` are positions in the original; `offset` is how far the start of this
 /// span sits from the start of the new content. Together they translate any position in the
 /// original into a position in the extract, which is what every marker and toc offset needs.
 /// `page` is the 0-based page it came from, kept so that two stretches can be told apart from two
 /// halves of one continuous run.
 struct Span {
-	start: usize,
-	end: usize,
-	offset: usize,
+	start: DocPos,
+	end: DocPos,
+	offset: DocPos,
 	page: usize,
 }
 
@@ -349,7 +349,7 @@ struct Span {
 pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 	let selected = selection.resolve(doc)?;
 	let breaks = page_breaks(doc);
-	let total = doc.buffer.total_display_len();
+	let total = doc.buffer.end();
 	// Each page runs from its own page-break marker to the next one, and the last page runs to the
 	// end of the content. Two adjacent pages selected together still produce two spans, so that
 	// the separator between them is added the same way whatever was asked for.
@@ -361,9 +361,8 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 		if start >= end {
 			continue;
 		}
-		let page_text =
-			doc.buffer.slice(doc.buffer.byte_index_for_display(start)..doc.buffer.byte_index_for_display(end));
-		let offset = display_len(&content);
+		let page_text = doc.buffer.text(start..end);
+		let offset = DocLen::of(&content).as_pos();
 		// Only a page the reader left out needs a break before the next one. Pages asked for
 		// together were adjacent in the document and already carry whatever separator the parser
 		// gave them, so adding one here would open a blank line between every page of a
@@ -381,7 +380,7 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 	// The new position of something that used to sit at `position`, or `None` when it fell in a
 	// part of the document that is not in the extract. The end of a span belongs to the span
 	// before it, so a marker sitting exactly on a page boundary stays with the page it heads.
-	let rebase = |position: usize| -> Option<usize> {
+	let rebase = |position: DocPos| -> Option<DocPos> {
 		spans
 			.iter()
 			.find(|span| position >= span.start && position < span.end)
@@ -398,7 +397,7 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 		// closing tag with no opening one, or blank the tail of the extract entirely. Both are
 		// silent, so the length is trimmed to what survived and the marker dropped if nothing did.
 		let length = marker.length.min(span.end - marker.position);
-		if marker.length != 0 && length == 0 {
+		if !marker.length.is_zero() && length.is_zero() {
 			continue;
 		}
 		buffer.add_marker(Marker {
@@ -427,19 +426,11 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 /// Keeps a table-of-contents entry and its subtree if it lands in the extract, rebasing each
 /// offset. An entry pointing outside is dropped along with its children, since a parent that is
 /// not in the extract makes its children's positions meaningless to follow.
-fn rebase_toc(item: &TocItem, rebase: &impl Fn(usize) -> Option<usize>) -> Option<TocItem> {
+fn rebase_toc(item: &TocItem, rebase: &impl Fn(DocPos) -> Option<DocPos>) -> Option<TocItem> {
 	let mut copy = item.clone();
 	copy.offset = rebase(item.offset)?;
 	copy.children = item.children.iter().filter_map(|child| rebase_toc(child, rebase)).collect();
 	Some(copy)
-}
-
-/// The display width of `text`, which is what a position in the extract is counted in.
-///
-/// Uses the same helper `DocumentBuffer` uses to index content, so a length measured here and one
-/// measured there are the same number rather than two that agree only on ASCII.
-fn display_len(text: &str) -> usize {
-	paperback_core::util::text::display_len(text)
 }
 
 #[cfg(test)]
@@ -599,7 +590,7 @@ mod tests {
 	fn document_of_pages(page_count: usize, label: &str) -> Document {
 		let mut buffer = DocumentBuffer::new();
 		for page in 0..page_count {
-			let position = buffer.current_position();
+			let position = buffer.end();
 			buffer.add_marker(Marker::new(MarkerType::PageBreak, position).with_text(format!("{label} {}", page + 1)));
 			buffer.append(&format!("page{} text\n", page + 1));
 		}
@@ -714,7 +705,7 @@ mod tests {
 	fn a_document_with_no_pages_says_so() {
 		let mut doc = Document::new().with_title("A Book".to_string());
 		doc.set_buffer(DocumentBuffer::with_content("chapter one\nchapter two\n".to_string()));
-		doc.toc_items = vec![TocItem::new("One".to_string(), String::new(), 0)];
+		doc.toc_items = vec![TocItem::new("One".to_string(), String::new(), DocPos::ZERO)];
 		let selection = PageSelection::parse("1-2").expect("valid");
 		let message = apply(&selection, &doc).expect_err("there are no pages").to_string();
 		assert!(message.contains("no pages"), "{message}");
@@ -731,14 +722,14 @@ mod tests {
 		assert_eq!(out.stats.line_count, 2, "the extract counted lines from the whole document");
 	}
 
-	/// Markers carry positions in display units, which on Windows and macOS are UTF-16 code units.
-	/// An emoji is one char, two UTF-16 units and three UTF-8 bytes, so treating a position as a
-	/// byte offset gives the right answer for every ASCII document and the wrong one here.
+	/// Markers carry positions counted in chars. An emoji is one char and four UTF-8 bytes, so
+	/// treating a position as a byte offset gives the right answer for every ASCII document and the
+	/// wrong one here.
 	#[test]
 	fn an_emoji_on_a_page_does_not_shift_the_pages_after_it() {
 		let mut buffer = DocumentBuffer::new();
 		for page in 1..=3 {
-			let position = buffer.current_position();
+			let position = buffer.end();
 			buffer.add_marker(Marker::new(MarkerType::PageBreak, position).with_text(format!("Page {page}")));
 			buffer.append(&format!("\u{1F600} page{page} text\n"));
 		}
@@ -748,14 +739,14 @@ mod tests {
 		assert_eq!(out.buffer.content, "\u{1F600} page2 text\n\u{1F600} page3 text\n");
 		// The page-break markers still sit at the head of their own pages, which is only true if
 		// every position was measured in the units the buffer indexes by.
-		let heads: Vec<usize> = out
+		let heads: Vec<DocPos> = out
 			.buffer
 			.markers
 			.iter()
 			.filter(|marker| marker.mtype == MarkerType::PageBreak)
 			.map(|marker| marker.position)
 			.collect();
-		assert_eq!(heads, vec![0, display_len("\u{1F600} page2 text\n")]);
+		assert_eq!(heads, vec![DocPos::ZERO, DocLen::of("\u{1F600} page2 text\n").as_pos()]);
 	}
 
 	/// A marker that starts on a discarded page would otherwise have the renderer close a span it
@@ -763,18 +754,18 @@ mod tests {
 	#[test]
 	fn a_marker_starting_on_a_discarded_page_is_dropped() {
 		let mut buffer = DocumentBuffer::new();
-		buffer.add_marker(Marker::new(MarkerType::PageBreak, 0).with_text("Page 1".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, DocPos::ZERO).with_text("Page 1".to_string()));
 		buffer.append("bold across\n");
-		let cut = buffer.current_position();
+		let cut = buffer.end();
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, cut).with_text("Page 2".to_string()));
 		buffer.append("the rest\n");
 		// A bold run begun on page 1 and running into page 2, which is what a heading split across
 		// a page boundary looks like.
 		buffer.add_marker(Marker {
 			mtype: MarkerType::Bold,
-			position: 0,
-			length: cut + 4,
-			..Marker::new(MarkerType::Bold, 0)
+			position: DocPos::ZERO,
+			length: cut.from_start() + DocLen::from_raw(4),
+			..Marker::new(MarkerType::Bold, DocPos::ZERO)
 		});
 		let mut doc = Document::new().with_title("Test".to_string());
 		doc.set_buffer(buffer);
@@ -791,13 +782,15 @@ mod tests {
 	#[test]
 	fn a_table_from_a_discarded_page_does_not_blank_the_extract() {
 		let mut buffer = DocumentBuffer::new();
-		buffer.add_marker(Marker::new(MarkerType::PageBreak, 0).with_text("Page 1".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, DocPos::ZERO).with_text("Page 1".to_string()));
 		buffer.append("a\tb\nc\td\n");
-		let table_length = display_len("a\tb\nc\td\n");
+		let table_length = DocLen::of("a\tb\nc\td\n");
 		buffer.add_marker(
-			Marker::new(MarkerType::Table, 0).with_reference("a\tb\nc\td".to_string()).with_length(table_length),
+			Marker::new(MarkerType::Table, DocPos::ZERO)
+				.with_reference("a\tb\nc\td".to_string())
+				.with_length(table_length),
 		);
-		let cut = buffer.current_position();
+		let cut = buffer.end();
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, cut).with_text("Page 2".to_string()));
 		buffer.append("kept text\n");
 		let mut doc = Document::new().with_title("Test".to_string());
@@ -818,7 +811,7 @@ mod tests {
 		let doc = document_of_pages(5, "Page");
 		for spec in ["1", "2-3", "1,3,5", "4-end", "1-end"] {
 			let out = extract_document(spec, &doc);
-			let total = out.buffer.total_display_len();
+			let total = out.buffer.end();
 			for marker in &out.buffer.markers {
 				assert!(marker.position <= total, "{spec}: {marker:?} starts past the end of {total}");
 				assert!(marker.position + marker.length <= total, "{spec}: {marker:?} runs past the end of {total}");

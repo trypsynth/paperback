@@ -13,8 +13,10 @@ use wxdragon::{event::KeyboardEvent, prelude::*};
 use super::{
 	document_manager::{DocumentManager, DocumentTab, tab_index_for_key},
 	menu, menu_ids,
+	reader_ctrl::ReaderCtrl,
 	text_render::reload_window_around,
 };
+use crate::text_window::CtrlPos;
 
 mod activation;
 #[cfg(target_os = "macos")]
@@ -32,15 +34,15 @@ pub(super) fn build_text_ctrl(
 	self_rc: &Rc<Mutex<DocumentManager>>,
 	frame: Frame,
 	from_keyboard: Rc<Cell<bool>>,
-) -> TextCtrl {
+) -> ReaderCtrl {
 	let style = TextCtrlStyle::MultiLine
 		| TextCtrlStyle::ReadOnly
 		| TextCtrlStyle::Rich2
 		| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
-	let text_ctrl = TextCtrl::builder(&panel).with_style(style).build();
+	let text_ctrl = ReaderCtrl::new(TextCtrl::builder(&panel).with_style(style).build());
 	let dm_for_enter = Rc::clone(self_rc);
 	let frame_for_char = frame;
-	activation::bind_activation(text_ctrl, move |enter| {
+	activation::bind_activation(text_ctrl.widget(), move |enter| {
 		#[cfg(not(any(target_os = "windows", target_os = "macos")))]
 		let _ = enter;
 		// Enter on an image-only page runs OCR instead of the table/link activation
@@ -364,7 +366,7 @@ fn navigate_line_by_column(
 	going_down: bool,
 	pref_col: Option<i64>,
 	start_of_line: bool,
-) -> Option<(i64, i64)> {
+) -> Option<(CtrlPos, i64)> {
 	if let Some(result) = try_navigate_line_by_column(tab, going_down, pref_col, start_of_line)? {
 		return Some(result);
 	}
@@ -373,7 +375,7 @@ fn navigate_line_by_column(
 	if !has_more {
 		return None;
 	}
-	let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point().max(0));
+	let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point().max(CtrlPos::ZERO));
 	reload_window_around(tab, doc_pos, "line navigation");
 	let local = tab.window.to_local(doc_pos);
 	tab.text_ctrl.set_insertion_point(local);
@@ -386,11 +388,11 @@ fn try_navigate_line_by_column(
 	going_down: bool,
 	_pref_col: Option<i64>,
 	_start_of_line: bool,
-) -> Option<Option<(i64, i64)>> {
+) -> Option<Option<(CtrlPos, i64)>> {
 	macos::try_adjacent_line_start(tab.text_ctrl, going_down)
 }
 
-fn show_reader_context_menu(text_ctrl: TextCtrl, dm: &Rc<Mutex<DocumentManager>>) {
+fn show_reader_context_menu(text_ctrl: ReaderCtrl, dm: &Rc<Mutex<DocumentManager>>) {
 	text_ctrl.set_focus();
 	let on_image = dm.try_lock().is_ok_and(|dm| dm.image_file_name_at_caret().is_some());
 	let mut builder = Menu::builder();

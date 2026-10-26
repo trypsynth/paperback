@@ -1,4 +1,4 @@
-//! Plain-text and regex search over the rendered document, with display-unit offset conversion
+//! Plain-text and regex search over the rendered document, with position conversion
 //! through [`DocumentBuffer`] and wrap-around retry.
 
 use bitflags::bitflags;
@@ -39,8 +39,7 @@ pub fn reader_search(buffer: &DocumentBuffer, needle: &str, start: i64, options:
 	if needle.is_empty() {
 		return -1;
 	}
-	let start_display = usize::try_from(start.max(0)).unwrap_or(0).min(buffer.total_display_len());
-	let start_byte = buffer.byte_index_for_display(start_display);
+	let start_byte = buffer.byte_at(buffer.nearest_pos(start));
 	// Build regex for search - this avoids copying/lowercasing the entire haystack.
 	let Some(re) = build_matcher(needle, options) else {
 		return -1;
@@ -50,10 +49,10 @@ pub fn reader_search(buffer: &DocumentBuffer, needle: &str, start: i64, options:
 	} else {
 		re.find_iter(buffer.slice(..start_byte)).last().map(|m| ContentBytePos::from_raw(m.start()))
 	};
-	found.map_or(-1, |byte| i64::try_from(buffer.display_index_for_byte(byte)).unwrap_or(-1))
+	found.map_or(-1, |byte| i64::try_from(buffer.pos_at_byte(byte)).unwrap_or(-1))
 }
 
-/// Every match of `needle` in `buffer`, as display-unit `(start, end)` spans in document order.
+/// Every match of `needle` in `buffer`, as `(start, end)` position spans in document order.
 /// Direction and wrap have no meaning here. Zero-length matches (e.g. an empty `x*` regex match)
 /// are skipped; an empty needle or an invalid regex yields no spans.
 #[must_use]
@@ -67,8 +66,8 @@ pub fn reader_search_all(buffer: &DocumentBuffer, needle: &str, options: SearchO
 	re.find_iter(&buffer.content)
 		.filter(|m| !m.is_empty())
 		.map(|m| {
-			let start = i64::try_from(buffer.display_index_for_byte(ContentBytePos::from_raw(m.start()))).unwrap_or(-1);
-			let end = i64::try_from(buffer.display_index_for_byte(ContentBytePos::from_raw(m.end()))).unwrap_or(-1);
+			let start = i64::try_from(buffer.pos_at_byte(ContentBytePos::from_raw(m.start()))).unwrap_or(-1);
+			let end = i64::try_from(buffer.pos_at_byte(ContentBytePos::from_raw(m.end()))).unwrap_or(-1);
 			(start, end)
 		})
 		.collect()
@@ -85,11 +84,7 @@ pub fn reader_search_with_wrap(
 	if position >= 0 {
 		return ffi::SearchResult { found: true, wrapped: false, position };
 	}
-	let wrap_pos = if options.contains(SearchOptions::FORWARD) {
-		0
-	} else {
-		i64::try_from(buffer.total_display_len()).unwrap_or(0)
-	};
+	let wrap_pos = if options.contains(SearchOptions::FORWARD) { 0 } else { i64::try_from(buffer.end()).unwrap_or(0) };
 	let wrapped_position = reader_search(buffer, needle, wrap_pos, options);
 	if wrapped_position >= 0 {
 		return ffi::SearchResult { found: true, wrapped: true, position: wrapped_position };
@@ -100,7 +95,7 @@ pub fn reader_search_with_wrap(
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::util::text::display_len;
+	use crate::document::DocLen;
 
 	#[test]
 	fn reader_search_handles_basic_and_whole_word() {
@@ -116,7 +111,7 @@ mod tests {
 	fn reader_search_returns_display_offsets() {
 		let buffer = DocumentBuffer::with_content("a😀b".to_string());
 		let options = SearchOptions::FORWARD;
-		let expected = i64::try_from(display_len("a😀")).unwrap();
+		let expected = i64::try_from(DocLen::of("a😀")).unwrap();
 		assert_eq!(reader_search(&buffer, "b", 0, options), expected);
 	}
 
@@ -124,8 +119,8 @@ mod tests {
 	fn reader_search_starts_from_a_display_offset() {
 		let buffer = DocumentBuffer::with_content("😀b😀b".to_string());
 		let options = SearchOptions::FORWARD;
-		let start = i64::try_from(display_len("😀b")).unwrap();
-		assert_eq!(reader_search(&buffer, "b", start, options), i64::try_from(display_len("😀b😀")).unwrap());
+		let start = i64::try_from(DocLen::of("😀b")).unwrap();
+		assert_eq!(reader_search(&buffer, "b", start, options), i64::try_from(DocLen::of("😀b😀")).unwrap());
 	}
 
 	#[test]
@@ -134,30 +129,22 @@ mod tests {
 		let result = reader_search_with_wrap(&buffer, "a", 0, SearchOptions::empty());
 		assert!(result.found);
 		assert!(result.wrapped);
-		assert_eq!(result.position, i64::try_from(display_len("😀😀")).unwrap());
+		assert_eq!(result.position, i64::try_from(DocLen::of("😀😀")).unwrap());
 	}
 
 	#[test]
 	fn reader_search_all_returns_display_spans() {
 		let buffer = DocumentBuffer::with_content("😀ab 😀ab".to_string());
 		let spans = reader_search_all(&buffer, "ab", SearchOptions::empty());
-		let first = i64::try_from(display_len("😀")).unwrap();
-		let second = i64::try_from(display_len("😀ab 😀")).unwrap();
+		let first = i64::try_from(DocLen::of("😀")).unwrap();
+		let second = i64::try_from(DocLen::of("😀ab 😀")).unwrap();
 		assert_eq!(spans, vec![(first, first + 2), (second, second + 2)]);
 	}
 
-	#[cfg(not(any(windows, target_os = "macos")))]
 	#[test]
-	fn reader_search_counts_scalars_off_windows_and_macos() {
+	fn reader_search_counts_an_astral_char_as_one_position() {
 		let buffer = DocumentBuffer::with_content("a😀b".to_string());
 		assert_eq!(reader_search(&buffer, "b", 0, SearchOptions::FORWARD), 2);
-	}
-
-	#[cfg(any(windows, target_os = "macos"))]
-	#[test]
-	fn reader_search_counts_utf16_units_on_windows_and_macos() {
-		let buffer = DocumentBuffer::with_content("a😀b".to_string());
-		assert_eq!(reader_search(&buffer, "b", 0, SearchOptions::FORWARD), 3);
 	}
 
 	#[test]
@@ -214,7 +201,7 @@ mod tests {
 		assert_eq!(reader_search(&buffer, "a", i64::MAX, SearchOptions::FORWARD), -1);
 		assert_eq!(
 			reader_search(&buffer, "a", i64::MAX, SearchOptions::empty()),
-			i64::try_from(display_len("😀")).unwrap()
+			i64::try_from(DocLen::of("😀")).unwrap()
 		);
 	}
 
@@ -244,7 +231,7 @@ mod tests {
 		let spans = reader_search_all(&buffer, "blah", options);
 		assert_eq!(spans.len(), 3);
 		assert_eq!(spans[0].0, 0);
-		// "blah" is four ASCII chars, so every span is four display units long.
+		// "blah" is four ASCII chars, so every span is four positions long.
 		assert!(spans.iter().all(|(start, end)| end - start == 4));
 		assert!(spans.windows(2).all(|w| w[0].0 < w[1].0));
 	}

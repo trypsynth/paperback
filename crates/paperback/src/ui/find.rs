@@ -4,7 +4,7 @@ use std::{
 	sync::Mutex,
 };
 
-use paperback_core::{config::ConfigManager, session::FindAllLine, util::text::display_len};
+use paperback_core::{config::ConfigManager, document::DocLen, session::FindAllLine};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -442,7 +442,7 @@ fn do_find(
 	if doc_len <= 0 {
 		return;
 	}
-	let len = i64::try_from(display_len(&query)).unwrap_or(i64::MAX);
+	let len = i64::try_from(DocLen::of(&query)).unwrap_or(i64::MAX);
 	let start = result.position.clamp(0, doc_len);
 	let end = (start + len).min(doc_len);
 	// Capture the line containing the match while the document lock is held; it is

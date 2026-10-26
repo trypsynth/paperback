@@ -10,8 +10,8 @@ use crate::{
 	reader_core::SearchOptions,
 };
 
-/// One match's extent, in the same display units (UTF-16 code units on Windows/macOS) as the
-/// GUI caret and page markers, so a caller can hand it straight to a range selector.
+/// One match's extent, in the same display units as the caret's document position and page
+/// markers, so a caller can hand it straight to a range selector.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FindSpan {
 	pub start: i64,
@@ -54,7 +54,7 @@ impl DocumentSession {
 		let mut rows: Vec<FindAllLine> = Vec::new();
 		let mut open_line_start: Option<ContentBytePos> = None;
 		for (start, end) in matches {
-			let start_byte = buffer.byte_index_for_display(usize::try_from(start.max(0)).unwrap_or(0)).min(content_end);
+			let start_byte = buffer.byte_at(buffer.nearest_pos(start)).min(content_end);
 			let line_idx = newline_bytes.partition_point(|&p| p < start_byte);
 			let line_start = if line_idx == 0 { ContentBytePos::ZERO } else { newline_bytes[line_idx - 1] + 1 };
 			let line_end = newline_bytes.get(line_idx).copied().unwrap_or(content_end);

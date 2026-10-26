@@ -1,6 +1,8 @@
 use crate::{
 	audio::AudioTimeline,
-	document::{self, DocumentHandle, Edit, MarkerType, ParseSettings, ParserContext, ParserFlags, ReplaceOutcome},
+	document::{
+		self, DocPos, DocumentHandle, Edit, MarkerType, ParseSettings, ParserContext, ParserFlags, ReplaceOutcome,
+	},
 	parser,
 	reader_core::record_history_position,
 	types::{self as ffi},
@@ -373,9 +375,9 @@ impl DocumentSession {
 	/// caller can adjust its sliding window. Used by the OCR flow to swap an image-only
 	/// placeholder line for recognized text.
 	pub fn replace_range(&mut self, start: i64, end: i64, text: &str) -> i64 {
-		let start = usize::try_from(start.max(0)).unwrap_or(0);
-		let end = usize::try_from(end.max(0)).unwrap_or(0);
-		self.handle.replace_range(start, end, text)
+		let start = self.handle.document().buffer.nearest_pos(start);
+		let end = self.handle.document().buffer.nearest_pos(end);
+		self.handle.replace_range(start..end, text)
 	}
 
 	/// Every page still awaiting OCR, as `(1-based page number, placeholder offset)` pairs in
@@ -425,8 +427,8 @@ impl DocumentSession {
 			.filter_map(|(offset, text)| {
 				let (start, end) = self.line_bounds_at(*offset)?;
 				Some(Edit {
-					start: usize::try_from(start.max(0)).unwrap_or(0),
-					end: usize::try_from(end.max(0)).unwrap_or(0),
+					start: self.handle.document().buffer.nearest_pos(start),
+					end: self.handle.document().buffer.nearest_pos(end),
 					text: text.clone(),
 				})
 			})
@@ -484,16 +486,16 @@ impl DocumentSession {
 					// the newline, so the recognized text goes in without one.
 					let (line_start, line_end) = self.line_bounds_at(placeholder)?;
 					return Some(Edit {
-						start: usize::try_from(line_start.max(0)).unwrap_or(0),
-						end: usize::try_from(line_end.max(0)).unwrap_or(0),
+						start: self.handle.document().buffer.nearest_pos(line_start),
+						end: self.handle.document().buffer.nearest_pos(line_end),
 						text: text.clone(),
 					});
 				}
 				// The page's whole span, newline included, so the replacement carries one.
 				let text = if text.ends_with('\n') { text.clone() } else { format!("{text}\n") };
 				Some(Edit {
-					start: usize::try_from(start.max(0)).unwrap_or(0),
-					end: usize::try_from(end.max(0)).unwrap_or(0),
+					start: self.handle.document().buffer.nearest_pos(start),
+					end: self.handle.document().buffer.nearest_pos(end),
 					text,
 				})
 			})
@@ -554,8 +556,8 @@ impl DocumentSession {
 	/// without audio, or where either offset falls outside every clip.
 	fn audio_distance_ms(&self, from: i64, to: i64) -> Option<u64> {
 		let audio = self.audio()?;
-		let from_ms = audio.point_for_position(usize::try_from(from).ok()?)?.time_ms;
-		let to_ms = audio.point_for_position(usize::try_from(to).ok()?)?.time_ms;
+		let from_ms = audio.point_for_position(DocPos::from_raw(usize::try_from(from).ok()?))?.time_ms;
+		let to_ms = audio.point_for_position(DocPos::from_raw(usize::try_from(to).ok()?))?.time_ms;
 		Some(from_ms.abs_diff(to_ms))
 	}
 }

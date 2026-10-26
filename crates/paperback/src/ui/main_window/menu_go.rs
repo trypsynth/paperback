@@ -191,10 +191,10 @@ pub(super) fn handle_table_of_contents(
 				return;
 			}
 			let current_pos = navigation::doc_caret(tab);
-			let current_pos_usize = usize::try_from(current_pos).unwrap_or(0);
-			let current_toc_offset = tab.session.handle().find_closest_toc_offset(current_pos_usize);
+			let current_pos = tab.session.handle().document().buffer.nearest_pos(current_pos);
+			let current_toc_offset = tab.session.handle().find_closest_toc_offset(current_pos);
 			let Some(offset) =
-				dialogs::show_toc_dialog(frame, toc_items, i32::try_from(current_toc_offset).unwrap_or(i32::MAX))
+				dialogs::show_toc_dialog(frame, toc_items, i32::try_from(current_toc_offset.get()).unwrap_or(i32::MAX))
 			else {
 				return;
 			};

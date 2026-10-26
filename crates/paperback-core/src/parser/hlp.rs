@@ -15,10 +15,11 @@ use anyhow::{Context, Result};
 use libhlp::{Block, Format, HlpFile, Paragraph, Run, Table, Target, Topic};
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem, format_marker_types},
+	document::{
+		DocLen, DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem, format_marker_types,
+	},
 	parser::{Parser, util::path::extract_title_from_path},
 	t,
-	util::text::display_len,
 };
 
 /// Prefix for the [`Document::id_positions`] key naming a topic by its offset.
@@ -74,7 +75,7 @@ fn failed(path: &str, error: &libhlp::HlpError) -> anyhow::Error {
 /// What the walk produced.
 struct Built {
 	buffer: DocumentBuffer,
-	id_positions: HashMap<String, usize>,
+	id_positions: HashMap<String, DocPos>,
 	toc_items: Vec<TocItem>,
 }
 
@@ -85,7 +86,7 @@ struct Builder<'a> {
 	contexts: &'a HashMap<u32, u32>,
 	buffer: DocumentBuffer,
 	/// Where each topic started, in the same order as the topics themselves.
-	starts: Vec<usize>,
+	starts: Vec<DocPos>,
 }
 
 impl<'a> Builder<'a> {
@@ -94,7 +95,7 @@ impl<'a> Builder<'a> {
 	}
 
 	fn add_topic(&mut self, topic: &Topic) {
-		let start = self.buffer.current_position();
+		let start = self.buffer.end();
 		self.starts.push(start);
 		if !topic.title.is_empty() {
 			// A WinHelp topic almost always repeats its title as the first line of its own
@@ -106,7 +107,7 @@ impl<'a> Builder<'a> {
 			self.buffer.add_marker(
 				Marker::new(MarkerType::Heading1, start)
 					.with_text(topic.title.clone())
-					.with_length(display_len(&topic.title)),
+					.with_length(DocLen::of(&topic.title)),
 			);
 		}
 		self.buffer.add_marker(Marker::new(MarkerType::SectionBreak, start).with_text(section_label(topic)));
@@ -128,7 +129,7 @@ impl<'a> Builder<'a> {
 	/// Lay a table out as one line per row with tabs between cells, and mark the whole of
 	/// it so the reader can jump table to table.
 	fn add_table(&mut self, table: &Table) {
-		let start = self.buffer.current_position();
+		let start = self.buffer.end();
 		for row in &table.rows {
 			for (index, cell) in row.cells.iter().enumerate() {
 				if index > 0 {
@@ -145,8 +146,8 @@ impl<'a> Builder<'a> {
 			}
 			self.buffer.append("\n");
 		}
-		let length = self.buffer.current_position().saturating_sub(start);
-		if length > 0 {
+		let length = self.buffer.end().since(start);
+		if !length.is_zero() {
 			self.buffer.add_marker(Marker::new(MarkerType::Table, start).with_length(length));
 		}
 	}
@@ -155,7 +156,7 @@ impl<'a> Builder<'a> {
 		// Runs split wherever a formatting command falls, so neighbouring runs usually
 		// share their emphasis. Merging them leaves one marker per visible span rather
 		// than one per command.
-		let mut span: Option<(Format, usize)> = None;
+		let mut span: Option<(Format, DocPos)> = None;
 		let mut links = Vec::new();
 		for run in &paragraph.runs {
 			let format = match run {
@@ -166,7 +167,7 @@ impl<'a> Builder<'a> {
 				if let Some((open, start)) = span {
 					self.close_span(open, start);
 				}
-				span = Some((format, self.buffer.current_position()));
+				span = Some((format, self.buffer.end()));
 			}
 			self.add_run(run, &mut links);
 		}
@@ -182,9 +183,9 @@ impl<'a> Builder<'a> {
 	}
 
 	/// Emit the emphasis markers for a finished run of same-formatted text.
-	fn close_span(&mut self, format: Format, start: usize) {
-		let length = self.buffer.current_position().saturating_sub(start);
-		if length == 0 {
+	fn close_span(&mut self, format: Format, start: DocPos) {
+		let length = self.buffer.end().since(start);
+		if length.is_zero() {
 			return;
 		}
 		for mtype in format_marker_types(format.bold, format.italic, format.underline) {
@@ -197,7 +198,7 @@ impl<'a> Builder<'a> {
 	fn add_run(&mut self, run: &Run, links: &mut Vec<Marker>) {
 		match run {
 			Run::Text { text, link, .. } => {
-				let position = self.buffer.current_position();
+				let position = self.buffer.end();
 				self.buffer.append(text);
 				let Some(link) = link else { return };
 				// A hotspot's reference is a key rather than a position, so it can be
@@ -221,8 +222,8 @@ impl<'a> Builder<'a> {
 			Run::Image(_) => {
 				// TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
 				let line = format!("[{}]", t("Image"));
-				let position = self.buffer.current_position();
-				self.buffer.add_marker(Marker::new(MarkerType::Image, position).with_length(display_len(&line)));
+				let position = self.buffer.end();
+				self.buffer.add_marker(Marker::new(MarkerType::Image, position).with_length(DocLen::of(&line)));
 				self.buffer.append(&line);
 			}
 		}
@@ -392,7 +393,7 @@ mod tests {
 		// The key the link names has to be the one the target topic registered. The first
 		// topic writes its title as well as its body, so the second starts nine
 		// characters in.
-		assert_eq!(built.id_positions.get("topic55"), Some(&9));
+		assert_eq!(built.id_positions.get("topic55"), Some(&9.into()));
 	}
 
 	// A WinHelp 3.0 hotspot names its target by topic number rather than by context hash,
@@ -409,7 +410,7 @@ mod tests {
 		let built = build(&topics);
 		let links = markers(&built, MarkerType::Link);
 		assert_eq!(links[0].reference, "topicnum17");
-		assert_eq!(built.id_positions.get("topicnum17"), Some(&9));
+		assert_eq!(built.id_positions.get("topicnum17"), Some(&9.into()));
 	}
 
 	// Every topic in a WinHelp 3.0 file reports offset zero, so keying only by offset would
@@ -421,8 +422,8 @@ mod tests {
 			topic(17, 0, "Second", vec![paragraph(vec![text_run("Second")])]),
 		];
 		let built = build(&topics);
-		assert_eq!(built.id_positions.get("topicnum16"), Some(&0));
-		assert_eq!(built.id_positions.get("topicnum17"), Some(&6));
+		assert_eq!(built.id_positions.get("topicnum16"), Some(&0.into()));
+		assert_eq!(built.id_positions.get("topicnum17"), Some(&6.into()));
 		let offsets: Vec<&str> = built.toc_items.iter().map(|i| i.reference.as_str()).collect();
 		assert_eq!(offsets, ["topicnum16", "topicnum17"]);
 	}

@@ -25,7 +25,7 @@ fn covered(document: &Document, mtype: MarkerType) -> Vec<String> {
 		.markers
 		.iter()
 		.filter(|marker| marker.mtype == mtype)
-		.map(|marker| document.buffer.content.chars().skip(marker.position).take(marker.length).collect())
+		.map(|marker| document.buffer.text(marker.position..marker.position + marker.length).to_string())
 		.collect()
 }
 

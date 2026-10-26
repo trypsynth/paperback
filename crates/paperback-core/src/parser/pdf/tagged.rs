@@ -11,25 +11,22 @@
 use std::collections::HashSet;
 
 use super::running::{EDGE_LINES, RunningText};
-use crate::{
-	document::{DocumentBuffer, TocItem},
-	util::text::display_len,
-};
+use crate::document::{DocLen, DocPos, DocumentBuffer, TocItem};
 
 /// A page laid out by [`extract_tagged_page_text`], in its own buffer.
 pub(super) struct TaggedPage {
 	pub buffer: DocumentBuffer,
 	pub display_text: String,
-	pub lines_info: Vec<(usize, String)>,
+	pub lines_info: Vec<(DocPos, String)>,
 	pub toc_items: Vec<(u32, TocItem)>,
 }
 
 /// Splice a tagged page's own buffer into the document, moving everything it holds from
 /// page-relative positions to where the page landed.
-pub(super) fn append_tagged_page(buffer: &mut DocumentBuffer, page: DocumentBuffer, page_start_offset: usize) {
+pub(super) fn append_tagged_page(buffer: &mut DocumentBuffer, page: DocumentBuffer, page_start_offset: DocPos) {
 	buffer.append(&page.content);
 	for mut marker in page.markers {
-		marker.position += page_start_offset;
+		marker.position += page_start_offset.from_start();
 		buffer.add_marker(marker);
 	}
 }
@@ -44,7 +41,7 @@ pub(super) fn append_tagged_page(buffer: &mut DocumentBuffer, page: DocumentBuff
 /// matches keeps them all, so a page is never emptied.
 pub(super) fn tagged_running_lines(page: &TaggedPage, running_text: &RunningText) -> HashSet<usize> {
 	let count = page.lines_info.len();
-	let marked: HashSet<usize> = page.buffer.markers.iter().map(|marker| marker.position).collect();
+	let marked: HashSet<DocPos> = page.buffer.markers.iter().map(|marker| marker.position).collect();
 	let at_an_edge = |index: usize| index < EDGE_LINES || index + EDGE_LINES >= count;
 	let doomed: HashSet<usize> = (0..count)
 		.filter(|index| at_an_edge(*index))
@@ -72,14 +69,14 @@ pub(super) fn without_lines(page: TaggedPage, doomed: &HashSet<usize>) -> Tagged
 	};
 	// Where each of the old page's lines starts now, and how far it runs. A line that is not
 	// kept maps to nothing, and whatever pointed into it is dropped with it.
-	let mut moved: Vec<(usize, usize, Option<usize>)> = Vec::with_capacity(page.lines_info.len());
+	let mut moved: Vec<(DocPos, DocLen, Option<DocPos>)> = Vec::with_capacity(page.lines_info.len());
 	for (index, (position, text)) in page.lines_info.iter().enumerate() {
-		let length = display_len(text) + 1;
+		let length = DocLen::of(text) + DocLen::ONE;
 		if doomed.contains(&index) {
 			moved.push((*position, length, None));
 			continue;
 		}
-		let start = rebuilt.buffer.current_position();
+		let start = rebuilt.buffer.end();
 		moved.push((*position, length, Some(start)));
 		rebuilt.lines_info.push((start, text.clone()));
 		rebuilt.buffer.append(text);
@@ -89,12 +86,12 @@ pub(super) fn without_lines(page: TaggedPage, doomed: &HashSet<usize>) -> Tagged
 	}
 	// A position past the last line, which a marker placed at the end of a page holds, keeps
 	// standing at the end of it.
-	let end = rebuilt.buffer.current_position();
-	let move_position = |position: usize| {
+	let end = rebuilt.buffer.end();
+	let move_position = |position: DocPos| {
 		moved
 			.iter()
-			.find(|(start, length, _)| position >= *start && position < start + length)
-			.map_or(Some(end), |(start, _, moved_to)| moved_to.map(|moved_to| moved_to + (position - start)))
+			.find(|(start, length, _)| position >= *start && position < *start + *length)
+			.map_or(Some(end), |(start, _, moved_to)| moved_to.map(|moved_to| moved_to + (position - *start)))
 	};
 	for mut marker in page.buffer.markers {
 		if let Some(position) = move_position(marker.position) {
@@ -132,7 +129,7 @@ mod tests {
 			toc_items: Vec::new(),
 		};
 		for (index, text) in lines.iter().enumerate() {
-			let position = page.buffer.current_position();
+			let position = page.buffer.end();
 			if marked.contains(&index) {
 				page.buffer.add_marker(Marker::new(MarkerType::Heading1, position).with_text((*text).to_string()));
 				page.toc_items.push((1, TocItem::new((*text).to_string(), String::new(), position)));
@@ -169,7 +166,7 @@ mod tests {
 		assert_eq!(doomed, HashSet::from([0, 2]));
 		let rebuilt = without_lines(page, &doomed);
 		assert_eq!(rebuilt.buffer.content, "Body of page 6.\n");
-		assert_eq!(rebuilt.lines_info, vec![(0, "Body of page 6.".to_string())]);
+		assert_eq!(rebuilt.lines_info, vec![(0.into(), "Body of page 6.".to_string())]);
 		assert_eq!(rebuilt.display_text, "Body of page 6.\n");
 	}
 

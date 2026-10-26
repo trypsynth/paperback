@@ -12,9 +12,9 @@
 
 use super::text::sanitize_pdf_text;
 use crate::{
-	document::{DocumentBuffer, Marker, MarkerType},
+	document::{DocLen, DocPos, DocumentBuffer, Marker, MarkerType},
 	pdf_engine::{LinkTarget, PdfPage, PdfTextPage},
-	util::text::{collapse_whitespace, display_len, trim_string},
+	util::text::{collapse_whitespace, trim_string},
 };
 
 /// A link pdfium reported, waiting for the page text that will say where it sits.
@@ -30,7 +30,7 @@ pub(super) struct PendingLink {
 /// inside a running header, say - simply places nothing.
 pub(super) fn place_links(
 	links: &[PendingLink],
-	page_start_offset: usize,
+	page_start_offset: DocPos,
 	page_display_text: &str,
 	buffer: &mut DocumentBuffer,
 ) {
@@ -39,8 +39,8 @@ pub(super) fn place_links(
 		if let Some(pos) = page_display_text[last_search_pos..].find(&link.text) {
 			let text_before = &page_display_text[last_search_pos..last_search_pos + pos];
 			let marker_pos =
-				page_start_offset + display_len(&page_display_text[..last_search_pos]) + display_len(text_before);
-			let link_len = display_len(&link.text);
+				page_start_offset + DocLen::of(&page_display_text[..last_search_pos]) + DocLen::of(text_before);
+			let link_len = DocLen::of(&link.text);
 			buffer.add_marker(
 				Marker::new(MarkerType::Link, marker_pos)
 					.with_text(link.text.clone())

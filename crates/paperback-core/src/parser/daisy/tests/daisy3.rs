@@ -2,7 +2,7 @@ use std::fs;
 
 use super::*;
 use crate::{
-	document::ParserContext,
+	document::{ContentBytePos, ParserContext},
 	parser::{Parser, daisy::DaisyParser},
 	util::test_support::TempDir,
 };
@@ -129,7 +129,8 @@ fn parses_multi_file_daisy_book_with_audio() {
 	assert_eq!(audio.sources().len(), 2);
 	// The second file's clips resume the elapsed clock where the first file's left off.
 	assert_eq!(audio.total_duration_ms(), 2000 + 3000 + 1500 + 2500);
-	let h2_pos = document.buffer.content.find("Chapter Two").unwrap();
+	let h2_pos =
+		document.buffer.pos_at_byte(ContentBytePos::from_raw(document.buffer.content.find("Chapter Two").unwrap()));
 	let clip_index = audio.clip_index_at_position(h2_pos).expect("chapter two should be narrated");
 	assert_eq!(audio.clip_start_ms(clip_index), Some(5000));
 }
@@ -165,8 +166,12 @@ fn multi_file_daisy_book_keeps_first_occurrence_of_a_duplicate_bare_id() {
 	fs::write(&zip_path, &zip_bytes).expect("write zip");
 	let context = ParserContext::new(zip_path.to_string_lossy().to_string());
 	let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
-	let first_pos = document.buffer.content.find("First occurrence.").unwrap();
-	let second_pos = document.buffer.content.find("Second occurrence.").unwrap();
+	let first_pos = document
+		.buffer
+		.pos_at_byte(ContentBytePos::from_raw(document.buffer.content.find("First occurrence.").unwrap()));
+	let second_pos = document
+		.buffer
+		.pos_at_byte(ContentBytePos::from_raw(document.buffer.content.find("Second occurrence.").unwrap()));
 	assert_eq!(
 		document.id_positions.get("dup").copied(),
 		Some(first_pos),
@@ -259,7 +264,9 @@ fn smil_bare_fragment_resolves_against_the_last_explicit_text_file() {
 	let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
 	let audio = document.audio.expect("audio timeline should be populated");
 	assert_eq!(audio.clips().len(), 2, "the bare-fragment par's clip must not be dropped");
-	let p2_pos = document.buffer.content.find("Second sentence.").unwrap();
+	let p2_pos = document
+		.buffer
+		.pos_at_byte(ContentBytePos::from_raw(document.buffer.content.find("Second sentence.").unwrap()));
 	let clip_index = audio.clip_index_at_position(p2_pos).expect("second sentence should be narrated");
 	assert_eq!(audio.clip_start_ms(clip_index), Some(2000));
 }

@@ -2,7 +2,7 @@
 //! [`reader_container_navigate`] (move relative to the enclosing list/table).
 
 use crate::{
-	document::{DocumentHandle, MarkerType},
+	document::{DocLen, DocPos, DocumentHandle, MarkerType},
 	types::{self as ffi, HeadingInfo},
 };
 
@@ -10,16 +10,19 @@ fn heading_info(doc: &DocumentHandle, idx: i32) -> Option<HeadingInfo> {
 	doc.heading_info(idx)
 }
 
+/// `position` is `None` before the start of the document, where moving forward finds even a marker at the very start.
 fn select_marker_index(
 	doc: &DocumentHandle,
-	position: i64,
+	position: Option<DocPos>,
 	wrap: bool,
 	direction: ffi::NavDirection,
 	kind: MarkerType,
 ) -> (Option<usize>, bool) {
-	let initial = match direction {
-		ffi::NavDirection::Next => doc.next_marker_index(position, kind),
-		ffi::NavDirection::Previous => doc.previous_marker_index(position, kind),
+	let initial = match (direction, position) {
+		(ffi::NavDirection::Next, Some(position)) => doc.next_marker_index(position, kind),
+		(ffi::NavDirection::Next, None) => doc.first_marker_index(kind),
+		(ffi::NavDirection::Previous, Some(position)) => doc.previous_marker_index(position, kind),
+		(ffi::NavDirection::Previous, None) => None,
 	};
 	if initial.is_some() {
 		return (initial, false);
@@ -27,35 +30,33 @@ fn select_marker_index(
 	if !wrap {
 		return (None, false);
 	}
-	let alt_pos = match direction {
-		ffi::NavDirection::Previous => i64::try_from(doc.document().buffer.content.len()).unwrap_or(0) + 1,
-		ffi::NavDirection::Next => -1,
-	};
 	(
 		match direction {
-			ffi::NavDirection::Next => doc.next_marker_index(alt_pos, kind),
-			ffi::NavDirection::Previous => doc.previous_marker_index(alt_pos, kind),
+			ffi::NavDirection::Next => doc.first_marker_index(kind),
+			ffi::NavDirection::Previous => doc.last_marker_index(kind),
 		},
 		true,
 	)
 }
 
-const fn build_nav_result(found: bool, wrapped: bool, offset: usize, level: i32, text: String) -> ffi::NavResult {
+const fn build_nav_result(found: bool, wrapped: bool, offset: DocPos, level: i32, text: String) -> ffi::NavResult {
 	ffi::NavResult { found, wrapped, offset, marker_level: level, marker_text: text }
 }
 
 #[must_use]
 pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavResult {
 	use ffi::NavTarget;
+	// A negative position is before the start of the document.
+	let position = (req.position >= 0).then(|| doc.document().buffer.nearest_pos(req.position));
 	match req.target {
 		NavTarget::Section | NavTarget::Page => {
 			let kind = if req.target == NavTarget::Section { MarkerType::SectionBreak } else { MarkerType::PageBreak };
-			let (idx_opt, wrapped) = select_marker_index(doc, req.position, req.wrap, req.direction, kind);
+			let (idx_opt, wrapped) = select_marker_index(doc, position, req.wrap, req.direction, kind);
 			if let Some(idx) = idx_opt {
 				let Ok(idx_i32) = i32::try_from(idx) else {
-					return build_nav_result(false, wrapped, 0, 0, String::new());
+					return build_nav_result(false, wrapped, DocPos::ZERO, 0, String::new());
 				};
-				let offset = doc.marker_position(idx_i32).unwrap_or(0);
+				let offset = doc.marker_position(idx_i32).unwrap_or_default();
 				// Section markers usually carry only a synthetic "Section N" label, not the
 				// chapter's real title, so leave the text empty; the UI falls back to the text of
 				// the line at `offset`, which is the section's actual heading. An audio-only book
@@ -72,23 +73,21 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 				};
 				return build_nav_result(true, wrapped, offset, 0, text);
 			}
-			build_nav_result(false, wrapped, 0, 0, String::new())
+			build_nav_result(false, wrapped, DocPos::ZERO, 0, String::new())
 		}
 		NavTarget::Heading => {
 			let level_filter = if req.level_filter > 0 { Some(req.level_filter) } else { None };
-			let (idx_opt, wrapped) = match req.direction {
-				ffi::NavDirection::Next => doc.next_heading_index(req.position, level_filter),
-				ffi::NavDirection::Previous => doc.previous_heading_index(req.position, level_filter),
+			let (idx_opt, wrapped) = match (req.direction, position) {
+				(ffi::NavDirection::Next, Some(position)) => doc.next_heading_index(position, level_filter),
+				(ffi::NavDirection::Next, None) => doc.first_heading_index(level_filter),
+				(ffi::NavDirection::Previous, Some(position)) => doc.previous_heading_index(position, level_filter),
+				(ffi::NavDirection::Previous, None) => None,
 			}
 			.map_or((None, false), |idx| (usize::try_from(idx).ok(), false));
 			let (idx_final, wrapped_final) = if idx_opt.is_none() && req.wrap {
-				let alt_pos = match req.direction {
-					ffi::NavDirection::Previous => i64::try_from(doc.document().buffer.content.len()).unwrap_or(0) + 1,
-					ffi::NavDirection::Next => -1,
-				};
 				let retry = match req.direction {
-					ffi::NavDirection::Next => doc.next_heading_index(alt_pos, level_filter),
-					ffi::NavDirection::Previous => doc.previous_heading_index(alt_pos, level_filter),
+					ffi::NavDirection::Next => doc.first_heading_index(level_filter),
+					ffi::NavDirection::Previous => doc.last_heading_index(level_filter),
 				};
 				let retry_idx = retry.and_then(|i| usize::try_from(i).ok());
 				(retry_idx, retry.is_some())
@@ -97,16 +96,16 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 			};
 			if let Some(idx) = idx_final {
 				let Ok(idx_i32) = i32::try_from(idx) else {
-					return build_nav_result(false, wrapped_final, 0, 0, String::new());
+					return build_nav_result(false, wrapped_final, DocPos::ZERO, 0, String::new());
 				};
-				let offset = doc.marker_position(idx_i32).unwrap_or(0);
+				let offset = doc.marker_position(idx_i32).unwrap_or_default();
 				let (level, text) = doc.document().buffer.markers.get(idx).map_or_else(
 					|| heading_info(doc, idx_i32).map_or((0, String::new()), |h| (h.level, h.text)),
 					|marker| (marker.level, marker.text.clone()),
 				);
 				return build_nav_result(true, wrapped_final, offset, level, text);
 			}
-			build_nav_result(false, wrapped_final, 0, 0, String::new())
+			build_nav_result(false, wrapped_final, DocPos::ZERO, 0, String::new())
 		}
 		NavTarget::List
 		| NavTarget::ListItem
@@ -129,15 +128,15 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 					"NavTarget should only be List, ListItem, Link, Table, Separator, Image, Figure, or Formula in this branch"
 				),
 			};
-			let (idx_opt, wrapped) = select_marker_index(doc, req.position, req.wrap, req.direction, kind);
+			let (idx_opt, wrapped) = select_marker_index(doc, position, req.wrap, req.direction, kind);
 			if let Some(idx) = idx_opt {
 				let marker = doc.document().buffer.markers.get(idx);
-				let offset = marker.map_or(0, |m| m.position);
+				let offset = marker.map_or(DocPos::ZERO, |m| m.position);
 				let level = marker.map_or(0, |m| m.level);
 				let text = marker.map(|m| m.text.clone()).unwrap_or_default();
 				return build_nav_result(true, wrapped, offset, level, text);
 			}
-			build_nav_result(false, wrapped, 0, 0, String::new())
+			build_nav_result(false, wrapped, DocPos::ZERO, 0, String::new())
 		}
 	}
 }
@@ -149,9 +148,8 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 /// container's `MarkerType` as `i32` so the UI can describe what was left.
 #[must_use]
 pub fn reader_container_navigate(doc: &DocumentHandle, position: i64, to_end: bool) -> ffi::NavResult {
-	let pos = usize::try_from(position.max(0)).unwrap_or(0);
-	doc.enclosing_container(pos).map_or_else(
-		|| build_nav_result(false, false, 0, 0, String::new()),
+	doc.enclosing_container(doc.document().buffer.nearest_pos(position)).map_or_else(
+		|| build_nav_result(false, false, DocPos::ZERO, 0, String::new()),
 		|span| {
 			let offset = if to_end { line_after(doc, span.end) } else { span.start };
 			build_nav_result(true, false, offset, i32::from(span.mtype), String::new())
@@ -163,11 +161,11 @@ pub fn reader_container_navigate(doc: &DocumentHandle, position: i64, to_end: bo
 /// whether they include the terminating newline (lists do, tables do not), so we normalise to the
 /// next line: find the newline that terminates the container's final line and step past it. When
 /// the container is the last line of the document, the clamped document end is returned.
-fn line_after(doc: &DocumentHandle, end: usize) -> usize {
+fn line_after(doc: &DocumentHandle, end: DocPos) -> DocPos {
 	let buffer = &doc.document().buffer;
-	let total = buffer.char_count();
-	let probe = end.min(total).saturating_sub(1);
-	buffer.newline_positions().iter().find(|&&nl| nl >= probe).map_or(total, |&nl| (nl + 1).min(total))
+	let total = buffer.end();
+	let probe = end.min(total).saturating_sub(DocLen::ONE);
+	buffer.newline_positions().iter().find(|&&nl| nl >= probe).map_or(total, |&nl| (nl + DocLen::ONE).min(total))
 }
 
 #[cfg(test)]
@@ -181,7 +179,7 @@ mod tests {
 		let content = "AAAA\nLLLL\nMMMM\nBBBB".to_string();
 		// List length 10 includes the trailing newline (end == 15, the next line start).
 		let mut list_buf = DocumentBuffer::with_content(content.clone());
-		list_buf.add_marker(Marker::new(MarkerType::List, 5).with_length(10));
+		list_buf.add_marker(Marker::new(MarkerType::List, 5.into()).with_length(10.into()));
 		let mut list_doc = Document::new();
 		list_doc.set_buffer(list_buf);
 		let list_handle = DocumentHandle::new(list_doc);
@@ -192,7 +190,7 @@ mod tests {
 		assert_eq!(reader_container_navigate(&list_handle, 7, false).offset, 5);
 		// Table length 9 stops at the last visible char (end == 14, the terminating newline).
 		let mut table_buf = DocumentBuffer::with_content(content);
-		table_buf.add_marker(Marker::new(MarkerType::Table, 5).with_length(9));
+		table_buf.add_marker(Marker::new(MarkerType::Table, 5.into()).with_length(9.into()));
 		let mut table_doc = Document::new();
 		table_doc.set_buffer(table_buf);
 		let table_handle = DocumentHandle::new(table_doc);
@@ -204,7 +202,7 @@ mod tests {
 	#[test]
 	fn reader_container_navigate_not_in_container() {
 		let mut buffer = DocumentBuffer::with_content("x".repeat(120));
-		buffer.add_marker(Marker::new(MarkerType::List, 10).with_length(30));
+		buffer.add_marker(Marker::new(MarkerType::List, 10.into()).with_length(30.into()));
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
 		let handle = DocumentHandle::new(doc);

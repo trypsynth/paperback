@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, Node, NodeType};
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
+	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
 		Parser, add_converter_markers,
 		convert::xml_to_text::XmlToText,
@@ -47,11 +47,11 @@ impl Parser for Fb2Parser {
 		}
 		let mut buffer = DocumentBuffer::new();
 		buffer.append(&converter.get_text());
-		add_converter_markers(&mut buffer, &converter, 0);
+		add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 		for offset in converter.get_section_offsets() {
 			buffer.add_marker(Marker::new(MarkerType::SectionBreak, *offset));
 		}
-		let id_positions: HashMap<String, usize> = converter.get_id_positions().clone();
+		let id_positions: HashMap<String, DocPos> = converter.get_id_positions().clone();
 		let mut document = Document::new().with_title(title).with_author(author);
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;

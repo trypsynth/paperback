@@ -26,6 +26,22 @@ pub mod readability;
 #[path = "../src/ui/paragraph_format.rs"]
 pub mod paragraph_format;
 
+#[cfg(target_os = "windows")]
+#[allow(dead_code, unused_imports)]
+#[path = "../src/text_window.rs"]
+pub mod text_window;
+
+#[cfg(target_os = "windows")]
+#[allow(dead_code)]
+#[path = "../src/ui/reader_ctrl.rs"]
+pub mod reader_ctrl;
+
+// Where the included modules look for the reader control.
+#[cfg(target_os = "windows")]
+pub mod ui {
+	pub use super::reader_ctrl;
+}
+
 #[cfg(not(target_os = "windows"))]
 fn main() {}
 
@@ -49,6 +65,8 @@ mod checks {
 		readability::apply_readability_format_to_ctrl,
 		rtf::{RtfFontInfo, build_rtf, build_rtf_for_whole_control},
 		rtf_stream::{append_rtf_into_ctrl, stream_rtf_into_ctrl},
+		text_window::CtrlPos,
+		ui::reader_ctrl::ReaderCtrl,
 	};
 
 	/// "Intro" 0..6, "Title" 6..12, "• one" 12..18, "• two" 18..24, "Body" 24..28.
@@ -145,7 +163,7 @@ mod checks {
 	pub fn run(text_ctrl: TextCtrl) {
 		text_ctrl.set_value(CONTENT);
 		let unformatted = appearance(text_ctrl);
-		apply_paragraph_formats(text_ctrl, 0, &FORMATS);
+		apply_paragraph_formats(ReaderCtrl::new(text_ctrl), CtrlPos::from_raw, &FORMATS);
 		assert_eq!(text_ctrl.get_value(), CONTENT, "plain: the text is untouched");
 		assert_formatted(text_ctrl, "plain");
 		assert_looks_unchanged(text_ctrl, &unformatted, "plain");
@@ -168,7 +186,7 @@ mod checks {
 		text_ctrl.set_value("Intro\n");
 		let base = text_ctrl.get_last_position();
 		text_ctrl.append_text("Title\nBody");
-		apply_paragraph_formats(text_ctrl, base, &heading);
+		apply_paragraph_formats(ReaderCtrl::new(text_ctrl), |offset| CtrlPos::from_raw(base + offset), &heading);
 		assert_appended_heading(text_ctrl, "plain append");
 	}
 

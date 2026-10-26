@@ -113,7 +113,7 @@ fn table_render_bundle_includes_caption_lines_and_length() {
 	let bundle = table_render_bundle("<table><caption>Cap</caption><tr><td>a</td><td>b</td></tr></table>", true);
 	assert_eq!(bundle.caption, "Cap");
 	assert_eq!(bundle.lines, vec!["a\tb".to_string()]);
-	assert_eq!(bundle.display_length, 4);
+	assert_eq!(bundle.length, 4);
 }
 
 #[test]
@@ -121,7 +121,7 @@ fn table_render_bundle_falls_back_to_default_caption() {
 	let bundle = table_render_bundle("<table></table>", true);
 	assert_eq!(bundle.caption, "table");
 	assert!(bundle.lines.is_empty());
-	assert_eq!(bundle.display_length, 0);
+	assert_eq!(bundle.length, 0);
 }
 
 #[test]

@@ -100,7 +100,7 @@ fn webview_target_path_renders_a_short_document_whole() {
 	let session = session_with_path("book.mobi");
 	let target = session.webview_target_path(0, &dir.to_string_lossy()).expect("a web view target");
 	let html = fs::read_to_string(&target.path).unwrap();
-	assert_eq!(html, crate::export::html::render_with_anchor(&session.handle, Some(0)));
+	assert_eq!(html, crate::export::html::render_with_anchor(&session.handle, Some(0.into())));
 }
 
 #[test]

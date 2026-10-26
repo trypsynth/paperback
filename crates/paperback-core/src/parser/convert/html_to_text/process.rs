@@ -7,6 +7,7 @@ use scraper::{ElementRef, Html, Node, node};
 
 use super::{HtmlToText, ProcessingFlags};
 use crate::{
+	document::{DocLen, DocPos},
 	parser::convert::{
 		block_elements::is_block_element,
 		format_spans::FormatKind,
@@ -17,7 +18,7 @@ use crate::{
 		table_text::{collect_dom_text, table_render_bundle},
 	},
 	types::{FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
-	util::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
+	util::text::{collapse_whitespace, format_list_item, remove_soft_hyphens, trim_string},
 };
 
 impl HtmlToText {
@@ -95,7 +96,7 @@ impl HtmlToText {
 				self.id_positions.insert(id.to_string(), offset);
 			}
 		}
-		let length = display_len(&rendered);
+		let length = DocLen::of(&rendered);
 		self.text.current_line.push_str(&rendered);
 		if block {
 			self.text.finalize_current_line();
@@ -115,13 +116,8 @@ impl HtmlToText {
 			self.text.push_finalized_line(line);
 		}
 		let table_caption = render.caption;
-		let display_length = render.display_length;
-		self.tables.push(TableInfo {
-			offset: start_offset,
-			text: table_caption,
-			html_content: table_html,
-			length: display_length,
-		});
+		let length = render.length;
+		self.tables.push(TableInfo { offset: start_offset, text: table_caption, html_content: table_html, length });
 	}
 
 	fn handle_element_opening(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {
@@ -171,7 +167,7 @@ impl HtmlToText {
 			let line = LineBuilder::separator_line();
 			self.text.current_line.push_str(line);
 			self.text.finalize_current_line();
-			self.separators.push(SeparatorInfo { offset, length: display_len(line) });
+			self.separators.push(SeparatorInfo { offset, length: DocLen::of(line) });
 		} else if tag_name == "code" {
 			self.flags.insert(ProcessingFlags::IN_CODE);
 			self.text.start_preserve_whitespace();
@@ -227,7 +223,11 @@ impl HtmlToText {
 			if item_count > 0 {
 				self.text.finalize_current_line();
 				self.open_lists.push(Some(self.lists.len()));
-				self.lists.push(ListInfo { offset: self.text.get_current_text_position(), item_count, length: 0 });
+				self.lists.push(ListInfo {
+					offset: self.text.get_current_text_position(),
+					item_count,
+					length: DocLen::ZERO,
+				});
 			} else {
 				self.open_lists.push(None);
 			}
@@ -283,7 +283,7 @@ impl HtmlToText {
 				for (image_text, mut info, is_figure) in std::mem::take(&mut self.current_link_images) {
 					let Some(found) = collapsed_text[searched..].find(&image_text) else { continue };
 					let start = searched + found;
-					info.offset = self.link_start_pos + display_len(&collapsed_text[..start]);
+					info.offset = self.link_start_pos + DocLen::of(&collapsed_text[..start]);
 					searched = start + image_text.len();
 					self.push_image(info, is_figure);
 				}
@@ -308,7 +308,7 @@ impl HtmlToText {
 			if let Some(open) = self.open_lists.pop().flatten() {
 				self.text.finalize_current_line();
 				let offset = self.lists[open].offset;
-				self.lists[open].length = self.text.get_current_text_position().saturating_sub(offset);
+				self.lists[open].length = self.text.get_current_text_position().since(offset);
 			}
 		}
 		if tag_name == "pre" {
@@ -381,9 +381,9 @@ impl HtmlToText {
 		}
 		let image_text = image_text::placeholder(is_figure, &description);
 		let info = ImageInfo {
-			offset: 0,
+			offset: DocPos::ZERO,
 			alt_text: description,
-			length: display_len(&image_text),
+			length: DocLen::of(&image_text),
 			source: Self::image_source(node),
 		};
 		Some((image_text, info, is_figure))

@@ -4,13 +4,12 @@ use rstest::rstest;
 use scraper::{ElementRef, Html, Selector};
 
 use crate::{
-	document::DocumentBuffer,
+	document::{DocLen, DocPos, DocumentBuffer},
 	parser::convert::{
 		html_to_text::{HtmlSourceMode, HtmlToText},
 		xml_to_text::XmlToText,
 	},
 	types::{FormulaInfo, HeadingInfo, LinkInfo, ListItemInfo},
-	util::text::display_len,
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -56,7 +55,7 @@ struct Converted {
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
 	list_items: Vec<ListItemInfo>,
-	ids: HashMap<String, usize>,
+	ids: HashMap<String, DocPos>,
 }
 
 fn convert(body: &str, source: Source) -> Converted {
@@ -137,8 +136,8 @@ fn embedded_formulas_preserve_text_spans_and_anchors(
 	assert_eq!(converted.formulas.len(), 1);
 	let formula = &converted.formulas[0];
 	assert_eq!(formula.text, expected);
-	assert_eq!(formula.offset, display_len(&format!("{bullet}😀 Before ")));
-	assert_eq!(formula.length, display_len(expected));
+	assert_eq!(formula.offset, DocLen::of(&format!("{bullet}😀 Before ")).as_pos());
+	assert_eq!(formula.length, DocLen::of(expected));
 	assert_eq!(converted.ids["formula"], formula.offset);
 	assert_eq!(converted.ids["token"], formula.offset);
 }
@@ -192,8 +191,8 @@ fn formula_display_controls_line_breaks(
 	assert_eq!(converted.formulas.len(), 1);
 	let formula = &converted.formulas[0];
 	assert_eq!(formula.text, "x^2");
-	assert_eq!(formula.offset, display_len(prefix));
-	assert_eq!(formula.length, display_len("x^2"));
+	assert_eq!(formula.offset, DocLen::of(prefix).as_pos());
+	assert_eq!(formula.length, DocLen::of("x^2"));
 	assert_eq!(converted.ids["formula"], formula.offset);
 	let view = formula_view(formula);
 	let selector = Selector::parse("body > math").unwrap();
@@ -355,8 +354,8 @@ fn table_formulas_preserve_text_and_spans(
 	assert_eq!(converted.formulas.len(), count);
 	let buffer = DocumentBuffer::with_content(converted.text);
 	for formula in converted.formulas {
-		let start = buffer.byte_index_for_display(formula.offset);
-		let end = buffer.byte_index_for_display(formula.offset + formula.length);
+		let start = buffer.byte_at(formula.offset);
+		let end = buffer.byte_at(formula.offset + formula.length);
 		assert_eq!(buffer.slice(start..end), formula.text);
 	}
 }
@@ -381,7 +380,7 @@ fn link_formula_spans_count_boundary_whitespace_once(
 ) {
 	let converted = convert(&format!(r##"<p>{prefix}<a href="#x">  <math>{}</math></a></p>"##, POWER.0), source);
 	assert_eq!(converted.formulas.len(), 1);
-	assert_eq!(converted.formulas[0].offset, display_len(prefix));
+	assert_eq!(converted.formulas[0].offset, DocLen::of(prefix).as_pos());
 }
 
 #[rstest]

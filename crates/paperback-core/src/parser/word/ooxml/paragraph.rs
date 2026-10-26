@@ -7,7 +7,7 @@ use super::{
 	annotations::{Annotations, NoteKind},
 };
 use crate::{
-	document::{DocumentBuffer, Marker, MarkerType, format_marker_types},
+	document::{DocLen, DocPos, DocumentBuffer, Marker, MarkerType, format_marker_types},
 	parser::{
 		convert::image_text,
 		util::{
@@ -17,7 +17,6 @@ use crate::{
 		},
 	},
 	types::HeadingInfo,
-	util::text::display_len,
 };
 
 /// Where a document's pages come from.
@@ -43,34 +42,34 @@ pub(super) fn process_paragraph(
 	element: Node,
 	buffer: &mut DocumentBuffer,
 	headings: &mut Vec<HeadingInfo>,
-	id_positions: &mut HashMap<String, usize>,
+	id_positions: &mut HashMap<String, DocPos>,
 	rels: &Relationships,
 	style_heading_map: &HashMap<String, i32>,
 	numbering: &mut Numbering,
 	page_source: PageSource,
 	annotations: &mut Annotations,
 ) -> bool {
-	let paragraph_start = buffer.current_position();
+	let paragraph_start = buffer.end();
 	// Word keeps list numbers and bullets out of the text and generates them; without this a
 	// numbered procedure reads as a run of unnumbered paragraphs.
 	let label = numbering.label_for(find_child_element(element, "pPr"));
 	let mut paragraph_text = label.as_ref().map_or_else(String::new, |label| format!("{} ", label.text));
-	let mut para_display_len = display_len(&paragraph_text);
+	let mut para_display_len = DocLen::of(&paragraph_text);
 	let label_len = para_display_len;
-	let mut page_starts: Vec<usize> = Vec::new();
+	let mut page_starts: Vec<DocLen> = Vec::new();
 	// Explicit breaks fall after their own text, so one at the end of the paragraph starts the page on the next line instead.
-	let mut breaks_after: Vec<usize> = Vec::new();
+	let mut breaks_after: Vec<DocLen> = Vec::new();
 	let mut next_starts_page = false;
-	let mut bookmarks: Vec<(String, usize)> = Vec::new();
-	let mut links: Vec<(usize, String, String)> = Vec::new();
+	let mut bookmarks: Vec<(String, DocLen)> = Vec::new();
+	let mut links: Vec<(DocLen, String, String)> = Vec::new();
 	// Each picture's offset, placeholder length, description and archive entry.
-	let mut pictures: Vec<(usize, usize, String, String)> = Vec::new();
+	let mut pictures: Vec<(DocLen, DocLen, String, String)> = Vec::new();
 	// Where comments start and end in this paragraph, by id, placed once the paragraph's text is final.
-	let mut comment_starts: Vec<(String, usize)> = Vec::new();
-	let mut comment_ends: Vec<(String, usize)> = Vec::new();
+	let mut comment_starts: Vec<(String, DocLen)> = Vec::new();
+	let mut comment_ends: Vec<(String, DocLen)> = Vec::new();
 	let mut heading_level = 0;
 	let mut is_paragraph_style_heading = false;
-	let mut format_spans: Vec<(MarkerType, usize, usize)> = Vec::new();
+	let mut format_spans: Vec<(MarkerType, DocLen, DocLen)> = Vec::new();
 	// A hyperlink field's displayed text was already taken whole when its instruction was read, so its runs are skipped until the field ends rather than read a second time.
 	let mut in_taken_field = false;
 	for child in content_children(element) {
@@ -85,7 +84,7 @@ pub(super) fn process_paragraph(
 			}
 			if page_source == PageSource::Explicit {
 				if find_child_element(child, "pageBreakBefore").is_some_and(is_on) {
-					page_starts.push(0);
+					page_starts.push(DocLen::ZERO);
 				}
 				next_starts_page = find_child_element(child, "sectPr").is_some_and(section_starts_page);
 			}
@@ -131,7 +130,7 @@ pub(super) fn process_paragraph(
 				comment_starts.push((id.to_string(), para_display_len));
 			}
 			if let Some((placeholder, description, entry)) = picture(child, rels) {
-				let length = display_len(&placeholder);
+				let length = DocLen::of(&placeholder);
 				pictures.push((para_display_len, length, description, entry));
 				para_display_len += length;
 				paragraph_text.push_str(&placeholder);
@@ -144,7 +143,7 @@ pub(super) fn process_paragraph(
 				let citation = annotations.cite(kind, reference.attribute("id").unwrap_or_default(), custom);
 				let cited = format!("[{}]", citation.label);
 				links.push((para_display_len, cited.clone(), format!("#{}", citation.key)));
-				para_display_len += display_len(&cited);
+				para_display_len += DocLen::of(&cited);
 				paragraph_text.push_str(&cited);
 				continue;
 			}
@@ -158,7 +157,7 @@ pub(super) fn process_paragraph(
 					if !display_text.is_empty() {
 						links.push((para_display_len, display_text.clone(), link_target));
 						paragraph_text.push_str(&display_text);
-						para_display_len += display_len(&display_text);
+						para_display_len += DocLen::of(&display_text);
 						in_taken_field = true;
 					}
 				}
@@ -166,7 +165,7 @@ pub(super) fn process_paragraph(
 			let run_text = collect_ooxml_run_text(child);
 			if !run_text.is_empty() {
 				let run_start = para_display_len;
-				let run_len = display_len(&run_text);
+				let run_len = DocLen::of(&run_text);
 				if let Some(rpr_node) = find_child_element(child, "rPr") {
 					let (bold, italic, underline) = get_run_format_flags(rpr_node);
 					let run_end = run_start + run_len;
@@ -184,16 +183,16 @@ pub(super) fn process_paragraph(
 	let trimmed = paragraph_text.trim();
 	buffer.append(trimmed);
 	buffer.append("\n");
-	let leading_trim = display_len(&paragraph_text) - display_len(paragraph_text.trim_start());
-	let trimmed_len = display_len(trimmed);
+	let leading_trim = DocLen::of(&paragraph_text) - DocLen::of(paragraph_text.trim_start());
+	let trimmed_len = DocLen::of(trimmed);
 	// Offsets were taken in the untrimmed text, so they move back by what the trim removed, and never out of this paragraph.
-	let in_trimmed = |offset: usize| paragraph_start + offset.saturating_sub(leading_trim).min(trimmed_len);
+	let in_trimmed = |offset: DocLen| paragraph_start + offset.saturating_sub(leading_trim).min(trimmed_len);
 	// A page or bookmark that starts on the paragraph's first words starts on the paragraph, not after its list label.
-	let at_words = |offset: usize| if offset <= label_len { paragraph_start } else { in_trimmed(offset) };
+	let at_words = |offset: DocLen| if offset <= label_len { paragraph_start } else { in_trimmed(offset) };
 	for offset in page_starts {
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, at_words(offset)));
 	}
-	let next_line = buffer.current_position();
+	let next_line = buffer.end();
 	for offset in breaks_after {
 		let position = if offset.saturating_sub(leading_trim) >= trimmed_len { next_line } else { at_words(offset) };
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, position));
@@ -329,15 +328,15 @@ pub(super) fn starts_page(run: Node, page_source: PageSource) -> bool {
 	}
 }
 
-/// Where in `run`'s text each explicit page break leaves off, counted in display units the way [`collect_ooxml_run_text`] writes the run, the break's own newline included.
-fn page_break_offsets(run: Node) -> impl Iterator<Item = usize> {
-	let mut offset = 0;
+/// Where in `run`'s text each explicit page break leaves off, counted the way [`collect_ooxml_run_text`] writes the run, the break's own newline included.
+fn page_break_offsets(run: Node) -> impl Iterator<Item = DocLen> {
+	let mut offset = DocLen::ZERO;
 	run.children().filter(|child| child.node_type() == NodeType::Element).filter_map(move |child| {
 		match child.tag_name().name() {
-			"t" => offset += child.text().map_or(0, display_len),
-			"tab" => offset += 1,
+			"t" => offset += child.text().map_or(DocLen::ZERO, DocLen::of),
+			"tab" => offset += DocLen::ONE,
 			"br" => {
-				offset += 1;
+				offset += DocLen::ONE;
 				if child.attribute("type") == Some("page") {
 					return Some(offset);
 				}
@@ -358,14 +357,14 @@ fn section_starts_page(section: Node) -> bool {
 	find_child_element(section, "type").and_then(|kind| kind.attribute("val")) != Some("continuous")
 }
 
-/// Appends the hyperlink's display text to `paragraph_text`, records the link at `offset` into the paragraph, and returns the number of display units appended.
+/// Appends the hyperlink's display text to `paragraph_text`, records the link at `offset` into the paragraph, and returns how many positions it appended.
 fn process_hyperlink(
 	element: Node,
 	paragraph_text: &mut String,
-	links: &mut Vec<(usize, String, String)>,
+	links: &mut Vec<(DocLen, String, String)>,
 	rels: &HashMap<String, String>,
-	offset: usize,
-) -> usize {
+	offset: DocLen,
+) -> DocLen {
 	let r_id = element.attribute("id").unwrap_or("");
 	let anchor = element.attribute("anchor").unwrap_or("");
 	let link_target = if !r_id.is_empty() {
@@ -382,13 +381,13 @@ fn process_hyperlink(
 		}
 	}
 	if link_text.is_empty() {
-		return 0;
+		return DocLen::ZERO;
 	}
 	paragraph_text.push_str(&link_text);
 	if !link_target.is_empty() {
 		links.push((offset, link_text.clone(), link_target));
 	}
-	display_len(&link_text)
+	DocLen::of(&link_text)
 }
 
 fn get_paragraph_heading_level(pr_element: Node, style_heading_map: &HashMap<String, i32>) -> i32 {

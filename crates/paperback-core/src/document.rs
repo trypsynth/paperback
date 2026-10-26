@@ -9,13 +9,15 @@ use crate::audio::AudioTimeline;
 mod buffer;
 mod handle;
 mod marker;
+mod position;
 mod stats;
 mod toc;
 
-pub use buffer::{ContentBytePos, DocumentBuffer, Edit, PartSpan, ReplaceOutcome};
+pub use buffer::{DocumentBuffer, Edit, PartSpan, ReplaceOutcome};
 pub use handle::DocumentHandle;
 pub(crate) use marker::format_marker_types;
 pub use marker::{ContainerSpan, Marker, MarkerType, is_container_marker, is_heading_marker};
+pub use position::{ContentBytePos, DocLen, DocPos};
 pub use stats::DocumentStats;
 pub use toc::TocItem;
 
@@ -25,7 +27,7 @@ pub struct Document {
 	pub author: String,
 	pub buffer: DocumentBuffer,
 	pub toc_items: Vec<TocItem>,
-	pub id_positions: HashMap<String, usize>,
+	pub id_positions: HashMap<String, DocPos>,
 	pub spine_items: Vec<String>,
 	pub manifest_items: HashMap<String, String>,
 	pub stats: DocumentStats,
@@ -213,8 +215,8 @@ mod tests {
 		let mut builder = crate::audio::AudioTimelineBuilder::new();
 		let source0 = builder.add_source(crate::audio::AudioLocation::File("a.mp3".to_string()), Some(2000));
 		let source1 = builder.add_source(crate::audio::AudioLocation::File("b.mp3".to_string()), Some(3000));
-		builder.add_clip(source0, 0, 2000, 0, 1);
-		builder.add_clip(source1, 0, 3000, 1, 2);
+		builder.add_clip(source0, 0, 2000, 0.into(), 1.into());
+		builder.add_clip(source1, 0, 3000, 1.into(), 2.into());
 		let mut doc = Document::new();
 		doc.set_buffer(DocumentBuffer::with_content("a b".to_string()));
 		doc.set_audio(builder.build());

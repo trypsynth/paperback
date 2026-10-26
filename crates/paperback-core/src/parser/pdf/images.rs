@@ -13,10 +13,9 @@
 //! all.
 
 use crate::{
-	document::{DocumentBuffer, Marker, MarkerType},
+	document::{DocLen, DocPos, DocumentBuffer, Marker, MarkerType},
 	pdf_engine::{MAX_FORM_DEPTH, ObjectKind, PageObject, PdfPage},
 	t,
-	util::text::display_len,
 };
 
 /// Writes one image's line into the page, with a marker spanning it.
@@ -29,18 +28,18 @@ pub(super) fn append_image(
 	mtype: MarkerType,
 	description: &str,
 	page_display_text: &mut String,
-	current_lines_info: &mut Vec<(usize, String)>,
+	current_lines_info: &mut Vec<(DocPos, String)>,
 	reference: &str,
 ) {
 	// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 	let label = if mtype == MarkerType::Figure { t("Figure") } else { t("Image") };
 	let line = if description.is_empty() { format!("[{label}]") } else { format!("[{label}: {description}]") };
-	let offset = buffer.current_position();
+	let offset = buffer.end();
 	current_lines_info.push((offset, line.clone()));
 	buffer.add_marker(
 		Marker::new(mtype, offset)
 			.with_text(description.to_string())
-			.with_length(display_len(&line))
+			.with_length(DocLen::of(&line))
 			.with_reference(reference.to_string()),
 	);
 	buffer.append(&line);
@@ -123,7 +122,7 @@ impl UnclaimedImages {
 		top: f64,
 		buffer: &mut DocumentBuffer,
 		page_display_text: &mut String,
-		current_lines_info: &mut Vec<(usize, String)>,
+		current_lines_info: &mut Vec<(DocPos, String)>,
 	) {
 		while self.images.front().is_some_and(|(image_top, _)| *image_top > top) {
 			if let Some((_, path)) = self.images.pop_front() {
