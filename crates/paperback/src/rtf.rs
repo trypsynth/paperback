@@ -97,8 +97,7 @@ pub fn build_rtf(
 	// written where they change.
 	let mut current_paragraph = (None, false);
 	let mut at_paragraph_start = true;
-	let mut position: i64 = 0;
-	for ch in content.chars() {
+	for (position, ch) in (0_i64..).zip(content.chars()) {
 		if at_paragraph_start {
 			while paragraph_idx < paragraphs.len() && paragraphs[paragraph_idx].end <= position {
 				paragraph_idx += 1;
@@ -145,7 +144,6 @@ pub fn build_rtf(
 			current = style;
 		}
 		append_escaped_char(ch, &mut out);
-		position += 1;
 	}
 	out.push('}');
 	out
