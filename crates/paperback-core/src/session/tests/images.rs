@@ -11,10 +11,10 @@ fn open(path: &Path) -> DocumentSession {
 	DocumentSession::new(&path.to_string_lossy(), "", "", ParseSettings::default()).expect("parse test document")
 }
 
-fn position_of(session: &DocumentSession, text: &str) -> i64 {
+fn position_of(session: &DocumentSession, text: &str) -> DocPos {
 	let content = session.content();
 	let byte = content.find(text).unwrap_or_else(|| panic!("{text:?} not in {content:?}"));
-	i64::try_from(content[..byte].chars().count()).unwrap()
+	DocLen::of(&content[..byte]).as_pos()
 }
 
 fn write_zip(path: &Path, entries: &[(&str, &[u8])]) {
@@ -37,7 +37,7 @@ fn a_picture_beside_an_html_page_is_saved_byte_for_byte() {
 	)
 	.unwrap();
 	let session = open(&dir.join("page.html"));
-	let at = position_of(&session, "[Image: A map]") + 3;
+	let at = position_of(&session, "[Image: A map]") + 3.into();
 	assert_eq!(session.image_file_name_at(at).as_deref(), Some("map 1.png"));
 	let out = dir.join("out.png");
 	session.save_image(at, &out.to_string_lossy()).unwrap();
@@ -119,9 +119,9 @@ fn an_epub_picture_page_saves_its_picture_rather_than_the_page() {
 	let epub = dir.join("book.epub");
 	write_epub(&epub);
 	let session = open(&epub);
-	assert_eq!(session.image_file_name_at(0).as_deref(), Some("plate.png"));
+	assert_eq!(session.image_file_name_at(0.into()).as_deref(), Some("plate.png"));
 	let out = dir.join("plate.png");
-	session.save_image(0, &out.to_string_lossy()).unwrap();
+	session.save_image(0.into(), &out.to_string_lossy()).unwrap();
 	assert_eq!(fs::read(&out).unwrap(), b"plate-bytes");
 }
 
@@ -131,7 +131,7 @@ fn a_comic_page_is_saved_from_the_archive() {
 	let cbz = dir.join("comic.cbz");
 	write_zip(&cbz, &[("001.png", b"first"), ("002.png", PICTURE)]);
 	let session = open(&cbz);
-	let second = session.page_offset(2);
+	let second = session.page_position(2).unwrap();
 	assert_eq!(session.image_file_name_at(second).as_deref(), Some("002.png"));
 	let out = dir.join("page.png");
 	session.save_image(second, &out.to_string_lossy()).unwrap();
@@ -151,7 +151,7 @@ fn a_picture_beside_an_html_page_offers_its_bytes() {
 	)
 	.unwrap();
 	let session = open(&dir.join("page.html"));
-	let at = position_of(&session, "[Image: A map]") + 3;
+	let at = position_of(&session, "[Image: A map]") + 3.into();
 	assert_eq!(session.image_bytes_at(at).unwrap(), PICTURE);
 }
 
@@ -186,8 +186,8 @@ fn a_linked_picture_is_on_a_link_and_a_plain_one_is_not() {
 	)
 	.unwrap();
 	let session = open(&dir.join("page.html"));
-	let linked = position_of(&session, "[Image: Linked]") + 3;
-	let plain = position_of(&session, "[Image: Plain]") + 3;
+	let linked = position_of(&session, "[Image: Linked]") + 3.into();
+	let plain = position_of(&session, "[Image: Plain]") + 3.into();
 	assert!(session.image_file_name_at(linked).is_some() && session.is_on_link(linked));
 	assert!(session.image_file_name_at(plain).is_some() && !session.is_on_link(plain));
 }
@@ -204,7 +204,7 @@ fn a_picture_in_a_zipped_daisy_book_offers_its_bytes() {
 <dtbook><book><bodymatter><p>Before</p><imggroup><img src="images/map.png" alt="A map"/></imggroup></bodymatter></book></dtbook>"#;
 	write_zip(&book, &[("content/book.opf", opf), ("content/book.xml", dtbook), ("content/images/map.png", PICTURE)]);
 	let session = open(&book);
-	let at = position_of(&session, "[Image: A map]") + 3;
+	let at = position_of(&session, "[Image: A map]") + 3.into();
 	assert_eq!(session.image_bytes_at(at).unwrap(), PICTURE);
 }
 
@@ -221,7 +221,7 @@ fn a_word_picture_reads_as_its_alt_text_and_offers_its_bytes() {
 	);
 	let session = open(&document);
 	assert_eq!(session.content(), "See [Image: Sales by region]\nAfter.\n[Image: Old logo]\n");
-	let at = position_of(&session, "[Image: Sales by region]") + 3;
+	let at = position_of(&session, "[Image: Sales by region]") + 3.into();
 	assert_eq!(session.image_bytes_at(at).unwrap(), PICTURE);
 	assert_eq!(session.image_bytes_at(position_of(&session, "[Image: Old logo]")).unwrap(), PICTURE);
 }
@@ -277,7 +277,7 @@ fn a_mobi_picture_offers_its_bytes_from_its_record() {
 	)
 	.unwrap();
 	let session = open(&path);
-	let at = position_of(&session, "[Image: A map]") + 3;
+	let at = position_of(&session, "[Image: A map]") + 3.into();
 	assert_eq!(session.image_file_name_at(at).as_deref(), Some("image 2.gif"));
 	assert_eq!(session.image_bytes_at(at).unwrap(), gif);
 }

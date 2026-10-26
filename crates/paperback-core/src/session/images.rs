@@ -18,7 +18,7 @@ use zip::ZipArchive;
 
 use super::DocumentSession;
 use crate::{
-	document::MarkerType,
+	document::{DocPos, MarkerType},
 	parser::{cbz, fb2, is_data_uri, is_external_url, mobi},
 	t,
 	util::{
@@ -36,7 +36,7 @@ const LENIENT_BASE64: GeneralPurpose = GeneralPurpose::new(
 impl DocumentSession {
 	/// The file name to offer when saving the image at `position`, or `None` when there is no image there whose picture can be saved.
 	#[must_use]
-	pub fn image_file_name_at(&self, position: i64) -> Option<String> {
+	pub fn image_file_name_at(&self, position: DocPos) -> Option<String> {
 		self.image_source_at(position).map(|source| image_file_name(&source))
 	}
 
@@ -45,7 +45,7 @@ impl DocumentSession {
 	/// # Errors
 	///
 	/// Returns an error when there is no saveable image at `position`, or its picture cannot be read or written.
-	pub fn save_image(&self, position: i64, output_path: &str) -> Result<()> {
+	pub fn save_image(&self, position: DocPos, output_path: &str) -> Result<()> {
 		let bytes = self.image_bytes_at(position)?;
 		fs::write(output_path, bytes).with_context(|| format!("failed to write '{output_path}'"))
 	}
@@ -58,22 +58,22 @@ impl DocumentSession {
 	/// # Errors
 	///
 	/// Returns an error when there is no image at `position`, or its picture cannot be read.
-	pub fn image_bytes_at(&self, position: i64) -> Result<Vec<u8>> {
+	pub fn image_bytes_at(&self, position: DocPos) -> Result<Vec<u8>> {
 		let source = self.image_source_at(position).context("no image at this position")?;
 		self.image_bytes(&source)
 	}
 
 	/// Where the picture of the image or figure at `position` lives. A described image covers its placeholder text; a picture page carries no length and covers its whole line.
-	fn image_source_at(&self, position: i64) -> Option<String> {
-		let pos = self.handle.document().buffer.nearest_pos(position);
-		let (line_start, line_end) = self.line_bounds_at(position)?;
+	fn image_source_at(&self, position: DocPos) -> Option<String> {
+		let pos = position.min(self.handle.document().buffer.end());
+		let (line_start, line_end) = self.line_bounds_at(pos)?;
 		let markers = &self.handle.document().buffer.markers;
 		[MarkerType::Image, MarkerType::Figure]
 			.into_iter()
 			.filter_map(|mtype| markers.get(self.handle.current_marker_index(pos, mtype)?))
 			.filter(|marker| {
 				if marker.length.is_zero() {
-					i64::try_from(marker.position).is_ok_and(|start| start >= line_start && start <= line_end)
+					marker.position >= line_start && marker.position <= line_end
 				} else {
 					pos < marker.position + marker.length
 				}

@@ -10,19 +10,16 @@ fn heading_info(doc: &DocumentHandle, idx: i32) -> Option<HeadingInfo> {
 	doc.heading_info(idx)
 }
 
-/// `position` is `None` before the start of the document, where moving forward finds even a marker at the very start.
 fn select_marker_index(
 	doc: &DocumentHandle,
-	position: Option<DocPos>,
+	position: DocPos,
 	wrap: bool,
 	direction: ffi::NavDirection,
 	kind: MarkerType,
 ) -> (Option<usize>, bool) {
-	let initial = match (direction, position) {
-		(ffi::NavDirection::Next, Some(position)) => doc.next_marker_index(position, kind),
-		(ffi::NavDirection::Next, None) => doc.first_marker_index(kind),
-		(ffi::NavDirection::Previous, Some(position)) => doc.previous_marker_index(position, kind),
-		(ffi::NavDirection::Previous, None) => None,
+	let initial = match direction {
+		ffi::NavDirection::Next => doc.next_marker_index(position, kind),
+		ffi::NavDirection::Previous => doc.previous_marker_index(position, kind),
 	};
 	if initial.is_some() {
 		return (initial, false);
@@ -46,8 +43,7 @@ const fn build_nav_result(found: bool, wrapped: bool, offset: DocPos, level: i32
 #[must_use]
 pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavResult {
 	use ffi::NavTarget;
-	// A negative position is before the start of the document.
-	let position = (req.position >= 0).then(|| doc.document().buffer.nearest_pos(req.position));
+	let position = req.position.min(doc.document().buffer.end());
 	match req.target {
 		NavTarget::Section | NavTarget::Page => {
 			let kind = if req.target == NavTarget::Section { MarkerType::SectionBreak } else { MarkerType::PageBreak };
@@ -77,11 +73,9 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 		}
 		NavTarget::Heading => {
 			let level_filter = if req.level_filter > 0 { Some(req.level_filter) } else { None };
-			let (idx_opt, wrapped) = match (req.direction, position) {
-				(ffi::NavDirection::Next, Some(position)) => doc.next_heading_index(position, level_filter),
-				(ffi::NavDirection::Next, None) => doc.first_heading_index(level_filter),
-				(ffi::NavDirection::Previous, Some(position)) => doc.previous_heading_index(position, level_filter),
-				(ffi::NavDirection::Previous, None) => None,
+			let (idx_opt, wrapped) = match req.direction {
+				ffi::NavDirection::Next => doc.next_heading_index(position, level_filter),
+				ffi::NavDirection::Previous => doc.previous_heading_index(position, level_filter),
 			}
 			.map_or((None, false), |idx| (usize::try_from(idx).ok(), false));
 			let (idx_final, wrapped_final) = if idx_opt.is_none() && req.wrap {
@@ -147,8 +141,8 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 /// start. `found` is false when the caret is not inside any container. `marker_level` carries the
 /// container's `MarkerType` as `i32` so the UI can describe what was left.
 #[must_use]
-pub fn reader_container_navigate(doc: &DocumentHandle, position: i64, to_end: bool) -> ffi::NavResult {
-	doc.enclosing_container(doc.document().buffer.nearest_pos(position)).map_or_else(
+pub fn reader_container_navigate(doc: &DocumentHandle, position: DocPos, to_end: bool) -> ffi::NavResult {
+	doc.enclosing_container(position.min(doc.document().buffer.end())).map_or_else(
 		|| build_nav_result(false, false, DocPos::ZERO, 0, String::new()),
 		|span| {
 			let offset = if to_end { line_after(doc, span.end) } else { span.start };
@@ -183,18 +177,18 @@ mod tests {
 		let mut list_doc = Document::new();
 		list_doc.set_buffer(list_buf);
 		let list_handle = DocumentHandle::new(list_doc);
-		let list_end = reader_container_navigate(&list_handle, 7, true);
+		let list_end = reader_container_navigate(&list_handle, 7.into(), true);
 		assert!(list_end.found);
 		assert_eq!(list_end.offset, 15); // start of "BBBB"
 		assert_eq!(list_end.marker_level, i32::from(MarkerType::List));
-		assert_eq!(reader_container_navigate(&list_handle, 7, false).offset, 5);
+		assert_eq!(reader_container_navigate(&list_handle, 7.into(), false).offset, 5);
 		// Table length 9 stops at the last visible char (end == 14, the terminating newline).
 		let mut table_buf = DocumentBuffer::with_content(content);
 		table_buf.add_marker(Marker::new(MarkerType::Table, 5.into()).with_length(9.into()));
 		let mut table_doc = Document::new();
 		table_doc.set_buffer(table_buf);
 		let table_handle = DocumentHandle::new(table_doc);
-		let table_end = reader_container_navigate(&table_handle, 7, true);
+		let table_end = reader_container_navigate(&table_handle, 7.into(), true);
 		assert!(table_end.found);
 		assert_eq!(table_end.offset, 15); // also lands on "BBBB", the line after the table
 	}
@@ -206,6 +200,6 @@ mod tests {
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
 		let handle = DocumentHandle::new(doc);
-		assert!(!reader_container_navigate(&handle, 5, true).found);
+		assert!(!reader_container_navigate(&handle, 5.into(), true).found);
 	}
 }

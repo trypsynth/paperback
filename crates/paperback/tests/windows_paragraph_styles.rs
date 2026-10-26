@@ -47,7 +47,7 @@ fn main() {}
 
 #[cfg(target_os = "windows")]
 mod checks {
-	use paperback_core::session::ParagraphFormat;
+	use paperback_core::{document::DocPos, session::ParagraphFormat};
 	use windows::Win32::{
 		Foundation::{HWND, LPARAM, WPARAM},
 		UI::{
@@ -76,10 +76,26 @@ mod checks {
 	const LIST: [i64; 2] = [12, 18];
 	const BODY: i64 = 24;
 
+	/// The same paragraphs as positions: every char of `CONTENT` is one unit of the control.
 	const FORMATS: [ParagraphFormat; 2] = [
-		ParagraphFormat { start: TITLE, end: LIST[0], heading_level: Some(2), list_item: false },
-		ParagraphFormat { start: LIST[0], end: BODY, heading_level: None, list_item: true },
+		ParagraphFormat {
+			start: DocPos::from_raw(6),
+			end: DocPos::from_raw(12),
+			heading_level: Some(2),
+			list_item: false,
+		},
+		ParagraphFormat {
+			start: DocPos::from_raw(12),
+			end: DocPos::from_raw(24),
+			heading_level: None,
+			list_item: true,
+		},
 	];
+
+	/// Where `position` is in a control holding only text in the Basic Multilingual Plane.
+	fn unit(position: DocPos) -> CtrlPos {
+		CtrlPos::from_raw(i64::try_from(position.get()).unwrap())
+	}
 
 	fn hwnd(text_ctrl: TextCtrl) -> HWND {
 		HWND(text_ctrl.get_handle())
@@ -163,7 +179,7 @@ mod checks {
 	pub fn run(text_ctrl: TextCtrl) {
 		text_ctrl.set_value(CONTENT);
 		let unformatted = appearance(text_ctrl);
-		apply_paragraph_formats(ReaderCtrl::new(text_ctrl), CtrlPos::from_raw, &FORMATS);
+		apply_paragraph_formats(ReaderCtrl::new(text_ctrl), unit, &FORMATS);
 		assert_eq!(text_ctrl.get_value(), CONTENT, "plain: the text is untouched");
 		assert_formatted(text_ctrl, "plain");
 		assert_looks_unchanged(text_ctrl, &unformatted, "plain");
@@ -178,7 +194,12 @@ mod checks {
 		assert_formatted(text_ctrl, "rtf");
 		assert_looks_unchanged(text_ctrl, &unformatted, "rtf");
 		// An appended chunk's formats are local to the chunk, as a window extension's are.
-		let heading = [ParagraphFormat { start: 0, end: 6, heading_level: Some(1), list_item: false }];
+		let heading = [ParagraphFormat {
+			start: DocPos::ZERO,
+			end: DocPos::from_raw(6),
+			heading_level: Some(1),
+			list_item: false,
+		}];
 		let font = font_info(text_ctrl);
 		assert!(stream_rtf_into_ctrl(text_ctrl, &build_rtf_for_whole_control("Intro\n", &[], &[], &font)));
 		assert!(append_rtf_into_ctrl(text_ctrl, &build_rtf("Title\nBody", &[], &heading, &font)));
@@ -186,7 +207,7 @@ mod checks {
 		text_ctrl.set_value("Intro\n");
 		let base = text_ctrl.get_last_position();
 		text_ctrl.append_text("Title\nBody");
-		apply_paragraph_formats(ReaderCtrl::new(text_ctrl), |offset| CtrlPos::from_raw(base + offset), &heading);
+		apply_paragraph_formats(ReaderCtrl::new(text_ctrl), |offset| unit(offset) + base, &heading);
 		assert_appended_heading(text_ctrl, "plain append");
 	}
 

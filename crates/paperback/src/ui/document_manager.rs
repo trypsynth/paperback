@@ -7,7 +7,7 @@ use std::{
 };
 
 use paperback_core::{
-	config::ConfigManager, parser::is_remote_url, session::DocumentSession, util::html::MATHML_STYLES,
+	config::ConfigManager, document::DocPos, parser::is_remote_url, session::DocumentSession, util::html::MATHML_STYLES,
 };
 use patois::t;
 use wxdragon::prelude::*;
@@ -54,7 +54,7 @@ pub struct DocumentTab {
 	/// into another would have it name different text entirely. Document-absolute rather than a
 	/// `text_ctrl` position for the same reason [`Self::window`] exists - the loaded window can be
 	/// swapped out from under it between marking and copying.
-	pub selection_mark: Cell<Option<i64>>,
+	pub selection_mark: Cell<Option<DocPos>>,
 	/// The document-absolute bounds of whatever's currently loaded into `text_ctrl`. See
 	/// `text_window` - for most documents this covers the whole thing, same as before
 	/// windowing existed; only huge documents actually get a partial window.
@@ -124,7 +124,7 @@ pub struct DocumentManager {
 	pub(super) config: Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 	last_position_save: Cell<Option<Instant>>,
-	last_sound_position: Cell<Option<i64>>,
+	last_sound_position: Cell<Option<DocPos>>,
 	last_audio_seek_position: Cell<Option<i64>>,
 	last_focus_in_text: Cell<bool>,
 	recently_closed: Vec<PathBuf>,
@@ -188,12 +188,12 @@ impl DocumentManager {
 	}
 
 	/// The position marked as the beginning of a selection to copy from, if one is set.
-	pub fn selection_mark(&self) -> Option<i64> {
+	pub fn selection_mark(&self) -> Option<DocPos> {
 		self.active_tab().and_then(|tab| tab.selection_mark.get())
 	}
 
 	/// Marks a position as the beginning of a selection to copy from, or clears the mark.
-	pub fn set_selection_mark(&self, position: Option<i64>) {
+	pub fn set_selection_mark(&self, position: Option<DocPos>) {
 		if let Some(tab) = self.active_tab() {
 			tab.selection_mark.set(position);
 		}

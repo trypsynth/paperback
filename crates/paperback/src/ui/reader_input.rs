@@ -6,7 +6,7 @@
 
 use std::{cell::Cell, rc::Rc, sync::Mutex};
 
-use paperback_core::config::ActionId;
+use paperback_core::{config::ActionId, document::DocPos};
 use patois::t;
 use wxdragon::{event::KeyboardEvent, prelude::*};
 
@@ -371,7 +371,7 @@ fn navigate_line_by_column(
 		return Some(result);
 	}
 	let doc_len = tab.session.document_len();
-	let has_more = if going_down { tab.window.end() < doc_len } else { tab.window.start() > 0 };
+	let has_more = if going_down { tab.window.end() < doc_len.as_pos() } else { tab.window.start() > DocPos::ZERO };
 	if !has_more {
 		return None;
 	}

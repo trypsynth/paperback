@@ -4,7 +4,7 @@
 
 use std::{rc::Rc, sync::Mutex};
 
-use paperback_core::{config::ConfigManager, session::DocumentSession};
+use paperback_core::{config::ConfigManager, document::DocPos, session::DocumentSession};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -107,7 +107,7 @@ pub(super) fn handle_go_to_page(
 				let Some(tab) = dm_guard.active_tab_mut() else {
 					return;
 				};
-				let target_pos = tab.session.page_offset(page);
+				let target_pos = tab.session.page_position(page).unwrap_or_default();
 				// Capture the page's announcement while the document lock is held; it is
 				// spoken after focus has returned to the book, cutting off the focus chain.
 				let content = tab.session.first_content_line_after(target_pos);
@@ -191,14 +191,13 @@ pub(super) fn handle_table_of_contents(
 				return;
 			}
 			let current_pos = navigation::doc_caret(tab);
-			let current_pos = tab.session.handle().document().buffer.nearest_pos(current_pos);
 			let current_toc_offset = tab.session.handle().find_closest_toc_offset(current_pos);
 			let Some(offset) =
 				dialogs::show_toc_dialog(frame, toc_items, i32::try_from(current_toc_offset.get()).unwrap_or(i32::MAX))
 			else {
 				return;
 			};
-			let offset = i64::from(offset);
+			let offset = tab.session.nearest_pos(i64::from(offset));
 			let update = navigation::move_to_offset_and_record_history(tab, offset);
 			// Capture the entry's announcement while the document lock is held; it is spoken
 			// after focus has returned to the book, cutting off the focus chain.
@@ -217,7 +216,7 @@ pub(super) fn handle_table_of_contents(
 /// a section that begins at the top of a page shares its offset with the page marker, and a
 /// "Page N:" prefix there would be redundant. Falls back to the bare line number when the
 /// destination has no content line.
-fn toc_announcement(session: &DocumentSession, offset: i64) -> String {
+fn toc_announcement(session: &DocumentSession, offset: DocPos) -> String {
 	let content = session.first_content_line_after(offset);
 	if content.trim().is_empty() {
 		// TRANSLATORS: Announced when landing on a blank line; %d is the line number
@@ -263,10 +262,10 @@ pub(super) fn handle_elements_list(
 /// to begin at the top of a page (there its offset coincides with the page marker, and a
 /// "Page N:" prefix would be redundant). Falls back to the bare line number when the
 /// destination line is blank.
-fn elements_announcement(session: &DocumentSession, offset: i64, kind: dialogs::ElementsKind) -> String {
+fn elements_announcement(session: &DocumentSession, offset: DocPos, kind: dialogs::ElementsKind) -> String {
 	if kind == dialogs::ElementsKind::Page {
 		let page_count = i32::try_from(session.page_count()).unwrap_or(0);
-		if let Some(page) = (1..=page_count).find(|&page| session.page_offset(page) == offset) {
+		if let Some(page) = (1..=page_count).find(|&page| session.page_position(page) == Some(offset)) {
 			let content = session.first_content_line_after(offset);
 			return navigation::page_announcement(page, &content);
 		}

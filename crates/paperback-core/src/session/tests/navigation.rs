@@ -12,25 +12,25 @@ use crate::{
 #[test]
 fn first_content_line_after_skips_headers_and_blank_lines() {
 	let session = session_with_content("27\n\nChapter One\nThe old house stood at the end of the lane.\n");
-	assert_eq!(session.first_content_line_after(0), "Chapter One");
+	assert_eq!(session.first_content_line_after(0.into()), "Chapter One");
 }
 
 #[test]
 fn first_content_line_after_skips_bare_page_number_header() {
 	let session = session_with_content("27\n\nThe old house stood at the end of the lane.\n");
-	assert_eq!(session.first_content_line_after(0), "The old house stood at the end of the lane.");
+	assert_eq!(session.first_content_line_after(0.into()), "The old house stood at the end of the lane.");
 }
 
 #[test]
 fn first_content_line_after_returns_empty_without_content() {
 	let session = session_with_content("27\n\n");
-	assert_eq!(session.first_content_line_after(0), "");
+	assert_eq!(session.first_content_line_after(0.into()), "");
 }
 
 #[test]
 fn first_content_line_after_reads_display_ranges_after_astral_characters() {
 	let session = session_with_content("😀\n\n27\nA 😀 paragraph.\nLast line");
-	assert_eq!(session.first_content_line_after(0), "A 😀 paragraph.");
+	assert_eq!(session.first_content_line_after(0.into()), "A 😀 paragraph.");
 }
 
 #[test]
@@ -55,7 +55,7 @@ fn link_activation_result_not_found_defaults() {
 #[test]
 fn set_history_clamps_out_of_range_index() {
 	let mut session = sample_session(ParserFlags::NONE);
-	session.set_history(&[10, 20], 99);
+	session.set_history(&[10.into(), 20.into()], 99);
 	let (history, index) = session.get_history();
 	assert_eq!(history, &[10, 20]);
 	assert_eq!(index, 1);
@@ -74,10 +74,10 @@ fn set_history_empty_resets_index_to_zero() {
 fn record_jump_keeps_only_jumps_worth_returning_from() {
 	let mut session = sample_session(ParserFlags::NONE);
 	// Far enough to be somewhere else, so where it came from is worth keeping.
-	session.record_jump(100, 450);
+	session.record_jump(100.into(), 450.into());
 	// Still inside the paragraph it started in, so it is not.
-	session.record_jump(450, 500);
-	session.record_jump(500, 900);
+	session.record_jump(450.into(), 500.into());
+	session.record_jump(500.into(), 900.into());
 	let (history, index) = session.get_history();
 	assert_eq!(history, &[100, 500]);
 	assert_eq!(index, 1);
@@ -89,11 +89,11 @@ fn record_jump_keeps_only_jumps_worth_returning_from() {
 #[test]
 fn going_back_returns_to_the_line_the_jump_started_from() {
 	let mut session = sample_session(ParserFlags::NONE);
-	let contents_top = 1_000;
-	let entry = 1_600;
-	let introduction = 40_000;
+	let contents_top = DocPos::from(1_000);
+	let entry = DocPos::from(1_600);
+	let introduction = DocPos::from(40_000);
 	// Reaching the contents, then reading down it to the entry.
-	session.record_jump(0, contents_top);
+	session.record_jump(0.into(), contents_top);
 	// Following the link from the entry.
 	session.record_jump(entry, introduction);
 	let back = session.history_go_back(introduction);
@@ -106,12 +106,12 @@ fn going_back_returns_to_the_line_the_jump_started_from() {
 #[test]
 fn going_back_from_the_start_of_the_document_returns_to_the_paragraph_being_read() {
 	let mut session = sample_session(ParserFlags::NONE);
-	let chapter = 20_000;
-	let paragraph = 24_500;
-	session.record_jump(500, chapter);
+	let chapter = DocPos::from(20_000);
+	let paragraph = DocPos::from(24_500);
+	session.record_jump(500.into(), chapter);
 	// Ctrl+Home from the paragraph the reader had walked down to.
-	session.record_jump(paragraph, 0);
-	let back = session.history_go_back(0);
+	session.record_jump(paragraph, 0.into());
+	let back = session.history_go_back(0.into());
 	assert!(back.found);
 	assert_eq!(back.offset, paragraph);
 	// And forward again returns to where going back was pressed.
@@ -124,7 +124,7 @@ fn going_back_from_the_start_of_the_document_returns_to_the_paragraph_being_read
 fn nav_helpers_build_expected_request() {
 	assert_eq!(DocumentSession::nav_direction(true), NavDirection::Next);
 	assert_eq!(DocumentSession::nav_direction(false), NavDirection::Previous);
-	let req = DocumentSession::nav_request(7, true, false, NavTarget::Heading, 2);
+	let req = DocumentSession::nav_request(7.into(), true, false, NavTarget::Heading, 2);
 	assert_eq!(req.position, 7);
 	assert!(req.wrap);
 	assert_eq!(req.direction, NavDirection::Previous);
@@ -135,7 +135,7 @@ fn nav_helpers_build_expected_request() {
 #[test]
 fn navigate_section_returns_not_supported_without_flag() {
 	let session = sample_session(ParserFlags::NONE);
-	let result = session.navigate_section(0, false, true);
+	let result = session.navigate_section(0.into(), false, true);
 	assert!(!result.found);
 	assert!(result.not_supported);
 }
@@ -143,28 +143,28 @@ fn navigate_section_returns_not_supported_without_flag() {
 #[test]
 fn navigate_list_and_list_item_require_support_flag() {
 	let session = sample_session(ParserFlags::NONE);
-	assert!(session.navigate_list(0, false, true).not_supported);
-	assert!(session.navigate_list_item(0, false, true).not_supported);
+	assert!(session.navigate_list(0.into(), false, true).not_supported);
+	assert!(session.navigate_list_item(0.into(), false, true).not_supported);
 	let session = sample_session(ParserFlags::SUPPORTS_LISTS);
-	assert!(!session.navigate_list(0, false, true).not_supported);
-	assert!(!session.navigate_list_item(0, false, true).not_supported);
+	assert!(!session.navigate_list(0.into(), false, true).not_supported);
+	assert!(!session.navigate_list_item(0.into(), false, true).not_supported);
 }
 
 #[test]
 fn history_navigation_returns_not_found_when_empty() {
 	let mut session = sample_session(ParserFlags::NONE);
-	assert!(!session.history_go_back(0).found);
-	assert!(!session.history_go_forward(0).found);
+	assert!(!session.history_go_back(0.into()).found);
+	assert!(!session.history_go_forward(0.into()).found);
 }
 
 #[test]
 fn history_navigation_updates_index_and_returns_targets() {
 	let mut session = sample_session(ParserFlags::NONE);
-	session.set_history(&[10, 20, 30], 2);
-	let back = session.history_go_back(30);
+	session.set_history(&[10.into(), 20.into(), 30.into()], 2);
+	let back = session.history_go_back(30.into());
 	assert!(back.found);
 	assert_eq!(back.offset, 20);
-	let forward = session.history_go_forward(20);
+	let forward = session.history_go_forward(20.into());
 	assert!(forward.found);
 	assert_eq!(forward.offset, 30);
 }
@@ -172,7 +172,7 @@ fn history_navigation_updates_index_and_returns_targets() {
 #[test]
 fn navigate_page_returns_found_and_page_marker_index() {
 	let session = sample_session(ParserFlags::NONE);
-	let result = session.navigate_page(0, false, true);
+	let result = session.navigate_page(0.into(), false, true);
 	assert!(result.found);
 	assert!(!result.not_supported);
 	assert_eq!(result.offset, 8);
@@ -182,7 +182,7 @@ fn navigate_page_returns_found_and_page_marker_index() {
 #[test]
 fn navigate_link_returns_found_when_link_exists() {
 	let session = sample_session(ParserFlags::NONE);
-	let result = session.navigate_link(0, false, true);
+	let result = session.navigate_link(0.into(), false, true);
 	assert!(result.found);
 	assert!(!result.not_supported);
 	assert_eq!(result.offset, 6);
@@ -191,10 +191,10 @@ fn navigate_link_returns_found_when_link_exists() {
 #[test]
 fn navigate_table_and_separator_return_found() {
 	let session = sample_session(ParserFlags::NONE);
-	let table = session.navigate_table(0, false, true);
+	let table = session.navigate_table(0.into(), false, true);
 	assert!(table.found);
 	assert_eq!(table.offset, 12);
-	let separator = session.navigate_separator(0, false, true);
+	let separator = session.navigate_separator(0.into(), false, true);
 	assert!(separator.found);
 	assert_eq!(separator.offset, 5);
 }
@@ -202,10 +202,10 @@ fn navigate_table_and_separator_return_found() {
 #[test]
 fn navigate_heading_respects_level_support() {
 	let session = sample_session(ParserFlags::NONE);
-	let any_level = session.navigate_heading(-1, false, true, 0);
+	let any_level = session.navigate_heading(0.into(), true, true, 0);
 	assert!(!any_level.not_supported);
 	assert!(any_level.found);
-	let missing_level = session.navigate_heading(-1, false, true, 2);
+	let missing_level = session.navigate_heading(0.into(), true, true, 2);
 	assert!(missing_level.not_supported);
 	assert!(!missing_level.found);
 }
@@ -213,7 +213,7 @@ fn navigate_heading_respects_level_support() {
 #[test]
 fn navigate_section_returns_found_when_flag_enabled() {
 	let session = sample_session(ParserFlags::SUPPORTS_SECTIONS);
-	let result = session.navigate_section(-1, false, true);
+	let result = session.navigate_section(0.into(), true, true);
 	assert!(result.found);
 	assert!(!result.not_supported);
 }
@@ -242,10 +242,7 @@ fn navigate_section_in_an_audio_only_book_announces_the_file_name() {
 		parse_settings: ParseSettings::default(),
 		password: String::new(),
 	};
-	let first = session.navigate_section(-1, false, true);
-	assert!(first.found);
-	assert_eq!(first.marker_text, "Track 1");
-	let second = session.navigate_section(first.offset, false, true);
+	let second = session.navigate_section(0.into(), false, true);
 	assert!(second.found);
 	assert_eq!(second.marker_text, "Track 2");
 	let back = session.navigate_section(second.offset, false, false);
@@ -257,8 +254,8 @@ fn navigate_section_in_an_audio_only_book_announces_the_file_name() {
 fn navigate_bookmark_and_note_return_not_found_with_empty_config() {
 	let session = sample_session(ParserFlags::NONE);
 	let config = ConfigManager::new();
-	assert!(!session.navigate_bookmark(&config, "book.epub", 0, false, true).found);
-	assert!(!session.navigate_note(&config, "book.epub", 0, false, true).found);
+	assert!(!session.navigate_bookmark(&config, "book.epub", 0.into(), false, true).found);
+	assert!(!session.navigate_note(&config, "book.epub", 0.into(), false, true).found);
 }
 
 /// A document opened from a link is parsed from a temporary copy (here `book.epub`) but
@@ -269,9 +266,9 @@ fn navigate_bookmark_reads_the_bookmarks_of_the_path_given() {
 	let config = ConfigManager::in_memory();
 	config.add_bookmark("https://example.org/book.epub", 6, 6, "");
 	config.add_bookmark("book.epub", 12, 12, "");
-	let first = session.navigate_bookmark(&config, "https://example.org/book.epub", 0, false, true);
-	assert_eq!((true, 6), (first.found, first.offset));
-	assert!(!session.navigate_bookmark(&config, "https://example.org/book.epub", 6, false, true).found);
+	let first = session.navigate_bookmark(&config, "https://example.org/book.epub", 0.into(), false, true);
+	assert_eq!((true, DocPos::from(6)), (first.found, first.offset));
+	assert!(!session.navigate_bookmark(&config, "https://example.org/book.epub", 6.into(), false, true).found);
 }
 
 #[test]
@@ -280,35 +277,35 @@ fn bookmark_display_at_position_reads_the_bookmarks_of_the_path_given() {
 	let config = ConfigManager::in_memory();
 	config.add_bookmark("https://example.org/book.epub", 6, 6, "saved under the link");
 	config.add_bookmark("book.epub", 12, 12, "saved under the copy");
-	let display = session.bookmark_display_at_position(&config, "https://example.org/book.epub", 6);
+	let display = session.bookmark_display_at_position(&config, "https://example.org/book.epub", 6.into());
 	assert_eq!((true, "saved under the link"), (display.found, display.note.as_str()));
-	assert!(!session.bookmark_display_at_position(&config, "https://example.org/book.epub", 12).found);
+	assert!(!session.bookmark_display_at_position(&config, "https://example.org/book.epub", 12.into()).found);
 }
 
 #[test]
 fn bookmark_display_at_position_returns_not_found_without_data() {
 	let session = sample_session(ParserFlags::NONE);
 	let config = ConfigManager::new();
-	let display = session.bookmark_display_at_position(&config, "book.epub", 0);
+	let display = session.bookmark_display_at_position(&config, "book.epub", 0.into());
 	assert!(!display.found);
 	assert_eq!(display.note, "");
 	assert_eq!(display.snippet, "");
 }
 
-/// Bookmark bounds come from the caret, so they are display units. An emoji before the bookmark
-/// is one char but two display units on Windows and macOS, so reading the snippet by char index
-/// would shift it right by one character there.
+/// An emoji before the bookmark is one position but two UTF-16 code units, so reading the snippet
+/// in any unit but positions would shift it right by one character.
 #[test]
-fn bookmark_display_at_position_reads_snippet_in_display_units() {
+fn bookmark_display_at_position_reads_snippet_in_positions() {
 	let content = "\u{1F600} intro\nfirst line\nsecond \u{1F600} line\nthird";
 	let session = session_with_content(content);
-	let pos = |needle: &str| i64::try_from(DocLen::of(&content[..content.find(needle).unwrap()])).unwrap();
+	let pos = |needle: &str| DocLen::of(&content[..content.find(needle).unwrap()]).as_pos();
+	let saved = |position: DocPos| i64::try_from(position).unwrap();
 	let config = ConfigManager::in_memory();
 	let range_start = pos("line\nsecond");
 	let range_end = pos("\nsecond");
-	config.add_bookmark("book.epub", range_start, range_end, "");
-	config.add_bookmark("book.epub", pos("third"), pos("third"), "");
-	config.add_bookmark("book.epub", pos("second"), pos("second"), "");
+	config.add_bookmark("book.epub", saved(range_start), saved(range_end), "");
+	config.add_bookmark("book.epub", saved(pos("third")), saved(pos("third")), "");
+	config.add_bookmark("book.epub", saved(pos("second")), saved(pos("second")), "");
 	assert_eq!(session.bookmark_display_at_position(&config, "book.epub", range_start).snippet, "line");
 	assert_eq!(session.bookmark_display_at_position(&config, "book.epub", pos("third")).snippet, "third");
 	assert_eq!(
@@ -338,14 +335,14 @@ fn navigate_section_names_each_file_of_a_real_plain_audio_zip() {
 	let session = DocumentSession::new(&zip_path.to_string_lossy(), "", "", ParseSettings::default())
 		.expect("plain audio zip opens");
 	let mut announced = Vec::new();
-	let mut position = -1;
+	let mut position = session.document_len().as_pos();
 	for _ in 0..3 {
-		let result = session.navigate_section(position, false, true);
+		let result = session.navigate_section(position, false, false);
 		assert!(result.found);
 		announced.push(result.marker_text.clone());
 		position = result.offset;
 	}
-	// Natural order, and a distinct name per section rather than the same blank line three times.
-	assert_eq!(announced, vec!["Track 1", "Track 2", "Track 10"]);
-	assert!(!session.navigate_section(position, false, true).found, "no fourth file to step onto");
+	// Natural order, walked back from the end, and a distinct name per section rather than the same blank line three times.
+	assert_eq!(announced, vec!["Track 10", "Track 2", "Track 1"]);
+	assert!(!session.navigate_section(position, false, false).found, "no file before the first to step onto");
 }

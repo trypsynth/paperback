@@ -3,7 +3,10 @@
 use std::{fs, path::Path, time::SystemTime};
 
 use paperback_core::{
-	config::ConfigManager, document::ParseSettings, parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession,
+	config::ConfigManager,
+	document::{DocPos, ParseSettings},
+	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
+	session::DocumentSession,
 };
 use patois::t;
 use wxdragon::prelude::*;
@@ -223,7 +226,7 @@ fn reparse_tab_in_place(
 ) -> Result<(), String> {
 	let new_fingerprint = read_fingerprint(tab.local_path());
 	let current_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-	let pos = tab.session.handle().document().buffer.nearest_pos(current_pos);
+	let pos = current_pos.min(tab.session.handle().document().buffer.end());
 	// Find the nearest anchor at-or-before the cursor using the full id_positions key
 	// (unlike nearest_fragment_before, which strips the "path#" prefix for epub keys
 	// making the subsequent lookup fail). Record the within-block offset so the cursor
@@ -257,7 +260,7 @@ fn reparse_tab_in_place(
 	// C:\Users\Quin\.claude\plans\fluffy-hugging-crystal.md Phase 2 - should load a window
 	// centered on `restored_pos` instead.
 	let doc_len = tab.session.document_len();
-	let slice = tab.session.get_window(0, doc_len);
+	let slice = tab.session.get_window(DocPos::ZERO, doc_len.as_pos());
 	tab.window = TextWindow::of(&slice);
 	fill_text_ctrl_with_formatting(tab.text_ctrl, &slice, &tab.window);
 	if let Some(font) = build_font_from_readability(&style.rf) {
@@ -275,7 +278,7 @@ fn reparse_tab_in_place(
 	tab.panel.layout();
 	let restored_pos = if let Some((ref key, within)) = stable_anchor {
 		match tab.session.handle().document().id_positions.get(key) {
-			Some(&new_anchor_off) => i64::try_from(new_anchor_off + within).unwrap_or(0),
+			Some(&new_anchor_off) => new_anchor_off + within,
 			None => tab.session.position_from_percent(fallback_percent),
 		}
 	} else {
