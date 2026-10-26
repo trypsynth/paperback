@@ -5,6 +5,7 @@ use scraper::Html;
 
 use super::{format_spans::FormatSpans, line_builder::LineBuilder, list_style::ListStyle};
 use crate::{
+	document::DocPos,
 	parser::ConverterOutput,
 	types::{
 		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
@@ -29,7 +30,7 @@ pub enum HtmlSourceMode {
 #[derive(Default)]
 pub struct HtmlToText {
 	text: LineBuilder,
-	id_positions: HashMap<String, usize>,
+	id_positions: HashMap<String, DocPos>,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
 	images: Vec<ImageInfo>,
@@ -51,7 +52,7 @@ pub struct HtmlToText {
 	/// `None` marks an open list that was not recorded (no direct `<li>`), keeping the stack
 	/// balanced with the start/close handlers so list lengths are set on the right entries.
 	open_lists: Vec<Option<usize>>,
-	link_start_pos: usize,
+	link_start_pos: DocPos,
 	format_spans: FormatSpans,
 	source_mode_markdown: bool,
 	/// When `true`, tables are emitted as their full tab-separated rendering; otherwise as a
@@ -129,7 +130,7 @@ impl HtmlToText {
 	}
 
 	#[must_use]
-	pub const fn get_id_positions(&self) -> &HashMap<String, usize> {
+	pub const fn get_id_positions(&self) -> &HashMap<String, DocPos> {
 		&self.id_positions
 	}
 
@@ -168,7 +169,7 @@ impl HtmlToText {
 		self.list_style_stack.clear();
 		self.list_level = 0;
 		self.open_lists.clear();
-		self.link_start_pos = 0;
+		self.link_start_pos = DocPos::ZERO;
 		self.format_spans.clear();
 	}
 }

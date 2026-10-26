@@ -1,8 +1,9 @@
 use scraper::{ElementRef, Html, Node};
 
 use crate::{
+	document::DocLen,
 	parser::convert::formula::{formula_text, is_dom_formula},
-	util::text::{collapse_whitespace, display_len, trim_string},
+	util::text::{collapse_whitespace, trim_string},
 };
 
 /// `<table>…</table>` HTML -> tab-separated text: rows by '\n', cells (`<td>`/`<th>`) by '\t'.
@@ -103,27 +104,27 @@ fn first_tsv_row_text(tsv: &str) -> String {
 pub struct TableRenderBundle {
 	pub caption: String,
 	pub lines: Vec<String>,
-	pub display_length: usize,
+	pub length: DocLen,
 }
 
-/// Split `display_text` into lines and compute the total display-unit length (each line's
-/// display width + 1 for its trailing newline).  Returns `(lines, display_length)`.
+/// Split `display_text` into lines and compute the total length (each line's
+/// length + 1 for its trailing newline).  Returns `(lines, length)`.
 #[must_use]
-pub fn display_lines_and_length(display_text: &str) -> (Vec<String>, usize) {
+pub fn display_lines_and_length(display_text: &str) -> (Vec<String>, DocLen) {
 	if display_text.is_empty() {
-		return (Vec::new(), 0);
+		return (Vec::new(), DocLen::ZERO);
 	}
 	let lines: Vec<String> = display_text.split('\n').map(str::to_string).collect();
-	let display_length = lines.iter().map(|line| display_len(line) + 1).sum();
-	(lines, display_length)
+	let length = lines.iter().map(|line| DocLen::of(line) + DocLen::ONE).sum();
+	(lines, length)
 }
 
 /// Push a line to a parser's output verbatim (no whitespace collapsing/trimming), updating its
-/// cached display length so position tracking stays correct. Shared by `HtmlToText` and `XmlToText`
+/// cached length so position tracking stays correct. Shared by `HtmlToText` and `XmlToText`
 /// so the `+1` newline accounting can never diverge between the two. Used for table rows whose tab
 /// separators and empty cells must not be mangled.
-pub fn push_finalized_line(lines: &mut Vec<String>, cached_len: &mut usize, line: String) {
-	*cached_len += display_len(&line) + 1; // +1 for the line's newline
+pub fn push_finalized_line(lines: &mut Vec<String>, cached_len: &mut DocLen, line: String) {
+	*cached_len += DocLen::of(&line) + DocLen::ONE; // +1 for the line's newline
 	lines.push(line);
 }
 
@@ -142,8 +143,8 @@ pub fn table_render_bundle(html: &str, inline: bool) -> TableRenderBundle {
 			(tsv, caption)
 		},
 	);
-	let (lines, display_length) = display_lines_and_length(&tsv_to_display(&tsv, inline));
-	TableRenderBundle { caption, lines, display_length }
+	let (lines, length) = display_lines_and_length(&tsv_to_display(&tsv, inline));
+	TableRenderBundle { caption, lines, length }
 }
 
 /// Find the first (outermost) `<table>` element in document order, descending through wrappers.

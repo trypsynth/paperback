@@ -65,14 +65,14 @@ impl DocumentSession {
 
 	/// Where the picture of the image or figure at `position` lives. A described image covers its placeholder text; a picture page carries no length and covers its whole line.
 	fn image_source_at(&self, position: i64) -> Option<String> {
-		let pos = usize::try_from(position.max(0)).unwrap_or(0);
+		let pos = self.handle.document().buffer.nearest_pos(position);
 		let (line_start, line_end) = self.line_bounds_at(position)?;
 		let markers = &self.handle.document().buffer.markers;
 		[MarkerType::Image, MarkerType::Figure]
 			.into_iter()
 			.filter_map(|mtype| markers.get(self.handle.current_marker_index(pos, mtype)?))
 			.filter(|marker| {
-				if marker.length == 0 {
+				if marker.length.is_zero() {
 					i64::try_from(marker.position).is_ok_and(|start| start >= line_start && start <= line_end)
 				} else {
 					pos < marker.position + marker.length

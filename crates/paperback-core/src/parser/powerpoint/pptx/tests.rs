@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use roxmltree::Document as XmlDocument;
 use rstest::rstest;
 
-use super::{display_len, extract_slide_number, extract_slide_text, extract_slide_title, is_title_shape};
+use super::{extract_slide_number, extract_slide_text, extract_slide_title, is_title_shape};
+use crate::document::{DocLen, DocPos};
 
 #[rstest]
 #[case("ppt/slides/slide1.xml", 1)]
@@ -67,7 +68,7 @@ fn extract_slide_text_collects_paragraphs_and_breaks() {
 	let mut links = Vec::new();
 	let mut tables = Vec::new();
 	let rels = HashMap::new();
-	let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0, &rels, true);
+	let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0.into(), &rels, true);
 	assert_eq!(text, "Hello\nWorld\nNext\n");
 	assert!(links.is_empty());
 	assert!(tables.is_empty());
@@ -92,7 +93,7 @@ fn extract_slide_text_renders_table_inline_with_marker_data() {
 	let mut links = Vec::new();
 	let mut tables = Vec::new();
 	let rels = HashMap::new();
-	let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0, &rels, true);
+	let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0.into(), &rels, true);
 	// Tab-separated rows, no flat duplication of the cell text.
 	assert_eq!(text, "One\tTwo\nThree\tFour\n");
 	assert_eq!(tables.len(), 1);
@@ -101,8 +102,8 @@ fn extract_slide_text_renders_table_inline_with_marker_data() {
 	assert_eq!(table.caption, "One Two");
 	assert!(table.html.contains("<table"));
 	assert!(table.html.contains("Four"));
-	// Two rows, each contributing its display width + a trailing newline.
-	assert_eq!(table.length, display_len("One\tTwo") + 1 + display_len("Three\tFour") + 1);
+	// Two rows, each contributing its length + a trailing newline.
+	assert_eq!(table.length, DocLen::of("One\tTwo") + 1.into() + DocLen::of("Three\tFour") + 1.into());
 	assert!(links.is_empty());
 }
 
@@ -112,22 +113,22 @@ fn extract_slide_text_renders_table_placeholder() {
 	let mut links = Vec::new();
 	let mut tables = Vec::new();
 	let rels = HashMap::new();
-	let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0, &rels, false);
+	let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0.into(), &rels, false);
 	assert_eq!(text, "[Table]: One Two\n");
 	assert_eq!(tables.len(), 1);
 	assert_eq!(tables[0].caption, "One Two");
 }
 
-/// A link's position is in display units, which an emoji before it makes differ from bytes.
+/// A link's position is counted in chars, which an emoji before it makes differ from bytes.
 #[test]
-fn extract_slide_text_places_a_link_after_an_emoji_in_display_units() {
+fn extract_slide_text_places_a_link_after_an_emoji_in_positions() {
 	let xml = "<root><p><r><t>\u{1F600} see </t></r><r><hlinkClick id=\"rId1\"/><t>this</t></r></p></root>";
 	let doc = XmlDocument::parse(xml).expect("xml parse");
 	let mut links = Vec::new();
 	let mut tables = Vec::new();
 	let rels = HashMap::from([("rId1".to_string(), "https://example.com".to_string())]);
-	extract_slide_text(doc.root(), &mut links, &mut tables, 0, &rels, true);
-	assert_eq!(links[0].offset, crate::util::text::display_len("\u{1F600} see "));
+	extract_slide_text(doc.root(), &mut links, &mut tables, 0.into(), &rels, true);
+	assert_eq!(links[0].offset, DocLen::of("\u{1F600} see ").as_pos());
 }
 
 /// Real decks put the link in the run's properties, beside its text, and split a link into several runs where its formatting changes.
@@ -138,7 +139,7 @@ fn a_link_in_a_runs_properties_covers_its_text_once() {
 	let mut links = Vec::new();
 	let mut tables = Vec::new();
 	let rels = HashMap::from([("rId1".to_string(), "https://example.com".to_string())]);
-	let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0, &rels, true);
+	let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0.into(), &rels, true);
 	assert_eq!(
 		text,
 		"Visit our site today
@@ -147,7 +148,7 @@ fn a_link_in_a_runs_properties_covers_its_text_once() {
 	assert_eq!(links.len(), 1);
 	assert_eq!(
 		(links[0].offset, links[0].text.as_str(), links[0].reference.as_str()),
-		(6, "our site", "https://example.com")
+		(6.into(), "our site", "https://example.com")
 	);
 }
 
@@ -159,7 +160,7 @@ fn a_link_directly_in_a_run_does_not_repeat_its_text() {
 	let mut links = Vec::new();
 	let mut tables = Vec::new();
 	let rels = HashMap::from([("rId1".to_string(), "https://example.com".to_string())]);
-	let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0, &rels, true);
+	let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0.into(), &rels, true);
 	assert_eq!(
 		text,
 		"this
@@ -185,12 +186,12 @@ fn a_slide_with_no_text_is_kept_and_says_so() {
 	zip.finish().unwrap();
 	let document = super::parse_pptx(&crate::document::ParserContext::new(path)).unwrap();
 	assert_eq!(document.buffer.content, "This slide has no text.\n\nWords\n");
-	let slides: Vec<(usize, &str)> = document
+	let slides: Vec<(DocPos, &str)> = document
 		.buffer
 		.markers
 		.iter()
 		.filter(|marker| marker.mtype == crate::document::MarkerType::PageBreak)
 		.map(|marker| (marker.position, marker.text.as_str()))
 		.collect();
-	assert_eq!(slides, [(0, "Slide 1"), (display_len("This slide has no text.\n\n"), "Slide 2")]);
+	assert_eq!(slides, [(DocPos::ZERO, "Slide 1"), (DocLen::of("This slide has no text.\n\n").as_pos(), "Slide 2")]);
 }

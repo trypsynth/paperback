@@ -9,7 +9,7 @@
 
 use std::{borrow::Cow, fmt::Write as _};
 
-use paperback_core::{session::ParagraphFormat, util::text::ch_width};
+use paperback_core::session::ParagraphFormat;
 
 use crate::text_format::FormatSegment;
 
@@ -145,7 +145,7 @@ pub fn build_rtf(
 			current = style;
 		}
 		append_escaped_char(ch, &mut out);
-		position += i64::try_from(ch_width(ch)).unwrap_or(1);
+		position += 1;
 	}
 	out.push('}');
 	out
@@ -217,9 +217,8 @@ mod tests {
 	use std::{env, fs, process};
 
 	use paperback_core::{
-		document::{Document, ParserContext},
+		document::{DocLen, Document, ParserContext},
 		parser::{Parser, rtf::RtfParser},
-		util::text::display_len,
 	};
 
 	use super::*;
@@ -261,7 +260,7 @@ mod tests {
 			let content = format!("a{ch}b");
 			let sanitized = sanitize_for_rich_edit(&content);
 			assert_eq!(sanitized, "a b", "U+{cp:04X} should become a space");
-			assert_eq!(display_len(&sanitized), display_len(&content), "U+{cp:04X} changed width");
+			assert_eq!(DocLen::of(&sanitized), DocLen::of(&content), "U+{cp:04X} changed width");
 		}
 	}
 
@@ -439,7 +438,7 @@ mod tests {
 				.markers
 				.iter()
 				.filter(|m| m.mtype == mtype)
-				.map(|m| doc.buffer.content.chars().skip(m.position).take(m.length).collect::<String>())
+				.map(|m| doc.buffer.text(m.position..m.position + m.length).to_string())
 				.collect::<Vec<_>>()
 		};
 		assert_eq!(span_text_for(MarkerType::Bold), vec!["bold".to_string(), "both".to_string()]);

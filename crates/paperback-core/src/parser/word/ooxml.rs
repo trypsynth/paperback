@@ -13,7 +13,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
+	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
 		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 		util::{
@@ -69,7 +69,7 @@ pub(super) fn parse_word_zip(context: &ParserContext, render_tables_inline: bool
 			inner_file.read_to_end(&mut inner_file_data)?;
 		}
 		if !buffer.content.is_empty() {
-			buffer.add_marker(Marker::new(MarkerType::SectionBreak, buffer.current_position()));
+			buffer.add_marker(Marker::new(MarkerType::SectionBreak, buffer.end()));
 		}
 		let mut inner_archive = ZipArchive::new(Cursor::new(inner_file_data))
 			.with_context(|| format!("Failed to parse inner DOCX '{docx_name}' as zip"))?;
@@ -121,7 +121,7 @@ fn load_ooxml_bytes(path: &str, password: Option<&str>) -> Result<Vec<u8>> {
 fn parse_ooxml_from_archive<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	buffer: &mut DocumentBuffer,
-	id_positions: &mut HashMap<String, usize>,
+	id_positions: &mut HashMap<String, DocPos>,
 	headings: &mut Vec<HeadingInfo>,
 	render_tables_inline: bool,
 ) -> Result<()> {
@@ -133,7 +133,7 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 	);
 	let doc_content = read_zip_entry_by_name(archive, "word/document.xml")?;
 	let doc_xml = XmlDocument::parse(&doc_content).context("Failed to parse word/document.xml")?;
-	let start = buffer.current_position();
+	let start = buffer.end();
 	let first_marker = buffer.markers.len();
 	let annotations = Annotations::new(read_zip_entry_by_name(archive, "word/settings.xml").ok().as_deref(), start);
 	let mut walk = Walk {
@@ -176,7 +176,7 @@ fn write_notes<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
 	}
 	// TRANSLATORS: Heading over the footnotes and endnotes of a document, written after its text
 	let heading = t("Notes");
-	let heading_offset = walk.buffer.current_position();
+	let heading_offset = walk.buffer.end();
 	walk.buffer.append(&heading);
 	walk.buffer.append("\n");
 	walk.buffer.add_marker(Marker::new(MarkerType::Heading1, heading_offset).with_text(heading.clone()).with_level(1));
@@ -191,7 +191,7 @@ fn write_notes<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
 			continue;
 		};
 		let rels = &parts[&citation.kind].1;
-		walk.id_positions.insert(citation.key, walk.buffer.current_position());
+		walk.id_positions.insert(citation.key, walk.buffer.end());
 		// A number or letter reads as "1." before its note, and a typed mark such as an asterisk as itself.
 		let separator = if citation.label.chars().all(char::is_alphanumeric) { ". " } else { " " };
 		walk.buffer.append(&format!("{}{separator}", citation.label));
@@ -258,9 +258,9 @@ fn write_word_comments<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut W
 /// Names the page breaks the walk placed from `first_marker` on, and adds the first page at `start`, which Word records no break for.
 ///
 /// A document Word never laid out records no breaks, and is left with no pages rather than given a single page that would claim more than is known.
-fn number_pages(buffer: &mut DocumentBuffer, start: usize, first_marker: usize) {
+fn number_pages(buffer: &mut DocumentBuffer, start: DocPos, first_marker: usize) {
 	// A break after the last words, such as one closing the document, would start a page with nothing on it.
-	let end = buffer.current_position();
+	let end = buffer.end();
 	let mut index = 0;
 	buffer.markers.retain(|marker| {
 		index += 1;
@@ -287,7 +287,7 @@ fn number_pages(buffer: &mut DocumentBuffer, start: usize, first_marker: usize) 
 struct Walk<'a> {
 	buffer: &'a mut DocumentBuffer,
 	headings: &'a mut Vec<HeadingInfo>,
-	id_positions: &'a mut HashMap<String, usize>,
+	id_positions: &'a mut HashMap<String, DocPos>,
 	rels: &'a Relationships,
 	style_heading_map: &'a HashMap<String, i32>,
 	render_tables_inline: bool,
@@ -300,9 +300,9 @@ struct Walk<'a> {
 }
 
 struct ListRun {
-	start: usize,
+	start: DocPos,
 	items: i32,
-	end: usize,
+	end: DocPos,
 }
 
 impl Walk<'_> {
@@ -310,8 +310,8 @@ impl Walk<'_> {
 	/// the way it steps over an HTML list.
 	fn end_list(&mut self) {
 		let Some(ListRun { start, items, end }) = self.list.take() else { return };
-		let length = end.saturating_sub(start);
-		if length > 0 {
+		let length = end.since(start);
+		if !length.is_zero() {
 			self.buffer.add_marker(Marker::new(MarkerType::List, start).with_level(items).with_length(length));
 		}
 	}
@@ -379,10 +379,10 @@ fn traverse(node: Node, walk: &mut Walk) {
 	if node.node_type() == NodeType::Element {
 		let tag_name = node.tag_name().name();
 		if let Some(id) = node.attribute("id") {
-			walk.id_positions.insert(id.to_string(), walk.buffer.current_position());
+			walk.id_positions.insert(id.to_string(), walk.buffer.end());
 		}
 		if tag_name == "p" {
-			let start = walk.buffer.current_position();
+			let start = walk.buffer.end();
 			let is_list_item = process_paragraph(
 				node,
 				walk.buffer,
@@ -395,7 +395,7 @@ fn traverse(node: Node, walk: &mut Walk) {
 				&mut walk.annotations,
 			);
 			if is_list_item {
-				let end = walk.buffer.current_position();
+				let end = walk.buffer.end();
 				let run = walk.list.get_or_insert(ListRun { start, items: 0, end });
 				run.items += 1;
 				run.end = end;
@@ -421,7 +421,7 @@ fn process_table(
 	render_tables_inline: bool,
 	page_source: PageSource,
 ) {
-	let table_start = buffer.current_position();
+	let table_start = buffer.end();
 	// The table's text has no row positions to put a page on, so a page that starts inside it starts with it. Dropping it instead would number every later page one short.
 	for _ in element.descendants().filter(|node| node.tag_name().name() == "r" && starts_page(*node, page_source)) {
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, table_start));
@@ -452,7 +452,7 @@ fn process_table(
 	let display_text = html_table_to_display(&html_content, render_tables_inline);
 	buffer.append(&display_text);
 	buffer.append("\n");
-	let display_len = buffer.current_position() - table_start;
+	let display_len = buffer.end() - table_start;
 	buffer.add_marker(
 		Marker::new(MarkerType::Table, table_start)
 			.with_text(final_caption)

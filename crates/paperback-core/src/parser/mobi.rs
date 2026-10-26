@@ -150,13 +150,13 @@ impl Parser for MobiParser {
 			})
 			.collect();
 		for html_converter in converted {
-			let offset = buffer.current_position();
+			let offset = buffer.end();
 			buffer.append(&html_converter.get_text());
 			for (id, &relative) in html_converter.get_id_positions() {
-				id_positions.entry(id.clone()).or_insert(offset + relative);
+				id_positions.entry(id.clone()).or_insert_with(|| offset + relative.from_start());
 			}
 			for heading in html_converter.get_headings() {
-				headings.push(HeadingInfo { offset: offset + heading.offset, ..heading.clone() });
+				headings.push(HeadingInfo { offset: offset + heading.offset.from_start(), ..heading.clone() });
 			}
 			add_converter_markers(&mut buffer, &html_converter, offset);
 		}

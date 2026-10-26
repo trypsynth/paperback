@@ -11,16 +11,16 @@ use std::{
 };
 
 use super::varint::{base32_decode, decode_vwi};
-use crate::document::TocItem;
+use crate::document::{DocPos, TocItem};
 
 /// Fills in [`TocItem::offset`] for NCX entries whose `#fp...` reference couldn't be
 /// resolved to a byte offset while parsing the NCX (no matching fragment-id), by looking
 /// the reference up in the final HTML's id positions instead.
-pub(super) fn resolve_ncx_offsets(items: &mut [TocItem], id_positions: &HashMap<String, usize>) {
+pub(super) fn resolve_ncx_offsets(items: &mut [TocItem], id_positions: &HashMap<String, DocPos>) {
 	let mut stack: Vec<&mut [TocItem]> = vec![items];
 	while let Some(current) = stack.pop() {
 		for item in current.iter_mut() {
-			if item.offset == 0 && !item.reference.is_empty() {
+			if item.offset == DocPos::ZERO && !item.reference.is_empty() {
 				let key = if item.reference.starts_with('#') { &item.reference[1..] } else { &item.reference };
 				if let Some(&pos) = id_positions.get(key) {
 					item.offset = pos;

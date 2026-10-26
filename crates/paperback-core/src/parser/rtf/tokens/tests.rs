@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use rtf_parser::lexer::Lexer;
 
 use super::*;
-use crate::parser::rtf::escapes::normalize_escapes;
+use crate::{document::DocLen, parser::rtf::escapes::normalize_escapes};
 
 #[test]
 fn extract_content_maps_quote_unknown_control_words_to_typographic_quotes() {
@@ -218,8 +218,8 @@ fn extract_content_reverts_bold_on_group_close() {
 	assert_eq!(bold[1].position, "before middle".chars().count());
 	assert_eq!(bold[1].length, " after ".chars().count());
 	// "middle" is covered by neither span.
-	let middle_start = "before ".chars().count();
-	let middle_end = "before middle".chars().count();
+	let middle_start = DocLen::of("before ").as_pos();
+	let middle_end = DocLen::of("before middle").as_pos();
 	for m in &bold {
 		let span_end = m.position + m.length;
 		assert!(m.position >= middle_end || span_end <= middle_start, "Bold span {m:?} should not overlap \"middle\"");
@@ -294,7 +294,7 @@ fn extract_content_keeps_bold_that_starts_the_body_without_pard() {
 }
 
 #[test]
-fn extract_content_measures_link_length_in_display_units() {
+fn extract_content_measures_link_length_in_positions() {
 	let tokens = vec![
 		Token::ControlSymbol((ControlWord::Pard, Property::None)),
 		Token::PlainText("see "),
@@ -306,8 +306,8 @@ fn extract_content_measures_link_length_in_display_units() {
 	assert_eq!(buffer.content, "see smile \u{1F600} here now");
 	let links: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Link).collect();
 	assert_eq!(links.len(), 1);
-	assert_eq!(links[0].position, display_len("see "));
-	assert_eq!(links[0].length, display_len("smile \u{1F600} here"));
+	assert_eq!(links[0].position, DocLen::of("see ").as_pos());
+	assert_eq!(links[0].length, DocLen::of("smile \u{1F600} here"));
 	assert_eq!(links[0].reference, "https://example.com");
 }
 
@@ -325,5 +325,5 @@ fn trimming_wide_leading_whitespace_keeps_markers_on_their_text() {
 	assert_eq!(buffer.content, "plain bold");
 	let bold: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Bold).collect();
 	assert_eq!(bold.len(), 1);
-	assert_eq!(bold[0].position, display_len("plain "));
+	assert_eq!(bold[0].position, DocLen::of("plain ").as_pos());
 }

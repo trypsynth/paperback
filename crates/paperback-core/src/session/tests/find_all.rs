@@ -91,9 +91,9 @@ fn find_all_assigns_pages_from_page_break_markers() {
 	let session = session_with_marks(
 		"aaa beta\nbbb beta\nccc beta\n",
 		vec![
-			Marker::new(MarkerType::PageBreak, 0),
-			Marker::new(MarkerType::PageBreak, 9),
-			Marker::new(MarkerType::PageBreak, 18),
+			Marker::new(MarkerType::PageBreak, 0.into()),
+			Marker::new(MarkerType::PageBreak, 9.into()),
+			Marker::new(MarkerType::PageBreak, 18.into()),
 		],
 	);
 	let rows = session.find_all_lines("beta", SearchOptions::empty());

@@ -3,14 +3,11 @@ use std::collections::HashMap;
 use roxmltree::Document as XmlDocument;
 
 use super::{build_odt_format_style_map, traverse};
-use crate::{
-	document::{DocumentBuffer, MarkerType},
-	util::text::display_len,
-};
+use crate::document::{DocLen, DocPos, DocumentBuffer, MarkerType};
 
 /// OFF mode: an ODT table emits a `"[Table]: <first row>"` placeholder. The second cell holds a
 /// non-ASCII character (U+1D11E, G Clef, non-BMP) to prove the cell-text extraction no longer
-/// mis-slices the display buffer with display-unit offsets as byte indices.
+/// mis-slices the display buffer with char offsets as byte indices.
 #[test]
 fn odt_table_emits_placeholder_when_off() {
 	let xml = "<document><table><table-row><table-cell>Kop</table-cell><table-cell>\u{1D11E}</table-cell></table-row></table></document>";
@@ -22,7 +19,7 @@ fn odt_table_emits_placeholder_when_off() {
 	assert_eq!(buffer.content, "[Table]: Kop \u{1D11E}\n");
 	let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
 	assert_eq!(table_marker.position, 0, "marker starts at buffer start");
-	assert_eq!(table_marker.length, display_len("[Table]: Kop \u{1D11E}") + 1, "marker length in display units");
+	assert_eq!(table_marker.length, DocLen::of("[Table]: Kop \u{1D11E}") + 1.into(), "marker length in positions");
 	assert_eq!(table_marker.text, "Kop \u{1D11E}", "marker keeps the first-row caption");
 	assert!(table_marker.reference.contains("<table"), "marker reference is the table HTML");
 }
@@ -59,7 +56,7 @@ fn odt_table_emits_tsv_when_inline() {
 	traverse(xml_doc.root(), &mut buffer, &mut id_positions, true, &format_style_map);
 	assert_eq!(buffer.content, "Kop\t\u{1D11E}\n");
 	let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
-	assert_eq!(table_marker.length, display_len("Kop\t\u{1D11E}") + 1, "marker length spans the TSV");
+	assert_eq!(table_marker.length, DocLen::of("Kop\t\u{1D11E}") + 1.into(), "marker length spans the TSV");
 }
 
 /// Builds the standard test fixture: an `<automatic-styles>` block defining style `"T1"` with the
@@ -88,7 +85,7 @@ fn odt_span_bold_style_adds_bold_marker() {
 	assert_eq!(buffer.content, "bold text\n");
 	let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");
 	assert_eq!(marker.position, 0);
-	assert_eq!(marker.length, display_len("bold text"));
+	assert_eq!(marker.length, DocLen::of("bold text"));
 	assert!(buffer.markers.iter().all(|m| m.mtype != MarkerType::Italic && m.mtype != MarkerType::Underline));
 }
 
@@ -99,7 +96,7 @@ fn odt_span_italic_style_adds_italic_marker() {
 	assert_eq!(buffer.content, "italic text\n");
 	let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Italic).expect("Italic marker");
 	assert_eq!(marker.position, 0);
-	assert_eq!(marker.length, display_len("italic text"));
+	assert_eq!(marker.length, DocLen::of("italic text"));
 	assert!(buffer.markers.iter().all(|m| m.mtype != MarkerType::Bold && m.mtype != MarkerType::Underline));
 }
 
@@ -110,7 +107,7 @@ fn odt_span_underline_solid_style_adds_underline_marker() {
 	assert_eq!(buffer.content, "underlined text\n");
 	let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Underline).expect("Underline marker");
 	assert_eq!(marker.position, 0);
-	assert_eq!(marker.length, display_len("underlined text"));
+	assert_eq!(marker.length, DocLen::of("underlined text"));
 	assert!(buffer.markers.iter().all(|m| m.mtype != MarkerType::Bold && m.mtype != MarkerType::Italic));
 }
 
@@ -133,9 +130,9 @@ fn odt_span_combined_bold_and_italic_style_adds_both_markers() {
 	let bold = buffer.markers.iter().find(|m| m.mtype == MarkerType::Bold).expect("Bold marker");
 	let italic = buffer.markers.iter().find(|m| m.mtype == MarkerType::Italic).expect("Italic marker");
 	assert_eq!(bold.position, 0);
-	assert_eq!(bold.length, display_len("both"));
+	assert_eq!(bold.length, DocLen::of("both"));
 	assert_eq!(italic.position, 0);
-	assert_eq!(italic.length, display_len("both"));
+	assert_eq!(italic.length, DocLen::of("both"));
 	assert!(buffer.markers.iter().all(|m| m.mtype != MarkerType::Underline));
 }
 
@@ -172,7 +169,7 @@ fn odt_span_without_style_name_falls_through_unformatted() {
 
 const NAMESPACES: &str = r#"xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:dc="http://purl.org/dc/elements/1.1/""#;
 
-fn walk_text(body: &str) -> (DocumentBuffer, HashMap<String, usize>) {
+fn walk_text(body: &str) -> (DocumentBuffer, HashMap<String, DocPos>) {
 	let xml = format!(
 		"<office:document-content {NAMESPACES}><office:body><office:text>{body}</office:text></office:body></office:document-content>"
 	);
@@ -193,7 +190,7 @@ fn a_footnote_is_cited_in_its_sentence_and_written_after_the_text() {
 	let link = buffer.markers.iter().find(|m| m.mtype == MarkerType::Link).expect("citation link");
 	assert_eq!(
 		(link.position, link.text.as_str(), link.reference.as_str()),
-		(display_len("Water boils"), "[1]", "#ftn1")
+		(DocLen::of("Water boils").as_pos(), "[1]", "#ftn1")
 	);
 	assert_eq!(ids["ftn1"], buffer.content.find("1. At sea").unwrap());
 	assert!(buffer.markers.iter().any(|m| m.mtype == MarkerType::Heading1 && m.text == "Notes"));
@@ -211,7 +208,7 @@ fn a_comment_goes_after_the_text_and_links_back_to_its_words() {
 	);
 	let link = buffer.markers.iter().find(|m| m.mtype == MarkerType::Link).expect("comment link");
 	assert_eq!(link.reference, "#comment-1");
-	assert_eq!(ids["comment-1"], display_len("Sales "));
+	assert_eq!(ids["comment-1"], DocLen::of("Sales ").as_pos());
 }
 
 /// A comment on a point rather than on words has nothing to quote, and one with no author is still a comment.
@@ -235,5 +232,5 @@ fn a_picture_reads_as_its_placeholder_and_can_be_found() {
 		walk_text("<text:p>See <draw:frame><draw:image/><svg:title>A map</svg:title></draw:frame> below.</text:p>");
 	assert_eq!(buffer.content, "See [Image: A map] below.\n");
 	let image = buffer.markers.iter().find(|m| m.mtype == MarkerType::Image).expect("image marker");
-	assert_eq!((image.position, image.text.as_str()), (display_len("See "), "A map"));
+	assert_eq!((image.position, image.text.as_str()), (DocLen::of("See ").as_pos(), "A map"));
 }

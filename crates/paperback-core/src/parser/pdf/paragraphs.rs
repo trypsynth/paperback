@@ -9,7 +9,7 @@
 use std::mem;
 
 use super::text::{Line, is_cjk, keeps_hyphen};
-use crate::util::text::{collapse_leaders, collapse_whitespace, display_len, trim_string};
+use crate::util::text::{collapse_leaders, collapse_whitespace, trim_string};
 
 /// Fraction of the lines on a page that must be at least as long as the length this returns.
 /// pdfium runs two visual lines together into one line of text often enough - a third of the
@@ -21,10 +21,10 @@ use crate::util::text::{collapse_leaders, collapse_whitespace, display_len, trim
 const FULL_LINE_PERCENTILE_NUMERATOR: usize = 3;
 const FULL_LINE_PERCENTILE_DENOMINATOR: usize = 4;
 
-/// The length of a line that fills the page's measure, in display units.
+/// The length of a line that fills the page's measure, in chars.
 fn full_line_len(lines: &[(Line, bool)]) -> usize {
 	let mut lengths: Vec<usize> =
-		lines.iter().map(|(line, ..)| display_len(&line.text)).filter(|len| *len > 0).collect();
+		lines.iter().map(|(line, ..)| line.text.chars().count()).filter(|len| *len > 0).collect();
 	if lengths.is_empty() {
 		return 0;
 	}
@@ -165,7 +165,7 @@ fn trimmed_lines(lines: &[Line]) -> Vec<(String, usize)> {
 		.iter()
 		.map(|line| {
 			let text = trim_string(&collapse_whitespace(&line.text));
-			let len = display_len(&text);
+			let len = text.chars().count();
 			(text, len)
 		})
 		.collect()
@@ -314,7 +314,7 @@ fn join_paragraphs_measured(
 		let first_char = line.chars().next();
 		let starts_with_uppercase = first_char.is_some_and(char::is_uppercase);
 		let starts_with_alpha = first_char.is_some_and(char::is_alphabetic);
-		let len = display_len(line);
+		let len = line.chars().count();
 		if current_paragraph.is_empty() {
 			current_paragraph = line.clone();
 			current_is_heading = *is_heading_line;

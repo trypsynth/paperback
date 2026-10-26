@@ -4,7 +4,7 @@ use anyhow::Result;
 use rayon::prelude::*;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
+	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	ocr::image_only_placeholder,
 	parser::{Parser, add_heading_markers, util::path::extract_title_from_path},
 	pdf_engine::{PAGE_IMAGE_COVERAGE, PdfDocument, PdfError, PdfPage},
@@ -326,7 +326,7 @@ fn resolve_headings(
 	buffer: &mut DocumentBuffer,
 	toc_items: &mut Vec<TocItem>,
 	flat_toc_items: Vec<(u32, TocItem)>,
-	detected: Vec<(usize, String)>,
+	detected: Vec<(DocPos, String)>,
 	any_tags_processed: bool,
 ) {
 	if any_tags_processed {
@@ -428,13 +428,13 @@ impl Parser for PdfParser {
 		let mut buffer = DocumentBuffer::new();
 		let mut page_offsets = Vec::new();
 		let mut id_positions = HashMap::new();
-		let mut page_lines_info: Vec<Vec<(usize, String)>> = Vec::new();
+		let mut page_lines_info: Vec<Vec<(DocPos, String)>> = Vec::new();
 		let page_count = document.page_count();
 		let mut any_tags_processed = false;
 		let mut flat_toc_items = Vec::new();
 		let mut has_any_text = false;
 		let mut has_any_images = false;
-		let mut detected_heading_positions: Vec<(usize, String)> = Vec::new();
+		let mut detected_heading_positions: Vec<(DocPos, String)> = Vec::new();
 		let mut pages = read_pages(&document, page_count, render_tables_inline);
 		// The survey runs either way, because it is also what measures the body text, which is what
 		// tells a heading from body text and has nothing to do with furniture. What the caller asked
@@ -454,13 +454,13 @@ impl Parser for PdfParser {
 			})
 			.collect();
 		for ((page_index, page), untagged) in pages.into_iter().enumerate().zip(untagged) {
-			let marker_position = buffer.current_position();
+			let marker_position = buffer.end();
 			page_offsets.push(marker_position);
 			id_positions.insert(format!("page_{page_index}"), marker_position);
 			buffer.add_marker(
 				Marker::new(MarkerType::PageBreak, marker_position).with_text(format!("Page {}", page_index + 1)),
 			);
-			let page_start_offset = buffer.current_position();
+			let page_start_offset = buffer.end();
 			let mut page_display_text = String::new();
 			let mut current_lines_info = Vec::new();
 			// A page that is one big scanned image wearing nothing but a page number is a scan, not
@@ -470,7 +470,7 @@ impl Parser for PdfParser {
 			// reader meets "[Image]" and a bare number on every page and no way to reach the words.
 			if is_scanned_with_only_furniture(&page, &running_text) {
 				has_any_images = true;
-				let placeholder_position = buffer.current_position();
+				let placeholder_position = buffer.end();
 				buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, placeholder_position));
 				buffer.append(&image_only_placeholder());
 				buffer.append("\n");
@@ -482,10 +482,13 @@ impl Parser for PdfParser {
 				has_any_text = true;
 				append_tagged_page(&mut buffer, tagged.buffer, page_start_offset);
 				page_display_text = tagged.display_text;
-				current_lines_info =
-					tagged.lines_info.into_iter().map(|(pos, text)| (pos + page_start_offset, text)).collect();
+				current_lines_info = tagged
+					.lines_info
+					.into_iter()
+					.map(|(pos, text)| (pos + page_start_offset.from_start(), text))
+					.collect();
 				flat_toc_items.extend(tagged.toc_items.into_iter().map(|(level, mut item)| {
-					item.offset += page_start_offset;
+					item.offset += page_start_offset.from_start();
 					(level, item)
 				}));
 			} else {
@@ -504,7 +507,7 @@ impl Parser for PdfParser {
 						}
 						UntaggedLine::Text(text, is_heading) => {
 							has_any_text = true;
-							let current_offset = buffer.current_position();
+							let current_offset = buffer.end();
 							if is_heading {
 								detected_heading_positions.push((current_offset, text.clone()));
 							}
@@ -525,9 +528,9 @@ impl Parser for PdfParser {
 			// A page with an image but no extractable text gets a placeholder the user can OCR
 			// from (Enter on it replaces it with the recognized text). The marker, not the text, is
 			// what the OCR flow matches on, so changing the UI language cannot strand a placeholder.
-			let page_has_text = buffer.current_position() > page_start_offset;
+			let page_has_text = buffer.end() > page_start_offset;
 			if !page_has_text && page_has_image {
-				let placeholder_position = buffer.current_position();
+				let placeholder_position = buffer.end();
 				buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, placeholder_position));
 				buffer.append(&image_only_placeholder());
 				buffer.append("\n");
@@ -621,7 +624,7 @@ mod tests {
 			toc_items: Vec::new(),
 		};
 		for block in blocks {
-			let position = tagged.buffer.current_position();
+			let position = tagged.buffer.end();
 			tagged.lines_info.push((position, (*block).to_string()));
 			tagged.buffer.append(block);
 			tagged.buffer.append("\n");

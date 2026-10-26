@@ -13,7 +13,7 @@ use std::{collections::HashMap, sync::atomic::AtomicBool};
 use anyhow::{Context, Result};
 use native_ocr::{Error as OcrError, Line, max_image_dimension, recognize_lines};
 use paperback_core::{
-	document::{ContentBytePos, Document, Edit, Marker, MarkerType},
+	document::{ContentBytePos, DocPos, Document, Edit, Marker, MarkerType},
 	ocr::{
 		PageRenderer, RecognizedLine, RecognizedWord, arrange, default_workers, image_only_placeholder, recognize_pages,
 	},
@@ -154,8 +154,8 @@ fn recognized(line: Line) -> RecognizedLine {
 #[derive(Debug)]
 struct PageEdit {
 	page: usize,
-	start: usize,
-	end: usize,
+	start: DocPos,
+	end: DocPos,
 	/// True for a page whose whole span goes, false for one where only the instruction line does.
 	whole_page: bool,
 	/// What the page had until the engine says otherwise. Empty once a page has been read, which is
@@ -207,13 +207,13 @@ fn page_edits(doc: &Document, selection: Selection) -> Vec<PageEdit> {
 	let mut breaks: Vec<&Marker> =
 		buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::PageBreak).collect();
 	breaks.sort_unstable_by_key(|marker| marker.position);
-	let scanned: Vec<usize> = buffer
+	let scanned: Vec<DocPos> = buffer
 		.markers
 		.iter()
 		.filter(|marker| marker.mtype == MarkerType::ImageOnlyPage)
 		.map(|marker| marker.position)
 		.collect();
-	let total = buffer.total_display_len();
+	let total = buffer.end();
 	let mut edits = Vec::new();
 	// Every page rather than the scanned ones, since which page of the file to render is a question
 	// about every page, and a page whose text is not wanted still has to be stepped over.
@@ -228,7 +228,7 @@ fn page_edits(doc: &Document, selection: Selection) -> Vec<PageEdit> {
 			// The marker sits at the head of its line, which for a page at the very top of the
 			// document is the very start of the content and has no newline in front of it to find a
 			// start after.
-			let byte_start = buffer.byte_index_for_display(start);
+			let byte_start = buffer.byte_at(start);
 			let head = buffer
 				.slice(..byte_start)
 				.rfind('\n')
@@ -236,8 +236,8 @@ fn page_edits(doc: &Document, selection: Selection) -> Vec<PageEdit> {
 			// The newline is left where it was rather than carried in the replacement.
 			let rest = buffer.slice(byte_start..);
 			let length = rest.find('\n').unwrap_or(rest.len());
-			let line_start = buffer.display_index_for_byte(head);
-			let line_end = buffer.display_index_for_byte(byte_start + length);
+			let line_start = buffer.pos_at_byte(head);
+			let line_end = buffer.pos_at_byte(byte_start + length);
 			if line_end > line_start {
 				edits.push(PageEdit {
 					page,
@@ -258,7 +258,7 @@ fn page_edits(doc: &Document, selection: Selection) -> Vec<PageEdit> {
 
 #[cfg(test)]
 mod tests {
-	use paperback_core::document::{DocumentBuffer, Marker};
+	use paperback_core::document::{DocLen, DocumentBuffer, Marker};
 
 	use super::*;
 
@@ -266,7 +266,7 @@ mod tests {
 	fn document() -> Document {
 		let mut buffer = DocumentBuffer::new();
 		for page in 0..3 {
-			let position = buffer.current_position();
+			let position = buffer.end();
 			buffer.add_marker(Marker::new(MarkerType::PageBreak, position).with_text(format!("Page {}", page + 1)));
 			buffer.append(&format!("text of page {}\n", page + 1));
 		}
@@ -281,7 +281,7 @@ mod tests {
 	fn extract_of_pages(first: usize, count: usize) -> Document {
 		let mut buffer = DocumentBuffer::new();
 		for index in 0..count {
-			let position = buffer.current_position();
+			let position = buffer.end();
 			buffer
 				.add_marker(Marker::new(MarkerType::PageBreak, position).with_text(format!("Page {}", first + index)));
 			buffer.append(&format!("text of page {}\n", first + index));
@@ -295,7 +295,7 @@ mod tests {
 	fn scanned_extract_of_pages(first: usize, count: usize) -> Document {
 		let mut buffer = DocumentBuffer::new();
 		for index in 0..count {
-			let position = buffer.current_position();
+			let position = buffer.end();
 			buffer
 				.add_marker(Marker::new(MarkerType::PageBreak, position).with_text(format!("Page {}", first + index)));
 			buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, position));
@@ -339,9 +339,8 @@ mod tests {
 	fn a_scanned_page_is_reported_by_the_number_the_document_gives_it() {
 		let mut doc = document();
 		// Put the marker where page 2's text starts.
-		let start = doc
-			.buffer
-			.display_index_for_byte(ContentBytePos::from_raw(doc.buffer.content.find("text of page 2").unwrap()));
+		let start =
+			doc.buffer.pos_at_byte(ContentBytePos::from_raw(doc.buffer.content.find("text of page 2").unwrap()));
 		doc.buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, start));
 		let edits = page_edits(&doc, images_only());
 		assert_eq!(edits.len(), 1);
@@ -391,9 +390,8 @@ mod tests {
 	#[test]
 	fn the_two_kinds_of_page_are_asked_for_separately() {
 		let mut doc = document();
-		let start = doc
-			.buffer
-			.display_index_for_byte(ContentBytePos::from_raw(doc.buffer.content.find("text of page 2").unwrap()));
+		let start =
+			doc.buffer.pos_at_byte(ContentBytePos::from_raw(doc.buffer.content.find("text of page 2").unwrap()));
 		doc.buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, start));
 
 		let scanned: Vec<usize> =
@@ -424,7 +422,7 @@ mod tests {
 	fn the_instruction_on_the_first_page_is_found_too() {
 		let mut buffer = DocumentBuffer::new();
 		for page in 1..=2 {
-			let position = buffer.current_position();
+			let position = buffer.end();
 			buffer.add_marker(Marker::new(MarkerType::PageBreak, position).with_text(format!("Page {page}")));
 			buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, position));
 			buffer.append(&image_only_placeholder());
@@ -447,7 +445,7 @@ mod tests {
 		let mut buffer = DocumentBuffer::new();
 		let placeholder = image_only_placeholder();
 		for page in 1..=2 {
-			let position = buffer.current_position();
+			let position = buffer.end();
 			buffer.add_marker(Marker::new(MarkerType::PageBreak, position).with_text(format!("Page {page}")));
 			// Shaped the way the comic parser builds a page: the break, the artwork and the
 			// instruction all at the same position.
@@ -470,7 +468,7 @@ mod tests {
 			format!("balloon one\n{placeholder}\n"),
 			"the page it did not read keeps its line"
 		);
-		let heads: Vec<usize> = doc
+		let heads: Vec<DocPos> = doc
 			.buffer
 			.markers
 			.iter()
@@ -479,7 +477,7 @@ mod tests {
 			.collect();
 		assert_eq!(
 			heads,
-			vec![0, display_len("balloon one\n")],
+			vec![DocPos::ZERO, DocLen::of("balloon one\n").as_pos()],
 			"a page's break has to stay at the head of its own page"
 		);
 		let html = paperback_core::export::render(
@@ -519,12 +517,14 @@ mod tests {
 	#[test]
 	fn a_page_re_read_does_not_keep_markers_pointing_into_the_words_it_gave_up() {
 		let mut buffer = DocumentBuffer::new();
-		buffer.add_marker(Marker::new(MarkerType::PageBreak, 0).with_text("Page 1".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, DocPos::ZERO).with_text("Page 1".to_string()));
 		buffer.append("stale text from an older pass\n");
 		// Inside the page rather than at its head: a marker at the head is the page break itself,
 		// which has to survive for the page to still be a page.
-		buffer.add_marker(Marker::new(MarkerType::Heading1, 6).with_level(1).with_text("Stale".to_string()));
-		let cut = buffer.current_position();
+		buffer.add_marker(
+			Marker::new(MarkerType::Heading1, DocPos::from_raw(6)).with_level(1).with_text("Stale".to_string()),
+		);
+		let cut = buffer.end();
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, cut).with_text("Page 2".to_string()));
 		buffer.append("kept text\n");
 		let mut doc = Document::new();
@@ -560,8 +560,8 @@ mod tests {
 	#[test]
 	fn a_page_the_engine_read_nothing_from_keeps_what_it_had() {
 		let mut buffer = DocumentBuffer::new();
-		buffer.add_marker(Marker::new(MarkerType::PageBreak, 0).with_text("Page 1".to_string()));
-		buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, 0));
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, DocPos::ZERO).with_text("Page 1".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, DocPos::ZERO));
 		buffer.append(&image_only_placeholder());
 		buffer.append("\n");
 		let mut doc = Document::new();
@@ -570,9 +570,5 @@ mod tests {
 		// unrecognized page looks like: the text was never filled in, so the replacement is the
 		// placeholder rather than a blank.
 		assert_eq!(read(&mut doc, images_only()), format!("{}\n", image_only_placeholder()));
-	}
-
-	fn display_len(text: &str) -> usize {
-		paperback_core::util::text::display_len(text)
 	}
 }

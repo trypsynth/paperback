@@ -7,7 +7,7 @@ use super::{
 	DocumentSession, DocumentStatsFfi, LineMarker, SegmentDirectionFfi, SegmentTypeFfi, StatusInfo, TextSegmentFfi,
 };
 use crate::{
-	document::{ContentBytePos, MarkerType, ParserFlags},
+	document::{ContentBytePos, DocLen, DocPos, DocumentBuffer, MarkerType, ParserFlags},
 	reader_core::reader_navigate,
 	types::{self as ffi, NavDirection, NavTarget},
 };
@@ -117,13 +117,12 @@ impl DocumentSession {
 				// collapses to the whole buffer (0..len) at every position, and re-deriving
 				// `start_pos` from that would silently discard the section actually found and
 				// snap every result back to position 0.
-				let offset = res.offset as i64;
+				let offset = i64::try_from(res.offset).unwrap_or(0);
 				let mut text = res.marker_text.clone();
 				let mut end_pos = offset;
 				if text.trim().is_empty() {
 					let buffer = &self.handle.document().buffer;
-					let start_pos_char = usize::try_from(offset.max(0)).unwrap_or(0).min(buffer.char_count());
-					let byte_idx = buffer.byte_index_for_char(start_pos_char);
+					let byte_idx = buffer.byte_at(res.offset);
 					let (start_byte, end_byte) = self.find_paragraph_boundaries(byte_idx, SegmentDirectionFfi::Current);
 					text = buffer.slice(start_byte..end_byte).trim().to_string();
 					end_pos = offset + i64::try_from(text.chars().count()).unwrap_or(0);
@@ -135,29 +134,26 @@ impl DocumentSession {
 			return TextSegmentFfi { text: String::new(), start_pos: position, end_pos: position, found: false };
 		}
 		let buffer = &self.handle.document().buffer;
-		let start_pos_char = usize::try_from(position.max(0)).unwrap_or(0).min(buffer.char_count());
-		let byte_idx = buffer.byte_index_for_char(start_pos_char);
+		let start = buffer.nearest_pos(position);
+		let byte_idx = buffer.byte_at(start);
 		let (start_byte, end_byte) = if matches!(segment_type, SegmentTypeFfi::Line) {
-			let start_display = buffer.display_index_for_char(start_pos_char);
-			let line_num = self.line_from_position(i64::try_from(start_display).unwrap_or(0));
+			let line_num = self.line_from_position(i64::try_from(start).unwrap_or(0));
 			let target_line = match direction {
 				SegmentDirectionFfi::Previous => (line_num - 1).max(1),
 				SegmentDirectionFfi::Next => line_num + 1,
 				SegmentDirectionFfi::Current => line_num,
 			};
-			let start_display = usize::try_from(self.position_from_line(target_line)).unwrap_or(0);
-			let end_display = usize::try_from(self.position_from_line(target_line + 1)).unwrap_or(0);
-			(buffer.byte_index_for_display(start_display), buffer.byte_index_for_display(end_display))
+			let line_start = buffer.nearest_pos(self.position_from_line(target_line));
+			let line_end = buffer.nearest_pos(self.position_from_line(target_line + 1));
+			(buffer.byte_at(line_start), buffer.byte_at(line_end))
 		} else {
 			self.find_paragraph_boundaries(byte_idx, direction)
 		};
 		let text = buffer.slice(start_byte..end_byte).trim().to_string();
-		let start_char = buffer.char_index_for_byte(start_byte);
-		let end_char = buffer.char_index_for_byte(end_byte);
 		TextSegmentFfi {
 			text,
-			start_pos: i64::try_from(start_char).unwrap_or(0),
-			end_pos: i64::try_from(end_char).unwrap_or(0),
+			start_pos: i64::try_from(buffer.pos_at_byte(start_byte)).unwrap_or(0),
+			end_pos: i64::try_from(buffer.pos_at_byte(end_byte)).unwrap_or(0),
 			// Next past the last paragraph/line (or Previous before the first) yields an empty
 			// range here rather than an error; treat that the same as any other not-found miss
 			// so callers don't stop on it and speak/persist a bogus end-of-buffer position.
@@ -168,12 +164,10 @@ impl DocumentSession {
 	#[must_use]
 	pub fn get_status_info(&self, position: i64) -> StatusInfo {
 		let buf = &self.handle.document().buffer;
-		let total_chars = buf.char_count();
-		let display_pos = usize::try_from(position.max(0)).unwrap_or(0).min(buf.total_display_len());
-		let pos = buf.char_index_for_display(display_pos);
+		let pos = buf.nearest_pos(position);
 		let line_number = buf.newline_positions().partition_point(|&p| p < pos) + 1;
-		let character_number = pos + 1;
-		let percentage = (pos * 100).checked_div(total_chars).unwrap_or(0);
+		let character_number = pos.get() + 1;
+		let percentage = (pos.get() * 100).checked_div(buf.len().get()).unwrap_or(0);
 		StatusInfo {
 			line_number: i64::try_from(line_number).unwrap_or(1),
 			character_number: i64::try_from(character_number).unwrap_or(1),
@@ -184,14 +178,9 @@ impl DocumentSession {
 	#[must_use]
 	pub fn position_from_percent(&self, percent: i32) -> i64 {
 		let buf = &self.handle.document().buffer;
-		let total_chars = i64::try_from(buf.char_count()).unwrap_or(0);
+		let total = i64::try_from(buf.len()).unwrap_or(0);
 		let percent = i64::from(percent.clamp(0, 100));
-		if total_chars == 0 {
-			return 0;
-		}
-		// Calculate over characters so the result cannot split an astral character.
-		let char_pos = usize::try_from((percent * total_chars + 99) / 100).unwrap_or(0);
-		i64::try_from(buf.display_index_for_char(char_pos)).unwrap_or(0)
+		i64::try_from(buf.nearest_pos((percent * total + 99) / 100)).unwrap_or(0)
 	}
 
 	#[must_use]
@@ -210,25 +199,23 @@ impl DocumentSession {
 		let target_newlines = usize::try_from(line - 1).unwrap_or(0);
 		let newlines = buf.newline_positions();
 		if target_newlines <= newlines.len() {
-			i64::try_from(buf.display_index_for_char(newlines[target_newlines - 1] + 1)).unwrap_or(0)
+			i64::try_from(newlines[target_newlines - 1] + DocLen::ONE).unwrap_or(0)
 		} else {
-			i64::try_from(buf.total_display_len()).unwrap_or(0)
+			i64::try_from(buf.end()).unwrap_or(0)
 		}
 	}
 
 	#[must_use]
 	pub fn line_from_position(&self, position: i64) -> i64 {
 		let buf = &self.handle.document().buffer;
-		let display_pos = usize::try_from(position.max(0)).unwrap_or(0).min(buf.total_display_len());
-		let pos = buf.char_index_for_display(display_pos);
+		let pos = buf.nearest_pos(position);
 		let line_number = buf.newline_positions().partition_point(|&p| p < pos) + 1;
 		i64::try_from(line_number).unwrap_or(1)
 	}
 
 	#[must_use]
 	pub fn current_page(&self, position: i64) -> i32 {
-		let pos = usize::try_from(position.max(0)).unwrap_or(0);
-		self.handle.page_index(pos).map_or(0, |idx| idx + 1)
+		self.handle.page_index(self.handle.document().buffer.nearest_pos(position)).map_or(0, |idx| idx + 1)
 	}
 
 	#[must_use]
@@ -249,14 +236,15 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn get_line_markers(&self, line: i64) -> Vec<LineMarker> {
+		let buf = &self.handle.document().buffer;
 		let start_pos = self.position_from_line(line);
 		let end_pos = self.position_from_line(line + 1);
-		let start_usize = usize::try_from(start_pos.max(0)).unwrap_or(0);
+		let start = buf.nearest_pos(start_pos);
 		// If line + 1 overflows or is the end, end_pos might be equal to start_pos
-		let end_usize = if start_pos == end_pos { usize::MAX } else { usize::try_from(end_pos.max(0)).unwrap_or(0) };
+		let end = (start_pos != end_pos).then(|| buf.nearest_pos(end_pos));
 		let mut res = Vec::new();
-		for marker in &self.handle.document().buffer.markers {
-			if marker.position >= start_usize && marker.position < end_usize {
+		for marker in &buf.markers {
+			if marker.position >= start && end.is_none_or(|end| marker.position < end) {
 				res.push(LineMarker {
 					mtype: marker.mtype,
 					position: i64::try_from(marker.position).unwrap_or(0),
@@ -265,7 +253,7 @@ impl DocumentSession {
 					level: marker.level,
 					length: i64::try_from(marker.length).unwrap_or(0),
 				});
-			} else if marker.position > end_usize {
+			} else if end.is_some_and(|end| marker.position > end) {
 				break;
 			}
 		}
@@ -303,12 +291,12 @@ impl DocumentSession {
 		self.marker_reference_at(position, MarkerType::Formula)
 	}
 
-	/// Reference of the marker whose half-open display extent contains `position`.
+	/// Reference of the marker whose half-open extent contains `position`.
 	fn marker_reference_at(&self, position: i64, mtype: MarkerType) -> Option<String> {
-		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
-		let index = self.handle.current_marker_index(pos_usize, mtype)?;
+		let pos = self.handle.document().buffer.nearest_pos(position);
+		let index = self.handle.current_marker_index(pos, mtype)?;
 		let marker = self.handle.document().buffer.markers.get(index)?;
-		if pos_usize < marker.position || pos_usize >= marker.position.saturating_add(marker.length) {
+		if pos < marker.position || pos >= marker.position + marker.length {
 			return None;
 		}
 		if marker.reference.is_empty() {
@@ -319,8 +307,8 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn get_current_section_path(&self, position: i64) -> Option<String> {
-		let pos_usize = usize::try_from(position.max(0)).unwrap_or(0);
-		let section_index = self.handle.current_marker_index(pos_usize, MarkerType::SectionBreak)?;
+		let pos = self.handle.document().buffer.nearest_pos(position);
+		let section_index = self.handle.current_marker_index(pos, MarkerType::SectionBreak)?;
 		let marker = self.handle.document().buffer.markers.get(section_index)?;
 		if marker.reference.is_empty() {
 			return None;
@@ -373,7 +361,7 @@ impl DocumentSession {
 		self.handle.count_markers_by_type(MarkerType::PageBreak)
 	}
 
-	/// The display-unit offset of every page-break marker in document order — one entry per page.
+	/// The position of every page-break marker in document order — one entry per page.
 	/// Collected in a single O(markers) pass; [`Self::page_offset`] is O(markers) per call, so
 	/// callers that want every page should use this once instead of calling it in a loop.
 	#[must_use]
@@ -388,32 +376,19 @@ impl DocumentSession {
 			.collect()
 	}
 
-	/// The display-unit `[start, end)` span of the line containing `position` (display units),
-	/// where `end` is the index of the line's terminating `\n` (exclusive of it). This converts via
-	/// [`DocumentBuffer::char_index_for_display`]/[`display_index_for_char`], so astral
-	/// characters before the caret (which occupy two display units) can't misalign the result.
-	/// Returns `None` for an empty document.
+	/// The `[start, end)` span of the line containing `position`, where `end` is the position of
+	/// the line's terminating `\n` (exclusive of it). Returns `None` for an empty document.
 	#[must_use]
 	pub fn line_bounds_at(&self, position: i64) -> Option<(i64, i64)> {
 		let buf = &self.handle.document().buffer;
-		let total_chars = buf.char_count();
-		if total_chars == 0 {
+		if buf.is_empty() {
 			return None;
 		}
-		let pos = usize::try_from(position.max(0)).unwrap_or(0).min(buf.total_display_len());
-		let char_pos = buf.char_index_for_display(pos);
-		let newlines = buf.newline_positions();
-		let idx = newlines.partition_point(|&p| p < char_pos);
-		let line_start_char = if idx == 0 { 0 } else { newlines[idx - 1] + 1 };
-		let line_end_char = newlines.get(idx).copied().unwrap_or(total_chars);
-		Some((
-			i64::try_from(buf.display_index_for_char(line_start_char)).unwrap_or(0),
-			i64::try_from(buf.display_index_for_char(line_end_char)).unwrap_or(0),
-		))
+		let (start, end) = line_around(buf, buf.nearest_pos(position));
+		Some((i64::try_from(start).unwrap_or(0), i64::try_from(end).unwrap_or(0)))
 	}
 
-	/// The text of the line containing `position` (display units), using display-unit-correct
-	/// bounds (see [`Self::line_bounds_at`]); an empty string at the end of the document.
+	/// The text of the line containing `position` (see [`Self::line_bounds_at`]); an empty string at the end of the document.
 	#[must_use]
 	pub fn line_text_at(&self, position: i64) -> String {
 		let Some((start, end)) = self.line_bounds_at(position) else {
@@ -429,26 +404,27 @@ impl DocumentSession {
 	#[must_use]
 	pub fn first_content_line_after(&self, position: i64) -> String {
 		let buf = &self.handle.document().buffer;
-		let total_chars = buf.char_count();
-		let display_pos = usize::try_from(position.max(0)).unwrap_or(0).min(buf.total_display_len());
-		let mut pos = buf.char_index_for_display(display_pos);
-		let newlines = buf.newline_positions();
+		let mut pos = buf.nearest_pos(position);
 		loop {
-			let idx = newlines.partition_point(|&p| p < pos);
-			let line_start = if idx == 0 { 0 } else { newlines[idx - 1] + 1 };
-			let line_end = newlines.get(idx).copied().unwrap_or(total_chars);
-			let start_display = i64::try_from(buf.display_index_for_char(line_start)).unwrap_or(0);
-			let end_display = i64::try_from(buf.display_index_for_char(line_end)).unwrap_or(0);
-			let line = self.get_text_range_display(start_display, end_display);
+			let (line_start, line_end) = line_around(buf, pos);
+			let line = buf.text(line_start..line_end);
 			if is_content_line(line.trim()) {
-				return line;
+				return line.to_string();
 			}
-			if line_end >= total_chars {
+			if line_end >= buf.end() {
 				return String::new();
 			}
-			pos = line_end + 1;
+			pos = line_end + DocLen::ONE;
 		}
 	}
+}
+
+/// The start of the line holding `pos` and the position of the `\n` that ends it, or of the end of the document for the last line.
+fn line_around(buf: &DocumentBuffer, pos: DocPos) -> (DocPos, DocPos) {
+	let newlines = buf.newline_positions();
+	let idx = newlines.partition_point(|&p| p < pos);
+	let start = if idx == 0 { DocPos::ZERO } else { newlines[idx - 1] + DocLen::ONE };
+	(start, newlines.get(idx).copied().unwrap_or_else(|| buf.end()))
 }
 
 /// Whether a trimmed line looks like real page content rather than a blank line, a bare page

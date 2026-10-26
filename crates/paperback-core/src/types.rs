@@ -1,3 +1,5 @@
+use crate::document::{DocLen, DocPos};
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NavDirection {
 	Next,
@@ -21,78 +23,78 @@ pub enum NavTarget {
 
 #[derive(Debug, Clone)]
 pub struct HeadingInfo {
-	pub offset: usize,
+	pub offset: DocPos,
 	pub level: i32,
 	pub text: String,
 }
 
 #[derive(Debug, Clone)]
 pub struct FormatInfo {
-	pub offset: usize,
-	pub length: usize,
+	pub offset: DocPos,
+	pub length: DocLen,
 }
 
 #[derive(Debug, Clone)]
 pub struct LinkInfo {
-	pub offset: usize,
+	pub offset: DocPos,
 	pub text: String,
 	pub reference: String,
 }
 
 #[derive(Debug, Clone)]
 pub struct ImageInfo {
-	pub offset: usize,
+	pub offset: DocPos,
 	pub alt_text: String,
-	/// Display-unit span of the emitted placeholder, brackets and label included.
-	pub length: usize,
+	/// The span of the emitted placeholder, brackets and label included.
+	pub length: DocLen,
 	/// Where the picture lives, as the markup wrote it: an `<img>`'s `src` or an SVG or FB2 `<image>`'s `href`. Empty when there is none.
 	pub source: String,
 }
 
 #[derive(Debug, Clone)]
 pub struct ListInfo {
-	pub offset: usize,
+	pub offset: DocPos,
 	pub item_count: i32,
-	/// Display-unit span of the list, from its start offset to the end of its content.
-	pub length: usize,
+	/// The span of the list, from its start offset to the end of its content.
+	pub length: DocLen,
 }
 
 #[derive(Debug, Clone)]
 pub struct ListItemInfo {
-	pub offset: usize,
+	pub offset: DocPos,
 	pub level: i32,
 	pub text: String,
 }
 
 #[derive(Debug, Clone)]
 pub struct TableInfo {
-	pub offset: usize,
+	pub offset: DocPos,
 	pub text: String,
 	pub html_content: String,
-	/// Display-unit span of the emitted table text.
-	pub length: usize,
+	/// The span of the emitted table text.
+	pub length: DocLen,
 }
 
 #[derive(Debug, Clone)]
 pub struct FormulaInfo {
-	pub offset: usize,
+	pub offset: DocPos,
 	/// Text rendering emitted into the buffer (also the marker text).
 	pub text: String,
 	/// Original `MathML` markup, shown in the `WebView` on activation.
 	pub mathml: String,
-	/// Display-unit span of the emitted formula text, excluding surrounding line breaks.
-	pub length: usize,
+	/// The span of the emitted formula text, excluding surrounding line breaks.
+	pub length: DocLen,
 }
 
 #[derive(Debug, Clone)]
 pub struct SeparatorInfo {
-	pub offset: usize,
-	pub length: usize,
+	pub offset: DocPos,
+	pub length: DocLen,
 }
 
 #[derive(Debug, Clone)]
 pub struct PageBreakInfo {
-	pub offset: usize,
+	pub offset: DocPos,
 	pub text: String,
 }
 
@@ -109,7 +111,7 @@ pub struct NavRequest {
 pub struct NavResult {
 	pub found: bool,
 	pub wrapped: bool,
-	pub offset: usize,
+	pub offset: DocPos,
 	pub marker_level: i32,
 	pub marker_text: String,
 }
@@ -162,7 +164,7 @@ pub struct BookmarkDisplayAtPosition {
 
 #[derive(Debug, Clone)]
 pub struct LinkListItem {
-	pub offset: usize,
+	pub offset: DocPos,
 	pub text: String,
 }
 
@@ -174,7 +176,7 @@ pub struct LinkList {
 
 #[derive(Debug, Clone)]
 pub struct ElementListItem {
-	pub offset: usize,
+	pub offset: DocPos,
 	pub text: String,
 }
 
@@ -186,7 +188,7 @@ pub struct ElementList {
 
 #[derive(Debug, Clone)]
 pub struct HeadingTreeItem {
-	pub offset: usize,
+	pub offset: DocPos,
 	pub text: String,
 	pub parent_index: i32,
 }

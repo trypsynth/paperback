@@ -1,7 +1,4 @@
-use crate::{
-	document::{Document, MarkerType},
-	util::text::ch_width,
-};
+use crate::document::{DocLen, DocPos, Document, MarkerType};
 
 #[must_use]
 pub fn render(doc: &Document) -> String {
@@ -14,11 +11,11 @@ pub fn render(doc: &Document) -> String {
 		BoldClose,
 		ItalicOpen,
 		ItalicClose,
-		// Replace `until` display-units of content with "\n---\n"
-		Replace { until: usize },
+		// Replace the content up to `until` with "\n---\n"
+		Replace { until: DocPos },
 	}
 	struct Ev {
-		pos: usize,
+		pos: DocPos,
 		kind: Mk,
 		/// Which span this event belongs to, counting up in the order spans are opened.
 		/// Closing in the reverse of that order is what keeps two spans over the same text
@@ -78,10 +75,10 @@ pub fn render(doc: &Document) -> String {
 	});
 	let mut md = String::with_capacity(content.len() + events.len() * 4);
 	let mut event_idx = 0usize;
-	let mut display_pos = 0usize;
-	let mut skip_until: Option<usize> = None;
+	let mut position = DocPos::ZERO;
+	let mut skip_until: Option<DocPos> = None;
 	for ch in content.chars() {
-		while event_idx < events.len() && events[event_idx].pos <= display_pos {
+		while event_idx < events.len() && events[event_idx].pos <= position {
 			if skip_until.is_some_and(|u| events[event_idx].pos < u) {
 				event_idx += 1;
 				continue;
@@ -108,14 +105,14 @@ pub fn render(doc: &Document) -> String {
 			event_idx += 1;
 		}
 		if let Some(until) = skip_until {
-			if display_pos < until {
-				display_pos += ch_width(ch);
+			if position < until {
+				position += DocLen::ONE;
 				continue;
 			}
 			skip_until = None;
 		}
 		md.push(ch);
-		display_pos += ch_width(ch);
+		position += DocLen::ONE;
 	}
 	// Flush any closes that fall at or past end of content
 	while event_idx < events.len() {
@@ -176,21 +173,22 @@ mod tests {
 
 	#[test]
 	fn test_bold_basic() {
-		let doc = simple_doc("bold text", vec![Marker::new(MarkerType::Bold, 0).with_length(4)]);
+		let doc = simple_doc("bold text", vec![Marker::new(MarkerType::Bold, 0.into()).with_length(4.into())]);
 		let md = render(&doc);
 		assert!(md.contains("**bold**"), "Expected **bold** in markdown: {md}");
 	}
 
 	#[test]
 	fn test_italic_basic() {
-		let doc = simple_doc("italic text", vec![Marker::new(MarkerType::Italic, 0).with_length(6)]);
+		let doc = simple_doc("italic text", vec![Marker::new(MarkerType::Italic, 0.into()).with_length(6.into())]);
 		let md = render(&doc);
 		assert!(md.contains("*italic*"), "Expected *italic* in markdown: {md}");
 	}
 
 	#[test]
 	fn test_underline_produces_no_syntax() {
-		let doc = simple_doc("underline text", vec![Marker::new(MarkerType::Underline, 0).with_length(9)]);
+		let doc =
+			simple_doc("underline text", vec![Marker::new(MarkerType::Underline, 0.into()).with_length(9.into())]);
 		let md = render(&doc);
 		// The text should still appear, but without any markdown syntax
 		assert!(md.contains("underline"), "Expected text 'underline' in markdown: {md}");
@@ -204,7 +202,10 @@ mod tests {
 		// "bold italic" where 0-4 is bold, 5-11 is italic
 		let doc = simple_doc(
 			"bold italic",
-			vec![Marker::new(MarkerType::Bold, 0).with_length(4), Marker::new(MarkerType::Italic, 5).with_length(6)],
+			vec![
+				Marker::new(MarkerType::Bold, 0.into()).with_length(4.into()),
+				Marker::new(MarkerType::Italic, 5.into()).with_length(6.into()),
+			],
 		);
 		let md = render(&doc);
 		assert!(md.contains("**bold**"), "Expected **bold** in markdown: {md}");
@@ -219,8 +220,10 @@ mod tests {
 		let doc = simple_doc(
 			"define",
 			vec![
-				Marker::new(MarkerType::Bold, 0).with_length(6),
-				Marker::new(MarkerType::Link, 0).with_text("define".to_string()).with_reference("topic7".to_string()),
+				Marker::new(MarkerType::Bold, 0.into()).with_length(6.into()),
+				Marker::new(MarkerType::Link, 0.into())
+					.with_text("define".to_string())
+					.with_reference("topic7".to_string()),
 			],
 		);
 		assert_eq!(render(&doc).trim(), "**[define](topic7)**");
@@ -233,8 +236,10 @@ mod tests {
 		let doc = simple_doc(
 			"define",
 			vec![
-				Marker::new(MarkerType::Link, 0).with_text("define".to_string()).with_reference("topic7".to_string()),
-				Marker::new(MarkerType::Bold, 0).with_length(6),
+				Marker::new(MarkerType::Link, 0.into())
+					.with_text("define".to_string())
+					.with_reference("topic7".to_string()),
+				Marker::new(MarkerType::Bold, 0.into()).with_length(6.into()),
 			],
 		);
 		assert_eq!(render(&doc).trim(), "[**define**](topic7)");
@@ -243,7 +248,7 @@ mod tests {
 	#[test]
 	fn test_bold_close_at_end_of_content() {
 		// Test that a bold span ending exactly at end-of-content doesn't lose its closing **
-		let doc = simple_doc("bold", vec![Marker::new(MarkerType::Bold, 0).with_length(4)]);
+		let doc = simple_doc("bold", vec![Marker::new(MarkerType::Bold, 0.into()).with_length(4.into())]);
 		let md = render(&doc);
 		assert!(md.contains("**bold**"), "Expected **bold** in markdown with closing **: {md}");
 		let count = md.matches("**").count();
@@ -253,7 +258,7 @@ mod tests {
 	#[test]
 	fn test_italic_close_at_end_of_content() {
 		// Test that an italic span ending exactly at end-of-content doesn't lose its closing *
-		let doc = simple_doc("italic", vec![Marker::new(MarkerType::Italic, 0).with_length(6)]);
+		let doc = simple_doc("italic", vec![Marker::new(MarkerType::Italic, 0.into()).with_length(6.into())]);
 		let md = render(&doc);
 		assert!(md.contains("*italic*"), "Expected *italic* in markdown with closing *: {md}");
 		let count = md.matches('*').count();

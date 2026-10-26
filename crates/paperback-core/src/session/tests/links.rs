@@ -61,7 +61,9 @@ fn element_list_lists_markers_fall_back_to_the_line_they_sit_on() {
 #[test]
 fn element_list_prefers_a_marker_caption_over_the_line_content() {
 	let mut buffer = DocumentBuffer::with_content("Price list    Quantity\n".to_string());
-	buffer.add_marker(Marker::new(MarkerType::Table, 0).with_text("Annual Report".to_string()).with_length(24));
+	buffer.add_marker(
+		Marker::new(MarkerType::Table, 0.into()).with_text("Annual Report".to_string()).with_length(24.into()),
+	);
 	let session = session_from_buffer(buffer);
 	let list = session.element_list(MarkerType::Table, 0);
 	assert_eq!(list.items[0].text, "Annual Report");
@@ -70,7 +72,7 @@ fn element_list_prefers_a_marker_caption_over_the_line_content() {
 #[test]
 fn element_list_preserves_the_indented_first_list_line() {
 	let mut buffer = DocumentBuffer::with_content("  - Alpha\n".to_string());
-	buffer.add_marker(Marker::new(MarkerType::List, 0).with_level(1));
+	buffer.add_marker(Marker::new(MarkerType::List, 0.into()).with_level(1));
 	let session = session_from_buffer(buffer);
 	let list = session.element_list(MarkerType::List, 0);
 	assert_eq!(list.items[0].text, "  - Alpha");
@@ -80,13 +82,13 @@ fn element_list_preserves_the_indented_first_list_line() {
 fn element_list_closest_index_tracks_the_last_marker_at_or_before_position() {
 	let mut buffer = DocumentBuffer::with_content("AAA\nBBB\nCCC\n".to_string());
 	// Added out of order to prove rows come back sorted by position.
-	buffer.add_marker(Marker::new(MarkerType::List, 4).with_level(1));
-	buffer.add_marker(Marker::new(MarkerType::List, 0).with_level(1));
+	buffer.add_marker(Marker::new(MarkerType::List, 4.into()).with_level(1));
+	buffer.add_marker(Marker::new(MarkerType::List, 0.into()).with_level(1));
 	let session = session_from_buffer(buffer);
 	let rows = session.element_list(MarkerType::List, 4);
 	assert_eq!(rows.items.len(), 2);
-	assert_eq!((rows.items[0].offset, rows.items[0].text.as_str()), (0, "AAA"));
-	assert_eq!((rows.items[1].offset, rows.items[1].text.as_str()), (4, "BBB"));
+	assert_eq!((rows.items[0].offset, rows.items[0].text.as_str()), (0.into(), "AAA"));
+	assert_eq!((rows.items[1].offset, rows.items[1].text.as_str()), (4.into(), "BBB"));
 	assert_eq!(session.element_list(MarkerType::List, 0).closest_index, 0);
 	assert_eq!(session.element_list(MarkerType::List, 3).closest_index, 0);
 	assert_eq!(session.element_list(MarkerType::List, 4).closest_index, 1);
@@ -103,7 +105,7 @@ fn element_list_is_empty_when_the_type_is_absent() {
 #[test]
 fn activate_link_returns_not_found_when_reference_missing() {
 	let mut buffer = DocumentBuffer::with_content("line1\nline2".to_string());
-	buffer.add_marker(Marker::new(MarkerType::Link, 6).with_text("line2".to_string()));
+	buffer.add_marker(Marker::new(MarkerType::Link, 6.into()).with_text("line2".to_string()));
 	let mut doc = Document::new();
 	doc.set_buffer(buffer);
 	let session = DocumentSession {

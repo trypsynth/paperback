@@ -15,7 +15,7 @@ use super::{
 	package::ManifestItem,
 };
 use crate::{
-	document::{DocumentBuffer, Marker, MarkerType},
+	document::{DocPos, DocumentBuffer, Marker, MarkerType},
 	parser::{
 		ConverterOutput, add_converter_markers_excluding_links,
 		convert::{
@@ -45,7 +45,7 @@ struct SectionContent {
 	bolds: Vec<FormatInfo>,
 	italics: Vec<FormatInfo>,
 	underlines: Vec<FormatInfo>,
-	id_positions: HashMap<String, usize>,
+	id_positions: HashMap<String, DocPos>,
 	/// Whether the section's markup holds an image element at all, described or not. The converters
 	/// only record an image that carries a description, so this is the only sign that a page whose
 	/// whole body is one undescribed picture is a picture and not simply empty.
@@ -97,13 +97,13 @@ impl ConverterOutput for SectionContent {
 
 pub(super) struct SectionMeta {
 	pub(super) path: String,
-	pub(super) start: usize,
-	pub(super) end: usize,
+	pub(super) start: DocPos,
+	pub(super) end: DocPos,
 }
 
 pub(super) struct SpineConversionResult {
 	pub(super) buffer: DocumentBuffer,
-	pub(super) id_positions: HashMap<String, usize>,
+	pub(super) id_positions: HashMap<String, DocPos>,
 	pub(super) sections: Vec<SectionMeta>,
 	pub(super) conversion_errors: Vec<String>,
 }
@@ -224,7 +224,7 @@ pub(super) fn convert_spine_items(
 		// positions still line up with, so only its section break and image marker are kept.
 		if !was_replaced {
 			for (id, relative) in &section.id_positions {
-				let absolute = section_start + relative;
+				let absolute = section_start + relative.from_start();
 				// Keep the first occurrence for bare ids to avoid later sections overwriting earlier ones.
 				id_positions.entry(id.clone()).or_insert(absolute);
 				id_positions.insert(format!("{}#{id}", item.path), absolute);
@@ -235,7 +235,7 @@ pub(super) fn convert_spine_items(
 			for link in &section.links {
 				let resolved = resolve_href(&item.path, &link.reference);
 				buffer.add_marker(
-					Marker::new(MarkerType::Link, section_start + link.offset)
+					Marker::new(MarkerType::Link, section_start + link.offset.from_start())
 						.with_text(link.text.clone())
 						.with_reference(resolved),
 				);

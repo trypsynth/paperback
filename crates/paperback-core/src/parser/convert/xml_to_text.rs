@@ -4,6 +4,7 @@ use roxmltree::{Document, ParsingOptions};
 
 use super::{format_spans::FormatSpans, line_builder::LineBuilder, list_style::ListStyle};
 use crate::{
+	document::DocPos,
 	parser::ConverterOutput,
 	types::{
 		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo,
@@ -14,7 +15,7 @@ use crate::{
 #[derive(Default)]
 pub struct XmlToText {
 	text: LineBuilder,
-	id_positions: HashMap<String, usize>,
+	id_positions: HashMap<String, DocPos>,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
 	images: Vec<ImageInfo>,
@@ -25,8 +26,8 @@ pub struct XmlToText {
 	page_breaks: Vec<PageBreakInfo>,
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
-	section_offsets: Vec<usize>,
-	position_watch: Option<usize>,
+	section_offsets: Vec<DocPos>,
+	position_watch: Option<DocPos>,
 	watched_byte_offset: Option<usize>,
 	in_body: bool,
 	list_level: i32,
@@ -90,7 +91,7 @@ impl XmlToText {
 	/// Returns the source byte offset of the start tag of the element nearest
 	/// at-or-before `target_position` (a character position in the converted text),
 	/// suitable as an insertion point for a navigation anchor.
-	pub fn find_anchor_byte_offset(&mut self, xml_content: &str, target_position: usize) -> Option<usize> {
+	pub fn find_anchor_byte_offset(&mut self, xml_content: &str, target_position: DocPos) -> Option<usize> {
 		self.position_watch = Some(target_position);
 		self.watched_byte_offset = None;
 		let converted = self.convert(xml_content);
@@ -100,7 +101,7 @@ impl XmlToText {
 	}
 
 	#[must_use]
-	pub const fn get_id_positions(&self) -> &HashMap<String, usize> {
+	pub const fn get_id_positions(&self) -> &HashMap<String, DocPos> {
 		&self.id_positions
 	}
 
@@ -150,7 +151,7 @@ impl XmlToText {
 	}
 
 	#[must_use]
-	pub fn get_section_offsets(&self) -> &[usize] {
+	pub fn get_section_offsets(&self) -> &[DocPos] {
 		&self.section_offsets
 	}
 
@@ -199,7 +200,7 @@ mod process;
 /// (a character position in the converted text). Returns `None` when the
 /// content is not valid XML.
 #[must_use]
-pub fn inject_anchor_at_position(xml_content: &str, target_position: usize, anchor_id: &str) -> Option<String> {
+pub fn inject_anchor_at_position(xml_content: &str, target_position: DocPos, anchor_id: &str) -> Option<String> {
 	let byte_offset = XmlToText::new().find_anchor_byte_offset(xml_content, target_position)?;
 	let mut result = xml_content.to_string();
 	result.insert_str(byte_offset, &format!("<span id=\"{anchor_id}\"></span>"));

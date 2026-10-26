@@ -241,13 +241,14 @@ impl DocumentManager {
 		// position, so it loses however much of that clip had already played, and loses
 		// everything since the last explicit jump if the caret wasn't following the audio.
 		let saved_audio_time = config.get_document_audio_time(&path_str);
+		let initial_pos = self.tabs[tab_index].session.handle().document().buffer.nearest_pos(initial_pos);
 		if let Some(player) = self.tabs[tab_index].audio_player.as_mut() {
 			match saved_audio_time {
 				Some(time_ms) => {
 					player.seek_to_ms(time_ms);
 				}
 				None => {
-					player.seek_to_position(usize::try_from(initial_pos).unwrap_or(0));
+					player.seek_to_position(initial_pos);
 				}
 			}
 		}

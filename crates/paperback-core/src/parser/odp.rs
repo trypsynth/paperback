@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, Node, NodeType};
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
+	document::{DocLen, DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
 		Parser,
 		odf_crypto::read_odf_content,
@@ -12,7 +12,6 @@ use crate::{
 	},
 	t,
 	types::LinkInfo,
-	util::text::display_len,
 };
 
 pub struct OdpParser;
@@ -45,7 +44,7 @@ impl Parser for OdpParser {
 /// One slide per page, each opening with its page break, and a slide with no text still there to be reached.
 fn build_slides(pages: &[Node], buffer: &mut DocumentBuffer) {
 	for (index, page_node) in pages.iter().enumerate() {
-		let slide_start = buffer.current_position();
+		let slide_start = buffer.end();
 		let slide = get_page_text(*page_node, slide_start);
 		if slide.text.trim().is_empty() {
 			buffer.append(&no_text_placeholder());
@@ -131,19 +130,19 @@ struct Slide {
 	text: String,
 	links: Vec<LinkInfo>,
 	/// Each picture's position, description and length.
-	images: Vec<(usize, String, usize)>,
+	images: Vec<(DocPos, String, DocLen)>,
 	notes: Vec<String>,
 	/// Each comment's author, which may be empty, and text.
 	comments: Vec<(String, String)>,
 }
 
-fn get_page_text(page_node: Node, slide_start: usize) -> Slide {
+fn get_page_text(page_node: Node, slide_start: DocPos) -> Slide {
 	let mut slide = Slide::default();
 	traverse_page(page_node, &mut slide, slide_start);
 	slide
 }
 
-fn traverse_page(node: Node, slide: &mut Slide, slide_start: usize) {
+fn traverse_page(node: Node, slide: &mut Slide, slide_start: DocPos) {
 	if node.is_text() {
 		slide.text.push_str(node.text().unwrap_or_default());
 		return;
@@ -182,13 +181,13 @@ fn traverse_page(node: Node, slide: &mut Slide, slide_start: usize) {
 			return;
 		}
 		if let Some((placeholder, description)) = odf::picture(node) {
-			slide.images.push((slide_start + display_len(&slide.text), description, display_len(&placeholder)));
+			slide.images.push((slide_start + DocLen::of(&slide.text), description, DocLen::of(&placeholder)));
 			slide.text.push_str(&placeholder);
 			return;
 		}
 		if tag_name == "a" {
 			if let Some(href) = node.attribute("href") {
-				let link_offset = slide_start + display_len(&slide.text);
+				let link_offset = slide_start + DocLen::of(&slide.text);
 				let link_text = odf::plain_text(node);
 				if !link_text.is_empty() {
 					slide.text.push_str(&link_text);
@@ -208,7 +207,7 @@ fn traverse_page(node: Node, slide: &mut Slide, slide_start: usize) {
 	traverse_children(node, slide, slide_start);
 }
 
-fn traverse_children(node: Node, slide: &mut Slide, slide_start: usize) {
+fn traverse_children(node: Node, slide: &mut Slide, slide_start: DocPos) {
 	for child in node.children() {
 		traverse_page(child, slide, slide_start);
 	}
@@ -280,17 +279,17 @@ mod tests {
 		let link = doc.buffer.markers.iter().find(|marker| marker.mtype == MarkerType::Link).expect("link marker");
 		assert_eq!(link.text, "the site");
 		assert_eq!(link.reference, "https://example.com");
-		assert_eq!(&doc.buffer.content[link.position..link.position + link.text.len()], "the site");
+		assert_eq!(&doc.buffer.content[link.position.get()..link.position.get() + link.text.len()], "the site");
 	}
 
-	/// A link's position is in display units, which an emoji before it makes differ from bytes.
+	/// A link's position is counted in chars, which an emoji before it makes differ from bytes.
 	#[test]
 	fn a_link_after_an_emoji_lands_on_its_text() {
 		let doc = parse_ok(&fodp_document(&page(
 			"<text:p>\u{1F600} <text:a xlink:href=\"https://example.com\">the site</text:a></text:p>",
 		)));
 		let link = doc.buffer.markers.iter().find(|marker| marker.mtype == MarkerType::Link).expect("link marker");
-		assert_eq!(link.position, display_len("\u{1F600} "));
+		assert_eq!(link.position, DocLen::of("\u{1F600} ").as_pos());
 	}
 
 	/// A slide with no text, usually one of pictures alone, is still a slide of the deck: it says so rather than vanishing, which would also leave the reader jumping from one slide number to the one after next.
@@ -373,10 +372,11 @@ Comment from Ann: Check this
 		assert_eq!(
 			(image.position, image.text.as_str()),
 			(
-				display_len(
+				DocLen::of(
 					"Sales grew fast
 "
-				),
+				)
+				.as_pos(),
 				"Bar chart"
 			)
 		);

@@ -10,7 +10,7 @@ use std::{collections::HashMap, fmt::Write as _};
 
 use super::marked_content::collect_text;
 use crate::{
-	document::{DocumentBuffer, Marker, MarkerType},
+	document::{DocPos, DocumentBuffer, Marker, MarkerType},
 	parser::convert::table_text::{display_lines_and_length, html_table_to_display},
 	pdf_engine::Tag,
 	util::text::{collapse_whitespace, trim_string},
@@ -68,8 +68,8 @@ fn html_escape(s: &str) -> String {
 pub(super) fn append_pdf_table_to_buffer(
 	buffer: &mut DocumentBuffer,
 	html: String,
-	pos: usize,
-	current_lines_info: &mut Vec<(usize, String)>,
+	pos: DocPos,
+	current_lines_info: &mut Vec<(DocPos, String)>,
 	page_display_text: &mut String,
 	render_tables_inline: bool,
 ) {
@@ -78,13 +78,13 @@ pub(super) fn append_pdf_table_to_buffer(
 	// lines, where a raw `split('\n')` would yield one `""` and emit a spurious blank line.
 	let (lines, _) = display_lines_and_length(&display_text);
 	for line in lines {
-		let line_pos = buffer.current_position();
+		let line_pos = buffer.end();
 		current_lines_info.push((line_pos, line.clone()));
 		buffer.append(&line);
 		buffer.append("\n");
 		page_display_text.push_str(&line);
 		page_display_text.push('\n');
 	}
-	let display_len = buffer.current_position() - pos;
+	let display_len = buffer.end() - pos;
 	buffer.add_marker(Marker::new(MarkerType::Table, pos).with_reference(html).with_length(display_len));
 }

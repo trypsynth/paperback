@@ -167,8 +167,9 @@ pub fn move_to_offset_and_record_history(tab: &mut DocumentTab, offset: i64) -> 
 /// Keeps a document's audio in step with the caret, called after every jump that moves the
 /// insertion point. A no-op for documents with no recorded audio.
 fn seek_audio_to_position(tab: &mut DocumentTab, offset: i64) {
+	let offset = tab.session.handle().document().buffer.nearest_pos(offset);
 	if let Some(player) = tab.audio_player.as_mut() {
-		player.seek_to_position(usize::try_from(offset).unwrap_or(0));
+		player.seek_to_position(offset);
 	}
 }
 

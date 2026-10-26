@@ -9,7 +9,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
+	document::{DocLen, DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		convert::table_text::{
 			build_html_table_from_grid, display_lines_and_length, html_table_to_display, table_caption_from_html,
@@ -23,16 +23,16 @@ use crate::{
 	},
 	t,
 	types::LinkInfo,
-	util::{text::display_len, zip::read_zip_entry_by_name},
+	util::zip::read_zip_entry_by_name,
 };
 
 /// A table found while traversing a slide. Markers are added after the slide text is appended to
-/// the buffer (mirroring the deferred link-marker handling), so positions stay in display units.
+/// the buffer (mirroring the deferred link-marker handling), so positions are counted in chars.
 struct TableData {
-	offset: usize,
+	offset: DocPos,
 	caption: String,
 	html: String,
-	length: usize,
+	length: DocLen,
 }
 
 pub(super) fn parse_pptx(context: &ParserContext) -> Result<Document> {
@@ -72,7 +72,7 @@ pub(super) fn parse_pptx(context: &ParserContext) -> Result<Document> {
 		let rels_name = format!("ppt/slides/_rels/{slide_base}.rels");
 		let rels = read_ooxml_relationships(&mut archive, &rels_name);
 		let slide_title = extract_slide_title(slide_doc.root());
-		let slide_start = buffer.current_position();
+		let slide_start = buffer.end();
 		let mut links = Vec::new();
 		let mut tables = Vec::new();
 		let slide_text = extract_slide_text(
@@ -154,7 +154,7 @@ fn extract_slide_text(
 	root: Node,
 	links: &mut Vec<LinkInfo>,
 	tables: &mut Vec<TableData>,
-	slide_start: usize,
+	slide_start: DocPos,
 	rels: &HashMap<String, String>,
 	render_tables_inline: bool,
 ) -> String {
@@ -168,7 +168,7 @@ fn traverse_for_text(
 	text: &mut String,
 	links: &mut Vec<LinkInfo>,
 	tables: &mut Vec<TableData>,
-	slide_start: usize,
+	slide_start: DocPos,
 	rels: &HashMap<String, String>,
 	render_tables_inline: bool,
 ) {
@@ -209,11 +209,11 @@ fn traverse_for_text(
 					}
 					if let Some(target) = link_target {
 						let link_text = text[start..].to_string();
-						let offset = slide_start + display_len(&text[..start]);
+						let offset = slide_start + DocLen::of(&text[..start]);
 						// PowerPoint splits one link across runs wherever the formatting changes, each carrying the same link.
 						match links.last_mut() {
 							Some(last)
-								if last.reference == *target && last.offset + display_len(&last.text) == offset =>
+								if last.reference == *target && last.offset + DocLen::of(&last.text) == offset =>
 							{
 								last.text.push_str(&link_text);
 							}
@@ -255,7 +255,7 @@ fn process_pptx_table(
 	node: Node,
 	text: &mut String,
 	tables: &mut Vec<TableData>,
-	slide_start: usize,
+	slide_start: DocPos,
 	render_tables_inline: bool,
 ) {
 	let mut rows: Vec<Vec<String>> = Vec::new();
@@ -289,7 +289,7 @@ fn process_pptx_table(
 	let caption = table_caption_from_html(&html).unwrap_or_else(|| "table".to_string());
 	let display_text = html_table_to_display(&html, render_tables_inline);
 	let (_, length) = display_lines_and_length(&display_text);
-	let offset = slide_start + display_len(text);
+	let offset = slide_start + DocLen::of(text);
 	text.push_str(&display_text);
 	text.push('\n');
 	tables.push(TableData { offset, caption, html, length });

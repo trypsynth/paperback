@@ -223,7 +223,7 @@ fn reparse_tab_in_place(
 ) -> Result<(), String> {
 	let new_fingerprint = read_fingerprint(tab.local_path());
 	let current_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-	let pos = usize::try_from(current_pos.max(0)).unwrap_or(0);
+	let pos = tab.session.handle().document().buffer.nearest_pos(current_pos);
 	// Find the nearest anchor at-or-before the cursor using the full id_positions key
 	// (unlike nearest_fragment_before, which strips the "path#" prefix for epub keys
 	// making the subsequent lookup fail). Record the within-block offset so the cursor
@@ -235,7 +235,7 @@ fn reparse_tab_in_place(
 			.iter()
 			.filter(|&(_, &off)| off <= pos)
 			.max_by_key(|&(_, &off)| off)
-			.map(|(key, &anchor_off)| (key.clone(), pos.saturating_sub(anchor_off)))
+			.map(|(key, &anchor_off)| (key.clone(), pos - anchor_off))
 	};
 	let fallback_percent = tab.session.get_status_info(current_pos).percentage;
 	let parse_path = tab.local_path().to_string_lossy().into_owned();

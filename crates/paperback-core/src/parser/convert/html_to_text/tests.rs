@@ -2,9 +2,8 @@ use rstest::rstest;
 
 use super::*;
 use crate::{
-	document::{DocumentBuffer, MarkerType},
+	document::{DocLen, DocPos, DocumentBuffer, MarkerType},
 	parser::add_converter_markers,
-	util::text::display_len,
 };
 
 /// End-to-end: the `HtmlToText` converter emits each table's on-screen text at parse time, and a
@@ -26,12 +25,12 @@ fn html_converter_emits_table_inline_or_placeholder(#[case] inline: bool) {
 	assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
 	let tables = converter.get_tables();
 	assert_eq!(tables.len(), 1);
-	assert_eq!(tables[0].offset, 6, "table follows 'Intro\n' (6 display units)");
+	assert_eq!(tables[0].offset, 6, "table follows 'Intro\n' (6 positions)");
 	let table_line = if inline { "A\tB" } else { "[Table]: A B" };
 	let expected_text = format!("Intro\n{table_line}\nAfter heading");
 	assert_eq!(converter.get_text(), expected_text, "table emitted as {table_line:?}");
 	// display_length equals the emitted display extent (the table line plus its newline).
-	let expected_display_length = display_len(table_line) + 1;
+	let expected_display_length = DocLen::of(table_line) + 1.into();
 	assert_eq!(tables[0].length, expected_display_length);
 	// The heading marker that follows the table sits right after the emitted table span.
 	let headings = converter.get_headings();
@@ -43,7 +42,7 @@ fn html_converter_emits_table_inline_or_placeholder(#[case] inline: bool) {
 	);
 	// Through the real marker path, the Table marker's length matches the emitted extent.
 	let mut buffer = DocumentBuffer::with_content(converter.get_text());
-	add_converter_markers(&mut buffer, &converter, 0);
+	add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 	let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
 	assert_eq!(table_marker.length, expected_display_length);
 }
@@ -87,7 +86,7 @@ fn test_format_span_collection(#[case] tag: &str, #[case] kind: MarkerType) {
 	};
 	assert_eq!(spans.len(), 1);
 	let text = converter.get_text();
-	assert_eq!(&text[spans[0].offset..spans[0].offset + spans[0].length], "bold");
+	assert_eq!(&text[spans[0].offset.get()..(spans[0].offset + spans[0].length).get()], "bold");
 }
 
 #[test]
@@ -98,10 +97,10 @@ fn test_format_span_nested_bold_and_italic() {
 	let text = converter.get_text();
 	let italics = converter.get_italics();
 	assert_eq!(italics.len(), 1);
-	assert_eq!(&text[italics[0].offset..italics[0].offset + italics[0].length], "inner");
+	assert_eq!(&text[italics[0].offset.get()..(italics[0].offset + italics[0].length).get()], "inner");
 	let bolds = converter.get_bolds();
 	assert_eq!(bolds.len(), 1);
-	assert_eq!(&text[bolds[0].offset..bolds[0].offset + bolds[0].length], "outer inner");
+	assert_eq!(&text[bolds[0].offset.get()..(bolds[0].offset + bolds[0].length).get()], "outer inner");
 }
 
 #[test]
@@ -144,10 +143,10 @@ fn test_ordered_list_metadata() {
 	assert_eq!(lists.len(), 1);
 	assert_eq!(lists[0].item_count, 2);
 	// The recorded length must span the whole list, reaching at least the last item's start.
-	assert!(lists[0].length > 0);
+	assert!(lists[0].length > 0.into());
 	assert!(lists[0].offset + lists[0].length >= items[1].offset);
 	// End lands at most one line break past the content (trailing newline at document end).
-	assert!(lists[0].offset + lists[0].length <= display_len(&converter.get_text()) + 1);
+	assert!(lists[0].offset + lists[0].length <= DocLen::of(&converter.get_text()).as_pos() + 1.into());
 	assert_eq!(items.len(), 2);
 	assert_eq!(items[0].level, 1);
 	assert_eq!(items[0].text, "First");
@@ -271,7 +270,7 @@ fn html_two_tables_offsets_are_cumulative() {
 	let t1_display_length = tables[0].length;
 	let t2_offset = tables[1].offset;
 	assert_eq!(t1_offset, 0, "first table starts at 0");
-	assert!(t1_display_length > 0, "first table has non-zero display_length");
+	assert!(t1_display_length > 0.into(), "first table has non-zero display_length");
 	assert_eq!(
 		t2_offset,
 		t1_offset + t1_display_length,
@@ -290,13 +289,13 @@ fn html_converter_gives_the_image_marker_the_placeholder_span() {
 	assert_eq!(converter.get_text(), "Before [Image: a cat] after");
 	let images = converter.get_images();
 	assert_eq!(images.len(), 1);
-	assert_eq!(images[0].offset, display_len("Before "));
-	assert_eq!(images[0].length, display_len("[Image: a cat]"));
+	assert_eq!(images[0].offset, DocLen::of("Before ").as_pos());
+	assert_eq!(images[0].length, DocLen::of("[Image: a cat]"));
 	let mut buffer = DocumentBuffer::with_content(converter.get_text());
-	add_converter_markers(&mut buffer, &converter, 0);
+	add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 	let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Image).expect("Image marker");
 	assert_eq!(marker.position, images[0].offset);
-	assert_eq!(marker.length, display_len("[Image: a cat]"));
+	assert_eq!(marker.length, DocLen::of("[Image: a cat]"));
 }
 
 /// A link made only of a picture, such as a logo linking home, has to be a link the reader can reach and follow, with the picture's marker on the same text.
@@ -310,11 +309,11 @@ fn html_converter_makes_a_link_of_a_picture_alone() {
 	assert_eq!(links.len(), 1);
 	assert_eq!(
 		(links[0].offset, links[0].text.as_str(), links[0].reference.as_str()),
-		(display_len("Go "), "[Image: Logo]", "/home")
+		(DocLen::of("Go ").as_pos(), "[Image: Logo]", "/home")
 	);
 	let images = converter.get_images();
 	assert_eq!(images.len(), 1);
-	assert_eq!((images[0].offset, images[0].source.as_str()), (display_len("Go "), "logo.png"));
+	assert_eq!((images[0].offset, images[0].source.as_str()), (DocLen::of("Go ").as_pos(), "logo.png"));
 }
 
 /// The picture stays where it sits in the link rather than ending up in front of its text.
@@ -325,7 +324,7 @@ fn html_converter_keeps_a_picture_in_its_place_inside_a_link() {
 	assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
 	assert_eq!(converter.get_text(), "Back to [Image: Logo] home");
 	assert_eq!(converter.get_links()[0].text, "Back to [Image: Logo] home");
-	assert_eq!(converter.get_images()[0].offset, display_len("Back to "));
+	assert_eq!(converter.get_images()[0].offset, DocLen::of("Back to ").as_pos());
 }
 
 /// A picture nobody described is still a picture the reader can find, save and read with OCR, while one marked as decoration stays out of the way.
@@ -337,7 +336,7 @@ fn html_converter_shows_an_undescribed_picture_and_skips_decoration() {
 	assert_eq!(converter.get_text(), "A [Image] B C");
 	let images = converter.get_images();
 	assert_eq!(images.len(), 1);
-	assert_eq!((images[0].offset, images[0].source.as_str()), (display_len("A "), "chart.png"));
+	assert_eq!((images[0].offset, images[0].source.as_str()), (DocLen::of("A ").as_pos(), "chart.png"));
 }
 
 /// A link made of an undescribed picture, such as a logo with no alt text, is still a link.

@@ -9,7 +9,9 @@ use anyhow::Result;
 use paperback_formats::FormatMeta;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem, is_heading_marker},
+	document::{
+		DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem, is_heading_marker,
+	},
 	t,
 	types::{
 		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
@@ -344,19 +346,21 @@ pub trait ConverterOutput {
 	fn get_underlines(&self) -> &[FormatInfo];
 }
 
-fn add_headings(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+fn add_headings(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: DocPos) {
 	for heading in converter.get_headings() {
 		let marker_type = util::toc::heading_level_to_marker_type(heading.level);
 		buffer.add_marker(
-			Marker::new(marker_type, offset + heading.offset).with_text(heading.text.clone()).with_level(heading.level),
+			Marker::new(marker_type, offset + heading.offset.from_start())
+				.with_text(heading.text.clone())
+				.with_level(heading.level),
 		);
 	}
 }
 
-fn add_links(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+fn add_links(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: DocPos) {
 	for link in converter.get_links() {
 		buffer.add_marker(
-			Marker::new(MarkerType::Link, offset + link.offset)
+			Marker::new(MarkerType::Link, offset + link.offset.from_start())
 				.with_text(link.text.clone())
 				.with_reference(link.reference.clone()),
 		);
@@ -367,7 +371,7 @@ fn add_links(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offse
 fn add_images(
 	buffer: &mut DocumentBuffer,
 	converter: &dyn ConverterOutput,
-	offset: usize,
+	offset: DocPos,
 	resolve: &dyn Fn(&str) -> String,
 ) {
 	let reference = |image: &ImageInfo| {
@@ -379,7 +383,7 @@ fn add_images(
 	};
 	for image in converter.get_images() {
 		buffer.add_marker(
-			Marker::new(MarkerType::Image, offset + image.offset)
+			Marker::new(MarkerType::Image, offset + image.offset.from_start())
 				.with_text(image.alt_text.clone())
 				.with_reference(reference(image))
 				.with_length(image.length),
@@ -387,7 +391,7 @@ fn add_images(
 	}
 	for figure in converter.get_figures() {
 		buffer.add_marker(
-			Marker::new(MarkerType::Figure, offset + figure.offset)
+			Marker::new(MarkerType::Figure, offset + figure.offset.from_start())
 				.with_text(figure.alt_text.clone())
 				.with_reference(reference(figure))
 				.with_length(figure.length),
@@ -395,10 +399,10 @@ fn add_images(
 	}
 }
 
-fn add_tables_separators_lists(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+fn add_tables_separators_lists(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: DocPos) {
 	for table in converter.get_tables() {
 		buffer.add_marker(
-			Marker::new(MarkerType::Table, offset + table.offset)
+			Marker::new(MarkerType::Table, offset + table.offset.from_start())
 				.with_text(table.text.clone())
 				.with_reference(table.html_content.clone())
 				.with_length(table.length),
@@ -406,29 +410,31 @@ fn add_tables_separators_lists(buffer: &mut DocumentBuffer, converter: &dyn Conv
 	}
 	for separator in converter.get_separators() {
 		buffer.add_marker(
-			Marker::new(MarkerType::Separator, offset + separator.offset)
+			Marker::new(MarkerType::Separator, offset + separator.offset.from_start())
 				.with_text("Separator".to_string())
 				.with_length(separator.length),
 		);
 	}
 	for list in converter.get_lists() {
 		buffer.add_marker(
-			Marker::new(MarkerType::List, offset + list.offset).with_level(list.item_count).with_length(list.length),
+			Marker::new(MarkerType::List, offset + list.offset.from_start())
+				.with_level(list.item_count)
+				.with_length(list.length),
 		);
 	}
 	for list_item in converter.get_list_items() {
 		buffer.add_marker(
-			Marker::new(MarkerType::ListItem, offset + list_item.offset)
+			Marker::new(MarkerType::ListItem, offset + list_item.offset.from_start())
 				.with_text(list_item.text.clone())
 				.with_level(list_item.level),
 		);
 	}
 }
 
-fn add_formulas(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+fn add_formulas(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: DocPos) {
 	for formula in converter.get_formulas() {
 		buffer.add_marker(
-			Marker::new(MarkerType::Formula, offset + formula.offset)
+			Marker::new(MarkerType::Formula, offset + formula.offset.from_start())
 				.with_text(formula.text.clone())
 				.with_reference(formula.mathml.clone())
 				.with_length(formula.length),
@@ -436,15 +442,19 @@ fn add_formulas(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, of
 	}
 }
 
-fn add_formatting(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+fn add_formatting(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: DocPos) {
 	for bold in converter.get_bolds() {
-		buffer.add_marker(Marker::new(MarkerType::Bold, offset + bold.offset).with_length(bold.length));
+		buffer.add_marker(Marker::new(MarkerType::Bold, offset + bold.offset.from_start()).with_length(bold.length));
 	}
 	for italic in converter.get_italics() {
-		buffer.add_marker(Marker::new(MarkerType::Italic, offset + italic.offset).with_length(italic.length));
+		buffer.add_marker(
+			Marker::new(MarkerType::Italic, offset + italic.offset.from_start()).with_length(italic.length),
+		);
 	}
 	for underline in converter.get_underlines() {
-		buffer.add_marker(Marker::new(MarkerType::Underline, offset + underline.offset).with_length(underline.length));
+		buffer.add_marker(
+			Marker::new(MarkerType::Underline, offset + underline.offset.from_start()).with_length(underline.length),
+		);
 	}
 }
 
@@ -469,7 +479,7 @@ pub fn add_heading_markers_where(
 	buffer: &mut DocumentBuffer,
 	items: &[TocItem],
 	level: i32,
-	wanted: &dyn Fn(usize) -> bool,
+	wanted: &dyn Fn(DocPos) -> bool,
 ) {
 	for item in items {
 		if wanted(item.offset) {
@@ -502,8 +512,8 @@ pub fn add_toc_heading_markers(buffer: &mut DocumentBuffer, toc_items: &[TocItem
 }
 
 /// Where the document's own text already carries a heading, sorted for the span check.
-fn heading_positions(buffer: &DocumentBuffer) -> Vec<usize> {
-	let mut positions: Vec<usize> =
+fn heading_positions(buffer: &DocumentBuffer) -> Vec<DocPos> {
+	let mut positions: Vec<DocPos> =
 		buffer.markers.iter().filter(|marker| is_heading_marker(marker.mtype)).map(|marker| marker.position).collect();
 	positions.sort_unstable();
 	positions
@@ -511,14 +521,14 @@ fn heading_positions(buffer: &DocumentBuffer) -> Vec<usize> {
 
 /// Every table-of-contents entry offset in the tree, sorted, so the stretch one entry speaks for
 /// runs to wherever the next entry starts.
-fn toc_entry_offsets(items: &[TocItem]) -> Vec<usize> {
+fn toc_entry_offsets(items: &[TocItem]) -> Vec<DocPos> {
 	let mut offsets = Vec::new();
 	collect_toc_offsets(items, &mut offsets);
 	offsets.sort_unstable();
 	offsets
 }
 
-fn collect_toc_offsets(items: &[TocItem], out: &mut Vec<usize>) {
+fn collect_toc_offsets(items: &[TocItem], out: &mut Vec<DocPos>) {
 	for item in items {
 		out.push(item.offset);
 		collect_toc_offsets(&item.children, out);
@@ -527,14 +537,14 @@ fn collect_toc_offsets(items: &[TocItem], out: &mut Vec<usize>) {
 
 /// Whether the stretch of the book starting at `offset` and running to the next entry already holds
 /// a heading of its own.
-fn span_has_heading(spans: &[usize], existing: &[usize], offset: usize) -> bool {
-	let end = spans.iter().copied().find(|start| *start > offset).unwrap_or(usize::MAX);
-	existing.iter().any(|position| *position >= offset && *position < end)
+fn span_has_heading(spans: &[DocPos], existing: &[DocPos], offset: DocPos) -> bool {
+	let end = spans.iter().copied().find(|start| *start > offset);
+	existing.iter().any(|position| *position >= offset && end.is_none_or(|end| *position < end))
 }
 
 /// Transfer all converter markers to a `DocumentBuffer`.
 /// `offset` is added to each marker position (for multi-section parsers like CHM/EPUB).
-pub fn add_converter_markers(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+pub fn add_converter_markers(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: DocPos) {
 	add_headings(buffer, converter, offset);
 	add_links(buffer, converter, offset);
 	add_images(buffer, converter, offset, &str::to_string);
@@ -547,7 +557,7 @@ pub fn add_converter_markers(buffer: &mut DocumentBuffer, converter: &dyn Conver
 pub fn add_converter_markers_excluding_links(
 	buffer: &mut DocumentBuffer,
 	converter: &dyn ConverterOutput,
-	offset: usize,
+	offset: DocPos,
 	resolve_image: &dyn Fn(&str) -> String,
 ) {
 	add_headings(buffer, converter, offset);

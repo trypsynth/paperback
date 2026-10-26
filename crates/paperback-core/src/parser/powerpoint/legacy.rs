@@ -73,7 +73,7 @@ pub(super) fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 	let mut id_positions = HashMap::new();
 	for (index, slide_text) in slide_texts.iter().enumerate() {
 		let slide_number = index + 1;
-		let slide_start = buffer.current_position();
+		let slide_start = buffer.end();
 		let label = format!("Slide {slide_number}");
 		id_positions.insert(format!("slide_{slide_number}"), slide_start);
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, slide_start).with_text(label.clone()));

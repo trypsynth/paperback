@@ -5,8 +5,8 @@ use zip::{ZipWriter, write::FileOptions};
 use super::*;
 use crate::{
 	config::ConfigManager,
+	document::DocLen,
 	types::{NavDirection, NavTarget},
-	util::text::display_len,
 };
 
 #[test]
@@ -226,7 +226,7 @@ fn navigate_section_returns_found_when_flag_enabled() {
 fn navigate_section_in_an_audio_only_book_announces_the_file_name() {
 	let mut buffer = DocumentBuffer::new();
 	for name in ["Track 1", "Track 2", "Track 3"] {
-		let position = buffer.current_position();
+		let position = buffer.end();
 		buffer.append(" ");
 		buffer.add_marker(Marker::new(MarkerType::SectionBreak, position).with_text(name.to_string()));
 	}
@@ -302,7 +302,7 @@ fn bookmark_display_at_position_returns_not_found_without_data() {
 fn bookmark_display_at_position_reads_snippet_in_display_units() {
 	let content = "\u{1F600} intro\nfirst line\nsecond \u{1F600} line\nthird";
 	let session = session_with_content(content);
-	let pos = |needle: &str| i64::try_from(display_len(&content[..content.find(needle).unwrap()])).unwrap();
+	let pos = |needle: &str| i64::try_from(DocLen::of(&content[..content.find(needle).unwrap()])).unwrap();
 	let config = ConfigManager::in_memory();
 	let range_start = pos("line\nsecond");
 	let range_end = pos("\nsecond");

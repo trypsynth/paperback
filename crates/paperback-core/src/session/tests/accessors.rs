@@ -1,9 +1,9 @@
 use super::*;
-use crate::util::text::display_len;
+use crate::document::DocLen;
 
-/// The session API takes positions as `i64`, while `display_len` measures in `usize`.
+/// The session API takes positions as `i64`, while `DocLen::of` measures a `DocLen`.
 fn display_len_i64(s: &str) -> i64 {
-	i64::try_from(display_len(s)).unwrap()
+	i64::try_from(DocLen::of(s)).unwrap()
 }
 
 #[test]
@@ -64,8 +64,8 @@ fn page_offsets_is_empty_without_page_breaks() {
 fn page_offsets_are_in_document_order_even_for_unsorted_insertion() {
 	let mut buffer = DocumentBuffer::with_content("aaaaaaaaa\nbbbbbbbbb\n".to_string());
 	// Inserted out of order: the buffer sorts markers at DocumentHandle::new.
-	buffer.add_marker(Marker::new(MarkerType::PageBreak, 9));
-	buffer.add_marker(Marker::new(MarkerType::PageBreak, 0));
+	buffer.add_marker(Marker::new(MarkerType::PageBreak, 9.into()));
+	buffer.add_marker(Marker::new(MarkerType::PageBreak, 0.into()));
 	let session = session_from_buffer(buffer);
 	assert_eq!(session.page_offsets(), vec![0, 9]);
 }
@@ -92,10 +92,10 @@ fn has_headings_checks_specific_and_any_levels() {
 #[test]
 fn get_formatting_markers_returns_only_bold_italic_underline_markers() {
 	let mut buffer = DocumentBuffer::with_content("line1\nline2\nline3".to_string());
-	buffer.add_marker(Marker::new(MarkerType::Heading1, 0).with_level(1).with_text("H1".to_string()));
-	buffer.add_marker(Marker::new(MarkerType::Bold, 0).with_length(5));
-	buffer.add_marker(Marker::new(MarkerType::Italic, 6).with_length(5));
-	buffer.add_marker(Marker::new(MarkerType::Underline, 12).with_length(5));
+	buffer.add_marker(Marker::new(MarkerType::Heading1, 0.into()).with_level(1).with_text("H1".to_string()));
+	buffer.add_marker(Marker::new(MarkerType::Bold, 0.into()).with_length(5.into()));
+	buffer.add_marker(Marker::new(MarkerType::Italic, 6.into()).with_length(5.into()));
+	buffer.add_marker(Marker::new(MarkerType::Underline, 12.into()).with_length(5.into()));
 	let mut doc = Document::new().with_title("Title".to_string()).with_author("Author".to_string());
 	doc.set_buffer(buffer);
 	let session = DocumentSession {
@@ -143,9 +143,9 @@ fn get_text_segment_current_direction_finds_enclosing_paragraph_start() {
 #[test]
 fn heading_tree_builds_parent_links_and_closest_index() {
 	let mut buffer = DocumentBuffer::with_content("a\nb\nc".to_string());
-	buffer.add_marker(Marker::new(MarkerType::Heading1, 0).with_level(1).with_text("H1".to_string()));
-	buffer.add_marker(Marker::new(MarkerType::Heading2, 2).with_level(2).with_text("H2".to_string()));
-	buffer.add_marker(Marker::new(MarkerType::Heading1, 4).with_level(1).with_text("H1b".to_string()));
+	buffer.add_marker(Marker::new(MarkerType::Heading1, 0.into()).with_level(1).with_text("H1".to_string()));
+	buffer.add_marker(Marker::new(MarkerType::Heading2, 2.into()).with_level(2).with_text("H2".to_string()));
+	buffer.add_marker(Marker::new(MarkerType::Heading1, 4.into()).with_level(1).with_text("H1b".to_string()));
 	let mut doc = Document::new();
 	doc.set_buffer(buffer);
 	let session = DocumentSession {
@@ -168,7 +168,7 @@ fn heading_tree_builds_parent_links_and_closest_index() {
 #[test]
 fn get_current_section_path_returns_none_when_reference_empty() {
 	let mut buffer = DocumentBuffer::with_content("line".to_string());
-	buffer.add_marker(Marker::new(MarkerType::SectionBreak, 0));
+	buffer.add_marker(Marker::new(MarkerType::SectionBreak, 0.into()));
 	let mut doc = Document::new();
 	doc.set_buffer(buffer);
 	let session = DocumentSession {
@@ -191,7 +191,10 @@ fn table_session() -> DocumentSession {
 	let mut buffer = DocumentBuffer::with_content("before\ntbl\nafter\n".to_string());
 	// Table marker length is the DISPLAY extent of the emitted span ("tbl\n" -> 4).
 	buffer.add_marker(
-		Marker::new(MarkerType::Table, 7).with_length(4).with_text("tbl".to_string()).with_reference(html.to_string()),
+		Marker::new(MarkerType::Table, 7.into())
+			.with_length(4.into())
+			.with_text("tbl".to_string())
+			.with_reference(html.to_string()),
 	);
 	let mut doc = Document::new();
 	doc.set_buffer(buffer);
@@ -225,8 +228,8 @@ fn get_table_at_position_handles_multibyte_extent() {
 	let mut buffer = DocumentBuffer::with_content("\u{1F600}\u{1F600}\u{1F600}".to_string());
 	// Three non-BMP emoji: three positions and twelve bytes. Marker spans the whole range.
 	buffer.add_marker(
-		Marker::new(MarkerType::Table, 0)
-			.with_length(3)
+		Marker::new(MarkerType::Table, 0.into())
+			.with_length(3.into())
 			.with_text("x".to_string())
 			.with_reference("<table/>".to_string()),
 	);
@@ -250,14 +253,14 @@ fn get_table_at_position_handles_multibyte_extent() {
 #[test]
 fn line_and_status_helpers_use_display_positions_after_emoji() {
 	let content = "😀😀😀😀\nab\ncdefgh\nij\n";
-	let ab = display_len("😀😀😀😀\n");
-	let next = display_len("😀😀😀😀\nab\n");
+	let ab = DocLen::of("😀😀😀😀\n");
+	let next = DocLen::of("😀😀😀😀\nab\n");
 	let ab_pos = display_len_i64("😀😀😀😀\n");
 	let next_pos = display_len_i64("😀😀😀😀\nab\n");
 	let end = display_len_i64(content);
 	let mut buffer = DocumentBuffer::with_content(content.to_string());
-	buffer.add_marker(Marker::new(MarkerType::Bold, ab).with_length(display_len("ab")));
-	buffer.add_marker(Marker::new(MarkerType::Italic, next).with_length(display_len("cdefgh")));
+	buffer.add_marker(Marker::new(MarkerType::Bold, ab.as_pos()).with_length(DocLen::of("ab")));
+	buffer.add_marker(Marker::new(MarkerType::Italic, next.as_pos()).with_length(DocLen::of("cdefgh")));
 	let session = session_from_buffer(buffer);
 	assert_eq!(session.get_line_text(ab_pos), "ab");
 	assert_eq!(session.first_content_line_after(ab_pos), "ab");

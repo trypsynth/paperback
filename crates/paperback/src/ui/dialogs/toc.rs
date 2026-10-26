@@ -70,7 +70,7 @@ fn populate_toc_tree_dv(
 	for item in items {
 		// TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
 		let display_text = if item.name.is_empty() { t("Untitled") } else { item.name.clone() };
-		let offset = i32::try_from(item.offset).unwrap_or(i32::MAX);
+		let offset = i32::try_from(item.offset.get()).unwrap_or(i32::MAX);
 		let node = if item.children.is_empty() {
 			tree.append_item(parent, &display_text, -1)
 		} else {
@@ -300,7 +300,7 @@ fn populate_toc_tree(tree: TreeCtrl, parent: &TreeItemId, items: &[TocItem]) {
 #[cfg(target_os = "windows")]
 fn append_toc_items(tree: TreeCtrl, parent: &TreeItemId, items: &[TocItem]) {
 	for item in items {
-		let offset = i32::try_from(item.offset).unwrap_or(i32::MAX);
+		let offset = i32::try_from(item.offset.get()).unwrap_or(i32::MAX);
 		if let Some(id) = tree.append_item_with_data(parent, &toc_label(item), offset, None, None)
 			&& !item.children.is_empty()
 		{

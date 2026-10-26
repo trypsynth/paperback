@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, Node};
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, format_marker_types},
+	document::{DocLen, DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, format_marker_types},
 	parser::{
 		Parser,
 		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
@@ -18,7 +18,6 @@ use crate::{
 		},
 	},
 	t,
-	util::text::display_len,
 };
 
 pub struct OdtParser;
@@ -106,7 +105,7 @@ fn build_odt_format_style_map(root: Node) -> HashMap<String, (bool, bool, bool)>
 fn traverse(
 	root: Node,
 	buffer: &mut DocumentBuffer,
-	id_positions: &mut HashMap<String, usize>,
+	id_positions: &mut HashMap<String, DocPos>,
 	render_tables_inline: bool,
 	format_style_map: &HashMap<String, (bool, bool, bool)>,
 ) {
@@ -120,7 +119,7 @@ fn traverse(
 /// What a walk of an ODT's content writes into and consults.
 struct Walk<'w, 'a, 'input> {
 	buffer: &'w mut DocumentBuffer,
-	id_positions: &'w mut HashMap<String, usize>,
+	id_positions: &'w mut HashMap<String, DocPos>,
 	render_tables_inline: bool,
 	format_style_map: &'w HashMap<String, (bool, bool, bool)>,
 	/// The notes cited so far, by the id their citation links to, with their number and body. Read in the middle of a sentence they interrupted it, so they are written after the text instead.
@@ -149,7 +148,7 @@ impl<'a, 'input> Walk<'_, 'a, 'input> {
 			return;
 		}
 		if tag_name == "annotation-end" {
-			let position = self.buffer.current_position();
+			let position = self.buffer.end();
 			if let Some((comment, _)) =
 				self.comments.iter_mut().rev().find(|(_, name)| name.as_deref() == node.attribute("name"))
 			{
@@ -162,7 +161,7 @@ impl<'a, 'input> Walk<'_, 'a, 'input> {
 		}
 		if tag_name == "h" {
 			let level = node.attribute("outline-level").and_then(|s| s.parse::<i32>().ok()).unwrap_or(1);
-			let heading_offset = self.buffer.current_position();
+			let heading_offset = self.buffer.end();
 			let heading_text = odf::plain_text(node);
 			if !heading_text.is_empty() {
 				self.buffer.append(&heading_text);
@@ -181,7 +180,7 @@ impl<'a, 'input> Walk<'_, 'a, 'input> {
 		}
 		if tag_name == "a" {
 			if let Some(href) = node.attribute("href") {
-				let link_offset = self.buffer.current_position();
+				let link_offset = self.buffer.end();
 				let link_text = odf::plain_text(node);
 				if !link_text.is_empty() {
 					self.buffer.append(&link_text);
@@ -199,7 +198,7 @@ impl<'a, 'input> Walk<'_, 'a, 'input> {
 			let id = node.attribute("id").map_or_else(|| format!("note-{}", self.notes.len() + 1), str::to_string);
 			let citation = odf::note_citation(node);
 			let cited = format!("[{citation}]");
-			let offset = self.buffer.current_position();
+			let offset = self.buffer.end();
 			self.buffer.append(&cited);
 			self.buffer
 				.add_marker(Marker::new(MarkerType::Link, offset).with_text(cited).with_reference(format!("#{id}")));
@@ -208,13 +207,13 @@ impl<'a, 'input> Walk<'_, 'a, 'input> {
 			return;
 		}
 		if let Some(id) = node.attribute("id") {
-			self.id_positions.insert(id.to_string(), self.buffer.current_position());
+			self.id_positions.insert(id.to_string(), self.buffer.end());
 		}
 		if let Some((placeholder, description)) = odf::picture(node) {
-			let offset = self.buffer.current_position();
+			let offset = self.buffer.end();
 			self.buffer.append(&placeholder);
 			self.buffer.add_marker(
-				Marker::new(MarkerType::Image, offset).with_text(description).with_length(display_len(&placeholder)),
+				Marker::new(MarkerType::Image, offset).with_text(description).with_length(DocLen::of(&placeholder)),
 			);
 			return;
 		}
@@ -223,9 +222,9 @@ impl<'a, 'input> Walk<'_, 'a, 'input> {
 			&& let Some(&(bold, italic, underline)) = self.format_style_map.get(style_name)
 			&& (bold || italic || underline)
 		{
-			let start = self.buffer.current_position();
+			let start = self.buffer.end();
 			self.children(node);
-			let end = self.buffer.current_position();
+			let end = self.buffer.end();
 			if end > start {
 				for kind in format_marker_types(bold, italic, underline) {
 					self.buffer.add_marker(Marker::new(kind, start).with_length(end - start));
@@ -273,7 +272,7 @@ impl<'a, 'input> Walk<'_, 'a, 'input> {
 			return;
 		}
 		let key = format!("comment-{}", self.comments.len() + 1);
-		let start = self.buffer.current_position();
+		let start = self.buffer.end();
 		self.id_positions.insert(key.clone(), start);
 		let author = child_text("creator").join(" ");
 		let name = annotation.attribute("name").map(str::to_string);
@@ -294,14 +293,14 @@ impl<'a, 'input> Walk<'_, 'a, 'input> {
 		}
 		// TRANSLATORS: Heading over the footnotes and endnotes of a document, written after its text
 		let heading = t("Notes");
-		let heading_offset = self.buffer.current_position();
+		let heading_offset = self.buffer.end();
 		self.buffer.append(&heading);
 		self.buffer.append("\n");
 		self.buffer
 			.add_marker(Marker::new(heading_level_to_marker_type(1), heading_offset).with_text(heading).with_level(1));
 		while !self.notes.is_empty() {
 			for (id, citation, body) in std::mem::take(&mut self.notes) {
-				self.id_positions.insert(id, self.buffer.current_position());
+				self.id_positions.insert(id, self.buffer.end());
 				self.buffer.append(&format!("{citation}. "));
 				if let Some(body) = body {
 					self.children(body);
@@ -317,10 +316,10 @@ impl<'a, 'input> Walk<'_, 'a, 'input> {
 fn process_table(
 	node: Node,
 	buffer: &mut DocumentBuffer,
-	id_positions: &mut HashMap<String, usize>,
+	id_positions: &mut HashMap<String, DocPos>,
 	render_tables_inline: bool,
 ) {
-	let table_start = buffer.current_position();
+	let table_start = buffer.end();
 	// The table collapses to a placeholder/TSV, so cells have no individual display offset. Register
 	// every anchor `id` nested inside the table at the table's start position; internal links to a
 	// bookmark/footnote/cross-ref target inside a cell then navigate to the table.
@@ -335,7 +334,7 @@ fn process_table(
 	let mut has_content = false;
 	// Build the table grid from the XML nodes directly. Cell text is collected via
 	// `collect_element_text` (operating on the XML tree), NOT by slicing the display buffer. The
-	// display buffer is indexed in display units, so slicing it with those offsets as byte indices
+	// display buffer is indexed in chars, so slicing it with those offsets as byte indices
 	// mis-sliced (and could panic) on non-ASCII cell content.
 	for child in node.children() {
 		if child.is_element() && child.tag_name().name() == "table-row" {
@@ -361,7 +360,7 @@ fn process_table(
 	let display_text = html_table_to_display(&html_content, render_tables_inline);
 	buffer.append(&display_text);
 	buffer.append("\n");
-	let display_len = buffer.current_position() - table_start;
+	let display_len = buffer.end() - table_start;
 	buffer.add_marker(
 		Marker::new(MarkerType::Table, table_start)
 			.with_text(marker_text)

@@ -16,6 +16,8 @@
 //! `time_ms` to carry everything else. Text-only documents have no timeline at
 //! all.
 
+use crate::document::DocPos;
+
 /// Where a source's bytes live. Paths are final, not relative to the document:
 /// the timeline is rebuilt on every open, so there is nothing to keep portable.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -36,14 +38,14 @@ pub struct AudioSource {
 }
 
 /// A span of audio bound to a span of text: source time `[clip_begin_ms,
-/// clip_end_ms)` narrates display units `[start, end)`.
+/// clip_end_ms)` narrates the text `[start, end)`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct AudioClip {
 	pub source: usize,
 	pub clip_begin_ms: u64,
 	pub clip_end_ms: u64,
-	pub start: usize,
-	pub end: usize,
+	pub start: DocPos,
+	pub end: DocPos,
 }
 
 impl AudioClip {
@@ -58,13 +60,13 @@ impl AudioClip {
 /// meaningful when several clips share a text position.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct TimelinePoint {
-	pub position: usize,
+	pub position: DocPos,
 	pub time_ms: u64,
 }
 
 impl TimelinePoint {
 	#[must_use]
-	pub const fn new(position: usize, time_ms: u64) -> Self {
+	pub const fn new(position: DocPos, time_ms: u64) -> Self {
 		Self { position, time_ms }
 	}
 }
@@ -148,7 +150,7 @@ impl AudioTimeline {
 	/// ordinary, since front matter and unrecorded sections are common. Where
 	/// several clips share a text anchor, this is the first of them.
 	#[must_use]
-	pub fn clip_index_at_position(&self, position: usize) -> Option<usize> {
+	pub fn clip_index_at_position(&self, position: DocPos) -> Option<usize> {
 		let searched = self.clips.partition_point(|clip| clip.start <= position);
 		let mut found: Option<usize> = None;
 		// Walking back, starts are non-increasing, so the first containing clip
@@ -168,7 +170,7 @@ impl AudioTimeline {
 
 	/// The point to jump audio to when the reader moves the caret to `position`.
 	#[must_use]
-	pub fn point_for_position(&self, position: usize) -> Option<TimelinePoint> {
+	pub fn point_for_position(&self, position: DocPos) -> Option<TimelinePoint> {
 		let index = self.clip_index_at_position(position)?;
 		Some(TimelinePoint::new(self.clips[index].start, self.elapsed_ms[index]))
 	}
@@ -278,10 +280,8 @@ impl AudioTimelineBuilder {
 		self.sources.len() - 1
 	}
 
-	/// Binds `[clip_begin_ms, clip_end_ms)` of `source` to display units
-	/// `[start, end)`. Positions must be display units, from the same counting
-	/// as marker positions (see `util::text::display_len`).
-	pub fn add_clip(&mut self, source: usize, clip_begin_ms: u64, clip_end_ms: u64, start: usize, end: usize) {
+	/// Binds `[clip_begin_ms, clip_end_ms)` of `source` to the text `[start, end)`.
+	pub fn add_clip(&mut self, source: usize, clip_begin_ms: u64, clip_end_ms: u64, start: DocPos, end: DocPos) {
 		self.clips.push(AudioClip { source, clip_begin_ms, clip_end_ms, start, end });
 	}
 
@@ -317,9 +317,9 @@ mod tests {
 	fn narrated_timeline() -> AudioTimeline {
 		let mut builder = AudioTimelineBuilder::new();
 		let source = builder.add_source(AudioLocation::File("chapter1.mp3".to_string()), Some(9000));
-		builder.add_clip(source, 0, 2000, 0, 40);
-		builder.add_clip(source, 2000, 5000, 40, 95);
-		builder.add_clip(source, 5000, 9000, 95, 160);
+		builder.add_clip(source, 0, 2000, 0.into(), 40.into());
+		builder.add_clip(source, 2000, 5000, 40.into(), 95.into());
+		builder.add_clip(source, 5000, 9000, 95.into(), 160.into());
 		builder.build()
 	}
 
@@ -329,8 +329,8 @@ mod tests {
 		let mut builder = AudioTimelineBuilder::new();
 		let part1 = builder.add_source(AudioLocation::File("part1.mp3".to_string()), Some(600_000));
 		let part2 = builder.add_source(AudioLocation::File("part2.mp3".to_string()), Some(300_000));
-		builder.add_clip(part1, 0, 600_000, 12, 30);
-		builder.add_clip(part2, 0, 300_000, 12, 30);
+		builder.add_clip(part1, 0, 600_000, 12.into(), 30.into());
+		builder.add_clip(part2, 0, 300_000, 12.into(), 30.into());
 		builder.build()
 	}
 
@@ -338,8 +338,8 @@ mod tests {
 	fn build_sorts_clips_and_accumulates_elapsed_time() {
 		let mut builder = AudioTimelineBuilder::new();
 		let source = builder.add_source(AudioLocation::File("a.mp3".to_string()), None);
-		builder.add_clip(source, 2000, 5000, 40, 95);
-		builder.add_clip(source, 0, 2000, 0, 40);
+		builder.add_clip(source, 2000, 5000, 40.into(), 95.into());
+		builder.add_clip(source, 0, 2000, 0.into(), 40.into());
 		let timeline = builder.build();
 		assert_eq!(timeline.clips().iter().map(|c| c.start).collect::<Vec<_>>(), vec![0, 40]);
 		assert_eq!(timeline.clip_start_ms(0), Some(0));
@@ -351,9 +351,9 @@ mod tests {
 	fn build_drops_degenerate_and_dangling_clips() {
 		let mut builder = AudioTimelineBuilder::new();
 		let source = builder.add_source(AudioLocation::File("a.mp3".to_string()), None);
-		builder.add_clip(source, 0, 1000, 0, 10);
-		builder.add_clip(source, 500, 500, 10, 20); // no duration
-		builder.add_clip(source + 1, 0, 1000, 20, 30); // no such source
+		builder.add_clip(source, 0, 1000, 0.into(), 10.into());
+		builder.add_clip(source, 500, 500, 10.into(), 20.into()); // no duration
+		builder.add_clip(source + 1, 0, 1000, 20.into(), 30.into()); // no such source
 		let timeline = builder.build();
 		assert_eq!(timeline.clips().len(), 1);
 		assert_eq!(timeline.total_duration_ms(), 1000);
@@ -389,38 +389,38 @@ mod tests {
 	#[test]
 	fn clip_index_at_position_is_start_inclusive_end_exclusive() {
 		let timeline = narrated_timeline();
-		assert_eq!(timeline.clip_index_at_position(40), Some(1));
-		assert_eq!(timeline.clip_index_at_position(94), Some(1));
-		assert_eq!(timeline.clip_index_at_position(95), Some(2));
-		assert_eq!(timeline.clip_index_at_position(160), None);
+		assert_eq!(timeline.clip_index_at_position(40.into()), Some(1));
+		assert_eq!(timeline.clip_index_at_position(94.into()), Some(1));
+		assert_eq!(timeline.clip_index_at_position(95.into()), Some(2));
+		assert_eq!(timeline.clip_index_at_position(160.into()), None);
 	}
 
 	#[test]
 	fn clip_index_at_position_returns_the_first_clip_sharing_an_anchor() {
 		let timeline = audiobook_timeline();
-		assert_eq!(timeline.clip_index_at_position(20), Some(0));
+		assert_eq!(timeline.clip_index_at_position(20.into()), Some(0));
 	}
 
 	#[test]
 	fn clip_index_at_position_is_none_in_a_gap() {
 		let mut builder = AudioTimelineBuilder::new();
 		let source = builder.add_source(AudioLocation::File("a.mp3".to_string()), None);
-		builder.add_clip(source, 0, 1000, 0, 10);
-		builder.add_clip(source, 1000, 2000, 50, 60);
+		builder.add_clip(source, 0, 1000, 0.into(), 10.into());
+		builder.add_clip(source, 1000, 2000, 50.into(), 60.into());
 		let timeline = builder.build();
-		assert!(timeline.clip_index_at_position(30).is_none());
+		assert!(timeline.clip_index_at_position(30.into()).is_none());
 	}
 
 	#[test]
 	fn point_for_position_anchors_to_the_start_of_its_clip() {
 		let timeline = narrated_timeline();
-		assert_eq!(timeline.point_for_position(60), Some(TimelinePoint::new(40, 2000)));
+		assert_eq!(timeline.point_for_position(60.into()), Some(TimelinePoint::new(40.into(), 2000)));
 	}
 
 	#[test]
 	fn a_point_round_trips_from_text_to_audio_and_back() {
 		let timeline = narrated_timeline();
-		let point = timeline.point_for_position(100).unwrap();
+		let point = timeline.point_for_position(100.into()).unwrap();
 		let cursor = timeline.resolve(point).unwrap();
 		assert_eq!(timeline.clip(cursor.clip).unwrap().start, point.position);
 	}
@@ -438,8 +438,8 @@ mod tests {
 	fn elapsed_for_source_position_falls_back_to_nearest_preceding_clip_in_a_gap() {
 		let mut builder = AudioTimelineBuilder::new();
 		let source = builder.add_source(AudioLocation::File("a.mp3".to_string()), None);
-		builder.add_clip(source, 0, 1000, 0, 10);
-		builder.add_clip(source, 2000, 3000, 10, 20);
+		builder.add_clip(source, 0, 1000, 0.into(), 10.into());
+		builder.add_clip(source, 2000, 3000, 10.into(), 20.into());
 		let timeline = builder.build();
 		// 1500ms falls between the two clips' raw ranges; nearest preceding clip ended at 1000ms.
 		assert_eq!(timeline.elapsed_for_source_position(0, 1500), Some(1000));
@@ -498,8 +498,8 @@ mod tests {
 	fn progress_measures_time_not_text() {
 		let timeline = audiobook_timeline();
 		// Half the recording, but the text spine is one heading throughout.
-		assert!((timeline.progress(TimelinePoint::new(12, 450_000)) - 0.5).abs() < f64::EPSILON);
-		assert!((timeline.progress(TimelinePoint::new(12, u64::MAX)) - 1.0).abs() < f64::EPSILON);
+		assert!((timeline.progress(TimelinePoint::new(12.into(), 450_000)) - 0.5).abs() < f64::EPSILON);
+		assert!((timeline.progress(TimelinePoint::new(12.into(), u64::MAX)) - 1.0).abs() < f64::EPSILON);
 		assert!((AudioTimeline::default().progress(TimelinePoint::default())).abs() < f64::EPSILON);
 	}
 }

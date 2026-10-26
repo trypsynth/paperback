@@ -16,7 +16,7 @@ use super::{
 	spine::SectionMeta,
 };
 use crate::{
-	document::TocItem,
+	document::{DocPos, TocItem},
 	parser::util::xml::collect_element_text,
 	util::{
 		text::{collapse_whitespace, trim_string},
@@ -29,7 +29,7 @@ pub(super) fn build_epub_toc<R: Read + Seek>(
 	nav_path: Option<&str>,
 	ncx_path: Option<&str>,
 	sections: &[SectionMeta],
-	id_positions: &HashMap<String, usize>,
+	id_positions: &HashMap<String, DocPos>,
 ) -> Vec<TocItem> {
 	let (items, source) = if let Some(nav_path) = nav_path {
 		if let Some(items) = build_toc_from_nav_document(archive, nav_path, sections, id_positions) {
@@ -55,7 +55,7 @@ fn build_toc_from_nav_document<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	nav_path: &str,
 	sections: &[SectionMeta],
-	id_positions: &HashMap<String, usize>,
+	id_positions: &HashMap<String, DocPos>,
 ) -> Option<Vec<TocItem>> {
 	let nav_content = read_zip_entry_by_name(archive, nav_path).ok()?;
 	let nav_doc =
@@ -103,7 +103,7 @@ pub(super) fn parse_nav_list(
 	list_node: Node<'_, '_>,
 	current_path: &str,
 	sections: &[SectionMeta],
-	id_positions: &HashMap<String, usize>,
+	id_positions: &HashMap<String, DocPos>,
 ) -> Vec<TocItem> {
 	let mut items = Vec::new();
 	for child in list_node.children() {
@@ -121,7 +121,7 @@ pub(super) fn parse_nav_item(
 	item_node: Node<'_, '_>,
 	current_path: &str,
 	sections: &[SectionMeta],
-	id_positions: &HashMap<String, usize>,
+	id_positions: &HashMap<String, DocPos>,
 ) -> Option<TocItem> {
 	let link_node = item_node
 		.children()
@@ -156,8 +156,8 @@ fn extract_link_text(link: Node<'_, '_>) -> String {
 pub(super) fn compute_nav_offset(
 	reference: &str,
 	sections: &[SectionMeta],
-	id_positions: &HashMap<String, usize>,
-) -> usize {
+	id_positions: &HashMap<String, DocPos>,
+) -> DocPos {
 	let (path_part, fragment) = split_href(reference);
 	if let Some(section) = sections.iter().find(|section| section.path == path_part) {
 		if let Some(frag) = fragment.as_deref()
@@ -184,14 +184,14 @@ pub(super) fn compute_nav_offset(
 		}) {
 		return section.start;
 	}
-	0
+	DocPos::ZERO
 }
 
 fn build_toc_from_ncx<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	ncx_path: &str,
 	sections: &[SectionMeta],
-	id_positions: &HashMap<String, usize>,
+	id_positions: &HashMap<String, DocPos>,
 ) -> Option<Vec<TocItem>> {
 	let ncx_content = read_zip_entry_by_name(archive, ncx_path).ok()?;
 	let ncx_doc =
@@ -214,7 +214,7 @@ fn build_toc_from_ncx<R: Read + Seek>(
 pub(super) fn convert_navpoint(
 	nav: Node,
 	sections: &[SectionMeta],
-	id_positions: &HashMap<String, usize>,
+	id_positions: &HashMap<String, DocPos>,
 	base_path: &str,
 ) -> Option<TocItem> {
 	let label = nav

@@ -1,7 +1,7 @@
 use rstest::{fixture, rstest};
 
 use super::*;
-use crate::util::{test_support::TempDir, text::display_len};
+use crate::{document::DocLen, util::test_support::TempDir};
 
 const MATHML: &str = "<math><mi>x</mi><mo>=</mo><mn>1</mn></math>";
 
@@ -69,7 +69,7 @@ fn markdown_web_view_keeps_dollars_when_dollar_math_is_off(
 fn markdown_source_view_maps_positions_past_formulas(markdown: MarkdownSession) {
 	let content = markdown.session.content();
 	let after = content.find("After.").unwrap();
-	let position = i64::try_from(display_len(&content[..after])).unwrap();
+	let position = i64::try_from(DocLen::of(&content[..after])).unwrap();
 	let view = markdown.session.view_source(position, markdown.temp_path()).expect("Markdown source view");
 	assert_eq!(std::fs::read_to_string(view.path).unwrap(), MARKDOWN_SOURCE);
 	assert_eq!(view.caret, i64::try_from(MARKDOWN_SOURCE.find("After.").unwrap()).unwrap());
@@ -78,8 +78,8 @@ fn markdown_source_view_maps_positions_past_formulas(markdown: MarkdownSession) 
 fn formula_session() -> DocumentSession {
 	let mut buffer = DocumentBuffer::with_content("before\nx = 1 after".to_string());
 	buffer.add_marker(
-		Marker::new(MarkerType::Formula, 7)
-			.with_length(5)
+		Marker::new(MarkerType::Formula, 7.into())
+			.with_length(5.into())
 			.with_text("x = 1".to_string())
 			.with_reference(MATHML.to_string()),
 	);
@@ -98,7 +98,7 @@ fn reference_uses_half_open_display_extent() {
 #[test]
 fn missing_reference_does_not_activate() {
 	let mut buffer = DocumentBuffer::with_content("x".to_string());
-	buffer.add_marker(Marker::new(MarkerType::Formula, 0).with_length(1));
+	buffer.add_marker(Marker::new(MarkerType::Formula, 0.into()).with_length(1.into()));
 	assert!(session_from_buffer(buffer).get_formula_at_position(0).is_none());
 }
 

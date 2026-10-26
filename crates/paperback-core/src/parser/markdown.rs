@@ -5,7 +5,7 @@ use math_core::{LatexToMathML, MathCoreConfig, MathDisplay};
 use pulldown_cmark::{Event, Options, Parser as MarkdownParserImpl, Tag, TagEnd, html::push_html};
 
 use crate::{
-	document::{Document, DocumentBuffer, ParserContext},
+	document::{DocPos, Document, DocumentBuffer, ParserContext},
 	parser::{
 		Parser, add_converter_markers,
 		convert::html_to_text::{HtmlSourceMode, HtmlToText},
@@ -170,7 +170,7 @@ impl Parser for MarkdownParser {
 		let opening_heading = converter
 			.get_headings()
 			.first()
-			.filter(|heading| heading.level == 1 && heading.offset == 0)
+			.filter(|heading| heading.level == 1 && heading.offset == DocPos::ZERO)
 			.map(|heading| heading.text.clone());
 		let title = metadata
 			.and_then(|metadata| front_matter_field(metadata, "title"))
@@ -180,7 +180,7 @@ impl Parser for MarkdownParser {
 		let text = converter.get_text();
 		let mut buffer = DocumentBuffer::with_content(text);
 		let id_positions = converter.get_id_positions().clone();
-		add_converter_markers(&mut buffer, &converter, 0);
+		add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 		let toc_items = build_toc_from_headings(converter.get_headings());
 		let mut doc = Document::new().with_title(title).with_author(author);
 		doc.set_buffer(buffer);
@@ -198,8 +198,8 @@ mod tests {
 
 	use super::*;
 	use crate::{
-		document::{MarkerType, ParseSettings},
-		util::{test_support::TempDir, text::display_len},
+		document::{DocLen, MarkerType, ParseSettings},
+		util::test_support::TempDir,
 	};
 
 	fn parse_markdown(source: &str) -> Document {
@@ -224,8 +224,8 @@ mod tests {
 		assert_eq!(formulas.len(), 1);
 		let formula = formulas[0];
 		assert_eq!(formula.text, formula_text);
-		assert_eq!(formula.position, display_len(prefix));
-		assert_eq!(formula.length, display_len(formula_text));
+		assert_eq!(formula.position, DocLen::of(prefix).as_pos());
+		assert_eq!(formula.length, DocLen::of(formula_text));
 		let mathml = roxmltree::Document::parse(&formula.reference).expect("valid MathML reference");
 		assert_eq!(mathml.root_element().tag_name().namespace(), Some("http://www.w3.org/1998/Math/MathML"));
 	}
@@ -275,7 +275,7 @@ mod tests {
 		let formulas: Vec<_> = doc.buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::Formula).collect();
 		assert_eq!(formulas.len(), 1);
 		assert_eq!(formulas[0].text, "x^2");
-		assert_eq!(formulas[0].position, display_len(&format!("Before {source} then ")));
+		assert_eq!(formulas[0].position, DocLen::of(&format!("Before {source} then ")).as_pos());
 		let html = markdown_to_html(&markdown, true);
 		assert!(!html.contains("<img"));
 	}
@@ -355,8 +355,16 @@ mod tests {
 		assert!(converter.convert(&html, HtmlSourceMode::Markdown));
 		let text = converter.get_text();
 		let ids = converter.get_id_positions();
-		assert_eq!(ids.get("pb-block-1"), Some(&text.find("Title").unwrap()), "ids: {ids:?} text: {text:?}");
-		assert_eq!(ids.get("pb-block-3"), Some(&text.find("Second").unwrap()), "ids: {ids:?} text: {text:?}");
+		assert_eq!(
+			ids.get("pb-block-1"),
+			Some(&DocPos::from_raw(text.find("Title").unwrap())),
+			"ids: {ids:?} text: {text:?}"
+		);
+		assert_eq!(
+			ids.get("pb-block-3"),
+			Some(&DocPos::from_raw(text.find("Second").unwrap())),
+			"ids: {ids:?} text: {text:?}"
+		);
 		assert!(!text.contains("pb-block"), "anchors must not leak into text: {text:?}");
 	}
 

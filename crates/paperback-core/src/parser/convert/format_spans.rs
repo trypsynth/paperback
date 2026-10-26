@@ -4,7 +4,7 @@
 //! records a [`FormatInfo`] span - nested spans of the same kind are handled by the stack
 //! rather than a single "currently open" position.
 
-use crate::types::FormatInfo;
+use crate::{document::DocPos, types::FormatInfo};
 
 pub(super) enum FormatKind {
 	Bold,
@@ -17,9 +17,9 @@ pub(super) struct FormatSpans {
 	bolds: Vec<FormatInfo>,
 	italics: Vec<FormatInfo>,
 	underlines: Vec<FormatInfo>,
-	open_bolds: Vec<usize>,
-	open_italics: Vec<usize>,
-	open_underlines: Vec<usize>,
+	open_bolds: Vec<DocPos>,
+	open_italics: Vec<DocPos>,
+	open_underlines: Vec<DocPos>,
 }
 
 impl FormatSpans {
@@ -32,7 +32,7 @@ impl FormatSpans {
 		self.open_underlines.clear();
 	}
 
-	pub(super) fn open(&mut self, kind: &FormatKind, position: usize) {
+	pub(super) fn open(&mut self, kind: &FormatKind, position: DocPos) {
 		match kind {
 			FormatKind::Bold => self.open_bolds.push(position),
 			FormatKind::Italic => self.open_italics.push(position),
@@ -41,14 +41,14 @@ impl FormatSpans {
 	}
 
 	/// Pops the innermost open span of `kind` (if any) and records it as `[start, end_position)`.
-	pub(super) fn close(&mut self, kind: &FormatKind, end_position: usize) {
+	pub(super) fn close(&mut self, kind: &FormatKind, end_position: DocPos) {
 		let (open_stack, spans) = match kind {
 			FormatKind::Bold => (&mut self.open_bolds, &mut self.bolds),
 			FormatKind::Italic => (&mut self.open_italics, &mut self.italics),
 			FormatKind::Underline => (&mut self.open_underlines, &mut self.underlines),
 		};
 		if let Some(start) = open_stack.pop() {
-			spans.push(FormatInfo { offset: start, length: end_position.saturating_sub(start) });
+			spans.push(FormatInfo { offset: start, length: end_position.since(start) });
 		}
 	}
 

@@ -3,7 +3,7 @@ use mp4ameta::{Chapter, ChplTimescale, ReadConfig, Tag};
 
 use crate::{
 	audio::{AudioLocation, AudioTimelineBuilder},
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
+	document::{DocLen, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		Parser,
 		util::{
@@ -70,10 +70,10 @@ fn build_document(
 	let mut audio_builder = AudioTimelineBuilder::new();
 	let source = audio_builder.add_source(AudioLocation::File(file_path.to_string()), Some(duration_ms));
 	for chapter in chapters {
-		let position = buffer.current_position();
+		let position = buffer.end();
 		buffer.append("\n");
 		buffer.add_marker(Marker::new(MarkerType::SectionBreak, position).with_text(chapter.title.clone()));
-		audio_builder.add_clip(source, chapter.start_ms, chapter.end_ms, position, position + 1);
+		audio_builder.add_clip(source, chapter.start_ms, chapter.end_ms, position, position + DocLen::ONE);
 		toc_items.push(TocItem::new(chapter.title.clone(), chapter.start_ms.to_string(), position));
 	}
 

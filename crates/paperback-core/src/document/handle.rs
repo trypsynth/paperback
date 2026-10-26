@@ -8,6 +8,7 @@ use super::{
 	Document,
 	buffer::{Edit, ReplaceOutcome},
 	marker::{ContainerSpan, Marker, MarkerType, is_container_marker, is_heading_marker},
+	position::DocPos,
 	toc::TocItem,
 };
 use crate::types::HeadingInfo;
@@ -29,10 +30,11 @@ impl DocumentHandle {
 		&self.doc
 	}
 
-	/// Replaces the text spanning `start..end` (display units) with `replacement`, keeping the
+	/// Replaces the text spanning `range` with `replacement`, keeping the
 	/// document's external position maps in sync. See [`Self::replace_ranges`], which this wraps.
-	pub fn replace_range(&mut self, start: usize, end: usize, replacement: &str) -> i64 {
-		self.replace_ranges(vec![Edit { start, end, text: replacement.to_string() }]).total_delta
+	pub fn replace_range(&mut self, range: std::ops::Range<DocPos>, replacement: &str) -> i64 {
+		self.replace_ranges(vec![Edit { start: range.start, end: range.end, text: replacement.to_string() }])
+			.total_delta
 	}
 
 	/// Applies a batch of replacements to the buffer and keeps the document's external position
@@ -52,7 +54,7 @@ impl DocumentHandle {
 		outcome
 	}
 
-	fn markers_by_type(&self, marker_type: MarkerType) -> impl Iterator<Item = (usize, &Marker)> {
+	fn markers_by_type(&self, marker_type: MarkerType) -> impl DoubleEndedIterator<Item = (usize, &Marker)> {
 		self.doc.buffer.markers.iter().enumerate().filter(move |(_, m)| m.mtype == marker_type)
 	}
 
@@ -71,35 +73,32 @@ impl DocumentHandle {
 	}
 
 	#[must_use]
-	pub fn next_marker_index(&self, position: i64, marker_type: MarkerType) -> Option<usize> {
-		self.doc
-			.buffer
-			.markers
-			.iter()
-			.enumerate()
-			.filter(|(_, marker)| {
-				marker.mtype == marker_type && i64::try_from(marker.position).unwrap_or(i64::MAX) > position
-			})
-			.map(|(idx, _)| idx)
-			.next()
+	pub fn next_marker_index(&self, position: DocPos, marker_type: MarkerType) -> Option<usize> {
+		self.markers_by_type(marker_type).find(|(_, marker)| marker.position > position).map(|(idx, _)| idx)
 	}
 
 	#[must_use]
-	pub fn previous_marker_index(&self, position: i64, marker_type: MarkerType) -> Option<usize> {
-		self.doc
-			.buffer
-			.markers
-			.iter()
-			.enumerate()
-			.filter(|(_, marker)| {
-				marker.mtype == marker_type && i64::try_from(marker.position).unwrap_or(i64::MAX) < position
-			})
+	pub fn previous_marker_index(&self, position: DocPos, marker_type: MarkerType) -> Option<usize> {
+		self.markers_by_type(marker_type)
+			.filter(|(_, marker)| marker.position < position)
 			.map(|(idx, _)| idx)
 			.next_back()
 	}
 
+	/// The first marker of `marker_type`, where a search that wraps past the end goes on from.
 	#[must_use]
-	pub fn current_marker_index(&self, position: usize, marker_type: MarkerType) -> Option<usize> {
+	pub fn first_marker_index(&self, marker_type: MarkerType) -> Option<usize> {
+		self.markers_by_type(marker_type).map(|(idx, _)| idx).next()
+	}
+
+	/// The last marker of `marker_type`, where a search that wraps past the start goes on from.
+	#[must_use]
+	pub fn last_marker_index(&self, marker_type: MarkerType) -> Option<usize> {
+		self.markers_by_type(marker_type).map(|(idx, _)| idx).next_back()
+	}
+
+	#[must_use]
+	pub fn current_marker_index(&self, position: DocPos, marker_type: MarkerType) -> Option<usize> {
 		let mut result = None;
 		for (idx, marker) in self.doc.buffer.markers.iter().enumerate() {
 			if marker.mtype == marker_type && marker.position <= position {
@@ -117,38 +116,29 @@ impl DocumentHandle {
 	/// When containers nest, the innermost is the candidate with the greatest start (ties broken
 	/// by the smallest end).
 	#[must_use]
-	pub fn enclosing_container(&self, position: usize) -> Option<ContainerSpan> {
+	pub fn enclosing_container(&self, position: DocPos) -> Option<ContainerSpan> {
 		self.doc
 			.buffer
 			.markers
 			.iter()
-			.filter(|m| is_container_marker(m.mtype) && m.length > 0)
+			.filter(|m| is_container_marker(m.mtype) && !m.length.is_zero())
 			.map(|m| ContainerSpan { start: m.position, end: m.position + m.length, mtype: m.mtype })
 			.filter(|span| span.start <= position && position < span.end)
 			.min_by(|a, b| b.start.cmp(&a.start).then_with(|| a.end.cmp(&b.end)))
 	}
 
 	#[must_use]
-	pub fn next_heading_marker_index(&self, position: i64, level: Option<i32>) -> Option<usize> {
-		let heading_markers = self.heading_markers(level);
-		heading_markers
-			.into_iter()
-			.find(|(_, m)| i64::try_from(m.position).unwrap_or(i64::MAX) > position)
-			.map(|(idx, _)| idx)
+	pub fn next_heading_marker_index(&self, position: DocPos, level: Option<i32>) -> Option<usize> {
+		self.heading_markers(level).into_iter().find(|(_, m)| m.position > position).map(|(idx, _)| idx)
 	}
 
 	#[must_use]
-	pub fn previous_heading_marker_index(&self, position: i64, level: Option<i32>) -> Option<usize> {
-		let heading_markers = self.heading_markers(level);
-		heading_markers
-			.into_iter()
-			.filter(|(_, m)| i64::try_from(m.position).unwrap_or(i64::MAX) < position)
-			.map(|(idx, _)| idx)
-			.next_back()
+	pub fn previous_heading_marker_index(&self, position: DocPos, level: Option<i32>) -> Option<usize> {
+		self.heading_markers(level).into_iter().filter(|(_, m)| m.position < position).map(|(idx, _)| idx).next_back()
 	}
 
 	#[must_use]
-	pub fn marker_position(&self, marker_index: i32) -> Option<usize> {
+	pub fn marker_position(&self, marker_index: i32) -> Option<DocPos> {
 		let idx = usize::try_from(marker_index).ok()?;
 		self.doc.buffer.markers.get(idx).map(|m| m.position)
 	}
@@ -162,11 +152,11 @@ impl DocumentHandle {
 	}
 
 	#[must_use]
-	pub fn find_closest_toc_offset(&self, position: usize) -> usize {
-		fn search(items: &[TocItem], position: usize, best_offset: &mut usize, best_distance: &mut usize) {
+	pub fn find_closest_toc_offset(&self, position: DocPos) -> DocPos {
+		fn search(items: &[TocItem], position: DocPos, best_offset: &mut DocPos, best_distance: &mut usize) {
 			for item in items {
 				if item.offset <= position {
-					let distance = position - item.offset;
+					let distance = (position - item.offset).get();
 					if distance < *best_distance {
 						*best_distance = distance;
 						*best_offset = item.offset;
@@ -177,7 +167,7 @@ impl DocumentHandle {
 				}
 			}
 		}
-		let mut best_offset = 0usize;
+		let mut best_offset = DocPos::ZERO;
 		let mut best_distance = usize::MAX;
 		search(&self.doc.toc_items, position, &mut best_offset, &mut best_distance);
 		best_offset
@@ -189,13 +179,13 @@ impl DocumentHandle {
 	}
 
 	#[must_use]
-	pub fn get_marker_position_by_index(&self, marker_type: MarkerType, index: i32) -> Option<usize> {
+	pub fn get_marker_position_by_index(&self, marker_type: MarkerType, index: i32) -> Option<DocPos> {
 		let target = usize::try_from(index).ok()?;
 		self.markers_by_type(marker_type).nth(target).map(|(_, marker)| marker.position)
 	}
 
 	#[must_use]
-	pub fn section_index(&self, position: usize) -> Option<i32> {
+	pub fn section_index(&self, position: DocPos) -> Option<i32> {
 		let count = self
 			.doc
 			.buffer
@@ -207,7 +197,7 @@ impl DocumentHandle {
 	}
 
 	#[must_use]
-	pub fn page_index(&self, position: usize) -> Option<i32> {
+	pub fn page_index(&self, position: DocPos) -> Option<i32> {
 		let count = self
 			.doc
 			.buffer
@@ -219,13 +209,25 @@ impl DocumentHandle {
 	}
 
 	#[must_use]
-	pub fn next_heading_index(&self, position: i64, level: Option<i32>) -> Option<i32> {
+	pub fn next_heading_index(&self, position: DocPos, level: Option<i32>) -> Option<i32> {
 		self.next_heading_marker_index(position, level).and_then(|idx| i32::try_from(idx).ok())
 	}
 
 	#[must_use]
-	pub fn previous_heading_index(&self, position: i64, level: Option<i32>) -> Option<i32> {
+	pub fn previous_heading_index(&self, position: DocPos, level: Option<i32>) -> Option<i32> {
 		self.previous_heading_marker_index(position, level).and_then(|idx| i32::try_from(idx).ok())
+	}
+
+	/// The first heading at `level`, or of any level, where a search that wraps past the end goes on from.
+	#[must_use]
+	pub fn first_heading_index(&self, level: Option<i32>) -> Option<i32> {
+		self.heading_markers(level).first().and_then(|&(idx, _)| i32::try_from(idx).ok())
+	}
+
+	/// The last heading at `level`, or of any level, where a search that wraps past the start goes on from.
+	#[must_use]
+	pub fn last_heading_index(&self, level: Option<i32>) -> Option<i32> {
+		self.heading_markers(level).last().and_then(|&(idx, _)| i32::try_from(idx).ok())
 	}
 }
 
@@ -238,17 +240,17 @@ mod tests {
 		let mut buffer = DocumentBuffer::new();
 		let text = "x".repeat(120);
 		buffer.append(&text);
-		buffer.add_marker(Marker::new(MarkerType::Link, 40));
-		buffer.add_marker(Marker::new(MarkerType::Heading2, 30).with_level(2).with_text("H2".to_string()));
-		buffer.add_marker(Marker::new(MarkerType::PageBreak, 20));
-		buffer.add_marker(Marker::new(MarkerType::Heading1, 10).with_level(1).with_text("H1".to_string()));
-		buffer.add_marker(Marker::new(MarkerType::SectionBreak, 60));
-		buffer.add_marker(Marker::new(MarkerType::SectionBreak, 5));
-		let mut parent = TocItem::new("Part 1".to_string(), "p1".to_string(), 10);
-		parent.children.push(TocItem::new("Chapter 1".to_string(), "c1".to_string(), 26));
+		buffer.add_marker(Marker::new(MarkerType::Link, 40.into()));
+		buffer.add_marker(Marker::new(MarkerType::Heading2, 30.into()).with_level(2).with_text("H2".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, 20.into()));
+		buffer.add_marker(Marker::new(MarkerType::Heading1, 10.into()).with_level(1).with_text("H1".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::SectionBreak, 60.into()));
+		buffer.add_marker(Marker::new(MarkerType::SectionBreak, 5.into()));
+		let mut parent = TocItem::new("Part 1".to_string(), "p1".to_string(), 10.into());
+		parent.children.push(TocItem::new("Chapter 1".to_string(), "c1".to_string(), 26.into()));
 		let mut doc = Document::new().with_title("Sample".to_string()).with_author("Author".to_string());
 		doc.set_buffer(buffer);
-		doc.toc_items = vec![parent, TocItem::new("Part 2".to_string(), "p2".to_string(), 50)];
+		doc.toc_items = vec![parent, TocItem::new("Part 2".to_string(), "p2".to_string(), 50.into())];
 		DocumentHandle::new(doc)
 	}
 
@@ -256,11 +258,11 @@ mod tests {
 		let mut buffer = DocumentBuffer::new();
 		buffer.append(&"x".repeat(200));
 		// A list spanning [10, 40) and a table spanning [80, 120).
-		buffer.add_marker(Marker::new(MarkerType::List, 10).with_level(3).with_length(30));
-		buffer.add_marker(Marker::new(MarkerType::Table, 80).with_length(40));
+		buffer.add_marker(Marker::new(MarkerType::List, 10.into()).with_level(3).with_length(30.into()));
+		buffer.add_marker(Marker::new(MarkerType::Table, 80.into()).with_length(40.into()));
 		// A nested list [50, 70) inside an outer list [45, 100).
-		buffer.add_marker(Marker::new(MarkerType::List, 45).with_level(2).with_length(55));
-		buffer.add_marker(Marker::new(MarkerType::List, 50).with_level(2).with_length(20));
+		buffer.add_marker(Marker::new(MarkerType::List, 45.into()).with_level(2).with_length(55.into()));
+		buffer.add_marker(Marker::new(MarkerType::List, 50.into()).with_level(2).with_length(20.into()));
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
 		DocumentHandle::new(doc)
@@ -269,69 +271,69 @@ mod tests {
 	#[test]
 	fn enclosing_container_finds_list_and_table_spans() {
 		let handle = container_handle();
-		let list = handle.enclosing_container(25).unwrap();
-		assert_eq!((list.start, list.end, list.mtype), (10, 40, MarkerType::List));
-		let table = handle.enclosing_container(80).unwrap();
-		assert_eq!((table.start, table.end, table.mtype), (80, 120, MarkerType::Table));
+		let list = handle.enclosing_container(25.into()).unwrap();
+		assert_eq!((list.start, list.end, list.mtype), (10.into(), 40.into(), MarkerType::List));
+		let table = handle.enclosing_container(80.into()).unwrap();
+		assert_eq!((table.start, table.end, table.mtype), (80.into(), 120.into(), MarkerType::Table));
 	}
 
 	#[test]
 	fn enclosing_container_start_inclusive_end_exclusive() {
 		let handle = container_handle();
-		assert_eq!(handle.enclosing_container(10).unwrap().start, 10); // start is inside
-		assert!(handle.enclosing_container(40).is_none()); // end is past the list
+		assert_eq!(handle.enclosing_container(10.into()).unwrap().start, 10); // start is inside
+		assert!(handle.enclosing_container(40.into()).is_none()); // end is past the list
 	}
 
 	#[test]
 	fn enclosing_container_returns_innermost_when_nested() {
 		let handle = container_handle();
 		// Position 55 is inside both the outer list [45,100) and the nested list [50,70).
-		let inner = handle.enclosing_container(55).unwrap();
-		assert_eq!((inner.start, inner.end), (50, 70));
+		let inner = handle.enclosing_container(55.into()).unwrap();
+		assert_eq!((inner.start, inner.end), (50.into(), 70.into()));
 		// Position 75 is only inside the outer list.
-		assert_eq!(handle.enclosing_container(75).unwrap().start, 45);
+		assert_eq!(handle.enclosing_container(75.into()).unwrap().start, 45);
 	}
 
 	#[test]
 	fn enclosing_container_none_outside_any_container() {
 		let handle = container_handle();
-		assert!(handle.enclosing_container(5).is_none());
-		assert!(handle.enclosing_container(150).is_none());
+		assert!(handle.enclosing_container(5.into()).is_none());
+		assert!(handle.enclosing_container(150.into()).is_none());
 	}
 
 	#[test]
 	fn document_handle_sorts_markers_on_creation() {
 		let handle = sample_handle();
-		let positions: Vec<usize> = handle.document().buffer.markers.iter().map(|m| m.position).collect();
+		let positions: Vec<DocPos> = handle.document().buffer.markers.iter().map(|m| m.position).collect();
 		assert_eq!(positions, vec![5, 10, 20, 30, 40, 60]);
 	}
 
 	#[test]
 	fn marker_index_navigation_works_for_next_previous_and_current() {
 		let handle = sample_handle();
-		assert_eq!(handle.next_marker_index(5, MarkerType::Heading2), Some(3));
-		assert_eq!(handle.previous_marker_index(25, MarkerType::Heading1), Some(1));
-		assert_eq!(handle.current_marker_index(25, MarkerType::PageBreak), Some(2));
-		assert_eq!(handle.current_marker_index(15, MarkerType::PageBreak), None);
+		assert_eq!(handle.next_marker_index(5.into(), MarkerType::Heading2), Some(3));
+		assert_eq!(handle.previous_marker_index(25.into(), MarkerType::Heading1), Some(1));
+		assert_eq!(handle.current_marker_index(25.into(), MarkerType::PageBreak), Some(2));
+		assert_eq!(handle.current_marker_index(15.into(), MarkerType::PageBreak), None);
 	}
 
 	#[test]
 	fn heading_navigation_respects_level_filter() {
 		let handle = sample_handle();
-		assert_eq!(handle.next_heading_marker_index(0, None), Some(1));
-		assert_eq!(handle.next_heading_marker_index(0, Some(2)), Some(3));
-		assert_eq!(handle.next_heading_marker_index(10, Some(1)), None);
-		assert_eq!(handle.previous_heading_marker_index(35, None), Some(3));
-		assert_eq!(handle.previous_heading_marker_index(35, Some(1)), Some(1));
+		assert_eq!(handle.next_heading_marker_index(0.into(), None), Some(1));
+		assert_eq!(handle.next_heading_marker_index(0.into(), Some(2)), Some(3));
+		assert_eq!(handle.next_heading_marker_index(10.into(), Some(1)), None);
+		assert_eq!(handle.previous_heading_marker_index(35.into(), None), Some(3));
+		assert_eq!(handle.previous_heading_marker_index(35.into(), Some(1)), Some(1));
 	}
 
 	#[test]
 	fn marker_position_and_marker_type_lookup_work() {
 		let handle = sample_handle();
-		assert_eq!(handle.marker_position(2), Some(20));
+		assert_eq!(handle.marker_position(2), Some(20.into()));
 		assert_eq!(handle.marker_position(-1), None);
-		assert_eq!(handle.get_marker_position_by_index(MarkerType::SectionBreak, 0), Some(5));
-		assert_eq!(handle.get_marker_position_by_index(MarkerType::SectionBreak, 1), Some(60));
+		assert_eq!(handle.get_marker_position_by_index(MarkerType::SectionBreak, 0), Some(5.into()));
+		assert_eq!(handle.get_marker_position_by_index(MarkerType::SectionBreak, 1), Some(60.into()));
 		assert_eq!(handle.get_marker_position_by_index(MarkerType::SectionBreak, 2), None);
 	}
 
@@ -353,26 +355,26 @@ mod tests {
 	#[test]
 	fn find_closest_toc_offset_uses_nested_items() {
 		let handle = sample_handle();
-		assert_eq!(handle.find_closest_toc_offset(9), 0);
-		assert_eq!(handle.find_closest_toc_offset(27), 26);
-		assert_eq!(handle.find_closest_toc_offset(49), 26);
-		assert_eq!(handle.find_closest_toc_offset(52), 50);
+		assert_eq!(handle.find_closest_toc_offset(9.into()), 0);
+		assert_eq!(handle.find_closest_toc_offset(27.into()), 26);
+		assert_eq!(handle.find_closest_toc_offset(49.into()), 26);
+		assert_eq!(handle.find_closest_toc_offset(52.into()), 50);
 	}
 
 	#[test]
 	fn index_helpers_return_expected_indices() {
 		let handle = sample_handle();
-		assert_eq!(handle.section_index(61), Some(1));
-		assert_eq!(handle.page_index(25), Some(0));
-		assert_eq!(handle.next_heading_index(0, None), Some(1));
-		assert_eq!(handle.previous_heading_index(100, None), Some(3));
+		assert_eq!(handle.section_index(61.into()), Some(1));
+		assert_eq!(handle.page_index(25.into()), Some(0));
+		assert_eq!(handle.next_heading_index(0.into(), None), Some(1));
+		assert_eq!(handle.previous_heading_index(100.into(), None), Some(3));
 	}
 
 	#[test]
 	fn find_closest_toc_offset_returns_zero_when_no_toc_items() {
 		let doc = Document::new();
 		let handle = DocumentHandle::new(doc);
-		assert_eq!(handle.find_closest_toc_offset(100), 0);
+		assert_eq!(handle.find_closest_toc_offset(100.into()), 0);
 	}
 
 	#[test]
@@ -386,14 +388,14 @@ mod tests {
 	#[test]
 	fn section_and_page_index_are_none_before_first_marker() {
 		let handle = sample_handle();
-		assert_eq!(handle.section_index(0), None);
-		assert_eq!(handle.page_index(0), None);
+		assert_eq!(handle.section_index(0.into()), None);
+		assert_eq!(handle.page_index(0.into()), None);
 	}
 
 	#[test]
 	fn heading_index_helpers_return_none_when_filtered_level_missing() {
 		let handle = sample_handle();
-		assert_eq!(handle.next_heading_index(0, Some(6)), None);
-		assert_eq!(handle.previous_heading_index(100, Some(6)), None);
+		assert_eq!(handle.next_heading_index(0.into(), Some(6)), None);
+		assert_eq!(handle.previous_heading_index(100.into(), Some(6)), None);
 	}
 }

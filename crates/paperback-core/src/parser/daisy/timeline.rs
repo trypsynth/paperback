@@ -9,7 +9,7 @@ use super::{
 };
 use crate::{
 	audio::{AudioLocation, AudioTimelineBuilder},
-	document::{Document, DocumentBuffer, Marker, MarkerType},
+	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType},
 	parser::{
 		add_converter_markers,
 		convert::xml_to_text::XmlToText,
@@ -25,9 +25,9 @@ fn convert_dtbook_file(
 	read_text: &mut dyn FnMut(&str) -> Result<String>,
 	render_tables_inline: bool,
 	buffer: &mut DocumentBuffer,
-	id_positions: &mut HashMap<String, usize>,
-	file_offsets: &mut HashMap<String, usize>,
-	file_ids: &mut HashMap<String, HashMap<String, usize>>,
+	id_positions: &mut HashMap<String, DocPos>,
+	file_offsets: &mut HashMap<String, DocPos>,
+	file_ids: &mut HashMap<String, HashMap<String, DocPos>>,
 ) -> Result<()> {
 	if file_offsets.contains_key(href) {
 		return Ok(());
@@ -38,16 +38,17 @@ fn convert_dtbook_file(
 		// TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
 		anyhow::bail!(t("Failed to convert DTBook XML to text"));
 	}
-	let offset = buffer.current_position();
+	let offset = buffer.end();
 	buffer.append(&converter.get_text());
 	add_converter_markers(buffer, &converter, offset);
 	for pb in converter.get_page_breaks() {
-		buffer.add_marker(Marker::new(MarkerType::PageBreak, offset + pb.offset).with_text(pb.text.clone()));
+		buffer
+			.add_marker(Marker::new(MarkerType::PageBreak, offset + pb.offset.from_start()).with_text(pb.text.clone()));
 	}
 	for (id, pos) in converter.get_id_positions() {
 		// Bare ids are only unique within their own file, so keep the first file's position
 		// and expose a path-qualified key alongside it.
-		let absolute = offset + pos;
+		let absolute = offset + pos.from_start();
 		id_positions.entry(id.clone()).or_insert(absolute);
 		id_positions.insert(format!("{href}#{id}"), absolute);
 	}
@@ -62,7 +63,7 @@ pub(super) struct PendingClip {
 	pub(super) source: usize,
 	pub(super) begin_ms: u64,
 	pub(super) end_ms: Option<u64>,
-	pub(super) start: usize,
+	pub(super) start: DocPos,
 }
 
 /// A clip with a known text position and a known end time, ready for the timeline.
@@ -70,7 +71,7 @@ pub(super) struct ResolvedClip {
 	pub(super) source: usize,
 	pub(super) begin_ms: u64,
 	pub(super) end_ms: u64,
-	pub(super) start: usize,
+	pub(super) start: DocPos,
 }
 
 /// Gives every clip a concrete end time and sorts the result by text position. A par with no
@@ -114,15 +115,15 @@ pub(super) fn build_daisy_document(
 		return None;
 	}
 	let mut buffer = DocumentBuffer::new();
-	let mut id_positions: HashMap<String, usize> = HashMap::new();
-	let mut file_offsets: HashMap<String, usize> = HashMap::new();
-	let mut file_ids: HashMap<String, HashMap<String, usize>> = HashMap::new();
+	let mut id_positions: HashMap<String, DocPos> = HashMap::new();
+	let mut file_offsets: HashMap<String, DocPos> = HashMap::new();
+	let mut file_ids: HashMap<String, HashMap<String, DocPos>> = HashMap::new();
 	let mut source_indices: HashMap<String, usize> = HashMap::new();
 	let mut audio_builder = AudioTimelineBuilder::new();
 	let mut pending_clips: Vec<PendingClip> = Vec::new();
 	// Where each id *inside the SMIL files* lands in the text, which is what a DAISY 3 NCX
 	// points at. Keyed both bare and path-qualified, first occurrence winning.
-	let mut smil_anchors: HashMap<String, usize> = HashMap::new();
+	let mut smil_anchors: HashMap<String, DocPos> = HashMap::new();
 	let mut converted_any = false;
 	for idref in &package.spine {
 		let Some(item) = package.item(idref) else { continue };
@@ -186,7 +187,7 @@ pub(super) fn build_daisy_document(
 			else {
 				continue;
 			};
-			let position = base + local_pos;
+			let position = base + local_pos.from_start();
 			for anchor in &par.anchor_ids {
 				smil_anchors.entry(anchor.clone()).or_insert(position);
 				smil_anchors.entry(format!("{}#{anchor}", item.href)).or_insert(position);
@@ -218,7 +219,7 @@ pub(super) fn build_daisy_document(
 	}
 	let toc_items = toc_items.unwrap_or_else(|| build_toc_from_buffer(&buffer));
 	let resolved_clips = bound_open_ended_clips(&pending_clips);
-	let doc_end = buffer.current_position();
+	let doc_end = buffer.end();
 	for index in 0..resolved_clips.len() {
 		let clip = &resolved_clips[index];
 		let end = resolved_clips.get(index + 1).map_or(doc_end, |next| next.start);

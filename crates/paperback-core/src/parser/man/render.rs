@@ -8,7 +8,7 @@
 
 use super::escape::{Font, Piece};
 use crate::{
-	document::{DocumentBuffer, Marker, MarkerType},
+	document::{DocPos, DocumentBuffer, Marker, MarkerType},
 	parser::convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 };
 
@@ -38,10 +38,10 @@ pub(super) struct Renderer {
 	pub(super) buffer: DocumentBuffer,
 	font: FontState,
 	/// Where the current bold or italic run started, if one is open.
-	run_start: Option<usize>,
+	run_start: Option<DocPos>,
 	/// The target of a link waiting for its first word, and then where that word began.
 	pending_link: Option<String>,
-	link_start: Option<usize>,
+	link_start: Option<DocPos>,
 	/// Whether anything has been written to the line being built.
 	line_has_text: bool,
 	/// Whether the paragraph being built has any lines in it yet.
@@ -49,7 +49,7 @@ pub(super) struct Renderer {
 	/// Whether text lines join into a paragraph (`.fi`) or stand as written (`.nf`).
 	filling: bool,
 	/// Where the run of list items being built started, and how many items it holds.
-	list_start: Option<usize>,
+	list_start: Option<DocPos>,
 	list_items: usize,
 }
 
@@ -111,10 +111,10 @@ impl Renderer {
 		// A link starts at its first word rather than where the macro stood, since the space
 		// joining it to the sentence before it is written between the two.
 		if !text.trim().is_empty() && self.pending_link.is_some() {
-			self.link_start = Some(self.buffer.current_position());
+			self.link_start = Some(self.buffer.end());
 		}
 		if self.run_start.is_none() && matches!(self.font.current, Font::Bold | Font::Italic) {
-			self.run_start = Some(self.buffer.current_position());
+			self.run_start = Some(self.buffer.end());
 		}
 		self.buffer.append(text);
 		if !text.trim().is_empty() {
@@ -131,15 +131,15 @@ impl Renderer {
 		}
 		self.close_run(before);
 		if matches!(self.font.current, Font::Bold | Font::Italic) {
-			self.run_start = Some(self.buffer.current_position());
+			self.run_start = Some(self.buffer.end());
 		}
 	}
 
 	/// Marks the span a bold or italic run covered, if it covered anything.
 	fn close_run(&mut self, font: Font) {
 		let Some(start) = self.run_start.take() else { return };
-		let length = self.buffer.current_position().saturating_sub(start);
-		if length == 0 {
+		let length = self.buffer.end().since(start);
+		if length.is_zero() {
 			return;
 		}
 		let mtype = match font {
@@ -159,7 +159,7 @@ impl Renderer {
 		self.buffer.append("\n");
 		self.line_has_text = false;
 		if matches!(self.font.current, Font::Bold | Font::Italic) {
-			self.run_start = Some(self.buffer.current_position());
+			self.run_start = Some(self.buffer.end());
 		}
 	}
 
@@ -175,13 +175,13 @@ impl Renderer {
 
 	/// Starts a section, as `.SH` and `.SS` do. The heading is its own line. Returns where it
 	/// landed, for the table of contents.
-	pub(super) fn heading(&mut self, text: &str, level: i32) -> Option<usize> {
+	pub(super) fn heading(&mut self, text: &str, level: i32) -> Option<DocPos> {
 		self.end_list();
 		self.end_paragraph();
 		if text.trim().is_empty() {
 			return None;
 		}
-		let position = self.buffer.current_position();
+		let position = self.buffer.end();
 		let mtype = if level <= 1 { MarkerType::Heading1 } else { MarkerType::Heading2 };
 		self.buffer.add_marker(Marker::new(mtype, position).with_level(level).with_text(text.to_string()));
 		self.buffer.append(text);
@@ -196,11 +196,11 @@ impl Renderer {
 	pub(super) fn start_item(&mut self, tag: &[Piece]) {
 		self.end_paragraph();
 		if self.list_start.is_none() {
-			self.list_start = Some(self.buffer.current_position());
+			self.list_start = Some(self.buffer.end());
 			self.list_items = 0;
 		}
 		self.list_items += 1;
-		let position = self.buffer.current_position();
+		let position = self.buffer.end();
 		let text = super::escape::plain_pieces(tag);
 		self.buffer.add_marker(Marker::new(MarkerType::ListItem, position).with_text(text));
 		self.write_line(tag);
@@ -220,14 +220,14 @@ impl Renderer {
 			rows.iter().map(|row| row.iter().map(|cell| escape_html(cell)).collect()).collect();
 		let html = build_html_table_from_grid(&escaped);
 		let caption = table_caption_from_html(&html).unwrap_or_else(|| "table".to_string());
-		let start = self.buffer.current_position();
+		let start = self.buffer.end();
 		self.buffer.append(&html_table_to_display(&html, inline));
 		self.buffer.append(
 			"
 
 ",
 		);
-		let length = self.buffer.current_position().saturating_sub(start);
+		let length = self.buffer.end().since(start);
 		self.buffer.add_marker(
 			Marker::new(MarkerType::Table, start).with_text(caption).with_reference(html).with_length(length),
 		);
@@ -243,8 +243,8 @@ impl Renderer {
 		if self.list_items < 2 {
 			return;
 		}
-		let length = self.buffer.current_position().saturating_sub(start);
-		if length > 0 {
+		let length = self.buffer.end().since(start);
+		if !length.is_zero() {
 			self.buffer.add_marker(Marker::new(MarkerType::List, start).with_length(length));
 		}
 	}
@@ -260,11 +260,11 @@ impl Renderer {
 		let (Some(url), Some(start)) = (self.pending_link.take(), self.link_start.take()) else {
 			return;
 		};
-		let length = self.buffer.current_position().saturating_sub(start);
-		if length == 0 {
+		let length = self.buffer.end().since(start);
+		if length.is_zero() {
 			return;
 		}
-		let text: String = self.buffer.content.chars().skip(start).take(length).collect();
+		let text = self.buffer.text(start..start + length).to_string();
 		self.buffer
 			.add_marker(Marker::new(MarkerType::Link, start).with_length(length).with_reference(url).with_text(text));
 	}

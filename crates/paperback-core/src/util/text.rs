@@ -101,18 +101,6 @@ pub fn trim_string(s: &str) -> String {
 	s.trim_matches(is_space_like).to_string()
 }
 
-/// How many positions `s` takes up in a document: one for each Unicode scalar, on every platform, so a saved position means the same place wherever it is read (#1062). A text control that counts otherwise, as Windows and macOS count UTF-16 code units, is converted for where the desktop app loads text into it.
-#[must_use]
-pub fn display_len(s: &str) -> usize {
-	s.chars().count()
-}
-
-/// How many positions `ch` takes up in a document: one, as every char does. See [`display_len`].
-#[must_use]
-pub const fn ch_width(_ch: char) -> usize {
-	1
-}
-
 #[must_use]
 pub const fn is_space_like(ch: char) -> bool {
 	ch.is_whitespace() || matches!(ch, '\u{00A0}' | '\u{200B}')
@@ -221,13 +209,6 @@ mod tests {
 		assert_eq!(trim_string(input), expected);
 	}
 
-	#[test]
-	fn test_display_len_counts_scalars() {
-		assert_eq!(display_len("abc"), 3);
-		assert_eq!(display_len("💖"), 1);
-		assert_eq!(display_len("line\nwrap"), 9);
-	}
-
 	#[rstest]
 	#[case(1, "1", "1")]
 	#[case(5, "1", "5")]
@@ -272,22 +253,5 @@ mod tests {
 	#[test]
 	fn collapse_whitespace_no_whitespace_unchanged() {
 		assert_eq!(collapse_whitespace("hello"), "hello");
-	}
-
-	#[test]
-	fn display_len_empty_string_is_zero() {
-		assert_eq!(display_len(""), 0);
-	}
-
-	// \r and \n are each one code unit on every platform, so \r\n counts as 2.
-	// This property underlies the find-navigation coordinate system.
-	#[test]
-	fn display_len_crlf_counts_as_two_units() {
-		assert_eq!(display_len("\r\n"), 2);
-	}
-
-	#[test]
-	fn display_len_plain_newline_counts_as_one_unit() {
-		assert_eq!(display_len("\n"), 1);
 	}
 }

@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 
 use super::{DocumentSession, LineMarker};
 use crate::{
-	document::{ContentBytePos, DocumentBuffer, MarkerType, is_heading_marker},
+	document::{ContentBytePos, DocLen, DocPos, DocumentBuffer, MarkerType, is_heading_marker},
 	parser::util::toc::marker_type_to_heading_level,
 };
 
@@ -61,14 +61,12 @@ impl DocumentSession {
 	/// the GUI caret, and `Marker.position` all use.
 	#[must_use]
 	pub fn document_len(&self) -> i64 {
-		i64::try_from(self.handle.document().buffer.total_display_len()).unwrap_or(i64::MAX)
+		i64::try_from(self.handle.document().buffer.end()).unwrap_or(i64::MAX)
 	}
 
 	/// The text between two display-unit positions, `start` inclusive and `end` exclusive - the
 	/// same unit [`Self::document_len`], the GUI caret and `Marker.position` all use.
 	///
-	/// Converts through [`crate::document::DocumentBuffer::byte_index_for_display`] so astral-plane
-	/// characters (one char, two display units on Windows and macOS) preserve caret and marker bounds.
 	/// Nothing is snapped to a paragraph boundary: a bound landing mid-word cuts the word, which
 	/// is the point when the caller is naming two caret positions.
 	///
@@ -76,16 +74,7 @@ impl DocumentSession {
 	#[must_use]
 	pub fn get_text_range_display(&self, start: i64, end: i64) -> String {
 		let buf = &self.handle.document().buffer;
-		let doc_len = buf.total_display_len();
-		let start_display = usize::try_from(start.max(0)).unwrap_or(0).min(doc_len);
-		let end_display = usize::try_from(end.max(0)).unwrap_or(0).min(doc_len);
-		if start_display >= end_display {
-			return String::new();
-		}
-		// The buffer answers with the start of a char, so both bounds are char boundaries.
-		let start_byte = buf.byte_index_for_display(start_display);
-		let end_byte = buf.byte_index_for_display(end_display);
-		buf.slice(start_byte..end_byte).to_string()
+		buf.text(buf.nearest_pos(start)..buf.nearest_pos(end)).to_string()
 	}
 
 	/// The display-unit position just past the character at `display_pos`, so that
@@ -100,10 +89,7 @@ impl DocumentSession {
 	#[must_use]
 	pub fn display_pos_after_char_at(&self, display_pos: i64) -> i64 {
 		let buf = &self.handle.document().buffer;
-		let total = buf.total_display_len();
-		let pos = usize::try_from(display_pos.max(0)).unwrap_or(0).min(total);
-		let char_index = buf.char_index_for_display(pos);
-		i64::try_from(buf.display_index_for_char(char_index + 1)).unwrap_or(i64::MAX)
+		i64::try_from((buf.nearest_pos(display_pos) + DocLen::ONE).min(buf.end())).unwrap_or(i64::MAX)
 	}
 
 	/// Slices `[raw_start, raw_end)` (display units, clamped to the document) out of the
@@ -114,13 +100,12 @@ impl DocumentSession {
 	#[must_use]
 	pub fn get_window(&self, raw_start: i64, raw_end: i64) -> WindowSlice {
 		let buf = &self.handle.document().buffer;
-		let doc_len = buf.total_display_len();
-		let raw_start = usize::try_from(raw_start.max(0)).unwrap_or(0).min(doc_len);
-		let raw_end = usize::try_from(raw_end.max(0)).unwrap_or(0).clamp(raw_start, doc_len);
-		let byte_start = snap_start_to_paragraph_boundary(buf, buf.byte_index_for_display(raw_start));
-		let byte_end = snap_end_to_paragraph_boundary(buf, buf.byte_index_for_display(raw_end));
-		let start = buf.display_index_for_byte(byte_start);
-		let end = buf.display_index_for_byte(byte_end);
+		let raw_start = buf.nearest_pos(raw_start);
+		let raw_end = buf.nearest_pos(raw_end).max(raw_start);
+		let byte_start = snap_start_to_paragraph_boundary(buf, buf.byte_at(raw_start));
+		let byte_end = snap_end_to_paragraph_boundary(buf, buf.byte_at(raw_end));
+		let start = buf.pos_at_byte(byte_start);
+		let end = buf.pos_at_byte(byte_end);
 		let text = buf.slice(byte_start..byte_end).to_string();
 		let markers = buf
 			.markers
@@ -128,7 +113,7 @@ impl DocumentSession {
 			.filter(|m| matches!(m.mtype, MarkerType::Bold | MarkerType::Italic | MarkerType::Underline))
 			.filter_map(|m| {
 				let marker_start = m.position;
-				let marker_end = m.position.saturating_add(m.length);
+				let marker_end = m.position + m.length;
 				if marker_end <= start || marker_start >= end {
 					return None; // fully outside the window
 				}
@@ -154,30 +139,32 @@ impl DocumentSession {
 	}
 }
 
-/// The paragraphs within the display-unit window `[start, end)` of `buf` that are headings or part
+/// The paragraphs within the window `[start, end)` of `buf` that are headings or part
 /// of a list, merged into runs and rebased to window-local positions. Both bounds must sit on
 /// paragraph boundaries, which [`DocumentSession::get_window`]'s snapping guarantees.
 ///
 /// A heading or list item marks the whole paragraph its position falls in: headings resolved from
 /// a table of contents can point partway into a line. A list marks every paragraph its span
 /// overlaps, so a line continuing an item stays inside the list.
-fn paragraph_formats(buf: &DocumentBuffer, start: usize, end: usize) -> Vec<ParagraphFormat> {
+fn paragraph_formats(buf: &DocumentBuffer, start: DocPos, end: DocPos) -> Vec<ParagraphFormat> {
 	// Keyed by paragraph start byte: (paragraph end byte, heading level, list item).
 	let mut by_paragraph: BTreeMap<ContentBytePos, (ContentBytePos, Option<u8>, bool)> = BTreeMap::new();
 	for marker in &buf.markers {
 		let (length, heading_level, list_item) = match marker.mtype {
 			MarkerType::List => (marker.length, None, true),
-			MarkerType::ListItem => (1, None, true),
-			mtype if is_heading_marker(mtype) => (1, u8::try_from(marker_type_to_heading_level(mtype)).ok(), false),
+			MarkerType::ListItem => (DocLen::ONE, None, true),
+			mtype if is_heading_marker(mtype) => {
+				(DocLen::ONE, u8::try_from(marker_type_to_heading_level(mtype)).ok(), false)
+			}
 			_ => continue,
 		};
 		let span_start = marker.position.max(start);
-		let span_end = marker.position.saturating_add(length).min(end);
+		let span_end = (marker.position + length).min(end);
 		if span_start >= span_end {
 			continue;
 		}
-		let span_end = buf.byte_index_for_display(span_end);
-		let mut paragraph_start = snap_start_to_paragraph_boundary(buf, buf.byte_index_for_display(span_start));
+		let span_end = buf.byte_at(span_end);
+		let mut paragraph_start = snap_start_to_paragraph_boundary(buf, buf.byte_at(span_start));
 		loop {
 			let paragraph_end = snap_end_to_paragraph_boundary(buf, paragraph_start);
 			let (_, level, item) = by_paragraph.entry(paragraph_start).or_insert((paragraph_end, None, false));
@@ -189,7 +176,7 @@ fn paragraph_formats(buf: &DocumentBuffer, start: usize, end: usize) -> Vec<Para
 			paragraph_start = paragraph_end;
 		}
 	}
-	let local = |byte| i64::try_from(buf.display_index_for_byte(byte) - start).unwrap_or(0);
+	let local = |byte| i64::try_from(buf.pos_at_byte(byte) - start).unwrap_or(0);
 	let mut runs: Vec<ParagraphFormat> = Vec::new();
 	for (paragraph_start, (paragraph_end, heading_level, list_item)) in by_paragraph {
 		let (run_start, run_end) = (local(paragraph_start), local(paragraph_end));
@@ -279,7 +266,7 @@ mod tests {
 		let marker_start = 3;
 		let marker_len = 9;
 		assert_eq!(&content[marker_start..marker_start + marker_len], "ha\nbeta g");
-		let markers = [Marker::new(MarkerType::Bold, marker_start).with_length(marker_len)];
+		let markers = [Marker::new(MarkerType::Bold, marker_start.into()).with_length(marker_len.into())];
 		let session = session_with(content, &markers);
 		// A request landing inside "beta gamma" should snap to just that paragraph, not pull
 		// in "alpha" too.
@@ -296,7 +283,7 @@ mod tests {
 	#[test]
 	fn get_window_excludes_markers_entirely_outside_the_window() {
 		let content = "alpha\nbeta gamma\ndelta";
-		let markers = [Marker::new(MarkerType::Italic, 0).with_length(5)]; // "alpha"
+		let markers = [Marker::new(MarkerType::Italic, 0.into()).with_length(5.into())]; // "alpha"
 		let session = session_with(content, &markers);
 		let raw_start = content.find("delta").unwrap() as i64;
 		let slice = session.get_window(raw_start, raw_start + 2);
@@ -307,8 +294,10 @@ mod tests {
 	#[test]
 	fn get_window_filters_to_bold_italic_underline_only() {
 		let content = "some heading text";
-		let markers =
-			[Marker::new(MarkerType::Heading1, 0).with_length(4), Marker::new(MarkerType::Bold, 0).with_length(4)];
+		let markers = [
+			Marker::new(MarkerType::Heading1, 0.into()).with_length(4.into()),
+			Marker::new(MarkerType::Bold, 0.into()).with_length(4.into()),
+		];
 		let session = session_with(content, &markers);
 		let slice = session.get_window(0, session.document_len());
 		assert_eq!(slice.markers.len(), 1);
@@ -327,7 +316,7 @@ mod tests {
 	#[test]
 	fn heading_marks_its_whole_paragraph_with_its_level() {
 		let content = "intro\nTitle\nbody\n";
-		let markers = [Marker::new(MarkerType::Heading2, 6)];
+		let markers = [Marker::new(MarkerType::Heading2, 6.into())];
 		assert_eq!(whole_window_paragraphs(content, &markers), vec![paragraph(6, 12, Some(2), false)]);
 	}
 
@@ -336,7 +325,7 @@ mod tests {
 	#[test]
 	fn heading_marker_mid_line_marks_the_containing_paragraph() {
 		let content = "intro\nsome Title here\nbody";
-		let markers = [Marker::new(MarkerType::Heading1, content.find("Title").unwrap())];
+		let markers = [Marker::new(MarkerType::Heading1, content.find("Title").unwrap().into())];
 		assert_eq!(whole_window_paragraphs(content, &markers), vec![paragraph(6, 22, Some(1), false)]);
 	}
 
@@ -344,7 +333,7 @@ mod tests {
 	fn list_span_marks_every_paragraph_it_covers_as_one_run() {
 		// The "b" line continues the first item: it is in the list without a bullet of its own.
 		let content = "before\n• a\nb\n• c\nafter\n";
-		let markers = [Marker::new(MarkerType::List, 7).with_length(10)];
+		let markers = [Marker::new(MarkerType::List, 7.into()).with_length(10.into())];
 		assert_eq!(whole_window_paragraphs(content, &markers), vec![paragraph(7, 17, None, true)]);
 	}
 
@@ -352,14 +341,17 @@ mod tests {
 	#[test]
 	fn list_item_without_a_list_span_marks_its_paragraph() {
 		let content = "x\n• item\ny";
-		let markers = [Marker::new(MarkerType::ListItem, 2)];
+		let markers = [Marker::new(MarkerType::ListItem, 2.into())];
 		assert_eq!(whole_window_paragraphs(content, &markers), vec![paragraph(2, 9, None, true)]);
 	}
 
 	#[test]
 	fn heading_inside_a_list_carries_both() {
 		let content = "• a\nHead\n• b\n";
-		let markers = [Marker::new(MarkerType::List, 0).with_length(13), Marker::new(MarkerType::Heading3, 4)];
+		let markers = [
+			Marker::new(MarkerType::List, 0.into()).with_length(13.into()),
+			Marker::new(MarkerType::Heading3, 4.into()),
+		];
 		assert_eq!(
 			whole_window_paragraphs(content, &markers),
 			vec![paragraph(0, 4, None, true), paragraph(4, 9, Some(3), true), paragraph(9, 13, None, true)]
@@ -369,7 +361,10 @@ mod tests {
 	#[test]
 	fn paragraph_formats_outside_the_window_are_dropped_and_straddling_lists_are_clipped() {
 		let content = "Head\n• a\n• b\n• c\ntail\n";
-		let markers = [Marker::new(MarkerType::Heading1, 0), Marker::new(MarkerType::List, 5).with_length(12)];
+		let markers = [
+			Marker::new(MarkerType::Heading1, 0.into()),
+			Marker::new(MarkerType::List, 5.into()).with_length(12.into()),
+		];
 		let session = session_with(content, &markers);
 		// Display units, not bytes: each bullet is one unit but three bytes.
 		let slice = session.get_window(9, 10);
@@ -380,7 +375,7 @@ mod tests {
 	#[test]
 	fn paragraph_formats_are_window_local() {
 		let content = "aaa\nbbb\nHead\nccc";
-		let markers = [Marker::new(MarkerType::Heading6, 8)];
+		let markers = [Marker::new(MarkerType::Heading6, 8.into())];
 		let session = session_with(content, &markers);
 		let slice = session.get_window(4, session.document_len());
 		assert_eq!(slice.text, "bbb\nHead\nccc");
@@ -390,7 +385,7 @@ mod tests {
 	#[test]
 	fn paragraph_positions_count_an_astral_character_as_one() {
 		let content = "a\u{1F600}b\nHead\n";
-		let markers = [Marker::new(MarkerType::Heading1, 4)];
+		let markers = [Marker::new(MarkerType::Heading1, 4.into())];
 		assert_eq!(whole_window_paragraphs(content, &markers), vec![paragraph(4, 9, Some(1), false)]);
 	}
 	// The UI grows a document window forward by asking for the range starting at the one it

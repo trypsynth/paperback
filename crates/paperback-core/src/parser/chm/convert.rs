@@ -5,6 +5,7 @@ use libchm::{ChmFile, Entry};
 use rayon::prelude::*;
 
 use crate::{
+	document::DocPos,
 	parser::{
 		ConverterOutput,
 		convert::html_to_text::{HtmlSourceMode, HtmlToText},
@@ -33,7 +34,7 @@ pub(super) struct SectionContent {
 	bolds: Vec<FormatInfo>,
 	italics: Vec<FormatInfo>,
 	underlines: Vec<FormatInfo>,
-	pub id_positions: HashMap<String, usize>,
+	pub id_positions: HashMap<String, DocPos>,
 }
 
 impl ConverterOutput for SectionContent {

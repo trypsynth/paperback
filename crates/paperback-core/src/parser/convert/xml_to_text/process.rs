@@ -4,6 +4,7 @@ use roxmltree::{Node, NodeType};
 
 use super::XmlToText;
 use crate::{
+	document::{DocLen, DocPos},
 	parser::{
 		convert::{
 			block_elements::is_block_element,
@@ -19,7 +20,7 @@ use crate::{
 	types::{
 		FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo, SeparatorInfo, TableInfo,
 	},
-	util::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
+	util::text::{collapse_whitespace, format_list_item, remove_soft_hyphens, trim_string},
 };
 
 impl XmlToText {
@@ -59,7 +60,7 @@ impl XmlToText {
 	/// Re-anchors `node`'s `id_positions` entry (if any) to `position`. Headings, list items,
 	/// tables and `<hr>` call `finalize_current_line` while opening, which moves the text
 	/// position past where `handle_element_opening_xml` first captured the id.
-	fn resync_id_position(&mut self, node: Node<'_, '_>, position: usize) {
+	fn resync_id_position(&mut self, node: Node<'_, '_>, position: DocPos) {
 		if self.in_body
 			&& let Some(id) = node.attribute("id").or_else(|| node.attribute("name"))
 		{
@@ -74,7 +75,7 @@ impl XmlToText {
 	/// containing element's own start, since the skipped subtree's text is emitted as one
 	/// run with no per-descendant offsets to attribute; for the common case of an element
 	/// wrapping the whole link that is exactly right.
-	fn record_descendant_ids(&mut self, node: Node<'_, '_>, position: usize) {
+	fn record_descendant_ids(&mut self, node: Node<'_, '_>, position: DocPos) {
 		if !self.in_body {
 			return;
 		}
@@ -113,7 +114,7 @@ impl XmlToText {
 			let line = LineBuilder::separator_line();
 			self.text.current_line.push_str(line);
 			self.text.finalize_current_line();
-			self.separators.push(SeparatorInfo { offset, length: display_len(line) });
+			self.separators.push(SeparatorInfo { offset, length: DocLen::of(line) });
 			return true;
 		}
 		if Self::tag_is(tag_name, "pagenum") {
@@ -138,7 +139,7 @@ impl XmlToText {
 				for (image_text, mut info, is_figure) in link_images {
 					let Some(found) = processed_link_text[searched..].find(&image_text) else { continue };
 					let start = searched + found;
-					info.offset = link_offset + display_len(&processed_link_text[..start]);
+					info.offset = link_offset + DocLen::of(&processed_link_text[..start]);
 					searched = start + image_text.len();
 					self.push_image(info, is_figure);
 				}
@@ -222,9 +223,9 @@ impl XmlToText {
 		}
 		let image_text = image_text::placeholder(is_figure, &description);
 		let info = ImageInfo {
-			offset: 0,
+			offset: DocPos::ZERO,
 			alt_text: description,
-			length: display_len(&image_text),
+			length: DocLen::of(&image_text),
 			source: Self::image_source(node),
 		};
 		Some((image_text, info, is_figure))
@@ -250,7 +251,7 @@ impl XmlToText {
 		let offset = self.text.get_current_text_position();
 		self.resync_id_position(node, offset);
 		self.record_descendant_ids(node, offset);
-		let length = display_len(&rendered);
+		let length = DocLen::of(&rendered);
 		self.text.current_line.push_str(&rendered);
 		if block {
 			self.text.finalize_current_line();
@@ -272,13 +273,8 @@ impl XmlToText {
 			self.text.push_finalized_line(line);
 		}
 		let table_caption = render.caption;
-		let display_length = render.display_length;
-		self.tables.push(TableInfo {
-			offset: start_offset,
-			text: table_caption,
-			html_content: table_xml,
-			length: display_length,
-		});
+		let length = render.length;
+		self.tables.push(TableInfo { offset: start_offset, text: table_caption, html_content: table_xml, length });
 	}
 
 	fn handle_list_item_xml(&mut self, node: Node<'_, '_>) {
@@ -321,7 +317,7 @@ impl XmlToText {
 			let offset = self.text.get_current_text_position();
 			self.resync_id_position(node, offset);
 			self.open_lists.push(Some(self.lists.len()));
-			self.lists.push(ListInfo { offset, item_count, length: 0 });
+			self.lists.push(ListInfo { offset, item_count, length: DocLen::ZERO });
 		} else {
 			self.open_lists.push(None);
 		}
@@ -380,7 +376,7 @@ impl XmlToText {
 			if let Some(open) = self.open_lists.pop().flatten() {
 				self.text.finalize_current_line();
 				let offset = self.lists[open].offset;
-				self.lists[open].length = self.text.get_current_text_position().saturating_sub(offset);
+				self.lists[open].length = self.text.get_current_text_position().since(offset);
 			}
 		}
 	}

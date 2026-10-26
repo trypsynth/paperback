@@ -1,7 +1,7 @@
 //! Comments reviewers left on a document. Read where they sit they interrupt the text, and dropped they lose what the reviewers said, so the word processor parsers write them after the text, each linking back to its place.
 
 use crate::{
-	document::{DocumentBuffer, Marker, MarkerType},
+	document::{DocPos, DocumentBuffer, Marker, MarkerType},
 	t,
 	util::text::collapse_whitespace,
 };
@@ -15,8 +15,8 @@ pub struct Comment {
 	pub author: String,
 	pub text: String,
 	/// Where the commented words start, and where they end when the comment covers words rather than a point.
-	pub start: usize,
-	pub end: Option<usize>,
+	pub start: DocPos,
+	pub end: Option<DocPos>,
 }
 
 /// Writes `comments` under a heading of their own at the end of `buffer`, each naming its author and, for a comment on words, the words, as a link back to them.
@@ -29,7 +29,7 @@ pub fn write_comments(buffer: &mut DocumentBuffer, comments: Vec<Comment>) {
 	}
 	// TRANSLATORS: Heading over the comments reviewers left on a document, written after its text
 	let heading = t("Comments");
-	let heading_offset = buffer.current_position();
+	let heading_offset = buffer.end();
 	buffer.append(&heading);
 	buffer.append("\n");
 	buffer.add_marker(Marker::new(MarkerType::Heading1, heading_offset).with_text(heading).with_level(1));
@@ -46,7 +46,7 @@ pub fn write_comments(buffer: &mut DocumentBuffer, comments: Vec<Comment>) {
 			// TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
 			None => t("{}: {}").replacen("{}", &author, 1).replacen("{}", &comment.text, 1),
 		};
-		let offset = buffer.current_position();
+		let offset = buffer.end();
 		buffer.append(&entry);
 		buffer.append("\n");
 		buffer.add_marker(
@@ -56,9 +56,9 @@ pub fn write_comments(buffer: &mut DocumentBuffer, comments: Vec<Comment>) {
 }
 
 /// The words between two positions in `buffer`, cut short when they run long, since the entry only has to say which words.
-fn quoted(buffer: &DocumentBuffer, start: usize, end: usize) -> String {
+fn quoted(buffer: &DocumentBuffer, start: DocPos, end: DocPos) -> String {
 	const LONGEST: usize = 60;
-	let words = buffer.slice(buffer.byte_index_for_display(start)..buffer.byte_index_for_display(end));
+	let words = buffer.slice(buffer.byte_at(start)..buffer.byte_at(end));
 	let words = collapse_whitespace(words).trim().to_string();
 	if words.chars().count() <= LONGEST {
 		return words;
@@ -72,6 +72,7 @@ fn quoted(buffer: &DocumentBuffer, start: usize, end: usize) -> String {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::document::DocLen;
 
 	#[test]
 	fn a_long_quote_is_cut_short() {
@@ -82,8 +83,8 @@ mod tests {
 			key: "c".into(),
 			author: "Ann".into(),
 			text: "Too long.".into(),
-			start: 0,
-			end: Some(words.len()),
+			start: 0.into(),
+			end: Some(DocLen::of(&words).as_pos()),
 		};
 		write_comments(&mut buffer, vec![comment]);
 		let entry = buffer.content.lines().last().unwrap();

@@ -13,6 +13,7 @@ use zip::ZipArchive;
 use super::{AudioClipFfi, AudioCursorFfi, AudioPointFfi, DocumentSession};
 use crate::{
 	audio::{AudioLocation, TimelinePoint},
+	document::DocPos,
 	util::zip as zip_utils,
 };
 
@@ -105,7 +106,7 @@ impl DocumentSession {
 	#[must_use]
 	pub fn audio_point_for_position_ffi(&self, position: i64) -> AudioPointFfi {
 		let Some(timeline) = self.audio() else { return AudioPointFfi::default() };
-		let position = usize::try_from(position.max(0)).unwrap_or(0);
+		let position = self.handle.document().buffer.nearest_pos(position);
 		let Some(point) = timeline.point_for_position(position) else { return AudioPointFfi::default() };
 		AudioPointFfi {
 			found: true,
@@ -179,7 +180,7 @@ impl DocumentSession {
 		if !timeline.durations_are_known() {
 			return None;
 		}
-		let progress = timeline.progress(TimelinePoint::new(0, elapsed_ms));
+		let progress = timeline.progress(TimelinePoint::new(DocPos::ZERO, elapsed_ms));
 		// Truncating rather than rounding keeps 100% for the end alone: a book is not "100%"
 		// with half a minute left to play.
 		Some((progress * 100.0) as i32)

@@ -23,7 +23,7 @@ impl Parser for TextParser {
 		let title = extract_title_from_path(&context.file_path);
 		let mut doc = Document::new().with_title(title);
 		let buffer = DocumentBuffer::with_content(processed);
-		let char_len = buffer.char_count();
+		let char_len = buffer.len().get();
 		doc.set_buffer(buffer);
 		tracing::debug!(path = %context.file_path, bytes = byte_len, chars = char_len, "parsed text file");
 		Ok(doc)

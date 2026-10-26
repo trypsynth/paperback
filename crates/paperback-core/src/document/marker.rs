@@ -3,6 +3,8 @@
 //! structure, plus the small helpers ([`is_heading_marker`], [`is_container_marker`],
 //! [`ContainerSpan`]) that classify them.
 
+use super::position::{DocLen, DocPos};
+
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(i32)]
@@ -82,17 +84,17 @@ impl TryFrom<i32> for MarkerType {
 #[derive(Debug, Clone)]
 pub struct Marker {
 	pub mtype: MarkerType,
-	pub position: usize,
+	pub position: DocPos,
 	pub text: String,
 	pub reference: String,
 	pub level: i32,
-	pub length: usize,
+	pub length: DocLen,
 }
 
 impl Marker {
 	#[must_use]
-	pub const fn new(mtype: MarkerType, position: usize) -> Self {
-		Self { mtype, position, text: String::new(), reference: String::new(), level: 0, length: 0 }
+	pub const fn new(mtype: MarkerType, position: DocPos) -> Self {
+		Self { mtype, position, text: String::new(), reference: String::new(), level: 0, length: DocLen::ZERO }
 	}
 
 	#[must_use]
@@ -114,7 +116,7 @@ impl Marker {
 	}
 
 	#[must_use]
-	pub const fn with_length(mut self, length: usize) -> Self {
+	pub const fn with_length(mut self, length: DocLen) -> Self {
 		self.length = length;
 		self
 	}
@@ -140,11 +142,11 @@ pub const fn is_container_marker(marker_type: MarkerType) -> bool {
 	matches!(marker_type, MarkerType::List | MarkerType::Table)
 }
 
-/// The display-unit span of a container marker: `[start, end)`.
+/// The span of a container marker: `[start, end)`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ContainerSpan {
-	pub start: usize,
-	pub end: usize,
+	pub start: DocPos,
+	pub end: DocPos,
 	pub mtype: MarkerType,
 }
 
@@ -164,11 +166,11 @@ mod tests {
 
 	#[test]
 	fn marker_builder_helpers_set_all_fields() {
-		let marker = Marker::new(MarkerType::Table, 42)
+		let marker = Marker::new(MarkerType::Table, 42.into())
 			.with_text("Title".to_string())
 			.with_reference("ref".to_string())
 			.with_level(3)
-			.with_length(9);
+			.with_length(9.into());
 		assert_eq!(marker.position, 42);
 		assert_eq!(marker.text, "Title");
 		assert_eq!(marker.reference, "ref");

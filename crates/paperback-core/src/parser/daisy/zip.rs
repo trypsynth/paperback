@@ -12,7 +12,7 @@ use super::{
 };
 use crate::{
 	audio::AudioLocation,
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
+	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX, add_converter_markers,
 		convert::xml_to_text::XmlToText,
@@ -158,7 +158,7 @@ fn parse_archive(context: &ParserContext, path: &Path) -> Result<Document> {
 			let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
 			if converter.convert(&xml_content) {
 				let mut converted_buffer = DocumentBuffer::with_content(converter.get_text());
-				add_converter_markers(&mut converted_buffer, &converter, 0);
+				add_converter_markers(&mut converted_buffer, &converter, DocPos::ZERO);
 				for pb in converter.get_page_breaks() {
 					converted_buffer
 						.add_marker(Marker::new(MarkerType::PageBreak, pb.offset).with_text(pb.text.clone()));

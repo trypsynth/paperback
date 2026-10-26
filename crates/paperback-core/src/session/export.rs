@@ -22,23 +22,23 @@ use super::{
 };
 use crate::{
 	config::compute_document_hash,
-	document::MarkerType,
+	document::{DocLen, DocPos, MarkerType},
 	export::{ExportFormat, html as export_html, render},
 	parser,
 	reader_core::{encode_url_fragment, nearest_fragment_before},
 	util::{encoding::convert_to_utf8, html::MATHML_STYLES, zip as zip_utils},
 };
 
-/// How much of a document, in display units, a web view is handed at once. A web view lays out
+/// How much of a document a web view is handed at once. A web view lays out
 /// an ordinary book without trouble, but a book of tens of millions of characters locks the
 /// machine up while the engine works through all of it, so past this size it is given the part
 /// around the reading position instead.
-const MAX_WEBVIEW_DISPLAY_LEN: usize = WINDOW_DISPLAY_LEN as usize;
+const MAX_WEBVIEW_LEN: DocLen = DocLen::from_raw(WINDOW_DISPLAY_LEN as usize);
 
 /// Up to here the web view gets the whole document. Shares the reader's threshold rather than
 /// slicing as soon as one window's worth is exceeded, so the two always agree about whether a
 /// document is being shown whole.
-const WHOLE_WEBVIEW_DISPLAY_LEN: usize = WHOLE_DOCUMENT_DISPLAY_LEN as usize;
+const WHOLE_WEBVIEW_LEN: DocLen = DocLen::from_raw(WHOLE_DOCUMENT_DISPLAY_LEN as usize);
 
 #[cfg_attr(feature = "uniffi", uniffi::export)]
 impl DocumentSession {
@@ -109,7 +109,7 @@ impl DocumentSession {
 				}
 				let doc_temp_dir = self.document_temp_dir(temp_dir)?;
 				let html_path = doc_temp_dir.join("document.html");
-				let offset = usize::try_from(position.max(0)).unwrap_or(0);
+				let offset = self.handle.document().buffer.nearest_pos(position);
 				let html = export_html::render_range(&self.handle, self.webview_range(offset), Some(offset));
 				fs::write(&html_path, html.as_bytes()).ok()?;
 				Some(WebviewTarget {
@@ -120,22 +120,22 @@ impl DocumentSession {
 		}
 	}
 
-	/// The display-unit span a web view is given for a document read at `position`: all of it when
-	/// it is short enough, and otherwise [`MAX_WEBVIEW_DISPLAY_LEN`] around the reading position,
+	/// The span a web view is given for a document read at `position`: all of it when
+	/// it is short enough, and otherwise [`MAX_WEBVIEW_LEN`] around the reading position,
 	/// snapped outward to paragraph boundaries so the slice never starts or ends mid-paragraph.
-	fn webview_range(&self, position: usize) -> Range<usize> {
+	fn webview_range(&self, position: DocPos) -> Range<DocPos> {
 		let buffer = &self.handle.document().buffer;
-		let doc_len = buffer.total_display_len();
-		if doc_len <= WHOLE_WEBVIEW_DISPLAY_LEN {
-			return 0..doc_len;
+		if buffer.len() <= WHOLE_WEBVIEW_LEN {
+			return DocPos::ZERO..buffer.end();
 		}
 		// Stays a full window wide at either end of the book rather than running off it.
-		let position = position.min(doc_len);
-		let end = (position + MAX_WEBVIEW_DISPLAY_LEN / 2).min(doc_len).max(MAX_WEBVIEW_DISPLAY_LEN);
-		let start = end - MAX_WEBVIEW_DISPLAY_LEN;
-		let byte_start = snap_start_to_paragraph_boundary(buffer, buffer.byte_index_for_display(start));
-		let byte_end = snap_end_to_paragraph_boundary(buffer, buffer.byte_index_for_display(end));
-		buffer.display_index_for_byte(byte_start)..buffer.display_index_for_byte(byte_end)
+		let position = position.min(buffer.end());
+		let half = DocLen::from_raw(MAX_WEBVIEW_LEN.get() / 2);
+		let end = (position + half).min(buffer.end()).max(MAX_WEBVIEW_LEN.as_pos());
+		let start = end - MAX_WEBVIEW_LEN;
+		let byte_start = snap_start_to_paragraph_boundary(buffer, buffer.byte_at(start));
+		let byte_end = snap_end_to_paragraph_boundary(buffer, buffer.byte_at(end));
+		buffer.pos_at_byte(byte_start)..buffer.pos_at_byte(byte_end)
 	}
 
 	/// The directory this document's web view and source view files are written to, created
@@ -153,10 +153,10 @@ impl DocumentSession {
 	/// extracted section file and returns its id, for use as a URL `#fragment`.
 	fn inject_reading_anchor(&self, position: i64, file_path: &str) -> Option<String> {
 		const READING_POS_ANCHOR_ID: &str = "paperback-reading-pos";
-		let pos = usize::try_from(position.max(0)).unwrap_or(0);
+		let pos = self.handle.document().buffer.nearest_pos(position);
 		let section_index = self.handle.current_marker_index(pos, MarkerType::SectionBreak)?;
 		let section_start = self.handle.document().buffer.markers.get(section_index)?.position;
-		let relative = pos.checked_sub(section_start)?;
+		let relative = (pos >= section_start).then(|| (pos - section_start).as_pos())?;
 		let content = convert_to_utf8(&fs::read(file_path).ok()?);
 		let injected =
 			parser::convert::xml_to_text::inject_anchor_at_position(&content, relative, READING_POS_ANCHOR_ID)?;
@@ -168,7 +168,7 @@ impl DocumentSession {
 	/// section, for use as a `#fragment` when opening the section in a web view.
 	#[must_use]
 	pub fn webview_fragment_for_position(&self, position: i64) -> Option<String> {
-		let pos = usize::try_from(position.max(0)).unwrap_or(0);
+		let pos = self.handle.document().buffer.nearest_pos(position);
 		nearest_fragment_before(&self.handle, pos).map(|id| encode_url_fragment(&id))
 	}
 
@@ -206,7 +206,7 @@ impl DocumentSession {
 	/// Returns `(source_text, caret_char_offset, file_name)` for the document at
 	/// `position`. The caret is mapped into the returned source text.
 	fn source_content_for_position(&self, position: i64) -> Option<(String, usize, String)> {
-		let pos = usize::try_from(position.max(0)).unwrap_or(0);
+		let pos = self.handle.document().buffer.nearest_pos(position);
 		if self.is_epub() {
 			let section_path = self.get_current_section_path(position).filter(|path| !path.is_empty())?;
 			let file = File::open(&self.file_path).ok()?;
@@ -214,7 +214,7 @@ impl DocumentSession {
 			let content = zip_utils::read_zip_entry_by_name(&mut archive, &section_path).ok()?;
 			let section_index = self.handle.current_marker_index(pos, MarkerType::SectionBreak)?;
 			let section_start = self.handle.document().buffer.markers.get(section_index)?.position;
-			let relative = pos.saturating_sub(section_start);
+			let relative = pos.since(section_start).as_pos();
 			let caret = Self::xml_caret(&content, relative);
 			let name = Path::new(&section_path).file_name()?.to_string_lossy().to_string();
 			return Some((content, caret, name));
@@ -230,9 +230,9 @@ impl DocumentSession {
 		Some((content, caret, name))
 	}
 
-	/// Maps a rendered character position to a caret offset in XML/HTML source
+	/// Maps a position in the section's rendered text to a caret offset in XML/HTML source
 	/// via the byte offset of the element at that position.
-	fn xml_caret(content: &str, relative: usize) -> usize {
+	fn xml_caret(content: &str, relative: DocPos) -> usize {
 		parser::convert::xml_to_text::XmlToText::new()
 			.find_anchor_byte_offset(content, relative)
 			.and_then(|byte| Some(content.get(..byte)?.chars().count()))
@@ -241,7 +241,7 @@ impl DocumentSession {
 
 	/// Maps a rendered character position to a caret offset in Markdown source
 	/// via the nearest `pb-block-N` anchor recorded during parsing.
-	fn markdown_caret(&self, content: &str, pos: usize) -> usize {
+	fn markdown_caret(&self, content: &str, pos: DocPos) -> usize {
 		nearest_fragment_before(&self.handle, pos)
 			.and_then(|id| id.strip_prefix("pb-block-").and_then(|n| n.parse::<usize>().ok()))
 			.and_then(|index| {

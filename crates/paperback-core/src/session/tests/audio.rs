@@ -31,8 +31,8 @@ fn lopsided_timeline(second_duration_known: bool) -> AudioTimeline {
 		AudioLocation::File("two.mp3".to_string()),
 		if second_duration_known { Some(180_000) } else { None },
 	);
-	builder.add_clip(short, 0, 60_000, 0, 1);
-	builder.add_clip(long, 0, 180_000, 1, 2);
+	builder.add_clip(short, 0, 60_000, 0.into(), 1.into());
+	builder.add_clip(long, 0, 180_000, 1.into(), 2.into());
 	builder.build()
 }
 
@@ -92,8 +92,8 @@ fn two_source_timeline() -> AudioTimeline {
 	let mut builder = crate::audio::AudioTimelineBuilder::new();
 	let source0 = builder.add_source(AudioLocation::File("chapter1.mp3".to_string()), Some(9000));
 	let source1 = builder.add_source(AudioLocation::File("chapter2.mp3".to_string()), Some(4000));
-	builder.add_clip(source0, 0, 9000, 0, 10);
-	builder.add_clip(source1, 0, 4000, 10, 17);
+	builder.add_clip(source0, 0, 9000, 0.into(), 10.into());
+	builder.add_clip(source1, 0, 4000, 10.into(), 17.into());
 	builder.build()
 }
 
@@ -183,7 +183,7 @@ fn audio_extract_source_ffi_copies_a_file_source() {
 	fs::write(&source_path, b"chapter-one-bytes").unwrap();
 	let mut builder = crate::audio::AudioTimelineBuilder::new();
 	let source = builder.add_source(AudioLocation::File(source_path.to_string_lossy().to_string()), None);
-	builder.add_clip(source, 0, 1000, 0, 10);
+	builder.add_clip(source, 0, 1000, 0.into(), 10.into());
 	let session = session_with_audio(builder.build());
 	let output_path = dir.join("out.mp3");
 	assert!(session.audio_extract_source_ffi(0, output_path.to_string_lossy().to_string()));
@@ -211,7 +211,7 @@ fn audio_extract_source_ffi_extracts_a_zip_entry_source() {
 		},
 		None,
 	);
-	builder.add_clip(source, 0, 1000, 0, 10);
+	builder.add_clip(source, 0, 1000, 0.into(), 10.into());
 	let session = session_with_audio(builder.build());
 	let output_path = dir.join("out.mp3");
 	assert!(session.audio_extract_source_ffi(0, output_path.to_string_lossy().to_string()));
@@ -241,7 +241,7 @@ fn audio_extract_source_ffi_extracts_a_password_protected_zip_entry_source() {
 		},
 		None,
 	);
-	builder.add_clip(source, 0, 1000, 0, 10);
+	builder.add_clip(source, 0, 1000, 0.into(), 10.into());
 	let session = session_with_audio(builder.build());
 	let output_path = dir.join("out.mp3");
 	assert!(session.audio_extract_source_ffi(0, output_path.to_string_lossy().to_string()));
@@ -255,8 +255,8 @@ fn adjacent_tracks_timeline() -> AudioTimeline {
 	let mut builder = crate::audio::AudioTimelineBuilder::new();
 	let one = builder.add_source(AudioLocation::File("one.mp3".to_string()), Some(60_000));
 	let two = builder.add_source(AudioLocation::File("two.mp3".to_string()), Some(60_000));
-	builder.add_clip(one, 0, 60_000, 0, 1);
-	builder.add_clip(two, 0, 60_000, 1, 2);
+	builder.add_clip(one, 0, 60_000, 0.into(), 1.into());
+	builder.add_clip(two, 0, 60_000, 1.into(), 2.into());
 	builder.build()
 }
 

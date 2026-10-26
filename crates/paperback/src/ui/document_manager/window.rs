@@ -122,7 +122,7 @@ impl DocumentManager {
 	pub fn select_all_and_count(&self) -> Option<usize> {
 		let tab = self.active_tab()?;
 		tab.text_ctrl.select_all();
-		Some(tab.session.handle().document().buffer.char_count())
+		Some(tab.session.handle().document().buffer.len().get())
 	}
 
 	/// Collapses a window that grew during a long read back to target size around the caret.

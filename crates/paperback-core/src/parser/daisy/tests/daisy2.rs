@@ -2,7 +2,7 @@ use std::fs;
 
 use super::*;
 use crate::{
-	document::ParserContext,
+	document::{ContentBytePos, ParserContext},
 	parser::{Parser, daisy::DaisyParser},
 	util::test_support::TempDir,
 };
@@ -61,7 +61,8 @@ fn parses_daisy_2_02_book_with_smil_audio() {
 	assert_eq!(document.toc_items.len(), 2);
 	assert_eq!(document.toc_items[0].name, "Chapter One");
 	assert_eq!(document.toc_items[1].name, "Chapter Two");
-	let chapter_two_pos = document.buffer.content.find("Chapter Two").unwrap();
+	let chapter_two_pos =
+		document.buffer.pos_at_byte(ContentBytePos::from_raw(document.buffer.content.find("Chapter Two").unwrap()));
 	assert_eq!(document.toc_items[1].offset, chapter_two_pos, "second heading must not be stranded at 0");
 	let audio = document.audio.expect("audio timeline should be populated for a DAISY 2.02 book with SMIL audio");
 	assert_eq!(audio.clips().len(), 3, "clip-begin/clip-end and audio nested under seq must both be recognized");
