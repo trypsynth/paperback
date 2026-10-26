@@ -310,3 +310,20 @@ fn extract_content_measures_link_length_in_display_units() {
 	assert_eq!(links[0].length, display_len("smile \u{1F600} here"));
 	assert_eq!(links[0].reference, "https://example.com");
 }
+
+/// Trimming the text's leading whitespace moves every marker back by as many positions as it took, not as many bytes: an ideographic space is one position and three bytes.
+#[test]
+fn trimming_wide_leading_whitespace_keeps_markers_on_their_text() {
+	let tokens = vec![
+		Token::ControlSymbol((ControlWord::Pard, Property::None)),
+		Token::PlainText("\u{3000}plain "),
+		Token::ControlSymbol((ControlWord::Bold, Property::None)),
+		Token::PlainText("bold"),
+		Token::ControlSymbol((ControlWord::Bold, Property::Value(0))),
+	];
+	let buffer = extract_content_from_tokens(&tokens);
+	assert_eq!(buffer.content, "plain bold");
+	let bold: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Bold).collect();
+	assert_eq!(bold.len(), 1);
+	assert_eq!(bold[0].position, display_len("plain "));
+}

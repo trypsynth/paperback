@@ -287,7 +287,7 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 	}
 	let trimmed = buffer.content.trim().to_string();
 	let mut result = DocumentBuffer::with_content(trimmed);
-	let leading_trim = buffer.content.len() - buffer.content.trim_start().len();
+	let leading_trim = display_len(&buffer.content[..buffer.content.len() - buffer.content.trim_start().len()]);
 	for marker in buffer.markers {
 		let adjusted_pos = marker.position.saturating_sub(leading_trim);
 		result.add_marker(
