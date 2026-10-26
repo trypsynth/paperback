@@ -177,6 +177,7 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 * `Ctrl+W` (macOS: `RawCtrl+W`, czyli fizyczny klawisz Control, a nie Cmd): Pokaż liczbę słów w bieżącym dokumencie.
 * `Ctrl+I`: Pokaż informacje o dokumencie.
 * `Ctrl+Shift+O`: Rozpoznaj tekst na wybranym zakresie zeskanowanych stron PDF za pomocą OCR.
+* `Ctrl+Shift+R`: Rozpoznaj za pomocą OCR stronę PDF lub stronę komiksu, na której znajduje się kursor. Dotychczasowy tekst tej strony zostanie zastąpiony.
 * `Ctrl+Shift+S`: Przełącz Wyłącznik czasowy.
 * `Ctrl+,`: Otwórz Ustawienia (w systemie macOS: w menu aplikacji).
 
@@ -195,7 +196,8 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 * `Ctrl+Tab` i `Ctrl+Shift+Tab`: przejdź do następnego lub poprzedniego otwartego dokumentu. Po ostatnim dokumencie przejdziesz do pierwszego, a przed pierwszym do ostatniego.
 * `Enter` albo `Spacja` w tekście dokumentu: otwórz odnośnik, Widok tabeli lub Widok wzoru pod kursorem.
 * `Enter` na zeskanowanej stronie PDF: rozpoznaj tekst na stronie za pomocą OCR.
-* `Shift+F10` albo klawisz menu aplikacji w tekście dokumentu: otwórz menu kontekstowe. Na obrazie w dokumencie PDF, EPUB, HTML, Markdown, CHM, FB2 lub w komiksie menu pozwala także zapisać obraz do pliku.
+* `Enter` na obrazie, który nie jest odnośnikiem: pokaż tekst rozpoznany na obrazie w osobnym widoku. Widok zamkniesz klawiszem `Escape`. Ani obraz, ani tekst dokumentu się nie zmieniają.
+* `Shift+F10` albo klawisz menu aplikacji w tekście dokumentu: otwórz menu kontekstowe. Na obrazie w dokumencie PDF, EPUB, HTML, Markdown, CHM, FB2 lub w komiksie menu pozwala także zapisać obraz do pliku, a w systemach Windows i macOS odczytać tekst z obrazu. W ten sposób odczytasz tekst z obrazu, który jest jednocześnie odnośnikiem.
 
 ## iOS i Android
 

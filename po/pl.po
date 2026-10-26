@@ -2996,8 +2996,8 @@ msgstr "Nie udało się pobrać bieżącej ścieżki pliku exe"
 msgid "Failed to launch update script"
 msgstr "Nie udało się uruchomić skryptu aktualizacji"
 
-msgid "Update failed"
-msgstr "Aktualizacja nie powiodła się"
+#~ msgid "Update failed"
+#~ msgstr "Aktualizacja nie powiodła się"
 
 msgid ""
 "Update downloaded to: %s\n"
@@ -5001,3 +5001,158 @@ msgstr "Eksportuj zakładki i notatki jako tekst lub HTML..."
 #. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
 msgid "{} (not on this keyboard layout)"
 msgstr "{} (niedostępny w tym układzie klawiatury)"
+
+#. TRANSLATORS: Title of the view showing the text recognized in a picture
+msgid "Image Text"
+msgstr "Tekst z obrazu"
+
+#. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
+#. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
+msgid "The picture could not be read."
+msgstr "Nie udało się odczytać obrazu."
+
+#. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
+msgid "No text was found in the picture."
+msgstr "Na obrazie nie znaleziono tekstu."
+
+#. TRANSLATORS: Announced when Recognize Current Page is chosen in a document that is not a PDF or a comic book
+msgid "Only PDF and comic book pages can be recognized."
+msgstr "Tekst można rozpoznawać tylko na stronach plików PDF i komiksów."
+
+#. TRANSLATORS: Tools menu item that recognizes the page the cursor is on with OCR, replacing any text it already has
+msgid "&Recognize Current Page"
+msgstr "&Rozpoznaj bieżącą stronę"
+
+msgid "Read &text in picture"
+msgstr "Odczytaj &tekst z obrazu"
+
+msgid "Read the text in the picture"
+msgstr "Odczytaj tekst z obrazu"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Recognize Current Page"
+msgstr "Rozpoznaj bieżącą stronę"
+
+#. TRANSLATORS: Spoken for a comic book page that is its front cover
+msgid "Front cover"
+msgstr "Przednia okładka"
+
+#. TRANSLATORS: Spoken for a comic book page that is an inside cover
+msgid "Inside cover"
+msgstr "Wewnętrzna strona okładki"
+
+#. TRANSLATORS: Spoken for a comic book page that recaps the story so far
+msgid "Recap"
+msgstr "Streszczenie"
+
+#. TRANSLATORS: Spoken for a comic book page that is an advertisement
+msgid "Advertisement"
+msgstr "Reklama"
+
+#. TRANSLATORS: Spoken for a comic book page written by the editors
+msgid "Editorial"
+msgstr "Od redakcji"
+
+#. TRANSLATORS: Spoken for a comic book page of letters from readers
+msgid "Letters"
+msgstr "Listy czytelników"
+
+#. TRANSLATORS: Spoken for a comic book page previewing another comic
+msgid "Preview"
+msgstr "Zapowiedź"
+
+#. TRANSLATORS: Spoken for a comic book page that is its back cover
+msgid "Back cover"
+msgstr "Tylna okładka"
+
+#. TRANSLATORS: Written after a presentation slide's text, before the presenter's notes for that slide; {} is the notes
+msgid "Speaker notes: {}"
+msgstr "Notatki prelegenta: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it without a name; {} is the comment
+msgid "Comment: {}"
+msgstr "Komentarz: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it: the first {} is the reviewer, the second the comment
+msgid "Comment from {}: {}"
+msgstr "Komentarz ({}): {}"
+
+#. TRANSLATORS: Heading over the comments reviewers left on a document, written after its text
+msgid "Comments"
+msgstr "Komentarze"
+
+#. TRANSLATORS: Names a comment's author when the document does not say who wrote it
+msgid "Comment"
+msgstr "Komentarz"
+
+#. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
+msgid "{} on \\u{201c}{}\\u{201d}: {}"
+msgstr "{}, do fragmentu „{}”: {}"
+
+#. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
+msgid "{}: {}"
+msgstr "{}: {}"
+
+#. TRANSLATORS: Shown in place of a presentation slide that has no text, such as one holding only pictures
+msgid "This slide has no text."
+msgstr "Ten slajd nie zawiera tekstu."
+
+msgid "Current version is not a valid semver."
+msgstr "Numer bieżącej wersji nie jest zgodny ze schematem semver."
+
+msgid "Latest release tag is not a valid semver."
+msgstr "Znacznik najnowszego wydania nie jest zgodny ze schematem semver."
+
+msgid "Invalid public key"
+msgstr "Nieprawidłowy klucz publiczny"
+
+msgid "Failed to read signature"
+msgstr "Nie udało się odczytać podpisu"
+
+msgid "Invalid signature"
+msgstr "Nieprawidłowy podpis"
+
+msgid "Failed to create private download directory"
+msgstr "Nie udało się utworzyć prywatnego folderu pobierania"
+
+msgid "Failed to create file"
+msgstr "Nie udało się utworzyć pliku"
+
+msgid "Failed to write file"
+msgstr "Nie udało się zapisać pliku"
+
+msgid "Failed to read file for verification"
+msgstr "Nie udało się odczytać pliku do weryfikacji"
+
+msgid "Signature verification failed"
+msgstr "Błąd weryfikacji podpisu"
+
+msgid "Failed to rename verified file"
+msgstr "Nie udało się zmienić nazwy zweryfikowanego pliku"
+
+msgid "Failed to parse release JSON"
+msgstr "Nie udało się przetworzyć danych JSON o wydaniu"
+
+msgid "Latest release does not include downloadable assets."
+msgstr "Najnowsze wydanie nie zawiera plików do pobrania."
+
+msgid "Update is available but no matching download asset or signature was found."
+msgstr "Aktualizacja jest dostępna, ale nie znaleziono pasującego pliku do pobrania lub jego podpisu."
+
+msgid "Failed to determine exe path"
+msgstr "Nie udało się ustalić ścieżki pliku exe"
+
+msgid "Failed to get exe directory"
+msgstr "Nie udało się ustalić folderu pliku exe"
+
+msgid "Could not determine a cache directory: neither XDG_CACHE_HOME nor HOME is set"
+msgstr "Nie udało się ustalić folderu pamięci podręcznej: nie ustawiono zmiennych XDG_CACHE_HOME ani HOME"
+
+msgid "Failed to create cache directory"
+msgstr "Nie udało się utworzyć folderu pamięci podręcznej"
+
+msgid "The update server returned HTTP error %s."
+msgstr "Serwer aktualizacji zwrócił błąd HTTP %s."
+
+msgid "Could not reach the update server: %s"
+msgstr "Nie udało się połączyć z serwerem aktualizacji: %s"
