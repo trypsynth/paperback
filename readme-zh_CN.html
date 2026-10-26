@@ -74,7 +74,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#当前支持的文件类型">当前支持的文件类型</a></li>
 <li><a href="#键盘快捷键">键盘快捷键</a><ul>
 <li><a href="#文件菜单">文件菜单</a></li>
+<li><a href="#编辑菜单">编辑菜单</a></li>
+<li><a href="#视图菜单">视图菜单</a></li>
 <li><a href="#转到菜单">转到菜单</a></li>
+<li><a href="#书签菜单">书签菜单</a></li>
+<li><a href="#音频菜单">音频菜单</a></li>
 <li><a href="#工具菜单">工具菜单</a></li>
 <li><a href="#帮助菜单">帮助菜单</a></li>
 <li><a href="#文档视图附加按键">文档视图附加按键</a></li>
@@ -145,7 +149,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>使用 Windows 和 macOS 内置的 OCR 读取扫描版 PDF 页面。</li>
 <li>书签和笔记，让您可以标记位置并随时返回。</li>
 <li>每个键盘快捷键都可以更改。</li>
-<li>附带 <code>pb</code>，一个命令行工具，可将任何支持的文档转换为 HTML、Markdown 或纯文本。</li>
+<li>直接从 http 和 https 链接打开文档，并在您重新打开它们或按 <code>F5</code> 时再次下载，同时保留您的阅读位置和书签。恢复上次打开的文档时，来自链接且大小为 2 MB 或更小的文档会被重新下载。</li>
+<li>附带 <code>pb</code>，一个命令行工具，可将任何支持的文档转换为 HTML、Markdown 或纯文本。它可以接受任意数量的文档，并自行展开 <code>*.pdf</code> 之类的通配符，因此同一条命令在 Windows 上同样适用，还可以为每个文档各写一个文件到指定文件夹。它也能通过 <code>--files-from</code> 从文件或标准输入读取文档列表，并可直接转换来自 http 和 https 链接的文档。</li>
 </ul>
 <h2 id="屏幕阅读器兼容性">屏幕阅读器兼容性</h2>
 <p>Paperback 可与所有主流屏幕阅读器良好配合。不过，对于 JAWS 用户存在两个已知问题。</p>
@@ -186,23 +191,45 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="文件菜单">文件菜单</h3>
 <ul>
 <li><code>Ctrl+O</code>：打开文档。</li>
+<li><code>Ctrl+L</code>（macOS：<code>Cmd+Option+O</code>）：从 Web 链接打开文档。</li>
 <li><code>Ctrl+F4</code>（macOS：<code>Cmd+W</code>）：关闭当前文档。</li>
 <li><code>Ctrl+Shift+F4</code>（macOS：<code>Cmd+Shift+W</code>）：关闭所有打开的文档。</li>
 <li><code>Ctrl+Shift+T</code>：重新打开上次关闭的文档。</li>
 <li><code>Ctrl+R</code>：显示“所有文档”对话框（来自“最近文档”）。</li>
+<li><code>Ctrl+Shift+C</code>：打开所在文件夹。</li>
+<li><code>Ctrl+Shift+E</code>：导出文档数据（<code>.paperback</code>）。</li>
+<li><code>Ctrl+Alt+E</code>：将书签和笔记导出为可读的文本或 HTML 文件。</li>
+<li><code>Ctrl+Shift+I</code>：导入文档数据（<code>.paperback</code>）。</li>
+<li><code>Ctrl+E</code>：将当前文档导出为纯文本。</li>
 <li><code>Ctrl+Q</code>：退出（仅限 Windows；在 macOS 上此功能位于应用菜单下）。</li>
 </ul>
-<h3 id="转到菜单">转到菜单</h3>
+<h3 id="编辑菜单">编辑菜单</h3>
 <ul>
 <li><code>Ctrl+F</code>：显示查找对话框。</li>
 <li><code>F3</code>（macOS：<code>Cmd+G</code>）：查找下一个。</li>
 <li><code>Shift+F3</code>（macOS：<code>Cmd+Shift+G</code>）：查找上一个。</li>
+<li><code>Alt+F9</code>（macOS：<code>Cmd+F9</code>）：标记选区起点，这样从这里到您到达的任何位置之间的所有内容都可以一次性复制。</li>
+<li><code>Alt+F10</code>（macOS：<code>Cmd+F10</code>）：将从标记的选区起点到当前位置的所有内容复制到剪贴板。</li>
+<li><code>Alt+Shift+F9</code>（macOS：<code>Cmd+Shift+F9</code>）：跳回标记的选区起点，并保留标记。</li>
+</ul>
+<h3 id="视图菜单">视图菜单</h3>
+<ul>
+<li><code>F5</code>：从磁盘重新读取当前文档，如果文档是从链接打开的则重新下载。无论设置中是否开启“自动重新加载已更改的文档”都有效。</li>
+<li><code>Ctrl+Alt+W</code>：切换自动换行。</li>
+<li><code>F11</code>（macOS：<code>RawCtrl+Ctrl+F</code>，即 Control+Command+F）：切换全屏。</li>
+<li><code>Ctrl+Shift+V</code>：在 Web 视图中打开当前内容。</li>
+<li><code>Ctrl+U</code>：在新标签页中查看文档源。</li>
+</ul>
+<h3 id="转到菜单">转到菜单</h3>
+<ul>
+<li><code>Ctrl+T</code>：显示目录。</li>
+<li><code>F7</code>：显示元素列表。</li>
 <li><code>Ctrl+G</code>（macOS：<code>Cmd+L</code>）：转到行。</li>
 <li><code>Ctrl+Shift+G</code>（macOS：<code>Cmd+Shift+L</code>）：转到百分比。</li>
 <li><code>Ctrl+P</code>：转到页（当当前文档支持时）。</li>
 <li><code>=</code>：朗读当前阅读百分比和页码，例如“15%，第 30 页”。对于没有页码的文档，将省略页码。</li>
-<li><code>Alt+Left</code>（macOS：<code>Cmd+[</code>）：后退导航历史。</li>
-<li><code>Alt+Right</code>（macOS：<code>Cmd+]</code>）：前进导航历史。</li>
+<li><code>Alt+Left</code>（macOS：<code>Cmd+[</code>）：在导航历史中后退。</li>
+<li><code>Alt+Right</code>（macOS：<code>Cmd+]</code>）：在导航历史中前进。</li>
 <li><code>[</code>：上一章节。</li>
 <li><code>]</code>：下一章节。</li>
 <li><code>Shift+H</code>：上一个标题。</li>
@@ -211,16 +238,6 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>1</code> 至 <code>6</code>：下一个 1-6 级标题。</li>
 <li><code>Shift+P</code>：上一页。</li>
 <li><code>P</code>：下一页。</li>
-<li><code>Shift+B</code>：上一个书签。</li>
-<li><code>B</code>：下一个书签。</li>
-<li><code>/</code>：设置临时书签。</li>
-<li><code>\</code>：跳转到临时书签。</li>
-<li><code>Shift+N</code>：上一个笔记。</li>
-<li><code>N</code>：下一个笔记。</li>
-<li><code>Ctrl+B</code>：跳转到所有书签和笔记。</li>
-<li><code>Ctrl+Alt+B</code>：仅跳转到书签。</li>
-<li><code>Ctrl+Alt+M</code>：仅跳转到笔记。</li>
-<li><code>Ctrl+Shift+W</code>（macOS：<code>RawCtrl+Shift+W</code>，即物理 Control 键而非 Cmd）：查看当前位置的笔记文本。</li>
 <li><code>Shift+K</code>：上一个链接。</li>
 <li><code>K</code>：下一个链接。</li>
 <li><code>Shift+G</code>：上一张图片。</li>
@@ -240,21 +257,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+,</code>：转到当前容器（列表或表格）的开头。</li>
 <li><code>,</code>：越过当前容器（列表或表格）的末尾。</li>
 </ul>
-<h3 id="工具菜单">工具菜单</h3>
+<h3 id="书签菜单">书签菜单</h3>
 <ul>
-<li><code>Ctrl+W</code>（macOS：<code>RawCtrl+W</code>，即物理 Control 键而非 Cmd）：显示当前文档的字数统计。</li>
-<li><code>Ctrl+I</code>：显示文档信息。</li>
-<li><code>Ctrl+T</code>：显示目录。</li>
-<li><code>F7</code>：显示元素列表。</li>
-<li><code>Ctrl+Shift+C</code>：打开所在文件夹。</li>
-<li><code>Ctrl+Shift+V</code>：在 Web 视图中打开当前内容。</li>
-<li><code>Ctrl+U</code>：在新标签页中查看文档源。</li>
-<li><code>Ctrl+Shift+E</code>：导出文档数据（<code>.paperback</code>）。</li>
-<li><code>Ctrl+Shift+I</code>：导入文档数据（<code>.paperback</code>）。</li>
-<li><code>Ctrl+E</code>：将当前文档导出为纯文本。</li>
 <li><code>Ctrl+Shift+B</code>：在当前选择/光标处切换书签。</li>
 <li><code>Ctrl+Shift+N</code>：在当前选择/光标处添加或编辑书签笔记。</li>
-<li><code>Ctrl+Alt+W</code>：切换自动换行。</li>
+<li><code>Shift+B</code>：上一个书签。</li>
+<li><code>B</code>：下一个书签。</li>
+<li><code>Shift+N</code>：上一个笔记。</li>
+<li><code>N</code>：下一个笔记。</li>
+<li><code>Ctrl+Shift+W</code>（macOS：<code>RawCtrl+Shift+W</code>，即物理 Control 键而非 Cmd）：查看当前位置的笔记文本。</li>
+<li><code>Ctrl+B</code>：跳转到所有书签和笔记。</li>
+<li><code>Ctrl+Alt+B</code>：仅跳转到书签。</li>
+<li><code>Ctrl+Alt+M</code>：仅跳转到笔记。</li>
+<li><code>/</code>：设置临时书签。</li>
+<li><code>\</code>：跳转到临时书签。</li>
+</ul>
+<h3 id="音频菜单">音频菜单</h3>
+<ul>
 <li><code>Ctrl+Space</code>（macOS：<code>RawCtrl+Space</code>，即物理 Control 键，因为 Cmd+Space 会打开 Spotlight）：播放/暂停音频朗读。</li>
 <li><code>'</code>：音频朗读向前跳转。</li>
 <li><code>;</code>：音频朗读向后跳转。</li>
@@ -262,13 +281,17 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+;</code>：减小音频跳转步长。</li>
 <li><code>Ctrl+Shift+.</code>：加快音频朗读速度。</li>
 <li><code>Ctrl+Shift+,</code>：减慢音频朗读速度。</li>
-<li><code>F11</code>（macOS：<code>RawCtrl+Ctrl+F</code>，即 Control+Command+F）：切换全屏。</li>
-<li><code>Ctrl+,</code>：打开设置（macOS：位于应用菜单下）。</li>
-<li><code>Ctrl+Shift+S</code>：切换睡眠定时器。</li>
+<li><code>Ctrl+'</code>：提高音频朗读音量。</li>
+<li><code>Ctrl+;</code>：降低音频朗读音量。</li>
+</ul>
+<h3 id="工具菜单">工具菜单</h3>
+<ul>
+<li><code>Ctrl+W</code>（macOS：<code>RawCtrl+W</code>，即物理 Control 键而非 Cmd）：显示当前文档的字数统计。</li>
+<li><code>Ctrl+I</code>：显示文档信息。</li>
 <li><code>Ctrl+Shift+O</code>：使用 OCR 识别扫描版 PDF 的页面范围。</li>
-<li><code>Alt+F9</code>（macOS：<code>Cmd+F9</code>）：标记选区起点，这样从这里到您到达的任何位置之间的所有内容都可以一次性复制。</li>
-<li><code>Alt+F10</code>（macOS：<code>Cmd+F10</code>）：将从标记的选区起点到当前位置的所有内容复制到剪贴板。</li>
-<li><code>Alt+Shift+F9</code>（macOS：<code>Cmd+Shift+F9</code>）：跳回标记的选区起点，并保留标记。</li>
+<li><code>Ctrl+Shift+R</code>：使用 OCR 识别光标所在的 PDF 或漫画页面，替换其已有的任何文本。</li>
+<li><code>Ctrl+Shift+S</code>：切换睡眠定时器。</li>
+<li><code>Ctrl+,</code>：打开设置（macOS：位于应用菜单下）。</li>
 </ul>
 <h3 id="帮助菜单">帮助菜单</h3>
 <ul>
@@ -281,9 +304,12 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="文档视图附加按键">文档视图附加按键</h3>
 <ul>
 <li>选项卡控件上的 <code>Delete</code> / <code>数字键盘 Delete</code>：关闭选中的文档选项卡。</li>
+<li>在文档文本中或选项卡控件上按 <code>Ctrl+1</code> 至 <code>Ctrl+9</code>（macOS：<code>Cmd+1</code> 至 <code>Cmd+9</code>）：按打开顺序转到前九个已打开的文档。</li>
+<li><code>Ctrl+Tab</code> 和 <code>Ctrl+Shift+Tab</code>：转到下一个或上一个已打开的文档，到任一端后循环。</li>
 <li>文档文本中的 <code>Enter</code> 或 <code>Space</code>：跟随光标处的链接，或打开表格或公式视图。</li>
 <li>扫描版 PDF 页面上的 <code>Enter</code>：使用 OCR 识别该页。</li>
-<li>文档文本中的 <code>Shift+F10</code> 或菜单/应用程序键：打开上下文菜单。</li>
+<li>在非链接的图片上按 <code>Enter</code>：显示图片中识别出的文本，该视图可用 <code>Escape</code> 关闭。图片本身保持不变，文档的文本也不会被修改。</li>
+<li>文档文本中的 <code>Shift+F10</code> 或菜单/应用程序键：打开上下文菜单。在 PDF、EPUB、HTML、Markdown、CHM、FB2 或漫画中的图片上，它还会提供将图片保存到文件的选项；在 Windows 和 macOS 上还能读取图片中的文本，这也是阅读同时作为链接的图片的方法。</li>
 </ul>
 <h2 id="ios-和-android">iOS 和 Android</h2>
 <p>iOS 和 Android 应用使用与桌面版相同的阅读引擎，因此它们打开相同的格式，并以相同的方式记住您的位置。它们专为在 iOS 上配合 VoiceOver、在 Android 上配合 TalkBack 使用而构建。</p>
@@ -310,7 +336,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>切换到 TTS 模式或切换到文本模式：</strong> 在朗读模式和文本模式之间切换，如上所述。在文本模式下，“朗读”项目可在不离开文本模式的情况下开始和暂停朗读。</li>
 <li><strong>目录：</strong> 图书的章节，打开时位于您正在阅读的章节。选择一个可直接跳转到该章节。带有子章节的条目可以使用屏幕阅读器的操作展开和折叠。</li>
 <li><strong>元素：</strong> 文档标题或链接的列表。在 iOS 上使用“类型”选择器，在 Android 上使用选项卡，在两者之间切换，然后选择一个跳转到它。</li>
-<li><strong>查找：</strong> 输入要查找的内容，或从搜索历史中选择较早的搜索，并选择是否区分大小写、仅匹配全字或使用正则表达式。查找上一个和查找下一个会跳转到匹配项并朗读其位置，查找对话框保持打开，以便您可以继续。在朗读模式下，查找也会作为阅读栏上的导航单位显示，因此您也可以从那里逐步浏览匹配项。</li>
+<li><strong>查找：</strong> 输入要查找的内容，或从搜索历史中选择较早的搜索，并选择是否区分大小写、仅匹配全字或使用正则表达式。查找上一个和查找下一个会跳转到匹配项并朗读其位置，查找对话框保持打开，以便您可以继续。在朗读模式下，查找还会作为阅读栏上的一个导航单位显示，因此您也可以从那里逐条浏览匹配项。设置中“文字转语音”下的<strong>找到搜索匹配项后停止朗读</strong>默认开启，会在朗读完包含匹配项的段落后停止。关闭后可从匹配项继续朗读，同时阅读栏的上一个和下一个控件仍按查找导航。</li>
 <li><strong>转到：</strong> 跳转到文档中的某一行、某一页或某个百分比。使用“模式”选择器选择。</li>
 <li><strong>最近文档：</strong> 您打开过的每个文档，每个都标记为当前已打开、已关闭或文件缺失。每个都有两个屏幕阅读器操作：“移除”将其从列表中删除，“定位”让您找到文件已移动的文档。“清除最近文档”会清空列表而不删除任何文档。</li>
 <li><strong>字数统计：</strong> 文档中的单词数。</li>
@@ -339,6 +365,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>芬兰语</li>
 <li>法语</li>
 <li>德语</li>
+<li>匈牙利语</li>
 <li>日语</li>
 <li>波兰语</li>
 <li>葡萄牙语（巴西）</li>
@@ -452,7 +479,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>文件已丢失的文档现在可以从“所有文档”中移除，而不是无论您确认多少次都留在列表中。</li>
 <li>修复了关闭 Paperback 时崩溃的问题。</li>
 <li>关闭 Paperback 现在会立即隐藏窗口，而不是在保存时将其留在屏幕上。</li>
-<li>格式很少的大型书籍现在打开时间约为原来的一半。</li>
+<li>格式较少的大型图书现在打开时间约为原来的一半。</li>
 <li>从菜单中选择的消息，例如“此文档没有音频”，不再在您听到之前被屏幕阅读器截断。</li>
 <li>打开文档时，如果没有可重新打开的文档，“重新打开上次关闭的文档”不再保持启用状态。</li>
 <li>Paperback 不再反复重试最近列表中已丢失的文档，并限制了存储的最近文档数量。</li>
@@ -740,7 +767,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>修复了 Esc 键无法关闭“打开方式”对话框的问题。</li>
 <li>修复了右键或应用程序键无法弹出阅读器上下文菜单的问题。</li>
 <li>修复了从命令行打开文档时有时聚焦到错误文档的问题。</li>
-<li>仅包含图片的 PDF 再次被检测到并提醒您其存在。</li>
+<li>仅包含图片的 PDF 会再次被检测到，并提醒您注意其存在。</li>
 <li>现在可以分别使用 G/Shift+G 和 F/Shift+F 在图片和图形之间导航。</li>
 <li>Paperback 现在会遵循您的应用程序深色模式设置。</li>
 <li>移除了 DAISY XML 支持，因为不再需要。</li>
@@ -848,7 +875,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>修复了转到百分比对话框中文本字段未更新滑块值的问题。</li>
 <li>修复了 Markdown 文档中自定义 HTML ID 的渲染。</li>
 <li>Markdown 代码块内的 HTML 现在会正确渲染。</li>
-<li>如果使用命令行参数加载书籍时已有 Paperback 实例在运行，如果文档加载超过 5 秒，您将不再收到错误。</li>
+<li>如果在已有 Paperback 实例运行时通过命令行参数加载图书，那么文档加载耗时超过 5 秒也不会再报错。</li>
 <li>如果以管理员身份运行 Paperback，配置现在会被正确加载和保存。</li>
 <li>现在可以直接从书签对话框中删除书签。</li>
 <li>现在可以导入和导出特定文档的书签和阅读位置。生成的文件以原文件命名，扩展名为 .paperback。如果在加载文件时在同一目录中发现此类文件，它将自动加载。否则，您可以使用工具菜单中的项目手动导入。</li>
@@ -903,7 +930,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>向状态栏添加了更多信息。它现在会显示您的当前行、字符和阅读百分比。</li>
 <li>HTML 注释以及 script 和 style 标签的内容将不再显示在文本输出中。</li>
 <li>如果在命令行中向 Paperback 传递相对路径，现在会正确解析。</li>
-<li>百分比移动现在由自己的基于滑块的对话框处理，可通过 Ctrl+Shift+G 访问。</li>
+<li>百分比移动现在由独立的基于滑块的对话框处理，可通过 Ctrl+Shift+G 访问。</li>
 <li>没有已知标题或作者的文档现在将始终有一个默认值。</li>
 <li>位置保存逻辑现在更加智能，只应在绝对必要时才写入磁盘。</li>
 <li>关闭 Paperback 时聚焦的文档现在会在应用程序重启后记住。</li>
@@ -914,7 +941,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>修复了 epub 图书中具有 URL 编码清单的目录。</li>
 <li>修复了包含多字节 Unicode 字符的 HTML 文档中的标题导航。</li>
-<li>修复了由于 wxWidgets 回归导致的标题较长的文档中 CPU 使用率过高的问题。</li>
+<li>修复了因 wxWidgets 的一处回归问题导致标题较长的文档 CPU 占用过高的问题。</li>
 <li>修复了加载 UTF-8 文本文件的问题。</li>
 <li>修复了 Epub 图书中嵌套目录项将光标置于错误位置的问题。</li>
 <li>修复了某些情况下应用程序退出时崩溃的问题。</li>
@@ -944,7 +971,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>如果文档不支持目录或章节，现在会朗读一条消息，而不是禁用菜单项。</li>
 <li>添加了最近文档菜单！它目前存储您最近打开的 10 个文档，在其中一个上按 Enter 将打开以供阅读。</li>
 <li>完全重写了查找对话框，使其更易于使用，同时添加了最近 25 次搜索的历史记录和正则表达式支持！</li>
-<li>以前打开的文档现在会在应用程序重启后记住。这可以通过工具菜单中的新选项项进行配置。</li>
+<li>以前打开的文档现在会在应用程序重启后记住。这可以通过工具菜单中新增的“选项”项进行配置。</li>
 <li>添加了 Shift+F1 直接在 Paperback 中打开 readme。</li>
 </ul>
 <h3 id="版本-010">版本 0.1.0</h3>
