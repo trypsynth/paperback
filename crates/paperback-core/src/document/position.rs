@@ -5,6 +5,8 @@ use std::{
 	ops::{Add, AddAssign, Sub, SubAssign},
 };
 
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
 /// A place in a document, counted in Unicode scalars from its start: the unit of the caret, markers, bookmarks and every saved position, the same on every platform. A text control that counts otherwise, as Windows and macOS count UTF-16 code units, is converted where the desktop app loads text into it.
 ///
 /// Nothing ties a position to one buffer, since positions outlive the buffers they were taken from (saved positions, history, a reparse), so one can point past the end or be from another document. [`super::DocumentBuffer::nearest_pos`] brings an outside value into range.
@@ -185,9 +187,22 @@ impl TryFrom<DocLen> for i64 {
 }
 
 /// The `usize` an `i64` from outside the core stands for, with a negative one at the start.
-#[cfg(feature = "uniffi")]
 fn saturating_usize(raw: i64) -> usize {
 	usize::try_from(raw.max(0)).unwrap_or(usize::MAX)
+}
+
+/// Saved as the plain integer the config has always held.
+impl Serialize for DocPos {
+	fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+		serializer.serialize_i64(i64::try_from(self.0).unwrap_or(i64::MAX))
+	}
+}
+
+/// A negative position, which nothing writes but an edited file could hold, loads as the start rather than failing the whole config.
+impl<'de> Deserialize<'de> for DocPos {
+	fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+		i64::deserialize(deserializer).map(|raw| Self(saturating_usize(raw)))
+	}
 }
 
 // The apps take positions and lengths as the `i64` the FFI has always carried, so their bindings don't change. A negative one lifts to the start rather than failing the call, since iOS's Go to page can pass back the -1 of a page that isn't there.

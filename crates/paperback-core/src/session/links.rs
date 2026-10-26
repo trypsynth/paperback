@@ -90,14 +90,14 @@ impl DocumentSession {
 		path: &str,
 		filter: ffi::BookmarkFilterType,
 	) -> Vec<AnnotationEntry> {
-		get_filtered_bookmarks(config, path, 0, filter)
+		get_filtered_bookmarks(config, path, DocPos::ZERO, filter)
 			.items
 			.into_iter()
 			.map(|b| AnnotationEntry {
 				passage: if b.is_whole_line {
-					self.get_line_text(self.nearest_pos(b.start))
+					self.get_line_text(b.start)
 				} else {
-					self.get_text_range_display(self.nearest_pos(b.start), self.nearest_pos(b.end))
+					self.get_text_range_display(b.start, b.end)
 				},
 				note: b.note,
 				audio_ms: b.audio_ms,
@@ -114,15 +114,14 @@ impl DocumentSession {
 		path: &str,
 		position: DocPos,
 	) -> ffi::BookmarkDisplayAtPosition {
-		let bookmark =
-			config.get_bookmarks(path).into_iter().find(|bm| i64::try_from(position).is_ok_and(|p| bm.start == p));
+		let bookmark = config.get_bookmarks(path).into_iter().find(|bm| bm.start == position);
 		let Some(bookmark) = bookmark else {
 			return ffi::BookmarkDisplayAtPosition { found: false, note: String::new(), snippet: String::new() };
 		};
 		let snippet = if bookmark.start == bookmark.end {
-			self.line_text_at(self.nearest_pos(bookmark.start))
+			self.line_text_at(bookmark.start)
 		} else {
-			self.get_text_range_display(self.nearest_pos(bookmark.start), self.nearest_pos(bookmark.end))
+			self.get_text_range_display(bookmark.start, bookmark.end)
 		};
 		ffi::BookmarkDisplayAtPosition { found: true, note: bookmark.note, snippet }
 	}

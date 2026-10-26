@@ -1,6 +1,6 @@
 use std::{collections::HashSet, sync::Mutex};
 
-use crate::{config::ConfigManager, parser::ParserRegistry};
+use crate::{config::ConfigManager, document::DocPos, parser::ParserRegistry};
 
 /// Thread-safe wrapper around `ConfigManager` for `UniFFI` exposure.
 #[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
@@ -69,11 +69,11 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().associate_uri_with_local_file(&uri, &local_path);
 	}
 
-	pub fn set_document_position(&self, path: String, position: i64) {
+	pub fn set_document_position(&self, path: String, position: DocPos) {
 		self.inner.lock().unwrap().set_document_position(&path, position);
 	}
 
-	pub fn get_document_position(&self, path: String) -> i64 {
+	pub fn get_document_position(&self, path: String) -> DocPos {
 		self.inner.lock().unwrap().get_document_position(&path)
 	}
 

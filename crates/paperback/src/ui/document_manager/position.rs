@@ -70,7 +70,7 @@ impl DocumentManager {
 		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		let path_str = tab.file_path.to_string_lossy().to_string();
 		let config = self.config.lock().unwrap();
-		config.set_temporary_bookmark(&path_str, Some(navigation::config_pos(position)));
+		config.set_temporary_bookmark(&path_str, Some(position));
 		config.flush();
 		drop(config);
 		// TRANSLATORS: Announced after setting a temporary bookmark at the current position
@@ -97,7 +97,7 @@ impl DocumentManager {
 		};
 		let (message, track, update) = {
 			let tab = self.active_tab_mut().unwrap();
-			let position = tab.session.nearest_pos(position);
+			let position = position.min(tab.session.document_len().as_pos());
 			let line_text = tab.session.get_line_text(position);
 			let message = if line_text.trim().is_empty() {
 				// TRANSLATORS: Fallback announcement when jumping to a temporary bookmark on a blank line

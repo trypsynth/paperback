@@ -23,7 +23,7 @@ use super::{
 };
 use crate::ui::{
 	document_manager::display_title,
-	navigation::{announce_for_command, config_pos, set_caret_to_doc_offset},
+	navigation::{announce_for_command, set_caret_to_doc_offset},
 };
 
 /// Handles every menu id not covered by `bind_menu_events`'s own dispatch match: dynamic
@@ -327,11 +327,11 @@ pub(super) fn handle_import_document_data(
 		let pos = {
 			let config = config.lock().unwrap();
 			config.import_settings_from_file(&path_str, &path);
-			config.get_validated_document_position(&path_str, config_pos(tab.session.document_len().as_pos()))
+			config.get_validated_document_position(&path_str, tab.session.document_len().as_pos())
 		};
 		tracing::info!(doc = %tab.file_path.display(), import = %path, "document data imported");
-		if pos >= 0 {
-			set_caret_to_doc_offset(tab, tab.session.nearest_pos(pos));
+		if let Some(pos) = pos {
+			set_caret_to_doc_offset(tab, pos);
 		}
 		let dialog = MessageDialog::builder(
 			frame,

@@ -7,10 +7,13 @@
 //! bookmarks, so a text bookmark and an audio one at the same position never get confused.
 
 use super::ConfigManager;
-use crate::config::settings::{Bookmark, StoredBookmark};
+use crate::{
+	config::settings::{Bookmark, StoredBookmark},
+	document::DocPos,
+};
 
 impl ConfigManager {
-	pub fn add_bookmark(&self, path: &str, start: i64, end: i64, note: &str) {
+	pub fn add_bookmark(&self, path: &str, start: DocPos, end: DocPos, note: &str) {
 		if !self.initialized {
 			return;
 		}
@@ -27,7 +30,7 @@ impl ConfigManager {
 		self.dirty.set(true);
 	}
 
-	pub fn remove_bookmark(&self, path: &str, start: i64, end: i64) {
+	pub fn remove_bookmark(&self, path: &str, start: DocPos, end: DocPos) {
 		if !self.initialized {
 			return;
 		}
@@ -42,7 +45,7 @@ impl ConfigManager {
 		self.dirty.set(true);
 	}
 
-	pub fn toggle_bookmark(&self, path: &str, start: i64, end: i64, note: &str) {
+	pub fn toggle_bookmark(&self, path: &str, start: DocPos, end: DocPos, note: &str) {
 		if self.get_bookmarks(path).iter().any(|bm| bm.audio_ms.is_none() && bm.start == start && bm.end == end) {
 			self.remove_bookmark(path, start, end);
 		} else {
@@ -50,7 +53,7 @@ impl ConfigManager {
 		}
 	}
 
-	pub fn update_bookmark_note(&self, path: &str, start: i64, end: i64, note: &str) {
+	pub fn update_bookmark_note(&self, path: &str, start: DocPos, end: DocPos, note: &str) {
 		if !self.initialized {
 			return;
 		}
@@ -83,7 +86,7 @@ impl ConfigManager {
 	}
 
 	/// Adds a bookmark at `audio_ms` in the recording, filed under the chapter at `position`.
-	pub fn add_audio_bookmark(&self, path: &str, position: i64, audio_ms: u64, note: &str) {
+	pub fn add_audio_bookmark(&self, path: &str, position: DocPos, audio_ms: u64, note: &str) {
 		if !self.initialized {
 			return;
 		}
@@ -148,7 +151,7 @@ impl ConfigManager {
 	}
 }
 
-fn is_text_bookmark_at(bookmark: &StoredBookmark, start: i64, end: i64) -> bool {
+fn is_text_bookmark_at(bookmark: &StoredBookmark, start: DocPos, end: DocPos) -> bool {
 	bookmark.audio_ms.is_none() && bookmark.start == start && bookmark.end == end
 }
 
@@ -172,8 +175,8 @@ mod tests {
 	#[test]
 	fn two_audio_bookmarks_in_one_chapter_are_both_kept() {
 		let config = config();
-		config.add_audio_bookmark("book.mp3", 0, 10_000, "");
-		config.add_audio_bookmark("book.mp3", 0, 60_000, "");
+		config.add_audio_bookmark("book.mp3", 0.into(), 10_000, "");
+		config.add_audio_bookmark("book.mp3", 0.into(), 60_000, "");
 		let times: Vec<_> = config.get_bookmarks("book.mp3").iter().map(|bm| bm.audio_ms).collect();
 		assert_eq!(vec![Some(10_000), Some(60_000)], times);
 	}
@@ -182,7 +185,7 @@ mod tests {
 	#[test]
 	fn a_bookmark_a_moment_away_is_found_but_one_further_off_is_not() {
 		let config = config();
-		config.add_audio_bookmark("book.mp3", 0, 10_000, "");
+		config.add_audio_bookmark("book.mp3", 0.into(), 10_000, "");
 		assert_eq!(Some(10_000), config.audio_bookmark_near("book.mp3", 10_400, 1000).and_then(|bm| bm.audio_ms));
 		assert!(config.audio_bookmark_near("book.mp3", 12_000, 1000).is_none());
 	}
@@ -192,9 +195,9 @@ mod tests {
 	#[test]
 	fn text_and_audio_bookmarks_at_one_position_stay_separate() {
 		let config = config();
-		config.add_bookmark("book.mp3", 0, 0, "text");
-		config.add_audio_bookmark("book.mp3", 0, 5000, "audio");
-		config.remove_bookmark("book.mp3", 0, 0);
+		config.add_bookmark("book.mp3", 0.into(), 0.into(), "text");
+		config.add_audio_bookmark("book.mp3", 0.into(), 5000, "audio");
+		config.remove_bookmark("book.mp3", 0.into(), 0.into());
 		let left = config.get_bookmarks("book.mp3");
 		assert_eq!(1, left.len());
 		assert_eq!(Some(5000), left[0].audio_ms);
@@ -208,7 +211,7 @@ mod tests {
 	/// bookmark written now leaves it out, so neither older nor newer builds see a change.
 	#[test]
 	fn a_text_bookmark_serializes_exactly_as_it_did_before() {
-		let stored = StoredBookmark { start: 3, end: 7, note: String::new(), audio_ms: None };
+		let stored = StoredBookmark { start: 3.into(), end: 7.into(), note: String::new(), audio_ms: None };
 		assert!(!toml::to_string(&stored).unwrap().contains("audio_ms"));
 		let read: StoredBookmark = toml::from_str("start = 3\nend = 7\n").unwrap();
 		assert_eq!(None, read.audio_ms);

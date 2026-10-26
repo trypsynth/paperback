@@ -8,18 +8,18 @@ use std::{fs, path::Path};
 use serde::{Deserialize, Serialize};
 
 use super::ConfigManager;
-use crate::config::settings::StoredBookmark;
+use crate::{config::settings::StoredBookmark, document::DocPos};
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub(super) struct SidecarData {
 	#[serde(default, skip_serializing_if = "Option::is_none")]
-	last_position: Option<i64>,
+	last_position: Option<DocPos>,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	format: Option<String>,
 	#[serde(default, skip_serializing_if = "Vec::is_empty")]
 	bookmarks: Vec<StoredBookmark>,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
-	temporary_bookmark: Option<i64>,
+	temporary_bookmark: Option<DocPos>,
 }
 
 impl ConfigManager {
@@ -66,7 +66,7 @@ impl ConfigManager {
 		let data = self.data.borrow();
 		let doc = data.documents.get(&key);
 		let sidecar = SidecarData {
-			last_position: doc.map(|d| d.last_position).filter(|&p| p > 0),
+			last_position: doc.map(|d| d.last_position).filter(|&p| p > DocPos::ZERO),
 			format: doc.and_then(|d| if d.format.is_empty() { None } else { Some(d.format.clone()) }),
 			bookmarks: doc.map(|d| d.bookmarks.clone()).unwrap_or_default(),
 			temporary_bookmark: doc.and_then(|d| d.temporary_bookmark),
