@@ -29,22 +29,18 @@ fn html_converter_emits_table_inline_or_placeholder(#[case] inline: bool) {
 	let table_line = if inline { "A\tB" } else { "[Table]: A B" };
 	let expected_text = format!("Intro\n{table_line}\nAfter heading");
 	assert_eq!(converter.get_text(), expected_text, "table emitted as {table_line:?}");
-	// display_length equals the emitted display extent (the table line plus its newline).
-	let expected_display_length = DocLen::of(table_line) + 1.into();
-	assert_eq!(tables[0].length, expected_display_length);
+	// The length is the emitted text's, in positions: the table line plus its newline.
+	let expected_length = DocLen::of(table_line) + 1.into();
+	assert_eq!(tables[0].length, expected_length);
 	// The heading marker that follows the table sits right after the emitted table span.
 	let headings = converter.get_headings();
 	assert_eq!(headings.len(), 1);
-	assert_eq!(
-		headings[0].offset,
-		tables[0].offset + expected_display_length,
-		"h2 immediately follows the emitted table span"
-	);
+	assert_eq!(headings[0].offset, tables[0].offset + expected_length, "h2 immediately follows the emitted table span");
 	// Through the real marker path, the Table marker's length matches the emitted extent.
 	let mut buffer = DocumentBuffer::with_content(converter.get_text());
 	add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 	let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
-	assert_eq!(table_marker.length, expected_display_length);
+	assert_eq!(table_marker.length, expected_length);
 }
 
 #[test]
@@ -241,7 +237,7 @@ fn clear_resets_converter_state() {
 }
 
 #[test]
-fn html_table_display_length_is_display_extent_not_byte_length() {
+fn html_table_length_counts_positions_not_bytes() {
 	let html =
 		concat!("<html><body><p>Intro</p>", "<table><tr><td>A</td><td>\u{1D11E}</td></tr></table>", "</body></html>");
 	let mut converter = HtmlToText::with_render_tables_inline(true);
@@ -267,15 +263,11 @@ fn html_two_tables_offsets_are_cumulative() {
 	let tables = converter.get_tables();
 	assert_eq!(tables.len(), 2, "expected two tables");
 	let t1_offset = tables[0].offset;
-	let t1_display_length = tables[0].length;
+	let t1_length = tables[0].length;
 	let t2_offset = tables[1].offset;
 	assert_eq!(t1_offset, 0, "first table starts at 0");
-	assert!(t1_display_length > 0.into(), "first table has non-zero display_length");
-	assert_eq!(
-		t2_offset,
-		t1_offset + t1_display_length,
-		"second table offset must equal first offset + first display_length"
-	);
+	assert!(t1_length > 0.into(), "first table has a non-zero length");
+	assert_eq!(t2_offset, t1_offset + t1_length, "second table offset must equal first offset + first length");
 }
 
 /// The Image marker spans the whole `"[Image: alt]"` placeholder, not just its first character, so

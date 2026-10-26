@@ -386,7 +386,7 @@ impl DocumentSession {
 		let Some((start, end)) = self.line_bounds_at(position) else {
 			return String::new();
 		};
-		self.get_text_range_display(start, end)
+		self.text_range(start, end)
 	}
 
 	/// Returns the first non-blank line of real content at or after `position`, skipping blank

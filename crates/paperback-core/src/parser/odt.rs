@@ -320,7 +320,7 @@ fn process_table(
 	render_tables_inline: bool,
 ) {
 	let table_start = buffer.end();
-	// The table collapses to a placeholder/TSV, so cells have no individual display offset. Register
+	// The table collapses to a placeholder/TSV, so cells have no individual position. Register
 	// every anchor `id` nested inside the table at the table's start position; internal links to a
 	// bookmark/footnote/cross-ref target inside a cell then navigate to the table.
 	for descendant in node.descendants() {
@@ -360,12 +360,12 @@ fn process_table(
 	let display_text = html_table_to_display(&html_content, render_tables_inline);
 	buffer.append(&display_text);
 	buffer.append("\n");
-	let display_len = buffer.end() - table_start;
+	let table_len = buffer.end() - table_start;
 	buffer.add_marker(
 		Marker::new(MarkerType::Table, table_start)
 			.with_text(marker_text)
 			.with_reference(html_content)
-			.with_length(display_len),
+			.with_length(table_len),
 	);
 }
 

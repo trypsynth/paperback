@@ -25,7 +25,7 @@ fn session_with_image_only_page() -> DocumentSession {
 #[test]
 fn line_bounds_at_and_line_text_at_return_the_containing_line() {
 	let session = session_with_content("aaa\nbbb\nccc");
-	// (start, end) are display units; end excludes the line's trailing newline.
+	// (start, end) are positions; end excludes the line's trailing newline.
 	assert_eq!(session.line_bounds_at(0.into()), Some((0.into(), 3.into())));
 	assert_eq!(session.line_text_at(0.into()), "aaa");
 	assert_eq!(session.line_bounds_at(5.into()), Some((4.into(), 7.into())));
@@ -81,9 +81,8 @@ fn replace_image_only_pages_ignores_offsets_that_are_not_placeholders() {
 }
 
 /// A session whose lines are each their own page, with a page break at every line start: the
-/// shape every paged parser produces. The breaks are placed from the buffer's own running display
-/// position rather than written down, so a fixture containing an astral character still lines up
-/// with however that platform measures display length.
+/// shape every paged parser produces. The breaks are placed from the buffer's own running
+/// position rather than written down, so a fixture containing an astral character still lines up.
 fn session_with_paged_lines(lines: &[&str]) -> DocumentSession {
 	let mut buffer = DocumentBuffer::new();
 	for line in lines {
@@ -135,7 +134,7 @@ fn page_text_bounds_of_a_blank_page_is_empty_rather_than_negative() {
 }
 
 /// The change in document length a page swap should report, given the text that went in and out.
-/// Both are ASCII, so their byte and display lengths agree on every platform.
+/// Both are ASCII, so their byte and position lengths agree.
 fn expected_delta(new_text: &str, old_text: &str) -> i64 {
 	i64::try_from(new_text.len()).unwrap_or(0) - i64::try_from(old_text.len()).unwrap_or(0)
 }
@@ -213,7 +212,7 @@ fn replace_ocr_pages_ignores_pages_the_document_does_not_have() {
 }
 
 #[test]
-fn replace_ocr_pages_measures_spans_in_display_units() {
+fn replace_ocr_pages_measures_spans_in_positions() {
 	// An emoji is one position but four bytes. What is being checked is that the page span, the
 	// page break it starts on and the caret are all measured in positions.
 	let mut session = session_with_paged_lines(&["\u{1F600} one", "page two", "page three"]);

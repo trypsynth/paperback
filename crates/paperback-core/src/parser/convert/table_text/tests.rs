@@ -95,17 +95,17 @@ fn table_caption_returns_none_for_empty_table() {
 }
 
 #[test]
-fn table_lines_preserve_empty_rows_and_report_display_length() {
-	let (lines, display_length) = display_lines_and_length("a\tb\n\tc");
+fn table_lines_preserve_empty_rows_and_report_their_length() {
+	let (lines, length) = display_lines_and_length("a\tb\n\tc");
 	assert_eq!(lines, vec!["a\tb".to_string(), "\tc".to_string()]);
-	assert_eq!(display_length, 7);
+	assert_eq!(length, 7);
 }
 
 #[test]
 fn table_lines_handle_empty_display_text() {
-	let (lines, display_length) = display_lines_and_length("");
+	let (lines, length) = display_lines_and_length("");
 	assert!(lines.is_empty());
-	assert_eq!(display_length, 0);
+	assert_eq!(length, 0);
 }
 
 #[test]

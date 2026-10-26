@@ -174,14 +174,14 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: ReaderCtrl, slice: &Wind
 			if text_ctrl.get_value() == *expected {
 				return;
 			}
-			// Not identical, but harmless as long as it cost no display units: every position
+			// Not identical, but harmless as long as it cost no units: every position
 			// the app hands the control is an offset into this buffer, so a length change
 			// breaks the caret, bookmarks and `text_window`'s translation alike, whereas a
 			// same-width substitution is only cosmetic. RichEdit does make a few of those on
 			// its own - U+2028 comes back as a vertical tab, U+FDD0..=U+FDEF as spaces - and
 			// falling back over those would cost seconds per window load to fix nothing. A
 			// length check is still decisive against the failure this guards: unparsed RTF
-			// stored as literal text would be tens of thousands of display units longer than
+			// stored as literal text would be tens of thousands of units longer than
 			// the content it encodes.
 			let expected_len = ctrl_len(&expected);
 			let stored_len = text_ctrl.get_last_position();

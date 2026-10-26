@@ -12,19 +12,18 @@ use crate::{
 
 /// How much of a document is shown at once when it is too long to show
 /// whole: the width of the reader's loaded window, and of the slice the web view is handed.
-pub const WINDOW_DISPLAY_LEN: DocLen = DocLen::from_raw(500_000);
+pub const WINDOW_LEN: DocLen = DocLen::from_raw(500_000);
 
 /// The document length up to which the whole thing is shown rather than a window around the
-/// reading position. One extension chunk above [`WINDOW_DISPLAY_LEN`], so a document a little
+/// reading position. One extension chunk above [`WINDOW_LEN`], so a document a little
 /// over a window's width is still shown whole rather than windowed from the outset.
 ///
 /// Shared between the reader and the web view deliberately. They used to decide separately,
-/// the reader against this and the web view against [`WINDOW_DISPLAY_LEN`], so a document
+/// the reader against this and the web view against [`WINDOW_LEN`], so a document
 /// between the two was loaded whole by one and sliced by the other: the web view dropped the
 /// text past its slice, dropped any link whose target lay outside it, and announced itself as
 /// a partial view of a document the reader was showing in full.
-pub const WHOLE_DOCUMENT_DISPLAY_LEN: DocLen =
-	DocLen::from_raw(WINDOW_DISPLAY_LEN.get() + WINDOW_DISPLAY_LEN.get() / 2);
+pub const WHOLE_DOCUMENT_LEN: DocLen = DocLen::from_raw(WINDOW_LEN.get() + WINDOW_LEN.get() / 2);
 
 /// A contiguous slice of a document's text, plus the Bold/Italic/Underline
 /// markers and the heading and list paragraphs that fall within it, rebased to positions in
@@ -71,12 +70,12 @@ impl DocumentSession {
 	///
 	/// Both bounds are clamped to the document; an empty or reversed range is an empty string.
 	#[must_use]
-	pub fn get_text_range_display(&self, start: DocPos, end: DocPos) -> String {
+	pub fn text_range(&self, start: DocPos, end: DocPos) -> String {
 		self.handle.document().buffer.text(start..end).to_string()
 	}
 
-	/// The position just past the character at `display_pos`, so that
-	/// `get_text_range_display(x, session.display_pos_after_char_at(y))` covers every character
+	/// The position just past the character at `position`, so that
+	/// `text_range(x, session.pos_after_char_at(y))` covers every character
 	/// from `x` through the one a caret at `y` is sitting on.
 	///
 	/// A caret sits at the *start* of the character it names - which is the character a screen
@@ -84,9 +83,9 @@ impl DocumentSession {
 	/// Past the last character it is the document length, so "the character at the caret" at the
 	/// very end of a document stays clamped instead of running off it.
 	#[must_use]
-	pub fn display_pos_after_char_at(&self, display_pos: DocPos) -> DocPos {
+	pub fn pos_after_char_at(&self, position: DocPos) -> DocPos {
 		let buf = &self.handle.document().buffer;
-		(display_pos.min(buf.end()) + DocLen::ONE).min(buf.end())
+		(position.min(buf.end()) + DocLen::ONE).min(buf.end())
 	}
 
 	/// Slices `[raw_start, raw_end)` (clamped to the document) out of the
@@ -427,44 +426,44 @@ epsilon";
 	}
 
 	#[test]
-	fn get_text_range_display_round_trips_the_whole_document() {
+	fn text_range_round_trips_the_whole_document() {
 		let content = "first paragraph\nsecond paragraph\nthird paragraph";
 		let session = session_with(content, &[]);
-		assert_eq!(session.get_text_range_display(0.into(), session.document_len().as_pos()), content);
+		assert_eq!(session.text_range(0.into(), session.document_len().as_pos()), content);
 	}
 
 	/// The property that separates this from `get_window`: what was asked for is what comes back,
 	/// even when it starts and ends mid-word.
 	#[test]
-	fn get_text_range_display_extracts_an_interior_range_without_snapping() {
+	fn text_range_extracts_an_interior_range_without_snapping() {
 		let content = "first paragraph\nsecond paragraph\nthird paragraph";
 		let session = session_with(content, &[]);
 		let start = DocPos::from(content.find("second").unwrap() + 3);
 		let end = DocPos::from(content.find("second paragraph").unwrap() + 10);
-		assert_eq!(session.get_text_range_display(start, end), "ond par");
+		assert_eq!(session.text_range(start, end), "ond par");
 		// The window call on the same bounds swallows both paragraphs whole.
 		assert_eq!(session.get_window(start, end).text, "second paragraph\n");
 	}
 
 	#[test]
-	fn get_text_range_display_clamps_and_handles_empty_or_reversed_ranges() {
+	fn text_range_clamps_and_handles_empty_or_reversed_ranges() {
 		let session = session_with("hello world", &[]);
 		let len = session.document_len().as_pos();
-		assert_eq!(session.get_text_range_display(0.into(), 100_000.into()), "hello world");
-		assert_eq!(session.get_text_range_display(0.into(), len), "hello world");
-		assert_eq!(session.get_text_range_display(3.into(), 3.into()), "");
-		assert_eq!(session.get_text_range_display(7.into(), 2.into()), "");
-		assert_eq!(session.get_text_range_display(len + 5.into(), len + 9.into()), "");
+		assert_eq!(session.text_range(0.into(), 100_000.into()), "hello world");
+		assert_eq!(session.text_range(0.into(), len), "hello world");
+		assert_eq!(session.text_range(3.into(), 3.into()), "");
+		assert_eq!(session.text_range(7.into(), 2.into()), "");
+		assert_eq!(session.text_range(len + 5.into(), len + 9.into()), "");
 	}
 
 	/// The inclusive end bound: a caret names the character it sits on, so a range ending at the
 	/// caret has to reach past that character rather than up to its start.
 	#[test]
-	fn display_pos_after_char_at_covers_the_character_the_caret_is_on() {
+	fn pos_after_char_at_covers_the_character_the_caret_is_on() {
 		let session = session_with("hello world", &[]);
-		let end = |pos| session.display_pos_after_char_at(pos);
-		assert_eq!(session.get_text_range_display(0.into(), end(0.into())), "h");
-		assert_eq!(session.get_text_range_display(0.into(), end(6.into())), "hello w");
+		let end = |pos| session.pos_after_char_at(pos);
+		assert_eq!(session.text_range(0.into(), end(0.into())), "h");
+		assert_eq!(session.text_range(0.into(), end(6.into())), "hello w");
 		// Past the last character it is the document length, never one beyond it.
 		assert_eq!(end(session.document_len().as_pos()), session.document_len().as_pos());
 		assert_eq!(end(10_000.into()), session.document_len().as_pos());
@@ -472,22 +471,22 @@ epsilon";
 
 	/// An astral-plane character is one character the reader hears, and one position.
 	#[test]
-	fn display_pos_after_char_at_spans_an_astral_character() {
+	fn pos_after_char_at_spans_an_astral_character() {
 		let session = session_with("a\u{1F600}bc", &[]);
-		let end = |pos| session.display_pos_after_char_at(pos);
-		assert_eq!(session.get_text_range_display(0.into(), end(0.into())), "a");
-		assert_eq!(session.get_text_range_display(1.into(), end(1.into())), "\u{1F600}");
-		assert_eq!(session.get_text_range_display(2.into(), end(2.into())), "b");
-		assert_eq!(session.get_text_range_display(0.into(), end(3.into())), "a\u{1F600}bc");
+		let end = |pos| session.pos_after_char_at(pos);
+		assert_eq!(session.text_range(0.into(), end(0.into())), "a");
+		assert_eq!(session.text_range(1.into(), end(1.into())), "\u{1F600}");
+		assert_eq!(session.text_range(2.into(), end(2.into())), "b");
+		assert_eq!(session.text_range(0.into(), end(3.into())), "a\u{1F600}bc");
 	}
 
 	#[test]
-	fn get_text_range_display_agrees_with_the_buffer_on_astral_characters() {
+	fn text_range_agrees_with_the_buffer_on_astral_characters() {
 		let session = session_with("a\u{1F600}bc", &[]);
 		// Positions: 'a' at 0, the emoji at 1, 'b' at 2, 'c' at 3.
 		assert_eq!(session.document_len(), 4);
-		assert_eq!(session.get_text_range_display(0.into(), 4.into()), "a\u{1F600}bc");
-		assert_eq!(session.get_text_range_display(1.into(), 2.into()), "\u{1F600}");
-		assert_eq!(session.get_text_range_display(2.into(), 4.into()), "bc");
+		assert_eq!(session.text_range(0.into(), 4.into()), "a\u{1F600}bc");
+		assert_eq!(session.text_range(1.into(), 2.into()), "\u{1F600}");
+		assert_eq!(session.text_range(2.into(), 4.into()), "bc");
 	}
 }

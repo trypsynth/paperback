@@ -14,7 +14,7 @@ use paperback_core::{document::DocPos, session::ParagraphFormat};
 use crate::text_format::FormatSegment;
 
 /// Replaces every character `RichEdit` silently discards instead of storing with a space, so
-/// its buffer holds exactly one display unit per display unit of `content`. Borrows unchanged
+/// its buffer holds exactly one of its units for each of `content`. Borrows unchanged
 /// when there is nothing to replace, which is the overwhelmingly common case.
 ///
 /// Every position the app hands the control is an offset into that buffer - the caret, a
@@ -153,7 +153,7 @@ pub fn build_rtf(
 /// `stream_rtf_into_ctrl` does; text appended after existing content uses [`build_rtf`] itself.
 ///
 /// `RichEdit` takes the last paragraph mark of a replacing stream as the end of its story and
-/// stores nothing for it. A window ending in one would then load a display unit short, and text
+/// stores nothing for it. A window ending in one would then load a unit short, and text
 /// appended to it later would run into its last paragraph. One more paragraph mark keeps it.
 #[must_use]
 pub fn build_rtf_for_whole_control(
