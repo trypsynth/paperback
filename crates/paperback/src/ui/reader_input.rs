@@ -263,6 +263,16 @@ pub(super) fn build_text_ctrl(
 		event.skip(false);
 		show_reader_context_menu(text_ctrl_for_right_click, &dm_for_right_click);
 	});
+	// VoiceOver's VO+Shift+M arrives as a context-menu event; left unhandled, wx hands it to
+	// NSTextView, which shows Cocoa's stock text menu instead of ours.
+	#[cfg(target_os = "macos")]
+	{
+		let dm_for_voiceover_menu = Rc::clone(self_rc);
+		text_ctrl.bind_internal(EventType::CONTEXT_MENU, move |event| {
+			event.skip(false);
+			show_reader_context_menu(text_ctrl, &dm_for_voiceover_menu);
+		});
+	}
 	text_ctrl
 }
 
