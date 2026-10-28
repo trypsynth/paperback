@@ -196,8 +196,8 @@ Az alábbi billentyűparancsok a Windowsra vonatkoznak. Ahol a macOS eltér, a m
 * `Ctrl+Tab` és `Ctrl+Shift+Tab`: Ugrás a következő vagy az előző megnyitott dokumentumra; az utolsó után az első, az első előtt az utolsó következik.
 * `Enter` vagy `Space` a dokumentum szövegében: A kurzornál lévő hivatkozás követése, illetve táblázat- vagy képletnézet megnyitása.
 * `Enter` egy szkennelt PDF-oldalon: Az oldal szövegfelismerése.
-* `Enter` egy nem hivatkozás képen: A képből felismert szöveg megjelenítése egy olyan nézetben, amelyet az `Escape` bezár. A kép maga nem változik, és a dokumentum szövege sem.
-* `Shift+F10` vagy a helyimenü-billentyű a dokumentum szövegében: A helyi menü megnyitása. Ha a kurzor egy PDF-, EPUB-, HTML-, Markdown-, CHM-, FB2-dokumentum vagy képregény képén áll, a kép fájlba is menthető, és Windowson illetve macOS-en a benne lévő szöveg is olvasható – így lehet olvasni egy olyan képet, amely hivatkozás is egyben.
+* `Enter` egy olyan képen, amely nem hivatkozás: A képből felismert szöveg megjelenítése egy olyan nézetben, amelyet az `Escape` bezár. A kép maga nem változik, és a dokumentum szövege sem.
+* `Shift+F10` vagy a helyimenü-billentyű a dokumentum szövegében: A helyi menü megnyitása. Ha a kurzor egy PDF-, EPUB-, HTML-, Markdown-, CHM-, FB2-dokumentum vagy képregény képén áll, a kép fájlba menthető, Windowson és macOS-en pedig a képen lévő szöveg is felismerhető. Így olvasható el az olyan kép is, amely egyben hivatkozás.
 
 ## iOS és Android
 
