@@ -1,6 +1,10 @@
 use std::{collections::HashSet, sync::Mutex};
 
-use crate::{config::ConfigManager, document::DocPos, parser::ParserRegistry};
+use crate::{
+	config::{ConfigManager, DocumentSpeech},
+	document::DocPos,
+	parser::ParserRegistry,
+};
 
 #[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct ConfigManagerFfi {
@@ -81,6 +85,14 @@ impl ConfigManagerFfi {
 	/// `-1` when no audio resume point has been stored for this document.
 	pub fn get_document_audio_time_ffi(&self, path: String) -> i64 {
 		self.inner.lock().unwrap().get_document_audio_time(&path).and_then(|ms| i64::try_from(ms).ok()).unwrap_or(-1)
+	}
+
+	pub fn set_document_speech(&self, path: String, speech: DocumentSpeech) {
+		self.inner.lock().unwrap().set_document_speech(&path, &speech);
+	}
+
+	pub fn get_document_speech(&self, path: String) -> DocumentSpeech {
+		self.inner.lock().unwrap().get_document_speech(&path)
 	}
 
 	pub fn set_document_password(&self, path: String, password: String) {

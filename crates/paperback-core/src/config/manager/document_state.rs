@@ -1,6 +1,6 @@
 use super::ConfigManager;
 use crate::{
-	config::settings::NavigationHistory,
+	config::settings::{DocumentSpeech, NavigationHistory},
 	document::{DocPos, ReplaceOutcome},
 };
 
@@ -146,6 +146,27 @@ impl ConfigManager {
 		}
 		let key = self.get_doc_key(path);
 		self.data.borrow().documents.get(&key).map(|d| d.format.clone()).unwrap_or_default()
+	}
+
+	pub fn set_document_speech(&self, path: &str, speech: &DocumentSpeech) {
+		if !self.initialized {
+			return;
+		}
+		{
+			let key = self.get_doc_key(path);
+			let mut data = self.data.borrow_mut();
+			Self::doc_entry_mut(&mut data, key, path).speech = speech.clone();
+		}
+		self.dirty.set(true);
+	}
+
+	#[must_use]
+	pub fn get_document_speech(&self, path: &str) -> DocumentSpeech {
+		if !self.initialized {
+			return DocumentSpeech::default();
+		}
+		let key = self.get_doc_key(path);
+		self.data.borrow().documents.get(&key).map(|d| d.speech.clone()).unwrap_or_default()
 	}
 
 	pub fn set_document_password(&self, path: &str, password: &str) {

@@ -195,6 +195,27 @@ impl Default for AppSettings {
 	}
 }
 
+/// Speech settings a reader chose for one document; each left out follows the app's own.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq, Eq)]
+pub struct DocumentSpeech {
+	/// The platform's own voice identifier, which another platform won't find and so ignores.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub voice: Option<String>,
+	/// Percentages of the platform's own range, as its rate and pitch controls show them, since each engine scales differently.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub rate_percent: Option<i32>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub pitch_percent: Option<i32>,
+}
+
+impl DocumentSpeech {
+	#[must_use]
+	pub fn is_empty(&self) -> bool {
+		*self == Self::default()
+	}
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct DocumentConfig {
 	pub path: String,
@@ -223,6 +244,8 @@ pub struct DocumentConfig {
 	/// Names a document opened from a link in lists better than its link can.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub download_name: Option<String>,
+	#[serde(default, skip_serializing_if = "DocumentSpeech::is_empty")]
+	pub speech: DocumentSpeech,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -313,6 +336,18 @@ mod tests {
 		let bare: DocumentConfig = toml::from_str("path = \"book.epub\"\n").unwrap();
 		assert_eq!(bare.audio_time_ms, None);
 		assert!(!toml::to_string(&bare).unwrap().contains("audio_time_ms"));
+	}
+
+	#[test]
+	fn a_documents_own_speech_round_trips_and_is_left_out_when_it_has_none() {
+		let speech =
+			DocumentSpeech { voice: Some("com.apple.voice.Alex".into()), rate_percent: Some(60), pitch_percent: None };
+		let doc = DocumentConfig { path: "book.epub".into(), speech: speech.clone(), ..DocumentConfig::default() };
+		let saved = toml::to_string(&doc).unwrap();
+		assert!(!saved.contains("pitch_percent"));
+		assert_eq!(toml::from_str::<DocumentConfig>(&saved).unwrap().speech, speech);
+		let bare = DocumentConfig { path: "book.epub".into(), ..DocumentConfig::default() };
+		assert!(!toml::to_string(&bare).unwrap().contains("speech"));
 	}
 
 	#[test]
