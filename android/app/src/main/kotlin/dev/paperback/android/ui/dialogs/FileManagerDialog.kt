@@ -29,7 +29,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.content.ContextCompat
 import dev.paperback.android.t
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -68,8 +67,8 @@ fun FileManagerDialog(
 			val sm = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 			sm.storageVolumes.mapNotNull { it.directory }
 		} else {
-			ContextCompat
-				.getExternalFilesDirs(context, null)
+			context
+				.getExternalFilesDirs(null)
 				.mapNotNull {
 					val path = it?.absolutePath ?: return@mapNotNull null
 					val index = path.indexOf("/Android/data/")
