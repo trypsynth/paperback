@@ -153,10 +153,12 @@ final class AppViewModel {
 		return model
 	}
 
-	func openDocument(url: URL, password: String? = nil, track: Bool = true) {
+	/// False when the document couldn't be opened, including when it asks for a password.
+	@discardableResult
+	func openDocument(url: URL, password: String? = nil, track: Bool = true) -> Bool {
 		if let existing = tabs.first(where: { $0.url == url }) {
 			activeTabId = existing.id
-			return
+			return true
 		}
 		let scopeStarted = url.startAccessingSecurityScopedResource()
 		let path = url.path(percentEncoded: false)
@@ -183,11 +185,19 @@ final class AppViewModel {
 				loadRecentsFromConfig()
 				saveBookmark(for: url, path: path)
 			}
+			if let password { configManager.setDocumentPassword(path: path, password: password) }
 			reading.loadSegment(for: tab)
 			reading.updateNowPlaying()
+			return true
 		} catch {
 			if scopeStarted { url.stopAccessingSecurityScopedResource() }
+			// The core starts a missing or wrong password's error with this marker, so the reader is asked for one rather than shown a failure.
+			if "\(error)".contains("[password_required]") {
+				navigation.passwordPromptUrl = url
+				return false
+			}
 			debugMessage = "Error opening '\(url.lastPathComponent)':\n\(error)\n\nPath: \(path)"
+			return false
 		}
 	}
 
