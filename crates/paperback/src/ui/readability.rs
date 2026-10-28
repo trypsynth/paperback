@@ -59,21 +59,21 @@ pub fn build_font_from_readability(rf: &ReadabilityFont) -> Option<Font> {
 	Some(font)
 }
 
+/// The colour a stored `0xRRGGBB` stands for, or `None` for the default, which is stored as a negative number.
+pub fn stored_colour(color: i32) -> Option<Colour> {
+	let [_, r, g, b] = color.to_be_bytes();
+	(color >= 0).then(|| Colour::rgb(r, g, b))
+}
+
 pub fn apply_foreground_color_to_ctrl(text_ctrl: TextCtrl, color: i32) {
-	if color >= 0 {
-		let r = ((color >> 16) & 0xFF) as u8;
-		let g = ((color >> 8) & 0xFF) as u8;
-		let b = (color & 0xFF) as u8;
-		text_ctrl.set_foreground_color(Colour::rgb(r, g, b));
+	if let Some(colour) = stored_colour(color) {
+		text_ctrl.set_foreground_color(colour);
 	}
 }
 
 pub fn apply_bg_color_to_ctrl(text_ctrl: TextCtrl, color: i32) {
-	if color >= 0 {
-		let r = ((color >> 16) & 0xFF) as u8;
-		let g = ((color >> 8) & 0xFF) as u8;
-		let b = (color & 0xFF) as u8;
-		text_ctrl.set_background_color(Colour::rgb(r, g, b));
+	if let Some(colour) = stored_colour(color) {
+		text_ctrl.set_background_color(colour);
 	}
 }
 
@@ -89,6 +89,11 @@ pub fn apply_text_alignment_to_ctrl(text_ctrl: TextCtrl, alignment: i32) {
 }
 
 #[cfg(target_os = "windows")]
+#[allow(
+	clippy::cast_possible_truncation,
+	clippy::cast_possible_wrap,
+	reason = "Win32 struct sizes and caret offsets fit the message parameters"
+)]
 pub fn apply_letter_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
 	use windows::Win32::{
 		Foundation::{HWND, LPARAM, WPARAM},
@@ -138,6 +143,11 @@ pub fn apply_paragraph_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
 	text_ctrl.set_style(0, text_ctrl.get_last_position(), &attr);
 }
 
+#[allow(
+	clippy::cast_possible_truncation,
+	clippy::cast_possible_wrap,
+	reason = "Win32 struct sizes and caret offsets fit the message parameters"
+)]
 pub fn apply_readability_format_to_ctrl(
 	text_ctrl: TextCtrl,
 	line_spacing: i32,
