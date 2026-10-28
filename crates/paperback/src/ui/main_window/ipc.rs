@@ -54,6 +54,7 @@ impl MainWindow {
 	fn toggle_visibility(&self) {
 		let is_shown = self.frame.is_shown();
 		if is_shown && self.is_window_active() {
+			#[cfg_attr(not(target_os = "windows"), allow(unused_mut))]
 			let mut has_popup = false;
 			#[cfg(target_os = "windows")]
 			{

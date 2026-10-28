@@ -37,7 +37,9 @@ pub struct PaperbackApp {
 static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
 
 impl PaperbackApp {
-	pub fn new(_app: App) -> Self {
+	pub fn new(app: App) -> Self {
+		#[cfg(not(target_os = "macos"))]
+		let _ = app;
 		migrate_if_needed();
 		let mut config = ConfigManager::new();
 		let _ = config.initialize(config_toml_path());
@@ -71,12 +73,12 @@ impl PaperbackApp {
 		#[cfg(target_os = "linux")]
 		crate::linux_integration::maybe_run_first_run_setup(main_window.frame(), &config);
 		#[cfg(target_os = "macos")]
-		_app.on_should_terminate(|| {
+		app.on_should_terminate(|| {
 			tracing::debug!("allowing native macOS termination request");
 			true
 		});
 		#[cfg(target_os = "macos")]
-		_app.on_reopen_app(|| {
+		app.on_reopen_app(|| {
 			if let Some(window) = main_window_from_ptr() {
 				window.show_from_dock();
 			}
@@ -84,7 +86,7 @@ impl PaperbackApp {
 		// Finder delivers documents via the odoc Apple Event, not argv, so
 		// "Open with"/double-click never reaches open_from_command_line.
 		#[cfg(target_os = "macos")]
-		_app.on_open_files(|files| {
+		app.on_open_files(|files| {
 			if let Some(window) = main_window_from_ptr() {
 				window.show_from_dock();
 				for file in &files {
@@ -249,7 +251,7 @@ mod pipe_unix {
 	}
 
 	/// Create the listening socket, removing any stale file first.
-	/// Returns None if XDG_RUNTIME_DIR is not set.
+	/// Returns None if `XDG_RUNTIME_DIR` is not set.
 	pub fn try_create_server() -> Option<UnixListener> {
 		let path = socket_path()?;
 		// Safe to remove: SingleInstanceChecker already confirmed no other instance.
@@ -285,7 +287,7 @@ pub struct PipeServer {
 }
 
 fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
-	#[cfg(not(any(target_os = "linux", target_os = "windows")))]
+	#[cfg(not(target_os = "windows"))]
 	let _ = main_window;
 	#[cfg(windows)]
 	{

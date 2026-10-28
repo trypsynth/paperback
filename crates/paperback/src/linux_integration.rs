@@ -146,7 +146,7 @@ fn apply_selections(appimage_path: &str, choices: &[AssociationChoice], selectio
 /// files or `PATH` itself by hand.
 ///
 /// Points at the AppImage file (`$APPIMAGE`, stable across runs) rather than the `usr/bin/pb`
-/// inside it, which lives on a fresh read-only mount that disappears once the app exits. AppRun
+/// inside it, which lives on a fresh read-only mount that disappears once the app exits. `AppRun`
 /// (see `xtask::release::build_appimage`) dispatches on `$ARGV0`'s basename, so invoking this
 /// symlink as `pb` re-execs the AppImage straight into `usr/bin/pb` instead of the GUI.
 fn add_pb_to_local_bin(appimage_path: &str) {
