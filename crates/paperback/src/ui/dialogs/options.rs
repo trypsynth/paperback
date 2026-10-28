@@ -13,6 +13,7 @@ use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 use crate::{
 	config_ext::{LogLevel, UpdateChannel, get_log_level, get_update_channel},
 	translation_manager::TranslationManager,
+	ui::readability::stored_colour,
 };
 
 mod font;
@@ -117,11 +118,11 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	let chosen_level = ui.log_level_combo.get_selection().and_then(|index| LogLevel::ALL.get(index as usize).copied());
 	let log_level = chosen_level.unwrap_or_default();
 	let readability_font = ui.readability_font.borrow().clone();
-	let line_spacing = ui.line_spacing_ctrl.get_selection().unwrap_or(0) as i32;
+	let line_spacing = ui.line_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
 	let bg_color = ui.bg_color.get();
-	let text_alignment = ui.text_alignment_ctrl.get_selection().unwrap_or(0) as i32;
-	let letter_spacing = ui.letter_spacing_ctrl.get_selection().unwrap_or(0) as i32;
-	let paragraph_spacing = ui.paragraph_spacing_ctrl.get_selection().unwrap_or(0) as i32;
+	let text_alignment = ui.text_alignment_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
+	let letter_spacing = ui.letter_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
+	let paragraph_spacing = ui.paragraph_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
 	let audio_seek_amount_seconds = ui
 		.audio_seek_amount_ctrl
 		.get_selection()
@@ -542,11 +543,11 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let initial_font = config.get_readability_font();
 	font_preview_label.set_label(&font_description(&initial_font));
 	let readability_font = Rc::new(RefCell::new(initial_font));
-	let stored_line_spacing = config.get_line_spacing().clamp(0, 2) as u32;
+	let stored_line_spacing = config.get_line_spacing().clamp(0, 2).unsigned_abs();
 	line_spacing_ctrl.set_selection(stored_line_spacing);
-	paragraph_spacing_ctrl.set_selection(config.get_paragraph_spacing().clamp(0, 2) as u32);
-	letter_spacing_ctrl.set_selection(config.get_letter_spacing().clamp(0, 2) as u32);
-	text_alignment_ctrl.set_selection(config.get_text_alignment().clamp(0, 3) as u32);
+	paragraph_spacing_ctrl.set_selection(config.get_paragraph_spacing().clamp(0, 2).unsigned_abs());
+	letter_spacing_ctrl.set_selection(config.get_letter_spacing().clamp(0, 2).unsigned_abs());
+	text_alignment_ctrl.set_selection(config.get_text_alignment().clamp(0, 3).unsigned_abs());
 	let stored_bg = config.get_bg_color();
 	bg_color_label.set_label(&color_description(stored_bg));
 	let bg_color = Rc::new(Cell::new(stored_bg));
@@ -572,14 +573,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let dialog_for_bg = dialog_ref;
 	choose_bg_button.on_click(move |_| {
 		let current = bg_state.get();
-		let initial = if current >= 0 {
-			let r = ((current >> 16) & 0xFF) as u8;
-			let g = ((current >> 8) & 0xFF) as u8;
-			let b = (current & 0xFF) as u8;
-			Some(Colour::rgb(r, g, b))
-		} else {
-			None
-		};
+		let initial = stored_colour(current);
 		// TRANSLATORS: Title of the system dialog for picking a background colour
 		let mut dlg = ColourDialog::builder(&dialog_for_bg).with_title(&t("Choose a colour"));
 		if let Some(c) = initial {
