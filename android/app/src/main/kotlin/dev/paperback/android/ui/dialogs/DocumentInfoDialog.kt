@@ -14,6 +14,7 @@ import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import dev.paperback.android.t
 import dev.paperback.android.ui.state.DocumentTabState
+import dev.paperback.android.ui.state.formatDuration
 import uniffi.paperback.DocumentStatsFfi
 import java.text.NumberFormat
 
@@ -62,6 +63,14 @@ fun DocumentInfoDialog(docState: DocumentTabState, stats: DocumentStatsFfi, prog
 					t("Characters (excluding spaces)"),
 					numbers.format(stats.charCountNoWhitespace)
 				)
+				if (stats.audioFileCount > 0) {
+					// TRANSLATORS: Label for the number of audio files in the document in the Document Information dialog
+					InfoRow(t("Number of files"), numbers.format(stats.audioFileCount))
+					// TRANSLATORS: Label for the total playback duration across all of the document's audio files in the Document Information dialog
+					InfoRow(t("Total duration"), formatDuration(stats.audioTotalDurationMs))
+					// TRANSLATORS: Label for the average playback duration per audio file in the document in the Document Information dialog
+					InfoRow(t("Average duration"), formatDuration(stats.audioTotalDurationMs / stats.audioFileCount))
+				}
 			}
 		},
 		confirmButton = {
