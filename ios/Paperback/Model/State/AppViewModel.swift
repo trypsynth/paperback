@@ -11,6 +11,7 @@ final class AppViewModel {
 		didSet {
 			guard activeTabId != oldValue else { return }
 			reading.ttsManager.stop()
+			speech.load(bookAt: activeTab?.url.path(percentEncoded: false))
 		}
 	}
 
@@ -24,6 +25,8 @@ final class AppViewModel {
 	let navigation = NavigationRouter()
 
 	let reading = ReadingController()
+
+	let speech = SpeechSettings()
 
 	var restorePreviousDocuments = true {
 		didSet { configManager.setAppBool(key: "restore_previous_documents", value: restorePreviousDocuments) }
@@ -99,33 +102,18 @@ final class AppViewModel {
 		reading.narration = narration
 
 		let ttsManager = reading.ttsManager
-		let savedRate = configManager.getAppString(key: "tts_speech_rate", defaultValue: "")
-		if let r = Float(savedRate) { ttsManager.speechRate = r }
-
-		let savedPitch = configManager.getAppString(key: "tts_pitch", defaultValue: "")
-		if let p = Float(savedPitch) { ttsManager.pitch = p }
+		speech.start(config: configManager, tts: ttsManager)
+		speech.onRestart = { [weak self] in self?.reading.playCurrentSegment() }
 
 		let savedPause = configManager.getAppString(key: "tts_paragraph_pause_ms", defaultValue: "")
 		if let ms = Int(savedPause) {
 			ttsManager.paragraphPauseMs = min(max(ms, paragraphPauseRangeMs.lowerBound), paragraphPauseRangeMs.upperBound)
 		}
 
-		let savedVoice = configManager.getAppString(key: "tts_voice_identifier", defaultValue: "")
-		if !savedVoice.isEmpty { ttsManager.selectedVoiceIdentifier = savedVoice }
-
 		loadRecentsFromConfig()
 		reading.start()
-		ttsManager.onSpeechRateChanged = { [weak self] rate in
-			self?.configManager.setAppString(key: "tts_speech_rate", value: "\(rate)")
-		}
-		ttsManager.onPitchChanged = { [weak self] pitch in
-			self?.configManager.setAppString(key: "tts_pitch", value: "\(pitch)")
-		}
 		ttsManager.onParagraphPauseChanged = { [weak self] ms in
 			self?.configManager.setAppString(key: "tts_paragraph_pause_ms", value: "\(ms)")
-		}
-		ttsManager.onVoiceChanged = { [weak self] identifier in
-			self?.configManager.setAppString(key: "tts_voice_identifier", value: identifier ?? "")
 		}
 
 		reading.isTextMode = configManager.getAppBool(key: "text_mode", defaultValue: false)

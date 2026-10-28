@@ -137,7 +137,6 @@ final class TtsManager: NSObject {
 		didSet {
 			guard oldValue != selectedVoiceIdentifier else { return }
 			invalidatePrefetch()
-			onVoiceChanged?(selectedVoiceIdentifier)
 		}
 	}
 
@@ -148,7 +147,6 @@ final class TtsManager: NSObject {
 	@ObservationIgnored var onPlaybackStateChanged: (() -> Void)?
 	@ObservationIgnored var onSpeechRateChanged: ((Float) -> Void)?
 	@ObservationIgnored var onPitchChanged: ((Float) -> Void)?
-	@ObservationIgnored var onVoiceChanged: ((String?) -> Void)?
 	@ObservationIgnored var onParagraphPauseChanged: ((Int) -> Void)?
 	@ObservationIgnored var rules: [TtsRule] = [] {
 		didSet { invalidatePrefetch() }

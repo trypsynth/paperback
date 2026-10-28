@@ -30,6 +30,11 @@ struct DocumentMenu: View {
 			.accessibilityAction(named: t("Find")) { viewModel.navigation.showFind = true }
 			.accessibilityAction(named: t("Elements")) { viewModel.navigation.showElements = true }
 			.accessibilityAction(named: t("Table of Contents")) { viewModel.navigation.showToc = true }
+			.accessibilityActions {
+				if speaksWithTts {
+					Button(t("Speech for This Book")) { viewModel.navigation.showBookSpeech = true }
+				}
+			}
 			.accessibilityAction(named: toggleModeActionName) {
 				viewModel.reading.toggleTextMode()
 			}
@@ -38,6 +43,11 @@ struct DocumentMenu: View {
 					Button(readAloudTitle) { viewModel.reading.togglePlayPause() }
 				}
 			}
+	}
+
+	/// A recording reads itself, so voice settings mean nothing to it.
+	private var speaksWithTts: Bool {
+		!viewModel.reading.hasAudio
 	}
 
 	// Text mode has no reading bar, so this is the way to start reading aloud without leaving it.
@@ -78,6 +88,11 @@ struct DocumentMenu: View {
 			infoItems
 			Divider()
 			sleepTimerItem
+			if speaksWithTts {
+				Button { viewModel.navigation.showBookSpeech = true } label: {
+					Label(t("Speech for This Book"), systemImage: "person.wave.2")
+				}
+			}
 			Divider()
 			helpAndSettingsItems
 		} label: {

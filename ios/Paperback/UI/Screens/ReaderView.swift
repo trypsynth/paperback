@@ -58,6 +58,9 @@ struct ReaderView: View {
 		.navigationDestination(isPresented: $navigation.showSleepTimer) {
 			SleepTimerView().environment(viewModel)
 		}
+		.navigationDestination(isPresented: $navigation.showBookSpeech) {
+			BookSpeechView().environment(viewModel)
+		}
 		.navigationDestination(isPresented: $navigation.showElements) {
 			ElementsView().environment(viewModel)
 		}
