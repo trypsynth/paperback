@@ -146,7 +146,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Kan volledig portable worden uitgevoerd of worden geïnstalleerd met automatisch ingestelde bestandstoewijzingen.</li>
 <li>Ondersteunt een enorme reeks gangbare bestandsindelingen.</li>
 <li>Speelt audioboeken af, met instelbare snelheid en bladwijzers die het exacte tijdstip onthouden.</li>
-<li>Leest gescande PDF-pagina’s met de OCR die in Windows en macOS is ingebouwd.</li>
+<li>Leest gescande PDF-pagina’s met de OCR die in Windows en macOS is ingebouwd, of met Tesseract op Linux.</li>
 <li>Bladwijzers en notities, zodat je kunt markeren waar je gebleven bent en er later naar terug kunt gaan.</li>
 <li>Elke toetsenbordsneltoets kan worden aangepast.</li>
 <li>Opent documenten rechtstreeks via http- en https-links en downloadt ze opnieuw wanneer je ze heropent of op <code>F5</code> drukt, met behoud van je leespositie en bladwijzers. Bij het herstellen van de documenten die je open had, downloadt Paperback de documenten van links die 2 MB of kleiner waren opnieuw.</li>
@@ -198,7 +198,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+R</code>: Het venster “Alle documenten” tonen (vanuit Recente documenten).</li>
 <li><code>Ctrl+Shift+C</code>: Bovenliggende map openen.</li>
 <li><code>Ctrl+Shift+E</code>: Documentgegevens exporteren (<code>.paperback</code>).</li>
-<li><code>Ctrl+Alt+E</code>: Bladwijzers en notities exporteren als een leesbare tekst- of HTML-bestand.</li>
+<li><code>Ctrl+Alt+E</code>: Bladwijzers en notities exporteren als een leesbaar tekst- of HTML-bestand.</li>
 <li><code>Ctrl+Shift+I</code>: Documentgegevens importeren (<code>.paperback</code>).</li>
 <li><code>Ctrl+E</code>: Het huidige document exporteren naar platte tekst.</li>
 <li><code>Ctrl+Q</code>: Afsluiten (alleen Windows; op macOS staat dit in het appmenu).</li>
@@ -281,15 +281,15 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Shift+;</code>: De audiospoelstap verkleinen.</li>
 <li><code>Ctrl+Shift+.</code>: Audio sneller afspelen.</li>
 <li><code>Ctrl+Shift+,</code>: Audio langzamer afspelen.</li>
-<li><code>Ctrl+'</code>: Audio luider afspelen.</li>
-<li><code>Ctrl+;</code>: Audio stiller afspelen.</li>
+<li><code>Ctrl+'</code>: Het audiovolume verhogen.</li>
+<li><code>Ctrl+;</code>: Het audiovolume verlagen.</li>
 </ul>
 <h3 id="menu-extra">Menu Extra</h3>
 <ul>
 <li><code>Ctrl+W</code> (macOS: <code>RawCtrl+W</code>, oftewel de fysieke Control-toets in plaats van Cmd): Woordenaantal van het huidige document tonen.</li>
 <li><code>Ctrl+I</code>: Documentinformatie tonen.</li>
 <li><code>Ctrl+Shift+O</code>: Een reeks gescande PDF-pagina’s herkennen met OCR.</li>
-<li><code>Ctrl+Shift+R</code>: De PDF- of comicbookpagina waarop de cursor staat herkennen met OCR, waarbij eventuele bestaande tekst wordt vervangen.</li>
+<li><code>Ctrl+Shift+R</code>: De PDF- of comicpagina waarop de cursor staat herkennen met OCR, waarbij eventuele bestaande tekst wordt vervangen.</li>
 <li><code>Ctrl+Shift+S</code>: Slaaptimer in-/uitschakelen.</li>
 <li><code>Ctrl+,</code>: Instellingen openen (macOS: in het appmenu).</li>
 </ul>
@@ -308,8 +308,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+Tab</code> en <code>Ctrl+Shift+Tab</code>: Ga naar het volgende of vorige geopende document; na het laatste kom je weer bij het eerste en andersom.</li>
 <li><code>Enter</code> of <code>Spatie</code> in de documenttekst: Een link volgen of een tabel- of formuleweergave openen op de cursor.</li>
 <li><code>Enter</code> op een gescande PDF-pagina: De pagina herkennen met OCR.</li>
-<li><code>Enter</code> op een afbeelding die geen link is: De tekst die in de afbeelding is herkend tonen, in een weergave die <code>Escape</code> sluit. De afbeelding zelf wordt niet gewijzigd en de documenttekst ook niet.</li>
-<li><code>Shift+F10</code> of de menu- of applicatietoets in de documenttekst: Het contextmenu openen. Op een afbeelding in een PDF, EPUB, HTML, Markdown, CHM, FB2 of comicarchief biedt het ook de mogelijkheid om de afbeelding op te slaan in een bestand, en op Windows en macOS om de tekst erin voor te lezen, waarmee je een afbeelding die ook een link is kunt lezen.</li>
+<li><code>Enter</code> op een afbeelding die geen link is: De in de afbeelding herkende tekst tonen, in een weergave die je met <code>Escape</code> sluit. De afbeelding zelf blijft ongewijzigd, en de documenttekst ook.</li>
+<li><code>Shift+F10</code> of de menu- of applicatietoets in de documenttekst: Het contextmenu openen. Op een afbeelding in een PDF, EPUB, HTML, Markdown, CHM, FB2 of comicarchief kun je daar ook de afbeelding opslaan in een bestand, en op Windows en macOS de tekst erin lezen. Zo lees je een afbeelding die ook een link is.</li>
 </ul>
 <h2 id="ios-en-android">iOS en Android</h2>
 <p>De iOS- en Android-apps gebruiken dezelfde leesengine als de desktopversie, dus ze openen dezelfde indelingen en onthouden op dezelfde manier waar je gebleven bent. Ze zijn gemaakt om te worden gebruikt met VoiceOver op iOS en TalkBack op Android.</p>
@@ -340,7 +340,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>Ga naar:</strong> spring naar een regel, een pagina of een percentage van het document. Kies welke met de keuzelijst Modus.</li>
 <li><strong>Recente documenten:</strong> alle documenten die je hebt geopend, elk gemarkeerd als momenteel open, gesloten of bestand ontbreekt. Elk document heeft twee schermlezeracties: Verwijderen haalt het uit de lijst en Terugvinden laat je een document terugvinden waarvan het bestand is verplaatst. Recente documenten wissen leegt de lijst zonder documenten te verwijderen.</li>
 <li><strong>Woordenaantal:</strong> het aantal woorden in het document.</li>
-<li><strong>Documentinformatie:</strong> de titel, de auteur, de bestandsnaam en op iOS ook het aantal regels en tekens.</li>
+<li><strong>Documentinformatie:</strong> de titel, de auteur, de bestandsnaam, hoe ver je in het document bent, en het aantal woorden, regels en tekens. Bij een audioboek zie je ook hoeveel bestanden het bevat en, als Paperback dat kan bepalen, hoe lang ze in totaal en gemiddeld duren.</li>
 <li><strong>Exporteren:</strong> slaat het document op als platte tekst, HTML of Markdown.</li>
 <li><strong>Slaaptimer:</strong> stopt het lezen na 5, 10, 15, 30, 45 of 60 minuten, of na een tijd die je zelf opgeeft. Open hem opnieuw terwijl hij loopt om te zien hoeveel tijd er nog over is, of om hem te annuleren.</li>
 <li><strong>Help:</strong> opent deze handleiding.</li>
