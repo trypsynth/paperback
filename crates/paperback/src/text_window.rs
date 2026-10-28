@@ -41,6 +41,7 @@ const WHOLE_DOCUMENT_THRESHOLD: DocLen = paperback_core::WHOLE_DOCUMENT_LEN;
 pub struct CtrlPos(i64);
 
 impl CtrlPos {
+	#[cfg(any(test, target_os = "windows", target_os = "macos"))]
 	pub const ZERO: Self = Self(0);
 
 	/// Wraps a position the control or a native API on it gave out.
