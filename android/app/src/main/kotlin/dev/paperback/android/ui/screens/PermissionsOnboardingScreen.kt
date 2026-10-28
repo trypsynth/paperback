@@ -47,6 +47,14 @@ private const val ONBOARDING_SHOWN_KEY = "permissions_onboarding_shown"
 internal fun needsAllFilesAccessPermission(): Boolean =
 	Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()
 
+/** Opens the Settings page where "All files access" is granted, which only exists from R on. */
+internal fun openAllFilesAccessSettings(context: Context) {
+	if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
+	val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+	intent.data = "package:${context.packageName}".toUri()
+	context.startActivity(intent)
+}
+
 /** True only on R+ devices where "All files access" has already been granted. */
 internal fun hasAllFilesAccessOnR(): Boolean =
 	Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()
@@ -111,14 +119,14 @@ fun PermissionsGate(viewModel: MainScreenViewModel) {
 	PermissionsOnboardingScreen(
 		showNotificationsSection = notificationsApplicable,
 		notificationsGranted = notificationsGranted,
-		onEnableNotifications = { notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) },
+		onEnableNotifications = {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+				notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+			}
+		},
 		showAllFilesAccessSection = allFilesAccessApplicable,
 		allFilesAccessGranted = allFilesAccessGranted,
-		onEnableAllFilesAccess = {
-			val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-			intent.data = "package:${context.packageName}".toUri()
-			context.startActivity(intent)
-		},
+		onEnableAllFilesAccess = { openAllFilesAccessSettings(context) },
 		onContinue = {
 			onboardingCompleted = true
 			viewModel.configManager.setAppBool(ONBOARDING_SHOWN_KEY, true)

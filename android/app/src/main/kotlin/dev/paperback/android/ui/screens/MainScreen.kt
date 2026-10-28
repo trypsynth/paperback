@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -538,9 +537,7 @@ fun MainScreen(
 			PermissionRationaleDialog(
 				onGrantClick = {
 					viewModel.navigation.permissionRationaleDialog.close()
-					val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-					intent.data = "package:${context.packageName}".toUri()
-					context.startActivity(intent)
+					openAllFilesAccessSettings(context)
 				},
 				onDismiss = {
 					viewModel.navigation.permissionRationaleDialog.close()

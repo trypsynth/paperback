@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -122,6 +123,7 @@ private fun PercentSetting(label: String, percentage: Int, onChange: (Int) -> Un
 }
 
 /** Opens Paperback's language page in the Settings app, showing the language Paperback is in now. */
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 private fun LanguageRow() {
 	val context = LocalContext.current
