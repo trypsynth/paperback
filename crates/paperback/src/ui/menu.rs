@@ -128,15 +128,9 @@ mod tests {
 		ActionId::all().iter().copied().find(|&action| menu_ids::action_to_menu_id(action) == id)
 	}
 
-	/// macOS puts Exit and Settings in the application menu, and Linux has no OCR engine.
+	/// macOS puts Exit and Settings in the application menu.
 	const fn omitted_on_this_platform(action: ActionId) -> bool {
-		if cfg!(target_os = "macos") {
-			matches!(action, ActionId::Exit | ActionId::Options)
-		} else if cfg!(target_os = "linux") {
-			matches!(action, ActionId::BatchOcr | ActionId::RecognizeCurrentPage)
-		} else {
-			false
-		}
+		cfg!(target_os = "macos") && matches!(action, ActionId::Exit | ActionId::Options)
 	}
 
 	/// The letter after the label's `&`, lowercased; the shortcut after a tab is not part of it.

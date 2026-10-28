@@ -39,12 +39,12 @@ pub use saved::{load_pages, save_pages, saved_pages_file};
 /// marker is emitted either way, so only the wording changes.
 #[must_use]
 pub fn image_only_placeholder() -> String {
-	#[cfg(any(target_os = "windows", target_os = "macos"))]
+	#[cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))]
 	{
 		// TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 		t("[Image only. Press enter to OCR.]")
 	}
-	#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+	#[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
 	{
 		// TRANSLATORS: Line shown in place of a scanned PDF page with no text layer, where the system has no OCR engine
 		t("[Image only. This page has no text to read.]")
