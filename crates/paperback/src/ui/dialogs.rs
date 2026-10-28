@@ -34,9 +34,7 @@ fn tree_group_label(first: &str, last: &str) -> String {
 
 mod about;
 pub use about::show_about_dialog;
-#[cfg(any(target_os = "windows", target_os = "macos"))]
 mod batch_ocr;
-#[cfg(any(target_os = "windows", target_os = "macos"))]
 pub use batch_ocr::show_batch_ocr_dialog;
 mod all_documents;
 pub use all_documents::show_all_documents_dialog;
@@ -55,9 +53,7 @@ mod go_to_page;
 pub use go_to_page::show_go_to_page_dialog;
 mod go_to_percent;
 pub use go_to_percent::show_go_to_percent_dialog;
-#[cfg(any(target_os = "windows", target_os = "macos"))]
 mod image_text;
-#[cfg(any(target_os = "windows", target_os = "macos"))]
 pub use image_text::show_image_text_dialog;
 #[cfg(target_os = "linux")]
 mod linux_setup;

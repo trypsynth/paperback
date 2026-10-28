@@ -138,7 +138,6 @@ impl MainWindow {
 				menu_ids::SAVE_IMAGE => {
 					menu_file::handle_save_image(&frame_copy, &dm);
 				}
-				#[cfg(any(target_os = "windows", target_os = "macos"))]
 				menu_ids::READ_IMAGE_TEXT => {
 					dm.lock().unwrap().read_picture_at_caret();
 				}
@@ -187,11 +186,9 @@ impl MainWindow {
 				menu_ids::SLEEP_TIMER => {
 					sleep_timer.toggle(&frame_copy, &dm, &config, live_region_label, from_keyboard);
 				}
-				#[cfg(any(target_os = "windows", target_os = "macos"))]
 				menu_ids::BATCH_OCR => {
 					menu_tools::handle_batch_ocr(&frame_copy, &dm, live_region_label, from_keyboard);
 				}
-				#[cfg(any(target_os = "windows", target_os = "macos"))]
 				menu_ids::RECOGNIZE_CURRENT_PAGE => {
 					dm.lock().unwrap().recognize_current_page();
 				}

@@ -26,16 +26,12 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 		item_with_help(menu_ids::DOCUMENT_INFO, doc_info_label, doc_info_help),
 		MenuEntry::Separator,
 	];
-	// No OCR engine outside Windows and macOS, so there is nothing for the item to do there.
-	#[cfg(any(target_os = "windows", target_os = "macos"))]
-	{
-		// TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
-		let batch_ocr_label = format_menu_label(&t("&Batch OCR..."), ActionId::BatchOcr, config);
-		entries.push(item(menu_ids::BATCH_OCR, batch_ocr_label));
-		// TRANSLATORS: Tools menu item that recognizes the page the cursor is on with OCR, replacing any text it already has
-		let recognize_label = format_menu_label(&t("&Recognize Current Page"), ActionId::RecognizeCurrentPage, config);
-		entries.push(item(menu_ids::RECOGNIZE_CURRENT_PAGE, recognize_label));
-	}
+	// TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
+	let batch_ocr_label = format_menu_label(&t("&Batch OCR..."), ActionId::BatchOcr, config);
+	entries.push(item(menu_ids::BATCH_OCR, batch_ocr_label));
+	// TRANSLATORS: Tools menu item that recognizes the page the cursor is on with OCR, replacing any text it already has
+	let recognize_label = format_menu_label(&t("&Recognize Current Page"), ActionId::RecognizeCurrentPage, config);
+	entries.push(item(menu_ids::RECOGNIZE_CURRENT_PAGE, recognize_label));
 	entries.extend([
 		item(menu_ids::SLEEP_TIMER, sleep_label),
 		MenuEntry::Separator,

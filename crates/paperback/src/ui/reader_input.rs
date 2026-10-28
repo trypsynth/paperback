@@ -43,13 +43,10 @@ pub(super) fn build_text_ctrl(
 	let dm_for_enter = Rc::clone(self_rc);
 	let frame_for_char = frame;
 	activation::bind_activation(text_ctrl.widget(), move |enter| {
-		#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-		let _ = enter;
 		// Enter on an image-only page runs OCR instead of the table/link activation
 		// below, and Enter on a picture reads the text in it into a view of its own.
 		// A picture that is also a link follows the link instead, as Enter always has;
 		// the context menu reads that one. Space always falls through to the activation.
-		#[cfg(any(target_os = "windows", target_os = "macos"))]
 		if enter {
 			let handled = {
 				let mut dm = dm_for_enter.lock().unwrap();
@@ -391,15 +388,12 @@ fn show_reader_context_menu(text_ctrl: ReaderCtrl, dm: &Rc<Mutex<DocumentManager
 	if on_image {
 		// TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
 		builder = builder.append_item(menu_ids::SAVE_IMAGE, &t("Save &image as..."), &t("Save image as"));
-		#[cfg(any(target_os = "windows", target_os = "macos"))]
-		{
-			// TRANSLATORS: Right-click context menu item and status text to show the text recognized in the picture under the caret
-			builder = builder.append_item(
-				menu_ids::READ_IMAGE_TEXT,
-				&t("Read &text in picture"),
-				&t("Read the text in the picture"),
-			);
-		}
+		// TRANSLATORS: Right-click context menu item and status text to show the text recognized in the picture under the caret
+		builder = builder.append_item(
+			menu_ids::READ_IMAGE_TEXT,
+			&t("Read &text in picture"),
+			&t("Read the text in the picture"),
+		);
 		builder = builder.append_separator();
 	}
 	let mut menu = builder

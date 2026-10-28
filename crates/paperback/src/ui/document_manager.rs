@@ -22,7 +22,6 @@ use crate::{
 
 mod appearance;
 mod audio;
-#[cfg(any(target_os = "windows", target_os = "macos"))]
 mod image_ocr;
 mod lifecycle;
 mod ocr;
@@ -136,7 +135,6 @@ pub struct DocumentManager {
 	next_job_id: Cell<u64>,
 	/// The picture whose text is being recognized, if one is, with the document it was read out
 	/// of. One at a time, and cleared when its view opens or its result is dropped.
-	#[cfg(any(target_os = "windows", target_os = "macos"))]
 	image_ocr_job: Option<(u64, PathBuf)>,
 }
 
@@ -161,7 +159,6 @@ impl DocumentManager {
 			recently_closed: Vec::new(),
 			from_keyboard,
 			next_job_id: Cell::new(0),
-			#[cfg(any(target_os = "windows", target_os = "macos"))]
 			image_ocr_job: None,
 		}
 	}

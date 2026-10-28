@@ -60,7 +60,6 @@ pub(super) fn handle_document_info(frame: &Frame, dm: &Rc<Mutex<DocumentManager>
 /// Opens the Batch OCR range dialog, or offers to stop the batch that is already running. One
 /// menu item covers both so there is nothing to enable and disable as a job starts and ends, and
 /// the answer to "how do I stop this" is the same item that started it.
-#[cfg(any(target_os = "windows", target_os = "macos"))]
 pub(super) fn handle_batch_ocr(
 	frame: &Frame,
 	dm: &Rc<Mutex<DocumentManager>>,
