@@ -126,6 +126,134 @@ pub fn table_render_bundle(html: &str, inline: bool) -> TableRenderBundle {
 	TableRenderBundle { caption, lines, length }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TableCell {
+	pub text: String,
+	pub is_header: bool,
+	pub row: usize,
+	pub column: usize,
+	pub row_span: usize,
+	pub column_span: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TableGrid {
+	/// Only a `<caption>`; unlike the table's display caption, never its first row.
+	pub caption: String,
+	/// Each cell once, at the row and column it starts in, in reading order.
+	pub cells: Vec<TableCell>,
+	pub row_count: usize,
+	pub column_count: usize,
+	/// The leading rows that name the columns below them.
+	pub header_row_count: usize,
+}
+
+impl TableGrid {
+	#[must_use]
+	pub fn row_text(&self, row: usize) -> String {
+		let cells: Vec<&str> = self
+			.cells
+			.iter()
+			.filter(|cell| cell.row == row && !cell.text.is_empty())
+			.map(|cell| cell.text.as_str())
+			.collect();
+		cells.join(" ")
+	}
+}
+
+/// The outermost table's cells placed on its grid, spans and all, or `None` when it has no rows.
+#[must_use]
+pub fn html_table_grid(html: &str) -> Option<TableGrid> {
+	let fragment = Html::parse_fragment(html);
+	let table = find_first_table(fragment.tree.root())?;
+	let mut rows = Vec::new();
+	collect_row_nodes(table, false, &mut rows);
+	if rows.is_empty() {
+		return None;
+	}
+	let mut occupied: Vec<Vec<bool>> = vec![Vec::new(); rows.len()];
+	let mut cells = Vec::new();
+	let mut header_rows = Vec::with_capacity(rows.len());
+	for (row, &(node, in_head)) in rows.iter().enumerate() {
+		let mut cell_nodes = Vec::new();
+		collect_cell_nodes(node, &mut cell_nodes);
+		header_rows.push(in_head || (!cell_nodes.is_empty() && cell_nodes.iter().all(|cell| is_element(*cell, "th"))));
+		let mut column = 0;
+		for cell in cell_nodes {
+			while occupied[row].get(column).copied().unwrap_or(false) {
+				column += 1;
+			}
+			let row_span = span(cell, "rowspan").min(rows.len() - row);
+			let column_span = span(cell, "colspan");
+			for taken in &mut occupied[row..row + row_span] {
+				if taken.len() < column + column_span {
+					taken.resize(column + column_span, false);
+				}
+				taken[column..column + column_span].fill(true);
+			}
+			cells.push(TableCell {
+				text: cell_text(cell),
+				is_header: in_head || is_element(cell, "th"),
+				row,
+				column,
+				row_span,
+				column_span,
+			});
+			column += column_span;
+		}
+	}
+	let column_count = occupied.iter().map(Vec::len).max().unwrap_or(0).max(1);
+	let header_row_count = header_rows.iter().take_while(|&&header| header).count();
+	Some(TableGrid {
+		caption: caption_element_text(table).unwrap_or_default(),
+		cells,
+		row_count: rows.len(),
+		column_count,
+		header_row_count,
+	})
+}
+
+// A span past this is a broken attribute, not a table that wide.
+const MAX_SPAN: usize = 1000;
+
+fn span(cell: ego_tree::NodeRef<'_, Node>, attribute: &str) -> usize {
+	let Node::Element(element) = cell.value() else { return 1 };
+	element.attr(attribute).and_then(|value| value.trim().parse::<usize>().ok()).unwrap_or(1).clamp(1, MAX_SPAN)
+}
+
+fn is_element(node: ego_tree::NodeRef<'_, Node>, name: &str) -> bool {
+	matches!(node.value(), Node::Element(element) if element.name() == name)
+}
+
+fn collect_row_nodes<'a>(
+	node: ego_tree::NodeRef<'a, Node>,
+	in_head: bool,
+	rows: &mut Vec<(ego_tree::NodeRef<'a, Node>, bool)>,
+) {
+	for child in node.children() {
+		if let Node::Element(element) = child.value() {
+			match element.name() {
+				"tr" => rows.push((child, in_head)),
+				"table" => {}
+				"thead" => collect_row_nodes(child, true, rows),
+				_ => collect_row_nodes(child, in_head, rows),
+			}
+		}
+	}
+}
+
+fn collect_cell_nodes<'a>(node: ego_tree::NodeRef<'a, Node>, cells: &mut Vec<ego_tree::NodeRef<'a, Node>>) {
+	for child in node.children() {
+		if let Node::Element(element) = child.value() {
+			match element.name() {
+				"td" | "th" => cells.push(child),
+				"table" => {}
+				_ => collect_cell_nodes(child, cells),
+			}
+		}
+	}
+}
+
 fn find_first_table(node: ego_tree::NodeRef<'_, Node>) -> Option<ego_tree::NodeRef<'_, Node>> {
 	for child in node.children() {
 		if let Node::Element(element) = child.value() {

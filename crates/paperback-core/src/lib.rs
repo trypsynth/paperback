@@ -8,6 +8,7 @@ pub mod ocr;
 pub mod parser;
 mod pdf_engine;
 pub mod reader_core;
+pub mod reading;
 pub mod session;
 pub mod types;
 pub mod util;
