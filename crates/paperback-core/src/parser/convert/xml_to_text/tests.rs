@@ -31,7 +31,7 @@ fn link_id_position_is_the_start_of_its_text_not_the_end() {
 
 #[test]
 fn heading_id_position_is_the_start_of_the_heading_not_the_previous_line() {
-	let xml = r##"<root><body><p>Before paragraph.</p><h2 id="hdr1">Chapter One</h2></body></root>"##;
+	let xml = r#"<root><body><p>Before paragraph.</p><h2 id="hdr1">Chapter One</h2></body></root>"#;
 	let mut converter = XmlToText::new();
 	assert!(converter.convert(xml));
 	let headings = converter.get_headings();
@@ -68,7 +68,7 @@ fn ids_inside_a_table_are_recorded_at_the_tables_start() {
 // `handle_list_start_xml` was missing.
 #[test]
 fn list_id_position_is_the_start_of_the_list_not_the_previous_line() {
-	let xml = r##"<root><body><p>Before paragraph.</p><ul id="lst1"><li>One</li><li>Two</li></ul></body></root>"##;
+	let xml = r#"<root><body><p>Before paragraph.</p><ul id="lst1"><li>One</li><li>Two</li></ul></body></root>"#;
 	let mut converter = XmlToText::new();
 	assert!(converter.convert(xml));
 	let lists = converter.get_lists();

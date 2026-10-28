@@ -316,7 +316,7 @@ fn join_paragraphs_measured(
 		let starts_with_alpha = first_char.is_some_and(char::is_alphabetic);
 		let len = line.chars().count();
 		if current_paragraph.is_empty() {
-			current_paragraph = line.clone();
+			current_paragraph.clone_from(line);
 			current_is_heading = *is_heading_line;
 			current_heading_size = *size;
 			current_start_line = line_index;
@@ -351,7 +351,7 @@ fn join_paragraphs_measured(
 				|| (!continues_heading && (*is_heading_line || current_is_heading || previous_line_ended_paragraph));
 			if break_paragraph {
 				paragraphs.push((mem::take(&mut current_paragraph), current_is_heading, current_start_line));
-				current_paragraph = line.clone();
+				current_paragraph.clone_from(line);
 				current_is_heading = *is_heading_line;
 				current_heading_size = *size;
 				current_start_line = line_index;

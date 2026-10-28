@@ -34,7 +34,7 @@ impl ConfigManager {
 		}
 		{
 			let mut data = self.data.borrow_mut();
-			data.app.font_face_name = font.face_name.clone();
+			data.app.font_face_name.clone_from(&font.face_name);
 			data.app.font_point_size = i64::from(font.point_size);
 			data.app.font_style = i64::from(font.style);
 			data.app.font_weight = i64::from(font.weight);

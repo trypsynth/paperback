@@ -125,7 +125,7 @@ pub fn build_rtf(
 			seg_idx += 1;
 		}
 		let active = segments.get(seg_idx).filter(|s| s.start <= position && position < s.end);
-		let style = active.map_or(ActiveStyle::default(), |s| ActiveStyle {
+		let style = active.map_or_else(ActiveStyle::default, |s| ActiveStyle {
 			bold: s.bold,
 			italic: s.italic,
 			underline: s.underline,

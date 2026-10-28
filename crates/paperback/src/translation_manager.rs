@@ -88,8 +88,7 @@ mod tests {
 	#[test]
 	fn available_languages_returns_clone() {
 		let manager = TranslationManager::new();
-		let mut langs = manager.available_languages();
-		langs.push(LanguageInfo { code: "xx".to_string(), name: "Fake".to_string() });
+		manager.available_languages().push(LanguageInfo { code: "xx".to_string(), name: "Fake".to_string() });
 		assert!(!manager.is_language_available("xx"));
 	}
 

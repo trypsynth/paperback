@@ -134,7 +134,7 @@ impl ConfigManager {
 		}
 		let key = self.get_doc_key(path);
 		if let Some(doc) = self.data.borrow().documents.get(&key) {
-			nav.positions = doc.navigation_history.clone();
+			nav.positions.clone_from(&doc.navigation_history);
 			nav.index = doc.navigation_history_index;
 		}
 		nav

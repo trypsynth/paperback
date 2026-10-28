@@ -40,7 +40,7 @@ pub(super) fn build_fragment_offsets(data: &[u8], records: &[usize], mobi_header
 	}
 	let frag_indx =
 		u32::from_be_bytes([mobi_header[232], mobi_header[233], mobi_header[234], mobi_header[235]]) as usize;
-	if frag_indx == 0xFFFFFFFF || frag_indx >= records.len() - 1 {
+	if frag_indx == 0xFFFF_FFFF || frag_indx >= records.len() - 1 {
 		return frag_offsets;
 	}
 	let prim_rec = &data[records[frag_indx]..records[frag_indx + 1]];

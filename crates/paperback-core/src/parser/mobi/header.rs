@@ -128,7 +128,7 @@ pub(super) fn parse_header(data: &[u8], title_bytes: &[u8]) -> Result<MobiHeader
 	if rec0.len() >= mobi_header_offset + 228 {
 		let mobi_header = &rec0[mobi_header_offset..];
 		extra_data_flags = u32::from(u16::from_be_bytes([mobi_header[226], mobi_header[227]]));
-		if extra_data_flags == 0xFFFFFFFF {
+		if extra_data_flags == 0xFFFF_FFFF {
 			extra_data_flags = 0;
 		}
 	}
@@ -137,7 +137,7 @@ pub(super) fn parse_header(data: &[u8], title_bytes: &[u8]) -> Result<MobiHeader
 		let mobi_header = &rec0[mobi_header_offset..];
 		let fdst_idx =
 			u32::from_be_bytes([mobi_header[176], mobi_header[177], mobi_header[178], mobi_header[179]]) as usize;
-		if fdst_idx != 0xFFFFFFFF && fdst_idx < num_records {
+		if fdst_idx != 0xFFFF_FFFF && fdst_idx < num_records {
 			let start = record_offsets[fdst_idx];
 			let end = if fdst_idx + 1 < num_records { record_offsets[fdst_idx + 1] } else { data.len() };
 			if start < end && end <= data.len() {
@@ -152,7 +152,7 @@ pub(super) fn parse_header(data: &[u8], title_bytes: &[u8]) -> Result<MobiHeader
 			} else {
 				tracing::debug!("fdst record offset is out of range, skipping html end truncation");
 			}
-		} else if fdst_idx != 0xFFFFFFFF {
+		} else if fdst_idx != 0xFFFF_FFFF {
 			tracing::debug!(fdst_idx, num_records, "fdst index is out of range, skipping html end truncation");
 		}
 	}
