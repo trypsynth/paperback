@@ -94,17 +94,21 @@ jobs:
             ~/.gradle/wrapper
           key: gradle-${{ hashFiles('android/**/*.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: gradle-
-      - name: Check formatting and run unit tests
+      # Android Lint covers what ktlint does not: accessibility, API levels below minSdk, and the
+      # manifest. Its warnings fail the build (see the lint block in app/build.gradle.kts).
+      - name: Check formatting, lint and run unit tests
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew ktlintCheck testDebugUnitTest
-      - name: Upload test report
+          ./gradlew ktlintCheck lintDebug testDebugUnitTest
+      - name: Upload test and lint reports
         if: failure()
         uses: actions/upload-artifact@v7
         with:
           name: android-test-report
-          path: android/app/build/reports/tests/
+          path: |
+            android/app/build/reports/tests/
+            android/app/build/reports/lint-results-debug.html
           retention-days: 7
 
   android-instrumented:

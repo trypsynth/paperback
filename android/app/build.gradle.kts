@@ -83,6 +83,11 @@ android {
 			excludes += "/META-INF/{AL2.0,LGPL2.1}"
 		}
 	}
+	lint {
+		warningsAsErrors = true
+		// These go off whenever Google ships a newer SDK or plugin, failing a build that has not changed. Renovate raises those upgrades as pull requests instead.
+		disable += setOf("OldTargetApi", "AndroidGradlePluginVersion", "GradleDependency", "NewerVersionAvailable")
+	}
 }
 
 kotlin {
