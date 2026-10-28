@@ -133,6 +133,6 @@ dependencies {
 	implementation(libs.androidx.navigation3.ui)
 	implementation(libs.androidx.navigation3.runtime)
 	implementation(libs.androidx.lifecycle.viewmodel.navigation3)
-	// JNA for UniFFI
-	implementation("net.java.dev.jna:jna:5.19.1@aar")
+	// JNA for UniFFI, as the .aar: only it carries the native libraries for Android.
+	implementation(libs.jna) { artifact { type = "aar" } }
 }
