@@ -202,7 +202,7 @@ impl DocumentSession {
 		self.navigate_with_post(
 			NavigateParams { position, wrap, next, target: NavTarget::Formula, level_filter: 0 },
 			self.has_marker(MarkerType::Formula),
-			|s, result| s.fill_marker_text_if_empty(result),
+			Self::fill_marker_text_if_empty,
 		)
 	}
 

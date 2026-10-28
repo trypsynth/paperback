@@ -133,15 +133,14 @@ fn is_scanned_with_only_furniture(page: &PageContent, running: &RunningText) -> 
 	if page.largest_image_coverage < SCAN_IMAGE_COVERAGE {
 		return false;
 	}
-	let text = match &page.tagged {
-		Some(tagged) => tagged.display_text.clone(),
-		None => {
-			let body = text_without_running_lines(&page.lines, running);
-			if body.trim().is_empty() && !page.lines.is_empty() {
-				return true;
-			}
-			body
+	let text = if let Some(tagged) = &page.tagged {
+		tagged.display_text.clone()
+	} else {
+		let body = text_without_running_lines(&page.lines, running);
+		if body.trim().is_empty() && !page.lines.is_empty() {
+			return true;
 		}
+		body
 	};
 	looks_like_page_number(&text)
 }

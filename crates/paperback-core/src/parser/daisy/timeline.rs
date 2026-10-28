@@ -155,16 +155,13 @@ pub(super) fn build_daisy_document(
 		// explicit reference in this same SMIL named.
 		let mut current_text_href: Option<String> = None;
 		for par in parse_smil_pars(&smil_content) {
-			let text_href = match &par.text_file {
-				Some(text_file) => {
-					let href = resolve_relative_path(&smil_dir, text_file);
-					current_text_href = Some(href.clone());
-					href
-				}
-				None => {
-					let Some(href) = current_text_href.clone() else { continue };
-					href
-				}
+			let text_href = if let Some(text_file) = &par.text_file {
+				let href = resolve_relative_path(&smil_dir, text_file);
+				current_text_href = Some(href.clone());
+				href
+			} else {
+				let Some(href) = current_text_href.clone() else { continue };
+				href
 			};
 			if !file_offsets.contains_key(&text_href) {
 				if convert_dtbook_file(

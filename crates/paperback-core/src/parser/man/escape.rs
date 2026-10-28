@@ -102,14 +102,13 @@ fn size_change_len(rest: &[char]) -> usize {
 	if matches!(rest.first(), Some('+' | '-')) {
 		used += 1;
 	}
-	match rest.get(used) {
-		Some('(' | '[') => used + escape_argument(&rest[used..]).1,
-		_ => {
-			while rest.get(used).is_some_and(char::is_ascii_digit) {
-				used += 1;
-			}
-			used
+	if let Some('(' | '[') = rest.get(used) {
+		used + escape_argument(&rest[used..]).1
+	} else {
+		while rest.get(used).is_some_and(char::is_ascii_digit) {
+			used += 1;
 		}
+		used
 	}
 }
 
