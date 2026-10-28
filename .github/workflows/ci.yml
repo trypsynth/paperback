@@ -321,7 +321,7 @@ jobs:
         run: cargo test --workspace
       # The default profile shares the wxWidgets build with the workspace tests.
       - name: Run clippy
-        run: cargo clippy --workspace --all-targets
+        run: cargo clippy --workspace --all-targets -- -D warnings
   test-linux:
     name: Tests (Linux)
     needs: changes
@@ -354,7 +354,7 @@ jobs:
         run: cargo test --workspace
       # The default profile shares the wxWidgets build with the workspace tests.
       - name: Run clippy
-        run: cargo clippy --workspace --all-targets
+        run: cargo clippy --workspace --all-targets -- -D warnings
   clippy:
     name: Clippy
     runs-on: windows-latest
@@ -394,13 +394,12 @@ jobs:
           # Writing the cache takes about five minutes. Only master writes one; a pull request
           # restores it and skips the write, which is the slowest step in several of these jobs.
           save-if: ${{ github.ref == 'refs/heads/master' }}
-      # `clippy::all` is denied through [workspace.lints] in Cargo.toml, so this fails the job on
-      # any of those lints. The pedantic and nursery groups stay warnings and are printed, not
-      # enforced -- see the comment on the lint table for why.
+      # -D warnings fails the job on any warning, including the pedantic and nursery groups the
+      # lint table in Cargo.toml turns on. macOS and Linux run the same check in their test jobs.
       # msgfmt comes from MSYS2, which setup-msys2 leaves off this step's PATH, so the build
       # scripts would silently skip every .po file. Appended rather than prepended: MSYS2's
       # usr/bin has a coreutils link.exe that would otherwise shadow the MSVC linker.
       - name: Run clippy
         run: |
           $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
-          cargo clippy --workspace --all-targets --release
+          cargo clippy --workspace --all-targets --release -- -D warnings
