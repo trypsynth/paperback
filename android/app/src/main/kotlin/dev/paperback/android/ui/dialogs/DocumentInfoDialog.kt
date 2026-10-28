@@ -28,7 +28,12 @@ private fun InfoRow(label: String, value: String) {
 }
 
 @Composable
-fun DocumentInfoDialog(docState: DocumentTabState, stats: DocumentStatsFfi, progressPercent: Int?, onDismiss: () -> Unit) {
+fun DocumentInfoDialog(
+	docState: DocumentTabState,
+	stats: DocumentStatsFfi,
+	progressPercent: Int?,
+	onDismiss: () -> Unit
+) {
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = t("Document Info") },
