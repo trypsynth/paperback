@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: b0171dfc874af9e8; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,808d00fb,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 001b5ced2d6cc026; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versie 1.0
 
@@ -22,7 +22,7 @@ Paperback draait op Windows 10/11, alle moderne versies van macOS op ARM, Linux,
 * Kan volledig portable worden uitgevoerd of worden geïnstalleerd met automatisch ingestelde bestandstoewijzingen.
 * Ondersteunt een enorme reeks gangbare bestandsindelingen.
 * Speelt audioboeken af, met instelbare snelheid en bladwijzers die het exacte tijdstip onthouden.
-* Leest gescande PDF-pagina's met de OCR die in Windows en macOS is ingebouwd.
+* Leest gescande PDF-pagina's met de OCR die in Windows en macOS is ingebouwd, of met Tesseract op Linux.
 * Bladwijzers en notities, zodat je kunt markeren waar je gebleven bent en er later naar terug kunt gaan.
 * Elke toetsenbordsneltoets kan worden aangepast.
 * Opent documenten rechtstreeks via http- en https-links en downloadt ze opnieuw wanneer je ze heropent of op `F5` drukt, met behoud van je leespositie en bladwijzers. Bij het herstellen van de documenten die je open had, downloadt Paperback de documenten van links die 2 MB of kleiner waren opnieuw.
@@ -86,7 +86,7 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 * `Ctrl+R`: Het venster "Alle documenten" tonen (vanuit Recente documenten).
 * `Ctrl+Shift+C`: Bovenliggende map openen.
 * `Ctrl+Shift+E`: Documentgegevens exporteren (`.paperback`).
-* `Ctrl+Alt+E`: Bladwijzers en notities exporteren als een leesbare tekst- of HTML-bestand.
+* `Ctrl+Alt+E`: Bladwijzers en notities exporteren als een leesbaar tekst- of HTML-bestand.
 * `Ctrl+Shift+I`: Documentgegevens importeren (`.paperback`).
 * `Ctrl+E`: Het huidige document exporteren naar platte tekst.
 * `Ctrl+Q`: Afsluiten (alleen Windows; op macOS staat dit in het appmenu).
@@ -169,15 +169,15 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 * `Shift+;`: De audiospoelstap verkleinen.
 * `Ctrl+Shift+.`: Audio sneller afspelen.
 * `Ctrl+Shift+,`: Audio langzamer afspelen.
-* `Ctrl+'`: Audio luider afspelen.
-* `Ctrl+;`: Audio stiller afspelen.
+* `Ctrl+'`: Het audiovolume verhogen.
+* `Ctrl+;`: Het audiovolume verlagen.
 
 ### Menu Extra
 
 * `Ctrl+W` (macOS: `RawCtrl+W`, oftewel de fysieke Control-toets in plaats van Cmd): Woordenaantal van het huidige document tonen.
 * `Ctrl+I`: Documentinformatie tonen.
 * `Ctrl+Shift+O`: Een reeks gescande PDF-pagina's herkennen met OCR.
-* `Ctrl+Shift+R`: De PDF- of comicbookpagina waarop de cursor staat herkennen met OCR, waarbij eventuele bestaande tekst wordt vervangen.
+* `Ctrl+Shift+R`: De PDF- of comicpagina waarop de cursor staat herkennen met OCR, waarbij eventuele bestaande tekst wordt vervangen.
 * `Ctrl+Shift+S`: Slaaptimer in-/uitschakelen.
 * `Ctrl+,`: Instellingen openen (macOS: in het appmenu).
 
@@ -196,8 +196,8 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 * `Ctrl+Tab` en `Ctrl+Shift+Tab`: Ga naar het volgende of vorige geopende document; na het laatste kom je weer bij het eerste en andersom.
 * `Enter` of `Spatie` in de documenttekst: Een link volgen of een tabel- of formuleweergave openen op de cursor.
 * `Enter` op een gescande PDF-pagina: De pagina herkennen met OCR.
-* `Enter` op een afbeelding die geen link is: De tekst die in de afbeelding is herkend tonen, in een weergave die `Escape` sluit. De afbeelding zelf wordt niet gewijzigd en de documenttekst ook niet.
-* `Shift+F10` of de menu- of applicatietoets in de documenttekst: Het contextmenu openen. Op een afbeelding in een PDF, EPUB, HTML, Markdown, CHM, FB2 of comicarchief biedt het ook de mogelijkheid om de afbeelding op te slaan in een bestand, en op Windows en macOS om de tekst erin voor te lezen, waarmee je een afbeelding die ook een link is kunt lezen.
+* `Enter` op een afbeelding die geen link is: De in de afbeelding herkende tekst tonen, in een weergave die je met `Escape` sluit. De afbeelding zelf blijft ongewijzigd, en de documenttekst ook.
+* `Shift+F10` of de menu- of applicatietoets in de documenttekst: Het contextmenu openen. Op een afbeelding in een PDF, EPUB, HTML, Markdown, CHM, FB2 of comicarchief kun je daar ook de afbeelding opslaan in een bestand, en op Windows en macOS de tekst erin lezen. Zo lees je een afbeelding die ook een link is.
 
 ## iOS en Android
 
@@ -236,7 +236,7 @@ In het menu Meer opties vind je al het andere. Sommige items werken in elke app 
 * **Ga naar:** spring naar een regel, een pagina of een percentage van het document. Kies welke met de keuzelijst Modus.
 * **Recente documenten:** alle documenten die je hebt geopend, elk gemarkeerd als momenteel open, gesloten of bestand ontbreekt. Elk document heeft twee schermlezeracties: Verwijderen haalt het uit de lijst en Terugvinden laat je een document terugvinden waarvan het bestand is verplaatst. Recente documenten wissen leegt de lijst zonder documenten te verwijderen.
 * **Woordenaantal:** het aantal woorden in het document.
-* **Documentinformatie:** de titel, de auteur, de bestandsnaam en op iOS ook het aantal regels en tekens.
+* **Documentinformatie:** de titel, de auteur, de bestandsnaam, hoe ver je in het document bent, en het aantal woorden, regels en tekens. Bij een audioboek zie je ook hoeveel bestanden het bevat en, als Paperback dat kan bepalen, hoe lang ze in totaal en gemiddeld duren.
 * **Exporteren:** slaat het document op als platte tekst, HTML of Markdown.
 * **Slaaptimer:** stopt het lezen na 5, 10, 15, 30, 45 of 60 minuten, of na een tijd die je zelf opgeeft. Open hem opnieuw terwijl hij loopt om te zien hoeveel tijd er nog over is, of om hem te annuleren.
 * **Help:** opent deze handleiding.
