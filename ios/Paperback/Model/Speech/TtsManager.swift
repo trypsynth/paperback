@@ -71,6 +71,9 @@ let pitchPresets = [0, 16, 33, 50, 67, 83, 100]
 
 // Lets an armed buffer's completion handler validate against a generation assigned later, at
 // consume time, rather than one captured when the closure was created (see armNextBuffer).
+// Main-actor bound so it can ride through the player's completion handler, which runs on an
+// audio thread, to the main-queue hop that is the only place it is read.
+@MainActor
 private final class GenBox {
 	var gen: Int? = nil
 }
@@ -781,6 +784,8 @@ final class TtsManager: NSObject {
 
 		var inputConsumed = false
 		var error: NSError?
+		// The converter calls the input block synchronously, before convert() returns, so the buffer never leaves this thread.
+		nonisolated(unsafe) let input = synthBuf
 		converter.convert(to: outBuf, error: &error) { _, outStatus in
 			if inputConsumed {
 				// Signal end-of-stream so the resampler flushes its tail; .noDataNow would discard it.
@@ -789,7 +794,7 @@ final class TtsManager: NSObject {
 			}
 			outStatus.pointee = .haveData
 			inputConsumed = true
-			return synthBuf
+			return input
 		}
 
 		return error == nil ? outBuf : nil
