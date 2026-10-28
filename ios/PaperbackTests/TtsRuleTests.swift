@@ -51,6 +51,11 @@ final class TtsRuleTests: XCTestCase {
 		XCTAssertEqual("pages 10 to 12", r.apply(to: "pages 10-12", voiceId: nil))
 	}
 
+	func testABackslashCaptureGroupWorksAsTheEditorSays() {
+		let r = rule(scope: .paragraph, matchType: .regex, pattern: #"(\d+)-(\d+)"#, replacement: #"\1 to \2"#)
+		XCTAssertEqual("pages 10 to 12", r.apply(to: "pages 10-12", voiceId: nil))
+	}
+
 	func testAnInvalidRegexLeavesTheTextAlone() {
 		let r = rule(scope: .paragraph, matchType: .regex, pattern: "([unclosed", replacement: "X")
 		XCTAssertEqual("untouched", r.apply(to: "untouched", voiceId: nil))

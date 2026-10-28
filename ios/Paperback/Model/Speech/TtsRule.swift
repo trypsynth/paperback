@@ -102,6 +102,11 @@ struct TtsRule: Codable, Identifiable, Equatable {
 		}
 	}
 
+	/// The editor promises `\1` for a capture group, as NVDA's speech dictionary uses, but the engine's templates only know `$1`.
+	static func template(_ replacement: String) -> String {
+		replacement.replacingOccurrences(of: #"\\(\d)"#, with: "\\$$1", options: .regularExpression)
+	}
+
 	func apply(to text: String, voiceId: String?) -> String {
 		guard isEnabled, voiceFilter.matches(voiceId: voiceId), !pattern.isEmpty else { return text }
 		switch scope {
@@ -120,7 +125,7 @@ struct TtsRule: Codable, Identifiable, Equatable {
 				guard let rx = try? NSRegularExpression(pattern: pattern) else { return text }
 				return rx.stringByReplacingMatches(
 					in: text, range: NSRange(text.startIndex..., in: text),
-					withTemplate: replacement
+					withTemplate: Self.template(replacement)
 				)
 			}
 			return text.replacingOccurrences(of: pattern, with: replacement)
