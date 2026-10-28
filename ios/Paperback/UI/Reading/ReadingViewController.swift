@@ -144,8 +144,10 @@ final class ReadingViewController: UIViewController, UIScrollViewAccessibilityDe
 	/// What the three-finger tap speaks.
 	private func status() -> String {
 		let percent = model.session.getStatusInfo(position: currentPosition).percentage
-		// TRANSLATORS: How far through the book the reader is, spoken by the three-finger tap; {} is a whole number
-		return t("{} percent").replacingOccurrences(of: "{}", with: "\(percent)")
+		let page = model.session.currentPage(position: currentPosition)
+		// The same words as desktop's position shortcut, whose translations this shares.
+		guard page > 0 else { return t("{} percent").replacingOccurrences(of: "{}", with: "\(percent)") }
+		return t("%s, page %d").replacingOccurrences(of: "%s", with: "\(percent)%").replacingOccurrences(of: "%d", with: "\(page)")
 	}
 
 	func accessibilityScrollStatus(for scrollView: UIScrollView) -> String? {

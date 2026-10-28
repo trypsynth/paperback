@@ -4,11 +4,15 @@ import XCTest
 
 @MainActor
 final class ReadingScreenTests: XCTestCase {
-	private func book(_ body: String) throws -> BookView {
-		let url = FileManager.default.temporaryDirectory.appending(path: "\(UUID().uuidString).html")
-		try "<html><head><title>Book</title></head><body>\(body)</body></html>".write(to: url, atomically: true, encoding: .utf8)
+	private func model(_ contents: String, as fileExtension: String = "html") throws -> BookModel {
+		let url = FileManager.default.temporaryDirectory.appending(path: "\(UUID().uuidString).\(fileExtension)")
+		try contents.write(to: url, atomically: true, encoding: .utf8)
 		let session = try DocumentSession.newFfi(filePath: url.path(percentEncoded: false), password: "", forcedExtension: "", renderTablesInline: false)
-		let view = BookView(model: BookModel(session: session, layout: ReadingLayout(session: session)))
+		return BookModel(session: session, layout: ReadingLayout(session: session))
+	}
+
+	private func book(_ body: String) throws -> BookView {
+		let view = BookView(model: try model("<html><head><title>Book</title></head><body>\(body)</body></html>"))
 		view.frame = CGRect(x: 0, y: 0, width: 390, height: 600)
 		view.layoutIfNeeded()
 		return view
@@ -90,5 +94,28 @@ final class ReadingScreenTests: XCTestCase {
 		XCTAssertTrue(types.contains(.heading))
 		XCTAssertTrue(types.contains(.link))
 		XCTAssertTrue(types.contains(.table))
+	}
+
+	private func reader(_ model: BookModel) -> ReadingViewController {
+		let controller = ReadingViewController(model: model, position: 0)
+		controller.loadViewIfNeeded()
+		controller.view.frame = CGRect(x: 0, y: 0, width: 390, height: 600)
+		controller.view.layoutIfNeeded()
+		return controller
+	}
+
+	private let threePages = #"{\rtf1\ansi One\par\page Two\par\page Three\par}"#
+
+	func testTheThreeFingerTapNamesTheBooksPageWhenItHasPages() throws {
+		let book = try model(threePages, as: "rtf")
+		let controller = reader(book)
+		XCTAssertEqual(controller.accessibilityScrollStatus(for: controller.bookView), "0%, page 1")
+		controller.jump(toPosition: book.position(ofUnit: book.count - 1))
+		XCTAssertEqual(controller.accessibilityScrollStatus(for: controller.bookView)?.hasSuffix("page 3"), true)
+	}
+
+	func testTheThreeFingerTapIsThePercentageWithoutPages() throws {
+		let controller = reader(try model("<html><body><p>One</p><p>Two</p></body></html>"))
+		XCTAssertEqual(controller.accessibilityScrollStatus(for: controller.bookView), "0 percent")
 	}
 }
