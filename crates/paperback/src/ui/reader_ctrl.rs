@@ -8,14 +8,10 @@ use wxdragon::{prelude::*, widgets::textctrl::TextAttr};
 
 use crate::text_window::CtrlPos;
 
-/// How far `text` reaches in the control: how many of the control's units it takes up, which on Windows and macOS are UTF-16 code units.
+/// How far `text` reaches in the control, which counts in UTF-16 code units.
+#[cfg(target_os = "windows")]
 pub fn ctrl_len(text: &str) -> CtrlPos {
-	let units = if cfg!(any(target_os = "windows", target_os = "macos")) {
-		text.encode_utf16().count()
-	} else {
-		text.chars().count()
-	};
-	CtrlPos::from_raw(i64::try_from(units).unwrap_or(i64::MAX))
+	CtrlPos::from_raw(i64::try_from(text.encode_utf16().count()).unwrap_or(i64::MAX))
 }
 
 #[derive(Clone, Copy)]
@@ -60,10 +56,12 @@ impl ReaderCtrl {
 		self.0.set_style(start.get(), end.get(), style);
 	}
 
+	#[cfg(target_os = "windows")]
 	pub fn xy_to_position(self, x: i64, y: i64) -> CtrlPos {
 		CtrlPos::from_raw(self.0.xy_to_position(x, y))
 	}
 
+	#[cfg(target_os = "windows")]
 	pub fn position_to_xy(self, pos: CtrlPos) -> Option<(i64, i64)> {
 		self.0.position_to_xy(pos.get())
 	}

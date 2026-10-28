@@ -140,6 +140,7 @@ mod tests {
 	}
 
 	/// The letter after the label's `&`, lowercased; the shortcut after a tab is not part of it.
+	#[cfg(not(target_os = "macos"))]
 	fn access_key(label: &str) -> Option<char> {
 		let text = label.split('\t').next().unwrap_or(label);
 		let mut chars = text.chars();
@@ -155,6 +156,7 @@ mod tests {
 		None
 	}
 
+	#[cfg(not(target_os = "macos"))]
 	fn top_level_labels(entries: &[MenuEntry]) -> Vec<&str> {
 		entries
 			.iter()
@@ -167,6 +169,7 @@ mod tests {
 	}
 
 	/// One line per label whose access key an earlier label already has.
+	#[cfg(not(target_os = "macos"))]
 	fn access_key_clashes<'a>(labels: impl IntoIterator<Item = &'a str>) -> Vec<String> {
 		let mut seen: Vec<(char, &str)> = Vec::new();
 		let mut clashes = Vec::new();

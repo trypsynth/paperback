@@ -173,6 +173,7 @@ impl DocumentManager {
 	}
 
 	/// The column vertical navigation is aiming for in the active document, if any.
+	#[cfg(target_os = "windows")]
 	pub fn preferred_column(&self) -> Option<i64> {
 		self.active_tab().and_then(|tab| tab.preferred_column.get())
 	}

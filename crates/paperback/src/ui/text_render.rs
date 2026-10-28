@@ -8,10 +8,9 @@ use paperback_core::{
 };
 use wxdragon::prelude::*;
 
-use super::{
-	document_manager::DocumentTab,
-	reader_ctrl::{ReaderCtrl, ctrl_len},
-};
+#[cfg(target_os = "windows")]
+use super::reader_ctrl::ctrl_len;
+use super::{document_manager::DocumentTab, reader_ctrl::ReaderCtrl};
 #[cfg(target_os = "windows")]
 use super::{
 	paragraph_format::apply_paragraph_formats,

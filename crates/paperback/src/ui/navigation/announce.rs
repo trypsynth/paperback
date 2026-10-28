@@ -250,6 +250,7 @@ pub fn announce_for_command(live_region_label: StaticText, from_keyboard: bool, 
 ///
 /// The wait is shorter than a menu's because what it is cutting starts sooner: a selection change is
 /// reported immediately, where a closing menu's focus chain takes the extra time to begin.
+#[cfg(not(target_os = "macos"))]
 pub fn announce_for_selection_command(live_region_label: StaticText, from_keyboard: bool, message: impl AsRef<str>) {
 	let delay_ms = if from_keyboard { FOCUS_CHAIN_INTERRUPT_DELAY_MS } else { MENU_FOCUS_CHAIN_INTERRUPT_DELAY_MS };
 	announce_after(live_region_label, message, delay_ms);

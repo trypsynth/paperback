@@ -6,16 +6,20 @@
 
 use std::{cell::Cell, rc::Rc, sync::Mutex};
 
-use paperback_core::{config::ActionId, document::DocPos};
+use paperback_core::config::ActionId;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+use paperback_core::document::DocPos;
 use patois::t;
 use wxdragon::{event::KeyboardEvent, prelude::*};
 
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+use super::{document_manager::DocumentTab, text_render::reload_window_around};
 use super::{
-	document_manager::{DocumentManager, DocumentTab, tab_index_for_key},
+	document_manager::{DocumentManager, tab_index_for_key},
 	menu, menu_ids,
 	reader_ctrl::ReaderCtrl,
-	text_render::reload_window_around,
 };
+#[cfg(any(target_os = "windows", target_os = "macos"))]
 use crate::text_window::CtrlPos;
 
 mod activation;
@@ -372,6 +376,7 @@ fn navigate_line_by_column(
 }
 
 #[cfg(target_os = "macos")]
+#[allow(clippy::option_option, reason = "the outer None and the inner None mean different things to the retry above")]
 fn try_navigate_line_by_column(
 	tab: &DocumentTab,
 	going_down: bool,
