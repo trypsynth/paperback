@@ -30,9 +30,6 @@ use crate::ui::navigation::announce;
 
 const MAX_FIND_HISTORY_SIZE: usize = 10;
 
-/// Which of the dialog's two views is showing: the query (find-what, options, find buttons) or
-/// the Find All results list. Switching hides one view's windows and shows the other's, then
-/// refits the dialog, so Enter always triggers the visible primary button.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum FindView {
 	Query,
@@ -56,9 +53,7 @@ pub struct FindDialogState {
 	in_progress: Rc<Cell<bool>>,
 	view: Rc<Cell<FindView>>,
 	origin: Rc<Cell<DocPos>>,
-	/// The document-absolute span of the match the last Find jumped to, when found text is not
-	/// left selected. See [`FindDialogState::search_origin`] for why the span is kept rather than
-	/// read back off the widget.
+	/// Set only when found text is left unselected, since then the widget holds nothing for `search_origin` to read.
 	last_match: Rc<Cell<Option<(DocPos, DocPos)>>>,
 	result_rows: Rc<RefCell<Vec<FindAllLine>>>,
 	result_labels: Rc<RefCell<Vec<String>>>,
@@ -182,14 +177,7 @@ impl FindDialogState {
 		Some(FindInProgressGuard { flag: Rc::clone(&self.in_progress) })
 	}
 
-	/// Where the next search resumes from, as a document-absolute `(start, end)` pair.
-	///
-	/// A live selection is the origin: either the match the previous Find left selected, or text
-	/// the reader selected themselves to search from. With found text left unselected there is no
-	/// selection to read that from, and the caret alone will not do - searching from it would land
-	/// straight back on the match the reader is already sitting on, so Find Next would never move.
-	/// The span of the last match is used instead, but only while the caret still sits at one of
-	/// its ends: anywhere else means the reader has moved, and the caret is the origin.
+	/// Searching from the caret on an unselected match would land back on it and Find Next would never move, so the last match's span is used while the caret sits at one of its ends.
 	fn search_origin(&self, tab: &DocumentTab) -> (DocPos, DocPos) {
 		let (start, end) = navigation::doc_selected_range(tab);
 		if start != end {
@@ -201,11 +189,6 @@ impl FindDialogState {
 		}
 	}
 
-	/// Moves to the match at `[start, end)`, highlighted or not according to the reader's setting.
-	///
-	/// An unselected match leaves nothing in the widget for [`Self::search_origin`] to read the
-	/// next search's starting point from, so its span is remembered here at the same time. A
-	/// selected one is its own record, and is left to be one.
 	fn reveal_match(&self, tab: &mut DocumentTab, start: DocPos, end: DocPos, highlight: bool) {
 		navigation::reveal_doc_range(tab, start, end, highlight);
 		if !highlight {
@@ -213,15 +196,13 @@ impl FindDialogState {
 		}
 	}
 
-	/// Empties the results list and its cached labels, so leaving Find All does not leave tens of
-	/// thousands of rows behind (or hand NVDA a stale huge list the next time the dialog opens).
+	/// So leaving Find All does not keep tens of thousands of rows around or hand NVDA a stale huge list next time.
 	fn clear_results(&self) {
 		clear_results_list(self.results_list);
 		self.result_labels.borrow_mut().clear();
 	}
 
-	/// Shows or hides every window that belongs to the query view. The Cancel button is shared by
-	/// both views, so it is not part of either set.
+	/// Cancel is shared by both views, so it belongs to neither set.
 	fn set_query_windows(&self, visible: bool) {
 		self.find_label.show(visible);
 		self.find_combo.show(visible);
@@ -236,20 +217,17 @@ impl FindDialogState {
 		self.find_all_btn.show(visible);
 	}
 
-	/// Shows or hides every window that belongs to the Find All results view.
 	fn set_results_windows(&self, visible: bool) {
 		self.results_list.show(visible);
 		self.go_btn.show(visible);
 	}
 
-	/// Refits the dialog to whichever view is showing.
 	fn refit(&self) {
 		self.dialog.layout();
 		self.dialog.fit();
 		self.dialog.centre();
 	}
 
-	/// Shows the query view, hiding the results view if it is showing.
 	fn switch_to_query_view(&self) {
 		self.clear_results();
 		if self.view.get() == FindView::Query {
@@ -262,7 +240,6 @@ impl FindDialogState {
 		self.refit();
 	}
 
-	/// Shows the Find All results view, hiding the query view if it is showing.
 	fn switch_to_results_view(&self) {
 		if self.view.get() == FindView::Results {
 			return;
@@ -332,8 +309,6 @@ pub fn show_find_dialog(
 	state.focus_find_text();
 }
 
-/// Makes sure the combo has a query, pulling the current document selection into it if it is
-/// empty. Returns whether a query is now present.
 fn ensure_query(state: &FindDialogState, doc_manager: &Rc<Mutex<DocumentManager>>) -> bool {
 	if !state.find_text().trim().is_empty() {
 		return true;
@@ -394,8 +369,7 @@ fn do_find(
 	};
 	state.save_settings(config);
 	state.add_to_history(config, &query);
-	// Read before the document lock is taken, so the two locks are never held the other way round
-	// from the rest of the app.
+	// Read before taking the document lock, so the two locks are never taken in the opposite order to the rest of the app.
 	let highlight_found_text = config.lock().unwrap().get_app_bool("highlight_found_text", true);
 	let mut options = FindOptions::default();
 	if forward {
@@ -417,9 +391,7 @@ fn do_find(
 	if !tab.text_ctrl.is_valid() {
 		return;
 	}
-	// Search the whole document (not just whatever window is currently loaded into
-	// text_ctrl) in the same document-absolute coordinate space `tab.window` uses, so a
-	// found match can be reached even when it falls outside the loaded window.
+	// Searches the whole document rather than the loaded window, so a match outside the window can still be reached.
 	let (origin_start, origin_end) = state.search_origin(tab);
 	let start_pos = if forward { origin_end } else { origin_start };
 	let result = find_text_with_wrap(&tab.session.handle().document().buffer, &query, start_pos, options);
@@ -434,10 +406,7 @@ fn do_find(
 		state.focus_find_text();
 		return;
 	}
-	// Whether the dialog was on screen decides *how* the message is delivered, not whether
-	// something needs interrupting. Hiding a visible dialog sends focus back to the book, and so
-	// does dismissing a menu; both start a chain NVDA reads over the message. The dialog's
-	// chain starts early, the menu's later, which is why the two wait different lengths of time.
+	// Hiding the dialog and dismissing a menu both start a focus chain NVDA reads over the message, the dialog's earlier than the menu's, so the two wait different lengths of time.
 	let dialog_was_shown = state.dialog.is_shown();
 	let doc_len = tab.session.document_len();
 	if doc_len.is_zero() {
@@ -445,8 +414,6 @@ fn do_find(
 	}
 	let start = result.position.min(doc_len.as_pos());
 	let end = (start + DocLen::of(&query)).min(doc_len.as_pos());
-	// Capture the line containing the match while the document lock is held; it is
-	// announced after focus has returned to the book.
 	let found_line = tab.session.get_line_text(start);
 	state.reveal_match(tab, start, end, highlight_found_text);
 	drop(dm);
@@ -459,12 +426,7 @@ fn do_find(
 		found_line
 	};
 	if !message.trim().is_empty() {
-		// NVDA starts reading the "Paperback, tab control, ..." ancestor chain the moment focus
-		// returns to the book. Delaying the announcement so it cuts that chain as it begins works
-		// because live-region's High priority maps to UIA NotificationProcessing_ImportantMostRecent,
-		// which NVDA handles as cancelSpeech() + speak, the same interrupt NVDA itself uses for its
-		// own find dialog. (During a say-all NVDA speaks at Spri.NOW instead of cancelling, so
-		// continuous reading is not chopped up.)
+		// Delayed to cut NVDA's ancestor chain as it starts: High priority maps to UIA ImportantMostRecent, which NVDA handles as cancelSpeech + speak (except during Say All).
 		if dialog_was_shown {
 			announce(live_region_label, message);
 		} else {

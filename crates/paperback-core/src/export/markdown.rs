@@ -11,15 +11,12 @@ pub fn render(doc: &Document) -> String {
 		BoldClose,
 		ItalicOpen,
 		ItalicClose,
-		// Replace the content up to `until` with "\n---\n"
 		Replace { until: DocPos },
 	}
 	struct Ev {
 		pos: DocPos,
 		kind: Mk,
-		/// Which span this event belongs to, counting up in the order spans are opened.
-		/// Closing in the reverse of that order is what keeps two spans over the same text
-		/// nested inside one another rather than interleaved.
+		/// Closing in the reverse of opening order keeps two spans over the same text nested rather than interleaved.
 		span: usize,
 	}
 	let mut events: Vec<Ev> = Vec::new();
@@ -48,18 +45,13 @@ pub fn render(doc: &Document) -> String {
 				events.push(Ev { pos: end, kind: Mk::ItalicClose, span });
 			}
 			MarkerType::Separator => {
-				// Replace the dash line written into the content by html_to_text with "---"
 				events.push(Ev { pos, kind: Mk::Replace { until: pos + marker.length }, span });
 			}
-			// MarkerType::Underline intentionally has no arm: CommonMark has no native
-			// underline construct; falls through to the `_` arm below and is silently
-			// dropped from markdown output rather than emitting raw HTML `<u>`.
+			// Underline is dropped: CommonMark has no underline, and raw `<u>` is worse than none.
 			_ => {}
 		}
 	}
-	// At equal positions: close before replace before prefix before open. Spans that start
-	// together open in the order their markers were recorded and close in the reverse of
-	// it, so a bold link comes out as `**[text](url)**` rather than `[**text](url)**`.
+	// Spans starting together close in reverse, so a bold link is `**[text](url)**`, not `[**text](url)**`.
 	events.sort_by(|a, b| {
 		let class = |k: &Mk| match k {
 			Mk::LinkClose(_) | Mk::BoldClose | Mk::ItalicClose => 0u8,
@@ -97,7 +89,7 @@ pub fn render(doc: &Document) -> String {
 				Mk::BoldOpen | Mk::BoldClose => md.push_str("**"),
 				Mk::ItalicOpen | Mk::ItalicClose => md.push('*'),
 				Mk::Replace { until } => {
-					// Leading newline ensures "---" is never parsed as a setext heading underline
+					// The leading newline keeps "---" from being read as a setext heading underline.
 					md.push_str("\n---\n");
 					skip_until = Some(*until);
 				}
@@ -114,7 +106,6 @@ pub fn render(doc: &Document) -> String {
 		md.push(ch);
 		position += DocLen::ONE;
 	}
-	// Flush any closes that fall at or past end of content
 	while event_idx < events.len() {
 		match &events[event_idx].kind {
 			Mk::LinkClose(url) => {
@@ -134,8 +125,7 @@ pub fn render(doc: &Document) -> String {
 	normalize_newlines(&md)
 }
 
-// Expand single newlines to blank lines and collapse runs of 3+ newlines to 2.
-// Markdown ignores single newlines; a blank line is required for paragraph breaks.
+// Markdown ignores single newlines, so every break becomes a blank line.
 fn normalize_newlines(s: &str) -> String {
 	let mut out = String::with_capacity(s.len() + s.len() / 4);
 	let mut nl_run = 0usize;
@@ -190,7 +180,6 @@ mod tests {
 		let doc =
 			simple_doc("underline text", vec![Marker::new(MarkerType::Underline, 0.into()).with_length(9.into())]);
 		let md = render(&doc);
-		// The text should still appear, but without any markdown syntax
 		assert!(md.contains("underline"), "Expected text 'underline' in markdown: {md}");
 		assert!(!md.contains("__"), "Expected no __ syntax for underline");
 		assert!(!md.contains("_underline_"), "Expected no _underline_ italic-like syntax");
@@ -199,7 +188,6 @@ mod tests {
 
 	#[test]
 	fn test_nested_bold_italic() {
-		// "bold italic" where 0-4 is bold, 5-11 is italic
 		let doc = simple_doc(
 			"bold italic",
 			vec![
@@ -212,9 +200,7 @@ mod tests {
 		assert!(md.contains("*italic*"), "Expected *italic* in markdown: {md}");
 	}
 
-	// A hotspot whose text is also bold gives two spans over exactly the same characters.
-	// Closing them in the order they opened would interleave the two into `[**x](url)**`,
-	// which no markdown renderer reads as a bold link.
+	// A bold hotspot gives two spans over the same characters, and interleaving them is no bold link to any renderer.
 	#[test]
 	fn a_bold_link_nests_rather_than_interleaving() {
 		let doc = simple_doc(
@@ -229,8 +215,6 @@ mod tests {
 		assert_eq!(render(&doc).trim(), "**[define](topic7)**");
 	}
 
-	// The markers can arrive the other way round, and the same rule has to hold: whichever
-	// span opened last is the one that closes first.
 	#[test]
 	fn a_linked_bold_run_nests_the_other_way_round() {
 		let doc = simple_doc(
@@ -247,7 +231,6 @@ mod tests {
 
 	#[test]
 	fn test_bold_close_at_end_of_content() {
-		// Test that a bold span ending exactly at end-of-content doesn't lose its closing **
 		let doc = simple_doc("bold", vec![Marker::new(MarkerType::Bold, 0.into()).with_length(4.into())]);
 		let md = render(&doc);
 		assert!(md.contains("**bold**"), "Expected **bold** in markdown with closing **: {md}");
@@ -257,7 +240,6 @@ mod tests {
 
 	#[test]
 	fn test_italic_close_at_end_of_content() {
-		// Test that an italic span ending exactly at end-of-content doesn't lose its closing *
 		let doc = simple_doc("italic", vec![Marker::new(MarkerType::Italic, 0.into()).with_length(6.into())]);
 		let md = render(&doc);
 		assert!(md.contains("*italic*"), "Expected *italic* in markdown with closing *: {md}");

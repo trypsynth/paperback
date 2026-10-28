@@ -1,5 +1,3 @@
-//! PalmDOC decompression, and stripping MOBI's trailing entries off each record before it.
-
 pub(super) fn get_trailing_size(data: &[u8]) -> usize {
 	let mut size = 0usize;
 	let mut pos = data.len() - 1;

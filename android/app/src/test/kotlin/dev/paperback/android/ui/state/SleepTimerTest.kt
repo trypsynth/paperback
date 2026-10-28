@@ -47,8 +47,7 @@ class SleepTimerTest {
 		assertNull(timer.remaining.value)
 	}
 
-	// Setting a new length while one is running has to replace it. Left running, the first timer
-	// would stop playback at its own deadline, well before the length just asked for.
+	// Left running, the first timer would stop playback well before the length just asked for.
 	@Test
 	fun `starting a second timer replaces the first`() = runTest {
 		var stopped = 0

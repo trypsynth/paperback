@@ -131,7 +131,6 @@ fn build_html_table_from_grid_2x2() {
 		build_html_table_from_grid(&rows),
 		"<table border=\"1\"><tr><td>a</td><td>b</td></tr><tr><td>c</td><td>d</td></tr></table>"
 	);
-	// Round-trips through the shared TSV renderer.
 	assert_eq!(html_table_to_tsv(&build_html_table_from_grid(&rows)), "a\tb\nc\td");
 }
 

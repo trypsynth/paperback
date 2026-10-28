@@ -24,11 +24,7 @@ pub use window::{ParagraphFormat, WHOLE_DOCUMENT_LEN, WINDOW_LEN, WindowSlice};
 
 const MAX_HISTORY_LEN: usize = 10;
 const HISTORY_DISTANCE_THRESHOLD: DocLen = DocLen::from_raw(300);
-/// The audio-time counterpart to [`HISTORY_DISTANCE_THRESHOLD`], for documents (plain audio
-/// bundles in particular) whose text spine is too sparse for a character count to tell a real
-/// jump from a step to the next line. 30 seconds is comfortably past a single seek keypress
-/// (`audio_seek_amount_seconds` defaults to 10) but short enough to catch a jump to the next
-/// track of an audiobook.
+// Past one seek keypress (10 s by default) but short enough to catch a jump to the next track.
 const AUDIO_HISTORY_DISTANCE_THRESHOLD_MS: u64 = 30_000;
 
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
@@ -57,7 +53,7 @@ pub struct WebviewTarget {
 #[derive(Debug, Clone)]
 pub struct SourceView {
 	pub path: String,
-	/// The reading position's place in the source, which opens as a document of its own.
+	/// A position in the source, which opens as a document of its own, not in this document.
 	pub caret: DocPos,
 }
 
@@ -162,9 +158,7 @@ pub enum SegmentDirectionFfi {
 	Previous,
 }
 
-/// `found` is independent of `text`: a segment can be found but have no text of its own (e.g. a
-/// plain-audio DAISY section marker, whose buffer content is just a placeholder space), so
-/// callers must check `found` rather than treating blank `text` as "not found".
+/// Check `found`, not blank `text`: a plain-audio DAISY section is found but its text is a placeholder space.
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone)]
 pub struct TextSegmentFfi {
@@ -174,8 +168,6 @@ pub struct TextSegmentFfi {
 	pub found: bool,
 }
 
-/// `found` is `false` (other fields zeroed) when the lookup misses, e.g. an out-of-range clip
-/// index. Mirrors `AudioClip` from `AudioTimeline` for platforms driving their own player.
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct AudioClipFfi {
@@ -187,7 +179,6 @@ pub struct AudioClipFfi {
 	pub end: DocPos,
 }
 
-/// See `AudioTimeline::cursor_at_elapsed`.
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct AudioCursorFfi {
@@ -196,7 +187,6 @@ pub struct AudioCursorFfi {
 	pub seek_ms: i64,
 }
 
-/// See `AudioTimeline::point_for_position`.
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct AudioPointFfi {
@@ -231,9 +221,9 @@ pub struct DocumentSession {
 	history: Vec<DocPos>,
 	history_index: usize,
 	parser_flags: ParserFlags,
-	/// The settings the document was parsed with, which views that re-render its source must follow too.
+	/// Kept so views that re-render the source parse it the same way.
 	parse_settings: ParseSettings,
-	/// The password the document was opened with, so a second look at the file for something the parse did not keep (the picture behind an image line) can get past the same lock.
+	/// Kept so a second read of the file (the picture behind an image line) gets past the same lock.
 	password: String,
 }
 
@@ -264,8 +254,7 @@ pub struct DocumentStatsFfi {
 	pub char_count: i64,
 	pub char_count_no_whitespace: i64,
 	pub audio_file_count: i64,
-	/// `-1` when there is no audio or any file's length is unknown. See
-	/// `DocumentStats::audio_total_duration_ms`.
+	/// `-1` when there is no audio or any file's length is unknown.
 	pub audio_total_duration_ms: i64,
 }
 
@@ -298,9 +287,7 @@ pub struct LinkListFfi {
 	pub closest_index: i32,
 }
 
-// Only the mobile front ends construct a session this way, so the whole block is behind the
-// feature: uniffi::export reads the attributes below literally and does not see through a
-// cfg_attr, so `uniffi::constructor` cannot be written conditionally.
+// uniffi::export reads attributes literally and does not see through cfg_attr, so the whole block is behind the feature.
 #[cfg(feature = "uniffi")]
 #[uniffi::export]
 impl DocumentSession {
@@ -338,9 +325,6 @@ impl DocumentSession {
 }
 
 impl DocumentSession {
-	/// # Errors
-	///
-	/// Returns an error if the document cannot be parsed.
 	pub fn new(
 		file_path: &str,
 		password: &str,
@@ -368,31 +352,23 @@ impl DocumentSession {
 		})
 	}
 
-	/// The parsed document handle backing this session.
 	#[must_use]
 	pub const fn handle(&self) -> &DocumentHandle {
 		&self.handle
 	}
 
-	/// The position in this document nearest `raw`, for a value from a control or a dialog, which hold positions as integers.
 	#[must_use]
 	pub fn nearest_pos(&self, raw: i64) -> DocPos {
 		self.handle.document().buffer.nearest_pos(raw)
 	}
 
-	/// Replaces the text spanning `start..end` with `text`, keeping the buffer
-	/// indexes, markers, and `id_positions` in sync. Returns how many positions longer the document got, negative when shorter, so the
-	/// caller can adjust its sliding window. Used by the OCR flow to swap an image-only
-	/// placeholder line for recognized text.
+	/// Returns how many positions longer the document got, negative when shorter.
 	pub fn replace_range(&mut self, start: DocPos, end: DocPos, text: &str) -> i64 {
 		let doc_end = self.handle.document().buffer.end();
 		self.handle.replace_range(start.min(doc_end)..end.min(doc_end), text)
 	}
 
-	/// Every page still awaiting OCR, as `(1-based page number, placeholder offset)` pairs in
-	/// document order. Driven by the `ImageOnlyPage` markers the PDF parser leaves behind, which
-	/// [`Self::replace_image_only_pages`] removes as it consumes them, so a page already
-	/// recognized in this session never appears here twice.
+	/// Pages are 1-based; [`Self::replace_image_only_pages`] consumes the markers, so a recognized page never comes back.
 	#[must_use]
 	pub fn image_only_pages(&self) -> Vec<(i32, DocPos)> {
 		self.handle
@@ -405,8 +381,7 @@ impl DocumentSession {
 			.collect()
 	}
 
-	/// The offset of the OCR placeholder on the line containing `position`, if that line is one.
-	/// This is what Enter keys off, so pressing it anywhere on the placeholder line works.
+	/// Matches anywhere on the placeholder line, so Enter works wherever the caret is on it.
 	#[must_use]
 	pub fn image_only_page_at(&self, position: DocPos) -> Option<DocPos> {
 		let (start, end) = self.line_bounds_at(position)?;
@@ -421,10 +396,6 @@ impl DocumentSession {
 			.map(|marker| marker.position)
 	}
 
-	/// Swaps each `(placeholder offset, recognized text)` pair for the whole placeholder line,
-	/// in one pass. Offsets must be ones [`Self::image_only_pages`] or
-	/// [`Self::image_only_page_at`] reported and must still be placeholders; anything else is
-	/// skipped. Returns the outcome so callers can remap positions they hold themselves.
 	pub fn replace_image_only_pages(&mut self, pages: &[(DocPos, String)]) -> ReplaceOutcome {
 		let edits: Vec<Edit> = pages
 			.iter()
@@ -437,16 +408,8 @@ impl DocumentSession {
 		self.handle.replace_ranges(edits)
 	}
 
-	/// The `[start, end)` span of the text belonging to `page` (1-based): from that
-	/// page's own `PageBreak` marker up to the next page's, or the end of the document for the
-	/// last one. A page with neither text nor an image sits between two page breaks at the same
-	/// offset, so its span is empty; replacing one is a pure insertion.
-	///
-	/// The span **includes the page's trailing newline**, unlike [`Self::line_bounds_at`], whose
-	/// `end` stops short of it. A replacement built from this span therefore has to put a newline
-	/// back, or the page's last line fuses onto the next page's first and that page's `PageBreak`
-	/// no longer starts a line. The span always *starts* on the page-break marker, which is what
-	/// keeps the marker alive across the edit (see [`DocumentBuffer::replace_ranges`]).
+	/// Unlike [`Self::line_bounds_at`] the span includes the trailing newline, so a replacement must put one back or the next page's `PageBreak` no longer starts a line.
+	/// Starting on the page-break marker is what keeps the marker alive across a replace.
 	#[must_use]
 	pub fn page_text_bounds(&self, page: i32) -> Option<(DocPos, DocPos)> {
 		let index = usize::try_from(page.checked_sub(1)?).ok()?;
@@ -456,39 +419,19 @@ impl DocumentSession {
 		Some((start, end.max(start)))
 	}
 
-	/// Folds recognized text into the document, keyed by 1-based page number, in one pass.
-	///
-	/// Each page is handled according to what it actually is at the moment the edit is built. A
-	/// page still carrying an `ImageOnlyPage` marker gets exactly the treatment
-	/// [`Self::replace_image_only_pages`] gives it: the placeholder line is swapped, its newline
-	/// left in place, and the marker consumed. A page that already has text has its whole span
-	/// replaced instead, newline included, which is what lets a page be re-OCR'd when its existing
-	/// text is stale.
-	///
-	/// Keying by page rather than by offset is deliberate. Applying one page's text moves every
-	/// offset after it, so a placeholder offset captured when the job started is stale by the
-	/// next flush; page numbers stay true and the span is re-resolved here, from live markers.
-	///
-	/// Re-OCR'ing a text page discards the markers inside it -- its headings, links, images,
-	/// tables and list items -- because [`DocumentBuffer::replace_ranges`] drops any marker
-	/// strictly inside a replaced span. That is the same plain text an image-only page ends up
-	/// with, and markers left pointing into text that no longer exists would be worse than none.
-	///
-	/// Pages out of range are skipped rather than failing the batch, matching
-	/// [`Self::replace_image_only_pages`]. Returns the outcome so callers can remap the positions
-	/// they hold themselves.
+	/// Keyed by 1-based page, not offset, because each applied page moves every offset after it; spans are re-resolved from live markers.
+	/// Re-OCR of a text page drops the markers inside it, since markers pointing into replaced text would be worse than none.
 	pub fn replace_ocr_pages(&mut self, pages: &[(i32, String)]) -> ReplaceOutcome {
 		let edits: Vec<Edit> = pages
 			.iter()
 			.filter_map(|(page, text)| {
 				let (start, end) = self.page_text_bounds(*page)?;
 				if let Some(placeholder) = self.image_only_page_at(start) {
-					// The placeholder line, and only that line. `line_bounds_at` stops before
-					// the newline, so the recognized text goes in without one.
+					// `line_bounds_at` stops before the newline, so the text goes in without one.
 					let (line_start, line_end) = self.line_bounds_at(placeholder)?;
 					return Some(Edit { start: line_start, end: line_end, text: text.clone() });
 				}
-				// The page's whole span, newline included, so the replacement carries one.
+				// The page span includes its newline, so the replacement must carry one.
 				let text = if text.ends_with('\n') { text.clone() } else { format!("{text}\n") };
 				let doc_end = self.handle.document().buffer.end();
 				Some(Edit { start: start.min(doc_end), end: end.min(doc_end), text })
@@ -497,8 +440,6 @@ impl DocumentSession {
 		self.handle.replace_ranges(edits)
 	}
 
-	/// This document's recorded audio, when it has any (DAISY audiobooks; text-only
-	/// documents have none).
 	#[must_use]
 	pub fn audio(&self) -> Option<&AudioTimeline> {
 		self.handle.document().audio.as_ref()
@@ -524,19 +465,8 @@ impl DocumentSession {
 		self.history_index = index.min(self.history.len().saturating_sub(1));
 	}
 
-	/// Records a jump from `from` to `to`, so that going back afterwards returns to `from`.
-	///
-	/// `from` is where the reader actually was when they jumped, which the caller reads off
-	/// the caret before moving it. A short jump records nothing: somewhere inside the
-	/// paragraph already being read is not a place to come back to, and a history filled with
-	/// those cannot reach anywhere worth returning to.
-	///
-	/// Text position alone cannot tell "short" from "long" for a plain audio bundle: its buffer
-	/// is one placeholder character per file (see the `audio_only` doc comment), so jumping
-	/// between tracks moves the caret by a handful of characters regardless of how much
-	/// recording separates them. Falling back to the audio distance between `from` and `to`
-	/// when it is available catches those jumps too - covering large distances and following
-	/// links should record a returnable position in an audiobook exactly as they do in text.
+	/// A short jump records nothing, since a spot inside the paragraph being read is not worth returning to.
+	/// A plain audio bundle has one placeholder character per file, so audio distance counts too.
 	pub fn record_jump(&mut self, from: DocPos, to: DocPos) {
 		let text_distance_worth_recording = to.since(from).max(from.since(to)) >= HISTORY_DISTANCE_THRESHOLD;
 		let audio_distance_worth_recording =
@@ -546,8 +476,6 @@ impl DocumentSession {
 		}
 	}
 
-	/// The elapsed-time distance between `from` and `to`, for documents with a timeline. `None`
-	/// without audio, or where either offset falls outside every clip.
 	fn audio_distance_ms(&self, from: DocPos, to: DocPos) -> Option<u64> {
 		let audio = self.audio()?;
 		let from_ms = audio.point_for_position(from)?.time_ms;

@@ -1,5 +1,3 @@
-//! The auto-updater flow: checking GitHub for a newer release and handing it to `ship-shape`.
-
 use std::{env, sync::Arc};
 
 use paperback_core::version;
@@ -11,10 +9,7 @@ use crate::config_ext::UpdateChannel;
 const PAPERBACK_GITHUB_REPO: &str = "trypsynth/paperback";
 const PAPERBACK_MINISIGN_KEY: &str = "RWQasnbWXwK2dhno9ThUm8HONEIo85iiDBZvw3jlNs574QJHEkoRiGX7";
 
-// Matches the `-x64`/`-arm64` suffixes the release workflow appends to Windows and Linux asset
-// names (see .github/workflows/build.yml) so the updater requests the build for this machine's
-// architecture instead of a name that no longer exists in the release. macOS publishes a single
-// unsuffixed asset.
+// Must match the suffixes `.github/workflows/build.yml` gives Windows and Linux assets; macOS publishes one unsuffixed asset.
 #[cfg(all(any(target_os = "windows", target_os = "linux"), target_arch = "x86_64"))]
 const UPDATE_ASSET_SUFFIX: &str = "-x64";
 #[cfg(all(any(target_os = "windows", target_os = "linux"), target_arch = "aarch64"))]
@@ -58,10 +53,7 @@ pub fn run_update_check(parent: &Frame, silent: bool, channel: UpdateChannel) {
 }
 
 pub fn is_installer_distribution() -> bool {
-	// An AppImage is what the updater treats as the installer on Linux: it replaces the
-	// `.AppImage` file itself, where the portable tar.gz would be extracted next to an executable
-	// that lives in the AppImage's read-only mount. `$APPIMAGE` is the same check `config_dir`
-	// and `linux_integration.rs` use.
+	// The portable tar.gz would be extracted beside an executable in the AppImage's read-only mount, so the AppImage file itself is replaced.
 	#[cfg(target_os = "linux")]
 	if env::var_os("APPIMAGE").is_some() {
 		return true;

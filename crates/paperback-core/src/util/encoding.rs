@@ -3,49 +3,35 @@ use std::str;
 use chardetng::{EncodingDetector, Iso2022JpDetection, Utf8Detection};
 use encoding_rs::{Encoding, UTF_8, UTF_16BE, UTF_16LE, WINDOWS_1252};
 
-/// How much of the input the two heuristics below look at.
-///
-/// Both are sampling problems: a file does not change encoding part-way through, so a prefix
-/// answers as well as the whole thing does. Running them over an entire book instead costs two
-/// extra passes over it, which is what made a 60 MB GB18030 text file take several times longer
-/// to open than the same book in UTF-8, where `str::from_utf8` answers and returns immediately.
+/// A file doesn't change encoding part-way, so a prefix answers as well as the whole; scanning all of a 60 MB GB18030 book made it open several times slower than in UTF-8 (#886).
 const DETECTION_SAMPLE_BYTES: usize = 64 * 1024;
 
 #[must_use]
 pub fn convert_to_utf8(input: &[u8]) -> String {
 	if input.len() >= 4 {
-		// UTF-32 LE BOM
 		if input[0] == 0xFF && input[1] == 0xFE && input[2] == 0x00 && input[3] == 0x00 {
 			return decode_utf32_le(&input[4..]);
 		}
-		// UTF-32 BE BOM
 		if input[0] == 0x00 && input[1] == 0x00 && input[2] == 0xFE && input[3] == 0xFF {
 			return decode_utf32_be(&input[4..]);
 		}
 	}
-	if input.len() >= 3 {
-		// UTF-8 BOM
-		if input[0] == 0xEF && input[1] == 0xBB && input[2] == 0xBF {
-			return String::from_utf8_lossy(&input[3..]).to_string();
-		}
+	if input.len() >= 3 && input[0] == 0xEF && input[1] == 0xBB && input[2] == 0xBF {
+		return String::from_utf8_lossy(&input[3..]).to_string();
 	}
 	if input.len() >= 2 {
-		// UTF-16 LE BOM
 		if input[0] == 0xFF && input[1] == 0xFE {
 			let (decoded, _, _) = UTF_16LE.decode(&input[2..]);
 			return decoded.to_string();
 		}
-		// UTF-16 BE BOM
 		if input[0] == 0xFE && input[1] == 0xFF {
 			let (decoded, _, _) = UTF_16BE.decode(&input[2..]);
 			return decoded.to_string();
 		}
 	}
-	// UTF-8 without BOM
 	if let Ok(s) = str::from_utf8(input) {
 		return s.to_string();
 	}
-	// UTF-16 without BOM (only if data looks like UTF-16)
 	if looks_like_utf16(sample_of(input)) {
 		let (decoded, encoding, had_errors) = UTF_16LE.decode(input);
 		if !had_errors && encoding == UTF_16LE {
@@ -56,14 +42,7 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 			return decoded.to_string();
 		}
 	}
-	// Legacy multi-byte encodings (GBK, Big5, Shift_JIS, EUC-KR, etc.) have no BOM and
-	// aren't valid UTF-8, so they can only be guessed heuristically. chardetng is the
-	// statistical detector Mozilla built specifically to pair with encoding_rs for this.
-	// Only trust its guess when it picks a multi-byte encoding: those have real
-	// structural constraints, so a clean decode is a meaningful signal. Single-byte
-	// encodings decode almost any input "successfully", so a confident-looking guess on
-	// a short/ambiguous sample is more likely wrong than not. That case is left to the
-	// Windows-1252-or-give-up fallback below, unchanged.
+	// Only a multi-byte guess is trusted: their structure makes a clean decode meaningful, while single-byte encodings decode almost anything.
 	let mut detector = EncodingDetector::new(Iso2022JpDetection::Allow);
 	let sample = sample_of(input);
 	detector.feed(sample, sample.len() == input.len());
@@ -74,22 +53,19 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 			return decoded.to_string();
 		}
 	}
-	// Windows-1252
 	let (decoded, _, _) = WINDOWS_1252.decode(input);
 	if decoded.chars().any(|c| !c.is_control() || c.is_whitespace()) {
 		return decoded.to_string();
 	}
-	// Give up
 	String::from_utf8_lossy(input).to_string()
 }
 
-/// How far into an HTML file a browser looks for its `<meta charset>`, per the HTML specification's prescan.
+/// The HTML specification's prescan length for `<meta charset>`.
 const HTML_PRESCAN_BYTES: usize = 1024;
 
-/// How far into a file to look for the XML declaration. It has to be the first thing in the file, so anything past the first line is not one.
+/// The XML declaration has to come first, so anything past the first line is not one.
 const XML_DECLARATION_SCAN_BYTES: usize = 200;
 
-/// The encoding an XML declaration names, if it names one this build knows.
 #[must_use]
 pub fn xml_declared_encoding(bytes: &[u8]) -> Option<&'static Encoding> {
 	let head = String::from_utf8_lossy(&bytes[..bytes.len().min(XML_DECLARATION_SCAN_BYTES)]);
@@ -101,7 +77,6 @@ pub fn xml_declared_encoding(bytes: &[u8]) -> Option<&'static Encoding> {
 	Encoding::for_label(label.as_bytes())
 }
 
-/// The encoding an HTML or XHTML file declares, in its XML declaration or its `<meta charset>` or `http-equiv` Content-Type, if it names one this build knows.
 #[must_use]
 pub fn html_declared_encoding(bytes: &[u8]) -> Option<&'static Encoding> {
 	if let Some(encoding) = xml_declared_encoding(bytes) {
@@ -112,13 +87,11 @@ pub fn html_declared_encoding(bytes: &[u8]) -> Option<&'static Encoding> {
 	let value = value.trim_start().trim_start_matches(['"', '\'']);
 	let label = value.split(|c: char| c.is_ascii_whitespace() || matches!(c, '"' | '\'' | ';' | '>' | '/')).next()?;
 	let encoding = Encoding::for_label(label.as_bytes())?;
-	// A file that could be read far enough to find the declaration is not UTF-16, whatever it says, which is why the specification has browsers read such a claim as UTF-8.
+	// A file readable far enough to find the declaration is not UTF-16, so the specification reads such a claim as UTF-8.
 	Some(if encoding == UTF_16LE || encoding == UTF_16BE { UTF_8 } else { encoding })
 }
 
-/// Decodes an HTML or XHTML file, trusting what it says about itself before guessing.
-///
-/// Its own declaration comes first, then `fallback`, whatever encoding its surroundings point to, and only then a guess. A file claiming UTF-8 that is not valid UTF-8 has its claim ignored, as old editors stamped that on whatever they saved.
+/// A UTF-8 claim on bytes that are not UTF-8 is ignored, as old editors stamped it on whatever they saved.
 #[must_use]
 pub fn decode_html(bytes: &[u8], fallback: Option<&'static Encoding>) -> String {
 	let has_bom =
@@ -135,7 +108,7 @@ pub fn decode_html(bytes: &[u8], fallback: Option<&'static Encoding>) -> String 
 		.map_or_else(|| convert_to_utf8(bytes), |encoding| encoding.decode_without_bom_handling(bytes).0.into_owned())
 }
 
-/// [`convert_to_utf8`] for bytes the caller is done with, which become the text without a copy when they are UTF-8 already. A whole text file is read this way, and a copy of one costs as much memory again as the file.
+/// Takes ownership so UTF-8 becomes the text without a copy, which for a whole text file would cost as much memory again.
 #[must_use]
 pub fn convert_owned_to_utf8(mut bytes: Vec<u8>) -> String {
 	let bom = bytes.starts_with(&[0xEF, 0xBB, 0xBF]);
@@ -173,9 +146,7 @@ fn decode_utf32_be(input: &[u8]) -> String {
 		.collect()
 }
 
-/// The leading bytes the heuristics run over. A sample can end part-way through a multi-byte
-/// character, so the detector must not be told a cut sample is the end of the input: it would
-/// read the cut character as malformed and rule out the right encoding over it.
+/// The detector must not be told a cut sample is the end of input, or it reads the cut character as malformed and rules out the right encoding (#907).
 fn sample_of(input: &[u8]) -> &[u8] {
 	&input[..input.len().min(DETECTION_SAMPLE_BYTES)]
 }
@@ -221,7 +192,6 @@ mod tests {
 		assert_eq!(convert_to_utf8(input), expected);
 	}
 
-	/// Bytes handed over whole decode exactly as borrowed ones do, whether they are UTF-8 kept as they are or anything else.
 	#[rstest]
 	#[case(b"\xEF\xBB\xBFHello")]
 	#[case(b"\xEF\xBB\xBFbad \xFF byte")]
@@ -235,11 +205,7 @@ mod tests {
 		assert_eq!(convert_owned_to_utf8(input.to_vec()), convert_to_utf8(input));
 	}
 
-	/// <https://github.com/trypsynth/paperback/issues/886>: the statistical detector and the
-	/// UTF-16 shape test used to run over the whole file, which made a large book in a legacy
-	/// encoding take an order of magnitude longer to open than the same book in UTF-8. They now
-	/// read a prefix, so a book far longer than that prefix still has to come out whole and
-	/// correct, including the text past where detection stopped looking.
+	/// #886: detection reads only a prefix, so text past it must still come out whole and correct.
 	#[test]
 	fn a_book_longer_than_the_detection_sample_still_decodes_whole() {
 		let paragraph = "这是一本很长的中文电子书，用来确认取样检测之后的文字仍然正确。
@@ -252,8 +218,7 @@ mod tests {
 		assert_eq!(convert_to_utf8(&encoded), text);
 	}
 
-	/// <https://github.com/trypsynth/paperback/issues/907>: a sample cut through the middle of a
-	/// character made the detector rule GBK out and fall back to Windows-1252.
+	/// #907: a sample cut mid-character made the detector rule out GBK and fall back to Windows-1252.
 	#[test]
 	fn a_sample_ending_mid_character_still_detects_gbk() {
 		let text = format!("a{}", "这是一本很长的中文电子书用来确认取样检测".repeat(DETECTION_SAMPLE_BYTES / 20));
@@ -263,9 +228,7 @@ mod tests {
 		assert_eq!(convert_to_utf8(&encoded), text);
 	}
 
-	/// <https://github.com/trypsynth/paperback/issues/632>: GBK-encoded Chinese text
-	/// (no BOM, not valid UTF-8) was falling through to the Windows-1252 fallback and
-	/// coming out as mojibake instead of being detected.
+	/// #632: GBK text fell through to the Windows-1252 fallback and came out as mojibake.
 	#[test]
 	fn detects_gbk_encoded_chinese_text() {
 		let original = "你好，世界。这是一个测试。";

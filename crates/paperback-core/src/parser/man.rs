@@ -1,18 +1,4 @@
-//! Manual pages: roff source written with the `man` macro package, as `man(7)` describes it.
-//!
-//! A page is roff, which is a typesetting language, but a manual page uses only a small,
-//! well-known part of it: section headings, paragraphs, tagged paragraphs for options, runs of
-//! bold and italic, and blocks where the line breaks are the content. Everything here reads
-//! that part and ignores the rest, which is what leaves a page readable rather than sprinkled
-//! with typesetting instructions.
-//!
-//! The BSD `mdoc` package is a different set of macros carried in the same files, and is not
-//! read here yet.
-//!
-//! Two things a page can carry are simplified rather than reproduced. A `tbl` table (`.TS`)
-//! comes out as its rows one after another rather than as a table, and `.if` and friends are
-//! skipped rather than evaluated, so a page that writes a paragraph inside a conditional loses
-//! that paragraph.
+//! Only the small part of roff a manual page uses is read; `.if` and friends are skipped rather than evaluated, so a paragraph written inside a conditional is lost.
 
 use std::{fs, io::Read, path::Path};
 
@@ -53,8 +39,7 @@ impl Parser for ManParser {
 		if !looks_like_roff(&source) {
 			anyhow::bail!("'{}' is not a manual page", context.file_path);
 		}
-		// The two macro packages share these file names, and the first macro of a page says
-		// which of them it is written in.
+		// `man` and `mdoc` pages share file names; only the first macro tells them apart.
 		let page = if mdoc::is_mdoc(&source) {
 			let read = mdoc::read(&source, context.render_tables_inline);
 			Page { buffer: read.buffer, title: read.title, toc: read.toc }
@@ -73,17 +58,10 @@ impl Parser for ManParser {
 	}
 }
 
-/// How much of a file to read before deciding it is not roff at all. A page opens with its
-/// comments and its `.TH`, and the longest licence header among the pages here runs to about
-/// forty lines.
+/// The longest licence header seen before a page's `.TH` runs to about forty lines.
 const SNIFF_LINES: usize = 200;
 
-/// Whether a file is roff source.
-///
-/// The extensions a manual page goes by say very little: a section number is a plausible name
-/// for any file, and `gz` is claimed here only so that an installed page can be opened at all.
-/// So the content is asked. Roff writes its instructions on lines of their own beginning with
-/// a full stop, and a manual page cannot be written without them.
+/// A section number is a plausible extension for any file, so the content is checked for roff control lines.
 fn looks_like_roff(source: &str) -> bool {
 	source
 		.lines()
@@ -92,8 +70,7 @@ fn looks_like_roff(source: &str) -> bool {
 		.any(|(name, _)| !name.is_empty() && name.chars().all(|c| c.is_ascii_alphanumeric()))
 }
 
-/// Whether the bytes start with the gzip magic number. An installed page is gzipped and one in
-/// a source tree is not, so the file itself is asked rather than its name.
+/// An installed page is gzipped and one in a source tree is not, so the bytes are checked rather than the name.
 fn is_gzipped(bytes: &[u8]) -> bool {
 	bytes.starts_with(&[0x1f, 0x8b])
 }
@@ -104,12 +81,6 @@ fn gunzip(bytes: &[u8], path: &str) -> Result<Vec<u8>> {
 	Ok(out)
 }
 
-/// Whether a path names a manual page by its section: `ls.1`, `printf.3`, `Tcl_Init.3tcl`, and
-/// the gzipped form of each.
-///
-/// The section is the only thing a manual page's name has to say for itself, the stem being the
-/// name of whatever is documented. It is a digit, sometimes with letters after it naming a
-/// sub-collection.
 #[must_use]
 pub fn is_manual_page_name(path: &Path) -> bool {
 	let unpacked = path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("gz")).then(|| path.file_stem());
@@ -123,23 +94,18 @@ pub fn is_manual_page_name(path: &Path) -> bool {
 	chars.next().is_some_and(|c| c.is_ascii_digit()) && chars.all(|c| c.is_ascii_alphanumeric())
 }
 
-/// A page as read.
 struct Page {
 	buffer: DocumentBuffer,
 	title: Option<String>,
 	toc: Vec<TocItem>,
 }
 
-/// What the next line is expected to be, for the macros that take their argument from the line
-/// after them rather than from their own.
+/// Macros that take their argument from the next line: `.SH`, `.SS` and `.B` and friends when bare, and `.TP` always.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Pending {
 	Nothing,
-	/// `.SH` and `.SS` with no arguments take the next line as the heading.
 	Heading(i32),
-	/// `.TP` always takes the next line as the tag of its tagged paragraph.
 	Tag,
-	/// `.B` and its friends with no arguments set the next line in that font.
 	Font(Font),
 }
 
@@ -149,9 +115,7 @@ struct Reader<'a> {
 	pending: Pending,
 	lines: Vec<&'a str>,
 	index: usize,
-	/// The sections read so far, with subsections nested under the section they fall in.
 	toc: Vec<TocItem>,
-	/// Whether a table is written out in full or stands as a placeholder.
 	render_tables_inline: bool,
 }
 
@@ -187,14 +151,10 @@ impl Reader<'_> {
 		}
 	}
 
-	/// The next source line, with any continued lines joined onto it.
-	///
-	/// A line ending in a backslash continues onto the next, which is how a long macro call is
-	/// written. An even number of trailing backslashes is not a continuation: those are escaped
-	/// backslashes standing for themselves.
 	fn joined_line(&mut self) -> String {
 		let mut line = self.lines[self.index].to_string();
 		self.index += 1;
+		// An even number of trailing backslashes is escaped backslashes, not a continuation.
 		while trailing_backslashes(&line) % 2 == 1 && self.index < self.lines.len() {
 			line.pop();
 			line.push_str(self.lines[self.index]);
@@ -203,7 +163,6 @@ impl Reader<'_> {
 		line
 	}
 
-	/// A line of text, which may be the argument a macro took from the line after itself.
 	fn text(&mut self, line: &str) {
 		match std::mem::replace(&mut self.pending, Pending::Nothing) {
 			Pending::Heading(level) => self.add_heading(&escape::plain(line), level),
@@ -221,10 +180,8 @@ impl Reader<'_> {
 		}
 	}
 
-	/// One macro call.
 	fn control(&mut self, name: &str, rest: &str) {
-		// A macro standing where a tag was expected supplies the tag, as long as it is one that
-		// lays down text. `.TP` followed by `.B \-\-help` is how most options are written.
+		// A text-laying macro where a tag was expected supplies the tag: `.TP` then `.B \-\-help` is how most options are written.
 		if self.pending == Pending::Tag {
 			self.pending = Pending::Nothing;
 			if let Some(pieces) = font_macro_pieces(name, rest) {
@@ -262,8 +219,7 @@ impl Reader<'_> {
 				} else if let Some(font) = bare_font(name, rest) {
 					self.pending = Pending::Font(font);
 				}
-				// Anything else is a typesetting instruction with nothing to say to a reader:
-				// spacing, hyphenation, indentation, page geometry.
+				// Anything else is spacing, hyphenation, indentation or page geometry, with nothing to say to a reader.
 			}
 		}
 	}
@@ -278,9 +234,6 @@ impl Reader<'_> {
 		}
 	}
 
-	/// Writes a heading and lists it in the table of contents. A subsection is listed under
-	/// the section it falls in, and one that opens a page with no section above it stands on
-	/// its own.
 	fn add_heading(&mut self, text: &str, level: i32) {
 		let text = text.trim();
 		let Some(position) = self.renderer.heading(text, level) else {
@@ -293,8 +246,7 @@ impl Reader<'_> {
 		}
 	}
 
-	/// `.TH name section ...`, which names the page. A manual page is known by its name and
-	/// section together, which is how one page refers to another.
+	/// A manual page is known by its name and section together, which is how one page refers to another.
 	fn title_header(&mut self, args: &[String]) {
 		let Some(name) = args.first() else { return };
 		let name = escape::plain(name);
@@ -304,7 +256,6 @@ impl Reader<'_> {
 		});
 	}
 
-	/// `.IP` with a tag is a list item; without one it is an indented paragraph.
 	fn indented_paragraph(&mut self, args: &[String]) {
 		match args.first() {
 			Some(tag) if !tag.trim().is_empty() => {
@@ -321,8 +272,7 @@ impl Reader<'_> {
 		self.renderer.begin_link(url);
 	}
 
-	/// `.UE` closes the link. Its argument is the punctuation that follows the link, which
-	/// belongs after it rather than inside it.
+	/// `.UE`'s argument is the punctuation that follows the link, which belongs after it rather than inside it.
 	fn close_link(&mut self, args: &[String]) {
 		self.renderer.end_link();
 		if let Some(trailing) = args.first() {
@@ -330,11 +280,6 @@ impl Reader<'_> {
 		}
 	}
 
-	/// A `tbl` table.
-	///
-	/// The grid it reads is handed to the same renderer every other format's tables go
-	/// through, so a page's table is a table the reader can step into, and honours the setting
-	/// for whether a table is written out in full or stands as a placeholder.
 	fn table(&mut self) {
 		self.renderer.end_paragraph();
 		let mut table = table::Table::new();
@@ -359,7 +304,6 @@ impl Reader<'_> {
 		self.renderer.table(&rows, self.render_tables_inline);
 	}
 
-	/// Skips a macro definition, which runs to a line holding only `..`.
 	fn skip_definition(&mut self) {
 		while self.index < self.lines.len() {
 			if self.joined_line().trim() == ".." {
@@ -368,7 +312,6 @@ impl Reader<'_> {
 		}
 	}
 
-	/// Skips a conditional, including the block it opens with `\{`.
 	fn skip_conditional(&mut self, rest: &str) {
 		if !rest.contains("\\{") {
 			return;
@@ -382,7 +325,6 @@ impl Reader<'_> {
 	}
 }
 
-/// Whether a line is a roff comment, whose macro name is `\"`.
 fn is_comment(line: &str) -> bool {
 	let trimmed = line.trim_start();
 	let Some(rest) = trimmed.strip_prefix('.').or_else(|| trimmed.strip_prefix('\'')) else {
@@ -391,10 +333,6 @@ fn is_comment(line: &str) -> bool {
 	rest.is_empty() || rest.starts_with("\\\"") || rest.starts_with("\\#")
 }
 
-/// Splits a control line into its macro name and the rest of the line.
-///
-/// A control line starts with `.` or `'`, the second of which asks for no break before the
-/// macro runs. Nothing here needs that distinction.
 fn control_line(line: &str) -> Option<(&str, &str)> {
 	let rest = line.strip_prefix('.').or_else(|| line.strip_prefix('\''))?;
 	let rest = rest.trim_start();
@@ -407,8 +345,6 @@ fn trailing_backslashes(line: &str) -> usize {
 	line.chars().rev().take_while(|&c| c == '\\').count()
 }
 
-/// Splits a macro's arguments, which are separated by spaces unless quoted. Inside a quoted
-/// argument a doubled quotation mark stands for one.
 fn split_args(rest: &str) -> Vec<String> {
 	let mut args = Vec::new();
 	let mut current = String::new();
@@ -447,7 +383,6 @@ fn split_args(rest: &str) -> Vec<String> {
 	args
 }
 
-/// The two fonts a macro alternates its arguments between, or the one font it sets them all in.
 const fn alternating_fonts(name: &str) -> Option<(Font, Font)> {
 	Some(match name.as_bytes() {
 		b"BR" => (Font::Bold, Font::Roman),
@@ -463,11 +398,7 @@ const fn alternating_fonts(name: &str) -> Option<(Font, Font)> {
 	})
 }
 
-/// The pieces a font macro lays down, or `None` if this is not one of them.
-///
-/// An alternating macro puts no space between its arguments: `.BR ls (1)` is how a page writes
-/// a cross-reference, and it reads `ls(1)`. A single-font macro sets the whole line, so its
-/// arguments keep the spaces between them.
+/// An alternating macro puts no space between its arguments, so the cross-reference `.BR ls (1)` reads `ls(1)`.
 fn font_macro_pieces(name: &str, rest: &str) -> Option<Vec<Piece>> {
 	let (first, second) = alternating_fonts(name)?;
 	let args = split_args(rest);
@@ -487,7 +418,6 @@ fn font_macro_pieces(name: &str, rest: &str) -> Option<Vec<Piece>> {
 	Some(pieces)
 }
 
-/// The font a bare `.B`, `.I` or `.SM` sets the line after it in.
 fn bare_font(name: &str, rest: &str) -> Option<Font> {
 	if !rest.trim().is_empty() {
 		return None;

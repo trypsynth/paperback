@@ -1,14 +1,4 @@
-//! Word 97-2003 automatic numbering: the `1.`, `a)` and bullets a `.doc` generates rather than
-//! stores in its text, read from the binary structures [MS-DOC] describes.
-//!
-//! * A paragraph is in a list when its properties (see [`super::properties`]) carry `sprmPIlfo`
-//!   (which list instance) and `sprmPIlvl` (which level).
-//! * The list definitions (`PlfLst`) give each list's levels: number format, start value and the
-//!   label template, in which a character 0-8 stands for that level's current number.
-//! * The list instances (`PlfLfo`) point paragraphs at a definition, optionally restarting levels.
-//!
-//! These are translated into the same model `numbering.xml` is read into, so the counting and the
-//! label formatting are shared with `.docx`.
+//! A `.doc` generates its list labels rather than storing them in its text; the [MS-DOC] lists are translated into the `numbering.xml` model so counting and label formatting are shared with `.docx`.
 
 use std::collections::HashMap;
 
@@ -17,21 +7,18 @@ use super::{
 	properties::fc_lcb,
 };
 
-/// Offsets in the FIB of the (fc, lcb) pairs this needs, in `FibRgFcLcb97`.
+/// Offsets of the (fc, lcb) pairs in `FibRgFcLcb97`.
 const FIB_FC_PLF_LST: usize = 0x02E2;
 const FIB_FC_PLF_LFO: usize = 0x02EA;
 const LSTF_SIZE: usize = 28;
 const LVLF_SIZE: usize = 28;
 const LFO_SIZE: usize = 16;
 
-/// A document's lists: the numbering its list paragraphs refer to.
 pub(super) struct DocLists {
 	numbering: Numbering,
 }
 
 impl DocLists {
-	/// Reads the list definitions and instances. `None` when the document has no lists or they
-	/// cannot be read, in which case it is read without them.
 	pub(super) fn read(word_document: &[u8], table: &[u8]) -> Option<Self> {
 		let lists = read_plf_lst(table, fc_lcb(word_document, FIB_FC_PLF_LST)?)?;
 		let instances = read_plf_lfo(table, fc_lcb(word_document, FIB_FC_PLF_LFO)?)?;
@@ -39,15 +26,13 @@ impl DocLists {
 			.then(|| Self { numbering: Numbering::from_definitions(lists, instances) })
 	}
 
-	/// The label for the next paragraph in list instance `ilfo` at level `ilvl`, advancing the
-	/// count of that list.
+	/// Advances the count of list instance `ilfo`, so call it once per paragraph.
 	pub(super) fn label(&mut self, ilfo: i16, ilvl: u8) -> Option<ListLabel> {
 		self.numbering.label_of(&ilfo.to_string(), usize::from(ilvl))
 	}
 }
 
-/// `PlfLst`: the list definitions, followed in the table stream by their levels (one for a
-/// simple list, nine otherwise). Keyed by the list's `lsid`, which is what instances refer to.
+/// Keyed by `lsid`, which is what the `PlfLfo` instances refer to.
 fn read_plf_lst(table: &[u8], (fc, lcb): (usize, usize)) -> Option<HashMap<String, Vec<Option<Level>>>> {
 	table.get(fc..fc.checked_add(lcb)?)?;
 	let count = usize::try_from(i16::from_le_bytes(table.get(fc..fc + 2)?.try_into().ok()?)).ok()?;
@@ -68,8 +53,6 @@ fn read_plf_lst(table: &[u8], (fc, lcb): (usize, usize)) -> Option<HashMap<Strin
 	Some(lists)
 }
 
-/// One `LVL`: the fixed LVLF, its paragraph and character property modifiers, then the label
-/// template as a counted UTF-16 string. Returns the level and the offset just past it.
 fn read_lvl(table: &[u8], at: usize) -> Option<(Level, usize)> {
 	let lvlf = table.get(at..at + LVLF_SIZE)?;
 	let start = i32::from_le_bytes(lvlf[0..4].try_into().ok()?);
@@ -87,8 +70,7 @@ fn read_lvl(table: &[u8], at: usize) -> Option<(Level, usize)> {
 		.iter()
 		.map(|c| u16::from_le_bytes(*c))
 		.collect();
-	// rgbxchNums holds the 1-based positions in the template of each level-number placeholder; the
-	// character there is the level (0-8) whose number goes in.
+	// rgbxchNums holds the 1-based template positions of the placeholders; the character there is the level (0-8) whose number goes in.
 	let mut text = String::new();
 	for (i, &unit) in units.iter().enumerate() {
 		if placeholders.contains(&(i + 1)) && unit < 9 {
@@ -102,8 +84,7 @@ fn read_lvl(table: &[u8], at: usize) -> Option<(Level, usize)> {
 	Some((level, xst_at + 2 + cch * 2))
 }
 
-/// `PlfLfo`: the list instances (1-based, which is what `sprmPIlfo` counts), each naming its
-/// definition by `lsid`, followed by each one's level overrides.
+/// Keyed 1-based, since that is what `sprmPIlfo` counts.
 fn read_plf_lfo(table: &[u8], (fc, lcb): (usize, usize)) -> Option<HashMap<String, Instance>> {
 	table.get(fc..fc.checked_add(lcb)?)?;
 	let count = usize::try_from(i32::from_le_bytes(table.get(fc..fc + 4)?.try_into().ok()?)).ok()?;
@@ -136,7 +117,6 @@ fn read_plf_lfo(table: &[u8], (fc, lcb): (usize, usize)) -> Option<HashMap<Strin
 	Some(instances)
 }
 
-/// [MS-DOC] number format codes, in the terms `numbering.xml` uses.
 const fn number_format(nfc: u8) -> &'static str {
 	match nfc {
 		1 => "upperRoman",

@@ -1,6 +1,3 @@
-//! The parts of opening documents from links that need no window: the link Open from URL starts
-//! with, and the wording of the download window, the security warning and what went wrong.
-
 use std::path::Path;
 
 use paperback_core::{
@@ -11,28 +8,21 @@ use patois::t;
 
 use crate::working_copy::WorkingCopy;
 
-/// What Open from URL's field starts with: the first line of `clipboard` that is a link.
 pub fn prefill(clipboard: &str) -> String {
 	clipboard.lines().map(str::trim).find(|line| is_remote_url(line)).unwrap_or_default().to_string()
 }
 
-/// The error for text typed into Open from URL that is not an http or https link.
 pub fn not_a_link(text: &str) -> String {
 	// TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
 	format!("{text}: {}", t("this is not a web link"))
 }
 
-/// What the download window is doing with a link.
 #[derive(Debug, Clone, Copy)]
 pub enum Stage {
-	/// Asking the server what it sends.
 	Checking,
-	/// Downloading the document.
 	Downloading,
 }
 
-/// The download window's message for link `n` of `m`, naming `subject`: the link while it is
-/// checked, the document's file name while it downloads.
 pub fn step(stage: Stage, n: usize, m: usize, subject: &str) -> String {
 	let template = match (stage, m > 1) {
 		// TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
@@ -48,8 +38,6 @@ pub fn step(stage: Stage, n: usize, m: usize, subject: &str) -> String {
 	template.replacen("%d", &n.to_string(), 1).replacen("%d", &m.to_string(), 1).replacen("%s", subject, 1)
 }
 
-/// The question asked before downloading a link whose server does not say it sends a document
-/// Paperback reads.
 pub fn warning_text(link: &str, content_type: Option<&str>) -> String {
 	let reason = match content_type {
 		Some(content_type) if fetch::is_web_page(content_type) => {
@@ -71,29 +59,16 @@ pub fn warning_text(link: &str, content_type: Option<&str>) -> String {
 	format!("{link}\n{reason}\n{}", t("Download it anyway?"))
 }
 
-/// Whether the reader picks a format before the downloaded `copy` opens: after a security
-/// warning, and when Paperback does not read its kind of file. A format already picked for the
-/// link is used without asking again.
 pub fn needs_open_as(warned: bool, copy: &Path) -> bool {
 	warned || !parser_supports_path(copy)
 }
 
-/// What became of one link.
 pub enum Outcome {
-	Downloaded {
-		link: String,
-		copy: WorkingCopy,
-		/// The reader said yes to a security warning for it.
-		warned: bool,
-	},
-	/// Refused, or the download failed.
+	Downloaded { link: String, copy: WorkingCopy, warned: bool },
 	Failed { link: String, error: FetchError },
-	/// The reader said no to a security warning, or cancelled.
 	Skipped,
 }
 
-/// The lines of the error shown after the links were downloaded: one per link that was refused
-/// or failed.
 pub fn report(outcomes: &[Outcome]) -> Vec<String> {
 	outcomes
 		.iter()

@@ -1,8 +1,6 @@
-//! A document's own title and author, from its `{\info}` group: `{\info{\title Annual Report}{\author Ann Smith}}`.
-
 use crate::util::text::collapse_whitespace;
 
-/// The title and author, each `None` when the document leaves it out or empty. Reads RTF that has been through `normalize_escapes`, so codepage escapes are characters already and `\uN` escapes stand on their own.
+/// Reads RTF that has been through `normalize_escapes`, so codepage escapes are characters already and `\uN` escapes stand on their own.
 pub(super) fn title_and_author(rtf: &str) -> (Option<String>, Option<String>) {
 	let Some(info) = group(rtf, "info") else { return (None, None) };
 	let field = |name| {
@@ -13,7 +11,6 @@ pub(super) fn title_and_author(rtf: &str) -> (Option<String>, Option<String>) {
 	(field("title"), field("author"))
 }
 
-/// What follows `{\name` up to the brace that closes that group, nested groups included.
 fn group<'a>(rtf: &'a str, name: &str) -> Option<&'a str> {
 	let opening = format!("{{\\{name}");
 	let mut search = 0;
@@ -45,7 +42,6 @@ fn group<'a>(rtf: &'a str, name: &str) -> Option<&'a str> {
 	None
 }
 
-/// A group's text with its control words dropped, its escaped braces and backslashes kept, and its `\uN` escapes turned into the characters they stand for.
 fn decode(group: &str) -> String {
 	let mut text = String::new();
 	let mut chars = group.chars().peekable();

@@ -33,8 +33,6 @@ fn build_huffman_decoder(header: &MobiHeader, data: &[u8]) -> Result<HuffmanDeco
 	HuffmanDecoder::init(&huffs)
 }
 
-/// Decodes and concatenates every content record into the book's raw HTML bytes, undoing
-/// PalmDOC/Huffman compression and stripping each record's trailing multibyte-boundary data.
 pub(super) fn decode_content(data: &[u8], header: &MobiHeader) -> Result<Vec<u8>> {
 	let mut huff_decoder = if header.compression == 17480 { Some(build_huffman_decoder(header, data)?) } else { None };
 	let num_records = header.record_offsets.len();

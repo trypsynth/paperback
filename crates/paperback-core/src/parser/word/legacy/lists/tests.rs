@@ -1,7 +1,6 @@
 use super::{number_format, read_lvl, read_plf_lfo};
 
-/// A level as Word writes one: LVLF, then its paragraph and character modifiers, then the label
-/// template. `template` uses 0-8 for the level placeholders, at the 1-based positions in `numbers`.
+/// `template` uses 0-8 for the level placeholders, at the 1-based positions in `numbers`.
 fn lvl(start: i32, nfc: u8, legal: bool, numbers: &[u8], template: &[u16], grpprl_papx: &[u8]) -> Vec<u8> {
 	let mut b = Vec::new();
 	b.extend_from_slice(&start.to_le_bytes());

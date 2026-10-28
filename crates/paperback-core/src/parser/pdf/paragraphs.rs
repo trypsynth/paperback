@@ -1,27 +1,12 @@
-//! Turning the lines of a page into paragraphs.
-//!
-//! A PDF says where every glyph sits and nothing about what any of it means, so where one
-//! paragraph ends and the next begins has to be worked out from how the page is set: the
-//! clear space above a line, the size it is set in, the face it is set in, and how far the
-//! line before it fell short of the measure. Nothing here talks to the PDF engine; it all reads
-//! [`Line`]s that [`super::text`] has already measured.
-
 use std::mem;
 
 use super::text::{Line, is_cjk, keeps_hyphen};
 use crate::util::text::{collapse_leaders, collapse_whitespace, trim_string};
 
-/// Fraction of the lines on a page that must be at least as long as the length this returns.
-/// pdfium runs two visual lines together into one line of text often enough - a third of the
-/// lines on some pages of #813 - that the longest line on a page is routinely a doubled one.
-/// Measuring the page by that made every real line count as short, and a short line followed by
-/// one starting with a capital or a digit is where [`join_paragraphs`] breaks a paragraph, so
-/// wrapped paragraphs came apart line by line. The 75th percentile is past any run of doubled
-/// lines while still landing on a line that fills the measure.
+/// pdfium runs two visual lines into one often enough (a third of the lines on some pages of #813) that the longest line is a doubled one and every real line looked short; the 75th percentile is past them but still fills the measure.
 const FULL_LINE_PERCENTILE_NUMERATOR: usize = 3;
 const FULL_LINE_PERCENTILE_DENOMINATOR: usize = 4;
 
-/// The length of a line that fills the page's measure, in chars.
 fn full_line_len(lines: &[(Line, bool)]) -> usize {
 	let mut lengths: Vec<usize> =
 		lines.iter().map(|(line, ..)| line.text.chars().count()).filter(|len| *len > 0).collect();
@@ -32,23 +17,12 @@ fn full_line_len(lines: &[(Line, bool)]) -> usize {
 	lengths[(lengths.len() - 1) * FULL_LINE_PERCENTILE_NUMERATOR / FULL_LINE_PERCENTILE_DENOMINATOR]
 }
 
-/// How much clear space above a line means it opens a paragraph, as a fraction of its own
-/// point size. Set from the four documents of #813 and #826: within a paragraph the space
-/// between two lines runs to about two thirds of a line's size, and between paragraphs it
-/// starts at about five fourths, so anything past a full size is a break with room to spare
-/// either side.
+/// From the documents of #813 and #826: within a paragraph the gap runs to about two thirds of a line's size, between paragraphs from about five fourths.
 const PARAGRAPH_GAP_RATIO: f64 = 1.0;
 
-/// How much larger than the body a single letter must be set to read as a drop cap.
 const DROP_CAP_RATIO: f64 = 2.0;
 
-/// Glue each drop cap onto the paragraph it opens.
-///
-/// A drop cap is set as its own line, several times the body size, and every size-based test
-/// reads it as a heading of one letter. What gives it away is the line under it: a drop cap
-/// is the first letter of a word, so what follows carries on in lower case, where a chapter
-/// number stands over a title in capitals. A digit is never a drop cap, which keeps a
-/// numbered chapter opening out of this entirely.
+/// A drop cap carries on into a lower-case word, where a chapter number stands over a title in capitals; a digit is never one.
 fn merge_drop_caps(raw_lines: &[Line], body_font_size: f64) -> Vec<Line> {
 	if body_font_size <= 0.0 {
 		return raw_lines.to_vec();
@@ -82,10 +56,9 @@ fn merge_drop_caps(raw_lines: &[Line], body_font_size: f64) -> Vec<Line> {
 const HEADING_FONT_RATIO: f64 = 1.2;
 const HEADING_MAX_LEN: usize = 150;
 
-/// The longest bold line that reads as a heading. A heading set in the body's size is a few words; a bold line longer than this is emphasis.
+/// A heading set in the body's size is a few words; a bold line longer than this is emphasis.
 const BOLD_HEADING_MAX_LEN: usize = 80;
 
-/// What makes a line a heading on a page: its size, or, where bold is rare enough on the page to mean something, being set in bold throughout.
 struct HeadingRule {
 	size: f64,
 	bold_is_rare: bool,
@@ -99,7 +72,6 @@ impl HeadingRule {
 		Self { size: heading_threshold(body_font_size), bold_is_rare: bold_lines * 2 < text_lines }
 	}
 
-	/// Which of `lines` are headings, each `trimmed` to its text and `len` characters.
 	fn mark(&self, lines: &[Line], trimmed: &[(String, usize)]) -> Vec<bool> {
 		(0..lines.len())
 			.map(|index| {
@@ -128,25 +100,18 @@ impl HeadingRule {
 	}
 }
 
-/// Whether a bold line reads like a title rather than a label, a sentence or a row of figures: it opens with a capital or a number, has a word in it, and does not end a sentence or a clause, introduce what follows ("Tip:"), or run a dot leader out to a page number as a contents line does. The PDF of #993 sets every section title in bold a size smaller than the body, so no size rule could find them.
+/// The PDF of #993 sets every section title in bold a size smaller than the body, so no size rule could find them.
 fn reads_as_a_title(text: &str) -> bool {
 	let opens_like_a_title = text.chars().next().is_some_and(|c| c.is_uppercase() || c.is_ascii_digit());
 	let has_a_word = text.split_whitespace().any(|word| word.chars().filter(|c| c.is_alphabetic()).count() >= 2);
 	opens_like_a_title && has_a_word && !text.ends_with(['.', ',', ';', ':']) && !text.contains("...")
 }
 
-/// The point size at which a line reads as a heading rather than as body text.
 fn heading_threshold(body_font_size: f64) -> f64 {
 	if body_font_size > 0.0 { body_font_size * HEADING_FONT_RATIO } else { f64::INFINITY }
 }
 
-/// Reads every line as a paragraph of its own, for a reader who has turned paragraph joining
-/// off.
-///
-/// Nothing in a PDF says whether five lines at the same left edge are five lines of code or
-/// one wrapped sentence, so a document whose line breaks are the content (a listing, a poem,
-/// a transcript) can only be read with the joining out of the way. Headings are still marked,
-/// because that is a question about size and not about where a paragraph ends.
+/// Headings are still marked with joining off, since that is a question of size, not of where a paragraph ends.
 pub(super) fn split_lines(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
 	let trimmed = trimmed_lines(raw_lines);
 	let marked = HeadingRule::for_page(raw_lines, body_font_size).mark(raw_lines, &trimmed);
@@ -159,7 +124,6 @@ pub(super) fn split_lines(raw_lines: &[Line], body_font_size: f64) -> Vec<(Strin
 		.collect()
 }
 
-/// Each line's text with its whitespace collapsed and trimmed, and that text's length.
 fn trimmed_lines(lines: &[Line]) -> Vec<(String, usize)> {
 	lines
 		.iter()
@@ -171,11 +135,7 @@ fn trimmed_lines(lines: &[Line]) -> Vec<(String, usize)> {
 		.collect()
 }
 
-/// Whether a line opens with the label of a list item or of a numbered section, such as "3.",
-/// "3.1", "b)" or the "l." an OCR engine reads a 1 as.
-///
-/// A lettered label is one letter and then its punctuation and a space, which is what keeps
-/// "e.g. the rest of a sentence" out of it.
+/// A lettered label is one letter, its punctuation and a space, which keeps "e.g. the rest of a sentence" out.
 fn opens_with_a_label(line: &str) -> bool {
 	let mut chars = line.chars();
 	let Some(first) = chars.next() else { return false };
@@ -193,20 +153,10 @@ fn opens_with_a_label(line: &str) -> bool {
 		&& chars.next().is_some_and(char::is_whitespace)
 }
 
-/// The point size the lines of recognized text are treated as being set in. Nothing in OCR
-/// output says what size anything is, and only the ratios between the sizes matter to the
-/// joining, so one size for every line leaves the size-based rules with nothing to say and the
-/// length and punctuation rules to decide where the paragraphs are.
+/// OCR says nothing about size and only ratios matter, so one size for every line leaves length and punctuation to decide.
 const RECOGNIZED_TEXT_SIZE: f64 = 12.0;
 
-/// Joins the wrapped lines of recognized text back into paragraphs.
-///
-/// An OCR engine reads a page line by line and says nothing about which lines belong to the
-/// same paragraph, so the text arrives with a break at the end of every printed line. This puts
-/// it through the same rules as the text of an ordinary page, minus the ones that need to know
-/// where on the page a line sits: the lines are laid out one under another with no gap between
-/// any two, so what decides a paragraph is where a line falls short of the measure and what it
-/// ends with.
+/// OCR lines are laid out with no gaps, so only the length and punctuation rules decide where paragraphs end.
 #[must_use]
 pub fn join_wrapped_lines(text: &str) -> String {
 	join_paragraphs(&recognized_lines(text), RECOGNIZED_TEXT_SIZE)
@@ -216,7 +166,7 @@ pub fn join_wrapped_lines(text: &str) -> String {
 		.join("\n")
 }
 
-/// Joins each of several runs of recognized text into paragraphs of its own, as [`join_wrapped_lines`] does, but judges where a line falls short against the measure of all of them together. A page whose prose comes in runs between headings and boxes has one measure, and a run of a few short lines has none of its own.
+/// Judges short lines against the measure of all runs together: a page whose prose comes in runs between headings and boxes has one measure, and a run of a few short lines has none of its own.
 #[must_use]
 pub fn join_wrapped_runs(runs: &[&str]) -> Vec<String> {
 	let runs: Vec<Vec<Line>> = runs.iter().map(|text| recognized_lines(text)).collect();
@@ -238,7 +188,6 @@ pub fn join_wrapped_runs(runs: &[&str]) -> Vec<String> {
 		.collect()
 }
 
-/// Recognized text as lines laid out one under another, all one size with no gap between any two.
 fn recognized_lines(text: &str) -> Vec<Line> {
 	let mut lines: Vec<Line> = Vec::new();
 	let mut top = 0.0;
@@ -256,14 +205,11 @@ fn recognized_lines(text: &str) -> Vec<Line> {
 	lines
 }
 
-/// The third field of each paragraph is the index, into `raw_lines`, of the line it starts
-/// with. An untagged page needs it to place its images: the paragraphs no longer say where on
-/// the page they were set, and that line does.
+/// The third field indexes the paragraph's first line in `raw_lines`, which an untagged page needs to place its images.
 pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
 	join_paragraphs_measured(raw_lines, body_font_size, None)
 }
 
-/// [`join_paragraphs`], judging where a line falls short against `measure` when it is given rather than against these lines' own.
 fn join_paragraphs_measured(
 	raw_lines: &[Line],
 	body_font_size: f64,
@@ -278,10 +224,7 @@ fn join_paragraphs_measured(
 		.zip(marked)
 		.map(|((line, (text, _)), is_heading_line)| (Line { text, ..line.clone() }, is_heading_line))
 		.collect();
-	// Two ways a line can end a paragraph, needing different amounts of evidence. A line that
-	// ends a sentence and stops any way short of the measure has ended the paragraph with it. A
-	// line that ends mid-sentence has to fall well short before the next line starting like a
-	// fresh sentence counts for anything, since a capital there is as likely to open a name.
+	// A line ending a sentence need only stop short; one ending mid-sentence must fall well short, since a capital after it is as likely to open a name.
 	let full_line = measure.unwrap_or_else(|| full_line_len(&lines));
 	let ended_sentence_threshold = full_line * 19 / 20;
 	let short_line_threshold = full_line * 3 / 4;
@@ -292,9 +235,7 @@ fn join_paragraphs_measured(
 	let mut current_start_line = 0usize;
 	let mut last_line_len = 0usize;
 	let mut last_line_ends_with_punctuation = false;
-	// The bottom edge of the last line that carried text, which the whitespace before the
-	// next one is measured down from. Infinity until there is one, so the first line of a
-	// page never reads as following a gap.
+	// Infinity so the first line of a page never reads as following a gap.
 	let mut last_line_bottom = f64::INFINITY;
 	let mut previous_was_monospaced = false;
 	for (line_index, (line_info, is_heading_line)) in lines.iter().enumerate() {
@@ -321,28 +262,15 @@ fn join_paragraphs_measured(
 			current_heading_size = *size;
 			current_start_line = line_index;
 		} else {
-			// A heading set over several lines - a chapter title, most often - carries on rather
-			// than becoming one heading per line, as long as the size does not change. A line
-			// that opens with its own number is a heading of its own even so, which is what
-			// keeps a numbered outline from running its sections together. Every other heading
-			// boundary, and every list item, starts a new paragraph; otherwise the previous line
-			// does when it stopped short of the measure.
+			// A multi-line heading carries on while its size holds, but a line opening with its own number starts a new one, which keeps a numbered outline apart.
 			let continues_heading =
 				*is_heading_line && current_is_heading && (*size - current_heading_size).abs() < f64::EPSILON;
 			let previous_line_ended_paragraph = (last_line_ends_with_punctuation
 				&& last_line_len < ended_sentence_threshold)
 				|| (last_line_len < short_line_threshold && (starts_with_uppercase || !starts_with_alpha));
-			// Extra whitespace above a line is the one signal a document sets deliberately and
-			// consistently, and it is what separates a run of one-line paragraphs that every
-			// length-based test reads as one block. It is measured from the previous line's
-			// lowest glyph rather than from its top, because pdfium runs two visual lines
-			// together often enough that a top-to-top pitch is doubled all over a normal
-			// paragraph and would break it apart.
+			// Measured from the previous line's bottom, not its top, because pdfium's doubled lines would make a top-to-top pitch break normal paragraphs apart.
 			let opened_by_a_gap = *size > 0.0 && last_line_bottom - *top > *size * PARAGRAPH_GAP_RATIO;
-			// A line set in a monospaced face is code, or a table, or something else laid out by
-			// column, and its own line breaks are the content. It joins with nothing, and nothing
-			// joins onto it. This is the one case geometry cannot see: a listing is set at the
-			// same left edge and the same leading as the prose around it.
+			// A monospaced line's breaks are the content, and geometry can't see it: a listing shares the prose's left edge and leading.
 			let set_apart_by_its_face = *monospaced || previous_was_monospaced;
 			let break_paragraph = is_list_item
 				|| opens_with_a_label(line)
@@ -358,8 +286,7 @@ fn join_paragraphs_measured(
 			} else {
 				let last_char = current_paragraph.chars().last().unwrap_or(' ');
 				if current_paragraph.ends_with('-') {
-					// A hyphen the line ended on splits a word, unless it joins a compound such as
-					// NFB-NEWSLINE or COVID-19 that only happened to wrap there.
+					// Unless it joins a compound such as NFB-NEWSLINE or COVID-19 that only happened to wrap there.
 					let left = current_paragraph[..current_paragraph.len() - 1]
 						.rsplit(|c: char| !c.is_alphanumeric())
 						.next()
@@ -402,9 +329,7 @@ fn join_paragraphs_measured(
 mod tests {
 	use super::{Line, full_line_len, join_paragraphs, join_wrapped_lines, opens_with_a_label, split_lines};
 
-	/// The lines of page 67 of the PDF attached to #813, with the sizes and the doubled lines
-	/// pdfium reports for it: a chapter number, a four-line chapter title, an epigraph over two
-	/// lines, and a paragraph whose second line opens with a year.
+	/// Page 67 of the PDF attached to #813, with the sizes and doubled lines pdfium reports for it.
 	fn issue_813_page() -> Vec<Line> {
 		tight(&[
 			("4", 17.0),
@@ -434,10 +359,7 @@ mod tests {
 		])
 	}
 
-	/// The page's measure comes from a line that fills it, not from one of the doubled lines
-	/// pdfium produced, which are nearly twice as long.
-	/// OCR reads a page one printed line at a time, so the text of a paragraph arrives broken at
-	/// every line end. Issue 822.
+	/// #822: OCR text arrives broken at every printed line end.
 	#[test]
 	fn join_wrapped_lines_joins_the_lines_of_a_recognized_paragraph() {
 		let recognized = concat!(
@@ -464,8 +386,6 @@ mod tests {
 		);
 	}
 
-	/// A blank line between two blocks is the one thing OCR does say about the structure of a
-	/// page, and it keeps them apart whatever the line before it ended with.
 	#[test]
 	fn join_wrapped_lines_keeps_blocks_apart_at_a_blank_line() {
 		let recognized = "A line that stops short
@@ -483,8 +403,7 @@ Another line that stops short"
 		assert_eq!(join_wrapped_lines(""), "");
 	}
 
-	/// A lettered list runs its items together without this: OCR gives no bullet glyph and the
-	/// items are short lines that end in nothing, which is what a wrapped paragraph looks like.
+	/// OCR gives no bullet glyph, and short items ending in nothing look like a wrapped paragraph.
 	#[test]
 	fn join_wrapped_lines_keeps_a_lettered_list_apart() {
 		let recognized = concat!(
@@ -528,8 +447,7 @@ c. can print words"
 		assert!((53..=64).contains(&full), "expected the length of a full line, got {full}");
 	}
 
-	/// #813: the body paragraph survives its second line opening with a year and its later lines
-	/// opening with capitals, and the chapter title is one heading rather than one per line.
+	/// #813: a second line opening with a year, later lines opening with capitals, and a four-line title.
 	#[test]
 	fn join_paragraphs_keeps_a_chapter_opening_whole() {
 		let result = join_paragraphs(&issue_813_page(), 11.0);
@@ -553,8 +471,6 @@ c. can print words"
 		assert!(!result[3].1, "the body paragraph is not");
 	}
 
-	/// A numbered outline sets every level in one size, so the sections must not run together
-	/// the way the lines of a single title do.
 	#[test]
 	fn join_paragraphs_keeps_numbered_headings_apart() {
 		let lines = tight(&[
@@ -566,7 +482,6 @@ c. can print words"
 		assert_eq!(result.len(), 3, "got {result:?}");
 	}
 
-	/// The chapter number is set in its own size, so it does not join the title below it.
 	#[test]
 	fn join_paragraphs_keeps_headings_of_different_sizes_apart() {
 		let lines = tight(&[("PART ONE", 30.0), ("Getting Started", 20.0)]);
@@ -574,8 +489,7 @@ c. can print words"
 		assert_eq!(result.len(), 2);
 	}
 
-	/// A line that ends a sentence ends the paragraph even when it reaches most of the way across
-	/// the measure - the case a single short-line threshold gets wrong.
+	/// The case a single short-line threshold gets wrong.
 	#[test]
 	fn join_paragraphs_breaks_after_a_sentence_that_nearly_fills_the_line() {
 		let lines = tight(&[
@@ -590,7 +504,6 @@ c. can print words"
 		assert!(result[1].0.starts_with("EAP trainers"));
 	}
 
-	/// A paragraph that pdfium hands back as wrapped lines is one paragraph, not one per line.
 	#[test]
 	fn join_paragraphs_merges_a_wrapped_list_item() {
 		let lines = tight(&[
@@ -611,22 +524,18 @@ c. can print words"
 		assert!(!result[0].1);
 	}
 
-	/// Lay `lines` out down a page with ordinary leading and no gap between any two, so a test
-	/// written about the text alone is not accidentally testing the paragraph-gap rule.
+	/// No gap between any two lines, so a test about the text alone isn't accidentally testing the paragraph-gap rule.
 	fn tight(lines: &[(&str, f64)]) -> Vec<Line> {
 		let mut top = 700.0;
 		let mut out = Vec::new();
 		for (text, size) in lines {
 			let bottom = top - size;
 			out.push(Line { text: (*text).to_string(), size: *size, top, bottom, monospaced: false, bold: false });
-			// A fifth of a line of clear space: what sits between two lines of one paragraph.
 			top = bottom - size * 0.2;
 		}
 		out
 	}
 
-	/// Lay `lines` out with a full line of clear space above each one that is marked, which is
-	/// what a document puts between two paragraphs.
 	fn spaced(lines: &[(&str, f64, bool)]) -> Vec<Line> {
 		let mut top = 700.0;
 		let mut out = Vec::new();
@@ -641,8 +550,6 @@ c. can print words"
 		out
 	}
 
-	/// Lay `lines` out with the same tight leading as [`tight`], marking which are set in a
-	/// monospaced face.
 	fn mixed(lines: &[(&str, f64, bool)]) -> Vec<Line> {
 		let mut out = tight(&lines.iter().map(|(text, size, _)| (*text, *size)).collect::<Vec<_>>());
 		for (line, (.., monospaced)) in out.iter_mut().zip(lines) {
@@ -651,9 +558,7 @@ c. can print words"
 		out
 	}
 
-	// #833: a listing is set at the same left edge and the same leading as the prose around
-	// it, so geometry cannot see it. The face can: the lines are monospaced and the prose is
-	// not.
+	// #833: a listing shares the prose's left edge and leading, so only its face sets it apart.
 	#[test]
 	fn join_paragraphs_keeps_a_monospaced_listing_apart() {
 		let lines = mixed(&[
@@ -682,16 +587,13 @@ c. can print words"
 		);
 	}
 
-	// The prose on either side of a listing still joins as prose.
 	#[test]
 	fn join_paragraphs_still_joins_the_prose_around_a_listing() {
 		let lines = mixed(&[("The suggestion appears here.", 12.0, false), ("And here.", 12.0, false)]);
 		assert_eq!(join_paragraphs(&lines, 12.0).len(), 1);
 	}
 
-	// #813 again: a run of one-line paragraphs is what every length test reads as one block,
-	// since no line among them stops short of a measure they never reach. The space a document
-	// leaves above each one is the only thing that tells them apart.
+	// #813: a run of one-line paragraphs never stops short of a measure it never reaches, so only the gap tells them apart.
 	#[test]
 	fn join_paragraphs_breaks_where_a_document_leaves_a_gap() {
 		let lines = spaced(&[
@@ -705,7 +607,6 @@ c. can print words"
 		assert_eq!(texts, ["Before We Get Started", "About the Author: Valentina Romano", "Lesson One", "Lesson Two"]);
 	}
 
-	// The same document sets a wrapped paragraph with no such gap, and that has to stay whole.
 	#[test]
 	fn join_paragraphs_keeps_a_wrapped_paragraph_whole_across_the_gap_rule() {
 		let lines = spaced(&[
@@ -720,9 +621,6 @@ c. can print words"
 		assert_eq!(result[1].0, "FEMALE: Parli italiano?");
 	}
 
-	// pdfium runs two visual lines together into one line of text all over a normal page. Such
-	// a line reaches a whole line lower than its neighbours, so measuring the space above the
-	// next line from its top rather than its bottom would break paragraphs everywhere.
 	#[test]
 	fn join_paragraphs_is_not_fooled_by_a_line_pdfium_doubled() {
 		let mut lines = tight(&[
@@ -731,7 +629,6 @@ c. can print words"
 			("Ministry of Aviation Industries of China in Beijing, discussing human resources", 11.0),
 			("AlliedSignal, the company for which I was then international", 11.0),
 		]);
-		// The third line is two visual lines run together, so its box reaches a line lower.
 		lines[2].bottom -= 11.0;
 		lines[3].top -= 11.0;
 		lines[3].bottom -= 11.0;
@@ -739,8 +636,7 @@ c. can print words"
 		assert_eq!(result.len(), 1, "got {result:?}");
 	}
 
-	// #826: a drop cap is one big letter set beside the paragraph it opens, and reads as a
-	// heading of one letter to anything that goes by size.
+	// #826.
 	#[test]
 	fn join_paragraphs_glues_a_drop_cap_to_its_paragraph() {
 		let lines = tight(&[("T", 153.5), ("his morning, people all over the planet got out of bed.", 12.0)]);
@@ -750,8 +646,6 @@ c. can print words"
 		assert!(!result[0].1, "the paragraph it opens is not a heading");
 	}
 
-	// A chapter number is also one large character on a line of its own. What separates it
-	// from a drop cap is that a title follows, not the rest of a word.
 	#[test]
 	fn join_paragraphs_leaves_a_chapter_number_alone() {
 		let digit = tight(&[("4", 40.0), ("INCONVENIENT OR NOT", 24.0)]);
@@ -763,13 +657,10 @@ c. can print words"
 
 	#[test]
 	fn join_paragraphs_leaves_an_ordinary_capital_alone() {
-		// Body-sized, so nothing to do with a drop cap however the next line starts.
 		let lines = tight(&[("A", 12.0), ("small letter follows.", 12.0)]);
 		assert_eq!(join_paragraphs(&lines, 12.0).len(), 1);
 	}
 
-	// #813: nothing in a PDF separates five lines of code from five wrapped lines of prose,
-	// so a reader whose document is a listing turns the joining off and gets the lines back.
 	#[test]
 	fn split_lines_keeps_every_line_apart() {
 		let lines = tight(&[
@@ -795,16 +686,12 @@ c. can print words"
 		);
 	}
 
-	// The same lines run together when the joining is on, which is the whole reason for the
-	// switch.
 	#[test]
 	fn join_paragraphs_runs_the_same_listing_together() {
 		let lines = tight(&[("def greet(name):", 11.0), ("# say hello", 11.0), ("return message", 11.0)]);
 		assert_eq!(join_paragraphs(&lines, 11.0).len(), 1);
 	}
 
-	// A heading is a question about size, not about where a paragraph ends, so it is still
-	// marked with the joining off. Navigating by heading has to keep working.
 	#[test]
 	fn split_lines_still_marks_headings() {
 		let lines = tight(&[("A Short Code Listing", 20.0), ("def greet(name):", 11.0)]);
@@ -814,8 +701,7 @@ c. can print words"
 		assert!(!result[1].1, "the body line is not");
 	}
 
-	// Each paragraph reports the line it came from, which is what places the images of an
-	// untagged page. A blank line is dropped and must not shift the ones after it.
+	// A dropped blank line must not shift the indices after it.
 	#[test]
 	fn split_lines_reports_the_line_each_paragraph_came_from() {
 		let lines = tight(&[("first", 11.0), ("   ", 11.0), ("third", 11.0)]);
@@ -836,7 +722,6 @@ c. can print words"
 		assert!(!result[1].1);
 	}
 
-	/// Lay `lines` out like [`tight`], marking which are set in bold throughout.
 	fn weighted(lines: &[(&str, f64, bool)]) -> Vec<Line> {
 		let mut out = tight(&lines.iter().map(|(text, size, _)| (*text, *size)).collect::<Vec<_>>());
 		for (line, (_, _, bold)) in out.iter_mut().zip(lines) {
@@ -894,7 +779,6 @@ c. can print words"
 		assert!(!super::reads_as_a_title("18-19 19-20 20-21 4.000 6.000"));
 	}
 
-	/// A page set mostly in bold, such as a cover or a form, says nothing by it.
 	#[test]
 	fn bold_means_nothing_on_a_page_mostly_set_in_bold() {
 		let lines =

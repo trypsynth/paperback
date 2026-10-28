@@ -5,14 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import uniffi.paperback.ConfigManagerFfi
 
-/**
- * One observable value that is persisted as soon as it changes. [persist] runs on every write
- * rather than at some later checkpoint because Android can kill this process with no lifecycle
- * callback at all, so there is no later point at which saving would be guaranteed to happen.
- *
- * [sanitize] applies to the stored value as well as to every write, so a config file holding
- * something outside the accepted range comes back in range rather than reaching the UI.
- */
+/** Persisted on every write because Android can kill the process without a callback; [sanitize] also applies to the stored value so a bad config file can't reach the UI. */
 class Setting<T>(stored: T, private val sanitize: (T) -> T = { it }, private val persist: (T) -> Unit) {
 	private val _state = MutableStateFlow(sanitize(stored))
 	val state: StateFlow<T> = _state.asStateFlow()
@@ -24,16 +17,7 @@ class Setting<T>(stored: T, private val sanitize: (T) -> T = { it }, private val
 	}
 }
 
-/**
- * The preferences the reading UI watches, each one a [Setting] over the same config file the
- * desktop app uses. Spacing and alignment share the desktop's keys and value meanings (spacing
- * 0/1/2; alignment 0 leading, 1 center, 2 trailing, 3 justify) so a document reads the same way
- * on every platform. Text size does not: the desktop stores an absolute point size, while this
- * scales whatever size the system font setting is already asking for.
- *
- * One-shot flags that nothing observes (the onboarding marker, the last file-manager directory)
- * stay on `ConfigManagerFfi` itself rather than becoming settings here.
- */
+/** Spacing and alignment share desktop's keys and values so a document reads the same everywhere; text size doesn't, since it scales the system font size rather than storing points. */
 class ReaderSettings(private val config: ConfigManagerFfi) {
 	val restorePreviousDocuments = boolSetting("restore_previous_documents", true)
 
@@ -41,10 +25,7 @@ class ReaderSettings(private val config: ConfigManagerFfi) {
 
 	val swipeUpMovesForward = boolSetting("swipe_up_moves_forward", true)
 
-	// Drops the previous and next buttons from the reading bar's TalkBack order. They duplicate
-	// the swipe up and down actions already on the play button, so hiding them makes the bar
-	// three stops instead of five. Off by default: the swipe is not discoverable on its own, so
-	// nobody should lose the buttons without having chosen to.
+	// Off by default: the play button's swipe actions that replace these buttons aren't discoverable on their own.
 	val hidePrevNextButtons = boolSetting("hide_prev_next_buttons", false)
 
 	val stopAfterFindMatch = boolSetting("tts_stop_after_find_match", true)
@@ -75,7 +56,6 @@ class ReaderSettings(private val config: ConfigManagerFfi) {
 		}
 
 	companion object {
-		/** Bounds of the readability text size multiplier, shared with the settings slider. */
 		const val MIN_TEXT_SCALE_PERCENT = 70
 		const val MAX_TEXT_SCALE_PERCENT = 300
 		const val TEXT_SCALE_PERCENT_STEP = 10

@@ -23,13 +23,8 @@ import dev.paperback.android.t
 import dev.paperback.android.ui.state.RecentDocumentItem
 import androidx.compose.foundation.lazy.items as lazyItems
 
-/** How many of the recent documents the no-document screen previews before "Show All". */
 private const val RECENT_DOCUMENTS_PREVIEW_COUNT = 5
 
-/**
- * What fills the reading area when no document is open: a short preview of the recent documents
- * with a way through to the full list, or a bare message when nothing has been opened yet.
- */
 @Composable
 fun NoDocumentPane(
 	recentDocuments: List<RecentDocumentItem>,
@@ -82,12 +77,6 @@ fun NoDocumentPane(
 	}
 }
 
-/**
- * The read-aloud view: the segment being spoken (or the name of the narration file being played),
- * how far through the document that segment sits, and the sleep timer countdown while one is
- * running. Find is a navigation unit in this mode, with its own buttons in the bottom bar, so the
- * text needs no find actions of its own.
- */
 @Composable
 fun ReadAloudPane(
 	segmentText: String,
@@ -101,9 +90,7 @@ fun ReadAloudPane(
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.Center
 	) {
-		// A segment is usually one short sentence but can be a whole paragraph, which would run off
-		// both ends of a centred column with no way to reach either. Giving the card what room it
-		// asks for up to the height of the pane, and scrolling beyond that, keeps both ends reachable.
+		// A whole-paragraph segment would run off both ends of a centred column, so the card scrolls past the pane's height.
 		Surface(
 			modifier = Modifier.fillMaxWidth().weight(1f, fill = false),
 			shape = MaterialTheme.shapes.large,
@@ -118,7 +105,7 @@ fun ReadAloudPane(
 		}
 		if (progressPercent != null) {
 			Spacer(modifier = Modifier.height(24.dp))
-			// The reading below says the same number, so the bar is decoration for the eye only.
+			// The text below says the same number, so the bar is for the eye only.
 			LinearProgressIndicator(
 				progress = { progressPercent / 100f },
 				modifier = Modifier.fillMaxWidth().clearAndSetSemantics { }

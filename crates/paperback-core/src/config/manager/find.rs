@@ -1,5 +1,3 @@
-//! The Find dialog's persisted checkbox state and search-text history.
-
 use super::ConfigManager;
 use crate::config::settings::FindSettings;
 

@@ -6,10 +6,6 @@ use crate::{
 	parser::add_converter_markers,
 };
 
-/// End-to-end: the `HtmlToText` converter emits each table's on-screen text at parse time, and a
-/// heading that follows the table is offset by the emitted display extent. Verified in both
-/// modes: OFF (placeholder) and ON (full TSV). The fixture has an "Intro" paragraph before the
-/// table (so the table offset is non-zero) and an `<h2>` after it.
 #[rstest]
 #[case(false)]
 #[case(true)]
@@ -29,14 +25,11 @@ fn html_converter_emits_table_inline_or_placeholder(#[case] inline: bool) {
 	let table_line = if inline { "A\tB" } else { "[Table]: A B" };
 	let expected_text = format!("Intro\n{table_line}\nAfter heading");
 	assert_eq!(converter.get_text(), expected_text, "table emitted as {table_line:?}");
-	// The length is the emitted text's, in positions: the table line plus its newline.
 	let expected_length = DocLen::of(table_line) + 1.into();
 	assert_eq!(tables[0].length, expected_length);
-	// The heading marker that follows the table sits right after the emitted table span.
 	let headings = converter.get_headings();
 	assert_eq!(headings.len(), 1);
 	assert_eq!(headings[0].offset, tables[0].offset + expected_length, "h2 immediately follows the emitted table span");
-	// Through the real marker path, the Table marker's length matches the emitted extent.
 	let mut buffer = DocumentBuffer::with_content(converter.get_text());
 	add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 	let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
@@ -101,13 +94,7 @@ fn test_format_span_nested_bold_and_italic() {
 
 #[test]
 fn test_format_span_fully_inside_link_is_dropped_known_limitation() {
-	// Known limitation: text inside an `<a>` is buffered in `current_link_text` and only
-	// pushed into `current_line` on `</a>` (see `handle_text_node`/`handle_element_closing`),
-	// so `get_current_text_position()` does not advance while inside a link. A `<b>`/`<i>`/`<u>`
-	// that opens and closes fully inside an `<a>` therefore sees `start == end` and is recorded
-	// as a zero-length span rather than spanning the link's text. This degrades gracefully (no
-	// panic, no bad offset; the link itself is still recorded correctly) rather than corrupting
-	// data, so it is left as-is (no changes to the `<a>` deferred-buffering behavior).
+	// Link text is buffered until `</a>`, so the position doesn't advance inside a link and formatting wholly inside one is zero-length; harmless, so left as-is.
 	let html = "<html><body><a href=\"https://example.com\"><b>bold</b></a></body></html>";
 	let mut converter = HtmlToText::new();
 	assert!(converter.convert(html, HtmlSourceMode::NativeHtml));
@@ -138,10 +125,9 @@ fn test_ordered_list_metadata() {
 	let items = converter.get_list_items();
 	assert_eq!(lists.len(), 1);
 	assert_eq!(lists[0].item_count, 2);
-	// The recorded length must span the whole list, reaching at least the last item's start.
 	assert!(lists[0].length > 0.into());
 	assert!(lists[0].offset + lists[0].length >= items[1].offset);
-	// End lands at most one line break past the content (trailing newline at document end).
+	// One past the content allows for the trailing newline at document end.
 	assert!(lists[0].offset + lists[0].length <= DocLen::of(&converter.get_text()).as_pos() + 1.into());
 	assert_eq!(items.len(), 2);
 	assert_eq!(items[0].level, 1);
@@ -212,9 +198,6 @@ fn pre_block_preserves_whitespace_characters() {
 	assert!(converter.get_text().contains("  spaced  "));
 }
 
-/// A `<pre>` block whose source text uses CRLF line endings must not leak a stray `\r` onto
-/// the end of each preserved line - the shared `LineBuilder::add_line` strips trailing
-/// `\r`/`\n` from a preserved line before storing it, same as `XmlToText` already relied on.
 #[test]
 fn pre_block_with_crlf_content_does_not_leak_carriage_returns() {
 	let html = "<html><body><pre>line one\r\nline two</pre></body></html>";
@@ -270,9 +253,7 @@ fn html_two_tables_offsets_are_cumulative() {
 	assert_eq!(t2_offset, t1_offset + t1_length, "second table offset must equal first offset + first length");
 }
 
-/// The Image marker spans the whole `"[Image: alt]"` placeholder, not just its first character, so
-/// a reader can style the placeholder apart from the prose it sits in. The fixture puts the image
-/// inside a paragraph, where the placeholder shares its line with real text.
+/// The whole placeholder, not just its first character, so a reader can style it apart from the prose around it.
 #[test]
 fn html_converter_gives_the_image_marker_the_placeholder_span() {
 	let html = "<html><body><p>Before <img alt=\"a cat\"> after</p></body></html>";
@@ -290,7 +271,6 @@ fn html_converter_gives_the_image_marker_the_placeholder_span() {
 	assert_eq!(marker.length, DocLen::of("[Image: a cat]"));
 }
 
-/// A link made only of a picture, such as a logo linking home, has to be a link the reader can reach and follow, with the picture's marker on the same text.
 #[test]
 fn html_converter_makes_a_link_of_a_picture_alone() {
 	let html = "<html><body><p>Go <a href=\"/home\"><img src=\"logo.png\" alt=\"Logo\"></a> now</p></body></html>";
@@ -308,7 +288,6 @@ fn html_converter_makes_a_link_of_a_picture_alone() {
 	assert_eq!((images[0].offset, images[0].source.as_str()), (DocLen::of("Go ").as_pos(), "logo.png"));
 }
 
-/// The picture stays where it sits in the link rather than ending up in front of its text.
 #[test]
 fn html_converter_keeps_a_picture_in_its_place_inside_a_link() {
 	let html = "<html><body><p><a href=\"/home\">Back  to <img alt=\"Logo\"> home</a></p></body></html>";
@@ -319,7 +298,6 @@ fn html_converter_keeps_a_picture_in_its_place_inside_a_link() {
 	assert_eq!(converter.get_images()[0].offset, DocLen::of("Back to ").as_pos());
 }
 
-/// A picture nobody described is still a picture the reader can find, save and read with OCR, while one marked as decoration stays out of the way.
 #[test]
 fn html_converter_shows_an_undescribed_picture_and_skips_decoration() {
 	let html = "<html><body><p>A <img src=\"chart.png\"> B <img src=\"rule.png\" alt=\"\"> C <img src=\"x.gif\" width=\"1\" height=\"1\"></p></body></html>";
@@ -331,7 +309,6 @@ fn html_converter_shows_an_undescribed_picture_and_skips_decoration() {
 	assert_eq!((images[0].offset, images[0].source.as_str()), (DocLen::of("A ").as_pos(), "chart.png"));
 }
 
-/// A link made of an undescribed picture, such as a logo with no alt text, is still a link.
 #[test]
 fn html_converter_makes_a_link_of_an_undescribed_picture() {
 	let html = "<html><body><p><a href=\"/home\"><img src=\"logo.png\"></a></p></body></html>";

@@ -1,8 +1,4 @@
-//! Shared bold/italic/underline span tracking for [`super::xml_to_text::XmlToText`] and
-//! [`super::html_to_text::HtmlToText`]: an opening `<b>`/`<i>`/`<u>` (or `<strong>`/`<em>`)
-//! pushes the current position onto a per-kind stack, and the matching close pops it and
-//! records a [`FormatInfo`] span - nested spans of the same kind are handled by the stack
-//! rather than a single "currently open" position.
+//! A stack per kind rather than one open position, so nested spans of the same kind close correctly.
 
 use crate::{document::DocPos, types::FormatInfo};
 
@@ -40,7 +36,6 @@ impl FormatSpans {
 		}
 	}
 
-	/// Pops the innermost open span of `kind` (if any) and records it as `[start, end_position)`.
 	pub(super) fn close(&mut self, kind: &FormatKind, end_position: DocPos) {
 		let (open_stack, spans) = match kind {
 			FormatKind::Bold => (&mut self.open_bolds, &mut self.bolds),

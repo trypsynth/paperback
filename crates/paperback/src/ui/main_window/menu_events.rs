@@ -1,6 +1,3 @@
-//! Binds the main frame's menu events: the big `on_menu` dispatcher that routes each menu id to
-//! its handler, plus the recurring background timers set up alongside it.
-
 #[cfg(target_os = "windows")]
 use std::cell::RefCell;
 use std::{cell::Cell, rc::Rc, sync::Mutex};
@@ -36,19 +33,15 @@ impl MainWindow {
 		#[cfg(target_os = "windows")]
 		let hotkey_handle_for_options = Rc::clone(hotkey_handle);
 		let sleep_timer = sleep_timer::SleepTimer::new(frame, doc_manager, &config);
-		// Taken before the menu closure captures the SleepTimer: the returned vec is what
-		// keeps the wx timer alive for the window's lifetime.
+		// Taken before the menu closure captures the SleepTimer: the returned vec is what keeps the wx timer alive.
 		let sleep_timer_handle = Rc::clone(sleep_timer.timer());
 		let mut timers = background::start_timers(frame, doc_manager);
 		timers.push(sleep_timer_handle);
 		background::bind_resize(frame, doc_manager);
 		frame.on_menu(move |event| {
 			let id = event.get_id();
-			// Whether a shortcut key produced this command, or a menu click did. Taken here and
-			// cleared whatever the outcome, so a key that led nowhere cannot leave it set.
+			// Cleared whatever the outcome, so a key that led nowhere can't leave it set for a later menu click.
 			let from_keyboard = from_keyboard.replace(false);
-			// Commands that have moved to the table handle themselves; the match below is the
-			// shrinking remainder, still keyed to menu ids by hand.
 			if commands::dispatch(
 				id,
 				&commands::Ctx { frame: &frame_copy, dm: &dm, config: &config, live_region_label, from_keyboard },
@@ -220,8 +213,7 @@ impl MainWindow {
 					help::handle_donate(&frame_copy);
 				}
 				menu_ids::COPY => {
-					// Other macOS controls keep Cocoa's responder-chain copy. Only the reader
-					// needs our document-window handling and character-count announcement.
+					// Other macOS controls keep Cocoa's responder-chain copy; only the reader needs our handling and announcement.
 					#[cfg(target_os = "macos")]
 					if !dm.lock().unwrap().active_tab().is_some_and(|tab| tab.text_ctrl.has_focus()) {
 						event.skip(true);
@@ -243,23 +235,9 @@ impl MainWindow {
 	}
 }
 
-/// Marks commands that a keyboard shortcut asked for, so announcements can tell a shortcut from
-/// a menu click.
-///
-/// Both arrive as the very same menu command. The menu labels carry their shortcut as a
-/// tab-and-key accelerator, so wxWidgets consumes the keystroke and rewrites it into a menu command before
-/// the book ever sees it -- which is why the text control's own key handler cannot mark these:
-/// by the time the event reaches it, it is no longer a keystroke. A `CHAR_HOOK` on the frame is
-/// delivered *before* the accelerator table is consulted, the last point at which the key is
-/// still a key; the command that follows is the one the accelerator was about to send, and the
-/// menu dispatcher reads the mark off it.
-///
-/// The mark is set only for keys that map to a known action, and is cleared by the dispatcher
-/// on every command plus by the key handler for actions it runs itself, so a key that produces
-/// no command cannot leave it set for a later menu click.
-/// On macOS, `mac_shortcuts` runs menu shortcuts before Cocoa selects their items and sets the mark itself; this hook still covers keys left to wxWidgets.
-///
-/// On Windows a punctuation chord with Ctrl or Alt has no accelerator (see `menu::is_punctuation_chord`), so this hook runs it too. Plain and Shift-only punctuation stay with the book's own key handler, so typing into another control is never taken for a shortcut.
+/// Accelerators turn a shortcut into a menu command before the text control sees it, so the mark is set on `CHAR_HOOK`, the last point the key is still a key.
+/// On macOS `mac_shortcuts` sets the mark itself for menu shortcuts; this hook covers keys left to wxWidgets.
+/// On Windows Ctrl/Alt punctuation chords have no accelerator (see `menu::is_punctuation_chord`), so this hook runs them; plain punctuation stays with the book so typing elsewhere is never a shortcut.
 pub(super) fn bind_key_source(frame: &Frame, config: &Rc<Mutex<ConfigManager>>, from_keyboard: Rc<Cell<bool>>) {
 	let config = Rc::clone(config);
 	#[cfg(target_os = "windows")]

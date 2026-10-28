@@ -9,11 +9,7 @@ import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeProvider
 import androidx.annotation.RequiresApi
 
-/**
- * Wraps the root view's accessibility delegate so Compose Sliders, which TalkBack would
- * otherwise announce as seek bars, are described as buttons. Every other method here is a
- * straight pass-through to the delegate Compose installed.
- */
+/** TalkBack announces the Compose Sliders used as buttons as seek bars; this relabels them, passing everything else through. */
 @RequiresApi(Build.VERSION_CODES.R)
 internal fun installSeekBarRoleDelegate(view: View) {
 	val originalDelegate = view.accessibilityDelegate

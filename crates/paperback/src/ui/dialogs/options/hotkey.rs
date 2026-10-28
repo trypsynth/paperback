@@ -1,5 +1,3 @@
-//! The global window hotkey picker, Windows only (see `start_hotkey_listener` in `main_window.rs`).
-
 use paperback_core::config::HotkeyConfig;
 use patois::t;
 use wxdragon::prelude::*;

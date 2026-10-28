@@ -1,17 +1,12 @@
-//! Assembles the File menu: the document commands from the command table, the export and
-//! document data items, and the Recent Documents submenu, whose items are generated from the
-//! recent list rather than being fixed commands.
-
 use paperback_core::config::{ActionId, ConfigManager, document_name};
 use patois::t;
 
 use super::builder::{MenuEntry, format_menu_label, item, item_with_help, submenu};
 use crate::ui::{commands, menu_ids};
 
-/// Shown only on Windows and Linux; macOS puts Quit in the application menu.
+/// macOS puts Quit in the application menu.
 const EXIT_ITEM: ActionId = ActionId::Exit;
 
-/// Last item of the Recent Documents submenu, below the generated entries and Show All.
 const CLEAR_RECENT_ITEM: ActionId = ActionId::ClearRecentDocuments;
 
 pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
@@ -100,7 +95,6 @@ fn recent_document_entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	entries
 }
 
-/// The Recent Documents item for the `index`th entry, numbered from 1 as its access key.
 fn recent_label(config: &ConfigManager, index: usize, path: &str) -> String {
 	format!("&{} {}", index + 1, document_name(config, path))
 }

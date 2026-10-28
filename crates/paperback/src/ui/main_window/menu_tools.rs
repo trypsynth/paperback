@@ -1,6 +1,3 @@
-//! The Tools menu's heavier handlers: word/document info, batch OCR, the Options dialog (and
-//! applying whatever changed), and shortcut customization.
-
 #[cfg(target_os = "windows")]
 use std::cell::RefCell;
 use std::{rc::Rc, sync::Mutex};
@@ -57,9 +54,7 @@ pub(super) fn handle_document_info(frame: &Frame, dm: &Rc<Mutex<DocumentManager>
 	}
 }
 
-/// Opens the Batch OCR range dialog, or offers to stop the batch that is already running. One
-/// menu item covers both so there is nothing to enable and disable as a job starts and ends, and
-/// the answer to "how do I stop this" is the same item that started it.
+/// One item both starts and stops a batch, so nothing needs enabling or disabling as a job starts and ends.
 pub(super) fn handle_batch_ocr(
 	frame: &Frame,
 	dm: &Rc<Mutex<DocumentManager>>,
@@ -151,9 +146,7 @@ pub(super) fn handle_options(
 	cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
 	cfg.set_app_bool("navigation_wrap", options.navigation_wrap);
 	cfg.set_app_bool("line_start_navigation", options.line_start_navigation);
-	// Read at each Find rather than applied here: nothing on screen changes until the next
-	// search, and a match already selected is left as it is rather than cleared out from under
-	// the reader as the dialog closes.
+	// Read at the next Find, so a match already selected isn't cleared out from under the reader as the dialog closes.
 	cfg.set_app_bool("highlight_found_text", options.highlight_found_text);
 	cfg.set_app_bool("check_for_updates_on_startup", options.check_for_updates_on_startup);
 	cfg.set_app_bool("bookmark_sounds", options.bookmark_sounds);

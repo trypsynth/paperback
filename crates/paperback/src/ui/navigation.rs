@@ -18,18 +18,10 @@ pub use announce::announce_for_selection_command;
 pub use announce::{announce, announce_for_command, page_announcement};
 use announce::{format_nav_found_message, nav_announcements};
 
-/// `(file_path, history_positions, history_index)` snapshot to persist via
-/// [`persist_navigation_history`]. Kept as an owned tuple (rather than borrowing
-/// from the tab) so it can outlive the `DocumentManager` lock: callers build it
-/// while a tab is borrowed, drop the lock, then persist it against `config`.
+/// Owned so it outlives the `DocumentManager` lock: built while a tab is borrowed, persisted after the lock drops.
 pub(super) type HistoryUpdate = (String, Vec<DocPos>, usize);
 
-/// Snapshots `tab`'s current position history as a [`HistoryUpdate`], if `tab.track`
-/// is set. Use this when the caller has already updated the history itself (e.g. via
-/// `history_go_forward`/`history_go_back`, which navigate *within* existing history
-/// rather than recording a new entry). For the common "record a new position, then
-/// snapshot" case, use [`record_history`] or [`move_to_offset_and_record_history`]
-/// instead.
+// For moves within the existing history (`history_go_forward`/`history_go_back`), which record no new entry.
 fn tracked_history_update(tab: &DocumentTab) -> Option<HistoryUpdate> {
 	if !tab.track {
 		return None;
@@ -38,29 +30,18 @@ fn tracked_history_update(tab: &DocumentTab) -> Option<HistoryUpdate> {
 	Some((tab.file_path.to_string_lossy().to_string(), history.to_vec(), history_index))
 }
 
-/// Records a jump from `from` to `to` in `tab`'s position history and returns the resulting
-/// snapshot unconditionally. Callers that should only persist it when `tab.track` is set
-/// (most callers) should gate with `tab.track.then_some(update)`.
 fn record_history(tab: &mut DocumentTab, from: DocPos, to: DocPos) -> HistoryUpdate {
 	tab.session.record_jump(from, to);
 	let (history, history_index) = tab.session.get_history();
 	(tab.file_path.to_string_lossy().to_string(), history.to_vec(), history_index)
 }
 
-/// Reads the caret's document-absolute position, translating it out of `tab`'s currently
-/// loaded window. Use this instead of `tab.text_ctrl.get_insertion_point()` directly - that
-/// method only knows about whatever window is currently loaded, not the document as a whole.
+/// The control's own insertion point is relative to the loaded window, not the document.
 pub fn doc_caret(tab: &DocumentTab) -> DocPos {
 	tab.window.to_doc(tab.text_ctrl.get_insertion_point())
 }
 
-/// Seeks `tab`'s audio to `percent` of the recording, reporting the text position that lands on.
-///
-/// `None` when the document has no audio, or its file lengths are not all known, leaving the
-/// caller to fall back to the character-count mapping. Seeking by time rather than by text
-/// position is the whole point: the text of a bundle of whole-file recordings is one blank line
-/// per file, so mapping a percentage through it lands on a file boundary chosen by file count
-/// rather than by how long any of them runs.
+/// By time, not text: whole-file recordings have one blank line of text per file, so a text percentage picks a file by count rather than duration.
 pub fn seek_audio_to_percent(tab: &mut DocumentTab, percent: i32) -> Option<DocPos> {
 	let target_ms = tab.session.audio_elapsed_for_percent(percent)?;
 	let player = tab.audio_player.as_mut()?;
@@ -69,16 +50,7 @@ pub fn seek_audio_to_percent(tab: &mut DocumentTab, percent: i32) -> Option<DocP
 	player.timeline().clip(cursor.clip).map(|clip| clip.start)
 }
 
-/// How far the reader has got through `tab`, as a whole percent.
-///
-/// For a document with audio whose files all have a known length, this is progress through the
-/// recording, taken from where the player actually is. That is what a listener means by how far
-/// in they are: the character-count percentage measures the text spine, which for an audiobook
-/// is a handful of chapter headings and, for a bundle of whole-file recordings, one blank line
-/// per file, so it reports every file as an equal share however long it runs.
-///
-/// Falls back to the character-count percentage for text, for audio the player has not started,
-/// and for audio whose lengths could not all be established.
+/// Audio progress where known, since an audiobook's text spine gives every file an equal share however long it runs.
 pub fn reading_percent(tab: &DocumentTab, position: DocPos) -> i32 {
 	let audio_percent = tab
 		.audio_player
@@ -88,22 +60,12 @@ pub fn reading_percent(tab: &DocumentTab, position: DocPos) -> i32 {
 	audio_percent.unwrap_or_else(|| tab.session.get_status_info(position).percentage).clamp(0, 100)
 }
 
-/// The current selection (or, absent one, the caret collapsed to a zero-length range), as
-/// document-absolute positions. Use this instead of `selected_range(tab.text_ctrl)` directly
-/// for anything that persists the result (bookmarks) or otherwise treats it as a document
-/// position rather than a ctrl-local one.
 pub fn doc_selected_range(tab: &DocumentTab) -> (DocPos, DocPos) {
 	let (start, end) = selected_range(tab.text_ctrl);
 	(tab.window.to_doc(start), tab.window.to_doc(end))
 }
 
-/// Moves the caret to document-absolute `offset`, focusing the document and reloading `tab`'s
-/// window first if `offset` falls outside it (see `DocumentTab::window`). Does not touch audio -
-/// use [`jump_to_doc_offset`] for the common case where a caret jump should also drive audio to
-/// match. This lower-level form exists for the reverse flow (audio driving the caret, e.g.
-/// `handle_seek_audio`), where re-seeking audio from the position we just derived it from would
-/// undo whatever precision produced that position (a mid-clip offset, or one "spilled" into the
-/// next file).
+/// Leaves audio alone, for audio driving the caret (`handle_seek_audio`), where re-seeking would lose a mid-clip or spilled-over position.
 pub(super) fn set_caret_to_doc_offset(tab: &mut DocumentTab, offset: DocPos) {
 	if tab.window.needs_reload_for(offset, tab.session.document_len()) {
 		reload_window_around(tab, offset, "caret jump");
@@ -114,25 +76,14 @@ pub(super) fn set_caret_to_doc_offset(tab: &mut DocumentTab, offset: DocPos) {
 	tab.text_ctrl.show_position(local);
 }
 
-/// Moves the caret to document-absolute `offset`, focuses the document, shows the position,
-/// and keeps audio in sync - reloading `tab`'s window first if `offset` falls outside it (see
-/// `DocumentTab::window`). This is the one chokepoint every caret-jump in the app routes
-/// through, directly or via [`move_to_offset_and_record_history`], so callers never need to
-/// think about the window themselves.
+// Every caret jump routes through here so no caller has to think about the loaded window or audio.
 fn jump_to_doc_offset(tab: &mut DocumentTab, offset: DocPos) {
 	set_caret_to_doc_offset(tab, offset);
 	seek_audio_to_position(tab, offset);
 }
 
-/// Reveals the document-absolute range `[start, end)` - a Find match - focusing the document and
-/// reloading `tab`'s window first if `start` falls outside it (see `DocumentTab::window`). The
-/// range form of [`jump_to_doc_offset`], for jumps to a span of text rather than to a single
-/// position. Keeps audio in sync with `start`, like `jump_to_doc_offset`.
-///
-/// With `highlight` the range is selected, which is what a sighted reader expects: the match is picked out on screen. Without it only the caret is moved, so nothing is selected and a screen reader reads the line around the caret as ordinary text instead of announcing a selected string. The caret goes to `start`, because a screen reader speaks the character after the caret: reading the current word then reads the match, and marking a selection start there takes the match in.
-///
-/// Only `start` is checked against the window: a match is expected to be far shorter than a
-/// window's `RELOAD_MARGIN`, so `end` lands safely inside whatever window `start` triggers.
+/// Without `highlight` nothing is selected, so a screen reader reads the line rather than announcing a selected string; the caret goes to `start` because screen readers speak the character after it.
+/// Only `start` is checked against the window, since a match is far shorter than `RELOAD_MARGIN`.
 pub fn reveal_doc_range(tab: &mut DocumentTab, start: DocPos, end: DocPos, highlight: bool) {
 	if tab.window.needs_reload_for(start, tab.session.document_len()) {
 		reload_window_around(tab, start, "selection jump");
@@ -143,30 +94,20 @@ pub fn reveal_doc_range(tab: &mut DocumentTab, start: DocPos, end: DocPos, highl
 	if highlight {
 		tab.text_ctrl.set_selection(local_start, local_end);
 	} else {
-		// Moving the insertion point collapses any selection, so this also takes the highlight
-		// off a match found while the setting was still on.
+		// Also clears the highlight from a match found while the setting was still on.
 		tab.text_ctrl.set_insertion_point(local_start);
 	}
 	tab.text_ctrl.show_position(local_start);
 	seek_audio_to_position(tab, start);
 }
 
-/// Moves the caret to `offset`, focuses the document, shows the position, and records the
-/// jump in the session's position history. Returns the resulting history snapshot
-/// unconditionally; gate on `tab.track` at the call site if the update should only be
-/// persisted when history tracking is enabled for this tab.
-///
-/// Where the caret was is read before it moves, because that is the position going back has
-/// to return to. #835: recording it from anywhere else lands the reader at the top of
-/// whatever section they had jumped into last, rather than at the line they left.
+/// The caret is read before it moves, because going back must return there (#835: anything else landed at the top of the last section jumped into).
 pub fn move_to_offset_and_record_history(tab: &mut DocumentTab, offset: DocPos) -> HistoryUpdate {
 	let from = doc_caret(tab);
 	jump_to_doc_offset(tab, offset);
 	record_history(tab, from, offset)
 }
 
-/// Keeps a document's audio in step with the caret, called after every jump that moves the
-/// insertion point. A no-op for documents with no recorded audio.
 fn seek_audio_to_position(tab: &mut DocumentTab, offset: DocPos) {
 	let offset = offset.min(tab.session.handle().document().buffer.end());
 	if let Some(player) = tab.audio_player.as_mut() {
@@ -174,9 +115,6 @@ fn seek_audio_to_position(tab: &mut DocumentTab, offset: DocPos) {
 	}
 }
 
-/// Persists a [`HistoryUpdate`] built by [`move_to_offset_and_record_history`] (or
-/// similar) to `config`. No-op if `update` is `None`, so callers can pass the gated
-/// result directly.
 pub fn persist_navigation_history(config: &Rc<Mutex<ConfigManager>>, update: Option<&HistoryUpdate>) {
 	if let Some((path_str, history, history_index)) = update {
 		let cfg = config.lock().unwrap();
@@ -222,9 +160,7 @@ fn apply_navigation_result(
 		return false;
 	}
 	let mut context_text = match target {
-		// PDFs fabricate a "Page N" label on page markers; announcing it alongside the page
-		// number the formatter adds would read the number twice, so use the page's first line
-		// of real content instead.
+		// PDF page markers carry a made-up "Page N" label, which would read the number twice beside the formatter's own.
 		MarkerNavTarget::Page => tab.session.first_content_line_after(result.offset),
 		_ => result.marker_text.clone(),
 	};
@@ -317,9 +253,6 @@ pub fn handle_marker_navigation(
 	persist_navigation_history(config, history_update.as_ref());
 }
 
-/// Navigate relative to the container (list/table) the caret is currently inside: `to_end` jumps
-/// just past its end, otherwise to its start. Announces "Not in a container." when the caret is
-/// not inside any container.
 pub fn handle_container_navigation(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,

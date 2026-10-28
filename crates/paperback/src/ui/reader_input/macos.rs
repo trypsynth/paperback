@@ -10,10 +10,8 @@ struct NativeRange {
 	length: usize,
 }
 
-/// Cocoa's PositionToXY/XYToPosition count paragraphs rather than wrapped visual lines.
-/// Ask the layout manager for adjacent line fragments, whose character offsets use the same
-/// UTF-16 units as `wxTextCtrl`. Movement commands are ineffective on a read-only `NSTextView`.
-// Match reader_input's retry protocol: unknown position vs. a known loaded-window boundary.
+// Cocoa's `PositionToXY` counts paragraphs, not wrapped lines, and movement commands do nothing on a read-only `NSTextView`, so this asks the layout manager.
+// `None`: position unknown; `Some(None)`: target is outside the loaded window, as in reader_input's retry.
 #[allow(clippy::option_option)]
 pub(super) fn try_adjacent_line_start(text_ctrl: ReaderCtrl, going_down: bool) -> Option<Option<(CtrlPos, i64)>> {
 	#[repr(C)]
@@ -30,8 +28,7 @@ pub(super) fn try_adjacent_line_start(text_ctrl: ReaderCtrl, going_down: bool) -
 	if scroll_view.is_null() {
 		return None;
 	}
-	// wxWidgets owns both native views for the control's lifetime. This key handler runs on
-	// the UI thread; ranges and rectangles below match AppKit's 64-bit C ABI.
+	// wxWidgets owns both views for the control's lifetime, this runs on the UI thread, and the structs match AppKit's 64-bit ABI.
 	unsafe {
 		let text_view: *mut Object = msg_send![scroll_view, documentView];
 		if text_view.is_null() {

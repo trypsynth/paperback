@@ -1,8 +1,3 @@
-//! Builds a DAISY 2.02 document: `ncc.html` names the SMIL files (one per section, usually),
-//! each SMIL aligns a `<par>`'s `<text>` fragment (into one or more shared content HTML files)
-//! with an `<audio>` clip, exactly like a DAISY 3 NCX/SMIL pair except the "master" file is
-//! `ncc.html` itself rather than an OPF spine plus a separate NCX.
-
 use std::collections::HashMap;
 
 use anyhow::Result;
@@ -23,8 +18,6 @@ use crate::{
 	},
 };
 
-/// Converts one content HTML file into the shared buffer, offsetting its markers and id
-/// positions by the buffer's current length. A no-op if `href` was already converted.
 fn convert_html_file(
 	href: &str,
 	read_text: &mut dyn FnMut(&str) -> Result<String>,
@@ -44,8 +37,7 @@ fn convert_html_file(
 	buffer.append(&converter.get_text());
 	add_converter_markers(buffer, &converter, offset);
 	for (id, pos) in converter.get_id_positions() {
-		// Bare ids are only unique within their own file, so keep the first file's position
-		// and expose a path-qualified key alongside it.
+		// Bare ids are only unique within their own file, so keep the first file's position and expose a path-qualified key alongside it.
 		let absolute = offset + pos.from_start();
 		id_positions.entry(id.clone()).or_insert(absolute);
 		id_positions.insert(format!("{href}#{id}"), absolute);
@@ -55,12 +47,7 @@ fn convert_html_file(
 	Ok(())
 }
 
-/// Builds a DAISY 2.02 document by walking `ncc.html`'s links to SMIL files, converting each
-/// content HTML file a `<text>` element references into the shared buffer, and turning every
-/// SMIL `<par>` into an `AudioClip` anchored at that text's position. Sections that fail to
-/// convert are skipped. Returns `None` when `ncc.html` names no SMIL files at all (a text-only
-/// DAISY 2.02 book links straight to content HTML instead), so the caller can fall back to
-/// treating the linked files as plain HTML.
+/// `None` when `ncc.html` names no SMIL files, as a text-only DAISY 2.02 book links straight to content HTML, so the caller can fall back to reading those.
 pub(super) fn build_daisy2_document(
 	ncc_content: &str,
 	ncc_name: &str,
@@ -83,17 +70,14 @@ pub(super) fn build_daisy2_document(
 	let mut source_indices: HashMap<String, usize> = HashMap::new();
 	let mut audio_builder = AudioTimelineBuilder::new();
 	let mut pending_clips: Vec<PendingClip> = Vec::new();
-	// Where each id *inside the SMIL files* lands in the text, which is what an `ncc.html`
-	// heading link points at. Keyed both bare and path-qualified (against the link text as
-	// written in `ncc.html`), first occurrence winning.
+	// An `ncc.html` heading links to an id inside the SMIL files, not the text; keyed bare and path-qualified as `ncc.html` writes it, first occurrence winning.
 	let mut smil_anchors: HashMap<String, DocPos> = HashMap::new();
 	let mut converted_any = false;
 	for smil_link in &smil_links {
 		let smil_href = resolve_relative_path(&ncc_dir, smil_link);
 		let Ok(smil_content) = read_text(&smil_href) else { continue };
 		let smil_dir = dir_of(&smil_href);
-		// A `<text src>` naming only a fragment resolves against the file the most recent
-		// explicit reference in this same SMIL named.
+		// A `<text src>` naming only a fragment resolves against the file the most recent explicit reference in this same SMIL named.
 		let mut current_text_href: Option<String> = None;
 		for par in parse_smil_pars(&smil_content) {
 			let text_href = if let Some(text_file) = &par.text_file {
@@ -165,9 +149,6 @@ pub(super) fn build_daisy2_document(
 	})
 }
 
-/// Builds a text-only DAISY 2.02 document: `ncc.html` links straight at content HTML pages
-/// with no SMIL audio layer. Combines every linked page into one buffer and derives the TOC
-/// from its headings. Returns `None` when none of the linked pages could be read.
 pub(super) fn build_daisy2_text_only_document(
 	ncc_content: &str,
 	ncc_name: &str,

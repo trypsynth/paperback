@@ -19,8 +19,6 @@ class ReaderShortcutTest {
 
 	private fun ctrlShift(keyCode: Int) = shortcutFor(keyCode, ctrlPressed = true, shiftPressed = true)
 
-	// Several letters mean one thing with Ctrl and another on their own. Getting either side
-	// wrong takes a shortcut away from a reader with no other way to reach the command.
 	@Test
 	fun `the letters that mean two things keep both meanings`() {
 		assertEquals(ReaderShortcut.OpenFind, ctrl(KeyEvent.KEYCODE_F))
@@ -125,8 +123,7 @@ class ReaderShortcutTest {
 		assertEquals(ReaderShortcut.HeadsetHook, plain(KeyEvent.KEYCODE_HEADSETHOOK))
 	}
 
-	// Anything not in the table has to be handed on, or typing in the reading view would start
-	// swallowing keys that belong to the system or to a text field.
+	// Otherwise the reading view would swallow keys belonging to the system or a text field.
 	@Test
 	fun `a key that means nothing here is passed on`() {
 		assertNull(plain(KeyEvent.KEYCODE_A))

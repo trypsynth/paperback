@@ -12,8 +12,7 @@ class SettingsTransferTest {
 		assertEquals(path("books", "Dune.paperback"), sidecarPathFor(path("books", "Dune.epub")))
 	}
 
-	// Only the last extension is replaced. A name carrying dots of its own keeps them, or the
-	// sidecar would be looked for under a name the export never wrote.
+	// Otherwise the sidecar would be looked for under a name the export never wrote.
 	@Test
 	fun `only the final extension is replaced`() {
 		assertEquals(path("books", "Vol.2.Dune.paperback"), sidecarPathFor(path("books", "Vol.2.Dune.epub")))

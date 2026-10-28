@@ -23,8 +23,7 @@ class TocStateTest {
 		assertEquals(2, activeEntryFor(toc, 5000))
 	}
 
-	// A document whose first heading is some way in still has to report a section for the text
-	// above it, or opening the contents from the front matter would point at nothing.
+	// Otherwise opening the contents from the front matter would point at nothing.
 	@Test
 	fun `a position ahead of every entry counts as the first one`() {
 		assertEquals(0, activeEntryFor(toc(500L to 0, 900L to 0), 10))
@@ -37,13 +36,11 @@ class TocStateTest {
 
 	@Test
 	fun `ancestors are every shallower entry up the branch`() {
-		// 0: part (level 0), 1: chapter (1), 2: section (2), 3: subsection (3)
 		val toc = toc(0L to 0, 10L to 1, 20L to 2, 30L to 3)
 		assertEquals(setOf(0, 1, 2), ancestorsOf(toc, 3))
 	}
 
-	// Walking back up must skip the siblings between an entry and its real parent, or opening a
-	// deep entry would expand half the book.
+	// Otherwise opening a deep entry would expand half the book.
 	@Test
 	fun `siblings on the way up are not ancestors`() {
 		val toc = toc(0L to 0, 10L to 1, 20L to 1, 30L to 2)
@@ -58,8 +55,7 @@ class TocStateTest {
 		assertEquals(setOf(0, 1), state.state.value.expandedIndices)
 	}
 
-	// Reopening the contents screen re-reads where the reader is, but must not collapse a branch
-	// they opened by hand on the way past.
+	// Reopening the contents must not collapse a branch the reader opened by hand.
 	@Test
 	fun `pointing again keeps rows the reader expanded themselves`() {
 		val state = TocState()

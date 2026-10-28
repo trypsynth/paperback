@@ -1,9 +1,4 @@
-//! The marked selection and the copy it makes possible: a reader's stand-in for dragging a
-//! selection across text they cannot see, in place of shift-arrowing through it a line at a time.
-//!
-//! The mark is a document position rather than a text-control position, so
-//! it survives the window reloads a huge document goes through on the way, and the text is read
-//! back out of the session rather than out of the control, which only ever holds a slice of one.
+//! The mark is a document position so it survives window reloads, and text is read from the session since the control only holds a slice.
 
 use std::{rc::Rc, sync::Mutex};
 
@@ -14,27 +9,17 @@ use wxdragon::{clipboard::Clipboard, prelude::*};
 use super::{document_manager::DocumentManager, navigation};
 use crate::ui::navigation::announce_for_command;
 
-/// What the copy shortcut found when it went to copy.
 enum CopyOutcome {
-	/// No beginning has been marked.
 	NoMark,
-	/// The mark and the caret are the same place, so there is nothing between them.
 	Empty,
-	/// The text to put on the clipboard.
 	Text(String),
 }
 
-/// Orders the mark and the caret into document order.
-///
-/// Marking a place, reading back past it and pressing the copy key there gets the text between
-/// the two rather than nothing: the two presses name a range, the same way dragging a selection
-/// upwards does. Both of these are positions the reader is *on* rather than bounds - the caller
-/// turns them into a range that can be extracted.
 fn ordered_ends(mark: DocPos, caret: DocPos) -> (DocPos, DocPos) {
 	if mark <= caret { (mark, caret) } else { (caret, mark) }
 }
 
-/// Shared with the plain Ctrl+C copy, which copies a selection rather than a marked range; the two are the same action to the reader and are worded the same way.
+/// Shared with plain Ctrl+C, since both are the same action to the reader.
 pub fn copied_announcement(count: usize) -> String {
 	// TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
 	nt("%d character copied.", "%d characters copied.", u64::try_from(count).unwrap_or(0)).replacen(
@@ -44,9 +29,7 @@ pub fn copied_announcement(count: usize) -> String {
 	)
 }
 
-/// Puts `text` on the clipboard so that it is still there after Paperback closes.
-///
-/// On Windows wx hands the clipboard a data object Paperback owns rather than the text itself, and the text goes with it when the app exits unless it is flushed. A failed flush still leaves the text on the clipboard while Paperback runs, so only the write decides whether the copy worked.
+/// Flushed because on Windows wx hands the clipboard a data object Paperback owns, which goes when the app exits; a failed flush still leaves the text while running, so only the write decides success.
 pub fn copy_to_clipboard(text: &str) -> bool {
 	let clipboard = Clipboard::get();
 	let copied = clipboard.set_text(text);
@@ -56,7 +39,6 @@ pub fn copy_to_clipboard(text: &str) -> bool {
 	copied
 }
 
-/// Marks the reader's current position as the beginning of a selection to copy from later.
 pub fn handle_set_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText, from_keyboard: bool) {
 	{
 		let dm = dm.lock().unwrap();
@@ -69,16 +51,12 @@ pub fn handle_set_selection_start(dm: &Rc<Mutex<DocumentManager>>, live_region_l
 	announce_for_command(live_region_label, from_keyboard, t("Beginning of selection set."));
 }
 
-/// Copies everything between the marked beginning and the reader's current position.
 pub fn handle_copy_from_selection_start(
 	dm: &Rc<Mutex<DocumentManager>>,
 	live_region_label: StaticText,
 	from_keyboard: bool,
 ) {
-	// Everything that touches the document happens under the lock; the clipboard write and the
-	// announcement deliberately do not. `Clipboard::set_text` goes through OLE on Windows, which
-	// can pump messages, and the document manager's mutex is not reentrant - holding it across a
-	// pumped message that comes back into a handler locking it would deadlock the app.
+	// The clipboard write stays outside the lock: OLE can pump messages on Windows, and a handler re-locking this non-reentrant mutex would deadlock.
 	let outcome = {
 		let dm = dm.lock().unwrap();
 		let Some(tab) = dm.active_tab() else {
@@ -87,15 +65,10 @@ pub fn handle_copy_from_selection_start(
 		match dm.selection_mark() {
 			None => CopyOutcome::NoMark,
 			Some(mark) => {
-				// The gesture is spent either way, so a second press with no fresh mark says so
-				// rather than quietly copying again from a mark the reader has moved past.
+				// Spent either way, so a second press says so rather than quietly copying from a mark the reader has moved past.
 				dm.set_selection_mark(None);
 				let (from, to) = ordered_ends(mark, navigation::doc_caret(tab));
-				// Both ends are included, because both name a character the reader is on. A
-				// caret sits at the start of the character a screen reader is speaking, so
-				// ending the range there would drop the last character read - the one the
-				// reader deliberately stopped on. This reaches past it instead, spanning the
-				// whole character where one is an astral-plane pair.
+				// Inclusive: the caret sits at the start of the character being spoken, so ending there would drop the one the reader stopped on.
 				let end = tab.session.pos_after_char_at(to);
 				let text = tab.session.text_range(from, end);
 				if text.is_empty() { CopyOutcome::Empty } else { CopyOutcome::Text(text) }
@@ -108,9 +81,7 @@ pub fn handle_copy_from_selection_start(
 		// TRANSLATORS: Announced when a copy had nothing to copy: no text was selected, or the marked beginning of a selection is at the reader's own position, leaving nothing between the two.
 		CopyOutcome::Empty => t("Nothing to copy."),
 		CopyOutcome::Text(text) => {
-			// Counted in characters, which are also what the range is measured in: a spoken count is for a
-			// person listening, and an astral-plane character is one character to them, though two of a
-			// Windows or macOS text control's units.
+			// Counted in chars: an astral-plane character is one to a listener, though two of a text control's units.
 			let count = text.chars().count();
 			if copy_to_clipboard(&text) {
 				copied_announcement(count)
@@ -123,8 +94,7 @@ pub fn handle_copy_from_selection_start(
 	announce_for_command(live_region_label, from_keyboard, message);
 }
 
-/// Moves the reader back to the marked beginning, leaving the mark in place so the copy and the
-/// jump can be used in either order, as often as they like.
+/// Leaves the mark in place so the copy and the jump can be used in either order, repeatedly.
 pub fn handle_jump_to_selection_start(
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
@@ -171,7 +141,6 @@ mod tests {
 		assert_eq!(copied_announcement(0), "0 characters copied.");
 	}
 
-	/// One is read aloud by a person, not measured by a buffer.
 	#[test]
 	fn copied_announcement_singular_for_one_character() {
 		assert_eq!(copied_announcement(1), "1 character copied.");

@@ -1,10 +1,3 @@
-/// One-time migration from the legacy wxWidgets INI config (Paperback.ini) to TOML.
-///
-/// Called at startup before `ConfigManager::initialize()`. If an INI file exists
-/// and no TOML file exists yet, reads the INI via wxdragon's Config and writes a
-/// TOML file that the core's `ConfigManager` can load normally, then deletes the
-/// INI. This module is the only place in the binary that directly constructs
-/// `ConfigData`.
 use std::{fs, path::Path};
 
 use base64::{Engine, engine::general_purpose::STANDARD};
@@ -22,12 +15,7 @@ pub fn migrate_if_needed() {
 	settle(&toml_path.with_extension("ini"), &toml_path, migrate);
 }
 
-/// Migrates the INI when there is no TOML yet, and deletes it once its contents are in one.
-///
-/// A TOML already sitting there means an earlier launch migrated the INI but kept it, which is
-/// what every version before this one did, so the INI is deleted then too. The one case it
-/// survives is a migration that failed, where it is still the only copy of the reader's
-/// bookmarks and positions.
+/// Older versions migrated but kept the INI, so an existing TOML still means delete it; only a failed migration keeps it, as the only copy of the reader's data.
 fn settle(ini_path: &Path, toml_path: &Path, migrate: impl FnOnce(&Path, &Path) -> bool) {
 	if !ini_path.exists() {
 		return;
@@ -41,7 +29,6 @@ fn settle(ini_path: &Path, toml_path: &Path, migrate: impl FnOnce(&Path, &Path) 
 	}
 }
 
-/// Writes the INI's contents out as TOML, reporting whether the TOML now holds them.
 fn migrate(ini_path: &Path, toml_path: &Path) -> bool {
 	tracing::info!(ini = %ini_path.display(), toml = %toml_path.display(), "migrating config from INI to TOML");
 	let data = read_ini(ini_path);
@@ -85,8 +72,7 @@ fn read_ini(ini_path: &Path) -> ConfigData {
 	data.app.find_use_regex = config.read_bool("find_use_regex", false);
 	data.app.recent_documents_to_show = config.read_long("recent_documents_to_show", 25);
 	data.app.sleep_timer_duration = config.read_long("sleep_timer_duration", 30);
-	// Desktop-only settings go into the extra passthrough map so they are preserved
-	// in the TOML file even though core's AppSettings doesn't know about them.
+	// Core's AppSettings doesn't know the desktop-only settings, so they go through `extra` to survive.
 	data.app
 		.extra
 		.insert("minimize_to_tray".to_string(), TomlValue::Boolean(config.read_bool("minimize_to_tray", false)));
@@ -208,7 +194,6 @@ fn read_ini(ini_path: &Path) -> ConfigData {
 	data
 }
 
-/// A position from the old config, which held them as signed integers.
 fn saved_position(raw: i64) -> DocPos {
 	DocPos::from_raw(usize::try_from(raw).unwrap_or(0))
 }
@@ -226,7 +211,6 @@ mod tests {
 
 	use super::settle;
 
-	/// A fresh directory per test, so they can run side by side without seeing each other's files.
 	fn scratch(name: &str) -> PathBuf {
 		let dir = env::temp_dir().join(format!("paperback-legacy-config-{name}-{}", std::process::id()));
 		let _ = fs::remove_dir_all(&dir);
@@ -255,7 +239,6 @@ mod tests {
 		assert!(!ini.exists());
 	}
 
-	/// A failed migration leaves the INI as the only copy of the reader's data, so it has to stay.
 	#[test]
 	fn a_failed_migration_keeps_the_ini() {
 		let dir = scratch("failure");

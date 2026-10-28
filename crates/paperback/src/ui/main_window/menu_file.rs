@@ -1,8 +1,3 @@
-//! The heavier File menu handlers: dynamic recent-document ids
-//! (`menu_ids::RECENT_DOCUMENT_BASE..=RECENT_DOCUMENT_MAX`), the "All Documents" dialog, exporting
-//! the document, saving a picture out of it, and importing and exporting its data. `Open`/`Close`/`Close All`/`Reopen Last
-//! Closed`/`Exit` are thin enough to stay inlined in `bind_menu_events`'s dispatch match.
-
 use std::{path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{
@@ -26,8 +21,6 @@ use crate::ui::{
 	navigation::{announce_for_command, set_caret_to_doc_offset},
 };
 
-/// Handles every menu id not covered by `bind_menu_events`'s own dispatch match: dynamic
-/// recent-document entries and "Show All Documents". Does nothing if `id` matches neither.
 pub(super) fn handle_fallback(
 	id: i32,
 	frame: &Frame,
@@ -379,11 +372,6 @@ pub(super) fn handle_save_image(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>) 
 	}
 }
 
-/// Prompts for a save path and exports `tab`'s document as `format`, showing a
-/// generic failure dialog on error. Shared by the `EXPORT_TO_PLAIN_TEXT` /
-/// `EXPORT_TO_HTML` / `EXPORT_TO_MARKDOWN` menu handlers, which differ only in
-/// `format`, the default file `extension`, the file-picker `wildcard`, and the
-/// file-picker `dialog_title`.
 fn export_document_as(
 	frame: &Frame,
 	tab: &DocumentTab,

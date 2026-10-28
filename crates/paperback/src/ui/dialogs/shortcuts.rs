@@ -1,18 +1,8 @@
-//! Paperback's side of the shared Customize Keyboard Shortcuts dialog.
-//!
-//! The dialog itself lives in `wx_utils::shortcuts`; all that is needed here is to describe
-//! Paperback's keymap to it. Every category is a view onto one set of bindings, so a chord has
-//! to be unique across all of them, which is what giving every tab the same `TabScope::Mode` says.
-
 use paperback_core::config::{ActionId, KeyChord, ShortcutCategory, ShortcutsConfig};
 use wx_utils::shortcuts::{ShortcutModel, TabScope};
 use wxdragon::prelude::*;
 
-/// A [`ShortcutsConfig`] presented as tabs, one per [`ShortcutCategory`].
-///
-/// A newtype because both the trait and `ShortcutsConfig` are foreign to this crate. `tab` is an
-/// index into [`ShortcutCategory::all`], and the lookups ignore it: the categories only decide
-/// which tab an action is listed under, not where its binding is stored.
+/// A newtype because the trait and `ShortcutsConfig` are both foreign; lookups ignore `tab`, since categories only decide where an action is listed.
 #[derive(Clone)]
 struct CategorizedShortcuts(ShortcutsConfig);
 
@@ -25,6 +15,7 @@ impl ShortcutModel for CategorizedShortcuts {
 	}
 
 	fn tab_scope(&self, _tab: usize) -> TabScope {
+		// Every category views one set of bindings, so a chord must be unique across all tabs.
 		TabScope::Mode(0)
 	}
 

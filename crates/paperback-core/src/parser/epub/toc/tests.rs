@@ -28,8 +28,7 @@ fn resolves_a_fragment_within_its_section_via_qualified_id() {
 
 #[rstest]
 fn falls_back_to_section_start_when_fragment_id_is_outside_the_section_bounds() {
-	// An id that happens to collide with another section's offset must not be trusted for this
-	// section's fragment: it lies outside [start, end), so this should fall back to section start.
+	// An id whose position lies outside this section's [start, end) must not be trusted for its fragment.
 	let mut id_positions = HashMap::new();
 	id_positions.insert("OEBPS/chapter2.xhtml#section1".to_string(), DocPos::from_raw(5));
 	let offset = compute_nav_offset("OEBPS/chapter2.xhtml#section1", &sections(), &id_positions);

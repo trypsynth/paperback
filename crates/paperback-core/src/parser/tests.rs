@@ -289,9 +289,7 @@ fn m4b_parser_advertises_audio_book_navigation() {
 	);
 }
 
-/// Guards against a format being declared in `paperback-formats` with no parser wired up
-/// in `parser_registry!` (it would show up in the installer and open dialog but fail to
-/// open), and against a parser being registered twice.
+/// A declared format with no parser would show in the installer and open dialog but fail to open.
 #[test]
 fn every_declared_format_has_exactly_one_parser() {
 	let registered: Vec<&'static FormatMeta> =
@@ -303,8 +301,6 @@ fn every_declared_format_has_exactly_one_parser() {
 	assert_eq!(registered.len(), paperback_formats::ALL.len(), "a parser was registered for an unlisted format");
 }
 
-/// Registration order decides which parser wins a shared extension, so it must track the
-/// order of the format table rather than drifting from it.
 #[test]
 fn registration_order_matches_the_format_table() {
 	let registered: Vec<&str> = ParserRegistry::global().all_parsers().iter().map(RegisteredParser::name).collect();
@@ -312,16 +308,12 @@ fn registration_order_matches_the_format_table() {
 	assert_eq!(registered, declared);
 }
 
-/// `.zip` is claimed by both DAISY and Word, and `parse_document` tries claimants in
-/// registration order, so DAISY must stay ahead of Word.
 #[test]
 fn zip_is_offered_to_daisy_before_word() {
 	let names: Vec<_> = ParserRegistry::global().get_parsers_for_extension("zip").iter().map(|p| p.name()).collect();
 	assert_eq!(names, vec![paperback_formats::DAISY.name, paperback_formats::WORD.name]);
 }
 
-/// The registry stores parsers in a `Vec`, so the file dialog's filter groups appear in a
-/// stable order rather than whatever order a hash map happened to yield.
 #[test]
 fn file_filter_lists_groups_in_registration_order() {
 	let filter = build_file_filter_string();
@@ -338,8 +330,6 @@ fn file_filter_string_contains_text_files_group_name() {
 	let filter = build_file_filter_string();
 	assert!(filter.contains("Text Files ("));
 }
-/// `add_tables_separators_lists` sets the Table marker's `length` to `table.length`
-/// (in positions) and offsets it by the base offset.
 #[test]
 fn add_tables_separators_lists_sets_table_marker_length() {
 	let converter = MockConverter {
@@ -351,7 +341,7 @@ fn add_tables_separators_lists_sets_table_marker_length() {
 			offset: 10.into(),
 			text: "T".to_string(),
 			html_content: "<table/>".to_string(),
-			length: 7.into(), // a length, must appear as marker length
+			length: 7.into(),
 		}],
 		formulas: vec![],
 		separators: vec![],
@@ -370,8 +360,6 @@ fn add_tables_separators_lists_sets_table_marker_length() {
 	assert_eq!(table_marker.reference, "<table/>", "marker reference must be the table HTML");
 }
 
-/// A table of contents whose entries name sections the text never marked up as headings. Every
-/// one of them gets a marker, so the reader can move through a book that carries none of its own.
 #[test]
 fn heading_markers_are_written_for_every_entry_of_a_table_of_contents() {
 	let mut buffer = DocumentBuffer::new();
@@ -390,21 +378,17 @@ fn heading_markers_are_written_for_every_entry_of_a_table_of_contents() {
 		headings,
 		vec![
 			(MarkerType::Heading1, 0.into(), "Alpha".to_string()),
-			// A child of the first entry, one level deeper.
 			(MarkerType::Heading2, 6.into(), "Beta".to_string()),
 			(MarkerType::Heading1, 11.into(), "Gamma".to_string()),
 		]
 	);
 }
 
-/// A document that marks up some of its headings and not others: the ones it wrote are left alone
-/// and the rest are filled in, so nothing is announced twice. This is the shape of an old CHM
-/// reference that marks up two of its six hundred pages.
+/// The shape of an old CHM reference that marks up two of its six hundred pages.
 #[test]
 fn an_entry_whose_section_wrote_its_own_heading_is_left_alone() {
 	let mut buffer = DocumentBuffer::new();
 	buffer.append("Alpha\nBeta\nGamma\n");
-	// The middle section already carries a heading of its own.
 	buffer.add_marker(Marker::new(MarkerType::Heading1, 6.into()).with_text("Beta".to_string()).with_level(1));
 	let items = vec![
 		TocItem::new("Alpha".to_string(), String::new(), DocPos::ZERO),
@@ -418,8 +402,6 @@ fn an_entry_whose_section_wrote_its_own_heading_is_left_alone() {
 	assert_eq!(positions.iter().filter(|p| **p == 6).count(), 1, "the marked-up section is not doubled");
 }
 
-/// A section that wrote its own heading may still sit above subsections that did not, so a turned
-/// down entry does not take its children with it.
 #[test]
 fn the_children_of_a_turned_down_entry_are_still_offered() {
 	let mut buffer = DocumentBuffer::new();
@@ -433,14 +415,11 @@ fn the_children_of_a_turned_down_entry_are_still_offered() {
 	assert_eq!(positions, vec![6], "the parent is skipped and the child is kept");
 }
 
-/// `TocItem` is a plain struct with no builder for its children.
 fn with_children(mut item: TocItem, children: Vec<TocItem>) -> TocItem {
 	item.children = children;
 	item
 }
 
-/// A book that lists its chapters in the table of contents but marks none of them up as a heading
-/// gets a heading for each entry, so the heading key reaches every chapter.
 #[test]
 fn add_toc_heading_markers_fills_in_unmarked_chapters() {
 	let mut buffer = DocumentBuffer::new();
@@ -456,13 +435,10 @@ fn add_toc_heading_markers_fills_in_unmarked_chapters() {
 	assert_eq!(headings, vec![0, 17, 34], "one heading per table-of-contents entry");
 }
 
-/// A chapter that already carries its own heading is not given a second one, so a well-marked book
-/// keeps exactly the headings it wrote.
 #[test]
 fn add_toc_heading_markers_does_not_double_an_existing_heading() {
 	let mut buffer = DocumentBuffer::new();
 	buffer.append("Chapter One text\nChapter Two text\n");
-	// The second chapter already has a real heading in its span.
 	buffer.add_marker(Marker::new(MarkerType::Heading1, 17.into()).with_text("Chapter Two".to_string()).with_level(1));
 	let toc = vec![
 		TocItem::new("Chapter One".to_string(), String::new(), DocPos::ZERO),

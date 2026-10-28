@@ -1,10 +1,4 @@
-//! Inline markup: `**bold**`, `*emphasis*`, ` ``literal`` `, hyperlink references, footnote/
-//! citation references, `|substitutions|` and bare URLs, turned into an HTML fragment.
-//!
-//! Runs as a single left-to-right scan over the paragraph's characters. Nothing here recurses
-//! into matched spans (RST itself disallows nested inline markup), so a false match can never
-//! send the scanner into a loop; anything not recognized falls through as literal, HTML-escaped
-//! text, which is what keeps this safe to run on arbitrary, possibly malformed, input.
+//! One left-to-right scan that never recurses into matched spans (RST disallows nested inline markup), so a false match cannot loop and anything unrecognized falls through as escaped text, keeping it safe on malformed input.
 
 use std::collections::HashMap;
 
@@ -67,7 +61,6 @@ fn match_markup(
 	None
 }
 
-/// `` ``literal`` ``, not confused with `**strong**` by requiring a matching double backtick.
 fn match_literal(chars: &[char], i: usize) -> Option<(usize, String)> {
 	if !starts_with(chars, i, "``") {
 		return None;
@@ -92,7 +85,6 @@ fn match_strong(chars: &[char], i: usize) -> Option<(usize, String)> {
 	Some((close + 2 - i, format!("<strong>{}</strong>", escape_html(&inner))))
 }
 
-/// `*emphasis*`, single asterisk, never matching into a `**strong**` span's delimiters.
 fn match_emphasis(chars: &[char], i: usize) -> Option<(usize, String)> {
 	if chars.get(i) != Some(&'*') || chars.get(i + 1) == Some(&'*') {
 		return None;
@@ -111,8 +103,7 @@ fn match_emphasis(chars: &[char], i: usize) -> Option<(usize, String)> {
 	None
 }
 
-/// `` :role:`text` ``, an interpreted-text role. The role itself carries no meaning to a reader,
-/// so only the text survives.
+/// A role name carries no meaning to a reader, so only the text survives.
 fn match_role(chars: &[char], i: usize) -> Option<(usize, String)> {
 	if chars.get(i) != Some(&':') {
 		return None;
@@ -128,8 +119,6 @@ fn match_role(chars: &[char], i: usize) -> Option<(usize, String)> {
 	Some((text_end + 1 - i, escape_html(&inner)))
 }
 
-/// `` `text <url>`_ `` and `` `text <url>`__ `` (embedded URI), and `` `text`_ ``/`` `text`__ ``
-/// (reference to a `.. _text:` target, or a section's implicit one, defined elsewhere).
 fn match_backtick_reference(chars: &[char], i: usize, targets: &HashMap<String, String>) -> Option<(usize, String)> {
 	if chars.get(i) != Some(&'`') || chars.get(i + 1) == Some(&'`') {
 		return None;
@@ -149,8 +138,7 @@ fn match_backtick_reference(chars: &[char], i: usize, targets: &HashMap<String, 
 		&& inner.ends_with('>')
 	{
 		let label = inner[..lt].trim().to_string();
-		// A long URL may be wrapped onto a second source line; docutils joins it back up by
-		// dropping the whitespace, since real URLs never contain any.
+		// A long URL may be wrapped onto a second source line; docutils joins it back up by dropping the whitespace, since real URLs never contain any.
 		let url: String = inner[lt + 1..inner.len() - 1].split_whitespace().collect();
 		return Some((end - i, format!(r#"<a href="{}">{}</a>"#, escape_html(&url), escape_html(&label))));
 	}
@@ -161,9 +149,7 @@ fn match_backtick_reference(chars: &[char], i: usize, targets: &HashMap<String, 
 	Some((end - i, escape_html(&inner)))
 }
 
-/// A bare `word_` reference to a target, without backticks. Left untouched (underscore and all)
-/// when no matching target is defined, since a trailing underscore in prose is otherwise
-/// meaningless markup rather than something worth stripping speculatively.
+/// Left untouched, underscore and all, when no target matches, since a trailing underscore in prose is not worth stripping speculatively.
 fn match_bare_reference(chars: &[char], i: usize, targets: &HashMap<String, String>) -> Option<(usize, String)> {
 	let c = *chars.get(i)?;
 	if !c.is_alphanumeric() {
@@ -185,8 +171,7 @@ fn match_bare_reference(chars: &[char], i: usize, targets: &HashMap<String, Stri
 	Some((j + 1 - i, format!(r#"<a href="{}">{}</a>"#, escape_html(url), escape_html(&word))))
 }
 
-/// `[1]_`, `[#]_`, `[*]_`, `[Name]_`: a footnote or citation reference. Rendered as its bracketed
-/// label with no link, since resolving it to the matching footnote body is not attempted.
+/// Unlinked, since resolving a reference to its footnote body is not attempted.
 fn match_footnote_ref(chars: &[char], i: usize) -> Option<(usize, String)> {
 	if chars.get(i) != Some(&'[') {
 		return None;
@@ -202,8 +187,7 @@ fn match_footnote_ref(chars: &[char], i: usize) -> Option<(usize, String)> {
 	Some((close + 2 - i, format!("[{}]", escape_html(&label))))
 }
 
-/// `|name|`, replaced by its recorded `.. |name| replace::` text, or left as-is if undefined or
-/// carrying no plain-text value (an image substitution, say).
+/// Left as-is when undefined or carrying no plain-text value, such as an image substitution.
 fn match_substitution(chars: &[char], i: usize, substitutions: &HashMap<String, String>) -> Option<(usize, String)> {
 	if chars.get(i) != Some(&'|') {
 		return None;

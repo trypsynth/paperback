@@ -2,8 +2,7 @@ use super::{ParagraphProperties, Paragraphs, sprms};
 
 #[test]
 fn property_modifiers_are_sized_from_the_sprm_and_unsizable_ones_stop_the_walk() {
-	// sprmPIlvl (1 byte) 2, sprmPIlfo (2 bytes) 3, then sprmPChgTabs, which has a size rule of
-	// its own and stops the walk rather than being misread.
+	// sprmPIlvl (1 byte) 2, sprmPIlfo (2 bytes) 3, then sprmPChgTabs, which has a size rule of its own and stops the walk rather than being misread.
 	let grpprl = [0x0A, 0x26, 0x02, 0x0B, 0x46, 0x03, 0x00, 0x15, 0xC6, 0x03, 9, 9, 9];
 	let found: Vec<_> = sprms(&grpprl).iter().map(|(s, o)| (*s, o.to_vec())).collect();
 	assert_eq!(found, vec![(0x260A, vec![2]), (0x460B, vec![3, 0])]);
@@ -11,8 +10,6 @@ fn property_modifiers_are_sized_from_the_sprm_and_unsizable_ones_stop_the_walk()
 	assert!(sprms(&[0x0B, 0x46, 0x03]).is_empty());
 }
 
-/// A `WordDocument` stream whose second page is an FKP with one paragraph run (file offsets
-/// 100-200) carrying `papx`, and a table stream whose bin table points that range at it.
 fn one_paragraph(papx: &[u8]) -> (Vec<u8>, Vec<u8>) {
 	let mut word_document = vec![0u8; 1024];
 	word_document[0x102..0x106].copy_from_slice(&0u32.to_le_bytes());

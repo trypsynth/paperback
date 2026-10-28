@@ -1,4 +1,4 @@
-//! The units a place in a document is given in: [`DocPos`] and [`DocLen`] count Unicode scalars, and [`ContentBytePos`] counts bytes into [`super::DocumentBuffer::content`]. Each is its own type so that the compiler, not a doc comment, keeps one from being used as another (#1062).
+//! Scalar positions and content byte offsets are separate types so the compiler, not a doc comment, keeps them apart (#1062).
 
 use std::{
 	iter::Sum,
@@ -7,14 +7,12 @@ use std::{
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-/// A place in a document, counted in Unicode scalars from its start: the unit of the caret, markers, bookmarks and every saved position, the same on every platform. A text control that counts otherwise, as Windows and macOS count UTF-16 code units, is converted where the desktop app loads text into it.
-///
-/// Nothing ties a position to one buffer, since positions outlive the buffers they were taken from (saved positions, history, a reparse), so one can point past the end or be from another document. [`super::DocumentBuffer::nearest_pos`] brings an outside value into range.
+/// Unicode scalars, the same on every platform; a control counting UTF-16 units is converted where the desktop loads text into it.
+/// Positions outlive their buffers (saved positions, history, a reparse), so one can point past the end.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
 pub struct DocPos(usize);
 
-/// How much of a document something takes up, in the scalars [`DocPos`] counts: what one position is past another, or the length of a piece of text.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
 pub struct DocLen(usize);
@@ -22,7 +20,7 @@ pub struct DocLen(usize);
 impl DocPos {
 	pub const ZERO: Self = Self(0);
 
-	/// Wraps a count of scalars from the start of a document. Positions come from the buffer, from [`DocLen::of`], or from where a value enters the core (the FFI, the config, the desktop's text control), which is the only place this should be called.
+	/// Only where a value enters the core (the FFI, the config, the desktop's text control); everything else comes from the buffer or [`DocLen::of`].
 	#[must_use]
 	pub const fn from_raw(raw: usize) -> Self {
 		Self(raw)
@@ -33,19 +31,16 @@ impl DocPos {
 		self.0
 	}
 
-	/// How far this position is from the start of the document, as a length.
 	#[must_use]
 	pub const fn from_start(self) -> DocLen {
 		DocLen(self.0)
 	}
 
-	/// The position `len` before this one, or the start of the document if that is further back.
 	#[must_use]
 	pub const fn saturating_sub(self, len: DocLen) -> Self {
 		Self(self.0.saturating_sub(len.0))
 	}
 
-	/// How far past `earlier` this position is, or nothing when it comes before it.
 	#[must_use]
 	pub const fn since(self, earlier: Self) -> DocLen {
 		DocLen(self.0.saturating_sub(earlier.0))
@@ -54,10 +49,9 @@ impl DocPos {
 
 impl DocLen {
 	pub const ZERO: Self = Self(0);
-	/// One char, such as the newline after a line.
 	pub const ONE: Self = Self(1);
 
-	/// Wraps a count of scalars that wasn't measured from text, such as one passed in through the FFI.
+	/// Only for a count not measured from text, such as one from the FFI.
 	#[must_use]
 	pub const fn from_raw(raw: usize) -> Self {
 		Self(raw)
@@ -68,13 +62,11 @@ impl DocLen {
 		self.0
 	}
 
-	/// How many positions `text` takes up in a document: one for each Unicode scalar.
 	#[must_use]
 	pub fn of(text: &str) -> Self {
 		Self(text.chars().count())
 	}
 
-	/// The position this far from the start of the document.
 	#[must_use]
 	pub const fn as_pos(self) -> DocPos {
 		DocPos(self.0)
@@ -119,7 +111,7 @@ impl SubAssign<DocLen> for DocPos {
 	}
 }
 
-/// How far apart two positions are. There is no `DocPos + DocPos`, as adding two places in a document means nothing.
+/// There is no `DocPos + DocPos`, as adding two places in a document means nothing.
 impl Sub for DocPos {
 	type Output = DocLen;
 
@@ -168,7 +160,6 @@ impl std::fmt::Display for DocLen {
 	}
 }
 
-/// Where a position leaves the core, as the `i64` that the FFI, the config and wx take.
 impl TryFrom<DocPos> for i64 {
 	type Error = std::num::TryFromIntError;
 
@@ -177,7 +168,6 @@ impl TryFrom<DocPos> for i64 {
 	}
 }
 
-/// Where a length leaves the core, as the `i64` that the FFI, the config and wx take.
 impl TryFrom<DocLen> for i64 {
 	type Error = std::num::TryFromIntError;
 
@@ -186,7 +176,6 @@ impl TryFrom<DocLen> for i64 {
 	}
 }
 
-/// The `usize` an `i64` from outside the core stands for, with a negative one at the start.
 fn saturating_usize(raw: i64) -> usize {
 	usize::try_from(raw.max(0)).unwrap_or(usize::MAX)
 }
@@ -198,26 +187,21 @@ impl Serialize for DocPos {
 	}
 }
 
-/// A negative position, which nothing writes but an edited file could hold, loads as the start rather than failing the whole config.
+/// A negative position in an edited file loads as the start rather than failing the whole config.
 impl<'de> Deserialize<'de> for DocPos {
 	fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
 		i64::deserialize(deserializer).map(|raw| Self(saturating_usize(raw)))
 	}
 }
 
-// The apps take positions and lengths as the `i64` the FFI has always carried, so their bindings don't change. A negative one lifts to the start rather than failing the call, since iOS's Go to page can pass back the -1 of a page that isn't there.
+// `i64` so the apps' bindings don't change; a negative value lifts to the start, since iOS's Go to page can pass back the -1 of a missing page.
 #[cfg(feature = "uniffi")]
 uniffi::custom_type!(DocPos, i64, { lower: |pos| i64::try_from(pos).unwrap_or(i64::MAX), try_lift: |raw| Ok(DocPos(saturating_usize(raw))) });
 
 #[cfg(feature = "uniffi")]
 uniffi::custom_type!(DocLen, i64, { lower: |len| i64::try_from(len).unwrap_or(i64::MAX), try_lift: |raw| Ok(DocLen(saturating_usize(raw))) });
 
-/// A byte offset into [`super::DocumentBuffer::content`]. Byte offsets into any other string, such as
-/// a parser's own output before it is appended, stay plain `usize`: this type says which string
-/// an offset belongs to, so that it can't be used to slice the wrong one.
-///
-/// Every value comes from the buffer's conversions or from a search of `content` itself, so it
-/// sits on a char boundary.
+/// Only for [`super::DocumentBuffer::content`]; offsets into other strings stay `usize` so this can't slice the wrong one. Always on a char boundary.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
 pub struct ContentBytePos(usize);
@@ -225,8 +209,7 @@ pub struct ContentBytePos(usize);
 impl ContentBytePos {
 	pub const ZERO: Self = Self(0);
 
-	/// Wraps a byte offset taken from a `str` operation on [`super::DocumentBuffer::content`] (a regex
-	/// match, a `find`), which is the only kind of `usize` that may become a `ContentBytePos`.
+	/// Only for an offset from a `str` operation on `content`, such as a regex match or a `find`.
 	#[must_use]
 	pub const fn from_raw(raw: usize) -> Self {
 		Self(raw)
@@ -238,7 +221,6 @@ impl ContentBytePos {
 	}
 }
 
-/// Moves forward by a byte count, such as the length of a match found from this position.
 impl Add<usize> for ContentBytePos {
 	type Output = Self;
 
@@ -247,7 +229,7 @@ impl Add<usize> for ContentBytePos {
 	}
 }
 
-// Conversions from and comparisons with a bare `usize` let tests write positions as integer literals (`5.into()`, `assert_eq!(pos, 5)`), which the compiler infers as `usize` here. They are test-only because outside tests, a bare `usize` could be in any unit, and mixing units is the mistake these types exist to rule out.
+// Test-only, because outside tests a bare `usize` could be in any unit, and mixing units is what these types rule out.
 macro_rules! test_literals {
 	($($unit:ty),*) => {$(
 		#[cfg(test)]

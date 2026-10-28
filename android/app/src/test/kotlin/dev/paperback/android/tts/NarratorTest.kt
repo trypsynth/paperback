@@ -68,8 +68,6 @@ class RecordedNarratorTest {
 		assertTrue(narrator.isPlaying())
 	}
 
-	// A recording is anchored to the text it narrates, so following the reader is a seek. There
-	// is no equivalent of "say this bit again".
 	@Test
 	fun `moving the reading position seeks the recording`() {
 		val player = FakePlayer()
@@ -126,8 +124,7 @@ class SpokenNarratorTest {
 		assertEquals(listOf("speak"), spoken)
 	}
 
-	// A pause belongs to the segment it happened in: resuming after a jump would carry on from a
-	// sentence that is no longer where the reader is.
+	// Resuming after a jump would carry on from a sentence that is no longer where the reader is.
 	@Test
 	fun `moving while paused drops the pause`() {
 		val speech = FakeSpeech()
@@ -138,8 +135,7 @@ class SpokenNarratorTest {
 		assertEquals(emptyList<String>(), spoken)
 	}
 
-	// Browsing a document nobody is listening to must stay silent, or every arrow key would
-	// start reading.
+	// Otherwise every arrow key would start reading.
 	@Test
 	fun `moving while silent says nothing`() {
 		val speech = FakeSpeech()
@@ -161,7 +157,6 @@ class SpokenNarratorTest {
 	}
 }
 
-/** The play/pause control, which is the same gesture whichever narrator is reading. */
 class PlayPauseTest {
 	private fun toggle(narrator: Narrator) {
 		if (narrator.isPlaying()) narrator.pause() else narrator.play()

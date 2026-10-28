@@ -47,11 +47,7 @@ mod tests {
 		assert_eq!(doc.buffer.content, "first line\nsecond line\n");
 	}
 
-	/// A raw `\r` in the buffer counts as its own character in `DocumentBuffer`'s position
-	/// tables, but the GUI's native text control doesn't necessarily agree - so Windows-style
-	/// CRLF line endings (extremely common in plain text files) must be normalized away rather
-	/// than passed through, or every position past the first line drifts out of sync with what
-	/// the control actually shows.
+	/// A raw `\r` counts as a character in `DocumentBuffer`'s positions but not necessarily in the native text control, so every later position would drift.
 	#[test]
 	fn normalizes_crlf_and_bare_cr_line_endings() {
 		let doc = parse_bytes("book.txt", "first line\r\nsecond line\rthird line\r\n");
@@ -64,8 +60,7 @@ mod tests {
 		assert_eq!(doc.title, "The Great Novel");
 	}
 
-	/// UTF-16 files are common enough from Windows editors that the parser decodes them by BOM
-	/// rather than mangling them into replacement characters.
+	/// UTF-16 files are common from Windows editors.
 	#[test]
 	fn decodes_utf16_by_byte_order_mark() {
 		let mut bytes = vec![0xFF, 0xFE];
@@ -76,8 +71,7 @@ mod tests {
 		assert_eq!(doc.buffer.content, "héllo");
 	}
 
-	/// Soft hyphens are invisible line-break hints; leaving them in makes searching and
-	/// screen-reader output wrong, so the parser strips them.
+	/// Soft hyphens are invisible line-break hints that would break searching and screen-reader output.
 	#[test]
 	fn strips_soft_hyphens() {
 		let doc = parse_bytes("book.txt", "hy\u{00AD}phen\u{00AD}ated");

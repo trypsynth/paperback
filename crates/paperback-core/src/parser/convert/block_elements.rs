@@ -1,7 +1,3 @@
-//! The set of tag names [`super::xml_to_text::XmlToText`] and
-//! [`super::html_to_text::HtmlToText`] both treat as block-level (closing one finalizes the
-//! current line).
-
 const BLOCK_ELEMENT_TAGS: &[&str] = &[
 	"div",
 	"p",

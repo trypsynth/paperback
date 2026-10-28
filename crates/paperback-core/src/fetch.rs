@@ -1,5 +1,3 @@
-//! Checking and naming a document that comes from a link.
-
 use std::path::Path;
 
 use paperback_formats::{ALL, FormatMeta};
@@ -12,26 +10,19 @@ mod net;
 #[cfg(feature = "fetch")]
 pub use net::{DEFAULT_MAX_SIZE, FetchError, Remote, RemoteInfo, open};
 
-/// What may happen to a link once its names and type are known.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Verdict {
-	/// A supported extension, or no extension and a supported type: download it.
 	Pass,
-	/// No extension anywhere, and a type no format claims: ask before downloading.
 	Warn,
-	/// The given link, the final link or the server's file name has this unsupported extension.
 	Refuse(String),
 }
 
-/// The unsupported extension the link itself names, checked before contacting the server.
 #[must_use]
 pub fn refused_extension(url: &str) -> Option<String> {
 	url_extension(url).filter(|extension| !parser_supports_extension(extension))
 }
 
-/// The [`Verdict`] for a link, from the link given, the link it ended at after redirects, the
-/// server's file name and its MIME type. A web page sent where the names promise another kind of
-/// document gets [`Verdict::Warn`].
+/// A web page sent where the names promise another kind of document gets [`Verdict::Warn`].
 #[must_use]
 pub fn verdict(
 	given_url: &str,
@@ -59,8 +50,6 @@ pub fn verdict(
 	}
 }
 
-/// The first extension of the format whose MIME types include `content_type`, matched without
-/// parameters and case.
 #[must_use]
 pub fn extension_for_mime(content_type: &str) -> Option<&'static str> {
 	let essence = essence(content_type);
@@ -70,25 +59,21 @@ pub fn extension_for_mime(content_type: &str) -> Option<&'static str> {
 		.filter(|extension| parser_supports_extension(extension))
 }
 
-/// Whether `content_type` is one of the HTML format's MIME types, matched without parameters and
-/// case.
 #[must_use]
 pub fn is_web_page(content_type: &str) -> bool {
 	let essence = essence(content_type);
 	html_format().is_some_and(|format| format.mime_types.contains(&essence.as_str()))
 }
 
-/// The format that `text/html` belongs to.
 fn html_format() -> Option<&'static FormatMeta> {
 	ALL.iter().copied().find(|format| format.mime_types.contains(&"text/html"))
 }
 
-/// `content_type` without parameters, lowercased.
 fn essence(content_type: &str) -> String {
 	content_type.split(';').next().unwrap_or_default().trim().to_ascii_lowercase()
 }
 
-/// The file name in a `Content-Disposition` header; `filename*` wins over `filename`.
+/// `filename*` wins over `filename`.
 #[must_use]
 pub fn disposition_file_name(header: &str) -> Option<String> {
 	let mut plain = None;
@@ -108,9 +93,6 @@ pub fn disposition_file_name(header: &str) -> Option<String> {
 	plain
 }
 
-/// The name a link's working copy is saved under: the server's file name, else the final link's
-/// last segment, else `document`. A name without a supported extension gets the MIME type's
-/// extension, else the supported extension of the final link, else that of the link given.
 #[must_use]
 pub fn file_name_for(
 	given_url: &str,
@@ -141,12 +123,9 @@ fn name_extension(name: &str) -> Option<String> {
 	Path::new(name).extension().and_then(|extension| extension.to_str()).map(str::to_ascii_lowercase)
 }
 
-/// The longest file name saved, in bytes, leaving room for `.part` and the folder in the path.
+/// Leaves room for `.part` and the folder in the path.
 const MAX_NAME_BYTES: usize = 200;
 
-/// The part after the last `/` or `\`, with control characters and `<>:"|?*` replaced by `_`,
-/// trailing dots and spaces removed, `_` put before a Windows device name, and the name cut to
-/// [`MAX_NAME_BYTES`] with its extension kept; `None` if nothing is left.
 fn safe_file_name(name: &str) -> Option<String> {
 	let base = name.rsplit(['/', '\\']).next().unwrap_or_default();
 	let replaced: String =
@@ -159,8 +138,7 @@ fn safe_file_name(name: &str) -> Option<String> {
 	Some(shortened(&named))
 }
 
-/// Whether Windows reads `name` as a device: `CON`, `PRN`, `AUX`, `NUL`, or `COM` or `LPT` followed
-/// by a digit or one of `¹²³`, in any case and with any extension.
+/// Windows reads these as devices in any case and with any extension, superscript digits included.
 fn is_device_name(name: &str) -> bool {
 	let stem = name.split('.').next().unwrap_or_default().trim_end().to_ascii_uppercase();
 	let characters: Vec<char> = stem.chars().collect();
@@ -170,7 +148,6 @@ fn is_device_name(name: &str) -> bool {
 			&& matches!(characters[3], '0'..='9' | '\u{b9}' | '\u{b2}' | '\u{b3}'))
 }
 
-/// `name` cut to [`MAX_NAME_BYTES`] on a character boundary, keeping an extension of up to 15 bytes.
 fn shortened(name: &str) -> String {
 	if name.len() <= MAX_NAME_BYTES {
 		return name.to_string();

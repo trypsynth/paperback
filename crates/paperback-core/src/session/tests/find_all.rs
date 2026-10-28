@@ -87,7 +87,6 @@ fn find_all_without_page_markers_reports_page_zero() {
 
 #[test]
 fn find_all_assigns_pages_from_page_break_markers() {
-	// Three lines of identical length; a PageBreak marker sits at each line's start.
 	let session = session_with_marks(
 		"aaa beta\nbbb beta\nccc beta\n",
 		vec![
@@ -104,8 +103,6 @@ fn find_all_assigns_pages_from_page_break_markers() {
 
 #[test]
 fn find_all_keeps_the_whole_line_across_an_astral_char() {
-	// The emoji is inside the line, between the two matches; the row must still be the whole
-	// line, whichever side of the astral character the match sits on.
 	let session = session_with_content("beta 😀 beta\n");
 	let rows = session.find_all_lines("beta", SearchOptions::empty());
 	assert_eq!(rows.len(), 1);
@@ -115,7 +112,6 @@ fn find_all_keeps_the_whole_line_across_an_astral_char() {
 
 #[test]
 fn find_all_counts_an_astral_char_as_one_position() {
-	// The emoji is one position, so the second match starts at 7.
 	let session = session_with_content("beta 😀 beta\n");
 	let rows = session.find_all_lines("beta", SearchOptions::empty());
 	assert_eq!((rows[0].matches[1].start, rows[0].matches[1].end), (7.into(), 11.into()));

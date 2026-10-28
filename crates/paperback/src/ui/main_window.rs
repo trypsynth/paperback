@@ -54,16 +54,12 @@ pub struct MainWindow {
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
 	#[cfg(target_os = "windows")]
 	_hotkey_handle: Rc<RefCell<Option<HotkeyHandle>>>,
-	/// Recurring timers, held for the window's lifetime. `Timer`'s `Drop` destroys the
-	/// underlying `wxTimer`, which stops it, so a timer that is only started and then dropped
-	/// at the end of the function that set it up never fires again.
+	/// `Timer`'s `Drop` destroys the `wxTimer`, so recurring timers must live as long as the window.
 	_timers: Vec<Rc<Timer<Frame>>>,
 }
 
 impl MainWindow {
-	/// Accessor for background callbacks (e.g. the OCR worker thread) that can't hold the app's
-	/// own `Rc<Mutex<DocumentManager>>` (an `Rc` is not `Send`); they reach the window via
-	/// [`crate::ui::app::main_window_from_ptr`] and then this method.
+	/// For background callbacks (e.g. OCR), which can't hold an `Rc` and reach the window via [`crate::ui::app::main_window_from_ptr`].
 	pub(crate) fn document_manager(&self) -> &Rc<Mutex<DocumentManager>> {
 		&self.doc_manager
 	}
@@ -73,9 +69,7 @@ impl MainWindow {
 		let app_title = t("Paperback");
 		let frame = Frame::builder().with_title(&app_title).build();
 		window_geometry::apply_defaults(&frame);
-		// The title bar and Alt+Tab entry. On Windows the executable's own icon resource
-		// (embedded by build.rs) already covers the taskbar and the shell; this is what the
-		// window itself carries, and is the only icon at all on the other platforms.
+		// On Windows the exe's icon resource covers the taskbar; this is the title bar and Alt+Tab icon, and the only icon elsewhere.
 		if let Some(bitmap) = icon::frame_bitmap() {
 			frame.set_icon(&bitmap);
 		}
@@ -194,7 +188,6 @@ impl MainWindow {
 		result
 	}
 
-	/// Opens what a command line or another Paperback names: a file, or a document behind a link.
 	pub fn open_target(&self, target: Target, quit_if_picker_closed: bool) {
 		match target {
 			Target::File(path) => {
@@ -210,7 +203,6 @@ impl MainWindow {
 		}
 	}
 
-	/// Get the frame
 	pub const fn frame(&self) -> &Frame {
 		&self.frame
 	}
@@ -228,12 +220,7 @@ impl MainWindow {
 	}
 }
 
-/// Close the active document, announcing the newly focused document for screen readers.
-///
-/// The `set_selection` inside `close_document` fires `on_page_changing` while the
-/// caller holds the manager lock, so the generic switch announcement is suppressed
-/// and this function announces the new focus itself instead, before the focus change
-/// actually happens.
+/// Announces the next tab itself because `close_document`'s `set_selection` fires `on_page_changing` under the manager lock, which suppresses the usual switch announcement.
 pub(crate) fn close_active_document_announced(dm: &mut DocumentManager, live_region_label: StaticText) {
 	let Some(index) = dm.active_tab_index() else {
 		return;
@@ -245,8 +232,6 @@ pub(crate) fn close_active_document_announced(dm: &mut DocumentManager, live_reg
 	dm.close_document(index, true);
 }
 
-/// Replaces `frame`'s menu bar with one built from `config`, then re-applies the item states
-/// that depend on the open documents and the reopen stack.
 pub(crate) fn rebuild_menu_bar(
 	frame: &Frame,
 	doc_manager: &Rc<Mutex<DocumentManager>>,
@@ -282,9 +267,7 @@ pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		return;
 	}
 	if let Some(tab) = dm.active_tab() {
-		// The document leads and the app name trails, which is the Windows convention and not
-		// just a cosmetic one: the taskbar and Alt+Tab truncate the end of a title, so an
-		// app-first title makes every open book look identical in both.
+		// Document first: the taskbar and Alt+Tab truncate a title's end, so app-first titles make every book look the same.
 		// TRANSLATORS: Window title when a document is open; {} is the document title
 		let template = t("{} - Paperback");
 		frame.set_title(&template.replace("{}", &display_title(tab)));

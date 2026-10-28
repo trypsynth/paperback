@@ -1,6 +1,3 @@
-//! Resolving an in-document link `href` ([`resolve_link`]) to a position, and finding the
-//! nearest element id before a position for use as a web-view URL fragment.
-
 use crate::{
 	document::{DocPos, DocumentHandle},
 	parser::is_external_url,
@@ -35,7 +32,6 @@ fn find_fragment_offset(doc: &DocumentHandle, fragment: &str, scoped_path: Optio
 	doc.document().id_positions.get(fragment).copied()
 }
 
-/// Percent-encodes an element id for use as a URL `#fragment`.
 #[must_use]
 pub fn encode_url_fragment(id: &str) -> String {
 	const FRAGMENT_ENCODE_SET: &percent_encoding::AsciiSet =
@@ -43,12 +39,6 @@ pub fn encode_url_fragment(id: &str) -> String {
 	percent_encoding::utf8_percent_encode(id, FRAGMENT_ENCODE_SET).to_string()
 }
 
-/// Finds the id of the element closest at-or-before `position`, suitable as a URL
-/// fragment when opening the current section in a web view.
-///
-/// For multi-section documents (epub) only ids scoped to the current section
-/// (stored as `"{path}#{id}"` keys) are considered; for single-file documents
-/// bare id keys are used instead.
 #[must_use]
 pub fn nearest_fragment_before(doc: &DocumentHandle, position: DocPos) -> Option<String> {
 	let id_positions = &doc.document().id_positions;
@@ -277,8 +267,6 @@ mod tests {
 	#[test]
 	fn nearest_fragment_ignores_ids_from_other_sections_and_bare_duplicates() {
 		let doc = sample_reading_pos_doc_handle();
-		// Position 110 is in chapter2 before its first id; chapter1 ids and the
-		// bare "intro" duplicate must not match.
 		assert_eq!(nearest_fragment_before(&doc, 110.into()), None);
 	}
 

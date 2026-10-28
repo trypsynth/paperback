@@ -48,8 +48,6 @@ fn element_list_returns_table_markers_with_their_caption_text() {
 
 #[test]
 fn element_list_lists_markers_fall_back_to_the_line_they_sit_on() {
-	// sample_session's List marker at 6 carries no text, and the ListItem marker at the same
-	// offset must not leak into the List rows.
 	let session = sample_session(ParserFlags::NONE);
 	let list = session.element_list(MarkerType::List, 7.into());
 	assert_eq!(list.items.len(), 1);
@@ -81,7 +79,6 @@ fn element_list_preserves_the_indented_first_list_line() {
 #[test]
 fn element_list_closest_index_tracks_the_last_marker_at_or_before_position() {
 	let mut buffer = DocumentBuffer::with_content("AAA\nBBB\nCCC\n".to_string());
-	// Added out of order to prove rows come back sorted by position.
 	buffer.add_marker(Marker::new(MarkerType::List, 4.into()).with_level(1));
 	buffer.add_marker(Marker::new(MarkerType::List, 0.into()).with_level(1));
 	let session = session_from_buffer(buffer);

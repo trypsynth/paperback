@@ -41,7 +41,7 @@ impl Parser for OdpParser {
 	}
 }
 
-/// One slide per page, each opening with its page break, and a slide with no text still there to be reached.
+/// A slide with no text is still written, or the reader would jump from one slide number to the one after next.
 fn build_slides(pages: &[Node], buffer: &mut DocumentBuffer) {
 	for (index, page_node) in pages.iter().enumerate() {
 		let slide_start = buffer.end();
@@ -124,15 +124,12 @@ fn collect_pages<'a, 'input>(node: Node<'a, 'input>, pages: &mut Vec<Node<'a, 'i
 	}
 }
 
-/// What one slide holds: its text with the links and pictures in it, and the presenter's notes and reviewers' comments, kept apart from the text they used to run into.
 #[derive(Default)]
 struct Slide {
 	text: String,
 	links: Vec<LinkInfo>,
-	/// Each picture's position, description and length.
 	images: Vec<(DocPos, String, DocLen)>,
 	notes: Vec<String>,
-	/// Each comment's author, which may be empty, and text.
 	comments: Vec<(String, String)>,
 }
 
@@ -222,7 +219,6 @@ mod tests {
 	use super::*;
 	use crate::util::test_support::TempDir;
 
-	/// Flat ODP: the same content tree an `.odp` carries in `content.xml`, stored as one XML file.
 	fn fodp_document(pages: &str) -> String {
 		format!(
 			r#"<?xml version="1.0" encoding="UTF-8"?>
@@ -292,7 +288,6 @@ mod tests {
 		assert_eq!(link.position, DocLen::of("\u{1F600} ").as_pos());
 	}
 
-	/// A slide with no text, usually one of pictures alone, is still a slide of the deck: it says so rather than vanishing, which would also leave the reader jumping from one slide number to the one after next.
 	#[test]
 	fn a_slide_with_no_text_says_so() {
 		let slides = format!("{}{}", page("<text:p>   </text:p>"), page("<text:p>Real content</text:p>"));
@@ -314,8 +309,7 @@ mod tests {
 		assert!(err.to_string().contains("does not contain any pages"), "unexpected error: {err}");
 	}
 
-	/// The zipped and flat parsers share their page walking but differ in how they get at the
-	/// content, so the `.odp` path needs its own coverage.
+	/// The zipped and flat parsers share page walking but not how they reach the content, so `.odp` needs its own coverage.
 	#[test]
 	fn reads_the_same_content_from_a_zipped_odp() {
 		let mut cursor = Cursor::new(Vec::new());
@@ -382,7 +376,6 @@ Comment from Ann: Check this
 		);
 	}
 
-	/// A slide of one picture reads as that picture, not as a slide with no text.
 	#[test]
 	fn a_picture_slide_reads_as_its_picture() {
 		let doc = parse_ok(&fodp_document("<draw:page><draw:frame><draw:image/></draw:frame></draw:page>"));

@@ -14,8 +14,7 @@ final class SegmentTypeNameTests: XCTestCase {
 		}
 	}
 
-	/// Two units reading alike in the picker would be indistinguishable to a screen reader,
-	/// which is the only way most readers tell them apart.
+	/// Two units reading alike would be indistinguishable to a screen reader, the only way most readers tell them apart.
 	func testNoTwoTypesShareAName() {
 		let names = Self.allTypes.map { segmentTypeName($0) }
 		XCTAssertEqual(Self.allTypes.count, Set(names).count, "duplicate names in \(names)")
@@ -23,8 +22,7 @@ final class SegmentTypeNameTests: XCTestCase {
 }
 
 final class NavUnitNameTests: XCTestCase {
-	/// Find joins the unit list whenever a search is active, so it has to be distinguishable
-	/// from every structural unit it sits beside.
+	/// Find joins the unit list whenever a search is active.
 	func testFindDoesNotShareANameWithAStructuralUnit() {
 		let findName = NavUnit.find.name
 		XCTAssertFalse(findName.isEmpty)
@@ -33,8 +31,7 @@ final class NavUnitNameTests: XCTestCase {
 		}
 	}
 
-	/// A recorded book offers seek amounts in the same list as its structural units, so the two
-	/// kinds must not produce the same label either.
+	/// A recorded book lists seek amounts alongside its structural units.
 	func testSeekAmountsDoNotShareNamesWithStructuralUnits() {
 		let segmentNames = Set([SegmentTypeFfi.paragraph, .line, .section].map { NavUnit.segment($0).name })
 		for seconds in audioSeekAmountsSeconds {
@@ -42,8 +39,7 @@ final class NavUnitNameTests: XCTestCase {
 		}
 	}
 
-	/// A unit's name is what the previous and next buttons announce, so an unnamed one would
-	/// leave them reading "Previous" and "Next" with nothing after.
+	/// An unnamed unit would leave the previous and next buttons announcing "Previous" and "Next" with nothing after.
 	func testEveryOfferedSeekAmountIsNamed() {
 		for seconds in audioSeekAmountsSeconds {
 			XCTAssertFalse(NavUnit.time(seconds: seconds).name.isEmpty, "\(seconds)s has no name")
@@ -52,8 +48,7 @@ final class NavUnitNameTests: XCTestCase {
 }
 
 final class AppearanceChoiceTests: XCTestCase {
-	/// Zero has to mean "follow the system" rather than picking a scheme, or a fresh install
-	/// would override whatever the phone is set to.
+	/// Otherwise a fresh install would override whatever the phone is set to.
 	func testTheDefaultChoiceFollowsTheSystem() {
 		XCTAssertNil(0.preferredColorSchemeChoice)
 	}
@@ -63,8 +58,7 @@ final class AppearanceChoiceTests: XCTestCase {
 		XCTAssertEqual(.dark, 2.preferredColorSchemeChoice)
 	}
 
-	/// A value stored by a future build with more options must fall back to the system rather
-	/// than pinning the app to something arbitrary.
+	/// A value stored by a future build with more options must not pin the app to something arbitrary.
 	func testAnUnknownChoiceFallsBackToTheSystem() {
 		XCTAssertNil(99.preferredColorSchemeChoice)
 		XCTAssertNil((-1).preferredColorSchemeChoice)

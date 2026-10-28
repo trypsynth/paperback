@@ -58,9 +58,7 @@ struct SleepTimerView: View {
 				}
 			}
 			Section {
-				// Deliberately not disabled while running: there's no reason to block picking
-				// the NEXT duration while the current timer counts down, and disabling it made
-				// VoiceOver announce the (non-interactive) "Duration" header as dimmed too.
+				// Not disabled while running: disabling it made VoiceOver announce the "Duration" header as dimmed too.
 				// TRANSLATORS: Label of the picker for choosing the sleep timer duration
 				Picker(t("Duration"), selection: $choice) {
 					ForEach(presets, id: \.self) { minutes in

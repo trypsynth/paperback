@@ -1,9 +1,3 @@
-//! Structural navigation: jump to the next/previous heading, section, page, list, table,
-//! bookmark, etc., plus the linear back/forward history stack and the flattened TOC. Every
-//! `navigate_*` method funnels through [`DocumentSession::navigate_with_post`], which turns
-//! a raw `reader_navigate` call into a [`super::NavigationResult`] and reports
-//! [`super::NavigationResult::not_supported`] for a target the current format can't produce.
-
 use super::{DocumentSession, MAX_HISTORY_LEN, NavigationResult, TocEntry};
 use crate::{
 	config::ConfigManager,
@@ -150,8 +144,6 @@ impl DocumentSession {
 		)
 	}
 
-	/// Move relative to the container (list/table) the caret is currently inside: `to_end` jumps
-	/// just past its end, otherwise to its start. Not found when the caret is not in a container.
 	#[must_use]
 	pub fn navigate_container(&self, position: DocPos, to_end: bool) -> NavigationResult {
 		if !(self.has_marker(MarkerType::List) || self.has_marker(MarkerType::Table)) {
@@ -231,8 +223,7 @@ impl DocumentSession {
 		}
 	}
 
-	/// Moves to the next or previous bookmark among those kept under `path`, which is where the
-	/// document's settings are: the link for a document opened from one.
+	/// `path` is where the settings are kept: the link, for a document opened from one.
 	#[must_use]
 	pub fn navigate_bookmark(
 		&self,
@@ -245,7 +236,6 @@ impl DocumentSession {
 		self.navigate_bookmark_inner(config, path, position, wrap, next, false)
 	}
 
-	/// [`Self::navigate_bookmark`] for the bookmarks that have a note.
 	#[must_use]
 	pub fn navigate_note(
 		&self,

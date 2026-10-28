@@ -1,8 +1,4 @@
-//! Shared line/position-tracking core for [`super::xml_to_text::XmlToText`] and
-//! [`super::html_to_text::HtmlToText`]: both converters build their output by accumulating text
-//! into `current_line`, flushing finished lines into `lines`, and tracking
-//! `get_current_text_position()` (the position markers/headings/links anchor to) via
-//! a running `cached_char_length` rather than recomputing it from `lines` on every call.
+//! A running `cached_char_length` saves recounting `lines` every time a marker asks for the current position.
 
 use std::mem;
 
@@ -46,9 +42,6 @@ impl LineBuilder {
 		}
 	}
 
-	/// Adds a finished line, collapsing/trimming whitespace and dropping it if that leaves it
-	/// empty - unless whitespace is being preserved (inside `<pre>`/`<code>`), in which case the
-	/// line is kept verbatim (just trailing `\n`/`\r` stripped).
 	pub(super) fn add_line(&mut self, mut line: String) {
 		if self.is_preserving_whitespace() {
 			while line.ends_with(['\n', '\r']) {
@@ -67,9 +60,6 @@ impl LineBuilder {
 		}
 	}
 
-	/// Push a line to the output verbatim (no whitespace collapsing/trimming), updating the
-	/// cached length so position tracking stays correct. Used for table rows whose tab
-	/// separators and empty cells must not be mangled by [`Self::add_line`].
 	pub(super) fn push_finalized_line(&mut self, line: String) {
 		push_finalized_line(&mut self.lines, &mut self.cached_char_length, line);
 	}
@@ -84,9 +74,7 @@ impl LineBuilder {
 			return DocLen::of(&self.current_line);
 		}
 		let collapsed = collapse_whitespace(&self.current_line);
-		// Use trim_start() not trim(): trailing whitespace before an inline element (e.g. a
-		// space before a link) IS preserved in the output line, so including it in the position
-		// count keeps link/anchor offsets correctly aligned with the final text.
+		// Not trim(): trailing whitespace before an inline element such as a link survives into the output line, so counting it keeps anchor offsets aligned.
 		let trimmed = collapsed.trim_start();
 		DocLen::of(trimmed)
 	}

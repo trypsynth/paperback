@@ -5,9 +5,6 @@ use patois::ui::WxTranslationManager;
 
 use crate::WxStdCatalogLoader;
 
-/// Thin app-side wrapper around `patois::ui::WxTranslationManager`: owns the singleton
-/// lifecycle (a concern of this app, not something patois should manage) and the
-/// paperback-specific logging around it.
 pub struct TranslationManager {
 	inner: WxTranslationManager,
 	initialized: bool,
@@ -26,9 +23,7 @@ impl TranslationManager {
 		let raw_sys_lang = patois::LanguageManager::system_language();
 		self.inner.initialize(WxStdCatalogLoader);
 		self.initialized = true;
-		// Asks the same question patois answered when it picked a language, rather than guessing
-		// from the code's shape: a system language with a region can still be served by a
-		// catalogue for another region of it, so "not available" is only true when nothing fits.
+		// A system language with a region can be served by another region's catalogue, so ask patois rather than guess from the code.
 		if patois::ui::best_available_language(&raw_sys_lang, &self.available_languages()).is_none() {
 			tracing::warn!(system_lang = %raw_sys_lang, "system language not available, falling back to English");
 		}
@@ -92,37 +87,23 @@ mod tests {
 		assert!(!manager.is_language_available("xx"));
 	}
 
-	/// The updater's dialogs (including their "&Yes"/"&No" buttons) live in the `ship-shape`
-	/// dependency rather than in this crate, and reach this app's catalog through
-	/// `patois::t` and the default domain. That path has broken twice: once when the app and
-	/// the dependency linked separate copies of patois, so the dependency saw no default
-	/// domain at all, and once when pot generation only scanned `crates/`, leaving every
-	/// dependency-owned string out of the catalog. Both look identical to a user: an
-	/// otherwise translated dialog with English buttons (issue #285).
+	/// Broke twice, both showing English buttons in a translated updater dialog (#285): the app and `ship-shape` linked separate patois copies, and pot generation skipped dependency strings.
 	#[test]
 	fn dependency_owned_strings_translate_through_the_app_catalog() {
 		patois::set_default_domain("paperback");
-		// Holds the locale lock for the body and puts the locale back on drop, so no concurrent
-		// test sees French and a failing assertion below cannot strand the rest of the run in it.
 		let _locale = crate::test_locale::pinned_to("fr");
-		// "&Yes"/"&No" are also used by this crate's own confirmation dialog; "Downloading
-		// update..." exists only in ship-shape, so it fails if dependency strings stop being
-		// extracted into the pot even while the app's own strings keep working.
+		// "Downloading update..." exists only in ship-shape, so it catches dependency strings missing from the pot.
 		for msgid in ["&Yes", "&No", "Downloading update..."] {
 			assert_ne!(patois::t(msgid), msgid, "{msgid} is missing from the French catalog");
 		}
 	}
 
-	/// Confirms `patois::embed_wx_translations!()` (invoked in `main.rs`) actually embedded
-	/// real wxstd catalogs restricted to paperback's own shipped languages, without needing
-	/// a visible window (mirrors the `wxdragon`/`patois` upstream headless test pattern).
-	/// Degrades gracefully (no-ops) if wxstd catalogs weren't available at build time, e.g.
-	/// CI without gettext.
 	#[test]
 	fn only_shipped_languages_have_wxstd_catalogs_embedded() {
 		use wxdragon::translations::TranslationsLoader as _;
 		let loader = WxStdCatalogLoader;
 		let langs = loader.available_translations("wxstd-3.3");
+		// No catalogs when the build had no gettext, as on CI.
 		if langs.is_empty() {
 			return;
 		}
@@ -130,9 +111,6 @@ mod tests {
 		assert!(!langs.iter().any(|l| l.eq_ignore_ascii_case("af")), "af is not a paperback language: {langs:?}");
 	}
 
-	/// End-to-end proof that wxWidgets actually loads and translates through the
-	/// macro-generated loader: sets German, loads the embedded catalog, and checks a known
-	/// wx string translates. Runs headless, with no wxApp.
 	#[test]
 	fn wxwidgets_translates_via_embedded_german_catalog() {
 		use wxdragon::translations::Translations;

@@ -1,21 +1,10 @@
-//! BSD manual pages, written with the `mdoc` macro package.
-//!
-//! `mdoc` differs from `man` in kind rather than in spelling. A `man` page says how a line is
-//! set: `.B` for bold, `.TP` for a tagged paragraph. An `mdoc` page says what a line *is*:
-//! `.Nm` the name of the thing documented, `.Fl` a flag, `.Ar` an argument, `.Op` something
-//! optional. How it looks follows from that.
-//!
-//! Two rules shape everything here. A macro's arguments can be macros themselves, so
-//! `.Op Fl f Ar file` reads `[-f file]` and has to be evaluated rather than looked up. And
-//! punctuation is an argument of its own, set against the word beside it rather than spaced
-//! away from it, so `.Xr ls 1 ,` reads `ls(1),`.
+//! An `mdoc` macro's arguments can be macros themselves, so `.Op Fl f Ar file` reads `[-f file]` and has to be evaluated rather than looked up; punctuation is an argument of its own, set against the word beside it, so `.Xr ls 1 ,` reads `ls(1),`.
 
 use super::{
 	escape::{Font, Piece},
 	render::Renderer,
 };
 
-/// How a macro sets the text it covers.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Style {
 	Bold,
@@ -33,7 +22,6 @@ impl Style {
 	}
 }
 
-/// The pair of marks an enclosing macro puts around what it covers.
 const fn enclosure(name: &str) -> Option<(&'static str, &'static str)> {
 	Some(match name.as_bytes() {
 		b"Op" | b"Bq" | b"Bo" => ("[", "]"),
@@ -47,14 +35,10 @@ const fn enclosure(name: &str) -> Option<(&'static str, &'static str)> {
 	})
 }
 
-/// The font a macro sets its arguments in, for the macros whose whole job is to name a kind of
-/// thing. The distinctions `mdoc` draws are finer than a reader can hear, so they collapse onto
-/// the three fonts roff has.
+/// The distinctions `mdoc` draws are finer than a reader can hear, so they collapse onto the three fonts roff has.
 const fn style_of(name: &str) -> Option<Style> {
 	Some(match name.as_bytes() {
-		// The name of the thing, its flags, its commands: what a reader types.
 		b"Nm" | b"Fl" | b"Cm" | b"Ic" | b"Sy" | b"Fn" | b"Fd" | b"In" | b"Cd" | b"Ms" => Style::Bold,
-		// What stands for something else: arguments, variables, emphasis.
 		b"Ar" | b"Em" | b"Va" | b"Fa" | b"Ft" | b"Vt" => Style::Italic,
 		b"Pa" | b"Ev" | b"Er" | b"Dv" | b"Li" | b"No" | b"Sx" | b"Tn" | b"Ux" | b"At" | b"Bx" | b"Nx" | b"Ox"
 		| b"Fx" | b"Dx" => Style::Roman,
@@ -62,9 +46,7 @@ const fn style_of(name: &str) -> Option<Style> {
 	})
 }
 
-/// Whether a word is punctuation that sits against the word beside it rather than apart from
-/// it. `mdoc` passes trailing punctuation as an argument of its own precisely so that it can be
-/// set this way.
+/// `mdoc` passes trailing punctuation as an argument of its own precisely so it can be set against the word before it.
 fn closing_punctuation(word: &str) -> bool {
 	matches!(word, "." | "," | ";" | ":" | "?" | "!" | ")" | "]" | "}")
 }
@@ -73,26 +55,20 @@ fn opening_punctuation(word: &str) -> bool {
 	matches!(word, "(" | "[" | "{")
 }
 
-/// What the text of a page needs from the macros that name the page itself.
 #[derive(Default)]
 struct Names {
-	/// The name and section from `.Dt`, which is how the page is titled.
 	name: String,
 	section: String,
-	/// The name from the first `.Nm`, which is what a later bare `.Nm` stands for.
+	/// From the first `.Nm`; a later bare `.Nm` stands for it.
 	subject: String,
 }
 
-/// The kind of list a `.Bl` opened, which decides what each `.It` in it looks like.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum ListKind {
-	/// Each item is headed by a tag of its own: the options of a page.
 	Tag,
 	Bullet,
 	Dash,
-	/// Numbered, counting as it goes.
 	Enum,
-	/// No mark of any kind.
 	Plain,
 }
 
@@ -105,24 +81,19 @@ pub(super) struct Reader<'a> {
 	renderer: Renderer,
 	names: Names,
 	lists: Vec<List>,
-	/// Whether the section being read is the synopsis, which is set one line per declaration.
 	in_synopsis: bool,
-	/// The sections read so far, with subsections nested under the section they fall in.
 	pub(super) toc: Vec<crate::document::TocItem>,
 	lines: Vec<&'a str>,
 	index: usize,
 	render_tables_inline: bool,
 }
 
-/// Everything a page turned into.
 pub(super) struct Page {
 	pub(super) buffer: crate::document::DocumentBuffer,
 	pub(super) title: Option<String>,
 	pub(super) toc: Vec<crate::document::TocItem>,
 }
 
-/// Whether a page is written in `mdoc` rather than `man`, which its first macro says: an `mdoc`
-/// page opens with `.Dd`, and a `man` page with `.TH`.
 pub(super) fn is_mdoc(source: &str) -> bool {
 	for line in source.lines().take(super::SNIFF_LINES) {
 		if super::is_comment(line) {
@@ -173,9 +144,7 @@ impl Reader<'_> {
 					let (name, rest) = (name.to_string(), rest.to_string());
 					self.macro_line(&name, &rest);
 				}
-				// A line that is not a macro call is text, whatever words are in it. Only a
-				// control line carries macros, which is what lets a page open a sentence with
-				// "No" without it being read as the macro of that name.
+				// Only a control line carries macros, which lets a page open a sentence with "No" without it being read as that macro.
 				None => self.renderer.write_line(&super::escape::pieces(&line)),
 			}
 		}
@@ -187,9 +156,7 @@ impl Reader<'_> {
 			// The date and the operating system, which name the edition rather than the page.
 			"Dd" | "Os" | "Ud" | "Bt" => {}
 			"Dt" => self.title_header(&words),
-			// The first `.Nm` with a name in it is what a later bare `.Nm` stands for. The
-			// title is not: `.Dt` writes the name in capitals, which is how a page is referred
-			// to rather than how it is spelled.
+			// A bare `.Nm` stands for this rather than the title, since `.Dt` writes the name in capitals, which is how a page is referred to rather than how it is spelled.
 			"Nm" if self.names.subject.is_empty() && words.first().is_some_and(|word| !word.text().is_empty()) => {
 				self.names.subject = words[0].text();
 				let pieces = self.evaluate(&words);
@@ -206,7 +173,6 @@ impl Reader<'_> {
 			"Rv" => self.return_value(&words),
 			"Sh" | "Ss" => self.heading(name, &words),
 			"Nd" => {
-				// The one-line description of the page, which follows its name on the same line.
 				let mut pieces = vec![Piece::Text("- ".to_string())];
 				pieces.extend(self.evaluate(&words));
 				self.renderer.write_line(&pieces);
@@ -233,8 +199,7 @@ impl Reader<'_> {
 			}
 			"TS" => self.table(),
 			"Rs" | "Re" | "%A" | "%B" | "%D" | "%I" | "%J" | "%N" | "%O" | "%P" | "%Q" | "%R" | "%T" | "%U" | "%V" => {
-				// A reference to something outside the page. Its parts are written one to a
-				// line, which reads well enough left as they are.
+				// A bibliographic reference's parts are written one to a line, which reads well enough left as they are.
 				if let Some(rest) = name.strip_prefix('%') {
 					let _ = rest;
 					let pieces = self.evaluate(&words);
@@ -243,8 +208,7 @@ impl Reader<'_> {
 				}
 			}
 			_ => {
-				// Everything else is either an in-line macro, which lays down text, or a
-				// typesetting instruction with nothing to say to a reader.
+				// Everything else is either an in-line macro, which lays down text, or a typesetting instruction with nothing to say to a reader.
 				let mut words = words;
 				words.insert(0, Word::Bare(name.to_string()));
 				let pieces = self.evaluate(&words);
@@ -255,7 +219,6 @@ impl Reader<'_> {
 		}
 	}
 
-	/// `.Dt NAME SECTION`, which names the page.
 	fn title_header(&mut self, words: &[Word]) {
 		if let Some(name) = words.first().map(Word::text) {
 			self.names.name = name;
@@ -280,7 +243,6 @@ impl Reader<'_> {
 		}
 	}
 
-	/// `.Bl` opens a list, and its first flag says what kind.
 	fn begin_list(&mut self, words: &[Word]) {
 		let kind = words
 			.iter()
@@ -303,8 +265,6 @@ impl Reader<'_> {
 		self.renderer.end_paragraph();
 	}
 
-	/// `.It` starts an item, whose look depends on the list it is in. A tagged item carries its
-	/// tag on the macro line, which is the same shape as a `man` page's `.TP`.
 	fn item(&mut self, words: &[Word]) {
 		let Some(list) = self.lists.last_mut() else {
 			self.renderer.end_paragraph();
@@ -336,7 +296,6 @@ impl Reader<'_> {
 		}
 	}
 
-	/// A `tbl` table, which an `mdoc` page carries the same way a `man` page does.
 	fn table(&mut self) {
 		let mut table = super::table::Table::new();
 		let mut rows: Vec<Vec<String>> = Vec::new();
@@ -360,8 +319,6 @@ impl Reader<'_> {
 		self.renderer.table(&rows, self.render_tables_inline);
 	}
 
-	/// `.In` is a header file, which the synopsis of a function page writes as the line a
-	/// caller would have to put in their source.
 	fn include(&mut self, words: &[Word]) {
 		let Some(header) = words.first().map(Word::text) else { return };
 		self.synopsis_break();
@@ -373,7 +330,6 @@ impl Reader<'_> {
 		self.synopsis_break();
 	}
 
-	/// `.Fn name "arg" "arg"` is a function, and reads as the call a caller would write.
 	fn function(&mut self, words: &[Word]) {
 		let Some(name) = words.first().map(Word::text) else { return };
 		self.synopsis_break();
@@ -421,7 +377,6 @@ impl Reader<'_> {
 		self.renderer.write_line(&pieces);
 	}
 
-	/// `.Rv -std` is the same thing for a function rather than a utility.
 	fn return_value(&mut self, words: &[Word]) {
 		let name = self.named_subject(words);
 		let pieces = vec![
@@ -437,7 +392,6 @@ impl Reader<'_> {
 		self.renderer.write_line(&pieces);
 	}
 
-	/// The name these stand for: the one they were given, or the page's own.
 	fn named_subject(&self, words: &[Word]) -> String {
 		words
 			.iter()
@@ -446,26 +400,18 @@ impl Reader<'_> {
 			.unwrap_or_else(|| self.names.subject.clone())
 	}
 
-	/// Turns a macro's arguments into text, evaluating any that are macros themselves.
-	///
-	/// This is the whole of `mdoc`: `.Op Fl f Ar file` is `Op` covering `Fl f` and `Ar file`,
-	/// and reads `[-f file]`. The words are walked left to right, a macro taking the words after
-	/// it until one closes it or the line ends.
 	fn evaluate(&self, words: &[Word]) -> Vec<Piece> {
 		let mut out = Vec::new();
 		let mut index = 0;
 		let mut spaced = false;
 		self.evaluate_run(words, &mut index, &mut out, &mut spaced, None);
-		// A font set by a macro ends with the line the macro is on. Roff carries a font over
-		// to the next line and `man` pages rely on that; `mdoc` never does, because a macro
-		// covers its own arguments and nothing else.
+		// Roff carries a font over to the next line and `man` pages rely on that, but an `mdoc` macro covers its own arguments and nothing else.
 		if !out.is_empty() {
 			out.push(Piece::Font(Font::Roman));
 		}
 		out
 	}
 
-	/// Evaluates words until `closer` is met or the words run out.
 	fn evaluate_run(
 		&self,
 		words: &[Word],
@@ -487,8 +433,7 @@ impl Reader<'_> {
 				continue;
 			}
 			if let Some((open, close)) = enclosure(&text) {
-				// Punctuation at the end of the arguments belongs outside the marks: `.Ql ^I .`
-				// reads as the quoted text and then the full stop.
+				// Punctuation at the end of the arguments belongs outside the marks: `.Ql ^I .` reads as the quoted text and then the full stop.
 				let trailing = trailing_punctuation(words, *index);
 				let inner_end = words.len() - trailing.len();
 				Self::push_word(out, spaced, open, Font::Roman);
@@ -505,7 +450,6 @@ impl Reader<'_> {
 				continue;
 			}
 			match text.as_str() {
-				// The name of the page, which stands alone once it has been given.
 				"Nm" if Self::next_is_macro_or_end(words, *index) => {
 					let subject = if self.names.subject.is_empty() {
 						self.names.name.clone()
@@ -514,7 +458,6 @@ impl Reader<'_> {
 					};
 					Self::push_word(out, spaced, &subject, Font::Bold);
 				}
-				// A cross-reference to another page: its name and section, set together.
 				"Xr" => {
 					let name = words.get(*index).map(Word::text).unwrap_or_default();
 					let section = words.get(*index + 1).map(Word::text).unwrap_or_default();
@@ -533,8 +476,6 @@ impl Reader<'_> {
 				"Fl" if Self::next_is_macro_or_end(words, *index) => {
 					Self::push_word(out, spaced, "-", Font::Bold);
 				}
-				// The rest name a kind of thing, and set every word after them until a macro
-				// that does something else.
 				_ => match style_of(&text) {
 					Some(style) => Self::styled_run(words, index, out, spaced, style, &text),
 					None => Self::push_word(out, spaced, &text, Font::Roman),
@@ -543,10 +484,7 @@ impl Reader<'_> {
 		}
 	}
 
-	/// Lays down the words after a macro in its font, stopping at the next macro.
-	///
-	/// `.Fl` writes the dash a reader would type, once for each of its arguments, which is why
-	/// a page writes `.Fl b` rather than `.Fl -b`.
+	/// `.Fl` writes the dash a reader would type before each of its arguments, which is why a page writes `.Fl b` rather than `.Fl -b`.
 	fn styled_run(
 		words: &[Word],
 		index: &mut usize,
@@ -572,12 +510,10 @@ impl Reader<'_> {
 		}
 	}
 
-	/// Whether the word at `index` is a macro, or there is nothing there at all.
 	fn next_is_macro_or_end(words: &[Word], index: usize) -> bool {
 		words.get(index).is_none_or(|word| word.is_bare() && is_macro_name(&word.text()))
 	}
 
-	/// Writes one word, spacing it from the one before unless punctuation says otherwise.
 	fn push_word(out: &mut Vec<Piece>, spaced: &mut bool, text: &str, font: Font) {
 		if text.is_empty() {
 			return;
@@ -603,7 +539,6 @@ fn last_text(piece: &Piece) -> Option<String> {
 	}
 }
 
-/// The macro that closes an enclosure opened by the block form: `.Bo` is closed by `.Bc`.
 const fn closing_name(open: &str) -> Option<&'static str> {
 	Some(match open.as_bytes() {
 		b"Bo" => "Bc",
@@ -617,8 +552,7 @@ const fn closing_name(open: &str) -> Option<&'static str> {
 	})
 }
 
-/// Whether a word names a macro. Every `mdoc` macro is two or three characters, a capital
-/// followed by lower case, which is exactly why the language can be written this way.
+/// Every `mdoc` macro is a capital followed by one or two lower-case letters, which is what lets arguments name macros at all.
 fn is_macro_name(word: &str) -> bool {
 	let mut chars = word.chars();
 	let Some(first) = chars.next() else { return false };
@@ -633,16 +567,14 @@ fn is_macro_name(word: &str) -> bool {
 		&& (style_of(word).is_some() || enclosure(word).is_some() || OTHER_MACROS.contains(&word))
 }
 
-/// The macros that lay down text without naming a font of their own, which the argument walker
-/// still has to recognise so that it stops the macro before them.
+/// Recognised so the argument walker stops the macro before them.
 const OTHER_MACROS: &[&str] = &[
 	"Nm", "Ar", "Xr", "Ns", "Pf", "Ap", "It", "Sx", "Fn", "Fa", "Ft", "Vt", "Va", "Pa", "Ev", "Er", "Dv", "Li", "No",
 	"Cm", "Ic", "Sy", "Em", "Fl", "Tn", "Ux", "At", "Bx", "Nx", "Ox", "Fx", "Dx", "St", "Bc", "Pc", "Ac", "Brc", "Dc",
 	"Sc", "Qc",
 ];
 
-/// One argument of a macro line: a bare word, which may name a macro, or a quoted one, which
-/// never does.
+/// A quoted argument never names a macro.
 #[derive(Debug, Clone)]
 pub(super) enum Word {
 	Bare(String),
@@ -654,10 +586,7 @@ impl Word {
 		super::escape::plain(self.raw())
 	}
 
-	/// The argument as it was written, escapes and all.
-	///
-	/// Whether a word is punctuation is asked of this rather than of the text: a page writes
-	/// `\&.` for a full stop that belongs to the text, and the escape is what says so.
+	/// Punctuation is asked of this rather than the text, since a page writes `\&.` for a full stop that belongs to the text.
 	const fn raw(&self) -> &String {
 		match self {
 			Self::Bare(text) | Self::Quoted(text) => text,
@@ -669,8 +598,6 @@ impl Word {
 	}
 }
 
-/// Splits a macro line into its arguments. A quoted argument is one word however many spaces it
-/// holds, and is never read as a macro.
 fn split_words(rest: &str) -> Vec<Word> {
 	let mut words = Vec::new();
 	let mut current = String::new();
@@ -705,8 +632,6 @@ fn split_words(rest: &str) -> Vec<Word> {
 	words
 }
 
-/// The punctuation at the end of a macro's arguments, which is set outside whatever the
-/// macro encloses rather than inside it.
 fn trailing_punctuation(words: &[Word], from: usize) -> Vec<String> {
 	let mut trailing = Vec::new();
 	for word in words[from.min(words.len())..].iter().rev() {

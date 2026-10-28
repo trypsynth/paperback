@@ -10,9 +10,7 @@ class ReadingModeSyncTest {
 		assertTrue(shouldSyncPositionFromList(previousMode = true, isTextMode = false))
 	}
 
-	// The case behind issue #743: popping the table of contents composes MainScreen again, which
-	// runs the effect with no previous mode. Syncing there would replace the section the reader
-	// just chose with the index the document was opened at.
+	// #743: popping the TOC recomposes MainScreen with no previous mode, and syncing there replaced the chosen section with the opening index.
 	@Test
 	fun `a first run with no previous mode does not touch the position`() {
 		assertFalse(shouldSyncPositionFromList(previousMode = null, isTextMode = false))

@@ -46,8 +46,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	if release {
 		build_args.push("--release");
 	}
-	// Both slices: without the simulator one the app cannot be built for, let alone run in
-	// the Simulator. xcodebuild fails with "no library for this platform was found".
+	// Without the simulator slice xcodebuild fails with "no library for this platform was found".
 	for (target, label) in [("aarch64-apple-ios", "device"), ("aarch64-apple-ios-sim", "simulator")] {
 		println!("Building for {target} ({label})...");
 		let status = Command::new(&cargo).current_dir(&root).args(&build_args).args(["--target", target]).status()?;
@@ -85,11 +84,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 		if let Err(e) = patois_build::gen_ios_strings(&po_dir, &ios_dir) {
 			println!("Warning: could not generate Localizable.strings: {e}");
 		}
-		// gen_ios_strings names .lproj folders after the po file stem (Android-style,
-		// e.g. pt_br, zh_CN). iOS expects canonical BCP-47 identifiers to match a
-		// device's language automatically, so rename the two that differ. Keep this
-		// in sync with the language list checked into project.pbxproj's knownRegions
-		// and the Localizable.strings variant group.
+		// iOS only matches a device's language to BCP-47 folder names, not po stems; keep in sync with knownRegions in project.pbxproj and the Localizable.strings variant group.
 		for (from, to) in [("pt_br", "pt-BR"), ("zh_CN", "zh-Hans")] {
 			let from_dir = ios_dir.join(format!("{from}.lproj"));
 			let to_dir = ios_dir.join(format!("{to}.lproj"));
@@ -165,13 +160,8 @@ pub fn ios_release() -> Result<(), Box<dyn Error>> {
 	Ok(())
 }
 
-/// Hands the IPA to App Store Connect with the same App Store Connect API key the macOS
-/// notarization step uses, named by the same environment variables so there is one set of
-/// credentials to keep rather than two.
-///
-/// altool finds the key itself by id, looking for `AuthKey_<id>.p8` under `./private_keys`,
-/// `~/private_keys`, `~/.private_keys` and `~/.appstoreconnect/private_keys`. A missing key or
-/// id is reported here rather than left to altool, whose own message for it is easy to miss.
+/// Uses the macOS notarization step's API key and variables, so there's one set of credentials to keep.
+/// A missing key is reported here because altool's own message for it is easy to miss.
 fn upload_ipa(ipa: &Path) -> Result<(), Box<dyn Error>> {
 	let key_id = env::var("APPSTORE_API_KEY_ID").unwrap_or_default().trim().to_string();
 	let issuer_id = env::var("APPSTORE_API_ISSUER_ID").unwrap_or_default().trim().to_string();

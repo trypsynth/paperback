@@ -14,7 +14,7 @@ use std::{
 use super::*;
 use crate::util::test_support::TempDir;
 
-/// Serves one request per connection; `handler(method, path, base, stream)` writes the response.
+/// `handler(method, path, base, stream)` writes the response.
 fn serve(handler: impl Fn(&str, &str, &str, &mut TcpStream) + Send + 'static) -> String {
 	let listener = TcpListener::bind("127.0.0.1:0").expect("bind a local port");
 	let base = format!("http://{}", listener.local_addr().expect("local address"));
@@ -40,7 +40,6 @@ fn serve(handler: impl Fn(&str, &str, &str, &mut TcpStream) + Send + 'static) ->
 	base
 }
 
-/// Writes a complete response; the body is left out for HEAD.
 fn respond(stream: &mut TcpStream, method: &str, status: &str, headers: &[(&str, &str)], body: &[u8]) {
 	let mut head = format!("HTTP/1.1 {status}\r\nConnection: close\r\nContent-Length: {}\r\n", body.len());
 	for (name, value) in headers {

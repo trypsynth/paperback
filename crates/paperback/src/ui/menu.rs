@@ -22,13 +22,11 @@ use builder::{build_menu, claim_access_key, deduplicate_access_keys};
 pub use file_menu::recent_documents_for_menu;
 pub use state::{update_menu_item_states, update_reopen_state};
 
-/// One menu of the menu bar, holding the commands of one shortcut category.
 pub struct TopMenu {
 	pub category: ShortcutCategory,
 	pub entries: Vec<MenuEntry>,
 }
 
-/// The menu bar's menus, in order.
 pub fn menus(config: &ConfigManager, compact_go: bool) -> Vec<TopMenu> {
 	let mut menus = vec![
 		TopMenu { category: ShortcutCategory::File, entries: file_menu::entries(config) },
@@ -46,7 +44,6 @@ pub fn menus(config: &ConfigManager, compact_go: bool) -> Vec<TopMenu> {
 	menus
 }
 
-/// The menu bar labels of `menus`, each with an access key of its own where it has a free letter.
 fn titles(menus: &[TopMenu]) -> Vec<String> {
 	let mut used = Vec::new();
 	menus
@@ -59,7 +56,6 @@ fn titles(menus: &[TopMenu]) -> Vec<String> {
 		.collect()
 }
 
-/// The menu bar label of the menu holding `category`'s commands.
 fn title(category: ShortcutCategory) -> String {
 	match category {
 		// TRANSLATORS: Top-level "File" menu label in the menu bar
@@ -81,14 +77,11 @@ fn title(category: ShortcutCategory) -> String {
 	}
 }
 
-/// Commands reachable only through their keyboard shortcut.
 pub const fn is_keyboard_only(action: ActionId) -> bool {
 	matches!(action, ActionId::AnnouncePercent)
 }
 
-/// Whether `chord` is on a punctuation key, which on Windows is run by the frame's char hook rather than by a menu accelerator.
-///
-/// wxMSW finds a punctuation accelerator's key with `VkKeyScan`, drops the modifiers it reports the character needing, and does it once, for the layout active when the menu is built. Where `;` is Shift+, as on Finnish, German and Bosnian keyboards, Ctrl+; lands on Ctrl+, and runs in its place (#1134). The char hook matches the key as the live layout reports it, so these chords are kept out of the accelerator table.
+/// Kept out of the accelerator table: wxMSW maps punctuation with `VkKeyScan` once for the layout at build time and drops its modifiers, so on layouts where `;` is Shift+comma (Finnish, German), Ctrl+; ran Ctrl+comma (#1134).
 #[cfg(target_os = "windows")]
 pub fn is_punctuation_chord(chord: &KeyChord) -> bool {
 	let mut chars = chord.key.chars();
@@ -133,7 +126,6 @@ mod tests {
 		cfg!(target_os = "macos") && matches!(action, ActionId::Exit | ActionId::Options)
 	}
 
-	/// The letter after the label's `&`, lowercased; the shortcut after a tab is not part of it.
 	#[cfg(not(target_os = "macos"))]
 	fn access_key(label: &str) -> Option<char> {
 		let text = label.split('\t').next().unwrap_or(label);
@@ -162,7 +154,6 @@ mod tests {
 			.collect()
 	}
 
-	/// One line per label whose access key an earlier label already has.
 	#[cfg(not(target_os = "macos"))]
 	fn access_key_clashes<'a>(labels: impl IntoIterator<Item = &'a str>) -> Vec<String> {
 		let mut seen: Vec<(char, &str)> = Vec::new();

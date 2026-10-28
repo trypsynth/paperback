@@ -1,44 +1,21 @@
-//! Maps recorded audio onto a document's text spine.
-//!
-//! An `AudioTimeline` is an overlay: it stores no text, duplicates no markers,
-//! and is rebuilt from the source document on every open, exactly like markers
-//! are. Nothing here is serialized, only `TimelinePoint` reaches disk.
-//!
-//! A point in an audio document has two coordinates, and each is authoritative
-//! for its own axis: `position` locates the text caret, `time_ms` locates the
-//! audio. Playback always resolves from `time_ms`; text navigation always uses
-//! `position`. Converting between them is what this module is for.
-//!
-//! The granularity of `position` follows the source material, so the same model
-//! covers all three cases. DAISY narration binds a clip per sentence, making
-//! `position` precise and `time_ms` a refinement within it. An audiobook binds
-//! one clip per chapter, making `position` a chapter anchor and leaving
-//! `time_ms` to carry everything else. Text-only documents have no timeline at
-//! all.
+//! Each coordinate is authoritative for its own axis: playback always resolves from `time_ms`, text navigation always from `position`.
 
 use crate::document::DocPos;
 
-/// Where a source's bytes live. Paths are final, not relative to the document:
-/// the timeline is rebuilt on every open, so there is nothing to keep portable.
+/// Paths are final, not relative: the timeline is rebuilt on every open, so nothing needs to stay portable.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AudioLocation {
 	File(String),
 	ZipEntry { archive: String, entry: String, password: Option<String> },
 }
 
-/// One audio file, referenced by index from the clips that play parts of it.
-/// Interning matters to players: consecutive clips sharing a source are a seek
-/// on an open decoder, a change of source is an open.
+/// Interned because players seek on an open decoder while consecutive clips share a source, and open a new one when it changes.
 #[derive(Debug, Clone)]
 pub struct AudioSource {
 	pub location: AudioLocation,
-	/// Full length of the file, when the parser knows it. Clip bounds do not
-	/// depend on this.
 	pub duration_ms: Option<u64>,
 }
 
-/// A span of audio bound to a span of text: source time `[clip_begin_ms,
-/// clip_end_ms)` narrates the text `[start, end)`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct AudioClip {
 	pub source: usize,
@@ -55,9 +32,7 @@ impl AudioClip {
 	}
 }
 
-/// A resumable point in an audio document. `time_ms` is elapsed time from the
-/// start of the document, not an offset into any one source, so it stays
-/// meaningful when several clips share a text position.
+/// `time_ms` is elapsed from the document start, not an offset into one source, so it stays meaningful when several clips share a position.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct TimelinePoint {
 	pub position: DocPos,
@@ -71,8 +46,6 @@ impl TimelinePoint {
 	}
 }
 
-/// What a player needs to start at some point: which clip, and where to seek
-/// within that clip's source.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PlaybackCursor {
 	pub clip: usize,
@@ -83,7 +56,7 @@ pub struct PlaybackCursor {
 pub struct AudioTimeline {
 	sources: Vec<AudioSource>,
 	clips: Vec<AudioClip>,
-	/// Elapsed time at the start of each clip, parallel to `clips`.
+	/// Parallel to `clips`.
 	elapsed_ms: Vec<u64>,
 	total_duration_ms: u64,
 }
@@ -119,15 +92,11 @@ impl AudioTimeline {
 		self.clips.is_empty()
 	}
 
-	/// Elapsed time at the start of the clip at `index`.
 	#[must_use]
 	pub fn clip_start_ms(&self, index: usize) -> Option<u64> {
 		self.elapsed_ms.get(index).copied()
 	}
 
-	/// The clip playing at `elapsed_ms`, with the offset into its source to seek
-	/// to. Times past the end of the document resolve to the end of the last
-	/// clip rather than to nothing.
 	#[must_use]
 	pub fn cursor_at_elapsed(&self, elapsed_ms: u64) -> Option<PlaybackCursor> {
 		if self.clips.is_empty() {
@@ -139,23 +108,17 @@ impl AudioTimeline {
 		Some(PlaybackCursor { clip: index, seek_ms: clip.clip_begin_ms + into_clip })
 	}
 
-	/// Where playback should resume for `point`. Resolves from `time_ms` alone;
-	/// `position` is the text caret and says nothing about the audio.
 	#[must_use]
 	pub fn resolve(&self, point: TimelinePoint) -> Option<PlaybackCursor> {
 		self.cursor_at_elapsed(point.time_ms)
 	}
 
-	/// The clip narrating `position`, or `None` where nothing does. Gaps are
-	/// ordinary, since front matter and unrecorded sections are common. Where
-	/// several clips share a text anchor, this is the first of them.
+	/// Where several clips share a text anchor, this is the first of them.
 	#[must_use]
 	pub fn clip_index_at_position(&self, position: DocPos) -> Option<usize> {
 		let searched = self.clips.partition_point(|clip| clip.start <= position);
 		let mut found: Option<usize> = None;
-		// Walking back, starts are non-increasing, so the first containing clip
-		// has the greatest start. Keep walking through that start's group to
-		// reach its earliest clip.
+		// Keep walking back through the matched start's group to reach its earliest clip.
 		for index in (0..searched).rev() {
 			let clip = &self.clips[index];
 			if found.is_some_and(|best| self.clips[best].start != clip.start) {
@@ -168,17 +131,12 @@ impl AudioTimeline {
 		found
 	}
 
-	/// The point to jump audio to when the reader moves the caret to `position`.
 	#[must_use]
 	pub fn point_for_position(&self, position: DocPos) -> Option<TimelinePoint> {
 		let index = self.clip_index_at_position(position)?;
 		Some(TimelinePoint::new(self.clips[index].start, self.elapsed_ms[index]))
 	}
 
-	/// The document-wide elapsed time corresponding to `raw_ms` within `source`'s own audio
-	/// file (the reverse of `resolve`), used to translate a decoder's reported position back
-	/// into document coordinates. Falls back to the nearest preceding clip's end when
-	/// `raw_ms` lands in an unrecorded gap.
 	#[must_use]
 	pub fn elapsed_for_source_position(&self, source: usize, raw_ms: u64) -> Option<u64> {
 		let mut nearest_preceding: Option<u64> = None;
@@ -195,21 +153,13 @@ impl AudioTimeline {
 		nearest_preceding
 	}
 
-	/// Whether every source's real length is known.
-	///
-	/// A file the parser could not probe still gets a clip, with a placeholder length far
-	/// longer than any real recording, so playback keeps working. Elapsed time across such a
-	/// timeline is meaningless though: one unprobed file in a six-hour book puts the total in
-	/// the tens of hours and drags every proportion toward zero. Anything reporting progress as
-	/// a fraction of the whole has to ask this first.
+	/// An unprobed file gets a placeholder length far longer than any recording, so progress as a fraction of the whole is meaningless unless this holds.
 	#[must_use]
 	pub fn durations_are_known(&self) -> bool {
 		!self.sources.is_empty() && self.sources.iter().all(|source| source.duration_ms.is_some())
 	}
 
-	/// How far through the recording `point` is, in `0.0..=1.0`. Audio documents
-	/// should prefer this to a character-count percentage, which measures only
-	/// the text spine (a few chapter headings, for an audiobook).
+	/// Prefer this to a character percentage for audio, whose text spine may be only a few chapter headings.
 	#[must_use]
 	pub fn progress(&self, point: TimelinePoint) -> f64 {
 		if self.total_duration_ms == 0 {
@@ -218,9 +168,6 @@ impl AudioTimeline {
 		(point.time_ms.min(self.total_duration_ms) as f64) / (self.total_duration_ms as f64)
 	}
 
-	/// Finds whichever source's narration picks up where `current`'s leaves off, for
-	/// auto-advancing playback across a chapter boundary (each DAISY chapter is typically
-	/// its own audio source file).
 	#[must_use]
 	pub fn next_source_after(&self, current: usize) -> Option<usize> {
 		let last_end_ms = self
@@ -240,8 +187,6 @@ impl AudioTimeline {
 			.map(|(_, clip)| clip.source)
 	}
 
-	/// The mirror of `next_source_after`: whichever source's narration runs up to where
-	/// `current`'s begins, for a seek that runs off the front of the file now playing.
 	#[must_use]
 	pub fn previous_source_before(&self, current: usize) -> Option<usize> {
 		let first_start_ms = self
@@ -274,21 +219,16 @@ impl AudioTimelineBuilder {
 		Self { sources: Vec::new(), clips: Vec::new() }
 	}
 
-	/// Registers a source and returns the index to pass to `add_clip`.
 	pub fn add_source(&mut self, location: AudioLocation, duration_ms: Option<u64>) -> usize {
 		self.sources.push(AudioSource { location, duration_ms });
 		self.sources.len() - 1
 	}
 
-	/// Binds `[clip_begin_ms, clip_end_ms)` of `source` to the text `[start, end)`.
 	pub fn add_clip(&mut self, source: usize, clip_begin_ms: u64, clip_end_ms: u64, start: DocPos, end: DocPos) {
 		self.clips.push(AudioClip { source, clip_begin_ms, clip_end_ms, start, end });
 	}
 
-	/// Sorts the clips and indexes them. Clips of no duration, and clips naming
-	/// a source that was never registered, are dropped rather than rejected;
-	/// authored SMIL is routinely a little ragged and one bad `<par>` should not
-	/// cost the reader the whole book.
+	/// Bad clips are dropped, not rejected: authored SMIL is routinely ragged and one bad `<par>` should not cost the reader the whole book.
 	#[must_use]
 	pub fn build(self) -> AudioTimeline {
 		let source_count = self.sources.len();
@@ -312,8 +252,7 @@ impl AudioTimelineBuilder {
 mod tests {
 	use super::*;
 
-	/// Narration bound per sentence, the DAISY shape: one source, clips in step
-	/// with the text.
+	/// The DAISY shape: one source, a clip per sentence.
 	fn narrated_timeline() -> AudioTimeline {
 		let mut builder = AudioTimelineBuilder::new();
 		let source = builder.add_source(AudioLocation::File("chapter1.mp3".to_string()), Some(9000));
@@ -323,8 +262,7 @@ mod tests {
 		builder.build()
 	}
 
-	/// An audiobook chapter with no text of its own beyond its heading, split
-	/// across two files: two clips sharing one anchor.
+	/// The audiobook shape: one chapter heading narrated by two files sharing its anchor.
 	fn audiobook_timeline() -> AudioTimeline {
 		let mut builder = AudioTimelineBuilder::new();
 		let part1 = builder.add_source(AudioLocation::File("part1.mp3".to_string()), Some(600_000));
@@ -352,8 +290,8 @@ mod tests {
 		let mut builder = AudioTimelineBuilder::new();
 		let source = builder.add_source(AudioLocation::File("a.mp3".to_string()), None);
 		builder.add_clip(source, 0, 1000, 0.into(), 10.into());
-		builder.add_clip(source, 500, 500, 10.into(), 20.into()); // no duration
-		builder.add_clip(source + 1, 0, 1000, 20.into(), 30.into()); // no such source
+		builder.add_clip(source, 500, 500, 10.into(), 20.into());
+		builder.add_clip(source + 1, 0, 1000, 20.into(), 30.into());
 		let timeline = builder.build();
 		assert_eq!(timeline.clips().len(), 1);
 		assert_eq!(timeline.total_duration_ms(), 1000);
@@ -369,7 +307,6 @@ mod tests {
 	#[test]
 	fn cursor_at_elapsed_offsets_from_the_clip_begin_not_the_file_start() {
 		let timeline = audiobook_timeline();
-		// 700s in is 100s into the second file, which begins at its own zero.
 		let cursor = timeline.cursor_at_elapsed(700_000).unwrap();
 		assert_eq!(cursor, PlaybackCursor { clip: 1, seek_ms: 100_000 });
 	}
@@ -428,7 +365,6 @@ mod tests {
 	#[test]
 	fn elapsed_for_source_position_maps_raw_file_position_back_to_document_time() {
 		let timeline = narrated_timeline();
-		// The source's single file holds all three clips back to back.
 		assert_eq!(timeline.elapsed_for_source_position(0, 0), Some(0));
 		assert_eq!(timeline.elapsed_for_source_position(0, 3500), Some(3500));
 		assert_eq!(timeline.elapsed_for_source_position(0, 7000), Some(7000));
@@ -441,7 +377,6 @@ mod tests {
 		builder.add_clip(source, 0, 1000, 0.into(), 10.into());
 		builder.add_clip(source, 2000, 3000, 10.into(), 20.into());
 		let timeline = builder.build();
-		// 1500ms falls between the two clips' raw ranges; nearest preceding clip ended at 1000ms.
 		assert_eq!(timeline.elapsed_for_source_position(0, 1500), Some(1000));
 	}
 
@@ -460,7 +395,6 @@ mod tests {
 	#[test]
 	fn next_source_after_finds_the_source_that_continues_the_narration() {
 		let timeline = audiobook_timeline();
-		// part1 (source 0) ends where part2 (source 1) begins.
 		assert_eq!(timeline.next_source_after(0), Some(1));
 	}
 
@@ -497,7 +431,6 @@ mod tests {
 	#[test]
 	fn progress_measures_time_not_text() {
 		let timeline = audiobook_timeline();
-		// Half the recording, but the text spine is one heading throughout.
 		assert!((timeline.progress(TimelinePoint::new(12.into(), 450_000)) - 0.5).abs() < f64::EPSILON);
 		assert!((timeline.progress(TimelinePoint::new(12.into(), u64::MAX)) - 1.0).abs() < f64::EPSILON);
 		assert!((AudioTimeline::default().progress(TimelinePoint::default())).abs() < f64::EPSILON);

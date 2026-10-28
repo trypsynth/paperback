@@ -1,5 +1,3 @@
-//! The user guide as HTML: the pages the iOS and Android apps show for Help, and the manual on paperback.dev in every language.
-
 use std::{error::Error, fmt::Write as _, fs, path::Path};
 
 use patois::language_name;
@@ -10,7 +8,6 @@ use crate::workspace::project_root;
 const TITLE: &str = "Paperback Documentation";
 const SITE: &str = "https://paperback.dev";
 
-/// Every `doc/readme*.md` as `readme.html` and `readme-<code>.html` in `out_dir`, for an app's Help.
 pub fn write_app_readmes(out_dir: &Path) -> Result<(), Box<dyn Error>> {
 	fs::create_dir_all(out_dir)?;
 	for readme in readmes(&project_root().join("doc"))? {
@@ -24,7 +21,7 @@ pub fn write_app_readmes(out_dir: &Path) -> Result<(), Box<dyn Error>> {
 	Ok(())
 }
 
-/// The manual for paperback.dev, written into the built site (`web/_site` unless a directory is given) after cobalt has built the rest of it, with the site's stylesheet, a way back to the home page, and a bar linking every language.
+/// Runs after cobalt has built the rest of the site, writing into it.
 pub fn site_docs() -> Result<(), Box<dyn Error>> {
 	let out_dir = std::env::args().nth(2).map_or_else(|| project_root().join("web/_site"), Into::into);
 	fs::create_dir_all(&out_dir)?;
@@ -41,7 +38,7 @@ pub fn site_docs() -> Result<(), Box<dyn Error>> {
 	Ok(())
 }
 
-/// The `hreflang` alternates, the same on every page, and the site's stylesheet. `x-default` is English, which is also where a language with no manual should land.
+/// `x-default` is English, which is also where a language with no manual should land.
 fn site_head(readmes: &[Readme]) -> String {
 	let mut head = String::new();
 	for readme in readmes {
@@ -57,7 +54,7 @@ fn site_head(readmes: &[Readme]) -> String {
 	head
 }
 
-/// Every language's name in that language, each carrying its own `lang` so a screen reader says "日本語" in a Japanese voice rather than spelling it out in the page's.
+/// Each name carries its own `lang` so a screen reader says "日本語" in a Japanese voice rather than spelling it out in the page's.
 fn language_bar(readmes: &[Readme], current: &str) -> String {
 	let mut bar = String::from("<nav class=\"language-bar\" aria-label=\"Language\">\n<ul>\n");
 	for readme in readmes {

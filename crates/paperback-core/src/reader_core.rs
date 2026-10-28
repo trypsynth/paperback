@@ -1,6 +1,4 @@
-//! Reading-position logic shared across all document formats: marker-based navigation, search,
-//! bookmark lookups, back/forward history, and link resolution. Kept format-agnostic and free of
-//! FFI/session state so it can be unit tested directly.
+//! Kept format-agnostic and free of FFI and session state so it can be unit tested directly.
 
 mod bookmarks;
 mod history;

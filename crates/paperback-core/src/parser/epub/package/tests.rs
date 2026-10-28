@@ -54,8 +54,7 @@ fn detects_epub3_nav_document_via_properties() {
 		<spine/>
 	</package>"#;
 	let (_manifest, _spine, nav_path, _ncx_path, _metadata) = parse(xml);
-	// The last manifest item with the "nav" property wins; both carry it here, so either would be
-	// acceptable, but exactly one nav_path must be set.
+	// Both items carry the "nav" property; the last one wins.
 	assert_eq!(nav_path, Some("OEBPS/other.xhtml".to_string()));
 }
 

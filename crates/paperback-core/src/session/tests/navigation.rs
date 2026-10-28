@@ -73,9 +73,7 @@ fn set_history_empty_resets_index_to_zero() {
 #[test]
 fn record_jump_keeps_only_jumps_worth_returning_from() {
 	let mut session = sample_session(ParserFlags::NONE);
-	// Far enough to be somewhere else, so where it came from is worth keeping.
 	session.record_jump(100.into(), 450.into());
-	// Still inside the paragraph it started in, so it is not.
 	session.record_jump(450.into(), 500.into());
 	session.record_jump(500.into(), 900.into());
 	let (history, index) = session.get_history();
@@ -83,38 +81,31 @@ fn record_jump_keeps_only_jumps_worth_returning_from() {
 	assert_eq!(index, 1);
 }
 
-// #835: following a link and pressing Alt+Left has to land on the line the link was on. It
-// used to land wherever the reader had last jumped from, which in a table of contents is the
-// top of the contents rather than the entry they chose.
+// #835: going back from a contents link landed at the top of the contents, not the entry chosen.
 #[test]
 fn going_back_returns_to_the_line_the_jump_started_from() {
 	let mut session = sample_session(ParserFlags::NONE);
 	let contents_top = DocPos::from(1_000);
 	let entry = DocPos::from(1_600);
 	let introduction = DocPos::from(40_000);
-	// Reaching the contents, then reading down it to the entry.
 	session.record_jump(0.into(), contents_top);
-	// Following the link from the entry.
 	session.record_jump(entry, introduction);
 	let back = session.history_go_back(introduction);
 	assert!(back.found);
 	assert_eq!(back.offset, entry, "back goes to the entry, not to {contents_top}");
 }
 
-// The other half of #835: jumping to the start of the document and back returns to the
-// paragraph that was being read, not to the start of its chapter.
+// The other half of #835: back from Ctrl+Home landed at the start of the chapter, not the paragraph being read.
 #[test]
 fn going_back_from_the_start_of_the_document_returns_to_the_paragraph_being_read() {
 	let mut session = sample_session(ParserFlags::NONE);
 	let chapter = DocPos::from(20_000);
 	let paragraph = DocPos::from(24_500);
 	session.record_jump(500.into(), chapter);
-	// Ctrl+Home from the paragraph the reader had walked down to.
 	session.record_jump(paragraph, 0.into());
 	let back = session.history_go_back(0.into());
 	assert!(back.found);
 	assert_eq!(back.offset, paragraph);
-	// And forward again returns to where going back was pressed.
 	let forward = session.history_go_forward(paragraph);
 	assert!(forward.found);
 	assert_eq!(forward.offset, 0);
@@ -218,10 +209,7 @@ fn navigate_section_returns_found_when_flag_enabled() {
 	assert!(!result.not_supported);
 }
 
-/// A plain audio bundle's buffer is one placeholder space per file with no newline anywhere, so
-/// the line enclosing any marker is the whole book. Section navigation must therefore announce
-/// the marker's own text (the file name), not the line it falls on, or every section reads out
-/// the same run of blanks.
+/// A plain audio bundle has no newlines, so the line around any marker is the whole book of blanks.
 #[test]
 fn navigate_section_in_an_audio_only_book_announces_the_file_name() {
 	let mut buffer = DocumentBuffer::new();
@@ -258,8 +246,7 @@ fn navigate_bookmark_and_note_return_not_found_with_empty_config() {
 	assert!(!session.navigate_note(&config, "book.epub", 0.into(), false, true).found);
 }
 
-/// A document opened from a link is parsed from a temporary copy (here `book.epub`) but
-/// remembered under the link, so the bookmarks are the link's and not the copy's.
+/// A document opened from a link is parsed from a temporary copy but remembered under the link.
 #[test]
 fn navigate_bookmark_reads_the_bookmarks_of_the_path_given() {
 	let session = sample_session(ParserFlags::NONE);
@@ -292,8 +279,6 @@ fn bookmark_display_at_position_returns_not_found_without_data() {
 	assert_eq!(display.snippet, "");
 }
 
-/// An emoji before the bookmark is one position but two UTF-16 code units, so reading the snippet
-/// in any unit but positions would shift it right by one character.
 #[test]
 fn bookmark_display_at_position_reads_snippet_in_positions() {
 	let content = "\u{1F600} intro\nfirst line\nsecond \u{1F600} line\nthird";
@@ -313,10 +298,7 @@ fn bookmark_display_at_position_reads_snippet_in_positions() {
 	);
 }
 
-/// The whole path a real audiobook takes: a zip that is nothing but audio files, opened through
-/// `DocumentSession::new`, stepped through with the same `navigate_section` the `[` and `]` keys
-/// call. Guards the seam the two narrower tests leave open, where the parser stores the file name
-/// on the marker but `reader_navigate` decides whether a section's marker text reaches the UI.
+/// Covers the seam the narrower tests leave open: the parser stores the file name, but `reader_navigate` decides whether it reaches the UI.
 #[test]
 fn navigate_section_names_each_file_of_a_real_plain_audio_zip() {
 	let dir = env::temp_dir().join("paperback-session-plain-audio-section-nav-test");
@@ -341,7 +323,6 @@ fn navigate_section_names_each_file_of_a_real_plain_audio_zip() {
 		announced.push(result.marker_text.clone());
 		position = result.offset;
 	}
-	// Natural order, walked back from the end, and a distinct name per section rather than the same blank line three times.
 	assert_eq!(announced, vec!["Track 10", "Track 2", "Track 1"]);
 	assert!(!session.navigate_section(position, false, false).found, "no file before the first to step onto");
 }

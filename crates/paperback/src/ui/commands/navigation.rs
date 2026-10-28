@@ -1,6 +1,3 @@
-//! Moving through the document by something other than an element: the reading history, and
-//! the ends of the list or table the reader is inside.
-
 use super::Ctx;
 use crate::ui::navigation;
 

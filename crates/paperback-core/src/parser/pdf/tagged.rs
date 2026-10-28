@@ -1,19 +1,8 @@
-//! A page Paperback read through its structure tree, and the two things done to one after the
-//! whole document has been seen.
-//!
-//! A tagged page arrives finished, in a buffer of its own whose positions are relative to the
-//! page, because the walk in [`super::structure`] writes its blocks as it meets them. Two
-//! questions cannot be answered until every page has been read, though: which of its lines are
-//! running headers (that needs the other pages to compare against) and where the page lands in
-//! the document (that needs the pages before it). [`tagged_running_lines`] and [`without_lines`]
-//! answer the first, [`append_tagged_page`] the second.
-
 use std::collections::HashSet;
 
 use super::running::{EDGE_LINES, RunningText};
 use crate::document::{DocLen, DocPos, DocumentBuffer, TocItem};
 
-/// A page laid out by [`extract_tagged_page_text`], in its own buffer.
 pub(super) struct TaggedPage {
 	pub buffer: DocumentBuffer,
 	pub display_text: String,
@@ -21,8 +10,6 @@ pub(super) struct TaggedPage {
 	pub toc_items: Vec<(u32, TocItem)>,
 }
 
-/// Splice a tagged page's own buffer into the document, moving everything it holds from
-/// page-relative positions to where the page landed.
 pub(super) fn append_tagged_page(buffer: &mut DocumentBuffer, page: DocumentBuffer, page_start_offset: DocPos) {
 	buffer.append(&page.content);
 	for mut marker in page.markers {
@@ -31,14 +18,7 @@ pub(super) fn append_tagged_page(buffer: &mut DocumentBuffer, page: DocumentBuff
 	}
 }
 
-/// Which of a tagged page's lines are running headers or footers, by their index among the
-/// page's lines.
-///
-/// Only the lines at the page's edges are looked at, and only a line the tags say nothing about
-/// at all. A running head is plain text by the time it reaches here; a line that carries a
-/// marker is a heading, a list item, a table or a figure, and a document that opens a dozen of
-/// its pages with a figure would otherwise lose every one of them. A page whose every line
-/// matches keeps them all, so a page is never emptied.
+/// A line carrying a marker is never a candidate: it is a heading, list item, table or figure, and a document opening a dozen pages with a figure would lose them all.
 pub(super) fn tagged_running_lines(page: &TaggedPage, running_text: &RunningText) -> HashSet<usize> {
 	let count = page.lines_info.len();
 	let marked: HashSet<DocPos> = page.buffer.markers.iter().map(|marker| marker.position).collect();
@@ -47,16 +27,13 @@ pub(super) fn tagged_running_lines(page: &TaggedPage, running_text: &RunningText
 		.filter(|index| at_an_edge(*index))
 		.filter(|index| {
 			let (position, text) = &page.lines_info[*index];
-			// The untagged path keeps a heading safe by its size; here the tags say outright
-			// which lines are headings, so no size is asked for.
+			// The tags say outright which lines are headings, so no size is needed.
 			!marked.contains(position) && running_text.contains(text, 0.0)
 		})
 		.collect();
 	if doomed.len() == count { HashSet::new() } else { doomed }
 }
 
-/// Rebuild a tagged page without the lines named in `doomed`, moving everything that sat after
-/// one of them up by as much as it took. A marker inside a dropped line goes with it.
 pub(super) fn without_lines(page: TaggedPage, doomed: &HashSet<usize>) -> TaggedPage {
 	if doomed.is_empty() {
 		return page;
@@ -67,8 +44,6 @@ pub(super) fn without_lines(page: TaggedPage, doomed: &HashSet<usize>) -> Tagged
 		lines_info: Vec::new(),
 		toc_items: Vec::new(),
 	};
-	// Where each of the old page's lines starts now, and how far it runs. A line that is not
-	// kept maps to nothing, and whatever pointed into it is dropped with it.
 	let mut moved: Vec<(DocPos, DocLen, Option<DocPos>)> = Vec::with_capacity(page.lines_info.len());
 	for (index, (position, text)) in page.lines_info.iter().enumerate() {
 		let length = DocLen::of(text) + DocLen::ONE;
@@ -84,8 +59,7 @@ pub(super) fn without_lines(page: TaggedPage, doomed: &HashSet<usize>) -> Tagged
 		rebuilt.display_text.push_str(text);
 		rebuilt.display_text.push('\n');
 	}
-	// A position past the last line, which a marker placed at the end of a page holds, keeps
-	// standing at the end of it.
+	// A marker placed at the end of a page sits past the last line and keeps standing at the end.
 	let end = rebuilt.buffer.end();
 	let move_position = |position: DocPos| {
 		moved
@@ -120,7 +94,6 @@ mod tests {
 		parser::pdf::running,
 	};
 
-	/// A tagged page built from finished lines, with a marker on whichever of them is named.
 	fn tagged_page(lines: &[&str], marked: &[usize]) -> TaggedPage {
 		let mut page = TaggedPage {
 			buffer: DocumentBuffer::new(),
@@ -143,8 +116,6 @@ mod tests {
 		page
 	}
 
-	/// Five pages that all open with the book's title and close with a page number, which is what
-	/// furniture on a tagged page looks like.
 	fn running_text() -> running::RunningText {
 		let bodies = ["Salt.", "Pepper.", "Thyme.", "Parsley.", "Sage."];
 		let edges: Vec<running::PageEdges> = (1..=5)
@@ -172,7 +143,6 @@ mod tests {
 
 	#[test]
 	fn a_line_the_tags_speak_for_is_never_furniture() {
-		// The same repeated title, this time tagged as the page's heading.
 		let page = tagged_page(&["The Book Of Tests", "Rosemary.", "6"], &[0]);
 		assert_eq!(tagged_running_lines(&page, &running_text()), HashSet::from([2]));
 	}
@@ -185,9 +155,7 @@ mod tests {
 
 	#[test]
 	fn a_line_repeated_on_a_few_pages_only_is_not_furniture() {
-		// Four pages carry it, which is enough for an untagged page, out of twenty tagged ones.
-		// The signature blanks out digits, so each page is given a word of its own rather than a
-		// number, or every page would read as the same line.
+		// Four of twenty pages would be enough untagged; words rather than numbers because the signature blanks digits.
 		let word = |page: usize| format!("{}", char::from(b'a' + u8::try_from(page).expect("a small page number")));
 		let edges: Vec<running::PageEdges> = (0..20)
 			.map(|page| {

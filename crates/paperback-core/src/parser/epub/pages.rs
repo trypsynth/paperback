@@ -1,7 +1,3 @@
-//! Building an EPUB's page list (used for "go to page") from its EPUB3 nav document's
-//! `page-list` nav (preferred) or NCX `pageList` (fallback). Mirrors [`super::toc`]'s
-//! nav/NCX handling, reusing its item-parsing helpers since both walk the same node shapes.
-
 use std::{
 	collections::HashMap,
 	io::{Read, Seek},

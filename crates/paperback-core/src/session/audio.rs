@@ -1,7 +1,3 @@
-//! FFI-facing queries over a document's recorded narration ([`super::DocumentSession::audio`]):
-//! source lookup/extraction, clip lookup, and the elapsed-time/position conversions a platform
-//! player needs to keep the caret and playback in sync.
-
 use std::{
 	fs::{self, File},
 	io::BufReader,
@@ -24,9 +20,7 @@ impl DocumentSession {
 		self.audio().is_some_and(|timeline| !timeline.is_empty())
 	}
 
-	/// True when this document's text spine is only there to anchor audio (see
-	/// `Document::audio_only`), so a read-aloud UI should navigate it by elapsed time rather
-	/// than by paragraph, section, or any other text unit.
+	/// The text then only anchors the audio, so a read-aloud UI should navigate by elapsed time rather than by text units.
 	#[must_use]
 	pub fn is_audio_only_ffi(&self) -> bool {
 		self.handle().document().audio_only && self.has_audio_ffi()
@@ -37,8 +31,7 @@ impl DocumentSession {
 		self.audio().map_or(0, |timeline| i32::try_from(timeline.sources().len()).unwrap_or(0))
 	}
 
-	/// Empty for a zip-embedded source, an out-of-range index, or a document with no audio;
-	/// otherwise callers can play the path directly without `audio_extract_source_ffi`.
+	/// Empty for a zip-embedded source, an out-of-range index, or a document with no audio.
 	#[must_use]
 	pub fn audio_source_direct_path_ffi(&self, index: i32) -> String {
 		let Some(timeline) = self.audio() else { return String::new() };
@@ -49,8 +42,7 @@ impl DocumentSession {
 		}
 	}
 
-	/// Writes source `index`'s audio bytes to `output_path`: extracted from its archive when
-	/// zip-embedded, copied otherwise, for platforms whose player needs a real local path.
+	/// For platforms whose player needs a real local path.
 	#[must_use]
 	#[allow(clippy::needless_pass_by_value, reason = "uniffi hands strings over by value")]
 	pub fn audio_extract_source_ffi(&self, index: i32, output_path: String) -> bool {
@@ -90,7 +82,6 @@ impl DocumentSession {
 		self.audio().map_or(0, |timeline| i64::try_from(timeline.total_duration_ms()).unwrap_or(0))
 	}
 
-	/// See `AudioTimeline::cursor_at_elapsed`.
 	#[must_use]
 	pub fn audio_cursor_at_elapsed_ffi(&self, elapsed_ms: i64) -> AudioCursorFfi {
 		let Some(timeline) = self.audio() else { return AudioCursorFfi::default() };
@@ -103,7 +94,6 @@ impl DocumentSession {
 		}
 	}
 
-	/// See `AudioTimeline::point_for_position`.
 	#[must_use]
 	pub fn audio_point_for_position_ffi(&self, position: DocPos) -> AudioPointFfi {
 		let Some(timeline) = self.audio() else { return AudioPointFfi::default() };
@@ -112,8 +102,7 @@ impl DocumentSession {
 		AudioPointFfi { found: true, position: point.position, time_ms: i64::try_from(point.time_ms).unwrap_or(0) }
 	}
 
-	/// `-1` when the source is unknown or the position falls before any recorded clip. See
-	/// `AudioTimeline::elapsed_for_source_position`.
+	/// `-1` when the source is unknown or the position falls before any recorded clip.
 	#[must_use]
 	pub fn audio_elapsed_for_source_position_ffi(&self, source: i32, raw_ms: i64) -> i64 {
 		let Some(timeline) = self.audio() else { return -1 };
@@ -122,7 +111,7 @@ impl DocumentSession {
 		timeline.elapsed_for_source_position(source, raw_ms).and_then(|ms| i64::try_from(ms).ok()).unwrap_or(-1)
 	}
 
-	/// `-1` at the end of the book. See `AudioTimeline::next_source_after`.
+	/// `-1` at the end of the book.
 	#[must_use]
 	pub fn audio_next_source_after_ffi(&self, current_source: i32) -> i32 {
 		let Some(timeline) = self.audio() else { return -1 };
@@ -130,7 +119,7 @@ impl DocumentSession {
 		timeline.next_source_after(current_source).and_then(|source| i32::try_from(source).ok()).unwrap_or(-1)
 	}
 
-	/// `-1` at the start of the book. See `AudioTimeline::previous_source_before`.
+	/// `-1` at the start of the book.
 	#[must_use]
 	pub fn audio_previous_source_before_ffi(&self, current_source: i32) -> i32 {
 		let Some(timeline) = self.audio() else { return -1 };
@@ -138,8 +127,7 @@ impl DocumentSession {
 		timeline.previous_source_before(current_source).and_then(|source| i32::try_from(source).ok()).unwrap_or(-1)
 	}
 
-	/// `-1` where [`Self::audio_progress_percent`] has no answer, matching the sentinel the
-	/// other audio FFI methods use.
+	/// `-1` where [`Self::audio_progress_percent`] has no answer.
 	#[must_use]
 	pub fn audio_progress_percent_ffi(&self, elapsed_ms: i64) -> i32 {
 		let Ok(elapsed_ms) = u64::try_from(elapsed_ms) else { return -1 };
@@ -160,17 +148,8 @@ impl DocumentSession {
 		zip_utils::extract_zip_entry_to_file_with_password(&mut zip, entry, Path::new(output_path), password).is_ok()
 	}
 
-	/// How far through the recording `elapsed_ms` is, as a whole percent, when that can be
-	/// answered honestly.
-	///
-	/// `None` for a document with no audio, and for one where any file's length was never
-	/// established: see `AudioTimeline::durations_are_known`. Callers fall back to the
-	/// character-count percentage in both cases, which is what they showed before.
-	///
-	/// This takes elapsed time rather than a caret position on purpose. A position only says
-	/// which clip is playing, so a percentage derived from it steps at clip boundaries and
-	/// stands still through a long chapter, which for a bundle of whole-file recordings means
-	/// it moves once per file and not at all in between.
+	/// `None` when any file's length is unknown, and callers fall back to the character percentage.
+	/// Takes elapsed time, not a position, because a position only steps at clip boundaries: once per file for whole-file recordings.
 	#[must_use]
 	pub fn audio_progress_percent(&self, elapsed_ms: u64) -> Option<i32> {
 		let timeline = self.audio()?;
@@ -178,15 +157,12 @@ impl DocumentSession {
 			return None;
 		}
 		let progress = timeline.progress(TimelinePoint::new(DocPos::ZERO, elapsed_ms));
-		// Truncating rather than rounding keeps 100% for the end alone: a book is not "100%"
-		// with half a minute left to play.
+		// Truncated so a book is not 100% with half a minute left to play.
 		#[allow(clippy::cast_possible_truncation, reason = "truncated on purpose, and a float cast saturates")]
 		let percent = (progress * 100.0) as i32;
 		Some(percent)
 	}
 
-	/// The elapsed time to seek to for `percent` of the recording, when that can be answered
-	/// honestly. `None` under the same conditions as [`Self::audio_progress_percent`].
 	#[must_use]
 	pub fn audio_elapsed_for_percent(&self, percent: i32) -> Option<u64> {
 		let timeline = self.audio()?;

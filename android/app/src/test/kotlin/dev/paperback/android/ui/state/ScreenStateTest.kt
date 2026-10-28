@@ -21,8 +21,7 @@ class DialogStateTest {
 		assertFalse(dialog.isOpen.value)
 	}
 
-	// Both are reached from more than one place (a menu item and a keyboard shortcut, say), so
-	// neither can be a toggle: a second open must leave it open, a second close closed.
+	// Opened from both a menu and a shortcut, so neither can be a toggle.
 	@Test
 	fun `repeating an open or a close changes nothing`() {
 		val dialog = DialogState()
@@ -46,8 +45,7 @@ class ScreenRequestTest {
 		assertFalse(request.isRequested.value)
 	}
 
-	// MainNavigation consumes the request as soon as it has pushed the screen. Leaving it set
-	// would push the same destination again on the next recomposition.
+	// Left set, the request would push the same screen again on the next recomposition.
 	@Test
 	fun `consuming a request that was never made is harmless`() {
 		val request = ScreenRequest()
@@ -57,8 +55,7 @@ class ScreenRequestTest {
 }
 
 class MainScreenUiStateTest {
-	// The index and the tab list are updated separately as tabs close, so activeTab has to cope
-	// with an index that no longer points at anything rather than throwing mid-recomposition.
+	// The index and tab list update separately as tabs close, so the index can briefly point at nothing.
 	@Test
 	fun `there is no active tab when the list is empty`() {
 		assertNull(MainScreenUiState.Success(emptyList(), 0).activeTab)

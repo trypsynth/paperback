@@ -44,11 +44,9 @@ import dev.paperback.android.ui.state.MainScreenViewModel
 private const val AUTO_ENABLED_IN_APP_FILE_BROWSER_KEY = "auto_enabled_in_app_file_browser"
 private const val ONBOARDING_SHOWN_KEY = "permissions_onboarding_shown"
 
-/** True once Android enforces scoped storage (R+) and the app still lacks "All files access". */
 internal fun needsAllFilesAccessPermission(): Boolean =
 	Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()
 
-/** Opens the Settings page where "All files access" is granted, which only exists from R on. */
 internal fun openAllFilesAccessSettings(context: Context) {
 	if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
 	val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
@@ -56,25 +54,15 @@ internal fun openAllFilesAccessSettings(context: Context) {
 	context.startActivity(intent)
 }
 
-/** True only on R+ devices where "All files access" has already been granted. */
 internal fun hasAllFilesAccessOnR(): Boolean =
 	Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && Environment.isExternalStorageManager()
 
-/** True once Android requires a runtime prompt (Tiramisu+) and notifications aren't yet allowed. */
 internal fun needsNotificationPermission(context: Context): Boolean =
 	Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
 		ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
 		PackageManager.PERMISSION_GRANTED
 
-/**
- * Shows the permissions onboarding over the reading view until the reader has dealt with it, and
- * keeps an eye on the permissions afterwards.
- *
- * The OS grants these from its own settings screens, which this app cannot see the result of, so
- * every resume re-reads them rather than trusting what was true when this last recomposed. A
- * resume that finds All Files Access newly granted also switches on the in-app file browser,
- * once: doing it on every resume would fight a reader who turned it back off.
- */
+/** Re-reads permissions on every resume since they're granted in system settings; the file browser is switched on only once, so it doesn't fight a reader who turned it off. */
 @Composable
 fun PermissionsGate(viewModel: MainScreenViewModel) {
 	val context = LocalContext.current
@@ -156,12 +144,6 @@ private fun PermissionSection(
 	}
 }
 
-/**
- * First-run screen explaining both permissions up front. Both sections are shown
- * together at all times (each reflecting its own granted state independently);
- * the user leaves via the Continue button whenever they're ready, whether or not
- * either permission ended up granted.
- */
 @Composable
 fun PermissionsOnboardingScreen(
 	showNotificationsSection: Boolean,

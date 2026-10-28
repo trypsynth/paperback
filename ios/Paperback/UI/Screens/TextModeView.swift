@@ -7,8 +7,6 @@ struct TextModeView: View {
 
 	private var firstVisibleLine: Int { visibleLineIndices.min() ?? 0 }
 
-	/// The heading level a line carries, if any. A line is a heading when the core reports a
-	/// heading marker on it, the same signal the Android reader uses to mark headings up.
 	private func headingLevel(of markers: [LineMarker]) -> Int? {
 		for marker in markers {
 			switch marker.mtype {
@@ -24,9 +22,7 @@ struct TextModeView: View {
 		return nil
 	}
 
-	/// Builds the line's text with its link markers turned into real links. The marker's
-	/// position is carried in the URL so the openURL handler can hand it straight back to
-	/// activateLink, which is the core's own resolution of where a link goes.
+	/// The marker's position rides in the URL so the openURL handler can hand it back to the core's activateLink.
 	private func attributedLine(_ line: String, lineStart: Int64, markers: [LineMarker]) -> AttributedString {
 		var attributed = AttributedString(line)
 		for marker in markers where marker.mtype == .link {
@@ -47,8 +43,6 @@ struct TextModeView: View {
 		return attributed
 	}
 
-	/// Resolves a tapped link. Internal links scroll to their target; external ones are handed
-	/// to the system.
 	private func activate(_ url: URL, in session: DocumentSession, scrollingWith proxy: ScrollViewProxy) -> OpenURLAction.Result {
 		guard url.scheme == Self.linkScheme, let host = url.host(), let position = Int64(host) else {
 			return .systemAction
@@ -91,9 +85,7 @@ struct TextModeView: View {
 					if let session = tab.session {
 						let lineCount = session.lineCount()
 						ForEach(0..<Int(lineCount), id: \.self) { i in
-							// The core numbers lines from 1; these indices are 0-based because
-							// the scroll position they feed (lineScrollIndex, textModeFirstLine)
-							// is too.
+							// The core numbers lines from 1, but the scroll position these indices feed is 0-based.
 							let lineNumber = Int64(i + 1)
 							let pos = session.positionFromLine(line: lineNumber)
 							let line = session.getLineText(position: pos)
@@ -120,8 +112,7 @@ struct TextModeView: View {
 			.onAppear {
 				proxy.scrollTo(tab.lineScrollIndex, anchor: .top)
 			}
-			// Keep the ScrollView's native accessibility scrolling so VoiceOver announces its
-			// page state, while asking it to turn that page automatically during read-all.
+			// Keeps native accessibility scrolling so VoiceOver announces page state, and turns the page during read-all.
 			.accessibilityAddTraits(.causesPageTurn)
 			.environment(\.openURL, OpenURLAction { url in
 				guard let session = tab.session else { return .systemAction }

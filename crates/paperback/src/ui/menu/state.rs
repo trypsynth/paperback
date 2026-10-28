@@ -5,9 +5,7 @@ use crate::ui::{
 	menu_ids,
 };
 
-/// Commands that need a document open and have not moved to the command table yet. The ones
-/// that have declare `Enable::HasDocument` instead, and are handled below through
-/// `commands::apply_enable`.
+/// Only commands not yet in the command table; those declare `Enable::HasDocument` instead.
 const DOCUMENT_DEPENDENT_IDS: &[i32] = &[
 	menu_ids::FIND,
 	menu_ids::FIND_NEXT,
@@ -28,7 +26,7 @@ const DOCUMENT_DEPENDENT_IDS: &[i32] = &[
 	menu_ids::EXPORT_NOTES_AND_BOOKMARKS,
 ];
 
-/// Edit > Copy and Select All, which macOS leaves to its native Edit menu.
+/// macOS leaves these to its native Edit menu.
 #[cfg(not(target_os = "macos"))]
 const DOCUMENT_DEPENDENT_EDIT_IDS: &[i32] = &[menu_ids::COPY, menu_ids::SELECT_ALL];
 

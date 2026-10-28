@@ -1,6 +1,3 @@
-//! Reading-appearance settings: font, background color, text alignment, and the
-//! line/paragraph/letter spacing steps shown in the options dialog's readability tab.
-
 use super::ConfigManager;
 use crate::config::settings::ReadabilityFont;
 

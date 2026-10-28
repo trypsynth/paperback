@@ -1,6 +1,3 @@
-//! Content search: [`DocumentSession::search_ffi`] runs an in-memory search over the
-//! rendered document text with the reader's case/whole-word/regex/direction options.
-
 use super::{DocumentSession, SearchOptionsFfi, SearchResultFfi};
 use crate::{
 	document::DocPos,

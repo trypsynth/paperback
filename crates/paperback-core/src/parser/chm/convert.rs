@@ -16,10 +16,7 @@ use crate::{
 	util::encoding::decode_html,
 };
 
-/// One converted HTML file: its text plus everything the converter recorded about it.
-///
-/// This is what crosses back from a rayon worker to the sequential assembly step, so it owns
-/// its data rather than borrowing the converter that produced it.
+/// Owns its data because it crosses back from a rayon worker to the sequential assembly step.
 pub(super) struct SectionContent {
 	pub text: String,
 	headings: Vec<HeadingInfo>,
@@ -76,13 +73,7 @@ impl ConverterOutput for SectionContent {
 	}
 }
 
-/// Reads and converts every HTML file to text, returning one result per file in order.
-///
-/// Conversion dominates the cost of parsing a CHM (around 90% of the time on a large one) and
-/// each file is independent, so this runs across cores. Each rayon worker opens its own
-/// [`ChmFile`] via `map_init` (once per task rather than once per file), so the reads and the
-/// LZX decompression parallelise too instead of being serialised through one shared handle.
-/// Failures are returned rather than dropped, so the caller can log each one and carry on.
+/// Conversion is around 90% of a large CHM's parse time, so each rayon worker opens its own [`ChmFile`] and the reads and LZX decompression parallelise too.
 pub(super) fn convert_sections(
 	source_path: &str,
 	ordered_files: &[String],
@@ -96,8 +87,6 @@ pub(super) fn convert_sections(
 			|| ChmFile::open(source_path).map_err(|err| err.to_string()),
 			|chm_result, file_path| {
 				let chm = chm_result.as_mut().map_err(|err| format!("{file_path} ({err})"))?;
-				// Enumeration already handed us the entry; look it up again only if this path
-				// somehow was not one of the files we enumerated.
 				let content_bytes = match entries_by_path.get(file_path) {
 					Some(entry) => chm.read(entry),
 					None => chm.find(file_path).and_then(|entry| chm.read(&entry)),
@@ -113,7 +102,6 @@ pub(super) fn convert_sections(
 		.collect()
 }
 
-/// Convert one file's raw bytes to text, decoding them to UTF-8 first.
 fn convert_section(
 	content_bytes: &[u8],
 	render_tables_inline: bool,

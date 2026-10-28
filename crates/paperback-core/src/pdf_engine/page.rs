@@ -1,5 +1,3 @@
-//! One page: its size, its text layer, its tag tree, the objects drawn on it, and rasterizing it for OCR.
-
 // The surface hands coordinates out as `f32`, as pdfium's does, while hayro works in `f64`.
 #![allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
 
@@ -20,18 +18,16 @@ use super::{
 	text::{FontCache, TextObject},
 };
 
-/// How much of the page one image can cover and still be a picture on the page rather than the page itself. A scanned book with an OCR text layer draws each sheet as one image under its invisible text, and announcing that put an "[Image]" with nothing behind it on every page (#1046).
+/// A scanned book with an OCR text layer draws each sheet as one image under its invisible text, and announcing that put an "[Image]" with nothing behind it on every page (#1046).
 pub const PAGE_IMAGE_COVERAGE: f64 = 0.9;
 
-/// How far the parser follows form `XObject`s into each other. hayro already draws a form's contents as the page's own objects, so no object here is ever a form and the parser never gets that far.
+/// hayro already draws a form's contents as the page's own objects, so no object here is ever a form and the parser never gets this deep.
 pub const MAX_FORM_DEPTH: u32 = 8;
 
-/// Shortest side, in PDF user units, an image must have to be worth a line of its own. A page laid out from HTML draws its spacers and its hairline rules as images a fraction of a point across.
+/// A page laid out from HTML draws its spacers and hairline rules as images a fraction of a point across.
 const MIN_IMAGE_SIDE: f32 = 4.0;
 
-/// A page, read in full when it is loaded and borrowed from the document it belongs to.
-///
-/// It owns what was read, the text layer included, so pages can be read on several threads at once and handed back to one.
+/// Owns what was read, the text layer included, so pages can be read on several threads at once and handed back to one.
 pub struct PdfPage<'doc> {
 	document: &'doc PdfDocument,
 	index: usize,
@@ -41,7 +37,7 @@ pub struct PdfPage<'doc> {
 	text: PdfTextPage,
 }
 
-/// The fonts and objects hayro has already read, kept across the pages one thread loads. A book sets every page in the same few fonts, and reading them again for each page was half of what loading a page cost.
+/// A book sets every page in the same few fonts, and reading them again for each page was half of what loading a page cost.
 pub struct PageCache<'doc>(InterpreterCache<'doc>);
 
 impl PageCache<'_> {
@@ -77,13 +73,12 @@ impl<'doc> PdfPage<'doc> {
 		self.height
 	}
 
-	/// The page's text layer. Always there; an `Option` because the parser is written for a page whose text cannot be read.
+	/// Always there; an `Option` because the parser is written for a page whose text cannot be read.
 	#[allow(clippy::unnecessary_wraps)]
 	pub const fn text(&self) -> Option<&PdfTextPage> {
 		Some(&self.text)
 	}
 
-	/// The page's structure tree, or `None` when the document is not tagged.
 	pub fn tags(&self) -> Option<TagTree<'_>> {
 		Some(TagTree::of(self.document.structure()?, i32::try_from(self.index).ok()?))
 	}
@@ -97,7 +92,6 @@ impl<'doc> PdfPage<'doc> {
 		Some(PageObject { data })
 	}
 
-	/// Every image the page draws that is worth a line of its own, nearest the top first.
 	pub fn announced_images(&self) -> Vec<PageImage<'_>> {
 		let page_area = f64::from(self.width) * f64::from(self.height);
 		let mut images: Vec<PageImage<'_>> = self
@@ -117,9 +111,7 @@ impl<'doc> PdfPage<'doc> {
 		images
 	}
 
-	/// The picture at `path`, encoded as PNG. `path` is the one an announced image carries in [`PageImage::path`].
-	///
-	/// The picture is taken at the resolution the file stores rather than as it is drawn on the page, so a photo placed small still saves at full size.
+	/// Taken at the resolution the file stores rather than as drawn, so a photo placed small still saves at full size.
 	pub fn image_png(&self, path: &str) -> Option<Vec<u8>> {
 		let index: usize = path.parse().ok()?;
 		let ordinal = self.objects.get(index)?.image?;
@@ -137,7 +129,6 @@ impl<'doc> PdfPage<'doc> {
 		extractor.png
 	}
 
-	/// The image path for each marked-content id on the page. A tagged PDF's `Figure` element points at its picture by marked-content id, and this is what turns that into a reference that can be saved.
 	pub fn image_paths_by_mcid(&self) -> std::collections::HashMap<i32, String> {
 		let mut paths = std::collections::HashMap::new();
 		for (index, data) in self.images() {
@@ -148,7 +139,6 @@ impl<'doc> PdfPage<'doc> {
 		paths
 	}
 
-	/// Rasterizes the page `width` pixels across, keeping its aspect ratio, as RGBA8 on white.
 	pub fn render(&self, width: u32) -> Option<PageBitmap> {
 		if self.width <= 0.0 || self.height <= 0.0 || width == 0 {
 			return None;
@@ -166,9 +156,6 @@ impl<'doc> PdfPage<'doc> {
 		Some(PageBitmap { width, height, rgba: pixmap.data_as_u8_slice().to_vec() })
 	}
 
-	/// Every link annotation on the page, with the box it covers and where it points.
-	///
-	/// A link may carry a URI action, a destination, or an action that itself carries a destination. All three are tried here so the parser only ever sees the answer.
 	pub fn annotation_links(&self) -> Vec<AnnotationLink> {
 		let Some(page) = self.document.pdf().pages().get(self.index) else { return Vec::new() };
 		let Some(annotations) = page.raw().get::<Array<'_>>(b"Annots") else { return Vec::new() };
@@ -216,26 +203,20 @@ fn display_matrix(page: &hayro_syntax::page::Page<'_>) -> [f32; 6] {
 	}
 }
 
-/// Where a link goes.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LinkTarget {
 	Url(String),
-	/// Somewhere inside this document, by zero-based page index.
 	Page(i32),
 }
 
-/// One link annotation: the box on the page a reader would activate, and its destination.
 #[derive(Debug, Clone, PartialEq)]
 pub struct AnnotationLink {
 	pub rect: Bounds,
 	pub target: LinkTarget,
 }
 
-/// One image a page draws, as Paperback announces it.
 pub struct PageImage<'page> {
-	/// The image's top edge, in PDF user units. Y grows up the page, so the nearest the top has the largest one.
 	pub top: f64,
-	/// Where the image sits among the page's objects. This is what an image marker's reference carries, so [`PdfPage::image_png`] can find the picture again.
 	pub path: String,
 	_page: std::marker::PhantomData<&'page ()>,
 }
@@ -252,25 +233,21 @@ fn is_announced_image(width: f32, height: f32, page_area: f64) -> bool {
 	width >= MIN_IMAGE_SIDE && height >= MIN_IMAGE_SIDE && !covers_page
 }
 
-/// A rasterized page.
 pub struct PageBitmap {
 	pub width: u32,
 	pub height: u32,
-	/// Four bytes per pixel, row-major, `width * height * 4` long.
 	pub rgba: Vec<u8>,
 }
 
-/// What a page object draws.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ObjectKind {
 	Image,
-	/// A form `XObject`. hayro draws a form's contents in its place, so no object is ever one, but the parser's walk through forms matches on it.
+	/// hayro draws a form's contents in its place, so no object is ever one, but the parser's walk through forms matches on it.
 	#[allow(dead_code)]
 	Form,
 	Other,
 }
 
-/// The box an object occupies, in PDF points.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Bounds {
 	pub left: f32,
@@ -279,7 +256,6 @@ pub struct Bounds {
 	pub top: f32,
 }
 
-/// One marked-content sequence an object sits inside.
 #[derive(Debug, Clone)]
 pub(super) struct Mark {
 	pub(super) name: String,
@@ -289,14 +265,12 @@ pub(super) struct Mark {
 	pub(super) sequence: usize,
 }
 
-/// One object the page draws: a text run or an image.
 #[derive(Clone)]
 pub(super) struct ObjectData {
 	pub(super) kind: ObjectKind,
 	pub(super) bounds: Option<Bounds>,
 	/// Outermost first, the order pdfium lists an object's marks in.
 	pub(super) marks: Arc<[Mark]>,
-	/// For an image, how many images the page drew before it, which is how [`PdfPage::image_png`] finds it again.
 	image: Option<usize>,
 }
 
@@ -313,7 +287,6 @@ impl ObjectData {
 	}
 }
 
-/// One object on a page, borrowed from the page that collected it.
 pub struct PageObject<'page> {
 	data: &'page ObjectData,
 }
@@ -342,7 +315,7 @@ impl<'page> PageObject<'page> {
 		None
 	}
 
-	/// The outermost mark carrying an id, which is the one pdfium reports.
+	/// The outermost id, which is the one pdfium reports.
 	pub fn marked_content_id(&self) -> Option<i32> {
 		self.data.marked_content_id()
 	}
@@ -357,30 +330,27 @@ impl<'page> PageObject<'page> {
 	}
 }
 
-/// One marked-content mark on an object.
 pub struct ObjectMark<'object> {
 	mark: &'object Mark,
 }
 
 impl ObjectMark<'_> {
-	/// The mark's tag as the content stream spells it: `P`, `Span`, `Artifact` and so on.
 	pub fn name(&self) -> Option<String> {
 		Some(self.mark.name.clone()).filter(|name| !name.is_empty())
 	}
 
-	/// An integer parameter on this mark. Only `MCID` is ever asked for, so it is the only one kept.
+	/// Only `MCID` is ever asked for, so it is the only parameter kept.
 	pub fn param_int(&self, key: &str) -> Option<i32> {
 		if key == "MCID" { self.mark.mcid } else { None }
 	}
 }
 
-/// Collects what a page draws into [`PageContent`].
 #[derive(Default)]
 struct Collector {
 	objects: Vec<ObjectData>,
 	text_objects: Vec<TextObject>,
 	marks: Vec<Mark>,
-	/// The open marks as one shared list, rebuilt only when a mark opens or closes, since a page's objects mostly sit inside the same few.
+	/// Rebuilt only when a mark opens or closes, since a page's objects mostly sit inside the same few.
 	current_marks: Option<Arc<[Mark]>>,
 	sequences: usize,
 	images: usize,
@@ -466,7 +436,7 @@ impl<'a> Device<'a> for Collector {
 	}
 }
 
-/// The box an image fills. hayro's transform places the image's pixel grid rather than the unit square PDF images are defined on, so the corners are the image's own size.
+/// hayro's transform places the image's pixel grid rather than the unit square PDF images are defined on, so the corners are the image's own size.
 fn image_bounds(transform: Affine, width: f64, height: f64) -> Bounds {
 	let corners = [Point::new(0.0, 0.0), Point::new(width, 0.0), Point::new(0.0, height), Point::new(width, height)]
 		.map(|p| transform * p);
@@ -480,7 +450,6 @@ fn image_bounds(transform: Affine, width: f64, height: f64) -> Bounds {
 	}
 }
 
-/// Decodes the `wanted`-th image a page draws into a PNG.
 struct ImageExtractor {
 	wanted: usize,
 	seen: usize,

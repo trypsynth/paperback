@@ -1,18 +1,9 @@
-//! Single source of truth for which document formats Paperback supports.
-//!
-//! Parsers in `paperback-core` are registered against the statics here, and packaging
-//! scripts (Windows installer, macOS bundle) read the same statics to generate file
-//! associations. Add a format to the `formats!` table below and every consumer picks
-//! it up automatically.
+//! Packaging scripts read these statics too, to generate file associations.
 
 use bitflags::bitflags;
 
 bitflags! {
-	/// Navigation and structure features a format's parser can produce.
-	///
-	/// The reader uses these to decide which navigation commands to offer, so a flag
-	/// belongs here when the format itself can carry the feature, whether or not a
-	/// particular document uses it.
+	/// The reader offers navigation by these, so a flag belongs here when the format can carry the feature, whether or not a given document uses it.
 	#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 	pub struct ParserFlags: u32 {
 		const NONE = 0;
@@ -26,50 +17,29 @@ bitflags! {
 	}
 }
 
-/// How the Windows installer should treat a format's file associations.
 pub struct InstallerMeta {
-	/// Whether the installer should offer this association pre-checked.
 	pub default_checked: bool,
-	/// Whether the installer should register Paperback as the extension's default
-	/// handler outright, rather than just adding it to "Open with". Reserve this for
-	/// formats unlikely to already have another default app on Windows.
+	/// Reserve this for formats unlikely to already have another default app on Windows.
 	pub default_handler: bool,
 }
 
 impl InstallerMeta {
-	/// Offered unchecked, and only ever added to "Open with". The right default for
-	/// formats that other Windows apps already claim.
+	/// The right default for formats that other Windows apps already claim.
 	pub const OPT_IN: Self = Self { default_checked: false, default_handler: false };
-	/// Offered unchecked, but becomes the default handler when the user opts in.
 	pub const OPT_IN_HANDLER: Self = Self { default_checked: false, default_handler: true };
-	/// Offered pre-checked, added to "Open with" only.
 	pub const CHECKED: Self = Self { default_checked: true, default_handler: false };
-	/// Offered pre-checked and becomes the default handler.
 	pub const CHECKED_HANDLER: Self = Self { default_checked: true, default_handler: true };
 }
 
-/// Metadata describing one user-facing document format.
 pub struct FormatMeta {
-	/// Display name, shown in the app's open-file dialog and in packaging UI (installer checkboxes).
 	pub name: &'static str,
-	/// Lowercase extensions (without the leading dot) this format is known by.
 	pub extensions: &'static [&'static str],
-	/// IANA media types this format is known by, used to register Linux (`xdg-mime`) file
-	/// associations. Excludes `application/zip`, even for formats whose `extensions` includes
-	/// `zip`: that extension is shared by multiple formats and gets its own standalone
-	/// association entry instead, same as the Windows installer's `assoc_zip` task.
+	/// Never `application/zip`: several formats share `.zip`, which gets its own standalone association, like the Windows installer's `assoc_zip` task.
 	pub mime_types: &'static [&'static str],
-	/// Navigation features the format's parser can produce.
 	pub flags: ParserFlags,
-	/// Packaging-only settings; ignored outside the Windows installer and the Linux file
-	/// association dialog.
 	pub installer: InstallerMeta,
 }
 
-/// Declares the format table: one static per entry, plus `ALL` listing them in declaration order.
-///
-/// `installer` defaults to [`InstallerMeta::OPT_IN`] and names an associated constant of
-/// [`InstallerMeta`] when given; `flags` names [`ParserFlags`] constants joined with `|`.
 macro_rules! formats {
 	(@installer) => { InstallerMeta::OPT_IN };
 	(@installer $installer:ident) => { InstallerMeta::$installer };
@@ -95,16 +65,13 @@ macro_rules! formats {
 			};
 		)+
 
-		/// Every registered format, in the order parsers are registered and packaging
-		/// entries are emitted.
+		/// Order matters: parsers are registered in it.
 		pub static ALL: &[&FormatMeta] = &[$(&$konst),+];
 	};
 }
 
 formats! {
-	/// Named apart from [`CBZ`] because the installer builds a task name out of it, and two
-	/// formats named the same would write the same task twice. Without brackets, because the
-	/// open dialog's filter puts the extensions in brackets after the name.
+	/// Not named like [`CBZ`], since the installer builds a task name from it; no brackets, since the open dialog adds the extensions in brackets.
 	CBR {
 		name: "RAR comic book archives",
 		extensions: ["cbr"],
@@ -129,13 +96,8 @@ formats! {
 		mime_types: ["application/winhlp"],
 		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_IMAGES,
 	},
-	/// Declared ahead of [`WORD`] so that it gets first crack at the `.zip` both claim.
-	///
-	/// `application/x-daisy-opf` isn't a registered freedesktop.org media type (DAISY's `.opf`
-	/// has no standard one), so the Linux association dialog installs a small supplementary
-	/// shared-mime-info entry for it alongside the desktop file, the same way the Windows
-	/// installer needs no such thing since it maps extensions directly rather than through a
-	/// system-wide type registry.
+	/// Declared ahead of [`WORD`] so it gets first crack at the `.zip` both claim.
+	/// `application/x-daisy-opf` isn't a registered freedesktop.org type, so the Linux association dialog installs a shared-mime-info entry for it.
 	DAISY {
 		name: "DAISY Books",
 		extensions: ["opf", "zip"],
@@ -175,10 +137,7 @@ formats! {
 		flags: SUPPORTS_PAGES | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
 		installer: CHECKED,
 	},
-	/// An installed manual page is named for its section and gzipped on top of that, as
-	/// `printf.3.gz`, so `gz` is claimed here to have such a file offered in an open dialog
-	/// at all. The parser reads what is inside before accepting it, so a gzipped anything
-	/// else is turned away rather than read as a page.
+	/// `gz` is claimed for installed pages like `printf.3.gz`; the parser checks what is inside, so other gzipped files are turned away.
 	MAN {
 		name: "Manual pages",
 		extensions: ["man", "roff", "gz", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
@@ -197,7 +156,6 @@ formats! {
 		mime_types: ["audio/x-m4b"],
 		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_AUDIO,
 	},
-	/// Chapters come from ID3v2 `CHAP` frames when the file has them.
 	MP3 {
 		name: "MP3 Audiobooks",
 		extensions: ["mp3"],
@@ -208,8 +166,7 @@ formats! {
 		name: "MOBI Books",
 		extensions: ["mobi", "azw", "azw3"],
 		mime_types: ["application/x-mobipocket-ebook", "application/vnd.amazon.ebook"],
-		// KF8 books carry the file boundaries of the EPUB they were compiled from; older
-		// Mobipocket ones do not, and simply produce no section markers.
+		// Only KF8 books carry the EPUB file boundaries that sections come from; older Mobipocket ones produce none.
 		flags: SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_SECTIONS,
 	},
 	FODP {
@@ -261,10 +218,7 @@ formats! {
 		mime_types: ["text/plain"],
 		flags: NONE,
 	},
-	/// Windows Write. Real `.wri` files in the wild are almost always RTF or plain text under a
-	/// `.wri` name; the parser sniffs the content and routes accordingly, and reads the genuine
-	/// Windows Write binary format too. Flags stay `NONE` because a routed file's real features
-	/// depend on what it turns out to be, and under-promising is safer than the reverse.
+	/// Real `.wri` files are mostly RTF or plain text that the parser routes elsewhere, so the flags stay `NONE` rather than over-promise.
 	WRI {
 		name: "Windows Write Documents",
 		extensions: ["wri"],
@@ -302,9 +256,6 @@ mod tests {
 			assert!(!format.mime_types.is_empty(), "{}: must declare at least one MIME type", format.name);
 			for mime in format.mime_types {
 				assert!(mime.contains('/'), "{}: '{mime}' doesn't look like a MIME type", format.name);
-				// `application/zip` is shared by DAISY and Word-in-zip and gets its own
-				// standalone association entry on Linux instead (see the doc comment on
-				// `FormatMeta::mime_types`).
 				assert_ne!(
 					*mime, "application/zip",
 					"{}: application/zip belongs to the standalone zip task",

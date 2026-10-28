@@ -22,11 +22,7 @@ import dev.paperback.android.ui.state.MainScreenUiState
 import dev.paperback.android.ui.state.MainScreenViewModel
 import androidx.compose.foundation.lazy.itemsIndexed as lazyItemsIndexed
 
-/**
- * The full recent-documents list. The no-document screen shows a five-item preview of the same
- * list; "Show All" pushes this screen, which is a real destination rather than a dialog so the
- * list can use the whole window and the system back gesture leaves it.
- */
+/** A real destination rather than a dialog, so the list gets the whole window and the system back gesture leaves it. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AllDocumentsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -> Unit) {
@@ -105,9 +101,7 @@ fun AllDocumentsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: 
 			} else {
 				LazyColumn(
 					modifier = Modifier.fillMaxSize(),
-					// The list runs to the bottom of the window and so under the navigation bar,
-					// which leaves its last row half covered without this. The top bar pads itself,
-					// so the bottom is the only side that belongs here.
+					// Otherwise the navigation bar half covers the last row; the top bar pads itself.
 					contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom).asPaddingValues()
 				) {
 					lazyItemsIndexed(recentDocuments) { index, recentDoc ->

@@ -16,15 +16,13 @@ use crate::{
 	util::zip::read_zip_entry_by_name,
 };
 
-/// A part's relationships that its text needs: where its links go, and which archive entry each picture is.
 #[derive(Debug, Default)]
 pub struct Relationships {
 	pub links: HashMap<String, String>,
-	/// By relationship id, the picture's entry in the archive, resolved against the part's own folder: `media/image1.png` beside `word/document.xml` is `word/media/image1.png`.
+	/// Resolved against the part's own folder: `media/image1.png` beside `word/document.xml` is `word/media/image1.png`.
 	pub images: HashMap<String, String>,
 }
 
-/// Reads the relationships at `rels_path`, such as `word/_rels/document.xml.rels`, for the part it belongs to.
 pub fn read_relationships<R: Read + Seek>(archive: &mut ZipArchive<R>, rels_path: &str) -> Relationships {
 	let links = read_ooxml_relationships(archive, rels_path);
 	let mut images = HashMap::new();
@@ -47,7 +45,6 @@ pub fn read_relationships<R: Read + Seek>(archive: &mut ZipArchive<R>, rels_path
 	Relationships { links, images }
 }
 
-/// A document's own title and author, from `docProps/core.xml`, each `None` when the document leaves it out or empty.
 pub fn read_core_properties<R: Read + Seek>(archive: &mut ZipArchive<R>) -> (Option<String>, Option<String>) {
 	let Ok(content) = read_zip_entry_by_name(archive, "docProps/core.xml") else { return (None, None) };
 	let Ok(document) = roxmltree::Document::parse(&content) else { return (None, None) };
@@ -117,21 +114,14 @@ pub fn collect_ooxml_run_text(run_element: Node) -> String {
 	text
 }
 
-/// If `path` looks like an encrypted OLE compound file (has an `EncryptionInfo` stream),
-/// attempts to decrypt it with `password` and returns the decrypted bytes. Shared by `word`'s
-/// `.docx` parsing and `powerpoint`'s `.pptx` parsing, since both formats wrap the same
-/// OLE-container encryption when password-protected.
-///
-/// Returns `None` if the file is not a compound file or is not encrypted.
-/// Returns an error if it is encrypted but decryption fails (wrong password, etc.).
+/// Password-protected `.docx` and `.pptx` both wrap the zip in the same OLE-container encryption.
 pub fn try_decrypt_office_file(path: &str, password: Option<&str>) -> Result<Option<Vec<u8>>> {
-	// Try opening as a CFB compound file. Plain ZIPs will fail here.
 	let file = File::open(path).with_context(|| format!("Failed to open '{path}'"))?;
-	// Not a compound file at all
+	// An unencrypted OOXML file is a plain zip, not a compound file.
 	let Ok(compound) = CompoundFile::open(file) else { return Ok(None) };
 	// Encrypted OOXML files always contain an EncryptionInfo stream.
 	if compound.entry("/EncryptionInfo").is_err() {
-		return Ok(None); // Compound file but not encrypted Office format
+		return Ok(None);
 	}
 	let Some(password) = password else {
 		// TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
@@ -220,8 +210,7 @@ mod tests {
 		assert_eq!(rels.keys().collect::<Vec<_>>(), vec!["rId3"]);
 	}
 
-	/// A missing rels part is normal (a document with no hyperlinks has none), so it must read
-	/// as "no relationships" rather than failing the parse.
+	/// A document with no hyperlinks has no rels part, so absence must not fail the parse.
 	#[test]
 	fn returns_empty_when_the_rels_entry_is_absent() {
 		let mut archive = archive_containing("word/document.xml", "<document/>");

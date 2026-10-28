@@ -12,8 +12,7 @@ struct GoToSheet: View {
 
 	private var session: DocumentSession? { viewModel.activeSession }
 	private var hasPages: Bool { (session?.pageCountFfi() ?? 0) > 0 }
-	/// An audio-only book's text is one blank line per audio file, so a line or page number
-	/// means nothing in it. A percentage still places the reader in the recording.
+	/// An audio-only book's text is one blank line per file, so only a percentage means anything in it.
 	private var isAudioOnly: Bool { viewModel.reading.isAudioOnly }
 
 	var body: some View {
@@ -94,8 +93,7 @@ struct GoToSheet: View {
 
 	private func populate() {
 		let initialMode = viewModel.navigation.goToInitialMode
-		// The picker only offers what the document can answer, and a selection it does not
-		// offer would leave it showing nothing.
+		// A selection the picker doesn't offer would leave it showing nothing.
 		mode = if isAudioOnly {
 			.percent
 		} else if initialMode == .page && !hasPages {
@@ -125,8 +123,7 @@ struct GoToSheet: View {
 			guard let n = Int64(pageValue) else { dismiss(); return }
 			viewModel.reading.goToPage(Int32(n), announce: true)
 		case .percent:
-			// A recording seeks by running time, where a percentage means something. Falling
-			// back to the text covers a book whose file lengths are not all known.
+			// Falls back to the text when the recording's file lengths are not all known.
 			if !viewModel.reading.seekAudioToPercent(Int32(percentValue)) {
 				viewModel.reading.goToPercent(Int32(percentValue), announce: true)
 			}

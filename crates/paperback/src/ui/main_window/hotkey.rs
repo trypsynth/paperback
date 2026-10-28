@@ -1,6 +1,4 @@
-//! The Windows global show/hide hotkey: registered on its own thread (so its message loop
-//! doesn't block the UI thread), torn down and re-registered whenever the user changes it
-//! in Options.
+//! The global hotkey lives on its own thread so its message loop doesn't block the UI thread.
 
 use std::{
 	cell::RefCell,

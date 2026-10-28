@@ -8,19 +8,8 @@ import java.io.File
 
 private const val SIDECAR_EXTENSION = "paperback"
 
-/**
- * Moves a document's saved reading data (its position, bookmarks and notes) in and out of a
- * `.paperback` file, so it can travel with the document to another device or another platform.
- *
- * Writing goes through a file in the cache first, then copies that into whatever the system
- * picker handed back: the config layer writes to a real path, and a picked destination is a
- * content URI that only the resolver can open.
- */
+/** Writes go through a cache file first: the config layer needs a real path, and a picked destination is a content URI only the resolver can open. */
 class SettingsTransfer(private val config: ConfigManagerFfi, private val cacheDir: File) {
-	/**
-	 * Writes the document's data to the `.paperback` file beside it. Only for a document opened
-	 * from a real path: one opened through a content URI has no "beside it" to write to.
-	 */
 	fun exportToSidecar(documentUri: String): Boolean {
 		if (documentUri.startsWith(CONTENT_SCHEME)) return false
 		val path = settingsPathFor(documentUri)
@@ -62,14 +51,9 @@ class SettingsTransfer(private val config: ConfigManagerFfi, private val cacheDi
 	}
 }
 
-/**
- * How the config layer identifies a document. A content URI is its own identity, since there is
- * no path behind it to speak of; anything else is identified by the path it points at.
- */
 internal fun settingsPathFor(documentUri: String): String =
 	if (documentUri.startsWith("content://")) documentUri else documentUri.toUri().path ?: documentUri
 
-/** The `.paperback` file that sits beside a document, carrying the reading data for it. */
 internal fun sidecarPathFor(documentPath: String): String {
 	val file = File(documentPath)
 	return File(file.parentFile, "${file.nameWithoutExtension}.$SIDECAR_EXTENSION").absolutePath

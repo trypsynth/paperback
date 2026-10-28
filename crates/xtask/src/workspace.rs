@@ -1,6 +1,3 @@
-//! Finding things in the workspace: its root, the crates whose strings are translatable, and a
-//! package's version.
-
 use std::{
 	env,
 	error::Error,
@@ -12,12 +9,7 @@ pub(crate) fn project_root() -> PathBuf {
 	Path::new(&env!("CARGO_MANIFEST_DIR")).ancestors().nth(2).unwrap().to_path_buf()
 }
 
-/// Find the `src/` directory of every package in the build graph tagged
-/// `[package.metadata.patois] translatable = true`: Paperback's own crates plus
-/// dependencies like ship-shape and wx-utils, whose strings show up in Paperback's own
-/// dialogs and therefore have to live in Paperback's catalog. Scanning only `crates/`
-/// silently left every dependency string out of the pot, so anything a dependency added
-/// after it was vendored in stayed untranslated no matter what the po files said.
+/// The whole build graph, not just `crates/`: dependencies like `ship-shape` show strings in Paperback's dialogs, and scanning only `crates/` silently left them untranslated.
 pub(crate) fn translatable_crate_src_dirs(root: &Path) -> Result<Vec<PathBuf>, Box<dyn Error>> {
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
 	let output = Command::new(&cargo).args(["metadata", "--format-version", "1"]).current_dir(root).output()?;
@@ -27,10 +19,7 @@ pub(crate) fn translatable_crate_src_dirs(root: &Path) -> Result<Vec<PathBuf>, B
 	let meta: serde_json::Value = serde_json::from_slice(&output.stdout)?;
 	let mut packages: Vec<&serde_json::Value> =
 		meta["packages"].as_array().ok_or("cargo metadata: missing packages")?.iter().collect();
-	// Order by name and version rather than by manifest path: a dependency's manifest lives
-	// under CARGO_HOME, whose absolute spelling differs per machine (`.cargo` vs `scoop`, say)
-	// and sorts differently from the workspace paths, which would reorder xgettext's input and
-	// churn the pot for whoever regenerates it next.
+	// Not by manifest path: `CARGO_HOME` is spelled differently per machine, which would reorder xgettext's input and churn the pot.
 	packages.sort_by_key(|pkg| {
 		(pkg["name"].as_str().unwrap_or_default().to_string(), pkg["version"].as_str().unwrap_or_default().to_string())
 	});
@@ -50,17 +39,10 @@ pub(crate) fn translatable_crate_src_dirs(root: &Path) -> Result<Vec<PathBuf>, B
 
 pub(crate) use shipfitter::package::crate_version;
 
-/// Builds paperback-core for the host and returns the shared library uniffi reads its interface
-/// from.
-///
-/// The bindings used to be generated from a `.udl` file. They now come from the compiled
-/// library, which carries the interface as metadata, so there is one description of the FFI
-/// rather than a Rust one and an IDL one kept in step by hand.
 pub fn build_host_ffi_library(cargo: &str) -> Result<PathBuf, Box<dyn Error>> {
 	let status = Command::new(cargo)
 		.current_dir(project_root())
-		// Debug, not release: uniffi reads the interface out of the library's symbols, and the
-		// release profile strips them. This build exists only to be read, never to be shipped.
+		// Debug, since uniffi reads the interface out of the library's symbols and release strips them.
 		.args(["rustc", "-p", "paperback-core", "--features", "uniffi", "--lib", "--crate-type", "cdylib"])
 		.status()?;
 	if !status.success() {

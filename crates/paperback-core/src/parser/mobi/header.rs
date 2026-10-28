@@ -4,9 +4,7 @@ use anyhow::Result;
 
 use crate::t;
 
-/// Fields pulled out of a MOBI file's PalmDOC/MOBI header (record 0) that the rest of parsing
-/// needs. `rec0` is kept as an owned copy (record 0 is at most a few KB) so this struct does not
-/// borrow the file's raw bytes.
+/// `rec0` is an owned copy, at most a few KB, so this does not borrow the file's raw bytes.
 pub(super) struct MobiHeader {
 	pub rec0: Vec<u8>,
 	pub record_offsets: Vec<usize>,
@@ -123,9 +121,7 @@ pub(super) fn parse_header(data: &[u8], title_bytes: &[u8]) -> Result<MobiHeader
 	};
 	document_title = document_title.replace('\0', "").trim().replace('_', " ");
 	let mut extra_data_flags = 0u32;
-	// The trailing-data flags live at absolute record-0 offset 0xF2 (242), a fixed 2-byte
-	// field regardless of MOBI version; that's 226 bytes into the mobi header, which starts
-	// at record-0 offset 16.
+	// The trailing-data flags are a fixed 2-byte field at record-0 offset 0xF2 in every MOBI version, 226 bytes into the MOBI header, which starts at offset 16.
 	if rec0.len() >= mobi_header_offset + 228 {
 		let mobi_header = &rec0[mobi_header_offset..];
 		extra_data_flags = u32::from(u16::from_be_bytes([mobi_header[226], mobi_header[227]]));
@@ -183,8 +179,6 @@ pub(super) fn parse_header(data: &[u8], title_bytes: &[u8]) -> Result<MobiHeader
 	})
 }
 
-/// Reads the EXTH metadata block (if present) following the MOBI header, returning the raw
-/// record map plus any author/title overrides it carries.
 pub(super) fn parse_exth(header: &MobiHeader) -> (HashMap<u32, Vec<u8>>, Option<String>, Option<String>) {
 	let mut exth_map = HashMap::new();
 	let mut author = None;

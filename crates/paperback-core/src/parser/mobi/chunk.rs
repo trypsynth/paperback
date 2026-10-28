@@ -1,42 +1,19 @@
-//! Splitting decoded MOBI HTML into bounded chunks before DOM parsing.
-//!
-//! `HtmlToText::convert` builds a full DOM tree (`scraper`/`html5ever`) for whatever it's
-//! handed. MOBI decodes its *entire* book into one HTML string before converting, so a
-//! single `convert` call means a DOM proportional to the whole book, which runs the
-//! process out of memory on genuinely huge books (#781). Splitting into bounded chunks,
-//! each parsed and converted independently and then stitched back together (the way EPUB
-//! already does per spine item), keeps peak DOM size bounded by chunk size instead of book
-//! size.
+//! MOBI decodes the whole book into one HTML string, and one `HtmlToText::convert` over it built a DOM the size of the book, running huge books out of memory (#781).
 
 use crate::parser::convert::block_elements::is_block_element;
 
-/// Target size, in bytes of still-encoded HTML, of each chunk handed to a single
-/// `HtmlToText::convert` call. Large enough that ordinary books produce only one or a
-/// handful of chunks (no behavior change from before chunking existed); small enough that
-/// even a multi-hundred-megabyte book's peak DOM size stays bounded.
+/// Large enough that ordinary books stay one or a few chunks, small enough that a multi-hundred-megabyte book's peak DOM stays bounded.
 const TARGET_CHUNK_BYTES: usize = 4 * 1024 * 1024;
 
 const VOID_ELEMENTS: &[&str] =
 	&["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"];
 
-/// Splits `html` into chunks of roughly [`TARGET_CHUNK_BYTES`] each. See
-/// [`split_html_chunks_with_target`] for how split points are chosen.
 pub(super) fn split_html_chunks(html: &str) -> Vec<&str> {
 	split_html_chunks_with_target(html, TARGET_CHUNK_BYTES)
 }
 
-/// Splits `html` into chunks of roughly `target_bytes` each, cutting only right after a
-/// block-level element's closing (or self-closing) tag at a nesting depth back to (at most) what
-/// it was at the start of the current chunk, i.e. a point that was already a line break in the
-/// rendered output, not partway through one. This keeps every chunk independently well-formed on
-/// its own (an element straddling a chunk boundary just loses its formatting at the seam, never
-/// its text) and keeps each `HtmlToText`'s fresh internal line-building state consistent with
-/// what a single, uninterrupted conversion would have done at that same point.
-///
-/// Falls back to fewer, larger chunks (down to a single one covering all of `html`) whenever no
-/// safe split point is found before `target_bytes` is reached: content with no tags at all, or
-/// one element wrapping everything, being the extreme cases. Chunking is a memory-bound
-/// optimization, not a correctness requirement, so there is never a wrong answer to fall back to.
+/// Cuts only after a block element closes back at the chunk's starting depth, a point already a line break in the output, so each fresh `HtmlToText` matches what one uninterrupted conversion would do there.
+/// With no safe split point it falls back to larger chunks, down to one; chunking only bounds memory, so that is never wrong.
 fn split_html_chunks_with_target(html: &str, target_bytes: usize) -> Vec<&str> {
 	if html.len() <= target_bytes {
 		return vec![html];
@@ -49,8 +26,7 @@ fn split_html_chunks_with_target(html: &str, target_bytes: usize) -> Vec<&str> {
 	let mut in_tag = false;
 	let mut tag_start = 0usize;
 	let mut quote: Option<u8> = None;
-	// The most recent position (and the nesting depth there) that is safe to split at, since
-	// the last chunk boundary. `None` once consumed by a split, until the next tag closes.
+	// `None` once consumed by a split, until the next tag closes.
 	let mut last_safe_split: Option<(usize, i32)> = None;
 	let mut i = 0usize;
 	while i < bytes.len() {

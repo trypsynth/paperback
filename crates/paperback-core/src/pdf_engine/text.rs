@@ -1,6 +1,4 @@
-//! A page's text layer, built the way pdfium builds it.
-//!
-//! This is a port of pdfium's `CPDF_TextPage` (`core/fpdftext/cpdf_textpage.cpp`). The parser's heuristics were tuned against what that class produces: the order it puts characters in, the spaces and line breaks it generates and flags as generated, the hyphen it marks with 0x02, the ligatures it splits back into letters. A text layer designed afresh would read differently in all of those places, so the class is followed closely, down to its thresholds and its `f32` arithmetic, and departs from it only where hayro offers its information in a different shape.
+//! A port of pdfium's `CPDF_TextPage` (`core/fpdftext/cpdf_textpage.cpp`), followed closely down to its thresholds and `f32` arithmetic, because the parser's heuristics were tuned against its character order, generated spaces and line breaks, 0x02 hyphens and split ligatures.
 //!
 //! Portions are derived from `PDFium`, used under its BSD-style license:
 //! Copyright 2014 The `PDFium` Authors. Original code copyright 2014 Foxit Software Inc. <http://www.foxitsoftware.com>
@@ -42,7 +40,6 @@ const FONT_FLAG_SYMBOLIC: i32 = 1 << 2;
 const FONT_FLAG_NONSYMBOLIC: i32 = 1 << 5;
 const FONT_FLAG_ITALIC: i32 = 1 << 6;
 
-/// The box one glyph occupies on the page, in PDF points.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct CharBox {
 	pub left: f64,
@@ -51,7 +48,6 @@ pub struct CharBox {
 	pub top: f64,
 }
 
-/// The text matrix in force for one glyph, which is what turns a nominal font size into the size the glyph is actually drawn at.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TextMatrix {
 	pub a: f32,
@@ -62,11 +58,9 @@ pub struct TextMatrix {
 	pub f: f32,
 }
 
-/// A glyph's font, as far as deciding whether it is monospaced needs.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FontInfo {
 	pub name: String,
-	/// The PDF font descriptor flags, whose fixed-pitch bit is more reliable than the name.
 	pub flags: i32,
 }
 
@@ -207,7 +201,6 @@ struct GlyphBox {
 	top: i32,
 }
 
-/// What the parser asks about a glyph's font once the page is laid out, shared by every text object set in it.
 struct FontSummary {
 	name: String,
 	flags: i32,
@@ -220,10 +213,10 @@ pub(super) struct FontData {
 	first_char: u32,
 	widths: Vec<f32>,
 	missing_width: f32,
-	/// Widths and boxes of the codes drawn so far, which is all a composite or standard font can say without its font program.
+	/// Codes drawn so far, which is all a composite or standard font can say without its font program.
 	observed: RefCell<HashMap<u32, (f32, GlyphBox)>>,
 	space_code: Cell<Option<u32>>,
-	/// The descriptor's ascent and descent, in thousandths of the font size, for a glyph whose outline is missing.
+	/// For a glyph whose outline is missing.
 	ascent: i32,
 	descent: i32,
 	summary: Arc<FontSummary>,
@@ -330,7 +323,6 @@ fn char_width_or_box(code: u32, font: &FontData) -> i32 {
 	(bbox.right - bbox.left).max(0)
 }
 
-/// The fonts a page's runs are set in, one [`FontData`] per font dictionary.
 #[derive(Default)]
 pub(super) struct FontCache {
 	fonts: HashMap<usize, Rc<FontData>>,
@@ -351,13 +343,11 @@ impl FontCache {
 struct Item {
 	code: u32,
 	unicode: Vec<u32>,
-	/// Where the glyph starts, in the text object's own space.
 	origin: (f32, f32),
 }
 
 /// One `Tj` or `TJ`: pdfium's `CPDF_TextObject`.
 pub(super) struct TextObject {
-	/// Which of the page's objects this is.
 	pub(super) object: usize,
 	font: Rc<FontData>,
 	font_size: f32,
@@ -375,7 +365,6 @@ pub(super) struct TextObject {
 }
 
 impl TextObject {
-	/// Reads one glyph run as a text object, or `None` for one that draws nothing a text layer could use.
 	pub(super) fn from_run(
 		run: &GlyphRun<'_, '_>,
 		ctm: Affine,
@@ -447,7 +436,7 @@ impl TextObject {
 							GlyphBox::default()
 						};
 						let width = outline.advance_width().unwrap_or(0.0);
-						// A visible character with no outline is one the font hayro substituted cannot draw, such as Cyrillic in a missing Times New Roman. pdfium finds a system font with the glyph and so sees it, so it is given the box the glyph would have rather than being taken for an empty, invisible object.
+						// A visible glyph with no outline is one hayro's substitute font cannot draw (Cyrillic in a missing Times New Roman); pdfium finds a system font that can, so it gets the box it would have rather than reading as an empty object.
 						let missing = bbox == GlyphBox::default()
 							&& width > 0.0
 							&& !unicode.is_empty()
@@ -502,7 +491,7 @@ impl TextObject {
 	}
 }
 
-/// The box a text object covers on the page: its glyphs' boxes, from the first glyph's start to the last's end, in page space. pdfium computes it the same way while laying the object out.
+/// Computed as pdfium computes it while laying the object out.
 fn object_rect(items: &[Item], font: &FontData, font_size: f32, matrix: &Matrix, vertical: bool) -> FRect {
 	let scale = font_size / 1000.0;
 	let (mut min_x, mut min_y, mut max_x, mut max_y) = (10000.0_f32, 10000.0_f32, -10000.0_f32, -10000.0_f32);
@@ -676,7 +665,7 @@ fn is_alphanumeric(c: u32) -> bool {
 	char::from_u32(c).is_some_and(char::is_alphanumeric)
 }
 
-/// pdfium's `GetUnicodeNormalization`, for the characters it is ever asked about: right-to-left text and the Latin ligatures. Its table maps the presentation forms to the letters they present, composed (an Arabic waw-with-hamza form becomes U+0624, not a waw and a combining hamza), which is NFKC; anything outside those blocks it leaves as it is.
+/// pdfium's `GetUnicodeNormalization`, only ever asked about right-to-left text and Latin ligatures; its table composes presentation forms (an Arabic waw-with-hamza form becomes U+0624), which is NFKC.
 fn unicode_normalization(c: u32) -> Vec<u32> {
 	let Some(ch) = char::from_u32(c) else { return vec![c] };
 	if !matches!(c, 0xFB00..=0xFDFF | 0xFE70..=0xFEFF) {
@@ -911,7 +900,7 @@ impl<'p> Builder<'p> {
 		}
 	}
 
-	/// The `/ActualText` of an object's marks and the sequence that carries it: the last mark with properties, which is the one pdfium ends up holding.
+	/// The last mark with properties, which is the one pdfium ends up holding.
 	fn actual_text(object: &TextObject) -> (bool, String, Option<usize>) {
 		let mut exists = false;
 		let mut text = String::new();
@@ -1382,16 +1371,13 @@ impl<'p> Builder<'p> {
 	}
 }
 
-/// What the text layer keeps of one text object once the page is laid out.
 struct ObjectSummary {
 	data: ObjectData,
 	font: Arc<FontSummary>,
 	font_size: f32,
 }
 
-/// A page's text, laid out the way pdfium lays it out.
-///
-/// It owns everything it answers from, the fonts reduced to what the parser asks of them, so a page read on one thread can be handed to another.
+/// Owns everything it answers from, the fonts reduced to what the parser asks of them, so a page read on one thread can be handed to another.
 pub struct PdfTextPage {
 	chars: Vec<CharInfo>,
 	text: Vec<u32>,
@@ -1449,13 +1435,12 @@ impl PdfTextPage {
 		self.objects.get(self.info(index)?.text_object?)
 	}
 
-	/// How many characters the page holds. Never `None`, but the parser still handles a page whose count cannot be told.
+	/// Never `None`, but the parser still handles a page whose count cannot be told.
 	#[allow(clippy::unnecessary_wraps)]
 	pub fn char_count(&self) -> Option<i32> {
 		Some(i32::try_from(self.chars.len()).unwrap_or(i32::MAX))
 	}
 
-	/// The whole page as one string.
 	pub fn text(&self) -> String {
 		self.extract(0, self.char_count().unwrap_or(0))
 	}
@@ -1472,7 +1457,7 @@ impl PdfTextPage {
 		-1
 	}
 
-	/// The characters of the page's text from `start` for `count` characters: pdfium's `GetPageText`.
+	/// pdfium's `GetPageText`.
 	pub(super) fn page_text(&self, mut start: i32, count: i32) -> Vec<u32> {
 		let total = self.char_count().unwrap_or(0);
 		if start < 0 || start >= total || count <= 0 || self.text.is_empty() {
@@ -1503,7 +1488,6 @@ impl PdfTextPage {
 		self.text.get(from..to).map(<[u32]>::to_vec).unwrap_or_default()
 	}
 
-	/// `count` characters starting at `start`.
 	pub fn extract(&self, start: i32, count: i32) -> String {
 		self.page_text(start, count).into_iter().filter_map(char::from_u32).collect()
 	}
@@ -1512,7 +1496,6 @@ impl PdfTextPage {
 		self.info(index).map_or(0, |info| info.unicode)
 	}
 
-	/// Where the glyph at `index` sits, as the point its baseline starts from.
 	pub fn char_origin(&self, index: i32) -> Option<(f64, f64)> {
 		self.info(index).map(|info| (f64::from(info.origin.0), f64::from(info.origin.1)))
 	}
@@ -1527,7 +1510,6 @@ impl PdfTextPage {
 		})
 	}
 
-	/// The weight of a glyph's font, 400 for regular and 700 for bold, or `None` where it cannot be told.
 	pub fn font_weight(&self, index: i32) -> Option<i32> {
 		let weight = self.object_of(index)?.font.weight;
 		(weight > 0).then_some(weight)
@@ -1542,24 +1524,22 @@ impl PdfTextPage {
 		Some(TextMatrix { a: m.a, b: m.b, c: m.c, d: m.d, e: m.e, f: m.f })
 	}
 
-	/// The font the glyph at `index` is set in. Like pdfium, a character with no font, such as a generated space, reports an empty name and no flags rather than nothing.
+	/// Like pdfium, a character with no font, such as a generated space, reports an empty name and no flags rather than nothing.
 	#[allow(clippy::unnecessary_wraps)]
 	pub fn font(&self, index: i32) -> Option<FontInfo> {
 		let Some(object) = self.object_of(index) else { return Some(FontInfo { name: String::new(), flags: 0 }) };
 		Some(FontInfo { name: object.font.name.clone(), flags: object.font.flags })
 	}
 
-	/// Whether the character was generated rather than found in the content stream, as the spaces inferred between words that are merely far apart are.
 	pub fn is_generated(&self, index: i32) -> bool {
 		self.info(index).is_some_and(|info| info.char_type == CharType::Generated)
 	}
 
-	/// The object that drew the glyph at `index`, which carries the marked-content id linking it to the tag tree.
 	pub fn text_object(&self, index: i32) -> Option<PageObject<'_>> {
 		Some(PageObject::new(&self.object_of(index)?.data))
 	}
 
-	/// The text inside a rectangle on the page, which is how a link annotation's words are read: pdfium's `GetTextByRect`.
+	/// pdfium's `GetTextByRect`.
 	pub fn bounded_text(&self, left: f64, top: f64, right: f64, bottom: f64) -> String {
 		let rect = FRect::new(left as f32, bottom as f32, right as f32, top as f32);
 		let mut posy = 0.0_f32;
@@ -1597,7 +1577,7 @@ impl PdfTextPage {
 		out
 	}
 
-	/// The URLs and email addresses that can be found in the page's text, with the character range each covers: pdfium's `CPDF_LinkExtract`.
+	/// pdfium's `CPDF_LinkExtract`.
 	pub fn web_links(&self) -> Vec<(i32, i32, String)> {
 		let total = self.chars.len();
 		let page_text = self.page_text(0, i32::try_from(total).unwrap_or(i32::MAX));

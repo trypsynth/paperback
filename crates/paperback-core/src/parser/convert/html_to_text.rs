@@ -44,19 +44,16 @@ pub struct HtmlToText {
 	flags: ProcessingFlags,
 	current_link_href: String,
 	current_link_text: String,
-	/// The described images inside the link being read: the placeholder each shows in the link's text, its info with the offset still to be found, and whether it is a figure.
+	/// Placeholder in the link's text, info whose offset is still to be found, and whether it is a figure.
 	current_link_images: Vec<(String, ImageInfo, bool)>,
 	list_style_stack: Vec<ListStyle>,
 	list_level: i32,
-	/// Indices into `lists` for currently open `<ul>`/`<ol>` elements, in nesting order.
-	/// `None` marks an open list that was not recorded (no direct `<li>`), keeping the stack
-	/// balanced with the start/close handlers so list lengths are set on the right entries.
+	/// `None` marks an unrecorded list (no direct `<li>`), keeping the stack balanced so list lengths land on the right entries.
 	open_lists: Vec<Option<usize>>,
 	link_start_pos: DocPos,
 	format_spans: FormatSpans,
 	source_mode_markdown: bool,
-	/// When `true`, tables are emitted as their full tab-separated rendering; otherwise as a
-	/// `"[Table]: <first row>"` placeholder. A config flag, not parse state: it survives `clear()`.
+	/// A config flag, not parse state, so it survives `clear()`.
 	render_tables_inline: bool,
 }
 
@@ -66,9 +63,6 @@ impl HtmlToText {
 		Self::default()
 	}
 
-	/// Like [`new`](Self::new) but sets whether tables are rendered inline (full TSV) or as a
-	/// placeholder. Threaded from the owning parser's `ParserContext`; preserved across
-	/// `convert`/`clear`.
 	#[must_use]
 	pub fn with_render_tables_inline(render_tables_inline: bool) -> Self {
 		Self { render_tables_inline, ..Self::default() }

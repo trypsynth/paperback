@@ -12,8 +12,7 @@ fn a_link_on_the_command_line_opens_the_document_it_names() {
 	common::wait_for_title(app.pid, &format!("{} - Paperback", fixture::TITLE));
 }
 
-/// The reading position is kept under the link, not under the downloaded copy, which is gone once
-/// the tab closes: reopening downloads the document again and finds the position.
+/// The position is kept under the link, since the downloaded copy is gone once the tab closes.
 #[test]
 #[ignore = "drives the real GUI via UI Automation; needs an interactive desktop"]
 fn a_link_reopened_after_closing_comes_back_where_reading_stopped() {

@@ -1,8 +1,6 @@
-//! Snapshots how Paperback reads every PDF in a folder, so a change to the PDF parser or to the library under it shows up as a diff rather than as a reader's bug report.
+//! Snapshots how Paperback reads every PDF in a folder, so a change to the PDF parser or the library under it shows up as a diff rather than as a reader's bug report.
 //!
-//! `cargo run -p paperback-core --release --example pdf_corpus -- <folder> [--bless]`
-//!
-//! Each PDF's snapshot is its metadata, its table of contents, and its text with every marker written inline where it falls. The first run writes them under `<folder>/snapshots`; later runs compare against them, write a `.new` file beside each one that changed, and exit nonzero. `--bless` accepts the new output. An encrypted file reads its password from a `<file>.password` beside it.
+//! `cargo run -p paperback-core --release --example pdf_corpus -- <folder> [--bless]`; an encrypted file reads its password from a `<file>.password` beside it.
 //!
 //! The PDFs themselves are never committed: most of them are other people's documents.
 
@@ -118,7 +116,6 @@ fn dump_toc(items: &[TocItem], depth: usize, out: &mut String) {
 	}
 }
 
-/// The text with each marker written as `⟦kind⟧` where it starts and `⟦/kind⟧` where a marker with a length ends.
 fn annotated_text(document: &Document) -> String {
 	let buffer = &document.buffer;
 	let mut tags = Vec::new();

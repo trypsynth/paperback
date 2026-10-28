@@ -15,13 +15,11 @@ use crate::{
 	util::encoding::convert_to_utf8,
 };
 
-/// Windows Write binary signatures: `0x31BE` for a plain document, `0x32BE` for one that also
-/// carries OLE objects. Stored little-endian, so the bytes on disk are `BE 31` / `BE 32`.
+/// Stored little-endian, so the bytes on disk are `BE 31` / `BE 32`.
 const WRITE_MAGIC_PLAIN: u16 = 0x31BE;
 const WRITE_MAGIC_OLE: u16 = 0x32BE;
-/// The Write header is 128 bytes; the document text begins right after it.
 const WRITE_TEXT_START: usize = 128;
-/// `fcMac`, the file position just past the end of the text, is a `u32` at offset 14 of the header.
+/// `fcMac` is the file position just past the end of the text.
 const WRITE_FCMAC_OFFSET: usize = 0x0E;
 
 pub struct WriParser;
@@ -47,12 +45,7 @@ impl Parser for WriParser {
 	}
 }
 
-/// The text of a genuine Windows Write binary document, or `None` when the bytes are not one.
-///
-/// The header records `fcMac`, the file position just past the text, and the text starts at a
-/// fixed offset after the header, so the run between them is the document. A file whose `fcMac`
-/// makes no sense is not treated as Write at all, so the caller falls back to reading it as text
-/// rather than emitting the paragraph and formatting tables that follow the run.
+/// A nonsense `fcMac` means the file isn't Write, so the caller reads it as text rather than emitting the paragraph and formatting tables past the run.
 fn write_binary_text(bytes: &[u8]) -> Option<String> {
 	if bytes.len() < WRITE_TEXT_START {
 		return None;

@@ -64,8 +64,7 @@ private struct TabChip: View {
 	}
 }
 
-// The active tab gets a Liquid Glass background on iOS 26+ instead of a flat fill, matching
-// Safari's tab-chip look; earlier versions keep the plain filled pill.
+// Liquid Glass on the active tab matches Safari's tab chips.
 private struct TabChipBackground: ViewModifier {
 	let isActive: Bool
 

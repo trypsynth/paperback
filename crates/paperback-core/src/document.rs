@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-/// Re-exported so `crate::document::ParserFlags` keeps working; the flags themselves are
-/// declared alongside the rest of each format's metadata in `paperback-formats`.
 pub use paperback_formats::ParserFlags;
 
 use crate::audio::AudioTimeline;
@@ -31,11 +29,8 @@ pub struct Document {
 	pub spine_items: Vec<String>,
 	pub manifest_items: HashMap<String, String>,
 	pub stats: DocumentStats,
-	/// Recorded audio for this document, when it has any.
 	pub audio: Option<AudioTimeline>,
-	/// True when the text spine exists only to anchor audio, carrying no prose of its own -
-	/// a zip of bare narration files, say. Read-aloud UIs use this to offer time-based
-	/// navigation instead of paragraph/section units that would have nothing to land on.
+	/// The text only anchors audio (a zip of bare narration files), so read-aloud UIs navigate by time, as text units would have nothing to land on.
 	pub audio_only: bool,
 }
 
@@ -92,7 +87,6 @@ impl Default for Document {
 	}
 }
 
-/// The parse-time toggles a reader can change, gathered so a caller can pass them together.
 #[derive(Debug, Clone, Copy)]
 pub struct ParseSettings {
 	pub render_tables_inline: bool,
@@ -117,25 +111,12 @@ pub struct ParserContext {
 	pub file_path: String,
 	pub password: Option<String>,
 	pub forced_extension: Option<String>,
-	/// When `true`, parsers emit each table's full tab-separated rendering inline; when `false`,
-	/// they emit a `"[Table]: <first row>"` placeholder. Threaded into each parser at parse time.
 	pub render_tables_inline: bool,
-	/// When `true`, the PDF parser joins the lines of an untagged page back into the
-	/// paragraphs they were wrapped from; when `false`, every line stands on its own. Off is
-	/// for documents whose line breaks are the content, such as code listings and poetry.
+	/// Off is for documents whose line breaks are the content, such as code listings and poetry.
 	pub join_pdf_paragraphs: bool,
-	/// Whether the lines a document repeats at its pages' edges are taken out of the text.
-	///
-	/// On by default, which is what a reader of the app expects and what every document read so
-	/// far has been given. It is a judgement rather than a fact, though: a line is taken out for
-	/// repeating on four or more pages, and on some documents that catches the tail of a sentence
-	/// that happens to fall at a page break, which is content rather than furniture. A caller that
-	/// would rather keep every word than have a tidy page edge can turn it off, and should expect
-	/// a running head on every page in exchange.
+	/// A judgement, not a fact: a line repeating on four or more pages can be the tail of a sentence that falls at a page break.
 	pub strip_running_text: bool,
-	/// Whether Markdown text between dollar signs, as in `$x^2$` and `$$x^2$$`, is read as a TeX formula. Off is for
-	/// documents whose dollars are not math, such as `$HOME/bin:$PATH` in a README: Markdown can't express which reading
-	/// the writer meant.
+	/// Off is for dollars that are not math, such as `$HOME/bin:$PATH` in a README, since Markdown can't say which the writer meant.
 	pub markdown_dollar_math: bool,
 }
 
@@ -159,8 +140,6 @@ impl ParserContext {
 		self
 	}
 
-	/// Sets whether repeated page-edge lines are taken out. See
-	/// [`ParserContext::strip_running_text`].
 	#[must_use]
 	pub const fn with_strip_running_text(mut self, strip: bool) -> Self {
 		self.strip_running_text = strip;
@@ -255,7 +234,6 @@ mod tests {
 		let settings = ParseSettings { strip_running_text: false, ..ParseSettings::default() };
 		let context = ParserContext::new("book.pdf".to_string()).with_parse_settings(settings);
 		assert!(!context.strip_running_text);
-		// The others move with it, so a partial override cannot quietly drop them.
 		assert!(context.render_tables_inline);
 		assert!(context.join_pdf_paragraphs);
 		assert!(context.markdown_dollar_math);

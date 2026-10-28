@@ -1,9 +1,6 @@
 /// Browser fixes required by the `MathML` emitted by `math-core`.
 pub const MATHML_STYLES: &str = include_str!("mathml.css");
 
-/// Escapes a single character for safe use in HTML text content (`&`, `<`, `>`), appending
-/// the result to `out`. Kept separate from [`escape`] since some callers stream characters
-/// one at a time rather than escaping a whole string up front.
 pub fn push_escaped(ch: char, out: &mut String) {
 	match ch {
 		'&' => out.push_str("&amp;"),
@@ -13,7 +10,6 @@ pub fn push_escaped(ch: char, out: &mut String) {
 	}
 }
 
-/// Escapes `&`, `<`, and `>` for safe use in HTML text content.
 #[must_use]
 pub fn escape(s: &str) -> String {
 	let mut out = String::with_capacity(s.len());
@@ -23,9 +19,9 @@ pub fn escape(s: &str) -> String {
 	out
 }
 
-/// Escapes `&` and `"` for safe use inside a double-quoted HTML attribute value.
 #[must_use]
 pub fn escape_attr(s: &str) -> String {
+	// `&` first, or the `&` of each `&quot;` would be escaped again.
 	s.replace('&', "&amp;").replace('"', "&quot;")
 }
 
@@ -45,8 +41,6 @@ mod tests {
 
 	#[test]
 	fn escape_attr_escapes_ampersand_before_quote() {
-		// & must be escaped first, or the & inserted by the quote replacement would itself
-		// get mangled.
 		assert_eq!(escape_attr(r#"a & "b""#), "a &amp; &quot;b&quot;");
 	}
 

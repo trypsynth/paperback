@@ -3,23 +3,13 @@ import Foundation
 
 private let pollInterval: TimeInterval = 0.25
 
-/// Where a relative seek lands relative to the file it starts in.
 enum SeekSpill: Equatable {
-	/// The seek stays inside this file, so it is an ordinary seek.
 	case withinFile
-	/// The seek runs off the end, this far into whatever plays next.
 	case pastEnd(overflowMs: Int64)
-	/// The seek runs off the front, this far back from the end of whatever plays before.
 	case beforeStart(underflowMs: Int64)
 }
 
-/// Where seeking `deltaMs` from `rawMs` lands, in a file that really runs for `lengthMs`.
-///
-/// This works in the file's own time rather than the document's elapsed time on purpose: an
-/// audiobook that is only a bundle of narration files gives every clip the same placeholder
-/// duration, far longer than the recording it stands for, so elapsed-time arithmetic would
-/// resolve back into the same file past its end, where a seek can only clamp. A file whose
-/// length is not known yet can only be seeked within.
+/// In the file's own time, because audio-only books give every clip a placeholder duration far longer than the recording, so elapsed-time arithmetic would only clamp.
 func spillOf(rawMs: Int64, lengthMs: Int64, deltaMs: Int64) -> SeekSpill {
 	guard lengthMs > 0 else { return .withinFile }
 	let naiveMs = rawMs + deltaMs
@@ -28,15 +18,11 @@ func spillOf(rawMs: Int64, lengthMs: Int64, deltaMs: Int64) -> SeekSpill {
 	return .withinFile
 }
 
-/// Where in a source to start: an absolute offset, or a distance back from its real end.
 private enum SourceSeek {
 	case fromStart(ms: Int64)
 	case fromEnd(ms: Int64)
 }
 
-/// Plays a book's recorded narration (including DAISY and M4B) against its timeline, like
-/// Android's `DaisyAudioPlayer`. `onClipChanged` fires unconditionally, so the caller keeps the
-/// currently-spoken-text display in step with playback without a sync toggle.
 @MainActor
 final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 	private var session: DocumentSession?
@@ -51,16 +37,11 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 	private var pendingTargetMs: Int64?
 	private var lastReportedClip: Int32?
 	private var pollTimer: Timer?
-	/// Set for the duration of one `seekRelativeMs`, so only that seek reports where it lands.
+	/// Only relative seeks report where they land; ones following the caret or restoring a saved position have nothing to say.
 	private var reportNextSeek = false
 
-	/// Invoked with the start position of the clip currently narrating, whenever it changes.
 	var onClipChanged: ((Int64) -> Void)?
-	/// Invoked whenever play/pause state changes, including auto-advance and end of book.
 	var onPlaybackStateChanged: ((Bool) -> Void)?
-	/// Invoked once a `seekRelativeMs` has landed, with where it landed in document elapsed
-	/// time. Only relative seeks report: the ones following the caret or restoring a saved
-	/// position have nothing to say.
 	var onRelativeSeekLanded: ((Int64) -> Void)?
 
 	private var cacheDirectory: URL {
@@ -70,8 +51,7 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 	var hasAudio: Bool { session?.hasAudioFfi() == true }
 	var isPlaying: Bool { playing }
 
-	/// Switches to narrating `newSession`, stopping whatever this player was doing. `newDocKey`
-	/// scopes the extracted-source cache so it doesn't collide with another document's.
+	/// `newDocKey` scopes the extracted-source cache so it doesn't collide with another document's.
 	func attach(session newSession: DocumentSession, docKey newDocKey: String) {
 		stop()
 		session = newSession
@@ -111,10 +91,7 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		if playing { pause() } else { play() }
 	}
 
-	/// Stops playback and releases the decoder, ahead of switching documents or going away.
-	/// Only notifies when there was something to stop: `attach` and `detach` call this on every
-	/// tab switch, including ones involving documents that never had audio, and firing
-	/// unconditionally there would force a paused state onto speech that was never speaking.
+	/// Only notifies when something was active: this runs on every tab switch, and firing unconditionally would force a paused state onto speech.
 	func stop() {
 		let wasActive = playing || session != nil
 		playing = false
@@ -129,8 +106,6 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		if wasActive { onPlaybackStateChanged?(false) }
 	}
 
-	/// Seeks to the point covering `position` in the text, if the timeline narrates it. Leaves
-	/// the transport running or paused as it already was.
 	@discardableResult
 	func seekToPosition(_ position: Int64) -> Bool {
 		guard let session else { return false }
@@ -139,11 +114,7 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		return seekToMs(point.timeMs)
 	}
 
-	/// Seeks to `elapsedMs` into the overall document timeline. A paused target landing in some
-	/// other file is only recorded and applied on resume, so browsing a paused book doesn't
-	/// drive a full load per keystroke. A target inside the file already open is applied at
-	/// once even while paused: it costs nothing and keeps the decoder's reported position
-	/// honest for `seekRelativeMs`, which measures from it.
+	/// A paused seek into another file waits for resume so browsing doesn't load per keystroke; within the open file it applies at once, since `seekRelativeMs` measures from the decoder.
 	@discardableResult
 	func seekToMs(_ elapsedMs: Int64) -> Bool {
 		guard let session else { return false }
@@ -166,8 +137,7 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		pendingTargetMs = elapsedMs
 		reportClip(cursor.clipIndex)
 		if currentSource == clip.source, let player, Int64(player.currentTime * 1000) == cursor.seekMs {
-			// Compare with the decoder's actual position: it may have moved since the last
-			// seek, even when the requested destination hasn't changed.
+			// The decoder may have moved since the last seek even when the requested destination hasn't.
 			if playing, !resumeLoadedPlayer() { return false }
 			pendingTargetMs = nil
 			return true
@@ -181,9 +151,6 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		return true
 	}
 
-	/// Moves playback `deltaMs` from wherever it is now, the time-unit equivalent of stepping
-	/// by paragraph in a text document. A seek running off either end of the file now playing
-	/// continues into its neighbour, measured against that file's own real length.
 	@discardableResult
 	func seekRelativeMs(_ deltaMs: Int64) -> Bool {
 		guard let session else { return false }
@@ -198,12 +165,9 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		return seeked
 	}
 
-	/// Handles the part of `seekRelativeMs` that leaves the current file, loading the
-	/// neighbouring source at the leftover offset.
 	private func spillAcrossFileBoundary(_ session: DocumentSession, deltaMs: Int64) -> Bool {
 		guard let source = currentSource, let player else { return false }
-		// A recorded-but-unapplied target means the loaded decoder isn't where we logically
-		// are, so its reported position is the wrong thing to measure against.
+		// With an unapplied target pending, the decoder's position is the wrong thing to measure from.
 		guard pendingTargetMs == nil else { return false }
 		let rawMs = Int64(player.currentTime * 1000)
 		let lengthMs = Int64(player.duration * 1000)
@@ -223,8 +187,7 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		}
 	}
 
-	/// Where playback would resume right now. Nil means no position has been established yet;
-	/// callers must not treat that as the start, since it would overwrite a stored position.
+	/// Nil must not be treated as the start, since that would overwrite a stored position.
 	func resumePointMs() -> Int64? {
 		if let pendingTargetMs { return pendingTargetMs }
 		if let session, let source = currentSource, let player {
@@ -259,9 +222,7 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		return true
 	}
 
-	/// Seeks `player` to `seekMs`, clamped to the file's real length, and reports where it
-	/// actually went. The clamp matters for a bundle of narration files, whose clips declare a
-	/// placeholder duration hours longer than the recording.
+	/// Clamped because audio-only books' clips declare a placeholder duration hours longer than the recording.
 	private func seekWithinPlayer(_ player: AVAudioPlayer, seekMs: Int64) -> Int64 {
 		let lengthMs = Int64(player.duration * 1000)
 		let target = lengthMs > 0 ? min(max(seekMs, 0), lengthMs) : max(seekMs, 0)
@@ -279,9 +240,7 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 	private func loadSource(_ sourceIndex: Int32, seek: SourceSeek) {
 		guard let session else { return }
 		currentSource = sourceIndex
-		// Where we are between here and the decoder being ready, so a second seek arriving in
-		// that window still has something to measure from. A distance back from the end has no
-		// answer until the file's real length is known, so it stays unrecorded until then.
+		// Gives a second seek arriving before the decoder is ready something to measure from; a distance from the end needs the real length first.
 		switch seek {
 		case .fromStart(let ms):
 			let elapsed = session.audioElapsedForSourcePositionFfi(source: sourceIndex, rawMs: ms)
@@ -296,8 +255,7 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		let myGeneration = loadGeneration
 		let key = docKey
 		let cacheDir = cacheDirectory
-		// Resolving a source can extract it from the book's zip, so it runs off the main
-		// thread; the generation check on return discards a superseded load.
+		// Off the main thread because resolving can extract from the book's zip.
 		Task.detached(priority: .userInitiated) {
 			let path = Self.resolveSourcePath(session: session, index: sourceIndex, docKey: key, cacheDir: cacheDir)
 			await MainActor.run { [weak self] in
@@ -311,8 +269,6 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		}
 	}
 
-	/// Resolves source `index` to a real local file: the document's own path when it isn't
-	/// zip-embedded, otherwise extracted once and cached.
 	private nonisolated static func resolveSourcePath(
 		session: DocumentSession,
 		index: Int32,
@@ -353,14 +309,12 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		if playing {
 			guard resumeLoadedPlayer() else { return }
 		}
-		// The decoder is now sitting where it was asked to, so it is the authority on the
-		// resume point again (see `resumePointMs`).
+		// The decoder is the authority on the resume point again (see `resumePointMs`).
 		pendingTargetMs = nil
 		reportClipAtSourcePosition(source: sourceIndex, rawMs: landedMs)
 		reportSeeked(source: sourceIndex, rawMs: landedMs)
 	}
 
-	/// Releases a failed decoder while retaining the destination for a later retry.
 	private func resetAfterLoadFailure() {
 		pendingTargetMs = resumePointMs()
 		player?.stop()
@@ -373,7 +327,6 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		onPlaybackStateChanged?(false)
 	}
 
-	/// Auto-advances to whichever source continues the narration, or stops at the end.
 	private func onSourceCompleted(_ sourceIndex: Int32) {
 		guard let session else { return }
 		let next = session.audioNextSourceAfterFfi(currentSource: sourceIndex)
@@ -412,14 +365,12 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		pollTimer = nil
 	}
 
-	/// How far into the whole recording playback has got, or nil before a file has been loaded or when the timeline has no answer.
 	var elapsedMs: Int64? {
 		guard let session, let source = currentSource, let player else { return nil }
 		let elapsed = session.audioElapsedForSourcePositionFfi(source: source, rawMs: Int64(player.currentTime * 1000))
 		return elapsed >= 0 ? elapsed : nil
 	}
 
-	/// Keeps the reported "currently narrating" clip in step with natural playback advance.
 	private func pollTick() {
 		guard playing, let session, let source = currentSource, let player else { return }
 		let rawMs = Int64(player.currentTime * 1000)
@@ -429,8 +380,7 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		if cursor.found { reportClip(cursor.clipIndex) }
 	}
 
-	/// Reports whichever clip covers `rawMs` in `source`, for a seek that landed somewhere the
-	/// poll loop won't visit on its own (a paused one, most of all).
+	/// For a seek landing where the poll loop won't visit on its own, a paused one most of all.
 	private func reportClipAtSourcePosition(source: Int32, rawMs: Int64) {
 		guard let session else { return }
 		let elapsed = session.audioElapsedForSourcePositionFfi(source: source, rawMs: rawMs)
@@ -447,8 +397,7 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 		onClipChanged?(clip.start)
 	}
 
-	/// Matches how speech claims the route: `.playback` is not mixable, so applying it
-	/// interrupts other apps' audio and must wait until the reader has asked for playback.
+	/// `.playback` is not mixable, so applying it interrupts other apps and must wait until the reader asks for playback.
 	private func activateAudioSession() {
 		let audio = AVAudioSession.sharedInstance()
 		try? audio.setCategory(.playback, mode: .spokenAudio)

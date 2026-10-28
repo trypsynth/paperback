@@ -75,25 +75,17 @@ fun MainScreen(
 	val activeSearchOptions by viewModel.search.options.collectAsStateWithLifecycle()
 	val isTextMode by settings.textMode.state.collectAsStateWithLifecycle()
 
-	// An audio-only tab has no real text spine to show in Text Mode (its top-bar toggle is
-	// hidden for the same reason), so switching to one from a Text Mode session falls back to
-	// Read-Aloud mode instead of stranding the user on a blank text view with no way back.
+	// An audio-only tab hides the Text Mode toggle, so staying in Text Mode would strand the reader on a blank view with no way back.
 	LaunchedEffect(state.activeTab?.documentUri) {
 		if (state.activeTab?.isAudioOnly == true) {
 			settings.textMode.set(false)
 		}
 	}
 
-	// F3/Shift+F3 (MainActivity) trigger this. In Read-Aloud mode, Find is a nav unit, so this
-	// just steps it the same way the nav-unit slider's Previous/Next buttons do; only Text mode
-	// (which has no nav-unit slider) still needs this handler's own search-and-scroll logic.
 	LaunchedEffect(Unit) {
 		viewModel.search.stepRequests.collect { forward ->
 			if (!isTextMode) {
-				// No active search means Find isn't the nav unit, so there's nothing for F3 to
-				// step through here; without this guard it would fall through to whatever unit
-				// currently is selected (Section, a Time seek, ordinary Paragraph...), silently
-				// doing the wrong thing instead of the no-op F3 has always been without a search.
+				// Without a search, F3 would otherwise step whatever unit is selected instead of doing nothing.
 				if (activeSearchQuery != null && activeSearchOptions != null) {
 					val speaking = viewModel.ttsManager.isSpeaking.value
 					if (forward) {
@@ -264,9 +256,7 @@ fun MainScreen(
 		}
 	)
 
-	// The three actions that pick a file. Which picker each one uses depends on a setting and on
-	// where the document came from, so the top bar's menu items and the keyboard shortcuts share
-	// these rather than each deciding for themselves.
+	// Shared by the menu and the keyboard shortcuts so both pick the same picker for the setting and the document's origin.
 	val openBook: () -> Unit = {
 		if (useInAppFileBrowser) {
 			if (needsAllFilesAccessPermission()) {
@@ -311,9 +301,7 @@ fun MainScreen(
 
 	Box(modifier = Modifier.fillMaxSize()) {
 		Scaffold(
-			// safeDrawing rather than the default systemBars so text keeps clear of a landscape
-			// display cutout. The bars each pad themselves, so letting the Scaffold be the one
-			// place that applies these is what stops them being counted twice.
+			// safeDrawing keeps text clear of a landscape cutout; applied only here so the bars' own padding isn't counted twice.
 			contentWindowInsets = WindowInsets.safeDrawing,
 			topBar = {
 				MainScreenTopBar(
@@ -365,8 +353,6 @@ fun MainScreen(
 					)
 				} else if (!isTextMode && activeTab != null) {
 					val baseNavUnits = remember(activeTab.session) { viewModel.reading.navUnitsFor(activeTab) }
-					// Find is only offered as a nav unit once a search is active; it steps through
-					// that search's matches instead of opening a separate find bar.
 					val navUnits = if (activeSearchQuery != null) baseNavUnits + NavUnit.Find else baseNavUnits
 					LaunchedEffect(navUnits) {
 						viewModel.reading.ensureNavUnitSupported(navUnits)
@@ -417,9 +403,6 @@ fun MainScreen(
 							val listState = listStates.getOrPut(docState.documentUri) {
 								LazyListState(firstVisibleItemIndex = docState.initialScrollIndex)
 							}
-							// What every "take me there" control in this view does once it has worked
-							// out which line it wants: record the new position, switch to Text Mode so
-							// the destination is actually on screen, and put the focus on it.
 							val jumpToLine: (Int) -> Unit = { indexToScroll ->
 								viewModel.reading.savePosition(docState.session, docState.documentUri, indexToScroll)
 								viewModel.reading.refreshSegmentPreview()
@@ -429,8 +412,7 @@ fun MainScreen(
 									lineIndexToFocus = indexToScroll
 								}
 							}
-							// Set by the elements screen, which cannot switch to Text Mode or
-							// scroll the list itself.
+							// Set by the elements screen, which cannot switch to Text Mode or scroll the list itself.
 							LaunchedEffect(pendingJumpOffset) {
 								val offset = pendingJumpOffset
 								if (offset != null) {
@@ -472,12 +454,7 @@ fun MainScreen(
 									.collect { index -> viewModel.reading.savePosition(docState.session, docState.documentUri, index) }
 							}
 							if (!isTextMode) {
-								// An audio-only book's buffer is one blank line per narration file, so a
-								// share of its characters says nothing about how far in the reader is,
-								// and its recording is no better: a plain zip of narration files gives
-								// every clip the same placeholder duration, so a share of the running
-								// time is just as made up. It goes without a reading rather than with
-								// a wrong one.
+								// Neither an audio-only book's text (a blank line per file) nor its placeholder clip durations give a true share, so it shows none rather than a wrong one.
 								val session = docState.session
 								val progressPercent = remember(session, docState.isAudioOnly, ttsPosition) {
 									if (docState.isAudioOnly) null else session.getStatusInfo(ttsPosition).percentage
@@ -578,11 +555,7 @@ fun MainScreen(
 	}
 }
 
-/**
- * Runs [work] off the UI thread and tells the reader how it went. Every transfer to or from a
- * file is slow enough to belong off the main thread and quiet enough to need saying, since the
- * result is a file somewhere the reader cannot see from here.
- */
+/** The result is a file the reader can't see from here, so it has to be said. */
 private fun CoroutineScope.reportResult(context: Context, succeeded: String, failed: String, work: () -> Boolean) {
 	launch(Dispatchers.IO) {
 		val message = if (work()) succeeded else failed

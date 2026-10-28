@@ -1,7 +1,3 @@
-//! Reference lists and jump targets built from document markers: the link list and
-//! heading tree feeding the "Elements"/"Table of Contents" dialogs, link activation for
-//! the reader's Enter-key handling, and bookmark note lookup for the status bar.
-
 use super::{
 	DocumentSession, HeadingTreeFfi, HeadingTreeItemFfi, LinkAction, LinkActivationResult, LinkListFfi, LinkListItemFfi,
 };
@@ -37,13 +33,11 @@ impl DocumentSession {
 		}
 	}
 
-	/// Whether `position` is on a link that activating would follow.
 	#[must_use]
 	pub fn is_on_link(&self, position: DocPos) -> bool {
 		self.link_href_at(position).is_some()
 	}
 
-	/// The href of the link `position` is on, if any.
 	fn link_href_at(&self, position: DocPos) -> Option<String> {
 		let pos = position.min(self.handle.document().buffer.end());
 		let link_index = self.handle.current_marker_index(pos, MarkerType::Link)?;
@@ -82,7 +76,7 @@ impl DocumentSession {
 }
 
 impl DocumentSession {
-	/// The bookmarks kept under `path`, each with the text it marks, for an export that has to be readable without the book.
+	/// Each with the text it marks, since the export has to be readable without the book.
 	#[must_use]
 	pub fn annotation_entries(
 		&self,
@@ -101,8 +95,7 @@ impl DocumentSession {
 			.collect()
 	}
 
-	/// The bookmark at `position` among those kept under `path`, which is where the document's
-	/// settings are: the link for a document opened from one.
+	/// `path` is where the settings are kept: the link, for a document opened from one.
 	#[must_use]
 	pub fn bookmark_display_at_position(
 		&self,
@@ -122,11 +115,7 @@ impl DocumentSession {
 		ffi::BookmarkDisplayAtPosition { found: true, note: bookmark.note, snippet }
 	}
 
-	/// One row per marker of `mtype`, in document order, for the Elements dialog's flat views.
-	/// Each row shows the marker's own text (a table's caption) or, when the marker carries none,
-	/// the whole line the marker sits on (a list's first rendered item) — the same text reading
-	/// navigation announces for it. `closest_index` is the index of the last row whose marker is
-	/// at or before `position`.
+	/// A marker with no text of its own shows its whole line, the same text navigation announces for it.
 	#[must_use]
 	pub fn element_list(&self, mtype: MarkerType, position: DocPos) -> ffi::ElementList {
 		let pos = position.min(self.handle.document().buffer.end());

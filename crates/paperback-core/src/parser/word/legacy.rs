@@ -1,7 +1,3 @@
-//! Legacy binary `.doc` parsing: the OLE compound-file container, its FIB header, the
-//! piece table that locates run text, and the plain-text fallback used when neither this
-//! nor `super::ooxml` can make sense of the file.
-
 use std::{
 	fs::{self, File},
 	io::{Cursor, Read, Seek},
@@ -35,9 +31,6 @@ const FIB_FCCLX_OFFSET: usize = 0x1A2;
 const FIB_LCBCLX_OFFSET: usize = 0x1A6;
 const FIB_FLAG_ENCRYPTED: u16 = 0x0100;
 const FIB_FLAG_USE_1_TABLE: u16 = 0x0200;
-/// `nFib` values below this are Word 6.0 and Word 95, which predate the Word 97 file format. They
-/// keep their text in the `WordDocument` stream itself and write no `0Table`/`1Table`, so the
-/// Word 97 path below cannot read them. Word 97 is `nFib` 0x00C1 and up.
 const FIB_NFIB_WORD97: u16 = 0x00C1;
 
 mod lists;
@@ -48,9 +41,7 @@ use lists::DocLists;
 use properties::Paragraphs;
 use styles::{OUTLINE_BODY_TEXT, ParagraphStyle};
 
-/// Marks where a list item starts in the extracted text, through normalization, until
-/// [`finish_doc`] turns it into a list-item marker. Level N (1-9) is `U+FDD0 + N - 1`:
-/// noncharacters, which no document can contain and which normalization leaves alone.
+/// Level N is `U+FDD0 + N - 1`: noncharacters, which no document can contain and normalization leaves alone, so they survive until [`finish_doc`].
 const LIST_ITEM_MARK: u32 = 0xFDD0;
 /// Marks where a heading starts, as [`LIST_ITEM_MARK`] does a list item: level N is `U+FDE0 + N - 1`.
 const HEADING_MARK: u32 = 0xFDE0;
@@ -105,9 +96,7 @@ pub(super) fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 		}
 		return Ok(finish_doc(&text, &context.file_path));
 	}
-	// Word 6.0 and Word 95 keep their text in the WordDocument stream and write no table stream, so
-	// the Word 97 path below would fail at the very first step. Their text is the run between fcMin
-	// and fcMac; read it straight out rather than turning a thirty-year-old file into an error.
+	// Word 6.0 and Word 95 write no table stream, so the Word 97 path would fail; their text is the fcMin-fcMac run of the WordDocument stream.
 	let nfib = read_u16_le(&word_document, FIB_NFIB_OFFSET);
 	if nfib < FIB_NFIB_WORD97 {
 		return Ok(finish_doc(&extract_word6_text(&word_document), &context.file_path));
@@ -151,15 +140,12 @@ fn extract_doc_text_from_piece_table(word_document: &[u8], table_stream: &[u8]) 
 	Some(mark_paragraphs(&units, &pieces, formatting, word_document))
 }
 
-/// What the document's formatting says about each paragraph's place in its structure.
 struct Formatting {
 	paragraphs: Paragraphs,
 	lists: Option<DocLists>,
-	/// What each paragraph style gives its paragraphs, by `istd`.
 	styles: Vec<ParagraphStyle>,
 }
 
-/// One piece of the piece table: the character positions it covers and where its text is.
 struct Piece {
 	cp_start: usize,
 	cp_end: usize,
@@ -168,16 +154,12 @@ struct Piece {
 }
 
 impl Piece {
-	/// The file offset of character position `cp`, which this piece covers.
 	const fn fc_of(&self, cp: usize) -> usize {
 		self.fc + (cp - self.cp_start) * if self.ansi { 1 } else { 2 }
 	}
 }
 
-/// The document's text with each heading marked by a [`HEADING_MARK`], and each list paragraph's
-/// label in front of it (with a [`LIST_ITEM_MARK`] before that), in the order Word shows them. A
-/// numbered heading keeps its number, but is a heading rather than a list item. `units` is the
-/// text by character position, one UTF-16 unit each, as the piece table lays it out.
+/// A numbered heading keeps its number but is a heading rather than a list item; `units` holds one UTF-16 unit per character position.
 fn mark_paragraphs(units: &[u16], pieces: &[Piece], formatting: Option<Formatting>, word_document: &[u8]) -> String {
 	let Some(mut formatting) = formatting else { return String::from_utf16_lossy(units) };
 	let mut out: Vec<u16> = Vec::with_capacity(units.len());
@@ -218,7 +200,6 @@ fn mark_paragraphs(units: &[u16], pieces: &[Piece], formatting: Option<Formattin
 	String::from_utf16_lossy(&out)
 }
 
-/// Appends the noncharacter that marks a level-`level` (1-9) heading or list item.
 fn push_mark(out: &mut Vec<u16>, base: u32, level: i32) {
 	let level = u32::try_from(level.clamp(1, 9) - 1).unwrap_or(0);
 	out.extend(char::from_u32(base + level).unwrap_or(' ').encode_utf16(&mut [0; 2]).iter());
@@ -229,7 +210,6 @@ fn parse_doc_clx(clx: &[u8], word_document: &[u8]) -> Option<String> {
 	clx_pieces(clx, word_document).map(|(units, _)| String::from_utf16_lossy(&units))
 }
 
-/// The piece table inside a Clx, read into text by character position and the pieces that lay it out.
 fn clx_pieces(clx: &[u8], word_document: &[u8]) -> Option<(Vec<u16>, Vec<Piece>)> {
 	let mut offset = 0usize;
 	while offset < clx.len() {
@@ -308,8 +288,7 @@ fn read_piece_table(piece_table: &[u8], word_document: &[u8]) -> Option<(Vec<u16
 		let slice = &word_document[fc..end];
 		let cp_start = units.len();
 		if is_ansi {
-			// Every byte of a compressed piece is one character position, and Windows-1252 maps
-			// each to one character in the Basic Multilingual Plane, so positions stay aligned.
+			// Every byte of a compressed piece is one character position, and Windows-1252 maps each to one BMP character, so positions stay aligned.
 			let (decoded, _, _) = WINDOWS_1252.decode(slice);
 			units.extend(decoded.encode_utf16());
 		} else {
@@ -320,7 +299,6 @@ fn read_piece_table(piece_table: &[u8], word_document: &[u8]) -> Option<(Vec<u16
 	Some((units, pieces))
 }
 
-/// A Word 6/95 document's text: the 8-bit codepage run between `fcMin` and `fcMac`, decoded with the shared detector.
 fn extract_word6_text(word_document: &[u8]) -> String {
 	let fc_min = usize::try_from(read_u32_le(word_document, FIB_FCMIN_OFFSET)).unwrap_or(0);
 	let fc_mac = usize::try_from(read_u32_le(word_document, FIB_FCMAC_OFFSET)).unwrap_or(0);
@@ -332,8 +310,6 @@ fn extract_word6_text(word_document: &[u8]) -> String {
 	convert_to_utf8(&word_document[fc_min..end])
 }
 
-/// Builds the finished document from extracted DOC text: normalize field codes, drop it into a
-/// buffer with a trailing newline, and title it from the path. Shared by the extraction paths.
 fn finish_doc(text: &str, file_path: &str) -> Document {
 	let normalized = normalize_doc_text(text);
 	let mut buffer = DocumentBuffer::new();
@@ -351,9 +327,6 @@ fn finish_doc(text: &str, file_path: &str) -> Document {
 	document
 }
 
-/// Appends the normalized text, turning each [`HEADING_MARK`] at the start of a line into a
-/// heading marker and each [`LIST_ITEM_MARK`] into a list-item marker, and each run of list items
-/// into one list the reader can step over, as HTML and `.docx` headings and lists are.
 fn append_marked(buffer: &mut DocumentBuffer, text: &str) {
 	let mut run: Option<(DocPos, i32, DocPos)> = None; // start, items, end of last item
 	let close = |buffer: &mut DocumentBuffer, run: &mut Option<(DocPos, i32, DocPos)>| {
@@ -397,7 +370,6 @@ fn append_marked(buffer: &mut DocumentBuffer, text: &str) {
 	close(buffer, &mut run);
 }
 
-/// Whether `c` is one of the noncharacters that mark a heading or a list item.
 fn is_mark(c: char) -> bool {
 	let c = u32::from(c);
 	(LIST_ITEM_MARK..LIST_ITEM_MARK + 9).contains(&c) || (HEADING_MARK..HEADING_MARK + 9).contains(&c)
@@ -414,8 +386,7 @@ fn extract_doc_text_simple(word_document: &[u8]) -> String {
 }
 
 fn normalize_doc_text(text: &str) -> String {
-	// Strip Word field codes: \u{13}=begin, \u{14}=separator (display text follows), \u{15}=end.
-	// Keep only text outside fields or in the display portion of a field; discard instructions.
+	// Word field codes: \u{13} begin, \u{14} separator (display text follows), \u{15} end; only the display text is kept, never the instructions.
 	let stripped = {
 		let mut out = String::with_capacity(text.len());
 		// Each entry on the stack is true when we have passed the \u{14} separator at that depth.

@@ -1,10 +1,4 @@
-//! A tagged PDF's tables: turning the `Table`/`TR`/`TH`/`TD` elements into HTML, and writing that
-//! table into the page.
-//!
-//! The HTML is the intermediate form the rest of Paperback already speaks. Every other format's
-//! tables reach the reader through
-//! [`crate::parser::convert::table_text`], so a PDF's do too rather than growing a renderer of
-//! their own, and the table view the reader opens with Enter is given the same HTML.
+//! Tables go through HTML because every other format's tables reach the reader through [`crate::parser::convert::table_text`], and the table view opened with Enter is given the same HTML.
 
 use std::{collections::HashMap, fmt::Write as _};
 
@@ -16,9 +10,7 @@ use crate::{
 	util::text::{collapse_whitespace, trim_string},
 };
 
-/// Walks a `Table` element into HTML. Anything between the table and its rows that is not a row
-/// itself (a `THead`, a `Div` some producer put in) is walked through rather than written, so a
-/// table keeps its shape whatever it is wrapped in.
+/// Anything between the table and its rows (a `THead`, a `Div` some producer put in) is walked through rather than written, so a table keeps its shape whatever wraps it.
 pub(super) fn build_html_table(elem: &Tag, mcid_to_text: &HashMap<i32, String>) -> String {
 	let elem_type = elem.kind().unwrap_or_default();
 	match elem_type.as_str() {
@@ -37,7 +29,6 @@ pub(super) fn build_html_table(elem: &Tag, mcid_to_text: &HashMap<i32, String>) 
 	}
 }
 
-/// One element's HTML: an opening tag, whatever its children come to, and a closing tag.
 fn wrap(open: &str, close: &str, elem: &Tag, mcid_to_text: &HashMap<i32, String>) -> String {
 	let mut html = format!("<{open}>\n");
 	html.push_str(&children(elem, mcid_to_text));
@@ -59,12 +50,6 @@ fn html_escape(s: &str) -> String {
 	s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;")
 }
 
-/// Append a PDF table's on-screen text to the buffer and add the Table marker. The text is produced
-/// by [`crate::parser::convert::table_text::html_table_to_display`]: the full tab-separated rendering when
-/// `render_tables_inline` is set, otherwise a `"[Table]: <first row>"` placeholder. The helper
-/// output may span multiple lines (one per table row); each line is recorded as its own
-/// `current_lines_info` / `page_display_text` line, mirroring the rest of the PDF line tracking.
-/// Kept apart from the walk so the logic is unit-testable without a live PDF page.
 pub(super) fn append_pdf_table_to_buffer(
 	buffer: &mut DocumentBuffer,
 	html: String,
@@ -74,8 +59,7 @@ pub(super) fn append_pdf_table_to_buffer(
 	render_tables_inline: bool,
 ) {
 	let display_text = html_table_to_display(&html, render_tables_inline);
-	// `display_lines_and_length` guards the empty case (an empty inline table) by returning no
-	// lines, where a raw `split('\n')` would yield one `""` and emit a spurious blank line.
+	// Not a raw `split('\n')`, which would emit a spurious blank line for an empty inline table.
 	let (lines, _) = display_lines_and_length(&display_text);
 	for line in lines {
 		let line_pos = buffer.end();

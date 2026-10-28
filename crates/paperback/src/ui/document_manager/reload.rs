@@ -1,5 +1,3 @@
-//! Re-reading open documents: after the parse settings change, and when a file changes on disk. Split out of the main `DocumentManager` impl.
-
 use std::{fs, path::Path, time::SystemTime};
 
 use paperback_core::{
@@ -28,10 +26,7 @@ use crate::{
 	working_copy::WorkingCopy,
 };
 
-/// Change-detection stamp for an open document's file, compared on every frame activation and
-/// tab switch. Metadata-only on purpose: `config::compute_document_hash` would read up to 2 MiB
-/// from disk per check and still miss mid-file edits in files larger than that (it hashes only
-/// head, tail and size), whereas a single `fs::metadata` call catches any completed write.
+/// Metadata-only, since `config::compute_document_hash` reads up to 2 MiB per check (every activation and tab switch) and still misses mid-file edits in larger files.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) struct FileFingerprint {
 	modified: SystemTime,
@@ -39,7 +34,6 @@ pub(super) struct FileFingerprint {
 }
 
 impl FileFingerprint {
-	/// The file's size in bytes.
 	pub(super) const fn len(self) -> u64 {
 		self.len
 	}
@@ -51,12 +45,8 @@ pub(super) fn read_fingerprint(path: &Path) -> Option<FileFingerprint> {
 }
 
 impl DocumentManager {
-	/// Re-parses every open document with the new parse settings and refills its text control.
-	/// Re-parsing (rather than transforming in place) keeps every format's table rendering
-	/// identical via the shared parse-time helper. A tab whose re-parse fails is left unchanged.
+	/// Re-parses rather than transforming in place so every format's table rendering stays identical via the shared parse-time helper.
 	pub fn apply_parse_settings(&mut self, settings: ParseSettings) {
-		// Read readability settings and collect each tab's parse inputs (password, forced format)
-		// under a single config lock, so we don't re-lock per tab while mutating the tabs.
 		let (style, parse_inputs) = {
 			let cfg = self.config.lock().unwrap();
 			let parse_inputs: Vec<(String, String)> = self
@@ -74,9 +64,6 @@ impl DocumentManager {
 		}
 	}
 
-	/// Reads the tab at `index` again from `copy`, a new download of the link it was opened from,
-	/// keeping the reading position, and records the download's name and size. The previous copy is
-	/// deleted when that works; otherwise the tab keeps it and stays as it was.
 	pub fn reload_link(&mut self, index: usize, copy: WorkingCopy) -> bool {
 		let Some(tab) = self.tabs.get_mut(index) else {
 			return false;
@@ -102,21 +89,16 @@ impl DocumentManager {
 		true
 	}
 
-	/// Reloads the tab at `index` if its file changed on disk since it was last parsed and automatic reloading is on.
 	pub fn reload_tab_if_changed(&mut self, index: usize) -> bool {
 		self.reload_tab(index, false)
 	}
 
-	/// Re-reads the tab at `index` from disk. Returns true only when the tab content was
-	/// actually replaced.
-	///
-	/// `forced` is the reader pressing F5, which skips the checks for a changed file and for the automatic reloading setting: turning that setting off asks not to be reloaded unasked, and F5 is asking. It does not reload an untracked tab, a help file or a source view, since a source view's title is applied once when it opens and a re-parse would leave "Source: ..." over an ordinary reading.
-	///
-	/// If the stored password no longer decrypts the file, prompts for a new one and retries once. Uses `try_lock` on the config: the caller may be a frame-activation handler running inside a nested modal event loop whose opener already holds the lock.
+	/// `forced` (F5) skips the changed-file and auto-reload checks, since turning that setting off asks not to be reloaded unasked and F5 is asking.
 	pub fn reload_tab(&mut self, index: usize, forced: bool) -> bool {
 		let Some(tab) = self.tabs.get(index) else {
 			return false;
 		};
+		// A source view's title is applied once at open, so a re-parse would leave "Source: ..." over an ordinary reading.
 		if !tab.track {
 			return false;
 		}
@@ -128,11 +110,10 @@ impl DocumentManager {
 		}
 		let path_str = tab.file_path.to_string_lossy().to_string();
 		if forced {
-			// Stop OCR before re-reading, or its pages would land in the new text. Quietly, because its
-			// page count would describe the text being replaced. A missing file returned above, so OCR
-			// on it carries on.
+			// Or its pages would land in the new text; quietly, because its page count would describe the replaced text.
 			self.stop_ocr_at(index, true);
 		}
+		// `try_lock` because a frame-activation caller may be inside a nested modal loop whose opener holds the lock.
 		let Ok(cfg) = self.config.try_lock() else {
 			return false;
 		};
@@ -150,8 +131,7 @@ impl DocumentManager {
 		let reloaded = match reparse_tab_in_place(tab, &password, &forced_extension, settings, &style) {
 			Ok(()) => true,
 			Err(err) if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
-				// Recorded before the prompt so a re-entrant call during its modal
-				// event loop sees the file as unchanged and skips a second prompt.
+				// Recorded before the prompt so a re-entrant call during its modal loop sees the file as unchanged and skips a second prompt.
 				tab.disk_fingerprint = Some(current);
 				self.reprompt_password_and_reparse(index, &path_str, &forced_extension, settings, &style)
 			}
@@ -167,10 +147,6 @@ impl DocumentManager {
 		reloaded
 	}
 
-	/// Asks for a fresh password after a reload attempt failed to decrypt the file, then retries
-	/// the re-parse once. Dismissing the prompt keeps the old tab content without an error: the
-	/// reload was not user-initiated, so there is nothing to recover from. A wrong password shows
-	/// the same load-error dialog as the open flow.
 	fn reprompt_password_and_reparse(
 		&mut self,
 		index: usize,
@@ -182,6 +158,7 @@ impl DocumentManager {
 		if let Ok(cfg) = self.config.try_lock() {
 			cfg.set_document_password(path_str, "");
 		}
+		// Dismissing keeps the old content without an error, since the reload wasn't the reader's doing.
 		let Some(password) = prompt_for_password(&self.notebook) else {
 			return false;
 		};
@@ -205,7 +182,6 @@ impl DocumentManager {
 	}
 }
 
-/// The parse-time toggles as the reader has them set.
 pub(super) fn parse_settings(cfg: &ConfigManager) -> ParseSettings {
 	ParseSettings {
 		render_tables_inline: cfg.get_app_bool("render_tables_inline", true),
@@ -215,8 +191,6 @@ pub(super) fn parse_settings(cfg: &ConfigManager) -> ParseSettings {
 	}
 }
 
-/// Builds a fresh session for `tab`'s file and refills its text control, restoring the reading
-/// position. Returns the parse error and leaves the tab unchanged if the re-parse fails.
 fn reparse_tab_in_place(
 	tab: &mut DocumentTab,
 	password: &str,
@@ -227,11 +201,7 @@ fn reparse_tab_in_place(
 	let new_fingerprint = read_fingerprint(tab.local_path());
 	let current_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 	let pos = current_pos.min(tab.session.handle().document().buffer.end());
-	// Find the nearest anchor at-or-before the cursor using the full id_positions key
-	// (unlike nearest_fragment_before, which strips the "path#" prefix for epub keys
-	// making the subsequent lookup fail). Record the within-block offset so the cursor
-	// lands at the same structural position after reparsing. Fallback: percentage-based
-	// position for formats with no anchors.
+	// Uses the full `id_positions` key, not `nearest_fragment_before`, which strips EPUB's "path#" prefix and so fails the lookup after reparsing.
 	let stable_anchor = {
 		let id_positions = &tab.session.handle().document().id_positions;
 		id_positions
@@ -256,9 +226,7 @@ fn reparse_tab_in_place(
 		&saved_pages_of(&local_path),
 		is_pdf(&local_path) && settings.join_pdf_paragraphs,
 	);
-	// TODO(windowing): still whole-document on every reparse, see
-	// C:\Users\Quin\.claude\plans\fluffy-hugging-crystal.md Phase 2 - should load a window
-	// centered on `restored_pos` instead.
+	// TODO(windowing): still whole-document on every reparse; should load a window centred on `restored_pos` instead.
 	let doc_len = tab.session.document_len();
 	let slice = tab.session.get_window(DocPos::ZERO, doc_len.as_pos());
 	tab.window = TextWindow::of(&slice);
@@ -288,10 +256,7 @@ fn reparse_tab_in_place(
 	tab.text_ctrl.set_insertion_point(restored);
 	tab.text_ctrl.show_position(restored);
 	tab.disk_fingerprint = new_fingerprint;
-	// The buffer was rebuilt, and the caret above was re-derived from an anchor or a percentage
-	// rather than carried over, so there is nothing honest to map an old mark onto. Clearing it
-	// means the next copy says "set beginning of selection first" instead of copying whatever now
-	// happens to sit at the old offset.
+	// The caret was re-derived rather than carried over, so there's nothing honest to map the old mark onto.
 	tab.selection_mark.set(None);
 	Ok(())
 }

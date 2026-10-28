@@ -1,9 +1,4 @@
-//! Reading Mobipocket's tagged index format (`INDX`/`TAGX`/`IDXT`/`CNCX`).
-//!
-//! One format serves several purposes: the NCX table of contents, and in KF8 books the
-//! skeleton and fragment tables that say how the original XHTML files were cut up. This
-//! module walks the structure and hands back each entry's name and tag values, leaving what
-//! those values mean to whoever asked.
+//! One tagged index format serves the NCX and KF8's skeleton and fragment tables, so this hands back raw tag values and leaves their meaning to the caller.
 
 use std::collections::HashMap;
 
@@ -12,27 +7,21 @@ use super::varint::decode_vwi;
 /// Bytes of `INDX` header before the per-record data, and the smallest a header can be.
 const INDX_HEADER_LEN: usize = 192;
 
-/// One entry of an index.
-///
-/// The entry's own name is read past but not kept: the indices this crate uses carry
-/// everything they mean in their tags.
+/// The entry's own name is not kept: the indices this crate uses carry everything they mean in their tags.
 #[derive(Debug, Clone)]
 pub(super) struct IndexEntry {
-	/// Values by tag number. A tag can carry several, which is how tag 6 gives a start
-	/// position and a length together.
+	/// A tag can carry several values, which is how tag 6 gives a start position and a length together.
 	pub tags: HashMap<u8, Vec<usize>>,
 }
 
-/// A parsed index, and the string blob its entries name their text in.
 #[derive(Debug, Default)]
 pub(super) struct Index {
 	pub entries: Vec<IndexEntry>,
-	/// The `CNCX` blob. A tag value naming a string is a byte offset into this.
+	/// A tag value naming a string is a byte offset into this.
 	cncx: Vec<u8>,
 }
 
 impl Index {
-	/// The string at `offset` in the `CNCX` blob, which stores each one length-prefixed.
 	pub fn string_at(&self, offset: usize) -> Option<String> {
 		if offset >= self.cncx.len() {
 			return None;
@@ -43,10 +32,7 @@ impl Index {
 	}
 }
 
-/// Read the index whose `INDX` header sits in record `index_record`.
-///
-/// Returns `None` when the record is out of range or does not hold a usable index, which is
-/// the ordinary answer for a book that simply has no such index.
+/// `None` is the ordinary answer for a book that simply has no such index.
 pub(super) fn read_index(data: &[u8], records: &[usize], index_record: usize) -> Option<Index> {
 	if index_record == 0 || index_record == 0xFFFF_FFFF || index_record + 1 >= records.len() {
 		return None;
@@ -81,16 +67,13 @@ pub(super) fn read_index(data: &[u8], records: &[usize], index_record: usize) ->
 	Some(Index { entries, cncx })
 }
 
-/// The `TAGX` table: which tags an entry can carry and how each is encoded.
 struct Tagx {
 	tags: Vec<TagDescriptor>,
 	control_bytes: usize,
 }
 
-/// One row of the `TAGX` table.
 struct TagDescriptor {
 	tag: u8,
-	/// Values per entry when this tag is present.
 	values_per_entry: usize,
 	/// Which bits of the control byte say whether this tag is present, and how often.
 	mask: u32,
@@ -119,11 +102,7 @@ fn parse_tagx(header: &[u8]) -> Option<Tagx> {
 	Some(Tagx { tags, control_bytes })
 }
 
-/// Read every entry in one index record, appending them to `out`.
-///
-/// The record opens with its own `INDX` header naming where its `IDXT` table starts and how
-/// many entries it holds. Both are taken from there rather than by hunting for the marker,
-/// since the bytes after the table are not entries and would otherwise read as garbage ones.
+/// The `IDXT` offset and count come from the record's own header rather than a marker search, since the bytes after the table would read as garbage entries.
 fn read_record(record: &[u8], tags: &[TagDescriptor], control_bytes: usize, out: &mut Vec<IndexEntry>) {
 	if record.len() < 28 || &record[0..4] != b"INDX" {
 		return;
@@ -140,10 +119,7 @@ fn read_record(record: &[u8], tags: &[TagDescriptor], control_bytes: usize, out:
 	}
 }
 
-/// Read the entry starting at `start`: a length-prefixed name, then its tag values.
 fn read_entry(record: &[u8], start: usize, tags: &[TagDescriptor], control_bytes: usize) -> Option<IndexEntry> {
-	// The name is length-prefixed and has to be stepped over to reach the control bytes,
-	// even though nothing here needs the name itself.
 	let name_len = usize::from(*record.get(start)?);
 	let name_end = start + 1 + name_len;
 	let control = record.get(name_end..name_end + control_bytes)?;
@@ -151,8 +127,7 @@ fn read_entry(record: &[u8], start: usize, tags: &[TagDescriptor], control_bytes
 	let mut values: HashMap<u8, Vec<usize>> = HashMap::new();
 	let mut control_index = 0;
 	for descriptor in tags {
-		// A row marking the end of a control byte is a separator, not a tag: it steps the
-		// reader to the next byte and carries nothing of its own.
+		// A row marking the end of a control byte is a separator, not a tag: it steps the reader to the next byte and carries nothing of its own.
 		if descriptor.ends_control_byte {
 			control_index += 1;
 			continue;
@@ -165,8 +140,7 @@ fn read_entry(record: &[u8], start: usize, tags: &[TagDescriptor], control_bytes
 		if present == 0 {
 			continue;
 		}
-		// A tag whose mask is fully set either repeats a fixed number of times, or states
-		// how many bytes of values follow; a partial mask holds the repeat count itself.
+		// A tag whose mask is fully set either repeats a fixed number of times or states how many bytes of values follow; a partial mask holds the repeat count itself.
 		let mut count = 0;
 		let mut byte_length = 0;
 		if present == descriptor.mask {
@@ -214,14 +188,11 @@ mod tests {
 
 	use super::*;
 
-	/// One value in MOBI's variable-width encoding, which marks its last byte with the high
-	/// bit. Every value the tests use fits in one byte.
+	/// Every value the tests use fits in one byte.
 	fn vwi(value: u8) -> u8 {
 		value | 0x80
 	}
 
-	/// Build one `INDX` record: a header naming its entry table, then the entries.
-	///
 	/// `entries` are `(name, control byte, values)` triples, the values already encoded.
 	fn indx_record(entries: &[(&str, u8, &[u8])]) -> Vec<u8> {
 		let mut body = Vec::new();
@@ -246,8 +217,6 @@ mod tests {
 		record
 	}
 
-	/// Build an index: a header record naming its `TAGX` table, then one entry record.
-	///
 	/// `tagx` rows are `(tag, values per entry, mask, ends control byte)`.
 	fn index_of(tagx: &[(u8, u8, u8, u8)], entries: &[(&str, u8, &[u8])]) -> (Vec<u8>, Vec<usize>) {
 		let mut header = vec![0u8; 192];
@@ -261,8 +230,7 @@ mod tests {
 			header.extend_from_slice(&[*tag, *per, *mask, *end]);
 		}
 		let entry_record = indx_record(entries);
-		// Record 0 is the book's own header in a real file, so the index never sits there
-		// and the reader rejects it; the test layout has to leave room for it too.
+		// Record 0 is the book's own header in a real file, so the reader rejects an index there and the test layout leaves room for it.
 		let mut data = vec![0u8; 16];
 		let records = vec![0, 16, 16 + header.len(), 16 + header.len() + entry_record.len()];
 		data.extend_from_slice(&header);
@@ -270,8 +238,7 @@ mod tests {
 		(data, records)
 	}
 
-	// A tag whose mask covers one bit appears once when that bit is set. This is the shape
-	// the skeleton table's fragment count uses.
+	// The shape the skeleton table's fragment count uses.
 	#[test]
 	fn a_single_bit_tag_reads_one_value() {
 		let (data, records) = index_of(&[(1, 1, 0x01, 0), (0, 0, 0, 1)], &[("SKEL", 0x01, &[vwi(8)])]);
@@ -280,8 +247,6 @@ mod tests {
 		assert_eq!(index.entries[0].tags.get(&1), Some(&vec![8]));
 	}
 
-	// A tag carrying two values per entry gives them in order, which is how a start position
-	// and a length arrive together.
 	#[test]
 	fn a_tag_with_two_values_per_entry_gives_both() {
 		let (data, records) = index_of(&[(6, 2, 0x01, 0), (0, 0, 0, 1)], &[("SKEL", 0x01, &[vwi(10), vwi(20)])]);
@@ -289,8 +254,7 @@ mod tests {
 		assert_eq!(index.entries[0].tags.get(&6), Some(&vec![10, 20]));
 	}
 
-	// The row that ends a control byte is a separator, not a tag of its own. Reading it as
-	// one made every following tag take its values from the wrong control byte.
+	// Reading this separator row as a tag made every following tag take its values from the wrong control byte.
 	#[test]
 	fn the_row_ending_a_control_byte_carries_no_values() {
 		let tagx = &[(1, 1, 0x01, 0), (6, 2, 0x02, 0), (0, 0, 0, 1)];
@@ -311,8 +275,7 @@ mod tests {
 		assert_eq!(index.entries[0].tags.get(&6), Some(&vec![10, 20]));
 	}
 
-	// Every entry is found through the record's own header, so several in one record all
-	// come back rather than only whichever the marker search happened to reach.
+	// Several entries in one record all come back, rather than only whichever a marker search happened to reach.
 	#[test]
 	fn every_entry_in_a_record_is_read() {
 		let entries: &[(&str, u8, &[u8])] = &[("A", 0x01, &[vwi(2)]), ("B", 0x01, &[vwi(4)]), ("C", 0x01, &[vwi(6)])];
@@ -322,8 +285,6 @@ mod tests {
 		assert_eq!(values, [2, 4, 6]);
 	}
 
-	// CNCX strings are length-prefixed with the same variable-width integer the tag values
-	// use, so a string is only reachable through that prefix.
 	#[test]
 	fn a_cncx_string_is_read_through_its_length_prefix() {
 		let index = Index { entries: Vec::new(), cncx: vec![0x85, b'h', b'e', b'l', b'l', b'o', 0x82, b'h', b'i'] };

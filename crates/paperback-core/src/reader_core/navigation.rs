@@ -1,6 +1,3 @@
-//! [`reader_navigate`] (the marker-based Previous/Next navigation dispatch) and
-//! [`reader_container_navigate`] (move relative to the enclosing list/table).
-
 use crate::{
 	document::{DocLen, DocPos, DocumentHandle, MarkerType},
 	types::{self as ffi, HeadingInfo},
@@ -53,14 +50,7 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 					return build_nav_result(false, wrapped, DocPos::ZERO, 0, String::new());
 				};
 				let offset = doc.marker_position(idx_i32).unwrap_or_default();
-				// Section markers usually carry only a synthetic "Section N" label, not the
-				// chapter's real title, so leave the text empty; the UI falls back to the text of
-				// the line at `offset`, which is the section's actual heading. An audio-only book
-				// is the exception: its buffer is placeholder spaces with no newline anywhere, so
-				// that fallback resolves to the whole book and every section would announce the
-				// same run of blanks. There the marker's text is the narration file's name, and
-				// the only label there is. Page markers carry a meaningful label (the page
-				// number/name) that should be announced as-is.
+				// A section's label is a synthetic "Section N", so the UI reads the line at `offset` instead; an audio-only book has no lines, and its label is the file name.
 				let marker_text_is_the_label = req.target == NavTarget::Page || doc.document().audio_only;
 				let text = if marker_text_is_the_label {
 					doc.document().buffer.markers.get(idx).map(|m| m.text.clone()).unwrap_or_default()
@@ -135,11 +125,7 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 	}
 }
 
-/// Move relative to the container (list/table) the caret is currently inside.
-///
-/// `to_end` moves to the start of the line that follows the container; otherwise moves to its
-/// start. `found` is false when the caret is not inside any container. `marker_level` carries the
-/// container's `MarkerType` as `i32` so the UI can describe what was left.
+/// `marker_level` carries the container's `MarkerType` so the UI can describe what was left.
 #[must_use]
 pub fn reader_container_navigate(doc: &DocumentHandle, position: DocPos, to_end: bool) -> ffi::NavResult {
 	doc.enclosing_container(position.min(doc.document().buffer.end())).map_or_else(
@@ -151,10 +137,7 @@ pub fn reader_container_navigate(doc: &DocumentHandle, position: DocPos, to_end:
 	)
 }
 
-/// The start of the line following the one that ends at-or-after `end`. Container lengths vary in
-/// whether they include the terminating newline (lists do, tables do not), so we normalise to the
-/// next line: find the newline that terminates the container's final line and step past it. When
-/// the container is the last line of the document, the clamped document end is returned.
+// Lists include their terminating newline and tables do not, so both are normalised to the next line.
 fn line_after(doc: &DocumentHandle, end: DocPos) -> DocPos {
 	let buffer = &doc.document().buffer;
 	let total = buffer.end();
@@ -169,9 +152,7 @@ mod tests {
 
 	#[test]
 	fn reader_container_navigate_to_end_lands_on_following_line() {
-		// Lines: "AAAA"(0-3) \n(4) "LLLL"(5-8) \n(9) "MMMM"(10-13) \n(14) "BBBB"(15-18).
 		let content = "AAAA\nLLLL\nMMMM\nBBBB".to_string();
-		// List length 10 includes the trailing newline (end == 15, the next line start).
 		let mut list_buf = DocumentBuffer::with_content(content.clone());
 		list_buf.add_marker(Marker::new(MarkerType::List, 5.into()).with_length(10.into()));
 		let mut list_doc = Document::new();
@@ -179,10 +160,9 @@ mod tests {
 		let list_handle = DocumentHandle::new(list_doc);
 		let list_end = reader_container_navigate(&list_handle, 7.into(), true);
 		assert!(list_end.found);
-		assert_eq!(list_end.offset, 15); // start of "BBBB"
+		assert_eq!(list_end.offset, 15);
 		assert_eq!(list_end.marker_level, i32::from(MarkerType::List));
 		assert_eq!(reader_container_navigate(&list_handle, 7.into(), false).offset, 5);
-		// Table length 9 stops at the last visible char (end == 14, the terminating newline).
 		let mut table_buf = DocumentBuffer::with_content(content);
 		table_buf.add_marker(Marker::new(MarkerType::Table, 5.into()).with_length(9.into()));
 		let mut table_doc = Document::new();
@@ -190,7 +170,7 @@ mod tests {
 		let table_handle = DocumentHandle::new(table_doc);
 		let table_end = reader_container_navigate(&table_handle, 7.into(), true);
 		assert!(table_end.found);
-		assert_eq!(table_end.offset, 15); // also lands on "BBBB", the line after the table
+		assert_eq!(table_end.offset, 15);
 	}
 
 	#[test]

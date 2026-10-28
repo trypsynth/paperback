@@ -1,5 +1,3 @@
-//! Rendering the readmes into the deflated HTML embedded in the binary for the Help menu, and generating the lookup table that maps a language code to it.
-
 use std::{env, fmt::Write as _, fs, path::PathBuf};
 
 use shipfitter::docs::{Page, bcp47, convert_deflated, readmes};
@@ -10,12 +8,12 @@ pub fn build() {
 	let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap_or_default());
 	let doc_dir = paths::workspace_dir().join("doc");
 	println!("cargo:rerun-if-changed={}", doc_dir.display());
-	// The readmes are embedded in the binary and nothing reads them from the install directory, so a build without them would ship an app whose Help menu does nothing. Fail instead.
+	// Nothing reads the readmes from the install directory, so a build without them would ship a Help menu that does nothing.
 	let readmes =
 		readmes(&doc_dir).unwrap_or_else(|e| panic!("couldn't list the readmes in {}: {e}", doc_dir.display()));
 	let mut code = String::from("pub fn readme_for_lang(lang: &str) -> Option<&'static [u8]> {\n    match lang {\n");
 	for readme in &readmes {
-		// The page's `lang`, so a screen reader reads a translated manual in that language's voice.
+		// So a screen reader reads a translated manual in that language's voice.
 		let lang = bcp47(&readme.code);
 		let page = Page { lang: &lang, title: "Paperback Documentation", ..Page::default() };
 		let html = format!("{}.deflate", readme.html_name());

@@ -1,8 +1,3 @@
-//! Marker types: the tagged positions ([`Marker`]) a parser scatters through a
-//! [`super::buffer::DocumentBuffer`] to record headings, links, formatting spans, and other
-//! structure, plus the small helpers ([`is_heading_marker`], [`is_container_marker`],
-//! [`ContainerSpan`]) that classify them.
-
 use super::position::{DocLen, DocPos};
 
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
@@ -28,9 +23,7 @@ pub enum MarkerType {
 	Bold = 16,
 	Italic = 17,
 	Underline = 18,
-	/// A PDF page that holds an image but no extractable text. Sits at the start of the page's
-	/// OCR placeholder line and is what the OCR flow matches on, so the feature never depends on
-	/// comparing against a translated string.
+	/// OCR matches on this rather than the placeholder line, so it never compares against a translated string.
 	ImageOnlyPage = 19,
 	Formula = 20,
 }
@@ -41,9 +34,6 @@ impl From<MarkerType> for i32 {
 	}
 }
 
-/// Yields the character-formatting marker types implied by the given
-/// bold/italic/underline flags, in a stable order. Shared by the parsers so
-/// the flag-triple → marker fan-out lives in one place.
 pub(crate) fn format_marker_types(bold: bool, italic: bool, underline: bool) -> impl Iterator<Item = MarkerType> {
 	[(bold, MarkerType::Bold), (italic, MarkerType::Italic), (underline, MarkerType::Underline)]
 		.into_iter()
@@ -135,14 +125,11 @@ pub const fn is_heading_marker(marker_type: MarkerType) -> bool {
 	)
 }
 
-/// Whether a marker type denotes a navigable container (an element the caret can be *inside* of,
-/// such as a list or table). The single place to extend the set of container types.
 #[must_use]
 pub const fn is_container_marker(marker_type: MarkerType) -> bool {
 	matches!(marker_type, MarkerType::List | MarkerType::Table)
 }
 
-/// The span of a container marker: `[start, end)`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ContainerSpan {
 	pub start: DocPos,

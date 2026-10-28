@@ -1,20 +1,9 @@
-//! The line-oriented block parser: turns reStructuredText source into HTML. See the module
-//! doc comment on [`super`] for why this is hand-written rather than a wrapped crate.
-
 use std::{
 	collections::{HashMap, HashSet},
 	fmt::Write,
 };
 
-/// Converts reStructuredText source to HTML for the shared `HtmlToText` converter.
-///
-/// Headings and hyperlink targets get an `id` attribute (their label, normalized), and a
-/// reference to one becomes an `<a href="#label">` rather than plain text: `HtmlToText` reads
-/// those ids into `Document::id_positions`, which is the same mechanism EPUB/HTML/CHM use for
-/// in-book navigation, so an RST cross-reference becomes a genuine jump-to-position link rather
-/// than inert text. A reference to `http://`/`https://`/`mailto:` (or embedding one directly, as
-/// `` `text <https://...>`_ `` does) stays an ordinary external href, which the reader's link
-/// resolver (`is_external_url`) already knows to open outside the book.
+/// Headings and targets get an `id` and references become `#label` links, because `HtmlToText` reads ids into `Document::id_positions`, the in-book navigation EPUB, HTML and CHM use too.
 #[must_use]
 pub fn rst_to_html(source: &str) -> String {
 	let lines: Vec<String> = source.lines().map(str::to_string).collect();
@@ -33,8 +22,7 @@ pub fn rst_to_html(source: &str) -> String {
 struct Converter {
 	lines: Vec<String>,
 	targets: HashMap<String, String>,
-	/// Labels of explicit targets with no URL of their own (`.. _label:` with nothing after the
-	/// colon), which bind instead to whichever block follows them in the document.
+	/// Targets with no URL (`.. _label:`), which bind to whichever block follows them.
 	internal_anchors: HashSet<String>,
 	substitutions: HashMap<String, String>,
 	levels: Vec<char>,
@@ -60,8 +48,7 @@ const ADMONITIONS: &[&str] = &[
 
 const LITERAL_DIRECTIVES: &[&str] = &["code-block", "code", "sourcecode", "math", "math-block", "productionlist"];
 
-/// Directives whose body is metadata, cross-references to other files, or raw markup for another
-/// output format, none of which have anything to show a reader here.
+/// Their bodies are metadata, links to other files, or raw markup for another output format, with nothing to show a reader.
 const SKIPPED_DIRECTIVES: &[&str] = &[
 	"toctree",
 	"include",
@@ -88,9 +75,7 @@ impl Converter {
 		&self.lines[i]
 	}
 
-	/// A first pass collecting `.. _label: url` targets, `.. |name| replace:: text` substitutions
-	/// and every section title's implicit target, wherever in the document they appear: RST
-	/// allows all three to be referenced before their definition.
+	/// A first pass, since RST allows targets, substitutions and section titles to be referenced before their definition.
 	fn collect_definitions(&mut self) {
 		let mut i = 0;
 		while i < self.lines.len() {
@@ -109,8 +94,6 @@ impl Converter {
 				let url = url.trim().trim_start_matches('<').trim_end_matches('>').trim().to_string();
 				if !label.is_empty() {
 					if url.is_empty() {
-						// An anchor-only target: it points at whichever block follows it rather
-						// than at a URL of its own.
 						self.internal_anchors.insert(label.clone());
 						self.targets.insert(label.clone(), format!("#{label}"));
 					} else {
@@ -137,11 +120,7 @@ impl Converter {
 		self.collect_section_targets();
 	}
 
-	/// Every section title implicitly names a hyperlink target (its own text, normalized), so a
-	/// `` `Some Section`_ `` reference resolves without an explicit `.. _Some Section:` target,
-	/// as an internal `#label` link the heading's own `id` attribute (set in [`Self::try_title`])
-	/// answers to. Runs after explicit targets are collected, so a real target with the same
-	/// label wins.
+	/// Runs after explicit targets are collected, so a real target with the same label wins.
 	fn collect_section_targets(&mut self) {
 		let is_text = |s: &str| !s.trim().is_empty() && adornment_char(s).is_none();
 		let mut i = 0;
@@ -168,10 +147,7 @@ impl Converter {
 		}
 	}
 
-	/// The heading level for an adornment character, assigned by the order distinct characters
-	/// are first seen. Real documents nearly always use one character per level consistently
-	/// (`=` for parts, `-` for chapters, and so on), so this is simpler than docutils' full
-	/// nesting algorithm while matching it for every document written that way.
+	/// Simpler than docutils' nesting algorithm, but matches it for every document that uses one adornment character per level consistently, which is nearly all of them.
 	fn level_for(&mut self, adornment: char) -> usize {
 		if let Some(pos) = self.levels.iter().position(|&c| c == adornment) {
 			pos + 1
@@ -182,8 +158,6 @@ impl Converter {
 		.min(6)
 	}
 
-	/// Renders every sibling block in `[start, end)`, all belonging to the same indentation
-	/// context, which is at least `indent` columns deep.
 	fn render_blocks(&mut self, start: usize, end: usize, indent: usize) -> String {
 		let mut html = String::new();
 		let mut i = start;
@@ -194,15 +168,12 @@ impl Converter {
 			}
 			let (block_html, next) = self.render_one_block(i, end, indent);
 			html.push_str(&block_html);
-			// `next` must exceed `i` even if a block type matched but consumed nothing, or a
-			// malformed document could loop here forever instead of degrading to plain text.
+			// `next` must exceed `i` even if a block type matched but consumed nothing, or a malformed document could loop here forever.
 			i = next.max(i + 1);
 		}
 		html
 	}
 
-	/// Renders the single block starting at line `i`, returning its HTML and the index of the
-	/// line after it.
 	fn render_one_block(&mut self, i: usize, end: usize, indent: usize) -> (String, usize) {
 		if let Some(result) = self.try_title(i, end) {
 			return result;
@@ -240,7 +211,6 @@ impl Converter {
 
 	fn try_title(&mut self, i: usize, end: usize) -> Option<(String, usize)> {
 		let is_text = |s: &str| !s.trim().is_empty() && adornment_char(s).is_none();
-		// Overline + text + underline.
 		if i + 2 < end
 			&& let Some(over) = adornment_char(self.line(i))
 			&& is_text(self.line(i + 1))
@@ -253,7 +223,6 @@ impl Converter {
 			let inline = self.inline(&text);
 			return Some((format!(r#"<h{level} id="{id}">{inline}</h{level}>"#), i + 3));
 		}
-		// Text + underline.
 		if i + 1 < end
 			&& is_text(self.line(i))
 			&& let Some(under) = adornment_char(self.line(i + 1))
@@ -271,8 +240,7 @@ impl Converter {
 		None
 	}
 
-	/// A line of 4 or more repeated punctuation characters standing on its own, once
-	/// [`try_title`] has had first refusal at reading it as a title's overline or underline.
+	/// Only after [`Self::try_title`] has had first refusal at reading the line as an overline or underline.
 	fn try_transition(&self, i: usize, end: usize) -> Option<(String, usize)> {
 		let line = self.line(i);
 		adornment_char(line)?;
@@ -284,11 +252,7 @@ impl Converter {
 		(before_blank && after_blank).then(|| ("<hr>".to_string(), i + 1))
 	}
 
-	/// A grid table (`+---+---+`) or simple table (`===  ===`) border line, and everything else
-	/// through the end of the block. Full parsing into `<table>` rows/columns isn't attempted, but
-	/// preserving the source's own line breaks in a literal block is enough to keep a table
-	/// readable (and, for a screen reader, keeps it from being read as one run-on line of dashes
-	/// and pipes).
+	/// Not parsed into rows and columns; keeping the source's line breaks in a literal block is enough to stop a screen reader reading it as one run-on line of dashes and pipes.
 	fn try_table(&self, i: usize, end: usize, indent: usize) -> Option<(String, usize)> {
 		let line = self.line(i);
 		if line_indent(line) != indent || !is_table_border(line) {
@@ -308,15 +272,12 @@ impl Converter {
 		let rest = rest.strip_prefix(' ').unwrap_or(rest);
 		let body_end = self.indented_or_blank_run_end(i + 1, end, indent);
 
-		// Hyperlink target / anonymous target: its URL (if any) was already collected. An
-		// anchor-only one (no URL) binds to whichever block follows it, so that block is rendered
-		// here and gets the anchor's `id` attached, rather than the target simply vanishing.
+		// A target's URL was already collected; an anchor-only one binds to the block that follows, so that block is rendered here with the anchor's `id` rather than the target vanishing.
 		if let Some(label_part) = rest.strip_prefix('_') {
 			let (label, _) = split_once_colon(label_part);
 			let label = normalize_label(&label);
 			if self.internal_anchors.contains(&label) {
-				// `body_end` is the target's own (empty) body; the block it binds to starts
-				// after the blank line separating them.
+				// `body_end` is the target's own empty body; the block it binds to starts after the blank line separating them.
 				let mut next_start = body_end;
 				while next_start < end && self.line(next_start).trim().is_empty() {
 					next_start += 1;
@@ -332,9 +293,7 @@ impl Converter {
 		if rest.starts_with('|') {
 			return Some((String::new(), body_end));
 		}
-		// Footnote or citation definition (`.. [1] body` / `.. [CIT2002] body`): resolving it back
-		// to its `[1]_` reference isn't attempted, but the body text itself is real content and
-		// must not silently vanish the way a comment does.
+		// A footnote or citation body isn't linked back to its reference, but it is real content and must not vanish the way a comment does.
 		if let Some(after_bracket) = rest.strip_prefix('[')
 			&& let Some(close) = after_bracket.find(']')
 		{
@@ -352,7 +311,6 @@ impl Converter {
 			let full = format!("[{label}] {}", text.trim());
 			return Some((format!("<p>{}</p>", self.inline(&full)), body_end));
 		}
-		// Directive: `name:: arguments`.
 		if let Some(colon_pos) = rest.find("::") {
 			let name = rest[..colon_pos].trim();
 			if !name.is_empty() && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_') {
@@ -406,8 +364,7 @@ impl Converter {
 		if name_lower == "rubric" {
 			return (format!("<p><strong>{}</strong></p>", escape_html(arg)), body_end);
 		}
-		// Unknown or purely structural directives (only, container, topic, compound, ...): show
-		// their body, since hiding it would silently drop real content from the reader.
+		// Unknown or purely structural directives show their body, since hiding it would silently drop real content.
 		let body_indent = self.first_indent_or(content_start, body_end, indent + 1);
 		let body = self.render_blocks(content_start, body_end, body_indent);
 		(body, body_end)
@@ -417,8 +374,6 @@ impl Converter {
 		(start..end).find(|&i| !self.line(i).trim().is_empty()).map_or(default, |i| line_indent(self.line(i)))
 	}
 
-	/// Reads any `:field: value` option lines right after a directive's own line, returning them
-	/// and the index of the first line after them.
 	fn read_field_options(&self, start: usize, end: usize) -> (HashMap<String, String>, usize) {
 		let mut options = HashMap::new();
 		let mut i = start;
@@ -550,8 +505,6 @@ impl Converter {
 		Some((format!("<ol>{html}</ol>"), j))
 	}
 
-	/// The lines making up one list item: from `j` (its marker line) up to (but not including)
-	/// the next item at the list's own `indent`, or a dedent back to or below it.
 	fn item_extent(&self, j: usize, end: usize, indent: usize) -> usize {
 		let mut k = j + 1;
 		while k < end {
@@ -571,10 +524,7 @@ impl Converter {
 		k
 	}
 
-	/// Renders one list item's body: its marker line's own remainder, re-based to `content_col`
-	/// so any continuation lines and nested blocks line up with it. Temporarily rewrites the
-	/// marker line in place (padding it out to `content_col`) so the shared block renderer can
-	/// treat it uniformly with the rest of the item, then restores it.
+	/// Temporarily pads the marker line out to `content_col` so the shared block renderer treats it like the rest of the item, then restores it.
 	fn render_item_body(&mut self, start: usize, end: usize, content_col: usize) -> String {
 		let original = self.lines[start].clone();
 		let rest = if original.len() >= content_col { original[content_col..].to_string() } else { String::new() };
@@ -641,8 +591,7 @@ impl Converter {
 			text.push_str(line.trim());
 			j += 1;
 		}
-		// A paragraph ending in `::` introduces a literal block: docutils folds the `::` into a
-		// trailing `:` (or drops it if it was already preceded by whitespace) before showing it.
+		// A paragraph ending in `::` introduces a literal block; docutils shows the `::` as `:`, or drops it after whitespace.
 		let literal_follows = text.trim_end().ends_with("::");
 		if literal_follows {
 			let stripped = text.trim_end();
@@ -671,9 +620,7 @@ impl Converter {
 		(html, next)
 	}
 
-	/// Whether `line` looks like the start of some other block type, so a paragraph already in
-	/// progress knows to stop even without a blank line separating them (real documents aren't
-	/// always strict about that blank line).
+	/// Real documents aren't always strict about the blank line before a new block, so a paragraph stops at one anyway.
 	fn starts_new_block(line: &str) -> bool {
 		adornment_char(line).is_some()
 			|| bullet_marker(line).is_some()
@@ -682,8 +629,7 @@ impl Converter {
 			|| field_marker_close(line).is_some()
 	}
 
-	/// The end of a run of lines all indented at least `min_indent`, stopping at end-of-range, a
-	/// dedent back below it, or two consecutive blank lines.
+	/// Two consecutive blank lines also end the run.
 	fn indented_run_end(&self, start: usize, end: usize, min_indent: usize) -> usize {
 		let mut i = start;
 		let mut blank_run = 0;
@@ -709,8 +655,7 @@ impl Converter {
 		i
 	}
 
-	/// Like [`Self::indented_run_end`], but for content that must be either blank or indented
-	/// *more than* `base_indent` (a directive's own line, or a field-list marker's line).
+	/// Content must be blank or indented *more than* `base_indent`, the column of a directive's or field marker's own line.
 	fn indented_or_blank_run_end(&self, start: usize, end: usize, base_indent: usize) -> usize {
 		let mut i = start;
 		while i < end {
@@ -743,7 +688,6 @@ fn is_continuation(line: &str, target_indent: usize) -> bool {
 	!line.trim().is_empty() && line_indent(line) > target_indent
 }
 
-/// Splits `label: rest` at the first colon, as used by `.. _label: url` and its anonymous form.
 fn split_once_colon(s: &str) -> (String, String) {
 	s.find(':').map_or_else(
 		|| (s.trim().to_string(), String::new()),
@@ -755,14 +699,7 @@ fn normalize_label(label: &str) -> String {
 	label.trim().trim_matches('`').trim().to_ascii_lowercase().replace(['_', ' '], "-")
 }
 
-/// The byte offset (within `line.trim_start()`, after the leading `:`) of a field-list marker's
-/// closing `:` (`:name: value`), or `None` if `line` isn't one.
-///
-/// Distinguishes a field marker from an interpreted-text role like `:func:` starting a wrapped
-/// paragraph line - `` See :func:`sorted`, and\n:func:`min`, ... `` is a real Sphinx idiom, and
-/// its second line must stay part of the paragraph rather than being read as a one-field list. A
-/// role's second colon is always immediately followed by the backtick that opens its interpreted
-/// text; a field marker's is followed by whitespace, another field, or nothing.
+/// Sphinx wraps roles like `:func:` onto line starts constantly; a role's second colon is always followed by the backtick of its text, a field marker's by whitespace, another field or nothing.
 fn field_marker_close(line: &str) -> Option<usize> {
 	let rest = line.trim_start().strip_prefix(':')?;
 	let close = rest.find(':')?;
@@ -772,10 +709,7 @@ fn field_marker_close(line: &str) -> Option<usize> {
 	Some(close)
 }
 
-/// Whether `line` opens a grid table (`+------+------+` or `+======+======+`) or a simple table
-/// (`=====  =====`, two or more `=` runs separated by whitespace). A single `=====` run alone is
-/// deliberately not matched here: it's indistinguishable from a section title's underline without
-/// looking at what follows, and titles are far more common.
+/// A single `=====` run is deliberately not a table: without looking ahead it is indistinguishable from a title underline, and titles are far more common.
 fn is_table_border(line: &str) -> bool {
 	let trimmed = line.trim();
 	if trimmed.len() >= 3
@@ -790,7 +724,6 @@ fn is_table_border(line: &str) -> bool {
 	groups.len() >= 2 && groups.iter().all(|g| !g.is_empty() && g.chars().all(|c| c == '='))
 }
 
-/// The repeated punctuation character a section-title or transition line is made of, or `None`.
 fn adornment_char(line: &str) -> Option<char> {
 	let trimmed = line.trim_end();
 	if trimmed.is_empty() {
@@ -803,7 +736,6 @@ fn adornment_char(line: &str) -> Option<char> {
 	trimmed.chars().all(|c| c == first).then_some(first)
 }
 
-/// The bullet character of a `- `/`* `/`+ ` list item line, if it is one.
 fn bullet_marker(line: &str) -> Option<char> {
 	bullet_item_start(line).map(|(c, _)| c)
 }
@@ -824,8 +756,6 @@ fn bullet_item_start(line: &str) -> Option<(char, usize)> {
 	Some((marker, indent + 1 + spaces))
 }
 
-/// The column where an enumerated list item's content starts, if `line` opens one: `1.`, `1)`,
-/// `a.`, `#.` and similar, followed by whitespace.
 fn enum_item_start(line: &str) -> Option<usize> {
 	let indent = line_indent(line);
 	let rest = &line[indent..];
@@ -857,10 +787,7 @@ fn escape_html(s: &str) -> String {
 	s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;")
 }
 
-/// Inserts an `id="label"` attribute into `html`'s very first opening tag, so an anchor-only
-/// target (see [`Converter::try_directive_or_target_or_comment`]) binds to the block that follows
-/// it. `html` always starts with a tag here (every block renderer opens on one), but falls back to
-/// returning it untouched rather than panicking if that ever stops holding.
+/// Every block renderer opens on a tag, but `html` comes back untouched rather than panicking if that ever stops holding.
 fn attach_id(html: String, label: &str) -> String {
 	let Some(name_start) = html.strip_prefix('<').map(|_| 1) else { return html };
 	let name_end = html[name_start..].find([' ', '>']).map_or(html.len(), |offset| name_start + offset);

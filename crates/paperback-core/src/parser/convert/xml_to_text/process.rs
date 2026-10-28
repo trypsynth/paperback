@@ -1,5 +1,3 @@
-//! The actual tree-walk: [`XmlToText::process_node`] and everything it dispatches to per tag.
-
 use roxmltree::{Node, NodeType};
 
 use super::XmlToText;
@@ -57,9 +55,7 @@ impl XmlToText {
 		}
 	}
 
-	/// Re-anchors `node`'s `id_positions` entry (if any) to `position`. Headings, list items,
-	/// tables and `<hr>` call `finalize_current_line` while opening, which moves the text
-	/// position past where `handle_element_opening_xml` first captured the id.
+	/// Headings, list items, tables and `<hr>` finalize the line while opening, moving the position past where the id was first captured.
 	fn resync_id_position(&mut self, node: Node<'_, '_>, position: DocPos) {
 		if self.in_body
 			&& let Some(id) = node.attribute("id").or_else(|| node.attribute("name"))
@@ -68,13 +64,8 @@ impl XmlToText {
 		}
 	}
 
-	/// Records every id *inside* `node` at `position`. `<a>` and `<table>` emit their text
-	/// through a helper and skip recursing into their children, so without this the ids on
-	/// those children are never seen at all, and a DAISY SMIL `<par>` anchored to one (a
-	/// narrated `<em>` inside a link, say) loses its audio clip entirely. `position` is the
-	/// containing element's own start, since the skipped subtree's text is emitted as one
-	/// run with no per-descendant offsets to attribute; for the common case of an element
-	/// wrapping the whole link that is exactly right.
+	/// `<a>` and `<table>` don't recurse, so without this a DAISY SMIL `<par>` anchored to a child (a narrated `<em>` inside a link) loses its audio clip.
+	/// Every id gets the container's start, since the skipped subtree's text is emitted as one run.
 	fn record_descendant_ids(&mut self, node: Node<'_, '_>, position: DocPos) {
 		if !self.in_body {
 			return;
@@ -90,8 +81,7 @@ impl XmlToText {
 
 	fn handle_element_opening_xml(&mut self, tag_name: &str, node: Node<'_, '_>) -> bool {
 		let mut skip_children = false;
-		// Recorded before the tag-specific handling below, which (notably for `<a>`) can push
-		// this element's own text into `current_line` and shift the position past its start.
+		// Before the tag handling below, which (notably for `<a>`) can push this element's text and shift the position past its start.
 		if self.in_body
 			&& let Some(id) = node.attribute("id").or_else(|| node.attribute("name"))
 		{
@@ -183,7 +173,7 @@ impl XmlToText {
 		skip_children
 	}
 
-	/// A link's text as it reads: its text nodes, with each described image's placeholder where the image sits, so a link made of a picture is still a link. The images come back with the placeholders they show.
+	/// Described images contribute their placeholders, so a link made of a picture is still a link.
 	fn collect_link_content(node: Node<'_, '_>, text: &mut String, images: &mut Vec<(String, ImageInfo, bool)>) {
 		for child in node.children() {
 			if let Some(child_text) = child.text().filter(|_| child.is_text()) {
@@ -197,7 +187,6 @@ impl XmlToText {
 		}
 	}
 
-	/// The placeholder an image or figure shows, such as `[Image: a cat]`, with its info (offset still unset) and whether it is a figure. `None` for anything else, and for a picture with no description, which shows nothing.
 	fn described_image(node: Node<'_, '_>) -> Option<(String, ImageInfo, bool)> {
 		if !node.is_element() {
 			return None;
@@ -265,9 +254,7 @@ impl XmlToText {
 		let start_offset = self.text.get_current_text_position();
 		self.resync_id_position(node, start_offset);
 		self.record_descendant_ids(node, start_offset);
-		// Emit the table's on-screen text via the shared helper instead of recursing children to
-		// emit one cell per line. The helper output may contain tabs and span multiple lines; push
-		// each line verbatim so tab separators and empty cells survive whitespace collapsing.
+		// Lines are pushed verbatim so tab separators and empty cells survive whitespace collapsing.
 		let render = table_render_bundle(&table_xml, self.render_tables_inline);
 		for line in render.lines {
 			self.text.push_finalized_line(line);
@@ -410,7 +397,7 @@ impl XmlToText {
 		["script", "style", "noscript", "iframe", "object", "embed"].iter().any(|t| Self::tag_is(tag_name, t))
 	}
 
-	/// Where an image element's picture lives. A `<figure>` has none of its own, so it takes the first picture inside it. SVG and FB2 put `href` in the `xlink` namespace, which is why the attribute is matched by local name.
+	/// SVG and FB2 put `href` in the `xlink` namespace, so the attribute is matched by local name.
 	fn image_source(node: Node<'_, '_>) -> String {
 		node.descendants()
 			.filter(Node::is_element)

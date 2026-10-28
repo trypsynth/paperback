@@ -1,6 +1,3 @@
-//! Copying a lot of text without shift-arrowing through it: marking where a selection begins,
-//! then taking everything from there to wherever the reader has got to.
-
 use super::Ctx;
 use crate::ui::selection;
 

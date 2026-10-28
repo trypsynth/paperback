@@ -1,7 +1,4 @@
-//! Reading text that a Windows console program wrote in the console's code page.
-
-/// `bytes` decoded with the console's input code page, which is what cmd's own commands write into
-/// a pipe. `None` without a console, and on other platforms.
+/// The console's input code page is what cmd's own commands write into a pipe.
 #[must_use]
 pub fn text(bytes: &[u8]) -> Option<String> {
 	#[cfg(windows)]
@@ -20,7 +17,7 @@ pub fn text(bytes: &[u8]) -> Option<String> {
 	}
 }
 
-/// `bytes` decoded with the system's ANSI code page, which a text file saved by a Windows program is in when it is not UTF-8. It differs from the console's code page on most systems, so a list file decoded with that one comes out wrong without failing. `None` on other platforms.
+/// A text file saved by a Windows program is in the ANSI code page, which differs from the console's on most systems, so decoding it with that one comes out wrong without failing.
 #[must_use]
 pub fn ansi_text(bytes: &[u8]) -> Option<String> {
 	#[cfg(windows)]
@@ -35,14 +32,11 @@ pub fn ansi_text(bytes: &[u8]) -> Option<String> {
 	}
 }
 
-/// `bytes` decoded with the Windows code page `code_page`; `None` for empty input or bytes that
-/// are not valid in that code page.
 #[cfg(windows)]
 fn decode_code_page(code_page: u32, bytes: &[u8]) -> Option<String> {
 	use windows_sys::Win32::Globalization::{MB_ERR_INVALID_CHARS, MultiByteToWideChar};
 	let length = i32::try_from(bytes.len()).ok().filter(|&length| length > 0)?;
-	// SAFETY: the input pointer and length describe `bytes`; a null output buffer with size 0 asks
-	// only for the size needed.
+	// SAFETY: the input pointer and length describe `bytes`; a null output buffer with size 0 asks only for the size needed.
 	let needed = unsafe {
 		MultiByteToWideChar(code_page, MB_ERR_INVALID_CHARS, bytes.as_ptr(), length, std::ptr::null_mut(), 0)
 	};
@@ -64,7 +58,6 @@ mod tests {
 		assert_eq!(decode_code_page(850, b"caf\x82.txt").as_deref(), Some("caf\u{e9}.txt"));
 	}
 
-	/// The same é is a different byte in the ANSI code page a list file is saved in, which is why a file is not decoded with the console's.
 	#[test]
 	fn a_line_in_an_ansi_code_page_is_decoded() {
 		assert_eq!(decode_code_page(1252, b"caf\xe9.txt").as_deref(), Some("caf\u{e9}.txt"));

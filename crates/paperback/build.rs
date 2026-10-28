@@ -1,6 +1,3 @@
-//! Build script for the Paperback desktop app. Everything it actually does lives in the
-//! modules under `build/`; this file only decides what runs, and in what order.
-
 #[path = "build/docs.rs"]
 mod docs;
 #[path = "build/installer.rs"]

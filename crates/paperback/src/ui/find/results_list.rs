@@ -6,25 +6,17 @@ use wxdragon::prelude::*;
 
 use super::super::navigation;
 
-// The Find All results list. macOS does not expose wxListCtrl to VoiceOver (see the All
-// Documents dialog), so it uses a store-backed wxDataViewListCtrl there; everywhere else the
-// results are a *virtual* wxListCtrl, which asks the control for text only for the visible rows.
-// That means even hundreds of thousands of matches populate in O(1) instead of appending a
-// native row per match (the appending was what froze the dialog on large documents).
+// VoiceOver does not see a wxListCtrl as a table, so macOS gets a wxDataViewListCtrl; elsewhere a virtual list, since appending a native row per match froze the dialog on large documents.
 #[cfg(target_os = "macos")]
 pub(super) type ResultsList = DataViewListCtrl;
 #[cfg(not(target_os = "macos"))]
 pub(super) type ResultsList = ListCtrl;
 
-/// The row label for one result line: "Page N: <text>" when the document is paginated, else the
-/// line text itself.
 fn result_row_label(row: &FindAllLine) -> String {
 	if row.page > 0 { navigation::page_announcement(row.page, &row.text) } else { row.text.clone() }
 }
 
-/// The fixed size of the results list. It is both the minimum and the maximum so the dialog's
-/// `fit()` never sizes itself to the list's item count (a 40,000-row virtual list has no business
-/// making the dialog tens of thousands of pixels tall).
+/// Used as both minimum and maximum so `fit()` never sizes the dialog to a 40,000-row list's item count.
 fn results_list_size(dialog: Dialog) -> Size {
 	dialog.from_dip(Size::new(600, 500))
 }
@@ -45,8 +37,6 @@ pub(super) fn build_results_list(
 	results_list.set_max_size(size);
 	// TRANSLATORS: Accessible name of the list of Find All results
 	results_list.set_accessibility_label(&t("Results"));
-	// The virtual list asks for text on demand; hand back a prebuilt label so the request is a
-	// cheap clone rather than a per-row translation.
 	results_list.set_virtual_text_callback(move |index, _column| {
 		let labels = result_labels.borrow();
 		usize::try_from(index).ok().and_then(|index| labels.get(index)).cloned().unwrap_or_default()
@@ -83,8 +73,6 @@ pub(super) fn populate_results_list(
 	rows: &Rc<RefCell<Vec<FindAllLine>>>,
 	labels: &Rc<RefCell<Vec<String>>>,
 ) {
-	// Build each row's label once, then hand the virtual list its count - it only ever asks for
-	// text for the rows it shows, and the callback reads from the prebuilt labels.
 	let mut labels = labels.borrow_mut();
 	labels.clear();
 	{
@@ -109,9 +97,7 @@ pub(super) fn populate_results_list(
 	}
 }
 
-/// Empties the results list so a fresh Find All starts from the same empty, instantly-focusable
-/// state every time (leaving the previous run's rows in place made NVDA enumerate all of them the
-/// moment the list was shown and focused again).
+/// Leaving the previous run's rows in place made NVDA enumerate all of them when the list was shown and focused again.
 #[cfg(not(target_os = "macos"))]
 pub(super) fn clear_results_list(list: ResultsList) {
 	list.set_item_count(0);

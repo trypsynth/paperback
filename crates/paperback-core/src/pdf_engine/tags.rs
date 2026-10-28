@@ -1,6 +1,4 @@
-//! A tagged PDF's structure tree: the author's own account of what the page means.
-//!
-//! pdfium reaches a page's elements through the tree root's `/ParentTree`, so it loses the whole tree of a PDF exported without one, as Apple Pages exports are. Here the whole tree is read once from `/StructTreeRoot` down, and each element records which pages its content lands on, so the parent tree is never consulted. What a page sees is still what pdfium shows it: the root's children by position, an element only where its content is on the page, and a marked-content reference only where it names the page.
+//! pdfium reaches a page's elements through `/ParentTree` and so loses the whole tree of a PDF exported without one, as Apple Pages exports are, so here the tree is read from `/StructTreeRoot` down while each page still sees what pdfium would show it.
 
 use std::collections::HashMap;
 
@@ -8,10 +6,10 @@ use hayro_syntax::object::{Dict, Name, Object, ObjectIdentifier};
 
 use super::{PdfDocument, decode_text_string};
 
-/// How deep the tree is followed. A tree this deep is a malformed file rather than a document's structure.
+/// A tree this deep is a malformed file rather than a document's structure.
 const MAX_DEPTH: u32 = 64;
 
-/// The document's structure tree, flattened into owned nodes so that pages can share it.
+/// Flattened into owned nodes so that pages can share it.
 pub(super) struct Structure {
 	roots: Vec<Kid>,
 	nodes: Vec<Node>,
@@ -22,13 +20,13 @@ struct Node {
 	actual_text: Option<String>,
 	alt_text: Option<String>,
 	kids: Vec<Kid>,
-	/// Every page some content under this element lands on, sorted.
+	/// Sorted, since pages are looked up by binary search.
 	pages: Vec<i32>,
 }
 
 enum Kid {
 	Element(usize),
-	/// A marked-content id, bare or in a reference dictionary. pdfium reports it only on the page it names: the reference's own `/Pg`, else the element's own, never an ancestor's.
+	/// pdfium reports it only on the page it names: the reference's own `/Pg`, else the element's own, never an ancestor's.
 	Content {
 		mcid: i32,
 		page: Option<i32>,
@@ -37,7 +35,7 @@ enum Kid {
 }
 
 impl Structure {
-	/// Reads the structure tree, or `None` when the document does not say it is tagged, which is pdfium's test too.
+	/// `None` unless `/MarkInfo` says the document is tagged, which is pdfium's test too.
 	pub(super) fn read(document: &PdfDocument, catalog: &Dict<'_>) -> Option<Self> {
 		let marked = catalog.get::<Dict<'_>>(b"MarkInfo").is_some_and(|info| {
 			info.get::<bool>(b"Marked").unwrap_or(false) || info.get::<i32>(b"Marked").is_some_and(|value| value != 0)
@@ -75,7 +73,6 @@ enum Visit {
 	Done,
 }
 
-/// Fills in each element's pages from its own content and its children's, guarding against a tree that loops.
 fn gather_pages(index: usize, nodes: &mut [Node], direct: &[Vec<i32>], state: &mut [Visit]) {
 	if state[index] != Visit::Unvisited {
 		return;
@@ -102,12 +99,11 @@ struct Reader<'d, 'a> {
 	role_map: Option<Dict<'a>>,
 	nodes: Vec<Node>,
 	by_id: HashMap<ObjectIdentifier, usize>,
-	/// The pages each element's own marked content lands on, before its children's are added.
 	direct_content: Vec<Vec<i32>>,
 }
 
 impl<'a> Reader<'_, 'a> {
-	/// One kid of an element whose own `/Pg` is `own_page` and whose nearest page is `page`. The reported page follows pdfium; the nearest one only decides which pages an element is on.
+	/// The reported page (`own_page`) follows pdfium; the nearest one (`page`) only decides which pages an element is on.
 	fn kid(&mut self, kid: Object<'a>, own_page: Option<i32>, page: Option<i32>, depth: u32) -> (Kid, Option<i32>) {
 		match kid {
 			Object::Number(number) => {
@@ -172,7 +168,7 @@ impl<'a> Reader<'_, 'a> {
 		Some(index)
 	}
 
-	/// The structure type, through the role map once, as pdfium resolves it.
+	/// Through the role map once, as pdfium resolves it.
 	fn kind(&self, dict: &Dict<'a>) -> Option<String> {
 		let name = dict.get::<Name<'_>>(b"S")?;
 		let mapped = self.role_map.as_ref().and_then(|map| map.get::<Name<'_>>(name.as_ref()));
@@ -190,7 +186,6 @@ fn text_field(dict: &Dict<'_>, key: &[u8]) -> Option<String> {
 		.filter(|text| !text.is_empty())
 }
 
-/// A page's view of the structure tree.
 pub struct TagTree<'page> {
 	structure: &'page Structure,
 	page: i32,
@@ -205,7 +200,6 @@ impl<'page> TagTree<'page> {
 		i32::try_from(self.structure.roots.len()).unwrap_or(i32::MAX)
 	}
 
-	/// The top-level tag at `index`, or `None` when there is no tag there or none of its content is on this page.
 	pub fn child(&self, index: i32) -> Option<Tag<'page>> {
 		element_on_page(self.structure, self.structure.roots.get(usize::try_from(index).ok()?)?, self.page)
 	}
@@ -217,7 +211,6 @@ fn element_on_page<'page>(structure: &'page Structure, kid: &Kid, page: i32) -> 
 	node.pages.binary_search(&page).is_ok().then_some(Tag { structure, node, page })
 }
 
-/// One element of the structure tree, as one page sees it.
 pub struct Tag<'tree> {
 	structure: &'tree Structure,
 	node: &'tree Node,
@@ -225,17 +218,14 @@ pub struct Tag<'tree> {
 }
 
 impl Tag<'_> {
-	/// The structure type, as the PDF spells it after its role map: `H1`, `P`, `LI`, `Figure`, `TD` and so on.
 	pub fn kind(&self) -> Option<String> {
 		self.node.kind.clone()
 	}
 
-	/// Text the author supplied to be read in place of this element's glyphs.
 	pub fn actual_text(&self) -> Option<String> {
 		self.node.actual_text.clone()
 	}
 
-	/// The alternative description, which is what a tagged figure carries instead of text.
 	pub fn alt_text(&self) -> Option<String> {
 		self.node.alt_text.clone()
 	}
@@ -244,12 +234,10 @@ impl Tag<'_> {
 		i32::try_from(self.node.kids.len()).unwrap_or(i32::MAX)
 	}
 
-	/// The child tag at `index`, or `None` when that child is marked content rather than a tag, or a tag with nothing on this page.
 	pub fn child(&self, index: i32) -> Option<Tag<'_>> {
 		element_on_page(self.structure, self.node.kids.get(usize::try_from(index).ok()?)?, self.page)
 	}
 
-	/// The marked-content id of the child at `index`. `None` when that child is a tag, carries no id, or is a reference to another page.
 	pub fn child_mcid(&self, index: i32) -> Option<i32> {
 		let Kid::Content { mcid, page } = self.node.kids.get(usize::try_from(index).ok()?)? else { return None };
 		let id = if *page == Some(self.page) { *mcid } else { return None };

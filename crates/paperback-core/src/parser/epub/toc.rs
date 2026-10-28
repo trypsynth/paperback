@@ -1,7 +1,3 @@
-//! Building an EPUB's table of contents from its EPUB3 nav document (preferred) or NCX
-//! (fallback), and resolving each entry's href to an absolute offset in the converted text
-//! via the spine section it falls in.
-
 use std::{
 	collections::HashMap,
 	io::{Read, Seek},
@@ -174,7 +170,6 @@ pub(super) fn compute_nav_offset(
 	{
 		return *offset;
 	}
-	// Fallback: match by file name if full path didn't resolve.
 	if let Some(name) = Path::new(&path_part).file_name().and_then(|n| n.to_str())
 		&& let Some(section) = sections.iter().find(|section| {
 			Path::new(&section.path)

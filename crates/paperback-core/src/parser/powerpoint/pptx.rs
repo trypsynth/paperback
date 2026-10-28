@@ -1,7 +1,3 @@
-//! Modern OOXML `.pptx` parsing: reads each `ppt/slides/slideN.xml` part directly (`pptx` has no
-//! single flattened text stream the way `.doc`x does), plus relationship-based hyperlink
-//! resolution and `DrawingML` table extraction.
-
 use std::{collections::HashMap, fs, io::Cursor, path::Path};
 
 use anyhow::{Context, Result};
@@ -26,8 +22,6 @@ use crate::{
 	util::zip::read_zip_entry_by_name,
 };
 
-/// A table found while traversing a slide. Markers are added after the slide text is appended to
-/// the buffer (mirroring the deferred link-marker handling), so positions are counted in chars.
 struct TableData {
 	offset: DocPos,
 	caption: String,
@@ -45,8 +39,7 @@ pub(super) fn parse_pptx(context: &ParserContext) -> Result<Document> {
 	};
 	let mut archive = ZipArchive::new(Cursor::new(bytes))
 		.with_context(|| format!("Failed to read PPTX as zip '{}'", context.file_path))?;
-	// zip 9 hands back a Result per name, since decoding one can fail. A name that will not
-	// decode cannot match what this scan is looking for, so drop those rather than fail the file.
+	// A name zip 9 cannot decode cannot be a slide part, so it is dropped rather than failing the file.
 	let mut slides = (0..archive.len())
 		.filter_map(|i| archive.by_index(i).ok().and_then(|entry| entry.name().ok().map(std::borrow::Cow::into_owned)))
 		.filter(|name| {
@@ -187,8 +180,7 @@ fn traverse_for_text(
 					return;
 				}
 				"tbl" => {
-					// Handle the table here and skip generic recursion: otherwise the walk below would
-					// re-emit every cell's `<a:t>` text as flat paragraph lines, duplicating the table.
+					// Generic recursion would re-emit every cell's `<a:t>` text as flat lines, duplicating the table.
 					process_pptx_table(node, text, tables, slide_start, render_tables_inline);
 					return;
 				}
@@ -237,7 +229,7 @@ fn traverse_for_text(
 	}
 }
 
-/// The relationship id a run links to. A deck writes the link in the run's properties, `<a:r><a:rPr><a:hlinkClick r:id="..."/></a:rPr><a:t>...</a:t></a:r>`, beside its text rather than around it.
+/// A deck writes the link in the run's properties, `<a:r><a:rPr><a:hlinkClick r:id="..."/></a:rPr><a:t>...</a:t></a:r>`, beside its text rather than around it.
 fn run_link<'a>(run: Node<'a, '_>) -> Option<&'a str> {
 	let properties = run.children().find(|child| child.tag_name().name() == "rPr");
 	properties
@@ -248,9 +240,7 @@ fn run_link<'a>(run: Node<'a, '_>) -> Option<&'a str> {
 		.and_then(|link| link.attribute("id"))
 }
 
-/// Convert a `DrawingML` `<a:tbl>` into the shared HTML-table representation, append its display text
-/// to `text`, and record a [`TableData`] for later marker creation. pptx cells nest one level
-/// deeper than Word (`tc > txBody > p`), so cell text is gathered from every descendant `<a:t>`.
+/// pptx cells nest one level deeper than Word (`tc > txBody > p`), so cell text is gathered from every descendant `<a:t>`.
 fn process_pptx_table(
 	node: Node,
 	text: &mut String,
@@ -268,7 +258,6 @@ fn process_pptx_table(
 			if tc.node_type() != NodeType::Element || tc.tag_name().name() != "tc" {
 				continue;
 			}
-			// Join paragraphs within the cell with a space so multi-paragraph cells stay readable.
 			let mut cell_text = String::new();
 			for p in tc.descendants() {
 				if p.node_type() == NodeType::Element && p.tag_name().name() == "p" {

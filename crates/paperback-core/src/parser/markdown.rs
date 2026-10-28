@@ -15,13 +15,12 @@ use crate::{
 	util::encoding::convert_to_utf8,
 };
 
-/// The grammar for both rendering and source lookup, which must agree to keep block anchors in sync. YAML front matter is recognised so it is read as the document's metadata rather than shown as text.
+/// Shared by rendering and source lookup, which must agree to keep block anchors in sync.
 const fn markdown_options(dollar_math: bool) -> Options {
 	let options = Options::ENABLE_TABLES.union(Options::ENABLE_YAML_STYLE_METADATA_BLOCKS);
 	if dollar_math { options.union(Options::ENABLE_MATH) } else { options }
 }
 
-/// The YAML front matter a file opens with, between its `---` lines, without them.
 fn front_matter(markdown: &str) -> Option<&str> {
 	let rest = markdown.trim_start_matches('\u{feff}').strip_prefix("---")?;
 	let rest = rest.strip_prefix("\r\n").or_else(|| rest.strip_prefix('\n'))?;
@@ -35,7 +34,6 @@ fn front_matter(markdown: &str) -> Option<&str> {
 	None
 }
 
-/// A top-level `key: value` from front matter, unquoted. A list, written on the lines below the key as `- item`, comes back joined with commas, as authors often are.
 fn front_matter_field(front_matter: &str, key: &str) -> Option<String> {
 	let mut lines = front_matter.lines().peekable();
 	while let Some(line) = lines.next() {
@@ -58,11 +56,7 @@ fn front_matter_field(front_matter: &str, key: &str) -> Option<String> {
 	None
 }
 
-/// Converts Markdown to HTML with an empty `<span id="pb-block-N"></span>` before each block.
-///
-/// The anchors produce no text but give every block a stable id, so a position
-/// in the converted text can be mapped back to a `#fragment` when the document
-/// is shown in a web view.
+/// The empty `pb-block-N` anchors give every block a stable id, so a position in the converted text maps back to a `#fragment` in a web view.
 #[must_use]
 pub fn markdown_to_html(markdown_text: &str, dollar_math: bool) -> String {
 	let parser = MarkdownParserImpl::new_ext(markdown_text, markdown_options(dollar_math)).into_offset_iter();
@@ -96,17 +90,10 @@ pub fn markdown_to_html(markdown_text: &str, dollar_math: bool) -> String {
 		if latex.trim().is_empty() {
 			continue;
 		}
-		// Rebuilt from the TeX rather than sliced from the source, because the source range of a multi-line formula
-		// includes container prefixes on its later lines, such as `> ` in a block quote.
+		// Rebuilt from the TeX because a multi-line formula's source range includes container prefixes such as `> ` on later lines.
 		let source_text = Event::Text(format!("{delimiter}{latex}{delimiter}").into());
-		// pulldown-cmark ends inline math at any `$` preceded by a non-space, so in "Tickets cost $10-$20 each." it
-		// interprets "$10-$" as math. Following Pandoc, we don't emit MathML when the closing `$` is followed by a
-		// digit. The span can't be re-parsed, so any Markdown formatting inside it (very unlikely) is shown literally.
-		//
-		// This still misreads a `$` that directly follows a non-space character and isn't followed by a digit, as in
-		// the shell's `$PATH:$HOME` or PHP's `$a.$b`. Markdown is ambiguous here: without knowing whether the writer
-		// uses dollars for math, there is no way to tell which reading is meant, so the reader can turn dollar math
-		// off (see `ParserContext::markdown_dollar_math`).
+		// pulldown-cmark reads "$10-$" in "$10-$20" as math; like Pandoc, a closing `$` followed by a digit isn't math.
+		// `$PATH:$HOME` is still misread, which is ambiguous without knowing the writer, hence `ParserContext::markdown_dollar_math`.
 		let closes_before_digit =
 			display == MathDisplay::Inline && markdown_text[range.end..].starts_with(|c: char| c.is_ascii_digit());
 		if closes_before_digit {
@@ -126,11 +113,7 @@ pub fn markdown_to_html(markdown_text: &str, dollar_math: bool) -> String {
 	html_content
 }
 
-/// Returns the byte offset in `markdown_text` where the 1-based `block_index`
-/// block begins, using the same block numbering as [`markdown_to_html`] given the same `dollar_math`.
-///
-/// This maps a `pb-block-N` anchor (recorded in `id_positions`) back to its
-/// location in the original Markdown source.
+/// Must number blocks exactly as [`markdown_to_html`] does given the same `dollar_math`, to map a `pb-block-N` anchor back to the source.
 #[must_use]
 pub fn block_source_offset(markdown_text: &str, block_index: usize, dollar_math: bool) -> Option<usize> {
 	let parser = MarkdownParserImpl::new_ext(markdown_text, markdown_options(dollar_math)).into_offset_iter();
@@ -368,7 +351,6 @@ mod tests {
 		assert!(!text.contains("pb-block"), "anchors must not leak into text: {text:?}");
 	}
 
-	/// Front matter names the document, and is its metadata rather than text to read.
 	#[test]
 	fn front_matter_gives_the_title_and_authors_and_is_not_read_as_text() {
 		let document = parse_markdown(
@@ -389,7 +371,7 @@ Text.
 		assert!(document.buffer.content.starts_with("Chapter"), "{:?}", document.buffer.content);
 	}
 
-	/// Most READMEs open with a level-one heading naming the project, which names the document better than README does.
+	/// Most READMEs open with a level-one heading naming the project, which beats "README" as a title.
 	#[test]
 	fn an_opening_level_one_heading_is_the_title_when_there_is_no_front_matter() {
 		assert_eq!(

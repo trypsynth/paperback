@@ -6,7 +6,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import java.util.Locale
 
-/** The tags actually shipped in assets/translations, as `cargo xtask android` names them. */
+/** As `cargo xtask android` names them in assets/translations. */
 private val SHIPPED = listOf(
 	"bs", "cs", "de", "es", "fi", "fr", "ja", "nl", "pl", "pt_br", "ru", "sr", "uk", "vi", "zh_CN"
 )
@@ -18,8 +18,7 @@ class BestLocaleMatchTest {
 		assertEquals("fr", bestLocaleMatch(SHIPPED, Locale.forLanguageTag("fr-FR")))
 	}
 
-	// The bug this all exists for: a Chinese device reports "zh", the catalogue is "zh_CN", and
-	// matching on the bare language code found nothing, so a complete translation read English.
+	// The bug: a Chinese device reports "zh", the catalogue is "zh_CN", and a complete translation read English.
 	@Test
 	fun `a country-tagged catalogue is found from the device's country`() {
 		assertEquals("zh_CN", bestLocaleMatch(SHIPPED, Locale.forLanguageTag("zh-CN")))
@@ -31,8 +30,7 @@ class BestLocaleMatchTest {
 		assertEquals("pt_br", bestLocaleMatch(SHIPPED, Locale.forLanguageTag("pt-BR")))
 	}
 
-	// Only one Chinese and one Portuguese catalogue exists, so a reader in Taiwan or Portugal is
-	// better served by it than by falling all the way back to English.
+	// The one Chinese or Portuguese catalogue serves Taiwan or Portugal better than English does.
 	@Test
 	fun `another country for the same language still finds that language`() {
 		assertEquals("zh_CN", bestLocaleMatch(SHIPPED, Locale.forLanguageTag("zh-TW")))
@@ -57,8 +55,6 @@ class BestLocaleMatchTest {
 		assertNull(bestLocaleMatch(emptyList(), Locale.forLanguageTag("de-DE")))
 	}
 
-	// A country-specific catalogue must win over a bare one for the same language, so shipping
-	// pt alongside pt_br would still send a Brazilian reader to pt_br.
 	@Test
 	fun `the device's own country wins over a bare language catalogue`() {
 		val both = listOf("pt", "pt_br")
@@ -92,23 +88,20 @@ class TranslateTest {
 		assertEquals("3 von 9", t("{} of {}", "3", "9"))
 	}
 
-	// The nav-unit labels translate first and substitute after, so a translation is free to move
-	// its placeholder somewhere else in the sentence.
+	// Nav-unit labels translate before substituting, which is what lets a translation move the placeholder.
 	@Test
 	fun `a translation may put its placeholder anywhere`() {
 		Translations.map = hashMapOf("Back {}" to "{} zurück")
 		assertEquals("30 seconds zurück", t("Back {}", "30 seconds"))
 	}
 
-	// An argument that itself contains a placeholder must not be re-scanned, or a filename or
-	// search term containing "{}" would swallow the argument meant for the next placeholder.
+	// Otherwise a file name or search term containing "{}" would swallow the next argument.
 	@Test
 	fun `an argument containing a placeholder is not substituted into`() {
 		assertEquals("{} and b", t("{} and {}", "{}", "b"))
 	}
 
-	// Both mismatches are survivable and neither should throw: a translation that dropped a
-	// placeholder, and one that kept more than the call site has arguments for.
+	// A translation may drop a placeholder or keep more than the call site fills, and neither may throw.
 	@Test
 	fun `spare placeholders and spare arguments are both left alone`() {
 		assertEquals("a and {}", t("{} and {}", "a"))
@@ -117,7 +110,6 @@ class TranslateTest {
 	}
 }
 
-/** The `Plural-Forms` headers the shipped catalogues actually carry. */
 private const val POLISH =
 	"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);"
 private const val SERBIAN =
@@ -135,8 +127,7 @@ class PluralFormTest {
 
 	private fun forCount(count: Long) = nt("one", "few", "many", count)
 
-	// The bug this exists for: Serbian gives 21 the same form as 1, Polish does not, and a single
-	// hardcoded rule served the first while making the second read "21 sekunda" for "21 sekund".
+	// The bug: the hardcoded Serbian rule made Polish read "21 sekunda" for "21 sekund".
 	@Test
 	fun `Polish gives the singular to one alone`() {
 		Translations.pluralRule = PluralRule.parse(POLISH)
@@ -150,8 +141,7 @@ class PluralFormTest {
 		assertEquals("many", forCount(121))
 	}
 
-	// The same counts under the rule the hardcoded fallback was written for, which must keep
-	// working: this is the language the marker mechanism was introduced for.
+	// The language the hardcoded fallback and the plural marker were written for.
 	@Test
 	fun `Serbian keeps giving twenty-one the singular`() {
 		Translations.pluralRule = PluralRule.parse(SERBIAN)
@@ -161,8 +151,7 @@ class PluralFormTest {
 		assertEquals("many", forCount(11))
 	}
 
-	// A two-form language must never reach the third slot, whose text is a duplicate of the second
-	// for it, and a one-form language must never leave the first.
+	// For a two-form language the third slot duplicates the second, so it must never be reached.
 	@Test
 	fun `a two-form language uses only the first two forms`() {
 		Translations.pluralRule = PluralRule.parse(GERMAN)
@@ -181,8 +170,7 @@ class PluralFormTest {
 		assertEquals("one", forCount(21))
 	}
 
-	// Czech writes the same three-form rule with its comparisons parenthesized instead of bare,
-	// so the parser has to handle both shapes.
+	// Czech writes its rule this way.
 	@Test
 	fun `a rule written with parenthesized comparisons parses`() {
 		Translations.pluralRule = PluralRule.parse("Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;")
@@ -191,8 +179,7 @@ class PluralFormTest {
 		assertEquals("many", forCount(9))
 	}
 
-	// A language with more forms than nt() has slots (Arabic has six) must still select a form
-	// rather than throw or fall through to the wrong one.
+	// Arabic has six forms to nt()'s three slots.
 	@Test
 	fun `more forms than slots clamps to the last slot`() {
 		Translations.pluralRule =
@@ -206,8 +193,7 @@ class PluralFormTest {
 		assertEquals("many", forCount(5))
 	}
 
-	// Everything below is about not making things worse than the hardcoded rule when the header
-	// can't be trusted: no catalogue, no header line, and a truncated expression.
+	// From here down: an untrustworthy header must be no worse than the hardcoded rule.
 	@Test
 	fun `no catalogue keeps the previous behaviour`() {
 		assertEquals("one", forCount(21))
@@ -228,8 +214,7 @@ class PluralFormTest {
 		assertNull(PluralRule.parse("Plural-Forms: nplurals=2;"))
 	}
 
-	// A malformed expression must not silently select form 0 for every count; falling back to the
-	// hardcoded rule at least keeps three-form Slavic languages readable.
+	// The hardcoded rule at least keeps three-form Slavic languages readable.
 	@Test
 	fun `an unevaluatable expression falls back instead of picking form zero`() {
 		Translations.pluralRule = PluralRule.parse("Plural-Forms: nplurals=3; plural=(n==1 ? 0 : ;")

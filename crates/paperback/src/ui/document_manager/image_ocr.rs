@@ -1,11 +1,4 @@
-//! Reading the text off the picture under the caret, on demand, and showing it in a view of its
-//! own.
-//!
-//! Nothing here reaches the document: the recognized text goes to the view and no further, which
-//! is what Batch OCR is for. The picture's bytes are read on the UI thread, because the session
-//! holds the document open and is not `Send`; decoding and recognizing happen on a worker, since
-//! the engine's first call costs a few hundred milliseconds and the app never blocks the UI thread
-//! on work like this.
+//! Bytes are read on the UI thread because the session isn't `Send`; decoding and recognition go to a worker since the engine's first call costs a few hundred milliseconds.
 
 use std::{path::PathBuf, thread};
 
@@ -18,26 +11,17 @@ use crate::{
 	ui::{dialogs::show_image_text_dialog, navigation::announce},
 };
 
-/// What one picture's recognition came back with.
 enum ImageOcrOutcome {
-	/// What the engine read in the picture.
 	Text(String),
-	/// The engine read the picture and found no text in it.
 	NoText,
-	/// The picture's bytes are not an image this build can decode.
 	Unreadable,
-	/// The engine itself refused or failed.
 	Failed(OcrError),
 }
 
 impl DocumentManager {
-	/// Reads the text off the picture under the caret and shows it in a view the reader can leave
-	/// with Escape.
-	///
-	/// One picture at a time: until the view opens or a message is announced there is nothing else
-	/// for the reader to do, so a second Enter is answered rather than queued.
 	pub fn read_picture_at_caret(&mut self) {
 		let label = self.live_region_label;
+		// A second Enter is answered rather than queued, since the reader has nothing else to do until the view opens.
 		if self.image_ocr_job.is_some() {
 			// TRANSLATORS: Announced when Enter is pressed on a picture while its text is already being recognized
 			announce(label, t("OCR in progress."));
@@ -67,8 +51,6 @@ impl DocumentManager {
 		}
 	}
 
-	/// Clears the picture job `id` if it is the one running, and returns the document it was read
-	/// out of. `None` means the result belongs to a job that has already been answered.
 	fn take_finished_image_ocr(&mut self, id: u64) -> Option<PathBuf> {
 		match self.image_ocr_job.take() {
 			Some((job_id, path)) if job_id == id => Some(path),
@@ -80,7 +62,6 @@ impl DocumentManager {
 	}
 }
 
-/// Decodes one picture and reads it, off the UI thread.
 fn run_image_ocr(bytes: &[u8], max_dimension: u32, id: u64) {
 	let outcome = match decode_image(bytes, max_dimension) {
 		Ok(page) => {
@@ -98,19 +79,13 @@ fn run_image_ocr(bytes: &[u8], max_dimension: u32, id: u64) {
 	post_image_ocr_result(id, outcome);
 }
 
-/// Hands one picture's outcome to the UI thread.
-///
-/// The lock is held only long enough to check the job is still the running one and to read what
-/// the view needs out of the manager. Opening the modal dialog under it would deadlock: its own
-/// handlers lock the manager again.
 fn post_image_ocr_result(id: u64, outcome: ImageOcrOutcome) {
 	wxdragon::call_after(Box::new(move || {
 		let Some(window) = crate::ui::app::main_window_from_ptr() else { return };
+		// The lock is released before the dialog opens, since its handlers lock the manager again and would deadlock.
 		let (frame, label) = {
 			let mut manager = window.document_manager().lock().unwrap();
 			let Some(path) = manager.take_finished_image_ocr(id) else { return };
-			// A document closed while the engine was reading leaves a result about a picture
-			// nobody is looking at any more.
 			if manager.active_tab().is_none_or(|tab| tab.local_path() != path) {
 				return;
 			}

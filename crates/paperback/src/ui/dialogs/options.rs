@@ -24,9 +24,7 @@ use font::{color_description, font_description, show_font_picker};
 #[cfg(target_os = "windows")]
 use hotkey::prompt_for_hotkey;
 
-/// Selectable audio seek amounts, in seconds, shown in the Options dialog and indexed by
-/// `audio_seek_amount_ctrl`'s selection. Also the step sequence `audio::handle_change_seek_amount`
-/// walks when nudging the seek amount via keyboard shortcut, so the two stay in lockstep.
+/// Indexed by `audio_seek_amount_ctrl`'s selection and also stepped through by `audio::handle_change_seek_amount`, so it must match the choices in the dialog.
 pub(crate) const AUDIO_SEEK_AMOUNTS_SECONDS: [i32; 9] = [5, 10, 30, 60, 120, 300, 600, 1800, 3600];
 
 #[derive(Clone, Debug)]
@@ -281,8 +279,6 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let log_level_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	log_level_sizer.add(&log_level_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	log_level_sizer.add(&log_level_combo, 0, SizerFlag::AlignCenterVertical, 0);
-	// Global window hotkeys are a Windows-only concept (see start_hotkey_listener in
-	// main_window.rs); macOS and Linux have no equivalent, so this button isn't built there.
 	#[cfg(target_os = "windows")]
 	// TRANSLATORS: Button label to open the hotkey customization dialog
 	let hotkey_button = Button::builder(&general_panel).with_label(&t("Customize &Window Hotkey...")).build();

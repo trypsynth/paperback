@@ -42,25 +42,19 @@ pub fn find_child_element<'a, 'input>(node: Node<'a, 'input>, name: &str) -> Opt
 	node.children().find(|child| child.node_type() == NodeType::Element && child.tag_name().name() == name)
 }
 
-/// Reads an XML file in the encoding its declaration names, since most FictionBooks are windows-1251. A byte order mark wins, and a file with no declaration is guessed at like plain text.
+/// Most FictionBooks are windows-1251, so the declared encoding is honoured rather than assuming UTF-8.
 pub fn read_xml_to_string(path: &str) -> std::io::Result<String> {
 	let bytes = std::fs::read(path)?;
 	let Some(encoding) = crate::util::encoding::xml_declared_encoding(&bytes) else {
-		// A file that declares nothing is guessed at the way a plain text file is, byte order
-		// marks and all, rather than simply assumed to be UTF-8: a FictionBook written in
-		// windows-1251 and saved without a declaration is still a windows-1251 book.
+		// A windows-1251 FictionBook saved without a declaration is still windows-1251, so it is sniffed like plain text.
 		return Ok(crate::util::encoding::convert_to_utf8(&bytes));
 	};
-	// `decode` sniffs for a byte order mark first and follows it where there is one, so a UTF-16
-	// file is read as UTF-16 whatever its declaration says.
+	// `decode` follows a byte order mark over the declaration, as the XML specification asks.
 	let (text, _, _) = encoding.decode(&bytes);
 	Ok(replace_encoding_declaration(&text))
 }
 
-/// Rewrites the decoded text's own encoding declaration to UTF-8, which is what it now is.
-///
-/// roxmltree reads `&str` and so is handed UTF-8 whatever the file held, but it reads the
-/// declaration too and refuses a document that claims to be anything else.
+/// roxmltree is handed UTF-8 whatever the file held, but refuses a document whose declaration claims otherwise.
 fn replace_encoding_declaration(text: &str) -> String {
 	let Some((declaration, rest)) = text.split_once("?>") else { return text.to_string() };
 	if !declaration.starts_with("<?xml") || !declaration.contains("encoding") {
@@ -147,7 +141,7 @@ mod tests {
 		let doc = Document::parse(xml).unwrap();
 		assert!(find_child_element(doc.root_element(), "target").is_none());
 	}
-	/// windows-1251, which `read_to_string` refuses.
+	/// Most FictionBooks are windows-1251, which `read_to_string` refuses.
 	#[test]
 	fn decodes_the_encoding_the_declaration_names() {
 		let dir = TempDir::new("xml-encoding");
@@ -157,8 +151,6 @@ mod tests {
 		let path = dir.write_str("cp1251.xml", bytes);
 		let text = read_xml_to_string(&path).expect("read the file");
 		assert!(text.contains("Анна"), "got {text:?}");
-		// roxmltree is handed a `&str` and refuses a document that claims to be anything but the
-		// UTF-8 it now is.
 		assert!(text.contains(r#"encoding="UTF-8""#), "got {text:?}");
 	}
 
@@ -175,7 +167,6 @@ mod tests {
 		assert!(text.contains("<p>hi</p>"), "got {text:?}");
 	}
 
-	/// A file that declares nothing at all is guessed at rather than assumed to be UTF-8.
 	#[test]
 	fn a_file_with_no_declaration_is_detected() {
 		let dir = TempDir::new("xml-nodecl");
@@ -187,8 +178,6 @@ mod tests {
 		assert!(!text.contains('\u{fffd}'), "no replacement characters: {text:?}");
 	}
 
-	/// A declaration naming an encoding this build has never heard of is read as UTF-8 rather than
-	/// refused.
 	#[test]
 	fn an_unknown_encoding_falls_back_to_utf8() {
 		let dir = TempDir::new("xml-unknown");

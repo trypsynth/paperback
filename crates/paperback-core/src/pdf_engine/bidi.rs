@@ -1,6 +1,4 @@
-//! pdfium's `CFX_BidiChar` and `CFX_BidiString` (`core/fxcrt/fx_bidi.cpp`), which split a line into runs of one direction and decide which way the line as a whole reads.
-//!
-//! This is much simpler than the Unicode bidirectional algorithm, and on purpose: the text layer orders right-to-left runs the way pdfium does, and [`crate::parser::util::bidi`] was written against the result.
+//! A port of pdfium's `CFX_BidiChar` and `CFX_BidiString` (`core/fxcrt/fx_bidi.cpp`), far simpler than the Unicode bidirectional algorithm on purpose: [`crate::parser::util::bidi`] was written against pdfium's ordering.
 //!
 //! Portions are derived from `PDFium`, used under its BSD-style license:
 //! Copyright 2014 The `PDFium` Authors. Original code copyright 2014 Foxit Software Inc. <http://www.foxitsoftware.com>
@@ -41,14 +39,12 @@ fn direction_of(c: u32) -> Direction {
 	}
 }
 
-/// A line split into runs of one direction, in the order the line reads.
 pub(super) struct BidiString {
 	order: Vec<Segment>,
 	overall: Direction,
 }
 
 impl BidiString {
-	/// Splits `text`, reading it right to left when it has more right-to-left runs than left-to-right ones.
 	pub(super) fn new(text: &[u32]) -> Self {
 		let mut order = Vec::new();
 		let mut current = Segment { start: 0, count: 0, direction: Direction::Neutral };
@@ -85,7 +81,6 @@ pub(super) fn overall_direction(text: &[u32]) -> Direction {
 	BidiString::new(text).overall_direction()
 }
 
-/// The character's mirror image, such as `)` for `(`, which is what a right-to-left run shows in its place.
 pub(super) fn mirror(c: u32) -> u32 {
 	char::from_u32(c)
 		.and_then(|ch| CodePointMapData::<BidiMirroringGlyph>::new().get(ch).mirroring_glyph)
@@ -105,7 +100,6 @@ mod tests {
 		assert_eq!(BidiString::new(&text("abc def")).overall_direction(), Direction::Left);
 	}
 
-	/// Two Hebrew runs outnumber the one Latin run, so the line reads right to left and its runs come in reverse.
 	#[test]
 	fn a_mostly_hebrew_line_reads_right_to_left() {
 		let line = BidiString::new(&text("שלום a עולם"));

@@ -1,5 +1,3 @@
-//! Playback commands: play/pause, seeking, and the seek amount.
-
 use std::{rc::Rc, sync::Mutex};
 
 use paperback_core::{audio::AudioTimeline, config::ConfigManager};
@@ -31,26 +29,12 @@ pub fn handle_toggle_play_pause_audio(
 	}
 }
 
-/// Where seeking `amount_ms` forward from wherever `player` is now would land, if that runs
-/// past the real end of the currently loaded file and "continue into the next file" is
-/// enabled: the elapsed time in the document that continuing from the very start of whatever
-/// comes next resolves to. `None` if the seek doesn't run off the file's real end, there's no
-/// next source, or the next source's own narration hasn't started by that raw position yet
-/// (an extremely long seek amount over a very short next file) - the caller falls back to the
-/// ordinary clamped-at-`total_duration_ms` target in every one of those cases.
 fn spilled_seek_target_ms(player: &AudioPlayer, amount_ms: u64) -> Option<u64> {
 	let (source, raw_ms, length_ms) = player.current_file_position_and_length_ms()?;
 	spill_overflow_into_next_source(player.timeline(), source, raw_ms, length_ms, amount_ms)
 }
 
-/// The arithmetic behind `spilled_seek_target_ms`, split out so it's testable without a real
-/// decoder backing `AudioPlayer`.
-///
-/// This has to go through the *real* decoder-reported file length (`length_ms`) rather than the
-/// document's own declared clip duration, since a plain-audio-zip bundle's placeholder clip
-/// duration (see `build_plain_audio_zip_document`) is hours longer than the real file, so the
-/// ordinary elapsed-time-based target would just resolve back into the same file, past its real
-/// end, where the seek is clamped to the file's own last frame instead of advancing.
+// Uses the decoder's real file length, not the clip duration: a plain-audio-zip bundle's placeholder clips run hours past the real file, so an elapsed-time target would land back in the same file.
 fn spill_overflow_into_next_source(
 	timeline: &AudioTimeline,
 	source: usize,
@@ -67,10 +51,6 @@ fn spill_overflow_into_next_source(
 	timeline.elapsed_for_source_position(next_source, overflow_ms)
 }
 
-/// Skips the active document's audio narration backward or forward by the configured seek
-/// amount (`audio_seek_amount_seconds`, default 10). When "sync caret to audio" is on, the
-/// caret follows the new audio position, mirroring what `pump_audio` does during playback;
-/// this is the one-shot equivalent for an explicit seek rather than passive following.
 pub fn handle_seek_audio(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
@@ -122,9 +102,6 @@ pub fn handle_seek_audio(
 	}
 }
 
-/// Nudges the active document's audio playback speed up or down by one step, and announces the
-/// new speed. Unlike the seek amount (a global setting), speed lives on the `AudioPlayer`
-/// itself, so this needs an active document with audio, like `handle_toggle_play_pause_audio`.
 pub fn handle_change_audio_speed(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	live_region_label: StaticText,
@@ -156,7 +133,7 @@ pub fn handle_change_audio_speed(
 	announce_for_command(live_region_label, from_keyboard, message);
 }
 
-/// Steps the active document's audio volume up or down, and announces the new volume. Like speed, it belongs to the document's `AudioPlayer`, because recordings differ in how loud they are.
+/// Volume is per `AudioPlayer` rather than global because recordings differ in how loud they are.
 pub fn handle_change_audio_volume(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	live_region_label: StaticText,
@@ -188,12 +165,10 @@ pub fn handle_change_audio_volume(
 	announce_for_command(live_region_label, from_keyboard, message);
 }
 
-/// A volume as a whole percentage, e.g. `80%` or `150%`.
 fn volume_label(volume: f32) -> String {
 	format!("{}%", (volume * 100.0).round())
 }
 
-/// A human-readable label for a playback speed multiplier, e.g. `1.5x`, `1x`, `0.75x`.
 fn speed_label(speed: f32) -> String {
 	let mut label = format!("{speed:.2}");
 	while label.ends_with('0') {
@@ -205,9 +180,6 @@ fn speed_label(speed: f32) -> String {
 	format!("{label}x")
 }
 
-/// A human-readable label for one of `dialogs::AUDIO_SEEK_AMOUNTS_SECONDS`, matching the text
-/// shown for it in the Options dialog's seek-amount dropdown, for the live-region announcement
-/// made when the amount changes via keyboard shortcut.
 fn seek_amount_label(seconds: i32) -> String {
 	match seconds {
 		// TRANSLATORS: Audio seek amount, announced after changing it via keyboard shortcut
@@ -232,10 +204,6 @@ fn seek_amount_label(seconds: i32) -> String {
 	}
 }
 
-/// Nudges the configured audio seek amount (used by `handle_seek_audio`) one step up or down
-/// through the same preset list shown in the Options dialog's dropdown, and announces the new
-/// value. A global setting rather than a per-document action, so unlike `handle_seek_audio` this
-/// doesn't need an active document or audio player.
 pub fn handle_change_seek_amount(
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
@@ -287,9 +255,7 @@ mod tests {
 		assert_eq!(volume_label(1.5), "150%");
 	}
 
-	/// Two "files", each one placeholder-duration clip covering its whole 24h declared length
-	/// (like `build_plain_audio_zip_document`'s clips), so a real file length far shorter than
-	/// that placeholder is what has to trigger the spill, not the document's own clip bounds.
+	/// 24h placeholder clips like `build_plain_audio_zip_document`'s, so only the real file length can trigger the spill.
 	fn plain_audio_zip_timeline() -> AudioTimeline {
 		const PLACEHOLDER_MS: u64 = 24 * 60 * 60 * 1000;
 		let mut builder = AudioTimelineBuilder::new();
@@ -303,7 +269,6 @@ mod tests {
 	#[test]
 	fn spill_overflow_into_next_source_is_none_when_the_seek_stays_within_the_real_file() {
 		let timeline = plain_audio_zip_timeline();
-		// 30s into a 45s file, seeking 10s: lands at 40s, still short of the real 45s end.
 		assert_eq!(spill_overflow_into_next_source(&timeline, 0, 30_000, 45_000, 10_000), None);
 	}
 
@@ -316,7 +281,6 @@ mod tests {
 	#[test]
 	fn spill_overflow_into_next_source_lands_the_overflow_into_the_next_files_start() {
 		let timeline = plain_audio_zip_timeline();
-		// 40s into a 45s file, seeking 10s: 5s of that seek belongs to whatever plays next.
 		let target = spill_overflow_into_next_source(&timeline, 0, 40_000, 45_000, 10_000);
 		assert_eq!(target, timeline.elapsed_for_source_position(1, 5_000));
 	}

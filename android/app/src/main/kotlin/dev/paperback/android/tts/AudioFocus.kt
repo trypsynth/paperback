@@ -6,26 +6,14 @@ import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
 
-/**
- * The attributes every stream this app plays goes out with: media usage, so it rides the volume
- * the user expects a book to, and speech content, so the system knows it is talking rather than
- * playing music.
- */
+/** Media usage so a book rides the media volume the reader expects. */
 fun speechAudioAttributes(): AudioAttributes = AudioAttributes
 	.Builder()
 	.setUsage(AudioAttributes.USAGE_MEDIA)
 	.setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
 	.build()
 
-/**
- * Audio focus for one player. Something else taking focus (a call, another app starting up)
- * pauses playback through [onPause], and focus coming back resumes it through [onResume], but
- * only when this player is the one that was interrupted: [isPlaying] is read at the moment focus
- * is lost, so a player that was already paused stays paused.
- *
- * Ducking is deliberately not handled. The system ducks on API 26 and up, and on older releases
- * speech carries on at full volume rather than being quietly talked over.
- */
+/** Ducking is deliberately not handled: the system ducks on API 26+, and below that speech carries on at full volume. */
 class AudioFocusHolder(
 	context: Context,
 	private val isPlaying: () -> Boolean,
@@ -41,6 +29,7 @@ class AudioFocusHolder(
 			when (focusChange) {
 				AudioManager.AUDIOFOCUS_LOSS,
 				AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+					// Read at the moment of loss, so a player that was already paused stays paused when focus returns.
 					wasPlayingBeforeLoss = isPlaying()
 					if (wasPlayingBeforeLoss) onPause()
 				}

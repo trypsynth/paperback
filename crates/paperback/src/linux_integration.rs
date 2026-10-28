@@ -1,14 +1,4 @@
-//! One-time "set up file associations" flow shown the first time Paperback runs from an
-//! AppImage. AppImages have no install step to hang an installer-style Tasks page off of, so
-//! this mimics one at first launch instead: the same checkbox list the Windows installer
-//! generates from `paperback_formats::ALL` (see `build/installer.rs`), applied via `xdg-mime`
-//! and a `.desktop` file in the user's local applications directory, since Linux associates by
-//! MIME type rather than by extension. There's also one extra checkbox with no Windows-installer
-//! equivalent, for symlinking the `pb` CLI onto `PATH`.
-//!
-//! A no-op for a regular (non-AppImage) Linux install: there's no single executable path to
-//! point a `.desktop` file's `Exec=` line at, and anyone packaging Paperback as a `.deb`/`.rpm`
-//! is expected to ship its own desktop file and associations as part of that packaging.
+//! First-launch stand-in for the installer's Tasks page, since AppImages have no install step; a `.deb` or `.rpm` ships its own desktop file and associations instead.
 
 use std::{
 	env, fs,
@@ -26,17 +16,12 @@ use wxdragon::prelude::Frame;
 
 use crate::ui::{AssociationChoice, ChoiceAction, show_linux_setup_dialog};
 
-/// Config key marking that the user has confirmed the dialog, so it never shows more than once.
-/// Left unset on Cancel/Escape, so declining shows it again next launch rather than silently
-/// skipping setup for good.
+/// Left unset on Cancel, so declining offers setup again next launch rather than skipping it for good.
 const SETUP_DONE_KEY: &str = "linux_file_associations_setup_done";
 
 const DESKTOP_FILE_ID: &str = "paperback.desktop";
 
-/// `.opf` has no freedesktop.org-registered media type, so Paperback supplies its own via a
-/// small supplementary shared-mime-info package installed alongside the desktop file. Extra
-/// `<mime-type>` packages like this are additive by spec, so this can't conflict with anything
-/// else on the system that happens to also claim `application/x-daisy-opf`.
+/// `.opf` has no registered media type; mime packages are additive, so this can't conflict with anything else claiming it.
 const DAISY_OPF_MIME_INFO: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
 	<mime-type type="application/x-daisy-opf">
@@ -46,20 +31,13 @@ const DAISY_OPF_MIME_INFO: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
 </mime-info>
 "#;
 
-/// Shows the setup dialog if Paperback is running from an AppImage and the user hasn't been
-/// through it before. Best-effort throughout: a missing `xdg-mime`/`update-desktop-database`,
-/// or a read-only home directory, just means the OS-level association doesn't stick. It
-/// doesn't stop the app from starting.
-///
-/// Cancel/Escape quits Paperback outright rather than dropping the user into a main window
-/// they never asked to open, and leaves `SETUP_DONE_KEY` unset so the dialog is offered again
-/// next launch.
 pub fn maybe_run_first_run_setup(parent: &Frame, config: &Mutex<ConfigManager>) {
 	let Ok(appimage_path) = env::var("APPIMAGE") else { return };
 	if config.lock().unwrap().get_app_bool(SETUP_DONE_KEY, false) {
 		return;
 	}
 	let choices = association_choices();
+	// Cancel quits rather than dropping the user into a main window they never asked to open.
 	let Some(selections) = show_linux_setup_dialog(parent, &choices) else {
 		process::exit(0);
 	};
@@ -69,14 +47,7 @@ pub fn maybe_run_first_run_setup(parent: &Frame, config: &Mutex<ConfigManager>) 
 	config.lock().unwrap().set_app_bool(SETUP_DONE_KEY, true);
 }
 
-/// Builds the checkbox list from `paperback_formats::ALL`, plus a standalone ZIP entry shared
-/// by DAISY and Word-in-zip. This mirrors which boxes `format_tasks_block()` in `build/installer.rs`
-/// offers and pre-checks, whose per-format loop also skips `zip` in favor of one shared,
-/// unchecked task. Unlike Windows, this dialog doesn't distinguish "Open with" from "default
-/// handler" (`format.installer.default_handler` is ignored here): it's an explicit, one-time
-/// action the user walks through on purpose rather than a task list ticked mid-install, and its
-/// own copy says "should open in Paperback", so every checked box becomes the default handler
-/// for its MIME types.
+/// Unlike the Windows installer, every checked box becomes the default handler: this is a deliberate one-time step whose copy says "should open in Paperback".
 fn association_choices() -> Vec<AssociationChoice> {
 	let mut choices = vec![AssociationChoice {
 		// TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
@@ -140,15 +111,7 @@ fn apply_selections(appimage_path: &str, choices: &[AssociationChoice], selectio
 	Ok(())
 }
 
-/// Symlinks `pb` into `~/.local/bin`, the conventional per-user bin directory most desktop
-/// distros already put on `PATH` (e.g. via `~/.profile`). This is the closest Linux equivalent of
-/// the Windows installer's "Add Paperback directory to PATH" task, without editing shell startup
-/// files or `PATH` itself by hand.
-///
-/// Points at the AppImage file (`$APPIMAGE`, stable across runs) rather than the `usr/bin/pb`
-/// inside it, which lives on a fresh read-only mount that disappears once the app exits. `AppRun`
-/// (see `xtask::release::build_appimage`) dispatches on `$ARGV0`'s basename, so invoking this
-/// symlink as `pb` re-execs the AppImage straight into `usr/bin/pb` instead of the GUI.
+/// Links to the AppImage, not the `usr/bin/pb` inside its mount that vanishes on exit; `AppRun` dispatches on `$ARGV0`, so running the link as `pb` runs the CLI.
 fn add_pb_to_local_bin(appimage_path: &str) {
 	let Ok(bin_dir) = local_bin_dir() else { return };
 	if fs::create_dir_all(&bin_dir).is_err() {
@@ -184,9 +147,7 @@ fn write_desktop_file(apps_dir: &Path, appimage_path: &str, icon_name: &str, mim
 	fs::File::create(apps_dir.join(DESKTOP_FILE_ID))?.write_all(contents.as_bytes())
 }
 
-/// Copies the icon out of the mounted AppImage (`$APPDIR`, set by the AppImage runtime
-/// alongside `$APPIMAGE` while it's running) into the user's icon theme directory, so the
-/// desktop entry has something to show once the AppImage itself is no longer mounted.
+/// So the desktop entry still has an icon once the AppImage is no longer mounted.
 fn install_icon() -> io::Result<String> {
 	let icons_dir = local_share_dir("icons/hicolor/512x512/apps")?;
 	fs::create_dir_all(&icons_dir)?;

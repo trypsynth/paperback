@@ -22,9 +22,6 @@ fn extracts_headings_and_paragraph_text() {
 	assert_eq!(doc.toc_items[0].children[0].name, "Section");
 }
 
-/// End-to-end: a reference to a section title must resolve through the same link-navigation path
-/// every other format uses (`resolve_link`, keyed off `Document::id_positions`), landing on the
-/// heading rather than being treated as an unresolved or external link.
 #[test]
 fn cross_reference_to_a_section_resolves_as_an_internal_link() {
 	let doc = parse_bytes("book.rst", "See Details_ below.\n\nDetails\n=======\n\nBody text here.\n");
@@ -36,8 +33,6 @@ fn cross_reference_to_a_section_resolves_as_an_internal_link() {
 	assert_eq!(nav.offset, heading_offset);
 }
 
-/// External links embedded in an RST reference (`` `text <https://...>`_ ``) must be classified
-/// external by the same reader link-navigation path as any other format's hyperlinks.
 #[test]
 fn embedded_external_link_resolves_as_external() {
 	let doc = parse_bytes("book.rst", "See `the docs <https://example.com/>`_ for details.\n");
@@ -66,8 +61,7 @@ fn decodes_non_utf8_content() {
 	assert!(doc.buffer.content.contains("héllo"), "got: {:?}", doc.buffer.content);
 }
 
-/// Malformed, deeply nested and pathological input from real files must never panic the parser -
-/// see the module doc comment for why this matters more here than for most formats.
+/// See the module doc for why a panic matters more here than for most formats.
 #[test]
 fn never_panics_on_malformed_input() {
 	let samples = [
@@ -100,7 +94,6 @@ fn never_panics_on_malformed_input() {
 	}
 }
 
-/// A title opening the document, and its `:Author:` field, name it the way docutils does.
 #[test]
 fn an_opening_title_and_author_field_name_the_document() {
 	let doc = parse_bytes(

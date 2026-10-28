@@ -38,8 +38,7 @@ class DocumentSearchTest {
 		assertEquals("second", search.query.value)
 	}
 
-	// Both go together: a query with no options (or the reverse) would leave every caller that
-	// checks one and uses the other reading a search that is only half gone.
+	// Callers check one and use the other, so a half-cleared search breaks them.
 	@Test
 	fun `clearing drops the query and the options together`() {
 		val search = DocumentSearch()
@@ -69,8 +68,7 @@ class DocumentSearchTest {
 		assertFalse(search.isSameAs("needle", options(matchCase = true)))
 	}
 
-	// Find Previous runs the same search backward. Counting that as a new search would start it
-	// from the match the reader is on rather than stepping off it.
+	// As a new search, Find Previous would start from the current match rather than stepping off it.
 	@Test
 	fun `searching the other way is still the same search`() {
 		val search = DocumentSearch()
@@ -78,8 +76,7 @@ class DocumentSearchTest {
 		assertTrue(search.isSameAs("needle", SearchOptionsFfi(false, false, false, false)))
 	}
 
-	// One step is carried out before the next is asked for, which is also why the flow needs no
-	// more buffer than it has: MainScreen collects each request as it arrives.
+	// MainScreen collects each request as it arrives, so the flow needs no more buffer than this.
 	@Test
 	fun `stepping reports the direction it was asked for`() = runTest {
 		val search = DocumentSearch()

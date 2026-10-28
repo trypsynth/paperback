@@ -1,11 +1,3 @@
-//! [`ConfigManager`], the stateful TOML-backed store built on [`super::settings::ConfigData`]:
-//! this file holds its core lifecycle (init/flush) and the content-hash-keyed document lookup
-//! every other accessor goes through, with the accessors themselves grouped into submodules by
-//! concern - generic app settings, readability, keybindings, the recent/opened document lists,
-//! Find, per-document reading state, bookmarks, and `.paperback` sidecar import/export - plus
-//! [`get_sorted_document_list`] and [`compute_document_hash`], the two free functions built on
-//! top of it.
-
 use std::{
 	cell::{Cell, RefCell},
 	fs,
@@ -53,8 +45,6 @@ impl ConfigManager {
 		}
 	}
 
-	/// An initialized manager that lives only in memory, for tests outside this module that need
-	/// to store and read settings without a file.
 	#[cfg(test)]
 	pub(crate) fn in_memory() -> Self {
 		let mut manager = Self::new();

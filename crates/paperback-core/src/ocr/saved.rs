@@ -1,8 +1,6 @@
-//! Keeping the pages OCR has read, so that a document opened again comes back with them rather than with its placeholders (#1160).
-//!
-//! What is kept is each line and where its words were read, not the text it was turned into, so the page is arranged again every time it comes back: by the joining the reader has set now, and by however [`super::arrange`] reads a page by then.
-//!
-//! Each document has one file, named for the same digest of its content that its settings are kept under, so a file that has changed since is never given text read from what it was. A page is appended to the file each time it is read, and a page read again is appended again; the last reading of a page is the one that counts.
+//! Recognized pages are kept so a reopened document comes back with them rather than its placeholders (#1160).
+//! Word boxes are kept, not the arranged text, so a page is arranged afresh by the current settings and [`super::arrange`] every time it comes back.
+//! Files are named for the content digest, so a changed file is never given text read from what it was; the last appended reading of a page counts.
 
 use std::{
 	collections::BTreeMap,
@@ -17,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use super::{RecognizedLine, RecognizedWord};
 use crate::config::compute_document_hash;
 
-/// Written as the first line of every file, so a file written in a layout this build does not know is left alone rather than misread.
+/// A file written in a layout this build does not know is left alone rather than misread.
 const VERSION: u32 = 1;
 
 #[derive(Serialize, Deserialize)]
@@ -25,32 +23,25 @@ struct Header {
 	version: u32,
 }
 
-/// One page as it is kept: its number and its lines.
 #[derive(Serialize, Deserialize)]
 struct Page {
 	page: i32,
 	lines: Vec<Line>,
 }
 
-/// A line and its words, each word with its box in whole pixels, which is as fine as an engine measures.
+/// Word boxes in whole pixels, which is as fine as an engine measures.
 #[derive(Serialize, Deserialize)]
 struct Line {
 	text: String,
 	words: Vec<(String, i32, i32, i32, i32)>,
 }
 
-/// Where the pages read off `document` are kept, in `dir`.
 #[must_use]
 pub fn saved_pages_file(dir: &Path, document: &Path) -> PathBuf {
 	let digest = compute_document_hash(&document.to_string_lossy());
 	dir.join(format!("{}.ocr", URL_SAFE_NO_PAD.encode(digest)))
 }
 
-/// Adds `pages` to what `file` keeps.
-///
-/// # Errors
-///
-/// Returns the error if the file or its folder cannot be written.
 pub fn save_pages(file: &Path, pages: &[(i32, Vec<RecognizedLine>)]) -> io::Result<()> {
 	if pages.is_empty() {
 		return Ok(());
@@ -72,7 +63,7 @@ pub fn save_pages(file: &Path, pages: &[(i32, Vec<RecognizedLine>)]) -> io::Resu
 	out.write_all(text.as_bytes())
 }
 
-/// The pages `file` keeps, in page order, the last reading of each. A file that is missing, or written in a layout this build does not know, keeps nothing; a line that cannot be read, such as one cut short when the app was closed while writing it, is passed over.
+/// A line that cannot be read, such as one cut short when the app closed while writing it, is passed over.
 #[must_use]
 pub fn load_pages(file: &Path) -> Vec<(i32, Vec<RecognizedLine>)> {
 	let Ok(input) = File::open(file) else { return Vec::new() };
@@ -149,7 +140,6 @@ mod tests {
 		assert_eq!(load_pages(&file), vec![(1, vec![line("one", 7.0)]), (3, vec![line("three", 5.0)])]);
 	}
 
-	/// A page read again replaces what it was read as before, and the pages read once are kept.
 	#[test]
 	fn the_last_reading_of_a_page_counts() {
 		let file = file("last-reading");
@@ -158,7 +148,6 @@ mod tests {
 		assert_eq!(load_pages(&file), vec![(1, vec![line("second try", 0.0)]), (2, vec![line("two", 0.0)])]);
 	}
 
-	/// The app closed while a page was being written leaves a line cut short, which costs that page and no other.
 	#[test]
 	fn a_page_cut_short_is_passed_over() {
 		let file = file("cut-short");
@@ -169,7 +158,6 @@ mod tests {
 		assert_eq!(load_pages(&file), vec![(1, vec![line("one", 0.0)])]);
 	}
 
-	/// A file from a build that keeps pages some other way is left alone rather than misread.
 	#[test]
 	fn a_file_in_an_unknown_layout_keeps_nothing() {
 		let file = file("unknown-layout");

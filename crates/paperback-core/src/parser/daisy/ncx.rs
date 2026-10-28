@@ -8,8 +8,7 @@ use crate::{
 	types::HeadingInfo,
 };
 
-/// Reads `dc:title`/`dc:creator` out of `ncc.html`'s `<meta>` tags (case-insensitively, since some
-/// producers write `dc:Title`), the same metadata a DAISY 3 OPF carries in `<dc-metadata>`.
+/// Case-insensitive, since some producers write `dc:Title`.
 pub(super) fn parse_daisy2_ncc_metadata(ncc_content: &str) -> (Option<String>, Option<String>) {
 	let doc = scraper::Html::parse_document(ncc_content);
 	let selector = scraper::Selector::parse("meta[name][content]").unwrap();
@@ -46,13 +45,7 @@ pub(super) fn extract_daisy2_links(ncc_content: &str) -> Vec<String> {
 	links
 }
 
-/// Parses DAISY 2.02 `ncc.html` headings (`h1`-`h6`, each wrapping an `<a href>` into a SMIL
-/// file) into the heading list `build_toc_from_headings` expects. `smil_anchors` (the SMIL id
-/// to text-position map built while walking the SMIL files, keyed both bare and
-/// `{smil_href}#{id}`-qualified) resolves the link the same way a DAISY 3 NCX target is
-/// resolved against its SMIL; `id_positions` is the fallback for a text-only book whose links
-/// point straight at the content HTML instead. Headings whose link target didn't resolve are
-/// dropped rather than stranding them at position 0.
+/// Each heading links into a SMIL file, so `smil_anchors` resolves it; `id_positions` is for a text-only book linking straight at content HTML. Unresolved headings are dropped rather than stranded at position 0.
 pub(super) fn parse_daisy2_ncc_headings(
 	ncc_content: &str,
 	id_positions: &HashMap<String, DocPos>,
@@ -80,12 +73,8 @@ pub(super) fn parse_daisy2_ncc_headings(
 	headings
 }
 
-/// Parses an NCX `navMap` into TOC items. `smil_anchors` maps ids *within the SMIL files* to
-/// text positions: in an audio DAISY 3 book a navPoint's `content/@src` points into the SMIL,
-/// not into the `DTBook`, so resolving it against `id_positions` alone would silently strand
-/// every entry at the start of the book. Text-only books, whose navPoints do point at
-/// `DTBook` ids, pass an empty map. Returns `None` when nothing resolved at all, letting the
-/// caller fall back to a TOC built from the text itself rather than serve a uniformly wrong one.
+/// In an audio DAISY 3 book a navPoint points into the SMIL, not the `DTBook`, so `id_positions` alone would strand every entry at the start; text-only books pass an empty `smil_anchors`.
+/// `None` when nothing resolved, so the caller builds a TOC from the text rather than serve a uniformly wrong one.
 pub(super) fn parse_daisy_ncx(
 	ncx_content: &str,
 	ncx_dir: &str,
@@ -110,9 +99,7 @@ pub(super) fn parse_daisy_ncx(
 	if items.is_empty() || !resolved_any { None } else { Some(items) }
 }
 
-/// The text position a navPoint's `content/@src` names, looked up path-qualified first (which
-/// can't collide across files) and then bare. `resolved_any` records whether any navPoint in
-/// the whole map found a real target.
+/// Path-qualified first, since that can't collide across files, then bare.
 fn resolve_navpoint_offset(
 	content_src: &str,
 	ncx_dir: &str,

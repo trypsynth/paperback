@@ -7,8 +7,6 @@ use super::{
 };
 use crate::document::{DocLen, DocumentBuffer, MarkerType};
 
-/// Word tags a list's number as marked content inside the item's body rather than as an Lbl, so
-/// the walker has to recognise a block that so far holds only a label and space the text from it.
 #[test]
 fn bare_list_labels_are_recognised_and_words_are_not() {
 	for label in ["1.", "12.", "1.2.", "3)", "a.", "(b)", "iv.", "XII.", "\u{2022}", "-", "\u{F0B7}", " 2. "] {
@@ -19,9 +17,7 @@ fn bare_list_labels_are_recognised_and_words_are_not() {
 	}
 }
 
-/// OFF mode: the PDF table helper emits a single `"[Table]: <first row>"` placeholder line and
-/// the Table marker's length equals the emitted display extent. The HTML has a non-BMP char
-/// (U+1D11E, G Clef) in a cell to lock position math (one position, four bytes).
+/// The non-BMP G clef (U+1D11E) locks the position math: one position, four bytes.
 #[test]
 fn pdf_table_helper_emits_placeholder_when_off() {
 	let html = "<table border=\"1\">\n<tr>\n<td>Kop</td>\n<td>\u{1D11E}</td>\n</tr>\n</table>\n".to_string();
@@ -30,20 +26,16 @@ fn pdf_table_helper_emits_placeholder_when_off() {
 	let mut lines_info = Vec::new();
 	let mut page_text = String::new();
 	append_pdf_table_to_buffer(&mut buffer, html.clone(), pos, &mut lines_info, &mut page_text, false);
-	// Placeholder: first row with tabs->spaces.
 	assert_eq!(buffer.content, "[Table]: Kop \u{1D11E}\n");
 	assert_eq!(lines_info.len(), 1, "placeholder is a single line");
 	assert!(lines_info[0].1.starts_with("[Table]: "));
-	// Table marker length equals the emitted display extent.
-	let placeholder_len = DocLen::of("[Table]: Kop \u{1D11E}") + 1.into(); // +1 for trailing newline
+	let placeholder_len = DocLen::of("[Table]: Kop \u{1D11E}") + 1.into();
 	let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker present");
 	assert_eq!(table_marker.position, 0);
 	assert_eq!(table_marker.length, placeholder_len, "marker length in positions");
 	assert_eq!(table_marker.reference, html, "marker keeps the table HTML");
 }
 
-/// ON mode: the helper emits the full TSV; multi-row tables produce one line per row, and the
-/// marker length spans all emitted lines.
 #[test]
 fn pdf_table_helper_emits_tsv_when_inline() {
 	let html =
@@ -54,7 +46,6 @@ fn pdf_table_helper_emits_tsv_when_inline() {
 	let mut lines_info = Vec::new();
 	let mut page_text = String::new();
 	append_pdf_table_to_buffer(&mut buffer, html, pos, &mut lines_info, &mut page_text, true);
-	// Two rows -> "Kop\t𝄞\na\tb\n".
 	assert_eq!(buffer.content, "Kop\t\u{1D11E}\na\tb\n");
 	assert_eq!(lines_info.len(), 2, "one line per table row");
 	assert_eq!(lines_info[0].1, "Kop\t\u{1D11E}");
@@ -64,8 +55,6 @@ fn pdf_table_helper_emits_tsv_when_inline() {
 	assert_eq!(table_marker.length, expected_len, "marker length spans all emitted rows");
 }
 
-/// An empty inline table must emit no line at all (a raw `split('\n')` would emit one spurious
-/// blank line). The buffer stays empty and the Table marker has zero length.
 #[test]
 fn pdf_table_helper_empty_inline_emits_no_line() {
 	let html = "<table border=\"1\">\n</table>\n".to_string();
@@ -81,15 +70,12 @@ fn pdf_table_helper_empty_inline_emits_no_line() {
 	assert_eq!(table_marker.length, 0, "zero-length marker for empty inline table");
 }
 
-/// The Symbol font's bullet reaches the text layer as U+F0B7, a private-use code point a screen
-/// reader reads as nothing. A label made only of those is a bullet, and is written as one.
 #[test]
 fn a_private_use_list_label_becomes_a_bullet() {
 	assert_eq!(normalize_list_label("\u{F0B7}"), "\u{2022}");
 	assert_eq!(normalize_list_label("\u{F0A7}"), "\u{2022}");
 }
 
-/// Labels that carry real characters are left exactly as the document wrote them.
 #[test]
 fn an_ordinary_list_label_is_left_alone() {
 	assert_eq!(normalize_list_label("1."), "1.");
@@ -98,9 +84,7 @@ fn an_ordinary_list_label_is_left_alone() {
 	assert_eq!(normalize_list_label("\u{F0B7} 1."), "\u{F0B7} 1.");
 }
 
-/// The case behind issue #797: a list item's label is held back until the paragraph inside its
-/// `LBody` arrives, then goes out on the front of that one line. The label on a line of its own is
-/// what made arrowing through a tagged list stop at silent rows.
+/// #797: a label on a line of its own made arrowing through a tagged list stop at silent rows.
 #[test]
 fn a_list_label_joins_the_line_that_follows_it() {
 	let mut buffer = DocumentBuffer::new();
@@ -128,7 +112,6 @@ fn a_list_label_joins_the_line_that_follows_it() {
 	assert!(label.is_empty(), "the label is spent once it is written");
 }
 
-/// The tree facts gathered from a page whose tree names these ids, in this order.
 fn facts_naming(mcids: &[i32]) -> TreeFacts {
 	let mut facts = TreeFacts::default();
 	for mcid in mcids {
@@ -137,29 +120,23 @@ fn facts_naming(mcids: &[i32]) -> TreeFacts {
 	facts
 }
 
-/// A paragraph running onto a new page names that page's first id once for itself and once more
-/// for each piece of text it lost there.
 #[test]
 fn a_reference_made_twice_counts_as_a_repeat() {
 	assert_eq!(facts_naming(&[0, 0, 3]).repeats, HashMap::from([(0, 1)]));
 	assert_eq!(facts_naming(&[0, 0, 0]).repeats, HashMap::from([(0, 2)]));
 }
 
-/// Each id's text on a page, `"t0 "` for id 0 and so on.
 fn text_of(mcids: &[i32]) -> HashMap<i32, String> {
 	mcids.iter().map(|mcid| (*mcid, format!("t{mcid} "))).collect()
 }
 
-/// The page's text after folding, for content running through the ids in `order` with those in
-/// `artifacts` inside `Artifact` marks, under a tree naming `named`.
 fn folded(order: &[i32], artifacts: &[i32], named: &[i32]) -> HashMap<i32, String> {
 	let mut text = text_of(order);
 	fold_repeated_references(order, &artifacts.iter().copied().collect(), &facts_naming(named), &mut text);
 	text
 }
 
-/// A paragraph names id 0 twice, a line number (artifact 1) follows it, and the words after the
-/// line number (id 2) are named by nothing.
+/// A paragraph names id 0 twice, a line number (artifact 1) follows it, and the words after it (id 2) are named by nothing.
 #[test]
 fn a_repeated_reference_takes_the_span_after_the_line_number() {
 	let text = folded(&[0, 1, 2, 3], &[1], &[0, 0, 3]);
@@ -167,7 +144,6 @@ fn a_repeated_reference_takes_the_span_after_the_line_number() {
 	assert_eq!(text[&3], "t3 ", "the next paragraph keeps its own text");
 }
 
-/// Id 0 named three times, with two line numbers and two pieces of text after them.
 #[test]
 fn a_reference_made_three_times_takes_two_spans() {
 	assert_eq!(folded(&[0, 1, 2, 3, 4, 5], &[1, 3], &[0, 0, 0, 5])[&0], "t0 t2 t4 ");
@@ -183,7 +159,6 @@ fn recovery_takes_no_more_parts_than_extra_references() {
 	assert_eq!(folded(&[0, 2, 4, 3], &[], &[0, 0, 3])[&0], "t0 t2 ");
 }
 
-/// Guard: text the tree never names stays out of a page whose tree names every id once.
 #[test]
 fn a_page_without_repeats_is_left_alone() {
 	assert_eq!(folded(&[0, 1, 2, 3], &[1], &[0, 3]), text_of(&[0, 1, 2, 3]));

@@ -1,6 +1,3 @@
-//! Plain-text and regex search over the rendered document, with position conversion
-//! through [`DocumentBuffer`] and wrap-around retry.
-
 use bitflags::bitflags;
 use regex::{Regex, RegexBuilder};
 
@@ -19,9 +16,6 @@ bitflags! {
 	}
 }
 
-/// The matcher both `reader_search` and `reader_search_all` run, honouring `options`: the needle
-/// is escaped unless it is already a regex, wrapped in `\b…\b` for whole-word search, and matched
-/// case-insensitively unless `MATCH_CASE` is set. `None` for an invalid regex.
 fn build_matcher(needle: &str, options: SearchOptions) -> Option<Regex> {
 	let escaped_needle =
 		if options.contains(SearchOptions::REGEX) { needle.to_string() } else { regex::escape(needle) };
@@ -40,7 +34,7 @@ pub fn reader_search(buffer: &DocumentBuffer, needle: &str, start: DocPos, optio
 		return None;
 	}
 	let start_byte = buffer.byte_at(start);
-	// Build regex for search - this avoids copying/lowercasing the entire haystack.
+	// A case-insensitive regex avoids copying and lowercasing the whole haystack.
 	let re = build_matcher(needle, options)?;
 	let found = if options.contains(SearchOptions::FORWARD) {
 		re.find(buffer.slice(start_byte..)).map(|m| start_byte + m.start())
@@ -50,9 +44,6 @@ pub fn reader_search(buffer: &DocumentBuffer, needle: &str, start: DocPos, optio
 	found.map(|byte| buffer.pos_at_byte(byte))
 }
 
-/// Every match of `needle` in `buffer`, as `(start, end)` position spans in document order.
-/// Direction and wrap have no meaning here. Zero-length matches (e.g. an empty `x*` regex match)
-/// are skipped; an empty needle or an invalid regex yields no spans.
 #[must_use]
 pub fn reader_search_all(buffer: &DocumentBuffer, needle: &str, options: SearchOptions) -> Vec<(DocPos, DocPos)> {
 	if needle.is_empty() {
@@ -219,7 +210,6 @@ mod tests {
 		let spans = reader_search_all(&buffer, "blah", options);
 		assert_eq!(spans.len(), 3);
 		assert_eq!(spans[0].0, 0);
-		// "blah" is four ASCII chars, so every span is four positions long.
 		assert!(spans.iter().all(|&(start, end)| end - start == 4));
 		assert!(spans.windows(2).all(|w| w[0].0 < w[1].0));
 	}
@@ -248,7 +238,6 @@ mod tests {
 		let options = SearchOptions::REGEX;
 		let spans = reader_search_all(&buffer, r"\d+", options);
 		assert_eq!(spans.len(), 3);
-		// Each span covers the whole run of digits, not just one.
 		assert_eq!((spans[0].1 - spans[0].0), 2);
 		assert_eq!((spans[1].1 - spans[1].0), 3);
 		assert_eq!((spans[2].1 - spans[2].0), 1);
@@ -256,7 +245,6 @@ mod tests {
 
 	#[test]
 	fn reader_search_all_skips_zero_length_matches() {
-		// `a*` also matches the empty gaps between characters; only the real run should survive.
 		let buffer = DocumentBuffer::with_content("aaab".to_string());
 		let options = SearchOptions::REGEX;
 		let spans = reader_search_all(&buffer, "a*", options);

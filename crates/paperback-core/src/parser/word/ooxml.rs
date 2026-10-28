@@ -1,7 +1,3 @@
-//! Modern OOXML `.docx` parsing, including the batch-`.zip`-of-`.docx` and single-file
-//! password-protected cases (the latter via [`util::ooxml::try_decrypt_office_file`], the
-//! shared OLE-container decryption check also reused by `powerpoint`'s `.pptx` parsing).
-
 use std::{
 	collections::HashMap,
 	fs::{self, File},
@@ -45,8 +41,7 @@ pub(super) fn parse_word_zip(context: &ParserContext, render_tables_inline: bool
 	let mut archive = ZipArchive::new(BufReader::new(file))
 		.with_context(|| format!("Failed to read ZIP archive '{}'", context.file_path))?;
 	tracing::debug!(path = %context.file_path, entries = archive.len(), "scanning zip archive for embedded docx entries");
-	// zip 9 hands back a Result per name, since decoding one can fail. A name that will not
-	// decode cannot match what this scan is looking for, so drop those rather than fail the file.
+	// zip 9 hands back a Result per name; one that will not decode cannot be a `.docx` we want, so drop it rather than fail the file.
 	let mut docx_names: Vec<String> = archive
 		.file_names()
 		.flatten()
@@ -112,7 +107,6 @@ pub(super) fn parse_ooxml_doc(context: &ParserContext, render_tables_inline: boo
 	Ok(document)
 }
 
-/// Read a DOCX/OOXML file's raw bytes, decrypting first if the file is an encrypted OLE container.
 fn load_ooxml_bytes(path: &str, password: Option<&str>) -> Result<Vec<u8>> {
 	try_decrypt_office_file(path, password)?
 		.map_or_else(|| fs::read(path).with_context(|| format!("Failed to read '{path}'")), Ok)
@@ -156,7 +150,7 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 	Ok(())
 }
 
-/// Writes the footnotes and endnotes the document cites after its text, under a heading of their own, each where its citation's link lands. Read where Word shows them, at the foot of a page, they would interrupt the text; dropped, as they used to be, the citation numbers led nowhere.
+/// After the text rather than at the foot of a page, where they would interrupt it; dropped, as they used to be, the citation numbers led nowhere.
 fn write_notes<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
 	let cited = std::mem::take(&mut walk.annotations.cited);
 	if cited.is_empty() {
@@ -214,7 +208,6 @@ fn write_notes<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
 	}
 }
 
-/// Writes the comments the document's text carries after it, from `word/comments.xml`, each with its author and the words it was made on.
 fn write_word_comments<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
 	let placed = std::mem::take(&mut walk.annotations.comments);
 	if placed.is_empty() {
@@ -255,9 +248,7 @@ fn write_word_comments<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut W
 	comments::write_comments(walk.buffer, comments);
 }
 
-/// Names the page breaks the walk placed from `first_marker` on, and adds the first page at `start`, which Word records no break for.
-///
-/// A document Word never laid out records no breaks, and is left with no pages rather than given a single page that would claim more than is known.
+/// Word records no break for the first page; a document Word never laid out records none at all, and gets no pages rather than one that would claim more than is known.
 fn number_pages(buffer: &mut DocumentBuffer, start: DocPos, first_marker: usize) {
 	// A break after the last words, such as one closing the document, would start a page with nothing on it.
 	let end = buffer.end();
@@ -283,7 +274,6 @@ fn number_pages(buffer: &mut DocumentBuffer, start: DocPos, first_marker: usize)
 	}
 }
 
-/// What a walk of `word/document.xml` writes into and consults.
 struct Walk<'a> {
 	buffer: &'a mut DocumentBuffer,
 	headings: &'a mut Vec<HeadingInfo>,
@@ -292,8 +282,7 @@ struct Walk<'a> {
 	style_heading_map: &'a HashMap<String, i32>,
 	render_tables_inline: bool,
 	numbering: Numbering,
-	/// The run of numbered or bulleted paragraphs being built: where it starts, how many items
-	/// it has, and where its last item ends. Any other paragraph, or a table, ends it.
+	/// Any other paragraph, or a table, ends the run.
 	list: Option<ListRun>,
 	page_source: PageSource,
 	annotations: Annotations,
@@ -306,8 +295,6 @@ struct ListRun {
 }
 
 impl Walk<'_> {
-	/// Marks the run of list items just finished as one list, so the reader can step over it
-	/// the way it steps over an HTML list.
 	fn end_list(&mut self) {
 		let Some(ListRun { start, items, end }) = self.list.take() else { return };
 		let length = end.since(start);
@@ -317,9 +304,7 @@ impl Walk<'_> {
 	}
 }
 
-/// Reads `word/styles.xml` and returns a map of style ID → heading level (1-9).
-/// Detects headings via `<w:name w:val="heading N"/>` (the canonical semantic name
-/// Word assigns regardless of locale) or a fallback `<w:outlineLvl>` in the style's pPr.
+/// Matches `<w:name w:val="heading N"/>`, the name Word assigns regardless of locale, with `<w:outlineLvl>` as the fallback.
 fn build_style_heading_map<R: Read + Seek>(archive: &mut ZipArchive<R>) -> HashMap<String, i32> {
 	let mut map = HashMap::new();
 	let Ok(content) = read_zip_entry_by_name(archive, "word/styles.xml") else {
@@ -446,8 +431,7 @@ fn process_table(
 		}
 	}
 	let html_content = build_html_table_from_grid(&rows);
-	// Derive the caption the same way HTML/XML do (first-row text, no prefix) for consistent
-	// labels across formats; fall back to "table" for an empty table like `table_caption_from_tsv`.
+	// Captioned as HTML/XML tables are, for consistent labels across formats.
 	let final_caption = table_caption_from_html(&html_content).unwrap_or_else(|| "table".to_string());
 	let display_text = html_table_to_display(&html_content, render_tables_inline);
 	buffer.append(&display_text);

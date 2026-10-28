@@ -1,6 +1,3 @@
-//! The Options dialog's font and background-color helpers: the descriptions shown next to each
-//! setting and the system font picker that changes the readability font.
-
 use std::{fmt::Write, mem};
 
 use paperback_core::config::ReadabilityFont;
@@ -95,7 +92,7 @@ pub(super) fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Opt
 	let font = dlg.get_font()?;
 	let chosen_color = dlg.get_font_data().map_or(-1, |fd| {
 		let c = fd.get_chosen_colour();
-		// Prevent double-free: this FontData pointer is owned by the dialog, not by us
+		// The dialog owns this FontData, so dropping it would double-free.
 		mem::forget(fd);
 		c.map_or(-1, |col| (i32::from(col.r) << 16) | (i32::from(col.g) << 8) | i32::from(col.b))
 	});

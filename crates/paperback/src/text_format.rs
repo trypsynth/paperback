@@ -1,11 +1,5 @@
-//! Merging the parser's bold, italic and underline markers into the non-overlapping runs the
-//! reading control and the RTF fast path both draw from. Neither the merge nor the segments it
-//! produces touch a widget, so both sides can be tested without one.
-
 use paperback_core::document::DocPos;
 
-/// A non-overlapping run of text with the union of bold/italic/underline
-/// styles active over it, in positions within the text the markers came with.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct FormatSegment {
 	pub start: DocPos,
@@ -15,21 +9,8 @@ pub struct FormatSegment {
 	pub underline: bool,
 }
 
-/// Merges bold/italic/underline markers (which may overlap, e.g. a bold word
-/// inside an italic sentence) into a sequence of non-overlapping segments, each
-/// carrying the union of the styles active over that range.
-///
-/// This is required because wxMSW's `wxTextCtrl::SetStyle` rewrites the *entire*
-/// font for a range whenever any font attribute is present in the `wxTextAttr`
-/// (it masks `CFM_FACE | CFM_SIZE | ...` unconditionally and fills unset fields
-/// from a default font, Arial 10pt). Applying overlapping single-style markers
-/// one at a time would therefore both reset the face/size and clobber each
-/// other's styles. Producing one combined style per non-overlapping segment
-/// avoids both problems and is correct on every platform.
-///
-/// Implemented as a sweep over +1/-1 events per style so it's O(n log n) instead
-/// of the naive O(n^2) "rescan every marker at every boundary" approach, which
-/// took several seconds on books with tens of thousands of formatting spans.
+/// wxMSW's `wxTextCtrl::SetStyle` rewrites the whole font for a range (unset fields become Arial 10pt), so overlapping markers applied one at a time reset the face and clobber each other.
+/// A sweep over +1/-1 events, because rescanning every marker at every boundary took seconds on books with tens of thousands of spans.
 pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker]) -> Vec<FormatSegment> {
 	use paperback_core::document::MarkerType;
 	#[derive(Clone, Copy)]
@@ -55,7 +36,6 @@ pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker])
 	events.sort_unstable_by_key(|e| e.position);
 	let mut active = [0i32; 3];
 	let mut segments: Vec<FormatSegment> = Vec::new();
-	// The segment currently being extended, if the active style set is non-empty.
 	let mut open: Option<FormatSegment> = None;
 	let mut idx = 0;
 	while idx < events.len() {
@@ -67,8 +47,6 @@ pub fn merge_formatting_markers(markers: &[paperback_core::session::LineMarker])
 		let (bold, italic, underline) = (active[0] > 0, active[1] > 0, active[2] > 0);
 		let same_style = open.is_some_and(|seg| seg.bold == bold && seg.italic == italic && seg.underline == underline);
 		if same_style {
-			// Style unchanged across this boundary: keep extending the open segment
-			// instead of splitting it into an adjacent duplicate.
 			open.as_mut().expect("same_style implies open is Some").end = position;
 		} else {
 			if let Some(mut seg) = open.take() {
@@ -144,7 +122,6 @@ mod tests {
 
 	#[test]
 	fn overlapping_bold_and_italic_keep_both_on_the_intersection() {
-		// Bold over [0,10), italic over [4,7): the middle run must carry both.
 		let markers = [marker(MarkerType::Bold, 0, 10), marker(MarkerType::Italic, 4, 3)];
 		assert_eq!(
 			merge_formatting_markers(&markers),

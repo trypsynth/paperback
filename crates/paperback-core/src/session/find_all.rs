@@ -1,37 +1,24 @@
-//! The Find All result rows: every line of a document that holds at least one match for a
-//! query, in document order, each with the page it sits on and the full list of that line's
-//! match spans. Built by [`DocumentSession::find_all_lines`] from
-//! [`crate::reader_core::reader_search_all`]; the UI renders one row per line and jumps to the
-//! chosen match span.
-
 use super::DocumentSession;
 use crate::{
 	document::{ContentBytePos, DocPos, MarkerType},
 	reader_core::SearchOptions,
 };
 
-/// One match's extent in the document, so a caller can hand it straight to a range selector.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FindSpan {
 	pub start: DocPos,
 	pub end: DocPos,
 }
 
-/// One result line: the trimmed text of a line holding at least one match, the page it is on
-/// (`0` when the document has no page markers), and every match's span on that line.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FindAllLine {
 	pub text: String,
+	/// `0` when the document has no page markers.
 	pub page: i32,
 	pub matches: Vec<FindSpan>,
 }
 
 impl DocumentSession {
-	/// Every line that contains at least one match of `query`, one row per distinct line in
-	/// document order (a line holding several matches appears once). Match spans are document
-	/// positions, so a caller can compare spans against the caret and select
-	/// ranges without further conversion. Returns an empty list for an empty query, an invalid
-	/// regex, or a document with no matches.
 	#[must_use]
 	pub fn find_all_lines(&self, query: &str, options: SearchOptions) -> Vec<FindAllLine> {
 		let buffer = &self.handle.document().buffer;
@@ -42,8 +29,7 @@ impl DocumentSession {
 		let newline_bytes: Vec<ContentBytePos> =
 			buffer.content.match_indices('\n').map(|(idx, _)| ContentBytePos::from_raw(idx)).collect();
 		let content_end = buffer.content_end();
-		// The page-break offsets once, so each result line's page is a binary search instead of
-		// recounting every marker per line (which would scale with lines x markers).
+		// Collected once, so each line's page is a binary search rather than a walk over every marker.
 		let pagebreak_offsets: Vec<DocPos> = buffer
 			.markers
 			.iter()
@@ -62,8 +48,7 @@ impl DocumentSession {
 				if text.is_empty() {
 					continue;
 				}
-				// The page number is how many page-break markers sit at or before the line; a line
-				// before the first marker still belongs to page 1.
+				// A line before the first page break still belongs to page 1.
 				let page = if pagebreak_offsets.is_empty() {
 					0
 				} else {

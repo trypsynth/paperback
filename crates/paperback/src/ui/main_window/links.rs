@@ -1,6 +1,3 @@
-//! Opening documents from links: one download window for all the links given at once, then a tab
-//! for each document that came down.
-
 use std::{path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{
@@ -24,8 +21,6 @@ use crate::{
 	working_copy::WorkingCopy,
 };
 
-/// Downloads `links` in one window and opens each document that came down, then lists what could
-/// not be opened. A link that is already open only selects its tab.
 pub fn open_links(
 	frame: &Frame,
 	dm: &Rc<Mutex<DocumentManager>>,
@@ -35,8 +30,6 @@ pub fn open_links(
 	open_links_then(frame, dm, config, links, || {});
 }
 
-/// [`open_links`], then `then` once the documents have opened, or straight away when there is
-/// nothing to download.
 pub fn open_links_then(
 	frame: &Frame,
 	dm: &Rc<Mutex<DocumentManager>>,
@@ -83,9 +76,6 @@ pub fn open_links_then(
 	);
 }
 
-/// Downloads the document the tab for `link` was opened from again and reads it in place,
-/// keeping the reading position, then calls `reloaded`. A refusal or a failed download is
-/// reported and leaves the tab as it was.
 pub fn download_again(
 	frame: &Frame,
 	dm: &Rc<Mutex<DocumentManager>>,
@@ -196,8 +186,7 @@ fn open_download(
 	if links::needs_open_as(warned, copy.path()) && !choose_format(frame, Path::new(link), config) {
 		return false;
 	}
-	// A zip of several books offers the same list as one opened from disk, unless a format was
-	// picked for the link.
+	// A zip of several books offers the same list as one opened from disk, unless a format was picked for the link.
 	if config.lock().unwrap().get_document_format(link).is_empty() {
 		match browse_zip(frame, copy.path(), false) {
 			None => return false,

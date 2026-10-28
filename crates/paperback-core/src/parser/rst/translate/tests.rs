@@ -15,8 +15,6 @@ fn overlined_title_is_also_a_heading() {
 #[test]
 fn adornment_characters_are_leveled_by_first_appearance() {
 	let html = rst_to_html("One\n===\n\nTwo\n---\n\nThree\n=====\n\nFour\n----\n");
-	// The second `===`/`---` pair reuses the characters already seen, so they repeat the same
-	// levels rather than climbing further.
 	assert_eq!(html, r#"<h1 id="one">One</h1><h2 id="two">Two</h2><h1 id="three">Three</h1><h2 id="four">Four</h2>"#);
 }
 
@@ -95,8 +93,7 @@ fn transition_becomes_a_horizontal_rule() {
 	assert_eq!(html, "<p>First.</p><hr><p>Second.</p>");
 }
 
-/// A real bug from code review: a grid table's rows were being joined into one run-on paragraph,
-/// losing the line breaks a screen reader (or anyone else) needs to make sense of it.
+/// A grid table's rows were joined into one run-on paragraph, losing the line breaks a screen reader needs.
 #[test]
 fn grid_table_preserves_its_line_breaks() {
 	let html = rst_to_html("+------+------+\n| a    | b    |\n+======+======+\n| 1    | 2    |\n+------+------+\n");
@@ -133,16 +130,13 @@ fn field_list_becomes_a_definition_list() {
 	assert_eq!(html, "<dl><dt>Author</dt><dd>Jane Doe</dd><dt>Version</dt><dd>1.0</dd></dl>");
 }
 
-/// A real bug from code review: a role wrapped onto the start of a paragraph's continuation line
-/// (extremely common in Sphinx docs, since roles wrap constantly) was misread as a one-field
-/// field list, splitting the role name out as a field name and leaving its content in backticks.
+/// A role wrapped onto the start of a continuation line, constant in Sphinx docs, was misread as a one-field field list.
 #[test]
 fn role_wrapped_onto_a_paragraph_continuation_line_is_not_a_field_list() {
 	let html = rst_to_html("See the :func:`sorted` builtin, and\n:func:`min`, which is smaller.\n");
 	assert_eq!(html, "<p>See the sorted builtin, and min, which is smaller.</p>");
 }
 
-/// A genuine field list starting with something that could pass for a role name must still work.
 #[test]
 fn field_list_is_still_recognized_when_its_name_could_look_like_a_role() {
 	let html = rst_to_html(":func: not a role, a field value\n");
@@ -155,9 +149,7 @@ fn strong_and_emphasis_and_literal_markup() {
 	assert_eq!(html, "<p><strong>bold</strong> and <em>italic</em> and <code>code</code>.</p>");
 }
 
-/// A real bug found against Flask's changelog: a double-backtick literal wrapping a dunder name,
-/// followed by a `:pr:` role, was mis-scanned as a hyperlink reference starting at the second
-/// backtick of the literal's own opening pair, eating the leading underscores of its content.
+/// Flask's changelog: a double-backtick literal around a dunder name before a `:pr:` role was scanned as a hyperlink reference from its second backtick, eating the name's leading underscores.
 #[test]
 fn double_backtick_literal_around_dunder_name_is_not_mistaken_for_a_reference() {
 	let html = rst_to_html("Remove ``__version__``. See :pr:`5648`\n");
@@ -170,8 +162,6 @@ fn embedded_uri_reference_becomes_a_link() {
 	assert_eq!(html, r#"<p>See <a href="https://example.com/">the docs</a> for more.</p>"#);
 }
 
-/// A URL wrapped across a source line (docutils' convention for long links) must not gain a
-/// space in the middle from the paragraph's line-join.
 #[test]
 fn embedded_uri_wrapped_across_lines_has_no_inserted_space() {
 	let html = rst_to_html("`long link <https://example.com/a/very/long\n/path>`_.\n");
@@ -184,17 +174,13 @@ fn reference_to_an_explicit_target_resolves() {
 	assert_eq!(html, r#"<p>See <a href="https://example.com/">Example</a> for details.</p>"#);
 }
 
-/// Every section title implicitly names a target; a reference to a section that defines no
-/// explicit `.. _label:` target of its own should still resolve, as a genuine in-book jump link
-/// to the heading (matching its own `id`) rather than falling back to plain text.
 #[test]
 fn reference_to_a_section_title_becomes_an_internal_link() {
 	let html = rst_to_html("See Details_ below.\n\nDetails\n=======\n\nBody.\n");
 	assert_eq!(html, r##"<p>See <a href="#details">Details</a> below.</p><h1 id="details">Details</h1><p>Body.</p>"##);
 }
 
-/// An explicit target with no URL of its own (`.. _label:`) binds to whichever block follows it,
-/// same as docutils' "internal hyperlink target" - here, a paragraph rather than a heading.
+/// docutils' "internal hyperlink target" binds to whichever block follows it, here a paragraph rather than a heading.
 #[test]
 fn anchor_only_target_binds_to_the_following_block() {
 	let html = rst_to_html("See Note_ below.\n\n.. _Note:\n\nA plain paragraph.\n");
@@ -213,8 +199,7 @@ fn footnote_reference_drops_the_trailing_underscore() {
 	assert_eq!(html, "<p>A claim [1] needs support.</p>");
 }
 
-/// A real bug found while manually testing a sample book: `.. [1] body text` (a footnote
-/// definition) was falling into the generic comment branch and vanishing entirely.
+/// A footnote definition fell into the generic comment branch and vanished entirely.
 #[test]
 fn footnote_definition_body_is_not_dropped() {
 	let html = rst_to_html("See the claim [1]_.\n\n.. [1] This is the footnote body.\n");
@@ -263,9 +248,7 @@ fn block_quote_wraps_an_indented_paragraph() {
 	assert_eq!(html, "<p>Normal.</p><blockquote><p>Quoted text.</p></blockquote><p>Back to normal.</p>");
 }
 
-/// Nothing here should ever panic, however malformed the input: this crate does not use a
-/// battle-tested RST implementation, and a crash on an untrusted document would take the whole
-/// reader down with it.
+/// This is not a battle-tested RST implementation, and a crash on an untrusted document would take the whole reader down with it.
 #[test]
 fn never_panics_on_pathological_input() {
 	let samples = [

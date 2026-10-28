@@ -21,8 +21,7 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 		t("{} ms").replacingOccurrences(of: "{}", with: "\(ttsManager.paragraphPauseMs)")
 	}
 
-	/// The percent readout at the trailing edge of a slider row, which doubles as the
-	/// presets menu and the screen reader's adjustable value for that row.
+	/// Doubles as the presets menu and the screen reader's adjustable value for the row.
 	private func percentMenu(_ label: String, percent: Binding<Int>, presets: [Int]) -> some View {
 		SpeechPercentMenu(accessibilityLabel: label, percent: percent, presets: presets) {
 			Text("\(percent.wrappedValue)%")
@@ -46,9 +45,7 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 						.lineLimit(1)
 				}
 			}
-			// The sliders are for touch. A screen reader gets the percent menu next to each label
-			// instead: one swipe per percent and the presets behind a double-tap, the same control
-			// as on the read-aloud bar.
+			// The sliders are for touch; a screen reader gets the percent menu instead, as on the read-aloud bar.
 			VStack(alignment: .leading, spacing: 4) {
 				HStack {
 					// TRANSLATORS: Label above the speech rate slider (visual label; the percent control next to it has its own accessibility label)
@@ -242,7 +239,7 @@ struct SettingsView: View {
 		.navigationBarTitleDisplayMode(.inline)
 	}
 
-	/// The language the app is shown in, named in that language, as the iOS language list names them.
+	/// Named in its own language, as the iOS language list names them.
 	private var currentLanguageName: String {
 		let code = Bundle.main.preferredLocalizations.first ?? "en"
 		let locale = Locale(identifier: code)

@@ -1,6 +1,3 @@
-//! Commands from a second instance of Paperback, which hands its arguments to this one over IPC
-//! rather than opening a second window.
-
 #[cfg(target_os = "windows")]
 use std::sync::atomic::{AtomicIsize, Ordering};
 

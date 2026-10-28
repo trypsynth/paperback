@@ -1,25 +1,14 @@
-//! The window's periodic work: the timers that tick while the app runs, and the resize
-//! handling that goes with them.
-//!
-//! Nothing here is triggered by the user choosing something; it all runs on its own.
-
 use std::{cell::Cell, rc::Rc, sync::Mutex};
 
 use wxdragon::{prelude::*, timer::Timer};
 
 use super::{document_manager::DocumentManager, sleep_timer, status};
 
-/// How often the status bar refreshes its sleep-timer countdown.
 const STATUS_INTERVAL_MS: i32 = 1000;
-/// How often audio playback position is pumped.
 const AUDIO_SYNC_INTERVAL_MS: i32 = 250;
-/// How often the loaded text window is extended ahead of the caret.
 const WINDOW_EXTEND_INTERVAL_MS: i32 = 250;
 
-/// Starts the window's periodic timers and returns them.
-///
-/// The caller must hold the returned timers for as long as the window lives: `Timer`'s `Drop`
-/// destroys the underlying wx timer.
+/// Hold the returned timers for the window's lifetime: `Timer`'s `Drop` destroys the wx timer.
 pub fn start_timers(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) -> Vec<Rc<Timer<Frame>>> {
 	vec![
 		status_timer(frame, doc_manager),
@@ -28,7 +17,6 @@ pub fn start_timers(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) -> 
 	]
 }
 
-/// Refreshes the status bar while a sleep timer counts down.
 fn status_timer(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) -> Rc<Timer<Frame>> {
 	let timer = Rc::new(Timer::new(frame));
 	let dm = Rc::clone(doc_manager);
@@ -51,10 +39,7 @@ fn status_timer(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) -> Rc<T
 	timer
 }
 
-/// A timer that calls one method on the [`DocumentManager`], skipping a tick it cannot lock for.
-///
-/// Both pumps run on a tick that must never block: the lock they want is held by whatever the
-/// user is doing, and waiting for it would stall the UI thread.
+/// Skips a tick it cannot lock for, since the lock is held by whatever the user is doing and waiting would stall the UI thread.
 fn pump_timer(
 	frame: &Frame,
 	doc_manager: &Rc<Mutex<DocumentManager>>,
@@ -72,15 +57,7 @@ fn pump_timer(
 	timer
 }
 
-/// Compacts the loaded text window when the frame actually changes shape.
-///
-/// A resize forces `RichEdit` to rewrap, whose cost scales with how much is loaded ahead of the
-/// caret. Give back any growth a long read accumulated before paying for that.
-///
-/// Only when the frame actually changed shape. Compaction moves the loaded start, which
-/// silently invalidates the offsets a screen reader is reading from, so a size event that
-/// resizes nothing must not trigger it: those arrive from ordinary layout work, including
-/// while a Say-All is running, where the user has done nothing that would stop the read.
+/// A resize makes `RichEdit` rewrap everything loaded, so a long read's growth is given back first.
 pub fn bind_resize(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
 	let dm = Rc::clone(doc_manager);
 	let last_frame_size = Rc::new(Cell::new((0, 0)));
@@ -89,6 +66,7 @@ pub fn bind_resize(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
 		event.skip(true);
 		let size = frame_for_resize.get_size();
 		let dimensions = (size.width, size.height);
+		// Layout work sends size events mid Say-All, and compaction moves the loaded start out from under the screen reader, so only a real shape change compacts.
 		if last_frame_size.replace(dimensions) == dimensions {
 			return;
 		}

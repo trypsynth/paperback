@@ -1,8 +1,3 @@
-//! [`get_sorted_document_list`], the "All Documents" dialog's filtering/sorting/status logic
-//! (recents first, then everything else alphabetically by file name), and
-//! [`compute_document_hash`], the content-based fingerprint [`super::ConfigManager::get_doc_key`]
-//! hashes a document path down to.
-
 use std::{cmp, fs, path::Path};
 
 use sha1::{Digest, Sha1};
@@ -56,10 +51,7 @@ pub fn get_sorted_document_list(
 		.collect()
 }
 
-/// The name a document is listed, sorted and searched by: the file's own name, or for a link the
-/// name its last download was saved under, else the file name the link ends in. A link's own
-/// segment can be a script like `download` or nothing at all, which is why the download's name
-/// wins. Falls back to `path` itself rather than listing a document with no name.
+/// A link's download name wins, since its last segment can be a script like `download` or nothing at all.
 #[must_use]
 pub fn document_name(config: &ConfigManager, path: &str) -> String {
 	let name = if is_remote_url(path) {
@@ -70,7 +62,7 @@ pub fn document_name(config: &ConfigManager, path: &str) -> String {
 	name.unwrap_or_else(|| path.to_string())
 }
 
-/// Whether the document's file is gone. A link never is: opening it downloads it again.
+/// A link is never missing, since opening it downloads it again.
 #[must_use]
 pub fn document_missing(path: &str) -> bool {
 	!is_remote_url(path) && !Path::new(path).exists()
@@ -152,8 +144,6 @@ mod tests {
 		assert_eq!(missing_only.iter().map(|item| &item.path).collect::<Vec<_>>(), vec![&missing_path]);
 	}
 
-	/// A document opened from a link has no file of its own to go missing; it is downloaded again
-	/// when it is opened.
 	#[test]
 	fn a_link_is_open_or_closed_and_never_missing() {
 		let config = ConfigManager::in_memory();

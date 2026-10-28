@@ -1,5 +1,3 @@
-//! The temporary file a document opened from a link is read from.
-
 use std::{
 	io,
 	path::{Path, PathBuf},
@@ -7,18 +5,13 @@ use std::{
 
 use tempfile::TempDir;
 
-/// A downloaded document's file, in a folder of its own in the system's temporary folder.
-///
-/// Dropping it deletes the folder, so the copy lasts exactly as long as whatever reads it. It is
-/// never reused as a cache: opening the link again downloads it again.
+/// Dropping it deletes the folder, so the copy lasts exactly as long as whatever reads it; it's never reused as a cache.
 pub struct WorkingCopy {
 	_dir: TempDir,
 	path: PathBuf,
 }
 
 impl WorkingCopy {
-	/// Makes a new, empty folder for a file called `file_name`. The file itself is written by the
-	/// download.
 	pub fn new(file_name: &str) -> io::Result<Self> {
 		let dir = tempfile::Builder::new().prefix("paperback-").tempdir()?;
 		let path = dir.path().join(file_name);

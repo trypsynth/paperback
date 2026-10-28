@@ -1,13 +1,4 @@
-//! Running the built-in OCR engine over pages that hold a picture and no text, one page at a
-//! time or a range in bulk, and folding the recognized text back into the open document.
-//!
-//! Everything that touches a `DocumentTab` runs on the UI thread. The worker thread holds only
-//! the file path and a list of page numbers: it renders and recognizes, then hands text back
-//! through `wxdragon::call_after`. A batch reads its pages on a pool of threads, which hands them
-//! over in page order. Pages are addressed by number rather than by offset for a reason. Applying
-//! one page's text moves every offset after it, so an offset captured before the job started
-//! would be stale by the time the worker's next result lands. Page numbers stay true, and the UI
-//! thread re-resolves each one's placeholder as it applies it.
+//! Workers are given page numbers, not offsets: applying one page's text moves every offset after it, so the UI thread re-resolves each placeholder as it applies it.
 
 use std::{
 	path::{Path, PathBuf},
@@ -33,37 +24,25 @@ use crate::{
 	ui::{navigation::announce, text_render::reload_window_around},
 };
 
-/// How long a batch OCR job goes between folding its pages into the document and announcing progress.
-///
-/// Time rather than a page count, because a page takes several times longer on a two-core laptop than on a desktop with a pool of workers, and a count tuned for one is either chatty or silent on the other. Every apply rebuilds the buffer's checkpoints, which is linear in the whole document, so this also keeps a long scan from going quadratic. Both happen together so the text has landed by the time the announcement says it has.
+/// Time rather than a page count, since page speed varies several-fold between machines; it also bounds checkpoint rebuilds, which are linear in the document, so a long scan doesn't go quadratic.
 const BATCH_OCR_UPDATE_EVERY: Duration = Duration::from_secs(4);
 
-/// A running OCR job, one per tab. Owned by the UI thread; the worker sees only `cancel`.
 pub(super) struct OcrJob {
-	/// Which run this is, so a message from a worker that has outlived its tab is recognised as stale rather than applied to whatever tab now holds the same path.
 	id: u64,
-	/// Raised by the UI thread to stop a batch after the page it is working on.
 	cancel: Arc<AtomicBool>,
-	/// True for a range job, false for a single page. Only a batch is worth offering to cancel.
 	batch: bool,
-	/// Pages whose text has made it into the document so far, for the closing announcement.
 	recognized: usize,
 	/// Stopped by a re-read rather than by the reader, so its remaining flushes are dropped and nothing is announced.
 	quiet_cancel: bool,
-	/// Where the pages this job reads are kept for the next time the document is opened, named when the job starts for the file the pages are read from.
 	saved_as: PathBuf,
 }
 
-/// Whether a document is a PDF, which is what the paragraph joining setting is about. The
-/// other thing OCR runs on is a comic, whose lines are the balloons and belong apart.
+/// Paragraph joining is PDF-only because the other OCR source is comics, whose lines are balloons and belong apart.
 pub(super) fn is_pdf(file_path: &Path) -> bool {
 	file_path.extension().is_some_and(|extension| extension.eq_ignore_ascii_case("pdf"))
 }
 
-/// Whether [`PageRenderer::open`] can actually open this document. It rasterizes PDFs and decodes
-/// comic archive pages, and hands anything else to the PDF engine, which will not read an EPUB or a DOCX.
-/// "Include text pages" collects every page in the range, so without this a book with no
-/// image-only pages at all would send a job straight into a renderer that cannot open it.
+/// The renderer hands anything but PDFs and comics to the PDF engine, so "Include text pages" on an EPUB would otherwise start a job it can't open.
 fn is_ocr_able(file_path: &Path) -> bool {
 	file_path.extension().is_some_and(|extension| {
 		extension.eq_ignore_ascii_case("pdf")
@@ -72,19 +51,14 @@ fn is_ocr_able(file_path: &Path) -> bool {
 	})
 }
 
-/// Whether the recognized text of the document at `local_path` is put back in reading order and joined into paragraphs.
-///
-/// An OCR engine reads a page a printed line at a time, so its text arrives broken at every line end. The reader who asked for wrapped lines to be joined asked about the text of a page, not about where it was read from.
 pub(super) fn joins_recognized_text(local_path: &Path, config: &ConfigManager) -> bool {
 	is_pdf(local_path) && config.get_app_bool("join_pdf_paragraphs", true)
 }
 
-/// Where the pages OCR reads off the document at `local_path` are kept.
 pub(super) fn saved_pages_of(local_path: &Path) -> PathBuf {
 	saved_pages_file(&ocr::saved_pages_dir(), local_path)
 }
 
-/// Puts back the pages `saved` keeps from the last time the document was open, so it opens with their text rather than with their placeholders. Done before the reading position is restored, since the position was kept against that text.
 pub(super) fn restore_saved_pages(session: &mut DocumentSession, saved: &Path, join: bool) {
 	let saved_pages = load_pages(saved);
 	let pages: Vec<(i32, String)> = saved_pages
@@ -98,32 +72,23 @@ pub(super) fn restore_saved_pages(session: &mut DocumentSession, saved: &Path, j
 	}
 }
 
-/// One page's outcome, as the worker reports it.
 type PageResult = (i32, Result<Vec<RecognizedLine>, OcrError>);
 
-/// The position of the tab whose current OCR job is `id`, over each tab's job id.
-///
-/// A worker outliving its tab is the case this exists for: the document can be closed mid-run and opened again, so the search is over job ids and never over paths, which cannot tell the two apart.
 fn index_running_job(job_ids: &[Option<u64>], id: u64) -> Option<usize> {
 	job_ids.iter().position(|job_id| *job_id == Some(id))
 }
 
 impl DocumentManager {
-	/// The offset of the OCR placeholder the caret is sitting on, if it is on one.
 	pub fn image_only_page_at_caret(&self) -> Option<DocPos> {
 		let tab = self.active_tab()?;
 		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		tab.session.image_only_page_at(position)
 	}
 
-	/// Whether a batch OCR job is running for the active tab, and so worth offering to cancel.
 	pub fn batch_ocr_running(&self) -> bool {
 		self.active_tab().is_some_and(|tab| tab.ocr_job.as_ref().is_some_and(|job| job.batch))
 	}
 
-	/// Asks a running batch to stop after the page it is on. The completion path announces how
-	/// much was recognized before the stop, so there is nothing to announce here.
-	///
 	/// `quiet` is for a stop that comes from re-reading the document, where the count would describe discarded text.
 	pub fn cancel_ocr(&mut self, quiet: bool) {
 		if let Some(index) = self.active_tab_index() {
@@ -131,9 +96,7 @@ impl DocumentManager {
 		}
 	}
 
-	/// Asks the OCR job on the tab at `index` to stop after the page it is on, whether or not that tab is the active one. Closing a document is the caller: it is about to drop the tab, which drops this end of the cancel flag without raising it.
-	///
-	/// Advisory rather than a wait, since the UI thread cannot block on OCR: the stop lands at the worker's next page boundary, and those results are dropped because [`Self::tab_running_job`] no longer finds the job.
+	/// Advisory rather than a wait, since the UI thread can't block on OCR; the stop lands at the worker's next page boundary.
 	pub(crate) fn stop_ocr_at(&mut self, index: usize, quiet: bool) {
 		if let Some(job) = self.tabs.get_mut(index).and_then(|tab| tab.ocr_job.as_mut()) {
 			job.cancel.store(true, Ordering::Relaxed);
@@ -141,7 +104,6 @@ impl DocumentManager {
 		}
 	}
 
-	/// Runs OCR on the image-only page the caret is on.
 	pub fn start_ocr_for_current_page(&mut self) {
 		let label = self.live_region_label;
 		let Some(offset) = self.image_only_page_at_caret() else {
@@ -159,7 +121,7 @@ impl DocumentManager {
 		self.spawn_ocr(vec![page], false);
 	}
 
-	/// Runs OCR on the page the caret is on, whether or not it already has text, for a page whose text came from an older or worse OCR pass (#814).
+	/// Also for pages that already have text, which may come from an older or worse OCR pass (#814).
 	pub fn recognize_current_page(&mut self) {
 		let label = self.live_region_label;
 		let Some(tab) = self.active_tab() else {
@@ -183,16 +145,7 @@ impl DocumentManager {
 		self.spawn_ocr(vec![page], false);
 	}
 
-	/// Runs OCR on every image-only page in `start..=end` (1-based page numbers), or on every
-	/// page in the range when `include_text_pages` is set.
-	///
-	/// The wider sweep exists for pages whose text came from an older or worse OCR pass, or that
-	/// carry no text for material living only in the page's images. It still includes the
-	/// image-only pages, which are a subset of the range, so one list covers both kinds.
-	///
-	/// A document the renderer cannot open keeps the narrow behaviour even with the box ticked:
-	/// there is nothing to render a page of an EPUB with, and reporting a completed job that
-	/// recognized nothing would be worse than saying the range held no image-only pages.
+	/// A document the renderer can't open keeps the image-only behaviour even with `include_text_pages`, since a completed job that recognized nothing would be worse than saying the range held no image-only pages.
 	pub fn start_batch_ocr(&mut self, start: i32, end: i32, include_text_pages: bool) {
 		let label = self.live_region_label;
 		let Some(tab) = self.active_tab() else {
@@ -208,9 +161,7 @@ impl DocumentManager {
 		let (start, end) = if start <= end { (start, end) } else { (end, start) };
 		let pages: Vec<i32> = if include_text_pages && is_ocr_able(tab.local_path()) {
 			let last = i32::try_from(tab.session.page_count()).unwrap_or(i32::MAX);
-			// Left to go empty when the range starts past the last page, which is what sends it
-			// to the "nothing to do" announcement below rather than to a job for a page the
-			// document does not have.
+			// Empty when the range starts past the last page, which falls through to the nothing-to-do announcement rather than a job for a missing page.
 			(start..=end.min(last)).collect()
 		} else {
 			tab.session
@@ -227,7 +178,6 @@ impl DocumentManager {
 		self.spawn_ocr(pages, true);
 	}
 
-	/// Starts the worker for `pages` and records the job on the active tab.
 	fn spawn_ocr(&mut self, pages: Vec<i32>, batch: bool) {
 		let label = self.live_region_label;
 		let Some(tab) = self.active_tab() else {
@@ -261,18 +211,13 @@ impl DocumentManager {
 		}
 	}
 
-	/// The tab running OCR job `id`, if it is still open and still running that job.
-	///
-	/// Every message from a worker is matched this way rather than by path alone: closing a tab drops its job but not the worker, so a worker can outlive its document and find a tab with the same path reopened.
+	/// By job id, not path: closing a tab drops its job but not the worker, which can outlive its document and find the same path reopened.
 	fn tab_running_job(&self, id: u64) -> Option<usize> {
 		let job_ids: Vec<Option<u64>> = self.tabs.iter().map(|tab| tab.ocr_job.as_ref().map(|job| job.id)).collect();
 		index_running_job(&job_ids, id)
 	}
 
-	/// Folds a group of recognized pages into the document. Called on the UI thread from the
-	/// worker, once per flush.
-	///
-	/// Drops a flush for a job that is no longer open, or was stopped by a re-read: the worker only checks the cancel flag between pages, so pages recognized before F5 can still arrive after it.
+	/// The worker only checks the cancel flag between pages, so pages recognized before F5 can still arrive after it and are dropped here.
 	pub(crate) fn apply_ocr_results(&mut self, id: u64, file_path: &Path, results: Vec<PageResult>) {
 		let label = self.live_region_label;
 		let Some(index) = self.tab_running_job(id) else {
@@ -288,9 +233,7 @@ impl DocumentManager {
 		let tab = &mut self.tabs[index];
 		let mut pages = Vec::with_capacity(results.len());
 		let mut read = Vec::with_capacity(results.len());
-		// Where each page being replaced starts, read before the edit for the same reason the
-		// session re-resolves the span rather than trusting a captured offset: earlier applies in
-		// this job have already moved everything after them.
+		// Read now rather than captured at job start, since earlier applies in this job have moved everything after them.
 		let mut starts = Vec::with_capacity(results.len());
 		for (page, result) in results {
 			let lines = match result {
@@ -304,14 +247,11 @@ impl DocumentManager {
 				}
 			};
 			let text = page_text(&lines, join);
-			// A page that came back empty keeps the text it had. For an image-only page that is
-			// the placeholder; for a text page it is the text the reader is distrusting, and
-			// blanking it would be strictly worse than leaving it alone.
+			// An empty result keeps the page's old text, since blanking a text page the reader distrusts would be strictly worse.
 			if text.trim().is_empty() {
 				continue;
 			}
-			// A page this document does not have has no position, which is how a
-			// result for a page the session no longer holds gets dropped instead of panicking.
+			// A page the session no longer holds has no position, so its result is dropped instead of panicking.
 			if let Some(start) = tab.session.page_position(page) {
 				starts.push(start);
 				pages.push((page, text));
@@ -332,20 +272,16 @@ impl DocumentManager {
 		}
 		let buffer = &tab.session.handle().document().buffer;
 		let caret = outcome.shift(caret.min(buffer.end()));
-		// The mark is a document-absolute offset like the caret's, so the insertions above moved
-		// it the same way. Left where it was it would name different text once OCR had finished.
+		// The mark is document-absolute, so the insertions above moved it like the caret.
 		if let Some(mark) = tab.selection_mark.get() {
 			tab.selection_mark.set(Some(outcome.shift(mark.min(buffer.end()))));
 		}
 		refresh_after_ocr(tab, &starts, loaded_end, caret, is_active);
-		// The config stores document-absolute offsets (reading position, navigation history,
-		// bookmarks), every one of which the edits above just moved.
+		// The config's reading position, history and bookmarks are document-absolute, so the edits above moved them too.
 		self.config.lock().unwrap().shift_document_positions(&file_path.to_string_lossy(), &outcome);
 	}
 
-	/// Announces batch progress. Called on the UI thread from the worker.
-	///
-	/// Silent for a job that is no longer open or was stopped by a re-read, or a queued count would cut off "Document reloaded."
+	/// Silent for a closed or re-read job, or a queued count would cut off "Document reloaded."
 	pub(crate) fn announce_ocr_progress(&self, id: u64, done: usize, total: usize) {
 		let Some(index) = self.tab_running_job(id) else {
 			return;
@@ -358,9 +294,6 @@ impl DocumentManager {
 		announce(self.live_region_label, message);
 	}
 
-	/// Clears the job and announces the outcome. Called on the UI thread when the worker ends.
-	///
-	/// Silent for a job that is no longer open or was stopped by a re-read, whose pages the re-read threw away.
 	pub(crate) fn finish_ocr(&mut self, id: u64, file_path: &Path, canceled: bool) {
 		let label = self.live_region_label;
 		let Some(index) = self.tab_running_job(id) else {
@@ -397,8 +330,7 @@ impl DocumentManager {
 	}
 }
 
-/// Reloads the on-screen window when a replaced page was in or before `loaded_end`, where the window ended before the pages were replaced, so the recognized text
-/// appears and local offsets keep matching document ones.
+/// `loaded_end` is where the window ended before the replacement; any page at or before it shifted local offsets, so the window must reload.
 fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[DocPos], loaded_end: DocPos, caret: DocPos, is_active: bool) {
 	if !starts.iter().any(|start| *start < loaded_end) {
 		return;
@@ -412,9 +344,6 @@ fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[DocPos], loaded_end: DocPo
 	}
 }
 
-/// The worker thread: renders and recognizes pages on a pool of threads, posting results back to the UI thread in flushes.
-///
-/// `id` travels with every message so the UI thread can tell this run apart from any other job on the same document, which may by now be open again under a new tab.
 fn run_ocr(
 	path_str: &str,
 	password: Option<&str>,
@@ -482,9 +411,7 @@ fn post_finish(id: u64, file_path: &Path, canceled: bool) {
 	run_on_ui_thread(move |manager| manager.finish_ocr(id, &path, canceled));
 }
 
-/// Queues `action` to run on the UI thread with the document manager locked. Every call lands in
-/// order behind the ones before it, which is what lets a flush rely on the previous flush having
-/// already moved the offsets it is about to resolve.
+/// Calls land in order, which lets a flush rely on the previous flush having already moved the offsets it resolves.
 fn run_on_ui_thread(action: impl FnOnce(&mut DocumentManager) + Send + 'static) {
 	wxdragon::call_after(Box::new(move || {
 		if let Some(window) = crate::ui::app::main_window_from_ptr() {
@@ -507,7 +434,6 @@ mod tests {
 
 	use super::{index_running_job, restore_saved_pages};
 
-	/// A comic of `pages` blank pages, which the comic reader leaves as placeholders to OCR.
 	fn comic(dir: &std::path::Path, pages: usize) -> String {
 		let mut png = Vec::new();
 		image::RgbaImage::new(4, 4).write_to(&mut Cursor::new(&mut png), image::ImageFormat::Png).unwrap();
@@ -521,7 +447,6 @@ mod tests {
 		path.to_string_lossy().into_owned()
 	}
 
-	/// The kept page comes back in place of its placeholder, and the page that was never read keeps its own.
 	#[test]
 	fn a_kept_page_comes_back_in_place_of_its_placeholder() {
 		let dir = std::env::temp_dir().join(format!("paperback-restore-saved-{}", std::process::id()));
@@ -538,7 +463,6 @@ mod tests {
 		assert_eq!(session.image_only_pages().iter().map(|(page, _)| *page).collect::<Vec<_>>(), vec![1]);
 	}
 
-	/// The case that needs the id: a batch is running, the reader closes the document with Ctrl+F4, and opens it again before the worker reaches its next page boundary.
 	#[test]
 	fn a_worker_whose_tab_was_closed_finds_nothing_when_the_document_is_reopened() {
 		// Tab 0, reopened, is running job 2. The worker's own job 1 is gone with the closed tab.
@@ -547,7 +471,6 @@ mod tests {
 		assert_eq!(index_running_job(&open, 2), Some(0));
 	}
 
-	/// An idle tab is never the answer, including for an adjacent id - which is what two jobs on one document in sequence look like.
 	#[test]
 	fn an_idle_tab_is_never_the_tab_a_worker_means() {
 		let open = [None, None, None];
@@ -556,7 +479,6 @@ mod tests {
 		}
 	}
 
-	/// With several documents open, each on its own job, the right tab is found and an idle one does not absorb its neighbour's lookup.
 	#[test]
 	fn the_job_s_own_tab_is_found_among_several_open_documents() {
 		let open = [None, Some(7), Some(3)];

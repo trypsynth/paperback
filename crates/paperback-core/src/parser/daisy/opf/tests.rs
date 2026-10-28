@@ -41,8 +41,7 @@ fn accepts_both_capitalized_and_lowercase_metadata_tags(#[case] title_tag: &str,
 
 #[test]
 fn falls_back_to_nested_metadata_elements_when_no_direct_child_matches() {
-	// Some DAISY 2 books wrap title/creator inside an x-metadata element rather than as a
-	// direct child of <metadata>; parse_opf_package should still find them via descendants().
+	// Some DAISY 2 books wrap title and creator in an x-metadata element rather than directly in <metadata>.
 	let opf = r"<package><metadata><x-metadata><Title>Nested Title</Title></x-metadata></metadata><manifest/><spine/></package>";
 	let package = parse_opf_package(opf, "").expect("valid opf");
 	assert_eq!(package.title, Some("Nested Title".to_string()));

@@ -6,9 +6,7 @@ import UIKit
 @Observable
 final class AppViewModel {
 	var tabs: [DocumentTab] = []
-	// Stops TTS whenever the active document changes so a paused/playing utterance from the
-	// previous book can never bleed into the next one (its buffer stays scheduled on the audio
-	// node across pause() until something clears it — see TtsManager.pause()).
+	// TTS stops on a tab switch because a paused buffer stays scheduled on the audio node and would bleed into the next book.
 	var activeTabId: UUID? = nil {
 		willSet {
 			if newValue != activeTabId { reading.saveTextModePosition() }
@@ -37,10 +35,7 @@ final class AppViewModel {
 		didSet { configManager.setAppBool(key: "swipe_up_moves_forward", value: swipeUpMovesForward) }
 	}
 
-	// Spacing and alignment share the desktop's config keys and value meanings (spacing
-	// 0/1/2, alignment 0 leading, 1 center, 2 trailing) so a document reads the same way on
-	// both. Text size does not: the desktop stores an absolute point size, while this scales
-	// whatever size Dynamic Type is already asking for.
+	// Spacing and alignment share desktop's keys and values; text size doesn't, since desktop stores points and this scales Dynamic Type.
 	var textScalePercent: Int = 100 {
 		didSet { configManager.setAppInt(key: "text_scale_percent", value: Int32(textScalePercent)) }
 	}
@@ -53,21 +48,15 @@ final class AppViewModel {
 	var textAlignmentChoice: Int = 0 {
 		didSet { configManager.setAppInt(key: "text_alignment", value: Int32(textAlignmentChoice)) }
 	}
-	/// 0 follows the system, 1 forces light, 2 forces dark. Readers often want the page dark
-	/// while the rest of the phone stays light, which following the system alone cannot do.
-	/// Drops the previous and next buttons from the reading bar's screen reader order. They
-	/// duplicate the swipe up and down actions already on the play button, so hiding them makes
-	/// the bar three stops instead of five. Off by default: the swipe is not discoverable on its
-	/// own, so nobody should lose the buttons without having chosen to.
+	/// Off by default because the swipe actions on the play button that replace these are not discoverable on their own.
 	var hidePrevNextButtons: Bool = false {
 		didSet { configManager.setAppBool(key: "hide_prev_next_buttons", value: hidePrevNextButtons) }
 	}
+	/// 0 system, 1 light, 2 dark: readers often want the page dark while the rest of the phone stays light.
 	var appearanceChoice: Int = 0 {
 		didSet { configManager.setAppInt(key: "appearance", value: Int32(appearanceChoice)) }
 	}
-	/// Pure black on white, or white on black, for document text. The system's own Increase
-	/// Contrast setting turns this on too, so a reader who has already asked for it everywhere
-	/// does not have to ask again here.
+	/// The system's Increase Contrast turns this on too.
 	var highContrastText: Bool = false {
 		didSet { configManager.setAppBool(key: "high_contrast_text", value: highContrastText) }
 	}
@@ -98,8 +87,7 @@ final class AppViewModel {
 
 		let narration = RecordedNarration(config: configManager)
 		narration.onClipChanged = { [weak self] position in
-			// The recording is the authority on where the reader is while it plays, so the
-			// caret and the displayed text follow it rather than the other way round.
+			// While it plays, the recording is the authority on where the reader is.
 			guard let self else { return }
 			self.reading.ttsPosition = position
 			self.reading.refreshSegmentForAudio()
@@ -212,9 +200,7 @@ final class AppViewModel {
 	func openHelpDocument() {
 		let preferred = Bundle.main.preferredLocalizations.first ?? "en"
 		let lang = preferred.split(separator: "-").first.map(String.init) ?? preferred
-		// Try the localized doc first, falling back to English rather than checking a
-		// hardcoded language list against a hand-maintained set of resource names — that
-		// list drifts out of sync with which readme-<lang>.html files actually exist.
+		// Probing the bundle rather than a hardcoded language list, which drifted out of sync with the readme files that exist.
 		let localizedURL = Bundle.main.url(forResource: "readme-\(lang)", withExtension: "html", subdirectory: "Readmes")
 		let fallbackURL = Bundle.main.url(forResource: "readme", withExtension: "html", subdirectory: "Readmes")
 		guard let url = localizedURL ?? fallbackURL else {
@@ -225,9 +211,6 @@ final class AppViewModel {
 		openDocument(url: url, track: false)
 	}
 
-	// Writes the active document's bookmarks/position to a temporary .paperback
-	// file and returns its URL, ready to hand to a file mover/exporter. Returns
-	// nil if there's no active document or the write failed.
 	func exportActiveDocumentSettings() -> URL? {
 		guard let tab = activeTab else { return nil }
 		let path = tab.url.path(percentEncoded: false)
@@ -240,14 +223,10 @@ final class AppViewModel {
 		return FileManager.default.fileExists(atPath: tempURL.path) ? tempURL : nil
 	}
 
-	/// The export formats the open document can be rendered as, which the core decides per
-	/// document rather than per app.
 	var supportedExportFormats: [ExportFormat] {
 		activeSession?.getSupportedExportFormatsFfi() ?? []
 	}
 
-	/// Renders the open document in `format` to a temporary file named after the book, ready to
-	/// hand to the file mover. Nil when there is nothing open or the write failed.
 	func exportActiveDocument(as format: ExportFormat) -> URL? {
 		guard let tab = activeTab, let session = tab.session else { return nil }
 		let name = tab.url.deletingPathExtension().lastPathComponent
@@ -263,10 +242,7 @@ final class AppViewModel {
 		return tempURL
 	}
 
-	/// Copies the open document's own file, untouched, to a temporary file to be shared.
-	///
-	/// A copy rather than the file itself: the original may live behind a security-scoped URL the
-	/// share sheet cannot read once this returns.
+	/// A copy because the original may sit behind a security-scoped URL the share sheet cannot read once this returns.
 	func copyActiveDocumentForSharing() -> URL? {
 		guard let tab = activeTab else { return nil }
 		let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(tab.url.lastPathComponent)
@@ -281,7 +257,6 @@ final class AppViewModel {
 		return tempURL
 	}
 
-	// Applies a .paperback file's bookmarks/position to the active document.
 	@discardableResult
 	func importActiveDocumentSettings(from url: URL) -> Bool {
 		guard let tab = activeTab else { return false }
@@ -327,10 +302,7 @@ final class AppViewModel {
 		let paths = configManager.getRecentDocuments()
 		let openPaths = Set(tabs.map { $0.url.path(percentEncoded: false) })
 		recentDocuments = paths.map { path in
-			// Resolve the persisted security-scoped bookmark rather than constructing a plain
-			// path URL: files picked from outside the app's own container (the common case)
-			// aren't readable via a bare path once the picker's access grant has ended, which
-			// otherwise shows every such entry as missing and fails to open with a parse error.
+			// Files picked from outside the app's container aren't readable by bare path once the picker's grant ends, so the bookmark is needed.
 			let resolved = resolvedURL(forPath: path)
 			let url = resolved ?? URL(fileURLWithPath: path)
 			let title = url.deletingPathExtension().lastPathComponent
@@ -348,8 +320,6 @@ final class AppViewModel {
 		loadRecentsFromConfig()
 	}
 
-	// Points a recent-document entry at a new file location, e.g. after the
-	// original was moved or renamed outside the app.
 	func locateRecentDocument(_ oldURL: URL, at newURL: URL) {
 		configManager.renameDocumentPath(
 			oldPath: oldURL.path(percentEncoded: false),
@@ -358,8 +328,7 @@ final class AppViewModel {
 		loadRecentsFromConfig()
 	}
 
-	/// Empties the recent documents list. Open tabs are left alone: a document being read is
-	/// not a document the reader is finished with.
+	/// Open tabs are left alone: a document being read is not one the reader is finished with.
 	func clearRecentDocuments() {
 		configManager.clearRecentDocuments()
 		recentDocuments.removeAll()
@@ -375,9 +344,6 @@ final class AppViewModel {
 		openDocument(url: url)
 	}
 
-	// Resolves a stored path back to a usable URL: prefers the persisted security-scoped
-	// bookmark (needed for files outside the app's own container), falling back to a plain
-	// path URL for files the app can read directly. Returns nil if neither resolves.
 	private func resolvedURL(forPath path: String) -> URL? {
 		if let data = UserDefaults.standard.data(forKey: bookmarkKey(path)) {
 			var isStale = false
@@ -423,12 +389,8 @@ extension AppViewModel: ReadingContext {
 	}
 }
 
-// What the previous/next controls move by. Ordinarily a structural unit; while a Find query is
-// active, Find joins the list and steps between that query's matches instead.
 enum NavUnit: Hashable {
 	case segment(SegmentTypeFfi)
-	/// An amount of elapsed recording to skip, for a book with its own narration. Stepping by
-	/// paragraph means nothing in a bundle of audio files with no real text to walk.
 	case time(seconds: Int)
 	case find
 
@@ -442,8 +404,6 @@ enum NavUnit: Hashable {
 	}
 }
 
-/// Renders a duration the way the reading bar reports one: minutes and seconds, with hours only
-/// once there are any.
 func formatDuration(_ ms: Int64) -> String {
 	let totalSeconds = (max(ms, 0) + 500) / 1000
 	let hours = totalSeconds / 3600
@@ -454,10 +414,9 @@ func formatDuration(_ ms: Int64) -> String {
 		: String(format: "%d:%02d", minutes, seconds)
 }
 
-/// The seek amounts a recorded book offers, matching the presets desktop shows in its Options.
+/// Matches the presets desktop shows in its Options dialog.
 let audioSeekAmountsSeconds = [5, 10, 30, 60, 120]
 
-/// Matches the labels desktop shows for the same presets in its Options dialog.
 func seekAmountName(_ seconds: Int) -> String {
 	switch seconds {
 	// TRANSLATORS: Audio seek amount, shown as a navigation unit in the read-aloud bar

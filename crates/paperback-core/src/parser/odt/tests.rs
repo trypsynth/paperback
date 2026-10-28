@@ -5,9 +5,7 @@ use roxmltree::Document as XmlDocument;
 use super::{build_odt_format_style_map, traverse};
 use crate::document::{DocLen, DocPos, DocumentBuffer, MarkerType};
 
-/// OFF mode: an ODT table emits a `"[Table]: <first row>"` placeholder. The second cell holds a
-/// non-ASCII character (U+1D11E, G Clef, non-BMP) to prove the cell-text extraction no longer
-/// mis-slices the display buffer with char offsets as byte indices.
+/// The second cell holds a non-BMP character to catch cell text being mis-sliced with char offsets as byte indices.
 #[test]
 fn odt_table_emits_placeholder_when_off() {
 	let xml = "<document><table><table-row><table-cell>Kop</table-cell><table-cell>\u{1D11E}</table-cell></table-row></table></document>";
@@ -24,9 +22,6 @@ fn odt_table_emits_placeholder_when_off() {
 	assert!(table_marker.reference.contains("<table"), "marker reference is the table HTML");
 }
 
-/// An `id` attribute on an element nested inside a table cell must be registered in
-/// `id_positions` at the table's start position, so internal links to that anchor navigate to
-/// the table. Holds in both OFF and ON modes (registration happens before the cells collapse).
 #[test]
 fn odt_table_cell_id_registered_at_table_start() {
 	let xml = "<document><p>before</p><table><table-row><table-cell><span id=\"anchor1\">Kop</span></table-cell></table-row></table></document>";
@@ -45,7 +40,6 @@ fn odt_table_cell_id_registered_at_table_start() {
 	}
 }
 
-/// ON mode: the same ODT table emits the full TSV instead of the placeholder.
 #[test]
 fn odt_table_emits_tsv_when_inline() {
 	let xml = "<document><table><table-row><table-cell>Kop</table-cell><table-cell>\u{1D11E}</table-cell></table-row></table></document>";
@@ -59,10 +53,7 @@ fn odt_table_emits_tsv_when_inline() {
 	assert_eq!(table_marker.length, DocLen::of("Kop\t\u{1D11E}") + 1.into(), "marker length spans the TSV");
 }
 
-/// Builds the standard test fixture: an `<automatic-styles>` block defining style `"T1"` with the
-/// given text-properties attribute (name, value), wrapping a `<span style-name="T1">` around
-/// `text`. Uses bare/local tag and attribute names, since this file's roxmltree usage strips
-/// namespace prefixes, so test XML omits them too, matching real ODT content.xml parsing.
+/// Names are bare because the parser matches local names only, ignoring namespace prefixes.
 fn span_fixture(prop_name: &str, prop_value: &str, text: &str) -> String {
 	format!(
 		"<document><automatic-styles><style family=\"text\" name=\"T1\"><text-properties {prop_name}=\"{prop_value}\"/></style></automatic-styles><p><span style-name=\"T1\">{text}</span></p></document>"
@@ -136,8 +127,6 @@ fn odt_span_combined_bold_and_italic_style_adds_both_markers() {
 	assert!(buffer.markers.iter().all(|m| m.mtype != MarkerType::Underline));
 }
 
-/// A span with no matching/known style-name (or a style resolving to no formatting) falls through
-/// to exactly today's behavior: text renders, but no bold/italic/underline marker is added.
 #[test]
 fn odt_span_with_unknown_style_falls_through_unformatted() {
 	let xml = "<document><automatic-styles><style family=\"text\" name=\"T1\"><text-properties font-weight=\"bold\"/></style></automatic-styles><p><span style-name=\"Unknown\">plain</span></p></document>";
@@ -152,7 +141,6 @@ fn odt_span_with_unknown_style_falls_through_unformatted() {
 	);
 }
 
-/// A span with no `style-name` attribute at all also falls through unformatted.
 #[test]
 fn odt_span_without_style_name_falls_through_unformatted() {
 	let xml = "<document><p><span>plain</span></p></document>";
@@ -180,7 +168,7 @@ fn walk_text(body: &str) -> (DocumentBuffer, HashMap<String, DocPos>) {
 	(buffer, id_positions)
 }
 
-/// A footnote read where it sits breaks its sentence in two, so its citation stays in the sentence as a link and the note goes after the text, where the link lands.
+/// A footnote read where it sits breaks its sentence in two.
 #[test]
 fn a_footnote_is_cited_in_its_sentence_and_written_after_the_text() {
 	let (buffer, ids) = walk_text(
@@ -196,7 +184,7 @@ fn a_footnote_is_cited_in_its_sentence_and_written_after_the_text() {
 	assert!(buffer.markers.iter().any(|m| m.mtype == MarkerType::Heading1 && m.text == "Notes"));
 }
 
-/// A comment read where it sits breaks the sentence, and dropped it loses what the reviewer said, so it goes after the text, naming its author and the words it is on, and linking back to them.
+/// A comment read where it sits breaks the sentence, and dropped it loses what the reviewer said.
 #[test]
 fn a_comment_goes_after_the_text_and_links_back_to_its_words() {
 	let (buffer, ids) = walk_text(
@@ -211,7 +199,6 @@ fn a_comment_goes_after_the_text_and_links_back_to_its_words() {
 	assert_eq!(ids["comment-1"], DocLen::of("Sales ").as_pos());
 }
 
-/// A comment on a point rather than on words has nothing to quote, and one with no author is still a comment.
 #[test]
 fn a_comment_on_a_point_names_only_its_author() {
 	let (buffer, _) = walk_text("<text:p>Done.<office:annotation><text:p>Nice.</text:p></office:annotation></text:p>");
@@ -225,7 +212,6 @@ fn spacing_elements_keep_words_apart() {
 	assert_eq!(buffer.content, "Name:\tAnn\nAge:  40\n");
 }
 
-/// A picture reads as its placeholder rather than its alt text running into the words around it.
 #[test]
 fn a_picture_reads_as_its_placeholder_and_can_be_found() {
 	let (buffer, _) =

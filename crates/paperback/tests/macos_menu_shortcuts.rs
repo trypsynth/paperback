@@ -22,13 +22,12 @@ mod ui {
 #[cfg(not(target_os = "macos"))]
 fn main() {}
 
-/// Where a position of the test document is in the control, which holds nothing outside the Basic Multilingual Plane, so the two count alike.
+/// The test document is all in the Basic Multilingual Plane, so control units and positions count alike.
 #[cfg(target_os = "macos")]
 fn ctrl(position: paperback_core::document::DocPos) -> i64 {
 	i64::try_from(position).unwrap()
 }
 
-/// The document position of a place in the control.
 #[cfg(target_os = "macos")]
 fn doc(units: i64) -> paperback_core::document::DocPos {
 	paperback_core::document::DocPos::from_raw(usize::try_from(units).unwrap())

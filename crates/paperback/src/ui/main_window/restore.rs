@@ -1,6 +1,3 @@
-//! Reopening the documents that were open when the app last exited, and forgetting the ones
-//! that can no longer be reopened.
-
 use std::{cell::RefCell, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{config::ConfigManager, parser::is_remote_url};
@@ -70,27 +67,20 @@ pub(super) fn schedule_restore_documents(
 			config.flush();
 		}
 		let (dm, cfg) = (Rc::clone(&doc_manager), Rc::clone(&config));
-		// Runs once the links have opened, which selects their tabs, or straight away without links.
+		// After the links open, since opening them selects their tabs.
 		open_links_then(&frame, &doc_manager, &config, plan.links, move || {
 			select_restored_tab(&dm, pre_restore_active, &active_path);
 			update_title_from_manager(&frame, &dm.lock().unwrap());
 			rebuild_menu_bar(&frame, &dm, &cfg);
 			dm.lock().unwrap().restore_focus();
-			// A large book keeps the window busy for seconds after this, and a screen reader that
-			// was told about the focus during that stretch has nothing to read: the reader is left
-			// on a document where no key says anything until it is closed and opened again
-			// (<https://github.com/trypsynth/paperback/issues/920>). Saying it again once the queue
-			// has drained costs nothing when the first one did arrive, since focus does not move.
+			// A large book keeps the window busy for seconds, and a screen reader told about focus meanwhile is left silent on it (#920); repeating it costs nothing otherwise.
 			focus_again_once_settled(&frame, &dm);
 		});
 	});
 }
 
-/// Links whose last download was larger than this are not downloaded again at startup.
 const RESTORE_DOWNLOAD_LIMIT: u64 = 2 * 1024 * 1024;
 
-/// Selects the tab that was active before the restore, such as a document from the command line,
-/// or else the document that was active when Paperback closed.
 fn select_restored_tab(doc_manager: &Rc<Mutex<DocumentManager>>, pre_restore_active: Option<usize>, active_path: &str) {
 	let dm = doc_manager.lock().unwrap();
 	let target = pre_restore_active
@@ -100,16 +90,9 @@ fn select_restored_tab(doc_manager: &Rc<Mutex<DocumentManager>>, pre_restore_act
 	}
 }
 
-/// How long after the restore to say where focus is a second time. Long enough for the window
-/// to have finished laying out a large book, short enough that a reader who starts pressing keys
-/// straight away is not moved from under their own first keystroke.
+/// Long enough for a large book to finish laying out, short enough not to move a reader from under their first keystroke.
 const FOCUS_SETTLE_DELAY_MS: i32 = 250;
 
-/// Focuses the restored document again once the window has stopped working, so a screen reader
-/// that missed the first focus while the text was still loading hears this one.
-///
-/// The one-shot `wxTimer` keeps itself alive through its single tick by the `Rc`/`RefCell` it
-/// hands its own callback, the same way delayed announcements do.
 fn focus_again_once_settled(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
 	let timer_holder: Rc<RefCell<Option<Timer<Frame>>>> = Rc::new(RefCell::new(None));
 	let holder = Rc::clone(&timer_holder);
@@ -118,8 +101,7 @@ fn focus_again_once_settled(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManage
 	timer.on_tick(move |_event| {
 		let dm = doc_manager.lock().unwrap();
 		dm.restore_focus();
-		// Focus is normally already on the text by now, and focusing a control that has focus
-		// tells a screen reader nothing, so the retry has to say so itself.
+		// Focus is usually already on the text, and refocusing tells a screen reader nothing, so the retry announces itself.
 		#[cfg(target_os = "windows")]
 		dm.announce_focus();
 		drop(dm);
@@ -130,19 +112,13 @@ fn focus_again_once_settled(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManage
 	}
 }
 
-/// What startup does with the documents that were open when Paperback closed.
 #[derive(Debug, Default, PartialEq, Eq)]
 pub(super) struct RestorePlan {
-	/// Files, reopened in order.
 	files: Vec<String>,
-	/// Links whose last download was small enough to download again, in order.
 	links: Vec<String>,
-	/// Links not reopened, which stay in the recent documents only.
 	dropped: Vec<String>,
 }
 
-/// Sorts the stored `paths` into a [`RestorePlan`]: a link is downloaded again when its last
-/// download, by `size_of`, was at most `limit` bytes.
 pub(super) fn plan(paths: Vec<String>, size_of: impl Fn(&str) -> Option<u64>, limit: u64) -> RestorePlan {
 	let mut plan = RestorePlan::default();
 	for path in paths {
@@ -157,7 +133,6 @@ pub(super) fn plan(paths: Vec<String>, size_of: impl Fn(&str) -> Option<u64>, li
 	plan
 }
 
-/// Runs `open` on every stored path in order and returns the ones it could not reopen.
 pub(super) fn restore_each(paths: Vec<String>, mut open: impl FnMut(&str) -> bool) -> Vec<String> {
 	paths.into_iter().filter(|path| !open(path)).collect()
 }

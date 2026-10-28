@@ -1,14 +1,9 @@
-//! The macOS side of packaging: the `Paperback.app` bundle laid out around the freshly built
-//! binary.
-
 use std::{collections::BTreeSet, env, fs};
 
 use shipfitter::macos::MacApp;
 
 use crate::paths::{self, target_profile_dir};
 
-/// Builds the `<string>ext</string>` lines for `CFBundleTypeExtensions`, deduped since a couple
-/// of extensions (e.g. `zip`) are shared by more than one entry in `paperback_formats::ALL`.
 fn bundle_document_extensions_block() -> String {
 	let mut extensions = BTreeSet::new();
 	for format in paperback_formats::ALL {
@@ -17,11 +12,7 @@ fn bundle_document_extensions_block() -> String {
 	extensions.into_iter().map(|ext| format!("\t\t\t\t<string>{ext}</string>")).collect::<Vec<_>>().join("\n")
 }
 
-/// Builds the `<string>lang</string>` lines for `CFBundleLocalizations`: English plus one per
-/// `po/<lang>.po`. Without them macOS runs the app in English whatever the system language, so
-/// everything the system supplies itself stays English - most audibly the role names the screen
-/// reader speaks, such as "button" and "menu bar". The two po stems that are not BCP-47 identifiers
-/// are renamed the same way `cargo ios` renames their `.lproj` folders.
+/// Without `CFBundleLocalizations` macOS runs the app in English whatever the system language, so the role names the screen reader speaks stay English too.
 fn bundle_localizations_block() -> String {
 	let mut languages = BTreeSet::from(["en".to_string()]);
 	println!("cargo:rerun-if-changed={}", paths::workspace_dir().join("po").display());
@@ -30,6 +21,7 @@ fn bundle_localizations_block() -> String {
 			if path.extension().is_some_and(|ext| ext == "po")
 				&& let Some(stem) = path.file_stem().and_then(|stem| stem.to_str())
 			{
+				// The same renames `cargo ios` gives their `.lproj` folders, since these stems aren't BCP-47.
 				let language = match stem {
 					"pt_br" => "pt-BR",
 					"zh_CN" => "zh-Hans",
@@ -93,8 +85,7 @@ pub fn generate_app_bundle() {
 	if exe_path.exists() {
 		let _ = fs::copy(&exe_path, &bundle_exe);
 	}
-	// Named to match CFBundleIconFile above; without it the Dock, Finder and the app switcher
-	// all fall back to the blank generic-application icon.
+	// Named to match CFBundleIconFile; without it the Dock, Finder and the app switcher show the generic application icon.
 	let icns = paths::manifest_dir().join("assets/paperback.icns");
 	if let Err(e) = fs::copy(&icns, bundle_dir.join("Resources/paperback.icns")) {
 		println!("cargo:warning=Failed to copy the app bundle icon: {e}");

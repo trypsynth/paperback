@@ -1,8 +1,4 @@
-//! [`DocumentHandle`]: read-only navigation over a parsed [`super::Document`]. Finding the
-//! next/previous/current marker of a given type, heading navigation with optional level
-//! filtering, the innermost list/table containing a position, and TOC/section/page lookups.
-//! Markers are sorted by position once at construction so every lookup below can rely on that
-//! order instead of re-sorting per call.
+//! Markers are sorted by position at construction, and every lookup here relies on that order.
 
 use super::{
 	Document,
@@ -30,18 +26,12 @@ impl DocumentHandle {
 		&self.doc
 	}
 
-	/// Replaces the text spanning `range` with `replacement`, keeping the
-	/// document's external position maps in sync. See [`Self::replace_ranges`], which this wraps.
 	pub fn replace_range(&mut self, range: std::ops::Range<DocPos>, replacement: &str) -> i64 {
 		self.replace_ranges(vec![Edit { start: range.start, end: range.end, text: replacement.to_string() }])
 			.total_delta
 	}
 
-	/// Applies a batch of replacements to the buffer and keeps the document's external position
-	/// maps in sync: [`Document::id_positions`] shift the same way the buffer's markers do, and
-	/// markers are re-sorted once at the end to preserve the ordering invariant `new` establishes.
-	/// Returns the outcome so callers (the UI's sliding text window, the config's stored
-	/// positions) can remap positions of their own.
+	/// Markers are re-sorted afterwards to keep the order [`Self::new`] establishes.
 	pub fn replace_ranges(&mut self, edits: Vec<Edit>) -> ReplaceOutcome {
 		let outcome = self.doc.buffer.replace_ranges(edits);
 		if outcome.is_empty() {
@@ -85,13 +75,11 @@ impl DocumentHandle {
 			.next_back()
 	}
 
-	/// The first marker of `marker_type`, where a search that wraps past the end goes on from.
 	#[must_use]
 	pub fn first_marker_index(&self, marker_type: MarkerType) -> Option<usize> {
 		self.markers_by_type(marker_type).map(|(idx, _)| idx).next()
 	}
 
-	/// The last marker of `marker_type`, where a search that wraps past the start goes on from.
 	#[must_use]
 	pub fn last_marker_index(&self, marker_type: MarkerType) -> Option<usize> {
 		self.markers_by_type(marker_type).map(|(idx, _)| idx).next_back()
@@ -110,11 +98,7 @@ impl DocumentHandle {
 		result
 	}
 
-	/// The innermost container (list/table) whose span contains `position`, or `None` when the
-	/// position is not inside any container. A container covers `[start, start + length)`; the
-	/// start is inclusive and the end is exclusive (a caret exactly at the end is past it).
-	/// When containers nest, the innermost is the candidate with the greatest start (ties broken
-	/// by the smallest end).
+	/// A caret exactly at a container's end is past it.
 	#[must_use]
 	pub fn enclosing_container(&self, position: DocPos) -> Option<ContainerSpan> {
 		self.doc
@@ -218,13 +202,11 @@ impl DocumentHandle {
 		self.previous_heading_marker_index(position, level).and_then(|idx| i32::try_from(idx).ok())
 	}
 
-	/// The first heading at `level`, or of any level, where a search that wraps past the end goes on from.
 	#[must_use]
 	pub fn first_heading_index(&self, level: Option<i32>) -> Option<i32> {
 		self.heading_markers(level).first().and_then(|&(idx, _)| i32::try_from(idx).ok())
 	}
 
-	/// The last heading at `level`, or of any level, where a search that wraps past the start goes on from.
 	#[must_use]
 	pub fn last_heading_index(&self, level: Option<i32>) -> Option<i32> {
 		self.heading_markers(level).last().and_then(|&(idx, _)| i32::try_from(idx).ok())
@@ -257,10 +239,8 @@ mod tests {
 	fn container_handle() -> DocumentHandle {
 		let mut buffer = DocumentBuffer::new();
 		buffer.append(&"x".repeat(200));
-		// A list spanning [10, 40) and a table spanning [80, 120).
 		buffer.add_marker(Marker::new(MarkerType::List, 10.into()).with_level(3).with_length(30.into()));
 		buffer.add_marker(Marker::new(MarkerType::Table, 80.into()).with_length(40.into()));
-		// A nested list [50, 70) inside an outer list [45, 100).
 		buffer.add_marker(Marker::new(MarkerType::List, 45.into()).with_level(2).with_length(55.into()));
 		buffer.add_marker(Marker::new(MarkerType::List, 50.into()).with_level(2).with_length(20.into()));
 		let mut doc = Document::new();
@@ -280,17 +260,15 @@ mod tests {
 	#[test]
 	fn enclosing_container_start_inclusive_end_exclusive() {
 		let handle = container_handle();
-		assert_eq!(handle.enclosing_container(10.into()).unwrap().start, 10); // start is inside
-		assert!(handle.enclosing_container(40.into()).is_none()); // end is past the list
+		assert_eq!(handle.enclosing_container(10.into()).unwrap().start, 10);
+		assert!(handle.enclosing_container(40.into()).is_none());
 	}
 
 	#[test]
 	fn enclosing_container_returns_innermost_when_nested() {
 		let handle = container_handle();
-		// Position 55 is inside both the outer list [45,100) and the nested list [50,70).
 		let inner = handle.enclosing_container(55.into()).unwrap();
 		assert_eq!((inner.start, inner.end), (50.into(), 70.into()));
-		// Position 75 is only inside the outer list.
 		assert_eq!(handle.enclosing_container(75.into()).unwrap().start, 45);
 	}
 

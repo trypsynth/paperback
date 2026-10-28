@@ -1,6 +1,3 @@
-//! Locating the directories the other build steps read from and write to, plus the
-//! `rerun-if-changed` list that decides when Cargo runs this script again.
-
 use std::{
 	env,
 	path::{Path, PathBuf},
@@ -17,12 +14,10 @@ pub fn track_packaging_inputs() {
 	println!("cargo:rerun-if-changed=paperback.iss.in");
 }
 
-/// The `crates/paperback` directory this build script lives in.
 pub fn manifest_dir() -> PathBuf {
 	PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap_or_default())
 }
 
-/// The workspace root, two levels above the crate.
 pub fn workspace_dir() -> PathBuf {
 	let manifest_dir = manifest_dir();
 	manifest_dir.parent().and_then(Path::parent).expect("crate lives two levels below the workspace root").to_path_buf()

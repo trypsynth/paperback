@@ -203,9 +203,7 @@ fn build_bookmark_dialog_ui(dialog: Dialog, initial_filter: BookmarkFilterType) 
 	}
 }
 
-/// The text each text bookmark quotes, keyed by its span: the whole line for a line bookmark,
-/// else the marked range. Worked out once when the dialog opens, since every change of filter
-/// refills the list.
+/// Worked out once when the dialog opens, since every change of filter refills the list.
 fn text_snippets(session: &DocumentSession, bookmarks: &[Bookmark]) -> HashMap<(DocPos, DocPos), String> {
 	bookmarks
 		.iter()
@@ -555,8 +553,7 @@ fn finalize_bookmark_dialog_layout(
 	let action_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	action_sizer.add(&edit_button, 0, SizerFlag::Right, DIALOG_PADDING);
 	action_sizer.add(&delete_button, 0, SizerFlag::Right, DIALOG_PADDING);
-	// macOS HIG puts the default/affirmative action rightmost (Cancel, then Jump); Windows
-	// puts it leftmost (Jump, then Cancel).
+	// macOS HIG puts the default action rightmost; Windows puts it leftmost.
 	#[cfg(target_os = "macos")]
 	{
 		action_sizer.add(&cancel_button, 0, SizerFlag::Right, DIALOG_PADDING);
@@ -581,8 +578,7 @@ fn finalize_bookmark_dialog_layout(
 	bookmark_list.set_focus();
 }
 
-/// Removes the selected bookmark: by its playback time for an audio bookmark, whose range it
-/// shares with everything else in its chapter, and by its range otherwise.
+/// An audio bookmark goes by playback time, since its range is shared with everything else in its chapter.
 fn remove_bookmark(config: &ConfigManager, path: &str, start: DocPos, end: DocPos, audio_ms: Option<u64>) {
 	match audio_ms {
 		Some(ms) => config.remove_audio_bookmark(path, ms),

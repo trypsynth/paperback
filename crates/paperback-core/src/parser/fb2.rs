@@ -61,8 +61,6 @@ impl Parser for Fb2Parser {
 	}
 }
 
-/// The base64 text of the `<binary>` an FB2 image points at, by the `#id` its `href` gives.
-///
 /// # Errors
 ///
 /// Returns an error when the file cannot be read or parsed, even after repair, or holds no binary with that id.
@@ -96,19 +94,16 @@ fn clean_fb2(xml_content: &str) -> Option<(String, Metadata)> {
 	Some((result, meta))
 }
 
-/// Where the serializer is in the book, which decides what an FB2 element becomes.
 #[derive(Clone, Copy, Default)]
 struct Place {
-	/// How many `<section>`s deep, which sets a title's heading level.
 	sections: usize,
 	in_body: bool,
-	/// Inside a named `<body>`, such as the notes, whose numbered sections would fill the contents with numbers if their titles were headings.
+	/// A named `<body>` such as the notes, whose numbered section titles would fill the contents with numbers as headings.
 	in_notes: bool,
-	/// Inside a poem, stanza, epigraph or quotation, whose titles are part of the text rather than the book's structure.
+	/// Poem, stanza, epigraph and quotation titles are part of the text rather than the book's structure.
 	in_verse: bool,
 }
 
-/// Writes the book back out as XML without its `<binary>` image data, with FB2's structure in the names the converter knows: titles as headings, verse lines and subtitles as paragraphs, stanzas and quotations as blocks.
 fn serialize_without_binary(node: Node, output: &mut String, place: Place) {
 	match node.node_type() {
 		NodeType::Root => {
@@ -194,7 +189,7 @@ fn serialize_without_binary(node: Node, output: &mut String, place: Place) {
 	}
 }
 
-/// A title's lines as one heading: FB2 often splits "Chapter 1" and its name into two paragraphs, which run together into "Chapter 1The Beginning" if simply joined.
+/// FB2 often splits "Chapter 1" and its name into two paragraphs, which run together into "Chapter 1The Beginning" if simply joined.
 fn title_text(title: Node) -> String {
 	let lines: Vec<String> = title
 		.children()
@@ -290,7 +285,7 @@ fn find_element_by_path<'a, 'input>(node: Node<'a, 'input>, path: &[&str]) -> Op
 	None
 }
 
-/// Declares the namespace prefixes a FictionBook uses but never declares, such as `l:href` with no `xmlns:l`, which roxmltree would refuse. `None` when nothing is missing.
+/// FictionBooks often use a prefix such as `l:href` with no `xmlns:l`, which roxmltree refuses.
 fn declare_missing_namespaces(xml: &str) -> Option<String> {
 	let mut missing: Vec<&str> = Vec::new();
 	for prefix in used_prefixes(xml) {
@@ -306,8 +301,7 @@ fn declare_missing_namespaces(xml: &str) -> Option<String> {
 	let mut out = String::with_capacity(xml.len() + missing.len() * 48);
 	out.push_str(&xml[..insert_at]);
 	for prefix in &missing {
-		// The one prefix worth naming properly: `l` and `xlink` are both how FictionBook writes a
-		// link. Anything else gets a URI of its own so that two prefixes never collide.
+		// `l` and `xlink` are both how FictionBook writes a link; anything else gets its own URI so two prefixes never collide.
 		let uri = if matches!(*prefix, "l" | "xlink") {
 			"http://www.w3.org/1999/xlink".to_string()
 		} else {
@@ -319,19 +313,14 @@ fn declare_missing_namespaces(xml: &str) -> Option<String> {
 	Some(out)
 }
 
-/// The prefixes a document uses on an element or an attribute name.
 fn used_prefixes(xml: &str) -> Vec<&str> {
 	let mut prefixes = Vec::new();
 	let is_name_char = |c: char| c.is_alphanumeric() || matches!(c, '_' | '-' | '.');
 	for (index, _) in xml.match_indices(':') {
 		let before = &xml[..index];
-		// Stepping over the character that ended the name, not over one byte of it: a file of
-		// random bytes reaches here, and one byte into a multi-byte character is not a place a
-		// string can be cut.
+		// Step over the whole character that ended the name: random bytes reach here, and one byte into a multi-byte character panics.
 		let start = before.char_indices().rev().find(|(_, c)| !is_name_char(*c)).map_or(0, |(at, c)| at + c.len_utf8());
 		let prefix = &before[start..];
-		// A prefix is a name, it follows either the `<` of a tag or the whitespace before an
-		// attribute, and what comes after the colon is a name too.
 		let opener = before[..start].chars().next_back();
 		let follows_name_start = opener.is_some_and(|c| c == '<' || c.is_whitespace());
 		let next_is_name = xml[index + 1..].chars().next().is_some_and(|c| c.is_alphabetic() || c == '_');
@@ -349,15 +338,12 @@ fn used_prefixes(xml: &str) -> Vec<&str> {
 	prefixes
 }
 
-/// Where an attribute can be added to the root element's start tag, which is just before the `>`
-/// that closes it.
 fn root_element_attribute_position(xml: &str) -> Option<usize> {
 	let mut at = 0;
 	loop {
 		let open = xml[at..].find('<')? + at;
 		let after = xml[open + 1..].chars().next()?;
 		if after == '?' || after == '!' {
-			// A declaration, a comment or a doctype, none of which is the root element.
 			at = xml[open..].find('>')? + open + 1;
 			continue;
 		}
@@ -368,8 +354,7 @@ fn root_element_attribute_position(xml: &str) -> Option<usize> {
 				(Some(open_quote), ch) if ch == open_quote => quote = None,
 				(None, '>') => {
 					let end = open + offset;
-					// A tag that closes itself has nothing under it, so `/` belongs after what is
-					// being added rather than before it.
+					// In a self-closing tag the `/` belongs after what is being added.
 					let insert = if xml[..end].ends_with('/') { end - 1 } else { end };
 					return Some(insert);
 				}
@@ -380,14 +365,14 @@ fn root_element_attribute_position(xml: &str) -> Option<usize> {
 	}
 }
 
-/// Mends a FictionBook that other readers open but a strict XML parser refuses, or `None` when there was nothing to mend.
+/// Mends FictionBooks that other readers open but a strict XML parser refuses.
 fn repair_fb2_xml(xml: &str) -> Option<String> {
 	let namespaced = declare_missing_namespaces(xml);
 	let entities = resolve_html_entities(namespaced.as_deref().unwrap_or(xml));
 	entities.or(namespaced)
 }
 
-/// Replaces HTML entities such as `&nbsp;` that XML does not define, dropping unknown ones, since any of them would otherwise lose the whole book.
+/// Any HTML entity XML doesn't define, such as `&nbsp;`, would otherwise lose the whole book, so unknown ones are dropped.
 fn resolve_html_entities(xml: &str) -> Option<String> {
 	/// Longest HTML entity name, `CounterClockwiseContourIntegral;`, plus room.
 	const MAX_ENTITY_LEN: usize = 34;
@@ -415,8 +400,7 @@ fn resolve_html_entities(xml: &str) -> Option<String> {
 		changed = true;
 		if let Some((first, second)) = web_atoms::NAMED_ENTITIES.get(&format!("{name};")) {
 			out.extend(char::from_u32(*first));
-			// The table gives a second code point of zero for the entities that stand for one
-			// character, which is most of them.
+			// The table gives a second code point of zero for single-character entities.
 			out.extend(char::from_u32(*second).filter(|c| *c != '\0'));
 		}
 	}
@@ -491,8 +475,7 @@ mod tests {
 			"<title-info><book-title>Entities</book-title></title-info>",
 			"<body><section><p>Hello&nbsp;world&mdash;and&hellip;</p></section></body>",
 		));
-		// The no-break space resolves and then collapses with the rest of the whitespace, which is
-		// what the converter does to every run of spaces in a book.
+		// The no-break space resolves and then collapses like every run of whitespace.
 		assert!(doc.buffer.content.contains("Hello world—and…"), "got {:?}", doc.buffer.content);
 	}
 
@@ -506,10 +489,7 @@ mod tests {
 		assert!(doc.buffer.content.contains("Version of it."), "got {:?}", doc.buffer.content);
 	}
 
-	/// Anything at all can be handed to a parser, and a file of random bytes has to come back as an
-	/// error rather than take the program down with it. This one found a panic in the namespace
-	/// repair: the byte after the character that ended a name is not a place a string can be cut
-	/// when that character is more than one byte long.
+	/// This found a panic in the namespace repair, cutting a string one byte into a multi-byte character.
 	#[test]
 	fn random_bytes_are_an_error_and_not_a_panic() {
 		let dir = TempDir::new("fb2-random");
@@ -557,8 +537,6 @@ mod tests {
 		assert_eq!(breaks, 2);
 	}
 
-	/// Cover images arrive as base64 `<binary>` blobs. They must not be decoded into the text,
-	/// which is what `clean_fb2` strips them for.
 	#[test]
 	fn drops_base64_binary_payloads() {
 		let doc = parse_ok(&fb2_document(
@@ -569,8 +547,7 @@ mod tests {
 		assert!(!doc.buffer.content.contains("iVBORw0KGgo"), "binary payload leaked: {:?}", doc.buffer.content);
 	}
 
-	/// Some writers append junk after the closing tag; the parser truncates there rather than
-	/// failing, so the document still opens.
+	/// Some writers append junk after the closing tag.
 	#[test]
 	fn ignores_trailing_junk_after_the_closing_tag() {
 		let doc = parse_ok(&format!(
@@ -598,7 +575,7 @@ mod tests {
 			.collect()
 	}
 
-	/// FB2 marks a chapter with a section and its title, not with HTML's h1 to h6, so without this a book has no headings to move between and no contents.
+	/// FB2 marks a chapter with a section and its title, not h1 to h6, so without this a book has no headings or contents.
 	#[test]
 	fn section_titles_are_headings_by_depth_and_make_the_contents() {
 		let body = r#"<body><title><p>The Book</p></title><section><title><p>Part One</p></title><section><title><p>Chapter 1</p><p>The Beginning</p></title><p>Text.</p></section></section></body><body name="notes"><title><p>Notes</p></title><section id="n1"><title><p>1</p></title><p>A note.</p></section></body>"#;
@@ -625,7 +602,6 @@ A note."
 		);
 	}
 
-	/// Each line of verse is a line, and a poem's own title is part of the text rather than a heading.
 	#[test]
 	fn verse_keeps_its_lines_and_its_title_is_not_a_heading() {
 		let body = r"<body><section><title><p>Chapter</p></title><poem><title><p>Ode</p></title><stanza><v>Line one</v><v>Line two</v></stanza><text-author>Someone</text-author></poem></section></body>";

@@ -1,8 +1,3 @@
-//! Import/export of a document's position, format, temporary bookmark, and bookmarks to a
-//! `.paperback` sidecar TOML file - the `Ctrl+Shift+E`/`Ctrl+Shift+I` "export/import document
-//! data" feature, and the same mechanism `import_document_settings` uses automatically when a
-//! matching sidecar already sits next to a file being opened.
-
 use std::{fs, path::Path};
 
 use serde::{Deserialize, Serialize};
@@ -23,7 +18,6 @@ pub(super) struct SidecarData {
 }
 
 impl ConfigManager {
-	/// Import document settings from a `.paperback` sidecar file if it exists.
 	pub fn import_document_settings(&self, path: &str) {
 		let import_path = Path::new(path).with_extension("paperback");
 		if let Some(import_path_str) = import_path.to_str()
@@ -33,7 +27,6 @@ impl ConfigManager {
 		}
 	}
 
-	/// Import document settings from a specified TOML sidecar file.
 	pub fn import_settings_from_file(&self, doc_path: &str, import_path: &str) {
 		if !self.initialized || !Path::new(import_path).exists() {
 			return;
@@ -57,7 +50,6 @@ impl ConfigManager {
 		}
 	}
 
-	/// Export document settings to a `.paperback` sidecar TOML file.
 	pub fn export_document_settings(&self, doc_path: &str, export_path: &str) {
 		if !self.initialized {
 			return;

@@ -6,14 +6,7 @@ use shipfitter::package::cargo_build_release;
 use crate::workspace::project_root;
 
 pub fn release() -> Result<(), Box<dyn Error>> {
-	// Built as two separate invocations rather than `-p paperback -p pb` in one: Cargo leaks
-	// wxdragon-sys's build-script native-library search paths (wxWidgets' own libs) into
-	// every binary linked in the same invocation when multiple root packages are requested
-	// together, even into pb, which doesn't depend on wxdragon at all. That pulled GUI DLL
-	// imports (comctl32's GetWindowSubclass and friends) into pb.exe, which then failed to
-	// launch on end-user machines with "entry point not found" since it never gets the
-	// comctl32-v6 manifest paperback.exe's build.rs embeds. cargo_build_release builds one
-	// package per invocation, which keeps each link step's inputs isolated.
+	// One package per invocation: built together, Cargo leaks wxdragon-sys's library paths into pb, whose comctl32 imports then fail with "entry point not found" without paperback.exe's manifest.
 	#[cfg(target_os = "macos")]
 	return build_mac_dmg(&project_root());
 	#[cfg(not(target_os = "macos"))]
@@ -38,8 +31,7 @@ pub fn release() -> Result<(), Box<dyn Error>> {
 	}
 }
 
-/// One universal app rather than a DMG per architecture, so Intel Macs get the same single
-/// `paperback.dmg` the updater and the website already look for.
+/// Universal, so Intel Macs get the single `paperback.dmg` the updater and website look for.
 #[cfg(target_os = "macos")]
 fn build_mac_dmg(root: &std::path::Path) -> Result<(), Box<dyn Error>> {
 	use std::{env, fs, process::Command};
@@ -62,8 +54,7 @@ fn build_mac_dmg(root: &std::path::Path) -> Result<(), Box<dyn Error>> {
 		fs::remove_dir_all(&bundle)?;
 	}
 	fs::create_dir_all(&target_dir)?;
-	// build.rs lays out the bundle and its Info.plist, but runs before the binaries are linked, so
-	// the freshly linked binaries are merged into it now.
+	// build.rs lays out the bundle before the binaries are linked, so they're merged in now.
 	run(Command::new("ditto").arg(slices[0].join("Paperback.app")).arg(&bundle))?;
 	let macos_dir = bundle.join("Contents/MacOS");
 	for name in ["paperback", "pb"] {
@@ -105,7 +96,6 @@ fn build_zip_package(
 	Ok(())
 }
 
-/// The portable tarball, then an `AppImage` on top of it.
 #[cfg(not(target_os = "macos"))]
 fn build_linux_packages(
 	target_dir: &std::path::Path,
@@ -127,18 +117,13 @@ fn build_linux_packages(
 	}
 	tarball.finish()?;
 	println!("Created tar.gz: {}", package_path.display());
-	// The desktop file and icon double as the AppImage's required metadata and as what
-	// `linux_integration.rs` copies into the user's own applications/icons directories once
-	// they pick file associations, so both need to be right at the AppDir root.
+	// `linux_integration.rs` copies the desktop file and icon from the AppDir root into the user's own directories.
 	let root = project_root();
 	let appimage = AppImage {
 		binaries: &binaries,
 		desktop_file: &root.join("paperback.desktop"),
 		icon: &root.join("crates/paperback/assets/paperback.png"),
-		// The AppImage runtime sets ARGV0 to the name this AppImage was invoked as when that
-		// differs from its own filename (e.g. through a symlink), so the ~/.local/bin/pb
-		// symlink linux_integration.rs's setup dialog can write dispatches into the pb CLI
-		// instead of the paperback GUI.
+		// The runtime sets ARGV0 to the invoked name, so the ~/.local/bin/pb symlink from the setup dialog runs the CLI.
 		app_run: Some(
 			r#"#!/bin/sh
 HERE="$(dirname "$(readlink -f "${0}")")"

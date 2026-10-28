@@ -1,6 +1,3 @@
-//! The flat (non-headings) element views shared by both platform implementations: the view model
-//! (Links, Pages, Tables, Lists) and the virtual list widget that shows whichever view is chosen.
-
 use std::{cell::RefCell, rc::Rc};
 
 use paperback_core::{
@@ -12,15 +9,11 @@ use wxdragon::prelude::*;
 
 use super::{FLAT_POPULATE_DELAY_MS, VIEW_LINKS, VIEW_LISTS, VIEW_PAGES, VIEW_TABLES};
 
-/// A page entry for the Pages view: the page's marker offset (where a jump lands) and the
-/// label to show, mirroring what page navigation announces for the page.
 struct PageEntry {
 	offset: DocPos,
 	label: String,
 }
 
-/// One entry per page, labelled "Page N: <first content line>" (the same line that page
-/// navigation (p / Shift+P) announces), or just "Page N" when the page has no readable line.
 fn page_entries(session: &DocumentSession) -> Vec<PageEntry> {
 	session
 		.page_offsets()
@@ -46,18 +39,11 @@ fn page_label(page: i32, content: &str) -> String {
 	}
 }
 
-/// The rows for one flat (non-headings) view: what each row shows, the document offset it
-/// jumps to, and which row is nearest the current position. The Links, Pages, Tables and Lists
-/// views each have one; the shared list pane is repopulated from whichever is selected.
 struct FlatView {
 	entries: Vec<(String, DocPos)>,
 	closest: Option<u32>,
 }
 
-/// The rows of a document-marker element view (Links, Tables, Lists): each shows the same text
-/// reading navigation announces for that element, and the row nearest the current position is
-/// preselected. A marker with its own text (a table's caption, a link's label) uses it; a
-/// text-less marker (a list) reads the line it sits on.
 fn marker_flat_view(session: &DocumentSession, mtype: MarkerType, position: DocPos) -> FlatView {
 	let data = session.element_list(mtype, position);
 	let entries = data.items.iter().map(|item| (item.text.clone(), item.offset)).collect();
@@ -86,10 +72,6 @@ fn page_flat_view(session: &DocumentSession, position: DocPos) -> FlatView {
 	FlatView { entries, closest }
 }
 
-/// The flat (non-headings) views, keyed by their `VIEW_*` selection. Holding them together lets
-/// the toggle, double-click and OK handlers look up the active view without threading each view
-/// through as its own argument; a future flat view adds one field here and one arm of
-/// [`FlatViews::view`].
 pub(super) struct FlatViews {
 	links: FlatView,
 	pages: FlatView,
@@ -118,12 +100,7 @@ impl FlatViews {
 	}
 }
 
-// The flat (non-headings) pane. Its rows can number in the tens of thousands (the Pages view of
-// a long document), so, as with the Find All results list, it is a virtual wxListCtrl on
-// Windows/Linux and a store-backed wxDataViewListCtrl on macOS (the split the All Documents
-// dialog uses): the control keeps no rows and asks for text only for the rows it shows, so
-// switching to a flat view is O(1) instead of appending every row. This mirrors ui/find.rs; if a
-// third control needs the same glue, factor it into a shared module.
+// Rows can number in the tens of thousands (Pages in a long book), so off macOS it is a virtual list that asks for text only for the rows it shows; mirrors ui/find.rs.
 #[cfg(target_os = "macos")]
 pub(super) type FlatList = DataViewListCtrl;
 #[cfg(not(target_os = "macos"))]
@@ -143,7 +120,6 @@ pub(super) fn build_flat_list(dialog: Dialog, flat_labels: Rc<RefCell<Vec<String
 	list.insert_column(0, "", ListColumnFormat::Left, dialog.from_dip_int(400));
 	list.set_min_size(size);
 	list.set_max_size(size);
-	// The control asks for text on demand; hand back a prebuilt label (a cheap clone).
 	list.set_virtual_text_callback(move |index, _column| {
 		let labels = flat_labels.borrow();
 		usize::try_from(index).ok().and_then(|index| labels.get(index)).cloned().unwrap_or_default()
@@ -164,12 +140,9 @@ pub(super) fn build_flat_list(dialog: Dialog, _flat_labels: Rc<RefCell<Vec<Strin
 
 #[cfg(not(target_os = "macos"))]
 fn populate_flat_list(list: FlatList, flat_labels: &Rc<RefCell<Vec<String>>>, view: &FlatView) {
-	// Reset to zero rows first so a previous run's selection never lingers when the new view has
-	// no row nearest the caret.
+	// So a previous view's selection never lingers when the new one has no row nearest the caret.
 	list.set_item_count(0);
-	// Build the labels, dropping the borrow before the count changes: setting the count can make
-	// the native control ask the virtual callback for text, which must not find the cache still
-	// mutably borrowed (that would panic across the FFI boundary).
+	// Setting the count can call the virtual text callback, so the borrow must end first or it panics across FFI.
 	let len = {
 		let mut labels = flat_labels.borrow_mut();
 		labels.clear();
@@ -230,7 +203,6 @@ fn flat_list_selected_index(list: FlatList) -> Option<usize> {
 	list.get_selected_row()
 }
 
-/// Shows `view`'s rows in the shared flat pane, naming the list after the view the user chose.
 fn present_flat_view(list: FlatList, flat_labels: &Rc<RefCell<Vec<String>>>, view: &FlatView, name: &str) {
 	list.set_accessibility_label(name);
 	populate_flat_list(list, flat_labels, view);
@@ -246,9 +218,6 @@ pub(super) fn clear_flat_list(list: FlatList) {
 	list.delete_all_items();
 }
 
-/// Switches the flat pane to `view` (the list entry whose `VIEW_*` index is `selection`) a short
-/// moment after it was shown empty, so the screen reader settles on the newly-shown pane before it
-/// fills with rows. If the user has since chosen a different view, the pending fill is skipped.
 pub(super) fn schedule_flat_fill(
 	frame: Frame,
 	list: FlatList,
@@ -275,7 +244,6 @@ pub(super) fn schedule_flat_fill(
 	*timer_holder.borrow_mut() = Some(timer);
 }
 
-/// Fills the list with `views.view(selection)`'s rows while it is hidden, then shows it.
 fn fill_flat_view(
 	list: FlatList,
 	flat_labels: &Rc<RefCell<Vec<String>>>,
@@ -291,7 +259,6 @@ fn fill_flat_view(
 	}
 }
 
-/// The offset of the row selected in the flat list pane for `view`, if any.
 pub(super) fn flat_selected_offset(view: u32, list: FlatList, views: &FlatViews) -> Option<DocPos> {
 	let entries = &views.view(view)?.entries;
 	flat_list_selected_index(list).and_then(|index| entries.get(index)).map(|(_, offset)| *offset)

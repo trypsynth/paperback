@@ -101,8 +101,7 @@ pub fn install(
 		let id = if let Some(action) = action {
 			if action == ActionId::Options { menu_ids::PREFERENCES } else { menu_ids::action_to_menu_id(action) }
 		} else if copy_key && reader_has_focus() {
-			// Copy is a stock wx command, outside ActionId. Catch it before Cocoa reads
-			// "Copy" and let the app announce the character count instead.
+			// Copy is a stock wx command outside ActionId; catch it before Cocoa reads "Copy" so the app announces the character count instead.
 			menu_ids::COPY
 		} else {
 			return event;

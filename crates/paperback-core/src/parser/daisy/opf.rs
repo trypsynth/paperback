@@ -10,8 +10,7 @@ pub(super) struct ManifestItem {
 	pub(super) media_type: String,
 }
 
-/// A parsed OPF package: manifest items and spine in document order, plus the metadata the
-/// parser cares about. Hrefs are resolved against the archive/directory root at parse time.
+/// Hrefs are resolved against the archive or directory root at parse time.
 pub(super) struct OpfPackage {
 	pub(super) items: Vec<(String, ManifestItem)>,
 	pub(super) spine: Vec<String>,
@@ -91,15 +90,13 @@ pub(super) fn is_dtbook_item(item: &ManifestItem) -> bool {
 	item.media_type == "application/x-dtbook+xml"
 }
 
-/// Whether `item` is DTBook content, by its declared type or by the `.xml` fallback for OPFs that label DTBook as `text/xml`.
+/// Some OPFs label DTBook as `text/xml`.
 pub(super) fn is_dtbook_like_item(item: &ManifestItem) -> bool {
 	is_dtbook_item(item)
 		|| (item.media_type == "text/xml"
 			&& Path::new(&item.href).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("xml")))
 }
 
-/// Finds the single `DTBook` XML file for a legacy single-file DAISY book: the manifest's
-/// declared `DTBook` item, or failing that, the first plain `.xml` item.
 pub(super) fn find_single_dtbook_href(package: &OpfPackage) -> Option<String> {
 	let mut fallback = None;
 	for (_, item) in &package.items {

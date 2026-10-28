@@ -1,5 +1,3 @@
-//! A loose MP3 file, split into chapters by its ID3v2 `CHAP` frames when it has them.
-
 use std::{fs::File, io::BufReader};
 
 use anyhow::{Context, Result, bail};
@@ -46,7 +44,7 @@ fn document_metadata(tagged_file: &lofty::file::TaggedFile, file_path: &str) -> 
 	(title, author)
 }
 
-/// The ID3v2 `CHAP` frames, read through `MpegFile` because the generic `Tag` API drops them. Empty when there are none or the file can't be read.
+/// Read through `MpegFile` because the generic `Tag` API drops `CHAP` frames.
 fn read_id3v2_chapters(file_path: &str) -> Vec<RawChapter> {
 	let Ok(file) = File::open(file_path) else { return Vec::new() };
 	let mut reader = BufReader::new(file);
@@ -62,8 +60,6 @@ fn read_id3v2_chapters(file_path: &str) -> Vec<RawChapter> {
 		.collect()
 }
 
-/// A chapter frame's human-readable name, from its embedded `TIT2` child frame. Blank when
-/// absent, which `normalize_chapters` turns into a "Chapter N" fallback.
 fn chapter_title(chapter: &lofty::id3::v2::ChapterFrame<'_>) -> String {
 	chapter
 		.children

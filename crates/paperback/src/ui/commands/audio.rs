@@ -1,5 +1,3 @@
-//! Playing a document's recorded narration, and the size of a seek through it.
-
 use super::Ctx;
 use crate::ui::audio;
 

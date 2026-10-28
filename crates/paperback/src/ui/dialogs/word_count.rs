@@ -14,11 +14,9 @@ fn format_reading_time(word_count: usize, wpm: i32) -> String {
 	template.replace("{}", &time_str)
 }
 
-/// Total file count and playback duration (in milliseconds) for an audio-only document, so
-/// [`show_word_count_dialog`] can report duration instead of a meaningless word count.
 pub struct AudioOnlySummary {
 	pub file_count: usize,
-	/// None when any file's length is unknown. See `DocumentStats::audio_total_duration_ms`.
+	/// `None` when any file's length is unknown.
 	pub total_duration_ms: Option<u64>,
 }
 

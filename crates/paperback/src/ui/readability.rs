@@ -1,6 +1,3 @@
-//! How a document's text looks in the reading area: the font, the colours, and the spacing and
-//! alignment that go with them.
-
 #[cfg(target_os = "windows")]
 use std::ptr::addr_of_mut;
 
@@ -59,7 +56,7 @@ pub fn build_font_from_readability(rf: &ReadabilityFont) -> Option<Font> {
 	Some(font)
 }
 
-/// The colour a stored `0xRRGGBB` stands for, or `None` for the default, which is stored as a negative number.
+/// The default colour is stored as a negative number.
 pub fn stored_colour(color: i32) -> Option<Colour> {
 	let [_, r, g, b] = color.to_be_bytes();
 	(color >= 0).then(|| Colour::rgb(r, g, b))
@@ -111,7 +108,6 @@ pub fn apply_letter_spacing_to_ctrl(text_ctrl: TextCtrl, spacing: i32) {
 		return;
 	}
 	let hwnd = HWND(hwnd_ptr);
-	// spacing_twips: 0=normal, 1=20 twips (~1pt extra), 2=40 twips (~2pt extra)
 	let spacing_twips: i16 = match spacing {
 		1 => 20,
 		2 => 40,

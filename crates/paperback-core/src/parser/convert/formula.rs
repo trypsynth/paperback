@@ -1,5 +1,4 @@
-//! `MathML` conversion shared by the XML/HTML text engines. `MathCAT`'s rules are embedded;
-//! its per-thread state is initialized lazily, including on EPUB's rayon workers.
+//! `MathCAT`'s state is per thread, so it is initialized lazily, including on EPUB's rayon workers.
 
 use std::{
 	cell::OnceCell,
@@ -24,8 +23,7 @@ pub(super) fn is_xml_formula(node: Node<'_, '_>) -> bool {
 }
 
 pub(super) fn is_dom_formula(element: &scraper::node::Element) -> bool {
-	// HTML parsing assigns the MathML namespace to bare <math> even without xmlns. Checking
-	// that parsed namespace excludes same-named elements in other contexts, such as SVG.
+	// HTML parsing gives bare <math> the MathML namespace even without xmlns, and checking it excludes same-named elements in other contexts such as SVG.
 	element.name() == "math" && &*element.name.ns == MATHML_NAMESPACE
 }
 
@@ -44,12 +42,9 @@ thread_local! {
 
 fn init() -> bool {
 	// TODO: make the output code configurable when math preferences are implemented.
-	// `rules` is embedded in the zip vfs in the binary; it does not represent an on-disk directory.
-	// It is nevertheless required for MathCAT initialization.
+	// The rules live in the binary's embedded zip vfs, not on disk, but MathCAT still requires a rules dir.
 	let result = libmathcat::set_rules_dir("Rules")
-		// Without this, MathCAT re-reads its preference files on every get_braille call, which
-		// resets BrailleCode to its shipped default (Nemeth) and discards the ASCIIMath set below,
-		// so the reader hears Nemeth braille cells instead of AsciiMath.
+		// Otherwise MathCAT re-reads its preference files on every get_braille call, resetting BrailleCode to Nemeth and discarding the ASCIIMath set below.
 		.and_then(|()| libmathcat::set_preference("CheckRuleFiles", "None"))
 		.and_then(|()| libmathcat::set_preference("Language", "en"))
 		// ASCIIMath is a text notation, despite being exposed through MathCAT's braille API.
@@ -61,7 +56,6 @@ fn init() -> bool {
 	true
 }
 
-/// `AsciiMath` when conversion succeeds, then the author's alternative text, then raw text.
 /// An empty expression with no fallback emits neither text nor a marker.
 pub(super) fn formula_text(
 	mathml: &str,
@@ -80,8 +74,7 @@ fn asciimath(mathml: &str) -> Option<String> {
 	if !MATHCAT_INIT.with(|cell| *cell.get_or_init(init)) {
 		return None;
 	}
-	// Do not collapse whitespace in the key: whitespace inside mtext and attribute values can
-	// be significant. Serialization already canonicalizes XML element/attribute quoting.
+	// Whitespace isn't collapsed in the key because it can be significant inside mtext and attribute values.
 	if let Some(hit) = CACHE.lock().unwrap().entries.get(mathml) {
 		return hit.clone();
 	}
@@ -122,8 +115,7 @@ fn serialize_mathml(node: Node<'_, '_>, output: &mut String) {
 		output.push_str(&escape(node.text().unwrap_or("")));
 		return;
 	}
-	// Foreign XML subtrees and custom namespaced attributes need a separate representation
-	// for the HTML view. Omit them here rather than reinterpret their local names as MathML.
+	// Foreign subtrees and namespaced attributes are dropped rather than having their local names reinterpreted as MathML.
 	if !node.is_element() || !matches!(node.tag_name().namespace(), None | Some(MATHML_NAMESPACE)) {
 		return;
 	}

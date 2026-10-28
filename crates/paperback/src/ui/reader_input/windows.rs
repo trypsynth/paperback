@@ -1,11 +1,7 @@
 use super::DocumentTab;
 use crate::text_window::CtrlPos;
 
-/// One line-vertical-navigation attempt within whatever's currently loaded in `tab.text_ctrl`.
-/// Returns `None` (outer) if the current position has no known line/column (shouldn't happen in
-/// practice), `Some(None)` if the target line falls outside what's currently loaded - the caller
-/// checks whether there's more document in that direction and, if so, reloads and retries - or
-/// `Some(Some(..))` on success.
+/// `None` if the position has no line/column; `Some(None)` if the target line is outside the loaded window, so the caller reloads and retries.
 #[allow(
 	clippy::option_option,
 	reason = "the outer None and the inner None mean different things to reader_input's retry"

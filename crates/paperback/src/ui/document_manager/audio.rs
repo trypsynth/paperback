@@ -1,10 +1,6 @@
-//! Playing a document's recorded narration, and the sounds that mark a bookmark or a note.
-
 use super::DocumentManager;
 
 impl DocumentManager {
-	/// Stops every tab's audio ahead of the app closing, winding playback down deliberately
-	/// rather than as a side effect of the frame being destroyed.
 	pub fn stop_all_audio(&mut self) {
 		for tab in &mut self.tabs {
 			if let Some(player) = tab.audio_player.as_mut() {
@@ -13,12 +9,7 @@ impl DocumentManager {
 		}
 	}
 
-	/// Takes note of where the caret is without sounding anything, after a move that jumps
-	/// rather than steps.
-	///
-	/// [`Self::check_bookmark_sounds`] decides by comparing against where the caret was last
-	/// seen. Leaving that stale across a jump would measure the next step from wherever the
-	/// reader used to be, so a step that never crosses a bookmark could sound as though it had.
+	/// Called after a jump, so the next step isn't measured from the old position and sounded as crossing a bookmark it never crossed.
 	pub(crate) fn forget_bookmark_sound_position(&self) {
 		let Some(tab) = self.active_tab() else {
 			return;
@@ -63,18 +54,8 @@ impl DocumentManager {
 		}
 	}
 
-	/// When "sync caret to audio" is on, moves the caret to follow playback. Called from a
-	/// recurring timer; a no-op for documents with no audio.
-	///
-	/// Also the tick that moves playback on to the next file, since rodio has no "finished"
-	/// callback of its own.
-	///
-	/// Uses `try_lock` on `config` rather than `lock`: this runs on the main thread on every
-	/// timer tick, and a modal dialog (e.g. Options) pumps the OS message loop while it holds
-	/// that same lock across `show_modal`. A blocking `lock` here would deadlock the UI thread
-	/// against itself the moment a tick landed mid-dialog; a tick that misses the lock just
-	/// leaves the caret where it is and retries in 250ms.
 	pub fn pump_audio(&mut self) {
+		// `try_lock` because a modal dialog like Options holds the config lock across `show_modal` while pumping messages, so a blocking lock on this tick would deadlock the UI thread.
 		let sync_enabled = self.config.try_lock().ok().map(|config| config.get_app_bool("sync_caret_to_audio", true));
 		let Some(tab) = self.active_tab_mut() else {
 			return;
@@ -82,8 +63,7 @@ impl DocumentManager {
 		let Some(player) = tab.audio_player.as_mut() else {
 			return;
 		};
-		// Moving on to the next file is this tick's job too, and it has to happen whether or
-		// not the caret is following along, or the config lock was free this time round.
+		// rodio has no "finished" callback, so this tick also advances to the next file, whether or not sync is on or the lock was free.
 		player.pump();
 		if sync_enabled != Some(true) || !player.is_playing() {
 			return;
@@ -100,9 +80,7 @@ impl DocumentManager {
 			tracing::warn!(clip_index = cursor.clip, "sync caret to audio: cursor names a clip that doesn't exist");
 			return;
 		};
-		// TODO(windowing, phase 3): still sets the caret directly rather than through a
-		// window-aware jump, see C:\Users\Quin\.claude\plans\fluffy-hugging-crystal.md - a
-		// scrub target outside the loaded window is silently clamped instead of reloading.
+		// TODO(windowing): sets the caret directly rather than through a window-aware jump, so a target outside the loaded window is clamped instead of reloading.
 		let current = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		if position != current {
 			let local = tab.window.to_local(position);
@@ -111,9 +89,6 @@ impl DocumentManager {
 		}
 	}
 
-	/// Pauses audio on every tab except the active one, so switching tabs can't leave two
-	/// documents narrating at once (the active tab may have audio of its own still playing,
-	/// which this leaves untouched).
 	pub fn pause_inactive_audio(&mut self) {
 		let active = self.active_tab_index();
 		for (index, tab) in self.tabs.iter_mut().enumerate() {

@@ -11,9 +11,7 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ListScrollPositionTest {
-	// The case behind issue #794: the reader picks a chapter in the table of contents, the list
-	// is rebuilt at the index the document was opened at, and saving that opening index sends
-	// read-aloud back to the start of the book.
+	// #794: after a TOC pick the list rebuilt at the opening index, and saving that sent read-aloud back to the start.
 	@Test
 	fun `the index the list starts at is not saved`() = runTest {
 		assertEquals(emptyList<Int>(), flowOf(120).scrollsWorthSaving().toList())

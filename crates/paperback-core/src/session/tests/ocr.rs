@@ -1,14 +1,9 @@
-//! Locating and replacing the image-only page placeholders the PDF parser leaves behind.
-
 use super::*;
 use crate::{
 	document::{DocLen, DocPos},
 	ocr::image_only_placeholder,
 };
 
-/// Two pages of text with an image-only page between them, shaped the way the PDF parser builds
-/// one: a page break at the start of each page, and an `ImageOnlyPage` marker sharing the
-/// placeholder line's start.
 fn session_with_image_only_page() -> DocumentSession {
 	let placeholder = image_only_placeholder();
 	// The wording depends on the platform's OCR support and can be translated.
@@ -25,7 +20,6 @@ fn session_with_image_only_page() -> DocumentSession {
 #[test]
 fn line_bounds_at_and_line_text_at_return_the_containing_line() {
 	let session = session_with_content("aaa\nbbb\nccc");
-	// (start, end) are positions; end excludes the line's trailing newline.
 	assert_eq!(session.line_bounds_at(0.into()), Some((0.into(), 3.into())));
 	assert_eq!(session.line_text_at(0.into()), "aaa");
 	assert_eq!(session.line_bounds_at(5.into()), Some((4.into(), 7.into())));
@@ -44,11 +38,9 @@ fn image_only_pages_reports_the_page_number_and_offset() {
 fn image_only_page_at_matches_anywhere_on_the_placeholder_line() {
 	let session = session_with_image_only_page();
 	let page_three_offset = session.page_position(3).unwrap();
-	// Include every caret position, from the line's start through its trailing newline.
 	for position in (9..page_three_offset.get()).map(DocPos::from) {
 		assert_eq!(session.image_only_page_at(position), Some(9.into()), "caret at {position}");
 	}
-	// The lines either side are ordinary text.
 	assert_eq!(session.image_only_page_at(0.into()), None);
 	assert_eq!(session.image_only_page_at(8.into()), None);
 	assert_eq!(session.image_only_page_at(page_three_offset), None);
@@ -62,12 +54,10 @@ fn replace_image_only_pages_swaps_the_line_and_clears_the_marker() {
 	assert_eq!(session.line_text_at(page_three_offset), "page three");
 	let outcome = session.replace_image_only_pages(&[(9.into(), "recognized text".to_string())]);
 	assert_eq!(session.line_text_at(9.into()), "recognized text");
-	// The marker is gone, so the page is not offered for OCR a second time.
 	assert!(session.image_only_pages().is_empty());
 	assert_eq!(session.image_only_page_at(9.into()), None);
-	// The page after it moved by the length difference, and page navigation follows.
 	assert_eq!(outcome.total_delta, 25 - i64::try_from(page_three_offset).unwrap());
-	assert_eq!(session.page_position(3).unwrap(), 25); // "page one\nrecognized text\n"
+	assert_eq!(session.page_position(3).unwrap(), 25);
 	assert_eq!(session.line_text_at(session.page_position(3).unwrap()), "page three");
 }
 
@@ -80,9 +70,7 @@ fn replace_image_only_pages_ignores_offsets_that_are_not_placeholders() {
 	assert_eq!(session.image_only_pages(), vec![(2, 9.into())]);
 }
 
-/// A session whose lines are each their own page, with a page break at every line start: the
-/// shape every paged parser produces. The breaks are placed from the buffer's own running
-/// position rather than written down, so a fixture containing an astral character still lines up.
+/// Breaks come from the buffer's running position, so a fixture with an astral character still lines up.
 fn session_with_paged_lines(lines: &[&str]) -> DocumentSession {
 	let mut buffer = DocumentBuffer::new();
 	for line in lines {
@@ -93,8 +81,7 @@ fn session_with_paged_lines(lines: &[&str]) -> DocumentSession {
 	session_from_buffer(buffer)
 }
 
-/// A page break with no text and no image between it and the next, which is what the PDF parser
-/// leaves for a blank page: two breaks at the same offset, so the page's span is empty.
+/// Two breaks at one offset, as the PDF parser leaves for a blank page.
 fn session_with_blank_middle_page() -> DocumentSession {
 	let mut buffer = DocumentBuffer::new();
 	buffer.add_marker(Marker::new(MarkerType::PageBreak, 0.into()));
@@ -114,7 +101,6 @@ fn page_text_bounds_covers_each_page_and_ends_the_last_one_at_the_document_end()
 	let session = session_with_paged_lines(&["page one", "page two", "page three"]);
 	assert_eq!(session.page_text_bounds(1), Some((0.into(), 9.into())));
 	assert_eq!(session.page_text_bounds(2), Some((9.into(), 18.into())));
-	// The last page has no following page break, so it runs to the end of the document.
 	assert_eq!(session.page_text_bounds(3), Some((18.into(), 29.into())));
 	assert_eq!(session.page_text_bounds(4), None);
 	assert_eq!(session.page_text_bounds(0), None);
@@ -124,17 +110,14 @@ fn page_text_bounds_covers_each_page_and_ends_the_last_one_at_the_document_end()
 #[test]
 fn page_text_bounds_of_a_blank_page_is_empty_rather_than_negative() {
 	let session = session_with_blank_middle_page();
-	// Two page breaks at the same offset, so the page owns no text at all.
 	assert_eq!(session.page_text_bounds(2), Some((9.into(), 9.into())));
-	// Replacing one is a pure insertion, and must not underflow.
 	let mut session = session;
 	session.replace_ocr_pages(&[(2, "found something".to_string())]);
 	assert_eq!(session.line_text_at(9.into()), "found something");
 	assert_eq!(session.page_count(), 3);
 }
 
-/// The change in document length a page swap should report, given the text that went in and out.
-/// Both are ASCII, so their byte and position lengths agree.
+/// Callers pass ASCII, whose byte and position lengths agree.
 fn expected_delta(new_text: &str, old_text: &str) -> i64 {
 	i64::try_from(new_text.len()).unwrap_or(0) - i64::try_from(old_text.len()).unwrap_or(0)
 }
@@ -145,8 +128,6 @@ fn replace_ocr_pages_swaps_a_text_page_and_leaves_the_pagination_alone() {
 	let before = session.page_position(3).unwrap();
 	let outcome = session.replace_ocr_pages(&[(2, "NEW".to_string())]);
 	assert_eq!(outcome.total_delta, expected_delta("NEW\n", "page two\n"));
-	// The page break that starts the replaced page survives, so the document still has three
-	// pages and the caret's page arithmetic still means something.
 	assert_eq!(session.page_count(), 3);
 	assert_eq!(
 		i64::try_from(session.page_position(3).unwrap()).unwrap(),
@@ -159,8 +140,6 @@ fn replace_ocr_pages_swaps_a_text_page_and_leaves_the_pagination_alone() {
 fn replace_ocr_pages_leaves_the_next_page_starting_on_its_own_line() {
 	let mut session = session_with_paged_lines(&["page one", "page two", "page three"]);
 	session.replace_ocr_pages(&[(2, "NEW".to_string())]);
-	// The page span includes the trailing newline, so the replacement has to put one back. If it
-	// did not, this line would read "NEWpage three" and the page break would land mid-line.
 	assert_eq!(session.line_text_at(session.page_position(3).unwrap()), "page three");
 	assert_eq!(session.line_bounds_at(session.page_position(3).unwrap()), Some((13.into(), 23.into())));
 }
@@ -179,9 +158,6 @@ fn replace_ocr_pages_discards_the_markers_inside_a_replaced_text_page() {
 	buffer.add_marker(Marker::new(MarkerType::PageBreak, 18.into()));
 	let mut session = session_from_buffer(buffer);
 	session.replace_ocr_pages(&[(2, "NEW".to_string())]);
-	// A page re-read because its text was untrusted should not keep markers pointing into text
-	// that is no longer there. An image-only page ends up with no markers either, so this is
-	// the same plain result rather than a new inconsistency.
 	assert_eq!(marker_count(&session, MarkerType::Heading1), 0);
 	assert_eq!(marker_count(&session, MarkerType::Link), 0);
 	assert_eq!(marker_count(&session, MarkerType::PageBreak), 3);
@@ -194,9 +170,6 @@ fn replace_ocr_pages_still_takes_the_placeholder_path_for_an_image_only_page() {
 	let outcome = session.replace_ocr_pages(&[(2, "recognized".to_string())]);
 	assert_eq!(session.line_text_at(9.into()), "recognized");
 	assert_eq!(outcome.total_delta, 10 - placeholder_len);
-	// The placeholder line was replaced, not the whole page span, so the newline that ends it is
-	// still the one the placeholder line already had. Had the replacement wrongly carried a
-	// newline of its own, a blank line would now sit between the two.
 	assert_eq!(session.line_text_at(session.page_position(3).unwrap() - DocLen::ONE), "recognized");
 	assert_eq!(session.line_text_at(session.page_position(3).unwrap()), "page three");
 	assert_eq!(session.image_only_pages(), vec![]);
@@ -213,8 +186,6 @@ fn replace_ocr_pages_ignores_pages_the_document_does_not_have() {
 
 #[test]
 fn replace_ocr_pages_measures_spans_in_positions() {
-	// An emoji is one position but four bytes. What is being checked is that the page span, the
-	// page break it starts on and the caret are all measured in positions.
 	let mut session = session_with_paged_lines(&["\u{1F600} one", "page two", "page three"]);
 	let third = session.page_position(3).unwrap();
 	assert_eq!(session.line_text_at(third), "page three");
@@ -229,8 +200,6 @@ fn replace_ocr_pages_measures_spans_in_positions() {
 
 #[test]
 fn a_comic_page_stays_page_aligned_after_being_recognized() {
-	// Shaped the way the comic parser builds one: a page break, an image marker and an
-	// `ImageOnlyPage` marker all sharing the placeholder line's start.
 	let content = format!("{}\n{}\n", image_only_placeholder(), image_only_placeholder());
 	let mut buffer = DocumentBuffer::with_content(content);
 	for position in [DocPos::ZERO, (DocLen::of(&image_only_placeholder()) + DocLen::ONE).as_pos()] {
@@ -238,11 +207,7 @@ fn a_comic_page_stays_page_aligned_after_being_recognized() {
 		buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, position));
 	}
 	let mut session = session_from_buffer(buffer);
-	// Recognizing a page consumes its `ImageOnlyPage` marker but leaves the page break, so the
-	// page still has a span and can be recognized again -- which is the whole point of being
-	// able to re-OCR a page that already has text.
 	session.replace_ocr_pages(&[(1, "balloon one".to_string())]);
-	// Page 2 moved by however much shorter "balloon one" is than the placeholder line.
 	assert_eq!(session.image_only_pages(), vec![(2, 12.into())]);
 	assert_eq!(session.page_count(), 2);
 	assert_eq!(session.line_text_at(0.into()), "balloon one");

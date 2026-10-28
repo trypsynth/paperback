@@ -13,21 +13,14 @@ mod flat;
 
 use flat::{FlatList, FlatViews, build_flat_list, clear_flat_list, flat_selected_offset, schedule_flat_fill};
 
-/// The view choice indices for [`show_elements_dialog`]. Headings is a tree; every other
-/// view (Links, Pages, Tables, Lists, ...) is a flat list shown in the same list pane.
 const VIEW_HEADINGS: u32 = 0;
-/// How long a flat view's (empty) list is left shown before it is filled. Mirror of the Find All
-/// results-list fix: NVDA intermittently spent ~10 s enumerating a list when it serviced the
-/// "list just appeared" event after the rows had been added; showing an empty list first and
-/// filling it later removes that stall.
+/// NVDA sometimes spent ~10 s enumerating a list whose rows were added before it serviced the list-appeared event, so a flat list is shown empty and filled after this delay.
 const FLAT_POPULATE_DELAY_MS: i32 = 150;
 const VIEW_LINKS: u32 = 1;
 const VIEW_PAGES: u32 = 2;
 const VIEW_TABLES: u32 = 3;
 const VIEW_LISTS: u32 = 4;
 
-/// Which view of the dialog a jump came from, so the caller can announce it appropriately: a
-/// page row announces like page navigation, while a heading or link reads the line it lands on.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ElementsKind {
 	Heading,
@@ -36,7 +29,6 @@ pub enum ElementsKind {
 }
 
 impl ElementsKind {
-	/// Maps a `VIEW_*` choice index to the kind of element it lists.
 	const fn from_view(selection: u32) -> Self {
 		match selection {
 			VIEW_HEADINGS => Self::Heading,
@@ -58,15 +50,11 @@ pub fn show_elements_dialog(
 	return show_elements_dialog_wx(parent, session, current_pos);
 }
 
-// ── DataViewTreeCtrl implementation (Linux + macOS) ───────────────────────────
-
 #[cfg(not(target_os = "windows"))]
 struct ElementsDialogUiDv {
 	content_sizer: BoxSizer,
 	view_choice: Choice,
 	headings_tree: DataViewTreeCtrl,
-	// The flat-list pane, shared by every non-headings view (Links, Pages, ...): its
-	// contents are swapped in when the view changes.
 	content_list: FlatList,
 }
 
@@ -108,8 +96,6 @@ fn show_elements_dialog_dv(
 	#[cfg(target_os = "macos")]
 	super::bind_enter_button(dialog, ok_button);
 	finalize_elements_layout(dialog, content_sizer, ok_button, cancel_button);
-	// The dialog opens on Headings (the choice is set to index 0 when it is built), so the
-	// tree is the visible pane.
 	headings_tree.set_focus();
 	if dialog.show_modal() == wxdragon::id::ID_OK {
 		let kind = ElementsKind::from_view(view_choice.get_selection().unwrap_or(VIEW_HEADINGS));
@@ -170,8 +156,6 @@ fn populate_elements_dialog_dv(
 	let selected_offset = Rc::new(Cell::new(None));
 	let mut item_offsets: HashMap<usize, DocPos> = HashMap::new();
 	let tree_data = session.heading_tree(current_pos);
-	// Precompute which items have children (single pass over items) so we can use append_container
-	// vs append_item.
 	let mut has_children_vec = vec![false; tree_data.items.len()];
 	for item in &tree_data.items {
 		if item.parent_index >= 0
@@ -235,16 +219,12 @@ fn bind_elements_view_toggle_dv(
 	let flat_labels_for_choice = Rc::clone(flat_labels);
 	view_choice.on_selection_changed(move |_| {
 		let selection = view_choice.get_selection().unwrap_or(VIEW_HEADINGS);
-		// Switch which pane is shown. Focus is deliberately left in the view choice (the change
-		// comes from the user arrowing through it, and throwing them into the newly shown pane
-		// with every arrow makes the dropdown impossible to browse).
+		// Focus stays in the view choice, since moving it into the new pane on every arrow would make the dropdown impossible to browse.
 		if selection == VIEW_HEADINGS {
 			headings_tree_for_choice.show(true);
 			content_list_for_choice.show(false);
 		} else {
 			headings_tree_for_choice.show(false);
-			// Show the pane empty first, then fill it a moment later so the screen reader settles
-			// on the newly-shown list before it grows to its full size (see the Find All fix).
 			clear_flat_list(content_list_for_choice);
 			let name = view_choice.get_string_selection().unwrap_or_default();
 			content_list_for_choice.set_accessibility_label(&name);
@@ -339,15 +319,11 @@ fn bind_elements_ok_action_dv(
 	});
 }
 
-// ── Windows implementation (TreeCtrl) ─────────────────────────────────────────
-
 #[cfg(target_os = "windows")]
 struct ElementsDialogUi {
 	content_sizer: BoxSizer,
 	view_choice: Choice,
 	headings_tree: TreeCtrl,
-	// The flat-list pane, shared by every non-headings view (Links, Pages, ...): its
-	// contents are swapped in when the view changes.
 	content_list: FlatList,
 }
 
@@ -369,8 +345,6 @@ fn show_elements_dialog_wx(
 	let (ok_button, cancel_button) = build_elements_buttons(dialog);
 	bind_elements_ok_action(dialog, view_choice, headings_tree, content_list, &selected_offset, &views, ok_button);
 	finalize_elements_layout(dialog, content_sizer, ok_button, cancel_button);
-	// The dialog opens on Headings (the choice is set to index 0 when it is built), so the
-	// tree is the visible pane.
 	headings_tree.set_focus();
 	if dialog.show_modal() == ID_OK {
 		let kind = ElementsKind::from_view(view_choice.get_selection().unwrap_or(VIEW_HEADINGS));
@@ -515,16 +489,12 @@ fn bind_elements_view_toggle(
 	let flat_labels_for_choice = Rc::clone(flat_labels);
 	view_choice.on_selection_changed(move |_| {
 		let selection = view_choice.get_selection().unwrap_or(VIEW_HEADINGS);
-		// Switch which pane is shown. Focus is deliberately left in the view choice (the change
-		// comes from the user arrowing through it, and throwing them into the newly shown pane
-		// with every arrow makes the dropdown impossible to browse).
+		// Focus stays in the view choice, since moving it into the new pane on every arrow would make the dropdown impossible to browse.
 		if selection == VIEW_HEADINGS {
 			headings_tree_for_choice.show(true);
 			content_list_for_choice.show(false);
 		} else {
 			headings_tree_for_choice.show(false);
-			// Show the pane empty first, then fill it a moment later so the screen reader settles
-			// on the newly-shown list before it grows to its full size (see the Find All fix).
 			clear_flat_list(content_list_for_choice);
 			let name = view_choice.get_string_selection().unwrap_or_default();
 			content_list_for_choice.set_accessibility_label(&name);
@@ -611,8 +581,6 @@ fn bind_elements_ok_action(
 		}
 	});
 }
-
-// ── Layout helpers ─────────────────────────────────────────────────────────────
 
 fn build_elements_buttons(dialog: Dialog) -> (Button, Button) {
 	// TRANSLATORS: Label for the confirmation button

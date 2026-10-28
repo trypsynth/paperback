@@ -1,9 +1,3 @@
-/// Desktop-specific configuration helpers that do not belong in `paperback-core`.
-///
-/// This module owns:
-/// - `UpdateChannel`, the desktop auto-update channel selector.
-/// - `config_toml_path()`, Windows/installer-aware path resolution for the TOML config file.
-/// - `get_update_channel` / `set_update_channel`, typed helpers wrapping the generic string API.
 use std::{
 	env,
 	fmt::{self, Display, Formatter},
@@ -50,7 +44,6 @@ pub fn set_update_channel(config: &ConfigManager, channel: UpdateChannel) {
 	config.set_app_string("update_channel", &channel.to_string());
 }
 
-/// How much Paperback writes to its log, from nothing at all to everything it can say.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum LogLevel {
 	Off,
@@ -66,7 +59,7 @@ impl LogLevel {
 	/// In the order the Options dialog lists them.
 	pub const ALL: [Self; 6] = [Self::Off, Self::Error, Self::Warn, Self::Info, Self::Debug, Self::Trace];
 
-	/// The filter for this level. Dependencies are held at info from Debug up, since below that they bury Paperback's own lines; Debug is the level every log was written at before it could be chosen.
+	/// Dependencies stay at info from Debug up, since below that they bury Paperback's own lines.
 	pub const fn filter(self) -> &'static str {
 		match self {
 			Self::Off => "off",
@@ -108,7 +101,7 @@ pub fn set_log_level(config: &ConfigManager, level: LogLevel) {
 	config.set_app_string("log_level", &level.to_string());
 }
 
-/// The log level straight from `Paperback.toml`, for logging to start with before a [`ConfigManager`] exists. Read without one because initializing a manager writes a fresh config when the file is missing or unreadable, which is not something to do before the app has even started.
+/// Read without a [`ConfigManager`], since initializing one writes a fresh config when the file is missing or unreadable, too early at startup.
 pub fn log_level_from_disk() -> LogLevel {
 	let text = fs::read_to_string(config_toml_path()).unwrap_or_default();
 	let table = text.parse::<toml::Table>().unwrap_or_default();
@@ -116,14 +109,13 @@ pub fn log_level_from_disk() -> LogLevel {
 	level.and_then(|level| level.parse().ok()).unwrap_or_default()
 }
 
-/// Paperback's config and log directory: `$PAPERBACK_CONFIG_DIR` if set, the platform's config directory for a macOS bundle, a Windows install or an AppImage, and otherwise beside the executable.
-/// An AppImage gets the config directory because it is mounted read-only at a new path on every launch.
 pub fn config_dir() -> PathBuf {
 	if let Some(dir) = env::var_os("PAPERBACK_CONFIG_DIR") {
 		let dir = PathBuf::from(dir);
 		let _ = fs::create_dir_all(&dir);
 		return dir;
 	}
+	// An AppImage is mounted read-only at a new path on every launch.
 	#[cfg(target_os = "linux")]
 	if env::var_os("APPIMAGE").is_some() {
 		let dir = xdg_config_home().join("Paperback");
@@ -151,7 +143,6 @@ pub fn config_dir() -> PathBuf {
 	exe_dir
 }
 
-/// `$XDG_CONFIG_HOME`, falling back to `~/.config` per the XDG Base Directory spec.
 #[cfg(target_os = "linux")]
 fn xdg_config_home() -> PathBuf {
 	if let Some(dir) = env::var_os("XDG_CONFIG_HOME") {
@@ -161,7 +152,6 @@ fn xdg_config_home() -> PathBuf {
 	PathBuf::from(home).join(".config")
 }
 
-/// Returns the path to `Paperback.toml`.
 pub fn config_toml_path() -> PathBuf {
 	config_dir().join("Paperback.toml")
 }

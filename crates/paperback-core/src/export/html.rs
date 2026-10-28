@@ -11,7 +11,6 @@ use crate::{
 	util::html::{escape, escape_attr, push_escaped},
 };
 
-/// The id of the anchor [`render_with_anchor`] writes at a reading position.
 #[must_use]
 pub fn anchor_id(offset: DocPos) -> String {
 	format!("pos-{offset}")
@@ -22,25 +21,14 @@ pub fn render(doc: &DocumentHandle) -> String {
 	render_with_anchor(doc, None)
 }
 
-/// Renders the document, with an anchor named by [`anchor_id`] at `anchor`.
-///
-/// A format that keeps no markup of its own has nothing for a web view to open but this
-/// rendering, so the reading position has to travel in the rendering itself.
+/// A format with no markup of its own has nothing for a web view to open but this, so the reading position travels in it as an anchor.
 #[must_use]
 pub fn render_with_anchor(doc: &DocumentHandle, anchor: Option<DocPos>) -> String {
 	let total = doc.document().buffer.end();
 	render_range(doc, DocPos::ZERO..total, anchor)
 }
 
-/// Renders the span `range` of the document, with an anchor named by
-/// [`anchor_id`] at `anchor`.
-///
-/// Both ends of `range` must already sit on a line boundary; [`render_with_anchor`]'s
-/// whole-document range trivially does, and every other caller snaps first. A marker whose
-/// own span lies wholly outside `range` is skipped, so rendering a window of a huge book
-/// costs the window rather than the book. A range short of the whole document opens the
-/// body with a line saying so, since a reader given a slice with no such line has no way to
-/// tell it apart from a book that ends there.
+/// Both ends of `range` must sit on a line boundary. A partial range opens with a line saying so, since a slice is otherwise indistinguishable from a book that ends there.
 #[must_use]
 pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<DocPos>) -> String {
 	let document = doc.document();
@@ -49,12 +37,8 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 	let range_end = range.end.clamp(range_start, doc_end);
 	let is_partial = range_start > DocPos::ZERO || range_end < doc_end;
 	let content = document.buffer.slice(document.buffer.byte_at(range_start)..document.buffer.byte_at(range_end));
-	// Precompute section boundaries once so link resolution is O(log S) per link
-	// instead of O(M) per link (where M = total marker count).
 	let section_break_positions: Vec<DocPos> =
 		document.buffer.markers.iter().filter(|m| m.mtype == MarkerType::SectionBreak).map(|m| m.position).collect();
-	// Single scan of the rendered range: collect newline positions.
-	// Turns each line-end lookup into an O(log lines) binary search instead of a fresh scan.
 	let newline_positions: Vec<DocPos> = {
 		let mut positions = Vec::new();
 		let mut pos = range_start;
@@ -66,13 +50,11 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 		}
 		positions
 	};
-	// A line running past the end of the range ends there, which is a line boundary of the
-	// rendered slice even when it is not one of the document.
+	// The range end is a line boundary of the rendered slice even when it is not one of the document.
 	let newline_from = |start: DocPos| -> DocPos {
 		let idx = newline_positions.partition_point(|&p| p < start);
 		newline_positions.get(idx).copied().unwrap_or(range_end)
 	};
-	// path → (section_start, section_end)
 	let path_to_bounds: HashMap<&str, (DocPos, DocPos)> = document
 		.spine_items
 		.iter()
@@ -84,7 +66,6 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 			Some((path.as_str(), (start, end)))
 		})
 		.collect();
-	// Returns the file path of the spine item that contains `pos`.
 	let section_path_at = |pos: DocPos| -> Option<&str> {
 		let count = section_break_positions.partition_point(|&bp| bp <= pos);
 		if count == 0 {
@@ -119,17 +100,11 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 	target_offsets.extend(anchor);
 	for marker in &document.buffer.markers {
 		let pos = marker.position;
-		// Outside the rendered range this marker has nothing to open or close, and resolving
-		// its link target would cost the whole book's worth of lookups for nothing. A length of
-		// zero means the span runs to the end of its line, which cannot reach a range that
-		// starts on a line boundary of its own.
+		// Skipped so a window of a huge book costs the window; a zero length runs to its line's end, which can't reach a range starting on a line boundary.
 		if pos >= range_end || pos + marker.length.max(DocLen::ONE) <= range_start {
 			continue;
 		}
-		// Markers from html_to_text carry length=0 for headings, links, and list items
-		// because those types store their span only implicitly in the content.
-		// Recover the span: for block elements scan to the next '\n'; for inline links
-		// use the length of the link text that was written into the content.
+		// html_to_text leaves headings and list items at length 0, so their span runs to the next newline.
 		let effective_end =
 			|explicit: DocLen| -> DocPos { if explicit.is_zero() { newline_from(pos) } else { pos + explicit } };
 		match marker.mtype {
@@ -233,8 +208,7 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 				events.push(Ev { pos: end, kind: Ek::InlineClose("</u>") });
 			}
 			MarkerType::List if !marker.length.is_zero() => {
-				// Only emit a <ul> wrapper when an explicit length is available; without it
-				// we cannot determine where the list ends and bare <li> items are cleaner.
+				// Without a length the list's end is unknown, and bare <li> items beat a guessed <ul>.
 				let end = pos + marker.length;
 				events.push(Ev { pos, kind: Ek::BlockOpen("<ul>") });
 				events.push(Ev { pos: end, kind: Ek::BlockClose("</ul>") });
@@ -254,8 +228,7 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 			_ => {}
 		}
 	}
-	// An anchor outside the range has no text to sit next to, and the tail flush below would
-	// otherwise pile every one of them up at the end of the page.
+	// Otherwise the tail flush below piles every anchor outside the range up at the end of the page.
 	for offset in target_offsets.into_iter().filter(|&off| off >= range_start && off <= range_end) {
 		events.push(Ev { pos: offset, kind: Ek::Anchor(offset) });
 	}
@@ -279,9 +252,7 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 	let mut position = range_start;
 	let mut skip_until: Option<DocPos> = None;
 	for ch in content.chars() {
-		// Fire events whose position has been reached
 		while event_idx < events.len() && events[event_idx].pos <= position {
-			// Suppress events that fall inside an active replace range
 			if skip_until.is_some_and(|u| events[event_idx].pos < u) && !matches!(events[event_idx].kind, Ek::Anchor(_))
 			{
 				event_idx += 1;
@@ -350,7 +321,6 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 			}
 			event_idx += 1;
 		}
-		// Skip chars that belong to a replaced range (e.g. table inline text)
 		if let Some(until) = skip_until {
 			if position < until {
 				position += DocLen::ONE;
@@ -359,7 +329,6 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 			skip_until = None;
 		}
 		if block_depth == 0 {
-			// Free-text mode: detect paragraph boundaries on double newlines
 			if ch == '\n' {
 				pending_newlines += 1;
 			} else {
@@ -375,12 +344,10 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 				push_escaped(ch, &mut html);
 			}
 		} else if ch != '\n' {
-			// Inside a block element: escape and emit, skip bare newlines
 			push_escaped(ch, &mut html);
 		}
 		position += DocLen::ONE;
 	}
-	// Flush any closing tags that extend to or past end of content
 	while event_idx < events.len() {
 		match &events[event_idx].kind {
 			Ek::BlockClose(tag) => {
@@ -444,8 +411,7 @@ mod tests {
 		DocumentHandle::new(doc)
 	}
 
-	// A range covering the whole document is what `render` itself asks for, so the two must not
-	// be able to drift apart.
+	// A whole-document range is what `render` itself asks for, so the two must not drift apart.
 	#[test]
 	fn render_range_over_the_whole_document_matches_render() {
 		let doc = simple_doc(
@@ -469,8 +435,7 @@ mod tests {
 		assert!(html.contains("part of the document"), "a partial view says so: {html}");
 	}
 
-	// An anchor for a link target outside the range used to be flushed out at the end of the page,
-	// which on a book with a link per paragraph meant every anchor in the book.
+	// Anchors outside the range were once flushed at the end of the page, which on a book with a link per paragraph meant every anchor in the book.
 	#[test]
 	fn render_range_leaves_out_anchors_for_targets_outside_the_range() {
 		let doc =
@@ -503,7 +468,6 @@ mod tests {
 
 	#[test]
 	fn test_nested_bold_italic() {
-		// "bold italic" where 0-4 is bold, 5-11 is italic (nested/overlapping)
 		let doc = simple_doc(
 			"bold italic",
 			vec![
@@ -512,14 +476,12 @@ mod tests {
 			],
 		);
 		let html = render(&doc);
-		// Both tags should be present and properly ordered
 		assert!(html.contains("<b>bold</b>"), "Expected <b>bold</b> in HTML: {html}");
 		assert!(html.contains("<i>italic</i>"), "Expected <i>italic</i> in HTML: {html}");
 	}
 
 	#[test]
 	fn test_nested_same_start_different_end() {
-		// "bold italic" where 0-11 is bold, 0-6 is italic (nested: italic entirely inside bold)
 		let doc = simple_doc(
 			"bold italic",
 			vec![
@@ -536,9 +498,6 @@ mod tests {
 
 	#[test]
 	fn test_coincident_end_edge_case() {
-		// "text" where both bold and italic end at position 4
-		// This tests the pre-existing characteristic where non-perfectly-nested
-		// tags can occur based on insertion order in buffer.markers
 		let doc = simple_doc(
 			"text",
 			vec![
@@ -547,7 +506,6 @@ mod tests {
 			],
 		);
 		let html = render(&doc);
-		// The order of closes may vary based on insertion order (pre-existing behavior)
 		assert!(html.contains("<b>"), "Expected <b> in HTML: {html}");
 		assert!(html.contains("</b>"), "Expected </b> in HTML: {html}");
 		assert!(html.contains("<i>"), "Expected <i> in HTML: {html}");
@@ -558,16 +516,10 @@ mod tests {
 		let i_close = html.matches("</i>").count();
 		assert_eq!(b_open, b_close, "Bold tags should be paired");
 		assert_eq!(i_open, i_close, "Italic tags should be paired");
-		// Note: the tag nesting order depends on marker iteration order.
-		// The output might be <b><i>text</i></b> or <i><b>text</b></i> or
-		// </b></i> before </i></b> depending on which marker is processed first.
-		// This is acceptable per the task brief.
 	}
 
 	#[test]
 	fn test_multiple_separate_bold_spans() {
-		// "bold text normal more bold"
-		// Bold at 0-4 and 22-26
 		let doc = simple_doc(
 			"bold text normal more bold",
 			vec![
@@ -584,7 +536,6 @@ mod tests {
 
 	#[test]
 	fn test_bold_italic_underline_combined() {
-		// "text" with all three marker types
 		let doc = simple_doc(
 			"text",
 			vec![

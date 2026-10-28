@@ -1,7 +1,4 @@
-//! Checks the heading and list paragraph formatting against a real `RichEdit` control, on every
-//! path that loads text into the reader: plain text styled afterwards, an RTF stream, and both
-//! kinds of append. What a screen reader reads through the Text Object Model is exactly what
-//! `EM_GETPARAFORMAT` reports, and the formatting must not change anything a sighted reader sees.
+//! A screen reader reads exactly what `EM_GETPARAFORMAT` reports, and the formatting must not change anything a sighted reader sees.
 
 // The included modules' own unit tests compile here too, unused.
 #[cfg(target_os = "windows")]
@@ -69,14 +66,13 @@ mod checks {
 		ui::reader_ctrl::ReaderCtrl,
 	};
 
-	/// "Intro" 0..6, "Title" 6..12, "• one" 12..18, "• two" 18..24, "Body" 24..28.
 	const CONTENT: &str = "Intro\nTitle\n• one\n• two\nBody";
 	const INTRO: i64 = 0;
 	const TITLE: i64 = 6;
 	const LIST: [i64; 2] = [12, 18];
 	const BODY: i64 = 24;
 
-	/// The same paragraphs as positions: every char of `CONTENT` is one unit of the control.
+	/// Every char of `CONTENT` is one unit of the control, so positions and units agree.
 	const FORMATS: [ParagraphFormat; 2] = [
 		ParagraphFormat {
 			start: DocPos::from_raw(6),
@@ -92,7 +88,6 @@ mod checks {
 		},
 	];
 
-	/// Where `position` is in a control holding only text in the Basic Multilingual Plane.
 	fn unit(position: DocPos) -> CtrlPos {
 		CtrlPos::from_raw(i64::try_from(position.get()).unwrap())
 	}
@@ -128,8 +123,6 @@ mod checks {
 		cf.Base
 	}
 
-	/// Everything about a paragraph's layout a sighted reader could notice: space before and after,
-	/// line spacing, the start indent, the offset of the lines after the first, and the right indent.
 	type Layout = (i32, i32, i32, i32, i32, i32);
 
 	fn layout(pf: &PARAFORMAT2) -> Layout {
@@ -147,8 +140,6 @@ mod checks {
 		pf.Base.wNumbering == PFN_BULLET && (pf.wNumberingStyle.0 & PFNS_NONUMBER.0) != 0
 	}
 
-	/// How every character and its paragraph look, to compare a load with paragraph formats against
-	/// the same load without them.
 	fn appearance(text_ctrl: TextCtrl) -> Vec<(CHARFORMATW, Layout)> {
 		(0..text_ctrl.get_last_position())
 			.map(|position| (characters_at(text_ctrl, position), layout(&paragraph_at(text_ctrl, position))))

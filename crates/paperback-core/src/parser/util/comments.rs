@@ -1,4 +1,4 @@
-//! Comments reviewers left on a document. Read where they sit they interrupt the text, and dropped they lose what the reviewers said, so the word processor parsers write them after the text, each linking back to its place.
+//! Read where they sit, comments interrupt the text, and dropped they lose what reviewers said, so they go after the text, each linking back to its place.
 
 use crate::{
 	document::{DocPos, DocumentBuffer, Marker, MarkerType},
@@ -6,20 +6,16 @@ use crate::{
 	util::text::collapse_whitespace,
 };
 
-/// One comment, gathered while the document's text was written.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Comment {
-	/// The id registered where the comment was made, which its entry links back to.
 	pub key: String,
-	/// Empty when the document does not say.
 	pub author: String,
 	pub text: String,
-	/// Where the commented words start, and where they end when the comment covers words rather than a point.
 	pub start: DocPos,
+	/// `None` for a comment on a point rather than on words.
 	pub end: Option<DocPos>,
 }
 
-/// Writes `comments` under a heading of their own at the end of `buffer`, each naming its author and, for a comment on words, the words, as a link back to them.
 pub fn write_comments(buffer: &mut DocumentBuffer, comments: Vec<Comment>) {
 	if comments.is_empty() {
 		return;
@@ -55,7 +51,7 @@ pub fn write_comments(buffer: &mut DocumentBuffer, comments: Vec<Comment>) {
 	}
 }
 
-/// The words between two positions in `buffer`, cut short when they run long, since the entry only has to say which words.
+/// Cut short when long, since the entry only has to say which words.
 fn quoted(buffer: &DocumentBuffer, start: DocPos, end: DocPos) -> String {
 	const LONGEST: usize = 60;
 	let words = buffer.slice(buffer.byte_at(start)..buffer.byte_at(end));

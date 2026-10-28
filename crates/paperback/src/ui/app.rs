@@ -83,8 +83,7 @@ impl PaperbackApp {
 				window.show_from_dock();
 			}
 		});
-		// Finder delivers documents via the odoc Apple Event, not argv, so
-		// "Open with"/double-click never reaches open_from_command_line.
+		// Finder delivers documents via the odoc Apple Event, not argv, so "Open with" and double-click never reach `open_from_command_line`.
 		#[cfg(target_os = "macos")]
 		app.on_open_files(|files| {
 			if let Some(window) = main_window_from_ptr() {
@@ -134,11 +133,7 @@ fn ipc_command_from_cli() -> IpcCommand {
 	env::args().nth(1).map_or(IpcCommand::Activate, |argument| IpcCommand::Open(target_for_argument(&argument)))
 }
 
-// Replaces wxWidgets DDE which has no access controls; any process in the
-// same desktop session could send arbitrary OpenFile commands.  Named pipes use
-// the default security descriptor, which restricts connections to the same user
-// + SYSTEM/Administrators.  The pipe name is also scoped by USERNAME so
-// different users on the same machine never share a pipe.
+// Replaces wxWidgets DDE, which let any process in the session send OpenFile commands; the default pipe security descriptor limits connections to the same user plus SYSTEM/Administrators, and the name is scoped by USERNAME.
 #[cfg(windows)]
 mod pipe {
 	use std::{ffi::OsStr, iter, os::windows::ffi::OsStrExt as _, thread};
@@ -157,8 +152,7 @@ mod pipe {
 
 	const BUF: u32 = 4096;
 	const GENERIC_WRITE: u32 = 0x4000_0000;
-	// Raw pipe constants (Windows SDK values; windows-rs doesn't export all of these
-	// without a larger feature matrix).
+	// Windows SDK values, since windows-rs doesn't export them without a larger feature matrix.
 	const PIPE_ACCESS_INBOUND: u32 = 0x0000_0001;
 	const PIPE_FLAG_FIRST_INSTANCE: u32 = 0x0008_0000; // FILE_FLAG_FIRST_PIPE_INSTANCE
 	const PIPE_UNLIMITED_INSTANCES: u32 = 255;
@@ -167,8 +161,6 @@ mod pipe {
 		OsStr::new(s).encode_wide().chain(iter::once(0)).collect()
 	}
 
-	/// Try to create the server-side named pipe instance.
-	/// Returns `None` when the pipe already exists (another instance is running).
 	pub fn try_create_server(pipe_name: &str) -> Option<HANDLE> {
 		let name = wide_nul(pipe_name);
 		let handle = unsafe {
@@ -186,9 +178,8 @@ mod pipe {
 		if handle.is_invalid() { None } else { Some(handle) }
 	}
 
-	/// Accept one connection, read the payload, disconnect, repeat.
-	/// HANDLE is !Send; convert to raw usize so the closure can cross the thread boundary.
 	pub fn serve_loop(handle: HANDLE, on_data: impl Fn(Vec<u8>) + Send + 'static) {
+		// HANDLE is !Send, so it crosses the thread boundary as a raw usize.
 		let raw = handle.0 as usize;
 		thread::spawn(move || {
 			let h = HANDLE(raw as *mut _);
@@ -211,7 +202,6 @@ mod pipe {
 
 	pub fn send(pipe_name: &str, payload: &str) {
 		let name = wide_nul(pipe_name);
-		// Allow up to 2 s for the server to become ready.
 		let _ = unsafe { WaitNamedPipeW(PCWSTR(name.as_ptr()), 2000) };
 		let Ok(file) = (unsafe {
 			CreateFileW(
@@ -221,7 +211,7 @@ mod pipe {
 				None,
 				OPEN_EXISTING,
 				FILE_ATTRIBUTE_NORMAL,
-				None, // hTemplateFile
+				None,
 			)
 		}) else {
 			return;
@@ -231,9 +221,7 @@ mod pipe {
 	}
 }
 
-// Uses $XDG_RUNTIME_DIR which is owned by the user with mode 700, so only the
-// same user (and root) can connect. No libc / SO_PEERCRED needed.
-// The socket name is also suffixed with the username as belt-and-suspenders.
+// $XDG_RUNTIME_DIR is user-owned with mode 700, so only the same user (and root) can connect without SO_PEERCRED; the username suffix is belt-and-braces.
 #[cfg(target_os = "linux")]
 mod pipe_unix {
 	use std::{
@@ -250,8 +238,6 @@ mod pipe_unix {
 		Some(Path::new(&dir).join(format!("paperback-{user}.sock")))
 	}
 
-	/// Create the listening socket, removing any stale file first.
-	/// Returns None if `XDG_RUNTIME_DIR` is not set.
 	pub fn try_create_server() -> Option<UnixListener> {
 		let path = socket_path()?;
 		// Safe to remove: SingleInstanceChecker already confirmed no other instance.
@@ -280,10 +266,8 @@ mod pipe_unix {
 	}
 }
 
-/// Opaque guard; the server thread runs for the lifetime of this value.
 pub struct PipeServer {
-	// Intentionally empty. The thread runs until the process exits.
-	// Holding this type in PaperbackApp makes the intent explicit.
+	// Empty: the server thread runs until the process exits, not for this value's lifetime.
 }
 
 fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
@@ -361,16 +345,13 @@ fn send_ipc_command(command: &IpcCommand) {
 	pipe_unix::send(&payload);
 }
 
-/// The updater calls this on the UI thread only once its helper is ready. Force-close runs the
-/// normal persistence and audio cleanup, which the updater's default `process::exit` would skip,
-/// without macOS's hide-on-close veto.
+/// Force-closes so normal persistence and audio cleanup run, which the updater's default `process::exit` would skip, without macOS's hide-on-close veto.
 pub fn quit_for_update() {
 	if let Some(window) = main_window_from_ptr() {
 		window.frame().enable(false);
 		window.announce_update_restart();
 	}
-	// macOS posts live-region announcements on the next main run-loop iteration. Keep the
-	// window alive briefly so the screen reader can receive it; never block the UI thread.
+	// macOS posts live-region announcements on the next run-loop iteration, so the window stays alive briefly without blocking the UI thread.
 	std::thread::spawn(|| {
 		std::thread::sleep(std::time::Duration::from_secs(2));
 		wxdragon::call_after(Box::new(finish_quit_for_update));

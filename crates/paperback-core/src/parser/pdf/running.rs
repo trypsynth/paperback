@@ -1,38 +1,15 @@
-//! Recognizing the running headers and footers a book repeats at the top and bottom of every
-//! page - the book's title, the chapter's title, the page number, a typesetter's slug - so that
-//! the extracted text is the text of the book and not the furniture around it.
-//!
-//! An untagged PDF gives no sign of which lines these are: they arrive in the same text stream
-//! as the body, at the page's edges. What gives them away is that they repeat. Take the first
-//! and last lines of every page, blank out the digits (the page number is the part that
-//! changes), and a line whose result recurs across pages is furniture. A per-chapter running
-//! head recurs only over its own chapter, so a handful of pages is enough to count.
-//!
-//! Before this, those lines were extracted as text: 396 of them in one 269-page book. They read
-//! as a paragraph of their own between two paragraphs, and once wrapped lines began joining into
-//! paragraphs properly they started landing inside one, mid-sentence.
-//!
-//! A tagged PDF usually marks its furniture as an artifact and never hands it over at all, but
-//! one that tags it as an ordinary paragraph needs the same treatment. Those pages are surveyed
-//! by [`detect_tagged`], which asks for more repetition than [`detect`] does; the reason is
-//! written out at [`MIN_TAGGED_SHARE`].
+//! Untagged PDFs give no sign of their running heads, and before this one 269-page book extracted 396 of them as text, which landed mid-sentence once wrapped lines were joined.
 
 use std::collections::{HashMap, HashSet};
 
 use super::text::Line;
 
-/// How many lines at each edge of a page can be running text. Two covers a page number on its
-/// own line above or below the running head itself.
+/// Two covers a page number on its own line above or below the running head itself.
 pub(super) const EDGE_LINES: usize = 2;
 
-/// How many pages must share a line before it is furniture rather than text. A running head
-/// that changes with the chapter appears only on that chapter's pages, so this cannot be a
-/// fraction of the document; it is instead a plain count high enough that body text does not
-/// reach it by chance.
+/// A count rather than a share of the document, because a running head that changes with the chapter appears only on that chapter's pages.
 const MIN_PAGES: usize = 4;
 
-/// The lines at one page's edges, as [`detect`] wants them: the first and last [`EDGE_LINES`]
-/// of the page, which is all a running header or footer can be.
 pub(super) struct PageEdges {
 	pub first: Vec<String>,
 	pub last: Vec<String>,
@@ -47,9 +24,6 @@ impl PageEdges {
 		}
 	}
 
-	/// The same edges taken from a page laid out by its structure tree, which arrives as finished
-	/// lines rather than as measured ones. Those pages are surveyed on their own, by
-	/// [`detect_tagged`].
 	pub(super) fn of_texts(lines: &[String]) -> Self {
 		Self {
 			first: lines.iter().take(EDGE_LINES).cloned().collect(),
@@ -58,9 +32,7 @@ impl PageEdges {
 	}
 }
 
-/// What a line looks like with the parts that vary from page to page taken out: digits become
-/// `#`, and a run of them collapses, so "DREAM CAR 17" and "DREAM CAR 18" are one signature.
-/// Roman numerals are left alone - too many real words are made of their letters.
+/// Roman numerals are left alone: too many real words are made of their letters.
 fn signature(line: &str) -> String {
 	let mut out = String::with_capacity(line.len());
 	let mut in_digits = false;
@@ -78,34 +50,21 @@ fn signature(line: &str) -> String {
 	out
 }
 
-/// How much larger than the document's body text a line may be and still be furniture. A
-/// running head is set in the body's size or smaller; a section heading that opens a page is
-/// set larger, and repeats across the chapters exactly as a running head does ("1.1 What's the
-/// buzz?" opens thirteen chapters of the PDF from #808), so without this it would be mistaken
-/// for one and the book would lose its headings.
+/// A section heading opening a page repeats across chapters like a running head ("1.1 What's the buzz?" opens thirteen chapters of the PDF from #808), but is set larger than the body.
 const MAX_BODY_RATIO: f64 = 1.05;
 
-/// The set of signatures that recur at the pages' edges, and the size the body text is set in.
 pub(super) struct RunningText {
 	signatures: HashSet<String>,
 	body_font_size: f64,
 }
 
 impl RunningText {
-	/// The same survey, matching nothing.
-	///
-	/// Keeps the body font size, which is what tells a heading from body text and has nothing to
-	/// do with furniture, and forgets every signature, so that no line is ever taken out. A caller
-	/// that wants the document as it is rather than as a reader would like it does not have to pay
-	/// for a survey whose answer it will not use.
+	/// Keeps the body font size, since that still tells a heading from body text.
 	pub(super) fn recognizing_nothing(mut self) -> Self {
 		self.signatures.clear();
 		self
 	}
 
-	/// Whether a line at a page edge is running text. A line is only ever tested when it sits
-	/// within [`EDGE_LINES`] of an edge, so a sentence in the body that happens to read like a
-	/// running head is never at risk.
 	pub(super) fn contains(&self, line: &str, font_size: f64) -> bool {
 		let trimmed = line.trim();
 		if trimmed.is_empty() {
@@ -122,25 +81,15 @@ impl RunningText {
 	}
 }
 
-/// Survey every page's edges and return the signatures that recur. `body_font_size` is the size
-/// the document's text is mostly set in, which keeps a heading from being taken for furniture.
 pub(super) fn detect(pages: &[PageEdges], body_font_size: f64) -> RunningText {
 	let signatures =
 		edge_counts(pages).into_iter().filter(|(_, count)| *count >= MIN_PAGES).map(|(sig, _)| sig).collect();
 	RunningText { signatures, body_font_size }
 }
 
-/// How many of a document's tagged pages have to share a line before it is furniture there.
-///
-/// A tagged page hands over whole blocks rather than visual lines, so what sits at its edge is a
-/// paragraph, not the one line at the top of the sheet. Judged at [`MIN_PAGES`] a manual loses
-/// the sentence it opens seven of its sections with, and a book loses the figure placeholder that
-/// ends a dozen of its pages. Real furniture on a tagged page is on nearly every page of it, so
-/// that is what is asked for.
+/// A tagged page's edge is a whole block, so at [`MIN_PAGES`] a manual lost the sentence opening seven of its sections and a book the figure placeholder ending a dozen pages; real tagged furniture is on nearly every page.
 const MIN_TAGGED_SHARE: f64 = 0.6;
 
-/// The same survey over the pages laid out by their structure tree, held to [`MIN_TAGGED_SHARE`].
-/// Tagged and untagged pages are surveyed apart because the two are counted differently.
 pub(super) fn detect_tagged(pages: &[PageEdges]) -> RunningText {
 	#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss, reason = "a share of the page count")]
 	let needed = (pages.len() as f64 * MIN_TAGGED_SHARE).ceil() as usize;
@@ -149,13 +98,11 @@ pub(super) fn detect_tagged(pages: &[PageEdges]) -> RunningText {
 		.filter(|(_, count)| *count >= MIN_PAGES && *count >= needed)
 		.map(|(sig, _)| sig)
 		.collect();
-	// No size is known for a tagged line, and none is needed: what keeps a heading safe there is
-	// the tag that says it is one.
+	// No size is needed for a tagged line: the tag that says it is a heading keeps it safe.
 	RunningText { signatures, body_font_size: 0.0 }
 }
 
-/// How many pages carry each signature at one of their edges. One page can only vote once for a
-/// signature, so a page repeating a line at both edges does not carry it on its own.
+/// One vote per page, so a page repeating a line at both edges does not carry it on its own.
 fn edge_counts(pages: &[PageEdges]) -> HashMap<String, usize> {
 	let mut counts: HashMap<String, usize> = HashMap::new();
 	for page in pages {
@@ -193,9 +140,6 @@ mod tests {
 		assert_ne!(signature("DREAM CAR 17"), signature("DREAM ON 17"));
 	}
 
-	/// A caller that converts a document as it is rather than as a reader would like it is asking
-	/// for no line to be taken out, and the body size has to survive that request because it is
-	/// what tells a heading from body text.
 	#[test]
 	fn a_survey_asked_to_recognise_nothing_takes_nothing_out() {
 		let mut survey = RunningText { signatures: HashSet::new(), body_font_size: BODY };
@@ -208,8 +152,7 @@ mod tests {
 
 	const BODY: f64 = 11.0;
 
-	/// The running heads and footer of the book in #813's follow-up: a verso carrying the book's
-	/// title, a recto carrying the chapter's, and a typesetter's slug at the foot of each page.
+	/// The book in #813's follow-up: the book's title on versos, the chapter's on rectos, and a typesetter's slug at each foot.
 	#[test]
 	fn detect_finds_running_heads_and_footers() {
 		let pages: Vec<PageEdges> = (1..=10)
@@ -226,8 +169,6 @@ mod tests {
 		assert!(!running.contains("On a hot, muggy August afternoon during the summer of", BODY));
 	}
 
-	/// A bare page number recurs like any other running text, its digits being the whole of what
-	/// changes from page to page.
 	#[test]
 	fn detect_finds_a_bare_page_number() {
 		let pages: Vec<PageEdges> = (1..=10).map(|n| edges(&[], &[&n.to_string()])).collect();
@@ -236,8 +177,6 @@ mod tests {
 		assert!(!running.contains("Chapter 204", BODY));
 	}
 
-	/// A chapter's running head covers only its own pages, so the count that decides has to be
-	/// low enough to catch it.
 	#[test]
 	fn detect_finds_a_head_that_runs_for_one_chapter_only() {
 		let mut pages: Vec<PageEdges> = (1..=40).map(|n| edges(&[&format!("EARLY CHAPTER {n}")], &[])).collect();
@@ -246,7 +185,6 @@ mod tests {
 		assert!(running.contains("A LATE SHORT CHAPTER 41", BODY));
 	}
 
-	/// A line that recurs on only a page or two is not furniture.
 	#[test]
 	fn detect_leaves_a_line_that_barely_recurs_alone() {
 		let pages: Vec<PageEdges> = (1..=20)
@@ -258,8 +196,6 @@ mod tests {
 		assert!(!running.contains("A repeated opening", BODY));
 	}
 
-	/// A section heading that opens a page in every chapter repeats exactly as a running head
-	/// does. It is set larger than the body, and that is what keeps it.
 	#[test]
 	fn a_heading_that_repeats_every_chapter_is_not_furniture() {
 		let pages: Vec<PageEdges> = (1..=13).map(|n| edges(&[&format!("{n}.1 What's the buzz?")], &[])).collect();

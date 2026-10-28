@@ -303,12 +303,7 @@ fun FileListItem(file: File, onClick: () -> Unit) {
 	}
 }
 
-/**
- * The in-app file browser, opened where it was last left. Which directory that is lives in the
- * config rather than in the composition, so it survives the app being killed between openings,
- * and it is shared by every use of the browser: a reader who found their books once should not
- * have to walk the same path again to import a settings file next to them.
- */
+/** The last directory lives in the config, not the composition, so it survives the process being killed and is shared by every use of the browser. */
 @Composable
 fun BrowseForFileDialog(
 	configManager: ConfigManagerFfi,

@@ -176,9 +176,7 @@ pub(super) fn format_nav_found_message(
 	}
 }
 
-/// The announcement for landing on page `page`, whose first line of real content is
-/// `content` (empty for a blank or image-only page). Shared by page navigation and the
-/// Go to page dialog so both read the same.
+/// Shared by page navigation and the Go to page dialog so both read the same.
 pub fn page_announcement(page: i32, content: &str) -> String {
 	let page_text = page.to_string();
 	if content.is_empty() {
@@ -190,46 +188,18 @@ pub fn page_announcement(page: i32, content: &str) -> String {
 	}
 }
 
-/// How long after a jump the interrupting announcement is raised.
-///
-/// The interrupt must land after NVDA has started the focus-return chain (if it fires
-/// before, the chain reads over the announcement instead), but as close to the chain's
-/// start as possible, so as little of it escapes before the cut. NVDA's own find dialog
-/// uses 100ms; Paperback's chain starts quickly, and 30ms was chosen by binary search on
-/// the Find dialog (60ms left a barely-audible sliver of the chain, 10ms occasionally let
-/// the full chain through after the announcement, 0ms always did).
+/// Must land just after NVDA starts the focus-return chain, or the chain reads over it; found by binary search on Find (60ms left a sliver of the chain, 10ms sometimes let all of it through).
 const FOCUS_CHAIN_INTERRUPT_DELAY_MS: i32 = 30;
 
-/// How long after a command raised by a menu item the interrupting announcement is raised.
-///
-/// Closing a popup menu sends focus back to the frame and the screen reader answers by reading
-/// the frame's whole child chain -- window title, tab strip, then the book -- which reads over
-/// anything said before that chain starts. That chain starts well after the one
-/// [`FOCUS_CHAIN_INTERRUPT_DELAY_MS`] was tuned against: at 30ms the message was spoken first
-/// and then cut off part-way through.
+/// A closing menu's focus chain (title, tab strip, book) starts later than a dialog's; at 30ms the message was cut off part-way.
 const MENU_FOCUS_CHAIN_INTERRUPT_DELAY_MS: i32 = 100;
 
-/// Announces `message` shortly after whatever the reader just did, so it cuts off the
-/// focus-chain announcement the screen reader starts when focus returns to the book.
-///
-/// Every announcement goes through this. A message raised the moment a command runs is spoken
-/// before the screen reader has noticed the focus change that closing a menu or a dialog causes,
-/// and the chain that follows reads straight over it: that is why choosing Play from the menu
-/// read the book's title instead of "This document has no audio".
+/// Delayed because the focus chain after a closing menu or dialog reads over an immediate message (Play from the menu read the title instead of "no audio").
 pub fn announce(live_region_label: StaticText, message: impl AsRef<str>) {
 	announce_after(live_region_label, message, FOCUS_CHAIN_INTERRUPT_DELAY_MS);
 }
 
-/// Announces `message` for a command, waiting only when a menu item was used to raise it.
-///
-/// Closing a popup menu sends focus back to the frame and the screen reader answers by reading
-/// the frame's whole child chain -- window title, tab strip, then the book -- which reads over
-/// anything said before that chain starts. A shortcut never takes focus away from the book,
-/// nothing reads over the message, and waiting would be latency paid for nothing.
-///
-/// Which of the two ran cannot be told from the command itself, because a menu click and a
-/// shortcut produce the same event; callers pass that in as `from_keyboard`. See
-/// [`crate::ui::commands::Ctx::from_keyboard`].
+/// A shortcut never moves focus off the book, so only a menu click needs the wait; both raise the same event, hence `from_keyboard`.
 pub fn announce_for_command(live_region_label: StaticText, from_keyboard: bool, message: impl AsRef<str>) {
 	if from_keyboard {
 		live_region::announce(live_region_label, message.as_ref());
@@ -238,29 +208,14 @@ pub fn announce_for_command(live_region_label: StaticText, from_keyboard: bool, 
 	}
 }
 
-/// Announces `message` for a command whose own effect makes the screen reader speak, so a shortcut
-/// waits too.
-///
-/// [`announce_for_command`] skips the wait for a shortcut because a shortcut takes no focus away from
-/// the book and so leaves nothing saying anything to read over. A command that changes the control's
-/// selection breaks that: the change is itself reported by the screen reader, so a message raised the
-/// instant the command runs is spoken *first* and leaves the reader's own "selected" hanging on the
-/// end of it. Waiting swaps those round, so the report is cut off at its start instead of trailing
-/// after the message.
-///
-/// The wait is shorter than a menu's because what it is cutting starts sooner: a selection change is
-/// reported immediately, where a closing menu's focus chain takes the extra time to begin.
+/// The screen reader reports a selection change itself, so even a shortcut waits, cutting that report off instead of leaving "selected" trailing the message.
 #[cfg(not(target_os = "macos"))]
 pub fn announce_for_selection_command(live_region_label: StaticText, from_keyboard: bool, message: impl AsRef<str>) {
 	let delay_ms = if from_keyboard { FOCUS_CHAIN_INTERRUPT_DELAY_MS } else { MENU_FOCUS_CHAIN_INTERRUPT_DELAY_MS };
 	announce_after(live_region_label, message, delay_ms);
 }
 
-/// The timer hangs off the live region itself rather than the frame, so a handler that never
-/// sees the window can still announce. The one-shot `wxTimer` is kept alive through its single
-/// tick by the `Rc`/`RefCell` it hands its own callback: the tick clears the cell, which drops
-/// the timer and destroys the native timer. If the timer cannot be armed, fall back to
-/// announcing immediately rather than silently dropping the message.
+// The timer hangs off the live region, not the frame, so handlers without the window can announce; its callback's `Rc` keeps it alive until the tick clears it.
 fn announce_after(live_region_label: StaticText, message: impl AsRef<str>, delay_ms: i32) {
 	let message = message.as_ref();
 	let timer_holder: Rc<RefCell<Option<Timer<StaticText>>>> = Rc::new(RefCell::new(None));
