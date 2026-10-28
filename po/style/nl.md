@@ -6,6 +6,7 @@
 - Menu items, buttons, checkbox labels, status-bar help text and window titles end in the infinitive: `Document openen`, `Alle documenten sluiten`, `Lettertype kiezen`, `Inhoudsopgave tonen`.
 - "Go to ...", "Go back" and "Go forward" keep the verb first: `Ga naar regel`, `Ga naar begin van regel`, `Ga terug`, `Ga vooruit`. "Jump to ..." is `Naar ... springen`.
 - "Failed to X" is `X mislukt`: `Document laden mislukt.`, `Bestandslocatie openen mislukt.`
+- "Could not X" is `Kan ... niet X`: `Kan de afbeelding niet lezen.`, `Kan de updateserver niet bereiken: %s`
 - Say what just happened in the present perfect, not the simple past: "the download was cancelled" is `de download is geannuleerd`, "so it was not downloaded" is `en is dus niet gedownload`.
 - Drop "Please": "Please select a bookmark" is `Selecteer een bladwijzer`.
 - Sentence-style capitalisation: only the first word of a label or title is capitalised. Product and format names keep their own capitalisation.
@@ -23,18 +24,20 @@ English → Dutch. Use these consistently.
 - application → applicatie on desktop; app on iOS and Android
 - audio narration → audio
 - audio seek amount → audiospoelstap; seek (audio) → spoelen; seek forward/backward → vooruitspoelen/terugspoelen
+- audio volume → audiovolume; increase/decrease audio volume, louder/quieter → audiovolume verhogen/verlagen, never luider/stiller maken
 - batch OCR → bulk-OCR
 - bookmark → bladwijzer; note → notitie; bookmark note → bladwijzernotitie
 - braille display → brailleleesregel
 - command line, command-line tool → terminal, terminalprogramma
-- comic archive → comicarchief
-- container → container; list → lijst; list item → lijstitem; table → tabel; figure → figuur; image → afbeelding
+- comic archive → comicarchief; comic book page → comicpagina; front cover → voorkaft; inside cover → binnenkant kaft; back cover → achterkaft
+- comment (in a document) → opmerking; speaker notes → sprekersnotities
+- container → container; list → lijst; list item → lijstitem; table → tabel; figure → figuur; image, picture → afbeelding
 - disk image (macOS) → schijfkopie; mount/unmount a disk image → activeren/deactiveren
 - document info → documentinformatie; document data (.paperback file) → documentgegevens
 - download (the file) → download; downloading → downloaden
 - duration → tijdsduur
 - elements list → elementenlijst
-- executable → uitvoerbaar bestand
+- executable → uitvoerbaar bestand; exe path → exe-pad
 - file manager → bestandsbeheerder; in-app file browser → bestandsbrowser in de app; file picker → bestandskiezer
 - find → zoeken; find next/previous → volgende/vorige zoeken; match (search result) → overeenkomst; search match → zoekovereenkomst; match case → hoofdlettergevoelig; whole word → heel woord
 - File menu → Bestand; Edit menu → Bewerken; View menu → Beeld; Go menu → Ga; Bookmarks menu → Bladwijzers; Audio menu → Audio; Tools menu → Extra; Help menu → Help
@@ -51,7 +54,8 @@ English → Dutch. Use these consistently.
 - page → pagina; line → regel; character → teken; word count → woordenaantal
 - parse, parser → verwerken, verwerker
 - permission → toestemming; grant → toestaan
-- read aloud → voorlezen; read aloud mode → voorleesmodus
+- package manager → pakketbeheerder
+- read aloud → voorlezen; read aloud mode → voorleesmodus; read (the text in a picture) → lezen, never voorlezen
 - readme → handleiding
 - reading bar → leesbalk; navigation unit → navigatie-eenheid
 - recent documents → recente documenten; reopen last closed → laatst gesloten heropenen

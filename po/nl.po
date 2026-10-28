@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 18:07+0000\n"
+"POT-Creation-Date: 2026-10-28 18:22+0000\n"
 "PO-Revision-Date: 2026-09-22 08:22+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -66,9 +66,8 @@ msgid "ZIP Archives (.zip)"
 msgstr "ZIP-archieven (.zip)"
 
 #. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
-#, fuzzy
 msgid "OCR needs Tesseract. Install it from your package manager."
-msgstr "OCR vereist Tesseract. Installeer dit via je pakketbeheerder."
+msgstr "Voor OCR is Tesseract nodig. Installeer het via je pakketbeheerder."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 msgid "OCR failed."
@@ -83,9 +82,8 @@ msgid "No OCR language is installed. Add one in your system language settings."
 msgstr "Geen OCR-taal geïnstalleerd. Voeg een taal toe in je systeeminstellingen."
 
 #. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
-#, fuzzy
 msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
-msgstr "Geen OCR-taal is geïnstalleerd. Installeer een Tesseract-taalpakket via je pakketbeheerder."
+msgstr "Geen OCR-taal geïnstalleerd. Installeer een Tesseract-taalpakket via je pakketbeheerder."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -662,24 +660,20 @@ msgid "Decrease how fast the audio narration plays"
 msgstr "Afspeelsnelheid van de audio verlagen"
 
 #. TRANSLATORS: Menu item in the Audio menu to make the audio narration louder.
-#, fuzzy
 msgid "Increase Audio &Volume"
-msgstr "Audio &luider maken"
+msgstr "Audiov&olume verhogen"
 
 #. TRANSLATORS: Status-bar help text for the Increase Audio Volume menu item.
-#, fuzzy
 msgid "Make the audio narration louder"
-msgstr "Audio luider maken"
+msgstr "Audiovolume verhogen"
 
 #. TRANSLATORS: Menu item in the Audio menu to make the audio narration quieter.
-#, fuzzy
 msgid "Decrease Audio Vo&lume"
-msgstr "Audio &stiller maken"
+msgstr "Audiovolu&me verlagen"
 
 #. TRANSLATORS: Status-bar help text for the Decrease Audio Volume menu item.
-#, fuzzy
 msgid "Make the audio narration quieter"
-msgstr "Audio stiller maken"
+msgstr "Audiovolume verlagen"
 
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
@@ -980,37 +974,30 @@ msgid "Export notes and bookmarks"
 msgstr "Notities en bladwijzers exporteren"
 
 #. TRANSLATORS: Label for the dropdown choosing which entries to export
-#, fuzzy
 msgid "&Export:"
 msgstr "&Exporteren:"
 
 #. TRANSLATORS: Option to export both bookmarks and notes
-#, fuzzy
 msgid "Bookmarks and notes"
 msgstr "Bladwijzers en notities"
 
 #. TRANSLATORS: Option to export only bookmarks that have no note
-#, fuzzy
 msgid "Bookmarks only"
 msgstr "Alleen bladwijzers"
 
 #. TRANSLATORS: Option to export only bookmarks that have a note
-#, fuzzy
 msgid "Notes only"
 msgstr "Alleen notities"
 
 #. TRANSLATORS: Checkbox to include the bookmarked text next to each note
-#, fuzzy
 msgid "Include the &passage each note is attached to"
-msgstr "De &passage opnemen waar elke notitie aan is gekoppeld"
+msgstr "Bij elke notitie de bijbehorende &passage opnemen"
 
 #. TRANSLATORS: Checkbox to number the exported entries
-#, fuzzy
 msgid "&Number the entries"
-msgstr "&De items nummeren"
+msgstr "Items &nummeren"
 
 #. TRANSLATORS: Label for the button that continues to the save dialog
-#, fuzzy
 msgid "Export"
 msgstr "Exporteren"
 
@@ -1066,7 +1053,6 @@ msgid "Percent out of range."
 msgstr "Percentage buiten bereik."
 
 #. TRANSLATORS: Title of the view showing the text recognized in a picture
-#, fuzzy
 msgid "Image Text"
 msgstr "Afbeeldingstekst"
 
@@ -1496,14 +1482,12 @@ msgstr "OCR wordt uitgevoerd."
 
 #. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
 #. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
-#, fuzzy
 msgid "The picture could not be read."
-msgstr "De afbeelding kon niet worden gelezen."
+msgstr "Kan de afbeelding niet lezen."
 
 #. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
-#, fuzzy
 msgid "No text was found in the picture."
-msgstr "Geen tekst gevonden in de afbeelding."
+msgstr "Geen tekst in de afbeelding gevonden."
 
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
@@ -1553,9 +1537,8 @@ msgid "OCR already in progress."
 msgstr "OCR wordt al uitgevoerd."
 
 #. TRANSLATORS: Announced when Recognize Current Page is chosen in a document that is not a PDF or a comic book
-#, fuzzy
 msgid "Only PDF and comic book pages can be recognized."
-msgstr "Alleen PDF- en comicarchief-pagina's kunnen worden herkend."
+msgstr "Alleen PDF- en comicpagina's kunnen worden herkend."
 
 #. TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
 msgid "No image-only pages in the given range."
@@ -1708,7 +1691,6 @@ msgid "Could not copy to the clipboard."
 msgstr "Kan niet naar het klembord kopiëren."
 
 #. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
-#, fuzzy
 msgid "%d character selected."
 msgid_plural "%d characters selected."
 msgstr[0] "%d teken geselecteerd."
@@ -1769,12 +1751,10 @@ msgid "Export Successful"
 msgstr "Exporteren geslaagd"
 
 #. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
-#, fuzzy
 msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
 msgstr "Tekstbestanden (*.txt)|*.txt|HTML-bestanden (*.html)|*.html"
 
 #. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
-#, fuzzy
 msgid "Failed to export notes and bookmarks."
 msgstr "Notities en bladwijzers exporteren mislukt."
 
@@ -1791,17 +1771,14 @@ msgid "Import Successful"
 msgstr "Importeren geslaagd"
 
 #. TRANSLATORS: Title of the file save dialog when saving a picture from the document
-#, fuzzy
 msgid "Save image"
 msgstr "Afbeelding opslaan"
 
 #. TRANSLATORS: File filter shown in the "Save image" dialog
-#, fuzzy
 msgid "All files (*.*)|*.*"
 msgstr "Alle bestanden (*.*)|*.*"
 
 #. TRANSLATORS: Error dialog shown when saving a picture from the document fails
-#, fuzzy
 msgid "Failed to save image."
 msgstr "Afbeelding opslaan mislukt."
 
@@ -1957,14 +1934,12 @@ msgid "Export bookmarks and position"
 msgstr "Bladwijzers en positie exporteren"
 
 #. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
-#, fuzzy
 msgid "Export &Notes and Bookmarks as Text or HTML..."
-msgstr "Bladwijzers en &notities als tekst of HTML exporteren..."
+msgstr "&Notities en bladwijzers als tekst of HTML exporteren..."
 
 #. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
-#, fuzzy
 msgid "Export bookmarks and notes in a readable format"
-msgstr "Bladwijzers en notities in leesbare indeling exporteren"
+msgstr "Bladwijzers en notities in een leesbare indeling exporteren"
 
 #. TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
 msgid "Reveal &File in Folder"
@@ -2183,7 +2158,6 @@ msgid "&Batch OCR..."
 msgstr "B&ulk-OCR..."
 
 #. TRANSLATORS: Tools menu item that recognizes the page the cursor is on with OCR, replacing any text it already has
-#, fuzzy
 msgid "&Recognize Current Page"
 msgstr "&Huidige pagina herkennen"
 
@@ -2433,19 +2407,15 @@ msgid "Table View"
 msgstr "Tabelweergave"
 
 #. TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
-#, fuzzy
 msgid "Save &image as..."
 msgstr "Afbeelding opslaan &als..."
 
-#, fuzzy
 msgid "Save image as"
 msgstr "Afbeelding opslaan als"
 
-#, fuzzy
 msgid "Read &text in picture"
 msgstr "Tekst in afbeelding &lezen"
 
-#, fuzzy
 msgid "Read the text in the picture"
 msgstr "Tekst in de afbeelding lezen"
 
@@ -2503,7 +2473,6 @@ msgid "Go to percent"
 msgstr "Ga naar percentage"
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
-#, fuzzy
 msgid "%d character copied."
 msgid_plural "%d characters copied."
 msgstr[0] "%d teken gekopieerd."
@@ -2543,7 +2512,6 @@ msgid "Character"
 msgstr "Teken"
 
 #. TRANSLATORS: Status bar label for how far through the document the reader has got, e.g. "Line 5, Character 120, Progress 45%"
-#, fuzzy
 msgid "Progress"
 msgstr "Voortgang"
 
@@ -2856,14 +2824,12 @@ msgid "Decrease Audio Speed"
 msgstr "Audiosnelheid verlagen"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Increase Audio Volume"
-msgstr "Audio luider maken"
+msgstr "Audiovolume verhogen"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Decrease Audio Volume"
-msgstr "Audio stiller maken"
+msgstr "Audiovolume verlagen"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Full Screen"
@@ -2882,7 +2848,6 @@ msgid "Batch OCR..."
 msgstr "Bulk-OCR..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Recognize Current Page"
 msgstr "Huidige pagina herkennen"
 
@@ -2899,9 +2864,8 @@ msgid "Export Document Data..."
 msgstr "Documentgegevens exporteren..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Export Notes and Bookmarks as Text or HTML..."
-msgstr "Bladwijzers en notities als tekst of HTML exporteren..."
+msgstr "Notities en bladwijzers als tekst of HTML exporteren..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export to Plain Text..."
@@ -3012,44 +2976,36 @@ msgid "Failed to parse comic archive: {}"
 msgstr "Comicarchief verwerken mislukt: {}"
 
 #. TRANSLATORS: Spoken for a comic book page that is its front cover
-#, fuzzy
 msgid "Front cover"
-msgstr "Voorkant"
+msgstr "Voorkaft"
 
 #. TRANSLATORS: Spoken for a comic book page that is an inside cover
-#, fuzzy
 msgid "Inside cover"
-msgstr "Achterkant binnenkant"
+msgstr "Binnenkant kaft"
 
 #. TRANSLATORS: Spoken for a comic book page that recaps the story so far
-#, fuzzy
 msgid "Recap"
 msgstr "Samenvatting"
 
 #. TRANSLATORS: Spoken for a comic book page that is an advertisement
-#, fuzzy
 msgid "Advertisement"
 msgstr "Advertentie"
 
 #. TRANSLATORS: Spoken for a comic book page written by the editors
-#, fuzzy
 msgid "Editorial"
 msgstr "Redactioneel"
 
 #. TRANSLATORS: Spoken for a comic book page of letters from readers
-#, fuzzy
 msgid "Letters"
-msgstr "Brievenrubriek"
+msgstr "Lezersbrieven"
 
 #. TRANSLATORS: Spoken for a comic book page previewing another comic
-#, fuzzy
 msgid "Preview"
-msgstr "Vooruitblik"
+msgstr "Voorproefje"
 
 #. TRANSLATORS: Spoken for a comic book page that is its back cover
-#, fuzzy
 msgid "Back cover"
-msgstr "Achterkant"
+msgstr "Achterkaft"
 
 #. TRANSLATORS: Error shown when a comic book archive holds no page images at all
 msgid "This comic archive contains no pages."
@@ -3238,17 +3194,14 @@ msgid "ODP file does not contain any pages"
 msgstr "ODP-bestand bevat geen pagina's"
 
 #. TRANSLATORS: Written after a presentation slide's text, before the presenter's notes for that slide; {} is the notes
-#, fuzzy
 msgid "Speaker notes: {}"
-msgstr "Aantekeningen spreker: {}"
+msgstr "Sprekersnotities: {}"
 
 #. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it without a name; {} is the comment
-#, fuzzy
 msgid "Comment: {}"
 msgstr "Opmerking: {}"
 
 #. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it: the first {} is the reviewer, the second the comment
-#, fuzzy
 msgid "Comment from {}: {}"
 msgstr "Opmerking van {}: {}"
 
@@ -3295,27 +3248,22 @@ msgid "Chapter {}"
 msgstr "Hoofdstuk {}"
 
 #. TRANSLATORS: Heading over the comments reviewers left on a document, written after its text
-#, fuzzy
 msgid "Comments"
 msgstr "Opmerkingen"
 
 #. TRANSLATORS: Names a comment's author when the document does not say who wrote it
-#, fuzzy
 msgid "Comment"
 msgstr "Opmerking"
 
 #. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
-#, fuzzy
 msgid "{} on \\u{201c}{}\\u{201d}: {}"
-msgstr "{} op \"{}\": {}"
+msgstr "{} op “{}”: {}"
 
 #. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
-#, fuzzy
 msgid "{}: {}"
 msgstr "{}: {}"
 
 #. TRANSLATORS: Shown in place of a presentation slide that has no text, such as one holding only pictures
-#, fuzzy
 msgid "This slide has no text."
 msgstr "Deze dia heeft geen tekst."
 
@@ -3364,82 +3312,63 @@ msgid "All parsers failed for extension: .{}"
 msgstr "Alle verwerkers zijn mislukt voor extensie: .{}"
 
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
-#, fuzzy
 msgid "image"
 msgstr "afbeelding"
 
-#, fuzzy
 msgid "Current version is not a valid semver."
 msgstr "Huidige versie is geen geldige semver."
 
-#, fuzzy
 msgid "Latest release tag is not a valid semver."
-msgstr "Laatste releaselabel is geen geldige semver."
+msgstr "Tag van de laatste release is geen geldige semver."
 
-#, fuzzy
 msgid "Invalid public key"
 msgstr "Ongeldige openbare sleutel"
 
-#, fuzzy
 msgid "Failed to read signature"
 msgstr "Handtekening lezen mislukt"
 
-#, fuzzy
 msgid "Invalid signature"
 msgstr "Ongeldige handtekening"
 
-#, fuzzy
 msgid "Failed to create private download directory"
-msgstr "Particuliere downloadmap maken mislukt"
+msgstr "Afgeschermde downloadmap maken mislukt"
 
-#, fuzzy
 msgid "Failed to create file"
 msgstr "Bestand maken mislukt"
 
-#, fuzzy
 msgid "Failed to write file"
 msgstr "Bestand schrijven mislukt"
 
-#, fuzzy
 msgid "Failed to read file for verification"
 msgstr "Bestand lezen voor verificatie mislukt"
 
-#, fuzzy
 msgid "Signature verification failed"
 msgstr "Handtekeningverificatie mislukt"
 
-#, fuzzy
 msgid "Failed to rename verified file"
 msgstr "Geverifieerd bestand hernoemen mislukt"
 
-#, fuzzy
 msgid "Failed to parse release JSON"
 msgstr "Release-JSON verwerken mislukt"
 
-#, fuzzy
 msgid "Latest release does not include downloadable assets."
 msgstr "Laatste release bevat geen downloadbare bestanden."
 
-#, fuzzy
 msgid "Update is available but no matching download asset or signature was found."
-msgstr "Update is beschikbaar maar geen bijbehorend downloadbestand of handtekening gevonden."
+msgstr "Update is beschikbaar, maar het downloadbestand of de handtekening ervoor is niet gevonden."
 
 msgid "Not running from an AppImage; cannot self-update."
 msgstr "Draait niet vanuit een AppImage; zichzelf bijwerken is niet mogelijk."
 
-#, fuzzy
 msgid "Failed to determine exe path"
-msgstr "Exepad bepalen mislukt"
+msgstr "Exe-pad bepalen mislukt"
 
-#, fuzzy
 msgid "Failed to get exe directory"
-msgstr "Exemap ophalen mislukt"
+msgstr "Exe-map bepalen mislukt"
 
-#, fuzzy
 msgid "Could not determine a cache directory: neither XDG_CACHE_HOME nor HOME is set"
-msgstr "Cachemap kon niet bepaald worden: noch XDG_CACHE_HOME noch HOME is ingesteld"
+msgstr "Kan geen cachemap bepalen: XDG_CACHE_HOME en HOME zijn geen van beide ingesteld"
 
-#, fuzzy
 msgid "Failed to create cache directory"
 msgstr "Cachemap maken mislukt"
 
@@ -3575,13 +3504,11 @@ msgstr "Veiligheidsverificatie mislukt. Mogelijk is met de update geknoeid: %s"
 msgid "Security Error"
 msgstr "Veiligheidsfout"
 
-#, fuzzy
 msgid "The update server returned HTTP error %s."
-msgstr "De updateserver retourneerde HTTP-fout %s."
+msgstr "De updateserver heeft HTTP-fout %s teruggestuurd."
 
-#, fuzzy
 msgid "Could not reach the update server: %s"
-msgstr "Updateserver bereiken mislukt: %s"
+msgstr "Kan de updateserver niet bereiken: %s"
 
 #. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 msgid "%d hour"
@@ -3686,7 +3613,6 @@ msgid "Reset Shortcuts"
 msgstr "Sneltoetsen herstellen"
 
 #. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
-#, fuzzy
 msgid "{} (not on this keyboard layout)"
 msgstr "{} (niet op deze toetsenbordindeling)"
 
@@ -4853,6 +4779,21 @@ msgstr "Schakel dit uit om door te blijven lezen terwijl je per zoekovereenkomst
 #: swift
 msgid "1.5\\u{00d7}"
 msgstr "1,5\\u{00d7}"
+
+#. TRANSLATORS: Row label for the number of audio files in the document
+#: kt swift
+msgid "Number of files"
+msgstr "Aantal bestanden"
+
+#. TRANSLATORS: Row label for the total playback duration across all of the document's audio files
+#: kt swift
+msgid "Total duration"
+msgstr "Totale tijdsduur"
+
+#. TRANSLATORS: Row label for the average playback duration per audio file in the document
+#: kt swift
+msgid "Average duration"
+msgstr "Gemiddelde tijdsduur"
 
 #~ msgid "Update failed"
 #~ msgstr "Update mislukt"
