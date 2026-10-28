@@ -51,7 +51,7 @@ objc = "0.2.7"
 
 [build-dependencies]
 paperback-formats = { path = "../paperback-formats" }
-patois-build = "0.1.16"
+patois-build = "0.1.17"
 shipfitter = { version = "0.2.4", features = ["docs", "windows-resources"] }
 
 [dev-dependencies]
