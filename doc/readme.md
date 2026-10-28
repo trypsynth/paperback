@@ -234,7 +234,7 @@ The More Options menu is where everything else lives. Some items work a little d
 * **Go To:** jump to a line, a page, or a percentage through the document. Pick which with the Mode picker.
 * **Recent Documents:** every document you've opened, each marked as currently open, closed, or file missing. Each one has two screen reader actions: Remove takes it off the list, and Locate lets you find a document whose file has moved. Clear Recent Documents empties the list without deleting any documents.
 * **Word Count:** the number of words in the document.
-* **Document Info:** the title, the author, the file name, and on iOS the line and character counts too.
+* **Document Info:** the title, the author, the file name, how far through the document you are, and the word, line, and character counts. For an audio book, it also shows how many files it has and, when Paperback can tell, how long they run in total and on average.
 * **Export:** saves the document as plain text, HTML, or Markdown.
 * **Sleep Timer:** stops reading after 5, 10, 15, 30, 45, or 60 minutes, or a time of your own. Open it again while it's running to see how long is left, or to cancel it.
 * **Help:** opens this readme.
