@@ -252,8 +252,8 @@ fn bind_elements_view_toggle_dv(
 			schedule_flat_fill(
 				frame,
 				content_list_for_choice,
-				Rc::clone(&flat_labels_for_choice),
-				Rc::clone(&views_for_choice),
+				&flat_labels_for_choice,
+				&views_for_choice,
 				view_choice,
 				selection,
 			);
@@ -532,8 +532,8 @@ fn bind_elements_view_toggle(
 			schedule_flat_fill(
 				frame,
 				content_list_for_choice,
-				Rc::clone(&flat_labels_for_choice),
-				Rc::clone(&views_for_choice),
+				&flat_labels_for_choice,
+				&views_for_choice,
 				view_choice,
 				selection,
 			);

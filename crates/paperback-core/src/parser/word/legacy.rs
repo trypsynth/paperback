@@ -103,14 +103,14 @@ pub(super) fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 			tracing::warn!(path = %context.file_path, "doc text extraction produced no content, simple fallback extraction also found nothing");
 			text = extract_doc_text_simple(&word_document);
 		}
-		return finish_doc(text, &context.file_path);
+		return Ok(finish_doc(&text, &context.file_path));
 	}
 	// Word 6.0 and Word 95 keep their text in the WordDocument stream and write no table stream, so
 	// the Word 97 path below would fail at the very first step. Their text is the run between fcMin
 	// and fcMac; read it straight out rather than turning a thirty-year-old file into an error.
 	let nfib = read_u16_le(&word_document, FIB_NFIB_OFFSET);
 	if nfib < FIB_NFIB_WORD97 {
-		return finish_doc(extract_word6_text(&word_document), &context.file_path);
+		return Ok(finish_doc(&extract_word6_text(&word_document), &context.file_path));
 	}
 	let table_stream_name = if (fib_flags & FIB_FLAG_USE_1_TABLE) != 0 { "1Table" } else { "0Table" };
 	let table_stream = read_stream(&mut compound, table_stream_name)
@@ -125,7 +125,7 @@ pub(super) fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 		tracing::warn!(path = %context.file_path, "doc text extraction produced no content, simple fallback extraction also found nothing");
 		text = extract_doc_text_simple(&word_document);
 	}
-	finish_doc(text, &context.file_path)
+	Ok(finish_doc(&text, &context.file_path))
 }
 
 fn read_stream<R: Read + Seek>(compound: &mut CompoundFile<R>, path: &str) -> Result<Vec<u8>> {
@@ -339,8 +339,8 @@ fn extract_word6_text(word_document: &[u8]) -> String {
 
 /// Builds the finished document from extracted DOC text: normalize field codes, drop it into a
 /// buffer with a trailing newline, and title it from the path. Shared by the extraction paths.
-fn finish_doc(text: String, file_path: &str) -> Result<Document> {
-	let normalized = normalize_doc_text(&text);
+fn finish_doc(text: &str, file_path: &str) -> Document {
+	let normalized = normalize_doc_text(text);
 	let mut buffer = DocumentBuffer::new();
 	if !normalized.is_empty() {
 		append_marked(&mut buffer, &normalized);
@@ -353,7 +353,7 @@ fn finish_doc(text: String, file_path: &str) -> Result<Document> {
 	let mut document = Document::new().with_title(title);
 	document.set_buffer(buffer);
 	document.toc_items = toc_items;
-	Ok(document)
+	document
 }
 
 /// Appends the normalized text, turning each [`HEADING_MARK`] at the start of a line into a

@@ -204,17 +204,17 @@ pub(super) fn build_daisy_document(
 	if !converted_any {
 		return None;
 	}
-	let mut toc_items = None;
-	if let Some((_, ncx_item)) = package.items.iter().find(|(_, item)| {
+	let toc_items = if let Some((_, ncx_item)) = package.items.iter().find(|(_, item)| {
 		item.media_type == "application/x-dtbncx+xml" || item.href.to_ascii_lowercase().ends_with(".ncx")
 	}) && let Ok(ncx_content) = read_text(&ncx_item.href)
 		&& !ncx_content.is_empty()
 		&& let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, &dir_of(&ncx_item.href), &id_positions, &smil_anchors)
 		&& !ncx_toc.is_empty()
 	{
-		toc_items = Some(ncx_toc);
-	}
-	let toc_items = toc_items.unwrap_or_else(|| build_toc_from_buffer(&buffer));
+		ncx_toc
+	} else {
+		build_toc_from_buffer(&buffer)
+	};
 	let resolved_clips = bound_open_ended_clips(&pending_clips);
 	let doc_end = buffer.end();
 	for index in 0..resolved_clips.len() {

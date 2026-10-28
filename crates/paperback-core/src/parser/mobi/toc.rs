@@ -37,10 +37,11 @@ pub(super) fn parse_ncx(
 	// book is KF8. Reading a different one for the older books cost them their chapters: a novel
 	// whose index record sat waiting at 228 came back with no table of contents at all, and one
 	// whose header stopped short of 248 was not even looked at.
-	let mut ncx_index = 0xFFFF_FFFF;
-	if mobi_header.len() >= 232 {
-		ncx_index = u32::from_be_bytes(mobi_header[228..232].try_into().unwrap_or([0; 4])) as usize;
-	}
+	let mut ncx_index = if mobi_header.len() >= 232 {
+		u32::from_be_bytes(mobi_header[228..232].try_into().unwrap_or([0; 4])) as usize
+	} else {
+		0xFFFF_FFFF
+	};
 	if (ncx_index == 0xFFFF_FFFF || ncx_index == 0)
 		&& let Some(ext) = exth.get(&253)
 		&& ext.len() >= 4

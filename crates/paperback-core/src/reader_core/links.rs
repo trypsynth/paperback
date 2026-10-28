@@ -114,14 +114,15 @@ pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: DocPos) 
 		&& let Some(spine_index) = doc.document().spine_items.iter().position(|id| id == &manifest_id)
 	{
 		let (section_start, section_end) = spine_section_bounds(doc, spine_index);
-		let mut offset = section_start;
-		if !fragment.is_empty()
+		let offset = if !fragment.is_empty()
 			&& let Some(found) = find_fragment_offset(doc, fragment, Some(file_path))
 			&& found >= section_start
 			&& found < section_end
 		{
-			offset = found;
-		}
+			found
+		} else {
+			section_start
+		};
 		return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
 	}
 	// Fallback for formats like CHM that store id_positions with "{path}#{id}" keys.

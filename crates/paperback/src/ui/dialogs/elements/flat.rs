@@ -252,15 +252,15 @@ pub(super) fn clear_flat_list(list: FlatList) {
 pub(super) fn schedule_flat_fill(
 	frame: Frame,
 	list: FlatList,
-	flat_labels: Rc<RefCell<Vec<String>>>,
-	views: Rc<FlatViews>,
+	flat_labels: &Rc<RefCell<Vec<String>>>,
+	views: &Rc<FlatViews>,
 	view_choice: Choice,
 	selection: u32,
 ) {
 	let timer_holder: Rc<RefCell<Option<Timer<Frame>>>> = Rc::new(RefCell::new(None));
 	let holder = Rc::clone(&timer_holder);
-	let labels_for_tick = Rc::clone(&flat_labels);
-	let views_for_tick = Rc::clone(&views);
+	let labels_for_tick = Rc::clone(flat_labels);
+	let views_for_tick = Rc::clone(views);
 	let timer = Timer::new(&frame);
 	timer.on_tick(move |_event| {
 		if view_choice.get_selection() == Some(selection) {
@@ -269,7 +269,7 @@ pub(super) fn schedule_flat_fill(
 		*holder.borrow_mut() = None;
 	});
 	if !timer.start(FLAT_POPULATE_DELAY_MS, true) {
-		fill_flat_view(list, &flat_labels, &views, view_choice, selection);
+		fill_flat_view(list, flat_labels, views, view_choice, selection);
 		return;
 	}
 	*timer_holder.borrow_mut() = Some(timer);

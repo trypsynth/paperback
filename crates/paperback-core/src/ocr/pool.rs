@@ -161,6 +161,7 @@ mod tests {
 
 	type Read = Result<String, String>;
 
+	#[allow(clippy::unnecessary_wraps, reason = "has the signature recognize_pages takes for its recognizer")]
 	fn says_which_page(_renderer: &mut PageRenderer, page: i32) -> Read {
 		Ok(format!("text of page {page}"))
 	}

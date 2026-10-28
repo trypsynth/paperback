@@ -84,22 +84,23 @@ pub(super) fn parse_header(data: &[u8], title_bytes: &[u8]) -> Result<MobiHeader
 		rec0[mobi_header_offset + 14],
 		rec0[mobi_header_offset + 15],
 	]);
-	let mut name_offset = 0usize;
-	let mut name_length = 0usize;
-	if header_length >= 76 && mobi_header_offset + 76 <= rec0.len() {
-		name_offset = u32::from_be_bytes([
+	let (name_offset, name_length) = if header_length >= 76 && mobi_header_offset + 76 <= rec0.len() {
+		let name_offset = u32::from_be_bytes([
 			rec0[mobi_header_offset + 68],
 			rec0[mobi_header_offset + 69],
 			rec0[mobi_header_offset + 70],
 			rec0[mobi_header_offset + 71],
 		]) as usize;
-		name_length = u32::from_be_bytes([
+		let name_length = u32::from_be_bytes([
 			rec0[mobi_header_offset + 72],
 			rec0[mobi_header_offset + 73],
 			rec0[mobi_header_offset + 74],
 			rec0[mobi_header_offset + 75],
 		]) as usize;
-	}
+		(name_offset, name_length)
+	} else {
+		(0, 0)
+	};
 	let first_content_record = 1;
 	let mut last_content_record = num_records.saturating_sub(1);
 	if rec0.len() >= 10 {

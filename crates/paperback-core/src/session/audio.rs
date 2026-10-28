@@ -52,6 +52,7 @@ impl DocumentSession {
 	/// Writes source `index`'s audio bytes to `output_path`: extracted from its archive when
 	/// zip-embedded, copied otherwise, for platforms whose player needs a real local path.
 	#[must_use]
+	#[allow(clippy::needless_pass_by_value, reason = "uniffi hands strings over by value")]
 	pub fn audio_extract_source_ffi(&self, index: i32, output_path: String) -> bool {
 		let Some(timeline) = self.audio() else { return false };
 		let Ok(index) = usize::try_from(index) else { return false };
