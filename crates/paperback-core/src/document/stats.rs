@@ -17,8 +17,10 @@ pub struct DocumentStats {
 	/// [`DocumentStats::from_text`], which only ever sees the text spine.
 	pub audio_file_count: usize,
 	/// Total playback length across every recorded audio file, in milliseconds. See
-	/// `audio_file_count`.
-	pub audio_total_duration_ms: u64,
+	/// `audio_file_count`. None when any file's length could not be probed: that file stands in
+	/// with a placeholder far longer than any recording (see `AudioTimeline::durations_are_known`),
+	/// so a total would be hours too long.
+	pub audio_total_duration_ms: Option<u64>,
 }
 
 /// Per-chunk counts from [`count_chunk`], plus the whitespace-ness of the chunk's first and last

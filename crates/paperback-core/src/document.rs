@@ -80,7 +80,7 @@ impl Document {
 		let mut stats = DocumentStats::from_text(&self.buffer.content);
 		if let Some(audio) = &self.audio {
 			stats.audio_file_count = audio.sources().len();
-			stats.audio_total_duration_ms = audio.total_duration_ms();
+			stats.audio_total_duration_ms = audio.durations_are_known().then(|| audio.total_duration_ms());
 		}
 		self.stats = stats;
 	}
@@ -207,7 +207,7 @@ mod tests {
 		assert_eq!(doc.stats.word_count, 2);
 		assert_eq!(doc.stats.line_count, 1);
 		assert_eq!(doc.stats.audio_file_count, 0);
-		assert_eq!(doc.stats.audio_total_duration_ms, 0);
+		assert_eq!(doc.stats.audio_total_duration_ms, None);
 	}
 
 	#[test]
@@ -222,7 +222,22 @@ mod tests {
 		doc.set_audio(builder.build());
 		doc.compute_stats();
 		assert_eq!(doc.stats.audio_file_count, 2);
-		assert_eq!(doc.stats.audio_total_duration_ms, 5000);
+		assert_eq!(doc.stats.audio_total_duration_ms, Some(5000));
+	}
+
+	#[test]
+	fn document_compute_stats_has_no_audio_duration_when_a_file_length_is_unknown() {
+		let mut builder = crate::audio::AudioTimelineBuilder::new();
+		let source0 = builder.add_source(crate::audio::AudioLocation::File("a.mp3".to_string()), Some(2000));
+		let source1 = builder.add_source(crate::audio::AudioLocation::File("b.mp3".to_string()), None);
+		builder.add_clip(source0, 0, 2000, 0.into(), 1.into());
+		builder.add_clip(source1, 0, 3000, 1.into(), 2.into());
+		let mut doc = Document::new();
+		doc.set_buffer(DocumentBuffer::with_content("a b".to_string()));
+		doc.set_audio(builder.build());
+		doc.compute_stats();
+		assert_eq!(doc.stats.audio_file_count, 2);
+		assert_eq!(doc.stats.audio_total_duration_ms, None);
 	}
 
 	#[test]

@@ -17,7 +17,8 @@ fn format_reading_time(word_count: usize, wpm: i32) -> String {
 /// [`show_word_count_dialog`] can report duration instead of a meaningless word count.
 pub struct AudioOnlySummary {
 	pub file_count: usize,
-	pub total_duration_ms: u64,
+	/// None when any file's length is unknown. See `DocumentStats::audio_total_duration_ms`.
+	pub total_duration_ms: Option<u64>,
 }
 
 pub fn show_word_count_dialog(
@@ -37,10 +38,12 @@ pub fn show_word_count_dialog(
 			summary.file_count as u64,
 		);
 		let mut msg = files_template.replacen("%d", &summary.file_count.to_string(), 1);
-		msg.push('\n');
-		// TRANSLATORS: Prompt showing an audio-only document's total playback duration across all its files. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
-		let duration_template = t("Total duration: {}");
-		msg.push_str(&duration_template.replace("{}", &format_duration_seconds(summary.total_duration_ms / 1000)));
+		if let Some(total_ms) = summary.total_duration_ms {
+			msg.push('\n');
+			// TRANSLATORS: Prompt showing an audio-only document's total playback duration across all its files. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".
+			let duration_template = t("Total duration: {}");
+			msg.push_str(&duration_template.replace("{}", &format_duration_seconds(total_ms / 1000)));
+		}
 		let dialog = MessageDialog::builder(parent, &msg, &title).with_style(MessageDialogStyle::OK).build();
 		dialog.show_modal();
 		return;

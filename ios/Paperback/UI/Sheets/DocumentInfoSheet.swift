@@ -52,12 +52,15 @@ struct DocumentInfoSheet: View {
 							Divider().padding(.leading, 16)
 							// TRANSLATORS: Row label for the number of audio files in the document
 							infoRow(t("Number of files"), value: stats.audioFileCount.formatted())
-							Divider().padding(.leading, 16)
-							// TRANSLATORS: Row label for the total playback duration across all of the document's audio files
-							infoRow(t("Total duration"), value: formatDuration(stats.audioTotalDurationMs))
-							Divider().padding(.leading, 16)
-							// TRANSLATORS: Row label for the average playback duration per audio file in the document
-							infoRow(t("Average duration"), value: formatDuration(stats.audioTotalDurationMs / stats.audioFileCount))
+							// Negative when any file's length is unknown, which would make any total hours too long.
+							if stats.audioTotalDurationMs >= 0 {
+								Divider().padding(.leading, 16)
+								// TRANSLATORS: Row label for the total playback duration across all of the document's audio files
+								infoRow(t("Total duration"), value: formatDuration(stats.audioTotalDurationMs))
+								Divider().padding(.leading, 16)
+								// TRANSLATORS: Row label for the average playback duration per audio file in the document
+								infoRow(t("Average duration"), value: formatDuration(stats.audioTotalDurationMs / stats.audioFileCount))
+							}
 						}
 					} else {
 						// TRANSLATORS: Row label for the document's title in the Document Info sheet, shown when no document is open

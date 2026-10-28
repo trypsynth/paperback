@@ -66,10 +66,13 @@ fun DocumentInfoDialog(docState: DocumentTabState, stats: DocumentStatsFfi, prog
 				if (stats.audioFileCount > 0) {
 					// TRANSLATORS: Label for the number of audio files in the document in the Document Information dialog
 					InfoRow(t("Number of files"), numbers.format(stats.audioFileCount))
-					// TRANSLATORS: Label for the total playback duration across all of the document's audio files in the Document Information dialog
-					InfoRow(t("Total duration"), formatDuration(stats.audioTotalDurationMs))
-					// TRANSLATORS: Label for the average playback duration per audio file in the document in the Document Information dialog
-					InfoRow(t("Average duration"), formatDuration(stats.audioTotalDurationMs / stats.audioFileCount))
+					// Negative when any file's length is unknown, which would make any total hours too long.
+					if (stats.audioTotalDurationMs >= 0) {
+						// TRANSLATORS: Label for the total playback duration across all of the document's audio files in the Document Information dialog
+						InfoRow(t("Total duration"), formatDuration(stats.audioTotalDurationMs))
+						// TRANSLATORS: Label for the average playback duration per audio file in the document in the Document Information dialog
+						InfoRow(t("Average duration"), formatDuration(stats.audioTotalDurationMs / stats.audioFileCount))
+					}
 				}
 			}
 		},

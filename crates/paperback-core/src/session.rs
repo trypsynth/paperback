@@ -264,6 +264,8 @@ pub struct DocumentStatsFfi {
 	pub char_count: i64,
 	pub char_count_no_whitespace: i64,
 	pub audio_file_count: i64,
+	/// `-1` when there is no audio or any file's length is unknown. See
+	/// `DocumentStats::audio_total_duration_ms`.
 	pub audio_total_duration_ms: i64,
 }
 

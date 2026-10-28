@@ -23,7 +23,7 @@ impl DocumentSession {
 			char_count: i64::try_from(s.char_count).unwrap_or(0),
 			char_count_no_whitespace: i64::try_from(s.char_count_no_whitespace).unwrap_or(0),
 			audio_file_count: i64::try_from(s.audio_file_count).unwrap_or(0),
-			audio_total_duration_ms: i64::try_from(s.audio_total_duration_ms).unwrap_or(0),
+			audio_total_duration_ms: s.audio_total_duration_ms.and_then(|ms| i64::try_from(ms).ok()).unwrap_or(-1),
 		}
 	}
 
