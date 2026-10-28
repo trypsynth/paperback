@@ -42,6 +42,8 @@ internal class StreamedPlayback(
 	/** Where a written segment's audio ends on the track, so the poller can tell when it has been heard. */
 	private class End(val id: String, val frame: Long)
 
+	// wait() and notifyAll() are only on java.lang.Object, which Kotlin's Any does not expose.
+	@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
 	private val lock = Object()
 	private val segments = ArrayDeque<Segment>()
 	private val ends = ArrayDeque<End>()
