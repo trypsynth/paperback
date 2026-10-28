@@ -297,8 +297,11 @@ final class ReadingController {
 				try? await Task.sleep(for: .seconds(1))
 				if Task.isCancelled { return }
 				guard let r = sleepTimerRemaining, r > 0 else {
-					ttsManager.pause()
+					// A recording plays on its own player, which pausing speech wouldn't reach.
+					if hasAudio { narration?.pause() } else { ttsManager.pause() }
+					updateNowPlaying()
 					UIApplication.shared.isIdleTimerDisabled = false
+					sleepTimerRemaining = nil
 					return
 				}
 				sleepTimerRemaining = r - 1
