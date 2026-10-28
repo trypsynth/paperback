@@ -180,7 +180,9 @@ impl DocumentSession {
 		let progress = timeline.progress(TimelinePoint::new(DocPos::ZERO, elapsed_ms));
 		// Truncating rather than rounding keeps 100% for the end alone: a book is not "100%"
 		// with half a minute left to play.
-		Some((progress * 100.0) as i32)
+		#[allow(clippy::cast_possible_truncation, reason = "truncated on purpose, and a float cast saturates")]
+		let percent = (progress * 100.0) as i32;
+		Some(percent)
 	}
 
 	/// The elapsed time to seek to for `percent` of the recording, when that can be answered

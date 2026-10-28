@@ -56,6 +56,8 @@ option_if_let_else = "allow"
 significant_drop_tightening = "allow"
 # Its fix is `assert_eq!(x, [] as [T; 0])`, which is harder to read than `assert!(x.is_empty())`.
 assert_is_empty = "allow"
+# Counts turned into ratios and percentages stay far below where a float stops holding whole numbers.
+cast_precision_loss = "allow"
 
 [profile.release]
 strip = true

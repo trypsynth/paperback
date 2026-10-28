@@ -101,6 +101,7 @@ mod checks {
 		HWND(text_ctrl.get_handle())
 	}
 
+	#[allow(clippy::cast_possible_truncation, reason = "Win32 struct sizes fit a u32")]
 	fn paragraph_at(text_ctrl: TextCtrl, position: i64) -> PARAFORMAT2 {
 		let mut pf = PARAFORMAT2::default();
 		pf.Base.cbSize = size_of::<PARAFORMAT2>() as u32;
@@ -111,6 +112,7 @@ mod checks {
 		pf
 	}
 
+	#[allow(clippy::cast_possible_truncation, reason = "Win32 struct sizes fit a u32")]
 	fn characters_at(text_ctrl: TextCtrl, position: i64) -> CHARFORMATW {
 		let mut cf = CHARFORMAT2W::default();
 		cf.Base.cbSize = size_of::<CHARFORMAT2W>() as u32;

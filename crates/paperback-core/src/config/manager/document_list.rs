@@ -103,7 +103,7 @@ pub fn compute_document_hash(path: &str) -> [u8; 20] {
 				let seek_pos = cmp::max(file_size.saturating_sub(max_read as u64), max_read as u64);
 				if file.seek(SeekFrom::Start(seek_pos)).is_ok() {
 					let mut end_read = 0;
-					let end_max = (file_size - seek_pos) as usize;
+					let end_max = usize::try_from(file_size - seek_pos).unwrap_or(usize::MAX);
 					while end_read < end_max {
 						let to_read = cmp::min(buffer.len(), end_max - end_read);
 						if let Ok(n) = file.read(&mut buffer[..to_read]) {

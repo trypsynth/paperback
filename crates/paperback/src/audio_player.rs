@@ -346,6 +346,11 @@ impl AudioPlayer {
 	fn position_ms(&self) -> Option<u64> {
 		let player = self.player.as_ref()?;
 		let played_ms = duration_ms(player.get_pos());
+		#[allow(
+			clippy::cast_possible_truncation,
+			clippy::cast_sign_loss,
+			reason = "a play position in milliseconds, never negative, and a float cast saturates"
+		)]
 		let content_elapsed_ms = (played_ms as f64 * f64::from(self.speed)) as u64;
 		Some(self.position_base_ms.saturating_add(content_elapsed_ms))
 	}

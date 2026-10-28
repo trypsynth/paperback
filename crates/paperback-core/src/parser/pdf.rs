@@ -650,7 +650,7 @@ mod tests {
 					// survey refusing to empty a page -- and the body is spelled with letters
 					// because the survey blanks digit runs, which would make "page 0" and "page 1"
 					// one line as far as it is concerned.
-					let body = format!("words unique to the {} page", (b'a' + page as u8) as char);
+					let body = format!("words unique to the {} page", char::from(b'a' + u8::try_from(page).unwrap()));
 					tagged_page(&["BOOK TITLE", body.as_str(), "a closing line", "and one after that"])
 				})
 				.collect::<Vec<_>>()

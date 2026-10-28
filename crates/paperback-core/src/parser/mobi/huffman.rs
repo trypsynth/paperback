@@ -3,6 +3,13 @@
 //! expands compressed text through them. A dictionary phrase can itself reference other
 //! phrases, hence the explicit stack in `decode` rather than plain recursion.
 
+#![allow(
+	clippy::cast_possible_truncation,
+	clippy::cast_possible_wrap,
+	clippy::cast_sign_loss,
+	reason = "bit arithmetic on codes the format limits to 32 bits"
+)]
+
 use anyhow::Result;
 
 use crate::t;

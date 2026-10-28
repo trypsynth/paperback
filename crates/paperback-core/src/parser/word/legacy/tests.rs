@@ -28,7 +28,7 @@ fn parse_doc_clx_extracts_piece_table_text() {
 	piece_table.extend_from_slice(&0u16.to_le_bytes());
 	let mut clx = Vec::new();
 	clx.push(0x02);
-	clx.extend_from_slice(&(piece_table.len() as u32).to_le_bytes());
+	clx.extend_from_slice(&u32::try_from(piece_table.len()).unwrap().to_le_bytes());
 	clx.extend_from_slice(&piece_table);
 	let text = parse_doc_clx(&clx, &word_document).expect("clx text");
 	assert_eq!(text, "Hello");

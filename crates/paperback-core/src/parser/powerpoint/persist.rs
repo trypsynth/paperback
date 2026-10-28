@@ -127,12 +127,13 @@ fn read_persist_directory(stream: &[u8], at: usize, directory: &mut BTreeMap<u32
 		let Some(word) = read_u32(stream, pos) else { return };
 		let first_id = word & 0x000F_FFFF;
 		let count = word >> 20;
-		for index in 0..count as usize {
-			let Some(offset) = read_u32(stream, pos + 4 + index * 4) else { return };
-			if (pos + 4 + index * 4 + 4) > body_end {
+		for index in 0..count {
+			let at = pos + 4 + index as usize * 4;
+			let Some(offset) = read_u32(stream, at) else { return };
+			if at + 4 > body_end {
 				return;
 			}
-			directory.insert(first_id + index as u32, offset as usize);
+			directory.insert(first_id + index, offset as usize);
 		}
 		// A run of no identifiers still takes up its four bytes, so the walk moves on rather
 		// than standing still.

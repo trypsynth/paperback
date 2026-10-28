@@ -153,7 +153,7 @@ mod pipe {
 		core::PCWSTR,
 	};
 
-	const BUF: usize = 4096;
+	const BUF: u32 = 4096;
 	const GENERIC_WRITE: u32 = 0x4000_0000;
 	// Raw pipe constants (Windows SDK values; windows-rs doesn't export all of these
 	// without a larger feature matrix).
@@ -176,7 +176,7 @@ mod pipe {
 				NAMED_PIPE_MODE(0), // PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT = 0
 				PIPE_UNLIMITED_INSTANCES,
 				0,
-				BUF as u32,
+				BUF,
 				0,
 				None,
 			)
@@ -195,7 +195,7 @@ mod pipe {
 				let ready =
 					conn.is_ok() || unsafe { windows::Win32::Foundation::GetLastError() } == ERROR_PIPE_CONNECTED;
 				if ready {
-					let mut buf = vec![0u8; BUF];
+					let mut buf = vec![0u8; BUF as usize];
 					let mut n = 0u32;
 					let ok = unsafe { ReadFile(h, Some(&mut buf), Some(&raw mut n), None) };
 					if ok.is_ok() && n > 0 {

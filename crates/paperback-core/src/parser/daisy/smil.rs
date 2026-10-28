@@ -99,6 +99,11 @@ pub fn parse_smil_time(raw: &str) -> u64 {
 
 /// Rounds `count * ms_per_unit` to whole milliseconds, clamping negatives (which a clock
 /// value can't legally hold) to zero rather than wrapping around on the cast.
+#[allow(
+	clippy::cast_possible_truncation,
+	clippy::cast_sign_loss,
+	reason = "rounded and positive by then, and a float cast saturates"
+)]
 fn scale_to_ms(count: f64, ms_per_unit: f64) -> u64 {
 	let ms = (count * ms_per_unit).round();
 	if ms > 0.0 { ms as u64 } else { 0 }

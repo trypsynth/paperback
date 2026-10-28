@@ -158,7 +158,7 @@ impl ConfigManagerFfi {
 	}
 
 	pub fn add_find_history(&self, text: String, max_len: i32) {
-		self.inner.lock().unwrap().add_find_history(&text, max_len as usize);
+		self.inner.lock().unwrap().add_find_history(&text, usize::try_from(max_len).unwrap_or(0));
 	}
 
 	pub fn import_document_settings(&self, path: String) {

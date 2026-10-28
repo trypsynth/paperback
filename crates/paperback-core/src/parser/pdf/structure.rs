@@ -445,7 +445,8 @@ fn process_struct_element(
 					_ => MarkerType::Heading6,
 				};
 				buffer.add_marker(Marker::new(marker_type, block_start_pos).with_text(title.clone()).with_level(level));
-				toc_items.push((level as u32, TocItem::new(title, String::new(), block_start_pos)));
+				toc_items
+					.push((u32::try_from(level).unwrap_or(1), TocItem::new(title, String::new(), block_start_pos)));
 			}
 		}
 		if elem_type == "L" || elem_type == "TOC" {

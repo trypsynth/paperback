@@ -403,6 +403,7 @@ pub(super) fn is_cjk(c: char) -> bool {
 	(0xAC00..=0xD7AF).contains(&u) // Hangul
 }
 
+#[allow(clippy::cast_possible_truncation, reason = "a page coordinate fits an f32")]
 fn char_x_origin(text_page: &PdfTextPage, i: i32) -> f32 {
 	text_page.char_origin(i).map_or(0.0, |(x, _)| x as f32)
 }

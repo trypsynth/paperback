@@ -134,7 +134,7 @@ pub(super) fn set_all_document_list_items_selected(list: DocumentList, selected:
 
 #[cfg(not(target_os = "macos"))]
 pub(super) fn get_document_list_text(list: DocumentList, index: i32, column: usize) -> String {
-	list.get_item_text(i64::from(index), column as i32)
+	list.get_item_text(i64::from(index), i32::try_from(column).unwrap_or(0))
 }
 
 #[cfg(target_os = "macos")]

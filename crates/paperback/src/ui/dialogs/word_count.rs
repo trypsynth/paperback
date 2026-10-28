@@ -6,6 +6,7 @@ fn format_reading_time(word_count: usize, wpm: i32) -> String {
 	if wpm <= 0 {
 		return String::new();
 	}
+	#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss, reason = "a rounded, positive number of seconds")]
 	let total_seconds = (word_count as f64 / f64::from(wpm) * 60.0).round() as u64;
 	let time_str = format_duration_seconds(total_seconds);
 	// TRANSLATORS: Prompt showing estimated reading time. The {} placeholder is replaced with a formatted duration like "1 hour, 5 minutes".

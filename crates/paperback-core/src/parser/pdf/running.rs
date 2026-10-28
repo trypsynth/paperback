@@ -142,6 +142,7 @@ const MIN_TAGGED_SHARE: f64 = 0.6;
 /// The same survey over the pages laid out by their structure tree, held to [`MIN_TAGGED_SHARE`].
 /// Tagged and untagged pages are surveyed apart because the two are counted differently.
 pub(super) fn detect_tagged(pages: &[PageEdges]) -> RunningText {
+	#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss, reason = "a share of the page count")]
 	let needed = (pages.len() as f64 * MIN_TAGGED_SHARE).ceil() as usize;
 	let signatures = edge_counts(pages)
 		.into_iter()
