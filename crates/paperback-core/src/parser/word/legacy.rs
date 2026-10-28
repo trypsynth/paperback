@@ -320,12 +320,7 @@ fn read_piece_table(piece_table: &[u8], word_document: &[u8]) -> Option<(Vec<u16
 	Some((units, pieces))
 }
 
-/// The main text of a Word 6.0 / Word 95 document, which is the byte run between `fcMin` and
-/// `fcMac` in the WordDocument stream. Those bytes are 8-bit codepage text, not the UTF-16 Word 97
-/// switched to, so they are decoded with the same detector the plain-text and HTML parsers use,
-/// which recovers a Cyrillic or Central European document rather than turning it into question
-/// marks. A fast-saved file's edits may sit outside this run, so the order can be imperfect, but
-/// the words are there, which is the whole point against a hard error.
+/// A Word 6/95 document's text: the 8-bit codepage run between `fcMin` and `fcMac`, decoded with the shared detector.
 fn extract_word6_text(word_document: &[u8]) -> String {
 	let fc_min = usize::try_from(read_u32_le(word_document, FIB_FCMIN_OFFSET)).unwrap_or(0);
 	let fc_mac = usize::try_from(read_u32_le(word_document, FIB_FCMAC_OFFSET)).unwrap_or(0);

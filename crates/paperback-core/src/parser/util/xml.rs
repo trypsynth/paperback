@@ -42,16 +42,7 @@ pub fn find_child_element<'a, 'input>(node: Node<'a, 'input>, name: &str) -> Opt
 	node.children().find(|child| child.node_type() == NodeType::Element && child.tag_name().name() == name)
 }
 
-/// Reads an XML file as text, decoded with the encoding the file's own declaration names.
-///
-/// [`std::fs::read_to_string`] demands UTF-8, and a FictionBook usually is not. The format came
-/// out of the Russian ebook world and most of its books are written in windows-1251, named in the
-/// `<?xml version="1.0" encoding="windows-1251"?>` at the top. Reading one of those as UTF-8 fails
-/// outright, so the whole book is lost over a header Paperback could simply have read.
-///
-/// A file that names an encoding this does not know is read as UTF-8, and one that names none at
-/// all is guessed at the way a plain text file is. A byte order mark wins over the declaration,
-/// which is what the XML specification asks for.
+/// Reads an XML file in the encoding its declaration names, since most FictionBooks are windows-1251. A byte order mark wins, and a file with no declaration is guessed at like plain text.
 pub fn read_xml_to_string(path: &str) -> std::io::Result<String> {
 	let bytes = std::fs::read(path)?;
 	let Some(encoding) = crate::util::encoding::xml_declared_encoding(&bytes) else {
@@ -156,7 +147,7 @@ mod tests {
 		let doc = Document::parse(xml).unwrap();
 		assert!(find_child_element(doc.root_element(), "target").is_none());
 	}
-	/// The windows-1251 an ordinary FictionBook is written in, which `read_to_string` refuses.
+	/// windows-1251, which `read_to_string` refuses.
 	#[test]
 	fn decodes_the_encoding_the_declaration_names() {
 		let dir = TempDir::new("xml-encoding");

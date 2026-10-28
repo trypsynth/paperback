@@ -10,42 +10,9 @@ use crate::{
 };
 
 impl DocumentManager {
-	/// Keeps the loaded window ahead of a caret that is moving forward, by appending to it.
+	/// Extends the loaded window ahead of a caret moving forward, on a timer because NVDA's Say-All reads through UI Automation and never reaches our key handlers.
 	///
-	/// A timer rather than an input hook because a screen reader's own text-walking never reaches
-	/// this app's key handlers: NVDA's Say-All (and similar continuous-reading features) drives
-	/// RichEdit's UI Automation text pattern directly. Without polling, reaching the loaded end
-	/// during a Say-All would look exactly like reaching the real end of the document, and reading
-	/// would stop mid-paragraph with millions of characters still unread. Reacting to where the
-	/// caret actually is sidesteps having to know what put it there. `RELOAD_MARGIN`, a quarter of
-	/// the window, gives even fast reading time to load more well before it runs out.
-	///
-	/// Because it runs on a timer, it must never do anything a reader could notice. Appending
-	/// qualifies: every offset already handed out still points at the same character. Rebuilding
-	/// the window does not.
-	///
-	/// The bug that motivated the split: NVDA's Say-All holds its own offsets into the control,
-	/// advances them itself rather than re-reading the caret, and has no handling for the text
-	/// changing underneath it (`_TextReader` only checks whether the object died). Recentring the
-	/// window swapped the whole buffer and moved `start`, so those offsets silently came to mean a
-	/// different place in the book. Say-All read on from the wrong spot, moved the real caret there
-	/// with it, and this timer then saw *that* position, decided it was near an edge, and recentred
-	/// again - walking the window backwards to the top of the document a few hundred thousand
-	/// characters at a time while the user listened. Reported as reading randomly jumping to the
-	/// start of large text files.
-	///
-	/// Splitting extension from compaction was not enough on its own, because compaction stayed
-	/// reachable from here for a caret that had run out of text behind it, on the reasoning that a
-	/// forward reader could never be in that position. A reader whose offsets have gone stale can:
-	/// compaction moves the loaded start out from under offsets their holder never revisits, which
-	/// leaves those offsets sitting near the new start, which is the very condition to compact
-	/// again. Each tick walked the window another `RELOAD_MARGIN` back, and the read reached the
-	/// top of the document in about three seconds. A tick that can only extend cannot start that
-	/// loop, so this one cannot.
-	///
-	/// Compaction happens elsewhere: at the navigation chokepoints, on the key and mouse events
-	/// that end a read (see [`Self::compact_window_after_user_move`]), and on a resize, where the
-	/// cost it exists to avoid is actually billed.
+	/// It only ever appends. Say-All keeps its own offsets into the control, and recentring or compacting here once walked a Say-All back to the top of a large file. Compaction happens where the user moves instead (see [`Self::compact_window_after_user_move`]).
 	pub fn pump_window_extend(&mut self) {
 		let Some(tab) = self.active_tab_mut() else {
 			return;

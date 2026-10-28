@@ -1,10 +1,4 @@
-//! Turning a format's raw chapter list (an unordered, possibly overlapping or duplicate set of
-//! start times and titles, as M4B's `Chpl`/`chap` atoms or an MP3's ID3v2 `CHAP` frames hand
-//! over) into a clean, contiguous set of sections covering the whole file.
-//!
-//! Shared by `parser::m4b` and `parser::mp3`, whose chapter *sources* differ but whose
-//! cleanup rules (sort, dedupe, force the first chapter to start at 0, derive each chapter's end
-//! from the next one's start) are identical.
+//! Turns an M4B's or MP3's raw chapter list into sections that cover the whole file without gaps.
 
 use std::collections::HashSet;
 

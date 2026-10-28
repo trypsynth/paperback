@@ -46,8 +46,7 @@ fn looks_like_text_content_detects_textual_data() {
 	assert!(!looks_like_text_content("\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}"));
 }
 
-/// Word 6/95 keeps its text in the WordDocument stream between fcMin and fcMac. A Western document
-/// decodes cleanly through the shared detector.
+/// Word 6/95 keeps its text between `fcMin` and `fcMac` in the `WordDocument` stream.
 #[test]
 fn extract_word6_text_reads_the_fcmin_to_fcmac_run() {
 	use super::extract_word6_text;

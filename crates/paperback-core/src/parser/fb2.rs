@@ -290,16 +290,7 @@ fn find_element_by_path<'a, 'input>(node: Node<'a, 'input>, path: &[&str]) -> Op
 	None
 }
 
-/// Declares the namespace prefixes a document uses and never declared, so a strict XML parser will
-/// read it.
-///
-/// A FictionBook written by hand or by a careless converter often opens with a bare
-/// `<FictionBook>` and then writes a footnote as `<a l:href="#n1">`, with no `xmlns:l` anywhere.
-/// That is not valid XML and roxmltree refuses the whole file, though every FictionBook reader
-/// takes it: Bulgakov's "The White Guard" in FBReader's own test corpus is written exactly that
-/// way. Nothing downstream looks at namespaces, only at local names, so the declarations added
-/// here need only exist. Returns `None` when every prefix the document uses is already declared,
-/// which is when there is nothing to gain by parsing it again.
+/// Declares the namespace prefixes a FictionBook uses but never declares, such as `l:href` with no `xmlns:l`, which roxmltree would refuse. `None` when nothing is missing.
 fn declare_missing_namespaces(xml: &str) -> Option<String> {
 	let mut missing: Vec<&str> = Vec::new();
 	for prefix in used_prefixes(xml) {
@@ -389,25 +380,14 @@ fn root_element_attribute_position(xml: &str) -> Option<usize> {
 	}
 }
 
-/// Makes a FictionBook that is not quite valid XML readable, or returns `None` when there was
-/// nothing to mend.
-///
-/// Both repairs are for files that every FictionBook reader opens and a strict XML parser will
-/// not, which is a large share of what is out there: the format is old, and much of its library
-/// was converted from HTML by tools that were not careful.
+/// Mends a FictionBook that other readers open but a strict XML parser refuses, or `None` when there was nothing to mend.
 fn repair_fb2_xml(xml: &str) -> Option<String> {
 	let namespaced = declare_missing_namespaces(xml);
 	let entities = resolve_html_entities(namespaced.as_deref().unwrap_or(xml));
 	entities.or(namespaced)
 }
 
-/// Replaces the HTML character entities an XML parser does not know with the characters they
-/// stand for.
-///
-/// XML declares five entities and no more, so `&nbsp;` or `&mdash;` in a FictionBook is an error
-/// that costs the whole book. They are common: a converter that has just read HTML writes what it
-/// read. An entity that is not in the HTML set either is dropped, because a missing character is
-/// a smaller loss than a missing book.
+/// Replaces HTML entities such as `&nbsp;` that XML does not define, dropping unknown ones, since any of them would otherwise lose the whole book.
 fn resolve_html_entities(xml: &str) -> Option<String> {
 	/// Longest HTML entity name, `CounterClockwiseContourIntegral;`, plus room.
 	const MAX_ENTITY_LEN: usize = 34;
@@ -471,8 +451,7 @@ mod tests {
 		parse_fb2(contents).expect("parse fb2 document")
 	}
 
-	/// FictionBook came out of the Russian ebook world and most of its books are written in
-	/// windows-1251, named in the XML declaration. Reading one as UTF-8 loses the whole book.
+	/// Most FictionBooks are windows-1251, named in the XML declaration.
 	#[test]
 	fn reads_a_book_written_in_windows_1251() {
 		let xml = concat!(
@@ -493,8 +472,7 @@ mod tests {
 		assert!(doc.buffer.content.contains("Анна Каренина"), "got {:?}", doc.buffer.content);
 	}
 
-	/// A FictionBook written by hand often opens with a bare `<FictionBook>` and then uses `l:href`
-	/// for a footnote without declaring the prefix. Every reader of the format takes it.
+	/// Hand-written FictionBooks often use `l:href` without declaring the prefix.
 	#[test]
 	fn reads_a_book_that_never_declared_its_namespace_prefix() {
 		let doc = parse_ok(
@@ -518,8 +496,7 @@ mod tests {
 		assert!(doc.buffer.content.contains("Hello world—and…"), "got {:?}", doc.buffer.content);
 	}
 
-	/// An entity nothing knows is dropped rather than taken as a reason to lose the book. FBReader's
-	/// own help files are written with an undeclared `&FBReaderVersion;` in them.
+	/// FBReader's own help files use an undeclared `&FBReaderVersion;`.
 	#[test]
 	fn an_entity_nothing_knows_costs_only_itself() {
 		let doc = parse_ok(&fb2_document(

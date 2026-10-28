@@ -350,16 +350,8 @@ const fn document_edge_for_key(key: i32, control: bool, shift: bool, alt: bool) 
 	}
 }
 
-/// Returns (`new_position`, `preferred_column`) for vertical navigation.
-/// With `start_of_line` set, the caret lands at the start of the target visual line. Otherwise it
-/// uses character-column-based navigation (`pref_col` or the current column), so the cursor lands on
-/// the same character column (not pixel column) on the target visual line.
-///
-/// Reloads `tab`'s window and retries once if Up/Down would otherwise stop at a loaded-window
-/// boundary that isn't the document's actual start/end. Without this, Up/Down (and Page Up/Down,
-/// which RichEdit handles natively with no window awareness at all) can strand the caret mid-chapter
-/// with no keyboard-only way past it except an explicit jump (heading/bookmark navigation etc.) -
-/// found the hard way testing a huge book, not something worth leaving as a TODO.
+/// Returns (`new_position`, `preferred_column`) for Up and Down, keeping the character column, or landing at the line start with `start_of_line`.
+/// Reloads the window and retries once at a loaded-window edge that isn't the document's, which would otherwise strand the caret.
 #[cfg(any(target_os = "windows", target_os = "macos"))]
 fn navigate_line_by_column(
 	tab: &mut DocumentTab,

@@ -1,6 +1,4 @@
-//! The platform-specific document list widget. wxListCtrl is not exposed to VoiceOver as an
-//! accessible table on macOS, so a wxDataViewListCtrl is used there while the ListCtrl remains
-//! appropriate on Windows and Linux; these accessors hide the difference from the dialog.
+//! The document list: a `wxDataViewListCtrl` on macOS, where VoiceOver does not see a `wxListCtrl` as a table, and a `wxListCtrl` elsewhere.
 
 use wxdragon::prelude::*;
 

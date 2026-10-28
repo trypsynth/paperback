@@ -110,11 +110,7 @@ fn asciimath(mathml: &str) -> Option<String> {
 	rendered
 }
 
-/// MathML expressions may use XML namespace prefixes declared on an ancestor element. These may
-/// need to be stripped for MathCAT (as its prefix handling is incomplete), and must be stripped for formula view.
-///
-/// Therefore, we can't pass the source MathML verbatim and must re-serialize it instead. Because Roxmltree
-/// doesn't implement its own serializer, we implement just enough of one ourselves to do the job.
+/// Re-serializes MathML without namespace prefixes: MathCAT's prefix handling is incomplete, formula view needs them gone, and roxmltree has no serializer.
 pub(super) fn xml_formula_fragment(node: Node<'_, '_>) -> String {
 	let mut output = String::new();
 	serialize_mathml(node, &mut output);

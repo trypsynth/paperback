@@ -29,9 +29,7 @@ use crate::{
 	},
 };
 
-/// Parses a DAISY book packaged as a zip archive: DAISY 3 (OPF manifest plus DTBook XML, with
-/// or without a SMIL audio layer), DAISY 2.02 (`ncc.html`), or, failing both, a bare bundle of
-/// audio files with no markup at all.
+/// Parses a zipped DAISY book: DAISY 3, DAISY 2.02 (`ncc.html`), or failing both a bare bundle of audio files.
 pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 	let mut document = parse_archive(context, path)?;
 	resolve_picture_entries(&mut document, path);

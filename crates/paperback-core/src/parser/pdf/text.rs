@@ -152,9 +152,7 @@ pub(super) struct Judgement {
 	kept: bool,
 }
 
-/// The words a line-end hyphen on one page is judged by: that page's own, and those of the pages before it.
-///
-/// A word split at a line end is judged by how the whole document so far writes it, not only that page: a book that writes "OpenSolaris" or "MTBF" on one page joins them when they wrap on a later one. Pages are read on several threads at once, though, and a thread has seen only some of the pages before the one in hand. So a page is first judged against the pages its own thread has read, and every judgement is kept. Once all the pages are read, [`confirms`] checks each judgement against every page before it, and a page with one that comes out differently is read again. What comes out is what reading the pages one after another gives.
+/// The words a line-end hyphen is judged by: its own page's and those of the pages its thread read before it. [`confirms`] checks each judgement against every earlier page once all threads finish.
 pub(super) struct PageEvidence<'a> {
 	page: i32,
 	earlier: &'a [WordPages],
@@ -697,7 +695,7 @@ mod tests {
 		assert_eq!(sanitize_pdf_text("BrailleNote and Braille\u{0002}Note"), "BrailleNote and BrailleNote");
 	}
 
-	/// A thread reading page 1 has not seen page 0 if another thread read it. Page 0 writes "OpenSolaris" whole, so the "Open-Solaris" wrapping on page 1 is one word, but without page 0 the capital keeps the hyphen. The check has to catch that, or the page keeps a hyphen that reading the pages in order would drop.
+	/// Page 0 writes "OpenSolaris" whole, so a thread that never saw it must not keep the hyphen in page 1's "Open-Solaris".
 	#[test]
 	fn a_hyphen_judged_without_an_earlier_page_is_caught() {
 		let chars = |text: &str| text.chars().collect::<Vec<char>>();

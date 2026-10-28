@@ -181,11 +181,7 @@ fn multi_file_daisy_book_keeps_first_occurrence_of_a_duplicate_bare_id() {
 	assert_eq!(document.id_positions.get("book2.xml#dup").copied(), Some(second_pos));
 }
 
-/// Some OPFs label their DTBook items as generic `text/xml` rather than the proper
-/// `application/x-dtbook+xml`. `find_single_dtbook_href`'s legacy fallback already tolerates
-/// this for a single-file book; the multi-file spine walk in `build_daisy_document` must too,
-/// or every such chapter gets skipped, `converted_any` never becomes true, and the whole book
-/// falls back to that same single-file path, which then only recovers the first chapter.
+/// Chapters an OPF labels `text/xml` must still be read, or the book falls back to the single-file path and keeps only its first chapter.
 #[test]
 fn multi_file_daisy_book_accepts_untyped_xml_chapters_referenced_directly_from_the_spine() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>

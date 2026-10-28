@@ -1,27 +1,16 @@
-//! Finding the live parts of a legacy PowerPoint file.
-//!
-//! A `PowerPoint Document` stream is not one document laid out from its start. It is a heap of
-//! *persist objects* left behind by every save the file has had, and only the ones the most
-//! recent save points at are the presentation. Reading the stream from the front instead reads
-//! whatever happens to sit there, which on a file whose objects are not in order means records
-//! attributed to the wrong parents and text from saves that were superseded.
-//!
-//! The way in is the Current User stream, which says where the current save's UserEditAtom is.
-//! That names a persist directory, and that directory says where every object of the
-//! presentation begins.
+//! Finding the live objects in a legacy PowerPoint stream, which keeps every save's objects: the Current User stream leads to the latest `UserEditAtom`, and its persist directory to each object.
 //!
 //! <https://docs.microsoft.com/en-us/openspecs/office_file_formats/ms-ppt/1fc22d56-28f9-4818-bd45-67c2bf721ccf>
 
 use std::collections::BTreeMap;
 
-/// Offset of the CurrentUserAtom's offsetToCurrentEdit, past its record header, its size, and
-/// the token that says whether the file is encrypted.
+/// Offset of the `CurrentUserAtom`'s `offsetToCurrentEdit`, past its header, its size and its encryption token.
 const OFFSET_TO_CURRENT_EDIT_AT: usize = 16;
 
 const RT_USER_EDIT_ATOM: u16 = 0x0FF5;
 const RT_PERSIST_DIRECTORY_ATOM: u16 = 0x1772;
 
-/// Offsets within a UserEditAtom, from the start of its record header.
+/// Offsets within a `UserEditAtom`, from the start of its record header.
 const OFFSET_LAST_EDIT_AT: usize = 16;
 const OFFSET_PERSIST_DIRECTORY_AT: usize = 20;
 const DOC_PERSIST_ID_REF_AT: usize = 24;
@@ -53,7 +42,7 @@ pub(super) struct Presentation<'a> {
 	stream: &'a [u8],
 	/// Persist identifier to the offset of the object it names.
 	directory: BTreeMap<u32, usize>,
-	/// The identifier of the DocumentContainer, which is where the presentation starts.
+	/// The identifier of the `DocumentContainer`, where the presentation starts.
 	document_id: u32,
 }
 
@@ -118,9 +107,7 @@ impl<'a> Presentation<'a> {
 	}
 }
 
-/// Adds one PersistDirectoryAtom's identifier-to-offset pairs to `directory`.
-///
-/// Each entry names a run of consecutive identifiers and gives an offset for each of them.
+/// Adds one `PersistDirectoryAtom`'s runs of identifiers and offsets to `directory`.
 /// <https://docs.microsoft.com/en-us/openspecs/office_file_formats/ms-ppt/d10a093d-860f-409c-b065-aeb24b830505>
 fn read_persist_directory(stream: &[u8], at: usize, directory: &mut BTreeMap<u32, usize>) {
 	if read_u16(stream, at + 2) != Some(RT_PERSIST_DIRECTORY_ATOM) {

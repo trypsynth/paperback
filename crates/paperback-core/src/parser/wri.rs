@@ -1,16 +1,4 @@
-//! Windows Write (`.wri`).
-//!
-//! The `.wri` extension has meant three different things over the years, and a real one on disk is
-//! almost never the format the name suggests. Of the files people actually keep, the overwhelming
-//! majority are Rich Text Format or plain text saved with a `.wri` name (a WordPad or Write "save
-//! as" habit from the 1990s), and only a rare few are the genuine Windows 3.x Write binary. So
-//! this parser reads the first bytes and routes: an RTF file goes to [`super::rtf`], the Write
-//! binary is read here, and anything else is read as plain text by [`super::text`]. That covers
-//! every `.wri` seen in a wide sample and turns a hard "cannot read" into a document either way.
-//!
-//! The Write binary format is a small header followed by the text, laid out much like the Word 6
-//! documents in [`super::word`]: a byte run whose end the header records, in the codepage of the
-//! machine that wrote it. It is read the same way, through the shared encoding detector.
+//! Windows Write (`.wri`). Most real `.wri` files are RTF or plain text under that name, so this routes on the first bytes and reads only the genuine Write binary itself.
 
 use std::fs;
 

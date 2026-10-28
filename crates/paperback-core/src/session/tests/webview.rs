@@ -338,8 +338,7 @@ fn build_epub_with_linked_sections(dir: &Path) -> PathBuf {
 	epub_path
 }
 
-/// The section a table of contents links to has to be on disk too, or following
-/// that link in the web view fails with ERR_FILE_NOT_FOUND (issue #719).
+/// The section a table of contents links to must be on disk too, or the web view fails with `ERR_FILE_NOT_FOUND` (#719).
 #[test]
 fn webview_target_path_extracts_linked_sibling_sections() {
 	let temp_root = TempDir::new("webview_toc");

@@ -91,11 +91,7 @@ pub(super) fn is_dtbook_item(item: &ManifestItem) -> bool {
 	item.media_type == "application/x-dtbook+xml"
 }
 
-/// Whether `item` is plausibly DTBook content convertible directly, without a SMIL layer:
-/// the manifest's declared type, or the same untyped-`.xml` fallback `find_single_dtbook_href`
-/// uses for a book whose OPF mislabels its DTBook items as generic `text/xml`. Unlike
-/// `is_dtbook_item`, this doesn't rank one match over the other, since the spine walk in
-/// `build_daisy_document` decides per item rather than picking a single best match package-wide.
+/// Whether `item` is DTBook content, by its declared type or by the `.xml` fallback for OPFs that label DTBook as `text/xml`.
 pub(super) fn is_dtbook_like_item(item: &ManifestItem) -> bool {
 	is_dtbook_item(item)
 		|| (item.media_type == "text/xml"

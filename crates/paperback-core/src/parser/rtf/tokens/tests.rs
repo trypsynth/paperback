@@ -240,12 +240,7 @@ fn extract_content_renders_bold_from_real_rtf_string() {
 	assert_eq!(bold[0].length, "bold".chars().count());
 }
 
-/// Round-trip through the real lexer (unlike
-/// `extract_content_maps_quote_unknown_control_words_to_typographic_quotes` above, which
-/// hand-builds `ControlWord::Unknown` tokens and so can't catch this): rtf_parser 0.4.3
-/// promoted `\rquote`/`\lquote`/`\rdblquote`/`\ldblquote`/`\emdash`/`\endash`/`\bullet` from
-/// `Unknown(name)` to their own dedicated `ControlWord` variants, which silently fell
-/// through the `_ => {}` catch-all until dedicated match arms were added for them.
+/// Goes through the real lexer, since `rtf_parser` 0.4.3 gave `\rquote` and the like their own variants, which fell through the catch-all.
 #[test]
 fn extract_content_maps_special_char_control_words_from_real_rtf_string() {
 	let rtf = r"{\rtf1\ansi\pard Earth\rquote s \lquote quoted\rquote \ldblquote double\rdblquote em\emdash dash en\endash dash \bullet bullet}";
@@ -269,8 +264,7 @@ fn extract_content_reads_a_document_with_a_dash_bullet_list_level() {
 	assert_eq!(buffer.content, "Body text.");
 }
 
-/// WordPad's minimal files and many generators never write \pard: the text follows the font
-/// table directly. It was treated as header and the document came out empty.
+/// WordPad and many generators never write `\pard`, which once left the document empty.
 #[test]
 fn extract_content_keeps_body_text_written_without_pard() {
 	let rtf = r"{\rtf1\ansi\deff0{\fonttbl{\f0 Arial;}}{\colortbl;\red0\green0\blue0;}\f0 Hello plain world.\par Second line.\par}";

@@ -1,10 +1,4 @@
-//! A loose MP3 file opened directly, as opposed to an M4B (which carries its own chapter list
-//! in a different way, see `parser::m4b`) or a DAISY "plain audio" zip bundle of several files
-//! (see `parser::daisy::plain_audio`).
-//!
-//! MP3 has a standard, widely-supported way to embed a chapter list: ID3v2's `CHAP`/`CTOC`
-//! frames, the same mechanism podcast apps use. A chapterless file becomes one full-length
-//! section, same as a chapterless M4B.
+//! A loose MP3 file, split into chapters by its ID3v2 `CHAP` frames when it has them.
 
 use std::{fs::File, io::BufReader};
 
@@ -52,19 +46,7 @@ fn document_metadata(tagged_file: &lofty::file::TaggedFile, file_path: &str) -> 
 	(title, author)
 }
 
-/// ID3v2 `CHAP` frames from the file's tag, if it has any. Reading them needs the format-specific
-/// `MpegFile` (via its own `AudioFile::read_from`, a second, separate read of the file), since
-/// the generic `TaggedFile`/`Tag` API `document_metadata` uses normalizes tags across formats
-/// and drops frames, like `CHAP`, that have no cross-format equivalent. Empty (rather than an
-/// error) whenever the file can't be opened, isn't valid MPEG audio after all, or carries no
-/// ID3v2 tag at all — `normalize_chapters` treats an empty list as "no chapters" regardless of
-/// why, falling back to one full-length section, which is the right response to all three.
-///
-/// Chapters are read in whatever order the tag stores them in; `normalize_chapters` sorts them
-/// by start time regardless. A `CTOC` frame's own ordering is not consulted: for the single flat
-/// chapter list every real-world MP3 audiobook or podcast actually has, start time sorts them
-/// identically, and consulting `CTOC` besides would only matter for a nested chapter tree, which
-/// no known producer writes and this reader has no representation for anyway.
+/// The ID3v2 `CHAP` frames, read through `MpegFile` because the generic `Tag` API drops them. Empty when there are none or the file can't be read.
 fn read_id3v2_chapters(file_path: &str) -> Vec<RawChapter> {
 	let Ok(file) = File::open(file_path) else { return Vec::new() };
 	let mut reader = BufReader::new(file);
@@ -164,9 +146,7 @@ mod tests {
 		assert_eq!(audio.total_duration_ms(), 10_000);
 	}
 
-	/// Reads a chapter's title back from a real, self-contained `ChapterFrame` built in memory
-	/// (as `read_id3v2_chapters` would find embedded in an MP3's ID3v2 tag), rather than from a
-	/// file on disk, so this doesn't depend on a real chaptered MP3 fixture existing in the repo.
+	/// Builds the frame in memory, so the test needs no chaptered MP3 fixture.
 	#[test]
 	fn chapter_title_reads_the_embedded_tit2_child_frame() {
 		use lofty::{

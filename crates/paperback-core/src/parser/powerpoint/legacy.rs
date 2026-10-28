@@ -25,8 +25,7 @@ const PPT_RECORD_HEADER_SIZE: usize = 8;
 /// How much of a string has to be ordinary text before it is taken for text and not for the
 /// binary that happens to sit next to it.
 const PRINTABLE_SHARE_OF_A_STRING: f32 = 0.8;
-/// What the names of the tags PowerPoint keeps its own settings under begin with, such as
-/// "___PPT9" and "___PPT10". They are not text of the presentation.
+/// The prefix of the tags PowerPoint keeps its own settings under, such as `___PPT9`, which are not slide text.
 const PROG_TAG_NAME_PREFIX: &str = "___PPT";
 const PPT_REC_SLIDE: u16 = 1006;
 const PPT_REC_TEXT_CHARS_ATOM: u16 = 4000;
@@ -96,7 +95,7 @@ pub(super) fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 	Ok(document)
 }
 
-/// Offset of the CurrentUserAtom's headerToken, past the record header and the size field.
+/// Offset of the `CurrentUserAtom`'s `headerToken`, past the record header and the size field.
 const HEADER_TOKEN_OFFSET: usize = 12;
 
 /// The token a presentation carries when it is password-protected. A legacy file says so here
@@ -167,12 +166,7 @@ fn read_ppt_document_stream<F: Read + std::io::Seek>(compound: &mut CompoundFile
 	anyhow::bail!(t("PowerPoint Document stream not found"))
 }
 
-/// The text of every slide, in the order the presentation lists them.
-///
-/// The text of a slide is not always kept in the slide. A presentation also carries a list of
-/// its slides in the document itself, the SlideListWithText, and that is where PowerPoint puts
-/// the outline text of a slide whose own record holds none. A file whose slides are all empty
-/// reads as a file of empty slides unless both places are looked at.
+/// Every slide's text in order, including the outline text PowerPoint keeps in the `SlideListWithText` for a slide whose own record has none.
 fn collect_legacy_slide_texts(stream_data: &[u8], current_user: &[u8]) -> Vec<String> {
 	if let Some(presentation) = Presentation::read(stream_data, current_user) {
 		let outlines = presentation.document().map(slide_outline_texts).unwrap_or_default();
@@ -394,8 +388,7 @@ mod tests {
 		text.encode_utf16().flat_map(u16::to_le_bytes).collect()
 	}
 
-	/// Writes a presentation carrying nothing but the CurrentUserAtom that says whether it is
-	/// encrypted, which is the only part of the file the check reads.
+	/// A presentation holding only the `CurrentUserAtom`, the one part the encryption check reads.
 	fn presentation_with_token(dir: &TempDir, name: &str, token: u32) -> String {
 		let mut current_user = Vec::new();
 		// A CurrentUserAtom: its record header, its size, the token, and the offset after it.
@@ -413,9 +406,7 @@ mod tests {
 		path
 	}
 
-	/// A legacy presentation says it is encrypted in its CurrentUserAtom, where an OOXML file
-	/// has a stream of its own for it. Opening one without a password has to ask for the
-	/// password rather than report a broken file.
+	/// A legacy presentation flags encryption in its `CurrentUserAtom`, and opening one has to ask for the password.
 	#[test]
 	fn an_encrypted_presentation_asks_for_a_password() {
 		let dir = TempDir::new("ppt-encrypted");
@@ -444,7 +435,7 @@ mod tests {
 		bytes
 	}
 
-	/// A CurrentUserAtom naming the save at `offset_to_current_edit`.
+	/// A `CurrentUserAtom` naming the save at `offset_to_current_edit`.
 	fn current_user_stream(offset_to_current_edit: u32) -> Vec<u8> {
 		let mut payload = Vec::new();
 		payload.extend_from_slice(&0x0000_0014u32.to_le_bytes());
@@ -454,7 +445,7 @@ mod tests {
 		record(0, 0x0FF6, &payload)
 	}
 
-	/// A UserEditAtom naming its persist directory and the object the document is.
+	/// A `UserEditAtom` naming its persist directory and the document's object.
 	fn user_edit_atom(persist_directory_at: u32, document_id: u32) -> Vec<u8> {
 		let mut payload = Vec::new();
 		payload.extend_from_slice(&0u32.to_le_bytes());
@@ -466,7 +457,7 @@ mod tests {
 		record(0, 0x0FF5, &payload)
 	}
 
-	/// A PersistDirectoryAtom, one entry for each object.
+	/// A `PersistDirectoryAtom` with one entry for each object.
 	fn persist_directory(entries: &[(u32, u32)]) -> Vec<u8> {
 		let mut payload = Vec::new();
 		for (id, offset) in entries {
@@ -551,8 +542,7 @@ mod tests {
 		assert_eq!(parse_cstring(&utf16("Agenda")), Some("Agenda".to_string()));
 	}
 
-	/// A CString holds UTF-16. Reading one as bytes turns "___PPT10" into a lone underscore,
-	/// which then stands on the slide in place of the text the slide really has.
+	/// A `CString` is UTF-16. Read as bytes, `___PPT10` became a lone underscore on the slide.
 	#[test]
 	fn parse_cstring_reads_utf16() {
 		assert_eq!(parse_cstring(&utf16("Agenda")), Some("Agenda".to_string()));

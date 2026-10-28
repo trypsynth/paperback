@@ -260,7 +260,7 @@ mod tests {
 		assert!(id < RECENT_DOCUMENT_BASE);
 	}
 
-	/// Adding Reload once walked a File id onto wxID_EXIT, and moving the File menu up to escape it put Close on wxID_CUT, which macOS binds to the native cut: action. Only the actions meant to be stock items may have a stock id.
+	/// Only actions meant to be stock items may have a stock id: one that landed on `wxID_CUT` became the native cut on macOS.
 	#[test]
 	fn only_stock_actions_have_wxwidgets_ids() {
 		use paperback_core::config::ActionId;

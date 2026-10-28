@@ -116,18 +116,8 @@ pub fn log_level_from_disk() -> LogLevel {
 	level.and_then(|level| level.parse().ok()).unwrap_or_default()
 }
 
-/// Returns the directory where Paperback stores its config and log files.
-///
-/// `$PAPERBACK_CONFIG_DIR`, when set, overrides every rule below.
-/// On macOS app bundles: `~/Library/Application Support/Paperback/`.
-/// On Windows installer builds: `%APPDATA%\Paperback\`.
-/// On Linux, only when running from an AppImage (`$APPIMAGE` set, the same check
-/// `linux_integration.rs` uses): `$XDG_CONFIG_HOME/Paperback` (default `~/.config/Paperback`).
-/// An AppImage mounts itself read-only at a fresh temp path on every launch, so the
-/// exe-directory convention below is never writable and never persists between runs there;
-/// a portable Linux build (the plain extracted tar.gz binary, no `$APPIMAGE`) has no such
-/// problem and uses it like every other portable build.
-/// Otherwise: the directory containing the executable (portable convention).
+/// Paperback's config and log directory: `$PAPERBACK_CONFIG_DIR` if set, the platform's config directory for a macOS bundle, a Windows install or an AppImage, and otherwise beside the executable.
+/// An AppImage gets the config directory because it is mounted read-only at a new path on every launch.
 pub fn config_dir() -> PathBuf {
 	if let Some(dir) = env::var_os("PAPERBACK_CONFIG_DIR") {
 		let dir = PathBuf::from(dir);

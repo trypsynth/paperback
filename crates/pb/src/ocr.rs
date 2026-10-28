@@ -406,8 +406,7 @@ mod tests {
 		assert_eq!(all, vec![1, 2, 3], "both together read every page");
 	}
 
-	/// A format with no bitmap pages to render is not swept, which is what is_ocr_able decides, so
-	/// an EPUB is not reported as a whole document read when it was not.
+	/// A format with no bitmap pages, such as EPUB, is not swept, so it is not reported as read (see `is_ocr_able`).
 	#[test]
 	fn a_format_with_no_bitmap_pages_is_not_swept() {
 		assert!(is_ocr_able("book.pdf"));
