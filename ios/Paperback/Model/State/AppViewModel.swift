@@ -8,9 +8,6 @@ final class AppViewModel {
 	var tabs: [DocumentTab] = []
 	// TTS stops on a tab switch because a paused buffer stays scheduled on the audio node and would bleed into the next book.
 	var activeTabId: UUID? = nil {
-		willSet {
-			if newValue != activeTabId { reading.saveTextModePosition() }
-		}
 		didSet {
 			guard activeTabId != oldValue else { return }
 			reading.ttsManager.stop()
@@ -142,7 +139,6 @@ final class AppViewModel {
 		}
 		NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
 			.sink { [weak self] _ in
-				self?.reading.saveTextModePosition()
 				self?.configManager.flush()
 			}
 			.store(in: &cancellables)
@@ -157,6 +153,17 @@ final class AppViewModel {
 	}
 
 	var debugMessage: String? = nil
+
+	/// Laid out the first time a document is shown in text mode, and kept while its tab is open.
+	@ObservationIgnored private var bookModels: [UUID: BookModel] = [:]
+
+	func bookModel(for tab: DocumentTab) -> BookModel? {
+		if let model = bookModels[tab.id] { return model }
+		guard let session = tab.session else { return nil }
+		let model = BookModel(session: session, layout: ReadingLayout(session: session))
+		bookModels[tab.id] = model
+		return model
+	}
 
 	func openDocument(url: URL, password: String? = nil, track: Bool = true) {
 		if let existing = tabs.first(where: { $0.url == url }) {
@@ -189,7 +196,6 @@ final class AppViewModel {
 				saveBookmark(for: url, path: path)
 			}
 			reading.loadSegment(for: tab)
-			if reading.isTextMode { reading.enterTextMode() }
 			reading.updateNowPlaying()
 		} catch {
 			if scopeStarted { url.stopAccessingSecurityScopedResource() }
@@ -276,7 +282,7 @@ final class AppViewModel {
 	}
 
 	func closeTab(_ tab: DocumentTab) {
-		if tab.id == activeTabId { reading.saveTextModePosition() }
+		bookModels[tab.id] = nil
 		let path = tab.url.path(percentEncoded: false)
 		if tab.session != nil {
 			let position = tabs.first { $0.id == tab.id }?.currentPosition ?? tab.currentPosition
@@ -294,7 +300,6 @@ final class AppViewModel {
 		activeTabId = tab.id
 		if let t = activeTab {
 			reading.loadSegment(for: t)
-			if reading.isTextMode { reading.enterTextMode() }
 		}
 	}
 
@@ -374,15 +379,6 @@ final class AppViewModel {
 
 extension AppViewModel: ReadingContext {
 	var activeTitle: String? { activeTab?.title }
-
-	var activeLineScrollIndex: Int {
-		get { activeTab?.lineScrollIndex ?? 0 }
-		set {
-			guard let id = activeTabId,
-			      let idx = tabs.firstIndex(where: { $0.id == id }) else { return }
-			tabs[idx].lineScrollIndex = newValue
-		}
-	}
 
 	func persistPosition(_ position: Int64) {
 		updateTabPosition(position)

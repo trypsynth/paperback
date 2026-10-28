@@ -47,7 +47,7 @@ pub struct ReadingUnitFfi {
 	/// A heading's level, else 0.
 	pub level: i32,
 	pub text: String,
-	/// An image's own description, empty when it has none.
+	/// The description of an image filling the unit, even one a section heading landed on, empty when it has none.
 	pub description: String,
 	pub position: DocPos,
 	pub block: i64,
@@ -384,15 +384,18 @@ impl ReadingLayout {
 		let mut kind = ReadingUnitKind::Paragraph;
 		let mut level = 0;
 		let mut description = String::new();
+		let image = self.image_filling(content_start, end, DocLen::of(text));
+		if let Some(image) = image {
+			description.clone_from(&buf.markers[image].text);
+		}
 		let heading = self.headings.partition_point(|heading| heading.0 < start);
 		if let Some(&(heading_position, heading_level)) = self.headings.get(heading)
 			&& heading_position < end
 		{
 			kind = ReadingUnitKind::Heading;
 			level = heading_level;
-		} else if let Some(image) = self.image_filling(content_start, end, DocLen::of(text)) {
+		} else if image.is_some() {
 			kind = ReadingUnitKind::Image;
-			description.clone_from(&buf.markers[image].text);
 		} else {
 			let list = self.lists.partition_point(|span| span.1 <= start);
 			if self.lists.get(list).is_some_and(|span| span.0 < end) {

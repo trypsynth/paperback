@@ -6,7 +6,6 @@ import MediaPlayer
 protocol ReadingContext: AnyObject {
 	var activeSession: DocumentSession? { get }
 	var activeTitle: String? { get }
-	var activeLineScrollIndex: Int { get set }
 	func persistPosition(_ position: Int64)
 }
 
@@ -38,8 +37,10 @@ final class ReadingController {
 		didSet { if isTextMode != oldValue { onTextModeChanged?(isTextMode) } }
 	}
 	@ObservationIgnored var onTextModeChanged: ((Bool) -> Void)?
-	// 0-indexed.
-	var textModeFirstLine: Int = 0
+	/// The reading screen, for places the app chose: VoiceOver follows a jump, but only the page follows reading aloud.
+	@ObservationIgnored var onTextModeJump: ((Int64) -> Void)?
+	@ObservationIgnored var onTextModeFollow: ((Int64) -> Void)?
+	@ObservationIgnored private var textModeReporting = false
 
 	let ttsManager = TtsManager()
 	var narration: RecordedNarration?
@@ -47,7 +48,10 @@ final class ReadingController {
 	var isAudioOnly: Bool { activeSession?.isAudioOnlyFfi() == true }
 	var isPlayingNow: Bool { hasAudio ? narration?.isPlaying == true : ttsManager.isSpeaking }
 	var ttsPosition: Int64 = 0 {
-		didSet { spokeCurrentSegment = false }
+		didSet {
+			spokeCurrentSegment = false
+			if isTextMode, !textModeReporting { onTextModeFollow?(ttsPosition) }
+		}
 	}
 	// After a Find match is read, play means "carry on from here", not "read that again".
 	private var spokeCurrentSegment = false
@@ -404,7 +408,7 @@ final class ReadingController {
 		return narration.seekToMs(targetMs)
 	}
 
-	/// Audio-only books are measured by running time, since their text is one placeholder line per file; text mode uses the first line on screen, which is what it saves.
+	/// Audio-only books are measured by running time, since their text is one placeholder line per file.
 	func progressPercent() -> Int? {
 		guard let session = activeSession else { return nil }
 		if isAudioOnly {
@@ -413,8 +417,7 @@ final class ReadingController {
 			let percent = session.audioProgressPercentFfi(elapsedMs: elapsed)
 			return percent >= 0 ? Int(percent) : nil
 		}
-		let position = isTextMode ? session.positionFromLine(line: Int64(textModeFirstLine + 1)) : ttsPosition
-		return Int(session.getStatusInfo(position: position).percentage)
+		return Int(session.getStatusInfo(position: ttsPosition).percentage)
 	}
 
 	func goToPercent(_ percent: Int32, announce shouldAnnounce: Bool = false) {
@@ -427,6 +430,7 @@ final class ReadingController {
 		ttsPosition = position
 		context?.persistPosition(position)
 		refreshCurrentSegment()
+		if isTextMode { onTextModeJump?(position) }
 		if hasAudio, let narration {
 			narration.seekToPosition(position)
 			if shouldAnnounce { announceNavigationCue(currentSegmentText) }
@@ -496,38 +500,17 @@ final class ReadingController {
 		currentSegmentText = seg.text
 	}
 
-	// The scroll position must be stored before isTextMode flips: TextModeView scrolls once on mount, and would otherwise land at the start of the book.
 	func toggleTextMode() {
-		if isTextMode {
-			exitTextMode()
-			isTextMode = false
-		} else {
-			enterTextMode()
-			isTextMode = true
-		}
+		isTextMode.toggle()
 	}
 
-	func enterTextMode() {
-		guard let session = activeSession else { return }
-		let line = session.lineFromPosition(position: ttsPosition)
-		let scrollIdx = max(0, Int(line) - 1)
-		context?.activeLineScrollIndex = scrollIdx
-		textModeFirstLine = scrollIdx
-	}
-
-	private func exitTextMode() {
-		guard activeSession != nil else { return }
-		saveTextModePosition()
+	/// Where VoiceOver focus or the page went in text mode, which is the reading position.
+	func textModeMoved(to position: Int64) {
+		textModeReporting = true
+		ttsPosition = position
+		textModeReporting = false
+		context?.persistPosition(position)
 		refreshCurrentSegment()
-		context?.activeLineScrollIndex = textModeFirstLine
-	}
-
-	// Scrolling in text mode only moves textModeFirstLine, so the place it reached is lost unless it is saved before the app is backgrounded or the document stops being the active one.
-	func saveTextModePosition() {
-		guard isTextMode, let session = activeSession else { return }
-		let pos = session.positionFromLine(line: Int64(textModeFirstLine + 1))
-		ttsPosition = pos
-		context?.persistPosition(pos)
 	}
 
 	private func setupRemoteCommands() {
