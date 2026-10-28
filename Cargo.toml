@@ -44,6 +44,18 @@ struct_excessive_bools = "allow"
 items_after_statements = "allow"
 too_long_first_doc_paragraph = "allow"
 similar_names = "allow"
+# Would put an attribute on nearly every getter in an application with no outside callers.
+must_use_candidate = "allow"
+# Marking functions const only because they could be adds churn and buys nothing here.
+missing_const_for_fn = "allow"
+# Conflicts with rustc's own unreachable_pub advice, so one of the two always fires.
+redundant_pub_crate = "allow"
+# Rewrites a plain if let/else into map_or_else closures, which reads worse.
+option_if_let_else = "allow"
+# Guesses at where to drop a lock and is often wrong about it.
+significant_drop_tightening = "allow"
+# Its fix is `assert_eq!(x, [] as [T; 0])`, which is harder to read than `assert!(x.is_empty())`.
+assert_is_empty = "allow"
 
 [profile.release]
 strip = true
