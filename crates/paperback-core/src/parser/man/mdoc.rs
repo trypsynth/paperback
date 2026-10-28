@@ -483,7 +483,7 @@ impl Reader<'_> {
 			}
 			*index += 1;
 			if !word.is_bare() {
-				self.push_word(out, spaced, &text, Font::Roman);
+				Self::push_word(out, spaced, &text, Font::Roman);
 				continue;
 			}
 			if let Some((open, close)) = enclosure(&text) {
@@ -491,7 +491,7 @@ impl Reader<'_> {
 				// reads as the quoted text and then the full stop.
 				let trailing = trailing_punctuation(words, *index);
 				let inner_end = words.len() - trailing.len();
-				self.push_word(out, spaced, open, Font::Roman);
+				Self::push_word(out, spaced, open, Font::Roman);
 				// Nothing is spaced away from an opening mark.
 				*spaced = true;
 				let closing = closing_name(&text);
@@ -499,20 +499,20 @@ impl Reader<'_> {
 				out.push(Piece::Font(Font::Roman));
 				out.push(Piece::Text(close.to_string()));
 				for word in trailing {
-					self.push_word(out, spaced, &word, Font::Roman);
+					Self::push_word(out, spaced, &word, Font::Roman);
 					*index += 1;
 				}
 				continue;
 			}
 			match text.as_str() {
 				// The name of the page, which stands alone once it has been given.
-				"Nm" if self.next_is_macro_or_end(words, *index) => {
+				"Nm" if Self::next_is_macro_or_end(words, *index) => {
 					let subject = if self.names.subject.is_empty() {
 						self.names.name.clone()
 					} else {
 						self.names.subject.clone()
 					};
-					self.push_word(out, spaced, &subject, Font::Bold);
+					Self::push_word(out, spaced, &subject, Font::Bold);
 				}
 				// A cross-reference to another page: its name and section, set together.
 				"Xr" => {
@@ -521,23 +521,23 @@ impl Reader<'_> {
 					*index += usize::from(!name.is_empty()) + usize::from(!section.is_empty());
 					let reference =
 						if section.is_empty() { name } else { format!("{name}({})", section.trim_matches('"')) };
-					self.push_word(out, spaced, &reference, Font::Bold);
+					Self::push_word(out, spaced, &reference, Font::Bold);
 				}
 				// An argument with nothing after it stands for the arguments in general.
-				"Ar" if self.next_is_macro_or_end(words, *index) => {
-					self.push_word(out, spaced, "file ...", Font::Italic);
+				"Ar" if Self::next_is_macro_or_end(words, *index) => {
+					Self::push_word(out, spaced, "file ...", Font::Italic);
 				}
 				// Written against what comes next, with no space between.
 				"Ns" | "Pf" | "Ap" => *spaced = true,
 				// A flag with nothing after it is the lone dash a page writes for standard input.
-				"Fl" if self.next_is_macro_or_end(words, *index) => {
-					self.push_word(out, spaced, "-", Font::Bold);
+				"Fl" if Self::next_is_macro_or_end(words, *index) => {
+					Self::push_word(out, spaced, "-", Font::Bold);
 				}
 				// The rest name a kind of thing, and set every word after them until a macro
 				// that does something else.
 				_ => match style_of(&text) {
-					Some(style) => self.styled_run(words, index, out, spaced, style, &text),
-					None => self.push_word(out, spaced, &text, Font::Roman),
+					Some(style) => Self::styled_run(words, index, out, spaced, style, &text),
+					None => Self::push_word(out, spaced, &text, Font::Roman),
 				},
 			}
 		}
@@ -548,7 +548,6 @@ impl Reader<'_> {
 	/// `.Fl` writes the dash a reader would type, once for each of its arguments, which is why
 	/// a page writes `.Fl b` rather than `.Fl -b`.
 	fn styled_run(
-		&self,
 		words: &[Word],
 		index: &mut usize,
 		out: &mut Vec<Piece>,
@@ -565,21 +564,21 @@ impl Reader<'_> {
 			}
 			*index += 1;
 			if closing_punctuation(word.raw()) {
-				self.push_word(out, spaced, &text, Font::Roman);
+				Self::push_word(out, spaced, &text, Font::Roman);
 				continue;
 			}
 			let text = if flag { format!("-{text}") } else { text };
-			self.push_word(out, spaced, &text, style.font());
+			Self::push_word(out, spaced, &text, style.font());
 		}
 	}
 
 	/// Whether the word at `index` is a macro, or there is nothing there at all.
-	fn next_is_macro_or_end(&self, words: &[Word], index: usize) -> bool {
+	fn next_is_macro_or_end(words: &[Word], index: usize) -> bool {
 		words.get(index).is_none_or(|word| word.is_bare() && is_macro_name(&word.text()))
 	}
 
 	/// Writes one word, spacing it from the one before unless punctuation says otherwise.
-	fn push_word(&self, out: &mut Vec<Piece>, spaced: &mut bool, text: &str, font: Font) {
+	fn push_word(out: &mut Vec<Piece>, spaced: &mut bool, text: &str, font: Font) {
 		if text.is_empty() {
 			return;
 		}

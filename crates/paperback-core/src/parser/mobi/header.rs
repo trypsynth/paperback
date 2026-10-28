@@ -10,7 +10,7 @@ use crate::t;
 pub(super) struct MobiHeader {
 	pub rec0: Vec<u8>,
 	pub record_offsets: Vec<usize>,
-	pub mobi_header_offset: usize,
+	pub header_offset: usize,
 	pub header_length: usize,
 	pub text_encoding: u32,
 	pub compression: u16,
@@ -24,7 +24,7 @@ pub(super) struct MobiHeader {
 
 impl MobiHeader {
 	pub fn mobi_header(&self) -> &[u8] {
-		&self.rec0[self.mobi_header_offset..]
+		&self.rec0[self.header_offset..]
 	}
 }
 
@@ -170,7 +170,7 @@ pub(super) fn parse_header(data: &[u8], title_bytes: &[u8]) -> Result<MobiHeader
 	Ok(MobiHeader {
 		rec0,
 		record_offsets,
-		mobi_header_offset,
+		header_offset: mobi_header_offset,
 		header_length,
 		text_encoding,
 		compression,
@@ -190,7 +190,7 @@ pub(super) fn parse_exth(header: &MobiHeader) -> (HashMap<u32, Vec<u8>>, Option<
 	let mut author = None;
 	let mut title = None;
 	let rec0 = &header.rec0;
-	let exth_offset = header.mobi_header_offset + header.header_length;
+	let exth_offset = header.header_offset + header.header_length;
 	if exth_offset + 12 <= rec0.len() && &rec0[exth_offset..exth_offset + 4] == b"EXTH" {
 		let exth_num_records = u32::from_be_bytes([
 			rec0[exth_offset + 8],

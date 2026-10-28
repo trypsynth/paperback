@@ -368,13 +368,10 @@ fn join_paragraphs_measured(
 					if !keeps_hyphen(left, &right, None) {
 						current_paragraph.pop();
 					}
-					current_paragraph.push_str(line);
-				} else if is_cjk(last_char) && line.chars().next().is_some_and(is_cjk) {
-					current_paragraph.push_str(line);
-				} else {
+				} else if !(is_cjk(last_char) && line.chars().next().is_some_and(is_cjk)) {
 					current_paragraph.push(' ');
-					current_paragraph.push_str(line);
 				}
+				current_paragraph.push_str(line);
 			}
 		}
 		last_line_len = len;

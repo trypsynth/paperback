@@ -322,7 +322,7 @@ fn declare_missing_namespaces(xml: &str) -> Option<String> {
 		} else {
 			format!("urn:paperback:undeclared:{prefix}")
 		};
-		out.push_str(&format!(" xmlns:{prefix}=\"{uri}\""));
+		let _ = write!(out, " xmlns:{prefix}=\"{uri}\"");
 	}
 	out.push_str(&xml[insert_at..]);
 	Some(out)

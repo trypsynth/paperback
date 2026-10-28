@@ -1,4 +1,5 @@
 use std::{
+	fmt::Write as _,
 	fs::{self, File},
 	io::Write,
 	path::{Path, PathBuf},
@@ -77,7 +78,7 @@ fn webview_target_path_renders_only_a_window_of_a_very_long_document() {
 	let mut session = session_with_path("book.mobi");
 	let mut content = String::new();
 	for i in 0..60_000 {
-		content.push_str(&format!("paragraph number {i} with a few words in it\n"));
+		let _ = writeln!(content, "paragraph number {i} with a few words in it");
 	}
 	let mut document = Document::new();
 	document.set_buffer(DocumentBuffer::with_content(content.clone()));

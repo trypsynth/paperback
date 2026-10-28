@@ -218,7 +218,8 @@ pub(super) fn bind_teardown(
 	{
 		let tray_for_destroy = Rc::clone(tray_state);
 		frame.on_destroy(move |_event| {
-			if let Some(state) = tray_for_destroy.lock().unwrap().take() {
+			let state = tray_for_destroy.lock().unwrap().take();
+			if let Some(state) = state {
 				state.icon.destroy();
 			}
 		});

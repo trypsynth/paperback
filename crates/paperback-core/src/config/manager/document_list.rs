@@ -81,7 +81,7 @@ pub fn compute_document_hash(path: &str) -> [u8; 20] {
 	let mut hasher = Sha1::new();
 	if let Ok(mut file) = fs::File::open(path) {
 		use std::io::{Read, Seek, SeekFrom};
-		let mut buffer = [0; 65536];
+		let mut buffer = vec![0; 65536];
 		let mut total_read = 0;
 		let max_read = 1024 * 1024;
 		while total_read < max_read {

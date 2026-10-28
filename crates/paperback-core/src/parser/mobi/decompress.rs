@@ -9,7 +9,7 @@ use crate::t;
 
 fn build_huffman_decoder(header: &MobiHeader, data: &[u8]) -> Result<HuffmanDecoder> {
 	let mobi_header = header.mobi_header();
-	if header.header_length < 104 || header.mobi_header_offset + 104 > header.rec0.len() {
+	if header.header_length < 104 || header.header_offset + 104 > header.rec0.len() {
 		tracing::warn!("mobi header is missing huff compression parameters");
 		// TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 		anyhow::bail!(t("Missing HUFF parameters in header"));
