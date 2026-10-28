@@ -109,6 +109,7 @@ impl PdfDocument {
 	}
 
 	/// A cache for loading many pages on one thread, so the fonts they share are read once.
+	#[allow(clippy::unused_self, reason = "ties the cache's lifetime to this document")]
 	pub fn page_cache(&self) -> PageCache<'_> {
 		PageCache::new()
 	}

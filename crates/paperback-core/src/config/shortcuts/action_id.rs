@@ -535,6 +535,7 @@ impl ActionId {
 		}
 	}
 
+	#[allow(clippy::match_same_arms, reason = "one action per line reads better as a table than arms merged by chord")]
 	pub fn default_chord(self) -> Option<KeyChord> {
 		#[cfg(target_os = "macos")]
 		match self {

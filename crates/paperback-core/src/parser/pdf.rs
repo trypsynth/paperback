@@ -355,6 +355,7 @@ fn read_pages(document: &PdfDocument, page_count: i32, render_tables_inline: boo
 	let runs = usize::try_from((page_count + RUN_LENGTH - 1) / RUN_LENGTH).unwrap_or(0);
 	let threads = std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get).clamp(1, runs.max(1));
 	let (read, words): (Vec<_>, Vec<_>) = std::thread::scope(|scope| {
+		#[allow(clippy::needless_collect, reason = "every thread has to be started before the first one is waited on")]
 		let handles: Vec<_> = (0..threads)
 			.map(|thread| {
 				scope.spawn(move || {
@@ -380,7 +381,6 @@ fn read_pages(document: &PdfDocument, page_count: i32, render_tables_inline: boo
 				})
 			})
 			.collect();
-		// Collected first so that every thread is started before the first one is waited on.
 		handles.into_iter().map(|handle| handle.join().unwrap_or_else(|panic| std::panic::resume_unwind(panic))).unzip()
 	});
 	let mut read: Vec<_> = read.into_iter().flatten().collect();
