@@ -48,7 +48,7 @@ description: Paperback is a fast, fully accessible ebook and document reader for
 - **Windows** &ndash; free. Installer and portable builds, for x64 and ARM64. Windows 10 and later.
 - **macOS** &ndash; free. Signed and notarized, so it opens with no security warnings.
 - **Linux** &ndash; free. AppImage or tar.gz, for x64 and ARM64, with desktop integration so documents open from your file manager.
-- **iOS** &ndash; paid, on the App Store, for iPhone and iPad running iOS 17 or later.
+- **iOS** &ndash; paid, [on the App Store](https://apps.apple.com/app/id6775220909), for iPhone and iPad running iOS 17 or later.
 - **Android** &ndash; paid, [on Google Play](https://play.google.com/store/apps/details?id=dev.paperback.android), Android 7 and later, with read-aloud that keeps playing in the background.
 
 Buying the mobile apps is what pays for the work. If you would rather not, the source is public and builds for both.
