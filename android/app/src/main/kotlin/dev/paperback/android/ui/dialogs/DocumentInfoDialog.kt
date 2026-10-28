@@ -31,7 +31,7 @@ fun DocumentInfoDialog(docState: DocumentTabState, stats: DocumentStatsFfi, onDi
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = t("Document Info") },
-		// TRANSLATORS: Title of the dialog showing the current document's title, author, path, and word/line/character counts
+		// TRANSLATORS: Title of the dialog showing the current document's title, author, file name, and word/line/character counts
 		title = { Text(t("Document Info")) },
 		text = {
 			val numbers = NumberFormat.getIntegerInstance()
@@ -44,15 +44,8 @@ fun DocumentInfoDialog(docState: DocumentTabState, stats: DocumentStatsFfi, onDi
 					// TRANSLATORS: Label for the document's author in the Document Information dialog
 					InfoRow(t("Author"), docState.author)
 				}
-				if (docState.documentUri.isNotBlank()) {
-					if (docState.documentUri.startsWith("content://")) {
-						// TRANSLATORS: Label for the document's file name in the Document Information dialog
-						InfoRow(t("File Name"), docState.fileName)
-					} else {
-						// TRANSLATORS: Label for the document's file path in the Document Information dialog
-						InfoRow(t("Path"), docState.documentUri.removePrefix("file://"))
-					}
-				}
+				// TRANSLATORS: Label for the document's file name in the Document Information dialog
+				InfoRow(t("File Name"), docState.fileName)
 				// TRANSLATORS: Label for the document's word count in the Document Information dialog
 				InfoRow(t("Words"), numbers.format(stats.wordCount))
 				// TRANSLATORS: Label for the document's line count in the Document Information dialog
