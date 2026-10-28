@@ -57,9 +57,11 @@ fun DocumentToolDialogs(
 	}
 	if (documentInfoOpen && docState != null) {
 		val stats = remember(docState.session) { docState.session.getStatsFfi() }
+		val progressPercent = remember(docState.session) { viewModel.reading.progressPercent() }
 		DocumentInfoDialog(
 			docState = docState,
 			stats = stats,
+			progressPercent = progressPercent,
 			onDismiss = { viewModel.navigation.documentInfoDialog.close() }
 		)
 	}

@@ -505,6 +505,22 @@ class ReadingController(
 		narrator.play()
 	}
 
+	/**
+	 * How far through the active document the reader is, as a whole-number percentage, or null when there is no answer.
+	 *
+	 * An audio-only book is measured through its recording, from the start of the clip the reader is in: its text is one placeholder line per file, so a share of the text treats a two minute file and an hour long one alike. It has no answer when the files' lengths are not all known. Scrolling in text mode saves the first line on screen as the reading position, so the one position covers both modes.
+	 */
+	fun progressPercent(): Int? {
+		val tab = activeTab() ?: return null
+		val session = tab.session
+		val position = _ttsPosition.value
+		if (!tab.isAudioOnly) return session.getStatusInfo(position).percentage
+		val point = session.audioPointForPositionFfi(position)
+		if (!point.found) return null
+		val percent = session.audioProgressPercentFfi(point.timeMs)
+		return if (percent >= 0) percent else null
+	}
+
 	fun updateTtsPosition(pos: Long) {
 		_ttsPosition.value = pos
 		refreshSegmentPreview()

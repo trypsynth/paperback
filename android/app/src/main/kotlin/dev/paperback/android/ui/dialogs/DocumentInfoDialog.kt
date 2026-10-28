@@ -27,7 +27,7 @@ private fun InfoRow(label: String, value: String) {
 }
 
 @Composable
-fun DocumentInfoDialog(docState: DocumentTabState, stats: DocumentStatsFfi, onDismiss: () -> Unit) {
+fun DocumentInfoDialog(docState: DocumentTabState, stats: DocumentStatsFfi, progressPercent: Int?, onDismiss: () -> Unit) {
 	AlertDialog(
 		onDismissRequest = onDismiss,
 		modifier = Modifier.semantics { paneTitle = t("Document Info") },
@@ -46,6 +46,11 @@ fun DocumentInfoDialog(docState: DocumentTabState, stats: DocumentStatsFfi, onDi
 				}
 				// TRANSLATORS: Label for the document's file name in the Document Information dialog
 				InfoRow(t("File Name"), docState.fileName)
+				// Text mode has no reading bar to show this on, so it is here for either mode.
+				if (progressPercent != null) {
+					// TRANSLATORS: Label in the Document Information dialog for how far through the document the reader has got
+					InfoRow(t("Progress"), t("{}% through", progressPercent.toString()))
+				}
 				// TRANSLATORS: Label for the document's word count in the Document Information dialog
 				InfoRow(t("Words"), numbers.format(stats.wordCount))
 				// TRANSLATORS: Label for the document's line count in the Document Information dialog
