@@ -118,4 +118,44 @@ final class ReadingScreenTests: XCTestCase {
 		let controller = reader(try model("<html><body><p>One</p><p>Two</p></body></html>"))
 		XCTAssertEqual(controller.accessibilityScrollStatus(for: controller.bookView), "0 percent")
 	}
+
+	private func page(_ controller: ReadingViewController) -> String? {
+		controller.accessibilityScrollStatus(for: controller.bookView)?.components(separatedBy: ", ").last
+	}
+
+	func testThreeFingerFlicksTurnTheBooksPagesAndStopAtItsEdges() throws {
+		let controller = reader(try model(threePages, as: "rtf"))
+		XCTAssertTrue(controller.bookView.accessibilityScroll(.up))
+		XCTAssertEqual(page(controller), "page 2")
+		XCTAssertTrue(controller.bookView.accessibilityScroll(.up))
+		XCTAssertEqual(page(controller), "page 3")
+		XCTAssertFalse(controller.bookView.accessibilityScroll(.up))
+		XCTAssertTrue(controller.bookView.accessibilityScroll(.down))
+		XCTAssertTrue(controller.bookView.accessibilityScroll(.down))
+		XCTAssertEqual(page(controller), "page 1")
+		XCTAssertFalse(controller.bookView.accessibilityScroll(.down))
+	}
+
+	func testAPageStartingInsideAParagraphIsTurnedToAndPast() throws {
+		let book = try model(#"{\rtf1\ansi One\page two\par Three\par\page Four\par}"#, as: "rtf")
+		let controller = reader(book)
+		XCTAssertTrue(controller.bookView.accessibilityScroll(.up))
+		XCTAssertEqual(page(controller), "page 2")
+		XCTAssertEqual(controller.bookView.focusedUnit, 0)
+		XCTAssertTrue(controller.bookView.accessibilityScroll(.up))
+		XCTAssertEqual(page(controller), "page 3")
+		XCTAssertEqual(controller.bookView.focusedUnit, book.count - 1)
+		XCTAssertTrue(controller.bookView.accessibilityScroll(.down))
+		XCTAssertEqual(page(controller), "page 2")
+		XCTAssertTrue(controller.bookView.accessibilityScroll(.down))
+		XCTAssertEqual(page(controller), "page 1")
+	}
+
+	func testWithoutPagesAFlickTurnsTheScreensPage() throws {
+		let controller = reader(try model("<html><body>\(paragraphs(300))</body></html>"))
+		XCTAssertTrue(controller.bookView.accessibilityScroll(.up))
+		XCTAssertGreaterThan(controller.bookView.firstUnitOnPage, 0)
+		XCTAssertTrue(controller.bookView.accessibilityScroll(.down))
+		XCTAssertEqual(controller.bookView.firstUnitOnPage, 0)
+	}
 }

@@ -154,19 +154,45 @@ final class ReadingViewController: UIViewController, UIScrollViewAccessibilityDe
 		status()
 	}
 
+	/// The book's own pages when it has them, else the screen's.
 	private func turnPage(forward: Bool) -> Bool {
-		guard let target = bookView.visualPageStop(forward: forward) else {
+		let landing: (unit: Int, position: Int64)?
+		if model.session.pageOffset(page: 1) >= 0 {
+			landing = bookPageTurn(forward: forward)
+		} else {
+			landing = bookView.visualPageStop(forward: forward).map { ($0, model.position(ofUnit: $0)) }
+		}
+		guard let landing else {
 			// The same status again tells VoiceOver it is at the edge.
 			UIAccessibility.post(notification: .pageScrolled, argument: status())
 			return false
 		}
-		bookView.reveal(target, startingPage: true)
-		setCurrent(bookView.focusedUnit)
-		if let element = bookView.focusTarget(forUnit: target) {
+		bookView.reveal(landing.unit, startingPage: true)
+		currentUnit = landing.unit
+		currentPosition = landing.position
+		onPositionChange?(landing.position)
+		if let element = bookView.focusTarget(forUnit: landing.unit) {
 			UIAccessibility.post(notification: .layoutChanged, argument: element)
 		}
 		UIAccessibility.post(notification: .pageScrolled, argument: status())
 		return true
+	}
+
+	/// Counted from the exact place, so a page starting partway into a paragraph is turned to like any other.
+	private func bookPageTurn(forward: Bool) -> (unit: Int, position: Int64)? {
+		let session = model.session
+		let page = Int(session.currentPage(position: currentPosition))
+		let target: Int
+		if forward {
+			target = page + 1
+		} else {
+			// Back to the start of the page being read first, unless the reader is already at it.
+			target = page > 0 && session.pageOffset(page: Int32(page)) < currentPosition ? page : page - 1
+		}
+		guard target >= 1 else { return nil }
+		let position = session.pageOffset(page: Int32(target))
+		guard position >= 0 else { return nil }
+		return (model.unit(forPosition: position), position)
 	}
 
 	// MARK: Without VoiceOver
