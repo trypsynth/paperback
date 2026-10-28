@@ -1052,7 +1052,6 @@ msgid "Percent out of range."
 msgstr "A százalékérték a tartományon kívül esik."
 
 #. TRANSLATORS: Title of the view showing the text recognized in a picture
-#, fuzzy
 msgid "Image Text"
 msgstr "Képből felismert szöveg"
 
@@ -1279,7 +1278,7 @@ msgstr "Az ablak billentyűparancsának testre&szabása..."
 
 #. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 msgid "Customize &Keyboard Shortcuts..."
-msgstr "&Billentyűparancsok testreszabása..."
+msgstr "Billentyű&parancsok testreszabása..."
 
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
@@ -1482,14 +1481,12 @@ msgstr "Szövegfelismerés folyamatban."
 
 #. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
 #. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
-#, fuzzy
 msgid "The picture could not be read."
 msgstr "A képet nem sikerült beolvasni."
 
 #. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
-#, fuzzy
 msgid "No text was found in the picture."
-msgstr "A képben nem található szöveg."
+msgstr "A képen nem található szöveg."
 
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
@@ -1539,9 +1536,8 @@ msgid "OCR already in progress."
 msgstr "Már folyamatban van egy szövegfelismerés."
 
 #. TRANSLATORS: Announced when Recognize Current Page is chosen in a document that is not a PDF or a comic book
-#, fuzzy
 msgid "Only PDF and comic book pages can be recognized."
-msgstr "Csak PDF és képregénylap ismerhető fel."
+msgstr "Csak PDF-oldal és képregénylap szövege ismerhető fel."
 
 #. TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
 msgid "No image-only pages in the given range."
@@ -2161,9 +2157,8 @@ msgid "&Batch OCR..."
 msgstr "&Kötegelt szövegfelismerés..."
 
 #. TRANSLATORS: Tools menu item that recognizes the page the cursor is on with OCR, replacing any text it already has
-#, fuzzy
 msgid "&Recognize Current Page"
-msgstr "&Aktuális oldal felismerése"
+msgstr "&Aktuális oldal szövegfelismerése"
 
 #. TRANSLATORS: Checkable menu item in the View menu that toggles whether word wrap is enabled.
 msgid "W&ord wrap"
@@ -2417,13 +2412,11 @@ msgstr "Kép mentése &másként..."
 msgid "Save image as"
 msgstr "Kép mentése másként"
 
-#, fuzzy
 msgid "Read &text in picture"
-msgstr "Szöveg felismerése a &képben"
+msgstr "Kép szövegének &felismerése"
 
-#, fuzzy
 msgid "Read the text in the picture"
-msgstr "Szöveg felismerése a képben"
+msgstr "A képen lévő szöveg felismerése és megjelenítése"
 
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
@@ -2854,9 +2847,8 @@ msgid "Batch OCR..."
 msgstr "Kötegelt szövegfelismerés..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#, fuzzy
 msgid "Recognize Current Page"
-msgstr "Aktuális oldal felismerése"
+msgstr "Aktuális oldal szövegfelismerése"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Customize Keyboard Shortcuts..."
@@ -2983,42 +2975,34 @@ msgid "Failed to parse comic archive: {}"
 msgstr "Nem sikerült feldolgozni a képregényarchívumot: {}"
 
 #. TRANSLATORS: Spoken for a comic book page that is its front cover
-#, fuzzy
 msgid "Front cover"
-msgstr "Előlap"
+msgstr "Első borító"
 
 #. TRANSLATORS: Spoken for a comic book page that is an inside cover
-#, fuzzy
 msgid "Inside cover"
 msgstr "Belső borító"
 
 #. TRANSLATORS: Spoken for a comic book page that recaps the story so far
-#, fuzzy
 msgid "Recap"
-msgstr "Összefoglalás"
+msgstr "Az eddig történtek"
 
 #. TRANSLATORS: Spoken for a comic book page that is an advertisement
-#, fuzzy
 msgid "Advertisement"
 msgstr "Hirdetés"
 
 #. TRANSLATORS: Spoken for a comic book page written by the editors
-#, fuzzy
 msgid "Editorial"
-msgstr "Szerkesztői közlemény"
+msgstr "Szerkesztői oldal"
 
 #. TRANSLATORS: Spoken for a comic book page of letters from readers
-#, fuzzy
 msgid "Letters"
-msgstr "Levelek"
+msgstr "Olvasói levelek"
 
 #. TRANSLATORS: Spoken for a comic book page previewing another comic
-#, fuzzy
 msgid "Preview"
-msgstr "Előnézet"
+msgstr "Előzetes"
 
 #. TRANSLATORS: Spoken for a comic book page that is its back cover
-#, fuzzy
 msgid "Back cover"
 msgstr "Hátsó borító"
 
@@ -3209,19 +3193,16 @@ msgid "ODP file does not contain any pages"
 msgstr "Az ODP-fájl nem tartalmaz oldalakat"
 
 #. TRANSLATORS: Written after a presentation slide's text, before the presenter's notes for that slide; {} is the notes
-#, fuzzy
 msgid "Speaker notes: {}"
-msgstr "Előadó jegyzetei: {}"
+msgstr "Előadói jegyzetek: {}"
 
 #. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it without a name; {} is the comment
-#, fuzzy
 msgid "Comment: {}"
 msgstr "Megjegyzés: {}"
 
 #. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it: the first {} is the reviewer, the second the comment
-#, fuzzy
 msgid "Comment from {}: {}"
-msgstr "Megjegyzés tőle ({}): {}"
+msgstr "{} megjegyzése: {}"
 
 #. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
 msgid "FODP file does not contain any pages"
@@ -3266,29 +3247,24 @@ msgid "Chapter {}"
 msgstr "{}. fejezet"
 
 #. TRANSLATORS: Heading over the comments reviewers left on a document, written after its text
-#, fuzzy
 msgid "Comments"
 msgstr "Megjegyzések"
 
 #. TRANSLATORS: Names a comment's author when the document does not say who wrote it
-#, fuzzy
 msgid "Comment"
 msgstr "Megjegyzés"
 
 #. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
-#, fuzzy
 msgid "{} on \\u{201c}{}\\u{201d}: {}"
-msgstr "{} erre: „{}‟: {}"
+msgstr "{} („{}”): {}"
 
 #. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
-#, fuzzy
 msgid "{}: {}"
 msgstr "{}: {}"
 
 #. TRANSLATORS: Shown in place of a presentation slide that has no text, such as one holding only pictures
-#, fuzzy
 msgid "This slide has no text."
-msgstr "A diához nincs szöveg."
+msgstr "A dián nincs szöveg."
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
@@ -3338,80 +3314,62 @@ msgstr "Egyik feldolgozó sem tudta megnyitni ezt a kiterjesztést: .{}"
 msgid "image"
 msgstr "kép"
 
-#, fuzzy
 msgid "Current version is not a valid semver."
-msgstr "Az aktuális verzió nem érvényes semver."
+msgstr "Az aktuális verziószám érvénytelen."
 
-#, fuzzy
 msgid "Latest release tag is not a valid semver."
-msgstr "A legutolsó kiadás címkéje nem érvényes semver."
+msgstr "A legújabb kiadás címkéje nem érvényes verziószám."
 
-#, fuzzy
 msgid "Invalid public key"
-msgstr "Érvénytelen nyilvános kulcs."
+msgstr "Érvénytelen nyilvános kulcs"
 
-#, fuzzy
 msgid "Failed to read signature"
-msgstr "Az aláírás olvasása sikertelen."
+msgstr "Nem sikerült beolvasni az aláírást"
 
-#, fuzzy
 msgid "Invalid signature"
-msgstr "Érvénytelen aláírás."
+msgstr "Érvénytelen aláírás"
 
-#, fuzzy
 msgid "Failed to create private download directory"
-msgstr "Nem sikerült létrehozni a privát letöltési könyvtárat."
+msgstr "Nem sikerült létrehozni a privát letöltési mappát"
 
-#, fuzzy
 msgid "Failed to create file"
-msgstr "Nem sikerült létrehozni a fájlt."
+msgstr "Nem sikerült létrehozni a fájlt"
 
-#, fuzzy
 msgid "Failed to write file"
-msgstr "Nem sikerült írni a fájlba."
+msgstr "Nem sikerült írni a fájlba"
 
-#, fuzzy
 msgid "Failed to read file for verification"
-msgstr "Nem sikerült beolvasni a fájlt az ellenőrzéshez."
+msgstr "Nem sikerült beolvasni a fájlt az ellenőrzéshez"
 
-#, fuzzy
 msgid "Signature verification failed"
-msgstr "Az aláírás ellenőrzése sikertelen."
+msgstr "Az aláírás ellenőrzése nem sikerült"
 
-#, fuzzy
 msgid "Failed to rename verified file"
-msgstr "Nem sikerült átnevezni az ellenőrzött fájlt."
+msgstr "Nem sikerült átnevezni az ellenőrzött fájlt"
 
-#, fuzzy
 msgid "Failed to parse release JSON"
-msgstr "Nem sikerült elemezni a kiadási JSON-t."
+msgstr "Nem sikerült feldolgozni a kiadás JSON-adatait"
 
-#, fuzzy
 msgid "Latest release does not include downloadable assets."
-msgstr "A legutolsó kiadás nem tartalmaz letölthető eszközöket."
+msgstr "A legújabb kiadás nem tartalmaz letölthető fájlokat."
 
-#, fuzzy
 msgid "Update is available but no matching download asset or signature was found."
-msgstr "Frissítés érhető el, de nem található megfelelő letöltési eszköz vagy aláírás."
+msgstr "Frissítés érhető el, de nem található hozzá megfelelő letöltendő fájl vagy aláírás."
 
 msgid "Not running from an AppImage; cannot self-update."
 msgstr "A program nem AppImage-ből fut, ezért nem tudja frissíteni önmagát."
 
-#, fuzzy
 msgid "Failed to determine exe path"
-msgstr "Nem sikerült meghatározni az exe elérési útját."
+msgstr "Nem sikerült meghatározni a program elérési útját"
 
-#, fuzzy
 msgid "Failed to get exe directory"
-msgstr "Nem sikerült megállapítani az exe könyvtárát."
+msgstr "Nem sikerült lekérdezni a program mappáját"
 
-#, fuzzy
 msgid "Could not determine a cache directory: neither XDG_CACHE_HOME nor HOME is set"
-msgstr "Nem sikerült meghatározni a gyorsítótár-könyvtárat: sem az XDG_CACHE_HOME, sem a HOME nincs beállítva."
+msgstr "Nem sikerült meghatározni a gyorsítótármappát: sem az XDG_CACHE_HOME, sem a HOME nincs beállítva"
 
-#, fuzzy
 msgid "Failed to create cache directory"
-msgstr "Nem sikerült létrehozni a gyorsítótár-könyvtárat."
+msgstr "Nem sikerült létrehozni a gyorsítótármappát"
 
 msgid "Failed to get current exe path"
 msgstr "Nem sikerült lekérdezni a futó program elérési útját"
@@ -3545,11 +3503,9 @@ msgstr "A biztonsági ellenőrzés nem sikerült. Lehet, hogy a frissítést ill
 msgid "Security Error"
 msgstr "Biztonsági hiba"
 
-#, fuzzy
 msgid "The update server returned HTTP error %s."
-msgstr "A frissítési kiszolgáló HTTP-hibát adott vissza: %s"
+msgstr "A frissítési kiszolgáló HTTP-hibával válaszolt (%s)."
 
-#, fuzzy
 msgid "Could not reach the update server: %s"
 msgstr "Nem sikerült elérni a frissítési kiszolgálót: %s"
 
