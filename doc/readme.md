@@ -20,7 +20,7 @@ Paperback runs on Windows 10/11, all the modern versions of ARM macOS, Linux, iO
 * Can be run entirely portably, or installed with file associations automatically set up.
 * Supports a massive array of common file formats.
 * Plays audio books, with adjustable speed and bookmarks that remember the exact time.
-* Reads scanned PDF pages with the OCR built into Windows and macOS.
+* Reads scanned PDF pages with the OCR built into Windows and macOS, or with Tesseract on Linux.
 * Bookmarks and notes, so you can mark your place and come back to it.
 * Every keyboard shortcut can be changed.
 * Opens documents straight from http and https links, and downloads them again when you reopen them or press `F5`, keeping your reading position and bookmarks. When restoring the documents you had open, it downloads again the ones from links that were 2 MB or smaller.
