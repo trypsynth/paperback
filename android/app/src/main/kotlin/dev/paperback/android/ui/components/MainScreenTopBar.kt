@@ -71,10 +71,13 @@ fun MainScreenTopBar(
 	onExportDocumentOpen: () -> Unit,
 	onExportSettings: () -> Unit,
 	onImportSettings: () -> Unit,
+	onOpenFromUrl: () -> Unit,
 	onHelpOpen: () -> Unit
 ) {
 	var moreOptionsExpanded by remember { mutableStateOf(false) }
 	val bookMenuActions = listOf(
+		// TRANSLATORS: Menu item / accessibility action that downloads a document from a web link and opens it
+		MenuAction(t("Open from URL..."), onOpenFromUrl),
 		MenuAction(
 			// TRANSLATORS: Menu item / accessibility action to import a document's saved settings and bookmarks from a .paperback file
 			t("Import Document Data"),

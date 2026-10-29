@@ -325,6 +325,7 @@ fun MainScreen(
 					onExportDocumentOpen = { viewModel.openExportDocumentDialog() },
 					onExportSettings = exportSettings,
 					onImportSettings = importSettings,
+					onOpenFromUrl = { viewModel.links.prompt() },
 					onHelpOpen = {
 						viewModel.openHelpDocument()
 					}

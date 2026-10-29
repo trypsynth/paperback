@@ -31,6 +31,8 @@ sealed interface ReaderShortcut {
 
 	object OpenBook : ReaderShortcut
 
+	object OpenFromUrl : ReaderShortcut
+
 	object OpenToc : ReaderShortcut
 
 	object OpenElements : ReaderShortcut
@@ -55,9 +57,14 @@ sealed interface ReaderShortcut {
 }
 
 /** A Ctrl key the Ctrl set doesn't name is passed on rather than falling through to its unmodified meaning. */
-fun shortcutFor(keyCode: Int, ctrlPressed: Boolean, shiftPressed: Boolean): ReaderShortcut? {
+fun shortcutFor(
+	keyCode: Int,
+	ctrlPressed: Boolean,
+	shiftPressed: Boolean,
+	altPressed: Boolean = false
+): ReaderShortcut? {
 	if (keyCode == KeyEvent.KEYCODE_F7) return ReaderShortcut.OpenElements
-	if (ctrlPressed) return ctrlShortcutFor(keyCode, shiftPressed)
+	if (ctrlPressed) return ctrlShortcutFor(keyCode, shiftPressed, altPressed)
 	if (keyCode == KeyEvent.KEYCODE_F3) {
 		return if (shiftPressed) ReaderShortcut.FindPrevious else ReaderShortcut.FindNext
 	}
@@ -65,20 +72,21 @@ fun shortcutFor(keyCode: Int, ctrlPressed: Boolean, shiftPressed: Boolean): Read
 }
 
 /** Matches the desktop app's Ctrl shortcuts. */
-private fun ctrlShortcutFor(keyCode: Int, shiftPressed: Boolean): ReaderShortcut? = when (keyCode) {
-	KeyEvent.KEYCODE_F -> ReaderShortcut.OpenFind
-	KeyEvent.KEYCODE_COMMA -> ReaderShortcut.OpenSettings
-	KeyEvent.KEYCODE_O -> ReaderShortcut.OpenBook
-	KeyEvent.KEYCODE_T -> ReaderShortcut.OpenToc
-	KeyEvent.KEYCODE_P -> ReaderShortcut.OpenGoTo(GO_TO_PAGE)
-	KeyEvent.KEYCODE_G -> ReaderShortcut.OpenGoTo(if (shiftPressed) GO_TO_PERCENTAGE else GO_TO_LINE)
-	KeyEvent.KEYCODE_W -> ReaderShortcut.OpenWordCount
-	KeyEvent.KEYCODE_R -> ReaderShortcut.OpenAllDocuments
-	KeyEvent.KEYCODE_E -> if (shiftPressed) ReaderShortcut.ExportSettings else ReaderShortcut.ExportDocument
-	KeyEvent.KEYCODE_I -> if (shiftPressed) ReaderShortcut.ImportSettings else ReaderShortcut.OpenDocumentInfo
-	KeyEvent.KEYCODE_S -> if (shiftPressed) ReaderShortcut.OpenSleepTimer else null
-	else -> null
-}
+private fun ctrlShortcutFor(keyCode: Int, shiftPressed: Boolean, altPressed: Boolean): ReaderShortcut? =
+	when (keyCode) {
+		KeyEvent.KEYCODE_F -> ReaderShortcut.OpenFind
+		KeyEvent.KEYCODE_COMMA -> ReaderShortcut.OpenSettings
+		KeyEvent.KEYCODE_O -> if (altPressed) ReaderShortcut.OpenFromUrl else ReaderShortcut.OpenBook
+		KeyEvent.KEYCODE_T -> ReaderShortcut.OpenToc
+		KeyEvent.KEYCODE_P -> ReaderShortcut.OpenGoTo(GO_TO_PAGE)
+		KeyEvent.KEYCODE_G -> ReaderShortcut.OpenGoTo(if (shiftPressed) GO_TO_PERCENTAGE else GO_TO_LINE)
+		KeyEvent.KEYCODE_W -> ReaderShortcut.OpenWordCount
+		KeyEvent.KEYCODE_R -> ReaderShortcut.OpenAllDocuments
+		KeyEvent.KEYCODE_E -> if (shiftPressed) ReaderShortcut.ExportSettings else ReaderShortcut.ExportDocument
+		KeyEvent.KEYCODE_I -> if (shiftPressed) ReaderShortcut.ImportSettings else ReaderShortcut.OpenDocumentInfo
+		KeyEvent.KEYCODE_S -> if (shiftPressed) ReaderShortcut.OpenSleepTimer else null
+		else -> null
+	}
 
 private fun readingShortcutFor(keyCode: Int, shiftPressed: Boolean): ReaderShortcut? {
 	val direction = if (shiftPressed) SegmentDirectionFfi.PREVIOUS else SegmentDirectionFfi.NEXT

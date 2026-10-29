@@ -19,6 +19,8 @@ class ReaderShortcutTest {
 
 	private fun ctrlShift(keyCode: Int) = shortcutFor(keyCode, ctrlPressed = true, shiftPressed = true)
 
+	private fun ctrlAlt(keyCode: Int) = shortcutFor(keyCode, ctrlPressed = true, shiftPressed = false, altPressed = true)
+
 	@Test
 	fun `the letters that mean two things keep both meanings`() {
 		assertEquals(ReaderShortcut.OpenFind, ctrl(KeyEvent.KEYCODE_F))
@@ -29,6 +31,12 @@ class ReaderShortcutTest {
 		assertEquals(navigate(SegmentTypeFfi.PAGE), plain(KeyEvent.KEYCODE_P))
 		assertEquals(ReaderShortcut.OpenGoTo(GO_TO_LINE), ctrl(KeyEvent.KEYCODE_G))
 		assertEquals(navigate(SegmentTypeFfi.IMAGE), plain(KeyEvent.KEYCODE_G))
+	}
+
+	@Test
+	fun `alt turns opening a file into opening a link, as on desktop`() {
+		assertEquals(ReaderShortcut.OpenBook, ctrl(KeyEvent.KEYCODE_O))
+		assertEquals(ReaderShortcut.OpenFromUrl, ctrlAlt(KeyEvent.KEYCODE_O))
 	}
 
 	@Test

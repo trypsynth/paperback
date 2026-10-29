@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
 	override fun dispatchKeyEvent(event: KeyEvent): Boolean {
 		if (event.action != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(event)
 		if (currentFocus is EditText) return super.dispatchKeyEvent(event)
-		val shortcut = shortcutFor(event.keyCode, event.isCtrlPressed, event.isShiftPressed)
+		val shortcut = shortcutFor(event.keyCode, event.isCtrlPressed, event.isShiftPressed, event.isAltPressed)
 			?: return super.dispatchKeyEvent(event)
 		perform(shortcut)
 		return true
@@ -89,6 +89,7 @@ class MainActivity : ComponentActivity() {
 			ReaderShortcut.OpenFind -> vm.navigation.findDialog.open()
 			ReaderShortcut.OpenSettings -> vm.navigation.settingsRequest.request()
 			ReaderShortcut.OpenBook -> vm.navigation.openBookRequest.request()
+			ReaderShortcut.OpenFromUrl -> vm.links.prompt()
 			ReaderShortcut.OpenToc -> vm.navigation.tocRequest.request()
 			ReaderShortcut.OpenElements -> vm.openElements()
 			ReaderShortcut.OpenWordCount -> vm.openWordCountDialog()

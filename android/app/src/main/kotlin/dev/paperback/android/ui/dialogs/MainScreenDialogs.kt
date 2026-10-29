@@ -169,6 +169,9 @@ fun DocumentTextDialogs(
 fun DocumentPromptDialogs(viewModel: MainScreenViewModel) {
 	val passwordPromptUri by viewModel.passwordPromptUri.collectAsStateWithLifecycle()
 	val importPromptPath by viewModel.importPromptPath.collectAsStateWithLifecycle()
+	val linkStage by viewModel.links.stage.collectAsStateWithLifecycle()
+	val linkFailure by viewModel.links.failure.collectAsStateWithLifecycle()
+	OpenFromUrlDialogs(viewModel.links, linkStage, linkFailure)
 	if (passwordPromptUri != null) {
 		PasswordDialog(
 			onConfirm = { viewModel.submitPassword(it) },

@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Environment
 import android.provider.OpenableColumns
 import android.widget.Toast
 import androidx.core.net.toUri
@@ -95,6 +96,13 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 	)
 
 	val navigation = NavigationRouter()
+
+	/** Downloads go where file managers can reach them, falling back to private storage when shared storage is missing. */
+	val links = LinkOpener(
+		viewModelScope,
+		folder = { context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: File(context.filesDir, "downloads") },
+		onSaved = { openDocument(Uri.fromFile(it)) }
+	)
 
 	val toc = TocState()
 
