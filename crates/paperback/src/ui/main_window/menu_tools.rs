@@ -160,7 +160,7 @@ pub(super) fn handle_options(
 	set_update_channel(&cfg, options.update_channel);
 	set_log_level(&cfg, options.log_level);
 	crate::logging::set_level(options.log_level);
-	cfg.set_hotkey(&options.hotkey);
+	cfg.set_hotkey(options.hotkey.as_ref());
 	cfg.set_shortcuts(&options.shortcuts);
 	cfg.set_readability_font(&options.readability_font);
 	cfg.set_line_spacing(options.line_spacing);
@@ -172,7 +172,7 @@ pub(super) fn handle_options(
 	tracing::info!("settings saved");
 	#[cfg(target_os = "windows")]
 	{
-		re_register_hotkey(hotkey_handle, &options.hotkey);
+		re_register_hotkey(hotkey_handle, options.hotkey.as_ref());
 	}
 	drop(cfg);
 	let options_word_wrap = options.word_wrap;
@@ -252,13 +252,22 @@ pub(super) fn handle_customize_shortcuts(
 	frame: &Frame,
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
+	#[cfg(target_os = "windows")] hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
 ) {
-	let initial_shortcuts = config.lock().unwrap().get_shortcuts();
-	if let Some(updated) = dialogs::prompt_for_shortcuts(frame, &initial_shortcuts) {
+	let initial = {
+		let cfg = config.lock().unwrap();
+		dialogs::Keymap { shortcuts: cfg.get_shortcuts(), window_hotkey: cfg.get_hotkey() }
+	};
+	if let Some(updated) = dialogs::prompt_for_shortcuts(frame, &initial) {
 		{
 			let cfg = config.lock().unwrap();
-			cfg.set_shortcuts(&updated);
+			cfg.set_shortcuts(&updated.shortcuts);
+			cfg.set_hotkey(updated.window_hotkey.as_ref());
 			cfg.flush();
+		}
+		#[cfg(target_os = "windows")]
+		if updated.window_hotkey != initial.window_hotkey {
+			re_register_hotkey(hotkey_handle, updated.window_hotkey.as_ref());
 		}
 		let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 		frame.set_menu_bar(menu_bar);

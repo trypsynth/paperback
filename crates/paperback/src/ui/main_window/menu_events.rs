@@ -174,7 +174,13 @@ impl MainWindow {
 					);
 				}
 				menu_ids::CUSTOMIZE_SHORTCUTS => {
-					menu_tools::handle_customize_shortcuts(&frame_copy, &dm, &config);
+					menu_tools::handle_customize_shortcuts(
+						&frame_copy,
+						&dm,
+						&config,
+						#[cfg(target_os = "windows")]
+						&hotkey_handle_for_options,
+					);
 				}
 				menu_ids::SLEEP_TIMER => {
 					sleep_timer.toggle(&frame_copy, &dm, &config, live_region_label, from_keyboard);

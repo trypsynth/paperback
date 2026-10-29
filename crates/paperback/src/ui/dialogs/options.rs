@@ -3,7 +3,7 @@ use std::{
 	rc::Rc,
 };
 
-use paperback_core::config::{ConfigManager, HotkeyConfig, ReadabilityFont, ShortcutsConfig};
+use paperback_core::config::{ConfigManager, KeyChord, ReadabilityFont, ShortcutsConfig};
 use patois::{t, ui::populate_language_choice};
 #[cfg(target_os = "windows")]
 use wxdragon::accessible::AccRole;
@@ -17,12 +17,8 @@ use crate::{
 };
 
 mod font;
-#[cfg(target_os = "windows")]
-mod hotkey;
 
 use font::{color_description, font_description, show_font_picker};
-#[cfg(target_os = "windows")]
-use hotkey::prompt_for_hotkey;
 
 /// Indexed by `audio_seek_amount_ctrl`'s selection and also stepped through by `audio::handle_change_seek_amount`, so it must match the choices in the dialog.
 pub(crate) const AUDIO_SEEK_AMOUNTS_SECONDS: [i32; 9] = [5, 10, 30, 60, 120, 300, 600, 1800, 3600];
@@ -52,7 +48,7 @@ pub struct OptionsDialogResult {
 	pub language: String,
 	pub update_channel: UpdateChannel,
 	pub log_level: LogLevel,
-	pub hotkey: HotkeyConfig,
+	pub hotkey: Option<KeyChord>,
 	pub shortcuts: ShortcutsConfig,
 	pub readability_font: ReadabilityFont,
 	pub line_spacing: i32,
@@ -92,7 +88,7 @@ struct OptionsDialogUi {
 	current_language: String,
 	ok_button: Button,
 	cancel_button: Button,
-	hotkey: Rc<RefCell<HotkeyConfig>>,
+	hotkey: Rc<RefCell<Option<KeyChord>>>,
 	shortcuts: Rc<RefCell<ShortcutsConfig>>,
 	readability_font: Rc<RefCell<ReadabilityFont>>,
 	line_spacing_ctrl: Choice,
@@ -279,9 +275,6 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let log_level_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	log_level_sizer.add(&log_level_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	log_level_sizer.add(&log_level_combo, 0, SizerFlag::AlignCenterVertical, 0);
-	#[cfg(target_os = "windows")]
-	// TRANSLATORS: Button label to open the hotkey customization dialog
-	let hotkey_button = Button::builder(&general_panel).with_label(&t("Customize &Window Hotkey...")).build();
 	// TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 	let shortcuts_button = Button::builder(&general_panel).with_label(&t("Customize &Keyboard Shortcuts...")).build();
 	let option_padding = 5;
@@ -295,8 +288,6 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	general_sizer.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
 	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
 	general_sizer.add_sizer(&log_level_sizer, 0, SizerFlag::All, option_padding);
-	#[cfg(target_os = "windows")]
-	general_sizer.add(&hotkey_button, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&shortcuts_button, 0, SizerFlag::All, option_padding);
 	reading_sizer.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
 	#[cfg(target_os = "windows")]
@@ -516,24 +507,16 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let log_level_index = LogLevel::ALL.iter().position(|level| *level == get_log_level(config)).unwrap_or(0);
 	log_level_combo.set_selection(u32::try_from(log_level_index).unwrap_or(0));
 	let current_hotkey = Rc::new(RefCell::new(config.get_hotkey()));
-	#[cfg(target_os = "windows")]
-	{
-		let hotkey_state = Rc::clone(&current_hotkey);
-		let hotkey_dialog_parent = dialog;
-		hotkey_button.on_click(move |_| {
-			let initial = hotkey_state.borrow().clone();
-			if let Some(updated) = prompt_for_hotkey(&hotkey_dialog_parent, &initial) {
-				*hotkey_state.borrow_mut() = updated;
-			}
-		});
-	}
 	let current_shortcuts = Rc::new(RefCell::new(config.get_shortcuts()));
 	let shortcuts_state = Rc::clone(&current_shortcuts);
+	let hotkey_state = Rc::clone(&current_hotkey);
 	let shortcuts_dialog_parent = dialog;
 	shortcuts_button.on_click(move |_| {
-		let initial = shortcuts_state.borrow().clone();
+		let initial =
+			super::Keymap { shortcuts: shortcuts_state.borrow().clone(), window_hotkey: hotkey_state.borrow().clone() };
 		if let Some(updated) = super::prompt_for_shortcuts(&shortcuts_dialog_parent, &initial) {
-			*shortcuts_state.borrow_mut() = updated;
+			*shortcuts_state.borrow_mut() = updated.shortcuts;
+			*hotkey_state.borrow_mut() = updated.window_hotkey;
 		}
 	});
 	let initial_font = config.get_readability_font();

@@ -7,4 +7,4 @@ pub use settings::{
 	AppSettings, Bookmark, ConfigData, DocumentConfig, DocumentSpeech, FindSettings, NavigationHistory,
 	ReadabilityFont, StoredBookmark,
 };
-pub use shortcuts::{ActionId, HotkeyConfig, KeyChord, ShortcutCategory, ShortcutsConfig};
+pub use shortcuts::{ActionId, KeyChord, ShortcutCategory, ShortcutsConfig, default_window_hotkey};

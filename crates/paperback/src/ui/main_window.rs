@@ -101,7 +101,7 @@ impl MainWindow {
 		)));
 		let find_dialog = Rc::new(Mutex::new(None));
 		#[cfg(target_os = "windows")]
-		let hotkey_handle = Rc::new(RefCell::new(start_hotkey_listener(&config.lock().unwrap().get_hotkey())));
+		let hotkey_handle = Rc::new(RefCell::new(start_hotkey_listener(config.lock().unwrap().get_hotkey().as_ref())));
 		let timers = Self::bind_menu_events(
 			&frame,
 			&doc_manager,

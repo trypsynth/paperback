@@ -172,18 +172,9 @@ pub(super) fn bind_teardown(
 		if let Some(state) = tray_for_close.lock().unwrap().as_ref() {
 			state.icon.remove_icon();
 		}
+		// Dropping the registration gives the chord back to the system.
 		#[cfg(target_os = "windows")]
-		if let Some(handle) = hotkey_for_close.borrow_mut().take() {
-			use windows::Win32::{
-				Foundation::{LPARAM, WPARAM},
-				UI::WindowsAndMessaging::{PostThreadMessageW, WM_QUIT},
-			};
-			if handle.thread_id != 0 {
-				unsafe {
-					let _ = PostThreadMessageW(handle.thread_id, WM_QUIT, WPARAM(0), LPARAM(0));
-				}
-			}
-		}
+		drop(hotkey_for_close.borrow_mut().take());
 		// A tick during teardown reaches a destroyed handler, an access violation; stopped only past the macOS veto, or they'd stay stopped when the window came back.
 		for timer in &timers_for_close {
 			timer.stop();

@@ -31,7 +31,7 @@ fontdb = { version = "0.24.0", default-features = false, features = ["fs"] }
 hayro = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
 hayro-interpret = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
 hayro-syntax = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
-key-chord = "0.2.2"
+key-chord = { version = "0.2.2", features = ["serde"] }
 encoding_rs = "0.8.42"
 icu_normalizer = "2.4.0"
 icu_properties = { version = "2.4.0", features = ["unicode_bidi"] }

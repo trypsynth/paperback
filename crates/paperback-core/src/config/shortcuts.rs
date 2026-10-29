@@ -7,20 +7,10 @@ mod action_id;
 pub use action_id::ActionId;
 pub use key_chord::KeyChord;
 
-#[allow(clippy::struct_excessive_bools)]
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct HotkeyConfig {
-	pub ctrl: bool,
-	pub alt: bool,
-	pub shift: bool,
-	pub win: bool,
-	pub key: char,
-}
-
-impl Default for HotkeyConfig {
-	fn default() -> Self {
-		Self { ctrl: true, alt: true, shift: false, win: false, key: 'P' }
-	}
+/// The system-wide chord that shows and hides the window.
+#[must_use]
+pub fn default_window_hotkey() -> KeyChord {
+	KeyChord::new(true, true, false, "P")
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

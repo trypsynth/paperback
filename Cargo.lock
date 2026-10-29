@@ -2121,6 +2121,9 @@ name = "key-chord"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6f0b9fc9ea91fa687a6702b248bae651b2781b173c5b9e41b2a719527c9283c0"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "kstring"

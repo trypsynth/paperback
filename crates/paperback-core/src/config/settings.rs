@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use super::shortcuts::{HotkeyConfig, ShortcutsConfig};
+use super::shortcuts::{KeyChord, ShortcutsConfig, default_window_hotkey};
 use crate::document::DocPos;
 
 const CONFIG_VERSION: u32 = 4;
@@ -150,8 +150,9 @@ pub struct AppSettings {
 	pub paragraph_spacing: i64,
 	#[serde(default)]
 	pub line_spacing: i64,
-	#[serde(default)]
-	pub hotkey: HotkeyConfig,
+	/// An empty key is no hotkey. Read through `ConfigManager::get_hotkey`, since older configs kept one key as a char and wrote a cleared hotkey as NUL.
+	#[serde(default = "default_window_hotkey")]
+	pub hotkey: KeyChord,
 	#[serde(default)]
 	pub shortcuts: ShortcutsConfig,
 	/// Host-specific settings, kept through a read and write so each front end can store its own fields.
@@ -188,7 +189,7 @@ impl Default for AppSettings {
 			letter_spacing: 0,
 			paragraph_spacing: 0,
 			line_spacing: 0,
-			hotkey: HotkeyConfig::default(),
+			hotkey: default_window_hotkey(),
 			shortcuts: ShortcutsConfig::default(),
 			extra: HashMap::new(),
 		}

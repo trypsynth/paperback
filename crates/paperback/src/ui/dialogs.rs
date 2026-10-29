@@ -54,7 +54,7 @@ mod options;
 pub(crate) use options::AUDIO_SEEK_AMOUNTS_SECONDS;
 pub use options::show_options_dialog;
 mod shortcuts;
-pub use shortcuts::prompt_for_shortcuts;
+pub use shortcuts::{Keymap, prompt_for_shortcuts};
 mod sleep_timer;
 pub use sleep_timer::show_sleep_timer_dialog;
 mod toc;
