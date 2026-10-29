@@ -5,7 +5,10 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{dialogs, document_manager::DocumentManager, navigation::set_caret_to_doc_offset};
-use crate::{audio_player::AudioPlayer, ui::navigation::announce_for_command};
+use crate::{
+	audio_player::{self, AudioPlayer},
+	ui::navigation::announce_for_command,
+};
 
 pub fn handle_toggle_play_pause_audio(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
@@ -104,6 +107,7 @@ pub fn handle_seek_audio(
 
 pub fn handle_change_audio_speed(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 	increase: bool,
 	from_keyboard: bool,
@@ -114,6 +118,11 @@ pub fn handle_change_audio_speed(
 		let after = if increase { player.increase_speed() } else { player.decrease_speed() };
 		(after, (after - before).abs() < f32::EPSILON)
 	});
+	// One speed for every book, so the other open recordings change with it.
+	if let Some((speed, _)) = result {
+		dm.set_audio_speed(speed);
+		config.lock().unwrap().set_app_string(audio_player::SPEED_KEY, &speed.to_string());
+	}
 	drop(dm);
 	let Some((speed, at_limit)) = result else {
 		// TRANSLATORS: Announced when trying to change audio playback speed on a document that has none

@@ -190,7 +190,10 @@ impl DocumentManager {
 		let nav_history = config.get_navigation_history(&path_str);
 		session.set_history(&nav_history.positions, nav_history.index);
 		let audio_player = session.audio().cloned().and_then(|timeline| match AudioPlayer::new(timeline) {
-			Ok(player) => Some(player),
+			Ok(mut player) => {
+				player.set_speed(crate::audio_player::saved_speed(&config));
+				Some(player)
+			}
 			Err(err) => {
 				tracing::warn!(error = %err, "failed to initialize audio playback for this document");
 				None

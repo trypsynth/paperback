@@ -22,11 +22,11 @@ pub fn decrease_seek_amount(ctx: &Ctx) {
 }
 
 pub fn increase_speed(ctx: &Ctx) {
-	audio::handle_change_audio_speed(ctx.dm, ctx.live_region_label, true, ctx.from_keyboard);
+	audio::handle_change_audio_speed(ctx.dm, ctx.config, ctx.live_region_label, true, ctx.from_keyboard);
 }
 
 pub fn decrease_speed(ctx: &Ctx) {
-	audio::handle_change_audio_speed(ctx.dm, ctx.live_region_label, false, ctx.from_keyboard);
+	audio::handle_change_audio_speed(ctx.dm, ctx.config, ctx.live_region_label, false, ctx.from_keyboard);
 }
 
 pub fn increase_volume(ctx: &Ctx) {

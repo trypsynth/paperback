@@ -165,6 +165,12 @@ impl DocumentManager {
 		}
 	}
 
+	pub fn set_audio_speed(&mut self, speed: f32) {
+		for player in self.tabs.iter_mut().filter_map(|tab| tab.audio_player.as_mut()) {
+			player.set_speed(speed);
+		}
+	}
+
 	pub fn active_tab_mut(&mut self) -> Option<&mut DocumentTab> {
 		self.active_tab_index().and_then(|i| self.tabs.get_mut(i))
 	}

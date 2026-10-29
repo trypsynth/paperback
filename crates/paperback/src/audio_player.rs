@@ -24,8 +24,16 @@ use zip::ZipArchive;
 const END_MARGIN_MS: u64 = 100;
 
 const MIN_SPEED: f32 = 0.5;
-const MAX_SPEED: f32 = 3.0;
+// Audiobook listeners commonly go well past 3x, and every mobile app matches this.
+const MAX_SPEED: f32 = 4.0;
 const SPEED_STEP: f32 = 0.1;
+
+/// One speed for every recording, under the key the mobile apps use too.
+pub const SPEED_KEY: &str = "audio_speed";
+
+pub fn saved_speed(config: &paperback_core::config::ConfigManager) -> f32 {
+	config.get_app_string(SPEED_KEY, "1").parse().unwrap_or(1.0)
+}
 
 const MIN_VOLUME: f32 = 0.1;
 /// Above 1.0 amplifies, for recordings made too quietly.
