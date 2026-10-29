@@ -20,7 +20,7 @@ Paperback toimii Windows 10:ssä ja 11:ssä, kaikissa nykyaikaisissa ARM-pohjais
 * Voidaan käyttää massamuistiversiona tai asentaa siten, että tiedostokytkennät määritetään automaattisesti.
 * Tukee erittäin kattavasti yleisiä tiedostomuotoja.
 * Toistaa äänikirjoja ja tukee niiden toistonopeuden muuttamista  sekä tarkan kohdan muistavia kirjanmerkkejä.
-* Mahdollistaa skannattujen PDF-asiakirjojen lukemisen Windowsin ja macOSin tekstintunnistusominaisuuden avulla.
+* Mahdollistaa skannattujen PDF-asiakirjojen lukemisen Windowsin ja macOSin tekstintunnistuksen tai Linuxissa Tesseractin avulla.
 * Kirjanmerkit ja muistiinpanot lukukohdan merkitsemistä ja siihen palaamista varten.
 * Kaikkia pikanäppäimiä on mahdollista muokata.
 * Avaa asiakirjoja suoraan HTTP- ja HTTPS-osoitteista. Ne ladataan uudelleen jokaisella avauskerralla tai `F5`-näppäimen painalluksella, mutta lukukohta ja kirjanmerkit säilyvät. Kun aiemmin avoinna olleet asiakirjat palautetaan, URL-osoitteista avatut asiakirjat ladataan uudelleen, jos niiden koko on enintään 2 Mt.
@@ -234,7 +234,7 @@ Muut toiminnot löytyvät Lisää vaihtoehtoja -valikosta. Osa niistä toimii so
 * **Siirry:** siirry asiakirjassa haluamallesi riville, sivulle tai tiettyyn prosenttikohtaan. Valitse haluamasi siirtymätapa Tila-valitsimella.
 * **Viimeksi avatut:** näyttää kaikki avaamasi asiakirjat ja ilmoittaa kunkin kohdalla, onko se parhaillaan avoinna, suljettu tai jos sen tiedostoa ei löydy. Asiakirjoille on kaksi ruudunlukijan toimintoa: ”Poista” poistaa asiakirjan luettelosta ja ”Etsi”-toiminnolla voit etsiä asiakirjan tiedoston, jos se on siirretty toiseen hakemistoon. ”Tyhjennä viimeksi avattujen luettelo” tyhjentää luettelon poistamatta varsinaisia asiakirjoja.
 * **Sanamäärä:** näyttää asiakirjan sanojen määrän.
-* **Asiakirjan tiedot:** näyttää asiakirjan otsikon, tekijän, tiedostonimen ja iOSissa myös rivien ja merkkien määrän.
+* **Asiakirjan tiedot:** näyttää asiakirjan otsikon, tekijän, tiedostonimen, luetun osuuden sekä sanojen, rivien ja merkkien määrän. Äänikirjoissa näytetään myös tiedostojen määrä sekä mahdollisuuksien mukaan niiden kokonais- ja keskimääräinen kesto.
 * **Vie:** tallentaa asiakirjan teksti-, HTML- tai Markdown-muodossa.
 * **Uniajastin:** pysäyttää lukemisen 5, 10, 15, 30, 45 tai 60 minuutin kuluttua tai itse valitsemanasi ajankohtana. Avaa se uudelleen ajastuksen ollessa käynnissä nähdäksesi jäljellä olevan ajan tai peruuttaaksesi sen.
 * **Ohje:** avaa tämän lueminut-tiedoston.
