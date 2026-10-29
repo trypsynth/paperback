@@ -14,16 +14,21 @@ struct DocumentDataTransferMenu: ViewModifier {
 	func body(content: Content) -> some View {
 		if viewModel.activeTab != nil {
 			withPickersAndFeedback(content)
+				.accessibilityAction(named: t("Open from URL...")) { viewModel.navigation.showOpenFromURL = true }
 				.accessibilityAction(named: t("Import Document Data")) { showImportPicker = true }
 				.accessibilityAction(named: t("Export Document Data")) { beginExport() }
 		} else {
 			withPickersAndFeedback(content)
+				.accessibilityAction(named: t("Open from URL...")) { viewModel.navigation.showOpenFromURL = true }
 		}
 	}
 
 	private func withPickersAndFeedback(_ content: Content) -> some View {
 		content
 			.contextMenu {
+				Button { viewModel.navigation.showOpenFromURL = true } label: {
+					Label(t("Open from URL..."), systemImage: "link")
+				}
 				Button { beginExport() } label: {
 					// TRANSLATORS: Long-press menu item to export a document's saved settings and bookmarks to a .paperback file
 					Label(t("Export Document Data"), systemImage: "square.and.arrow.up")

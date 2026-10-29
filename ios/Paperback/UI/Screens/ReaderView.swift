@@ -27,6 +27,9 @@ struct ReaderView: View {
 		.sheet(isPresented: $navigation.showGoTo) {
 			GoToSheet().environment(viewModel)
 		}
+		.sheet(isPresented: $navigation.showOpenFromURL) {
+			OpenFromURLSheet().environment(viewModel)
+		}
 		.navigationDestination(isPresented: $navigation.showSettings) {
 			SettingsView().environment(viewModel)
 		}

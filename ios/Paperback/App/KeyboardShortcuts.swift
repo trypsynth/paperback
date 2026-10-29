@@ -41,6 +41,7 @@ extension MagicTapWindow {
 			cmd(UIKeyCommand.f3, .shift, #selector(kbFindPrev), t("Find Previous")),
 			cmd(UIKeyCommand.f7, [], #selector(kbElements), t("Elements List...")),
 			cmd("o", .command, #selector(kbOpenBook), t("Open...")),
+			cmd("o", [.command, .alternate], #selector(kbOpenFromURL), t("Open from URL...")),
 			cmd("r", .command, #selector(kbRecents), t("Show All Recent Documents...")),
 			cmd("f", .command, #selector(kbOpenFind), t("Find...")),
 			cmd(",", .command, #selector(kbOpenSettings), t("Settings...")),
@@ -97,6 +98,7 @@ extension MagicTapWindow {
 	@objc private func kbElements()       { onMain { $0.navigation.showElements = true } }
 
 	@objc private func kbOpenBook()       { onMain { $0.navigation.showFilePicker = true } }
+	@objc private func kbOpenFromURL()    { onMain { $0.navigation.showOpenFromURL = true } }
 	@objc private func kbRecents()        { onMain { $0.navigation.showRecents = true } }
 	@objc private func kbExport()         { onMain { $0.navigation.showExportDocument = true } }
 	@objc private func kbOpenFind()       { onMain { $0.navigation.showFind = true } }
