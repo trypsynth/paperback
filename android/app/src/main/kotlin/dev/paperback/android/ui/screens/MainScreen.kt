@@ -353,6 +353,7 @@ fun MainScreen(
 						onNavigate = { lineIndexToFocus = it }
 					)
 				} else if (!isTextMode && activeTab != null) {
+					val audioSpeed by viewModel.reading.audioSpeed.collectAsStateWithLifecycle()
 					val baseNavUnits = remember(activeTab.session) { viewModel.reading.navUnitsFor(activeTab) }
 					val navUnits = if (activeSearchQuery != null) baseNavUnits + NavUnit.Find else baseNavUnits
 					LaunchedEffect(navUnits) {
@@ -370,6 +371,8 @@ fun MainScreen(
 						onNavUnitChange = { viewModel.reading.setNavUnit(it) },
 						speechRatePercent = speechRatePercent.takeUnless { ttsEngine == null },
 						onSpeechRateChange = { viewModel.ttsManager.setSpeechRate(it) },
+						audioSpeed = audioSpeed.takeIf { activeTab.hasAudio },
+						onAudioSpeedChange = { viewModel.reading.setAudioSpeed(it) },
 						swipeUpMovesForward = swipeUpMovesForward,
 						hidePrevNextButtons = hidePrevNextButtons
 					)

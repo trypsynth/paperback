@@ -45,6 +45,27 @@ class DaisyAudioPlayer(private val context: Context) : RecordedPlayer {
 	/** Only relative seeks report: those following the caret or restoring a saved position have nothing to announce. */
 	private var reportNextSeek = false
 
+	/** One speed for every recording; it survives loading the next file. */
+	var speed: Float = 1f
+		set(value) {
+			field = value
+			// Only while it plays, since setting a speed on a paused MediaPlayer starts it.
+			mediaPlayer?.takeIf { playing && it.isPlaying }?.let { applySpeed(it) }
+		}
+
+	private fun applySpeed(player: MediaPlayer) {
+		try {
+			player.playbackParams = player.playbackParams.setSpeed(speed)
+		} catch (_: Exception) {
+		}
+	}
+
+	/** The speed is set as it starts, which is the one moment setting it can't start a paused player by surprise. */
+	private fun startAtSpeed(player: MediaPlayer) {
+		applySpeed(player)
+		player.start()
+	}
+
 	private val audioFocus =
 		AudioFocusHolder(context, isPlaying = { playing }, onPause = { pause() }, onResume = { play() })
 
@@ -77,7 +98,7 @@ class DaisyAudioPlayer(private val context: Context) : RecordedPlayer {
 			pending != null -> seekToMs(pending)
 			currentSource != null -> {
 				try {
-					mediaPlayer?.start()
+					mediaPlayer?.let { startAtSpeed(it) }
 				} catch (_: Exception) {
 				}
 				onPlaybackStateChanged?.invoke(true)
@@ -216,7 +237,7 @@ class DaisyAudioPlayer(private val context: Context) : RecordedPlayer {
 
 	private fun resumeLoadedPlayer() {
 		try {
-			mediaPlayer?.start()
+			mediaPlayer?.let { startAtSpeed(it) }
 		} catch (_: Exception) {
 		}
 		onPlaybackStateChanged?.invoke(true)
@@ -229,7 +250,7 @@ class DaisyAudioPlayer(private val context: Context) : RecordedPlayer {
 		lastSeekTarget = source to landedMs
 		try {
 			if (playing) {
-				player.start()
+				startAtSpeed(player)
 				startPolling()
 			} else {
 				player.pause()
@@ -338,7 +359,7 @@ class DaisyAudioPlayer(private val context: Context) : RecordedPlayer {
 				lastSeekTarget = sourceIndex to landedMs
 				if (playing) {
 					try {
-						mp.start()
+						startAtSpeed(mp)
 					} catch (_: Exception) {
 					}
 					onPlaybackStateChanged?.invoke(true)

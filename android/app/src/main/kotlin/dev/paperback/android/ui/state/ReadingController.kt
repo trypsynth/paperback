@@ -35,6 +35,11 @@ class ReadingController(
 	private val narration = RecordedNarration(application, config, scope)
 
 	private val recordedNarrator = RecordedNarrator(narration)
+
+	val audioSpeed: StateFlow<Float> get() = narration.speed
+
+	fun setAudioSpeed(speed: Float) = narration.setSpeed(speed)
+
 	private val spokenNarrator = SpokenNarrator(ttsManager) { speakCurrentSegment() }
 
 	/** Worked out per call rather than held, so switching tabs needs no bookkeeping. */

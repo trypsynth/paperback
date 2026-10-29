@@ -25,6 +25,10 @@ import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
+import dev.paperback.android.tts.AUDIO_SPEED_STEP
+import dev.paperback.android.tts.audioSpeedLabel
+import dev.paperback.android.tts.audioSpeedPresets
+import dev.paperback.android.tts.clampAudioSpeed
 import dev.paperback.android.ui.state.NavUnit
 import dev.paperback.android.ui.state.getNavUnitName
 import dev.paperback.android.ui.state.getNextUnitLabel
@@ -57,11 +61,13 @@ fun TtsBottomBar(
 	speechRatePercent: Int?,
 	onSpeechRateChange: (Int) -> Unit,
 	modifier: Modifier = Modifier,
+	// A book's recording, when it has one, takes the chip in place of the voice's rate.
+	audioSpeed: Float? = null,
+	onAudioSpeedChange: (Float) -> Unit = {},
 	swipeUpMovesForward: Boolean = true,
 	hidePrevNextButtons: Boolean = false
 ) {
 	var dropdownExpanded by remember { mutableStateOf(false) }
-	var rateMenuExpanded by remember { mutableStateOf(false) }
 	val unitName = getNavUnitName(currentUnit)
 	val currentUnitIndex = navUnits.indexOf(currentUnit)
 	val prevLabel = when (currentUnit) {
@@ -195,48 +201,98 @@ fun TtsBottomBar(
 				}
 			}
 
-			if (speechRatePercent != null) {
-				Box(modifier = Modifier.align(Alignment.CenterEnd)) {
-					FilterChip(
-						selected = false,
-						onClick = { rateMenuExpanded = true },
-						label = { Text("$speechRatePercent%") },
-						modifier = Modifier.clearAndSetSemantics {
-							// TRANSLATORS: TalkBack label for the read-aloud bar's speech rate control
-							contentDescription = t("Speech Rate")
-							stateDescription = "$speechRatePercent%"
-							progressBarRangeInfo = ProgressBarRangeInfo(
-								current = (SEEK_RANGE / 2).toFloat(),
-								range = 0f..SEEK_RANGE.toFloat(),
-								steps = SEEK_RANGE - 1,
-							)
-							setProgress { targetValue ->
-								val current = SEEK_RANGE / 2
-								val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
-								when {
-									newPos > current -> onSpeechRateChange(speechRatePercent + RATE_STEP)
-									newPos < current -> onSpeechRateChange(speechRatePercent - RATE_STEP)
+			if (audioSpeed != null) {
+				SpeedChip(
+					modifier = Modifier.align(Alignment.CenterEnd),
+					value = audioSpeedLabel(audioSpeed),
+					// TRANSLATORS: TalkBack label for the read-aloud bar's control that speeds up or slows down a book's recorded audio
+					description = t("Audio Speed"),
+					// TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
+					openLabel = t("Select audio speed"),
+					presets = audioSpeedPresets.map { audioSpeedLabel(it) },
+					selected = audioSpeedPresets.indexOf(audioSpeed),
+					onPreset = { onAudioSpeedChange(audioSpeedPresets[it]) },
+					onStep = { up ->
+						onAudioSpeedChange(
+							clampAudioSpeed(
+								if (up) {
+									audioSpeed + AUDIO_SPEED_STEP
+								} else {
+									audioSpeed -
+										AUDIO_SPEED_STEP
 								}
-								true
-							}
-							// TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
-							onClick(label = t("Select speech rate")) {
-								rateMenuExpanded = true
-								true
-							}
-						}
-					)
-					DropdownMenu(
-						expanded = rateMenuExpanded,
-						onDismissRequest = { rateMenuExpanded = false },
-					) {
-						RATE_PRESETS.forEach { percent ->
-							PickerMenuItem(label = "$percent%", selected = percent == speechRatePercent) {
-								onSpeechRateChange(percent)
-								rateMenuExpanded = false
-							}
-						}
+							)
+						)
 					}
+				)
+			} else if (speechRatePercent != null) {
+				SpeedChip(
+					modifier = Modifier.align(Alignment.CenterEnd),
+					value = "$speechRatePercent%",
+					// TRANSLATORS: TalkBack label for the read-aloud bar's speech rate control
+					description = t("Speech Rate"),
+					// TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
+					openLabel = t("Select speech rate"),
+					presets = RATE_PRESETS.map { "$it%" },
+					selected = RATE_PRESETS.indexOf(speechRatePercent),
+					onPreset = { onSpeechRateChange(RATE_PRESETS[it]) },
+					onStep = { up -> onSpeechRateChange(if (up) speechRatePercent + RATE_STEP else speechRatePercent - RATE_STEP) }
+				)
+			}
+		}
+	}
+}
+
+/** A swipe steps it and a double tap lists the presets, for the voice's rate and a recording's speed alike. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SpeedChip(
+	modifier: Modifier,
+	value: String,
+	description: String,
+	openLabel: String,
+	presets: List<String>,
+	selected: Int,
+	onPreset: (Int) -> Unit,
+	onStep: (up: Boolean) -> Unit
+) {
+	var menuExpanded by remember { mutableStateOf(false) }
+	Box(modifier = modifier) {
+		FilterChip(
+			selected = false,
+			onClick = { menuExpanded = true },
+			label = { Text(value) },
+			modifier = Modifier.clearAndSetSemantics {
+				contentDescription = description
+				stateDescription = value
+				progressBarRangeInfo = ProgressBarRangeInfo(
+					current = (SEEK_RANGE / 2).toFloat(),
+					range = 0f..SEEK_RANGE.toFloat(),
+					steps = SEEK_RANGE - 1,
+				)
+				setProgress { targetValue ->
+					val current = SEEK_RANGE / 2
+					val newPos = targetValue.roundToInt().coerceIn(0, SEEK_RANGE)
+					when {
+						newPos > current -> onStep(true)
+						newPos < current -> onStep(false)
+					}
+					true
+				}
+				onClick(label = openLabel) {
+					menuExpanded = true
+					true
+				}
+			}
+		)
+		DropdownMenu(
+			expanded = menuExpanded,
+			onDismissRequest = { menuExpanded = false },
+		) {
+			presets.forEachIndexed { index, label ->
+				PickerMenuItem(label = label, selected = index == selected) {
+					onPreset(index)
+					menuExpanded = false
 				}
 			}
 		}

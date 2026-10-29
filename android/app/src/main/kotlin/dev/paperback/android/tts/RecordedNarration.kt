@@ -4,6 +4,9 @@ import android.content.Context
 import dev.paperback.android.ui.state.DocumentTabState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import uniffi.paperback.ConfigManagerFfi
 
@@ -22,6 +25,9 @@ class RecordedNarration(context: Context, private val config: ConfigManagerFfi, 
 
 	var onDetached: (() -> Unit)? = null
 
+	private val _speed = MutableStateFlow(1f)
+	val speed: StateFlow<Float> = _speed.asStateFlow()
+
 	// Android can kill the process without any callback, so the position is saved on every pause and clip change rather than on the way out.
 	init {
 		player.onPlaybackStateChanged = { playing ->
@@ -33,6 +39,24 @@ class RecordedNarration(context: Context, private val config: ConfigManagerFfi, 
 			onClipChanged?.invoke(position)
 			persistPosition()
 		}
+		player.speed = config.getAppString(SPEED_KEY, "").toFloatOrNull()?.let(::clampAudioSpeed) ?: 1f
+		_speed.value = player.speed
+	}
+
+	fun setSpeed(newSpeed: Float) {
+		val clamped = clampAudioSpeed(newSpeed)
+		if (clamped == player.speed) return
+		player.speed = clamped
+		_speed.value = clamped
+		scope.launch(Dispatchers.IO) {
+			config.setAppString(SPEED_KEY, clamped.toString())
+			config.flush()
+		}
+	}
+
+	private companion object {
+		/** One speed for every recording, under the key desktop and iOS use too. */
+		const val SPEED_KEY = "audio_speed"
 	}
 
 	fun attach(tab: DocumentTabState) {
