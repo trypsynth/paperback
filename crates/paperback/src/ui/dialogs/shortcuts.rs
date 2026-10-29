@@ -42,11 +42,11 @@ impl ShortcutModel for CategorizedShortcuts {
 
 	fn tabs(&self) -> Vec<String> {
 		// TRANSLATORS: Tab label in the Keyboard Shortcuts dialog naming a category of shortcuts (e.g. Navigation, File).
-		let mut tabs: Vec<String> = ShortcutCategory::all().iter().map(|c| c.display_name()).collect();
+		let tabs = ShortcutCategory::all().iter().map(|c| c.display_name());
 		// TRANSLATORS: Tab in the Keyboard Shortcuts dialog for shortcuts that work in every program, not only while Paperback has focus
 		#[cfg(target_os = "windows")]
-		tabs.push(t("System-Wide"));
-		tabs
+		let tabs = tabs.chain([t("System-Wide")]);
+		tabs.collect()
 	}
 
 	fn tab_scope(&self, tab: usize) -> TabScope {
