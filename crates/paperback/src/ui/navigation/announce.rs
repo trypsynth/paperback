@@ -211,6 +211,11 @@ pub fn announce_for_command(live_region_label: StaticText, from_keyboard: bool, 
 /// The screen reader reports a selection change itself, so even a shortcut waits, cutting that report off instead of leaving "selected" trailing the message.
 #[cfg(not(target_os = "macos"))]
 pub fn announce_for_selection_command(live_region_label: StaticText, from_keyboard: bool, message: impl AsRef<str>) {
+	announce_waiting_for_command(live_region_label, from_keyboard, message);
+}
+
+/// For a result that can come back while the menu that asked for it is still closing, as a fast OCR does; after a shortcut it waits only as `announce` does.
+pub fn announce_waiting_for_command(live_region_label: StaticText, from_keyboard: bool, message: impl AsRef<str>) {
 	let delay_ms = if from_keyboard { FOCUS_CHAIN_INTERRUPT_DELAY_MS } else { MENU_FOCUS_CHAIN_INTERRUPT_DELAY_MS };
 	announce_after(live_region_label, message, delay_ms);
 }

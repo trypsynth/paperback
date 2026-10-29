@@ -132,7 +132,7 @@ impl MainWindow {
 					menu_file::handle_save_image(&frame_copy, &dm);
 				}
 				menu_ids::READ_IMAGE_TEXT => {
-					dm.lock().unwrap().read_picture_at_caret();
+					dm.lock().unwrap().read_picture_at_caret(from_keyboard);
 				}
 				menu_ids::EXPORT_DOCUMENT_DATA => {
 					menu_file::handle_export_document_data(&frame_copy, &dm, &config);
@@ -183,7 +183,7 @@ impl MainWindow {
 					menu_tools::handle_batch_ocr(&frame_copy, &dm, live_region_label, from_keyboard);
 				}
 				menu_ids::RECOGNIZE_CURRENT_PAGE => {
-					dm.lock().unwrap().recognize_current_page();
+					dm.lock().unwrap().recognize_current_page(from_keyboard);
 				}
 				menu_ids::ABOUT => {
 					dialogs::show_about_dialog(&frame_copy);

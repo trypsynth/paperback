@@ -50,7 +50,7 @@ pub(super) fn build_text_ctrl(
 					dm.start_ocr_for_current_page();
 					true
 				} else if dm.image_file_name_at_caret().is_some() && !dm.link_at_caret() {
-					dm.read_picture_at_caret();
+					dm.read_picture_at_caret(true);
 					true
 				} else {
 					false

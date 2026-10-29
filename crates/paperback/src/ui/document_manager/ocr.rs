@@ -21,7 +21,10 @@ use patois::{nt, t};
 use super::{DocumentManager, DocumentTab};
 use crate::{
 	ocr::{self, OcrError},
-	ui::{navigation::announce, text_render::reload_window_around},
+	ui::{
+		navigation::{announce, announce_for_command, announce_waiting_for_command},
+		text_render::reload_window_around,
+	},
 };
 
 /// Time rather than a page count, since page speed varies several-fold between machines; it also bounds checkpoint rebuilds, which are linear in the document, so a long scan doesn't go quadratic.
@@ -35,6 +38,8 @@ pub(super) struct OcrJob {
 	/// Stopped by a re-read rather than by the reader, so its remaining flushes are dropped and nothing is announced.
 	quiet_cancel: bool,
 	saved_as: PathBuf,
+	/// Whether a shortcut started it, since a fast result started from a menu lands while the menu is still closing.
+	from_keyboard: bool,
 }
 
 /// Paragraph joining is PDF-only because the other OCR source is comics, whose lines are balloons and belong apart.
@@ -118,31 +123,31 @@ impl DocumentManager {
 			return;
 		}
 		let page = tab.session.current_page(offset);
-		self.spawn_ocr(vec![page], false);
+		self.spawn_ocr(vec![page], false, true);
 	}
 
 	/// Also for pages that already have text, which may come from an older or worse OCR pass (#814).
-	pub fn recognize_current_page(&mut self) {
+	pub fn recognize_current_page(&mut self, from_keyboard: bool) {
 		let label = self.live_region_label;
 		let Some(tab) = self.active_tab() else {
 			// TRANSLATORS: Announced when Recognize Current Page is chosen with no document open
-			announce(label, t("No document open."));
+			announce_for_command(label, from_keyboard, t("No document open."));
 			return;
 		};
 		if tab.ocr_job.is_some() {
 			// TRANSLATORS: Announced when Recognize Current Page is chosen while OCR is already running
-			announce(label, t("OCR already in progress."));
+			announce_for_command(label, from_keyboard, t("OCR already in progress."));
 			return;
 		}
 		if !is_ocr_able(tab.local_path()) {
 			// TRANSLATORS: Announced when Recognize Current Page is chosen in a document that is not a PDF or a comic book
-			announce(label, t("Only PDF and comic book pages can be recognized."));
+			announce_for_command(label, from_keyboard, t("Only PDF and comic book pages can be recognized."));
 			return;
 		}
 		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		// Text before the first page break still belongs to the first page.
 		let page = tab.session.current_page(position).max(1);
-		self.spawn_ocr(vec![page], false);
+		self.spawn_ocr(vec![page], false, from_keyboard);
 	}
 
 	/// A document the renderer can't open keeps the image-only behaviour even with `include_text_pages`, since a completed job that recognized nothing would be worse than saying the range held no image-only pages.
@@ -175,10 +180,10 @@ impl DocumentManager {
 			announce(label, t("No image-only pages in the given range."));
 			return;
 		}
-		self.spawn_ocr(pages, true);
+		self.spawn_ocr(pages, true, true);
 	}
 
-	fn spawn_ocr(&mut self, pages: Vec<i32>, batch: bool) {
+	fn spawn_ocr(&mut self, pages: Vec<i32>, batch: bool, from_keyboard: bool) {
 		let label = self.live_region_label;
 		let Some(tab) = self.active_tab() else {
 			return;
@@ -192,7 +197,7 @@ impl DocumentManager {
 		let worker_cancel = Arc::clone(&cancel);
 		let id = self.next_job_id.get();
 		self.next_job_id.set(id.wrapping_add(1));
-		let job = OcrJob { id, cancel, batch, recognized: 0, quiet_cancel: false, saved_as };
+		let job = OcrJob { id, cancel, batch, recognized: 0, quiet_cancel: false, saved_as, from_keyboard };
 		let worker = thread::Builder::new()
 			.name("paperback-ocr".into())
 			.spawn(move || run_ocr(&path_str, password.as_deref(), &pages, &path, &worker_cancel, batch, id));
@@ -206,7 +211,7 @@ impl DocumentManager {
 			}
 			Err(err) => {
 				tracing::warn!(error = %err, "failed to spawn the ocr worker thread");
-				announce(label, ocr::message(&OcrError::Failed(err.to_string())));
+				announce_waiting_for_command(label, from_keyboard, ocr::message(&OcrError::Failed(err.to_string())));
 			}
 		}
 	}
@@ -229,6 +234,7 @@ impl DocumentManager {
 			return;
 		}
 		let is_active = self.active_tab_index() == Some(index);
+		let from_keyboard = self.tabs[index].ocr_job.as_ref().is_none_or(|job| job.from_keyboard);
 		let join = joins_recognized_text(self.tabs[index].local_path(), &self.config.lock().unwrap());
 		let tab = &mut self.tabs[index];
 		let mut pages = Vec::with_capacity(results.len());
@@ -241,7 +247,7 @@ impl DocumentManager {
 				Err(err) => {
 					tracing::warn!(page, error = %err, "ocr failed on page");
 					if matches!(err, OcrError::NoLanguage) {
-						announce(label, ocr::message(&err));
+						announce_waiting_for_command(label, from_keyboard, ocr::message(&err));
 					}
 					continue;
 				}
@@ -315,7 +321,7 @@ impl DocumentManager {
 				// TRANSLATORS: Announced when OCR runs on a page but finds no recognizable text
 				t("No text found.")
 			};
-			announce(label, message);
+			announce_waiting_for_command(label, job.from_keyboard, message);
 			return;
 		}
 		let count = u64::try_from(job.recognized).unwrap_or(0);

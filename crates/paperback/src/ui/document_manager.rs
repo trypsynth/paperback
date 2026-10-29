@@ -107,7 +107,7 @@ pub struct DocumentManager {
 	pub(super) from_keyboard: Rc<Cell<bool>>,
 	/// So a worker whose tab has been closed is recognisable as stale rather than mistaken for one on a reopened tab.
 	next_job_id: Cell<u64>,
-	image_ocr_job: Option<(u64, PathBuf)>,
+	image_ocr_job: Option<(u64, PathBuf, bool)>,
 }
 
 impl DocumentManager {

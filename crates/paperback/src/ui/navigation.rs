@@ -15,7 +15,7 @@ mod announce;
 
 #[cfg(not(target_os = "macos"))]
 pub use announce::announce_for_selection_command;
-pub use announce::{announce, announce_for_command, page_announcement};
+pub use announce::{announce, announce_for_command, announce_waiting_for_command, page_announcement};
 use announce::{format_nav_found_message, nav_announcements};
 
 /// Owned so it outlives the `DocumentManager` lock: built while a tab is borrowed, persisted after the lock drops.
