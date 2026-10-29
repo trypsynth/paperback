@@ -120,9 +120,15 @@ fn download(link: &str, n: usize, count: usize, progress: &Progress) -> Outcome 
 	if let Some(extension) = fetch::refused_extension(link) {
 		return failed(FetchError::Refused(extension));
 	}
-	let remote = match fetch::open(link, fetch::DEFAULT_MAX_SIZE) {
-		Ok(remote) => remote,
-		Err(error) => return failed(error),
+	let owned_link = link.to_string();
+	let remote = match links::unless_cancelled(
+		|| progress.is_cancelled(),
+		|_, _| {},
+		move |_, _| fetch::open(&owned_link, fetch::DEFAULT_MAX_SIZE),
+	) {
+		None => return Outcome::Skipped,
+		Some(Ok(remote)) => remote,
+		Some(Err(error)) => return failed(error),
 	};
 	let info = remote.info().clone();
 	let warned = match info.verdict(link) {
@@ -141,10 +147,15 @@ fn download(link: &str, n: usize, count: usize, progress: &Progress) -> Outcome 
 		Err(error) => return failed(error.into()),
 	};
 	progress.set_message(&links::step(Stage::Downloading, n, count, &info.file_name));
-	match remote.save(copy.path(), progress.cancel_flag(), |done, total| progress.set(done, total)) {
-		Ok(_) => Outcome::Downloaded { link: link.to_string(), copy, warned },
-		Err(FetchError::Cancelled) => Outcome::Skipped,
-		Err(error) => failed(error),
+	let path = copy.path().to_path_buf();
+	match links::unless_cancelled(
+		|| progress.is_cancelled(),
+		|done, total| progress.set(done, total),
+		move |cancel, moved| remote.save(&path, cancel, moved),
+	) {
+		Some(Ok(_)) => Outcome::Downloaded { link: link.to_string(), copy, warned },
+		None | Some(Err(FetchError::Cancelled)) => Outcome::Skipped,
+		Some(Err(error)) => failed(error),
 	}
 }
 

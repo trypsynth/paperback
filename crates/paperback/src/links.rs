@@ -1,4 +1,13 @@
-use std::path::Path;
+use std::{
+	path::Path,
+	sync::{
+		Arc,
+		atomic::{AtomicBool, Ordering},
+		mpsc::{self, RecvTimeoutError},
+	},
+	thread,
+	time::Duration,
+};
 
 pub use paperback_core::fetch::{not_a_link, prefill, warning_text};
 use paperback_core::{fetch::FetchError, parser::parser_supports_path};
@@ -27,6 +36,46 @@ pub fn step(stage: Stage, n: usize, m: usize, subject: &str) -> String {
 	template.replacen("%d", &n.to_string(), 1).replacen("%d", &m.to_string(), 1).replacen("%s", subject, 1)
 }
 
+/// How often a step waiting on the network looks for Cancel: soon enough that the window seems to close at once.
+const CANCEL_POLL: Duration = Duration::from_millis(100);
+
+/// Runs `step` on a thread of its own and waits for it, passing on its progress, unless `cancelled` turns true first.
+///
+/// A server can take minutes to answer or to send the next part of a document, and nothing can interrupt a read that is waiting on one. So Cancel stops the waiting instead: `step` is told through its flag, and whatever it returns once the server does answer is dropped.
+pub fn unless_cancelled<T: Send + 'static>(
+	cancelled: impl Fn() -> bool,
+	mut on_progress: impl FnMut(u64, Option<u64>),
+	step: impl FnOnce(&AtomicBool, &dyn Fn(u64, Option<u64>)) -> T + Send + 'static,
+) -> Option<T> {
+	let cancel = Arc::new(AtomicBool::new(false));
+	let step_cancel = Arc::clone(&cancel);
+	let (result_tx, result_rx) = mpsc::channel();
+	let (moved_tx, moved_rx) = mpsc::channel();
+	thread::spawn(move || {
+		let result = step(&step_cancel, &|done, total| {
+			let _ = moved_tx.send((done, total));
+		});
+		let _ = result_tx.send(result);
+	});
+	loop {
+		while let Ok((done, total)) = moved_rx.try_recv() {
+			on_progress(done, total);
+		}
+		match result_rx.recv_timeout(CANCEL_POLL) {
+			Ok(result) => return Some(result),
+			Err(RecvTimeoutError::Timeout) if cancelled() => {
+				cancel.store(true, Ordering::Relaxed);
+				return None;
+			}
+			Err(RecvTimeoutError::Timeout) => {}
+			Err(RecvTimeoutError::Disconnected) => {
+				tracing::warn!("a link download's network thread ended without a result");
+				return None;
+			}
+		}
+	}
+}
+
 pub fn needs_open_as(warned: bool, copy: &Path) -> bool {
 	warned || !parser_supports_path(copy)
 }
@@ -53,6 +102,44 @@ mod tests {
 
 	use super::*;
 	use crate::{test_locale, working_copy::WorkingCopy};
+
+	#[test]
+	fn a_step_s_result_and_progress_come_back_when_nothing_cancels_it() {
+		let mut seen = Vec::new();
+		let result = unless_cancelled(
+			|| false,
+			|done, total| seen.push((done, total)),
+			|_, progress| {
+				progress(5, Some(10));
+				progress(10, Some(10));
+				thread::sleep(CANCEL_POLL * 2);
+				"saved"
+			},
+		);
+		assert_eq!(result, Some("saved"));
+		assert_eq!(seen, vec![(5, Some(10)), (10, Some(10))]);
+	}
+
+	#[test]
+	fn cancel_stops_waiting_on_a_step_that_is_still_blocked_and_tells_it() {
+		let told = Arc::new(AtomicBool::new(false));
+		let told_by_step = Arc::clone(&told);
+		let started = std::time::Instant::now();
+		let result = unless_cancelled(
+			|| started.elapsed() > CANCEL_POLL,
+			|_, _| {},
+			move |cancel, _| {
+				while !cancel.load(Ordering::Relaxed) {
+					thread::sleep(Duration::from_millis(10));
+				}
+				told_by_step.store(true, Ordering::Relaxed);
+			},
+		);
+		assert_eq!(result, None);
+		assert!(started.elapsed() < Duration::from_secs(2), "{:?}", started.elapsed());
+		thread::sleep(CANCEL_POLL);
+		assert!(told.load(Ordering::Relaxed));
+	}
 
 	#[test]
 	fn prefill_takes_the_first_link_on_the_clipboard() {
