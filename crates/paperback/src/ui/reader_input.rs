@@ -202,7 +202,7 @@ pub(super) fn build_text_ctrl(
 			let action = {
 				if let Ok(dm) = dm_for_keys.try_lock() {
 					let config = dm.config.lock().unwrap();
-					config.get_shortcuts().find_action(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down())
+					config.find_shortcut_action(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down())
 				} else {
 					None
 				}
@@ -288,7 +288,7 @@ fn shortcut_for_shifted_character(kbd: &KeyboardEvent, dm: &Rc<Mutex<DocumentMan
 	let typed = char::from_u32(code).filter(char::is_ascii_punctuation)?;
 	let dm = dm.try_lock().ok()?;
 	let config = dm.config.lock().unwrap();
-	config.get_shortcuts().find_action(i32::from(typed as u8), false, false, false)
+	config.find_shortcut_action(i32::from(typed as u8), false, false, false)
 }
 
 // Only these play a bookmark's sound: a line move used to sound a mid-paragraph bookmark from the paragraph's start.

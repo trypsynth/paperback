@@ -250,8 +250,13 @@ pub(super) fn bind_key_source(frame: &Frame, config: &Rc<Mutex<ConfigManager>>, 
 	let frame_for_hook = *frame;
 	frame.bind_internal(EventType::CHAR_HOOK, move |event| {
 		let Some(key) = event.get_key_code() else { return };
-		let Ok(shortcuts) = config.try_lock().map(|cfg| cfg.get_shortcuts()) else { return };
-		let action = shortcuts.find_action(key, event.control_down(), event.alt_down(), event.shift_down());
+		let Ok(cfg) = config.try_lock() else { return };
+		let action = cfg.find_shortcut_action(key, event.control_down(), event.alt_down(), event.shift_down());
+		#[cfg(target_os = "windows")]
+		let punctuation = action
+			.and_then(|action| cfg.get_shortcut_chord(action))
+			.is_some_and(|chord| menu::is_punctuation_chord(&chord));
+		drop(cfg);
 		if action.is_some() {
 			from_keyboard.set(true);
 		}
@@ -260,7 +265,7 @@ pub(super) fn bind_key_source(frame: &Frame, config: &Rc<Mutex<ConfigManager>>, 
 		if let Some(action) = action
 			&& (event.control_down() || event.alt_down())
 			&& !menu::is_keyboard_only(action)
-			&& shortcuts.get_chord(action).is_some_and(|chord| menu::is_punctuation_chord(&chord))
+			&& punctuation
 		{
 			event.skip(false);
 			if !frame_for_hook.process_menu_command(menu_ids::action_to_menu_id(action)) {

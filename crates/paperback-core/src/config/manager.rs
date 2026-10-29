@@ -7,7 +7,10 @@ use std::{
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use sha1::{Digest, Sha1};
 
-use super::settings::{ConfigData, DocumentConfig};
+use super::{
+	ActionId, KeyChord,
+	settings::{ConfigData, DocumentConfig},
+};
 
 mod app_settings;
 mod bookmarks;
@@ -26,6 +29,8 @@ pub struct ConfigManager {
 	config_path: PathBuf,
 	dirty: Cell<bool>,
 	initialized: bool,
+	// Parsed once per change, as every keystroke looks a chord up here.
+	shortcut_chords: RefCell<Vec<(ActionId, KeyChord)>>,
 }
 
 impl Default for ConfigManager {
@@ -42,6 +47,7 @@ impl ConfigManager {
 			config_path: PathBuf::new(),
 			dirty: Cell::new(false),
 			initialized: false,
+			shortcut_chords: RefCell::new(super::ShortcutsConfig::default().chords()),
 		}
 	}
 
@@ -63,6 +69,7 @@ impl ConfigManager {
 		};
 		self.config_path = config_path;
 		self.initialized = true;
+		*self.shortcut_chords.borrow_mut() = data.app.shortcuts.chords();
 		*self.data.borrow_mut() = data;
 		if needs_save {
 			self.dirty.set(true);

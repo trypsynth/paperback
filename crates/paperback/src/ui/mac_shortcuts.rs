@@ -4,7 +4,7 @@ use std::{cell::Cell, ptr, rc::Rc, sync::Mutex};
 
 use block::ConcreteBlock;
 use objc::{class, msg_send, runtime::Object, sel, sel_impl};
-use paperback_core::config::{ActionId, ConfigManager, ShortcutsConfig};
+use paperback_core::config::{ActionId, ConfigManager, KeyChord};
 use wxdragon::prelude::*;
 
 use crate::ui::menu_ids;
@@ -61,15 +61,11 @@ fn event_key(event: *mut Object) -> Option<(usize, i32)> {
 	}
 }
 
-fn shortcut_action(shortcuts: &ShortcutsConfig, key: i32, modifiers: usize) -> Option<ActionId> {
-	ActionId::all().iter().copied().find(|&action| {
-		shortcuts.get_chord(action).is_some_and(|chord| {
-			// Plain Ctrl in the config means Command on macOS and RawCtrl means physical Control; test both so VoiceOver's Control+Option commands pass through unless that exact chord was assigned.
-			chord.ctrl == (modifiers & COMMAND != 0)
-				&& chord.raw_ctrl == (modifiers & CONTROL != 0)
-				&& chord.matches(key, chord.ctrl || chord.raw_ctrl, modifiers & OPTION != 0, modifiers & SHIFT != 0)
-		})
-	})
+// Plain Ctrl in the config means Command on macOS and RawCtrl means physical Control; test both so VoiceOver's Control+Option commands pass through unless that exact chord was assigned.
+fn chord_matches(chord: &KeyChord, key: i32, modifiers: usize) -> bool {
+	chord.ctrl == (modifiers & COMMAND != 0)
+		&& chord.raw_ctrl == (modifiers & CONTROL != 0)
+		&& chord.matches(key, chord.ctrl || chord.raw_ctrl, modifiers & OPTION != 0, modifiers & SHIFT != 0)
 }
 
 pub fn install(
@@ -92,7 +88,8 @@ pub fn install(
 			return event;
 		}
 		let Some((modifiers, key)) = event_key(event) else { return event };
-		let action = config.try_lock().ok().and_then(|cfg| shortcut_action(&cfg.get_shortcuts(), key, modifiers));
+		let action =
+			config.try_lock().ok().and_then(|cfg| cfg.find_shortcut(|chord| chord_matches(chord, key, modifiers)));
 		// Percentage announcements have no menu item and already run in the reader's key handler.
 		if action == Some(ActionId::AnnouncePercent) {
 			return event;
@@ -139,9 +136,13 @@ pub fn install(
 
 #[cfg(test)]
 mod tests {
-	use paperback_core::config::KeyChord;
+	use paperback_core::config::ShortcutsConfig;
 
 	use super::*;
+
+	fn shortcut_action(shortcuts: &ShortcutsConfig, key: i32, modifiers: usize) -> Option<ActionId> {
+		shortcuts.chords().into_iter().find(|(_, chord)| chord_matches(chord, key, modifiers)).map(|(action, _)| action)
+	}
 
 	#[test]
 	fn native_shortcuts_match_command_control_and_shift_separately() {

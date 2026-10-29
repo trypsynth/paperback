@@ -30,15 +30,25 @@ impl ConfigManager {
 			return;
 		}
 		self.data.borrow_mut().app.shortcuts = shortcuts.clone();
+		*self.shortcut_chords.borrow_mut() = shortcuts.chords();
 		self.dirty.set(true);
 	}
 
+	/// The first action, in `ActionId::all()` order, whose chord passes `matches`.
+	pub fn find_shortcut(&self, matches: impl Fn(&KeyChord) -> bool) -> Option<ActionId> {
+		self.shortcut_chords.borrow().iter().find(|(_, chord)| matches(chord)).map(|&(action, _)| action)
+	}
+
+	pub fn find_shortcut_action(&self, key_code: i32, ctrl: bool, alt: bool, shift: bool) -> Option<ActionId> {
+		self.find_shortcut(|chord| chord.matches(key_code, ctrl, alt, shift))
+	}
+
 	pub fn get_shortcut_chord(&self, action: ActionId) -> Option<KeyChord> {
-		self.get_shortcuts().get_chord(action)
+		self.shortcut_chords.borrow().iter().find(|&&(a, _)| a == action).map(|(_, chord)| chord.clone())
 	}
 
 	pub fn get_shortcut_menu_str(&self, action: ActionId) -> String {
-		self.get_shortcuts().get_menu_str(action)
+		self.get_shortcut_chord(action).map_or_else(String::new, |chord| chord.to_shortcut_string())
 	}
 }
 
@@ -88,5 +98,32 @@ mod tests {
 		);
 		let app: crate::config::AppSettings = toml::from_str("").unwrap();
 		assert_eq!(stored_hotkey(&app.hotkey), Some(default_window_hotkey()));
+	}
+
+	#[test]
+	fn a_shortcut_change_reaches_the_keystroke_lookup_and_the_menu() {
+		let config = config();
+		let next_heading = ActionId::NextHeading.default_chord().unwrap();
+		assert_eq!(config.find_shortcut(|chord| *chord == next_heading), Some(ActionId::NextHeading));
+		let mut shortcuts = config.get_shortcuts();
+		shortcuts.set_chord(ActionId::NextHeading, Some(KeyChord::new(true, true, false, "K")));
+		config.set_shortcuts(&shortcuts);
+		assert_eq!(config.find_shortcut(|chord| *chord == next_heading), None);
+		assert_eq!(config.find_shortcut_action(i32::from(b'K'), true, true, false), Some(ActionId::NextHeading));
+		assert_eq!(
+			config.get_shortcut_menu_str(ActionId::NextHeading),
+			KeyChord::new(true, true, false, "K").to_shortcut_string()
+		);
+	}
+
+	#[test]
+	fn shortcuts_read_from_the_config_file_reach_the_keystroke_lookup() {
+		let mut data = crate::config::settings::ConfigData::default();
+		data.app.shortcuts.set_chord(ActionId::NextHeading, Some(KeyChord::new(true, true, false, "K")));
+		let dir = crate::util::test_support::TempDir::new("shortcuts-from-config-file");
+		let path = dir.write("paperback.toml", toml::to_string_pretty(&data).unwrap());
+		let mut reader = ConfigManager::new();
+		reader.initialize(path);
+		assert_eq!(reader.find_shortcut_action(i32::from(b'K'), true, true, false), Some(ActionId::NextHeading));
 	}
 }

@@ -75,13 +75,13 @@ impl ShortcutsConfig {
 		}
 	}
 
+	pub fn chords(&self) -> Vec<(ActionId, KeyChord)> {
+		ActionId::all().iter().filter_map(|&action| Some((action, self.get_chord(action)?))).collect()
+	}
+
 	pub fn get_display_str(&self, action: ActionId) -> String {
 		// TRANSLATORS: Shown in the Customize Keyboard Shortcuts list in place of a key combination when an action has no shortcut assigned
 		self.get_chord(action).map_or_else(|| crate::t("None"), |c| c.to_shortcut_string())
-	}
-
-	pub fn get_menu_str(&self, action: ActionId) -> String {
-		self.get_chord(action).map_or_else(String::new, |c| c.to_shortcut_string())
 	}
 
 	pub fn set_chord(&mut self, action: ActionId, chord: Option<KeyChord>) {
