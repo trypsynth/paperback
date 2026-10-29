@@ -45,9 +45,9 @@ impl HuffmanDecoder {
 		decoder.load_huff(huffs[0])?;
 		decoder.load_cdic_records(&huffs[1..])?;
 		for i in 0..decoder.dictionary.len() {
-			let (slice, flag) = decoder.dictionary[i].clone().unwrap();
-			if !flag {
-				decoder.dictionary[i] = None;
+			if matches!(decoder.dictionary[i], Some((_, false)))
+				&& let Some((slice, _)) = decoder.dictionary[i].take()
+			{
 				let decoded = decoder.decode(&slice).unwrap_or(slice);
 				decoder.dictionary[i] = Some((decoded, true));
 			}
@@ -209,34 +209,30 @@ impl HuffmanDecoder {
 					let index = ((max_code - code) >> (32 - code_len)) as usize;
 					if index >= self.dictionary.len() {
 						current.bits_left = 0;
-					} else {
-						let (slice, flag) = self.dictionary[index].clone().unwrap_or_else(|| (Vec::new(), true));
-						if flag {
-							current.out.extend_from_slice(&slice);
-						} else {
-							self.dictionary[index] = None;
-							stack.push(current);
-							if stack.len() > 1024 {
-								// TRANSLATORS: Error shown when a MOBI file's Huffman decoder recurses too deeply (likely corrupt data)
-								anyhow::bail!(t("Decode stack overflow"));
-							}
-							current = {
-								let mut padded_data = Vec::with_capacity(slice.len() + 8);
-								padded_data.extend_from_slice(&slice);
-								padded_data.extend_from_slice(&[0u8; 8]);
-								let mut x_bytes = [0u8; 8];
-								x_bytes.copy_from_slice(&padded_data[0..8]);
-								DecodeFrame {
-									data: padded_data,
-									pos: 0,
-									bits_left: slice.len() * 8,
-									x: u64::from_be_bytes(x_bytes),
-									n: 32,
-									out: Vec::new(),
-									target_dict_index: Some(index),
-								}
-							};
+					} else if let Some((slice, true)) = &self.dictionary[index] {
+						current.out.extend_from_slice(slice);
+					} else if let Some((slice, _)) = self.dictionary[index].take() {
+						stack.push(current);
+						if stack.len() > 1024 {
+							// TRANSLATORS: Error shown when a MOBI file's Huffman decoder recurses too deeply (likely corrupt data)
+							anyhow::bail!(t("Decode stack overflow"));
 						}
+						current = {
+							let mut padded_data = Vec::with_capacity(slice.len() + 8);
+							padded_data.extend_from_slice(&slice);
+							padded_data.extend_from_slice(&[0u8; 8]);
+							let mut x_bytes = [0u8; 8];
+							x_bytes.copy_from_slice(&padded_data[0..8]);
+							DecodeFrame {
+								data: padded_data,
+								pos: 0,
+								bits_left: slice.len() * 8,
+								x: u64::from_be_bytes(x_bytes),
+								n: 32,
+								out: Vec::new(),
+								target_dict_index: Some(index),
+							}
+						};
 					}
 				}
 			}
