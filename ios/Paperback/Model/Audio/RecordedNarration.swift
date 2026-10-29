@@ -1,6 +1,19 @@
 import Foundation
 import Observation
 
+/// Up to 4x because audiobook listeners commonly go past 3x; desktop and Android keep to the same range.
+let audioSpeedRange: ClosedRange<Float> = 0.5...4.0
+let audioSpeedStep: Float = 0.1
+let audioSpeedPresets: [Float] = [1, 1.25, 1.5, 2, 2.5, 3, 3.5, 4]
+
+/// "2.5x", as desktop says it.
+func audioSpeedLabel(_ speed: Float) -> String {
+	var label = String(format: "%.2f", speed)
+	while label.hasSuffix("0") { label.removeLast() }
+	if label.hasSuffix(".") { label.removeLast() }
+	return label + "x"
+}
+
 /// One player shared by every tab, since only one book narrates at a time and a decoder per tab would hold a file and memory per book.
 @MainActor
 @Observable
@@ -32,6 +45,25 @@ final class RecordedNarration {
 			self?.onClipChanged?(position)
 			self?.persistPosition()
 		}
+		player.speed = Float(config.getAppString(key: Self.speedKey, defaultValue: "")).map(Self.clamped) ?? 1
+		speed = player.speed
+	}
+
+	/// One speed for every recording, under the key desktop and Android use too.
+	private static let speedKey = "audio_speed"
+
+	private static func clamped(_ speed: Float) -> Float {
+		(min(max(speed, audioSpeedRange.lowerBound), audioSpeedRange.upperBound) * 100).rounded() / 100
+	}
+
+	private(set) var speed: Float = 1
+
+	func setSpeed(_ newSpeed: Float) {
+		let clamped = Self.clamped(newSpeed)
+		guard clamped != speed else { return }
+		speed = clamped
+		player.speed = clamped
+		config.setAppString(key: Self.speedKey, value: "\(clamped)")
 	}
 
 	private(set) var isPlaying = false

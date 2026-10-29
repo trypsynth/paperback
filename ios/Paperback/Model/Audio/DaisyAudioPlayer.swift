@@ -24,11 +24,11 @@ private enum SourceSeek {
 }
 
 @MainActor
-final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
+final class DaisyAudioPlayer {
 	private var session: DocumentSession?
 	private var docKey: String?
 
-	private var player: AVAudioPlayer?
+	private var player: SourcePlayer?
 	private var currentSource: Int32?
 	private var playing = false
 	private var loadGeneration = 0
@@ -43,6 +43,11 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 	var onClipChanged: ((Int64) -> Void)?
 	var onPlaybackStateChanged: ((Bool) -> Void)?
 	var onRelativeSeekLanded: ((Int64) -> Void)?
+
+	/// One speed for every recording; it survives loading the next file.
+	var speed: Float = 1 {
+		didSet { player?.rate = speed }
+	}
 
 	private var cacheDirectory: URL {
 		FileManager.default.temporaryDirectory.appendingPathComponent("paperback_daisy_audio_cache")
@@ -223,7 +228,7 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 	}
 
 	/// Clamped because audio-only books' clips declare a placeholder duration hours longer than the recording.
-	private func seekWithinPlayer(_ player: AVAudioPlayer, seekMs: Int64) -> Int64 {
+	private func seekWithinPlayer(_ player: SourcePlayer, seekMs: Int64) -> Int64 {
 		let lengthMs = Int64(player.duration * 1000)
 		let target = lengthMs > 0 ? min(max(seekMs, 0), lengthMs) : max(seekMs, 0)
 		player.currentTime = Double(target) / 1000
@@ -288,15 +293,18 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 
 	private func startPlayer(path: String, sourceIndex: Int32, seek: SourceSeek, generation: Int) {
 		guard generation == loadGeneration else { return }
-		let loaded: AVAudioPlayer
+		let loaded: SourcePlayer
 		do {
-			loaded = try AVAudioPlayer(contentsOf: URL(fileURLWithPath: path))
+			loaded = try SourcePlayer(url: URL(fileURLWithPath: path))
 		} catch {
 			resetAfterLoadFailure()
 			return
 		}
-		loaded.delegate = self
-		loaded.prepareToPlay()
+		loaded.rate = speed
+		loaded.onFinished = { [weak self, weak loaded] in
+			guard let self, let loaded, self.player === loaded, let source = self.currentSource else { return }
+			self.onSourceCompleted(source)
+		}
 		player = loaded
 		let requestedMs: Int64
 		switch seek {
@@ -337,17 +345,6 @@ final class DaisyAudioPlayer: NSObject, AVAudioPlayerDelegate {
 			stopPolling()
 			deactivateAudioSession()
 			onPlaybackStateChanged?(false)
-		}
-	}
-
-	nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-		Task { @MainActor [weak self] in
-			guard let self, let source = self.currentSource, self.player === player else { return }
-			if flag {
-				self.onSourceCompleted(source)
-			} else {
-				self.resetAfterLoadFailure()
-			}
 		}
 	}
 

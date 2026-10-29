@@ -112,18 +112,24 @@ struct TtsControlBar: View {
 			.contentShape(Rectangle())
 			.accessibilityHidden(viewModel.hidePrevNextButtons)
 
-			// Adjustable so a screen reader changes the rate with a swipe rather than a trip into Settings.
-			SpeechPercentMenu(
-				// TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
-				accessibilityLabel: t("Speech Rate"),
-				percent: $ttsManager.speechRatePercent,
-				presets: speechRatePresets
-			) {
-				Text("\(ttsManager.speechRatePercent)%")
-					.font(.caption)
-					.foregroundStyle(.secondary)
-					.monospacedDigit()
-					.frame(width: 72, alignment: .trailing)
+			// Adjustable so a screen reader changes the rate with a swipe rather than a trip into Settings; a recording has a speed of its own instead of the voice's rate.
+			Group {
+				if viewModel.reading.hasAudio, let narration = viewModel.reading.narration {
+					AudioSpeedMenu(narration: narration)
+				} else {
+					SpeechPercentMenu(
+						// TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
+						accessibilityLabel: t("Speech Rate"),
+						percent: $ttsManager.speechRatePercent,
+						presets: speechRatePresets
+					) {
+						Text("\(ttsManager.speechRatePercent)%")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+							.monospacedDigit()
+							.frame(width: 72, alignment: .trailing)
+					}
+				}
 			}
 			.padding(.trailing, 16)
 		}
