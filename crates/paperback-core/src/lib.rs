@@ -8,6 +8,7 @@ pub mod ocr;
 pub mod parser;
 mod pdf_engine;
 pub mod reader_core;
+pub mod reading;
 pub mod session;
 pub mod types;
 pub mod util;
@@ -30,11 +31,7 @@ uniffi::setup_scaffolding!("paperback");
 
 pub(crate) use patois::t;
 
-/// Every character the PDF engine reads off one page, a line each: what it is, whether it was generated, where it sits and what it is set in, followed by the page's objects and tag tree. For chasing down how a PDF's text layer was read; nothing in the app calls it.
-///
-/// # Errors
-///
-/// When the document or the page cannot be opened.
+/// For chasing down how a PDF's text layer was read; nothing in the app calls it.
 #[doc(hidden)]
 pub fn dump_pdf_page_chars(path: &str, password: Option<&str>, page: i32) -> Result<String, String> {
 	use std::fmt::Write as _;

@@ -22,12 +22,7 @@ pub fn show_web_view_dialog(
 	ACTIVE_WEB_VIEW.with(|v| v.set(Some(dialog)));
 	let web_view = WebView::builder(&dialog).build();
 	web_view.add_script_message_handler("wx");
-	// EndModal asserts if it runs on a dialog that is no longer modal, so every path
-	// that closes this dialog goes through `closing` and only the first one acts. The
-	// escape listener is installed on every load, and following a fragment link (the
-	// kind a table of contents is full of) completes a load without replacing the
-	// document, so a page could end up carrying several of them and a single Escape
-	// could post several close messages.
+	// EndModal asserts on a dialog that is no longer modal, so only the first close acts; one Escape can post several close messages if fragment-link loads stacked listeners.
 	let closing = Rc::new(Cell::new(false));
 	let dialog_for_close = dialog;
 	let closing_for_script = Rc::clone(&closing);
@@ -58,9 +53,7 @@ pub fn show_web_view_dialog(
 	}
 	let web_view_for_load = web_view;
 	web_view.on_loaded(move |_| {
-		// Guarded so a load that did not replace the document reuses the listener
-		// already on it rather than adding a second one. A real load clears the flag
-		// along with the rest of the document.
+		// A fragment-link load keeps the document, so the flag stops a second listener; a real load clears it.
 		web_view_for_load.run_script(
 			"if (!window.__paperbackEscapeHooked) { \
              window.__paperbackEscapeHooked = true; \

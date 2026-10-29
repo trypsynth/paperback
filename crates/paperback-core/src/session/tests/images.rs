@@ -138,8 +138,6 @@ fn a_comic_page_is_saved_from_the_archive() {
 	assert_eq!(fs::read(&out).unwrap(), PICTURE);
 }
 
-/// The bytes have to be readable without writing a file, because that is what reading the text
-/// off a picture does with them.
 #[test]
 fn a_picture_beside_an_html_page_offers_its_bytes() {
 	let dir = TempDir::new("images");
@@ -165,8 +163,6 @@ fn an_epub_picture_offers_its_bytes() {
 	assert_eq!(session.image_bytes_at(at).unwrap(), PICTURE);
 }
 
-/// A line that is not a picture has nothing to hand the OCR engine, and saying so is better than
-/// recognizing whatever happened to be there.
 #[test]
 fn text_that_is_not_an_image_has_no_bytes() {
 	let dir = TempDir::new("images");
@@ -192,7 +188,7 @@ fn a_linked_picture_is_on_a_link_and_a_plain_one_is_not() {
 	assert!(session.image_file_name_at(plain).is_some() && !session.is_on_link(plain));
 }
 
-/// #1166: a zipped DAISY book, as Bookshare sends them, names its pictures relative to the `DTBook` inside the archive, so reading one has to find it there rather than on disk.
+/// #1166: a zipped DAISY book, as Bookshare sends them, names pictures relative to the `DTBook` inside the archive.
 #[test]
 fn a_picture_in_a_zipped_daisy_book_offers_its_bytes() {
 	let dir = TempDir::new("images");
@@ -208,7 +204,7 @@ fn a_picture_in_a_zipped_daisy_book_offers_its_bytes() {
 	assert_eq!(session.image_bytes_at(at).unwrap(), PICTURE);
 }
 
-/// Word pictures were dropped without a trace. A picture now reads as its alt text, can be saved and read with OCR from the `.docx` itself, and one its author marked as decorative stays out of the way.
+/// Word pictures used to be dropped without a trace.
 #[test]
 fn a_word_picture_reads_as_its_alt_text_and_offers_its_bytes() {
 	let dir = TempDir::new("images");
@@ -226,7 +222,6 @@ fn a_word_picture_reads_as_its_alt_text_and_offers_its_bytes() {
 	assert_eq!(session.image_bytes_at(position_of(&session, "[Image: Old logo]")).unwrap(), PICTURE);
 }
 
-/// An uncompressed MOBI book of one text record holding `html`, followed by `pictures`, each a record of its own.
 fn mobi_book(html: &str, pictures: &[&[u8]]) -> Vec<u8> {
 	let mut mobi = vec![0u8; 232];
 	mobi[..4].copy_from_slice(b"MOBI");
@@ -265,7 +260,7 @@ fn mobi_book(html: &str, pictures: &[&[u8]]) -> Vec<u8> {
 	data
 }
 
-/// MOBI pictures are records of the book, named by number, and nothing reached them: they could not be saved or read with OCR.
+/// MOBI pictures are records named by number, and nothing used to reach them.
 #[test]
 fn a_mobi_picture_offers_its_bytes_from_its_record() {
 	let dir = TempDir::new("images");

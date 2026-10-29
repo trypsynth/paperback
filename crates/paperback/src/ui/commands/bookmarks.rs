@@ -1,5 +1,3 @@
-//! Bookmarks and notes: setting them, stepping between them, and the dialogs that list them.
-
 use paperback_core::types::BookmarkFilterType;
 
 use super::Ctx;

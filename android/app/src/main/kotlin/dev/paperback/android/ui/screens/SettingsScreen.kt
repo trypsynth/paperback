@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -35,12 +36,10 @@ private val MIN_SCALE = ReaderSettings.MIN_TEXT_SCALE_PERCENT.toFloat()
 
 private val MAX_SCALE = ReaderSettings.MAX_TEXT_SCALE_PERCENT.toFloat()
 
-/** Discrete slider positions between the bounds, one per [ReaderSettings.TEXT_SCALE_PERCENT_STEP]. */
 private const val SCALE_STEPS =
 	(ReaderSettings.MAX_TEXT_SCALE_PERCENT - ReaderSettings.MIN_TEXT_SCALE_PERCENT) /
 		ReaderSettings.TEXT_SCALE_PERCENT_STEP - 1
 
-/** Rounds a raw slider value so the text size only ever lands on a whole step. */
 private fun snapScale(value: Float): Int = (value / ReaderSettings.TEXT_SCALE_PERCENT_STEP).roundToInt() *
 	ReaderSettings.TEXT_SCALE_PERCENT_STEP
 
@@ -51,13 +50,9 @@ private const val PERCENT_ACCESSIBILITY_STEPS = 99
 
 private val PAUSE_RANGE = MIN_PARAGRAPH_PAUSE_MS.toFloat()..MAX_PARAGRAPH_PAUSE_MS.toFloat()
 
-/** Discrete slider positions between the bounds, one per [PARAGRAPH_PAUSE_STEP_MS]. */
 private const val PAUSE_STEPS = (MAX_PARAGRAPH_PAUSE_MS - MIN_PARAGRAPH_PAUSE_MS) / PARAGRAPH_PAUSE_STEP_MS - 1
 
-/**
- * A labelled dropdown over a fixed list of options, where the stored value is the option's index.
- * The readability choices all share the desktop's index meanings, so the index is the setting.
- */
+/** The readability choices share the desktop's index meanings, so the stored index is the setting. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChoiceSetting(label: String, options: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit) {
@@ -89,11 +84,7 @@ private fun ChoiceSetting(label: String, options: List<String>, selectedIndex: I
 	}
 }
 
-/**
- * A speech setting on a 0 to 100 scale, with the slider semantics a screen reader needs to
- * announce and change it: the label and the percentage are folded into the group so TalkBack
- * reads one control rather than a heading and a slider separately.
- */
+/** Label and percentage are merged so TalkBack reads one control rather than a heading and a slider separately. */
 @Composable
 private fun PercentSetting(label: String, percentage: Int, onChange: (Int) -> Unit) {
 	Column(
@@ -121,7 +112,7 @@ private fun PercentSetting(label: String, percentage: Int, onChange: (Int) -> Un
 	}
 }
 
-/** Opens Paperback's language page in the Settings app, showing the language Paperback is in now. */
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 private fun LanguageRow() {
 	val context = LocalContext.current
@@ -197,8 +188,7 @@ fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -
 					.fillMaxSize()
 					.verticalScroll(rememberScrollState())
 					.padding(16.dp)
-					// Scrolled to the end, Play Sample otherwise sits under the navigation bar. The
-					// top bar pads itself, so the bottom is the only side that belongs here.
+					// Otherwise Play Sample sits under the navigation bar; the top bar pads itself.
 					.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
 			) {
 				// TRANSLATORS: Section heading for general (non-speech) settings
@@ -286,7 +276,7 @@ fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -
 					style = MaterialTheme.typography.bodySmall,
 					color = MaterialTheme.colorScheme.onSurfaceVariant
 				)
-				// Android keeps a language for each app from Android 13 on, chosen on the app's own page in the Settings app. Before that the only language is the phone's own.
+				// Per-app languages only exist from Android 13; before that the only language is the phone's.
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 					LanguageRow()
 				}
@@ -317,10 +307,7 @@ fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -
 					}
 				) {
 					Text("$textSizeLabel: $textScalePercent%", style = MaterialTheme.typography.labelLarge)
-					// The track draws one tick per step, which at this many steps reads as a dotted
-					// line rather than a slider. snapScale already pins the value to whole steps, and
-					// the step count TalkBack swipes by lives in the semantics block above, so the
-					// visible slider gives up its ticks without either behaviour changing.
+					// Ticks at this many steps read as a dotted line; snapScale and the semantics step count above do the stepping instead.
 					Slider(
 						value = textScalePercent.toFloat(),
 						onValueChange = { settings.textScalePercent.set(snapScale(it)) },
@@ -431,16 +418,12 @@ fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -
 				}
 				Spacer(modifier = Modifier.height(16.dp))
 				val isSystemDefault = currentEngine == dev.paperback.android.tts.TtsManager.SYSTEM_DEFAULT
-				// An engine that reports no voices of its own, which Code Factory's Vocalizer
-				// does, used to leave this tappable and open a menu with nothing in it. One
-				// voice is no choice either: the menu would offer only what is already spoken.
+				// Code Factory's Vocalizer reports no voices, which used to open an empty menu; one voice is no choice either.
 				val canChooseVoice = !isSystemDefault && availableVoices.size > 1
 				ExposedDropdownMenuBox(
 					expanded = voiceExpanded,
 					onExpandedChange = { if (canChooseVoice) voiceExpanded = it }
 				) {
-					// With nothing to choose from, name what the engine is actually using rather
-					// than leaving the row blank.
 					val voiceName = currentVoice?.name ?: availableVoices.singleOrNull()?.name ?: t("Default")
 					OutlinedButton(
 						onClick = { if (canChooseVoice) voiceExpanded = true },

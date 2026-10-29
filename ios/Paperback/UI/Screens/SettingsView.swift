@@ -1,34 +1,88 @@
 import SwiftUI
 import AVFoundation
 
-private let sampleText = "This is a sample of the current voice and speed settings."
+let speechSampleText = "This is a sample of the current voice and speed settings."
+
+/// The voice row's name for a voice, nil being the system's default.
+func voiceName(_ identifier: String?, in voices: [AVSpeechSynthesisVoice]) -> String {
+	guard let identifier, let voice = voices.first(where: { $0.identifier == identifier }) else { return t("Default") }
+	return voice.name
+}
+
+/// Doubles as the presets menu and the screen reader's adjustable value for the row.
+private func percentMenu(_ label: String, percent: Binding<Int>, presets: [Int]) -> some View {
+	SpeechPercentMenu(accessibilityLabel: label, percent: percent, presets: presets) {
+		Text("\(percent.wrappedValue)%")
+			.foregroundStyle(.secondary)
+			.monospacedDigit()
+	}
+}
+
+// The sliders are for touch; a screen reader gets the percent menu instead, as on the read-aloud bar.
+struct SpeechRateRow: View {
+	@Binding var rate: Float
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 4) {
+			HStack {
+				// TRANSLATORS: Label above the speech rate slider (visual label; the percent control next to it has its own accessibility label)
+				Text(t("Rate")).accessibilityHidden(true)
+				Spacer()
+				percentMenu(
+					// TRANSLATORS: VoiceOver accessibility label for the speech rate control in Settings
+					t("Speech Rate"),
+					percent: Binding(get: { percentForSpeechRate(rate) }, set: { rate = speechRateForPercent($0) }),
+					presets: speechRatePresets
+				)
+			}
+			Slider(
+				value: $rate,
+				in: AVSpeechUtteranceMinimumSpeechRate...AVSpeechUtteranceMaximumSpeechRate,
+				step: (AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate) / 100
+			)
+			.accessibilityHidden(true)
+		}
+	}
+}
+
+struct SpeechPitchRow: View {
+	@Binding var pitch: Float
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 4) {
+			HStack {
+				// TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
+				Text(t("Pitch")).accessibilityHidden(true)
+				Spacer()
+				percentMenu(
+					// TRANSLATORS: VoiceOver accessibility label for the pitch control in Settings
+					t("Pitch"),
+					percent: Binding(get: { percentForPitch(pitch) }, set: { pitch = pitchForPercent($0) }),
+					presets: pitchPresets
+				)
+			}
+			Slider(
+				value: $pitch,
+				in: pitchRange,
+				step: (pitchRange.upperBound - pitchRange.lowerBound) / 100
+			)
+			.accessibilityHidden(true)
+		}
+	}
+}
 
 private struct TtsSettingsSection<VoiceDestination: View>: View {
 	@Bindable var ttsManager: TtsManager
+	let voiceName: String
+	@Binding var rate: Float
+	@Binding var pitch: Float
 	@Binding var stopAfterFindMatch: Bool
 	let onPlaySample: () -> Void
 	@ViewBuilder let voiceDestination: () -> VoiceDestination
 
-	private var selectedVoiceName: String {
-		guard let id = ttsManager.selectedVoiceIdentifier,
-		      let voice = ttsManager.availableVoices.first(where: { $0.identifier == id })
-		else { return "Default" }
-		return voice.name
-	}
-
 	private var paragraphPauseLabel: String {
 		// TRANSLATORS: Value of the paragraph pause setting; {} is a number of milliseconds
 		t("{} ms").replacingOccurrences(of: "{}", with: "\(ttsManager.paragraphPauseMs)")
-	}
-
-	/// The percent readout at the trailing edge of a slider row, which doubles as the
-	/// presets menu and the screen reader's adjustable value for that row.
-	private func percentMenu(_ label: String, percent: Binding<Int>, presets: [Int]) -> some View {
-		SpeechPercentMenu(accessibilityLabel: label, percent: percent, presets: presets) {
-			Text("\(percent.wrappedValue)%")
-				.foregroundStyle(.secondary)
-				.monospacedDigit()
-		}
 	}
 
 	var body: some View {
@@ -41,52 +95,13 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 					// TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 					Text(t("Voice"))
 					Spacer()
-					Text(selectedVoiceName)
+					Text(voiceName)
 						.foregroundStyle(.secondary)
 						.lineLimit(1)
 				}
 			}
-			// The sliders are for touch. A screen reader gets the percent menu next to each label
-			// instead: one swipe per percent and the presets behind a double-tap, the same control
-			// as on the read-aloud bar.
-			VStack(alignment: .leading, spacing: 4) {
-				HStack {
-					// TRANSLATORS: Label above the speech rate slider (visual label; the percent control next to it has its own accessibility label)
-					Text(t("Rate")).accessibilityHidden(true)
-					Spacer()
-					percentMenu(
-						// TRANSLATORS: VoiceOver accessibility label for the speech rate control in Settings
-						t("Speech Rate"),
-						percent: $ttsManager.speechRatePercent,
-						presets: speechRatePresets
-					)
-				}
-				Slider(
-					value: $ttsManager.speechRate,
-					in: AVSpeechUtteranceMinimumSpeechRate...AVSpeechUtteranceMaximumSpeechRate,
-					step: (AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate) / 100
-				)
-				.accessibilityHidden(true)
-			}
-			VStack(alignment: .leading, spacing: 4) {
-				HStack {
-					// TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
-					Text(t("Pitch")).accessibilityHidden(true)
-					Spacer()
-					percentMenu(
-						// TRANSLATORS: VoiceOver accessibility label for the pitch control in Settings
-						t("Pitch"),
-						percent: $ttsManager.pitchPercent,
-						presets: pitchPresets
-					)
-				}
-				Slider(
-					value: $ttsManager.pitch,
-					in: pitchRange,
-					step: (pitchRange.upperBound - pitchRange.lowerBound) / 100
-				)
-				.accessibilityHidden(true)
-			}
+			SpeechRateRow(rate: $rate)
+			SpeechPitchRow(pitch: $pitch)
 			Stepper(
 				value: $ttsManager.paragraphPauseMs,
 				in: paragraphPauseRangeMs,
@@ -229,11 +244,14 @@ struct SettingsView: View {
 			ReadabilitySettingsSection(viewModel: viewModel)
 			TtsSettingsSection(
 				ttsManager: viewModel.reading.ttsManager,
+				voiceName: voiceName(viewModel.speech.defaultVoice, in: viewModel.reading.ttsManager.availableVoices),
+				rate: Binding(get: { viewModel.speech.defaultRate }, set: { viewModel.speech.setDefaultRate($0) }),
+				pitch: Binding(get: { viewModel.speech.defaultPitch }, set: { viewModel.speech.setDefaultPitch($0) }),
 				stopAfterFindMatch: Binding(
 					get: { viewModel.reading.stopAfterFindMatch },
 					set: { viewModel.reading.stopAfterFindMatch = $0 }
 				),
-				onPlaySample: { viewModel.reading.ttsManager.speakSample(sampleText) },
+				onPlaySample: { viewModel.reading.ttsManager.speakSample(speechSampleText) },
 				voiceDestination: { voicePicker }
 			)
 		}
@@ -242,7 +260,7 @@ struct SettingsView: View {
 		.navigationBarTitleDisplayMode(.inline)
 	}
 
-	/// The language the app is shown in, named in that language, as the iOS language list names them.
+	/// Named in its own language, as the iOS language list names them.
 	private var currentLanguageName: String {
 		let code = Bundle.main.preferredLocalizations.first ?? "en"
 		let locale = Locale(identifier: code)
@@ -250,16 +268,8 @@ struct SettingsView: View {
 	}
 
 	private var voicePicker: some View {
-		VoicePickerView(ttsManager: viewModel.reading.ttsManager) { identifier in
-			let wasPlaying = viewModel.reading.ttsManager.isSpeaking
-			let wasPaused = viewModel.reading.ttsManager.isPaused
-			viewModel.reading.ttsManager.selectedVoiceIdentifier = identifier
-			if wasPlaying {
-				viewModel.reading.ttsManager.stop()
-				viewModel.reading.playCurrentSegment()
-			} else if wasPaused {
-				viewModel.reading.ttsManager.stop()
-			}
+		VoicePickerView(ttsManager: viewModel.reading.ttsManager, selected: viewModel.speech.defaultVoice) { identifier in
+			viewModel.speech.setDefaultVoice(identifier)
 		}
 	}
 }

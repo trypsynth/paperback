@@ -1,6 +1,4 @@
-//! Fonts for the PDFs that leave theirs out, found among the ones installed on the system.
-//!
-//! hayro carries stand-ins for the 14 standard fonts, enough to draw Latin text. A PDF that names Times New Roman without embedding it may still set Cyrillic or Greek in it, which the stand-ins cannot draw, and a glyph a font cannot draw has no outline: nothing for OCR to read and no box for the text layer. pdfium looks such fonts up on the system, and so does this, falling back on hayro's stand-ins where the system has nothing suitable.
+//! hayro's stand-ins for the 14 standard fonts draw only Latin, and a glyph with no outline gives OCR and the text layer nothing, so like pdfium this looks unembedded fonts up on the system first.
 
 use std::{
 	collections::HashMap,
@@ -33,7 +31,6 @@ const TRADITIONAL_CHINESE: &[&str] =
 const KOREAN: &[&str] =
 	&["Batang", "Malgun Gothic", "AppleMyungjo", "Apple SD Gothic Neo", "Noto Serif CJK KR", "Noto Sans CJK KR"];
 
-/// The settings every page is read with: hayro's own, with fonts looked up on the system first.
 pub(super) fn settings() -> InterpreterSettings {
 	static SETTINGS: OnceLock<InterpreterSettings> = OnceLock::new();
 	SETTINGS
@@ -51,7 +48,7 @@ fn resolve(query: &FontQuery) -> Option<(FontData, u32)> {
 	}
 }
 
-/// An installed face standing in for a standard font. Symbol and `ZapfDingbats` are left to hayro, whose stand-ins follow those fonts' own encodings.
+/// Symbol and `ZapfDingbats` are left to hayro, whose stand-ins follow those fonts' own encodings.
 fn installed_standard(font: StandardFont) -> Option<(FontData, u32)> {
 	let (families, bold, italic) = match font {
 		StandardFont::Helvetica => (SANS, false, false),
@@ -71,7 +68,6 @@ fn installed_standard(font: StandardFont) -> Option<(FontData, u32)> {
 	find(families, if bold { Weight::BOLD } else { Weight::NORMAL }, italic)
 }
 
-/// An installed face for a font the PDF names but does not embed: the face by that PostScript name, the family by name, or failing those a face for the font's Chinese, Japanese or Korean character collection.
 fn installed_fallback(query: &FallbackFontQuery) -> Option<(FontData, u32)> {
 	if let Some(name) = &query.post_script_name
 		&& let Some(&id) = post_script_names().get(name)
@@ -103,7 +99,7 @@ fn find(families: &[&str], weight: Weight, italic: bool) -> Option<(FontData, u3
 	load(id)
 }
 
-/// The system's fonts, scanned the first time a PDF needs one rather than at startup, since most documents embed everything they use.
+/// Scanned the first time a PDF needs a font rather than at startup, since most documents embed everything they use.
 fn database() -> &'static Database {
 	static DATABASE: OnceLock<Database> = OnceLock::new();
 	DATABASE.get_or_init(|| {
@@ -123,7 +119,6 @@ fn post_script_names() -> &'static HashMap<String, ID> {
 	NAMES.get_or_init(|| database().faces().map(|face| (face.post_script_name.clone(), face.id)).collect())
 }
 
-/// A face's bytes, read from disk once and shared by every page that asks for it after.
 fn load(id: ID) -> Option<(FontData, u32)> {
 	static LOADED: OnceLock<Mutex<HashMap<ID, (FontData, u32)>>> = OnceLock::new();
 	let loaded = LOADED.get_or_init(|| Mutex::new(HashMap::new()));

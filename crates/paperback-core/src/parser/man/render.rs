@@ -1,10 +1,4 @@
-//! Laying roff out as text: paragraphs, headings, list items and font runs.
-//!
-//! Roff fills text by default, which means the line breaks in the source are not line breaks in
-//! the output: a paragraph is written one sentence to a line and set as one run. `.nf` turns
-//! filling off, and there the breaks are the content. The renderer keeps that distinction, since
-//! a synopsis or an example read as one long line is unreadable, and prose read one sentence to
-//! a line is not much better.
+//! Filled text and `.nf` text are kept apart, since a synopsis read as one long line is unreadable and prose read one source sentence to a line is not much better.
 
 use super::escape::{Font, Piece};
 use crate::{
@@ -12,7 +6,6 @@ use crate::{
 	parser::convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 };
 
-/// How the current run of text is set.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct FontState {
 	current: Font,
@@ -24,7 +17,6 @@ impl FontState {
 		Self { current: Font::Roman, previous: Font::Roman }
 	}
 
-	/// Applies a font change, resolving `\fP` against the font before the current one.
 	fn set(&mut self, font: Font) {
 		let next = if font == Font::Previous { self.previous } else { font };
 		if next != self.current {
@@ -37,18 +29,12 @@ impl FontState {
 pub(super) struct Renderer {
 	pub(super) buffer: DocumentBuffer,
 	font: FontState,
-	/// Where the current bold or italic run started, if one is open.
 	run_start: Option<DocPos>,
-	/// The target of a link waiting for its first word, and then where that word began.
 	pending_link: Option<String>,
 	link_start: Option<DocPos>,
-	/// Whether anything has been written to the line being built.
 	line_has_text: bool,
-	/// Whether the paragraph being built has any lines in it yet.
 	paragraph_has_text: bool,
-	/// Whether text lines join into a paragraph (`.fi`) or stand as written (`.nf`).
 	filling: bool,
-	/// Where the run of list items being built started, and how many items it holds.
 	list_start: Option<DocPos>,
 	list_items: usize,
 }
@@ -73,14 +59,10 @@ impl Renderer {
 		self.filling = filling;
 	}
 
-	/// Lays down one source line's worth of pieces.
-	///
-	/// While filling, a line joins the one before it with a space; otherwise it starts a line of
-	/// its own. Either way the font carries across lines, which is what roff does.
+	/// The font carries across lines, as it does in roff.
 	pub(super) fn write_line(&mut self, pieces: &[Piece]) {
 		if !pieces.iter().any(|piece| matches!(piece, Piece::Text(text) if !text.trim().is_empty())) {
-			// A line with no text of its own still ends a paragraph while filling: roff reads a
-			// blank line as a break.
+			// A line with no text of its own still ends a paragraph while filling: roff reads a blank line as a break.
 			if self.filling {
 				self.end_paragraph();
 			} else {
@@ -103,13 +85,11 @@ impl Renderer {
 		}
 	}
 
-	/// Writes text in whatever font is current, opening and closing marker runs as it goes.
 	fn write_text(&mut self, text: &str) {
 		if text.is_empty() {
 			return;
 		}
-		// A link starts at its first word rather than where the macro stood, since the space
-		// joining it to the sentence before it is written between the two.
+		// A link starts at its first word rather than where the macro stood, since the space joining it to the sentence before it is written between the two.
 		if !text.trim().is_empty() && self.pending_link.is_some() {
 			self.link_start = Some(self.buffer.end());
 		}
@@ -135,7 +115,6 @@ impl Renderer {
 		}
 	}
 
-	/// Marks the span a bold or italic run covered, if it covered anything.
 	fn close_run(&mut self, font: Font) {
 		let Some(start) = self.run_start.take() else { return };
 		let length = self.buffer.end().since(start);
@@ -150,7 +129,6 @@ impl Renderer {
 		self.buffer.add_marker(Marker::new(mtype, start).with_length(length));
 	}
 
-	/// Ends the line being built without ending the paragraph, as `.br` does.
 	pub(super) fn break_line(&mut self) {
 		if !self.line_has_text {
 			return;
@@ -163,7 +141,6 @@ impl Renderer {
 		}
 	}
 
-	/// Ends the paragraph being built, leaving a blank line after it.
 	pub(super) fn end_paragraph(&mut self) {
 		if !self.paragraph_has_text {
 			return;
@@ -173,8 +150,6 @@ impl Renderer {
 		self.paragraph_has_text = false;
 	}
 
-	/// Starts a section, as `.SH` and `.SS` do. The heading is its own line. Returns where it
-	/// landed, for the table of contents.
 	pub(super) fn heading(&mut self, text: &str, level: i32) -> Option<DocPos> {
 		self.end_list();
 		self.end_paragraph();
@@ -191,8 +166,7 @@ impl Renderer {
 		Some(position)
 	}
 
-	/// Starts a tagged paragraph, as `.TP` and a tagged `.IP` do: the tag on its own line, then
-	/// the body under it. The tag is a list item, so a page's options can be walked one by one.
+	/// The tag is a list item, so a page's options can be walked one by one.
 	pub(super) fn start_item(&mut self, tag: &[Piece]) {
 		self.end_paragraph();
 		if self.list_start.is_none() {
@@ -207,9 +181,7 @@ impl Renderer {
 		self.break_line();
 	}
 
-	/// Lays down a table, as every other format does: the grid becomes the same HTML the
-	/// shared renderer takes, so the text of it, its caption, and whether it is written out in
-	/// full or stands as a placeholder are all decided in one place.
+	/// Goes through the shared HTML table renderer so the text, caption and inline-or-placeholder choice are decided in one place for every format.
 	pub(super) fn table(&mut self, rows: &[Vec<String>], inline: bool) {
 		self.end_list();
 		self.end_paragraph();
@@ -235,8 +207,6 @@ impl Renderer {
 		self.paragraph_has_text = false;
 	}
 
-	/// Closes the run of list items being built, marking the whole run as one list so the reader
-	/// can step over it.
 	pub(super) fn end_list(&mut self) {
 		let Some(start) = self.list_start.take() else { return };
 		// A lone tagged paragraph is not a list worth navigating into.
@@ -249,13 +219,11 @@ impl Renderer {
 		}
 	}
 
-	/// Opens a link, as `.UR` does. The text of it is whatever is written before it closes.
 	pub(super) fn begin_link(&mut self, url: String) {
 		self.pending_link = Some(url);
 		self.link_start = None;
 	}
 
-	/// Closes a link, as `.UE` does, marking the text written since it opened.
 	pub(super) fn end_link(&mut self) {
 		let (Some(url), Some(start)) = (self.pending_link.take(), self.link_start.take()) else {
 			return;
@@ -269,7 +237,6 @@ impl Renderer {
 			.add_marker(Marker::new(MarkerType::Link, start).with_length(length).with_reference(url).with_text(text));
 	}
 
-	/// Everything written, with the last paragraph closed off.
 	pub(super) fn finish(mut self) -> DocumentBuffer {
 		self.end_list();
 		self.end_paragraph();
@@ -277,8 +244,7 @@ impl Renderer {
 	}
 }
 
-/// Escapes a cell for the HTML the shared table renderer reads back. A manual page is full
-/// of angle brackets and ampersands, which would otherwise be read as markup.
+/// A manual page is full of angle brackets and ampersands, which the shared table renderer would otherwise read as markup.
 fn escape_html(cell: &str) -> String {
 	let mut out = String::with_capacity(cell.len());
 	for c in cell.chars() {

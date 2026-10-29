@@ -1,16 +1,7 @@
-//! Turning a format's raw chapter list (an unordered, possibly overlapping or duplicate set of
-//! start times and titles, as M4B's `Chpl`/`chap` atoms or an MP3's ID3v2 `CHAP` frames hand
-//! over) into a clean, contiguous set of sections covering the whole file.
-//!
-//! Shared by `parser::m4b` and `parser::mp3`, whose chapter *sources* differ but whose
-//! cleanup rules (sort, dedupe, force the first chapter to start at 0, derive each chapter's end
-//! from the next one's start) are identical.
-
 use std::collections::HashSet;
 
 use crate::t;
 
-/// One chapter boundary and its title, straight from a format's tag data, before cleanup.
 pub struct RawChapter {
 	pub start_ms: u64,
 	pub title: String,
@@ -23,11 +14,7 @@ pub struct NormalizedChapter {
 	pub title: String,
 }
 
-/// Sorts `chapters` by start time, drops duplicate start times and any at or past
-/// `duration_ms`, forces the first surviving chapter to start at 0, and gives each an end time
-/// (the next chapter's start, or `duration_ms` for the last). An empty or entirely-dropped input
-/// falls back to a single chapter spanning the whole file, titled `document_title`. A chapter
-/// whose own title is blank is labelled "Chapter N" by position among the survivors.
+/// The first chapter is forced to start at 0 so the sections cover the whole file without gaps.
 #[must_use]
 pub fn normalize_chapters(chapters: &[RawChapter], duration_ms: u64, document_title: &str) -> Vec<NormalizedChapter> {
 	let mut starts: Vec<(u64, String)> = chapters

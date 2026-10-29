@@ -1,12 +1,10 @@
 use super::*;
 use crate::document::DocLen;
 
-/// The position just past `s` in a document that starts with it.
 fn pos_after(s: &str) -> DocPos {
 	DocLen::of(s).as_pos()
 }
 
-/// Further than any test document goes.
 const PAST_THE_END: DocPos = DocPos::from_raw(usize::MAX);
 
 #[test]
@@ -69,7 +67,6 @@ fn page_offsets_is_empty_without_page_breaks() {
 #[test]
 fn page_offsets_are_in_document_order_even_for_unsorted_insertion() {
 	let mut buffer = DocumentBuffer::with_content("aaaaaaaaa\nbbbbbbbbb\n".to_string());
-	// Inserted out of order: the buffer sorts markers at DocumentHandle::new.
 	buffer.add_marker(Marker::new(MarkerType::PageBreak, 9.into()));
 	buffer.add_marker(Marker::new(MarkerType::PageBreak, 0.into()));
 	let session = session_from_buffer(buffer);
@@ -136,9 +133,6 @@ fn table_and_section_accessors_require_in_range_and_reference() {
 
 #[test]
 fn get_text_segment_current_direction_finds_enclosing_paragraph_start() {
-	// "line2" spans bytes 6..11; position 8 lands mid-paragraph, e.g. where a link marker
-	// embedded in the middle of a sentence would sit. The Current direction must still
-	// return the full enclosing paragraph, not a suffix truncated from the given position.
 	let session = sample_session(ParserFlags::NONE);
 	let seg = session.get_text_segment(8.into(), SegmentTypeFfi::Paragraph, SegmentDirectionFfi::Current);
 	assert_eq!(seg.text, "line2");
@@ -189,13 +183,9 @@ fn get_current_section_path_returns_none_when_reference_empty() {
 	assert!(session.get_current_section_path(0.into()).is_none());
 }
 
-/// Builds a session whose buffer contains a table marker spanning a range of positions, used to
-/// exercise `get_table_at_position`'s half-open `[position, position + length)` check.
 fn table_session() -> DocumentSession {
-	// Layout (positions): "before\n" (0..7), table span "tbl\n" (7..11), "after\n" (11..17).
 	let html = "<table><tr><td>a</td><td>b</td></tr></table>";
 	let mut buffer = DocumentBuffer::with_content("before\ntbl\nafter\n".to_string());
-	// Table marker length is the emitted span's, in positions ("tbl\n" -> 4).
 	buffer.add_marker(
 		Marker::new(MarkerType::Table, 7.into())
 			.with_length(4.into())
@@ -219,7 +209,6 @@ fn table_session() -> DocumentSession {
 #[test]
 fn get_table_at_position_uses_the_marker_length() {
 	let session = table_session();
-	// Table marker at position 7 with length 4 -> half-open range [7, 11).
 	assert_eq!(
 		session.get_table_at_position(7.into()).as_deref(),
 		Some("<table><tr><td>a</td><td>b</td></tr></table>")
@@ -234,11 +223,8 @@ fn get_table_at_position_uses_the_marker_length() {
 
 #[test]
 fn get_table_at_position_handles_multibyte_extent() {
-	// A table's extent is its marker's length, not the length of the text the marker carries.
-	// Here that text is shorter than the extent, so the caret near the end is only inside the
-	// table when using `marker.length`.
+	// The marker's text is shorter than its extent, so only `marker.length` puts the caret near the end inside the table.
 	let mut buffer = DocumentBuffer::with_content("\u{1F600}\u{1F600}\u{1F600}".to_string());
-	// Three non-BMP emoji: three positions and twelve bytes. Marker spans the whole range.
 	buffer.add_marker(
 		Marker::new(MarkerType::Table, 0.into())
 			.with_length(3.into())
@@ -257,7 +243,6 @@ fn get_table_at_position_handles_multibyte_extent() {
 		parse_settings: ParseSettings::default(),
 		password: String::new(),
 	};
-	// Position 2 is within [0, 3) by the marker's length but would be outside [0, 1) by its text.
 	assert_eq!(session.get_table_at_position(2.into()).as_deref(), Some("<table/>"));
 	assert!(session.get_table_at_position(3.into()).is_none());
 }

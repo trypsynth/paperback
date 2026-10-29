@@ -1,6 +1,3 @@
-//! The window's own event handlers: switching and closing documents from the tab strip, coming
-//! back to the window, and closing it.
-
 #[cfg(target_os = "windows")]
 use std::cell::RefCell;
 use std::{cell::Cell, rc::Rc, sync::Mutex};
@@ -56,19 +53,14 @@ pub(super) fn bind_document_events(
 		event.skip(true);
 		if let WindowEventData::Activate(activate) = &event {
 			if activate.is_active() {
-				// On Windows the read-only Richedit does not emit its own focus event when the
-				// window is re-activated, so screen readers keep announcing the frame ("pane")
-				// instead of the book text. Restore focus to whichever control had it before we
-				// left (text control or tab strip) and fire the MSAA focus event explicitly so
-				// screen readers re-sync.
+				// The read-only RichEdit emits no focus event on reactivation, so screen readers would say "pane"; fire the MSAA focus event ourselves.
 				#[cfg(target_os = "windows")]
 				if let Ok(dm) = dm_for_activate.try_lock() {
 					dm.restore_focus();
 					dm.announce_focus();
 				}
 			} else {
-				// Deactivating: remember where focus was so we restore the same control (text
-				// control or tab strip) on the way back, rather than always forcing the text.
+				// So reactivation returns to the tab strip if that had focus, rather than always forcing the text.
 				#[cfg(target_os = "windows")]
 				if let Ok(dm) = dm_for_activate.try_lock() {
 					dm.record_focus_target();
@@ -85,8 +77,7 @@ pub(super) fn bind_document_events(
 			if dm_ref.reload_tab_if_changed(index) {
 				update_title_from_manager(&frame_for_activate, &dm_ref);
 				dm_ref.update_status_bar();
-				// Medium rather than the default high, for the same reason as the reload
-				// announcement on the page change path.
+				// Medium rather than the default high, for the same reason as the reload announcement on the page change path.
 				// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
 				live_region::announce_with_priority(
 					live_region_label,
@@ -103,11 +94,7 @@ pub(super) fn bind_document_events(
 		if let WindowEventData::Keyboard(key_event) = &event
 			&& let Some(key) = key_event.get_key_code()
 		{
-			// The same Ctrl+digit chords the reading control answers, so arrowing across the tab
-			// strip and then reaching for a number still works. The native tab control announces
-			// its own selection from here, and the page-changing handler deliberately stays
-			// quiet when the notebook has focus - but `switch_to_tab` announces either way,
-			// because it cannot rely on that handler, whose lock this call already holds.
+			// `switch_to_tab` announces itself: the page-changing handler stays quiet when the notebook has focus, and this call holds its lock.
 			if let Some(index) =
 				tab_index_for_key(key, key_event.control_down(), key_event.alt_down(), key_event.shift_down())
 				&& let Ok(mut dm) = dm.try_lock()
@@ -157,22 +144,17 @@ pub(super) fn bind_teardown(
 		let mut dm = dm_for_close.lock().unwrap();
 		{
 			let cfg = config_for_close.lock().unwrap();
-			// Geometry has to be read while the window is still on screen, so this
-			// comes before it goes.
+			// Geometry has to be read while the window is still on screen.
 			window_geometry::save(&frame, &cfg);
 			if let Some(tab) = dm.active_tab() {
 				cfg.set_app_string("active_document", &tab.file_path.to_string_lossy());
 			}
-			// Off the screen now. Everything below is bookkeeping: writing the config,
-			// saving each document's position, winding audio down. None of it is slow,
-			// but all of it happens after the key press, and a window that is still
-			// there while it runs is a window that feels slow to close.
+			// Hidden before the bookkeeping below so the window doesn't feel slow to close.
 			frame.show(false);
 			cfg.flush();
 		}
 		dm.save_all_positions();
-		// Stop audio and move focus off the per-tab child controls (the hidden audio
-		// control included) before the frame tears its children down.
+		// Audio stops and focus leaves the per-tab controls (hidden audio control included) before the frame tears its children down.
 		dm.stop_all_audio();
 		frame.set_focus();
 		#[cfg(target_os = "macos")]
@@ -184,8 +166,7 @@ pub(super) fn bind_teardown(
 			frame.show(false);
 			return;
 		}
-		// Only once the app is really quitting: on macOS the window is only hidden above, and its
-		// documents stay open.
+		// Only once really quitting: on macOS the window is only hidden above, and its documents stay open.
 		dm.remove_working_copies();
 		#[cfg(target_os = "windows")]
 		if let Some(state) = tray_for_close.lock().unwrap().as_ref() {
@@ -203,12 +184,7 @@ pub(super) fn bind_teardown(
 				}
 			}
 		}
-		// Last, and only once the close is really going ahead: macOS hides the window
-		// and vetoes instead of exiting, and a timer stopped on that path would stay
-		// stopped when the window came back. These tick every 250ms against the frame,
-		// so one landing while it tears its children down is delivered to an event
-		// handler that no longer exists, which is an access violation rather than a
-		// panic. Stopping them here makes that impossible rather than unlikely.
+		// A tick during teardown reaches a destroyed handler, an access violation; stopped only past the macOS veto, or they'd stay stopped when the window came back.
 		for timer in &timers_for_close {
 			timer.stop();
 		}
@@ -218,19 +194,20 @@ pub(super) fn bind_teardown(
 	{
 		let tray_for_destroy = Rc::clone(tray_state);
 		frame.on_destroy(move |_event| {
-			if let Some(state) = tray_for_destroy.lock().unwrap().take() {
+			let state = tray_for_destroy.lock().unwrap().take();
+			if let Some(state) = state {
 				state.icon.destroy();
 			}
 		});
 	}
 }
 
-/// Ctrl+Tab and Ctrl+Shift+Tab move between documents, as they do in a browser. The Windows tab control does this on its own; the macOS and GTK ones do not. Bound on the frame's char hook so it works from the book and the tab strip alike, before Tab can move focus.
+/// The Windows tab control handles Ctrl+Tab itself; macOS and GTK don't. On the char hook so it works from the book and tab strip before Tab moves focus.
 #[cfg(not(target_os = "windows"))]
 pub(super) fn bind_tab_cycling(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
 	let dm = Rc::clone(doc_manager);
 	frame.bind_internal(EventType::CHAR_HOOK, move |event| {
-		// wxWidgets reports Command as Control on macOS, so the physical Control key has to be read directly. Command+Tab is the system's application switcher and never arrives here anyway.
+		// wxWidgets reports Command as Control on macOS, so the physical Control key is read directly.
 		#[cfg(target_os = "macos")]
 		let control = wxdragon::utils::get_key_state(WXK_RAW_CONTROL) && !event.control_down();
 		#[cfg(not(target_os = "macos"))]

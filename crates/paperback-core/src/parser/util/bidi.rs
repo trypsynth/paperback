@@ -4,21 +4,12 @@ use icu_properties::{
 };
 use unicode_bidi::{BidiInfo, Level};
 
-/// True when some maximal run of consecutive RTL-strong base characters is stored
-/// left-to-right (x increasing), i.e. visual order that needs reversing. Combining
-/// marks are transparent; any non-RTL strong/neutral/space breaks the current run.
-/// Also covers the "no RTL character at all" case (the loop simply never enters the
-/// RTL branch), so callers need no separate "any RTL" pre-check.
-///
-/// The `0.5` threshold is half a PDF user-space unit (typically 1/72 inch at the
-/// default, unscaled CTM): glyph x-origins within that distance are treated as the
-/// "same position" jitter PDF producers emit for stacked/overlapping marks, not a
-/// genuine left-to-right step.
+/// The `0.5` threshold, half a PDF user-space unit, absorbs the x jitter producers emit for stacked marks so it isn't taken for a left-to-right step.
 fn has_visual_rtl_run(chars: &[(char, f32)], bidi: icu_properties::CodePointMapDataBorrowed<BidiClass>) -> bool {
 	let mut prev_x: Option<f32> = None;
 	for &(c, x) in chars {
 		match bidi.get(c) {
-			BidiClass::NonspacingMark => {} // transparent
+			BidiClass::NonspacingMark => {}
 			BidiClass::RightToLeft | BidiClass::ArabicLetter => {
 				if let Some(px) = prev_x
 					&& x > px + 0.5
@@ -33,47 +24,27 @@ fn has_visual_rtl_run(chars: &[(char, f32)], bidi: icu_properties::CodePointMapD
 	false
 }
 
-/// Cheap presence check for whether `chars` contains any strong RTL character,
-/// with no x-origin needed. Callers use this to skip fetching origins entirely
-/// for runs that turn out to be pure LTR (the overwhelming majority of text).
+/// Lets callers skip fetching x-origins for pure left-to-right runs, the overwhelming majority of text.
 pub fn contains_rtl(mut chars: impl Iterator<Item = char>) -> bool {
 	let bidi = CodePointMapData::<BidiClass>::new();
 	chars.any(|c| matches!(bidi.get(c), BidiClass::RightToLeft | BidiClass::ArabicLetter))
 }
 
-/// One base character plus the combining marks that attach to it, in logical
-/// (base-first) order.
 struct Cluster {
 	ch: char,
 	x: f32,
 	marks: Vec<char>,
 }
 
-/// Reorder one visually-ordered line of `(char, x_origin)` pairs (as pdfium emits
-/// them) into logical order. Returns the line unchanged when it contains no
-/// right-to-left character, so left-to-right documents are byte-for-byte identical
-/// and pay only a single cheap scan.
-///
-/// The returned string contains exactly the same multiset of scalar values as the
-/// input (marks re-attached, clusters reordered, mirrored brackets swap for their
-/// pair), so its length is unchanged and downstream marker offsets stay
-/// valid.
+/// The output holds exactly the input's scalar values, so its length is unchanged and downstream marker offsets stay valid.
 #[must_use]
 pub fn reorder_line(chars: &[(char, f32)]) -> String {
 	let bidi = CodePointMapData::<BidiClass>::new();
-	// Fast path, covering both "nothing right-to-left" and "RTL present but already
-	// stored in logical order": return input verbatim, in a single scan. Many PDFs
-	// (and all faithfully-exported vocalized Hebrew) already store RTL text in
-	// logical order with x decreasing right-to-left; re-deriving order from x there
-	// is a no-op at best and, because producers sprinkle stray spaces with imprecise
-	// x, can wrongly relocate them. Leaving already-logical lines byte-for-byte
-	// untouched guarantees no regression on correctly-stored documents.
+	// Many PDFs (and all faithfully exported vocalized Hebrew) already store RTL text in logical order, where re-deriving order from x can wrongly move the stray spaces producers emit with imprecise x.
 	if !has_visual_rtl_run(chars, bidi) {
 		return chars.iter().map(|&(c, _)| c).collect();
 	}
-	// 1. Split into base clusters and combining marks. A mark attaches to the
-	//    nearest non-whitespace base by x origin (PDFs emit marks adjacent in x but
-	//    sometimes out of sequence, and occasionally in the wrong base's slot).
+	// PDFs emit marks adjacent in x but sometimes out of sequence or in the wrong base's slot, so each attaches to the nearest base by x.
 	let mut clusters: Vec<Cluster> = Vec::with_capacity(chars.len());
 	let mut mark_targets: Vec<(char, f32)> = Vec::new();
 	for &(c, x) in chars {
@@ -85,8 +56,7 @@ pub fn reorder_line(chars: &[(char, f32)]) -> String {
 		}
 	}
 	for (mc, mx) in mark_targets {
-		// Nearest non-whitespace cluster; fall back to nearest of any kind
-		// (whitespace sorts after non-whitespace at equal distance, for free).
+		// Any non-whitespace base beats whitespace, which is picked only when there is nothing else.
 		let dist = |cl: &Cluster| (cl.x - mx).abs();
 		let pick = clusters
 			.iter()
@@ -97,13 +67,8 @@ pub fn reorder_line(chars: &[(char, f32)]) -> String {
 			clusters[i].marks.push(mc);
 		}
 	}
-	// 2. Sort clusters by ascending x → true visual (left-to-right) order.
 	clusters.sort_by(|a, b| a.x.total_cmp(&b.x));
-	// 3. Determine the paragraph base direction from the strong-character majority,
-	//    overriding the Unicode Bidi Algorithm's own first-strong-character (P2/P3)
-	//    detection: a line that opens with punctuation or a short embedded word in
-	//    the other script would otherwise pick the wrong base direction for the
-	//    dominant script.
+	// Majority rather than UBA's first-strong rule (P2/P3), which picks wrong for a line opening with punctuation or a short word in the other script.
 	let (mut rtl, mut ltr) = (0usize, 0usize);
 	for cl in &clusters {
 		match bidi.get(cl.ch) {
@@ -114,17 +79,11 @@ pub fn reorder_line(chars: &[(char, f32)]) -> String {
 	}
 	let base_rtl = rtl >= ltr && rtl > 0;
 	let base_level = if base_rtl { Level::rtl() } else { Level::ltr() };
-	// 4. Resolve per-character embedding levels (UBA rules N0-N3, L1), delegated to
-	//    `unicode_bidi`. The x-sorted cluster text is fed in as if it were logical
-	//    order: resolving levels and reordering (L2) a single-embedding paragraph is
-	//    a self-inverse transform, so running the standard logical→visual reorder
-	//    over this pretend-logical (actually visual) text recovers the true logical
-	//    order.
+	// Visual text is fed to `unicode_bidi` as if logical, which works because reordering a single-embedding paragraph is self-inverse.
 	let base_text: String = clusters.iter().map(|cl| cl.ch).collect();
 	let bidi_info = BidiInfo::new_with_data_source(&bidi, &base_text, Some(base_level));
 	let para = &bidi_info.paragraphs[0];
 	let char_levels = bidi_info.reordered_levels_per_char(para, para.range.clone());
-	// Mirror paired punctuation that sits at an odd (right-to-left) level.
 	let mirror = CodePointMapData::<BidiMirroringGlyph>::new();
 	for (cl, lvl) in clusters.iter_mut().zip(&char_levels) {
 		if lvl.is_rtl()
@@ -133,11 +92,7 @@ pub fn reorder_line(chars: &[(char, f32)]) -> String {
 			cl.ch = m;
 		}
 	}
-	// 5. Apply the Unicode Bidi rule L2 (reverse, from the highest level down to the
-	//    lowest odd level, every contiguous run whose level is at or above the
-	//    current level) to recover the logical order.
 	let order = BidiInfo::reorder_visual(&char_levels);
-	// 6. Emit clusters in final order: each base followed by its marks.
 	let mut out = String::with_capacity(chars.len());
 	for &idx in &order {
 		out.push(clusters[idx].ch);
@@ -165,8 +120,7 @@ mod tests {
 
 	#[test]
 	fn hebrew_run_stored_visually_is_reversed_to_logical() {
-		// "יֹאבַד" captured from the PDF in visual order (increasing x within the run),
-		// with the holam/patach marks emitted out of place. x values from the probe.
+		// "יֹאבַד" captured from a real PDF in visual order, with the holam/patach marks emitted out of place.
 		let input = [
 			('\u{05D3}', 456.06), // dalet
 			('\u{05B7}', 463.25), // patach (belongs to bet)
@@ -181,7 +135,6 @@ mod tests {
 
 	#[test]
 	fn hebrew_run_stored_logically_is_left_intact() {
-		// Consonants already emitted right-to-left (descending x): must stay as-is.
 		let input = [
 			('\u{05E2}', 240.65), // ayin
 			('\u{05DE}', 234.02), // mem
@@ -216,9 +169,7 @@ mod tests {
 
 	#[test]
 	fn already_logical_line_with_stray_space_is_untouched() {
-		// Logical RTL emission (x strictly decreasing) with a producer-inserted stray
-		// space mid-word. Must be returned byte-for-byte so well-formed vocalized
-		// Hebrew is never disturbed (no x-sort relocating the space).
+		// A producer-inserted stray space mid-word must not be relocated by an x-sort.
 		let input = [
 			('\u{05EA}', 100.0), // tav
 			('\u{05D5}', 92.0),  // vav
@@ -230,7 +181,6 @@ mod tests {
 
 	#[test]
 	fn latin_word_in_rtl_line_keeps_its_order() {
-		// RTL base line with an embedded Latin word "ok"; the Latin must not reverse.
 		let input = [
 			('\u{05D0}', 100.0), // aleph (rightmost, logical first)
 			('\u{05D1}', 90.0),  // bet

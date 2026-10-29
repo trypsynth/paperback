@@ -1,5 +1,3 @@
-//! Footnotes, endnotes and comments: text Word keeps in parts of their own, `footnotes.xml`, `endnotes.xml` and `comments.xml`, tied to places in the document by id.
-
 use roxmltree::{Document as XmlDocument, Node};
 
 use crate::document::DocPos;
@@ -11,7 +9,6 @@ pub(super) enum NoteKind {
 }
 
 impl NoteKind {
-	/// The kind of note a run cites, and the reference element that cites it.
 	pub(super) fn cited_by<'a, 'input>(run: Node<'a, 'input>) -> Option<(Self, Node<'a, 'input>)> {
 		run.children().filter(Node::is_element).find_map(|child| match child.tag_name().name() {
 			"footnoteReference" => Some((Self::Footnote, child)),
@@ -20,7 +17,7 @@ impl NoteKind {
 		})
 	}
 
-	/// The part that holds this kind of note, its relationships, and the element each note is.
+	/// (part, its relationships, the element each note is).
 	pub(super) const fn part(self) -> (&'static str, &'static str, &'static str) {
 		match self {
 			Self::Footnote => ("word/footnotes.xml", "word/_rels/footnotes.xml.rels", "footnote"),
@@ -29,7 +26,7 @@ impl NoteKind {
 	}
 }
 
-/// One citation: which note it is, the label it shows, and the id its link lands on.
+/// `key` is the id the citation's link lands on.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(super) struct Citation {
 	pub kind: NoteKind,
@@ -38,7 +35,7 @@ pub(super) struct Citation {
 	pub key: String,
 }
 
-/// What the walk finds tied to places in the text: the notes cited so far, in the order their citations appear, which is also how Word numbers them, and where each comment's words are.
+/// `cited` is in citation order, which is also how Word numbers the notes.
 #[derive(Debug, Default)]
 pub(super) struct Annotations {
 	footnote_format: String,
@@ -48,12 +45,11 @@ pub(super) struct Annotations {
 	/// Tells one document's notes from another's when a zip holds several, since each numbers its own from one.
 	document_start: DocPos,
 	pub cited: Vec<Citation>,
-	/// Each comment's id, where its words start and, for a comment on words rather than a point, where they end. In the order the comments start.
+	/// (id, start, end); a comment on a point rather than words has no end.
 	pub comments: Vec<(String, DocPos, Option<DocPos>)>,
 }
 
 impl Annotations {
-	/// Numbered as `word/settings.xml` says, or as Word does by default: footnotes 1, 2, 3 and endnotes i, ii, iii.
 	pub(super) fn new(settings_xml: Option<&str>, document_start: DocPos) -> Self {
 		let settings = settings_xml.and_then(|xml| XmlDocument::parse(xml).ok());
 		let format = |properties: &str, default: &str| {
@@ -73,12 +69,11 @@ impl Annotations {
 		}
 	}
 
-	/// The id a comment's entry links back to, told apart from another document's as note keys are.
 	pub(super) fn comment_key(&self, id: &str) -> String {
 		format!("comment-{}-{id}", self.document_start)
 	}
 
-	/// Records where comment `id`'s words start. A comment on a point, which has only its reference, starts there.
+	/// A comment on a point has only its reference, which starts it, so only the first call for an id counts.
 	pub(super) fn comment_starts(&mut self, id: &str, position: DocPos) {
 		if !self.comments.iter().any(|(known, _, _)| known == id) {
 			self.comments.push((id.to_string(), position, None));
@@ -91,7 +86,7 @@ impl Annotations {
 		}
 	}
 
-	/// Records a citation of note `id` and returns it. A custom mark, such as an asterisk the author typed in place of a number, is the label as it stands.
+	/// A custom mark, such as an asterisk the author typed in place of a number, is the label as it stands.
 	pub(super) fn cite(&mut self, kind: NoteKind, id: &str, custom_mark: Option<String>) -> Citation {
 		let (count, format) = match kind {
 			NoteKind::Footnote => (&mut self.footnotes, &self.footnote_format),
@@ -110,7 +105,6 @@ impl Annotations {
 	}
 }
 
-/// `number` the way a Word number format writes it, decimal for any format this does not know.
 fn format_number(number: usize, format: &str) -> String {
 	match format {
 		"lowerRoman" => roman(number).to_lowercase(),

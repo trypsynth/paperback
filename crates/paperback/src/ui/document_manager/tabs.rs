@@ -1,5 +1,3 @@
-//! Which document has focus and which tab is showing. Split out of the main `DocumentManager` impl.
-
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -7,12 +5,7 @@ use super::{DocumentManager, display_title};
 use crate::ui::{main_window::update_title_from_manager, navigation::announce};
 
 impl DocumentManager {
-	/// Puts focus on the freshly opened document's text, and makes that the target a later
-	/// [`Self::restore_focus`] will return to.
-	///
-	/// Opening a document is a request to read it, so it is not a case for restoring an earlier
-	/// preference: whatever had focus a moment ago was about a different document, or about
-	/// there being none.
+	/// Opening a document is a request to read it, so an earlier focus preference doesn't apply.
 	pub fn focus_document_text(&self) {
 		if let Some(tab) = self.active_tab() {
 			self.last_focus_in_text.set(true);
@@ -22,8 +15,6 @@ impl DocumentManager {
 		}
 	}
 
-	/// Restores focus to whichever control had it when the window was last active (the text
-	/// control or the notebook), falling back to the notebook when there's no active document.
 	pub fn restore_focus(&self) {
 		if self.last_focus_in_text.get() {
 			if let Some(tab) = self.active_tab() {
@@ -36,17 +27,9 @@ impl DocumentManager {
 		}
 	}
 
-	/// Records whether the text control or the notebook currently has focus, so focus can be
-	/// restored to the same place when the window is next activated. Only updates when one of
-	/// the two is confidently focused (a mid-focus-transition leaves the previous value).
-	///
-	/// With no documents open there is nothing to record: the notebook is the only focusable
-	/// control, so it has focus by default rather than by choice. Writing that down as "the user
-	/// prefers the tab strip" made the next document open onto its own tab strip instead of its
-	/// text, because [`Self::restore_focus`] honours the preference and could not tell a real
-	/// one from the absence of an alternative.
 	#[cfg(target_os = "windows")]
 	pub fn record_focus_target(&self) {
+		// With no documents the notebook has focus by default, not by choice; recording it made the next document open onto its tab strip.
 		if self.tabs.is_empty() {
 			return;
 		}
@@ -57,11 +40,7 @@ impl DocumentManager {
 		}
 	}
 
-	/// Tells screen readers that the text control has focus, after `restore_focus`. On Windows the
-	/// read-only Richedit does not emit its own focus event on re-activation, and `SetFocus` on a
-	/// window that already has focus emits nothing at all, so the text control needs the explicit
-	/// event; the notebook's native tab control announces its selected tab on its own (firing a
-	/// whole-control event there would swallow that), so nothing is sent for it.
+	/// The read-only `RichEdit` emits no focus event on re-activation and `SetFocus` on an already focused window emits nothing; the notebook is skipped because its native control announces its tab and a whole-control event would swallow that.
 	#[cfg(target_os = "windows")]
 	pub fn announce_focus(&self) {
 		if !self.last_focus_in_text.get() {
@@ -76,7 +55,6 @@ impl DocumentManager {
 		}
 	}
 
-	/// Moves to the next document, or the previous one, wrapping around at either end.
 	#[cfg(not(target_os = "windows"))]
 	pub fn cycle_tab(&mut self, forward: bool) {
 		let count = self.tabs.len();
@@ -85,74 +63,34 @@ impl DocumentManager {
 		self.switch_to_tab(index);
 	}
 
-	/// Selects the tab at `index`, reporting whether there was such a tab.
-	///
-	/// Goes through the notebook rather than setting state directly, so the tab strip repaints
-	/// exactly as it does for the notebook's own Ctrl+Tab. What the page-changed handler does
-	/// after that - title bar, the other document's audio, the check for a file changed on disk -
-	/// is done here by [`Self::finish_page_change`] instead, because that handler needs the lock
-	/// too and, on Windows, where the notebook fires it synchronously, finds it taken.
-	///
-	/// The title is announced here rather than left to the page-changing handler, and that is the
-	/// part which is easy to get wrong. That handler takes the manager lock before it announces
-	/// anything, and every caller of this method already holds it - there is no way to reach a
-	/// `DocumentManager` except through its `MutexGuard` - so it takes the lock, fails, and
-	/// returns in silence. The jump then announced nothing at all, and what a screen reader said
-	/// instead was its own focus event on the newly revealed text control: "edit read only",
-	/// then whatever line the caret was on. Ctrl+Tab never had that problem because the notebook
-	/// handles it from its own key handler, with the lock free.
-	///
-	/// Announcing last, and through the delayed live region rather than straight to the reader,
-	/// is what makes the title land on top of that focus event instead of under it - the same
-	/// thing [`announce`]'s delay is there for everywhere else. It is the one behaviour worth
-	/// copying from Ctrl+Tab, and it is a behaviour of the announcement, not of the focus.
-	///
-	/// `Ctrl+<n>` for an `n` past the last document reports false and does nothing at all. The
-	/// alternative - saying so - would mean a new translatable string for a key that is mostly
-	/// pressed by habit, and a reader who is nine documents deep is not going to wonder what
-	/// went wrong.
+	/// Every caller holds the manager lock, so the page-changed handler (synchronous on Windows) can't get in; its follow-up and the title announcement happen here instead, or the switch is heard only as "edit read only".
 	pub fn switch_to_tab(&mut self, index: usize) -> bool {
+		// Silent past the last tab: a new translatable string isn't worth it for a key mostly pressed by habit.
 		let Some(tab) = self.tabs.get(index) else {
 			return false;
 		};
 		if self.active_tab_index() == Some(index) {
-			// Re-announced rather than left silent. "Already on this tab" and "the shortcut did
-			// nothing" are indistinguishable to a screen reader, and the shortcut doing nothing
-			// is the reading that costs the reader the most.
+			// "Already on this tab" and "the shortcut did nothing" are indistinguishable to a screen reader.
 			announce(self.live_region_label, display_title(tab));
 			return true;
 		}
+		// Through the notebook so the tab strip repaints exactly as for its own Ctrl+Tab.
 		self.notebook.set_selection(index);
 		self.finish_page_change(true);
-		// The same condition the page-changing handler uses. From the reading control the notebook
-		// does not have focus, the handler cannot get in to say anything, and the title is the
-		// only thing this gesture should be heard saying. From the tab strip the notebook does
-		// have focus and its native control announces its own new selection, so saying it again
-		// would read the title twice.
-		//
-		// After the page change, so that the title lands on top of the focus event the switch
-		// caused rather than under it.
+		// From the tab strip the native control announces the selection itself; announcing after the page change, via the delayed live region, lands the title on top of the focus event rather than under it.
 		if !self.notebook.has_focus() {
 			announce(self.live_region_label, display_title(&self.tabs[index]));
 		}
 		true
 	}
 
-	/// Brings the window up to date with the tab that has just become active: re-reads it if its
-	/// file changed on disk (only when `check_disk` is set), then updates the title bar and stops
-	/// the audio of every other document.
-	///
-	/// Called by the notebook's page-changed handler and by [`Self::switch_to_tab`]. Running it
-	/// twice for one switch - which happens where the notebook delivers the page-changed event
-	/// after the lock is released - is harmless: the second run finds nothing left to do.
+	/// Running twice for one switch, where the notebook delivers page-changed after the lock is released, is harmless.
 	pub fn finish_page_change(&mut self, check_disk: bool) {
 		if check_disk
 			&& let Some(index) = self.active_tab_index()
 			&& self.reload_tab_if_changed(index)
 		{
-			// Medium rather than the default high: a file changing on disk is not something the
-			// user asked for, so it waits for the current utterance to finish instead of cutting
-			// them off mid sentence.
+			// Medium so an unrequested reload waits for the current utterance instead of cutting the reader off.
 			// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
 			live_region::announce_with_priority(
 				self.live_region_label,

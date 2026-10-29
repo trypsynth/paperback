@@ -1,7 +1,4 @@
-//! Rewriting MOBI/KF8 internal links: resolving `filepos`/`kindle:pos` anchors and NCX
-//! fragment-id offsets into real `<a href="#fp...">`/`<a id="fp...">` anchors, since MOBI
-//! stores links and TOC targets as raw byte offsets into the decoded content rather than
-//! real element ids.
+//! MOBI stores links and TOC targets as raw byte offsets into the decoded content rather than element ids, so they are rewritten into real anchors.
 
 use std::{
 	collections::{BTreeSet, HashMap},
@@ -13,9 +10,7 @@ use std::{
 use super::varint::{base32_decode, decode_vwi};
 use crate::document::{DocPos, TocItem};
 
-/// Fills in [`TocItem::offset`] for NCX entries whose `#fp...` reference couldn't be
-/// resolved to a byte offset while parsing the NCX (no matching fragment-id), by looking
-/// the reference up in the final HTML's id positions instead.
+/// For NCX entries whose `#fp...` reference had no matching fragment id while the NCX was parsed.
 pub(super) fn resolve_ncx_offsets(items: &mut [TocItem], id_positions: &HashMap<String, DocPos>) {
 	let mut stack: Vec<&mut [TocItem]> = vec![items];
 	while let Some(current) = stack.pop() {
@@ -40,7 +35,7 @@ pub(super) fn build_fragment_offsets(data: &[u8], records: &[usize], mobi_header
 	}
 	let frag_indx =
 		u32::from_be_bytes([mobi_header[232], mobi_header[233], mobi_header[234], mobi_header[235]]) as usize;
-	if frag_indx == 0xFFFFFFFF || frag_indx >= records.len() - 1 {
+	if frag_indx == 0xFFFF_FFFF || frag_indx >= records.len() - 1 {
 		return frag_offsets;
 	}
 	let prim_rec = &data[records[frag_indx]..records[frag_indx + 1]];
@@ -141,8 +136,7 @@ pub(super) fn rewrite_internal_links(
 	if links.is_empty() && targets.is_empty() {
 		return html.to_string();
 	}
-	// Build a sorted event list: inserts (kind=0) at target positions, replaces (kind=1) at link sites.
-	// At equal positions inserts sort before replaces so the anchor lands before the link tag.
+	// Inserts (kind 0) at targets and replaces (kind 1) at links; at equal positions inserts sort first so the anchor lands before the link tag.
 	let mut events: Vec<(usize, u8, usize, usize)> = Vec::new();
 	for &target in &targets {
 		events.push((target, 0, target, target));
@@ -182,9 +176,6 @@ fn snap_to_char_boundary(s: &str, pos: usize) -> usize {
 	p
 }
 
-// If pos falls inside or at the start of an HTML tag (<...>), advance it to
-// just after the closing '>'. We look at the first '<' and '>' from pos
-// onwards: if '>' comes before '<', we are inside a tag.
 fn snap_past_open_tag(html: &str, pos: usize) -> usize {
 	let bytes = &html.as_bytes()[pos..];
 	let next_gt = bytes.iter().position(|&b| b == b'>');

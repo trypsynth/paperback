@@ -1,12 +1,10 @@
-//! What ODT and ODP share in running text: the elements that stand for spacing, the parts of the markup that are not text at all, and how a picture reads.
-
 use std::fmt::Write as _;
 
 use roxmltree::Node;
 
 use crate::parser::{convert::image_text, odf_crypto::read_odf_content};
 
-/// The text a spacing element stands for: `<text:s text:c="3"/>` for three spaces, a tab, or a line break. ODF writes runs of spaces this way because XML collapses them, so without it words run together.
+/// ODF writes runs of spaces as `<text:s text:c="3"/>` because XML collapses them, so without this words run together.
 #[must_use]
 pub fn spacing(node: Node) -> Option<String> {
 	if !node.is_element() {
@@ -20,7 +18,7 @@ pub fn spacing(node: Node) -> Option<String> {
 	}
 }
 
-/// Whether an element is markup rather than text: a picture's alt text, which its placeholder reads instead, or a comment, with its author and date.
+/// A picture's alt text is read through its placeholder instead.
 #[must_use]
 pub fn is_hidden(node: Node) -> bool {
 	if !node.is_element() {
@@ -31,7 +29,7 @@ pub fn is_hidden(node: Node) -> bool {
 	(is_svg && matches!(name, "title" | "desc")) || matches!(name, "annotation" | "annotation-end")
 }
 
-/// A document's own title and author, from its `office:meta`: the title, and whoever created the document, or failing that whoever last saved it. Each is `None` when the document leaves it out. Looked for only inside the metadata, since a picture's alt text and a title field in the text are also named `title`.
+/// Looked for only inside `office:meta`, since a picture's alt text and a title field in the text are also named `title`.
 #[must_use]
 pub fn metadata(document: &roxmltree::Document) -> (Option<String>, Option<String>) {
 	let Some(meta) = document.descendants().find(|node| {
@@ -51,7 +49,6 @@ pub fn metadata(document: &roxmltree::Document) -> (Option<String>, Option<Strin
 	(field("title"), field("initial-creator").or_else(|| field("creator")))
 }
 
-/// [`metadata`] from the `meta.xml` of a packaged file. Nothing when the file has none or it will not read.
 #[must_use]
 pub fn packaged_metadata(path: &str, password: Option<&str>) -> (Option<String>, Option<String>) {
 	read_odf_content(path, "meta.xml", password)
@@ -60,7 +57,6 @@ pub fn packaged_metadata(path: &str, password: Option<&str>) -> (Option<String>,
 		.unwrap_or_default()
 }
 
-/// The number a footnote or endnote shows where it is cited.
 #[must_use]
 pub fn note_citation(note: Node) -> String {
 	note.children()
@@ -69,7 +65,6 @@ pub fn note_citation(note: Node) -> String {
 		.unwrap_or_default()
 }
 
-/// An element's text as it reads: spacing elements honoured, comments and alt text left out, a note reduced to its citation in brackets, and a picture to its placeholder.
 #[must_use]
 pub fn plain_text(node: Node) -> String {
 	let mut text = String::new();
@@ -94,7 +89,6 @@ fn collect(node: Node, text: &mut String) {
 	}
 }
 
-/// The placeholder a frame holding a picture shows, such as `[Image: a cat]`, and the description in it, read from the frame's title, the alternative text, or else its description. `None` for any other element, including a frame of text, which reads as its text.
 #[must_use]
 pub fn picture(frame: Node) -> Option<(String, String)> {
 	if !frame.is_element() || frame.tag_name().name() != "frame" {

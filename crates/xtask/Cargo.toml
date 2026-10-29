@@ -7,7 +7,7 @@ publish = false
 
 [dependencies]
 patois = "0.2.4"
-patois-build = "0.1.16"
+patois-build = "0.1.17"
 patois-translate = "0.1.4"
 serde_json = "1.0.154"
 shipfitter = { version = "0.2.4", features = ["docs", "package"] }

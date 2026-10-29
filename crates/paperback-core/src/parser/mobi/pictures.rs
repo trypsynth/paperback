@@ -1,6 +1,4 @@
-//! Pointing a book's pictures at the records that hold them.
-//!
-//! A MOBI book keeps each picture as a record of its own, after the text, and names it by its place among those records rather than by a file: an old Mobipocket book writes `<img recindex="00003">`, a KF8 (`.azw3`) one `<img src="kindle:embed:0003?mime=image/jpeg">`, counting from the book's first picture record. Neither reaches the picture once the book is text, so each is rewritten to the record's absolute number, `mobi-record:57.jpg`, which saving a picture reads straight out of the file.
+//! A MOBI picture is named by its place among the picture records (`recindex`, or KF8's `kindle:embed`), which nothing reaches once the book is text, so each is rewritten to its absolute record, `mobi-record:57.jpg`, which saving a picture reads straight out of the file.
 
 use std::sync::LazyLock;
 
@@ -9,7 +7,6 @@ use regex::{Captures, Regex};
 /// `mobi_header` offset of the record number the book's pictures, or for KF8 its resources, start at.
 const FIRST_IMAGE_OFFSET: usize = 92;
 
-/// Rewrites every picture in `html` to the record it is, so the converter picks it up as the picture's source.
 pub(super) fn point_pictures_at_records(html: &str, data: &[u8], records: &[usize], mobi_header: &[u8]) -> String {
 	static IMG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(?i)<img\b[^>]*>").unwrap());
 	static RECINDEX: LazyLock<Regex> =
@@ -44,14 +41,12 @@ pub(super) fn point_pictures_at_records(html: &str, data: &[u8], records: &[usiz
 	.into_owned()
 }
 
-/// The record a book's pictures start at, or `None` when the book has none.
 fn first_image_record(mobi_header: &[u8]) -> Option<usize> {
 	let bytes = mobi_header.get(FIRST_IMAGE_OFFSET..FIRST_IMAGE_OFFSET + 4)?;
 	let first = u32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]);
 	(first != u32::MAX && first > 0).then(|| usize::try_from(first).ok()).flatten()
 }
 
-/// Record `index` of the book, from the table of record offsets its Palm database header starts with.
 #[must_use]
 pub fn record_bytes<'a>(data: &'a [u8], records: &[usize], index: usize) -> Option<&'a [u8]> {
 	let start = *records.get(index)?;
@@ -59,7 +54,7 @@ pub fn record_bytes<'a>(data: &'a [u8], records: &[usize], index: usize) -> Opti
 	data.get(start..end).filter(|bytes| !bytes.is_empty())
 }
 
-/// The record offsets a Palm database file lists, for reading a record without parsing the rest of the book.
+/// Lets a record be read without parsing the rest of the book.
 #[must_use]
 pub fn record_offsets(data: &[u8]) -> Vec<usize> {
 	let Some(count) = data.get(76..78).map(|bytes| usize::from(u16::from_be_bytes([bytes[0], bytes[1]]))) else {
@@ -73,7 +68,7 @@ pub fn record_offsets(data: &[u8]) -> Vec<usize> {
 		.collect()
 }
 
-/// The file extension a picture record's bytes say it has, so a saved picture opens as what it is.
+/// So a saved picture opens as what it is.
 fn extension(bytes: &[u8]) -> &'static str {
 	if bytes.starts_with(&[0xFF, 0xD8]) {
 		".jpg"
@@ -92,7 +87,6 @@ fn extension(bytes: &[u8]) -> &'static str {
 mod tests {
 	use super::*;
 
-	/// A Palm database of `records`, with `first` as the first picture record in its MOBI header.
 	fn book(records: &[&[u8]], first: u32) -> (Vec<u8>, Vec<usize>, Vec<u8>) {
 		let header_end = 78 + records.len() * 8;
 		let mut data = vec![0u8; 76];
@@ -125,7 +119,6 @@ mod tests {
 		assert_eq!(record_bytes(&data, &offsets, 3), Some(b"GIF89a".as_slice()));
 	}
 
-	/// A picture the book does not have is left as it was rather than pointed at the wrong record.
 	#[test]
 	fn a_picture_past_the_last_record_is_left_alone() {
 		let (data, offsets, header) = book(&[b"rec0", b"\xFF\xD8"], 1);

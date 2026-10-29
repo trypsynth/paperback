@@ -6,8 +6,6 @@ pub const H1: &str = "Paperback UI test";
 pub const H2_FIRST: &str = "Introduction";
 pub const H2_LAST: &str = "Conclusion";
 
-/// Writes a small HTML book into `dir`: an opening paragraph, then an `h1` and two `h2`s,
-/// each followed by text, plus a link and a list.
 pub fn write_html(dir: &Path) -> PathBuf {
 	std::fs::create_dir_all(dir).expect("create fixture dir");
 	let path = dir.join(HTML_NAME);
@@ -28,10 +26,8 @@ pub fn write_html(dir: &Path) -> PathBuf {
 }
 
 pub const COMIC_NAME: &str = "ui-test.cbz";
-/// Words on the comic's one page, which is a picture of two lines of text.
 pub const COMIC_WORDS: &str = "quick brown fox";
 
-/// Writes a comic of one page into `dir`, a picture with text on it and nothing else, which the comic reader offers to OCR.
 pub fn write_comic(dir: &Path) -> PathBuf {
 	use std::io::Write as _;
 	std::fs::create_dir_all(dir).expect("create fixture dir");

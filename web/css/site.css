@@ -478,7 +478,7 @@ details > summary {
 	}
 }
 
-/* Google's badge carries its own transparent margin, so it sits in a line of text without any of its own. */
+/* Google's badge carries its own transparent margin and Apple's is drawn at the same 40px height, so both sit in a line of text without any of their own. */
 .store-badge img {
 	vertical-align: middle;
 }

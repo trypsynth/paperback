@@ -1,6 +1,3 @@
-//! Back/forward reading-position history: [`record_history_position`] appends/dedupes/trims,
-//! [`history_go_previous`]/[`history_go_next`] step through it.
-
 use crate::document::DocPos;
 
 fn normalize_index(positions: &[DocPos], index: usize) -> usize {
@@ -46,7 +43,6 @@ pub fn record_history_position(positions: &mut Vec<DocPos>, index: &mut usize, c
 
 #[derive(Debug, Clone)]
 pub struct HistoryNavResult {
-	/// Where the step lands, or nothing when there is no further entry that way.
 	pub target: Option<DocPos>,
 	pub positions: Vec<DocPos>,
 	pub index: usize,

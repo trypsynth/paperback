@@ -24,8 +24,7 @@ class SectionTitleTest {
 		assertEquals("Chapter One", sectionTitleAt(toc, 500))
 	}
 
-	// Front matter before the first heading belongs to no section. Naming the first one there
-	// would announce a chapter the reader has not reached.
+	// Naming the first section here would announce a chapter the reader has not reached.
 	@Test
 	fun `a position before every section is named by none`() {
 		assertEquals("", sectionTitleAt(toc, 0))
@@ -37,8 +36,7 @@ class SectionTitleTest {
 		assertEquals("", sectionTitleAt(emptyList(), 400))
 	}
 
-	// Nested entries are still in reading order, so the deepest one the reader has passed is the
-	// one they are in, not the chapter above it.
+	// Nested entries are still in reading order, so the deepest one passed is the one the reader is in.
 	@Test
 	fun `a nested section wins over the chapter it sits in`() {
 		assertEquals("A Digression", sectionTitleAt(toc, 750))

@@ -22,11 +22,6 @@ import uniffi.paperback.TextSegmentFfi
 private const val AUDIO_SEEK_AMOUNT_KEY = "audio_seek_amount_seconds"
 private const val DEFAULT_AUDIO_SEEK_SECONDS = 10
 
-/**
- * Reading the active document aloud and moving through it: where the reader is, what unit previous and next move by, and the speech or recording that follows them.
- *
- * Kept apart from the open documents themselves, which [MainScreenViewModel] owns, so the two can change without each having to be read through the other. It sees the active document only through [activeTab].
- */
 class ReadingController(
 	application: Application,
 	private val config: ConfigManagerFfi,
@@ -37,26 +32,19 @@ class ReadingController(
 	private val activeTab: () -> DocumentTabState?,
 	private val announcer: (String) -> Unit
 ) {
-	// Narrates DAISY audiobooks' recorded audio in place of synthesized TTS (see
-	// DocumentTabState.hasAudio), re-attached to whichever tab is active.
 	private val narration = RecordedNarration(application, config, scope)
 
 	private val recordedNarrator = RecordedNarrator(narration)
 	private val spokenNarrator = SpokenNarrator(ttsManager) { speakCurrentSegment() }
 
-	/**
-	 * Whatever is reading the active document aloud: its own recording for a DAISY audiobook, the
-	 * synthesizer for everything else. Worked out per call rather than held, so switching tabs
-	 * needs no bookkeeping of its own.
-	 */
+	/** Worked out per call rather than held, so switching tabs needs no bookkeeping. */
 	private val narrator: Narrator
 		get() = if (activeTab()?.hasAudio == true) recordedNarrator else spokenNarrator
 
 	private val _currentNavUnit = MutableStateFlow<NavUnit>(NavUnit.Segment(SegmentTypeFfi.PARAGRAPH))
 	val currentNavUnit: StateFlow<NavUnit> = _currentNavUnit.asStateFlow()
 
-	// The source whose position was last announced after an audio seek, so a seek that stays in
-	// the same file doesn't repeat its name every time.
+	// So a seek that stays in the same file doesn't repeat its name every time.
 	private var lastAnnouncedAudioSource: Int? = null
 
 	private val _ttsPosition = MutableStateFlow(0L)
@@ -67,13 +55,10 @@ class ReadingController(
 
 	val sleepTimer = SleepTimer(scope) { pauseTts() }
 
-	/** The position whose paragraph playback already read to the end while Find was the unit.
-	 * Comparing against the live position rather than clearing a flag means a move of any kind
-	 * invalidates it on its own. */
+	/** Compared against the live position rather than cleared as a flag, so a move of any kind invalidates it on its own. */
 	private var spokenThroughPosition: Long? = null
 
 	init {
-		// Both queued audio and completion callbacks follow the Find playback preference.
 		ttsManager.shouldAutoAdvance = { !shouldStopAfterFindMatch() }
 		ttsManager.onSegmentTransition = {
 			if (!shouldStopAfterFindMatch()) {
@@ -84,9 +69,7 @@ class ReadingController(
 			if (!shouldStopAfterFindMatch()) {
 				playNextContinuousSegment()
 			} else {
-				// The cursor stays on the match, so remember that its paragraph was read right
-				// through. Without this, play would find the same paragraph under the cursor and
-				// speak it again, for ever.
+				// The cursor stays on the match; without this, play would find the same paragraph and speak it again forever.
 				spokenThroughPosition = _ttsPosition.value
 				ttsManager.stop()
 			}
@@ -99,13 +82,7 @@ class ReadingController(
 		narration.onSeekLanded = { elapsedMs -> announceAudioSeek(elapsedMs) }
 		narration.onDetached = { lastAnnouncedAudioSource = null }
 		narration.onClipChanged = { position ->
-			// Same reasoning as the TTS auto-advance callbacks above: natural playback tracking
-			// would otherwise keep dragging the tracked position forward (mid-clip, off the exact
-			// match) while browsing Find, racing with the next Find Previous/Next press. This
-			// doesn't extend to saving the audio position, which RecordedNarration does on every
-			// clip change whatever the nav unit: unlike desktop's on-close save, Android can kill
-			// this process with no lifecycle callback at all, so a kill mid-Find would otherwise
-			// resume from before the jump on relaunch.
+			// While browsing Find, tracking playback would drag the position off the exact match and race the next Find press; RecordedNarration still saves the audio position on every clip change.
 			if (_currentNavUnit.value !is NavUnit.Find) {
 				_ttsPosition.value = position
 				refreshSegmentPreview()
@@ -114,7 +91,7 @@ class ReadingController(
 		}
 	}
 
-	/** Moves the reading position without saving it or moving playback, for a document just made active, which carries its own saved position. */
+	/** Doesn't save or move playback: a document just made active carries its own saved position. */
 	internal fun setPosition(position: Long) {
 		_ttsPosition.value = position
 	}
@@ -123,7 +100,6 @@ class ReadingController(
 		_currentSegmentText.value = ""
 	}
 
-	/** Points the media session and the recorded narration at [tab], or at nothing once no document is open. */
 	internal fun follow(tab: DocumentTabState?) {
 		if (tab != null) {
 			ttsManager.currentDocumentTitle = tab.title.ifBlank { tab.fileName }
@@ -156,8 +132,7 @@ class ReadingController(
 
 	fun setNavUnit(unit: NavUnit) {
 		_currentNavUnit.value = unit
-		// Seek amounts are a global preference rather than per-document, and share desktop's
-		// setting so the two agree about what "forward" means.
+		// Global rather than per-document, and shared with desktop so the two agree about what "forward" means.
 		if (unit is NavUnit.Time) {
 			scope.launch(Dispatchers.IO) {
 				config.setAppInt(AUDIO_SEEK_AMOUNT_KEY, unit.seconds)
@@ -166,10 +141,7 @@ class ReadingController(
 		}
 	}
 
-	/** The navigation units `tab` can offer. A document whose text spine is only there to anchor
-	 * audio has nothing to step through but the recording itself, so it gets seek amounts plus
-	 * Section (each underlying audio file is its own section); a DAISY book with real prose gets
-	 * seek amounts and every supported segment type, seek amounts first. */
+	/** An audio-only book's text only anchors the audio, so it gets seek amounts plus Section (one per audio file). */
 	fun navUnitsFor(tab: DocumentTabState): List<NavUnit> {
 		val segments = tab.session.getSupportedSegmentTypesFfi().map { NavUnit.Segment(it) }
 		if (!tab.hasAudio) return segments
@@ -180,8 +152,6 @@ class ReadingController(
 		return times + segments
 	}
 
-	/** Falls back to a unit the newly active document actually supports, preferring the saved
-	 * seek amount where seek amounts are on offer. */
 	fun ensureNavUnitSupported(units: List<NavUnit>) {
 		if (units.isEmpty() || units.contains(_currentNavUnit.value)) return
 		val savedSeconds = config.getAppInt(AUDIO_SEEK_AMOUNT_KEY, DEFAULT_AUDIO_SEEK_SECONDS)
@@ -194,8 +164,6 @@ class ReadingController(
 	private fun shouldStopAfterFindMatch(): Boolean =
 		_currentNavUnit.value is NavUnit.Find && settings.stopAfterFindMatch.state.value
 
-	/** Handles previous/next for a document being navigated by elapsed time rather than by text
-	 * unit. False when that isn't what's happening, leaving the ordinary text path to run. */
 	private fun seekAudioByNavUnit(forward: Boolean): Boolean {
 		val unit = _currentNavUnit.value
 		if (unit !is NavUnit.Time || activeTab()?.hasAudio != true) return false
@@ -204,19 +172,14 @@ class ReadingController(
 		return true
 	}
 
-	/** Handles previous/next for a document being navigated by Find match instead of by text
-	 * unit or elapsed time. False when that isn't what's happening, leaving the ordinary text
-	 * path to run. Always returns true once "Find" is the active unit, even with no query or no
-	 * more matches, since there is nothing else for prev/next to fall back to in that case. */
+	/** True whenever Find is the unit, even with no query or no more matches, since prev/next have nothing else to fall back to. */
 	private fun navigateByFind(forward: Boolean, speak: Boolean, announce: Boolean): Boolean {
 		if (_currentNavUnit.value !is NavUnit.Find) return false
 		val query = search.query.value
 		val options = search.options.value
 		val tab = activeTab() ?: return true
 		if (query == null || options == null) return true
-		// Forward search is inclusive of the start position, so searching from the current
-		// match's own start would just re-find it; nudge past it first. Backward search is
-		// already exclusive of the start position, so it needs no such adjustment.
+		// Forward search includes the start position and would re-find the current match; backward search already excludes it.
 		val searchPos = if (forward) _ttsPosition.value + 1L else _ttsPosition.value
 		val res = tab.session.searchFfi(query, searchPos, options.copy(forward = forward))
 		if (!res.found) {
@@ -249,9 +212,7 @@ class ReadingController(
 		return true
 	}
 
-	/** Speaks where an audio seek landed. An audiobook that is a bundle of narration files has
-	 * no meaningful document-wide elapsed time (its clips carry placeholder durations), so its
-	 * position reads as an offset into the file now playing, named whenever the file changes. */
+	/** An audio-only book's clips carry placeholder durations, so it has no book-wide elapsed time and reads as an offset into the current file. */
 	private fun announceAudioSeek(elapsedMs: Long) {
 		val tab = activeTab() ?: return
 		val cursor = tab.session.audioCursorAtElapsedFfi(elapsedMs)
@@ -279,11 +240,7 @@ class ReadingController(
 
 	fun refreshSegmentPreview() {
 		val tab = activeTab() ?: return
-		// An audio-only book's buffer is one placeholder space per file with no newlines
-		// anywhere, so asking for the paragraph enclosing a position collapses to the whole
-		// buffer and reports it as starting at 0. Deriving the label from that would pin it to
-		// the first file's name for the life of the book, however far playback had moved; the
-		// section (that is, the file) holding the current position is the only label there is.
+		// An audio-only buffer has no newlines, so its "paragraph" is the whole buffer and would pin the label to the first file's name.
 		if (tab.isAudioOnly) {
 			_currentSegmentText.value = sectionTitleAt(tab.toc, _ttsPosition.value)
 			return
@@ -316,9 +273,6 @@ class ReadingController(
 		}
 	}
 
-	/** Seeks the recorded narration to `segment`'s start, resumes playback there when `speak` says
-	 * the reader was already going, and announces `announceText` where that is the only sign
-	 * anything moved. */
 	private fun navigateNarrationToSegment(
 		segment: TextSegmentFfi,
 		announceText: String,
@@ -329,11 +283,7 @@ class ReadingController(
 		if (speak) {
 			narration.play()
 		}
-		// Stepping by section moves between whole narration files, so name where the jump
-		// landed the way a time seek names the file it crossed into: unconditionally, because
-		// with playback resuming there is otherwise no cue at all that anything moved, and in
-		// full rather than announceNavigationCue's five-word prefix, since here the name is the
-		// whole message rather than the opening of a paragraph being previewed.
+		// A section jump names the file it lands in, always and in full: with playback resuming there is otherwise no cue that anything moved.
 		val bySection = (_currentNavUnit.value as? NavUnit.Segment)?.type == SegmentTypeFfi.SECTION
 		if (bySection && announceText.isNotBlank()) {
 			announcer(announceText)
@@ -342,18 +292,13 @@ class ReadingController(
 		}
 	}
 
-	/** A segment's own text, falling back to its enclosing section's TOC title when blank — the
-	 * case for a plain-audio DAISY section, whose buffer content is just a placeholder space. */
+	/** A plain-audio DAISY section's text is just a placeholder space, hence the TOC title fallback. */
 	private fun displayTextFor(tab: DocumentTabState, segment: TextSegmentFfi): String {
 		if (segment.text.isNotBlank()) return segment.text
 		return sectionTitleAt(tab.toc, segment.startPos)
 	}
 
-	/** Jumps straight to `pos` (a freshly found Find match) and, if `resume` says the reader was
-	 * already going, speaks/plays from exactly there. Deliberately does not go through
-	 * `updateTtsPosition`/`speakCurrentSegment`, which re-derive the *enclosing paragraph* of a
-	 * position and snap to its start — fine for ordinary navigation, but it would silently move
-	 * a Find jump off the match it just found and back to that paragraph's beginning. */
+	/** Bypasses updateTtsPosition/speakCurrentSegment, which snap to the enclosing paragraph's start and would move a Find jump off its match. */
 	fun jumpToFoundPosition(pos: Long, resume: Boolean) {
 		val tab = activeTab() ?: return
 		_ttsPosition.value = pos
@@ -373,8 +318,7 @@ class ReadingController(
 			ttsManager.speak(text)
 			precacheNextContinuousSegment()
 		} else if (ttsManager.isPaused.value) {
-			// Was paused mid-utterance elsewhere; clear that stale state so a later resume
-			// doesn't play the old paragraph's audio instead of the new position.
+			// Otherwise a later resume would play the old paragraph's paused audio instead of the new position.
 			ttsManager.stop()
 		}
 	}
@@ -407,7 +351,6 @@ class ReadingController(
 		}
 	}
 
-	/** Says where a Find match landed, for a reader whose focus is still in the Find dialog. */
 	fun announceFoundMatch(pos: Long) {
 		val tab = activeTab() ?: return
 		val segment = tab.session.getTextSegment(pos, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
@@ -505,6 +448,18 @@ class ReadingController(
 		narrator.play()
 	}
 
+	/** An audio-only book is measured through its recording, since its text is one placeholder line per file and would weigh a two minute file the same as an hour long one. */
+	fun progressPercent(): Int? {
+		val tab = activeTab() ?: return null
+		val session = tab.session
+		val position = _ttsPosition.value
+		if (!tab.isAudioOnly) return session.getStatusInfo(position).percentage
+		val point = session.audioPointForPositionFfi(position)
+		if (!point.found) return null
+		val percent = session.audioProgressPercentFfi(point.timeMs)
+		return if (percent >= 0) percent else null
+	}
+
 	fun updateTtsPosition(pos: Long) {
 		_ttsPosition.value = pos
 		refreshSegmentPreview()
@@ -512,16 +467,7 @@ class ReadingController(
 		narrator.moveTo(pos)
 	}
 
-	/**
-	 * Seeks the recording to `percent` of its running time, reporting whether it applied.
-	 *
-	 * False for a document with no audio, and for one whose file lengths are not all known, so
-	 * the caller maps the percentage through the text instead. A
-	 * percentage through the text of an audiobook counts blank lines, one per file, so it treats
-	 * a two minute file and an hour long one as equal shares of the book.
-	 *
-	 * The reading position follows on its own: the player reports the clip it lands in.
-	 */
+	/** False when file lengths aren't all known, so the caller maps through the text instead; the reading position follows from the clip the player reports. */
 	fun seekAudioToPercent(percent: Int): Boolean {
 		val tab = activeTab() ?: return false
 		val targetMs = tab.session.audioElapsedForPercentFfi(percent)

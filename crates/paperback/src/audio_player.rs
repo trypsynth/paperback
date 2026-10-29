@@ -20,79 +20,46 @@ use rodio::{Decoder, DeviceSinkBuilder, MixerDeviceSink, Player, Source};
 use rodio_wsola::WsolaSourceExt;
 use zip::ZipArchive;
 
-/// How far short of a source's end a seek past that end lands, leaving enough to play out
-/// before moving on to the next source.
+/// Leaves enough of the file to play out, so a seek past the end moves on to the next source instead of replaying this one.
 const END_MARGIN_MS: u64 = 100;
 
-/// The slowest and fastest playback speed multipliers `increase_speed`/`decrease_speed` will
-/// step to, and the size of each step.
 const MIN_SPEED: f32 = 0.5;
 const MAX_SPEED: f32 = 3.0;
 const SPEED_STEP: f32 = 0.1;
 
-/// The quietest and loudest volume `increase_volume`/`decrease_volume` will step to, and the size of each step. Above 1.0 amplifies, for recordings made too quietly.
 const MIN_VOLUME: f32 = 0.1;
+/// Above 1.0 amplifies, for recordings made too quietly.
 const MAX_VOLUME: f32 = 2.0;
 const VOLUME_STEP: f32 = 0.1;
 
-/// How often the live source checks `shared_speed` for a change made while it's already
-/// playing (see `AudioPlayer::speed`'s doc comment).
 const SPEED_POLL_PERIOD: Duration = Duration::from_millis(20);
 
-/// A source decoded straight from its file, with the file's length handed to the decoder so a
-/// constant-bitrate MP3 carrying no duration header still reports a usable `total_duration()`.
 type FileDecoder = Decoder<BufReader<fs::File>>;
 
 thread_local! {
-	/// The one audio output device every open document plays through, opened on the first
-	/// document that has narration and closed again once the last of them goes away.
 	static AUDIO_DEVICE: RefCell<Weak<MixerDeviceSink>> = const { RefCell::new(Weak::new()) };
 }
 
-/// Plays a DAISY audiobook's narration against its `AudioTimeline` through rodio, decoding in
-/// process rather than through whatever the OS happens to have installed. `Decoder` needs a
-/// seekable file, so zip-embedded sources are extracted on use.
-///
-/// One rodio `Player` holds one source at a time. Switching source builds a fresh `Player`
-/// and drops the old one, which stops it without blocking the UI thread the way `clear()` and
-/// `stop()` both would.
+/// Switching source builds a fresh `Player` and drops the old one, since `clear()` and `stop()` both block the UI thread.
 pub struct AudioPlayer {
-	/// Kept alive for as long as this player exists; dropping the last handle closes the
-	/// output device.
+	/// Dropping the last handle closes the output device.
 	device: Rc<MixerDeviceSink>,
 	player: Option<Player>,
 	timeline: AudioTimeline,
 	current_source: Option<usize>,
-	/// The loaded source's own length as its decoder reports it, which a format that declares
-	/// no duration leaves as `None`.
 	current_length_ms: Option<u64>,
-	/// Added to what the player reports, to turn it into a position within the source's file.
-	/// A source is loaded by seeking its decoder before handing it over, and rodio counts from
-	/// zero from there, so this holds that head start. A seek through the player instead makes
-	/// rodio's own count absolute, and zeroes this.
+	/// rodio counts from zero after a decoder seek made before loading, so this holds that head start; a seek through the player makes rodio's count absolute and zeroes it.
 	position_base_ms: u64,
 	playing: bool,
-	/// A seek requested while paused, applied lazily on resume. Applying it eagerly would
-	/// decode a fresh source per keystroke while navigating with audio nobody is hearing.
+	/// Applied on resume, since applying it eagerly would decode a fresh source per keystroke while navigating with audio nobody hears.
 	pending_target_ms: Option<u64>,
-	/// `(source, seek_ms)` of the most recent seek, so navigation resolving to the same pair
-	/// doesn't restart correct audio.
+	/// So navigation resolving to the same spot doesn't restart audio that's already right.
 	last_seek_target: Option<(usize, u64)>,
-	/// Where extracted zip-embedded sources are cached, keyed by archive+entry.
 	cache_dir: PathBuf,
-	/// The playback speed multiplier (1.0 = normal), applied to the loaded source and to
-	/// whatever loads next. Reset to 1.0 only by creating a new `AudioPlayer`.
-	///
-	/// Speeding up plays the source through a WSOLA time-stretcher (`rodio_wsola::Wsola`)
-	/// rather than through rodio's own `Player::set_speed`, which just plays samples faster
-	/// (raising their pitch, the "chipmunk effect") rather than actually stretching time.
-	/// `shared_speed` is the live channel into that already-running stretcher: `load_source`
-	/// wraps each freshly loaded decoder in a `Wsola` that polls it every `SPEED_POLL_PERIOD`
-	/// (`Wsola::set_speed` takes `&mut self`, and the wrapped source lives on rodio's own
-	/// mixer thread once appended, out of this struct's reach otherwise).
+	/// Played through WSOLA rather than `Player::set_speed`, which raises the pitch instead of stretching time.
 	speed: f32,
+	/// `Wsola::set_speed` takes `&mut self` and the source lives on rodio's mixer thread once appended, so it polls this instead.
 	shared_speed: Arc<Mutex<f32>>,
-	/// The volume multiplier (1.0 = as recorded), applied to the loaded source and to whatever loads next.
 	volume: f32,
 }
 
@@ -122,7 +89,6 @@ impl AudioPlayer {
 		&self.timeline
 	}
 
-	/// Stops playback and releases the decoder, ahead of this player being torn down.
 	pub fn stop(&mut self) {
 		self.playing = false;
 		self.player = None;
@@ -149,8 +115,6 @@ impl AudioPlayer {
 			player.play();
 			return;
 		}
-		// Nothing loaded yet, or the last source played out: pick up from wherever the
-		// document was left.
 		let elapsed = self.elapsed_ms().unwrap_or(0);
 		self.seek_to_ms(elapsed);
 	}
@@ -170,22 +134,12 @@ impl AudioPlayer {
 		}
 	}
 
-	/// The current playback speed multiplier (1.0 = normal).
 	#[must_use]
 	pub const fn speed(&self) -> f32 {
 		self.speed
 	}
 
-	/// Sets the playback speed multiplier, clamped to `MIN_SPEED..=MAX_SPEED`, applying it to
-	/// the currently loaded source (if any) as well as whatever loads next. Returns the speed
-	/// actually applied, after clamping.
-	///
-	/// `position_ms` (and everything built on it: `elapsed_ms`, seeking, "is this the same
-	/// spot" checks) reads the loaded source's position as `position_base_ms` plus however much
-	/// wall-clock time the player reports played back, scaled by `speed` — see its own doc
-	/// comment. That scaling is only correct for time played *at the current speed*, so a speed
-	/// change re-seeks the live source to where it already was, which re-bases
-	/// `position_base_ms`/`position_ms` against the new speed before anything is scaled by it.
+	/// Re-seeks the live source to where it already was, because `position_ms` scaling by `speed` is only right for time played at the current speed.
 	pub fn set_speed(&mut self, speed: f32) -> f32 {
 		let new_speed = round_to_hundredth(speed.clamp(MIN_SPEED, MAX_SPEED));
 		if (new_speed - self.speed).abs() < f32::EPSILON {
@@ -205,24 +159,19 @@ impl AudioPlayer {
 		self.speed
 	}
 
-	/// Steps the playback speed up by `SPEED_STEP`, clamped at `MAX_SPEED`. Returns the new
-	/// speed, which callers compare against the speed before the call to notice a clamp.
 	pub fn increase_speed(&mut self) -> f32 {
 		self.set_speed(self.speed + SPEED_STEP)
 	}
 
-	/// Steps the playback speed down by `SPEED_STEP`, clamped at `MIN_SPEED`.
 	pub fn decrease_speed(&mut self) -> f32 {
 		self.set_speed(self.speed - SPEED_STEP)
 	}
 
-	/// The current volume multiplier (1.0 = as recorded).
 	#[must_use]
 	pub const fn volume(&self) -> f32 {
 		self.volume
 	}
 
-	/// Sets the volume, clamped to `MIN_VOLUME..=MAX_VOLUME`, for the loaded source and whatever loads next. Returns the volume applied.
 	pub fn set_volume(&mut self, volume: f32) -> f32 {
 		self.volume = round_to_hundredth(volume.clamp(MIN_VOLUME, MAX_VOLUME));
 		if let Some(player) = self.player.as_ref() {
@@ -239,9 +188,7 @@ impl AudioPlayer {
 		self.set_volume(self.volume - VOLUME_STEP)
 	}
 
-	/// Moves on to the next source once the current one has played out, and notices the end of
-	/// the last one. rodio has no "finished" callback, so this is driven by the same recurring
-	/// tick that syncs the caret.
+	/// rodio has no "finished" callback, so the caret-sync timer drives this.
 	pub fn pump(&mut self) {
 		if !self.playing {
 			return;
@@ -265,16 +212,12 @@ impl AudioPlayer {
 		}
 	}
 
-	/// Seeks playback to the point covering `position` in the text, if the timeline
-	/// narrates it. Leaves the transport running or paused as it already was.
 	pub fn seek_to_position(&mut self, position: DocPos) -> bool {
 		let target = self.timeline.point_for_position(position);
 		tracing::debug!(%position, ?target, "audio: seek_to_position");
 		target.is_some_and(|point| self.seek_to_ms(point.time_ms))
 	}
 
-	/// Seeks playback to `elapsed_ms` into the overall document timeline. While paused this
-	/// only records the target (see `pending_target_ms`), applying it lazily on resume.
 	pub fn seek_to_ms(&mut self, elapsed_ms: u64) -> bool {
 		if !self.playing {
 			tracing::debug!(elapsed_ms, "audio: seek_to_ms while paused, deferring");
@@ -291,7 +234,6 @@ impl AudioPlayer {
 		};
 		let (source_index, seek_ms) = (clip.source, cursor.seek_ms);
 		tracing::debug!(elapsed_ms, source_index, seek_ms, current = ?self.current_source, "audio: seek_to_ms");
-		// Already playing (or headed to) the right spot: don't restart it.
 		if self.last_seek_target == Some((source_index, seek_ms)) {
 			return true;
 		}
@@ -302,31 +244,19 @@ impl AudioPlayer {
 		self.load_source(source_index, seek_ms)
 	}
 
-	/// The current playback position in the overall document timeline, if a source is
-	/// loaded and its position maps onto a known clip.
 	#[must_use]
 	pub fn elapsed_ms(&self) -> Option<u64> {
 		let source = self.current_source?;
 		self.timeline.elapsed_for_source_position(source, self.position_ms()?)
 	}
 
-	/// Where playback would resume right now, for saving as this document's audio position.
-	/// Falls back to a seek that was deferred because it arrived while paused (see
-	/// `pending_target_ms`), so browsing a paused book still records where it would pick up.
-	/// `None` means nothing has established a position yet, and callers must not treat that
-	/// as "the start", since it would wipe a perfectly good stored position.
+	/// `None` means no position is established yet; callers must not treat it as the start, or a good stored position gets wiped.
 	#[must_use]
 	pub fn resume_point_ms(&self) -> Option<u64> {
 		self.pending_target_ms.or_else(|| self.elapsed_ms())
 	}
 
-	/// The decoder's current position within the currently loaded source's own file, and that
-	/// file's real (decoder-reported) length. `None` with no source loaded yet, or when the
-	/// format declares no duration. Distinct from the document's own declared clip duration
-	/// for that source, which a plain-audio-zip bundle's placeholder (see
-	/// `build_plain_audio_zip_document`) can put far past the file's real end, so callers that
-	/// need to know when a seek is about to run off the real end of the file (e.g. "continue
-	/// into the next file" seeking) can't get this from the timeline alone.
+	/// The decoder's real file length, since a plain audio zip's declared clip duration is a placeholder far past the file's end.
 	#[must_use]
 	pub fn current_file_position_and_length_ms(&self) -> Option<(usize, u64, u64)> {
 		let source = self.current_source?;
@@ -335,24 +265,19 @@ impl AudioPlayer {
 		(length_ms > 0).then_some((source, raw_ms, length_ms))
 	}
 
-	/// Where the loaded source is playing, within its own file.
-	///
-	/// `player.get_pos()` reports how much wall-clock time has actually played since the last
-	/// seek (through the WSOLA-wrapped source, at whatever `speed` is now), not how far that
-	/// covers into the source's own content — at 2x speed, one played-back second covers two
-	/// content seconds. Scaling it by `speed` converts back to a content position, which is
-	/// only correct as long as `speed` hasn't changed since the last seek; `set_speed` re-seeks
-	/// specifically to keep that true.
+	/// `get_pos()` is wall-clock time played since the last seek, so it's scaled by `speed`; only valid while `speed` is unchanged since that seek.
 	fn position_ms(&self) -> Option<u64> {
 		let player = self.player.as_ref()?;
 		let played_ms = duration_ms(player.get_pos());
+		#[allow(
+			clippy::cast_possible_truncation,
+			clippy::cast_sign_loss,
+			reason = "a play position in milliseconds, never negative, and a float cast saturates"
+		)]
 		let content_elapsed_ms = (played_ms as f64 * f64::from(self.speed)) as u64;
 		Some(self.position_base_ms.saturating_add(content_elapsed_ms))
 	}
 
-	/// Seeks the source that is already loaded, reporting whether that worked. A source that
-	/// has played out is past seeking, and a decoder can refuse a seek outright, both of which
-	/// leave the caller to load the source afresh instead.
 	fn seek_loaded_source(&mut self, seek_ms: u64) -> bool {
 		let Some(player) = self.player.as_ref() else {
 			return false;
@@ -360,14 +285,12 @@ impl AudioPlayer {
 		if player.empty() {
 			return false;
 		}
-		// `seek_ms` is a content position; the live source expects wall-clock ("apparent")
-		// position, which is content position divided by speed (see `position_ms`).
+		// The live source counts wall-clock time, which is content time divided by speed.
 		let apparent = Duration::from_millis(seek_ms).div_f32(self.speed);
 		if let Err(err) = player.try_seek(apparent) {
 			tracing::debug!(seek_ms, error = %err, "audio: in-place seek refused, reloading the source");
 			return false;
 		}
-		// rodio counts from the seek target now, so its position needs no head start added.
 		self.position_base_ms = 0;
 		if self.playing {
 			player.play();
@@ -375,7 +298,6 @@ impl AudioPlayer {
 		true
 	}
 
-	/// Loads `source_index` and starts it at `seek_ms` into its file.
 	fn load_source(&mut self, source_index: usize, seek_ms: u64) -> bool {
 		let Some(source) = self.timeline.source(source_index) else {
 			return false;
@@ -396,15 +318,12 @@ impl AudioPlayer {
 			}
 		};
 		let length_ms = decoder.total_duration().map(duration_ms);
-		// A target past the real end of the file is a document's declared duration overrunning
-		// its own audio (see `current_file_position_and_length_ms`). Land just short of the end
-		// instead, so playback moves on to the next source rather than replaying this one.
+		// A declared duration can overrun the file's real audio.
 		let target_ms = match length_ms {
 			Some(length_ms) if seek_ms >= length_ms => length_ms.saturating_sub(END_MARGIN_MS),
 			_ => seek_ms,
 		};
-		// Seeking the decoder before it reaches the player keeps the seek off the audio
-		// thread, which `Player::try_seek` waits on.
+		// Seeking the decoder before the player gets it avoids `Player::try_seek` waiting on the audio thread.
 		let applied_seek_ms = match decoder.try_seek(Duration::from_millis(target_ms)) {
 			Ok(()) => target_ms,
 			Err(err) => {
@@ -430,8 +349,7 @@ impl AudioPlayer {
 	}
 }
 
-/// The output device, opened on demand and shared by every player. Held here by weak
-/// reference so the device closes once the last document with narration is gone.
+/// Held weakly so the device closes once the last document with narration is gone.
 fn shared_device() -> Result<Rc<MixerDeviceSink>> {
 	AUDIO_DEVICE.with_borrow_mut(|slot| {
 		if let Some(device) = slot.upgrade() {
@@ -447,6 +365,7 @@ fn shared_device() -> Result<Rc<MixerDeviceSink>> {
 
 fn open_decoder(path: &Path) -> Result<FileDecoder> {
 	let file = fs::File::open(path).with_context(|| format!("failed to open '{}'", path.display()))?;
+	// So a constant-bitrate MP3 with no duration header still reports `total_duration()`.
 	let byte_len = file.metadata().with_context(|| format!("failed to measure '{}'", path.display()))?.len();
 	let mut builder = Decoder::builder().with_data(BufReader::new(file)).with_byte_len(byte_len).with_seekable(true);
 	if let Some(extension) = path.extension().and_then(|extension| extension.to_str()) {
@@ -459,10 +378,6 @@ fn duration_ms(duration: Duration) -> u64 {
 	u64::try_from(duration.as_millis()).unwrap_or(u64::MAX)
 }
 
-/// Wraps `decoder` in a WSOLA time-stretcher started at `initial_speed`, which keeps polling
-/// `shared_speed` for the rest of its life so a later `AudioPlayer::set_speed` (changing that
-/// shared value) reaches it — `Wsola::set_speed` takes `&mut self`, and once this is handed to
-/// `Player::append` it runs on rodio's own mixer thread, out of `AudioPlayer`'s direct reach.
 fn wsola_speed_source(
 	decoder: FileDecoder,
 	initial_speed: f32,
@@ -479,14 +394,12 @@ fn wsola_speed_source(
 	})
 }
 
-/// Rounds a speed or volume multiplier to the nearest hundredth, so repeated steps land on
-/// clean values (`1.0`, `1.1`, ...) instead of drifting from `f32` addition error.
+/// So repeated steps land on clean values instead of drifting from `f32` addition error.
 fn round_to_hundredth(value: f32) -> f32 {
 	(value * 100.0).round() / 100.0
 }
 
-/// Resolves an `AudioLocation` to a real file path the decoder can open. Zip-embedded
-/// sources are extracted to `cache_dir` once and reused on subsequent calls.
+/// `Decoder` needs a seekable file, so zip-embedded sources are extracted to the cache.
 fn resolve_source_path(location: &AudioLocation, cache_dir: &Path) -> Result<PathBuf> {
 	match location {
 		AudioLocation::File(path) => Ok(PathBuf::from(path)),
@@ -504,8 +417,7 @@ fn resolve_source_path(location: &AudioLocation, cache_dir: &Path) -> Result<Pat
 	}
 }
 
-/// A stable, filesystem-safe cache file name for an archive+entry pair, keeping the entry's
-/// own extension so the decoder can sniff its format from the file name.
+/// Keeps the entry's extension so the decoder can sniff the format from the name.
 fn cache_file_name(archive: &str, entry: &str) -> String {
 	let mut hasher = DefaultHasher::new();
 	archive.hash(&mut hasher);
@@ -527,13 +439,7 @@ mod tests {
 
 	use super::*;
 
-	/// Whether this machine can open an audio output device, asked once for the whole test run.
-	///
-	/// A Windows machine with no sound hardware, which is what every CI runner is, crashes the
-	/// test process inside the audio library when a device is opened again after an earlier
-	/// attempt failed. Asking once and remembering the answer means the audio tests all skip
-	/// there without ever trying a second time. A machine with a device is unaffected: every test
-	/// still opens it for real.
+	/// Asked once, because on Windows with no sound hardware (every CI runner) opening a device again after a failure crashes the test process.
 	fn has_audio_device() -> bool {
 		static AVAILABLE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
 		*AVAILABLE.get_or_init(|| shared_device().is_ok())
@@ -551,8 +457,6 @@ mod tests {
 		buf
 	}
 
-	/// Writes `millis` of silent 16-bit mono PCM, which is enough for the decoder to report a
-	/// length, seek within, and play out.
 	fn write_wav(path: &Path, millis: u64) {
 		const SAMPLE_RATE: u32 = 44100;
 		let samples = u32::try_from(u64::from(SAMPLE_RATE) * millis / 1000).unwrap();
@@ -574,8 +478,6 @@ mod tests {
 		fs::write(path, out).unwrap();
 	}
 
-	/// Waits up to `timeout_ms` for `check` to pass, pumping the player as the app's timer
-	/// does. Reports whether it passed, so a test can say what it was waiting for.
 	fn wait_for(player: &mut AudioPlayer, timeout_ms: u64, check: impl Fn(&AudioPlayer) -> bool) -> bool {
 		let deadline = Instant::now() + Duration::from_millis(timeout_ms);
 		loop {
@@ -590,8 +492,6 @@ mod tests {
 		}
 	}
 
-	/// Plays real audio through the real output device. Skipped where there isn't one, which
-	/// is most CI runners.
 	#[test]
 	fn plays_a_timeline_through_to_the_next_source() {
 		if !has_audio_device() {
@@ -635,11 +535,7 @@ mod tests {
 		);
 	}
 
-	/// A speed change mid-playback must not make `elapsed_ms` jump: `position_ms` scales
-	/// however much wall-clock time the player reports by the *current* speed (see its doc
-	/// comment), which is only correct for time played at that speed, so `set_speed` has to
-	/// re-seek to re-base it. Written after that re-seek arithmetic came out backwards once
-	/// already in development (position jumped instead of staying put).
+	/// The re-seek arithmetic in `set_speed` once came out backwards and made the position jump.
 	#[test]
 	fn changing_speed_mid_playback_does_not_jump_the_position() {
 		if !has_audio_device() {
@@ -669,15 +565,12 @@ mod tests {
 			"a speed change alone should not move the position, went from {before}ms to {after}ms"
 		);
 
-		// At 1.1x, real playback time should now cover more content than it would have at 1.0x.
 		assert!(
 			wait_for(&mut player, 3000, |player| player.elapsed_ms().is_some_and(|ms| ms >= after + 500)),
 			"position keeps advancing after the speed change"
 		);
 	}
 
-	/// The decoder reports a real length for a file, which is what "continue into the next
-	/// file" seeking needs and what a document's own declared duration can't be trusted for.
 	#[test]
 	fn reports_the_loaded_files_own_length() {
 		if !has_audio_device() {
@@ -767,7 +660,6 @@ mod tests {
 		};
 		let resolved = resolve_source_path(&location, &cache_dir).unwrap();
 		assert_eq!(fs::read(&resolved).unwrap(), b"chapter-one-bytes");
-		// A second resolve reuses the cached file rather than re-extracting.
 		let resolved_again = resolve_source_path(&location, &cache_dir).unwrap();
 		assert_eq!(resolved, resolved_again);
 	}

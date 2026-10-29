@@ -17,7 +17,6 @@ use crate::{
 /// Where an entry whose page the book doesn't have points: past the end, as no position in the book is.
 const UNRESOLVED: DocPos = DocPos::from_raw(usize::MAX);
 
-/// What the `#SYSTEM` file says about the book as a whole.
 pub(super) struct SystemInfo {
 	pub title: Option<String>,
 	pub encoding: Option<&'static Encoding>,
@@ -129,7 +128,6 @@ fn parse_hhc_node(node: ElementRef, items: &mut Vec<TocItem>) {
 				if !name.is_empty() {
 					let mut item = TocItem::new(name, local, UNRESOLVED);
 					let mut found_child_ul = false;
-					// PATTERN 1: Check for child UL (standard CHM pattern)
 					for nested_child in child_ref.children() {
 						if let Some(nested_element) = nested_child.value().as_element()
 							&& nested_element.name() == "ul"
@@ -139,7 +137,7 @@ fn parse_hhc_node(node: ElementRef, items: &mut Vec<TocItem>) {
 							found_child_ul = true;
 						}
 					}
-					// PATTERN 2: Check for sibling UL elements, as seen in nvgt.chm.
+					// Some CHMs, such as nvgt.chm, nest a topic's children in a sibling UL rather than a child one.
 					if !found_child_ul {
 						let mut next_element = None;
 						for (next_idx, child) in children.iter().enumerate().skip(index + 1) {

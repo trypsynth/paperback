@@ -33,16 +33,12 @@ import kotlin.math.roundToInt
 
 private const val SEEK_RANGE = 10000
 
-// Whole percentages of the rate range, matching what the settings slider reports.
 private val RATE_PRESETS = listOf(25, 50, 75, 100)
 
-// One percent per swipe, the same as iOS. Bigger steps get where you are going in fewer
-// gestures but overshoot the rate you actually wanted, and the rate is a setting people tune
-// once and live with rather than sweep through.
+// Same as iOS; bigger steps overshoot, and rate is tuned once rather than swept through.
 private const val RATE_STEP = 1
 
-// Zero-width space: satisfies TalkBack's non-null stateDescription check so it doesn't
-// fall back to announcing the raw slider value, while reading aloud as nothing.
+// A non-empty stateDescription stops TalkBack announcing the raw slider value, while reading aloud as nothing.
 private const val ZWSP = "​"
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,7 +53,7 @@ fun TtsBottomBar(
 	currentUnit: NavUnit,
 	navUnits: List<NavUnit>,
 	onNavUnitChange: (NavUnit) -> Unit,
-	// Null hides the rate control, for the moment before the speech engine has started and there is no rate to show.
+	// Null before the speech engine has started.
 	speechRatePercent: Int?,
 	onSpeechRateChange: (Int) -> Unit,
 	modifier: Modifier = Modifier,
@@ -68,10 +64,6 @@ fun TtsBottomBar(
 	var rateMenuExpanded by remember { mutableStateOf(false) }
 	val unitName = getNavUnitName(currentUnit)
 	val currentUnitIndex = navUnits.indexOf(currentUnit)
-	// A time unit means the prev/next controls seek the recording rather than stepping through
-	// text, so they read as "back"/"forward" by that amount instead of "previous"/"next" thing.
-	// Find reads as "Find Previous"/"Find Next", matching the old standalone find bar's buttons,
-	// rather than "Previous Find"/"Next Find".
 	val prevLabel = when (currentUnit) {
 		is NavUnit.Time ->
 			// TRANSLATORS: TalkBack label for the read-aloud bar's back button when navigating audio by time; {} is an amount like "30 seconds"
@@ -92,12 +84,8 @@ fun TtsBottomBar(
 	}
 
 	BottomAppBar(modifier = modifier) {
-		// Weighted spacers on either side of the transport controls would only centre them in what
-		// is left over after the unit selector, which puts them half a selector's width right of
-		// the bar's own centre. Laying the two out over each other instead lets each align against
-		// the bar: the selector to its start, the transport to its middle.
+		// Overlaid rather than in a Row with spacers, which would centre the transport in the space left after the selector, off the bar's centre.
 		Box(modifier = Modifier.fillMaxWidth()) {
-			// Unit selector: chip for sighted users (tap to open menu), swipe slider for TalkBack.
 			Box(modifier = Modifier.align(Alignment.CenterStart)) {
 				FilterChip(
 					selected = false,
@@ -160,7 +148,6 @@ fun TtsBottomBar(
 					Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = prevLabel)
 				}
 
-				// Play/pause: tap to play/pause, swipe up/down (TalkBack) to seek by the current unit.
 				Box(
 					modifier = Modifier
 						.size(48.dp)
@@ -208,9 +195,6 @@ fun TtsBottomBar(
 				}
 			}
 
-			// Speech rate sits opposite the unit selector and works the same way: a chip to tap
-			// for presets, a swipe slider for TalkBack, so changing speed mid-book does not mean
-			// a trip into Settings.
 			if (speechRatePercent != null) {
 				Box(modifier = Modifier.align(Alignment.CenterEnd)) {
 					FilterChip(

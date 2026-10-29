@@ -1,8 +1,7 @@
 use wxdragon::prelude::*;
 
-/// Cocoa's read-only text view can consume Return/Space without sending a character event.
-/// The hook runs before native text handling; other platforms retain their character handler.
 pub(super) fn bind_activation(text_ctrl: TextCtrl, activate: impl Fn(bool) + 'static) {
+	// Cocoa's read-only text view can swallow Return/Space without a character event, so the hook runs before native handling.
 	#[cfg(target_os = "macos")]
 	let event_type = EventType::CHAR_HOOK;
 	#[cfg(not(target_os = "macos"))]

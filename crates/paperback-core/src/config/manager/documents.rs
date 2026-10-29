@@ -1,9 +1,3 @@
-//! The recent-documents and opened-documents lists, plus the small per-document housekeeping
-//! operations (rename, forget) that touch both those lists and the per-document config entries
-//! together. Per-document *content* (position, bookmarks, ...) lives in
-//! [`super::document_state`]/[`super::bookmarks`] instead - this file is about which paths the
-//! app knows about and in what lists, not what's stored against any one of them.
-
 use super::ConfigManager;
 
 const MAX_RECENT_DOCUMENTS: usize = 100;
@@ -26,12 +20,10 @@ impl ConfigManager {
 		self.trim_recent_documents();
 	}
 
-	/// The `recent_documents_to_show` setting clamped to `0..=MAX_RECENT_DOCUMENTS`.
 	pub fn recent_documents_limit(&self) -> usize {
 		usize::try_from(self.data.borrow().app.recent_documents_to_show).unwrap_or(0).min(MAX_RECENT_DOCUMENTS)
 	}
 
-	/// Drops stored recent documents beyond [`Self::recent_documents_limit`].
 	pub(super) fn trim_recent_documents(&self) {
 		if !self.initialized {
 			return;
@@ -55,7 +47,6 @@ impl ConfigManager {
 		self.initialized && !self.data.borrow().recent_documents.is_empty()
 	}
 
-	/// Empties the recent list; per-document entries (positions, bookmarks) are kept.
 	pub fn clear_recent_documents(&self) {
 		if !self.initialized {
 			return;
@@ -108,8 +99,6 @@ impl ConfigManager {
 		}
 	}
 
-	/// Sets the per-document opened flag. Prefer `add_opened_document`/`remove_opened_document`
-	/// for maintaining the opened-documents list.
 	pub fn set_document_opened(&self, path: &str, opened: bool) {
 		if !self.initialized {
 			return;
@@ -122,14 +111,7 @@ impl ConfigManager {
 		self.dirty.set(true);
 	}
 
-	/// Forgets everything stored about `path`: its place in the recent list, its reading
-	/// position, its bookmarks, and the hash it is filed under.
-	///
-	/// The record is dropped by path as well as by key, because the two can disagree. A key is a
-	/// hash of the file's contents, and a document whose file has since gone missing hashes to
-	/// its path instead, which is not the key it was stored under back when it could be read.
-	/// Removing only by key left such a document sitting in the All Documents list, surviving
-	/// every attempt to remove it (<https://github.com/trypsynth/paperback/issues/932>).
+	/// Dropped by path as well as key: a missing file hashes to its path, not the content key it was stored under, so it could never be removed (#932).
 	pub fn remove_document_history(&self, path: &str) {
 		if !self.initialized {
 			return;
@@ -190,10 +172,6 @@ mod tests {
 		config
 	}
 
-	/// <https://github.com/trypsynth/paperback/issues/932>: a document whose file has gone
-	/// missing could not be removed from the All Documents list. Its key is a hash of the file's
-	/// contents, so with the file gone the key computed at removal time no longer matched the
-	/// one it was stored under, and nothing was removed.
 	#[test]
 	fn a_document_whose_file_is_gone_can_still_be_removed() {
 		use crate::util::test_support::TempDir;
@@ -204,8 +182,7 @@ mod tests {
 		config.set_document_position(&path, 42.into());
 		assert_eq!(config.get_all_documents(), vec![path.clone()]);
 		std::fs::remove_file(&path).expect("remove the document's file");
-		// The mapping from path to key is what would otherwise paper over the mismatch, and it
-		// is gone in the case reported: the file was hashed again while it was already missing.
+		// In the reported case the file was hashed again while already missing, so no mapping papers over the mismatch.
 		config.data.borrow_mut().path_hashes.clear();
 		config.remove_document_history(&path);
 		assert!(config.get_all_documents().is_empty(), "the missing document should be gone from the list");

@@ -16,9 +16,6 @@ use wxdragon::prelude::*;
 use super::document_manager::DocumentManager;
 use crate::translation_manager::TranslationManager;
 
-/// Materializes the readme for the current UI language and returns its path. Every readme is
-/// embedded deflated at build time, so this reads nothing from the install directory; languages without a
-/// translated readme fall back to English rather than to no help at all.
 pub fn readme_path() -> Option<PathBuf> {
 	let lang = TranslationManager::instance().lock().unwrap().current_language();
 	let (lang, bytes) = match lang_readmes::readme_for_lang(&lang) {

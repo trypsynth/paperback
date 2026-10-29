@@ -1,5 +1,3 @@
-//! The title and author old Office files keep in their `SummaryInformation` stream, an OLE property set: `.doc`, `.ppt` and their kin.
-
 use std::{fs::File, io::Read};
 
 use cfb::CompoundFile;
@@ -14,7 +12,6 @@ const VT_LPSTR: u32 = 0x1E;
 const VT_LPWSTR: u32 = 0x1F;
 const VT_I2: u32 = 2;
 
-/// Names `document` by the title and author its file's summary information gives, where it gives them.
 pub fn apply_summary_information(document: &mut Document, path: &str) {
 	let (title, author) = File::open(path)
 		.ok()
@@ -34,7 +31,6 @@ pub fn apply_summary_information(document: &mut Document, path: &str) {
 	}
 }
 
-/// The title and author in a `SummaryInformation` property set, each `None` when it is missing or empty.
 fn title_and_author(stream: &[u8]) -> (Option<String>, Option<String>) {
 	let read_u32 =
 		|at: usize| stream.get(at..at + 4).map(|bytes| u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]));
@@ -74,7 +70,6 @@ fn title_and_author(stream: &[u8]) -> (Option<String>, Option<String>) {
 	(text(TITLE), text(AUTHOR))
 }
 
-/// The encoding a Windows code page number names, Windows-1252 for one this does not know.
 fn encoding_for(code_page: u16) -> &'static Encoding {
 	match code_page {
 		65001 => encoding_rs::UTF_8,
@@ -99,7 +94,6 @@ fn encoding_for(code_page: u16) -> &'static Encoding {
 mod tests {
 	use super::*;
 
-	/// A summary property set holding a code page, a title and an author, laid out as Office writes it.
 	fn summary(title: &[u8], author: &[u8]) -> Vec<u8> {
 		let mut set = Vec::new();
 		let properties: [(u32, Vec<u8>); 3] = [

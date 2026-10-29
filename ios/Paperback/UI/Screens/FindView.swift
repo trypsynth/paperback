@@ -1,7 +1,6 @@
 import SwiftUI
 
-// The same keys and history length Android's Find dialog uses, so the options and the history
-// mean the same thing on both apps.
+// The same keys and history length as Android's Find dialog, so both apps mean the same thing by them.
 private let matchCaseKey = "find_match_case"
 private let wholeWordKey = "find_whole_word"
 private let useRegexKey = "find_use_regex"
@@ -24,8 +23,6 @@ struct FindView: View {
 					.autocorrectionDisabled()
 					.textInputAutocapitalization(.never)
 					.focused($queryFocused)
-					// Labels the keyboard's return key "Search" rather than "return", which is
-					// what the field's submit action actually does.
 					.submitLabel(.search)
 					.onSubmit { find(forward: true) }
 				if !history.isEmpty {

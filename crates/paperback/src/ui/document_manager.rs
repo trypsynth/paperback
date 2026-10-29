@@ -22,7 +22,6 @@ use crate::{
 
 mod appearance;
 mod audio;
-#[cfg(any(target_os = "windows", target_os = "macos"))]
 mod image_ocr;
 mod lifecycle;
 mod ocr;
@@ -37,29 +36,18 @@ pub struct DocumentTab {
 	pub panel: Panel,
 	pub text_ctrl: ReaderCtrl,
 	pub session: DocumentSession,
-	/// What the reader opened: a file, or for a document opened from a link the link itself. Its
-	/// settings, its place in the recent documents and its tab are all found by this.
+	/// For a document opened from a link, the link itself, since its settings, recent-documents entry and tab are all keyed by this.
 	pub file_path: PathBuf,
-	/// The downloaded copy a document opened from a link is read from, deleted with the tab.
 	pub working_copy: Option<WorkingCopy>,
 	pub track: bool,
 	pub audio_player: Option<AudioPlayer>,
 	disk_fingerprint: Option<FileFingerprint>,
-	/// The column an unbroken run of Up/Down presses is aiming for, so passing through a short
-	/// line does not pull the caret left for good. Per tab: each document is read at its own
-	/// column, and switching tabs must not carry one document's column into another.
+	/// Per tab, so passing through a short line doesn't pull the caret left for good and one document's column never carries into another.
 	pub preferred_column: Cell<Option<i64>>,
-	/// The document-absolute position marked as the beginning of a selection to copy from, or
-	/// `None`. Per tab: a mark names a position in one document, and carrying one document's mark
-	/// into another would have it name different text entirely. Document-absolute rather than a
-	/// `text_ctrl` position for the same reason [`Self::window`] exists - the loaded window can be
-	/// swapped out from under it between marking and copying.
+	/// Document-absolute rather than a `text_ctrl` position because the loaded window can be swapped out between marking and copying.
 	pub selection_mark: Cell<Option<DocPos>>,
-	/// The document-absolute bounds of whatever's currently loaded into `text_ctrl`. See
-	/// `text_window` - for most documents this covers the whole thing, same as before
-	/// windowing existed; only huge documents actually get a partial window.
+	/// Covers the whole document except for huge ones, which get a partial window.
 	pub window: TextWindow,
-	/// The OCR job running for this tab, if one is. Written and read only on the UI thread.
 	ocr_job: Option<ocr::OcrJob>,
 }
 
@@ -73,8 +61,6 @@ pub fn title_or_filename(title: String, path: &Path) -> String {
 }
 
 impl DocumentTab {
-	/// The file the document is read from: its working copy if it was opened from a link,
-	/// otherwise its own file.
 	pub fn local_path(&self) -> &Path {
 		reading_path(&self.file_path, self.working_copy.as_ref())
 	}
@@ -88,23 +74,12 @@ pub fn display_title(tab: &DocumentTab) -> String {
 	title_or_filename(tab.session.title(), tab.local_path())
 }
 
-/// The 0-based tab index a key press names, if it names one at all.
-///
-/// `Ctrl+1` through `Ctrl+9` name the first nine open documents in the order they were
-/// opened, as they do in a browser. Only those, and only with Ctrl held and nothing else:
-/// `Ctrl+Shift+digit` and `Ctrl+Alt+digit` belong to whatever the shortcut table or the
-/// system has bound them to. The numpad row counts as well as the digits above it.
-///
-/// wxWidgets reports the macOS Command key as `control_down`, so this covers Cmd+1 there
-/// without a special case - which is the same reasoning `reader_input`'s `document_edge_for_key`
-/// is built on, and lands on the convention macOS users already have for their tabs.
+/// Only bare Ctrl, since `Ctrl+Shift+digit` and `Ctrl+Alt+digit` belong to the shortcut table or the system; wxWidgets reports Cmd as `control_down`, so this covers Cmd+1 on macOS too.
 pub fn tab_index_for_key(key: i32, control: bool, alt: bool, shift: bool) -> Option<usize> {
 	if !control || alt || shift {
 		return None;
 	}
-	// `Ctrl+0` names nothing. It is left alone rather than treated as the tenth tab, since ten
-	// is a document this feature cannot reach and a key that does not work is worse than one
-	// that never appeared.
+	// Ctrl+0 is not a tenth tab: this feature can't reach a tenth document, and a key that doesn't work is worse than none.
 	let digit = if (i32::from(b'1')..=i32::from(b'9')).contains(&key) {
 		key - i32::from(b'0')
 	} else if (WXK_NUMPAD1..=WXK_NUMPAD9).contains(&key) {
@@ -128,15 +103,10 @@ pub struct DocumentManager {
 	last_audio_seek_position: Cell<Option<i64>>,
 	last_focus_in_text: Cell<bool>,
 	recently_closed: Vec<PathBuf>,
-	/// Set by the frame's char hook when a shortcut key is seen, and consumed by the menu
-	/// dispatcher. See `menu_events::bind_key_source` for why the book's own key handler
-	/// cannot do this.
+	/// Set by the frame's char hook; `menu_events::bind_key_source` explains why the book's own key handler can't.
 	pub(super) from_keyboard: Rc<Cell<bool>>,
-	/// Hands out an id per OCR job, so a worker whose tab has been closed is recognisable as stale rather than mistaken for one on a reopened tab.
+	/// So a worker whose tab has been closed is recognisable as stale rather than mistaken for one on a reopened tab.
 	next_job_id: Cell<u64>,
-	/// The picture whose text is being recognized, if one is, with the document it was read out
-	/// of. One at a time, and cleared when its view opens or its result is dropped.
-	#[cfg(any(target_os = "windows", target_os = "macos"))]
 	image_ocr_job: Option<(u64, PathBuf)>,
 }
 
@@ -161,7 +131,6 @@ impl DocumentManager {
 			recently_closed: Vec::new(),
 			from_keyboard,
 			next_job_id: Cell::new(0),
-			#[cfg(any(target_os = "windows", target_os = "macos"))]
 			image_ocr_job: None,
 		}
 	}
@@ -175,24 +144,21 @@ impl DocumentManager {
 		self.active_tab_index().and_then(|i| self.tabs.get(i))
 	}
 
-	/// The column vertical navigation is aiming for in the active document, if any.
+	#[cfg(target_os = "windows")]
 	pub fn preferred_column(&self) -> Option<i64> {
 		self.active_tab().and_then(|tab| tab.preferred_column.get())
 	}
 
-	/// Records the column vertical navigation should keep aiming for in the active document.
 	pub fn set_preferred_column(&self, column: Option<i64>) {
 		if let Some(tab) = self.active_tab() {
 			tab.preferred_column.set(column);
 		}
 	}
 
-	/// The position marked as the beginning of a selection to copy from, if one is set.
 	pub fn selection_mark(&self) -> Option<DocPos> {
 		self.active_tab().and_then(|tab| tab.selection_mark.get())
 	}
 
-	/// Marks a position as the beginning of a selection to copy from, or clears the mark.
 	pub fn set_selection_mark(&self, position: Option<DocPos>) {
 		if let Some(tab) = self.active_tab() {
 			tab.selection_mark.set(position);
@@ -317,7 +283,6 @@ mod tests {
 	};
 	use crate::working_copy::WorkingCopy;
 
-	/// A document opened from a link is known by the link but read from its downloaded copy.
 	#[test]
 	fn a_tab_with_a_working_copy_is_read_from_the_copy() {
 		let copy = WorkingCopy::new("book.epub").unwrap();
@@ -329,16 +294,12 @@ mod tests {
 		assert_eq!(reading_path(Path::new("books/book.epub"), None), Path::new("books/book.epub"));
 	}
 
-	/// The path of a link is case-sensitive, so two links that differ only in case are two
-	/// documents, even on Windows.
+	/// A link's path is case-sensitive, so links differing only in case are two documents, even on Windows.
 	#[test]
 	fn a_link_is_matched_as_written() {
 		assert_eq!(normalized_path_key(Path::new("https://example.org/Book.EPUB")), "https://example.org/Book.EPUB");
 	}
 
-	/// Ctrl+1 is the first document opened, and so maps to tab 0. Everything is checked against
-	/// the same function both key handlers call, because the mapping is the only part of this
-	/// that can be wrong without a window to look at.
 	#[test]
 	fn ctrl_digit_names_a_tab_by_the_order_the_documents_were_opened() {
 		for (digit, expected) in [(1, 0), (2, 1), (5, 4), (9, 8)] {
@@ -357,8 +318,7 @@ mod tests {
 		}
 	}
 
-	/// The digits below Ctrl belong to heading navigation and the digits under Alt to the menu
-	/// bar's own mnemonics, and both must keep working.
+	/// Bare digits belong to heading navigation and Alt+digit to the menu bar's mnemonics.
 	#[test]
 	fn a_digit_without_control_is_not_a_tab() {
 		assert_eq!(tab_index_for_key(i32::from(b'1'), false, false, false), None);
@@ -366,7 +326,6 @@ mod tests {
 		assert_eq!(tab_index_for_key(i32::from(b'1'), false, false, true), None);
 	}
 
-	/// Shift and Alt chords on a digit belong to the shortcut table and to the system, not here.
 	#[test]
 	fn ctrl_shift_and_ctrl_alt_digits_are_left_alone() {
 		assert_eq!(tab_index_for_key(i32::from(b'3'), true, false, true), None);
@@ -374,15 +333,11 @@ mod tests {
 		assert_eq!(tab_index_for_key(WXK_NUMPAD3, true, false, true), None);
 	}
 
-	/// There is no tenth document to name, and a tenth tab is not something this feature reaches.
 	#[test]
 	fn ctrl_zero_names_no_tab() {
 		assert_eq!(tab_index_for_key(i32::from(b'0'), true, false, false), None);
 	}
 
-	/// The other keys that share this range of codes: a Ctrl that happens to land on a neighbouring
-	/// key code must not be read as a digit. Numpad 0 sits directly below Numpad 1, and the
-	/// digit row's neighbours are punctuation.
 	#[test]
 	fn keys_beside_the_digits_name_no_tab() {
 		assert_eq!(tab_index_for_key(i32::from(b'0') - 1, true, false, false), None);
@@ -415,9 +370,6 @@ mod tests {
 		assert_eq!(read_fingerprint(&path), None);
 	}
 
-	/// The percentage is reported on its own for a document with no pages at all, exactly as it was
-	/// before pages joined it - so a markdown or plain text reader hears the same "15%" they always
-	/// have, rather than a page they do not have.
 	#[test]
 	fn announcement_without_a_page_is_the_bare_percentage() {
 		assert_eq!(position_announcement(15, None), "15%");
@@ -428,9 +380,7 @@ mod tests {
 		assert_eq!(position_announcement(15, Some(30)), "15%, page 30");
 	}
 
-	/// The percentage's own `%` must survive substitution: it rides in on the `%s` argument rather
-	/// than sitting in the msgid, because `t()` is a plain catalog lookup and does no printf-style
-	/// unescaping - a `%%` in the format string would reach the listener doubled.
+	/// The `%` rides in on the `%s` argument because `t()` does no printf-style unescaping, so a `%%` msgid would be heard doubled.
 	#[test]
 	fn announcement_keeps_the_percentage_sign_intact() {
 		assert!(position_announcement(7, Some(412)).starts_with("7%,"));

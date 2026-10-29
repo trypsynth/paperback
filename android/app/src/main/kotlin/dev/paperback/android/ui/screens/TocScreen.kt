@@ -77,9 +77,7 @@ fun TocScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -> Uni
 			LazyColumn(
 				state = listState,
 				modifier = Modifier.fillMaxSize(),
-				// The list runs to the bottom of the window and so under the navigation bar, which
-				// leaves its last row half covered without this. The top bar pads itself, so the
-				// bottom is the only side that belongs here.
+				// Otherwise the navigation bar half covers the last row; the top bar pads itself.
 				contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom).asPaddingValues()
 			) {
 				items(visibleTocIndices.size) { i ->
@@ -98,8 +96,7 @@ fun TocScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -> Uni
 								viewModel.reading.updateTtsPosition(item.position)
 								onDismiss()
 							}.semantics(mergeDescendants = true) {
-								// The row's indentation shows the level on screen, so the number
-								// itself is spoken rather than drawn.
+								// Indentation shows the level on screen, so the number is spoken rather than drawn.
 								// TRANSLATORS: TalkBack description of a table of contents entry: its title, then how deep it sits
 								contentDescription = t("{}, Level {}", item.title, (item.level + 1).toString())
 								if (isActive) {

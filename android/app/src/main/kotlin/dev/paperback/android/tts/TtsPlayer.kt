@@ -10,13 +10,7 @@ import androidx.media3.common.util.UnstableApi
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 
-/**
- * Adapts TtsManager's play/pause state and document title/author into Media3's Player
- * interface, so a MediaSession (and its auto-generated notification, lock-screen
- * controls, and Bluetooth/headset button routing) can be driven by it. The playback itself lives
- * entirely in TtsManager; this class only reports its state and forwards transport commands back
- * to it.
- */
+/** Exists so a MediaSession, with its notification, lock-screen controls and headset buttons, can drive TtsManager; it plays nothing itself. */
 @OptIn(UnstableApi::class)
 class TtsPlayer(
 	private val onPlayCommand: () -> Unit,
@@ -56,8 +50,7 @@ class TtsPlayer(
 		when (seekCommand) {
 			Player.COMMAND_SEEK_TO_NEXT -> onNextCommand()
 			Player.COMMAND_SEEK_TO_PREVIOUS -> onPrevCommand()
-			// Only next/previous are advertised in availableCommands; anything else Media3 routes
-			// here is a transport we don't support, so there's nothing to do.
+			// Only next and previous are advertised.
 			else -> {}
 		}
 		return Futures.immediateVoidFuture()

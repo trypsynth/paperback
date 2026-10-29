@@ -47,23 +47,19 @@ pub struct App {
 }
 
 impl App {
-	/// Where the app keeps `Paperback.toml` and its logs.
 	pub fn config_dir(&self) -> PathBuf {
 		self.base.join("config")
 	}
 
-	/// The fixture document `launch` wrote.
 	pub fn fixture(&self) -> PathBuf {
 		self.base.join("fixture").join(fixture::HTML_NAME)
 	}
 
-	/// The current run's log.
 	pub fn logs(&self) -> String {
 		std::fs::read_to_string(self.config_dir().join("paperback.log")).unwrap_or_default()
 	}
 
-	/// Starts the app again without a document, on the same config dir, once this run has
-	/// exited. The returned `App` takes over the temp dir.
+	/// The returned `App` takes over the temp dir.
 	pub fn relaunch(mut self) -> Self {
 		assert!(self.child.try_wait().expect("try_wait").is_some(), "relaunch while the app is still running");
 		let base = std::mem::take(&mut self.base);
@@ -72,7 +68,6 @@ impl App {
 		Self { child, pid, base }
 	}
 
-	/// Polls until the app exits; returns its exit status.
 	pub fn wait_exit(&mut self, timeout: Duration) -> std::process::ExitStatus {
 		let deadline = Instant::now() + timeout;
 		loop {
@@ -95,19 +90,15 @@ impl Drop for App {
 	}
 }
 
-/// Launches the app on the generated HTML fixture with the default seeded config.
 pub fn launch(test_name: &str) -> App {
 	launch_with(test_name, |_| {})
 }
 
-/// Launches the app on the generated HTML fixture; `configure` adjusts the seeded config
-/// before it is written. `test_name` keys the temp dir.
 pub fn launch_with(test_name: &str, configure: impl FnOnce(&mut ConfigData)) -> App {
 	let (base, fixture) = prepare(test_name, configure);
 	start(base, fixture.as_os_str())
 }
 
-/// Launches the app on the document `write` puts in the folder it is given, rather than on the HTML fixture; `configure` adjusts the seeded config before it is written.
 pub fn launch_on(
 	test_name: &str,
 	write: impl FnOnce(&Path) -> PathBuf,
@@ -118,16 +109,12 @@ pub fn launch_on(
 	start(base, document.as_os_str())
 }
 
-/// Serves the fixture over http on 127.0.0.1 and launches the app with its link instead of its
-/// path; `configure` adjusts the seeded config before it is written.
 pub fn launch_with_link(test_name: &str, configure: impl FnOnce(&mut ConfigData)) -> (App, FixtureServer) {
 	let (base, fixture) = prepare(test_name, configure);
 	let server = FixtureServer::start(&fixture);
 	(start(base, OsStr::new(&server.link())), server)
 }
 
-/// Makes the temp dir `test_name` keys, with the fixture and a seeded config that `configure`
-/// adjusts; returns the dir and the fixture's path.
 fn prepare(test_name: &str, configure: impl FnOnce(&mut ConfigData)) -> (PathBuf, PathBuf) {
 	let base = std::env::temp_dir().join(format!("paperback-ui-{test_name}-{}", std::process::id()));
 	let _ = std::fs::remove_dir_all(&base);
@@ -141,14 +128,12 @@ fn prepare(test_name: &str, configure: impl FnOnce(&mut ConfigData)) -> (PathBuf
 	(base, fixture)
 }
 
-/// Starts the app on `base`'s config dir with `argument`.
 fn start(base: PathBuf, argument: &OsStr) -> App {
 	let child = spawn(&base.join("config"), Some(argument));
 	let pid = child.id();
 	App { child, pid, base }
 }
 
-/// A web server on 127.0.0.1 that answers every request with the fixture, until the test ends.
 pub struct FixtureServer {
 	port: u16,
 	requests: Arc<AtomicUsize>,
@@ -171,12 +156,10 @@ impl FixtureServer {
 		Self { port, requests }
 	}
 
-	/// The fixture's link, ending in its file name.
 	pub fn link(&self) -> String {
 		format!("http://127.0.0.1:{}/{}", self.port, fixture::HTML_NAME)
 	}
 
-	/// How many requests the server has answered: one per download.
 	pub fn requests(&self) -> usize {
 		self.requests.load(Ordering::SeqCst)
 	}
@@ -200,7 +183,6 @@ fn serve(mut stream: TcpStream, body: &[u8], requests: &AtomicUsize) {
 	let _ = stream.write_all(body);
 }
 
-/// The config every launch starts from: no update check, no restored session, English UI.
 fn seeded_config() -> ConfigData {
 	let mut config = ConfigData::default();
 	config.app.restore_previous_documents = false;
@@ -222,7 +204,6 @@ fn spawn(config_dir: &Path, argument: Option<&OsStr>) -> Child {
 		.expect("launch paperback")
 }
 
-/// Panics while another Paperback holds the single-instance mutex.
 fn assert_no_running_instance() {
 	let Ok(mutex) = (unsafe { OpenMutexW(SYNCHRONIZATION_SYNCHRONIZE, false, w!("paperback_running")) }) else {
 		return;
@@ -237,8 +218,6 @@ fn automation() -> UIAutomation {
 	UIAutomation::new().expect("UI Automation unavailable")
 }
 
-/// The app's focused element type and name, or None while another process has focus or the
-/// window is not up yet.
 pub fn focused(pid: u32) -> Option<(ControlType, String)> {
 	let element = automation().get_focused_element().ok()?;
 	if element.get_process_id().ok()? != pid {
@@ -247,12 +226,10 @@ pub fn focused(pid: u32) -> Option<(ControlType, String)> {
 	Some((element.get_control_type().ok()?, element.get_name().ok()?))
 }
 
-/// The reading text control, the multi-line read-only text control of each tab.
 pub fn is_reader(control_type: ControlType, _name: &str) -> bool {
 	control_type == ControlType::Document
 }
 
-/// Polls the focused element until `expected` matches it; panics on timeout.
 pub fn wait_for_focus(
 	pid: u32,
 	timeout: Duration,
@@ -272,7 +249,6 @@ pub fn wait_for_focus(
 	}
 }
 
-/// The text of the focused reading control, or None while it does not have focus.
 pub fn reader_text(pid: u32) -> Option<String> {
 	let element = automation().get_focused_element().ok()?;
 	if element.get_process_id().ok()? != pid || element.get_control_type().ok()? != ControlType::Document {
@@ -281,14 +257,12 @@ pub fn reader_text(pid: u32) -> Option<String> {
 	element.get_pattern::<uiautomation::patterns::UITextPattern>().ok()?.get_document_range().ok()?.get_text(-1).ok()
 }
 
-/// Waits until the reading control has focus and still has it a second later.
 pub fn wait_for_reader_focus(pid: u32) {
 	wait_for_focus(pid, Duration::from_secs(30), is_reader);
 	std::thread::sleep(Duration::from_secs(1));
 	wait_for_focus(pid, Duration::from_secs(10), is_reader);
 }
 
-/// The app's top-level frame.
 pub fn main_window(pid: u32) -> UIElement {
 	let automation = automation();
 	let root = automation.get_root_element().expect("desktop root");
@@ -303,7 +277,6 @@ pub fn main_window(pid: u32) -> UIElement {
 		.expect("app window")
 }
 
-/// Whether a window of the app titled `title` appears within `timeout`.
 pub fn window_appears(pid: u32, title: &str, timeout: Duration) -> bool {
 	let automation = automation();
 	let root = automation.get_root_element().expect("desktop root");
@@ -319,7 +292,6 @@ pub fn window_appears(pid: u32, title: &str, timeout: Duration) -> bool {
 		.is_ok()
 }
 
-/// Polls the main window's title until it reads `expected`; panics on timeout.
 pub fn wait_for_title(pid: u32, expected: &str) {
 	let window = main_window(pid);
 	let deadline = Instant::now() + Duration::from_secs(10);
@@ -333,7 +305,6 @@ pub fn wait_for_title(pid: u32, expected: &str) {
 	}
 }
 
-/// The status bar's text: the name of its first pane.
 pub fn status_text(pid: u32) -> String {
 	let automation = automation();
 	let status_bar = automation
@@ -356,7 +327,6 @@ pub fn status_text(pid: u32) -> String {
 		.unwrap_or_default()
 }
 
-/// Polls the status bar until its text starts with `prefix`; returns that text.
 pub fn wait_for_status_prefix(pid: u32, prefix: &str) -> String {
 	let deadline = Instant::now() + Duration::from_secs(10);
 	loop {
@@ -373,12 +343,10 @@ pub fn arrow_down() {
 	send_key(VK_DOWN, KEYEVENTF_EXTENDEDKEY);
 }
 
-/// Presses and releases a letter or digit key, e.g. `press('H')`.
 pub fn press(key: char) {
 	send_key(letter(key), KEYBD_EVENT_FLAGS(0));
 }
 
-/// Presses and releases a letter or digit key with Shift held.
 pub fn press_shifted(key: char) {
 	let inputs = [
 		key_input(VK_SHIFT, KEYBD_EVENT_FLAGS(0)),
@@ -389,7 +357,6 @@ pub fn press_shifted(key: char) {
 	send_inputs(&inputs);
 }
 
-/// Presses and releases F4 with Alt held, closing the focused window.
 pub fn alt_f4() {
 	let inputs = [
 		key_input(VK_MENU, KEYBD_EVENT_FLAGS(0)),
@@ -400,17 +367,15 @@ pub fn alt_f4() {
 	send_inputs(&inputs);
 }
 
-/// Presses and releases a letter key with Ctrl held, e.g. `press_ctrl('L')`.
 pub fn press_ctrl(key: char) {
 	chord(&[VK_CONTROL], letter(key));
 }
 
-/// Presses and releases a letter key with Ctrl and Shift held.
 pub fn press_ctrl_shift(key: char) {
 	chord(&[VK_CONTROL, VK_SHIFT], letter(key));
 }
 
-/// Presses and releases the key that types `key` on a US layout, `,` or `;`, with Ctrl held.
+/// The key that types `key` on a US layout.
 pub fn press_ctrl_punctuation(key: char) {
 	let vk = match key {
 		',' => VK_OEM_COMMA,
@@ -420,7 +385,6 @@ pub fn press_ctrl_punctuation(key: char) {
 	chord(&[VK_CONTROL], vk);
 }
 
-/// Presses and releases F4 with Ctrl held, closing the current document.
 pub fn ctrl_f4() {
 	chord(&[VK_CONTROL], VK_F4);
 }
@@ -433,7 +397,7 @@ pub fn f5() {
 	send_key(VK_F5, KEYBD_EVENT_FLAGS(0));
 }
 
-/// Types `text` as characters, whatever the keyboard layout.
+/// Sent as characters, so it works whatever the keyboard layout.
 pub fn type_text(text: &str) {
 	let inputs: Vec<INPUT> = text
 		.encode_utf16()
@@ -444,7 +408,6 @@ pub fn type_text(text: &str) {
 	send_inputs(&inputs);
 }
 
-/// Presses and releases `key` with `modifiers` held.
 fn chord(modifiers: &[VIRTUAL_KEY], key: VIRTUAL_KEY) {
 	let down = KEYBD_EVENT_FLAGS(0);
 	let inputs: Vec<INPUT> = modifiers
@@ -471,7 +434,6 @@ fn letter(key: char) -> VIRTUAL_KEY {
 	VIRTUAL_KEY(key as u16)
 }
 
-/// Presses and releases `key` as a virtual key with its real scan code.
 fn send_key(key: VIRTUAL_KEY, flags: KEYBD_EVENT_FLAGS) {
 	send_inputs(&[key_input(key, flags), key_input(key, flags | KEYEVENTF_KEYUP)]);
 }
@@ -492,14 +454,12 @@ fn key_input(key: VIRTUAL_KEY, flags: KEYBD_EVENT_FLAGS) -> INPUT {
 
 type Received = Arc<Mutex<Vec<(String, NotificationProcessing)>>>;
 
-/// Records the UI Automation notification events `pid` raises, from `listen` until drop,
-/// through `IUIAutomation5`: what screen readers hear.
+/// UI Automation notification events are what screen readers hear.
 pub struct Notifications {
 	automation: IUIAutomation5,
 	root: IUIAutomationElement,
 	handler: IUIAutomationNotificationEventHandler,
 	received: Received,
-	/// How many notifications earlier `wait_for` calls have used up.
 	consumed: Cell<usize>,
 }
 
@@ -523,8 +483,7 @@ impl Notifications {
 		}
 	}
 
-	/// Polls until a notification reading `text` with `processing` arrives after the one the
-	/// previous call matched; panics on timeout.
+	/// Only notifications after the one the previous call matched count.
 	pub fn wait_for(&self, text: &str, processing: NotificationProcessing) {
 		let deadline = Instant::now() + Duration::from_secs(10);
 		loop {
@@ -586,7 +545,6 @@ mod collector {
 	}
 }
 
-/// Polls `condition` until it holds; panics with `describe()` on timeout.
 pub fn wait_until(timeout: Duration, mut condition: impl FnMut() -> bool, describe: impl Fn() -> String) {
 	let deadline = Instant::now() + timeout;
 	loop {

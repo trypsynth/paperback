@@ -1,6 +1,4 @@
-//! Checks against a real `RichEdit` control that a window loaded as RTF keeps its last paragraph
-//! mark, so a window extension appended after it starts a paragraph of its own, whether the
-//! extension arrives as RTF or as plain text.
+//! A window loaded as RTF must keep its last paragraph mark, or an appended extension runs into its last paragraph.
 
 // The included modules' own unit tests compile here too, unused.
 #[cfg(target_os = "windows")]

@@ -1,9 +1,4 @@
-//! Comic book archives (`.cbz`): a zip holding one image per page.
-//!
-//! There is no text in one, so every page comes out as an OCR placeholder carrying the same
-//! [`MarkerType::ImageOnlyPage`] marker a scanned PDF page gets. That is what puts comic
-//! archives in reach of the reader at all: pressing Enter on a page runs it through the
-//! platform OCR engine exactly as it would a scan.
+//! A comic has no text, so every page is an OCR placeholder with the same [`MarkerType::ImageOnlyPage`] marker a scanned PDF page gets, so Enter runs OCR on it like a scan.
 
 use std::{
 	cmp::Ordering,
@@ -22,10 +17,7 @@ use crate::{
 	t,
 };
 
-/// File extensions inside the archive that count as a page.
-///
-/// Comic archives routinely carry a `ComicInfo.xml`, a `.nfo`, or the odd thumbnail
-/// database alongside the artwork, and none of those is a page.
+/// Comic archives routinely carry a `ComicInfo.xml`, a `.nfo`, or a thumbnail database beside the artwork.
 const PAGE_EXTENSIONS: [&str; 7] = ["jpg", "jpeg", "png", "gif", "webp", "bmp", "avif"];
 
 pub struct CbzParser;
@@ -47,23 +39,21 @@ impl Parser for CbzParser {
 	}
 }
 
-/// What a comic's `ComicInfo.xml` says about it: the metadata file `ComicRack` defined and most comic tools now write beside the pages.
 #[derive(Debug, Default)]
 pub(super) struct ComicInfo {
 	title: Option<String>,
 	author: Option<String>,
-	/// Keyed by the page's index among the archive's pages in reading order, which is how `<Page Image="...">` counts.
+	/// Keyed by the page's index in reading order, which is how `<Page Image="...">` counts.
 	pages: HashMap<usize, ComicPage>,
 }
 
 #[derive(Debug, Default)]
 struct ComicPage {
-	/// The page type, already worded for the reader, such as "Front cover". `None` for an ordinary story page.
 	kind: Option<String>,
 	bookmark: Option<String>,
 }
 
-/// Reads `ComicInfo.xml` from the archive's root. Only the root counts: an omnibus zip can carry an issue's own file in each folder.
+/// Only the root counts: an omnibus zip can carry an issue's own `ComicInfo.xml` in each folder.
 fn comic_info<R: std::io::Read + std::io::Seek>(archive: &mut ZipArchive<R>) -> Option<ComicInfo> {
 	let name = archive
 		.file_names()
@@ -110,7 +100,6 @@ fn parse_comic_info(xml: &str) -> Option<ComicInfo> {
 	Some(ComicInfo { title, author: field("Writer"), pages })
 }
 
-/// A `<Page Type>` as the reader hears it. Story pages, and types this does not know, are ordinary pages and say nothing.
 fn page_kind(kind: &str) -> Option<String> {
 	Some(match kind {
 		// TRANSLATORS: Spoken for a comic book page that is its front cover
@@ -133,8 +122,6 @@ fn page_kind(kind: &str) -> Option<String> {
 	})
 }
 
-/// One comic's worth of placeholder pages, however the archive they came out of was packed.
-///
 /// # Errors
 ///
 /// Returns an error if the archive holds no pages at all.
@@ -152,20 +139,14 @@ pub(super) fn comic_document(pages: &[String], info: &ComicInfo, file_path: &str
 	Ok(document)
 }
 
-/// Whether a file is a zip, whatever its name says.
-///
-/// Comic archives get renamed between .cbz and .cbr by people sorting their shelves, so the
-/// name is a hint and the first four bytes are the answer.
+/// Comic archives get renamed between `.cbz` and `.cbr` by people sorting their shelves, so the magic bytes decide.
 pub(crate) fn is_zip(file_path: &str) -> bool {
 	let Ok(mut file) = File::open(file_path) else { return false };
 	let mut magic = [0u8; 4];
 	file.read_exact(&mut magic).is_ok() && magic == *b"PK"
 }
 
-/// The archive's page images, in reading order.
-///
-/// Shared with [`crate::ocr`], which reopens the archive to render a page and has to number
-/// the pages exactly as this parser did.
+/// Shared with [`crate::ocr`], which reopens the archive to render a page and has to number the pages exactly as this parser did.
 pub fn page_names<R: std::io::Read + std::io::Seek>(archive: &mut ZipArchive<R>) -> Vec<String> {
 	let mut names = Vec::new();
 	for i in 0..archive.len() {
@@ -182,7 +163,6 @@ pub fn page_names<R: std::io::Read + std::io::Seek>(archive: &mut ZipArchive<R>)
 	names
 }
 
-/// Whether an archive entry is one of the page images rather than metadata.
 pub(super) fn is_page(name: &str) -> bool {
 	// A leading dot is a resource fork or a macOS metadata file, never artwork.
 	let file_name = name.rsplit(['/', '\\']).next().unwrap_or(name);
@@ -193,7 +173,6 @@ pub(super) fn is_page(name: &str) -> bool {
 	PAGE_EXTENSIONS.iter().any(|known| extension.eq_ignore_ascii_case(known))
 }
 
-/// Lay one placeholder line out per page, marked so the OCR flow can find it, with the table of contents the comic's page bookmarks make.
 fn build(pages: &[String], info: &ComicInfo) -> (DocumentBuffer, Vec<TocItem>) {
 	let mut buffer = DocumentBuffer::new();
 	let mut toc_items = Vec::new();
@@ -203,8 +182,7 @@ fn build(pages: &[String], info: &ComicInfo) -> (DocumentBuffer, Vec<TocItem>) {
 		let page = info.pages.get(&index);
 		// The label stays "Page N" whatever the page is: the OCR pass reads the page number back out of it.
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, position).with_text(format!("Page {}", index + 1)));
-		// The archive entry rides along as the marker's reference so a caller that wants the
-		// artwork itself knows which one to pull out.
+		// The archive entry is the reference so a caller wanting the artwork knows which one to pull out.
 		let kind = page.and_then(|page| page.kind.clone()).unwrap_or_default();
 		buffer.add_marker(Marker::new(MarkerType::Image, position).with_reference(name.clone()).with_text(kind));
 		buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, position));
@@ -217,10 +195,7 @@ fn build(pages: &[String], info: &ComicInfo) -> (DocumentBuffer, Vec<TocItem>) {
 	(buffer, toc_items)
 }
 
-/// Compare two names with runs of digits ordered by value rather than by character.
-///
-/// Comic archives number their pages without padding often enough that plain sorting puts
-/// page 10 in front of page 2, which shuffles the whole book.
+/// Comic archives often number pages unpadded, so plain sorting would put page 10 before page 2.
 pub(super) fn natural_cmp(a: &str, b: &str) -> Ordering {
 	let (mut a, mut b) = (a.as_bytes(), b.as_bytes());
 	loop {
@@ -231,8 +206,7 @@ pub(super) fn natural_cmp(a: &str, b: &str) -> Ordering {
 			(Some(x), Some(y)) if x.is_ascii_digit() && y.is_ascii_digit() => {
 				let (left, rest_a) = split_digits(a);
 				let (right, rest_b) = split_digits(b);
-				// Compare by length first so an arbitrarily long run needs no parsing, then
-				// by digits, which settles equal-length runs and ignores leading zeroes.
+				// Length first so an arbitrarily long run needs no parsing; leading zeroes are already stripped.
 				match left.len().cmp(&right.len()).then_with(|| left.cmp(right)) {
 					Ordering::Equal => (a, b) = (rest_a, rest_b),
 					other => return other,
@@ -246,7 +220,6 @@ pub(super) fn natural_cmp(a: &str, b: &str) -> Ordering {
 	}
 }
 
-/// Split the leading run of digits off `s`, with any leading zeroes dropped.
 fn split_digits(s: &[u8]) -> (&[u8], &[u8]) {
 	let end = s.iter().position(|c| !c.is_ascii_digit()).unwrap_or(s.len());
 	let (digits, rest) = s.split_at(end);
@@ -339,8 +312,7 @@ mod tests {
 		assert!(!is_page("noextension"));
 	}
 
-	// A zip made on a Mac carries a shadow copy of every file under __MACOSX, and those
-	// would otherwise double every page in the book.
+	// A zip made on a Mac carries a shadow copy of every file under __MACOSX, which would double every page.
 	#[test]
 	fn macos_metadata_is_not_a_page() {
 		assert!(!is_page("__MACOSX/._001.jpg"));
@@ -348,8 +320,6 @@ mod tests {
 		assert!(!is_page("pages/._003.jpg"));
 	}
 
-	// Page numbers in comic archives are often unpadded, and plain string order puts 10
-	// before 2, which shuffles the book.
 	#[test]
 	fn digits_sort_by_value_rather_than_by_character() {
 		let mut names = vec!["p10.jpg".to_string(), "p2.jpg".to_string(), "p1.jpg".to_string()];
@@ -364,8 +334,7 @@ mod tests {
 		assert_eq!(names, ["0008.jpg", "009.jpg", "10.jpg"]);
 	}
 
-	// Archives usually put their pages in folders, and the folder has to order before the
-	// numbers inside it or chapters interleave.
+	// The folder has to order before the numbers inside it or chapters interleave.
 	#[test]
 	fn folders_order_before_the_pages_inside_them() {
 		let mut names = vec![
@@ -395,14 +364,7 @@ mod tests {
 		assert_eq!(buffer.content.lines().count(), 2);
 	}
 
-	/// The OCR pass reads a page's number off its break's label to know which page of the file to
-	/// render: `--pages` renumbers the pages of an extract from one, so the position in the document
-	/// is no longer the page of the file, and the label is what still says which sheet it is. A
-	/// label that stopped naming its page would send `pb --pages ... --ocr-image-pages` back to
-	/// rendering page 1 for every page of the range, with nothing to show for it but a scan that
-	/// reads as if the engine had misread it.
-	///
-	/// The CBR parser goes through this one, so both comic formats are pinned here.
+	/// The OCR pass reads which page of the file to render off this label, since `--pages` renumbers an extract; otherwise `pb --pages ... --ocr-image-pages` renders page 1 every time. CBR shares this code.
 	#[test]
 	fn a_page_break_names_the_page_of_the_file_it_heads() {
 		let buffer = build_plain(&["001.jpg".to_string(), "002.jpg".to_string()]);
@@ -415,8 +377,7 @@ mod tests {
 		assert_eq!(labels, ["Page 1", "Page 2"]);
 	}
 
-	// The OCR flow replaces the placeholder line at the marker's own position, so the two
-	// have to sit together or Enter finds nothing to swap.
+	// The OCR flow replaces the placeholder line at the marker's own position, so Enter finds nothing to swap otherwise.
 	#[test]
 	fn the_ocr_marker_sits_at_the_start_of_its_placeholder_line() {
 		let buffer = build_plain(&["001.jpg".to_string(), "002.jpg".to_string()]);
@@ -428,7 +389,6 @@ mod tests {
 		}
 	}
 
-	// A caller wanting the artwork has only the marker to go on, so it has to name the entry.
 	#[test]
 	fn each_page_marker_names_its_archive_entry() {
 		let buffer = build_plain(&["cover.png".to_string(), "002.jpg".to_string()]);

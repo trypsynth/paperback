@@ -1,13 +1,9 @@
-//! Resolving the text encoding(s) an RTF document uses: the document-level `\ansicpg`
-//! codepage, and the per-font `\fcharsetN` overrides declared in `{\fonttbl}`, which
-//! [`super::escapes::normalize_escapes`] consults so a `\'xx` byte escape decodes under
-//! whichever font is active at that point in the document.
+//! The per-font `\fcharsetN` overrides matter because a `\'xx` byte escape decodes under whichever font is active at that point in the document.
 
 use std::{collections::HashMap, str};
 
 use encoding_rs::Encoding;
 
-/// Resolves the `encoding_rs` encoding for an RTF `\ansicpg` codepage number.
 fn encoding_for_codepage(cpg: i32) -> &'static Encoding {
 	match cpg {
 		874 => encoding_rs::WINDOWS_874,
@@ -23,8 +19,6 @@ fn encoding_for_codepage(cpg: i32) -> &'static Encoding {
 	}
 }
 
-/// Extracts the `\ansicpg` codepage number from the raw RTF text and returns
-/// the corresponding encoding. Defaults to Windows-1252 if not found.
 pub(super) fn extract_codepage(rtf: &str) -> &'static Encoding {
 	if let Some(pos) = rtf.find("\\ansicpg") {
 		let after = &rtf[pos + 8..];
@@ -37,19 +31,18 @@ pub(super) fn extract_codepage(rtf: &str) -> &'static Encoding {
 	encoding_rs::WINDOWS_1252
 }
 
-/// Maps an RTF `\fcharsetN` number to the corresponding encoding.
 fn encoding_for_fcharset(charset: i32, default: &'static Encoding) -> &'static Encoding {
 	match charset {
-		161 => encoding_rs::WINDOWS_1253, // Greek
-		162 => encoding_rs::WINDOWS_1254, // Turkish
-		163 => encoding_rs::WINDOWS_1258, // Vietnamese
-		177 => encoding_rs::WINDOWS_1255, // Hebrew
-		178 => encoding_rs::WINDOWS_1256, // Arabic
-		186 => encoding_rs::WINDOWS_1257, // Baltic
-		204 => encoding_rs::WINDOWS_1251, // Cyrillic
-		238 => encoding_rs::WINDOWS_1250, // Central/Eastern European
-		222 => encoding_rs::WINDOWS_874,  // Thai
-		// 0 / 2 (ANSI / Symbol) and any other unrecognized value fall back to the document default
+		161 => encoding_rs::WINDOWS_1253,
+		162 => encoding_rs::WINDOWS_1254,
+		163 => encoding_rs::WINDOWS_1258,
+		177 => encoding_rs::WINDOWS_1255,
+		178 => encoding_rs::WINDOWS_1256,
+		186 => encoding_rs::WINDOWS_1257,
+		204 => encoding_rs::WINDOWS_1251,
+		238 => encoding_rs::WINDOWS_1250,
+		222 => encoding_rs::WINDOWS_874,
+		// ANSI and Symbol use the document default.
 		0 | 2 => default,
 		_ => {
 			tracing::warn!(
@@ -61,15 +54,12 @@ fn encoding_for_fcharset(charset: i32, default: &'static Encoding) -> &'static E
 	}
 }
 
-/// Parses the `{\fonttbl}` group and returns a map from font number to encoding,
-/// so that `normalize_escapes` can use the right charset per `\fN` switch.
 pub(super) fn extract_font_table(rtf: &str, default_encoding: &'static Encoding) -> HashMap<u32, &'static Encoding> {
 	let mut map = HashMap::new();
 	let Some(start) = rtf.find("{\\fonttbl") else {
 		tracing::debug!("no font table found in rtf document, per-font encoding is unavailable");
 		return map;
 	};
-	// Find the matching closing brace for the {\fonttbl} group.
 	let bytes = rtf.as_bytes();
 	let mut depth = 0usize;
 	let mut fonttbl_end = start;
@@ -95,7 +85,6 @@ pub(super) fn extract_font_table(rtf: &str, default_encoding: &'static Encoding)
 			j += 1;
 			continue;
 		}
-		// Find the matching close for this font entry group.
 		let entry_start = j;
 		let mut d = 0usize;
 		let mut entry_end = j;
@@ -116,8 +105,7 @@ pub(super) fn extract_font_table(rtf: &str, default_encoding: &'static Encoding)
 		}
 		let entry = &fonttbl[entry_start..entry_end];
 		let eb = entry.as_bytes();
-		// Find the first \fN (font number selection) in this entry.
-		// \fcharset, \fbidi, \froman, etc. all start with \f + non-digit so they won't match.
+		// \fcharset, \fbidi, \froman and the like are \f plus a non-digit, so only the font number matches.
 		let mut font_num: Option<u32> = None;
 		let mut ei = 0;
 		while ei + 2 < eb.len() {

@@ -1,7 +1,3 @@
-//! Applying reader appearance settings across every open tab: font, colours, alignment, spacing,
-//! and the word-wrap toggle that rebuilds each tab's text control. Split out of the main
-//! `DocumentManager` impl.
-
 use std::{rc::Rc, sync::Mutex};
 
 use wxdragon::prelude::*;
@@ -85,8 +81,7 @@ impl DocumentManager {
 		for tab in &mut self.tabs {
 			let old_ctrl = tab.text_ctrl;
 			let current_doc_pos = tab.window.to_doc(old_ctrl.get_insertion_point());
-			// Re-slice just the currently loaded window rather than the whole document: a wrap
-			// toggle doesn't change what range is loaded, only how it's laid out.
+			// A wrap toggle changes layout, not the loaded range, so only the current window is re-sliced.
 			let slice = tab.session.get_window(tab.window.start(), tab.window.end());
 			let text_ctrl =
 				reader_input::build_text_ctrl(tab.panel, word_wrap, self_rc, self.frame, self.from_keyboard.clone());

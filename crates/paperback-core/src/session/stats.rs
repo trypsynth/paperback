@@ -1,8 +1,3 @@
-//! Position/line/page bookkeeping and the read-aloud/status-bar queries built on it: status
-//! bar text, percent-to-position mapping, line and page lookups, formatting-marker spans,
-//! and [`DocumentSession::get_text_segment`] (the paragraph/line/element text used by TTS
-//! and "read current element" commands).
-
 use super::{
 	DocumentSession, DocumentStatsFfi, LineMarker, SegmentDirectionFfi, SegmentTypeFfi, StatusInfo, TextSegmentFfi,
 };
@@ -23,7 +18,7 @@ impl DocumentSession {
 			char_count: i64::try_from(s.char_count).unwrap_or(0),
 			char_count_no_whitespace: i64::try_from(s.char_count_no_whitespace).unwrap_or(0),
 			audio_file_count: i64::try_from(s.audio_file_count).unwrap_or(0),
-			audio_total_duration_ms: i64::try_from(s.audio_total_duration_ms).unwrap_or(0),
+			audio_total_duration_ms: s.audio_total_duration_ms.and_then(|ms| i64::try_from(ms).ok()).unwrap_or(-1),
 		}
 	}
 
@@ -111,12 +106,7 @@ impl DocumentSession {
 			let nav_req = ffi::NavRequest { position, wrap: false, direction: direction_nav, target, level_filter: 0 };
 			let res = reader_navigate(&self.handle, &nav_req);
 			if res.found {
-				// `res.offset` is the marker's own real position and must never move, regardless of
-				// what the fallback below does for display text: a plain-audio DAISY section, for
-				// instance, has no newlines anywhere in its buffer, so `find_paragraph_boundaries`
-				// collapses to the whole buffer (0..len) at every position, and re-deriving
-				// `start_pos` from that would silently discard the section actually found and
-				// snap every result back to position 0.
+				// Never re-derive the start from the paragraph fallback: a plain-audio DAISY buffer has no newlines, so every section would snap back to 0.
 				let mut text = res.marker_text.clone();
 				if text.trim().is_empty() {
 					let buffer = &self.handle.document().buffer;
@@ -151,9 +141,7 @@ impl DocumentSession {
 			text,
 			start_pos: buffer.pos_at_byte(start_byte),
 			end_pos: buffer.pos_at_byte(end_byte),
-			// Next past the last paragraph/line (or Previous before the first) yields an empty
-			// range here rather than an error; treat that the same as any other not-found miss
-			// so callers don't stop on it and speak/persist a bogus end-of-buffer position.
+			// Moving past either end gives an empty range, which callers would otherwise speak and save as a bogus position.
 			found: start_byte < end_byte,
 		}
 	}
@@ -182,7 +170,6 @@ impl DocumentSession {
 	#[must_use]
 	pub fn line_count(&self) -> i64 {
 		let newline_count = self.handle.document().buffer.newline_positions().len();
-		// Line count is newlines + 1 (last line may not have trailing newline)
 		i64::try_from(newline_count + 1).unwrap_or(1)
 	}
 
@@ -210,10 +197,9 @@ impl DocumentSession {
 		self.handle.page_index(position.min(self.handle.document().buffer.end())).map_or(0, |idx| idx + 1)
 	}
 
-	/// Where `page` (1-based) starts, or -1 when the document has no such page.
+	/// `page` is 1-based; -1 when the document has no such page, which the apps read as is.
 	#[must_use]
 	pub fn page_offset(&self, page: i32) -> i64 {
-		// The apps read the -1 as it is, so it stays; Rust callers have `page_position`.
 		self.page_position(page).map_or(-1, |position| i64::try_from(position).unwrap_or(-1))
 	}
 
@@ -227,7 +213,6 @@ impl DocumentSession {
 		let buf = &self.handle.document().buffer;
 		let start = self.position_from_line(line);
 		let end_pos = self.position_from_line(line + 1);
-		// If line + 1 overflows or is the end, end_pos might be equal to start
 		let end = (start != end_pos).then_some(end_pos);
 		let mut res = Vec::new();
 		for marker in &buf.markers {
@@ -249,7 +234,7 @@ impl DocumentSession {
 }
 
 impl DocumentSession {
-	/// Where `page` (1-based) starts, if the document has that page.
+	/// `page` is 1-based.
 	#[must_use]
 	pub fn page_position(&self, page: i32) -> Option<DocPos> {
 		self.handle.get_marker_position_by_index(MarkerType::PageBreak, page.checked_sub(1)?)
@@ -284,7 +269,6 @@ impl DocumentSession {
 		self.marker_reference_at(position, MarkerType::Formula)
 	}
 
-	/// Reference of the marker whose half-open extent contains `position`.
 	fn marker_reference_at(&self, position: DocPos, mtype: MarkerType) -> Option<String> {
 		let pos = position.min(self.handle.document().buffer.end());
 		let index = self.handle.current_marker_index(pos, mtype)?;
@@ -337,9 +321,7 @@ impl DocumentSession {
 				start = content.len();
 			}
 		} else {
-			// Current: byte_idx may land anywhere inside the enclosing paragraph (e.g. a link
-			// marker mid-sentence), not just at its start, so search backward for the nearest
-			// preceding newline rather than only trimming forward from byte_idx.
+			// byte_idx can be mid-paragraph (a link marker mid-sentence), so search back for the paragraph start.
 			while start < content.len() && (content.as_bytes()[start] == b'\n' || content.as_bytes()[start] == b'\r') {
 				start += 1;
 			}
@@ -354,9 +336,7 @@ impl DocumentSession {
 		self.handle.count_markers_by_type(MarkerType::PageBreak)
 	}
 
-	/// The position of every page-break marker in document order — one entry per page.
-	/// Collected in a single O(markers) pass; [`Self::page_position`] is O(markers) per call, so
-	/// callers that want every page should use this once instead of calling it in a loop.
+	/// Use this rather than [`Self::page_position`] in a loop, which walks every marker per call.
 	#[must_use]
 	pub fn page_offsets(&self) -> Vec<DocPos> {
 		self.handle
@@ -369,8 +349,7 @@ impl DocumentSession {
 			.collect()
 	}
 
-	/// The `[start, end)` span of the line containing `position`, where `end` is the position of
-	/// the line's terminating `\n` (exclusive of it). Returns `None` for an empty document.
+	/// `end` stops before the line's `\n`.
 	#[must_use]
 	pub fn line_bounds_at(&self, position: DocPos) -> Option<(DocPos, DocPos)> {
 		let buf = &self.handle.document().buffer;
@@ -380,7 +359,6 @@ impl DocumentSession {
 		Some(line_around(buf, position.min(buf.end())))
 	}
 
-	/// The text of the line containing `position` (see [`Self::line_bounds_at`]); an empty string at the end of the document.
 	#[must_use]
 	pub fn line_text_at(&self, position: DocPos) -> String {
 		let Some((start, end)) = self.line_bounds_at(position) else {
@@ -389,10 +367,7 @@ impl DocumentSession {
 		self.text_range(start, end)
 	}
 
-	/// Returns the first non-blank line of real content at or after `position`, skipping blank
-	/// lines and bare page-number headers (e.g. "27" or "Page 27"). Returns an empty string if
-	/// no such line exists. Used for page-navigation announcements so the page number isn't
-	/// announced twice (the page marker's own text is a "Page N" label).
+	/// Skips bare page-number headers so page navigation doesn't announce the number twice, the marker's own text being a "Page N" label.
 	#[must_use]
 	pub fn first_content_line_after(&self, position: DocPos) -> String {
 		let buf = &self.handle.document().buffer;
@@ -411,7 +386,6 @@ impl DocumentSession {
 	}
 }
 
-/// The start of the line holding `pos` and the position of the `\n` that ends it, or of the end of the document for the last line.
 fn line_around(buf: &DocumentBuffer, pos: DocPos) -> (DocPos, DocPos) {
 	let newlines = buf.newline_positions();
 	let idx = newlines.partition_point(|&p| p < pos);
@@ -419,8 +393,6 @@ fn line_around(buf: &DocumentBuffer, pos: DocPos) -> (DocPos, DocPos) {
 	(start, newlines.get(idx).copied().unwrap_or_else(|| buf.end()))
 }
 
-/// Whether a trimmed line looks like real page content rather than a blank line, a bare page
-/// number ("27", "27 / 300"), or a "Page N" header.
 fn is_content_line(trimmed: &str) -> bool {
 	if trimmed.is_empty() {
 		return false;

@@ -4,7 +4,6 @@ struct DocumentTab: Identifiable, Equatable {
 	let id: UUID
 	var title: String
 	var url: URL
-	var lineScrollIndex: Int = 0
 	var currentPosition: Int64 = 0
 	var session: DocumentSession?
 	var securityScopeURL: URL? = nil

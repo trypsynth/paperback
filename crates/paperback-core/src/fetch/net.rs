@@ -1,5 +1,3 @@
-//! Asking a server what a link holds, and downloading it.
-
 use std::{
 	fmt,
 	fs::{self, File},
@@ -18,46 +16,33 @@ use crate::version::user_agent;
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(30);
 const OVERALL_TIMEOUT: Duration = Duration::from_mins(10);
 const CHUNK_SIZE: usize = 8192;
-/// The largest document downloaded unless a caller asks for another limit, in bytes.
 pub const DEFAULT_MAX_SIZE: u64 = 512 * 1024 * 1024;
 
-/// What a server says about a link before its body is read.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RemoteInfo {
-	/// The link after redirects.
 	pub final_url: String,
-	/// The file name from `Content-Disposition`, made safe to save under.
 	pub disposition_name: Option<String>,
 	pub content_type: Option<String>,
-	/// `Content-Length`, when the server sends one.
 	pub size: Option<u64>,
-	/// The name the working copy is saved under (see [`file_name_for`]).
 	pub file_name: String,
 }
 
 impl RemoteInfo {
-	/// The [`Verdict`] for this link, given as `given_url`.
 	#[must_use]
 	pub fn verdict(&self, given_url: &str) -> Verdict {
 		verdict(given_url, &self.final_url, self.disposition_name.as_deref(), self.content_type.as_deref())
 	}
 }
 
-/// Why a link could not be downloaded.
 #[derive(Debug)]
 pub enum FetchError {
-	/// The server answered with this error status.
 	Http(u16),
-	/// The server could not be reached, or the connection broke off.
 	Network(String),
-	/// The download could not be written to disk.
 	Io(String),
 	Cancelled,
-	/// The link names this extension, which no parser reads.
 	Refused(String),
-	/// An https link was redirected to plain http.
 	Insecure,
-	/// The document is larger than this many bytes.
+	/// The limit, in bytes.
 	TooLarge(u64),
 }
 
@@ -104,7 +89,6 @@ impl From<io::Error> for FetchError {
 	}
 }
 
-/// The settings for fetching `url`; an https link is followed only to https addresses.
 fn config_for(url: &str) -> Config {
 	Config::builder()
 		.timeout_connect(Some(CONNECT_TIMEOUT))
@@ -113,7 +97,6 @@ fn config_for(url: &str) -> Config {
 		.build()
 }
 
-/// A link's response, with its headers read and its body not yet.
 pub struct Remote {
 	given_url: String,
 	info: RemoteInfo,
@@ -121,14 +104,6 @@ pub struct Remote {
 	max_size: u64,
 }
 
-/// Sends one GET for `url` and reads the response's headers, leaving its body for
-/// [`Remote::save`]. Dropping the [`Remote`] instead closes the connection unread.
-///
-/// # Errors
-///
-/// Returns [`FetchError::Http`] for an error status, [`FetchError::Network`] when the server
-/// cannot be reached, and [`FetchError::TooLarge`] when the server announces more than
-/// `max_size` bytes, the limit [`Remote::save`] then holds the body to as well.
 pub fn open(url: &str, max_size: u64) -> Result<Remote, FetchError> {
 	let response = Agent::new_with_config(config_for(url)).get(url).header("User-Agent", &user_agent()).call()?;
 	let info = info_from(&response, url);
@@ -139,21 +114,12 @@ pub fn open(url: &str, max_size: u64) -> Result<Remote, FetchError> {
 }
 
 impl Remote {
-	/// What the server said about the link.
 	#[must_use]
 	pub const fn info(&self) -> &RemoteInfo {
 		&self.info
 	}
 
-	/// Streams the body into `dest` + `.part` and renames it over `dest` once complete; `progress`
-	/// gets the bytes so far and the expected total. `cancel` is checked before each chunk.
-	///
-	/// # Errors
-	///
-	/// Returns [`FetchError::Refused`] when the link's [`Verdict`] is a refusal,
-	/// [`FetchError::Cancelled`] when `cancel` is set, [`FetchError::TooLarge`] when the body grows
-	/// past the limit, and the other variants for network and disk failures. `dest` is left as it
-	/// was in every error case.
+	/// Streams into a `.part` file renamed over `dest` when complete, so `dest` is untouched on every error.
 	pub fn save(
 		self,
 		dest: &Path,
@@ -203,8 +169,7 @@ fn part_path(dest: &Path) -> PathBuf {
 	PathBuf::from(name)
 }
 
-/// A partial download, created only where no file exists yet. Dropping it closes and removes the
-/// file; after [`PartFile::finish`] there is nothing left to remove.
+/// Created only where no file exists yet, since dropping it removes the file.
 struct PartFile {
 	path: PathBuf,
 	file: Option<File>,

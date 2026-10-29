@@ -68,9 +68,6 @@ impl Parser for FodtParser {
 	}
 }
 
-/// Builds a style-name → `(bold, italic, underline)` map from `<office:automatic-styles>` /
-/// `<style:style style:family="text">` entries, so that `<text:span text:style-name="...">`
-/// elements encountered during traversal can be resolved to direct character formatting.
 fn build_odt_format_style_map(root: Node) -> HashMap<String, (bool, bool, bool)> {
 	let mut map = HashMap::new();
 	let Some(automatic_styles) =
@@ -101,7 +98,6 @@ fn build_odt_format_style_map(root: Node) -> HashMap<String, (bool, bool, bool)>
 	map
 }
 
-/// Writes the content under `root` into `buffer`, then the footnotes and endnotes it cites, each where its citation links to.
 fn traverse(
 	root: Node,
 	buffer: &mut DocumentBuffer,
@@ -116,15 +112,13 @@ fn traverse(
 	walk.write_comments();
 }
 
-/// What a walk of an ODT's content writes into and consults.
 struct Walk<'w, 'a, 'input> {
 	buffer: &'w mut DocumentBuffer,
 	id_positions: &'w mut HashMap<String, DocPos>,
 	render_tables_inline: bool,
 	format_style_map: &'w HashMap<String, (bool, bool, bool)>,
-	/// The notes cited so far, by the id their citation links to, with their number and body. Read in the middle of a sentence they interrupted it, so they are written after the text instead.
+	/// Read mid-sentence a note would interrupt it, so notes are written after the text.
 	notes: Vec<(String, String, Option<Node<'a, 'input>>)>,
-	/// The comments met so far, each with the name its range's closing `office:annotation-end` uses, when it covers words.
 	comments: Vec<(Comment, Option<String>)>,
 }
 
@@ -246,7 +240,7 @@ impl<'a, 'input> Walk<'_, 'a, 'input> {
 		}
 	}
 
-	/// Keeps the notes cited inside an element that is read as plain text, such as a heading or a table, whose citations show as text rather than links, so their bodies are still written with the rest.
+	/// A heading or table is read as plain text, so its citations show as text rather than links, but their note bodies must still be written.
 	fn keep_notes_inside(&mut self, node: Node<'a, 'input>) {
 		for note in
 			node.descendants().filter(|descendant| descendant.is_element() && descendant.tag_name().name() == "note")
@@ -257,7 +251,6 @@ impl<'a, 'input> Walk<'_, 'a, 'input> {
 		}
 	}
 
-	/// Writes the notes under a heading of their own after the text, each where its citation's link lands. A note can cite another, so this runs until none are left.
 	fn keep_comment(&mut self, annotation: Node) {
 		let child_text = |name: &str| {
 			annotation
@@ -298,6 +291,7 @@ impl<'a, 'input> Walk<'_, 'a, 'input> {
 		self.buffer.append("\n");
 		self.buffer
 			.add_marker(Marker::new(heading_level_to_marker_type(1), heading_offset).with_text(heading).with_level(1));
+		// A note can cite another, so this runs until none are left.
 		while !self.notes.is_empty() {
 			for (id, citation, body) in std::mem::take(&mut self.notes) {
 				self.id_positions.insert(id, self.buffer.end());
@@ -320,9 +314,7 @@ fn process_table(
 	render_tables_inline: bool,
 ) {
 	let table_start = buffer.end();
-	// The table collapses to a placeholder/TSV, so cells have no individual position. Register
-	// every anchor `id` nested inside the table at the table's start position; internal links to a
-	// bookmark/footnote/cross-ref target inside a cell then navigate to the table.
+	// The table collapses to a placeholder or TSV, so cells have no position of their own and anchors inside them point at the table.
 	for descendant in node.descendants() {
 		if descendant.is_element()
 			&& let Some(id) = descendant.attribute("id")
@@ -332,10 +324,7 @@ fn process_table(
 	}
 	let mut rows: Vec<Vec<String>> = Vec::new();
 	let mut has_content = false;
-	// Build the table grid from the XML nodes directly. Cell text is collected via
-	// `collect_element_text` (operating on the XML tree), NOT by slicing the display buffer. The
-	// display buffer is indexed in chars, so slicing it with those offsets as byte indices
-	// mis-sliced (and could panic) on non-ASCII cell content.
+	// Cell text comes from the XML tree, not the display buffer: slicing that with char offsets as byte indices mis-sliced (and could panic) on non-ASCII cells.
 	for child in node.children() {
 		if child.is_element() && child.tag_name().name() == "table-row" {
 			let mut cells: Vec<String> = Vec::new();

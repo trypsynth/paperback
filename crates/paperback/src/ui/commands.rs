@@ -1,13 +1,4 @@
-//! One record per user-triggerable command: its identity, its menu label and help text, when
-//! it is available, and what it does.
-//!
-//! A [`Command`] holds all of it, so the menu bar, the dispatcher and the enable/disable pass
-//! can be derived from one list and a command described once. [`ActionId`] is the identity,
-//! shared with the shortcuts dialog and the keyboard config, which already carry its display
-//! name and default key chord. Handlers live in submodules by feature.
-//!
-//! Not every command is here. Anything absent from [`COMMANDS`] is handled by
-//! `bind_menu_events`, which falls through to its own match when [`dispatch`] returns false.
+//! One table drives the menu bar, the dispatcher and the enable pass, so a command is described once; anything absent from [`COMMANDS`] falls through to `bind_menu_events` when [`dispatch`] returns false.
 
 use std::{rc::Rc, sync::Mutex};
 
@@ -28,76 +19,49 @@ pub mod file;
 pub mod navigation;
 pub mod selection;
 
-/// What has to be true for a command to be usable.
-///
-/// A command declares its own condition, so it cannot end up enabled with no document open
-/// by being left out of a list kept somewhere else.
+/// Declared per command, so none can stay enabled with no document open by being left out of a list kept elsewhere.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Enable {
-	/// Always available, document or not.
 	Always,
-	/// Needs a document open.
 	HasDocument,
-	/// Needs something in the recently-closed stack.
 	HasRecentlyClosed,
-	/// Needs something in the recent-documents list.
 	HasRecentDocuments,
 }
 
-/// What a handler is allowed to touch.
-///
 /// One borrow of the shared state for every handler, rather than a clone per closure.
 pub struct Ctx<'a> {
 	pub frame: &'a Frame,
 	pub dm: &'a Rc<Mutex<DocumentManager>>,
 	pub config: &'a Rc<Mutex<ConfigManager>>,
 	pub live_region_label: StaticText,
-	/// Whether a keyboard shortcut asked for this command rather than a menu click. Both
-	/// produce an identical menu event, so the char hook tags this one; see
-	/// `menu_events::bind_key_source`. `false` is the safe default -- it only ever costs a
-	/// little latency, never the message.
+	/// A shortcut and a menu click raise the same event, so `menu_events::bind_key_source` tags shortcuts; `false` only ever costs latency, never the message.
 	pub from_keyboard: bool,
 }
 
-/// What running a command does.
-///
-/// Marker navigation is data rather than a function: every one of those commands is the same
-/// `handle_marker_navigation` call with a different target and direction, so holding the
-/// difference as values makes a new navigable element one row rather than a handler of its own.
+/// Marker navigation is data, so a new navigable element is one row rather than a handler of its own.
 pub enum Behavior {
-	/// Run this handler.
 	Run(fn(&Ctx)),
-	/// Move to the previous or next `target`.
 	Navigate { target: MarkerNavTarget, next: bool },
 }
 
-/// A single command: identity, presentation, availability, behaviour.
 pub struct Command {
-	/// Identity, shared with the shortcuts dialog and the keyboard config.
 	pub action: ActionId,
-	/// Menu label, without the accelerator; [`Command::menu_label`] appends that.
-	///
-	/// A function rather than a string so the text is translated at menu-build time, which is
-	/// what makes the menu bar follow a language change at runtime.
+	/// A function so the text is translated at menu-build time, letting the menu bar follow a runtime language change.
 	pub label: fn() -> String,
-	/// Status-bar help text, for the items that have one. Most of the Go menu's do not.
 	pub help: Option<fn() -> String>,
 	pub enable: Enable,
 	pub behavior: Behavior,
 }
 
 impl Command {
-	/// The wx id this command's menu item carries.
 	pub const fn id(&self) -> i32 {
 		menu_ids::action_to_menu_id(self.action)
 	}
 
-	/// Label with the user's current shortcut appended, ready for a menu item.
 	pub fn menu_label(&self, config: &ConfigManager) -> String {
 		format_menu_label(&(self.label)(), self.action, config)
 	}
 
-	/// Status-bar help text, empty when the item has none.
 	pub fn help_text(&self) -> String {
 		self.help.map_or_else(String::new, |help| help())
 	}
@@ -112,7 +76,6 @@ impl Command {
 	}
 }
 
-/// Every command that has been ported to the table.
 pub static COMMANDS: &[Command] = &[
 	Command {
 		action: ActionId::Open,
@@ -615,9 +578,7 @@ pub static COMMANDS: &[Command] = &[
 		label: || t("Copy fro&m Selection Start"),
 		// TRANSLATORS: Status-bar help text for the Edit > Copy from Selection Start menu item.
 		help: Some(|| t("Copy from the beginning of the selection to here")),
-		// Deliberately not gated on a mark being set: the command has to stay enabled so pressing
-		// it with nothing marked can say so. Gating it here would leave a disabled menu item and
-		// a shortcut that does nothing at all, with no way to find out why.
+		// Not gated on a mark, so pressing it with nothing marked can say so instead of being a silent dead item.
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(selection::copy_from_start),
 	},
@@ -627,8 +588,7 @@ pub static COMMANDS: &[Command] = &[
 		label: || t("&Jump to Selection Start"),
 		// TRANSLATORS: Status-bar help text for the Edit > Jump to Selection Start menu item.
 		help: Some(|| t("Go back to the beginning of the selection")),
-		// Enabled for the same reason as the copy above: an unset mark has to be announced, not
-		// turned into a dead menu item.
+		// Not gated on a mark, for the same reason as the copy above.
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(selection::jump_to_start),
 	},
@@ -715,36 +675,26 @@ pub static COMMANDS: &[Command] = &[
 	},
 ];
 
-/// Looks up a ported command by its action.
 pub fn for_action(action: ActionId) -> Option<&'static Command> {
 	COMMANDS.iter().find(|command| command.action == action)
 }
 
-/// One menu entry for `action`, with its label, shortcut and help text.
-///
-/// Panics if `action` has not been ported to [`COMMANDS`], rather than quietly building a menu
-/// with an item missing. The menu tests build every menu, so this fires in CI rather than on a
-/// user's launch.
+/// Panics rather than quietly building a menu with an item missing; the menu tests build every menu, so CI catches it.
 pub fn menu_entry(action: ActionId, config: &ConfigManager) -> MenuEntry {
 	let command =
 		for_action(action).unwrap_or_else(|| panic!("{action:?} is in a menu's item list but not in COMMANDS"));
 	item_with_help(command.id(), command.menu_label(config), command.help_text())
 }
 
-/// Menu entries for `actions`, in the order given.
 pub fn menu_entries(actions: &[ActionId], config: &ConfigManager) -> Vec<MenuEntry> {
 	actions.iter().map(|&action| menu_entry(action, config)).collect()
 }
 
-/// Looks up a ported command by wx id.
 pub fn find(id: i32) -> Option<&'static Command> {
 	COMMANDS.iter().find(|command| command.id() == id)
 }
 
-/// Runs the command bound to `id`, reporting whether one was found.
-///
-/// `false` means the id belongs to a command that has not been ported yet, and the caller
-/// should fall through to its own dispatch.
+/// `false` means the command isn't in the table yet and the caller falls through to its own dispatch.
 pub fn dispatch(id: i32, ctx: &Ctx) -> bool {
 	find(id).is_some_and(|command| {
 		command.run(ctx);
@@ -752,11 +702,7 @@ pub fn dispatch(id: i32, ctx: &Ctx) -> bool {
 	})
 }
 
-/// Enables or disables every ported command whose availability is governed by `enable`.
-///
-/// Split by condition rather than taking all of them at once because the call sites are:
-/// opening or closing a document knows whether one is open, and the reopen stack changes
-/// on its own schedule.
+/// One condition at a time because each call site knows only one: whether a document is open, or the reopen stack, which changes on its own schedule.
 pub fn apply_enable(frame: &Frame, enable: Enable, available: bool) {
 	let Some(menu_bar) = frame.get_menu_bar() else {
 		return;
@@ -764,7 +710,6 @@ pub fn apply_enable(frame: &Frame, enable: Enable, available: bool) {
 	apply_enable_to(&menu_bar, enable, available);
 }
 
-/// [`apply_enable`] for a menu bar that is not attached to a frame yet.
 pub fn apply_enable_to(menu_bar: &MenuBar, enable: Enable, available: bool) {
 	for command in COMMANDS.iter().filter(|command| command.enable == enable) {
 		menu_bar.enable_item(command.id(), available);
@@ -777,8 +722,7 @@ mod tests {
 
 	use super::*;
 
-	/// Two commands sharing a wx id would make [`find`] pick whichever came first, silently
-	/// running the wrong one.
+	/// Two commands sharing a wx id would make [`find`] silently run whichever came first.
 	#[test]
 	fn every_command_has_a_distinct_id() {
 		let mut seen: Vec<i32> = COMMANDS.iter().map(Command::id).collect();
@@ -822,8 +766,7 @@ mod tests {
 		assert_eq!(command.enable, Enable::HasDocument);
 	}
 
-	/// A command whose id came back as the fallback would collide with anything else that
-	/// failed to map, and would enable and disable the wrong menu item.
+	/// A fallback id would collide with anything else that failed to map and toggle the wrong menu item.
 	#[test]
 	fn no_command_maps_to_a_placeholder_id() {
 		for command in COMMANDS {

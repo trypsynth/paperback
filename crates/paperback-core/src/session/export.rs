@@ -1,8 +1,3 @@
-//! Getting document content out of the session: exporting to text/HTML/Markdown, resolving
-//! a webview target for EPUB/HTML/Markdown (extracting sibling resources so relative
-//! `<img src="../images/...">`-style references resolve on disk), and writing the
-//! underlying source to a temp file with the caret mapped to the current reading position.
-
 use std::{
 	fs::{self, File},
 	io::{self, BufReader, Write},
@@ -26,15 +21,10 @@ use crate::{
 	util::{encoding::convert_to_utf8, html::MATHML_STYLES, zip as zip_utils},
 };
 
-/// How much of a document a web view is handed at once. A web view lays out
-/// an ordinary book without trouble, but a book of tens of millions of characters locks the
-/// machine up while the engine works through all of it, so past this size it is given the part
-/// around the reading position instead.
+// A book of tens of millions of characters locks the machine up while the web engine lays out all of it.
 const MAX_WEBVIEW_LEN: DocLen = WINDOW_LEN;
 
-/// Up to here the web view gets the whole document. Shares the reader's threshold rather than
-/// slicing as soon as one window's worth is exceeded, so the two always agree about whether a
-/// document is being shown whole.
+// The reader's threshold, so the two always agree about whether a document is shown whole.
 const WHOLE_WEBVIEW_LEN: DocLen = WHOLE_DOCUMENT_LEN;
 
 #[cfg_attr(feature = "uniffi", uniffi::export)]
@@ -57,14 +47,9 @@ impl DocumentSession {
 		if let Some(section_path) = section_path
 			&& let Some(doc_temp_dir) = self.document_temp_dir(temp_dir)
 		{
-			// Extract every entry (sections, images, stylesheets, fonts, ...) once,
-			// preserving the epub's internal layout, so the section's relative
-			// references resolve on disk: both its resources (e.g.
-			// `<img src="../images/foo.jpg">`) and its links to other sections,
-			// which is what a table of contents is made of.
+			// The whole archive, so the section's relative references resolve on disk: its images and stylesheets, and its links to other sections, which is what a table of contents is.
 			let _ = self.ensure_epub_resources_extracted(&doc_temp_dir);
-			// Re-extract the section itself fresh at its original relative path so
-			// the reading-position anchor below is injected into a clean copy.
+			// Re-extracted fresh so the reading-position anchor goes into a clean copy.
 			let output_path = doc_temp_dir.join(&section_path);
 			let output_str = output_path.to_string_lossy().to_string();
 			if self.extract_resource(&section_path, &output_str).ok() == Some(true) {
@@ -97,9 +82,7 @@ impl DocumentSession {
 				}
 				None
 			}
-			// Every other format keeps no markup of its own for a web view to open, so it gets
-			// the parsed document rendered as HTML. The reading position travels in that
-			// rendering as an anchor: there is no source file whose own ids could carry it.
+			// Every other format has no markup of its own to open, so the parsed document is rendered as HTML.
 			_ => {
 				if self.handle.document().buffer.content.trim().is_empty() {
 					return None;
@@ -117,9 +100,6 @@ impl DocumentSession {
 		}
 	}
 
-	/// The span a web view is given for a document read at `position`: all of it when
-	/// it is short enough, and otherwise [`MAX_WEBVIEW_LEN`] around the reading position,
-	/// snapped outward to paragraph boundaries so the slice never starts or ends mid-paragraph.
 	fn webview_range(&self, position: DocPos) -> Range<DocPos> {
 		let buffer = &self.handle.document().buffer;
 		if buffer.len() <= WHOLE_WEBVIEW_LEN {
@@ -135,9 +115,6 @@ impl DocumentSession {
 		buffer.pos_at_byte(byte_start)..buffer.pos_at_byte(byte_end)
 	}
 
-	/// The directory this document's web view and source view files are written to, created
-	/// if it is not there yet. Named from the document's hash so two documents never write
-	/// over each other.
 	fn document_temp_dir(&self, temp_dir: &str) -> Option<PathBuf> {
 		let digest = compute_document_hash(&self.file_path);
 		let hash = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(digest);
@@ -146,8 +123,6 @@ impl DocumentSession {
 		Some(doc_temp_dir)
 	}
 
-	/// Inserts an empty anchor element at the current reading position into the
-	/// extracted section file and returns its id, for use as a URL `#fragment`.
 	fn inject_reading_anchor(&self, position: DocPos, file_path: &str) -> Option<String> {
 		const READING_POS_ANCHOR_ID: &str = "paperback-reading-pos";
 		let pos = position.min(self.handle.document().buffer.end());
@@ -161,8 +136,6 @@ impl DocumentSession {
 		Some(READING_POS_ANCHOR_ID.to_string())
 	}
 
-	/// Returns the id of the element closest at-or-before `position` in the current
-	/// section, for use as a `#fragment` when opening the section in a web view.
 	#[must_use]
 	pub fn webview_fragment_for_position(&self, position: DocPos) -> Option<String> {
 		let pos = position.min(self.handle.document().buffer.end());
@@ -173,7 +146,6 @@ impl DocumentSession {
 		self.file_path.to_lowercase().ends_with(".epub")
 	}
 
-	/// Returns true when the document's underlying source can be shown as text.
 	#[must_use]
 	pub fn source_view_available(&self) -> bool {
 		if self.is_epub() {
@@ -183,14 +155,6 @@ impl DocumentSession {
 		matches!(ext.as_deref(), Some("html" | "htm" | "xhtml" | "md" | "markdown"))
 	}
 
-	/// Writes the underlying source of the document at `position` to a temp `.txt`
-	/// file and returns its path plus the caret offset matching the reading position.
-	///
-	/// For EPUB the current spine section is used; for standalone HTML/XHTML and
-	/// Markdown the original file is used. The caret is mapped to the source the
-	/// same way the web view positions it: HTML/XHTML/EPUB via the source byte
-	/// offset of the element at the reading position, Markdown via the nearest
-	/// block anchor. Returns `None` for formats without a meaningful text source.
 	#[must_use]
 	pub fn view_source(&self, position: DocPos, temp_dir: &str) -> Option<SourceView> {
 		let (content, caret, name) = self.source_content_for_position(position)?;
@@ -200,8 +164,6 @@ impl DocumentSession {
 		Some(SourceView { path: output_path.to_string_lossy().to_string(), caret })
 	}
 
-	/// Returns `(source_text, caret, file_name)` for the document at
-	/// `position`. The caret is a position in the returned source text.
 	fn source_content_for_position(&self, position: DocPos) -> Option<(String, DocPos, String)> {
 		let pos = position.min(self.handle.document().buffer.end());
 		if self.is_epub() {
@@ -227,8 +189,6 @@ impl DocumentSession {
 		Some((content, caret, name))
 	}
 
-	/// Maps a position in the section's rendered text to a caret offset in XML/HTML source
-	/// via the byte offset of the element at that position.
 	fn xml_caret(content: &str, relative: DocPos) -> DocPos {
 		parser::convert::xml_to_text::XmlToText::new()
 			.find_anchor_byte_offset(content, relative)
@@ -236,8 +196,6 @@ impl DocumentSession {
 			.unwrap_or_default()
 	}
 
-	/// Maps a rendered character position to a caret offset in Markdown source
-	/// via the nearest `pb-block-N` anchor recorded during parsing.
 	fn markdown_caret(&self, content: &str, pos: DocPos) -> DocPos {
 		nearest_fragment_before(&self.handle, pos)
 			.and_then(|id| id.strip_prefix("pb-block-").and_then(|n| n.parse::<usize>().ok()))
@@ -248,35 +206,23 @@ impl DocumentSession {
 			.unwrap_or_default()
 	}
 
-	/// Extracts every entry of the EPUB into `doc_temp_dir`, preserving the
-	/// archive's internal directory structure, so that anything referenced
-	/// relatively from a spine section is present on disk wherever a webview
-	/// loading that section would look for it. That covers resources
-	/// (images, stylesheets, fonts, ...) and the other spine sections, which a
-	/// table of contents links to. Runs at most once per `doc_temp_dir`;
-	/// subsequent calls are a no-op.
 	fn ensure_epub_resources_extracted(&self, doc_temp_dir: &Path) -> anyhow::Result<()> {
 		if !self.is_epub() {
 			return Ok(());
 		}
-		// Versioned so a temp directory written by a release that left markup out is
-		// refilled rather than trusted as complete.
+		// Versioned so a temp directory written by a release that left markup out is refilled rather than trusted as complete.
 		let marker = doc_temp_dir.join(".resources_extracted_v2");
 		if marker.exists() {
 			return Ok(());
 		}
 		let file = File::open(&self.file_path)?;
 		let mut archive = ZipArchive::new(BufReader::new(file))?;
-		// Nothing is skipped. The caller re-extracts the current section fresh
-		// afterwards, so the anchor-free copy written here does not matter.
+		// The caller re-extracts the current section afterwards, so its anchor-free copy here does not matter.
 		zip_utils::extract_zip_to_dir(&mut archive, doc_temp_dir, |_| false)?;
 		fs::write(&marker, b"").ok();
 		Ok(())
 	}
 
-	/// # Errors
-	///
-	/// Returns an error if the EPUB cannot be opened or the resource cannot be written.
 	pub fn extract_resource(&self, resource_path: &str, output_path: &str) -> anyhow::Result<bool> {
 		if self.is_epub() {
 			let file = File::open(&self.file_path)?;
@@ -288,11 +234,6 @@ impl DocumentSession {
 		}
 	}
 
-	/// Exports the document content to a file.
-	///
-	/// # Errors
-	///
-	/// Returns an error if the file cannot be written.
 	pub fn export_as(&self, output_path: &str, format: ExportFormat) -> io::Result<()> {
 		let content = render(&self.handle, format);
 		let mut file = File::create(output_path)?;

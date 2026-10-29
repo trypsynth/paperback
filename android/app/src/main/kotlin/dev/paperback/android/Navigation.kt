@@ -17,9 +17,7 @@ import dev.paperback.android.ui.state.OnScreenRequest
 fun MainNavigation() {
 	val backStack = rememberNavBackStack(Main)
 	val viewModel: MainScreenViewModel = viewModel()
-	// Bridges non-UI triggers (e.g. the Ctrl+, keyboard shortcut in MainActivity) that
-	// can't reach this composable's backStack directly into a real navigation push. Pushing a
-	// route that is already on top would stack a second copy of the same screen.
+	// Pushing a route that is already on top would stack a second copy of the same screen.
 	OnScreenRequest(viewModel.navigation.settingsRequest) {
 		if (backStack.lastOrNull() != SettingsRoute) backStack.add(SettingsRoute)
 	}

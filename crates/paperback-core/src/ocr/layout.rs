@@ -1,12 +1,10 @@
-//! Putting recognized text back in reading order, from where on the page each word was read.
-//!
-//! An OCR engine reads a page a line at a time and knows nothing about its layout. Text set in boxes or columns comes back with the lines of different boxes in between each other, and with two boxes that sit side by side read as one line (#1167). So each line is split where a gap between two words is far wider than a space, the pieces that sit one under another are stacked into blocks, and the blocks are read column by column. The lines of each block are then joined into paragraphs.
+//! An OCR engine knows nothing of layout: boxes side by side come back as one line and their lines interleave (#1167), so lines are split at wide gaps, stacked into blocks and read column by column.
 
 use std::cmp::{Ordering, Reverse};
 
 use crate::parser::pdf::{join_wrapped_lines, join_wrapped_runs, keeps_line_end_hyphen};
 
-/// One word an OCR engine read, and its box in the image, in pixels from the top left.
+/// Pixels from the top left of the image.
 #[derive(Debug, Clone, PartialEq)]
 pub struct RecognizedWord {
 	pub text: String,
@@ -16,44 +14,39 @@ pub struct RecognizedWord {
 	pub height: f32,
 }
 
-/// One line an OCR engine read: its text as the engine wrote it, and its words in reading order.
 #[derive(Debug, Clone, PartialEq)]
 pub struct RecognizedLine {
 	pub text: String,
 	pub words: Vec<RecognizedWord>,
 }
 
-/// A gap between two words of one line wider than this many times the line's height may not be a space. Windows reads two boxes side by side as one line with a gap of about one line height between them, where a space is a third of one.
+/// Windows reads two boxes side by side as one line with a gap of about a line height between them, where a space is a third of one.
 const WIDE_GAP_HEIGHTS: f32 = 0.8;
 
-/// A gap must also be this many times the narrowest gap in its line, so that a justified line, whose every gap is wide, stays whole.
+/// So that a justified line, whose every gap is wide, stays whole.
 const WIDE_GAP_SPACES: f32 = 2.5;
 
-/// The only gap of a two-word line has nothing to be measured against, so it must be wider than this many line heights.
+/// The only gap of a two-word line has nothing to be measured against.
 const LONE_GAP_HEIGHTS: f32 = 1.2;
 
-/// How far a line above or below must reach past both sides of a wide gap, in line heights, to show that the gap is inside one box. An engine that drops a word or a symbol leaves a gap as wide as two boxes have between them, but the lines around it run straight across.
+/// A dropped word leaves a gap as wide as two boxes have between them, but the lines around it run straight across.
 const BRIDGE_HEIGHTS: f32 = 0.5;
 
-/// The most space between the lines of one block, in line heights. The lines of a paragraph or a box sit half a line height apart or less.
+/// The lines of a paragraph or a box sit half a line height apart or less.
 const LINE_GAP_HEIGHTS: f32 = 1.0;
 
-/// How far one line may reach up into the one above it, in line heights, and still be the next line rather than the same one.
 const LINE_OVERLAP_HEIGHTS: f32 = 0.5;
 
-/// Lines set in sizes further apart than this are not one block: a heading is not the first line of the paragraph under it.
+/// A heading is not the first line of the paragraph under it.
 const SIZE_RATIO: f32 = 1.6;
 
-/// The narrowest empty column, in line heights, that is taken for the gutter between two columns.
 const GUTTER_HEIGHTS: f32 = 1.0;
 
-/// How far apart two lines may start, in line heights, and still be set from the same left edge.
 const ALIGNED_HEIGHTS: f32 = 1.0;
 
-/// A line this many characters long is a line of a book, longer than any box or slide sets.
+/// Longer than any box or slide sets.
 const PROSE_LINE_CHARS: usize = 40;
 
-/// The text of a page's lines: put in reading order and joined into paragraphs when `arranged` is set (see [`arrange`]), otherwise one to a line in the order the engine read them.
 #[must_use]
 pub fn page_text(lines: &[RecognizedLine], arranged: bool) -> String {
 	if arranged {
@@ -63,9 +56,6 @@ pub fn page_text(lines: &[RecognizedLine], arranged: bool) -> String {
 	}
 }
 
-/// The text of `lines` in reading order, with each block's wrapped lines joined into paragraphs when `join` is set.
-///
-/// An engine that reports no word boxes leaves nothing to arrange by, so its lines are taken in the order it read them.
 #[must_use]
 pub fn arrange(lines: &[RecognizedLine], join: bool) -> String {
 	if lines.iter().any(|line| line.words.is_empty() && !line.text.trim().is_empty()) {
@@ -96,7 +86,7 @@ pub fn arrange(lines: &[RecognizedLine], join: bool) -> String {
 	if !join {
 		return ordered.iter().map(|block| lines_of(block).join("\n")).collect::<Vec<_>>().join("\n");
 	}
-	// Consecutive blocks of prose go through the rules for wrapped paragraphs as one run of lines, as a whole page of recognized text did before it was arranged at all, so a page of plain prose reads as it did and prose running on from the foot of one column to the head of the next is one paragraph. Every run is measured against all of them together; see `join_wrapped_runs`.
+	// Consecutive prose blocks are joined as one run, so plain prose reads as it did before arranging and prose running from one column's foot to the next's head is one paragraph.
 	let mut pieces: Vec<Result<usize, String>> = Vec::new();
 	let mut runs: Vec<String> = Vec::new();
 	for block in &ordered {
@@ -129,12 +119,10 @@ pub fn arrange(lines: &[RecognizedLine], join: bool) -> String {
 	text
 }
 
-/// Whether `next` carries on the sentence `text` stops in: `text` does not end one, and `next` starts in lower case.
 fn carries_on(text: &str, next: &str) -> bool {
 	!text.trim_end().ends_with(['.', '?', '!', ':', ';']) && starts_lowercase(next)
 }
 
-/// Whether the first letter of `line` is lower case, past any quotation mark or bracket opening it.
 fn starts_lowercase(line: &str) -> bool {
 	line.chars().find(|c| c.is_alphanumeric()).is_some_and(char::is_lowercase)
 }
@@ -161,22 +149,20 @@ impl Bounds {
 		}
 	}
 
-	/// How far the two overlap from left to right, negative for how far apart they are.
+	/// Negative for how far apart they are.
 	const fn overlap(self, other: Self) -> f32 {
 		self.right.min(other.right) - self.left.max(other.left)
 	}
 }
 
-/// A run of words from one line with no gap between them wider than a space.
 #[derive(Debug)]
 struct Segment {
 	text: String,
 	bounds: Bounds,
-	/// The median height of its words, which a descender or an accent does not throw off.
+	/// The median, which a descender or an accent does not throw off.
 	height: f32,
 }
 
-/// A gap in a line wide enough that it may lie between two boxes: after which word, and where it runs from and to.
 #[derive(Debug)]
 struct Gap {
 	after: usize,
@@ -184,7 +170,6 @@ struct Gap {
 	right: f32,
 }
 
-/// The gaps in `line` far wider than a space.
 fn wide_gaps(line: &RecognizedLine) -> Vec<Gap> {
 	let words = &line.words;
 	let height = median(words.iter().map(|word| word.height));
@@ -211,7 +196,7 @@ fn wide_gaps(line: &RecognizedLine) -> Vec<Gap> {
 	gaps.into_iter().filter(|gap| width(gap) > threshold).collect()
 }
 
-/// Whether a line just above or below `line` runs straight across `gap`, which makes the gap a hole inside one box rather than the space between two.
+/// A line just above or below running straight across `gap` makes it a hole inside one box rather than the space between two.
 fn bridged(gap: &Gap, line: &Segment, around: &[&Segment]) -> bool {
 	let reach = BRIDGE_HEIGHTS * line.height;
 	around.iter().any(|other| {
@@ -225,7 +210,6 @@ fn bridged(gap: &Gap, line: &Segment, around: &[&Segment]) -> bool {
 	})
 }
 
-/// `line` as one segment.
 fn whole(line: &RecognizedLine) -> Segment {
 	Segment {
 		text: line.text.clone(),
@@ -234,12 +218,11 @@ fn whole(line: &RecognizedLine) -> Segment {
 	}
 }
 
-/// The box around `words`, of which there is at least one.
+/// `words` must not be empty.
 fn around(words: &[RecognizedWord]) -> Bounds {
 	words[1..].iter().map(Bounds::of).fold(Bounds::of(&words[0]), Bounds::union)
 }
 
-/// `line` cut after each word in `after`.
 fn split(line: &RecognizedLine, after: &[usize]) -> Vec<Segment> {
 	if after.is_empty() {
 		return vec![whole(line)];
@@ -265,7 +248,7 @@ fn split(line: &RecognizedLine, after: &[usize]) -> Vec<Segment> {
 		.collect()
 }
 
-/// Where each word is in the line's text, so a run of them is cut from the text as the engine wrote it, with the spacing its script uses. `None` when a word is not found there in order.
+/// So a run is cut from the text as the engine wrote it, with the spacing its script uses.
 fn word_spans(line: &RecognizedLine) -> Option<Vec<(usize, usize)>> {
 	let mut from = 0;
 	line.words
@@ -278,14 +261,12 @@ fn word_spans(line: &RecognizedLine) -> Option<Vec<(usize, usize)>> {
 		.collect()
 }
 
-/// Lines stacked one under another, as a box or a column of a page sets them.
 #[derive(Debug)]
 struct Block {
 	segments: Vec<Segment>,
 	bounds: Bounds,
 }
 
-/// Stacks each segment under the block whose last line sits right above it, or starts a block of its own.
 fn stack(mut segments: Vec<Segment>) -> Vec<Block> {
 	segments.sort_by(|a, b| compare(a.bounds.top, b.bounds.top).then(compare(a.bounds.left, b.bounds.left)));
 	let mut blocks: Vec<Block> = Vec::new();
@@ -315,9 +296,7 @@ fn stack(mut segments: Vec<Segment>) -> Vec<Block> {
 	blocks
 }
 
-/// Appends `blocks` to `ordered` in reading order: column by column where an empty column at least `gutter` wide runs between them, otherwise row by row, and within what neither splits, from the top.
-///
-/// Columns are tried first, because two columns of text often have their paragraph breaks at the same height, and reading them row by row would go back and forth between the columns.
+/// Columns are tried before rows because two columns often break paragraphs at the same height, and reading by rows would go back and forth between them.
 fn read_in_order(blocks: Vec<Block>, gutter: f32, ordered: &mut Vec<Block>) {
 	if blocks.len() <= 1 {
 		ordered.extend(blocks);
@@ -345,7 +324,6 @@ fn read_in_order(blocks: Vec<Block>, gutter: f32, ordered: &mut Vec<Block>) {
 	ordered.extend(blocks);
 }
 
-/// Splits `blocks` into groups wherever nothing covers a stretch of more than `least` along the axis `span` measures, in order along it. Hands the blocks back when nothing splits them.
 fn groups(
 	mut blocks: Vec<Block>,
 	span: impl Fn(Bounds) -> (f32, f32),
@@ -369,9 +347,7 @@ fn lines_of(block: &Block) -> Vec<&str> {
 	block.segments.iter().map(|segment| segment.text.as_str()).collect()
 }
 
-/// The lines of a block that is not prose joined where one plainly carries on: the next starts in lower case, or this one ends on a comma, an ampersand or a hyphen.
-///
-/// Only prose goes through the rules for wrapped paragraphs, which break a paragraph where a line falls short of the measure. A box in a diagram or a slide, a caption or a heading has no measure to fall short of, and those rules would run its title into the text under it.
+/// The wrapped-paragraph rules break where a line falls short of the measure; a box, caption or heading has no measure, and they would run its title into the text under it.
 fn join_box(block: &Block) -> String {
 	let mut text = String::new();
 	for line in lines_of(block).into_iter().map(str::trim).filter(|line| !line.is_empty()) {
@@ -391,16 +367,14 @@ fn join_box(block: &Block) -> String {
 	text
 }
 
-/// Whether a block is wrapped prose: lines set from the margin or the indent, at least one of them as long as a line of a book. Centred lines start wherever their length puts them, and the lines of a box or a slide are short, which is what tells them from a paragraph.
-///
-/// How full its lines run says nothing either way, for a box of centred lines of much the same length fills its width as well as a paragraph does. A narrow column of prose is left to the joining a box gets, which joins most of its lines all the same.
+/// Centred lines start wherever their length puts them and box lines are short; how full lines run says nothing, since a box of centred lines fills its width too.
 fn is_wrapped_prose(block: &Block) -> bool {
 	let height = median(block.segments.iter().map(|segment| segment.height));
 	left_edges(block, ALIGNED_HEIGHTS * height) * 4 >= block.segments.len() * 3
 		&& block.segments.iter().any(|segment| segment.text.chars().count() >= PROSE_LINE_CHARS)
 }
 
-/// How many of a block's lines start at one of its two most common left edges, counting edges within `tolerance` of each other as one: the margin and the paragraph indent, for prose.
+/// Two edges, for prose's margin and paragraph indent.
 fn left_edges(block: &Block, tolerance: f32) -> usize {
 	let mut lefts: Vec<f32> = block.segments.iter().map(|segment| segment.bounds.left).collect();
 	lefts.sort_by(|a, b| compare(*a, *b));
@@ -436,7 +410,6 @@ mod tests {
 	const CHAR: f32 = 8.0;
 	const SPACE: f32 = 5.0;
 
-	/// A line set from `x` at `y`, its words as wide as their letters with a space between each.
 	fn line(text: &str, x: f32, y: f32) -> RecognizedLine {
 		let mut words = Vec::new();
 		let mut left = x;
@@ -448,14 +421,13 @@ mod tests {
 		RecognizedLine { text: text.to_string(), words }
 	}
 
-	/// Two lines an engine read as one, the second starting at `x` with a gap of `gap` before it.
 	fn merged(first: &RecognizedLine, second: &RecognizedLine) -> RecognizedLine {
 		let mut words = first.words.clone();
 		words.extend(second.words.clone());
 		RecognizedLine { text: format!("{} {}", first.text, second.text), words }
 	}
 
-	/// The reported case: two boxes side by side, whose bottom lines Windows read as one line with a wide gap between them. The left box's line above ends where the right box starts.
+	/// The reported case (#1167): Windows read the bottom lines of two side-by-side boxes as one line.
 	#[test]
 	fn two_boxes_read_as_one_line_come_apart() {
 		let lines = vec![
@@ -469,7 +441,6 @@ mod tests {
 		);
 	}
 
-	/// A word the engine dropped leaves a hole as wide as the space between two boxes, but the lines above and below run straight across it.
 	#[test]
 	fn a_hole_inside_a_box_does_not_split_its_line() {
 		let mut hole = line("Indigenous & Global South traditional", 0.0, 22.0);
@@ -483,7 +454,6 @@ mod tests {
 		assert_eq!(arrange(&lines, false).lines().nth(1), Some("Indigenous Global South traditional"));
 	}
 
-	/// Two columns are read one after the other, not line by line across both.
 	#[test]
 	fn columns_are_read_one_after_the_other() {
 		let lines = vec![
@@ -493,7 +463,6 @@ mod tests {
 		assert_eq!(arrange(&lines, false), "left one\nleft two\nright one\nright two");
 	}
 
-	/// A box's title stays apart from the text under it, which a centred box sets no wider.
 	#[test]
 	fn a_box_keeps_its_title_apart_and_joins_its_wrapped_lines() {
 		let lines = vec![
@@ -508,7 +477,6 @@ mod tests {
 		);
 	}
 
-	/// Prose goes through the rules for wrapped paragraphs, which join a line that fills the measure whatever the next one starts with, and break after one that ends a sentence short of it. Its indented first lines are still set from its left edge.
 	#[test]
 	fn a_paragraph_of_prose_is_joined_whole() {
 		let lines = vec![
@@ -524,7 +492,6 @@ The next meeting is set for the spring."
 		);
 	}
 
-	/// Without word boxes there is nothing to arrange by, so the lines come as the engine read them.
 	#[test]
 	fn lines_without_boxes_keep_the_engine_s_order() {
 		let lines = vec![
@@ -534,7 +501,6 @@ The next meeting is set for the spring."
 		assert_eq!(arrange(&lines, false), "second\nfirst");
 	}
 
-	/// A run cut from a line keeps the line's own spacing, which a script written without spaces does not have.
 	#[test]
 	fn a_split_line_keeps_the_engine_s_spacing() {
 		let word =

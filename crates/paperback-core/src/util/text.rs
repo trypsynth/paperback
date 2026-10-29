@@ -3,22 +3,18 @@ use std::sync::LazyLock;
 use regex::Regex;
 use roman::to;
 
-/// A run of dot leaders before a page number at the end of a line: `Getting Started.......12`.
 static LEADERS: LazyLock<Regex> = LazyLock::new(|| {
 	Regex::new(r"(?m)[ \t]*(?:[.\u{2026}\u{00B7}][ \t]?){4,}[ \t]*(\d+|[ivxlcdmIVXLCDM]+)[ \t]*$")
 		.expect("leader pattern is valid")
 });
 
-/// Collapses table-of-contents dot leaders into a single space, so a contents line reads
-/// "Getting Started 12" rather than every dot being spoken. Only runs of four or more dots,
-/// ellipses or middle dots followed by a page number at the end of a line count, which leaves
-/// ellipses and fill-in blanks (`Name: ______`) alone.
+/// So every dot of a contents line isn't spoken; requiring four or more and a trailing page number leaves ellipses and fill-in blanks alone.
 #[must_use]
 pub fn collapse_leaders(input: &str) -> String {
 	LEADERS.replace_all(input, " $1").into_owned()
 }
 
-/// Takes the soft hyphens out of `text`, in place, so a whole text file is not copied to find it has none.
+/// In place, so a whole text file is not copied to find it has none.
 #[must_use]
 pub fn remove_soft_hyphens(mut text: String) -> String {
 	if text.contains('\u{00AD}') {
@@ -27,20 +23,13 @@ pub fn remove_soft_hyphens(mut text: String) -> String {
 	text
 }
 
-/// Normalizes `\r\n` and bare `\r` line endings to `\n`, matching every other parser's output
-/// (RTF, HTML, XML, Markdown all only ever emit bare `\n`). A GUI text control's own line-ending
-/// handling doesn't necessarily count an embedded `\r` as a position the same way `DocumentBuffer`
-/// does, so leaving raw `\r`s in a document's content drifts its stored positions (markers, Find
-/// results, ...) out of sync with the control by roughly one unit per line - worse the further
-/// into the document you go. Plain text files are the one format whose source can contain `\r` at
-/// all, since every other parser builds its output text itself rather than passing source bytes
-/// through.
+/// A text control may not count a raw `\r` as a position the way the buffer does, so stored positions drift by about one per line.
 #[must_use]
 pub fn normalize_line_endings(text: String) -> String {
 	if !text.contains('\r') {
 		return text;
 	}
-	// Done on the bytes and in place, as a whole text file is read through here: `\r` and `\n` are ASCII, so no other char is touched and the text stays valid UTF-8.
+	// In place on the bytes, as a whole text file comes through here; `\r` and `\n` are ASCII, so the text stays valid UTF-8.
 	let mut bytes = text.into_bytes();
 	let mut write = 0;
 	let mut read = 0;
@@ -167,7 +156,6 @@ mod tests {
 	#[case("Preface . . . . . . . . . . vii", "Preface vii")]
 	#[case("Index\u{2026}\u{2026}\u{2026}\u{2026}212", "Index 212")]
 	#[case("Line one.......1\nLine two.......2", "Line one 1\nLine two 2")]
-	// Left alone: an ellipsis, a fill-in blank, and leaders not ending in a page number.
 	#[case("Wait for it... then go", "Wait for it... then go")]
 	#[case("Name: ______________", "Name: ______________")]
 	#[case("Loading........ please wait", "Loading........ please wait")]

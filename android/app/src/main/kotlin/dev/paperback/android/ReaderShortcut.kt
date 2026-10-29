@@ -7,24 +7,14 @@ import dev.paperback.android.ui.dialogs.GO_TO_PERCENTAGE
 import uniffi.paperback.SegmentDirectionFfi
 import uniffi.paperback.SegmentTypeFfi
 
-/**
- * What a key press means to the reading view. Working the key table out as data, rather than
- * acting on each key where it is matched, keeps the whole of it in one readable place and lets it
- * be checked without an Activity: for a reader working entirely from the keyboard, a shortcut
- * that quietly stops matching is not a small thing.
- */
+/** Kept as data so the key table can be tested without an Activity. */
 sealed interface ReaderShortcut {
 	object TogglePlayback : ReaderShortcut
 
-	/** Start playing, but leave playback alone if it is already going (the media Play key,
-	 * which is a separate key from Play/Pause on a headset or a keyboard). */
 	object PlayOnly : ReaderShortcut
 
-	/** Stop playing, leaving already-stopped playback alone (the media Pause key). */
 	object PauseOnly : ReaderShortcut
 
-	/** A headset's single button, which counts clicks: one plays or pauses, two skips on, three
-	 * goes back. */
 	object HeadsetHook : ReaderShortcut
 
 	object NextSegment : ReaderShortcut
@@ -59,19 +49,12 @@ sealed interface ReaderShortcut {
 
 	object ImportSettings : ReaderShortcut
 
-	/** Opens Go To on one of its modes (line, page or percentage). */
 	data class OpenGoTo(val mode: String) : ReaderShortcut
 
 	data class Navigate(val type: SegmentTypeFfi, val direction: SegmentDirectionFfi) : ReaderShortcut
 }
 
-/**
- * The shortcut a key press means, or null to let the key through to whoever else wants it.
- *
- * F7 is looked at before the modifier, so it works however it is pressed; every other shortcut
- * belongs to either the Ctrl set or the unmodified set, and a key with Ctrl held that the Ctrl
- * set does not name is passed on rather than falling through to its unmodified meaning.
- */
+/** A Ctrl key the Ctrl set doesn't name is passed on rather than falling through to its unmodified meaning. */
 fun shortcutFor(keyCode: Int, ctrlPressed: Boolean, shiftPressed: Boolean): ReaderShortcut? {
 	if (keyCode == KeyEvent.KEYCODE_F7) return ReaderShortcut.OpenElements
 	if (ctrlPressed) return ctrlShortcutFor(keyCode, shiftPressed)
@@ -81,7 +64,7 @@ fun shortcutFor(keyCode: Int, ctrlPressed: Boolean, shiftPressed: Boolean): Read
 	return readingShortcutFor(keyCode, shiftPressed)
 }
 
-/** The shortcuts held with Ctrl, which match the desktop app's. */
+/** Matches the desktop app's Ctrl shortcuts. */
 private fun ctrlShortcutFor(keyCode: Int, shiftPressed: Boolean): ReaderShortcut? = when (keyCode) {
 	KeyEvent.KEYCODE_F -> ReaderShortcut.OpenFind
 	KeyEvent.KEYCODE_COMMA -> ReaderShortcut.OpenSettings
@@ -97,10 +80,6 @@ private fun ctrlShortcutFor(keyCode: Int, shiftPressed: Boolean): ReaderShortcut
 	else -> null
 }
 
-/**
- * The shortcuts pressed on their own: playback keys, and one key per kind of element, where
- * Shift turns "go to the next one" into "go back to the previous one".
- */
 private fun readingShortcutFor(keyCode: Int, shiftPressed: Boolean): ReaderShortcut? {
 	val direction = if (shiftPressed) SegmentDirectionFfi.PREVIOUS else SegmentDirectionFfi.NEXT
 	return when (keyCode) {

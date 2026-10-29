@@ -32,12 +32,7 @@ const val GO_TO_LINE = "Line"
 const val GO_TO_PAGE = "Page"
 const val GO_TO_PERCENTAGE = "Percentage"
 
-/**
- * The display name for a Go To mode.
- *
- * Each name is a literal `t()` call so the string extractor can find it; the modes are chosen
- * from a list at runtime, and `t(mode)` on a variable would leave nothing to extract.
- */
+/** Literal `t()` calls so the string extractor can find them; `t(mode)` on a variable would leave nothing to extract. */
 private fun goToModeName(mode: String): String = when (mode) {
 	// TRANSLATORS: Go To mode that jumps to a line number
 	GO_TO_LINE -> t("Line")
@@ -54,13 +49,11 @@ fun GoToDialog(
 	onDismiss: () -> Unit,
 	onGoTo: (Int) -> Unit,
 	initialMode: String = GO_TO_LINE,
-	/** Seeks the recording to a percentage of its running time; false when that does not apply. */
 	onSeekPercent: (Int) -> Boolean = { false }
 ) {
 	val maxLines = remember(docState.session) { docState.session.lineCount() }
 	val maxPages = remember(docState.session) { docState.session.pageCountFfi() }
-	// An audio-only book's text is one blank line per audio file, so a line or page number means
-	// nothing in it. A percentage still places the reader in the recording.
+	// An audio-only book's text is one blank line per file, so line and page numbers mean nothing in it.
 	val modes = remember(docState.isAudioOnly, maxPages) {
 		buildList {
 			if (!docState.isAudioOnly) {
@@ -77,8 +70,7 @@ fun GoToDialog(
 	var sliderPercent by remember { mutableIntStateOf(0) }
 	var dropdownExpanded by remember { mutableStateOf(false) }
 	val onSubmit = {
-		// An audio document seeks its recording, where a percentage means running time rather
-		// than a share of the placeholder text the recording is anchored to.
+		// For audio, a percentage means running time rather than a share of the placeholder text.
 		val seeked = selectedMode == GO_TO_PERCENTAGE && onSeekPercent(sliderPercent)
 		val targetPos = if (seeked) {
 			null
@@ -115,8 +107,6 @@ fun GoToDialog(
 		title = { Text(t("Go To")) },
 		text = {
 			Column {
-				// With one mode there is nothing to choose, so the selector is left out rather
-				// than shown holding a single entry.
 				if (modes.size > 1) {
 					ExposedDropdownMenuBox(
 						expanded = dropdownExpanded,
@@ -155,9 +145,7 @@ fun GoToDialog(
 					Spacer(modifier = Modifier.height(16.dp))
 				}
 				if (selectedMode == GO_TO_PERCENTAGE) {
-					// The track draws one tick per step, which at a hundred of them reads as a dotted
-					// line rather than a slider. Carrying the range info out here lets the visible
-					// slider drop its ticks while TalkBack still swipes a percent at a time.
+					// A hundred ticks read as a dotted line, so the range info lives out here and TalkBack still swipes a percent at a time.
 					Column(
 						modifier = Modifier.clearAndSetSemantics {
 							contentDescription = goToModeName(GO_TO_PERCENTAGE)

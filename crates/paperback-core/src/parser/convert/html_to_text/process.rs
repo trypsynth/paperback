@@ -1,5 +1,3 @@
-//! The actual tree-walk: [`HtmlToText::process_node`] and everything it dispatches to per tag.
-
 use std::fmt::Write;
 
 use ego_tree::NodeRef;
@@ -108,9 +106,7 @@ impl HtmlToText {
 		self.text.finalize_current_line();
 		let table_html = Self::serialize_node(node, document);
 		let start_offset = self.text.get_current_text_position();
-		// Emit the table's on-screen text via the shared helper instead of recursing children to
-		// emit one cell per line. The helper output may contain tabs and span multiple lines; push
-		// each line verbatim so tab separators and empty cells survive whitespace collapsing.
+		// Lines are pushed verbatim so tab separators and empty cells survive whitespace collapsing.
 		let render = table_render_bundle(&table_html, self.render_tables_inline);
 		for line in render.lines {
 			self.text.push_finalized_line(line);
@@ -356,7 +352,6 @@ impl HtmlToText {
 		}
 	}
 
-	/// The placeholder an image or figure shows, such as `[Image: a cat]`, with its info (offset still unset) and whether it is a figure. `None` when it has no description, since an undescribed picture shows nothing.
 	fn described_image(tag_name: &str, node: NodeRef<'_, Node>) -> Option<(String, ImageInfo, bool)> {
 		if tag_name != "img" && tag_name != "image" && tag_name != "figure" {
 			return None;
@@ -397,7 +392,7 @@ impl HtmlToText {
 		}
 	}
 
-	/// Where an image element's picture lives. A `<figure>` has none of its own, so it takes the first picture inside it. SVG writes `href` as `xlink:href` in older markup, which is why the attribute is matched by local name.
+	/// Older SVG markup writes `href` as `xlink:href`, so the attribute is matched by local name.
 	pub(crate) fn image_source(node: NodeRef<'_, Node>) -> String {
 		node.descendants()
 			.find_map(|descendant| {

@@ -25,9 +25,7 @@ fn is_plain_audio_entry(name: &str) -> bool {
 		.is_some_and(|ext| PLAIN_AUDIO_EXTENSIONS.iter().any(|candidate| candidate.eq_ignore_ascii_case(ext)))
 }
 
-/// Orders file names the way a person would: numeric runs compare by value, so "track2" sorts
-/// before "track10" instead of after it, which plain byte-wise sorting would get wrong for the
-/// common case of unpadded track numbers.
+/// So "track2" sorts before "track10", the common case of unpadded track numbers that byte-wise sorting gets wrong.
 fn natural_cmp(a: &str, b: &str) -> Ordering {
 	let mut a = a.chars().peekable();
 	let mut b = b.chars().peekable();
@@ -63,31 +61,15 @@ fn take_number(chars: &mut Peekable<Chars>) -> u64 {
 	value
 }
 
-/// Reads back the real duration of a zip-embedded audio entry via a lightweight container/tag
-/// probe (no full decode). `None` when the format isn't one `lofty` recognizes (e.g. WMA) or the
-/// entry doesn't parse as audio at all; callers fall back to a placeholder in that case rather
-/// than fail the whole document over one bad or unsupported entry.
+/// A container and tag probe, no full decode; `None` (WMA, which `lofty` does not know, or a bad entry) gets a placeholder rather than failing the whole document.
 fn probe_duration_ms<R: Read + Seek>(archive: &mut ZipArchive<R>, entry: &str, password: Option<&str>) -> Option<u64> {
 	let bytes = read_zip_entry_bytes_with_password(archive, entry, password).ok()?;
 	let tagged_file = lofty::probe::Probe::new(Cursor::new(bytes)).guess_file_type().ok()?.read().ok()?;
 	u64::try_from(tagged_file.properties().duration().as_millis()).ok()
 }
 
-/// Builds a document out of a zip that is nothing but a bundle of audio files: no OPF, no NCC,
-/// no markup relating them to any text. Each audio file becomes its own textless section, named
-/// after the file and ordered naturally by file name. Playback has no per-sentence granularity to
-/// offer, so each section is a single clip spanning its whole source; seeking within a section and
-/// crossing between sections (see `AudioTimeline::next_source_after` and
-/// `previous_source_before`) are the only ways to move around, which is why the document is
-/// marked `audio_only`: there is no text spine for a reading unit to step through, so read-aloud
-/// UIs navigate it by elapsed time instead.
-///
-/// Each clip's end time is the file's real duration, probed via `probe_duration_ms`, falling back
-/// to a generous placeholder when probing fails. `AudioTimeline`'s bookkeeping only strictly needs
-/// a source's clip to end after every other clip against the same source begins (there is only
-/// one), so a placeholder still keeps players working; the cost of falling back is that elapsed
-/// time can't say where that one file ends and the next begins, so a seek running off either end
-/// of it resolves against the file's own real length, which only a prepared decoder knows.
+/// Marked `audio_only` because there is no text spine for a reading unit to step through, so read-aloud UIs navigate it by elapsed time instead.
+/// A placeholder duration still works because each source has only one clip; a seek past its end then resolves against the file's real length, which only a prepared decoder knows.
 pub(super) fn build_plain_audio_zip_document<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	archive_path: &str,
@@ -96,8 +78,7 @@ pub(super) fn build_plain_audio_zip_document<R: Read + Seek>(
 	password: Option<&str>,
 ) -> Option<Document> {
 	const PLACEHOLDER_CLIP_DURATION_MS: u64 = 24 * 60 * 60 * 1000;
-	// zip 9 hands back a Result per name, since decoding one can fail. A name that will not
-	// decode cannot match what this scan is looking for, so drop those rather than fail the file.
+	// zip 9 hands back a Result per name; one that will not decode cannot be an audio file we want, so drop it rather than fail the file.
 	let mut entries: Vec<String> =
 		archive.file_names().flatten().filter(|name| is_plain_audio_entry(name)).map(String::from).collect();
 	if entries.is_empty() {
@@ -111,14 +92,9 @@ pub(super) fn build_plain_audio_zip_document<R: Read + Seek>(
 		let name =
 			Path::new(entry).file_stem().map_or_else(|| entry.clone(), |stem| stem.to_string_lossy().to_string());
 		let position = buffer.end();
-		// A bare newline, not a space: this is what the reading area shows for an audio-only
-		// document, and a genuine blank line reads and navigates like any other blank line
-		// elsewhere in the app, unlike a run of space characters (which screen readers announce
-		// character by character, once per file).
+		// A newline, not a space: screen readers announce a run of spaces character by character, once per file, while a blank line navigates like any other.
 		buffer.append("\n");
-		// The marker carries the file name so section navigation has something to announce.
-		// Without it the name lives only in the TOC, and `fill_marker_text_if_empty` falls back
-		// to the line enclosing the marker, which here is always empty.
+		// Without the name, section navigation would announce nothing: `fill_marker_text_if_empty` falls back to the enclosing line, which here is always empty.
 		buffer.add_marker(Marker::new(MarkerType::SectionBreak, position).with_text(name.clone()));
 		let probed_ms = probe_duration_ms(archive, entry, password);
 		let clip_duration_ms = probed_ms.unwrap_or(PLACEHOLDER_CLIP_DURATION_MS);

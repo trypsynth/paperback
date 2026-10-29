@@ -4,8 +4,6 @@ use patois::t;
 use super::builder::{MenuEntry, format_menu_label, item, item_with_help, submenu};
 use crate::ui::{commands, menu_ids};
 
-/// The navigation groups, each as its label, status-bar help text and items: a submenu apiece in
-/// the compact Go menu, or runs of items between separators in the flat one.
 fn groups(config: &ConfigManager) -> Vec<(String, String, Vec<MenuEntry>)> {
 	vec![
 		(

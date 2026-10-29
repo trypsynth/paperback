@@ -1,9 +1,3 @@
-//! Filesystem helpers shared by unit tests.
-//!
-//! Parsers take a path rather than bytes, so testing one means putting a real file on disk.
-//! These helpers are the one implementation of that, and they remove what they create when the
-//! test ends.
-
 use std::{
 	env, fs,
 	ops::Deref,
@@ -13,17 +7,13 @@ use std::{
 	time::{SystemTime, UNIX_EPOCH},
 };
 
-/// A uniquely named directory under the system temp dir, deleted when the guard drops.
-///
-/// Bind it to a variable for the lifetime of the test. `let _dir = TempDir::new(..)` drops
-/// immediately and takes the files with it.
+/// Deleted on drop, so `let _dir = TempDir::new(..)` takes the files with it immediately; bind it to a name.
 pub struct TempDir {
 	path: PathBuf,
 }
 
 impl TempDir {
-	/// Creates the directory. `label` appears in the name so a directory left behind by a
-	/// killed test process can be traced back to the test that made it.
+	/// `label` is in the name so a directory left behind by a killed test can be traced to the test.
 	pub fn new(label: &str) -> Self {
 		static COUNTER: AtomicU64 = AtomicU64::new(0);
 		let nanos = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |elapsed| elapsed.as_nanos());
@@ -38,8 +28,6 @@ impl TempDir {
 		&self.path
 	}
 
-	/// Writes `contents` to `name` inside the directory, creating parent directories as needed,
-	/// and returns the full path.
 	pub fn write(&self, name: &str, contents: impl AsRef<[u8]>) -> PathBuf {
 		let path = self.path.join(name);
 		if let Some(parent) = path.parent() {
@@ -49,12 +37,10 @@ impl TempDir {
 		path
 	}
 
-	/// Like [`TempDir::write`], for the parser APIs that take a path as a `String`.
 	pub fn write_str(&self, name: &str, contents: impl AsRef<[u8]>) -> String {
 		self.write(name, contents).to_string_lossy().into_owned()
 	}
 
-	/// The path a file would have inside this directory, without creating it.
 	#[must_use]
 	pub fn join_str(&self, name: &str) -> String {
 		self.path.join(name).to_string_lossy().into_owned()

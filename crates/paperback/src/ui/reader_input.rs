@@ -1,21 +1,21 @@
-//! The reading control: building it, and everything it does in response to a key or a click.
-//!
-//! A closure installed on a control cannot borrow the tab that owns it, so the handlers go
-//! through the document manager to reach the active tab, which is the tab whose control has
-//! focus.
+//! A closure on a control cannot borrow the tab that owns it, so handlers reach the active (focused) tab through the document manager.
 
 use std::{cell::Cell, rc::Rc, sync::Mutex};
 
-use paperback_core::{config::ActionId, document::DocPos};
+use paperback_core::config::ActionId;
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+use paperback_core::document::DocPos;
 use patois::t;
 use wxdragon::{event::KeyboardEvent, prelude::*};
 
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+use super::{document_manager::DocumentTab, text_render::reload_window_around};
 use super::{
-	document_manager::{DocumentManager, DocumentTab, tab_index_for_key},
+	document_manager::{DocumentManager, tab_index_for_key},
 	menu, menu_ids,
 	reader_ctrl::ReaderCtrl,
-	text_render::reload_window_around,
 };
+#[cfg(any(target_os = "windows", target_os = "macos"))]
 use crate::text_window::CtrlPos;
 
 mod activation;
@@ -27,7 +27,6 @@ mod windows;
 #[cfg(target_os = "windows")]
 use windows::try_navigate_line_by_column;
 
-/// Builds the reading control and binds everything it responds to.
 pub(super) fn build_text_ctrl(
 	panel: Panel,
 	word_wrap: bool,
@@ -43,13 +42,7 @@ pub(super) fn build_text_ctrl(
 	let dm_for_enter = Rc::clone(self_rc);
 	let frame_for_char = frame;
 	activation::bind_activation(text_ctrl.widget(), move |enter| {
-		#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-		let _ = enter;
-		// Enter on an image-only page runs OCR instead of the table/link activation
-		// below, and Enter on a picture reads the text in it into a view of its own.
-		// A picture that is also a link follows the link instead, as Enter always has;
-		// the context menu reads that one. Space always falls through to the activation.
-		#[cfg(any(target_os = "windows", target_os = "macos"))]
+		// A picture that is also a link follows the link, as Enter always has; its text is read from the context menu instead.
 		if enter {
 			let handled = {
 				let mut dm = dm_for_enter.lock().unwrap();
@@ -122,10 +115,7 @@ pub(super) fn build_text_ctrl(
 			dm.compact_window_after_user_move();
 			dm.update_status_bar();
 			dm.save_position_throttled();
-			// Clicking straight onto a bookmark is deliberate enough to deserve the sound,
-			// and lands inside it, so the same enter-the-range test says so. It reads the
-			// position the arrow keys left behind, which is why jumps keep that up to date
-			// rather than leaving it stale.
+			// A click onto a bookmark is deliberate enough for the sound; this compares against the last arrow-key position, which is why jumps keep it current.
 			dm.check_bookmark_sounds();
 		}
 	});
@@ -141,8 +131,8 @@ pub(super) fn build_text_ctrl(
 				show_reader_context_menu(text_ctrl_for_menu, &dm_for_keys);
 				return;
 			}
-			// Ctrl+C and Ctrl+A are intercepted here because the reading control consumes them in its own window procedure, before wx consults the accelerator table, so neither ever becomes a menu command and the handlers Edit > Copy and Edit > Select All reach never run for the keystroke. Raising the same command a click produces is what makes the two ways of doing either behave identically - for the copy that is the announcement and the widening to the whole document, and for the select all it is the announcement alone, without which the command says nothing at all.
-			// The mark is set here rather than by `bind_key_source`'s CHAR_HOOK, which resolves a key through the ActionIds and finds nothing for a wxWidgets stock command; without it the announcement is deferred as though a menu had been clicked, and read over by the focus chain returning to the book. It is cleared again when the command goes unhandled, so a chord that reaches nothing cannot leave the mark set for the next click.
+			// The reading control eats Ctrl+C and Ctrl+A in its window procedure before wx checks accelerators, so raise the menu command here to get the click's announcement (and whole-document copy).
+			// `bind_key_source` finds no `ActionId` for a stock command, so the keyboard mark is set here, else the announcement is deferred as for a menu click and read over by the focus chain.
 			// macOS handles Copy in `mac_shortcuts` before Cocoa's Edit menu; Select All stays native.
 			#[cfg(not(target_os = "macos"))]
 			if let Some(stock_id) = stock_edit_command(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down()) {
@@ -218,35 +208,19 @@ pub(super) fn build_text_ctrl(
 				}
 			};
 			if let Some(act) = action {
-				// Alt chords are normally left to wxWidgets to resolve as menu
-				// accelerators, which is how Alt+Left gets to the navigation history.
-				// The selection commands are dispatched here as well because F10 means
-				// "activate the menu bar" to Windows, so whether Alt+F10 ever reaches the
-				// accelerator table on every platform is not something to bet a shortcut
-				// on. The two routes cannot both run: a keystroke the accelerator consumed
-				// never arrives here at all.
+				// Selection commands are dispatched here because F10 means "activate the menu bar" to Windows, so Alt+F10 may never reach the accelerator table; a key the accelerator consumed never arrives here, so both cannot run.
 				let plain = !kbd.control_down() && !kbd.alt_down();
 				if menu::is_keyboard_only(act) || plain || is_selection_command(act) || cfg!(target_os = "linux") {
 					kbd.event.skip(false);
 					if menu::is_keyboard_only(act) {
-						// A keyboard-only command has no menu item, so the key never becomes a menu command and the
-						// dispatcher never reads the mark off one. Clear it here instead, so a key
-						// that led nowhere cannot leave it set for the next menu click.
+						// No menu item means the dispatcher never clears the mark, which would then leak into the next menu click.
 						from_keyboard.set(false);
 					}
 					run_shortcut(act, &dm_for_keys, &frame_for_keys);
 					return;
 				}
 			}
-			// Ctrl+1 through Ctrl+9 jump to the first nine open documents. Deliberately after the
-			// shortcut table rather than before it: a reader who has deliberately bound one of
-			// these chords to something of their own keeps it, and gets no tab switch rather than a
-			// switch that overrode them. No default binds any of these chords, so this is reached
-			// on a stock configuration.
-			//
-			// The title is announced by `switch_to_tab` itself, not by the notebook's
-			// page-changing handler, because the lock this call holds is the one that handler
-			// needs in order to announce at all.
+			// After the shortcut table so a reader's own Ctrl+digit binding wins; `switch_to_tab` announces because the lock held here blocks the notebook handler's announcement.
 			if let Some(index) = tab_index_for_key(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down()) {
 				kbd.event.skip(false);
 				if let Ok(mut dm) = dm_for_keys.try_lock() {
@@ -263,6 +237,16 @@ pub(super) fn build_text_ctrl(
 		event.skip(false);
 		show_reader_context_menu(text_ctrl_for_right_click, &dm_for_right_click);
 	});
+	// VoiceOver's VO+Shift+M arrives as a context-menu event; left unhandled, wx hands it to
+	// NSTextView, which shows Cocoa's stock text menu instead of ours.
+	#[cfg(target_os = "macos")]
+	{
+		let dm_for_voiceover_menu = Rc::clone(self_rc);
+		text_ctrl.bind_internal(EventType::CONTEXT_MENU, move |event| {
+			event.skip(false);
+			show_reader_context_menu(text_ctrl, &dm_for_voiceover_menu);
+		});
+	}
 	text_ctrl
 }
 
@@ -270,13 +254,7 @@ const fn is_selection_command(action: ActionId) -> bool {
 	matches!(action, ActionId::SetSelectionStart | ActionId::CopyFromSelectionStart | ActionId::JumpToSelectionStart)
 }
 
-/// The stock Edit command a chord names, for the two whose keys the reading control would otherwise
-/// swallow before wx consults the accelerator table: Control+C and Control+A. Its own function of the
-/// key and the modifiers so it can be tested without a `KeyboardEvent`, which cannot be built outside
-/// a running app.
-///
-/// Plain Control only. Ctrl+Shift+C, Ctrl+Alt+C and their A counterparts are left to the reader, who
-/// may have bound one of those to something of their own.
+// Takes the key and modifiers, not a `KeyboardEvent`, so it can be tested outside a running app; Shift and Alt chords are left for the reader's own bindings.
 #[cfg(not(target_os = "macos"))]
 const fn stock_edit_command(key: i32, control: bool, alt: bool, shift: bool) -> Option<i32> {
 	if !control || alt || shift {
@@ -301,7 +279,7 @@ fn run_shortcut(action: ActionId, dm: &Rc<Mutex<DocumentManager>>, frame: &Frame
 	}
 }
 
-/// A shortcut on a punctuation key the reader's layout can only type with Shift, such as `=` and `'` on a Japanese keyboard, where they are Shift+- and Shift+7. The key-down handler matches the key itself, which there is `-` with Shift and so no shortcut; the character it types is what the shortcut names. Punctuation only, so Shift and a letter never runs the letter's own shortcut.
+// Layouts that need Shift for punctuation (`=` is Shift+- on Japanese keyboards) never match on key-down; letters are excluded so Shift+letter never runs the letter's shortcut.
 fn shortcut_for_shifted_character(kbd: &KeyboardEvent, dm: &Rc<Mutex<DocumentManager>>) -> Option<ActionId> {
 	if !kbd.shift_down() || kbd.control_down() || kbd.alt_down() {
 		return None;
@@ -313,28 +291,12 @@ fn shortcut_for_shifted_character(kbd: &KeyboardEvent, dm: &Rc<Mutex<DocumentMan
 	config.get_shortcuts().find_action(i32::from(typed as u8), false, false, false)
 }
 
-/// Whether a key moves the caret through the text one piece at a time, rather than jumping it
-/// somewhere else.
-///
-/// Only these play a bookmark's sound. Landing on a line that happens to hold a bookmark used
-/// to sound exactly like moving onto the bookmark itself, so a bookmark attached to a word in
-/// the middle of a paragraph announced itself from the start of that paragraph, which is not
-/// where it is. Stepping by character or by word passes over the bookmark's own position, so
-/// there the sound means what it says.
+// Only these play a bookmark's sound: a line move used to sound a mid-paragraph bookmark from the paragraph's start.
 const fn moves_through_text(key: i32) -> bool {
 	matches!(key, WXK_LEFT | WXK_RIGHT)
 }
 
-/// Which end of the document a key press names as a "jump to the very start/end" gesture, if
-/// any: `Some(true)` for the end, `Some(false)` for the start. See
-/// `DocumentManager::jump_to_document_edge` for why these are intercepted rather than left to
-/// the text control.
-///
-/// Ctrl+Home/Ctrl+End everywhere - wxWidgets reports macOS's Command key as `control_down`, so
-/// that covers Cmd+Home/Cmd+End there - plus Cmd+Up/Cmd+Down on macOS, which is what Mac text
-/// views actually bind document start/end to, and the only one of the two most Apple keyboards
-/// can even type (they have no Home/End keys). Bare Home/End are deliberately not included on
-/// macOS: there they scroll without moving the caret, which is a different gesture.
+// wx reports Command as `control_down`, so this covers Cmd+Home/End; Cmd+Up/Down too since most Apple keyboards lack Home/End, and bare Home/End there only scroll.
 const fn document_edge_for_key(key: i32, control: bool, shift: bool, alt: bool) -> Option<bool> {
 	if !control || shift || alt {
 		return None;
@@ -350,16 +312,7 @@ const fn document_edge_for_key(key: i32, control: bool, shift: bool, alt: bool) 
 	}
 }
 
-/// Returns (`new_position`, `preferred_column`) for vertical navigation.
-/// With `start_of_line` set, the caret lands at the start of the target visual line. Otherwise it
-/// uses character-column-based navigation (`pref_col` or the current column), so the cursor lands on
-/// the same character column (not pixel column) on the target visual line.
-///
-/// Reloads `tab`'s window and retries once if Up/Down would otherwise stop at a loaded-window
-/// boundary that isn't the document's actual start/end. Without this, Up/Down (and Page Up/Down,
-/// which RichEdit handles natively with no window awareness at all) can strand the caret mid-chapter
-/// with no keyboard-only way past it except an explicit jump (heading/bookmark navigation etc.) -
-/// found the hard way testing a huge book, not something worth leaving as a TODO.
+// Retries once after a reload at a loaded-window edge that isn't the document's, which would otherwise strand the caret.
 #[cfg(any(target_os = "windows", target_os = "macos"))]
 fn navigate_line_by_column(
 	tab: &mut DocumentTab,
@@ -383,6 +336,7 @@ fn navigate_line_by_column(
 }
 
 #[cfg(target_os = "macos")]
+#[allow(clippy::option_option, reason = "the outer None and the inner None mean different things to the retry above")]
 fn try_navigate_line_by_column(
 	tab: &DocumentTab,
 	going_down: bool,
@@ -399,15 +353,12 @@ fn show_reader_context_menu(text_ctrl: ReaderCtrl, dm: &Rc<Mutex<DocumentManager
 	if on_image {
 		// TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
 		builder = builder.append_item(menu_ids::SAVE_IMAGE, &t("Save &image as..."), &t("Save image as"));
-		#[cfg(any(target_os = "windows", target_os = "macos"))]
-		{
-			// TRANSLATORS: Right-click context menu item and status text to show the text recognized in the picture under the caret
-			builder = builder.append_item(
-				menu_ids::READ_IMAGE_TEXT,
-				&t("Read &text in picture"),
-				&t("Read the text in the picture"),
-			);
-		}
+		// TRANSLATORS: Right-click context menu item and status text to show the text recognized in the picture under the caret
+		builder = builder.append_item(
+			menu_ids::READ_IMAGE_TEXT,
+			&t("Read &text in picture"),
+			&t("Read the text in the picture"),
+		);
 		builder = builder.append_separator();
 	}
 	let mut menu = builder
@@ -451,7 +402,6 @@ mod tests {
 		assert_eq!(stock_edit_command(C, true, false, true), None, "Ctrl+Shift+C may be the reader's own");
 	}
 
-	/// Only the letter, so a neighbouring key on the keyboard is not mistaken for either.
 	#[test]
 	fn only_the_letters_c_and_a_name_a_command() {
 		assert_eq!(stock_edit_command('V' as i32, true, false, false), None, "Ctrl+V pastes");

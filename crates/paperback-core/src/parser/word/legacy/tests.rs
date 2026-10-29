@@ -28,7 +28,7 @@ fn parse_doc_clx_extracts_piece_table_text() {
 	piece_table.extend_from_slice(&0u16.to_le_bytes());
 	let mut clx = Vec::new();
 	clx.push(0x02);
-	clx.extend_from_slice(&(piece_table.len() as u32).to_le_bytes());
+	clx.extend_from_slice(&u32::try_from(piece_table.len()).unwrap().to_le_bytes());
 	clx.extend_from_slice(&piece_table);
 	let text = parse_doc_clx(&clx, &word_document).expect("clx text");
 	assert_eq!(text, "Hello");
@@ -46,8 +46,6 @@ fn looks_like_text_content_detects_textual_data() {
 	assert!(!looks_like_text_content("\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}"));
 }
 
-/// Word 6/95 keeps its text in the WordDocument stream between fcMin and fcMac. A Western document
-/// decodes cleanly through the shared detector.
 #[test]
 fn extract_word6_text_reads_the_fcmin_to_fcmac_run() {
 	use super::extract_word6_text;
@@ -61,8 +59,6 @@ fn extract_word6_text_reads_the_fcmin_to_fcmac_run() {
 	assert_eq!(extract_word6_text(&wd).trim(), "Harold Koplow, Gainesville FL.");
 }
 
-/// Bounds that make no sense (fcMac at or before fcMin, or past the stream) fall back to the
-/// simple scan rather than panicking on a bad slice.
 #[test]
 fn extract_word6_text_survives_nonsense_bounds() {
 	use super::extract_word6_text;
@@ -70,6 +66,5 @@ fn extract_word6_text_survives_nonsense_bounds() {
 	// fcMac before fcMin.
 	wd[0x18..0x1C].copy_from_slice(&0x30u32.to_le_bytes());
 	wd[0x1C..0x20].copy_from_slice(&0x10u32.to_le_bytes());
-	// Must not panic; the run is empty so the fallback returns an empty string here.
 	let _ = extract_word6_text(&wd);
 }

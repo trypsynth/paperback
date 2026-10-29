@@ -1,12 +1,4 @@
-//! Reading the text off pages with a picture on them, by rendering each one and handing the pixels to the platform OCR engine.
-//!
-//! Two kinds of page are worth this. A scanned page is nothing but a picture, so it has no text to extract at all; the parsers write a line saying "[Image only. Press enter to OCR.]" in its place and mark it, which is what `--ocr-image-pages` looks for. A page whose text layer came from an older or worse OCR pass, or that carries no text for material living only in its images, has text that is no better than no text; `--ocr-text` re-reads those, and covers the scanned pages too, which is the wider sweep the app's "Include text pages too" does.
-//!
-//! What is read is a rendering of the page, not the text layer it replaces, which is what makes re-reading a page that already has text worth doing at all.
-//!
-//! Pages are read on several threads by the same pool as the app's Batch OCR.
-//!
-//! The recognized text is put in place of what it replaces rather than in front of it, for the reason given on [`Edit`]: an insertion at a page's start moves every marker sitting there past the words, the page break and the image marker naming the artwork among them, so in HTML the rule for a scanned page comes out after its text.
+//! Recognized text replaces what it stands for rather than going in front of it, since an insertion at a page's start pushes the page break and image markers past the words (see [`Edit`]).
 
 use std::{collections::HashMap, sync::atomic::AtomicBool};
 
@@ -19,44 +11,24 @@ use paperback_core::{
 	},
 };
 
-/// Whether a file has pages worth rendering for OCR at all.
-///
-/// Only the three formats whose pages are a picture or a page image can be rendered: there is nothing to rasterize a page of an EPUB with, and reporting that a whole document was read when the reader got an empty text file would be worse than saying there was nothing to read. Matches the app's own gate, so pb and the app agree about which documents Batch OCR applies to.
+/// Matches the app's own gate, so pb and the app agree about which documents Batch OCR applies to.
 pub fn is_ocr_able(file_path: &str) -> bool {
 	["pdf", "cbz", "cbr"].iter().any(|extension| file_path.to_ascii_lowercase().ends_with(&format!(".{extension}")))
 }
 
-/// Which kinds of page to read, from the flags given.
-///
-/// The two are separate rather than one widening the other, because the kinds are disjoint: a page
-/// is either a picture with nothing on it or it carries a text layer, and a reader who wants only
-/// one of those has a reason for it. Both flags together are every page, which is the sweep the app
-/// offers as one checkbox.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Selection {
-	/// Pages that are a picture and nothing else, found through the instruction the parsers wrote.
 	pub image_pages: bool,
-	/// Pages carrying a text layer of their own, for one that came from an older or worse OCR pass
-	/// or that misses text living only in a page's images.
 	pub text_pages: bool,
 }
 
 impl Selection {
-	/// Whether this asks for any kind of page at all.
 	pub const fn any(self) -> bool {
 		self.image_pages || self.text_pages
 	}
 }
 
-/// Reads the text off the pages of `doc` in `selection`, replacing what each page had.
-///
-/// A document whose renderer cannot be opened reads nothing, as in the app: a page of an EPUB is not a bitmap, so there is nothing to read off one. Reported rather than passed over in silence, because a reader who asked for a whole document to be read and got the original text back has been told nothing.
-///
-/// Pages are numbered as the document numbers them, so a report of which pages were read and which were not is a report the reader can act on. A page that fails contributes nothing, and says so on stderr, because a page of a scan that silently came out blank is a page the reader would otherwise trust.
-///
-/// # Errors
-///
-/// Returns an error if the document cannot be opened for rendering. A page that fails to render or recognize is not an error: it is reported and skipped, so one unreadable page in a thousand-page scan does not throw the other nine hundred and ninety-nine away.
+/// A page that fails is reported and skipped, so one bad page doesn't throw away the rest of a thousand-page scan.
 pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, selection: Selection) -> Result<()> {
 	if !selection.any() {
 		return Ok(());
@@ -93,9 +65,7 @@ pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, select
 		match results.remove(&page) {
 			Some(Ok(text)) => {
 				let text = text.trim().to_string();
-				// A page the engine read nothing from keeps what it had. Blanking it would turn an
-				// instruction the reader cannot follow into a page that reads as blank, which is a
-				// claim about the scan that was never made.
+				// Blanking a page the engine read nothing from would claim the scan is blank.
 				if !text.is_empty() {
 					edit.text = if edit.whole_page { format!("{text}\n") } else { text };
 				}
@@ -109,7 +79,7 @@ pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, select
 	let edits: Vec<Edit> =
 		edits.into_iter().map(|edit| Edit { start: edit.start, end: edit.end, text: edit.text }).collect();
 	doc.buffer.replace_ranges(edits);
-	// Reported after the text is in place, so that a run which recognised most of a book still produces the book and says what it missed.
+	// After the text is in place, so a run that recognised most of a book still produces it.
 	for (page, error) in &failures {
 		eprintln!("pb: page {page} could not be read: {error}");
 	}
@@ -124,9 +94,8 @@ pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, select
 	Ok(())
 }
 
-/// Renders one 1-based page and recognizes the text on it, put back in reading order and joined into paragraphs (see [`arrange`]).
 fn recognize_page(renderer: &mut PageRenderer, page: i32, max_dimension: u32) -> Result<String, OcrError> {
-	// `render` takes a 0-based page index; the document numbers its pages from one.
+	// `render` takes a 0-based index; the document numbers pages from one.
 	let rendered = renderer.render(page - 1, max_dimension).map_err(|error| OcrError::Failed(error.to_string()))?;
 	let lines: Vec<RecognizedLine> =
 		recognize_lines(&rendered.rgba, rendered.width, rendered.height)?.into_iter().map(recognized).collect();
@@ -148,39 +117,18 @@ fn recognized(line: Line) -> RecognizedLine {
 	RecognizedLine { text: line.text, words }
 }
 
-/// One page's replacement, and which page it belongs to.
-///
-/// Carries the page number because every edit is filled in before any of them is applied, so the offsets captured here go stale as soon as the first page's text lands. The app re-resolves its spans for the same reason.
+/// Every edit is filled in before any is applied, so it carries the page number rather than relying on offsets that go stale once the first page lands.
 #[derive(Debug)]
 struct PageEdit {
 	page: usize,
 	start: DocPos,
 	end: DocPos,
-	/// True for a page whose whole span goes, false for one where only the instruction line does.
 	whole_page: bool,
-	/// What the page had until the engine says otherwise. Empty once a page has been read, which is
-	/// also what a page read as blank looks like, so the two are told apart by the caller rather
-	/// than by this field.
 	text: String,
 }
 
-/// The page of the file a page of the document came from, which is the page to render.
-///
-/// Not the page's position in the document, because `--pages` cuts a document down to an extract
-/// that keeps the markers naming the pages it was cut from: in `pb book.pdf --pages 43000-44000`,
-/// the first page of the extract sits where position 1 is and is page 43,000 of the file. Rendering
-/// by position would read the wrong sheet and put its words on the right page of the extract, which
-/// reads as a plausible misreading of the scan rather than as a fault.
-///
-/// Every format this reads labels its pages this way. Only a PDF, a CBZ or a CBR is ever rendered
-/// (see [`is_ocr_able`]), and all three name each page `"Page {n}"` for its number in the file --
-/// [`PdfParser`](paperback_core::parser::pdf::PdfParser) and
-/// [`CbzParser`](paperback_core::parser::cbz::CbzParser), with the CBR parser reading through the
-/// latter -- and [`PageRenderer`] numbers them the same way. The name is also what the document
-/// itself treats as the page's label, which is why page navigation announces it as it stands.
-///
-/// A marker that names nothing falls back to the position, which is what the name means for every
-/// document that has not been cut down to a range.
+/// `--pages` keeps the markers naming the pages an extract was cut from, so rendering by position would read the wrong sheet and pass as a misreading.
+/// The PDF and comic parsers name each page `"Page {n}"` for its number in the file, as [`PageRenderer`] numbers them.
 fn source_page(marker: &Marker, position: usize) -> usize {
 	marker
 		.text
@@ -190,18 +138,8 @@ fn source_page(marker: &Marker, position: usize) -> usize {
 		.unwrap_or(position)
 }
 
-/// The edits that put each page's words where that page's text was.
-///
-/// A scanned page gives up only its instruction line, and the newline closing it is left where it
-/// was so that the next page does not run into this one. A page that already had text gives up its
-/// whole span, newline included, and carries a newline of its own back -- which is also what drops
-/// the markers inside it, since a page re-read from its picture has no headings, links or tables to
-/// point at. That is the same plain text a scanned page ends up with, so both kinds of page come
-/// out the same way.
-///
-/// The kinds are asked for separately, so a scanned page is left alone by a request for text pages
-/// alone and a page with a text layer is left alone by a request for scanned pages alone. Only both
-/// together read every page.
+/// A scanned page gives up only its instruction line, keeping the newline so the next page doesn't run into it.
+/// A text page gives up its whole span and the markers in it, since a page re-read from its picture has no headings or links to point at.
 fn page_edits(doc: &Document, selection: Selection) -> Vec<PageEdit> {
 	let buffer = &doc.buffer;
 	let mut breaks: Vec<&Marker> =
@@ -215,8 +153,7 @@ fn page_edits(doc: &Document, selection: Selection) -> Vec<PageEdit> {
 		.collect();
 	let total = buffer.end();
 	let mut edits = Vec::new();
-	// Every page rather than the scanned ones, since which page of the file to render is a question
-	// about every page, and a page whose text is not wanted still has to be stepped over.
+	// Every page, since a page that isn't wanted still counts toward the position `source_page` falls back to.
 	for (index, marker) in breaks.iter().enumerate() {
 		let start = marker.position;
 		let page = source_page(marker, index + 1);
@@ -225,15 +162,12 @@ fn page_edits(doc: &Document, selection: Selection) -> Vec<PageEdit> {
 			if !selection.image_pages {
 				continue;
 			}
-			// The marker sits at the head of its line, which for a page at the very top of the
-			// document is the very start of the content and has no newline in front of it to find a
-			// start after.
+			// A page at the very top has no newline in front of it to find a start after.
 			let byte_start = buffer.byte_at(start);
 			let head = buffer
 				.slice(..byte_start)
 				.rfind('\n')
 				.map_or(ContentBytePos::ZERO, |offset| ContentBytePos::from_raw(offset + 1));
-			// The newline is left where it was rather than carried in the replacement.
 			let rest = buffer.slice(byte_start..);
 			let length = rest.find('\n').unwrap_or(rest.len());
 			let line_start = buffer.pos_at_byte(head);
@@ -262,7 +196,6 @@ mod tests {
 
 	use super::*;
 
-	/// Three pages, the second of them a picture with nothing on it.
 	fn document() -> Document {
 		let mut buffer = DocumentBuffer::new();
 		for page in 0..3 {
@@ -275,9 +208,6 @@ mod tests {
 		doc
 	}
 
-	/// A document cut down to a page range, which is what `--pages` hands over: the markers keep
-	/// naming the pages they were taken from, so this is the extract of pages 43000-43002 and its
-	/// pages are numbered 43000 to 43002 rather than 1 to 3.
 	fn extract_of_pages(first: usize, count: usize) -> Document {
 		let mut buffer = DocumentBuffer::new();
 		for index in 0..count {
@@ -291,7 +221,6 @@ mod tests {
 		doc
 	}
 
-	/// The same extract with every page a picture and nothing on it, as a scanned book's pages are.
 	fn scanned_extract_of_pages(first: usize, count: usize) -> Document {
 		let mut buffer = DocumentBuffer::new();
 		for index in 0..count {
@@ -319,9 +248,7 @@ mod tests {
 	}
 
 	fn read(pages: &mut Document, selection: Selection) -> String {
-		// The renderer is never reached, because these documents have nothing to render, so the
-		// edits are built and left alone. That is the shape the caller acts on, which is what the
-		// page-break ordering and the span choice are about.
+		// These documents have nothing to render, so only the edits are applied.
 		let edits = page_edits(pages, selection);
 		let edits: Vec<Edit> =
 			edits.into_iter().map(|edit| Edit { start: edit.start, end: edit.end, text: edit.text }).collect();
@@ -334,11 +261,9 @@ mod tests {
 		assert!(page_edits(&document(), images_only()).is_empty());
 	}
 
-	/// The page a failure is reported against has to be the page the document numbers it as, or the report points the reader at a page they cannot find.
 	#[test]
 	fn a_scanned_page_is_reported_by_the_number_the_document_gives_it() {
 		let mut doc = document();
-		// Put the marker where page 2's text starts.
 		let start =
 			doc.buffer.pos_at_byte(ContentBytePos::from_raw(doc.buffer.content.find("text of page 2").unwrap()));
 		doc.buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, start));
@@ -347,11 +272,7 @@ mod tests {
 		assert_eq!(edits[0].page, 2);
 	}
 
-	/// The bug this pairs with: `--pages 43000-43002 --ocr-image-pages` is handed a three-page
-	/// extract, and each page of it has to be rendered from its own page of the file. Numbering the
-	/// pages by where they sit in the extract read page 1 three times over. It was silent, because
-	/// the words that came back were put on the right page of the extract either way, so the scan
-	/// simply read as if the engine had misread it.
+	/// `--pages 43000-43002 --ocr-image-pages` once rendered page 1 three times, silently, since the words still landed on the right page of the extract.
 	#[test]
 	fn a_scanned_page_of_an_extract_is_rendered_from_its_own_page_of_the_file() {
 		let doc = scanned_extract_of_pages(43000, 3);
@@ -359,7 +280,6 @@ mod tests {
 		assert_eq!(pages, vec![43000, 43001, 43002]);
 	}
 
-	/// The same for a page that already has a text layer, which `--ocr-text-pages` re-reads.
 	#[test]
 	fn a_text_page_of_an_extract_is_rendered_from_its_own_page_of_the_file() {
 		let doc = extract_of_pages(43000, 3);
@@ -367,10 +287,6 @@ mod tests {
 		assert_eq!(pages, vec![43000, 43001, 43002]);
 	}
 
-	/// A marker that names no page is still numbered by its position, which is what every document
-	/// outside a PDF or a comic is numbered by and what every document was numbered by before
-	/// `--pages` could cut one down. Getting this wrong would number a whole document's pages from
-	/// nothing rather than from a range that is merely offset.
 	#[test]
 	fn a_marker_that_names_no_page_is_numbered_by_where_it_sits() {
 		let mut doc = document();
@@ -383,10 +299,6 @@ mod tests {
 		assert_eq!(pages, vec![1, 2, 3]);
 	}
 
-	/// The two flags ask for disjoint kinds of page, so neither is a widening of the other and
-	/// either may be given alone. A reader who wants one sort of page has a reason for it, and
-	/// re-reading a book that already has a good text layer over a thousand scanned pages is not
-	/// what they asked for.
 	#[test]
 	fn the_two_kinds_of_page_are_asked_for_separately() {
 		let mut doc = document();
@@ -406,8 +318,6 @@ mod tests {
 		assert_eq!(all, vec![1, 2, 3], "both together read every page");
 	}
 
-	/// A format with no bitmap pages to render is not swept, which is what is_ocr_able decides, so
-	/// an EPUB is not reported as a whole document read when it was not.
 	#[test]
 	fn a_format_with_no_bitmap_pages_is_not_swept() {
 		assert!(is_ocr_able("book.pdf"));
@@ -417,7 +327,7 @@ mod tests {
 		assert!(!is_ocr_able("notes.txt"));
 	}
 
-	/// A document with the instruction on its first page is the one that breaks: there is no newline in front of that line for its start to be found after, so a reader looking for one concludes the line has no start and leaves it where it is.
+	/// No newline precedes the first page's instruction line, so a search for one misses it.
 	#[test]
 	fn the_instruction_on_the_first_page_is_found_too() {
 		let mut buffer = DocumentBuffer::new();
@@ -439,7 +349,7 @@ mod tests {
 		assert_eq!(doc.buffer.content, format!("read from the first page\n{}\n", image_only_placeholder()));
 	}
 
-	/// The bug this shape was chosen to avoid: a page's own markers have to stay at the head of it. Inserting the words in front of the line instead of in place of it pushes every marker sitting there past the words, and the page's break with them, so an HTML export puts the rule for a scanned page after its text.
+	/// Inserting in front of the line pushed the page break past the words, so HTML put a scanned page's rule after its text.
 	#[test]
 	fn the_words_go_where_the_line_was_so_the_page_break_stays_at_the_head_of_the_page() {
 		let mut buffer = DocumentBuffer::new();
@@ -447,8 +357,7 @@ mod tests {
 		for page in 1..=2 {
 			let position = buffer.end();
 			buffer.add_marker(Marker::new(MarkerType::PageBreak, position).with_text(format!("Page {page}")));
-			// Shaped the way the comic parser builds a page: the break, the artwork and the
-			// instruction all at the same position.
+			// As the comic parser builds a page: break, artwork and instruction at one position.
 			buffer.add_marker(Marker::new(MarkerType::Image, position).with_reference(format!("{page}.png")));
 			buffer.add_marker(Marker::new(MarkerType::ImageOnlyPage, position));
 			buffer.append(&placeholder);
@@ -457,7 +366,6 @@ mod tests {
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
 
-		// What the OCR pass does with the first page it read.
 		let mut edits = page_edits(&doc, images_only());
 		edits[0].text = "balloon one".to_string();
 		let edits: Vec<Edit> =
@@ -489,14 +397,10 @@ mod tests {
 		assert!(rule_at < text_at, "the page's rule came after its text in the HTML: {html}");
 	}
 
-	/// A page read again gives up its whole span, and the replacement carries a newline, or the
-	/// next page's text runs into this one's and the page break lands mid-line.
 	#[test]
 	fn a_page_re_read_gives_up_its_whole_span_and_keeps_the_pages_apart() {
 		let mut doc = document();
 		let mut edits = page_edits(&doc, text_only());
-		// Every page is read, so every edit carries words: an edit left empty would blank the page
-		// it was built for, which is the behaviour being checked somewhere else.
 		for (index, edit) in edits.iter_mut().enumerate() {
 			edit.text = format!("words for page {}", index + 1);
 		}
@@ -511,16 +415,12 @@ mod tests {
 		);
 	}
 
-	/// A page re-read from its picture has no headings, links or tables to point at, so the markers
-	/// inside the span it gave up go with it. Leaving them would hand the renderer coordinates into
-	/// text that is no longer there.
 	#[test]
 	fn a_page_re_read_does_not_keep_markers_pointing_into_the_words_it_gave_up() {
 		let mut buffer = DocumentBuffer::new();
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, DocPos::ZERO).with_text("Page 1".to_string()));
 		buffer.append("stale text from an older pass\n");
-		// Inside the page rather than at its head: a marker at the head is the page break itself,
-		// which has to survive for the page to still be a page.
+		// Inside the page, since the marker at its head is the page break, which has to survive.
 		buffer.add_marker(
 			Marker::new(MarkerType::Heading1, DocPos::from_raw(6)).with_level(1).with_text("Stale".to_string()),
 		);
@@ -530,7 +430,6 @@ mod tests {
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
 
-		// Only page 1 is read, so page 2's edit is left out rather than blanked.
 		let mut edits = page_edits(&doc, text_only());
 		edits[0].text = "words read from the picture".to_string();
 		let edits: Vec<Edit> = edits
@@ -545,7 +444,6 @@ mod tests {
 		assert_eq!(doc.buffer.content, "words read from the picture\nkept text\n");
 	}
 
-	/// With neither flag there is nothing to do, and asking for nothing must not read the whole book.
 	#[test]
 	fn a_document_with_neither_kind_asked_for_is_left_alone() {
 		assert!(!Selection::default().any());
@@ -566,9 +464,6 @@ mod tests {
 		buffer.append("\n");
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
-		// An edit left empty by the caller keeps the line it was built to hold, which is what an
-		// unrecognized page looks like: the text was never filled in, so the replacement is the
-		// placeholder rather than a blank.
 		assert_eq!(read(&mut doc, images_only()), format!("{}\n", image_only_placeholder()));
 	}
 }

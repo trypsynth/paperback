@@ -1,9 +1,6 @@
 import Foundation
 
-// Which screen or dialog the reader is showing. This lives outside the views because two
-// non-SwiftUI layers drive navigation: the UIKeyCommand handlers in KeyboardShortcuts and the
-// VoiceOver custom actions on DocumentMenu. Both need something to set, so per-view @State
-// would not reach.
+// Outside the views because UIKeyCommand handlers and DocumentMenu's VoiceOver custom actions drive navigation too, and per-view @State wouldn't reach them.
 @MainActor
 @Observable
 final class NavigationRouter {
@@ -17,6 +14,7 @@ final class NavigationRouter {
 	var showDocumentInfo = false
 	var showExportDocument = false
 	var showSleepTimer = false
+	var showBookSpeech = false
 	var showElements = false
 	var showFilePicker = false
 	var passwordPromptUrl: URL? = nil

@@ -6,8 +6,6 @@ use std::time::Duration;
 
 use common::fixture;
 
-/// F5 in a document opened from a link downloads it again, rather than reading its working copy,
-/// and the reader stays where they were.
 #[test]
 #[ignore = "drives the real GUI via UI Automation; needs an interactive desktop"]
 fn f5_downloads_a_link_document_again_where_reading_stopped() {
@@ -28,8 +26,6 @@ fn f5_downloads_a_link_document_again_where_reading_stopped() {
 	common::wait_for_status_prefix(app.pid, &position);
 }
 
-/// A document opened from a link that was open when Paperback closed is downloaded again when it
-/// starts, since it is small.
 #[test]
 #[ignore = "drives the real GUI via UI Automation; needs an interactive desktop"]
 fn relaunching_downloads_a_small_link_document_again() {

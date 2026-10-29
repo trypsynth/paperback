@@ -24,8 +24,7 @@ struct TtsModeView: View {
 					.foregroundStyle(.secondary)
 					.lineLimit(1)
 					.padding(.horizontal, 24)
-					// The text above is the real content. This only says where in the document
-					// it sits, so VoiceOver reading both would say the same words twice.
+					// The text above is the real content, so VoiceOver reading both would say the same words twice.
 					.accessibilityHidden(true)
 			}
 			// A recording moves on between the clip changes the view is told about, so its share is read again every second while it plays.
@@ -52,11 +51,7 @@ struct TtsModeView: View {
 		}
 	}
 
-	/// The line under the caret, shown small beneath the spoken text as a place marker.
-	///
-	/// Left out when the spoken text already contains it, which is what happens whenever a
-	/// paragraph is one line long: the same words would otherwise appear twice on screen, once
-	/// full size and once again underneath.
+	/// Nil when the spoken text already contains it, as in a one-line paragraph, so the same words don't appear twice.
 	private var positionLine: String? {
 		guard let session = viewModel.activeSession else { return nil }
 		let line = session.getLineText(position: viewModel.reading.ttsPosition)

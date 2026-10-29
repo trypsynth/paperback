@@ -1,13 +1,3 @@
-//! Page rendering for OCR of pages that carry a picture and no text.
-//!
-//! The PDF parser tags every page that has an image but no extractable text with a
-//! [`MarkerType::ImageOnlyPage`](crate::document::MarkerType::ImageOnlyPage) marker and an
-//! [`image_only_placeholder`] line, and the comic archive parser tags every page that way,
-//! since none of them holds text at all. At runtime the desktop app renders those pages to
-//! RGBA bitmaps through [`PageRenderer`] and hands the pixels to the platform OCR engine
-//! (`Windows.Media.Ocr`, or Vision on macOS), which lives in the desktop crate so this one
-//! stays platform-neutral. The recognized text then replaces the placeholder in the buffer.
-
 use std::{fs::File, io::BufReader, path::Path};
 
 use anyhow::{Context, Result};
@@ -27,40 +17,28 @@ pub use layout::{RecognizedLine, RecognizedWord, arrange, page_text};
 pub use pool::{Run, default_workers, recognize_pages};
 pub use saved::{load_pages, save_pages, saved_pages_file};
 
-/// The placeholder line the PDF parser inserts for a page that has an image but no extractable
-/// text. Purely what the reader sees: the OCR flow locates these pages by their
-/// `ImageOnlyPage` marker, so this string is free to be translated and to change.
-///
-/// Written as literal [`t`] calls rather than a translated constant because the pot is built by
-/// `xgettext`, which only sees string literals; `t(SOME_CONST)` extracts nothing and the message
-/// silently stays untranslated in every language.
-///
-/// Builds with no OCR engine say less, because there is nothing for Enter to do there. The
-/// marker is emitted either way, so only the wording changes.
+/// OCR finds these pages by their `ImageOnlyPage` marker, so this text is free to change and be translated.
+/// Literal [`t`] calls rather than a translated constant, because `xgettext` only sees string literals.
 #[must_use]
 pub fn image_only_placeholder() -> String {
-	#[cfg(any(target_os = "windows", target_os = "macos"))]
+	#[cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))]
 	{
 		// TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 		t("[Image only. Press enter to OCR.]")
 	}
-	#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+	#[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
 	{
 		// TRANSLATORS: Line shown in place of a scanned PDF page with no text layer, where the system has no OCR engine
 		t("[Image only. This page has no text to read.]")
 	}
 }
 
-/// Dots per inch to render at. OCR engines want 200 to 300 DPI; below that, small type starts
-/// dropping characters. PDF user units are points (1/72 inch), which is what the ratio below
-/// converts from.
+/// OCR engines want 200 to 300 DPI; below that, small type starts dropping characters.
 const TARGET_DPI: f32 = 300.0;
 const POINTS_PER_INCH: f32 = 72.0;
 
-/// Fallback pixel width for a page whose reported size is unusable (zero or negative).
 const FALLBACK_WIDTH: i32 = 1800;
 
-/// An RGBA8 page render ready to hand to a platform OCR engine.
 #[derive(Debug)]
 pub struct RenderedPage {
 	pub width: u32,
@@ -68,25 +46,18 @@ pub struct RenderedPage {
 	pub rgba: Vec<u8>,
 }
 
-/// A document held open for repeated page rendering.
-///
-/// Batch OCR renders many pages from one file, so the file is opened once here rather than per
-/// page. It need not live on the UI thread. Each pool worker opens its own rather than sharing
-/// one, so the workers rasterize in parallel.
+/// Each pool worker opens its own rather than sharing one, so the workers rasterize in parallel.
 pub struct PageRenderer {
 	source: Source,
 }
 
-/// What the renderer draws pages out of. A PDF page has to be rasterized; a comic archive's
-/// page is already a picture and only needs decoding.
 enum Source {
 	Pdf(PdfDocument),
 	Comic {
 		archive: ZipArchive<BufReader<File>>,
 		pages: Vec<String>,
 	},
-	/// A RAR is read from the front rather than opened at any member, so the archive is not
-	/// held open between pages: the path is, and each page reopens it.
+	/// A RAR is read from the front rather than opened at any member, so each page reopens it.
 	ComicRar {
 		file_path: String,
 		pages: Vec<String>,
@@ -94,12 +65,6 @@ enum Source {
 }
 
 impl PageRenderer {
-	/// Opens `file_path` for rendering, choosing the backend from its extension.
-	///
-	/// # Errors
-	///
-	/// Returns an error if the file cannot be opened, including a wrong or missing PDF
-	/// password, or if a comic archive holds no pages.
 	pub fn open(file_path: &str, password: Option<&str>) -> Result<Self> {
 		let extension = Path::new(file_path).extension();
 		if extension.is_some_and(|e| e.eq_ignore_ascii_case("cbz")) {
@@ -114,8 +79,7 @@ impl PageRenderer {
 	fn open_comic(file_path: &str) -> Result<Self> {
 		let file = File::open(file_path).with_context(|| format!("Failed to open '{file_path}'"))?;
 		let mut archive = ZipArchive::new(BufReader::new(file))?;
-		// Numbered exactly as the parser numbered them, so page N here is the page the
-		// reader is sitting on.
+		// Numbered exactly as the parser numbered them, so page N here is the page the reader is on.
 		let pages = cbz::page_names(&mut archive);
 		if pages.is_empty() {
 			anyhow::bail!("comic archive '{file_path}' has no pages to render");
@@ -123,8 +87,7 @@ impl PageRenderer {
 		Ok(Self { source: Source::Comic { archive, pages } })
 	}
 
-	/// The RAR twin of [`Self::open_comic`], for the comics packed the other way. A .cbr that
-	/// is really a zip reads as one, the same as it does when the parser opens it.
+	// A .cbr that is really a zip reads as one, as it does in the parser.
 	fn open_comic_rar(file_path: &str) -> Result<Self> {
 		if cbz::is_zip(file_path) {
 			return Self::open_comic(file_path);
@@ -136,14 +99,6 @@ impl PageRenderer {
 		Ok(Self { source: Source::ComicRar { file_path: file_path.to_string(), pages } })
 	}
 
-	/// Renders page `page_index` (0-based) to an RGBA8 bitmap, scaled down to keep its longest
-	/// side within `max_dimension` (engines silently downscale larger inputs themselves, and
-	/// doing it here keeps the buffer smaller). A PDF page is rasterized at [`TARGET_DPI`];
-	/// a comic archive's page is decoded at whatever resolution it was scanned.
-	///
-	/// # Errors
-	///
-	/// Returns an error if the page is out of range, or cannot be rasterized or decoded.
 	pub fn render(&mut self, page_index: i32, max_dimension: u32) -> Result<RenderedPage> {
 		match &mut self.source {
 			Source::Pdf(document) => {
@@ -171,25 +126,13 @@ impl PageRenderer {
 	}
 }
 
-/// Decode one comic page and shrink it to fit `max_dimension`.
 fn decode_page(bytes: &[u8], max_dimension: u32) -> Result<RenderedPage> {
 	decode_image(bytes, max_dimension).context("failed to decode a comic archive page")
 }
 
-/// Decodes an encoded picture into RGBA8, shrunk so its longest side fits `max_dimension`.
-///
-/// This is what a picture embedded in a document goes through before an OCR engine sees it: the
-/// bytes are whatever the document stores (PNG, JPEG, GIF, WebP or BMP, and a PDF's picture as
-/// PNG), and a picture the decoder does not know — an SVG, or a file that is not really an image —
-/// comes back as an error for the caller to report.
-///
-/// # Errors
-///
-/// Returns an error if the bytes are not an image this build can decode.
 pub fn decode_image(bytes: &[u8], max_dimension: u32) -> Result<RenderedPage> {
 	let image = image::load_from_memory(bytes).context("failed to decode the image")?;
-	// Scanned artwork is routinely bigger than the engines accept, and they downscale it
-	// themselves anyway, so shrinking here only saves carrying the pixels around.
+	// The engines downscale oversized input themselves anyway, so shrinking here only saves carrying the pixels around.
 	let longest = image.width().max(image.height());
 	let image = if max_dimension > 0 && longest > max_dimension {
 		image.thumbnail(max_dimension, max_dimension)
@@ -200,8 +143,6 @@ pub fn decode_image(bytes: &[u8], max_dimension: u32) -> Result<RenderedPage> {
 	Ok(RenderedPage { width: rgba.width(), height: rgba.height(), rgba: rgba.into_raw() })
 }
 
-/// The pixel width to rasterize a page of `width_pt` by `height_pt` at [`TARGET_DPI`], reduced
-/// so neither side exceeds `max_dimension`.
 #[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss, clippy::cast_sign_loss)]
 fn pixel_width(width_pt: f32, height_pt: f32, max_dimension: u32) -> i32 {
 	if width_pt <= 0.0 || height_pt <= 0.0 {
@@ -221,7 +162,6 @@ mod tests {
 
 	use super::*;
 
-	/// A greyscale PNG of `width` by `height`, all white. Small but a real decodable image.
 	fn png(width: u32, height: u32) -> Vec<u8> {
 		let mut buffer = Vec::new();
 		let encoder = image::codecs::png::PngEncoder::new(&mut buffer);
@@ -230,7 +170,6 @@ mod tests {
 		buffer
 	}
 
-	/// Write a comic archive holding `pages`, each `(name, width, height)`, and return its path.
 	fn comic(test_name: &str, pages: &[(&str, u32, u32)]) -> String {
 		let dir = env::temp_dir().join("paperback-cbz-render-tests");
 		fs::create_dir_all(&dir).unwrap();
@@ -245,8 +184,7 @@ mod tests {
 		path.to_string_lossy().into_owned()
 	}
 
-	// The reader numbers comic pages in natural order, so the renderer has to agree or
-	// running OCR on page 2 recognizes some other page entirely.
+	// The reader numbers comic pages in natural order; disagreeing here would OCR some other page.
 	#[test]
 	fn a_comic_page_renders_in_the_order_the_reader_numbers_them() {
 		let path = comic("order", &[("p10.png", 30, 10), ("p2.png", 20, 10), ("p1.png", 10, 10)]);
@@ -265,8 +203,6 @@ mod tests {
 		assert_eq!(page.rgba.len(), 8 * 4 * 4);
 	}
 
-	// Scanned artwork is routinely larger than the OCR engines accept, so an oversized page
-	// has to come back shrunk rather than as tens of megabytes of pixels.
 	#[test]
 	fn an_oversized_comic_page_is_shrunk_to_the_cap() {
 		let path = comic("cap", &[("001.png", 400, 200)]);
@@ -276,8 +212,6 @@ mod tests {
 		assert_eq!(page.height, 50);
 	}
 
-	/// A picture embedded in a document arrives as its own bytes, not as a page of a comic, and
-	/// has to come back at its own size for the engine to read it.
 	#[test]
 	fn a_picture_decodes_to_rgba_of_its_own_size() {
 		let page = decode_image(&png(8, 4), 4000).unwrap();
@@ -291,8 +225,6 @@ mod tests {
 		assert_eq!((page.width, page.height), (100, 50));
 	}
 
-	/// A picture the decoder does not know is the caller's to report, not a crash and not an
-	/// empty page handed to the engine.
 	#[test]
 	fn a_picture_that_is_not_an_image_is_an_error() {
 		assert!(decode_image(b"<svg xmlns=\"http://www.w3.org/2000/svg\"/>", 4000).is_err());
@@ -306,8 +238,6 @@ mod tests {
 		assert!(renderer.render(-1, 4000).is_err());
 	}
 
-	// A zip with nothing but metadata in it has no pages to OCR, and saying so beats
-	// handing the engine an empty bitmap.
 	#[test]
 	fn a_comic_with_no_pages_will_not_open() {
 		let path = comic("empty", &[("ComicInfo.xml", 1, 1)]);
@@ -316,13 +246,11 @@ mod tests {
 
 	#[test]
 	fn pixel_width_renders_letter_at_target_dpi() {
-		// 8.5 by 11 inches in points, comfortably inside the cap.
 		assert_eq!(pixel_width(612.0, 792.0, 4000), 2550);
 	}
 
 	#[test]
 	fn pixel_width_scales_down_to_the_cap() {
-		// The same page at a 2600 px cap: the 11 inch side is the one that binds.
 		assert_eq!(pixel_width(612.0, 792.0, 2600), 2009);
 	}
 

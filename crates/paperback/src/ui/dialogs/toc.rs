@@ -16,8 +16,6 @@ pub fn show_toc_dialog(parent: &Frame, toc_items: &[TocItem], current_offset: i3
 	return show_toc_dialog_wx(parent, toc_items, current_offset);
 }
 
-// ── DataViewTreeCtrl implementation (Linux + macOS) ───────────────────────────
-
 #[cfg(not(target_os = "windows"))]
 fn show_toc_dialog_dv(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {
 	// TRANSLATORS: Title of the Table of Contents dialog
@@ -34,10 +32,7 @@ fn show_toc_dialog_dv(parent: &Frame, toc_items: &[TocItem], current_offset: i32
 	bind_toc_selection_dv(tree, Rc::clone(&item_offsets), Rc::clone(&selected_offset));
 	bind_toc_activation_dv(dialog, tree, Rc::clone(&item_offsets), Rc::clone(&selected_offset));
 	let (ok_button, cancel_button) = build_toc_buttons(dialog);
-	// OK confirms the tree's current selection at click time, as Enter does, rather than
-	// trusting a cached offset: the entry nearest the reader is preselected while the tree
-	// is being built, before the selection-changed listener is attached, so that listener
-	// never records it and OK would otherwise claim nothing is selected.
+	// The preselected entry is set before the selection listener is attached, so OK reads the live selection rather than a cached offset.
 	let resolve_selected: Rc<dyn Fn() -> Option<i32>> = {
 		let tree_for_ok = tree;
 		let offsets_for_ok = Rc::clone(&item_offsets);
@@ -127,8 +122,7 @@ fn bind_toc_layout_dv(dialog: Dialog, tree: DataViewTreeCtrl, ok_button: Button,
 	content_sizer.add(&tree, 1, SizerFlag::Expand | SizerFlag::All, super::DIALOG_PADDING);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	button_sizer.add_stretch_spacer(1);
-	// macOS HIG puts the default/affirmative action rightmost (Cancel, then OK); this
-	// implementation also covers Linux, which keeps the OK-then-Cancel order.
+	// macOS HIG puts the default action rightmost; Linux keeps OK first.
 	#[cfg(target_os = "macos")]
 	{
 		button_sizer.add(&cancel_button, 0, SizerFlag::Right, super::DIALOG_PADDING);
@@ -173,8 +167,6 @@ fn find_and_select_dv(
 	false
 }
 
-// ── Windows implementation (TreeCtrl) ─────────────────────────────────────────
-
 #[cfg(target_os = "windows")]
 fn show_toc_dialog_wx(parent: &Frame, toc_items: &[TocItem], current_offset: i32) -> Option<i32> {
 	// TRANSLATORS: Title of the Table of Contents dialog
@@ -186,10 +178,7 @@ fn show_toc_dialog_wx(parent: &Frame, toc_items: &[TocItem], current_offset: i32
 	bind_toc_activation(dialog, tree, Rc::clone(&selected_offset));
 	bind_toc_search(tree);
 	let (ok_button, cancel_button) = build_toc_buttons(dialog);
-	// OK confirms the tree's current selection at click time, as Enter does, rather than
-	// trusting a cached offset: the entry nearest the reader is preselected while the tree
-	// is being built, before the selection-changed listener is attached, so that listener
-	// never records it and OK would otherwise claim nothing is selected.
+	// The preselected entry is set before the selection listener is attached, so OK reads the live selection rather than a cached offset.
 	let resolve_selected: Rc<dyn Fn() -> Option<i32>> = {
 		let tree_for_ok = tree;
 		Rc::new(move || {
@@ -253,7 +242,7 @@ fn bind_toc_activation(dialog: Dialog, tree: TreeCtrl, selected_offset: Rc<Cell<
 
 #[cfg(target_os = "windows")]
 fn bind_toc_search(tree: TreeCtrl) {
-	// Prevent space from triggering item_activated (which our handler maps to OK).
+	// Space would fire `item_activated`, which the dialog treats as OK.
 	tree.bind_internal(EventType::KEY_DOWN, move |event| {
 		if let Some(key) = event.get_key_code()
 			&& key == KEY_SPACE
@@ -338,9 +327,8 @@ fn find_and_select_item(tree: TreeCtrl, parent: &TreeItemId, offset: i32) -> boo
 	false
 }
 
-// ── Shared helpers ─────────────────────────────────────────────────────────────
-
 fn build_toc_buttons(dialog: Dialog) -> (Button, Button) {
+	// Not `ID_OK`, so the custom handler can keep the dialog open until something is selected.
 	// TRANSLATORS: Label for the confirmation button
 	let ok_button = Button::builder(&dialog).with_label(&t("OK")).build();
 	// TRANSLATORS: Label for the cancellation button

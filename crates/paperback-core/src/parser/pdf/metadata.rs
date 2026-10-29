@@ -1,6 +1,3 @@
-//! Mapping the PDF engine's document-open errors to user-facing messages, and reading sanitized
-//! metadata fields (title/author) off an opened document.
-
 use anyhow::anyhow;
 
 use super::text::sanitize_pdf_text;
@@ -26,14 +23,10 @@ pub(super) fn metadata_value(document: &PdfDocument, key: &str) -> Option<String
 	document.metadata(key).map(|value| trim_string(&sanitize_pdf_text(&value))).filter(|value| !value.is_empty())
 }
 
-/// The extensions a `/Title` carries when it is really the name of the file the PDF was made
-/// from. Layout and word processors write their own document's name into the metadata, so
-/// these turn up constantly in print-production PDFs. `.pdf` is here too: a title of
-/// `book.pdf` is the export's own name, never what the book is called.
+/// Layout and word processors write their own source file's name into `/Title`, and a title of `book.pdf` is the export's own name.
 const AUTHORING_EXTENSIONS: [&str; 12] =
 	[".indd", ".qxd", ".qxp", ".doc", ".docx", ".odt", ".rtf", ".tex", ".fm", ".pmd", ".pub", ".pdf"];
 
-/// Titles that carry no information, which several tools write when the author never set one.
 const PLACEHOLDER_TITLES: [&str; 5] = ["untitled", "untitled document", "unnamed", "no title", "document1"];
 
 /// Words no book is called on their own, which turn up as a whole title when a tool picks a stray word off a page (#986 had `FROM`). Articles, prepositions and conjunctions only: pronouns name real books (*It*, *Us*, *We*, *Them*), and so does *If—*.
@@ -42,20 +35,13 @@ const FUNCTION_WORDS: [&str; 18] = [
 	"than",
 ];
 
-/// The book's title from the PDF's metadata, ignoring the values that are not titles at all.
-///
-/// A PDF's `/Title` is whatever produced it chose to put there, and print-production tools
-/// routinely put their own source filename in: the reported case was a book whose metadata
-/// title was `i-xx_Phobias-fm.indd`. The name of the file on disk is a better answer than
-/// that, so returning nothing here lets the caller fall back to it.
+/// Returning nothing lets the caller fall back to the file name on disk, which beats a source filename like `i-xx_Phobias-fm.indd`.
 pub(super) fn metadata_title(document: &PdfDocument) -> Option<String> {
 	metadata_value(document, "Title").filter(|title| !is_not_really_a_title(title))
 }
 
 fn is_not_really_a_title(title: &str) -> bool {
 	let lowered = title.to_lowercase();
-	// "Microsoft Word - Chapter 3 final.doc" and its PowerPoint equivalent: the tool's name,
-	// a dash, and then the file it was exported from.
 	if lowered.starts_with("microsoft word - ") || lowered.starts_with("microsoft powerpoint - ") {
 		return true;
 	}
@@ -76,9 +62,7 @@ mod tests {
 
 	use super::is_not_really_a_title;
 
-	/// <https://github.com/trypsynth/paperback/issues/882>: a book whose metadata title was the
-	/// `InDesign` file it was laid out in, so the reader saw `i-xx_Phobias-fm.indd` where the
-	/// book's name should be.
+	/// <https://github.com/trypsynth/paperback/issues/882>: the metadata title was the `InDesign` file the book was laid out in.
 	#[rstest]
 	#[case("i-xx_Phobias-fm.indd")]
 	#[case("chapter 3 final.doc")]
@@ -97,8 +81,7 @@ mod tests {
 		assert!(is_not_really_a_title(title), "{title} should have been rejected");
 	}
 
-	/// Far more important than catching the junk: never throwing away a real title. A book
-	/// named after a file format, or one whose name merely contains a dot, has to survive.
+	/// Never throwing away a real title matters far more than catching the junk.
 	#[rstest]
 	#[case("The Encyclopedia of Phobias, Fears, and Anxieties")]
 	#[case("Programming in D")]

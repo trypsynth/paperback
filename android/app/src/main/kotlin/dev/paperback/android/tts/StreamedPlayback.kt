@@ -10,11 +10,8 @@ import android.util.Log
 private const val TAG = "PaperbackTts"
 
 /**
- * Plays synthesized paragraphs back to back through one [AudioTrack], from the audio the engine hands over as it makes it.
- *
- * Each paragraph is a segment, queued in reading order before its audio exists. Audio plays as soon as it arrives, so speech starts with the engine's first chunk rather than once the whole paragraph is made, and the next paragraph follows on the same track with no gap. Pausing pauses the track, so resuming carries on from the very sample it stopped at. Nothing is written to disk.
- *
- * The engine's callbacks arrive on binder threads and a feeder thread writes to the track; [onSegmentPlayed] is called on the main thread once a segment's last sample, and the pause after it, has been heard.
+ * One streaming track so speech starts on the engine's first chunk, paragraphs follow with no gap, and a pause resumes on the exact sample.
+ * Engine callbacks arrive on binder threads and a feeder thread writes, hence the lock; [onSegmentPlayed] runs on the main thread.
  */
 internal class StreamedPlayback(
 	private val audioAttributes: AudioAttributes,
@@ -39,9 +36,10 @@ internal class StreamedPlayback(
 		var silenceWritten = false
 	}
 
-	/** Where a written segment's audio ends on the track, so the poller can tell when it has been heard. */
 	private class End(val id: String, val frame: Long)
 
+	// wait() and notifyAll() are only on java.lang.Object, which Kotlin's Any does not expose.
+	@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
 	private val lock = Object()
 	private val segments = ArrayDeque<Segment>()
 	private val ends = ArrayDeque<End>()
@@ -61,7 +59,7 @@ internal class StreamedPlayback(
 		start()
 	}
 
-	/** Queues a segment after every one already queued. [skipMs] of its start is dropped, for carrying on part-way through a paragraph made again at a new rate. */
+	/** [skipMs] is for carrying on part-way through a paragraph made again at a new rate. */
 	fun enqueue(id: String, pauseMs: () -> Int, skipMs: Long = 0) {
 		synchronized(lock) {
 			segments.addLast(Segment(id, skipMs, pauseMs))
@@ -69,7 +67,6 @@ internal class StreamedPlayback(
 		}
 	}
 
-	/** Drops a queued segment that has not started playing, such as a paragraph made ahead at settings that have since changed. */
 	fun remove(id: String) {
 		synchronized(lock) {
 			val segment = segments.firstOrNull { it.id == id } ?: return
@@ -91,7 +88,7 @@ internal class StreamedPlayback(
 		}
 	}
 
-	/** Marks a segment complete. A segment that failed is complete too, with whatever audio it had, so the queue never waits on it. */
+	/** Called for failed segments too, so the queue never waits on one. */
 	fun done(id: String) {
 		synchronized(lock) {
 			segments.firstOrNull { it.id == id }?.done = true
@@ -99,7 +96,6 @@ internal class StreamedPlayback(
 		}
 	}
 
-	/** How far into the segment being heard the listener is, in milliseconds, or null when nothing is playing. */
 	fun playedMsOfCurrent(): Long? {
 		synchronized(lock) {
 			val format = trackFormat ?: return null
@@ -132,7 +128,6 @@ internal class StreamedPlayback(
 		startPolling()
 	}
 
-	/** Drops everything queued and everything on the track. The next segment opens a new track. */
 	fun clear() {
 		synchronized(lock) {
 			segments.clear()
@@ -223,11 +218,7 @@ internal class StreamedPlayback(
 		return segment.chunks.isEmpty() && !segment.done
 	}
 
-	/**
-	 * The next bytes to write, opening the track for them; an empty array when the segment has just been finished, and null to wait a moment and ask again.
-	 *
-	 * Called with the lock held.
-	 */
+	// Called with the lock held. Empty means the segment just finished; null means wait and ask again.
 	private fun takeNextBytes(): ByteArray? {
 		val segment = segments.first()
 		val format = segment.format
@@ -255,11 +246,7 @@ internal class StreamedPlayback(
 		return ByteArray(0)
 	}
 
-	/**
-	 * Makes sure the track plays [format], opening one if there is none. Called with the lock held; false means wait.
-	 *
-	 * A segment in another format, after a voice change, waits for the track to play out what it holds and then gets a track of its own.
-	 */
+	// Called with the lock held. A new format after a voice change waits for the old track to play out before getting its own.
 	private fun openTrackFor(format: Format): Boolean {
 		val current = track
 		if (current != null && trackFormat == format) return true
@@ -319,7 +306,7 @@ internal class StreamedPlayback(
 		const val POLL_MS = 40L
 		const val WAIT_MS = 10L
 
-		/** Enough audio on the track to ride out a busy moment on the device, short enough that a pause or a stop is not waiting on it. */
+		/** Rides out a busy moment on the device, short enough that a pause or stop isn't waiting on it. */
 		const val BUFFER_MS = 250L
 	}
 }

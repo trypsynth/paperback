@@ -7,10 +7,7 @@ use crate::{
 	util::test_support::TempDir,
 };
 
-// Regression test for https://github.com/trypsynth/paperback/issues/606: a real-world DAISY
-// book declared its DTBook XML as ISO-8859-1 but was actually encoded as Windows-1252 (a very
-// common mislabeling), which made `fs::read_to_string` fail outright since the bytes were not
-// valid UTF-8.
+// https://github.com/trypsynth/paperback/issues/606: a real book declared its DTBook XML as ISO-8859-1 but was Windows-1252, a common mislabeling, so `fs::read_to_string` failed outright.
 #[test]
 fn parses_dtbook_xml_declared_as_iso_8859_1_but_encoded_as_windows_1252() {
 	let dir = TempDir::new("daisy");
@@ -33,8 +30,7 @@ fn parses_dtbook_xml_declared_as_iso_8859_1_but_encoded_as_windows_1252() {
 "#,
 	)
 	.expect("write opf");
-	// Windows-1252 bytes for curly quotes (0x93/0x94) and 0xE7 for the c-cedilla in
-	// "Fran\xE7ois" -- both invalid as standalone UTF-8.
+	// Windows-1252 bytes for curly quotes (0x93/0x94) and 0xE7 for the c-cedilla in "Fran\xE7ois" -- both invalid as standalone UTF-8.
 	let mut xml_bytes = Vec::new();
 	xml_bytes.extend_from_slice(b"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n");
 	xml_bytes.extend_from_slice(b"<dtbook><book><frontmatter><p id=\"p1\">Fran\xE7ois said, \x93hello\x94.</p>");
@@ -51,8 +47,6 @@ fn parses_dtbook_xml_declared_as_iso_8859_1_but_encoded_as_windows_1252() {
 	assert!(document.audio.is_none());
 }
 
-/// A minimal two-section DAISY 3 "full text, full audio" book, exercising the multi-file
-/// offset math and the SMIL-to-text-position audio linkage end to end.
 #[test]
 fn parses_multi_file_daisy_book_with_audio() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
@@ -135,8 +129,6 @@ fn parses_multi_file_daisy_book_with_audio() {
 	assert_eq!(audio.clip_start_ms(clip_index), Some(5000));
 }
 
-/// Two chapters can legally reuse the same bare id; the merged map keeps the first file's
-/// position while still exposing both via their path-qualified keys.
 #[test]
 fn multi_file_daisy_book_keeps_first_occurrence_of_a_duplicate_bare_id() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
@@ -181,11 +173,7 @@ fn multi_file_daisy_book_keeps_first_occurrence_of_a_duplicate_bare_id() {
 	assert_eq!(document.id_positions.get("book2.xml#dup").copied(), Some(second_pos));
 }
 
-/// Some OPFs label their DTBook items as generic `text/xml` rather than the proper
-/// `application/x-dtbook+xml`. `find_single_dtbook_href`'s legacy fallback already tolerates
-/// this for a single-file book; the multi-file spine walk in `build_daisy_document` must too,
-/// or every such chapter gets skipped, `converted_any` never becomes true, and the whole book
-/// falls back to that same single-file path, which then only recovers the first chapter.
+/// Chapters an OPF labels `text/xml` must still be read, or the book falls back to the single-file path and keeps only its first chapter.
 #[test]
 fn multi_file_daisy_book_accepts_untyped_xml_chapters_referenced_directly_from_the_spine() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
@@ -222,8 +210,6 @@ fn multi_file_daisy_book_accepts_untyped_xml_chapters_referenced_directly_from_t
 	);
 }
 
-/// A `<text src="#id">` with no file part resolves against the most recent explicit
-/// `<text src="file#id">` in the same SMIL, rather than losing that clip.
 #[test]
 fn smil_bare_fragment_resolves_against_the_last_explicit_text_file() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
@@ -271,9 +257,7 @@ fn smil_bare_fragment_resolves_against_the_last_explicit_text_file() {
 	assert_eq!(audio.clip_start_ms(clip_index), Some(2000));
 }
 
-/// A DAISY 3 NCX points `content/@src` at SMIL ids, not `DTBook` ids. Here the SMIL par
-/// ids are deliberately unrelated to the `DTBook` ids (as producers other than Bookshare
-/// number them), so resolving against `DTBook` ids alone would strand every entry at 0.
+/// Producers other than Bookshare number SMIL par ids unrelated to the `DTBook` ids, so resolving against `DTBook` ids alone would strand every entry at 0.
 #[test]
 fn ncx_targets_resolve_through_smil_par_ids() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
@@ -321,7 +305,6 @@ fn ncx_targets_resolve_through_smil_par_ids() {
 	assert_eq!(document.toc_items[1].offset, chapter_two, "second entry must not be stranded at 0");
 }
 
-/// An NCX naming a `<seq>` rather than a `<par>` resolves to where that `<seq>` begins.
 #[test]
 fn ncx_targets_resolve_through_smil_seq_ids() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
@@ -364,8 +347,6 @@ fn ncx_targets_resolve_through_smil_seq_ids() {
 	assert_eq!(document.toc_items[0].offset, document.buffer.content.find("Chapter Two").unwrap());
 }
 
-/// `clipEnd` is optional in SMIL 2.0 and means "to the end of the media". Such a par must
-/// keep its audio, bounded by whatever plays next from the same file.
 #[test]
 fn par_without_clip_end_is_bounded_by_the_next_clip_on_the_same_source() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
@@ -384,8 +365,7 @@ fn par_without_clip_end_is_bounded_by_the_next_clip_on_the_same_source() {
 <p id="p2">Second sentence.</p>
 <p id="p3">Third sentence.</p>
 </bodymatter></book></dtbook>"#;
-	// p1 has no clipEnd and must be bounded by p2's clipBegin; p3 is the trailing
-	// open-ended clip, which has nothing to measure against.
+	// p1 has no clipEnd and must be bounded by p2's clipBegin; p3 is the trailing open-ended clip, which has nothing to measure against.
 	let smil1 = br#"<smil xmlns="http://www.w3.org/2001/SMIL20/"><body><seq id="s">
 <par id="par1"><text src="book1.xml#p1" /><audio src="book1.mp3" clipBegin="0s" /></par>
 <par id="par2"><text src="book1.xml#p2" /><audio src="book1.mp3" clipBegin="3s" clipEnd="5s" /></par>
@@ -409,7 +389,6 @@ fn par_without_clip_end_is_bounded_by_the_next_clip_on_the_same_source() {
 	assert_eq!(audio.total_duration_ms(), 3000 + 2000);
 }
 
-/// One unparseable chapter shouldn't cost the reader the rest of the book.
 #[test]
 fn corrupt_chapter_does_not_abort_the_whole_book() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>

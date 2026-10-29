@@ -1,7 +1,4 @@
-//! Everything Paperback asks of a PDF: opening it, walking its outline and tag tree, reading text with glyph positions, finding its images and links, and rendering a page for OCR, all on hayro, a PDF interpreter written in Rust.
-//!
-//! hayro interprets a page's content stream once into a device rather than answering questions one at a time, so a page here is read in full when it is loaded, and every question after that is answered from what was collected.
-//!
+//! hayro interprets a page's content stream once into a device rather than answering questions one at a time, so a page here is read in full when it is loaded.
 //! Paperback read PDFs with pdfium before this, and the text layer is a port of pdfium's own (`core/fpdftext`) rather than a fresh design: the parser's heuristics were measured against the characters, inferred spaces and line breaks pdfium produces, and they only hold if those come out the same.
 
 use std::{
@@ -31,14 +28,11 @@ pub use tags::{Tag, TagTree};
 #[allow(unused_imports)]
 pub use text::{CharBox, FontInfo, PdfTextPage, TextMatrix};
 
-/// Why a PDF could not be read.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PdfError {
-	/// The file is encrypted and the password was missing or wrong. Kept separate from the rest because it is the one failure the reader can do something about.
+	/// Kept separate because it is the one failure the reader can do something about.
 	PasswordRequired,
-	/// The file could not be opened or parsed.
 	CouldNotOpen,
-	/// A request on a document that did open failed, such as a page that does not exist.
 	Failed,
 }
 
@@ -54,20 +48,15 @@ impl std::fmt::Display for PdfError {
 
 impl std::error::Error for PdfError {}
 
-/// An open PDF.
 pub struct PdfDocument {
 	pdf: Pdf,
-	/// Each page's object, by its position in the document, so a destination naming a page object can be turned into a page number.
 	page_numbers: HashMap<ObjectIdentifier, i32>,
-	/// The structure tree, read once the first time a page asks for its tags rather than once per page.
 	structure: OnceLock<Option<tags::Structure>>,
-	/// Each named destination's page, read from the catalog's `/Names` tree the first time a link names one. Walking the tree again for every link made a few hundred hyperlinked pages take a minute.
+	/// Walking the name tree again for every link made a few hundred hyperlinked pages take a minute.
 	named_destinations: OnceLock<HashMap<Vec<u8>, i32>>,
 }
 
 impl PdfDocument {
-	/// Opens `path`, decrypting with `password` when the file is encrypted.
-	///
 	/// # Errors
 	///
 	/// [`PdfError::PasswordRequired`] when the file is encrypted and the password does not fit, and [`PdfError::CouldNotOpen`] for a file that cannot be read or is not readable as a PDF.
@@ -76,8 +65,6 @@ impl PdfDocument {
 		Self::from_bytes(bytes, password)
 	}
 
-	/// Opens a PDF already in memory.
-	///
 	/// # Errors
 	///
 	/// The same failures as [`PdfDocument::open`].
@@ -99,8 +86,6 @@ impl PdfDocument {
 		i32::try_from(self.pdf.pages().len()).unwrap_or(i32::MAX)
 	}
 
-	/// Loads one page, which stays borrowed from this document so it cannot outlive it.
-	///
 	/// # Errors
 	///
 	/// [`PdfError::Failed`] when there is no such page.
@@ -108,13 +93,12 @@ impl PdfDocument {
 		PdfPage::load(self, index, &PageCache::new())
 	}
 
-	/// A cache for loading many pages on one thread, so the fonts they share are read once.
+	/// Lets the pages one thread loads share the fonts they read.
+	#[allow(clippy::unused_self, reason = "ties the cache's lifetime to this document")]
 	pub fn page_cache(&self) -> PageCache<'_> {
 		PageCache::new()
 	}
 
-	/// Loads one page, reusing what `cache` already read from earlier pages.
-	///
 	/// # Errors
 	///
 	/// [`PdfError::Failed`] when there is no such page.
@@ -122,7 +106,6 @@ impl PdfDocument {
 		PdfPage::load(self, index, cache)
 	}
 
-	/// One of the document's metadata fields, such as `Title` or `Author`.
 	pub fn metadata(&self, key: &str) -> Option<String> {
 		let metadata = self.pdf.metadata();
 		let value = match key {
@@ -137,9 +120,7 @@ impl PdfDocument {
 		Some(decode_text_string(value)).filter(|text| !text.is_empty())
 	}
 
-	/// The bookmark outline, flattened depth-first with the nesting recorded as a level.
-	///
-	/// A damaged outline can point back at itself. The walk stops descending the branch that loops and keeps everything it read on the way, because a partial contents list is far more use to a reader than none.
+	/// A damaged outline can point back at itself; the looping branch is cut but what was read is kept, since a partial contents list beats none.
 	pub fn outline(&self, max_depth: u32) -> Vec<OutlineEntry> {
 		let mut entries = Vec::new();
 		let Some(outlines) = self.catalog().and_then(|catalog| catalog.get::<Dict<'_>>(b"Outlines")) else {
@@ -179,7 +160,7 @@ impl PdfDocument {
 		}
 	}
 
-	/// Where an outline item or link annotation points: its `/Dest`, or failing that the destination of a `GoTo` action in its `/A`, which is the order pdfium tries them in.
+	/// `/Dest` before a `GoTo` action's destination, the order pdfium tries them in.
 	fn destination_page(&self, item: &Dict<'_>) -> Option<i32> {
 		if let Some(destination) = item.get::<Object<'_>>(b"Dest")
 			&& let Some(page) = self.resolve_destination(destination, 0, true)
@@ -193,7 +174,7 @@ impl PdfDocument {
 		self.resolve_destination(action.get::<Object<'_>>(b"D")?, 0, true)
 	}
 
-	/// The page a destination names, following named destinations through the catalog's `/Dests` dictionary and its `/Names` tree. `named` is off while the tree itself is being read, so a value that is itself a name does not ask for the tree it is part of.
+	/// `named` is off while the name tree itself is being read, so a value that is itself a name does not ask for the tree it is part of.
 	fn resolve_destination(&self, destination: Object<'_>, depth: u32, named: bool) -> Option<i32> {
 		if depth > 8 {
 			return None;
@@ -257,17 +238,15 @@ impl PdfDocument {
 	}
 }
 
-/// One entry in a PDF's bookmark outline.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OutlineEntry {
-	/// How deep this entry sits, counting from zero at the top.
 	pub level: u32,
 	pub title: String,
-	/// The page it points at, zero-based. Entries pointing nowhere are left out entirely, so this is always a real page.
+	/// Always a real page: entries pointing nowhere are left out.
 	pub page: i32,
 }
 
-/// Every name and value in a name tree, in the order a search of it would meet them: each node's own `/Names` pairs, then its `/Kids`.
+/// In the order a search of the tree meets them, own `/Names` before `/Kids`, since the first entry for a name is the one that counts.
 fn collect_name_tree<'a>(node: &Dict<'a>, depth: u32, out: &mut Vec<(Vec<u8>, Object<'a>)>) {
 	if depth > 32 {
 		return;
@@ -287,7 +266,6 @@ fn collect_name_tree<'a>(node: &Dict<'a>, depth: u32, out: &mut Vec<(Vec<u8>, Ob
 	}
 }
 
-/// Decodes a PDF text string: UTF-16 or UTF-8 when it opens with that encoding's byte order mark, `PDFDocEncoding` otherwise.
 fn decode_text_string(bytes: &[u8]) -> String {
 	if let Some(rest) = bytes.strip_prefix(&[0xFE, 0xFF]) {
 		let units: Vec<u16> = rest.as_chunks::<2>().0.iter().map(|&pair| u16::from_be_bytes(pair)).collect();
@@ -330,7 +308,6 @@ mod tests {
 		assert_eq!(decode_text_string(&[0xFE, 0xFF, 0x00, 0x48, 0x00, 0x69]), "Hi");
 	}
 
-	/// The bytes Latin-1 would read as control characters are quotation marks in `PDFDocEncoding`.
 	#[test]
 	fn pdf_doc_encoding_has_its_own_quotation_marks() {
 		assert_eq!(decode_text_string(&[0x8D, b'Q', 0x8E]), "\u{201C}Q\u{201D}");

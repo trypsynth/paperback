@@ -14,7 +14,7 @@ use crate::config_ext::LogLevel;
 
 static FILTER: OnceLock<reload::Handle<EnvFilter, Registry>> = OnceLock::new();
 
-/// The log file, made on the first line written rather than at startup, so that with logging off none is made at all. That is also when the previous run's log becomes `paperback.log.1`, so only the last two sessions are ever on disk.
+/// Created on the first line written, so with logging off no file is made at all.
 struct LazyLogFile {
 	dir: PathBuf,
 	file: Option<File>,
@@ -35,7 +35,7 @@ impl LazyLogFile {
 
 impl Write for LazyLogFile {
 	fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-		// Given up on after the first failure, rather than retried on every line, much as a log that could not be created at startup never was.
+		// Given up after the first failure rather than retried on every line.
 		if self.failed {
 			return Ok(buf.len());
 		}
@@ -54,14 +54,14 @@ impl Write for LazyLogFile {
 	}
 }
 
-/// `RUST_LOG`, when set, wins over the chosen level, so a filter set by hand for debugging is never overridden by the setting.
+/// `RUST_LOG` wins, so a filter set by hand for debugging is never overridden by the setting.
 fn filter_for(level: LogLevel) -> EnvFilter {
 	EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(level.filter()))
 }
 
-/// Initialise file logging. Returns a guard that must be kept alive for the duration of the process; dropping it flushes and closes the log file.
+/// Keep the guard alive for the whole process; dropping it flushes and closes the log.
 pub fn init(log_dir: &Path, level: LogLevel) -> WorkerGuard {
-	// Logging off means no logs, and the last two runs' would otherwise stay on disk indefinitely.
+	// Otherwise the last two runs' logs would stay on disk indefinitely.
 	if level == LogLevel::Off && env::var_os("RUST_LOG").is_none() {
 		let _ = fs::remove_file(log_dir.join("paperback.log"));
 		let _ = fs::remove_file(log_dir.join("paperback.log.1"));
@@ -74,7 +74,6 @@ pub fn init(log_dir: &Path, level: LogLevel) -> WorkerGuard {
 	guard
 }
 
-/// Applies a newly chosen level straight away.
 pub fn set_level(level: LogLevel) {
 	if let Some(handle) = FILTER.get() {
 		let _ = handle.reload(filter_for(level));

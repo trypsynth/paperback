@@ -89,10 +89,6 @@ impl Parser for EpubParser {
 		}
 		let manifest_items: HashMap<String, String> =
 			manifest.values().map(|item| (item.id.clone(), item.path.clone())).collect();
-		// A book that lists every chapter in its nav or ncx but marks none of them up as a heading
-		// (many classic Gutenberg EPUBs are built this way) gives a working table of contents and
-		// nothing to move between with the heading key. Give those chapters heading markers, leaving
-		// a book that marked up its own headings untouched.
 		add_toc_heading_markers(&mut conversion.buffer, &toc_items);
 		let mut document = Document::new().with_title(title).with_author(author);
 		document.set_buffer(conversion.buffer);

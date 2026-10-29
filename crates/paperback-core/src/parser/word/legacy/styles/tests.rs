@@ -4,8 +4,6 @@ fn heading_levels(word_document: &[u8], table: &[u8]) -> Vec<Option<u8>> {
 	paragraph_styles(word_document, table).iter().map(|style| style.heading).collect()
 }
 
-/// A paragraph style as Word writes one with an 18-byte Stdf: sti, kind and base, one UPX
-/// (paragraph properties) and no character properties to speak of, its name, then the PAPX.
 fn style(sti: u16, base: u16, name: &str, papx_sprms: &[u8]) -> Vec<u8> {
 	let mut std = Vec::new();
 	std.extend_from_slice(&sti.to_le_bytes());
@@ -29,7 +27,6 @@ fn style(sti: u16, base: u16, name: &str, papx_sprms: &[u8]) -> Vec<u8> {
 	std
 }
 
-/// A FIB pointing at a stylesheet of `styles` (None for an empty slot) at the start of the table.
 fn stylesheet(styles: &[Option<Vec<u8>>]) -> (Vec<u8>, Vec<u8>) {
 	let mut table = Vec::new();
 	table.extend_from_slice(&18u16.to_le_bytes()); // cbStshi

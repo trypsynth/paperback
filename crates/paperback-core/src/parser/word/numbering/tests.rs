@@ -4,8 +4,6 @@ use super::{ListLabel, Numbering, format_number};
 
 const W: &str = r#"xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main""#;
 
-/// A decimal outline (`1.`, `1.1.`), a bullet level and a lettered level, with two instances
-/// of the outline so a restart can be tested.
 fn numbering_xml() -> String {
 	format!(
 		r#"<w:numbering {W}>
@@ -35,7 +33,6 @@ fn styles_xml() -> String {
 	)
 }
 
-/// The label for a `<w:pPr>` written inline, as each paragraph of a document would ask.
 fn label(numbering: &mut Numbering, ppr_inner: &str) -> Option<String> {
 	let xml = format!("<w:pPr {W}>{ppr_inner}</w:pPr>");
 	let doc = XmlDocument::parse(&xml).expect("test pPr parses");

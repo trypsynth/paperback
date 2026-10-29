@@ -40,9 +40,7 @@ fun FindDialog(
 
 	var searchHistory by remember { mutableStateOf(configManager.getFindHistory()) }
 
-	// The dialog stays open after a search, as it does on iOS, so the reader can keep stepping
-	// through the matches from here. With a screen reader in text mode there is no other way to
-	// reach the next one without a keyboard.
+	// Stays open after a search, as on iOS: with a screen reader in text mode there's no other way to reach the next match without a keyboard.
 	val submitSearch = { forward: Boolean ->
 		if (query.isNotBlank()) {
 			configManager.setAppBool(MATCH_CASE_KEY, matchCase)

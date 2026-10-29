@@ -1,7 +1,4 @@
-//! Gives text already in the native `RichEdit` control its heading and list paragraph formatting,
-//! for the paths that load plain text rather than an RTF stream; `rtf::build_rtf` writes the same
-//! formatting into its markup. A screen reader reading the control through the Text Object Model
-//! reports these paragraphs as headings and list items.
+//! For the plain-text load paths (`rtf::build_rtf` writes the same into its markup); screen readers report these through the Text Object Model as headings and list items.
 
 use std::{ffi::c_void, ptr::null_mut};
 
@@ -20,15 +17,6 @@ use wxdragon::prelude::*;
 
 use crate::{text_window::CtrlPos, ui::reader_ctrl::ReaderCtrl};
 
-/// Gives each of `paragraphs`, whose offsets `place` puts in the control, its heading style and list membership, leaving
-/// the text looking exactly as it did.
-///
-/// Each paragraph's whole format is copied, changed and applied in one go: setting only the style
-/// would also apply `RichEdit`'s own heading spacing. List items are bulleted with no bullet drawn,
-/// since Paperback's bullets and numbers are already part of the text.
-///
-/// The Text Object Model refuses to change a read-only control, so the control is made editable
-/// for the duration. That raises no accessibility event, and nothing here moves the caret.
 pub fn apply_paragraph_formats(
 	text_ctrl: ReaderCtrl,
 	place: impl Fn(DocPos) -> CtrlPos,
@@ -42,6 +30,7 @@ pub fn apply_paragraph_formats(
 	};
 	let editable = text_ctrl.is_editable();
 	text_ctrl.freeze();
+	// The Text Object Model refuses to change a read-only control; toggling it raises no accessibility event.
 	text_ctrl.set_editable(true);
 	for paragraph in paragraphs {
 		if let Err(error) = apply(&document, &place, paragraph) {
@@ -75,11 +64,13 @@ fn apply(
 	let position = |offset: DocPos| i32::try_from(place(offset).get()).unwrap_or(i32::MAX);
 	unsafe {
 		let para = document.Range(position(paragraph.start), position(paragraph.end))?.GetPara()?;
+		// Whole format changed and applied in one go, since setting only the style would also apply RichEdit's own heading spacing.
 		let format = para.GetDuplicate()?;
 		if let Some(level) = paragraph.heading_level {
 			format.SetStyle(-(i32::from(level) + 1))?;
 		}
 		if paragraph.list_item {
+			// No bullet drawn, since Paperback's bullets and numbers are already part of the text.
 			format.SetListType(tomListBullet.0 | tomListNoNumber.0)?;
 		}
 		para.SetDuplicate(&format)

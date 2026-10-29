@@ -25,10 +25,7 @@ import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
 import dev.paperback.android.ui.state.MainScreenUiState
 
-/**
- * A single menu entry, rendered as both a visible [DropdownMenuItem] and a TalkBack
- * [CustomAccessibilityAction] from one definition, so the two can't drift out of sync.
- */
+/** One definition for both the visible menu item and the TalkBack custom action, so the two can't drift out of sync. */
 private data class MenuAction(val label: String, val onClick: () -> Unit)
 
 private fun List<MenuAction>.toCustomActions(): List<CustomAccessibilityAction> = map { action ->
@@ -155,10 +152,7 @@ fun MainScreenTopBar(
 				}
 			}
 			if (state is MainScreenUiState.Success && state.tabs.isNotEmpty()) {
-				// An audio-only book (a zip of nothing but narration files) has no real text
-				// spine, so switching to Text Mode, listing elements, counting words or
-				// exporting doesn't make sense for it. Its buffer is one blank line per audio
-				// file, so an export would write a file of nothing.
+				// An audio-only book's text is one blank line per file, so Text Mode, elements, word count and export have nothing to work with.
 				val isAudioOnly = state.activeTab?.isAudioOnly == true
 				val menuActions = buildList {
 					if (!isAudioOnly) {

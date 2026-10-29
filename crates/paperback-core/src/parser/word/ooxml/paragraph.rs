@@ -19,24 +19,22 @@ use crate::{
 	types::HeadingInfo,
 };
 
-/// Where a document's pages come from.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum PageSource {
-	/// Where Word last laid the pages out, which it records with `lastRenderedPageBreak`. Explicit breaks are not counted on top, because Word records one of these after each of those too.
+	/// From `lastRenderedPageBreak`; explicit breaks are not counted on top, because Word records one of these after each of those too.
 	Rendered,
-	/// The breaks written into the file, for one Word never laid out, such as a file from Google Docs, pandoc or python-docx: page breaks, paragraphs set to start a page, and section breaks that start a new page.
+	/// For a file Word never laid out, such as one from Google Docs, pandoc or python-docx.
 	Explicit,
 }
 
 impl PageSource {
-	/// Rendered breaks when the document has any, since Word wrote them, and the explicit ones otherwise.
+	/// Rendered breaks win whenever there are any, since Word wrote them.
 	pub(super) fn for_document(document_xml: &str) -> Self {
 		if document_xml.contains("lastRenderedPageBreak") { Self::Rendered } else { Self::Explicit }
 	}
 }
 
-/// Writes one paragraph into the buffer. Returns whether it is an item of a numbered or
-/// bulleted list, so the caller can mark where the list it belongs to starts and ends.
+/// Returns whether the paragraph is a list item, so the caller can mark where its list starts and ends.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn process_paragraph(
 	element: Node,
@@ -50,8 +48,7 @@ pub(super) fn process_paragraph(
 	annotations: &mut Annotations,
 ) -> bool {
 	let paragraph_start = buffer.end();
-	// Word keeps list numbers and bullets out of the text and generates them; without this a
-	// numbered procedure reads as a run of unnumbered paragraphs.
+	// Word keeps list numbers and bullets out of the text and generates them; without this a numbered procedure reads as a run of unnumbered paragraphs.
 	let label = numbering.label_for(find_child_element(element, "pPr"));
 	let mut paragraph_text = label.as_ref().map_or_else(String::new, |label| format!("{} ", label.text));
 	let mut para_len = DocLen::of(&paragraph_text);
@@ -249,7 +246,7 @@ pub(super) fn process_paragraph(
 	true
 }
 
-/// The placeholder a picture in `run` shows, its description, and its entry in the archive, for a picture Word draws (`w:drawing`) or an older VML one (`w:pict`). `None` for a run with no picture, for a drawing that is not a picture, such as a chart, and for a picture its author marked as decorative.
+/// (placeholder, description, archive entry); `None` also for a drawing that is not a picture, such as a chart, and for a picture its author marked as decorative.
 fn picture(run: Node, rels: &Relationships) -> Option<(String, String, String)> {
 	let (description, embed) = if let Some(drawing) = find_child_element(run, "drawing") {
 		let properties = named(drawing, "docPr")?;
@@ -281,7 +278,7 @@ fn named<'a, 'input>(node: Node<'a, 'input>, name: &str) -> Option<Node<'a, 'inp
 	node.descendants().find(|descendant| descendant.tag_name().name() == name)
 }
 
-/// A paragraph's content with the wrappers Word puts around runs looked through: tracked insertions, content controls, smart tags, simple fields and the like. Read as they stand, the paragraph lost all of their text. Tracked deletions, and text moved away from here, are left out, so the text reads as it does with every change accepted.
+/// Read as they stand, these wrappers lost the paragraph all of their text; deletions and moved-away text are left out so it reads with every change accepted.
 pub(super) fn content_children<'a, 'input>(node: Node<'a, 'input>) -> Vec<Node<'a, 'input>> {
 	let mut children = Vec::new();
 	for child in node.children().filter(Node::is_element) {
@@ -301,7 +298,6 @@ pub(super) fn content_children<'a, 'input>(node: Node<'a, 'input>) -> Vec<Node<'
 	children
 }
 
-/// A paragraph's words, wrappers looked through and links included, for the places that read a paragraph as plain text, such as a table cell.
 pub(super) fn paragraph_plain_text(paragraph: Node) -> String {
 	content_children(paragraph)
 		.into_iter()
@@ -317,9 +313,7 @@ pub(super) fn paragraph_plain_text(paragraph: Node) -> String {
 		.collect()
 }
 
-/// Whether a page begins at `run`.
-///
-/// A .docx has no pages of its own: Word paginates as it lays the document out, and saves where each page after the first began with `lastRenderedPageBreak`, so for a file Word laid out that is the closest it comes to Word's own page numbers.
+/// A `.docx` has no pages of its own; `lastRenderedPageBreak`, where Word last laid out each page after the first, is the closest it comes to Word's page numbers.
 pub(super) fn starts_page(run: Node, page_source: PageSource) -> bool {
 	match page_source {
 		PageSource::Rendered => find_child_element(run, "lastRenderedPageBreak").is_some(),
@@ -327,7 +321,7 @@ pub(super) fn starts_page(run: Node, page_source: PageSource) -> bool {
 	}
 }
 
-/// Where in `run`'s text each explicit page break leaves off, counted the way [`collect_ooxml_run_text`] writes the run, the break's own newline included.
+/// Counted the way [`collect_ooxml_run_text`] writes the run, the break's own newline included.
 fn page_break_offsets(run: Node) -> impl Iterator<Item = DocLen> {
 	let mut offset = DocLen::ZERO;
 	run.children().filter(|child| child.node_type() == NodeType::Element).filter_map(move |child| {
@@ -346,17 +340,17 @@ fn page_break_offsets(run: Node) -> impl Iterator<Item = DocLen> {
 	})
 }
 
-/// Whether an on-off property such as `<w:pageBreakBefore/>` is on: present with no value, or with one that is not off.
+/// An on-off property present with no value is on.
 fn is_on(property: Node) -> bool {
 	!matches!(property.attribute("val"), Some("0" | "false" | "off"))
 }
 
-/// Whether a section ending at this paragraph starts the next one on a new page, which every kind but a continuous section does, including one that names no kind.
+/// Every section kind but continuous starts a new page, including one that names no kind.
 fn section_starts_page(section: Node) -> bool {
 	find_child_element(section, "type").and_then(|kind| kind.attribute("val")) != Some("continuous")
 }
 
-/// Appends the hyperlink's display text to `paragraph_text`, records the link at `offset` into the paragraph, and returns how many positions it appended.
+/// Returns how many positions it appended to `paragraph_text`.
 fn process_hyperlink(
 	element: Node,
 	paragraph_text: &mut String,

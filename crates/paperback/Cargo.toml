@@ -21,34 +21,24 @@ live-region = "0.3.3"
 # Inflates the embedded Help pages; already in the tree via flate2 and patois.
 miniz_oxide = "0.9.1"
 native-ocr = "0.2.1"
-# `fetch` downloads documents opened from links.
 paperback-core = { path = "../paperback-core", features = ["fetch"] }
 paperback-formats = { path = "../paperback-formats" }
 patois = { version = "0.2.4", features = ["ui"] }
-# Decodes and plays DAISY narration in process. Recording and dithering are off: neither is
-# used, and both pull dependencies of their own. The symphonia extras cover the formats a
-# DAISY book can name that rodio's defaults leave out.
+# Recording and dithering are off, since neither is used and both pull in dependencies; the symphonia extras cover DAISY formats rodio's defaults leave out.
 rodio = { version = "0.22.2", default-features = false, features = [
 	"playback", "tracing", "flac", "mp3", "mp4", "vorbis", "wav",
 	"symphonia-adpcm", "symphonia-aiff", "symphonia-alac", "symphonia-mp2",
 ] }
-# WSOLA time-stretching, so changing playback speed doesn't shift pitch the way naively
-# resampling (rodio's own `Player::set_speed`) does.
+# Changes playback speed without shifting pitch, which rodio's own `Player::set_speed` does.
 rodio-wsola = "0.2.0"
 tracing = "0.1.44"
 tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 ship-shape = "0.5.0"
-# The temporary folder a document opened from a link is downloaded into.
 tempfile = "3.27.0"
 toml = { workspace = true }
 wx-utils = { version = "0.4.4", features = ["shortcuts"] }
-# `default-features = false` turns off the seven size knobs wxdragon enables by default, all of
-# which Paperback pays for and none of which it uses: it never prints, it decodes its own icon
-# with the `image` crate and hands wx raw pixels rather than going through wx's JPEG, TIFF, GIF
-# and friends handlers, its Find uses Rust regex, and its dialogs use the system icons rather
-# than the Tango set built into wxArtProvider. Asserts go too, since a release build cannot act
-# on them.
+# Default features off: Paperback never prints, decodes its own icon, finds with Rust regex and uses system icons, and a release build can't act on asserts.
 wxdragon = { version = "0.9.24", default-features = false, features = ["webview"] }
 zip = { version = "9.1.2", default-features = false, features = ["deflate"] }
 
@@ -61,7 +51,7 @@ objc = "0.2.7"
 
 [build-dependencies]
 paperback-formats = { path = "../paperback-formats" }
-patois-build = "0.1.16"
+patois-build = "0.1.17"
 shipfitter = { version = "0.2.4", features = ["docs", "windows-resources"] }
 
 [dev-dependencies]

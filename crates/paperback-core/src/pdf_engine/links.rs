@@ -1,11 +1,8 @@
-//! pdfium's `CPDF_LinkExtract` (`core/fpdftext/cpdf_linkextract.cpp`): finding the bare URLs and email addresses in a page's text.
-//!
-//! It walks the page's characters and reads the page's text by the same positions, which pdfium does too even though the two can drift apart where a character has no text. The ranges it reports are only right if that is kept, since the parser reads a link's words back by character position.
+//! A port of pdfium's `CPDF_LinkExtract` (`core/fpdftext/cpdf_linkextract.cpp`). Like pdfium it reads the page text by character positions even where the two drift apart, since the parser reads a link's words back by position.
 //!
 //! Portions are derived from `PDFium`, used under its BSD-style license:
 //! Copyright 2014 The `PDFium` Authors. Original code copyright 2014 Foxit Software Inc. <http://www.foxitsoftware.com>
 
-/// What the extractor needs to know about one character of the text layer.
 pub(super) struct LinkChar {
 	pub(super) generated: bool,
 	pub(super) hyphen: bool,
@@ -39,7 +36,6 @@ fn decode(text: &[u32]) -> String {
 	text.iter().filter_map(|&c| char::from_u32(c)).collect()
 }
 
-/// Every link on the page as (first character, character count, URL).
 pub(super) fn extract(chars: &[LinkChar], page_text: &[u32]) -> Vec<(i32, i32, String)> {
 	let total = chars.len();
 	let mut links = Vec::new();

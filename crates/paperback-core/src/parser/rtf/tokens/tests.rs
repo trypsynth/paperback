@@ -34,9 +34,7 @@ fn extract_content_preserves_line_and_tab_unknown_controls() {
 
 #[test]
 fn extract_content_keeps_text_around_word_style_unicode_escapes() {
-	// Word writes curly quotes as \uN followed by a bare `?` fallback. Because the
-	// lexer ends a control word at the first space, every character between the
-	// digits and that space used to be swallowed along with the escape.
+	// Word writes curly quotes as \uN with a bare `?` fallback, and the lexer ending a control word only at a space used to swallow everything up to it.
 	let rtf = "{\\rtf1\\ansi\\pard\t\n\\u8216?Yes!\\u8217? shrieked Salem Rews, quartermaster of his August \
 	           Majesty\\u8217?s First Regiment. \\u8216?Give \\u8217?em hell!\\u8217?\\par}";
 	let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
@@ -74,8 +72,7 @@ fn extract_content_maps_page_control_to_marker_and_separator() {
 
 #[test]
 fn extract_content_skips_pict_groups() {
-	// A bare {\pict...} group (no leading \*) still carries binary image data as
-	// hex text, which must not leak into the document body.
+	// A bare {\pict...} group has no leading \* yet still carries image data as hex text.
 	let rtf = r"{\rtf1\ansi\pard before{\pict\wmetafile8\picw100\pich100 010009000003}after}";
 	let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
 	let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
@@ -86,10 +83,7 @@ fn extract_content_skips_pict_groups() {
 
 #[test]
 fn extract_content_skips_nested_ignorable_destination_without_leaking_hex() {
-	// Word writes shapes as {\*\shppict{\pict{\*\picprop ...}\jpegblip <hex>}}: an
-	// ignorable destination (\shppict) wrapping a \pict group that itself contains
-	// another ignorable destination (\picprop). The inner \picprop group closing must
-	// not end the skip early and let the outer \jpegblip hex data leak as text.
+	// Word writes shapes like this; the inner \picprop closing must not end the skip early and leak the \jpegblip hex as text.
 	let rtf = r"{\rtf1\ansi\pard before {\*\shppict{\pict{\*\picprop\shplid1{\sp{\sn shapeType}{\sv 75}}}\picscalex100\jpegblip abc123def456}} after}";
 	let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
 	let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
@@ -130,7 +124,6 @@ fn extract_content_handles_libreoffice_unicode_fallback_and_nbsp_symbols() {
 
 #[test]
 fn extract_content_maps_bold_toggle_to_marker() {
-	// \b bold \b0 not-bold  → one Bold marker spanning exactly "bold ".
 	let tokens = vec![
 		Token::ControlSymbol((ControlWord::Pard, Property::None)),
 		Token::ControlSymbol((ControlWord::Bold, Property::None)),
@@ -148,9 +141,6 @@ fn extract_content_maps_bold_toggle_to_marker() {
 
 #[test]
 fn extract_content_scopes_nested_group_formatting() {
-	// \b bold {\i more} still-bold \b0
-	// Bold spans the whole "bold more still-bold " (uninterrupted by the group);
-	// Italic spans only "more" (opened and closed within the group).
 	let tokens = vec![
 		Token::ControlSymbol((ControlWord::Pard, Property::None)),
 		Token::ControlSymbol((ControlWord::Bold, Property::None)),
@@ -176,7 +166,6 @@ fn extract_content_scopes_nested_group_formatting() {
 
 #[test]
 fn extract_content_maps_underline_off_via_ulnone() {
-	// \ul under \ulnone plain → one Underline marker spanning "under ".
 	let tokens = vec![
 		Token::ControlSymbol((ControlWord::Pard, Property::None)),
 		Token::ControlSymbol((ControlWord::Underline, Property::None)),
@@ -194,8 +183,6 @@ fn extract_content_maps_underline_off_via_ulnone() {
 
 #[test]
 fn extract_content_reverts_bold_on_group_close() {
-	// \b before {\b0 middle} after \b0
-	// Two separate Bold markers ("before " and " after "), "middle" in neither.
 	let tokens = vec![
 		Token::ControlSymbol((ControlWord::Pard, Property::None)),
 		Token::ControlSymbol((ControlWord::Bold, Property::None)),
@@ -211,13 +198,10 @@ fn extract_content_reverts_bold_on_group_close() {
 	assert_eq!(buffer.content, "before middle after");
 	let bold: Vec<_> = buffer.markers.iter().filter(|m| m.mtype == MarkerType::Bold).collect();
 	assert_eq!(bold.len(), 2, "expected two Bold spans, got {bold:?}");
-	// "before "
 	assert_eq!(bold[0].position, 0);
 	assert_eq!(bold[0].length, "before ".chars().count());
-	// " after " starts right after "before middle"
 	assert_eq!(bold[1].position, "before middle".chars().count());
 	assert_eq!(bold[1].length, " after ".chars().count());
-	// "middle" is covered by neither span.
 	let middle_start = DocLen::of("before ").as_pos();
 	let middle_end = DocLen::of("before middle").as_pos();
 	for m in &bold {
@@ -228,7 +212,6 @@ fn extract_content_reverts_bold_on_group_close() {
 
 #[test]
 fn extract_content_renders_bold_from_real_rtf_string() {
-	// Round-trip through the real lexer to confirm \b / \b0 map to Bold markers.
 	let rtf = r"{\rtf1\ansi\pard normal \b bold\b0  normal}";
 	let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new()).replace('\r', "");
 	let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
@@ -240,12 +223,7 @@ fn extract_content_renders_bold_from_real_rtf_string() {
 	assert_eq!(bold[0].length, "bold".chars().count());
 }
 
-/// Round-trip through the real lexer (unlike
-/// `extract_content_maps_quote_unknown_control_words_to_typographic_quotes` above, which
-/// hand-builds `ControlWord::Unknown` tokens and so can't catch this): rtf_parser 0.4.3
-/// promoted `\rquote`/`\lquote`/`\rdblquote`/`\ldblquote`/`\emdash`/`\endash`/`\bullet` from
-/// `Unknown(name)` to their own dedicated `ControlWord` variants, which silently fell
-/// through the `_ => {}` catch-all until dedicated match arms were added for them.
+/// Goes through the real lexer, since `rtf_parser` 0.4.3 gave `\rquote` and the like their own variants, which fell through the catch-all.
 #[test]
 fn extract_content_maps_special_char_control_words_from_real_rtf_string() {
 	let rtf = r"{\rtf1\ansi\pard Earth\rquote s \lquote quoted\rquote \ldblquote double\rdblquote em\emdash dash en\endash dash \bullet bullet}";
@@ -258,8 +236,7 @@ fn extract_content_maps_special_char_control_words_from_real_rtf_string() {
 	);
 }
 
-/// The minimal dash-bulleted list Word writes. It used to fail in the lexer with
-/// "Unable to parse - as integer".
+/// The minimal dash-bulleted list Word writes used to fail in the lexer with "Unable to parse - as integer".
 #[test]
 fn extract_content_reads_a_document_with_a_dash_bullet_list_level() {
 	let rtf = r"{\rtf1\ansi\deff0{\fonttbl{\f0 Arial;}}{\*\listtable{\list{\listlevel{\leveltext\leveltemplateid1290421206\'01-;}{\levelnumbers;}}}}\pard Body text.\par}";
@@ -269,8 +246,7 @@ fn extract_content_reads_a_document_with_a_dash_bullet_list_level() {
 	assert_eq!(buffer.content, "Body text.");
 }
 
-/// WordPad's minimal files and many generators never write \pard: the text follows the font
-/// table directly. It was treated as header and the document came out empty.
+/// WordPad and many generators never write `\pard`, which once left the document empty.
 #[test]
 fn extract_content_keeps_body_text_written_without_pard() {
 	let rtf = r"{\rtf1\ansi\deff0{\fonttbl{\f0 Arial;}}{\colortbl;\red0\green0\blue0;}\f0 Hello plain world.\par Second line.\par}";
@@ -280,7 +256,6 @@ fn extract_content_keeps_body_text_written_without_pard() {
 	assert_eq!(buffer.content, "Hello plain world.\nSecond line.");
 }
 
-/// Formatting that opens the body before any text still applies to that text.
 #[test]
 fn extract_content_keeps_bold_that_starts_the_body_without_pard() {
 	let rtf = r"{\rtf1\ansi{\fonttbl{\f0 Arial;}}\b Bold\b0  rest\par}";
@@ -311,7 +286,7 @@ fn extract_content_measures_link_length_in_positions() {
 	assert_eq!(links[0].reference, "https://example.com");
 }
 
-/// Trimming the text's leading whitespace moves every marker back by as many positions as it took, not as many bytes: an ideographic space is one position and three bytes.
+/// An ideographic space is one position but three bytes, so the trim must move markers back by positions.
 #[test]
 fn trimming_wide_leading_whitespace_keeps_markers_on_their_text() {
 	let tokens = vec![

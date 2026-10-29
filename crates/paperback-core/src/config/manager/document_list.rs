@@ -1,8 +1,3 @@
-//! [`get_sorted_document_list`], the "All Documents" dialog's filtering/sorting/status logic
-//! (recents first, then everything else alphabetically by file name), and
-//! [`compute_document_hash`], the content-based fingerprint [`super::ConfigManager::get_doc_key`]
-//! hashes a document path down to.
-
 use std::{cmp, fs, path::Path};
 
 use sha1::{Digest, Sha1};
@@ -56,10 +51,7 @@ pub fn get_sorted_document_list(
 		.collect()
 }
 
-/// The name a document is listed, sorted and searched by: the file's own name, or for a link the
-/// name its last download was saved under, else the file name the link ends in. A link's own
-/// segment can be a script like `download` or nothing at all, which is why the download's name
-/// wins. Falls back to `path` itself rather than listing a document with no name.
+/// A link's download name wins, since its last segment can be a script like `download` or nothing at all.
 #[must_use]
 pub fn document_name(config: &ConfigManager, path: &str) -> String {
 	let name = if is_remote_url(path) {
@@ -70,7 +62,7 @@ pub fn document_name(config: &ConfigManager, path: &str) -> String {
 	name.unwrap_or_else(|| path.to_string())
 }
 
-/// Whether the document's file is gone. A link never is: opening it downloads it again.
+/// A link is never missing, since opening it downloads it again.
 #[must_use]
 pub fn document_missing(path: &str) -> bool {
 	!is_remote_url(path) && !Path::new(path).exists()
@@ -81,7 +73,7 @@ pub fn compute_document_hash(path: &str) -> [u8; 20] {
 	let mut hasher = Sha1::new();
 	if let Ok(mut file) = fs::File::open(path) {
 		use std::io::{Read, Seek, SeekFrom};
-		let mut buffer = [0; 65536];
+		let mut buffer = vec![0; 65536];
 		let mut total_read = 0;
 		let max_read = 1024 * 1024;
 		while total_read < max_read {
@@ -103,7 +95,7 @@ pub fn compute_document_hash(path: &str) -> [u8; 20] {
 				let seek_pos = cmp::max(file_size.saturating_sub(max_read as u64), max_read as u64);
 				if file.seek(SeekFrom::Start(seek_pos)).is_ok() {
 					let mut end_read = 0;
-					let end_max = (file_size - seek_pos) as usize;
+					let end_max = usize::try_from(file_size - seek_pos).unwrap_or(usize::MAX);
 					while end_read < end_max {
 						let to_read = cmp::min(buffer.len(), end_max - end_read);
 						if let Ok(n) = file.read(&mut buffer[..to_read]) {
@@ -152,8 +144,6 @@ mod tests {
 		assert_eq!(missing_only.iter().map(|item| &item.path).collect::<Vec<_>>(), vec![&missing_path]);
 	}
 
-	/// A document opened from a link has no file of its own to go missing; it is downloaded again
-	/// when it is opened.
 	#[test]
 	fn a_link_is_open_or_closed_and_never_missing() {
 		let config = ConfigManager::in_memory();

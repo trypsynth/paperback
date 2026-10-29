@@ -42,18 +42,18 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 	private var precachedText: String? = null
 	private var utteranceCounter = 0
 
-	// Which paragraphs the playback queue holds. A stale callback for a request that has been replaced names neither, and is ignored.
+	// A stale callback for a replaced request names neither of these, and is ignored.
 	private var currentContentUtteranceId: String? = null
 	private var currentPrecacheUtteranceId: String? = null
 
-	// Kept so a rate or pitch change can render the paragraph being read again, since its audio was made at the old settings.
+	// Kept so a rate or pitch change can render the current paragraph again at the new settings.
 	private var currentText: String? = null
 
-	// The rate each queued paragraph was made at, so carrying on after a rate change can scale how far in the listener was.
+	// So carrying on after a rate change can scale how far in the listener was.
 	private var currentRate = 1f
 	private var precacheRate = 1f
 
-	// Set while paused after a rate or pitch change, so resuming renders the paragraph again instead of playing the old audio (#1067).
+	// Set by a rate or pitch change while paused, so resuming renders again instead of playing the old audio (#1067).
 	private var currentAudioStale = false
 	private var rerenderJob: Job? = null
 
@@ -79,7 +79,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		private const val SAMPLE_PREFIX = "TTS_SAMPLE_ID_"
 		private const val SYSTEM_SPEECH_SCALE = 100
 
-		/** Where synthesized audio is written once it has already been handed over as it was made. */
+		/** The audio already arrives through the progress listener, so the file keeps nothing. */
 		private val DISCARDED_AUDIO = File("/dev/null")
 	}
 
@@ -89,13 +89,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 	private val _isInitialized = MutableStateFlow(false)
 	val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
 
-	/** Text asked for before the engine finished starting, spoken once it has.
-	 *
-	 * An engine reports itself ready through `onInit`, and every call made before that fails
-	 * and returns ERROR. Engines differ by a lot in how long they take: a device's built-in one
-	 * is usually up before the reader can press play, while a third-party engine that loads
-	 * dictionaries of its own may not be, so the press landed on nothing at all. Only the most
-	 * recent request is kept; an earlier one is no longer what the reader is waiting for. */
+	/** Calls before `onInit` fail, and a third-party engine loading its dictionaries may not be ready when play is pressed, so the press landed on nothing. */
 	private var pendingSpeak: Pair<String, Boolean>? = null
 
 	private val ttsScope = CoroutineScope(Dispatchers.Main)
@@ -110,8 +104,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 	var onUtteranceCompleted: (() -> Unit)? = null
 	var onSegmentTransition: (() -> Unit)? = null
 
-	// Consulted when linking and consuming queued audio, so a changed Find preference
-	// takes effect at the next paragraph boundary as well as on the next play press.
+	// Read at each paragraph boundary, so a changed Find preference takes effect there and not only on the next play press.
 	var shouldAutoAdvance: () -> Boolean = { true }
 
 	var onPlayCommand: (() -> Unit)? = null
@@ -170,13 +163,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 			.build()
 		PlaybackService.activeMediaSession = mediaSession
 		updateMediaMetadata()
-		// Binding (rather than Context.startForegroundService()) keeps PlaybackService
-		// alive and its Media3 internals already observing the player before playback
-		// ever begins. Starting it with a plain Intent instead races the 5-second
-		// startForeground() deadline against Media3's async notification/session wiring
-		// and intermittently crashes with ForegroundServiceDidNotStartInTimeException —
-		// see https://github.com/androidx/media/issues/167, where the Media3 maintainers
-		// confirm a bound controller/client is the supported way to avoid it.
+		// Bound rather than started: startForegroundService() races the 5-second deadline against Media3's async wiring and intermittently throws ForegroundServiceDidNotStartInTimeException (androidx/media#167).
 		val connection = object : ServiceConnection {
 			override fun onServiceConnected(name: ComponentName, binder: IBinder?) {
 			}
@@ -195,11 +182,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		ttsPlayer?.updateMetadata(currentDocumentTitle, currentDocumentAuthor)
 	}
 
-	/**
-	 * Throws away the paragraph synthesized ahead and synthesizes it again at the current settings.
-	 *
-	 * The next paragraph is made while the current one is still talking, so without this a rate or pitch change is not heard until that already-made paragraph has played, one paragraph later than expected.
-	 */
+	/** The next paragraph is made while the current one talks, so without this a rate or pitch change arrives one paragraph late. */
 	private fun resynthesizePrecache() {
 		val text = precachedText ?: return
 		currentPrecacheUtteranceId?.let { playback.remove(it) }
@@ -219,11 +202,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		synthesize(text, utteranceId)
 	}
 
-	/**
-	 * Has the engine make [text], with its audio streamed to [playback] through the progress listener.
-	 *
-	 * The engine only reports audio to the app while making it for a file or for its own playback, and its own playback cannot be paused part-way through. So the file is one that keeps nothing.
-	 */
+	/** The engine only hands audio over while making a file or playing it itself, and its own playback can't pause mid-paragraph, hence a file that keeps nothing. */
 	private fun synthesize(text: String, utteranceId: String): Boolean {
 		val queued = tts?.synthesizeToFile(text, null, DISCARDED_AUDIO, utteranceId)
 		if (queued != TextToSpeech.SUCCESS) {
@@ -249,8 +228,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 
 	override fun onInit(status: Int) {
 		if (status != TextToSpeech.SUCCESS) {
-			// Nothing will ever speak through this engine. Say so rather than leaving the
-			// reader pressing play against an engine that never answers.
+			// Otherwise the reader is left pressing play against an engine that never answers.
 			Log.e(TAG, "TTS engine ${_currentEngineName.value ?: SYSTEM_DEFAULT} failed to start (status $status)")
 			pendingSpeak = null
 			_isSpeaking.value = false
@@ -330,7 +308,6 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		speak(text, isSample)
 	}
 
-	/** A paragraph has been heard to its end, pause after it included. */
 	private fun onSegmentPlayed(utteranceId: String) {
 		if (utteranceId != currentContentUtteranceId) return
 		val next = currentPrecacheUtteranceId
@@ -355,7 +332,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		onUtteranceCompleted?.invoke()
 	}
 
-	/** The engine gave up on a paragraph. One made ahead is dropped, so reaching it asks for it afresh rather than skipping it. */
+	/** A failed paragraph made ahead is dropped, so reaching it asks for it afresh rather than skipping it. */
 	private fun onSynthesisFailed(utteranceId: String) {
 		if (utteranceId == currentPrecacheUtteranceId) {
 			playback.remove(utteranceId)
@@ -384,7 +361,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 
 	private fun speakFrom(text: String, isSample: Boolean, skipMs: Long) {
 		if (text.isBlank()) return
-		// Every call before the engine reports itself ready fails and returns ERROR, so hold the text instead of handing it over to be dropped.
+		// Every call before the engine is ready fails, so hold the text rather than have it dropped.
 		if (!_isInitialized.value) {
 			pendingSpeak = text to isSample
 			return
@@ -433,9 +410,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		}
 	}
 
-	/** Reflects a non-TTS playback engine's (e.g. DaisyAudioPlayer) play/pause state into
-	 * isSpeaking/isPaused and the MediaSession, so the UI, notification, and lock-screen
-	 * controls behave the same regardless of which engine is narrating. */
+	/** So the UI, notification and lock-screen controls behave the same while DAISY audio narrates. */
 	fun setExternalPlaybackState(isPlaying: Boolean) {
 		_isSpeaking.value = isPlaying
 		_isPaused.value = !isPlaying
@@ -446,7 +421,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		if (!_isPaused.value) return
 		val text = currentText
 		if (currentAudioStale || (text != null && playback.isIdle())) {
-			// Nothing left to carry on from, such as after the engine failed, so the paragraph is made again rather than resuming into silence.
+			// Nothing left to carry on from (say the engine failed), so render again rather than resume into silence.
 			rerenderCurrentParagraph()
 			return
 		}
@@ -472,11 +447,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		audioFocus.abandon()
 	}
 
-	/**
-	 * Takes up the system default engine's rate and pitch: the reader's own, once they have set one here, and otherwise Android's.
-	 *
-	 * Android's are only shown, not applied, since leaving them alone is what follows them. Applying the slider's default instead would change the speed of every reader who never touched it, because the middle of the slider is faster than Android's normal rate.
-	 */
+	/** Android's own rate and pitch are only shown, not applied: applying the slider's middle would speed up every reader who never touched it. */
 	private fun loadSystemDefaultSpeech() {
 		val savedRate = config.getAppString("${KEY_RATE}_$SYSTEM_DEFAULT", "").toIntOrNull()
 		if (savedRate != null) {
@@ -492,7 +463,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		}
 	}
 
-	/** One of Android's own speech settings, which it stores as a hundredth of the multiplier. */
+	/** Android stores these as a hundredth of the multiplier. */
 	private fun systemSpeechSetting(name: String): Float =
 		Settings.Secure.getInt(context.contentResolver, name, SYSTEM_SPEECH_SCALE) / SYSTEM_SPEECH_SCALE.toFloat()
 
@@ -516,7 +487,6 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		applyToCurrentParagraph()
 	}
 
-	/** Makes a rate or pitch change heard in the paragraph being read, not only from the next one: straight away while playing, and on resume while paused. */
 	private fun applyToCurrentParagraph() {
 		if (currentText == null) return
 		if (_isPaused.value) {
@@ -525,18 +495,14 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		}
 		if (!_isSpeaking.value) return
 		rerenderJob?.cancel()
-		// A slider swipe or drag sends a run of changes; rendering the paragraph once they stop avoids a stutter of restarts.
+		// A slider swipe sends a run of changes; waiting for them to stop avoids a stutter of restarts.
 		rerenderJob = ttsScope.launch {
 			delay(RERENDER_DELAY_MS)
 			rerenderCurrentParagraph()
 		}
 	}
 
-	/**
-	 * Makes the paragraph again at the current settings and carries on from about where the old audio was.
-	 *
-	 * The new audio is not known in full until it is made, so how far in to start is scaled from the old by the change in rate, which is what sets how long the same words take.
-	 */
+	/** The new audio's length isn't known until it is made, so the resume point is scaled from the old by the change in rate. */
 	private fun rerenderCurrentParagraph() {
 		val text = currentText ?: return
 		val played = playback.playedMsOfCurrent() ?: 0
@@ -619,38 +585,29 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		ttsPlayer?.release()
 		ttsPlayer = null
 		PlaybackService.activeMediaSession = null
-		// Unbind rather than force-stopping the service — Media3's own lifecycle
-		// handling decides when it's actually safe for the service to go away.
+		// Unbound rather than stopped: Media3 decides when the service can safely go.
 		serviceConnection?.let { context.unbindService(it) }
 		serviceConnection = null
 		playback.close()
-		// Last, so nothing torn down above can leave work queued: a late callback would otherwise launch on this scope after shutdown.
+		// Last, or a late callback from something torn down above could launch on this scope after shutdown.
 		ttsScope.cancel()
 	}
 }
 
-/** The ends of the rate and pitch sliders, which every stored value is brought back inside: a
- * config written by hand or by another version can hold anything at all. */
+/** Stored values are clamped to these, since a hand-edited or older config can hold anything. */
 internal const val MIN_SPEECH_PERCENTAGE = 0
 internal const val MAX_SPEECH_PERCENTAGE = 100
 
-/**
- * The engine speech rate a slider percentage means. The slider runs 0 to 100 with 50 in the
- * middle, and the engine takes a multiplier, so this spreads it over 0.1x to 3.0x: slow enough to
- * follow an unfamiliar word, fast enough for a practised listener.
- */
+/** 0.1x to 3.0x: slow enough to follow an unfamiliar word, fast enough for a practised listener. */
 internal fun speechRateFor(percentage: Int): Float =
 	0.1f + (percentage.coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE) / 100f) * 2.9f
 
-/** The engine pitch a slider percentage means, over a narrower 0.1x to 2.0x: past that a voice
- * stops being understandable rather than just sounding different. */
+/** Only up to 2.0x: past that a voice stops being understandable. */
 internal fun pitchFor(percentage: Int): Float =
 	0.1f + (percentage.coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE) / 100f) * 1.9f
 
-/** The slider percentage nearest an engine speech rate, the inverse of [speechRateFor]. */
 internal fun speechRatePercentageFor(rate: Float): Int =
 	((rate - 0.1f) / 2.9f * 100f).roundToInt().coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE)
 
-/** The slider percentage nearest an engine pitch, the inverse of [pitchFor]. */
 internal fun pitchPercentageFor(pitch: Float): Int =
 	((pitch - 0.1f) / 1.9f * 100f).roundToInt().coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE)

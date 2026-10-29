@@ -1,7 +1,3 @@
-//! Hotkey and keyboard-shortcut passthroughs. `ConfigManager` just stores/returns these two
-//! blobs ([`HotkeyConfig`]/[`ShortcutsConfig`]) - all the actual chord parsing/formatting logic
-//! lives in [`crate::config::shortcuts`].
-
 use super::ConfigManager;
 use crate::config::shortcuts::{ActionId, HotkeyConfig, KeyChord, ShortcutsConfig};
 

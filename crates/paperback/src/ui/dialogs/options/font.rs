@@ -1,21 +1,17 @@
-//! The Options dialog's font and background-color helpers: the descriptions shown next to each
-//! setting and the system font picker that changes the readability font.
-
 use std::{fmt::Write, mem};
 
 use paperback_core::config::ReadabilityFont;
 use patois::t;
 use wxdragon::prelude::*;
 
+use crate::ui::readability::stored_colour;
+
 pub(super) fn color_description(color: i32) -> String {
 	if color < 0 {
 		// TRANSLATORS: Description text shown when the background color is set to default
 		t("Background: Default")
 	} else {
-		let r = ((color >> 16) & 0xFF) as u8;
-		let g = ((color >> 8) & 0xFF) as u8;
-		let b = (color & 0xFF) as u8;
-		format!("#{r:02X}{g:02X}{b:02X}")
+		format!("#{:06X}", color & 0xFF_FFFF)
 	}
 }
 
@@ -54,11 +50,8 @@ pub(super) fn font_description(rf: &ReadabilityFont) -> String {
 
 pub(super) fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Option<ReadabilityFont> {
 	let mut font_data = FontData::new();
-	if current.color >= 0 {
-		let r = ((current.color >> 16) & 0xFF) as u8;
-		let g = ((current.color >> 8) & 0xFF) as u8;
-		let b = (current.color & 0xFF) as u8;
-		font_data.set_colour(&Colour::rgb(r, g, b));
+	if let Some(colour) = stored_colour(current.color) {
+		font_data.set_colour(&colour);
 	}
 	if !current.is_default() {
 		let style = match current.style {
@@ -99,7 +92,7 @@ pub(super) fn show_font_picker(parent: Dialog, current: &ReadabilityFont) -> Opt
 	let font = dlg.get_font()?;
 	let chosen_color = dlg.get_font_data().map_or(-1, |fd| {
 		let c = fd.get_chosen_colour();
-		// Prevent double-free: this FontData pointer is owned by the dialog, not by us
+		// The dialog owns this FontData, so dropping it would double-free.
 		mem::forget(fd);
 		c.map_or(-1, |col| (i32::from(col.r) << 16) | (i32::from(col.g) << 8) | i32::from(col.b))
 	});

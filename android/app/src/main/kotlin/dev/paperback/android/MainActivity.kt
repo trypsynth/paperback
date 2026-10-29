@@ -31,12 +31,7 @@ class MainActivity : ComponentActivity() {
 		setContent {
 			val view = LocalView.current
 			LaunchedEffect(view) {
-				// The delegate below exists only to relabel Compose Slider nodes -- which report
-				// themselves to TalkBack as SeekBar -- as buttons, and that check reads
-				// AccessibilityNodeInfo#getStateDescription, which is API 30. Below API 30 the
-				// wrapper would be a pure pass-through, so don't install it at all rather than
-				// call View#getAccessibilityDelegate (API 29) to build it: unguarded, that getter
-				// threw NoSuchMethodError at launch on API 24-28.
+				// The delegate's check needs API 30 anyway, and building it calls View#getAccessibilityDelegate (API 29), which threw NoSuchMethodError at launch on API 24-28.
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
 					installSeekBarRoleDelegate(view)
 				}
@@ -70,13 +65,10 @@ class MainActivity : ComponentActivity() {
 		headsethookClickCount = 0
 	}
 
-	// ComponentActivity.dispatchKeyEvent is marked @RestrictTo(LIBRARY_GROUP_PREFIX) by AndroidX,
-	// which makes lint flag every super call here even though overriding it and delegating is the
-	// documented way to intercept key events on an Activity.
+	// AndroidX marks ComponentActivity.dispatchKeyEvent @RestrictTo, so lint flags the super calls even though this is the documented way to intercept keys.
 	@Suppress("RestrictedApi")
 	override fun dispatchKeyEvent(event: KeyEvent): Boolean {
 		if (event.action != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(event)
-		// Don't intercept when a text field has focus (e.g. Find or Go-To dialogs).
 		if (currentFocus is EditText) return super.dispatchKeyEvent(event)
 		val shortcut = shortcutFor(event.keyCode, event.isCtrlPressed, event.isShiftPressed)
 			?: return super.dispatchKeyEvent(event)
@@ -111,9 +103,7 @@ class MainActivity : ComponentActivity() {
 		}
 	}
 
-	/** A headset's one button counts clicks rather than acting on each: the second and third land
-	 * within [HEADSET_CLICK_WINDOW_MS] of the first, so acting straight away would play the book
-	 * every time the reader meant to skip. */
+	// Clicks are counted before acting, or a double click meant to skip would first play the book.
 	private fun countHeadsetClick() {
 		headsethookClickCount++
 		headsethookHandler.removeCallbacks(headsethookRunnable)

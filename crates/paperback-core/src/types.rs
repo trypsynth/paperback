@@ -45,9 +45,9 @@ pub struct LinkInfo {
 pub struct ImageInfo {
 	pub offset: DocPos,
 	pub alt_text: String,
-	/// The span of the emitted placeholder, brackets and label included.
+	/// Brackets and label included.
 	pub length: DocLen,
-	/// Where the picture lives, as the markup wrote it: an `<img>`'s `src` or an SVG or FB2 `<image>`'s `href`. Empty when there is none.
+	/// As the markup wrote it, unresolved; empty when there is none.
 	pub source: String,
 }
 
@@ -55,7 +55,6 @@ pub struct ImageInfo {
 pub struct ListInfo {
 	pub offset: DocPos,
 	pub item_count: i32,
-	/// The span of the list, from its start offset to the end of its content.
 	pub length: DocLen,
 }
 
@@ -71,18 +70,15 @@ pub struct TableInfo {
 	pub offset: DocPos,
 	pub text: String,
 	pub html_content: String,
-	/// The span of the emitted table text.
 	pub length: DocLen,
 }
 
 #[derive(Debug, Clone)]
 pub struct FormulaInfo {
 	pub offset: DocPos,
-	/// Text rendering emitted into the buffer (also the marker text).
 	pub text: String,
-	/// Original `MathML` markup, shown in the `WebView` on activation.
 	pub mathml: String,
-	/// The span of the emitted formula text, excluding surrounding line breaks.
+	/// Excludes the surrounding line breaks.
 	pub length: DocLen,
 }
 
@@ -120,7 +116,7 @@ pub struct NavResult {
 pub struct SearchResult {
 	pub found: bool,
 	pub wrapped: bool,
-	/// Where the match starts; the start of the document when nothing was found.
+	/// The start of the document when nothing was found.
 	pub position: DocPos,
 }
 
@@ -146,7 +142,6 @@ pub struct BookmarkDisplayItem {
 	pub end: DocPos,
 	pub note: String,
 	pub is_whole_line: bool,
-	/// See [`BookmarkDisplayEntry::audio_ms`].
 	pub audio_ms: Option<u64>,
 }
 
@@ -204,7 +199,7 @@ pub struct HeadingTree {
 pub struct BookmarkDisplayEntry {
 	pub start: DocPos,
 	pub end: DocPos,
-	/// The playback time of an audio bookmark, which is what tells two in one chapter apart.
+	/// What tells two audio bookmarks in one chapter apart.
 	pub audio_ms: Option<u64>,
 }
 

@@ -131,7 +131,6 @@ fn build_html_table_from_grid_2x2() {
 		build_html_table_from_grid(&rows),
 		"<table border=\"1\"><tr><td>a</td><td>b</td></tr><tr><td>c</td><td>d</td></tr></table>"
 	);
-	// Round-trips through the shared TSV renderer.
 	assert_eq!(html_table_to_tsv(&build_html_table_from_grid(&rows)), "a\tb\nc\td");
 }
 
@@ -144,4 +143,42 @@ fn build_html_table_from_grid_empty() {
 fn build_html_table_from_grid_empty_cell() {
 	let rows = vec![vec![String::new(), "b".to_string()]];
 	assert_eq!(build_html_table_from_grid(&rows), "<table border=\"1\"><tr><td></td><td>b</td></tr></table>");
+}
+
+#[test]
+fn table_grid_places_spanning_cells_and_skips_the_columns_they_cover() {
+	let grid = html_table_grid(
+		"<table><tr><td rowspan=\"2\">a</td><td>b</td></tr><tr><td>c</td></tr><tr><td colspan=\"2\">d</td></tr></table>",
+	)
+	.unwrap();
+	let placed: Vec<(&str, usize, usize, usize, usize)> = grid
+		.cells
+		.iter()
+		.map(|cell| (cell.text.as_str(), cell.row, cell.column, cell.row_span, cell.column_span))
+		.collect();
+	assert_eq!(placed, vec![("a", 0, 0, 2, 1), ("b", 0, 1, 1, 1), ("c", 1, 1, 1, 1), ("d", 2, 0, 1, 2)]);
+	assert_eq!((grid.row_count, grid.column_count, grid.header_row_count), (3, 2, 0));
+}
+
+#[test]
+fn table_grid_counts_thead_and_all_th_rows_as_headers_and_keeps_only_a_real_caption() {
+	let grid = html_table_grid(
+		"<table><thead><tr><td>Name</td></tr></thead><tr><th>Sub</th></tr><tr><th>Row</th><td>1</td></tr></table>",
+	)
+	.unwrap();
+	assert_eq!(grid.header_row_count, 2);
+	assert!(grid.cells[0].is_header);
+	assert_eq!(grid.caption, "");
+	assert_eq!(
+		html_table_grid("<table><caption> Sales </caption><tr><td>x</td></tr></table>").unwrap().caption,
+		"Sales"
+	);
+}
+
+#[test]
+fn table_grid_clamps_a_row_span_past_the_last_row_and_has_none_without_rows() {
+	let grid = html_table_grid("<table><tr><td rowspan=\"9\">a</td></tr></table>").unwrap();
+	assert_eq!(grid.cells[0].row_span, 1);
+	assert!(html_table_grid("<table></table>").is_none());
+	assert_eq!(grid.row_text(0), "a");
 }

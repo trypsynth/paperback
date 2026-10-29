@@ -1,12 +1,3 @@
-//! Reading the text off a PDF page: pdfium's per-character stream assembled into visual
-//! lines, each reordered visual to logical so a right-to-left script comes out in reading
-//! order, and each measured for the size and the face it is set in.
-//!
-//! What those lines mean is [`super::paragraphs`]. This module only reports what is on the
-//! page. It is the fallback path for a page with no trustworthy structure tree (see
-//! [`super::structure`]), and its [`sanitize_pdf_text`] helper is shared by the metadata and
-//! table of contents readers as well.
-
 use std::{
 	cell::Cell,
 	cmp::Ordering,
@@ -35,29 +26,20 @@ pub(super) fn sanitize_pdf_text(input: &str) -> String {
 	out
 }
 
-/// Every character on the page, read once, indexed as pdfium indexes them: `None` where pdfium
-/// reports a value that is not a character.
 pub(super) fn page_chars(text_page: &PdfTextPage, char_count: i32) -> Vec<Option<char>> {
 	(0..char_count).map(|i| char::from_u32(text_page.unicode_at(i))).collect()
 }
 
-/// The page's characters as plain text for [`HyphenEvidence`] and [`PageEvidence::keeps_line_end_hyphen`],
-/// with a space standing in for anything that is not a character.
 pub(super) fn context_chars(page: &[Option<char>]) -> Vec<char> {
 	page.iter().map(|c| c.unwrap_or(' ')).collect()
 }
 
-/// What pdfium reports in place of a hyphen that ends a line: it takes the hyphen for one that
-/// splits a word and marks it so a reader can join the halves.
+/// pdfium's stand-in for a hyphen ending a line, which it takes for one that splits a word.
 pub(super) const LINE_END_HYPHEN: char = '\u{0002}';
 
-/// The words on a page, as evidence for whether a hyphen pdfium found at the end of a line is
-/// part of the word (`NFB-NEWSLINE`, `non-web`) or only splits it (`sugges-tion`).
 #[derive(Default)]
 pub(super) struct HyphenEvidence {
-	/// Compounds written with a hyphen somewhere it is not at a line end, lower-cased.
 	hyphenated: HashSet<String>,
-	/// Every unhyphenated word seen, lower-cased.
 	words: HashSet<String>,
 }
 
@@ -68,7 +50,6 @@ impl HyphenEvidence {
 		evidence
 	}
 
-	/// Adds a page's words.
 	pub(super) fn add_chars(&mut self, chars: &[char]) {
 		let evidence = self;
 		let mut word = String::new();
@@ -98,7 +79,6 @@ impl HyphenEvidence {
 	}
 }
 
-/// What a document writes of the word a line-end hyphen splits: the halves joined by a hyphen somewhere other than a line end, or written whole.
 #[derive(Clone, Copy, Default)]
 struct Written {
 	hyphenated: bool,
@@ -115,7 +95,6 @@ impl Written {
 	}
 }
 
-/// The page each word is first written on, over the pages one thread has read.
 #[derive(Default)]
 pub(super) struct WordPages {
 	hyphenated: HashMap<String, i32>,
@@ -123,7 +102,7 @@ pub(super) struct WordPages {
 }
 
 impl WordPages {
-	/// Adds the words of `page`. A thread reads its pages in order, so the first page a word is added for is the first one of them it is written on.
+	/// A thread reads its pages in order, so the first page a word is added for is the first of them it is written on.
 	pub(super) fn add(&mut self, page: i32, evidence: HyphenEvidence) {
 		for word in evidence.hyphenated {
 			self.hyphenated.entry(word).or_insert(page);
@@ -134,7 +113,6 @@ impl WordPages {
 	}
 }
 
-/// What `pages` write of a word on the pages before `page`.
 fn written_before(pages: &[WordPages], page: i32, hyphenated: &str, whole: &str) -> Written {
 	let before = |words: &HashMap<String, i32>, word: &str| words.get(word).is_some_and(|&first| first < page);
 	Written {
@@ -143,18 +121,15 @@ fn written_before(pages: &[WordPages], page: i32, hyphenated: &str, whole: &str)
 	}
 }
 
-/// How one line-end hyphen was judged, kept so the judgement can be checked against every page before it once all of them are read.
+/// Kept so the judgement can be checked against every earlier page once all of them are read.
 pub(super) struct Judgement {
 	left: String,
 	right: String,
-	/// What the hyphen's own page writes, which is all the check cannot look up afterwards.
+	/// The one part the check cannot look up afterwards.
 	own: Written,
 	kept: bool,
 }
 
-/// The words a line-end hyphen on one page is judged by: that page's own, and those of the pages before it.
-///
-/// A word split at a line end is judged by how the whole document so far writes it, not only that page: a book that writes "OpenSolaris" or "MTBF" on one page joins them when they wrap on a later one. Pages are read on several threads at once, though, and a thread has seen only some of the pages before the one in hand. So a page is first judged against the pages its own thread has read, and every judgement is kept. Once all the pages are read, [`confirms`] checks each judgement against every page before it, and a page with one that comes out differently is read again. What comes out is what reading the pages one after another gives.
 pub(super) struct PageEvidence<'a> {
 	page: i32,
 	earlier: &'a [WordPages],
@@ -163,7 +138,6 @@ pub(super) struct PageEvidence<'a> {
 }
 
 impl<'a> PageEvidence<'a> {
-	/// Evidence for `page`, with the pages before it as `earlier` records them.
 	pub(super) fn new(page: i32, earlier: &'a [WordPages]) -> Self {
 		Self { page, earlier, own: HyphenEvidence::default(), judgements: Vec::new() }
 	}
@@ -172,7 +146,6 @@ impl<'a> PageEvidence<'a> {
 		self.own.add_chars(chars);
 	}
 
-	/// Whether the line-end hyphen at `at` in `chars` belongs to the word.
 	pub(super) fn keeps_line_end_hyphen(&mut self, chars: &[char], at: usize) -> bool {
 		let (left, right) = line_end_halves(chars, at);
 		if left.is_empty() || right.is_empty() {
@@ -186,13 +159,12 @@ impl<'a> PageEvidence<'a> {
 		kept
 	}
 
-	/// The page's own words, and how its hyphens were judged.
 	pub(super) fn finish(self) -> (HyphenEvidence, Vec<Judgement>) {
 		(self.own, self.judgements)
 	}
 }
 
-/// Whether every hyphen on `page` was judged as `pages` judge it, which once every page is read is how reading the pages in order would have judged it.
+/// Once every page is read, `pages` judge a hyphen as reading the pages in order would have.
 pub(super) fn confirms(judgements: &[Judgement], page: i32, pages: &[WordPages]) -> bool {
 	judgements.iter().all(|judgement| {
 		let (hyphenated, whole) = written_forms(&judgement.left, &judgement.right);
@@ -201,7 +173,6 @@ pub(super) fn confirms(judgements: &[Judgement], page: i32, pages: &[WordPages])
 	})
 }
 
-/// The word before the line-end hyphen at `at` in `chars`, and the one it continues into.
 fn line_end_halves(chars: &[char], at: usize) -> (String, String) {
 	let left_start = chars[..at].iter().rposition(|c| !c.is_alphanumeric()).map_or(0, |p| p + 1);
 	let left: String = chars[left_start..at].iter().collect();
@@ -211,18 +182,12 @@ fn line_end_halves(chars: &[char], at: usize) -> (String, String) {
 	(left, right)
 }
 
-/// The two ways a document may write the word split between `left` and `right`, lower-cased as [`HyphenEvidence`] keeps them.
 fn written_forms(left: &str, right: &str) -> (String, String) {
 	let (l, r) = (left.to_lowercase(), right.to_lowercase());
 	(format!("{l}-{r}"), format!("{l}{r}"))
 }
 
-/// Whether a hyphen between `left` and `right` at a line break is part of the word.
-///
-/// What the document itself writes decides first: a compound it hyphenates elsewhere keeps its
-/// hyphen, a word it writes whole elsewhere loses it. Failing that, a hyphen next to an
-/// abbreviation, a capitalised word or a number belongs to a compound (`NFB-NEWSLINE`,
-/// `COVID-19`), while one between two lower-case halves splits an ordinary word.
+/// What the document writes elsewhere decides first; failing that, a hyphen beside an abbreviation, a capital or a number belongs to a compound (`NFB-NEWSLINE`, `COVID-19`).
 pub(super) fn keeps_hyphen(left: &str, right: &str, evidence: Option<&HyphenEvidence>) -> bool {
 	if left.is_empty() || right.is_empty() {
 		return false;
@@ -234,7 +199,6 @@ pub(super) fn keeps_hyphen(left: &str, right: &str, evidence: Option<&HyphenEvid
 	keeps_written_hyphen(left, right, written)
 }
 
-/// [`keeps_hyphen`] for two halves that are not empty, given what the document writes of them.
 fn keeps_written_hyphen(left: &str, right: &str, written: Written) -> bool {
 	if written.hyphenated {
 		return true;
@@ -248,52 +212,27 @@ fn keeps_written_hyphen(left: &str, right: &str, written: Written) -> bool {
 	left_is_abbreviation || right_opens_a_name || left.chars().any(|c| c.is_ascii_digit())
 }
 
-/// One visual line of an untagged page.
 #[derive(Clone, Debug)]
 pub(super) struct Line {
 	pub text: String,
-	/// The point size it is set in.
 	pub size: f64,
-	/// The upper edge of its first glyph.
 	pub top: f64,
-	/// The lower edge of its lowest glyph.
 	pub bottom: f64,
-	/// Whether it is set in a monospaced face, which marks it as something whose own line
-	/// breaks are the content: code, or anything else laid out by column.
 	pub monospaced: bool,
-	/// Whether all of it is set in a bold face, which is how a heading set no larger than the text around it stands out.
 	pub bold: bool,
 }
 
-/// Tolerance, in PDF user units, for calling two baselines or two box edges the same. pdfium
-/// reports characters set on one line with identical coordinates, so this only has to absorb
-/// rounding.
+/// pdfium reports characters on one line with identical coordinates, so this only has to absorb rounding.
 const COORDINATE_EPSILON: f64 = 0.05;
-/// A space that carries less than this fraction of its own width in horizontal advance is not
-/// separating anything. Real spaces in a page measured for #808 all advance by at least 70% of
-/// their width; the spurious ones advance by 0-5%.
+/// Real spaces on a page measured for #808 all advance by at least 70% of their width; the spurious ones by 0-5%.
 const NO_ADVANCE_RATIO: f64 = 0.25;
-/// A space this much of whose width lies inside the box of the glyph before it is being drawn
-/// underneath that glyph rather than after it. The same page measured 58% at most for real
-/// spaces (an `f` overhangs the space after it) and 92% at least for the spurious ones.
+/// The same page measured 58% at most for real spaces (an `f` overhangs the space after it) and 92% at least for the spurious ones.
 const SWALLOWED_RATIO: f64 = 0.8;
-/// How many of a page's spaces are measured to decide whether a covered space means anything there. Enough to see the font's habit, few enough that the lookups stay a fixed cost per page.
+/// Enough to see the font's habit, few enough that the lookups stay a fixed cost per page.
 const COVER_SAMPLE: usize = 64;
 
-/// Whether a U+0020 in the text layer renders as no space at all, judged from where pdfium puts
-/// it relative to its neighbours. Both shapes of this reach us as an ordinary space that pdfium
-/// does not mark as generated, so only the geometry tells them apart from a real one:
-///
-/// * A space with (almost) no horizontal advance: the character after it starts where the space
-///   itself starts, so nothing on the page moves for it. The PDF of #808 leaves these in the
-///   middle of words ("Pref ace") and in front of punctuation ("skills . The").
-/// * A space drawn inside the glyph before it, which is what an `fi`/`fl` ligature that pdfium
-///   has split back into its two code points leaves behind ("fi eld"): the ligature's advance
-///   covers the space, so the space sits on top of it.
-///
-/// `next_origin` and `prev_box` are the raw neighbouring characters, line breaks included; a
-/// neighbour on another line fails both the baseline and the containment check and so is
-/// ignored, which is what should happen for a space at either end of a line.
+/// Two shapes reach us as ordinary spaces: one with no advance, which #808 leaves mid-word ("Pref ace") and before punctuation, and one drawn inside a split `fi`/`fl` ligature ("fi eld").
+/// A neighbour on another line fails both checks, as it should for a space at either end of a line.
 pub(super) fn space_is_invisible(
 	space_origin: (f64, f64),
 	space_box: CharBox,
@@ -302,9 +241,7 @@ pub(super) fn space_is_invisible(
 ) -> bool {
 	let width = space_box.right - space_box.left;
 	if width <= 0.0 {
-		// A space whose own box is empty gives nothing to measure against. Fonts that give the
-		// space glyph no width of its own and position words by hand land here, and their spaces
-		// are the only word separator the page has.
+		// Fonts that give the space glyph no width and position words by hand land here, and their spaces are the page's only word separators.
 		return false;
 	}
 	if let Some((next_x, next_y)) = next_origin
@@ -316,7 +253,6 @@ pub(super) fn space_is_invisible(
 	prev_box.is_some_and(|prev| covers(prev, space_box))
 }
 
-/// Whether `prev`, on the same line, lies over most of `space_box`, the second shape [`space_is_invisible`] looks for.
 fn covers(prev: CharBox, space_box: CharBox) -> bool {
 	let width = space_box.right - space_box.left;
 	let on_the_same_line =
@@ -325,21 +261,20 @@ fn covers(prev: CharBox, space_box: CharBox) -> bool {
 	width > 0.0 && on_the_same_line && covered_width >= width * SWALLOWED_RATIO
 }
 
-/// Whether a space covered by the glyph before it is hidden by that glyph, given how many of a page's measured spaces are covered. A split ligature in front of a space is rare: the PDF of #808 has at most 4% of a page's spaces covered. A font whose glyph boxes are wider than their advances covers nearly all of them, 64% to 91% a page in the PDF of #993, and there being covered says nothing.
+/// A split ligature before a space is rare (at most 4% of a page's spaces in #808), but a font whose glyph boxes outrun their advances covers 64% to 91% a page in #993, and there it says nothing.
 fn covering_hides(covered: usize, measured: usize) -> bool {
 	covered * 4 <= measured
 }
 
-/// The top edge of one character, which is what gives a tagged block the height the structure
-/// tree never records for it. See [`super::images::UnclaimedImages`].
+/// The structure tree never records a block's height, so its first character's top stands in.
 pub(super) fn char_top(text_page: &PdfTextPage, index: i32) -> Option<f64> {
 	text_page.char_box(index).map(|boxed| boxed.top)
 }
 
-/// [`space_is_invisible`] for the spaces of one page, fetching only the geometry each test actually needs. Costs three or four lookups per space character and none at all for anything else, so a page pays for it in proportion to its spaces rather than its length - the per-character cost that #747 had to undo.
+/// Fetches geometry only for space characters, so a page pays in proportion to its spaces rather than its length, the per-character cost #747 had to undo.
 pub(super) struct SpaceFilter {
 	char_count: i32,
-	/// [`covering_hides`] for this page, measured the first time a covered space turns up, so a page without one never pays for it.
+	/// Measured the first time a covered space turns up, so a page without one never pays for it.
 	covering_hides: Cell<Option<bool>>,
 }
 
@@ -348,7 +283,6 @@ impl SpaceFilter {
 		Self { char_count, covering_hides: Cell::new(None) }
 	}
 
-	/// Whether the space at `index` of `text_page` renders as no space at all.
 	pub(super) fn hides(&self, text_page: &PdfTextPage, index: i32) -> bool {
 		let (Some(origin), Some(space_box)) = (text_page.char_origin(index), text_page.char_box(index)) else {
 			return false;
@@ -387,10 +321,7 @@ impl SpaceFilter {
 	}
 }
 
-/// Whether `ch` ends the current visual line. pdfium writes a line break as the pair `"\r\n"`,
-/// so counting both characters would end the line twice and leave an empty line between every
-/// pair of real ones - which [`join_paragraphs`] reads as a paragraph break, splitting every
-/// wrapped paragraph into one paragraph per line (#808).
+/// pdfium writes a line break as `"\r\n"`, and counting both ended every line twice, splitting every wrapped paragraph into one per line (#808).
 fn ends_line(ch: char, prev: Option<char>) -> bool {
 	ch == '\r' || (ch == '\n' && prev != Some('\r'))
 }
@@ -405,14 +336,12 @@ pub(super) fn is_cjk(c: char) -> bool {
 	(0xAC00..=0xD7AF).contains(&u) // Hangul
 }
 
+#[allow(clippy::cast_possible_truncation, reason = "a page coordinate fits an f32")]
 fn char_x_origin(text_page: &PdfTextPage, i: i32) -> f32 {
 	text_page.char_origin(i).map_or(0.0, |(x, _)| x as f32)
 }
 
-/// Assemble one run of `(char, pdfium index)` pairs into text, reordering
-/// visual→logical for RTL scripts. Fetches x origins (a per-char FFI call)
-/// only when the run actually contains an RTL character, so pure-LTR runs
-/// (the overwhelming majority) pay a single cheap classification scan instead.
+/// Fetches x origins (a lookup per char) only for runs containing an RTL character, so LTR runs pay a single classification scan.
 pub(super) fn reorder_run(text_page: &PdfTextPage, chars: &[(char, i32)]) -> String {
 	if !bidi::contains_rtl(chars.iter().map(|&(c, _)| c)) {
 		return chars.iter().map(|&(c, _)| c).collect();
@@ -421,7 +350,6 @@ pub(super) fn reorder_run(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Str
 	bidi::reorder_line(&with_origin)
 }
 
-/// Reads one visual line: its text in logical order, and everything measured about it.
 fn measure_line(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Line {
 	let (top, bottom) = line_edges(text_page, chars);
 	Line {
@@ -434,7 +362,6 @@ fn measure_line(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Line {
 	}
 }
 
-/// The page's visual lines. `evidence` judges the hyphens pdfium finds at line ends; this page's words are added to it.
 pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32, evidence: &mut PageEvidence) -> Vec<Line> {
 	let Some(char_count) = text_page.char_count() else {
 		tracing::warn!(
@@ -455,8 +382,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32, evide
 			.collect();
 	};
 	let mut result: Vec<Line> = Vec::new();
-	// Chars of the current visual line with their pdfium index, so each line can be
-	// reordered visual→logical (handles RTL scripts) before paragraph joining.
+	// Kept with their pdfium index so each line can be reordered visual to logical before paragraph joining.
 	let mut current_chars: Vec<(char, i32)> = Vec::new();
 	let mut previous_char = None;
 	let spaces = SpaceFilter::new(char_count);
@@ -474,8 +400,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32, evide
 				current_chars.push(('-', i));
 			}
 		} else if ch == '\n' || (ch.is_control() && !matches!(ch, '\t')) || ch == '\u{00AD}' {
-			// The '\n' of a "\r\n" pair, and anything else with no text of its own: dropped, but
-			// still the previous character as far as the next `ends_line` is concerned.
+			// Dropped, but still the previous character as far as the next `ends_line` is concerned.
 		} else if ch != ' ' || !spaces.hides(text_page, i) {
 			current_chars.push((ch, i));
 		}
@@ -487,21 +412,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32, evide
 	restore_reading_order(result)
 }
 
-/// The top edge of a line, in PDF user units, taken from its first character. Y grows up the
-/// page, so the line nearest the top of it has the largest one.
-///
-/// This is all an untagged page gives to say where an image on it belongs, since the page draws
-/// its images and sets its text in the same coordinates and says nothing about the order of the
-/// two. The first character is measured rather than the tallest, because a couple of points
-/// either way decides nothing about which line an image falls between and every character
-/// measured costs another lookup.
-/// The top and bottom edges of a line.
-///
-/// The top comes from the first character, because a couple of points either way decides
-/// nothing about which line an image falls between. The bottom is the lowest of the line's
-/// characters, and that one has to be exact: it is what the whitespace before the next line
-/// is measured from, and pdfium runs two visual lines together often enough that a line's
-/// box regularly reaches a whole line lower than its first character does.
+/// The top is the first character's, since a few points decide nothing about where an image falls; the bottom must be the lowest, since the next line's gap is measured from it and pdfium's doubled lines reach a whole line lower.
 fn line_edges(text_page: &PdfTextPage, chars: &[(char, i32)]) -> (f64, f64) {
 	let top = chars.first().and_then(|(_, index)| text_page.char_box(*index)).map_or(f64::NEG_INFINITY, |b| b.top);
 	let mut bottom = f64::INFINITY;
@@ -513,25 +424,16 @@ fn line_edges(text_page: &PdfTextPage, chars: &[(char, i32)]) -> (f64, f64) {
 	(top, bottom)
 }
 
-/// The point size one character is set in. pdfium reports the `Tf` size, which is 1.0 in every
-/// PDF that scales its text through the text matrix instead of through `Tf` - both the PDF of
-/// #808 and the one of #813 do, and every line of both came back as size 1.0, so no line was
-/// ever tall enough to be taken for a heading. The matrix's vertical scale is the rest of the
-/// size, so the two together are the size the reader sees.
+/// The `Tf` size alone is 1.0 in PDFs that scale text through the matrix instead (#808 and #813 both do), so no line was ever tall enough to be a heading.
 fn effective_font_size(text_page: &PdfTextPage, index: i32) -> f64 {
 	let size = text_page.font_size(index);
 	text_page.text_matrix(index).map_or(size, |matrix| size * f64::from(matrix.b.hypot(matrix.d)))
 }
 
-/// How many characters of a line to measure. Reading the size off the line's first character
-/// costs one call but believes a chapter opening's drop cap, which stands three times the size
-/// of the line it starts; the median of a handful of characters spread across the line does not.
-/// Still a per-line cost rather than a per-character one - the per-character font-size calls
-/// that #747 had to undo.
+/// The first character alone believes a drop cap three times the line's size; a median of a few does not, and stays a per-line cost rather than the per-character one #747 had to undo.
 const LINE_FONT_SIZE_SAMPLES: usize = 5;
 
-/// The point size of a visual line: the median of [`effective_font_size`] over a few of its
-/// characters, ignoring whitespace (which a font may set in a size of its own).
+/// Whitespace is skipped because a font may set it in a size of its own.
 fn line_font_size(text_page: &PdfTextPage, chars: &[(char, i32)]) -> f64 {
 	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
 	if indices.is_empty() {
@@ -543,29 +445,19 @@ fn line_font_size(text_page: &PdfTextPage, chars: &[(char, i32)]) -> f64 {
 	sorted_median(&mut sizes)
 }
 
-/// Bit 1 of a PDF font descriptor's flags, which a font sets when all its glyphs are the
-/// same width. Reliable when it is set and worth nothing when it is not: the Computer Modern
-/// typewriter faces LaTeX sets code in leave it clear.
+/// Reliable when set and worth nothing when not: the Computer Modern typewriter faces LaTeX sets code in leave it clear.
 const FIXED_PITCH_FLAG: i32 = 1;
 
-/// Whether a font name belongs to a monospaced face.
-///
-/// Names come subset-tagged as `ABCDEF+Consolas`, so the tag comes off first. `monotype` is
-/// removed before looking for `mono` because it is a foundry name that says nothing about the
-/// widths: Monotype Corsiva is a script face.
+/// `monotype` comes out before looking for `mono` because it is a foundry, not a width: Monotype Corsiva is a script face.
 fn looks_monospaced(font_name: &str) -> bool {
 	const HINTS: [&str; 6] = ["mono", "courier", "consol", "menlo", "typewriter", "inconsolata"];
 	let name = font_name.rsplit('+').next().unwrap_or(font_name).to_ascii_lowercase();
 	let name = name.replace("monotype", "");
 	HINTS.iter().any(|hint| name.contains(hint))
-		// Computer Modern, which is what a LaTeX document sets a listing in, names its
-		// typewriter faces cmtt, cmitt, cmsltt and cmvtt. No other face in the family has a
-		// double t in its name.
+		// Computer Modern's typewriter faces are cmtt, cmitt, cmsltt and cmvtt; no other face in the family has a double t.
 		|| (name.starts_with("cm") && name.contains("tt"))
 }
 
-/// Whether one character is set in a monospaced face, by the font's descriptor flags first and
-/// its name second.
 fn char_is_monospaced(text_page: &PdfTextPage, index: i32) -> bool {
 	let Some(font) = text_page.font(index) else { return false };
 	if font.flags & FIXED_PITCH_FLAG != 0 {
@@ -574,10 +466,8 @@ fn char_is_monospaced(text_page: &PdfTextPage, index: i32) -> bool {
 	looks_monospaced(&font.name)
 }
 
-/// The weight from which a face counts as bold: semibold and up.
 const BOLD_WEIGHT: i32 = 600;
 
-/// Whether a font name belongs to a bold face, for a font whose weight pdfium cannot report. Names come subset-tagged as `ABCDEF+Arial-BoldMT`.
 fn looks_bold(font_name: &str) -> bool {
 	const HINTS: [&str; 5] = ["bold", "black", "heavy", "semibold", "demi"];
 	let name = font_name.rsplit('+').next().unwrap_or(font_name).to_ascii_lowercase();
@@ -591,7 +481,7 @@ fn char_is_bold(text_page: &PdfTextPage, index: i32) -> bool {
 	text_page.font(index).is_some_and(|font| looks_bold(&font.name))
 }
 
-/// Whether a line is set in a bold face throughout, over the same handful of characters the size is measured across. All of them have to be: a paragraph that opens with a bold word is not a heading.
+/// Every sampled character has to be bold: a paragraph that opens with a bold word is not a heading.
 fn line_is_bold(text_page: &PdfTextPage, chars: &[(char, i32)]) -> bool {
 	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
 	if indices.is_empty() {
@@ -601,9 +491,7 @@ fn line_is_bold(text_page: &PdfTextPage, chars: &[(char, i32)]) -> bool {
 	indices.iter().step_by(step).all(|&i| char_is_bold(text_page, i))
 }
 
-/// Whether a line is set in a monospaced face, over the same handful of characters the size is
-/// measured across. Most of them have to agree: one word of code quoted in a sentence of prose
-/// does not make the sentence a listing.
+/// Most sampled characters have to agree: one word of code quoted in prose does not make the sentence a listing.
 fn line_is_monospaced(text_page: &PdfTextPage, chars: &[(char, i32)]) -> bool {
 	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
 	if indices.is_empty() {
@@ -632,14 +520,13 @@ pub(super) fn median_line_font_size(line_infos: &[Line]) -> f64 {
 	sorted_median(&mut sizes)
 }
 
-/// How far above a page's first line other text has to sit, as a share of the height its text spans, before the page counts as drawn out of order. A running header drawn after the body sits well inside this, and a second column starts about where the first did.
+/// A running header drawn after the body sits well inside this, and a second column starts about where the first did.
 const OUT_OF_ORDER_SHARE: f64 = 0.25;
 
-/// Puts a page whose content stream starts partway down it back into top-down order. Some form generators draw the lower half of a page first, and an untagged page has only the stream to go on, so the form read from its middle. Only such a page is touched, and it is reordered by region, each a stretch the stream draws without leaving that part of the page, kept whole and placed by where it starts: every page drawn in order, columns included, comes back unchanged. Lines the stream draws first at the bottom of everything drawn after them, such as a footer, are not where it starts.
+/// Some form generators draw a page's lower half first, so the form read from its middle; whole regions are moved, so a page drawn in order, columns and a footer drawn first included, comes back unchanged.
 fn restore_reading_order(lines: Vec<Line>) -> Vec<Line> {
 	// A line with no position, such as an empty one, says nothing about the order and travels with the run it is drawn in.
 	let placed = |line: &&Line| line.top.is_finite() && line.bottom.is_finite();
-	// Walks back from the end keeping the lowest top drawn after each line, so this ends on the earliest line that has a lower one drawn after it.
 	let mut lowest_after = f64::INFINITY;
 	let mut first = None;
 	for line in lines.iter().rev().filter(placed) {
@@ -676,9 +563,7 @@ mod tests {
 		restore_reading_order, sanitize_pdf_text, space_is_invisible,
 	};
 
-	/// pdfium marks a hyphen it finds at the end of a line with U+0002. An ordinary word split
-	/// across lines is joined, but a compound that merely wrapped keeps its hyphen: the SELVAS
-	/// NFB-NEWSLINE guide and the Mantis Q40 conformance report both lost real hyphens here.
+	/// The SELVAS NFB-NEWSLINE guide and the Mantis Q40 conformance report both lost real hyphens here.
 	#[test]
 	fn line_end_hyphens_are_kept_only_where_they_belong_to_the_word() {
 		assert_eq!(sanitize_pdf_text("sugges\u{0002}tion"), "suggestion");
@@ -697,7 +582,7 @@ mod tests {
 		assert_eq!(sanitize_pdf_text("BrailleNote and Braille\u{0002}Note"), "BrailleNote and BrailleNote");
 	}
 
-	/// A thread reading page 1 has not seen page 0 if another thread read it. Page 0 writes "OpenSolaris" whole, so the "Open-Solaris" wrapping on page 1 is one word, but without page 0 the capital keeps the hyphen. The check has to catch that, or the page keeps a hyphen that reading the pages in order would drop.
+	/// Page 0 writes "OpenSolaris" whole, so a thread that never saw it must not keep the hyphen in page 1's "Open-Solaris".
 	#[test]
 	fn a_hyphen_judged_without_an_earlier_page_is_caught() {
 		let chars = |text: &str| text.chars().collect::<Vec<char>>();
@@ -858,8 +743,7 @@ mod tests {
 		);
 	}
 
-	/// The coordinates below come from what pdfium reports for the PDF attached to #808, so the
-	/// ratios each case turns on are the ones real pages produce.
+	/// The coordinates in these tests are what pdfium reports for the PDF attached to #808.
 	fn char_box(left: f64, right: f64, bottom: f64, top: f64) -> CharBox {
 		CharBox { left, right, bottom, top }
 	}
@@ -903,8 +787,7 @@ mod tests {
 		assert!(covering_hides(0, 0), "a page with no spaces to measure");
 	}
 
-	/// "name of paper": an `f` overhangs the space after it by more than half its width, and that
-	/// space advances normally. It stays.
+	/// "name of paper": an `f` overhangs the space after it by more than half its width, but that space advances normally.
 	#[test]
 	fn space_after_an_overhanging_glyph_is_kept() {
 		assert!(!space_is_invisible(
@@ -915,8 +798,6 @@ mod tests {
 		));
 	}
 
-	/// A neighbour on another line decides nothing: a space at the end of a line keeps whatever
-	/// the line below happens to sit under.
 	#[test]
 	fn neighbours_on_another_line_are_ignored() {
 		let space = char_box(287.34, 289.84, 387.61, 387.62);
@@ -924,8 +805,6 @@ mod tests {
 		assert!(!space_is_invisible((287.34, 387.61), space, None, Some(char_box(284.87, 289.77, 375.61, 382.44))));
 	}
 
-	/// A font whose space glyph has no width of its own gives nothing to measure, and its spaces
-	/// may be the only word separators on the page.
 	#[test]
 	fn zero_width_space_glyph_is_kept() {
 		assert!(!space_is_invisible(
@@ -944,7 +823,6 @@ mod tests {
 
 	#[test]
 	fn monospaced_faces_are_known_by_name() {
-		// What LaTeX sets a listing in, subset tag and all.
 		assert!(looks_monospaced("CMTT9"));
 		assert!(looks_monospaced("CMITT10"));
 		assert!(looks_monospaced("ABCDEF+CMSLTT10"));

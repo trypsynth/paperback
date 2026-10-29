@@ -1,18 +1,7 @@
-//! `tbl` tables, the preprocessor language a manual page writes a table in.
-//!
-//! A table opens with `.TS` and closes with `.TE`. Between them come an options line, one or
-//! more lines describing the columns, and then the rows, whose cells are separated by tabs. A
-//! cell too long for one line is written between `T{` and `T}` and holds ordinary roff, macros
-//! and all.
-//!
-//! What this reads is the grid: the options that change how a row is read (the separator), the
-//! rows, and the cells. The rest of what `tbl` can say is about how a table looks on paper -
-//! column widths, alignment, rules, boxes - and is dropped.
+//! Only the grid is read; the rest of what `tbl` says is about how a table looks on paper (widths, alignment, rules, boxes) and is dropped.
 
 use super::escape;
 
-/// The cell separator, and whether a row of rules was seen. Everything else the options line
-/// says is about the look of the table.
 struct Options {
 	separator: char,
 }
@@ -23,7 +12,7 @@ impl Default for Options {
 	}
 }
 
-/// Reads the options line, whose only part that changes what the rows mean is `tab(x)`.
+/// `tab(x)` is the only option that changes what the rows mean.
 fn read_options(line: &str) -> Options {
 	let mut options = Options::default();
 	if let Some(start) = line.find("tab(") {
@@ -37,21 +26,15 @@ fn read_options(line: &str) -> Options {
 	options
 }
 
-/// Whether a line describes the columns rather than holding a row of them.
-///
-/// The format section ends at the line whose last character is a full stop, which is also the
-/// last line of it, so a caller reads lines until this returns `true`.
 fn ends_format(line: &str) -> bool {
 	line.trim_end().ends_with('.')
 }
 
-/// A row that draws a rule rather than holding anything.
 fn is_rule(line: &str) -> bool {
 	matches!(line.trim(), "_" | "=")
 }
 
-/// Splits a row into its cells, leaving the separators inside a `T{` block alone: the block
-/// holds ordinary roff, and a tab in it belongs to the text.
+/// A `T{` block holds ordinary roff, so a separator inside it belongs to the text.
 fn split_cells(row: &str, separator: char) -> Vec<String> {
 	let mut cells = Vec::new();
 	let mut current = String::new();
@@ -78,7 +61,6 @@ fn split_cells(row: &str, separator: char) -> Vec<String> {
 	cells
 }
 
-/// The text of one cell, which may run to several lines and hold roff macros of its own.
 fn cell_text(cell: &str) -> String {
 	let mut parts: Vec<String> = Vec::new();
 	for line in cell.lines() {
@@ -86,8 +68,7 @@ fn cell_text(cell: &str) -> String {
 			continue;
 		}
 		let text = match super::control_line(line) {
-			// A cell is usually set with the font macros, and `.BR printf ()` in one is still a
-			// cross-reference rather than three words.
+			// A cell is usually set with the font macros, and `.BR printf ()` in one is still a cross-reference rather than three words.
 			Some((name, rest)) => super::font_macro_pieces(name, rest).map(|pieces| escape::plain_pieces(&pieces)),
 			None => Some(escape::plain(line)),
 		};
@@ -99,18 +80,12 @@ fn cell_text(cell: &str) -> String {
 	parts.join(" ")
 }
 
-/// One row of the grid, or the end of the table.
 pub(super) enum Row {
 	Cells(Vec<String>),
-	/// A rule, or a line describing the columns: nothing to show.
 	Nothing,
 	End,
 }
 
-/// Reads a `tbl` table into a grid, one row at a time.
-///
-/// `next_line` hands over the next source line, or `None` at the end of the file, so the reader
-/// can drive this over whatever it is reading from.
 pub(super) struct Table {
 	options: Options,
 	past_format: bool,
@@ -121,10 +96,7 @@ impl Table {
 		Self { options: Options { separator: '\t' }, past_format: false }
 	}
 
-	/// Reads one line of the table.
-	///
-	/// `continuation` is called when a cell block is left open at the end of a line, and has to
-	/// return the next line of the table.
+	/// `continuation` supplies the next line while a `T{` block is left open.
 	pub(super) fn read_line(&mut self, line: &str, mut continuation: impl FnMut() -> Option<String>) -> Row {
 		if line.trim() == ".TE" {
 			return Row::End;
@@ -133,8 +105,7 @@ impl Table {
 			return Row::Nothing;
 		}
 		if !self.past_format {
-			// The options line comes first and ends in a semicolon; the column formats follow
-			// and end at a line ending in a full stop.
+			// The options line comes first and ends in a semicolon; the column formats follow and end at a line ending in a full stop.
 			if line.trim_end().ends_with(';') {
 				self.options = read_options(line);
 				return Row::Nothing;
@@ -169,7 +140,6 @@ impl Table {
 	}
 }
 
-/// How many `T{` blocks a row leaves open.
 fn unclosed_blocks(row: &str) -> usize {
 	let opens = row.matches("T{").count();
 	let closes = row.matches("T}").count();
@@ -192,7 +162,6 @@ mod tests {
 		assert_eq!(split_cells("a:b", ':'), ["a", "b"]);
 	}
 
-	/// A separator inside a cell block belongs to the text of the cell.
 	#[test]
 	fn a_separator_inside_a_block_does_not_split() {
 		let cells = split_cells("T{\none\ttwo\nT}\tthree", '\t');

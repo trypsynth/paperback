@@ -1,7 +1,5 @@
 use super::write_binary_text;
 
-/// A genuine Windows Write binary file: the magic, `fcMac` at offset 14 pointing past the text,
-/// and the text starting at byte 128.
 #[test]
 fn write_binary_text_reads_the_run_to_fcmac() {
 	let text = b"Hello from Windows Write.";
@@ -27,14 +25,11 @@ fn the_ole_write_magic_is_accepted() {
 
 #[test]
 fn non_write_bytes_are_declined_so_the_caller_reads_them_as_text() {
-	// No magic: a plain-text .wri.
 	assert!(write_binary_text(b"Just some notes saved with a .wri name.").is_none());
-	// The magic but a nonsense fcMac (past the file): not treated as Write.
 	let mut file = vec![0u8; 200];
 	file[0] = 0xBE;
 	file[1] = 0x31;
 	file[0x0E..0x12].copy_from_slice(&9_999_999u32.to_le_bytes());
 	assert!(write_binary_text(&file).is_none());
-	// Too short to hold a header at all.
 	assert!(write_binary_text(b"\xBE\x31").is_none());
 }

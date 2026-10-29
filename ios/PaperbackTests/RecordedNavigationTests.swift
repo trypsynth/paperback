@@ -3,7 +3,6 @@ import Observation
 import XCTest
 @testable import Paperback
 
-/// Model both M4B chapters sharing one source and audio bundles with a source per section.
 private final class SectionAudioSession: DocumentSession, @unchecked Sendable {
 	var sharedSource = true
 	var audioPath = ""
@@ -124,7 +123,6 @@ final class RecordedNavigationTests: XCTestCase {
 		narration.attach(to: tab)
 		defer { narration.detach() }
 		narration.play()
-		// Wait for the real decoder to load and move beyond the pending start position.
 		for _ in 0..<200 {
 			if (player.resumePointMs() ?? 0) > 0 { break }
 			try await Task.sleep(for: .milliseconds(10))
@@ -135,8 +133,7 @@ final class RecordedNavigationTests: XCTestCase {
 		XCTAssertEqual(player.resumePointMs(), 10_000)
 		XCTAssertEqual(config.savedMs, 10_000)
 		XCTAssertFalse(narration.isPlaying)
-		// Returning to the still-loaded file must rewind it, even though its last seek
-		// target was also zero before playback advanced.
+		// Must rewind even though the loaded file's last seek target was also zero before playback advanced.
 		XCTAssertTrue(narration.seekToPosition(0))
 		XCTAssertEqual(player.resumePointMs(), 0)
 		XCTAssertTrue(narration.seekToPosition(1))

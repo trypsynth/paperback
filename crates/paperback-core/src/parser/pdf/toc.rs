@@ -1,7 +1,4 @@
-//! Building a PDF's table of contents from its bookmark outline, snapping each bookmark to
-//! the nearest matching line on its target page (bookmark destinations only carry a page,
-//! not an in-page offset), plus the shared flat-list-to-tree builder used both here and by
-//! [`super::structure`]'s tagged heading extraction.
+//! Bookmark destinations only carry a page, not an offset within it, so each bookmark is snapped to the matching line on its page.
 
 use std::collections::HashSet;
 
@@ -12,8 +9,7 @@ use crate::{
 	util::text::{collapse_whitespace, trim_string},
 };
 
-/// How deep into a nested outline to read. Beyond this the entries stop being navigation and
-/// start being the document over again.
+/// Beyond this the entries stop being navigation and start being the document over again.
 const MAX_OUTLINE_DEPTH: u32 = 16;
 
 pub(super) fn extract_toc(

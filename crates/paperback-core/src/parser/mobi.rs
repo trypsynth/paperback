@@ -68,15 +68,13 @@ impl Parser for MobiParser {
 			tracing::debug!(text_encoding = header.text_encoding, "decoding mobi content as windows-1252");
 			WINDOWS_1252.decode(&content).0.into_owned()
 		};
-		// A KF8 book was an EPUB before it was compiled, and its skeleton index still records
-		// where each of those files began. Those are the book's sections.
+		// A KF8 book was an EPUB before it was compiled, and its skeleton index still records where each file began.
 		let section_starts = if header.is_kf8 {
 			kf8::section_starts(&data, &header.record_offsets, header.mobi_header()).unwrap_or_default()
 		} else {
 			Vec::new()
 		};
-		// Rewrite MOBI-style filepos links into standard href/id anchors before any
-		// content is stripped, since filepos values are byte offsets into the raw HTML.
+		// filepos values are byte offsets into the raw HTML, so links are rewritten before anything is stripped.
 		let frag_offsets = build_fragment_offsets(&data, &header.record_offsets, header.mobi_header());
 		let mut ncx_toc =
 			parse_ncx(&data, &header.record_offsets, header.mobi_header(), &exth_map, header.is_kf8, &frag_offsets);
@@ -97,20 +95,11 @@ impl Parser for MobiParser {
 		}
 		let mut extra_targets = BTreeSet::new();
 		extract_targets(&ncx_toc, &mut extra_targets);
-		// Section starts ride along as link targets, which gets each one an anchor in the
-		// HTML and so an entry in `id_positions` once the text is converted. That is the only
-		// way to learn where a raw-text position ended up, since rewriting and cleaning move
-		// everything around before the converter ever sees it.
+		// Anchoring section starts as link targets is the only way to learn where a raw-text position ends up after rewriting and cleaning move everything.
 		extra_targets.extend(section_starts.iter().copied());
 		let mut text = rewrite_internal_links(&text, &frag_offsets, &extra_targets);
-		// Everything the converter has no use for comes out in one pass rather than five: each one
-		// was a full scan and a full copy of a string that runs to a hundred megabytes on the
-		// largest books. A title or style element wins over an `aid`/`cid` attribute inside it,
-		// since the element starts first and the leftmost match is the one taken.
-		//
-		// KF8 / AZW3 files concatenate the skeleton and fragments, often leaving `</body></html>`
-		// inside unclosed tags at insertion points, which `scraper` cannot parse the fragments
-		// around, so those go too.
+		// One pass rather than five, since each was a full copy of a string reaching a hundred megabytes; a title or style element beats an `aid`/`cid` inside it as the leftmost match.
+		// KF8 / AZW3 files often leave `</body></html>` inside unclosed tags at fragment insertion points, which `scraper` cannot parse around.
 		static RE_STRIP: LazyLock<regex::Regex> = LazyLock::new(|| {
 			regex::Regex::new(
 				r#"(?is)<title[^>]*>.*?</title>|<style[^>]*>.*?</style>|</body>|</html>|@page\s*\{[^<]+|\s[ac]id\s*=\s*["'][^"']*["']"#,
@@ -119,7 +108,6 @@ impl Parser for MobiParser {
 		});
 		text = RE_STRIP.replace_all(&text, "").into_owned();
 		// Old-style Mobipocket files use <font size="N"> instead of <h1>-<h6>.
-		// Rewrite them so the heading-based TOC builder can pick them up.
 		text = rewrite_font_size_headings(&text);
 		text = pictures::point_pictures_at_records(&text, &data, &header.record_offsets, header.mobi_header());
 		let mut document_title = header.document_title;
@@ -128,19 +116,10 @@ impl Parser for MobiParser {
 		}
 		let mut document = Document::new().with_author(document_author);
 		document.title = document_title;
-		// Converted chunk by chunk rather than as one whole-book DOM parse: `HtmlToText::convert`
-		// builds a full `scraper`/`html5ever` tree for whatever it's handed, and a book-sized
-		// single tree is what ran huge MOBI/AZW3 files out of memory (#781). Each chunk lands on
-		// a block-element boundary (see `chunk::split_html_chunks`), so splitting costs nothing
-		// beyond that boundary already being a line break in the rendered output; appending each
-		// chunk's text in sequence (rather than via `DocumentBuffer::from_parts`, which inserts a
-		// separator between parts) keeps a single-chunk book's output byte-identical to before
-		// chunking existed.
+		// Chunked because one book-sized DOM ran huge MOBI/AZW3 files out of memory (#781); chunks end on block boundaries, and appending (not `DocumentBuffer::from_parts`, which adds separators) keeps output unchanged.
 		let mut buffer = DocumentBuffer::new();
 		let mut id_positions = HashMap::new();
 		let mut headings: Vec<HeadingInfo> = Vec::new();
-		// The chunks are independent by construction, so they convert on every core at once. Only
-		// the stitching below has to stay in order, and it is a fraction of the work.
 		let converted: Vec<HtmlToText> = split_html_chunks(&text)
 			.par_iter()
 			.map(|piece| {
@@ -169,10 +148,7 @@ impl Parser for MobiParser {
 		document.id_positions = id_positions;
 		let ncx_item_count = ncx_toc.len();
 		let mut toc_items = build_toc_from_headings(&headings);
-		// Whichever of the two names more of the book. A novel whose text marks up its title and
-		// nothing else gives a one entry table of contents while its index quietly lists all forty
-		// chapters, and taking the longer list is what puts those chapters back. A single entry
-		// index is a stub rather than a table of contents and never wins.
+		// A novel marking up only its title gives one heading while its index lists all forty chapters; a single-entry index is a stub and never wins.
 		let use_ncx = ncx_item_count > 1 && ncx_item_count > toc_items.len();
 		let toc_source = if use_ncx {
 			"ncx"
@@ -187,9 +163,6 @@ impl Parser for MobiParser {
 				toc_items = ncx_toc;
 			}
 		}
-		// The book may name every chapter in its index and mark up none of them in its text, which
-		// leaves the reader a table of contents and nothing to move between by heading. Asked one
-		// entry at a time so that a chapter which did write its own heading is not announced twice.
 		add_toc_heading_markers(&mut buffer, &toc_items);
 		document.set_buffer(buffer);
 		document.toc_items = toc_items;

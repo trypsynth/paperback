@@ -1,7 +1,11 @@
-//! MOBI HUFF/CDIC decompression (`compression` mode 17480): builds a code table from the
-//! `HUFF` record and a phrase dictionary from the `CDIC` record(s), then recursively
-//! expands compressed text through them. A dictionary phrase can itself reference other
-//! phrases, hence the explicit stack in `decode` rather than plain recursion.
+//! A `CDIC` dictionary phrase can itself reference other phrases, hence the explicit stack in `decode` rather than plain recursion.
+
+#![allow(
+	clippy::cast_possible_truncation,
+	clippy::cast_possible_wrap,
+	clippy::cast_sign_loss,
+	reason = "bit arithmetic on codes the format limits to 32 bits"
+)]
 
 use anyhow::Result;
 
@@ -173,7 +177,6 @@ impl HuffmanDecoder {
 				if current.pos + 8 <= current.data.len() {
 					x_bytes.copy_from_slice(&current.data[current.pos..current.pos + 8]);
 				} else {
-					// 1-3 remaining bytes: load zero-padded to 4 bytes
 					let rem = current.data.len() - current.pos;
 					x_bytes[..rem].copy_from_slice(&current.data[current.pos..]);
 				}

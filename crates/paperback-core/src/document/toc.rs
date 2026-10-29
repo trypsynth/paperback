@@ -1,7 +1,3 @@
-//! [`TocItem`]: one entry in a document's table of contents, as built by each parser from
-//! whatever structure it has (an EPUB nav document, a PDF's bookmark outline, headings detected
-//! by font size, ...).
-
 use super::position::DocPos;
 
 #[derive(Debug, Clone)]

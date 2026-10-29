@@ -58,6 +58,9 @@ struct ReaderView: View {
 		.navigationDestination(isPresented: $navigation.showSleepTimer) {
 			SleepTimerView().environment(viewModel)
 		}
+		.navigationDestination(isPresented: $navigation.showBookSpeech) {
+			BookSpeechView().environment(viewModel)
+		}
 		.navigationDestination(isPresented: $navigation.showElements) {
 			ElementsView().environment(viewModel)
 		}
@@ -108,8 +111,7 @@ struct ReaderView: View {
 	private var bottomBar: some View {
 		if !viewModel.reading.isTextMode, viewModel.activeTab != nil {
 			if #available(iOS 26, *) {
-				// Floats as a Liquid Glass pill inset from the edges, matching Safari's bottom
-				// toolbar, instead of a flat bar spanning the full width.
+				// An inset Liquid Glass pill, to match Safari's bottom toolbar.
 				TtsControlBar()
 					.environment(viewModel)
 					.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 26))

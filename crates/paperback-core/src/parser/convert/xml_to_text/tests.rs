@@ -15,8 +15,7 @@ fn test_link_collection() {
 	assert_eq!(converter.get_text(), "Hello world");
 }
 
-// SMIL audio and NCX targets anchor to an id expecting it to mark the start of what it
-// narrates, so a link's own id must resolve to where its text starts, not where it ends.
+// SMIL audio and NCX targets expect an id to mark the start of what it narrates.
 #[test]
 fn link_id_position_is_the_start_of_its_text_not_the_end() {
 	let xml = r##"<root><body><p>Before. <a id="lnk1" href="#x">Link text</a> After.</p></body></root>"##;
@@ -31,7 +30,7 @@ fn link_id_position_is_the_start_of_its_text_not_the_end() {
 
 #[test]
 fn heading_id_position_is_the_start_of_the_heading_not_the_previous_line() {
-	let xml = r##"<root><body><p>Before paragraph.</p><h2 id="hdr1">Chapter One</h2></body></root>"##;
+	let xml = r#"<root><body><p>Before paragraph.</p><h2 id="hdr1">Chapter One</h2></body></root>"#;
 	let mut converter = XmlToText::new();
 	assert!(converter.convert(xml));
 	let headings = converter.get_headings();
@@ -41,8 +40,7 @@ fn heading_id_position_is_the_start_of_the_heading_not_the_previous_line() {
 	assert_eq!(&converter.get_text()[heading_offset.get()..heading_offset.get() + "Chapter One".len()], "Chapter One");
 }
 
-// `<a>` emits its text in one go and skips its children, so ids on elements inside a link
-// were never recorded, losing the audio clip of any DAISY SMIL par anchored to one.
+// `<a>` skips its children, so ids inside a link were never recorded, losing the audio clip of any DAISY SMIL par anchored to one.
 #[test]
 fn ids_inside_a_link_are_recorded_at_the_links_start() {
 	let xml = r##"<root><body><p>Before. <a href="#x"><em id="em1">Title Page</em></a></p></body></root>"##;
@@ -64,11 +62,10 @@ fn ids_inside_a_table_are_recorded_at_the_tables_start() {
 	assert_ne!(table_offset, 0, "table should start after the preceding paragraph");
 }
 
-// Same off-by-one-line bug as headings/list items/tables/`<hr>`, which
-// `handle_list_start_xml` was missing.
+// `handle_list_start_xml` was missing the off-by-one-line fix that headings, list items, tables and `<hr>` had.
 #[test]
 fn list_id_position_is_the_start_of_the_list_not_the_previous_line() {
-	let xml = r##"<root><body><p>Before paragraph.</p><ul id="lst1"><li>One</li><li>Two</li></ul></body></root>"##;
+	let xml = r#"<root><body><p>Before paragraph.</p><ul id="lst1"><li>One</li><li>Two</li></ul></body></root>"#;
 	let mut converter = XmlToText::new();
 	assert!(converter.convert(xml));
 	let lists = converter.get_lists();
@@ -217,9 +214,6 @@ fn dl_dt_dd_produce_separate_lines() {
 	assert!(lines.contains(&"Term"), "dt content should be on its own line");
 	assert!(lines.contains(&"Definition"), "dd content should be on its own line");
 }
-/// `TableInfo.length` must equal the emitted extent in positions, NOT the
-/// emitted text's byte length. Prefix text ensures `start_offset` > 0. With inline rendering the
-/// emitted row is the TSV "A\t𝄞"; its non-BMP character distinguishes display and byte lengths.
 #[test]
 fn xml_table_length_counts_positions_not_bytes() {
 	let xml =
@@ -234,7 +228,6 @@ fn xml_table_length_counts_positions_not_bytes() {
 	assert_eq!(table.length, 4, "length must be the table's extent in positions");
 }
 
-/// OFF mode emits the `"[Table]: <first row>"` placeholder; ON mode emits the full TSV.
 #[test]
 fn xml_table_emits_placeholder_or_tsv_by_flag() {
 	let xml = "<root><body><table><tr><td>A</td><td>B</td></tr><tr><td>c</td><td>d</td></tr></table></body></root>";
@@ -246,7 +239,6 @@ fn xml_table_emits_placeholder_or_tsv_by_flag() {
 	assert_eq!(on.get_text(), "A\tB\nc\td");
 }
 
-/// Two XML tables: second table's offset equals first offset + first length.
 #[test]
 fn xml_two_tables_offsets_are_cumulative() {
 	let xml = concat!(
@@ -315,13 +307,7 @@ fn test_format_span_nested_bold_and_italic() {
 
 #[test]
 fn test_format_span_fully_inside_link_is_dropped_known_limitation() {
-	// Known limitation: `<a>` handling (see `handle_element_opening_xml`) eagerly grabs the full
-	// flattened text of the element via `collect_element_text`, pushes it into `current_line`, and
-	// sets `skip_children = true`. `process_node` then skips recursing into the `<a>`'s children
-	// entirely, so the open/close handlers for a `<b>`/`<i>`/`<u>` nested inside the link never
-	// fire and no format span is recorded. This degrades gracefully (no panic, no bad offset; the
-	// link itself is still recorded correctly) and is left as-is per this task's scope (no changes
-	// to the `<a>`/`skip_children` behavior).
+	// `<a>` skips its children, so formatting nested in a link never records a span; harmless, so left as-is.
 	let xml = "<root><body><a href=\"https://example.com\"><b>bold</b></a></body></root>";
 	let mut converter = XmlToText::new();
 	assert!(converter.convert(xml));
@@ -341,7 +327,6 @@ fn test_no_format_spans_without_formatting_tags() {
 	assert!(converter.get_underlines().is_empty());
 }
 
-/// A link made only of a picture, such as a cover linking to the first chapter, has to be a link the reader can reach and follow, with the picture's marker on the same text.
 #[test]
 fn a_link_made_of_a_picture_alone_is_a_link() {
 	let xml = r#"<root><body><p>Go <a href="ch1.xhtml"><img src="cover.png" alt="Cover"/></a> now</p></body></root>"#;

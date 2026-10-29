@@ -1,19 +1,17 @@
 use std::{collections::HashSet, sync::Mutex};
 
-use crate::{config::ConfigManager, document::DocPos, parser::ParserRegistry};
+use crate::{
+	config::{ConfigManager, DocumentSpeech},
+	document::DocPos,
+	parser::ParserRegistry,
+};
 
-/// Thread-safe wrapper around `ConfigManager` for `UniFFI` exposure.
 #[cfg_attr(feature = "uniffi", derive(uniffi::Object))]
 pub struct ConfigManagerFfi {
 	inner: Mutex<ConfigManager>,
 }
 
-// These take `String`/owned params instead of `&str` because their signatures are dictated by
-// UniFFI's generated scaffolding calls them with owned values it has just lifted
-// from the FFI boundary, so a borrowed parameter here would fail to compile against that scaffolding.
-// `new` stays outside the exported block so it exists whether or not the FFI is built; the
-// constructor below is what the bindings call, and it has to carry a literal
-// `uniffi::constructor` because uniffi::export reads that attribute without expanding cfg_attr.
+// Outside the exported block so it exists without the FFI; uniffi::export doesn't expand cfg_attr, so the constructor below needs a literal `uniffi::constructor`.
 impl ConfigManagerFfi {
 	#[must_use]
 	pub fn new() -> Self {
@@ -30,6 +28,7 @@ impl ConfigManagerFfi {
 	}
 }
 
+// Owned `String` params, because UniFFI's scaffolding passes the values it has just lifted and a borrow would not compile against it.
 #[allow(clippy::needless_pass_by_value)]
 #[cfg_attr(feature = "uniffi", uniffi::export)]
 impl ConfigManagerFfi {
@@ -77,9 +76,7 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().get_document_position(&path)
 	}
 
-	/// Persists the elapsed-audio-time resume point for a DAISY audiobook. `time_ms < 0`
-	/// leaves any stored value alone (see `ConfigManager::set_document_audio_time`), so a
-	/// document that hasn't started playing can't wipe a previously saved position.
+	/// `time_ms < 0` leaves the stored value alone, so a document that hasn't started playing can't wipe it.
 	pub fn set_document_audio_time_ffi(&self, path: String, time_ms: i64) {
 		let time_ms = u64::try_from(time_ms).ok();
 		self.inner.lock().unwrap().set_document_audio_time(&path, time_ms);
@@ -88,6 +85,14 @@ impl ConfigManagerFfi {
 	/// `-1` when no audio resume point has been stored for this document.
 	pub fn get_document_audio_time_ffi(&self, path: String) -> i64 {
 		self.inner.lock().unwrap().get_document_audio_time(&path).and_then(|ms| i64::try_from(ms).ok()).unwrap_or(-1)
+	}
+
+	pub fn set_document_speech(&self, path: String, speech: DocumentSpeech) {
+		self.inner.lock().unwrap().set_document_speech(&path, &speech);
+	}
+
+	pub fn get_document_speech(&self, path: String) -> DocumentSpeech {
+		self.inner.lock().unwrap().get_document_speech(&path)
 	}
 
 	pub fn set_document_password(&self, path: String, password: String) {
@@ -106,9 +111,6 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().get_recent_documents()
 	}
 
-	/// Empties the recent documents list. Desktop has had this on its File menu; the mobile
-	/// apps could only remove them one at a time, which is a lot of work once a list has
-	/// filled up with books already finished.
 	pub fn clear_recent_documents(&self) {
 		let inner = self.inner.lock().unwrap();
 		inner.clear_recent_documents();
@@ -158,7 +160,7 @@ impl ConfigManagerFfi {
 	}
 
 	pub fn add_find_history(&self, text: String, max_len: i32) {
-		self.inner.lock().unwrap().add_find_history(&text, max_len as usize);
+		self.inner.lock().unwrap().add_find_history(&text, usize::try_from(max_len).unwrap_or(0));
 	}
 
 	pub fn import_document_settings(&self, path: String) {

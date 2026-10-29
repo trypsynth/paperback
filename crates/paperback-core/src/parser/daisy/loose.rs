@@ -20,10 +20,6 @@ use crate::{
 	util::encoding::decode_html,
 };
 
-/// Parses a DAISY book laid out as loose files on disk: either DAISY 3, where
-/// `context.file_path` names the OPF with the DTBook XML (and, for narrated books, the SMIL and
-/// audio files) sitting alongside it, or DAISY 2.02, where it names `ncc.html` with the SMIL,
-/// content HTML, and audio files sitting alongside that instead.
 pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 	let mut title = extract_title_from_path(&context.file_path);
 	let mut author = String::new();
@@ -124,8 +120,6 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 	anyhow::bail!(t("Invalid DAISY .opf file or could not find DTBook XML in manifest"));
 }
 
-/// Parses a DAISY 2.02 book laid out as loose files on disk: `path` names `ncc.html`, with the
-/// SMIL (for narrated books), content HTML, and audio files sitting alongside it.
 fn parse_daisy2(context: &ParserContext, path: &Path, mut title: String) -> Result<Document> {
 	let ncc_content = decode_html(&fs::read(path)?, None);
 	let mut author = String::new();

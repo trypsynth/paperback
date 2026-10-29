@@ -30,12 +30,6 @@ import dev.paperback.android.ui.state.lineIndexFor
 import kotlinx.coroutines.launch
 import uniffi.paperback.ExportFormat
 
-/**
- * The dialogs that only report on, or set a timer over, whatever document is open: they need the
- * open document and nothing else from the reading view, so they live here rather than in the
- * middle of `MainScreen`'s layout. Each reads its own open flag, so the caller just places this
- * once and lets the view model decide what is showing.
- */
 @Composable
 fun DocumentToolDialogs(
 	docState: DocumentTabState?,
@@ -57,9 +51,11 @@ fun DocumentToolDialogs(
 	}
 	if (documentInfoOpen && docState != null) {
 		val stats = remember(docState.session) { docState.session.getStatsFfi() }
+		val progressPercent = remember(docState.session) { viewModel.reading.progressPercent() }
 		DocumentInfoDialog(
 			docState = docState,
 			stats = stats,
+			progressPercent = progressPercent,
 			onDismiss = { viewModel.navigation.documentInfoDialog.close() }
 		)
 	}
@@ -82,26 +78,18 @@ fun DocumentToolDialogs(
 				onDismiss = { viewModel.navigation.exportDocumentDialog.close() }
 			)
 		} else {
-			// Nothing to export: the last tab closed while the dialog was open. Closing from an
-			// effect rather than straight from composition keeps the state change out of the
-			// composition that is reading it.
+			// The last tab closed while the dialog was open; closing from an effect keeps the state change out of the composition reading it.
 			LaunchedEffect(Unit) { viewModel.navigation.exportDocumentDialog.close() }
 		}
 	}
 }
 
-/** The extension an exported document is offered under, matching the format it is rendered in. */
 internal fun ExportFormat.fileExtension(): String = when (this) {
 	ExportFormat.TEXT -> "txt"
 	ExportFormat.HTML -> "html"
 	ExportFormat.MARKDOWN -> "md"
 }
 
-/**
- * The dialogs that act on the open document's text. Unlike the tool dialogs these need the
- * reading view itself: where a search starts, and where landing on a match puts the reader, both
- * depend on which mode is showing and where the list is scrolled to.
- */
 @Composable
 fun DocumentTextDialogs(
 	docState: DocumentTabState,
@@ -125,8 +113,7 @@ fun DocumentTextDialogs(
 			onSeekPercent = { viewModel.reading.seekAudioToPercent(it) }
 		)
 	}
-	// Focus stays in the Find dialog while it is open, so the line the last match landed on only
-	// takes screen reader focus once the dialog closes.
+	// Focus stays in the Find dialog while it is open, so the last match's line only takes screen reader focus once it closes.
 	var lastMatchLine by remember { mutableStateOf<Int?>(null) }
 	if (findOpen) {
 		FindDialog(
@@ -142,8 +129,7 @@ fun DocumentTextDialogs(
 				if (wasSpeaking) {
 					viewModel.reading.pauseTts()
 				}
-				// Searching again for what is already running would just re-find the match the
-				// reader is sitting on, so that case starts one step past it.
+				// Searching again for the running query would re-find the match the reader is on, so start one step past it.
 				val isSameQuery = viewModel.search.isSameAs(query, options)
 				viewModel.search.start(query, options)
 				if (!isTextMode) {
@@ -179,11 +165,6 @@ fun DocumentTextDialogs(
 	}
 }
 
-/**
- * The two prompts opening a document can raise on its own: a password for an encrypted file, and
- * the offer to import a `.paperback` sidecar found next to it. Both are driven entirely by the
- * view model, so unlike the tool dialogs above they need nothing from the caller at all.
- */
 @Composable
 fun DocumentPromptDialogs(viewModel: MainScreenViewModel) {
 	val passwordPromptUri by viewModel.passwordPromptUri.collectAsStateWithLifecycle()

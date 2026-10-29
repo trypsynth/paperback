@@ -1,6 +1,4 @@
-//! The reader's text control, which gives and takes positions only as [`CtrlPos`].
-//!
-//! A position in the control is counted from the start of what is loaded into it, and in the control's own units, so it means nothing to the session until [`crate::text_window::TextWindow`] turns it into a document position. Wrapping the control is what makes the compiler find every place a position crosses between the two (#1062): the control's own position methods are shadowed here by typed ones of the same names, and everything else reaches the control unchanged.
+//! Shadows the control's position methods with [`CtrlPos`] ones so the compiler finds every place a loaded-window position crosses into a document position (#1062).
 
 use std::ops::Deref;
 
@@ -8,14 +6,10 @@ use wxdragon::{prelude::*, widgets::textctrl::TextAttr};
 
 use crate::text_window::CtrlPos;
 
-/// How far `text` reaches in the control: how many of the control's units it takes up, which on Windows and macOS are UTF-16 code units.
+/// The control counts in UTF-16 code units.
+#[cfg(target_os = "windows")]
 pub fn ctrl_len(text: &str) -> CtrlPos {
-	let units = if cfg!(any(target_os = "windows", target_os = "macos")) {
-		text.encode_utf16().count()
-	} else {
-		text.chars().count()
-	};
-	CtrlPos::from_raw(i64::try_from(units).unwrap_or(i64::MAX))
+	CtrlPos::from_raw(i64::try_from(text.encode_utf16().count()).unwrap_or(i64::MAX))
 }
 
 #[derive(Clone, Copy)]
@@ -26,7 +20,6 @@ impl ReaderCtrl {
 		Self(ctrl)
 	}
 
-	/// The control itself, for what takes it whole: sizers, native handles, the helpers that only set its look.
 	pub const fn widget(self) -> TextCtrl {
 		self.0
 	}
@@ -60,10 +53,12 @@ impl ReaderCtrl {
 		self.0.set_style(start.get(), end.get(), style);
 	}
 
+	#[cfg(target_os = "windows")]
 	pub fn xy_to_position(self, x: i64, y: i64) -> CtrlPos {
 		CtrlPos::from_raw(self.0.xy_to_position(x, y))
 	}
 
+	#[cfg(target_os = "windows")]
 	pub fn position_to_xy(self, pos: CtrlPos) -> Option<(i64, i64)> {
 		self.0.position_to_xy(pos.get())
 	}

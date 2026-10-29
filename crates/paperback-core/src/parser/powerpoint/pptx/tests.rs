@@ -94,7 +94,7 @@ fn extract_slide_text_renders_table_inline_with_marker_data() {
 	let mut tables = Vec::new();
 	let rels = HashMap::new();
 	let text = extract_slide_text(doc.root(), &mut links, &mut tables, 0.into(), &rels, true);
-	// Tab-separated rows, no flat duplication of the cell text.
+	// No flat duplication of the cell text.
 	assert_eq!(text, "One\tTwo\nThree\tFour\n");
 	assert_eq!(tables.len(), 1);
 	let table = &tables[0];
@@ -102,7 +102,6 @@ fn extract_slide_text_renders_table_inline_with_marker_data() {
 	assert_eq!(table.caption, "One Two");
 	assert!(table.html.contains("<table"));
 	assert!(table.html.contains("Four"));
-	// Two rows, each contributing its length + a trailing newline.
 	assert_eq!(table.length, DocLen::of("One\tTwo") + 1.into() + DocLen::of("Three\tFour") + 1.into());
 	assert!(links.is_empty());
 }
@@ -169,7 +168,6 @@ fn a_link_directly_in_a_run_does_not_repeat_its_text() {
 	assert_eq!(links[0].text, "this");
 }
 
-/// A slide of pictures alone has no text, and still has to be there to reach, under its own number.
 #[test]
 fn a_slide_with_no_text_is_kept_and_says_so() {
 	use std::{fs::File, io::Write};

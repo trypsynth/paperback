@@ -35,9 +35,7 @@ fn main() {
 	let _log_guard = logging::init(&config_ext::config_dir(), config_ext::log_level_from_disk());
 	tracing::info!(version = env!("CARGO_PKG_VERSION"), commit = version::COMMIT_HASH, "starting");
 	cleanup_legacy_files();
-	// When running in dev via `cargo run`, make sure the app gets a proper menu bar on Mac OS.
-	// Binaries not inside an app bundle are essentially treated as background processes of Terminal.app, which leads to all sorts of nastiness.
-	// This needs to be called before WX initializes to properly take effect.
+	// Under `cargo run` macOS treats the unbundled binary as a Terminal background process with no menu bar; must run before wx initializes.
 	#[cfg(target_os = "macos")]
 	promote_unbundled_to_regular_app();
 	#[cfg(target_os = "windows")]
@@ -49,11 +47,7 @@ fn main() {
 	});
 }
 
-/// Keeps the rich edit library loaded until the process ends.
-///
-/// At exit wxWidgets frees the rich edit library before it shuts COM down. A screen reader still holds
-/// accessibility objects that live in that library, so COM's shutdown then calls into unloaded
-/// code and the process crashes. Holding a reference of our own means wx's free never unloads it.
+/// wx frees the rich edit library before COM shuts down, so a screen reader's accessibility objects in it crashed the process at exit.
 #[cfg(target_os = "windows")]
 fn pin_rich_edit() {
 	use windows::{Win32::System::LibraryLoader::LoadLibraryW, core::w};

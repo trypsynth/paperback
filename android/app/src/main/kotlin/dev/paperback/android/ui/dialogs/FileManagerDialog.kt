@@ -29,7 +29,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.content.ContextCompat
 import dev.paperback.android.t
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -68,8 +67,8 @@ fun FileManagerDialog(
 			val sm = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 			sm.storageVolumes.mapNotNull { it.directory }
 		} else {
-			ContextCompat
-				.getExternalFilesDirs(context, null)
+			context
+				.getExternalFilesDirs(null)
 				.mapNotNull {
 					val path = it?.absolutePath ?: return@mapNotNull null
 					val index = path.indexOf("/Android/data/")
@@ -304,12 +303,7 @@ fun FileListItem(file: File, onClick: () -> Unit) {
 	}
 }
 
-/**
- * The in-app file browser, opened where it was last left. Which directory that is lives in the
- * config rather than in the composition, so it survives the app being killed between openings,
- * and it is shared by every use of the browser: a reader who found their books once should not
- * have to walk the same path again to import a settings file next to them.
- */
+/** The last directory lives in the config, not the composition, so it survives the process being killed and is shared by every use of the browser. */
 @Composable
 fun BrowseForFileDialog(
 	configManager: ConfigManagerFfi,

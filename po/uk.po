@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 00:35+0000\n"
-"PO-Revision-Date: 2026-10-20 14:25+0300\n"
+"POT-Creation-Date: 2026-10-25 18:07+0000\n"
+"PO-Revision-Date: 2026-10-27 13:50+0200\n"
 "Last-Translator: Ivan Shtefuriak <ip0877@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -70,11 +70,11 @@ msgstr "Додати інструмент командного рядка pb д�
 msgid "ZIP Archives (.zip)"
 msgstr "Архіви ZIP (.zip)"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
+msgid "OCR needs Tesseract. Install it from your package manager."
 msgstr ""
-"Не встановлено мову для розпізнавання тексту. Додайте її в системних "
-"налаштуваннях мови."
+"Для роботи OCR потрібен Tesseract. Встановіть його за допомогою менеджера "
+"пакетів."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 msgid "OCR failed."
@@ -83,6 +83,20 @@ msgstr "Помилка розпізнавання тексту."
 #. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
 msgid "OCR is not available on this system."
 msgstr "Розпізнавання тексту недоступне на цій системі."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr ""
+"Не встановлено мову для розпізнавання тексту. Додайте її в системних "
+"налаштуваннях мови."
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+msgid ""
+"No OCR language is installed. Install a Tesseract language package from your "
+"package manager."
+msgstr ""
+"Не встановлено жодної мови для розпізнавання тексту (OCR). Встановіть мовний "
+"пакет Tesseract за допомогою вашого менеджера пакетів."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -847,6 +861,7 @@ msgid "Bookmarks"
 msgstr "Закладки"
 
 #. TRANSLATORS: Option in the filter dropdown to show notes only
+#. TRANSLATORS: Heading over the footnotes and endnotes of a document, written after its text
 msgid "Notes"
 msgstr "Нотатки"
 
@@ -986,6 +1001,40 @@ msgstr "Без назви"
 msgid "OK"
 msgstr "Гаразд"
 
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+msgid "Export notes and bookmarks"
+msgstr "Експорт нотаток та закладок"
+
+#. TRANSLATORS: Label for the dropdown choosing which entries to export
+msgid "&Export:"
+msgstr "&Експортувати:"
+
+#. TRANSLATORS: Option to export both bookmarks and notes
+msgid "Bookmarks and notes"
+msgstr "Закладки та нотатки"
+
+#. TRANSLATORS: Option to export only bookmarks that have no note
+msgid "Bookmarks only"
+msgstr "Лише закладки"
+
+#. TRANSLATORS: Option to export only bookmarks that have a note
+msgid "Notes only"
+msgstr "Лише нотатки"
+
+#. TRANSLATORS: Checkbox to include the bookmarked text next to each note
+msgid "Include the &passage each note is attached to"
+msgstr "Додавати &фрагмент тексту до кожної нотатки"
+
+#. TRANSLATORS: Checkbox to number the exported entries
+msgid "&Number the entries"
+msgstr "&Нумерувати записи"
+
+#. TRANSLATORS: Label for the button that continues to the save dialog
+msgid "Export"
+msgstr "Експортувати"
+
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Go"
@@ -1036,6 +1085,10 @@ msgstr "&Відсоток"
 #. TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
 msgid "Percent out of range."
 msgstr "Відсоток поза діапазоном."
+
+#. TRANSLATORS: Title of the view showing the text recognized in a picture
+msgid "Image Text"
+msgstr "Текст на зображенні"
 
 #. TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
 msgid "Set Up Paperback"
@@ -1359,7 +1412,6 @@ msgid "General"
 msgstr "Загальні"
 
 #. TRANSLATORS: Tab label for the Reading options panel
-#. TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Reading"
 msgstr "Читання"
 
@@ -1460,6 +1512,20 @@ msgstr "&Документи в цьому архіві:"
 msgid "{} to {}"
 msgstr "{} до {}"
 
+#. TRANSLATORS: Announced when Enter is pressed on a picture while its text is already being recognized
+#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
+msgid "OCR in progress."
+msgstr "Триває розпізнавання тексту."
+
+#. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
+#. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
+msgid "The picture could not be read."
+msgstr "Не вдалося прочитати зображення."
+
+#. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
+msgid "No text was found in the picture."
+msgstr "На зображенні не виявлено тексту."
+
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr "Файл не знайдено: {}"
@@ -1498,18 +1564,20 @@ msgstr "Файл: {}"
 msgid "Details: {}"
 msgstr "Деталі: {}"
 
-#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
-msgid "OCR in progress."
-msgstr "Триває розпізнавання тексту."
-
+#. TRANSLATORS: Announced when Recognize Current Page is chosen with no document open
 #. TRANSLATORS: Announced when batch OCR is triggered with no document open
 #. TRANSLATORS: Announced when Batch OCR is chosen with no document open
 msgid "No document open."
 msgstr "Немає відкритого документа."
 
+#. TRANSLATORS: Announced when Recognize Current Page is chosen while OCR is already running
 #. TRANSLATORS: Announced when batch OCR is started while another OCR job is running
 msgid "OCR already in progress."
 msgstr "Розпізнавання тексту вже триває."
+
+#. TRANSLATORS: Announced when Recognize Current Page is chosen in a document that is not a PDF or a comic book
+msgid "Only PDF and comic book pages can be recognized."
+msgstr "Розпізнати можна лише сторінки PDF та коміксів."
 
 #. TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
 msgid "No image-only pages in the given range."
@@ -1667,8 +1735,8 @@ msgid "Could not copy to the clipboard."
 msgstr "Не вдалося скопіювати в буфер обміну."
 
 #. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
-msgid "Selected %d character."
-msgid_plural "Selected %d characters."
+msgid "%d character selected."
+msgid_plural "%d characters selected."
 msgstr[0] "Вибрано %d символ."
 msgstr[1] "Вибрано %d символи."
 msgstr[2] "Вибрано %d символів."
@@ -1719,10 +1787,6 @@ msgstr "документ"
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Файли формату Paperback (*.paperback)|*.paperback"
 
-#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
-msgid "Export notes and bookmarks"
-msgstr "Експорт нотаток та закладок"
-
 #. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 msgid "Notes and bookmarks exported successfully."
 msgstr "Нотатки та закладки успішно експортовано."
@@ -1730,6 +1794,16 @@ msgstr "Нотатки та закладки успішно експортова
 #. TRANSLATORS: Title of the export-succeeded dialog
 msgid "Export Successful"
 msgstr "Експорт успішний"
+
+#. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
+msgstr ""
+"Текстові файли (*.txt)|*.txt|HTML-файли (*.html)|*.htmlЗвичайні текстові "
+"файли (*.txt)|*.txt|Усі файли (*.*)|*.*"
+
+#. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+msgid "Failed to export notes and bookmarks."
+msgstr "Не вдалося експортувати нотатки та закладки."
 
 #. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 msgid "Import notes and bookmarks"
@@ -1905,6 +1979,14 @@ msgstr "&Експортувати дані документа..."
 #. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
 msgid "Export bookmarks and position"
 msgstr "Експорт закладок та позиції"
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+msgid "Export &Notes and Bookmarks as Text or HTML..."
+msgstr "Експортувати нотатки й &закладки як текст або HTML..."
+
+#. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
+msgid "Export bookmarks and notes in a readable format"
+msgstr "Експортувати закладки та нотатки у зручному для читання форматі"
 
 #. TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
 msgid "Reveal &File in Folder"
@@ -2121,6 +2203,10 @@ msgstr "&Налаштування"
 #. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
 msgid "&Batch OCR..."
 msgstr "Пакетне &розпізнавання OCR..."
+
+#. TRANSLATORS: Tools menu item that recognizes the page the cursor is on with OCR, replacing any text it already has
+msgid "&Recognize Current Page"
+msgstr "&Розпізнати поточну сторінку"
 
 #. TRANSLATORS: Checkable menu item in the View menu that toggles whether word wrap is enabled.
 msgid "W&ord wrap"
@@ -2374,6 +2460,12 @@ msgstr "Зберегти зображення як..."
 msgid "Save image as"
 msgstr "Зберегти зображення як"
 
+msgid "Read &text in picture"
+msgstr "&Прочитати текст на зображенні"
+
+msgid "Read the text in the picture"
+msgstr "Прочитати текст на зображенні"
+
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
 msgstr "Створити &закладку"
@@ -2428,8 +2520,8 @@ msgid "Go to percent"
 msgstr "Перейти до відсотка"
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
-msgid "Copied %d character."
-msgid_plural "Copied %d characters."
+msgid "%d character copied."
+msgid_plural "%d characters copied."
 msgstr[0] "Скопійовано %d символ."
 msgstr[1] "Скопійовано %d символи."
 msgstr[2] "Скопійовано %d символів."
@@ -2460,13 +2552,17 @@ msgstr[0] "Таймер сну встановлено на %d хвилину."
 msgstr[1] "Таймер сну встановлено на %d хвилини."
 msgstr[2] "Таймер сну встановлено на %d хвилин."
 
-#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Progress 45%"
 msgid "Line"
 msgstr "Рядок"
 
 #. TRANSLATORS: Status bar label for the current character offset within the line
 msgid "Character"
 msgstr "Символ"
+
+#. TRANSLATORS: Status bar label for how far through the document the reader has got, e.g. "Line 5, Character 120, Progress 45%"
+msgid "Progress"
+msgstr "Прогрес"
 
 #. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 msgid "Sleep timer"
@@ -2801,6 +2897,10 @@ msgid "Batch OCR..."
 msgstr "Пакетне розпізнавання OCR..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Recognize Current Page"
+msgstr "Розпізнати поточну сторінку"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Customize Keyboard Shortcuts..."
 msgstr "Налаштувати комбінації клавіш..."
 
@@ -2811,6 +2911,10 @@ msgstr "Імпортувати дані документа..."
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export Document Data..."
 msgstr "Експортувати дані документа..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Export Notes and Bookmarks as Text or HTML..."
+msgstr "Експортувати нотатки й закладки як текст або HTML..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export to Plain Text..."
@@ -2929,10 +3033,43 @@ msgstr ""
 msgid "Failed to parse comic archive: {}"
 msgstr "Не вдалося проаналізувати архів коміксів: {}"
 
+#. TRANSLATORS: Spoken for a comic book page that is its front cover
+msgid "Front cover"
+msgstr "Передня обкладинка"
+
+#. TRANSLATORS: Spoken for a comic book page that is an inside cover
+msgid "Inside cover"
+msgstr "Внутрішня обкладинка"
+
+#. TRANSLATORS: Spoken for a comic book page that recaps the story so far
+msgid "Recap"
+msgstr "Стислий зміст"
+
+#. TRANSLATORS: Spoken for a comic book page that is an advertisement
+msgid "Advertisement"
+msgstr "Реклама"
+
+#. TRANSLATORS: Spoken for a comic book page written by the editors
+msgid "Editorial"
+msgstr "Від редакції"
+
+#. TRANSLATORS: Spoken for a comic book page of letters from readers
+msgid "Letters"
+msgstr "Листи"
+
+#. TRANSLATORS: Spoken for a comic book page previewing another comic
+msgid "Preview"
+msgstr "Анонс"
+
+#. TRANSLATORS: Spoken for a comic book page that is its back cover
+msgid "Back cover"
+msgstr "Задня обкладинка"
+
 #. TRANSLATORS: Error shown when a comic book archive holds no page images at all
 msgid "This comic archive contains no pages."
 msgstr "Цей архів коміксів не містить сторінок."
 
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]", and on its own, "[Image]", for a picture with none
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr "Малюнок"
@@ -3120,6 +3257,18 @@ msgstr ""
 msgid "ODP file does not contain any pages"
 msgstr "Файл ODP не містить жодної сторінки"
 
+#. TRANSLATORS: Written after a presentation slide's text, before the presenter's notes for that slide; {} is the notes
+msgid "Speaker notes: {}"
+msgstr "Нотатки доповідача: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it without a name; {} is the comment
+msgid "Comment: {}"
+msgstr "Коментар: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it: the first {} is the reviewer, the second the comment
+msgid "Comment from {}: {}"
+msgstr "Коментар від {}: {}"
+
 #. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
 msgid "FODP file does not contain any pages"
 msgstr "Файл FODP не містить жодної сторінки"
@@ -3161,6 +3310,26 @@ msgstr "Не вдалося проаналізувати документ RTF: {
 #. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
 msgid "Chapter {}"
 msgstr "Розділ {}"
+
+#. TRANSLATORS: Heading over the comments reviewers left on a document, written after its text
+msgid "Comments"
+msgstr "Коментарі"
+
+#. TRANSLATORS: Names a comment's author when the document does not say who wrote it
+msgid "Comment"
+msgstr "Коментар"
+
+#. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
+msgid "{} on \\u{201c}{}\\u{201d}: {}"
+msgstr "{} на \\u{201c}{}\\u{201d}: {}"
+
+#. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
+msgid "{}: {}"
+msgstr "{}: {}"
+
+#. TRANSLATORS: Shown in place of a presentation slide that has no text, such as one holding only pictures
+msgid "This slide has no text."
+msgstr "На цьому слайді немає тексту."
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
@@ -3211,8 +3380,67 @@ msgstr "Усі парсери повернули помилку для розш�
 msgid "image"
 msgstr "зображення"
 
+msgid "Current version is not a valid semver."
+msgstr "Поточна версія не відповідає стандарту SemVer."
+
+msgid "Latest release tag is not a valid semver."
+msgstr "Тег останнього релізу не відповідає стандарту SemVer."
+
+msgid "Invalid public key"
+msgstr "Недійсний відкритий ключ"
+
+msgid "Failed to read signature"
+msgstr "Не вдалося прочитати підпис"
+
+msgid "Invalid signature"
+msgstr "Невірний підпис"
+
+msgid "Failed to create private download directory"
+msgstr "Не вдалося створити захищену папку завантажень"
+
+msgid "Failed to create file"
+msgstr "Не вдалося створити файл"
+
+msgid "Failed to write file"
+msgstr "Не вдалося записати файл"
+
+msgid "Failed to read file for verification"
+msgstr "Не вдалося прочитати файл для перевірки"
+
+msgid "Signature verification failed"
+msgstr "Не вдалося перевірити підпис"
+
+msgid "Failed to rename verified file"
+msgstr "Не вдалося перейменувати перевірений файл"
+
+msgid "Failed to parse release JSON"
+msgstr "Не вдалося розібрати JSON-файл релізу"
+
+msgid "Latest release does not include downloadable assets."
+msgstr "Найновіший реліз не містить доступних для завантаження ресурсів."
+
+msgid ""
+"Update is available but no matching download asset or signature was found."
+msgstr ""
+"Доступне оновлення, проте не знайдено відповідного файлу для завантаження "
+"або цифрового підпису."
+
 msgid "Not running from an AppImage; cannot self-update."
 msgstr "Програму запущено не з AppImage; автооновлення неможливе."
+
+msgid "Failed to determine exe path"
+msgstr "Не вдалося визначити шлях до файлу exe"
+
+msgid "Failed to get exe directory"
+msgstr "Не вдалося отримати каталог exe"
+
+msgid ""
+"Could not determine a cache directory: neither XDG_CACHE_HOME nor HOME is set"
+msgstr ""
+"Не вдалося визначити каталог кешу: не задано ані XDG_CACHE_HOME, ані HOME"
+
+msgid "Failed to create cache directory"
+msgstr "Не вдалося створити каталог кешу"
 
 msgid "Failed to get current exe path"
 msgstr "Не вдалося отримати поточний шлях до exe-файлу"
@@ -3333,9 +3561,6 @@ msgstr "Оновлення %s"
 msgid "Downloading update..."
 msgstr "Завантаження оновлення..."
 
-msgid "Update failed"
-msgstr "Оновлення не вдалося"
-
 msgid "Preparing update..."
 msgstr "Підготовка оновлення..."
 
@@ -3357,6 +3582,12 @@ msgstr "Перевірка безпеки не вдалася. Можливо, �
 
 msgid "Security Error"
 msgstr "Помилка безпеки"
+
+msgid "The update server returned HTTP error %s."
+msgstr "Сервер оновлень повернув HTTP-помилку %s."
+
+msgid "Could not reach the update server: %s"
+msgstr "Не вдалося підключитися до сервера оновлень: %s"
 
 #. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 msgid "%d hour"
@@ -3467,6 +3698,10 @@ msgstr "Скинути всі комбінації клавіш на цій вк
 #. TRANSLATORS: Title of the confirmation dialog for resetting keyboard shortcuts to their defaults.
 msgid "Reset Shortcuts"
 msgstr "Скидання комбінацій клавіш"
+
+#. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
+msgid "{} (not on this keyboard layout)"
+msgstr "{} (немає в цій розкладці клавіатури)"
 
 #: kt swift
 msgid "Export Document Data"
@@ -4678,10 +4913,14 @@ msgstr "Якщо вимкнено, читання продовжуватимет
 msgid "1.5\\u{00d7}"
 msgstr "1.5\\u{00d7}"
 
-#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
-#: swift
-msgid "Progress"
-msgstr "Прогрес"
+#~ msgid "Selected %d character."
+#~ msgid_plural "Selected %d characters."
+#~ msgstr[0] "Вибрано %d символ."
+#~ msgstr[1] "Вибрано %d символи."
+#~ msgstr[2] "Вибрано %d символів."
+
+#~ msgid "Update failed"
+#~ msgstr "Оновлення не вдалося"
 
 #~ msgid "Previous &Note"
 #~ msgstr "&Попередня нотатка"

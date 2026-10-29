@@ -1,7 +1,6 @@
 import SwiftUI
 
-/// A speech percentage shown as a menu of presets. A screen reader reads it as one adjustable
-/// value: swipe up or down moves it by `speechPercentStep`, double-tap opens the presets.
+/// One adjustable value for a screen reader: a swipe moves it by `speechPercentStep`, a double-tap opens the presets.
 struct SpeechPercentMenu<MenuLabel: View>: View {
 	let accessibilityLabel: String
 	@Binding var percent: Int

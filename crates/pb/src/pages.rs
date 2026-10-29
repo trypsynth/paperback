@@ -1,45 +1,22 @@
-//! Selecting part of a document by page, for `pb --pages`.
-//!
-//! A page is not a thing `paperback-core` knows about. It is a [`MarkerType::PageBreak`] sitting
-//! at a position in the flat text buffer, and which parsers emit one varies: a PDF's pages are
-//! real, a presentation's are slides, an RTF's are the `\page` breaks in the source, an EPUB's
-//! come from the publisher's page-list and are absent from most books, and a Markdown file has
-//! none at all. This module works off those markers, which is the same definition `paperback.exe`
-//! uses -- `DocumentSession::navigate_page` gates on `has_marker(PageBreak)` and `page_count`
-//! counts them, neither consulting `ParserFlags::SUPPORTS_PAGES`. Keying off that flag instead
-//! would have made `pb` disagree with the app it ships beside, since it is deliberately unset for
-//! presentations.
-//!
-//! Working off the markers rather than off the file extension also means no format has to be
-//! special-cased. An EPUB that carries a page-list has real printed page numbers and is selected
-//! from them; one that does not has no markers at all, and says so rather than handing back the
-//! whole book as though the request had been honoured.
-//!
-//! Because a document's length is not known until it has been read, a specification is parsed
-//! into ranges first and resolved against the real page count afterwards. That is what lets
-//! `--pages 80-end` mean "through to the last page" without the reader counting first.
+//! A page is a `PageBreak` marker, the same definition the app uses; `ParserFlags::SUPPORTS_PAGES` is deliberately unset for presentations, so keying off it would make pb disagree with the app.
+//! A specification is parsed before the document is read and resolved against its page count after, which is what lets `80-end` work.
 
 use anyhow::{Result, bail};
 use paperback_core::document::{DocLen, DocPos, Document, DocumentBuffer, Marker, MarkerType, TocItem};
 
-/// What one element of a `--pages` specification asks for, before the page count is known.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum PageRange {
-	/// An inclusive pair of 1-based page numbers, as in `5-10`.
 	Fixed(usize, usize),
-	/// From a 1-based page through to the last one, as in `80-end`.
 	ToEnd(usize),
 }
 
 impl PageRange {
-	/// The first page asked for, which decides whether a range can be satisfied at all.
 	const fn start(&self) -> usize {
 		match *self {
 			Self::Fixed(start, _) | Self::ToEnd(start) => start,
 		}
 	}
 
-	/// The last page asked for, or `None` when the range runs to the end of the document.
 	const fn end(&self) -> Option<usize> {
 		match *self {
 			Self::Fixed(_, end) => Some(end),
@@ -47,16 +24,11 @@ impl PageRange {
 		}
 	}
 
-	/// The last page covered in a document of `page_count` pages.
 	fn last(&self, page_count: usize) -> usize {
 		self.end().unwrap_or(page_count)
 	}
 
-	/// This range written the way the reader would have written it, for naming a file after it.
-	///
-	/// A range whose ends are the same is one page, and is written as the number rather than as
-	/// `7-7`: `book.p7.md` reads as the page that was asked for, where `book.p7-7.md` reads as a
-	/// range typed the long way round.
+	/// `book.p7.md` reads as the page asked for, where `book.p7-7.md` reads as a range typed the long way.
 	fn label(&self) -> String {
 		match *self {
 			Self::Fixed(start, end) if start == end => start.to_string(),
@@ -65,11 +37,7 @@ impl PageRange {
 		}
 	}
 
-	/// The first page of this range that a document of `page_count` pages does not have, which is
-	/// what an error should name.
-	///
-	/// For `8-700` against a 417-page document that is 700 rather than 8, because 8 is there and
-	/// saying otherwise points the reader at the wrong end of their own command.
+	/// For `8-700` against 417 pages this is 700, not 8, which is there.
 	const fn past_page(&self, page_count: usize) -> usize {
 		match self.end() {
 			Some(end) if end > page_count => end,
@@ -77,12 +45,7 @@ impl PageRange {
 		}
 	}
 
-	/// The 1-based pages this range covers, or `None` when any part of it falls outside a document
-	/// of `page_count` pages.
-	///
-	/// A range that starts inside the document and ends past its last page is refused too, not
-	/// quietly shortened: `--pages 5-10` on a five-page file is a mistyped end, and returning five
-	/// pages would leave the reader believing they had the other five.
+	/// A range running past the last page is refused, not shortened: `5-10` on five pages is a mistyped end, and five pages back would hide that.
 	fn resolve(&self, page_count: usize) -> Option<std::ops::RangeInclusive<usize>> {
 		if self.start() > page_count || self.last(page_count) > page_count {
 			return None;
@@ -91,33 +54,18 @@ impl PageRange {
 	}
 }
 
-/// Every page a `--pages` specification asks for, in document order.
-///
-/// Held as merged ranges rather than a list of page numbers, because `end` cannot be turned into
-/// a number until the document has been parsed.
+/// Held as ranges rather than page numbers, because `end` can't become a number until the document is parsed.
 #[derive(Debug, Clone)]
 pub struct PageSelection(Vec<PageRange>);
 
 impl PageSelection {
-	/// Reads a `--pages` value such as `5-10,55,80-end`.
-	///
-	/// Parts are separated by a comma or a semicolon, and the two may be mixed, so a shell that
-	/// makes commas awkward to type can use `5;18-22;38` and get the same reading of it.
-	///
-	/// Pages are 1-based, matching both the page numbers printed in a PDF and the labels the
-	/// parsers write onto their own page-break markers, so page 0 does not exist.
-	///
-	/// # Errors
-	///
-	/// Returns an error naming the offending part of the specification if an element is empty,
-	/// reversed, zero, or not a page range at all.
+	/// Semicolons work as commas, for a shell that makes commas awkward to type.
 	pub fn parse(spec: &str) -> Result<Self> {
 		let mut ranges = Vec::new();
 		for element in spec.split([',', ';']) {
 			let element = element.trim();
 			if element.is_empty() {
-				// Reachable via a stray or doubled comma. The all-empty specification is caught
-				// by the emptiness check in `resolve`, which has the document to talk about.
+				// The all-empty specification is caught in `resolve`, which has the document to talk about.
 				bail!("no page given for the empty part of --pages \"{spec}\"");
 			}
 			ranges.push(parse_range(element, spec)?);
@@ -125,29 +73,14 @@ impl PageSelection {
 		Ok(Self(merge(ranges)))
 	}
 
-	/// The pages asked for, as 0-based indexes, in a document of `page_count` pages.
-	///
-	/// A range reaching past the last page is an error rather than a shorter range: `--pages 5-10`
-	/// on a five-page file is a reader who mistyped the end, and quietly handing back five pages
-	/// would leave them believing they had the other five.
-	///
-	/// # Errors
-	///
-	/// Returns an error if any range starts past the last page. `end` resolves to the last page, so
-	/// this is only meaningful once the count is known.
 	fn pages(&self, page_count: usize) -> Result<Vec<usize>> {
 		let mut selected: Vec<usize> = self
 			.0
 			.iter()
 			.map(|range| {
-				range
-					.resolve(page_count)
-					// The page named is the one the reader wrote that does not exist. For `8-700` on
-					// a 417-page file that is 700: page 8 is there, and being told otherwise sends
-					// them looking for a problem in the wrong end of their command.
-					.ok_or_else(|| {
-						anyhow::anyhow!("page {} is past the last page of {page_count}", range.past_page(page_count))
-					})
+				range.resolve(page_count).ok_or_else(|| {
+					anyhow::anyhow!("page {} is past the last page of {page_count}", range.past_page(page_count))
+				})
 			})
 			.collect::<Result<Vec<_>>>()?
 			.into_iter()
@@ -158,20 +91,12 @@ impl PageSelection {
 		Ok(selected.into_iter().map(|page| page - 1).collect())
 	}
 
-	/// The selected pages as 0-based indexes into a document's page-break markers, ascending.
-	///
-	/// # Errors
-	///
-	/// Returns an error if the document has no pages at all, or if a range starts past its last
-	/// page -- naming the real count, since a reader who asked for `80-end` on a 12-page file is
-	/// owed that `12` more than they are owed an empty document.
 	pub fn resolve(&self, doc: &Document) -> Result<Vec<usize>> {
 		let breaks = page_breaks(doc);
 		if breaks.is_empty() {
 			bail!("{}", no_pages_message(doc));
 		}
-		// Checked here rather than left to `pages`, so that the document is named in the message a
-		// reader actually sees. The page named is the one they wrote that does not exist.
+		// Checked here rather than left to `pages`, so the message names the document and its real page count.
 		for range in &self.0 {
 			if range.resolve(breaks.len()).is_none() {
 				bail!(
@@ -186,31 +111,19 @@ impl PageSelection {
 		self.pages(breaks.len())
 	}
 
-	/// What this selection asks for, in a form to put in a file name: `5-10_20`, or `80-end` for
-	/// a range that runs to the last page.
-	///
-	/// Ranges are joined with an underscore rather than the hyphen that holds one together, so
-	/// that `--pages 1-5;20` is `p1-5_20` and not `p1-5-20`. The hyphen version reads as a single
-	/// range from 1 to 520, which is not what was asked for and not a mistake anyone would notice
-	/// until they opened the file.
-	///
-	/// The merged ranges, not the specification as typed, so that `--pages 5-10,7-12` and
-	/// `--pages 5-12` name the same output. Two files differing only in how their reader happened
-	/// to type the same request is a puzzle with no payoff.
+	/// Joined with `_` so `1-5;20` isn't `p1-5-20`, which reads as 1 to 520; built from the merged ranges so `5-10,7-12` and `5-12` name the same file.
 	#[must_use]
 	pub fn label(&self) -> String {
 		self.0.iter().map(PageRange::label).collect::<Vec<_>>().join("_")
 	}
 }
 
-/// Reads one element of a `--pages` specification: `7`, `5-10`, or `80-end`.
 fn parse_range(element: &str, spec: &str) -> Result<PageRange> {
 	let unreadable =
 		|| anyhow::anyhow!("cannot read \"{element}\" in --pages \"{spec}\" as a page number or a range of them");
 	let zero = || anyhow::anyhow!("page 0 in --pages \"{spec}\" does not exist; pages are numbered from 1");
 	let Some((start, end)) = element.split_once('-') else {
-		// A bare number, as in `55`. `+5` and `05` parse but are not what anyone meant to type,
-		// so the round-trip check rejects them rather than silently accepting a second spelling.
+		// `+5` and `05` parse but aren't what anyone meant, so the round-trip check rejects them.
 		let page = element.parse::<usize>().map_err(|_| unreadable())?;
 		if element != page.to_string() {
 			return Err(unreadable());
@@ -225,8 +138,7 @@ fn parse_range(element: &str, spec: &str) -> Result<PageRange> {
 	if start == 0 {
 		return Err(zero());
 	}
-	// Matched case-insensitively because a capitalised format name elsewhere in the command line
-	// makes `End` a likely typing.
+	// A capitalised format name elsewhere on the command line makes `End` a likely typing.
 	if end.eq_ignore_ascii_case("end") {
 		return Ok(PageRange::ToEnd(start));
 	}
@@ -240,25 +152,18 @@ fn parse_range(element: &str, spec: &str) -> Result<PageRange> {
 	Ok(PageRange::Fixed(start, end))
 }
 
-/// One page number, rejecting anything that is not written the way a page number is.
 fn parse_page(text: &str) -> Option<usize> {
 	let page = text.parse::<usize>().ok()?;
 	(text == page.to_string()).then_some(page)
 }
 
-/// Sorts the ranges and merges those that overlap or touch, so that no page is selected twice and
-/// the selection comes out in document order however it was typed.
 fn merge(ranges: Vec<PageRange>) -> Vec<PageRange> {
 	let mut sorted = ranges;
-	// A `ToEnd` range sorts before a `Fixed` one starting at the same page, because it has no end
-	// and `None` sorts first. That ordering does not matter to the result: whichever of the two
-	// comes second, the merge below keeps the `ToEnd`, which is the one that reaches further.
+	// Which of a `ToEnd` and a `Fixed` at the same start sorts first doesn't matter: the merge keeps the `ToEnd` either way.
 	sorted.sort_unstable_by_key(|range| (range.start(), range.end().is_some()));
 	let mut merged: Vec<PageRange> = Vec::new();
 	for range in sorted {
-		// A range already running to the last page swallows everything after it, and nothing
-		// sorts beyond it. Saturating, because a reader may write the largest page number there
-		// is and adding one to it would wrap round to zero.
+		// Saturating, since a reader may write the largest page number there is.
 		let merged_into_previous = merged
 			.last()
 			.is_some_and(|previous| previous.end().is_none_or(|end| range.start() <= end.saturating_add(1)));
@@ -267,7 +172,6 @@ fn merge(ranges: Vec<PageRange>) -> Vec<PageRange> {
 			continue;
 		}
 		let previous = merged.pop().expect("checked as present just above");
-		// Whichever of the two reached further wins; a `ToEnd` on either side keeps `ToEnd`.
 		merged.push(match (previous, range) {
 			(PageRange::ToEnd(_), _) | (_, PageRange::ToEnd(_)) => PageRange::ToEnd(previous.start()),
 			(PageRange::Fixed(start, previous_end), PageRange::Fixed(_, end)) => {
@@ -278,10 +182,7 @@ fn merge(ranges: Vec<PageRange>) -> Vec<PageRange> {
 	merged
 }
 
-/// The positions of every page-break marker, in document order.
-///
-/// Sorted rather than taken in buffer order, because a parser may add its markers in any order
-/// and page 5 has to be the fifth page of the book, not the fifth marker added.
+/// Sorted, since a parser may add its markers in any order and page 5 must be the fifth page, not the fifth marker added.
 fn page_breaks(doc: &Document) -> Vec<DocPos> {
 	let mut positions: Vec<DocPos> = doc
 		.buffer
@@ -298,61 +199,34 @@ const fn page_word(page_count: usize) -> &'static str {
 	if page_count == 1 { "page" } else { "pages" }
 }
 
-/// How to refer to the document in an error, given that this module never sees the file path.
+/// This module never sees the file path.
 fn describe(doc: &Document) -> String {
 	if doc.title.is_empty() { "this document".to_string() } else { format!("\"{}\"", doc.title) }
 }
 
-/// Why a document has nothing to select.
-///
-/// The common case is an EPUB, whose pages come from a page-list the publisher may simply not have
-/// supplied -- and which the reader cannot see from the outside. Saying what is missing, rather
-/// than only that something is, is what tells them the file was read fine and the request was the
-/// problem.
+/// Usually an EPUB without a publisher page-list, which the reader can't see from outside, so it says the file was read fine.
 fn no_pages_message(doc: &Document) -> String {
 	let mut message = format!("{} has no pages to select from", describe(doc));
-	// A document with chapters but no pages is the EPUB case, and the chapters are what the reader
-	// would reach for instead.
 	if !doc.toc_items.is_empty() {
 		message.push_str("; it has a table of contents, but no page numbers");
 	}
 	message
 }
 
-/// A kept stretch of the original document, and where it ended up.
-///
-/// `start`/`end` are positions in the original; `offset` is how far the start of this
-/// span sits from the start of the new content. Together they translate any position in the
-/// original into a position in the extract, which is what every marker and toc offset needs.
-/// `page` is the 0-based page it came from, kept so that two stretches can be told apart from two
-/// halves of one continuous run.
 struct Span {
 	start: DocPos,
 	end: DocPos,
+	/// Where `start` landed in the new content.
 	offset: DocPos,
+	/// Tells two stretches apart from two halves of one continuous run.
 	page: usize,
 }
 
-/// Cuts `doc` down to the pages in `selection`.
-///
-/// The result is a whole, self-consistent [`Document`]: its buffer is rebuilt from the sliced
-/// text, and every position carried by a marker, a table-of-contents entry or an id is rebased to
-/// match, or dropped when it falls outside. Handing the renderers positions that no longer point
-/// where they used to does not crash them -- both bound their cursors by the content and skip what
-/// they cannot reach -- so the failure would be output that looks plausible and is wrong, which is
-/// the failure mode this function exists to prevent.
-///
-/// # Errors
-///
-/// Returns an error if the selection cannot be satisfied, as described on
-/// [`PageSelection::resolve`], or if the selected pages hold no text at all.
+/// Every marker, toc entry and id is rebased or dropped: renderers don't crash on stale positions, they produce plausible output that is wrong.
 pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 	let selected = selection.resolve(doc)?;
 	let breaks = page_breaks(doc);
 	let total = doc.buffer.end();
-	// Each page runs from its own page-break marker to the next one, and the last page runs to the
-	// end of the content. Two adjacent pages selected together still produce two spans, so that
-	// the separator between them is added the same way whatever was asked for.
 	let mut content = String::new();
 	let mut spans: Vec<Span> = Vec::new();
 	for &page in &selected {
@@ -363,11 +237,7 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 		}
 		let page_text = doc.buffer.text(start..end);
 		let offset = DocLen::of(&content).as_pos();
-		// Only a page the reader left out needs a break before the next one. Pages asked for
-		// together were adjacent in the document and already carry whatever separator the parser
-		// gave them, so adding one here would open a blank line between every page of a
-		// continuous run. Compared against the last page actually emitted, which is the only
-		// neighbour whose adjacency matters.
+		// Adjacent pages already carry the parser's separator, so only a gap gets a break.
 		if spans.last().is_some_and(|previous| previous.page + 1 != page) {
 			content.push('\n');
 		}
@@ -377,9 +247,7 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 	if spans.is_empty() {
 		bail!("no text on the pages asked for");
 	}
-	// The new position of something that used to sit at `position`, or `None` when it fell in a
-	// part of the document that is not in the extract. The end of a span belongs to the span
-	// before it, so a marker sitting exactly on a page boundary stays with the page it heads.
+	// A marker exactly on a page boundary stays with the page it heads.
 	let rebase = |position: DocPos| -> Option<DocPos> {
 		spans
 			.iter()
@@ -393,9 +261,7 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 		let Some(span) = spans.iter().find(|span| marker.position >= span.start && marker.position < span.end) else {
 			continue;
 		};
-		// A marker whose span runs past the end of the kept text would have the renderer emit a
-		// closing tag with no opening one, or blank the tail of the extract entirely. Both are
-		// silent, so the length is trimmed to what survived and the marker dropped if nothing did.
+		// A marker running past the kept text makes the renderer emit an unopened closing tag or silently blank the tail.
 		let length = marker.length.min(span.end - marker.position);
 		if !marker.length.is_zero() && length.is_zero() {
 			continue;
@@ -417,15 +283,12 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 	out.manifest_items.clone_from(&doc.manifest_items);
 	out.audio_only = doc.audio_only;
 	out.set_buffer(buffer);
-	// The word and line counts `pb --metadata` prints are derived from the content, so they have
-	// to be re-derived from the extract rather than left describing the whole book.
+	// Or `pb --metadata` would print the whole book's counts.
 	out.compute_stats();
 	Ok(out)
 }
 
-/// Keeps a table-of-contents entry and its subtree if it lands in the extract, rebasing each
-/// offset. An entry pointing outside is dropped along with its children, since a parent that is
-/// not in the extract makes its children's positions meaningless to follow.
+/// A dropped entry's children go with it, since their positions mean nothing without their parent.
 fn rebase_toc(item: &TocItem, rebase: &impl Fn(DocPos) -> Option<DocPos>) -> Option<TocItem> {
 	let mut copy = item.clone();
 	copy.offset = rebase(item.offset)?;
@@ -437,11 +300,9 @@ fn rebase_toc(item: &TocItem, rebase: &impl Fn(DocPos) -> Option<DocPos>) -> Opt
 mod tests {
 	use super::*;
 
-	/// Enough pages that no range in these tests runs off the end by accident.
+	/// Enough that no range in these tests runs off the end by accident.
 	const PAGES: usize = 200;
 
-	/// The largest page number a specification can name, which is also the one that overflows when
-	/// the merge asks whether the page after it exists.
 	const LAST_PAGE: usize = usize::MAX;
 
 	fn pages(spec: &str) -> Vec<usize> {
@@ -468,15 +329,11 @@ mod tests {
 		assert_eq!(pages("5-7,55,92-94"), vec![4, 5, 6, 54, 91, 92, 93]);
 	}
 
-	/// The commas and spaces a reader types around the parts should not become the error.
 	#[test]
 	fn spaces_around_the_parts_are_forgiven() {
 		assert_eq!(pages(" 5 - 10 , 55 "), vec![4, 5, 6, 7, 8, 9, 54]);
 	}
 
-	/// A semicolon separates parts as well as a comma, for a shell that makes commas awkward, and
-	/// the two may be mixed because a reader who has started with one is not thereby forbidden the
-	/// other.
 	#[test]
 	fn a_semicolon_separates_parts_as_well_as_a_comma() {
 		assert_eq!(pages("5;18-22;38"), vec![4, 17, 18, 19, 20, 21, 37]);
@@ -486,8 +343,6 @@ mod tests {
 
 	#[test]
 	fn a_semicolon_is_not_a_way_to_sneak_past_a_rejection() {
-		// A reversed range is a reversed range whichever separator introduced it, and an element
-		// left empty by a trailing semicolon is as empty as one left by a trailing comma.
 		assert!(message("5-10;22-18").contains("starts at page 22"), "{}", message("5-10;22-18"));
 		assert!(message("5-10;").contains("5-10;"), "{}", message("5-10;"));
 		assert!(message("5;;10").contains("5;;10"), "{}", message("5;;10"));
@@ -498,18 +353,12 @@ mod tests {
 		assert_eq!(pages("92-94,5-7,55"), vec![4, 5, 6, 54, 91, 92, 93]);
 	}
 
-	/// The largest page number there is, followed by a range touching it. Asking whether the two
-	/// merge turns on whether the first ends one page short of the second, and the page after the
-	/// largest number does not exist to be counted to.
 	#[test]
 	fn the_largest_page_number_does_not_wrap_around_when_ranges_are_merged() {
 		let selection = PageSelection::parse(&format!("1-{LAST_PAGE},2")).expect("a valid --pages value");
 		assert_eq!(selection.0, vec![PageRange::Fixed(1, LAST_PAGE)]);
 	}
 
-	/// `--pages 5-10,8-12` asks for two overlapping stretches. Selecting 8-10 twice would print
-	/// those pages twice in the output, which reads as a fault in the document rather than in the
-	/// command.
 	#[test]
 	fn overlapping_ranges_are_merged_rather_than_repeated() {
 		assert_eq!(pages("5-10,8-12"), (4..12).collect::<Vec<_>>());
@@ -520,7 +369,6 @@ mod tests {
 		assert_eq!(pages("5-10,11-12"), (4..12).collect::<Vec<_>>());
 	}
 
-	/// A page is a page whether it was named once or three times.
 	#[test]
 	fn a_repeated_page_is_selected_once() {
 		assert_eq!(pages("7,7,7"), vec![6]);
@@ -531,7 +379,6 @@ mod tests {
 		assert_eq!(pages("80-end"), (79..PAGES).collect::<Vec<_>>());
 	}
 
-	/// A fixed range and one running to the end are the same request once they meet.
 	#[test]
 	fn a_fixed_range_and_one_to_end_merge_into_the_longer() {
 		assert_eq!(pages("9-10,8-end"), (7..PAGES).collect::<Vec<_>>());
@@ -544,8 +391,6 @@ mod tests {
 		assert!(PageSelection::parse("80-End").is_ok());
 	}
 
-	/// A reversed range is the mistake a reader is most likely to make, and quietly treating it
-	/// as an empty selection would hide it.
 	#[test]
 	fn a_reversed_range_says_which_way_round_it_is() {
 		let message = message("10-5");
@@ -553,8 +398,6 @@ mod tests {
 		assert!(message.contains("ends at page 5"), "{message}");
 	}
 
-	/// Page 0 is the one number guaranteed never to exist, and resolving it to nothing would hand
-	/// back an empty document instead of an explanation.
 	#[test]
 	fn page_zero_is_refused_rather_than_resolved_to_nothing() {
 		assert!(message("0").contains("numbered from 1"), "{}", message("0"));
@@ -574,19 +417,12 @@ mod tests {
 		}
 	}
 
-	/// The reader who typed the command needs to see which part of it was wrong, and a batch of
-	/// conversions gives them no other way to tell which file is being complained about.
 	#[test]
 	fn a_rejection_quotes_the_part_that_was_wrong() {
 		assert!(message("5-10,banana").contains("banana"), "{}", message("5-10,banana"));
 	}
 
-	// --- the document half ---
-
-	/// A document of `page_count` pages, each holding one line of its own text, with a page-break
-	/// marker at the head of every page. This is the shape every paginated parser produces: the
-	/// PDF parser labels its markers "Page N" and the presentation parsers "Slide N", and both
-	/// place one at the start of each page.
+	/// The shape every paginated parser produces: a labelled break at the head of each page.
 	fn document_of_pages(page_count: usize, label: &str) -> Document {
 		let mut buffer = DocumentBuffer::new();
 		for page in 0..page_count {
@@ -620,8 +456,6 @@ mod tests {
 		assert_eq!(extract("2-4", &doc), "page2 text\npage3 text\npage4 text\n");
 	}
 
-	/// Two stretches asked for separately are two extracts. Running the last line of one into the
-	/// first of the next would read as a single broken paragraph.
 	#[test]
 	fn pages_that_are_not_adjacent_are_separated() {
 		let doc = document_of_pages(6, "Page");
@@ -640,16 +474,13 @@ mod tests {
 		assert_eq!(extract("4", &doc), "page4 text\n");
 	}
 
-	/// Presentations page by slide in the GUI, and their parsers label the markers "Slide N". pb
-	/// has to agree with the app it ships beside.
+	/// The app pages presentations by slide, and pb has to agree with it.
 	#[test]
 	fn slides_are_pages_too() {
 		let doc = document_of_pages(3, "Slide");
 		assert_eq!(extract("2", &doc), "page2 text\n");
 	}
 
-	/// A range past the end has to say how long the document actually is, or the reader is left
-	/// with an empty file and no idea why.
 	#[test]
 	fn a_range_past_the_end_says_how_many_pages_there_are() {
 		let doc = document_of_pages(4, "Page");
@@ -659,9 +490,7 @@ mod tests {
 		assert!(message.contains("4 pages"), "{message}");
 	}
 
-	/// `--pages 5-10` on a five-page file starts inside the document and runs off the end of it.
-	/// Treating that as "the pages that are there" would hand back five pages and leave the reader
-	/// believing they had the other five -- and indexing page 10 of a five-page document panicked.
+	/// Indexing page 10 of a five-page document once panicked.
 	#[test]
 	fn a_range_running_off_the_end_is_refused_rather_than_truncated() {
 		let doc = document_of_pages(5, "Page");
@@ -672,9 +501,7 @@ mod tests {
 		}
 	}
 
-	/// The page an error names is the one the reader wrote that does not exist. `--pages 8-700` on
-	/// a 417-page file used to be refused as "page 8 is past the last page", which is false: page 8
-	/// is there, and 700 is what is not.
+	/// `8-700` on 417 pages was once refused as "page 8 is past the last page".
 	#[test]
 	fn the_error_names_the_page_that_is_missing_rather_than_the_one_that_is_not() {
 		let doc = document_of_pages(417, "Page");
@@ -684,23 +511,17 @@ mod tests {
 		assert!(!message.contains("page 8 is past"), "{message}");
 		assert!(message.contains("417 pages"), "{message}");
 
-		// A range that starts past the end has only the one page to name.
 		let selection = PageSelection::parse("900-end").expect("valid");
 		let message = apply(&selection, &doc).expect_err("page 900 does not exist").to_string();
 		assert!(message.contains("900"), "{message}");
 	}
 
-	/// The last page by number is in range, however the range was written to reach it.
 	#[test]
 	fn a_range_ending_exactly_on_the_last_page_is_fine() {
 		let doc = document_of_pages(5, "Page");
 		assert_eq!(extract("3-5", &doc), "page3 text\npage4 text\npage5 text\n");
 	}
 
-	/// The case that decides whether a format is selectable at all: a document with chapters but
-	/// no page numbers has nothing to select, and saying so beats handing back the whole book as
-	/// though the request had been honoured. An EPUB whose publisher supplied no page-list lands
-	/// here, since its pages come from metadata the reader cannot see.
 	#[test]
 	fn a_document_with_no_pages_says_so() {
 		let mut doc = Document::new().with_title("A Book".to_string());
@@ -712,8 +533,6 @@ mod tests {
 		assert!(message.contains("table of contents"), "{message}");
 	}
 
-	/// The counts `pb --metadata` prints come from the content, so they have to describe the
-	/// extract rather than the whole book.
 	#[test]
 	fn the_extract_reports_the_counts_of_the_extract() {
 		let doc = document_of_pages(6, "Page");
@@ -722,9 +541,7 @@ mod tests {
 		assert_eq!(out.stats.line_count, 2, "the extract counted lines from the whole document");
 	}
 
-	/// Markers carry positions counted in chars. An emoji is one char and four UTF-8 bytes, so
-	/// treating a position as a byte offset gives the right answer for every ASCII document and the
-	/// wrong one here.
+	/// An emoji is one char but four bytes, so treating positions as bytes only works for ASCII.
 	#[test]
 	fn an_emoji_on_a_page_does_not_shift_the_pages_after_it() {
 		let mut buffer = DocumentBuffer::new();
@@ -737,8 +554,6 @@ mod tests {
 		doc.set_buffer(buffer);
 		let out = extract_document("2-3", &doc);
 		assert_eq!(out.buffer.content, "\u{1F600} page2 text\n\u{1F600} page3 text\n");
-		// The page-break markers still sit at the head of their own pages, which is only true if
-		// every position was measured in the units the buffer indexes by.
 		let heads: Vec<DocPos> = out
 			.buffer
 			.markers
@@ -749,8 +564,6 @@ mod tests {
 		assert_eq!(heads, vec![DocPos::ZERO, DocLen::of("\u{1F600} page2 text\n").as_pos()]);
 	}
 
-	/// A marker that starts on a discarded page would otherwise have the renderer close a span it
-	/// never opened.
 	#[test]
 	fn a_marker_starting_on_a_discarded_page_is_dropped() {
 		let mut buffer = DocumentBuffer::new();
@@ -759,8 +572,6 @@ mod tests {
 		let cut = buffer.end();
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, cut).with_text("Page 2".to_string()));
 		buffer.append("the rest\n");
-		// A bold run begun on page 1 and running into page 2, which is what a heading split across
-		// a page boundary looks like.
 		buffer.add_marker(Marker {
 			mtype: MarkerType::Bold,
 			position: DocPos::ZERO,
@@ -777,8 +588,7 @@ mod tests {
 		);
 	}
 
-	/// A table marker left pointing past the end of the extract makes the HTML renderer skip every
-	/// remaining character, quietly blanking the tail. Dropping it is the fix.
+	/// A table marker past the end of the extract made the HTML renderer skip every remaining character.
 	#[test]
 	fn a_table_from_a_discarded_page_does_not_blank_the_extract() {
 		let mut buffer = DocumentBuffer::new();
@@ -804,8 +614,6 @@ mod tests {
 		assert!(html.contains("kept text"), "the extract lost its text: {html}");
 	}
 
-	/// Every position a sliced document hands on has to be inside that document, or the renderers
-	/// and the table of contents are being handed coordinates from a different book.
 	#[test]
 	fn no_position_in_the_extract_points_outside_it() {
 		let doc = document_of_pages(5, "Page");

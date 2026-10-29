@@ -12,8 +12,7 @@ extension MagicTapWindow {
 
 	override var keyCommands: [UIKeyCommand]? {
 		var cmds = super.keyCommands ?? []
-		// The titles are the desktop's menu names, so VoiceOver's Cmd-hold list reads them in the
-		// reader's language without asking translators for a second copy of each.
+		// Desktop's menu names, so VoiceOver's Cmd-hold list is translated without a second copy for translators.
 		cmds += [
 			cmd(" ", [], #selector(kbTogglePlayPause)),
 			cmd("[", [], #selector(kbPrevSection), t("Previous Section")),

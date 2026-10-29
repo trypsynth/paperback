@@ -1,5 +1,3 @@
-//! The loaded-window management for a document: keeping the text control's slice of a large document ahead of a forward read, compacting it when the caret runs out of text behind it or the layout changes, copying the whole document when a windowed Select All only reached a slice, and jumping to the true document edges rather than the loaded window's. Split out of the main `DocumentManager` impl; see [`super`] for the windowing model in `text_window`.
-
 use super::{DocumentManager, DocumentTab};
 use crate::{
 	text_window::{self, CtrlPos},
@@ -10,42 +8,9 @@ use crate::{
 };
 
 impl DocumentManager {
-	/// Keeps the loaded window ahead of a caret that is moving forward, by appending to it.
+	/// Extends the loaded window ahead of a caret moving forward, on a timer because NVDA's Say-All reads through UI Automation and never reaches our key handlers.
 	///
-	/// A timer rather than an input hook because a screen reader's own text-walking never reaches
-	/// this app's key handlers: NVDA's Say-All (and similar continuous-reading features) drives
-	/// RichEdit's UI Automation text pattern directly. Without polling, reaching the loaded end
-	/// during a Say-All would look exactly like reaching the real end of the document, and reading
-	/// would stop mid-paragraph with millions of characters still unread. Reacting to where the
-	/// caret actually is sidesteps having to know what put it there. `RELOAD_MARGIN`, a quarter of
-	/// the window, gives even fast reading time to load more well before it runs out.
-	///
-	/// Because it runs on a timer, it must never do anything a reader could notice. Appending
-	/// qualifies: every offset already handed out still points at the same character. Rebuilding
-	/// the window does not.
-	///
-	/// The bug that motivated the split: NVDA's Say-All holds its own offsets into the control,
-	/// advances them itself rather than re-reading the caret, and has no handling for the text
-	/// changing underneath it (`_TextReader` only checks whether the object died). Recentring the
-	/// window swapped the whole buffer and moved `start`, so those offsets silently came to mean a
-	/// different place in the book. Say-All read on from the wrong spot, moved the real caret there
-	/// with it, and this timer then saw *that* position, decided it was near an edge, and recentred
-	/// again - walking the window backwards to the top of the document a few hundred thousand
-	/// characters at a time while the user listened. Reported as reading randomly jumping to the
-	/// start of large text files.
-	///
-	/// Splitting extension from compaction was not enough on its own, because compaction stayed
-	/// reachable from here for a caret that had run out of text behind it, on the reasoning that a
-	/// forward reader could never be in that position. A reader whose offsets have gone stale can:
-	/// compaction moves the loaded start out from under offsets their holder never revisits, which
-	/// leaves those offsets sitting near the new start, which is the very condition to compact
-	/// again. Each tick walked the window another `RELOAD_MARGIN` back, and the read reached the
-	/// top of the document in about three seconds. A tick that can only extend cannot start that
-	/// loop, so this one cannot.
-	///
-	/// Compaction happens elsewhere: at the navigation chokepoints, on the key and mouse events
-	/// that end a read (see [`Self::compact_window_after_user_move`]), and on a resize, where the
-	/// cost it exists to avoid is actually billed.
+	/// It only ever appends. Say-All keeps its own offsets into the control, and recentring or compacting here once walked a Say-All back to the top of a large file. Compaction happens where the user moves instead (see [`Self::compact_window_after_user_move`]).
 	pub fn pump_window_extend(&mut self) {
 		let Some(tab) = self.active_tab_mut() else {
 			return;
@@ -56,28 +21,15 @@ impl DocumentManager {
 			return;
 		}
 		if !Self::extend_window_forward(tab) {
-			// The append did not land cleanly, so the control and the window no longer agree on
-			// what is loaded. Every later position translation would be wrong by the difference;
-			// rebuild to get back to a state that is at least consistent. This does move the
-			// loaded start, so it is the one thing here a reader can notice, but a control whose
-			// contents no one can locate is worse than a read that loses its place.
+			// The control and window now disagree on what's loaded; reloading moves the loaded start, but a control whose contents no one can locate is worse than a read that loses its place.
 			reload_window_around(tab, doc_pos, "append failed");
 			let local = tab.window.to_local(doc_pos);
 			tab.text_ctrl.set_insertion_point(local);
 		}
 	}
 
-	/// Compacts the window around the caret if the caret has run out of text behind it.
-	///
-	/// The counterpart to [`Self::pump_window_extend`], called from the key and mouse handlers
-	/// rather than the timer. Anything that moves the loaded start invalidates the offsets a
-	/// screen reader is reading from, so it may only happen where the user has already done
-	/// something that stops a read, and a keypress or a click is exactly that.
-	///
-	/// Holding Up-arrow is the case this exists for. Auto-repeat sends key *down* events and no
-	/// key up until release, so a held key eats into [`RELOAD_MARGIN`] without compacting; that
-	/// margin is a quarter of the window, which is over a minute of held arrow before the caret
-	/// reaches the loaded start, and releasing the key compacts well before then.
+	/// Moving the loaded start invalidates a screen reader's offsets, so it only happens on a keypress or click, which already stops a read.
+	/// A held arrow sends no key up until release, but the reload margin is over a minute of held arrow, so release compacts well before the loaded start.
 	pub fn compact_window_after_user_move(&mut self) {
 		let Some(tab) = self.active_tab_mut() else {
 			return;
@@ -93,9 +45,6 @@ impl DocumentManager {
 		tab.text_ctrl.show_position(local);
 	}
 
-	/// The text Edit > Copy puts on the clipboard: the control's selection, or the whole document
-	/// when everything loaded is selected but only part of the document is loaded. `None` when
-	/// nothing is selected.
 	pub fn text_to_copy(&self) -> Option<String> {
 		let tab = self.active_tab()?;
 		let doc_len = tab.session.document_len();
@@ -112,12 +61,7 @@ impl DocumentManager {
 		(!text.is_empty()).then_some(text)
 	}
 
-	/// Selects everything the reading control holds and reports the document's own character count,
-	/// or `None` when there is no document open.
-	///
-	/// The count is the document's rather than the control's selection: a windowed document holds a
-	/// slice of the book, and selecting all of that slice is the reader asking for all of it - which
-	/// is what a copy of it will put on the clipboard, so the two counts agree.
+	/// The document's count rather than the selection's, since selecting all of a windowed slice is asking for the whole book, which is what copy will put on the clipboard.
 	#[cfg(not(target_os = "macos"))]
 	pub fn select_all_and_count(&self) -> Option<usize> {
 		let tab = self.active_tab()?;
@@ -125,16 +69,8 @@ impl DocumentManager {
 		Some(tab.session.handle().document().buffer.len().get())
 	}
 
-	/// Collapses a window that grew during a long read back to target size around the caret.
-	///
-	/// Called before a relayout, which is the one place a deep caret in a big loaded buffer is
-	/// actually billed. Measured on a 16.5M-character document, the per-line work a screen reader
-	/// does costs about a millisecond even at the far end - nothing against the seconds spent
-	/// speaking that line - whereas rewrapping the same buffer costs tens of seconds. So growth is
-	/// free while reading and only has to be paid back when the layout actually changes.
-	///
-	/// Resize events arrive continuously during a drag; this is self-limiting because the first
-	/// one brings the window back under the threshold and the rest return immediately.
+	/// Growth is free while reading (a screen reader's per-line work stays about 1ms on a 16.5M-character document) but rewrapping costs tens of seconds, so it is paid back only before a relayout.
+	/// Self-limiting during a drag: the first resize brings the window under the threshold.
 	pub fn compact_window_if_grown(&mut self) {
 		let Some(tab) = self.active_tab_mut() else {
 			return;
@@ -149,20 +85,13 @@ impl DocumentManager {
 		tab.text_ctrl.show_position(local);
 	}
 
-	/// Appends the next chunk of the document to the end of the loaded window, leaving
-	/// `window.start` and every offset already in play untouched.
-	///
-	/// Returns false if the append did not land cleanly, meaning the caller should compact rather
-	/// than carry on with a control and a `TextWindow` that disagree.
 	fn extend_window_forward(tab: &mut DocumentTab) -> bool {
 		let doc_len = tab.session.document_len();
 		let (from, to) = tab.window.extend_bounds(doc_len);
 		if to <= from {
 			return true;
 		}
-		// `from` is the current loaded end, which the session snapped to a paragraph boundary when
-		// it produced this window. Snapping a boundary again is a no-op, so this slice abuts the
-		// loaded text exactly: no gap, no repeated paragraph.
+		// `from` is already paragraph-snapped and snapping is idempotent, so the slice abuts the loaded text with no gap or repeat.
 		let slice = tab.session.get_window(from, to);
 		if slice.end <= from {
 			return true;
@@ -174,10 +103,7 @@ impl DocumentManager {
 		}
 		let previous_end = tab.window.end();
 		tab.window = extended;
-		// The safe half, logged at debug so a report can be read alongside the window moves above.
-		// A healthy forward read extends about once per chunk; a burst of these with the caret
-		// pinned at the loaded end is the signature of the caret being moved by the append itself,
-		// which is what `append_rtf_into_ctrl` saves and restores the selection to prevent.
+		// A burst of these with the caret pinned at the loaded end means the append moved the caret, which `append_rtf_into_ctrl` saves the selection to prevent.
 		tracing::debug!(
 			caret = tab.window.to_doc(tab.text_ctrl.get_insertion_point()).get(),
 			from_end = previous_end.get(),
@@ -185,8 +111,6 @@ impl DocumentManager {
 			loaded = tab.window.loaded_len().get(),
 			"extended loaded window"
 		);
-		// The control and the window have to agree on how much is loaded. Any drift would offset
-		// every translation from here on.
 		let drift = tab.text_ctrl.get_last_position().get() - tab.window.to_local(tab.window.end()).get();
 		if drift != 0 {
 			tracing::warn!(drift, "window extension left the control and the window disagreeing");
@@ -195,16 +119,7 @@ impl DocumentManager {
 		true
 	}
 
-	/// Jumps the caret to the very first or very last character of the *document*, reloading the
-	/// text control's window at that edge (see `text_window`).
-	///
-	/// `text_ctrl`'s own Ctrl+Home/Ctrl+End can only ever reach the ends of whatever window is
-	/// currently loaded, which on a huge document is an arbitrary spot mid-book rather than the
-	/// start or end of the document - and reaching a loaded edge that way then makes
-	/// `pump_window_reload` recentre the window on it, so the keys both landed in the wrong place
-	/// and paid for a reload to get there. `build_text_ctrl` intercepts them and routes here
-	/// instead, which also keeps them consistent with every other jump in the app (history,
-	/// audio sync, focus).
+	/// The control's own Ctrl+Home/End only reach the loaded window's ends, an arbitrary spot mid-book on a huge document, so `build_text_ctrl` routes them here.
 	pub fn jump_to_document_edge(&mut self, to_end: bool) {
 		let (track, update) = {
 			let Some(tab) = self.active_tab_mut() else {
@@ -219,18 +134,13 @@ impl DocumentManager {
 	}
 }
 
-/// What a copy takes from the reading control.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CopySource {
 	Nothing,
-	/// The text selected in the control.
 	Selection,
-	/// The whole document, of which the control holds only part.
 	WholeDocument,
 }
 
-/// What copying `selection` takes, for a control holding text up to `last_position` that is the
-/// whole document or only part of it.
 pub const fn copy_source(
 	selection: (CtrlPos, CtrlPos),
 	last_position: CtrlPos,

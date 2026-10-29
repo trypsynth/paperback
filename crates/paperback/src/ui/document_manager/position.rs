@@ -1,5 +1,3 @@
-//! The reader's place in the active document: the status bar, the spoken position, and the temporary bookmark. Split out of the main `DocumentManager` impl.
-
 use paperback_core::document::DocPos;
 use patois::t;
 
@@ -10,7 +8,6 @@ use crate::ui::{
 };
 
 impl DocumentManager {
-	/// The file name to offer for the picture under the caret, when there is one that can be saved.
 	pub fn image_file_name_at_caret(&self) -> Option<String> {
 		let tab = self.active_tab()?;
 		tab.session.image_file_name_at(tab.window.to_doc(tab.text_ctrl.get_insertion_point()))
@@ -50,8 +47,6 @@ impl DocumentManager {
 		}
 	}
 
-	/// Announces the current caret position as a percentage of the document, and the page it falls
-	/// on where the document has pages, via the live region.
 	pub fn announce_current_percent(&self, from_keyboard: bool) {
 		let Some(tab) = self.active_tab() else {
 			return;
@@ -62,7 +57,6 @@ impl DocumentManager {
 		announce_for_command(self.live_region_label, from_keyboard, position_announcement(percent, page));
 	}
 
-	/// Sets the temporary bookmark at the current caret position and announces it.
 	pub fn set_temporary_bookmark(&self, from_keyboard: bool) {
 		let Some(tab) = self.active_tab() else {
 			return;
@@ -77,8 +71,6 @@ impl DocumentManager {
 		announce_for_command(self.live_region_label, from_keyboard, t("Temporary bookmark set."));
 	}
 
-	/// Jumps to the temporary bookmark, announcing the line text there, or "No temporary bookmark."
-	/// if none has been set.
 	pub fn jump_to_temporary_bookmark(&mut self, from_keyboard: bool) {
 		let path_str = {
 			let Some(tab) = self.active_tab() else {
@@ -113,31 +105,14 @@ impl DocumentManager {
 	}
 }
 
-/// The 1-based page `position` falls on, or `None` for a document that has no pages at all -
-/// meaning one with no page-break markers, which is every plain text and markdown document and any
-/// EPUB that carries no page list.
-///
-/// The `.max(1)` covers a hole in `current_page`, which answers 0 both for a document with no pages
-/// and for a position ahead of the first marker: the first is what the guard above has already
-/// turned into `None`, the second is not a page number to say out loud. Only a PDF escapes the
-/// second case, since its first page marker sits at offset 0. An RTF's and a DAISY book's first
-/// break lands mid-document, and an EPUB page list starts at the first *content* page, leaving the
-/// cover and title pages in front of every marker.
-///
-/// Every caller of `current_page` patches that 0 differently or not at all - Go to Page clamps it
-/// (`dialogs::show_go_to_page_dialog`), the Elements view reads it as "no closest page"
-/// (`dialogs::elements`), and iOS's Go To sheet shows it to the reader as a plain 0. This agrees
-/// with Go to Page, the one other place that speaks a page number; the fix that would stop it being
-/// forgotten belongs in `current_page` itself.
 fn page_at(tab: &DocumentTab, position: DocPos) -> Option<i32> {
 	if tab.session.page_count() == 0 {
 		return None;
 	}
+	// `current_page` answers 0 ahead of the first marker (RTF, DAISY, an EPUB's cover pages), which is no page to say; clamped like Go to Page, though the real fix belongs in `current_page`.
 	Some(tab.session.current_page(position).max(1))
 }
 
-/// What the "announce percentage" shortcut says for `percent` through the document, on `page` where
-/// it has pages - "15%, page 30" - or the bare percentage where it has none.
 pub(super) fn position_announcement(percent: i32, page: Option<i32>) -> String {
 	let Some(page) = page else {
 		return format!("{percent}%");

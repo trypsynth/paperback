@@ -1,7 +1,3 @@
-//! The heavier "View" menu handlers: opening the document in a web view and viewing its source.
-//! Reload and the word wrap and full screen toggles stay inlined in `bind_menu_events`'s
-//! dispatch match.
-
 use std::{env, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{parser::is_external_url, session::SourceView};
@@ -58,9 +54,7 @@ pub(super) fn handle_open_in_web_view(frame: &Frame, dm: &Rc<Mutex<DocumentManag
 }
 
 pub(super) fn handle_view_source(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>) {
-	// `None` => format has no text source; `Some(None)` => source could not
-	// be loaded; `Some(Some(..))` => source ready. Locks are dropped before
-	// any dialog is shown.
+	// `None`: the format has no source; `Some(None)`: it failed to load. Locks drop before any dialog shows.
 	let outcome: Option<Option<(SourceView, String)>> = {
 		let Ok(dm_ref) = dm.try_lock() else {
 			return;

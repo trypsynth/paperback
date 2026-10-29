@@ -5,9 +5,6 @@ private extension UTType {
 	static let paperbackData = UTType(filenameExtension: "paperback") ?? .data
 }
 
-// Long-press affordance on the "Open Book" button to import/export a document's
-// saved settings and bookmarks as a .paperback sidecar file, matching Android's
-// long-press menu on its Open Book button.
 struct DocumentDataTransferMenu: ViewModifier {
 	@Environment(AppViewModel.self) private var viewModel
 	@State private var exportURL: URL? = nil

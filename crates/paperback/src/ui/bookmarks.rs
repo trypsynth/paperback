@@ -1,9 +1,4 @@
-//! Setting, listing and jumping to bookmarks, and the notes attached to them.
-//!
-//! In a document that is only audio, a bookmark remembers where in the recording it was set as
-//! well as its chapter. An audiobook's text is a blank line per chapter, so a text position alone
-//! can only say which chapter a bookmark is in: in a chapterless MP3 every bookmark would land on
-//! the same spot, and setting a second would find the first and remove it.
+//! Audio-only bookmarks also record playback time: the text is a blank line per chapter, so in a chapterless MP3 every bookmark would land on one spot and a second would toggle off the first.
 
 use std::{rc::Rc, sync::Mutex};
 
@@ -21,15 +16,9 @@ use super::{
 };
 use crate::ui::navigation::{announce, announce_for_command};
 
-/// How close to the playback time a bookmark has to be for toggling to treat it as the one here.
-/// Playback moves on between one press and the next, so an exact match would never happen and the
-/// second press would add a second bookmark instead of removing the first.
+/// Playback moves on between presses, so an exact match would never happen and the second press would add a bookmark instead of removing the first.
 const TOGGLE_REACH_MS: u64 = 1500;
 
-/// The playback time a bookmark set now should record, for a document that is only audio.
-///
-/// `None` for a document with text, whose bookmarks stay text positions. Before anything has
-/// played the reader is at the start, which is time zero.
 fn audio_bookmark_time(tab: &DocumentTab) -> Option<u64> {
 	if !tab.session.handle().document().audio_only {
 		return None;
@@ -38,15 +27,13 @@ fn audio_bookmark_time(tab: &DocumentTab) -> Option<u64> {
 	Some(player.resume_point_ms().unwrap_or(0))
 }
 
-/// Seeks the recording to an audio bookmark. Moving the caret to the bookmark's chapter seeks the
-/// audio to the start of that chapter, so this has to come after it.
+/// Must come after moving the caret, which seeks the audio to the start of the chapter.
 fn seek_to_audio_bookmark(tab: &mut DocumentTab, audio_ms: u64) {
 	if let Some(player) = tab.audio_player.as_mut() {
 		player.seek_to_ms(audio_ms);
 	}
 }
 
-/// What to announce for an audio bookmark: its note if it has one, and where in the recording.
 fn audio_bookmark_label(note: &str, audio_ms: u64) -> String {
 	let time = format_duration_ms(audio_ms);
 	if note.is_empty() { time } else { format!("{note}, {time}") }
@@ -81,7 +68,6 @@ fn nothing_to_navigate_to(has_items: bool, next: bool, notes_only: bool) -> Stri
 	}
 }
 
-/// Next or previous bookmark in a document that is only audio, ordered by playback time.
 fn navigate_audio_bookmark(
 	tab: &mut DocumentTab,
 	config: &ConfigManager,
@@ -212,13 +198,11 @@ pub fn handle_bookmark_dialog(
 		(message, tab.track.then_some(update))
 	};
 	drop(dm);
-	// The dialog was modal, so focus is already back on the book by now: this is the dialog-return
-	// chain, and the menu that opened the dialog closed long before it appeared.
+	// The modal dialog has already returned focus to the book and its menu closed long ago, so this announces directly.
 	announce(live_region_label, message);
 	persist_navigation_history(config, history_update.as_ref());
 }
 
-/// Where a new bookmark would go: the selection, and the playback time in an audio-only document.
 fn bookmark_target(doc_manager: &Rc<Mutex<DocumentManager>>) -> Option<(DocPos, DocPos, String, Option<u64>)> {
 	let mut dm = doc_manager.lock().unwrap();
 	let tab = dm.active_tab_mut()?;

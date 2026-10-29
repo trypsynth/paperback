@@ -29,16 +29,13 @@ use crate::{
 	},
 };
 
-/// Parses a DAISY book packaged as a zip archive: DAISY 3 (OPF manifest plus DTBook XML, with
-/// or without a SMIL audio layer), DAISY 2.02 (`ncc.html`), or, failing both, a bare bundle of
-/// audio files with no markup at all.
 pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 	let mut document = parse_archive(context, path)?;
 	resolve_picture_entries(&mut document, path);
 	Ok(document)
 }
 
-/// Points each picture at the archive entry it lives in, so it can be saved and read with OCR. The markup names a picture relative to the text file it appears in, which nothing reading the picture later can know, so the name is settled here, while the archive's layout is at hand.
+/// The markup names a picture relative to its text file, which nothing that later saves the picture or reads it with OCR can know, so the entry is settled here while the archive's layout is at hand.
 fn resolve_picture_entries(document: &mut Document, path: &Path) {
 	let Ok(archive) =
 		File::open(path).map(BufReader::new).and_then(|file| ZipArchive::new(file).map_err(std::io::Error::other))
@@ -73,7 +70,7 @@ fn resolve_picture_entries(document: &mut Document, path: &Path) {
 	}
 }
 
-/// The archive entry a picture's `src` names: the name itself, or the name beside one of the book's text files, or failing those the only entry ending in it. Matched without regard to case, as the rest of the book's files are.
+/// Matched without regard to case, as the rest of the book's files are.
 fn picture_entry(names: &[String], folders: &[String], source: &str) -> Option<String> {
 	let source = url_decode(source.split(['#', '?']).next().unwrap_or_default());
 	let find = |wanted: &str| names.iter().find(|name| name.eq_ignore_ascii_case(wanted)).cloned();
@@ -97,8 +94,7 @@ fn parse_archive(context: &ParserContext, path: &Path) -> Result<Document> {
 	let file = File::open(path).context("Failed to open zip file")?;
 	let mut archive = ZipArchive::new(BufReader::new(file)).context("Failed to read zip archive")?;
 	let entry_name = zip_entry_name_resolver(&archive);
-	// zip 9 hands back a Result per name, since decoding one can fail. A name that will not
-	// decode cannot match what this scan is looking for, so drop those rather than fail the file.
+	// zip 9 hands back a Result per name; one that will not decode cannot match what this scan looks for, so drop it rather than fail the file.
 	let opf_path = archive
 		.file_names()
 		.flatten()
@@ -269,9 +265,7 @@ fn parse_archive(context: &ParserContext, path: &Path) -> Result<Document> {
 		}
 	}
 	tracing::warn!(opf_found, ncc_found, "exhausted daisy 3 and daisy 2.02 detection attempts in zip archive");
-	// Not a recognizable DAISY book, but plenty of "audiobook" zips out there (e.g. from
-	// AudioVault) are just a folder of narration files with no markup at all. Rather than
-	// refuse those, present each audio file as its own playable, textless section.
+	// Plenty of "audiobook" zips (e.g. from AudioVault) are just a folder of narration files with no markup, so each file becomes a textless section rather than the zip being refused.
 	if let Some(document) =
 		build_plain_audio_zip_document(&mut archive, &context.file_path, title, author, context.password.as_deref())
 	{

@@ -1,5 +1,3 @@
-//! Bookmark navigation and filtering, backed by [`ConfigManager`]'s per-document bookmark list.
-
 use crate::{
 	config::{Bookmark, ConfigManager as RustConfigManager},
 	document::DocPos,
@@ -46,31 +44,19 @@ pub fn bookmark_navigate(
 	ffi::BookmarkNavResult { found: false, start: DocPos::ZERO, note: String::new(), index: -1, wrapped }
 }
 
-/// How far behind the current playback time a bookmark has to be for "previous" to go to it.
-///
-/// Jumping to a bookmark and then asking for the previous one would otherwise find the bookmark
-/// just jumped to, since playback has moved a moment past it and it now counts as behind. This is
-/// the same allowance a media player gives its "previous track" button.
+/// Playback has moved a moment past a bookmark just jumped to, so without this "previous" would find it again, as a media player's previous-track button allows for.
 const PREVIOUS_SLACK_MS: u64 = 1500;
 
-/// Where an audio bookmark search landed.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct AudioBookmarkHit {
-	/// The playback time to seek to.
 	pub audio_ms: u64,
-	/// The chapter's position in the text, for the caret.
 	pub start: DocPos,
 	pub note: String,
-	/// The bookmark's place among the ones searched, counting from zero.
 	pub index: usize,
 	pub wrapped: bool,
 }
 
-/// The next or previous audio bookmark from `current_ms`, for a document that is only audio.
-///
-/// The playback-time counterpart to [`bookmark_navigate`]. It has to be separate because an
-/// audiobook's text positions cannot order its bookmarks: every bookmark in a chapter shares the
-/// chapter's position. Text bookmarks are ignored.
+/// Separate from [`bookmark_navigate`] because every bookmark in an audiobook chapter shares the chapter's position, so positions cannot order them.
 pub fn audio_bookmark_navigate(
 	manager: &RustConfigManager,
 	path: &str,
@@ -165,8 +151,6 @@ mod audio_tests {
 		assert_eq!((60_000, 1, false), (hit.audio_ms, hit.index, hit.wrapped));
 	}
 
-	/// Just after jumping to a bookmark, playback is a moment past it. "Previous" has to skip it
-	/// and go to the one before, or it would keep landing on the same bookmark.
 	#[test]
 	fn previous_skips_the_bookmark_playback_just_left() {
 		let config = config_with(&[(10_000, ""), (60_000, "")]);

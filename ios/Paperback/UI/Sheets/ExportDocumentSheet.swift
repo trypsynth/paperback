@@ -29,9 +29,6 @@ extension ExportFormat {
 	}
 }
 
-/// Picks a format and hands the rendered document to the system file mover. Which formats
-/// appear comes from the core, since what a document can be rendered as depends on the
-/// document.
 struct ExportDocumentSheet: View {
 	@Environment(AppViewModel.self) private var viewModel
 	@Environment(\.dismiss) private var dismiss

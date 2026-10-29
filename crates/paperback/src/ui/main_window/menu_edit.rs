@@ -1,5 +1,3 @@
-//! Edit > Copy on every desktop platform, and Edit > Select All on Windows and Linux.
-
 use std::{rc::Rc, sync::Mutex};
 
 #[cfg(not(target_os = "macos"))]
@@ -15,20 +13,14 @@ use crate::ui::{
 	selection::{copied_announcement, copy_to_clipboard},
 };
 
-/// What the copy shortcut found when it went to copy.
 #[derive(Clone, Copy)]
 enum CopyOutcome {
-	/// Nothing was selected, or what was selected is empty.
 	Nothing,
-	/// This many characters went on the clipboard.
 	Copied(usize),
-	/// The clipboard would not take the text.
 	Failed,
 }
 
-/// Puts the selection, or the whole document after a Select All, on the clipboard, and says what it did. The document manager is unlocked before the clipboard write.
-///
-/// Announces because it is the only feedback a copy gives this reader: there is no beep and nothing changes on screen, so a copy that copied nothing is otherwise silent and the reader finds out later, by pasting. The copy from a marked selection already announces, in these same words.
+/// Announces because a copy otherwise gives no feedback, so one that copied nothing would go unnoticed until the reader pastes.
 pub fn handle_copy(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText, from_keyboard: bool) {
 	// The clipboard write goes through OLE on Windows, which can pump messages, and the document manager's mutex is not reentrant, so the write and the announcement stay outside the lock.
 	let text = dm.lock().unwrap().text_to_copy();
@@ -39,7 +31,7 @@ pub fn handle_copy(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticTex
 	announce_for_command(live_region_label, from_keyboard, copy_message(outcome));
 }
 
-/// Its own function of the outcome so the wording can be pinned without a document, which a test cannot build.
+/// Separate so a test can pin the wording, since a test cannot build a document.
 fn copy_message(outcome: CopyOutcome) -> String {
 	match outcome {
 		// TRANSLATORS: Announced when the copy shortcut is pressed with nothing selected, so there was nothing to put on the clipboard.
@@ -50,16 +42,7 @@ fn copy_message(outcome: CopyOutcome) -> String {
 	}
 }
 
-/// Selects everything the reading control holds, and says how much text the document has.
-///
-/// Announces for the same reason the copy above does, and one more. As the only feedback the command
-/// gave the reader, a screen reader's own report of the selection change went out the instant the
-/// menu closed and the focus-return chain read over it; saying it here gives a menu click the same
-/// delayed announcement every other command gets.
-///
-/// The shortcut waits as well, which the copy's does not. Selecting is not silent: the change is
-/// itself reported, and a message raised the moment the command runs is spoken first and leaves that
-/// report hanging on the end.
+/// Announces because after a menu click the focus return reads over the screen reader's own selection report; the shortcut waits too, or the message would leave that report hanging on the end.
 #[cfg(not(target_os = "macos"))]
 pub fn handle_select_all(dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText, from_keyboard: bool) {
 	let Some(count) = dm.lock().unwrap().select_all_and_count() else {
@@ -68,7 +51,7 @@ pub fn handle_select_all(dm: &Rc<Mutex<DocumentManager>>, live_region_label: Sta
 	announce_for_selection_command(live_region_label, from_keyboard, selected_message(count));
 }
 
-/// Its own function of the count so the wording can be pinned without a document, which a test cannot build.
+/// Separate so a test can pin the wording, since a test cannot build a document.
 #[cfg(not(target_os = "macos"))]
 fn selected_message(count: usize) -> String {
 	// TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
@@ -89,13 +72,11 @@ mod tests {
 		assert_eq!(copy_message(CopyOutcome::Copied(42)), "42 characters copied.");
 	}
 
-	/// One character is read aloud by a person, not measured by a buffer.
 	#[test]
 	fn a_copy_of_one_character_is_not_plural() {
 		assert_eq!(copy_message(CopyOutcome::Copied(1)), "1 character copied.");
 	}
 
-	/// A copy that copied nothing has to say so rather than leaving the reader to paste and find out.
 	#[test]
 	fn a_copy_with_nothing_selected_says_so() {
 		assert_eq!(copy_message(CopyOutcome::Nothing), "Nothing to copy.");
@@ -112,7 +93,6 @@ mod tests {
 		assert_eq!(selected_message(42), "42 characters selected.");
 	}
 
-	/// One is read aloud by a person, not measured by a buffer.
 	#[test]
 	#[cfg(not(target_os = "macos"))]
 	fn a_select_all_of_one_character_is_not_plural() {

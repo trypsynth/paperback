@@ -32,13 +32,10 @@ pub struct XmlToText {
 	in_body: bool,
 	list_level: i32,
 	list_style_stack: Vec<ListStyle>,
-	/// Indices into `lists` for currently open `<ul>`/`<ol>` elements, in nesting order.
-	/// `None` marks an open list that was not recorded (no direct `<li>`), keeping the stack
-	/// balanced with the start/close handlers so list lengths are set on the right entries.
+	/// `None` marks an unrecorded list (no direct `<li>`), keeping the stack balanced so list lengths land on the right entries.
 	open_lists: Vec<Option<usize>>,
 	format_spans: FormatSpans,
-	/// When `true`, tables are emitted as their full tab-separated rendering; otherwise as a
-	/// `"[Table]: <first row>"` placeholder. A config flag, not parse state: it survives `clear()`.
+	/// A config flag, not parse state, so it survives `clear()`.
 	render_tables_inline: bool,
 }
 
@@ -48,9 +45,6 @@ impl XmlToText {
 		Self::default()
 	}
 
-	/// Like [`new`](Self::new) but sets whether tables are rendered inline (full TSV) or as a
-	/// placeholder. Threaded from the owning parser's `ParserContext`; preserved across
-	/// `convert`/`clear`.
 	#[must_use]
 	pub fn with_render_tables_inline(render_tables_inline: bool) -> Self {
 		Self { render_tables_inline, ..Self::default() }
@@ -66,7 +60,7 @@ impl XmlToText {
 		}
 	}
 
-	/// [`Self::convert`] without the warning, for a caller that has a fallback for content that is not well-formed and reports that itself.
+	/// For a caller that has a fallback for malformed content and reports that itself.
 	///
 	/// # Errors
 	///
@@ -88,9 +82,6 @@ impl XmlToText {
 		self.text.get_text()
 	}
 
-	/// Returns the source byte offset of the start tag of the element nearest
-	/// at-or-before `target_position` (a character position in the converted text),
-	/// suitable as an insertion point for a navigation anchor.
 	pub fn find_anchor_byte_offset(&mut self, xml_content: &str, target_position: DocPos) -> Option<usize> {
 		self.position_watch = Some(target_position);
 		self.watched_byte_offset = None;
@@ -194,11 +185,6 @@ impl XmlToText {
 
 mod process;
 
-/// Inserts an empty `<span id="{anchor_id}"></span>` into `xml_content`.
-///
-/// The span is placed before the element nearest at-or-before `target_position`
-/// (a character position in the converted text). Returns `None` when the
-/// content is not valid XML.
 #[must_use]
 pub fn inject_anchor_at_position(xml_content: &str, target_position: DocPos, anchor_id: &str) -> Option<String> {
 	let byte_offset = XmlToText::new().find_anchor_byte_offset(xml_content, target_position)?;

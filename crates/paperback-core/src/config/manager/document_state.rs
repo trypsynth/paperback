@@ -1,20 +1,11 @@
-//! Per-document reading state: last position, audio playback time, the temporary bookmark,
-//! navigation history, and the detected format/password used to reopen it.
-
 use super::ConfigManager;
 use crate::{
-	config::settings::NavigationHistory,
+	config::settings::{DocumentSpeech, NavigationHistory},
 	document::{DocPos, ReplaceOutcome},
 };
 
 impl ConfigManager {
-	/// Remaps every stored position for `path` through `outcome`, after the document buffer was
-	/// edited in place. Covers the reading position, the navigation history, the temporary
-	/// bookmark, and every bookmark range.
-	///
-	/// Without this, editing the buffer silently drifts all of them: they are document
-	/// positions, so inserting OCR text on page 40 moves everything after it. OCR is the
-	/// only thing that mutates a parsed document today, and it goes through here.
+	/// Inserting OCR text on page 40 moves every stored position after it, so they would all drift without this.
 	pub fn shift_document_positions(&self, path: &str, outcome: &ReplaceOutcome) {
 		if !self.initialized || outcome.is_empty() {
 			return;
@@ -51,8 +42,7 @@ impl ConfigManager {
 		self.dirty.set(true);
 	}
 
-	/// Records how far into its narration an audio document had played. `None` leaves any
-	/// stored value alone, so a document that hasn't started playing can't wipe it.
+	/// `None` leaves the stored value alone, so a document that hasn't started playing can't wipe it.
 	pub fn set_document_audio_time(&self, path: &str, time_ms: Option<u64>) {
 		if !self.initialized {
 			return;
@@ -84,14 +74,12 @@ impl ConfigManager {
 		self.data.borrow().documents.get(&key).map_or(DocPos::ZERO, |d| d.last_position)
 	}
 
-	/// The saved position, when there is one past the start and no further than `max_position`.
 	#[must_use]
 	pub fn get_validated_document_position(&self, path: &str, max_position: DocPos) -> Option<DocPos> {
 		let saved = self.get_document_position(path);
 		(saved > DocPos::ZERO && saved <= max_position).then_some(saved)
 	}
 
-	/// Sets the single per-document temporary bookmark position (`None` clears it).
 	pub fn set_temporary_bookmark(&self, path: &str, position: Option<DocPos>) {
 		if !self.initialized {
 			return;
@@ -134,7 +122,7 @@ impl ConfigManager {
 		}
 		let key = self.get_doc_key(path);
 		if let Some(doc) = self.data.borrow().documents.get(&key) {
-			nav.positions = doc.navigation_history.clone();
+			nav.positions.clone_from(&doc.navigation_history);
 			nav.index = doc.navigation_history_index;
 		}
 		nav
@@ -160,6 +148,27 @@ impl ConfigManager {
 		self.data.borrow().documents.get(&key).map(|d| d.format.clone()).unwrap_or_default()
 	}
 
+	pub fn set_document_speech(&self, path: &str, speech: &DocumentSpeech) {
+		if !self.initialized {
+			return;
+		}
+		{
+			let key = self.get_doc_key(path);
+			let mut data = self.data.borrow_mut();
+			Self::doc_entry_mut(&mut data, key, path).speech = speech.clone();
+		}
+		self.dirty.set(true);
+	}
+
+	#[must_use]
+	pub fn get_document_speech(&self, path: &str) -> DocumentSpeech {
+		if !self.initialized {
+			return DocumentSpeech::default();
+		}
+		let key = self.get_doc_key(path);
+		self.data.borrow().documents.get(&key).map(|d| d.speech.clone()).unwrap_or_default()
+	}
+
 	pub fn set_document_password(&self, path: &str, password: &str) {
 		if !self.initialized {
 			return;
@@ -180,7 +189,6 @@ impl ConfigManager {
 		self.data.borrow().documents.get(&key).map(|d| d.password.clone()).unwrap_or_default()
 	}
 
-	/// Records the file name and size in bytes of the last download of the document at the link `path`.
 	pub fn set_document_download(&self, path: &str, name: &str, size: u64) {
 		if !self.initialized {
 			return;
@@ -265,8 +273,6 @@ mod tests {
 		assert_eq!(config.get_document_audio_time(path), Some(24_800_000));
 	}
 
-	/// A player that hasn't established a position yet reports `None`, and that must not wipe
-	/// the stored time, since otherwise merely opening a book would discard where it was up to.
 	#[test]
 	fn audio_time_none_does_not_clear_a_stored_value() {
 		let mut config = ConfigManager::new();

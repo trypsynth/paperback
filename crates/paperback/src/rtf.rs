@@ -1,11 +1,4 @@
-//! Builds a minimal RTF document from plain text plus a set of non-overlapping
-//! bold/italic/underline spans and the heading and list paragraphs a screen reader
-//! reports, for the Windows RTF fast path in
-//! `document_manager`. See `apply_formatting_markers_to_ctrl_from_segments` for why this
-//! exists: the native `RichEdit` control backing a `wxTE_RICH2` `TextCtrl`
-//! special-cases `WM_SETTEXT`. Text starting with `{\rtf` is parsed as RTF in
-//! one shot instead of literal text, which is far cheaper than issuing one
-//! `SetStyle` call per formatting span on documents with thousands of them.
+//! `RichEdit` parses text starting with `{\rtf` in one shot, far cheaper than one `SetStyle` call per span on documents with thousands of them.
 
 use std::{borrow::Cow, fmt::Write as _};
 
@@ -13,27 +6,8 @@ use paperback_core::{document::DocPos, session::ParagraphFormat};
 
 use crate::text_format::FormatSegment;
 
-/// Replaces every character `RichEdit` silently discards instead of storing with a space, so
-/// its buffer holds exactly one of its units for each of `content`. Borrows unchanged
-/// when there is nothing to replace, which is the overwhelmingly common case.
-///
-/// Every position the app hands the control is an offset into that buffer - the caret, a
-/// bookmark, a heading jump, the document-absolute translation in `text_window` - so a
-/// character that vanishes on the way in shifts everything after it by one and quietly breaks
-/// all of them. Sweeping the entire BMP through [`build_rtf`] + `EM_STREAMIN` and comparing
-/// `RichEdit`'s own reported buffer length found exactly one discarded range, the tail of the
-/// Unicode Specials block: the interlinear annotation marks, the object replacement character,
-/// the replacement character, and the two noncharacters. Nothing else in the BMP is dropped,
-/// and no astral character is.
-///
-/// A space is what `wxTextCtrl::SetValue` - the non-RTF path the caller falls back to - already
-/// substitutes for these, so both paths leave identical text in the control.
-///
-/// U+FFFD is the one that turns up in practice: it is what every decoder emits for malformed
-/// input, so any document that discusses or demonstrates broken encodings is littered with
-/// them. Before this, one such character anywhere in a window made the round-trip check fail on
-/// every single load of that window and fall back to issuing one `SetStyle` call per formatting
-/// span - seconds rather than milliseconds.
+/// `RichEdit` silently drops U+FFF9..=U+FFFF (found by sweeping the whole BMP through `EM_STREAMIN`), shifting every offset after them; a space is what `wxTextCtrl::SetValue` substitutes.
+/// U+FFFD from malformed input is the common one: it used to fail the round-trip check on every load and fall back to per-span `SetStyle`, taking seconds.
 #[must_use]
 pub fn sanitize_for_rich_edit(content: &str) -> Cow<'_, str> {
 	if content.chars().any(is_discarded_by_rich_edit) {
@@ -43,7 +17,6 @@ pub fn sanitize_for_rich_edit(content: &str) -> Cow<'_, str> {
 	}
 }
 
-/// U+FFF9..=U+FFFF - see [`sanitize_for_rich_edit`] for how this range was established.
 const fn is_discarded_by_rich_edit(ch: char) -> bool {
 	matches!(ch, '\u{FFF9}'..='\u{FFFF}')
 }
@@ -61,19 +34,13 @@ struct ActiveStyle {
 	underline: bool,
 }
 
-/// `RichEdit` maps these names, and only these, to its built-in heading styles, which is what a
-/// screen reader reading the control through the Text Object Model sees. Declaring a style
-/// changes nothing on screen: the stylesheet entries carry no formatting.
+/// `RichEdit` maps only these names to its built-in heading styles, which a screen reader sees through the Text Object Model; they carry no formatting.
 const STYLESHEET: &str = "{\\stylesheet{\\s0 Normal;}{\\s1 heading 1;}{\\s2 heading 2;}{\\s3 heading 3;}{\\s4 heading 4;}{\\s5 heading 5;}{\\s6 heading 6;}}\n";
 
-/// A list item for which `RichEdit` draws no bullet or number, as its own RTF writer encodes one:
-/// Paperback's bullets and numbers are already part of the text.
+/// Encoded as `RichEdit`'s own writer does a list item with no drawn bullet, since Paperback's bullets are already in the text.
 const LIST_ITEM_WITHOUT_MARKER: &str = "{\\*\\pn\\pnlvlcont\\pnindent0{\\pntxtb\\'B7}}";
 
-/// `segments` must be the already-merged, non-overlapping, start-sorted output of
-/// `merge_formatting_markers`, and `paragraphs` likewise sorted and non-overlapping. Both are
-/// walked with a single forward cursor, so overlapping entries would silently shadow one another
-/// instead of combining.
+/// Both slices are walked with one forward cursor, so they must be sorted and non-overlapping or entries shadow each other instead of combining.
 #[must_use]
 pub fn build_rtf(
 	content: &str,
@@ -93,8 +60,7 @@ pub fn build_rtf(
 	let mut seg_idx = 0;
 	let mut current = ActiveStyle::default();
 	let mut paragraph_idx = 0;
-	// Paragraph properties carry over each `\par` until the next `\pard`, so they are only
-	// written where they change.
+	// Paragraph properties carry over each `\par` until the next `\pard`, so they're only written where they change.
 	let mut current_paragraph = (None, false);
 	let mut at_paragraph_start = true;
 	for (position, ch) in (0..).map(DocPos::from_raw).zip(content.chars()) {
@@ -125,7 +91,7 @@ pub fn build_rtf(
 			seg_idx += 1;
 		}
 		let active = segments.get(seg_idx).filter(|s| s.start <= position && position < s.end);
-		let style = active.map_or(ActiveStyle::default(), |s| ActiveStyle {
+		let style = active.map_or_else(ActiveStyle::default, |s| ActiveStyle {
 			bold: s.bold,
 			italic: s.italic,
 			underline: s.underline,
@@ -149,12 +115,7 @@ pub fn build_rtf(
 	out
 }
 
-/// [`build_rtf`] for an RTF stream that replaces everything the control holds, as
-/// `stream_rtf_into_ctrl` does; text appended after existing content uses [`build_rtf`] itself.
-///
-/// `RichEdit` takes the last paragraph mark of a replacing stream as the end of its story and
-/// stores nothing for it. A window ending in one would then load a unit short, and text
-/// appended to it later would run into its last paragraph. One more paragraph mark keeps it.
+/// `RichEdit` stores nothing for a replacing stream's last paragraph mark, so a window ending in one loaded a unit short and appended text ran into its last paragraph.
 #[must_use]
 pub fn build_rtf_for_whole_control(
 	content: &str,
@@ -187,8 +148,7 @@ fn append_escaped_char(ch: char, out: &mut String) {
 		'\\' => out.push_str("\\\\"),
 		'{' => out.push_str("\\{"),
 		'}' => out.push_str("\\}"),
-		// A lone \r (or the \r of a \r\n pair) contributes no visible glyph;
-		// the \n that follows (or stands alone) emits the paragraph break.
+		// The \n of a \r\n pair emits the paragraph break.
 		'\r' => {}
 		'\n' => out.push_str("\\par\n"),
 		'\t' => out.push_str("\\tab "),
@@ -196,14 +156,9 @@ fn append_escaped_char(ch: char, out: &mut String) {
 		c => {
 			let mut buf = [0u16; 2];
 			for unit in c.encode_utf16(&mut buf) {
-				// RTF \u takes a signed 16-bit value; surrogate halves (and any
-				// unit >= 0x8000) must be encoded as negative.
+				// RTF \u takes a signed 16-bit value.
 				let signed = if *unit > 0x7fff { i32::from(*unit) - 0x1_0000 } else { i32::from(*unit) };
-				// Every \u escape must be followed by exactly one fallback
-				// character for readers that don't understand \u (\uc1 in the
-				// header declares that count as 1). Writing it as \'3f (hex for
-				// '?') rather than a literal '?' keeps it unambiguously delimited
-				// from adjacent plain text for any hex-escape-aware RTF reader.
+				// \uc1 in the header promises one fallback character per \u; \'3f rather than a literal ? keeps it delimited from adjacent text.
 				let _ = write!(out, "\\u{signed}\\'3f");
 			}
 		}
@@ -225,7 +180,6 @@ mod tests {
 		RtfFontInfo { face_name: "Segoe UI".to_string(), point_size: 10 }
 	}
 
-	/// Parses `rtf` with paperback-core's own `RtfParser`, through a temporary file named after `test`.
 	fn parse_back(rtf: &str, test: &str) -> Document {
 		let path = env::temp_dir().join(format!("{test}_{}.rtf", process::id()));
 		fs::write(&path, rtf).expect("write temp RTF file");
@@ -246,7 +200,6 @@ mod tests {
 
 	#[test]
 	fn sanitize_replaces_the_characters_rich_edit_discards() {
-		// U+FFFD is the one that matters in practice - see `sanitize_for_rich_edit`.
 		let content = "Before: r\u{FFFD}sum\u{FFFD}";
 		assert_eq!(sanitize_for_rich_edit(content), "Before: r sum ");
 	}
@@ -264,8 +217,7 @@ mod tests {
 
 	#[test]
 	fn sanitize_leaves_the_neighbouring_specials_alone() {
-		// The sweep that established the range found these stored faithfully; replacing them
-		// would be a silent, pointless downgrade of the text.
+		// The sweep that found the range showed `RichEdit` stores these faithfully.
 		let content = "a\u{FFF8}b\u{FFF0}c";
 		assert!(matches!(sanitize_for_rich_edit(content), Cow::Borrowed(_)));
 	}
@@ -302,13 +254,12 @@ mod tests {
 	#[test]
 	fn bmp_non_ascii_char_is_unicode_escaped() {
 		let rtf = build_rtf("caf\u{e9}", &[], &[], &font());
-		// 'é' is U+00E9, fits in one UTF-16 unit, well under 0x8000.
 		assert!(rtf.contains("\\u233\\'3f"));
 	}
 
 	#[test]
 	fn astral_char_emits_two_surrogate_escapes() {
-		// U+1F600 GRINNING FACE, outside the BMP: encodes as a UTF-16 surrogate pair.
+		// Outside the BMP, so a surrogate pair.
 		let rtf = build_rtf("\u{1f600}", &[], &[], &font());
 		assert!(rtf.contains("\\u-10179\\'3f\\u-8704\\'3f"));
 	}
@@ -325,18 +276,12 @@ mod tests {
 
 	#[test]
 	fn adjacent_segments_with_different_combined_styles_both_apply() {
-		// Mirrors what merge_formatting_markers would emit for a bold span
-		// overlapped by an italic span from position 5 onward: two adjacent,
-		// non-overlapping runs, the second carrying both styles. Bold only
-		// needs to toggle on once since it stays active across both runs;
-		// only italic toggles at the second boundary.
 		let text = "bold italic both";
 		let segments = [seg(0, 5, true, false, false), seg(5, 17, true, true, false)];
 		let rtf = build_rtf(text, &segments, &[], &font());
 		let bold_on = rtf.find("\\b ").unwrap();
 		let italic_on = rtf.find("\\i ").unwrap();
 		assert!(bold_on < italic_on);
-		// Bold never closes because it's active through the end of the text.
 		assert!(!rtf.contains("\\b0 "));
 	}
 
@@ -362,7 +307,6 @@ mod tests {
 		ParagraphFormat { start: DocPos::from_raw(start), end: DocPos::from_raw(end), heading_level, list_item }
 	}
 
-	/// Only the built-in style names make `RichEdit` report a paragraph as a heading.
 	#[test]
 	fn stylesheet_names_the_built_in_heading_styles() {
 		let rtf = build_rtf("x", &[], &[], &font());
@@ -407,12 +351,7 @@ mod tests {
 		assert_eq!(parse_back(&rtf, "rtf_paragraph_roundtrip_test").buffer.content, text);
 	}
 
-	/// Independent black-box check: run generated RTF through paperback-core's
-	/// own `RtfParser` (used for *reading* .rtf files) and confirm the plain
-	/// text and bold/italic/underline spans it extracts match what went in.
-	/// This doesn't exercise the real fast path (that's native `RichEdit`, not
-	/// this crate's parser), but it does catch escaping bugs independently of
-	/// hand-checking the raw RTF string.
+	/// Not the real fast path, which is native `RichEdit`, but it catches escaping bugs without hand-checking raw RTF.
 	#[test]
 	fn round_trips_through_paperback_cores_own_rtf_parser() {
 		use paperback_core::document::MarkerType;

@@ -1,7 +1,3 @@
-//! MOBI/KF8 NCX table-of-contents parsing: reads the book's NCX index through
-//! [`super::index`], which walks Mobipocket's generic tagged-index format, and turns its
-//! entries into a hierarchical table of contents.
-
 use std::collections::HashMap;
 
 use super::index::{IndexEntry, read_index};
@@ -19,7 +15,6 @@ const TAG_LEVEL: u8 = 4;
 /// Tag giving a fragment number and a position within it, in that order.
 const TAG_FRAGMENT: u8 = 6;
 
-/// An entry's first value for `tag`, when it carries one.
 fn value(entry: &IndexEntry, tag: u8) -> Option<usize> {
 	entry.tags.get(&tag)?.first().copied()
 }
@@ -32,15 +27,12 @@ pub(super) fn parse_ncx(
 	_is_kf8: bool,
 	frag_offsets: &HashMap<usize, usize>,
 ) -> Vec<TocItem> {
-	// The NCX's index record number is the field at 0xF4 of record 0, which is 228 bytes into the
-	// MOBI header that follows record 0's first sixteen. It is the same field whether or not the
-	// book is KF8. Reading a different one for the older books cost them their chapters: a novel
-	// whose index record sat waiting at 228 came back with no table of contents at all, and one
-	// whose header stopped short of 248 was not even looked at.
-	let mut ncx_index = 0xFFFF_FFFF;
-	if mobi_header.len() >= 232 {
-		ncx_index = u32::from_be_bytes(mobi_header[228..232].try_into().unwrap_or([0; 4])) as usize;
-	}
+	// The NCX index is the field at 0xF4 of record 0, 228 bytes into the MOBI header, whether or not the book is KF8; reading a different field for older books cost a novel its whole table of contents.
+	let mut ncx_index = if mobi_header.len() >= 232 {
+		u32::from_be_bytes(mobi_header[228..232].try_into().unwrap_or([0; 4])) as usize
+	} else {
+		0xFFFF_FFFF
+	};
 	if (ncx_index == 0xFFFF_FFFF || ncx_index == 0)
 		&& let Some(ext) = exth.get(&253)
 		&& ext.len() >= 4
@@ -53,8 +45,7 @@ pub(super) fn parse_ncx(
 	let Some(index) = read_index(data, records, ncx_index) else { return Vec::new() };
 	let mut entries = Vec::new();
 	for entry in &index.entries {
-		// Tag 1 gives a position on its own; tag 6 gives a fragment and a position together
-		// and wins where both are present, which is how KF8 books point into a fragment.
+		// Tag 6 wins over tag 1 where both are present, since that is how KF8 books point into a fragment.
 		let mut position = value(entry, TAG_POSITION);
 		let mut fragment = None;
 		if let Some(values) = entry.tags.get(&TAG_FRAGMENT) {
@@ -65,10 +56,8 @@ pub(super) fn parse_ncx(
 		}
 		let (Some(title_offset), Some(position)) = (value(entry, TAG_TITLE), position) else { continue };
 		let Some(title) = index.string_at(title_offset) else { continue };
-		// A fragment's own start has to be added back, since the position is measured from
-		// inside it rather than from the top of the book.
+		// The position is measured from inside the fragment, so its start is added back.
 		let filepos = frag_offsets.get(&fragment.unwrap_or(0)).copied().unwrap_or(0) + position;
-		// An entry with no depth of its own sits at the top level.
 		let level = match value(entry, TAG_LEVEL) {
 			Some(0) | None => 1,
 			Some(level) => u32::try_from(level).unwrap_or(1),

@@ -1,7 +1,3 @@
-//! The picture under the caret: finding the image or figure there, and reading its bytes out of
-//! wherever the document keeps them, unchanged. Saving one writes those bytes to a file; reading
-//! the text off one hands them to the OCR engine.
-
 use std::{
 	fs::{self, File},
 	io::BufReader,
@@ -34,36 +30,23 @@ const LENIENT_BASE64: GeneralPurpose = GeneralPurpose::new(
 );
 
 impl DocumentSession {
-	/// The file name to offer when saving the image at `position`, or `None` when there is no image there whose picture can be saved.
 	#[must_use]
 	pub fn image_file_name_at(&self, position: DocPos) -> Option<String> {
 		self.image_source_at(position).map(|source| image_file_name(&source))
 	}
 
-	/// Writes the picture of the image at `position` to `output_path`.
-	///
-	/// # Errors
-	///
-	/// Returns an error when there is no saveable image at `position`, or its picture cannot be read or written.
 	pub fn save_image(&self, position: DocPos, output_path: &str) -> Result<()> {
 		let bytes = self.image_bytes_at(position)?;
 		fs::write(output_path, bytes).with_context(|| format!("failed to write '{output_path}'"))
 	}
 
-	/// The picture of the image at `position`, as the bytes the document stores it in.
-	///
-	/// Both saving a picture and reading the text off one go through here, so the two agree about
-	/// which picture the caret is on.
-	///
-	/// # Errors
-	///
-	/// Returns an error when there is no image at `position`, or its picture cannot be read.
+	/// Saving a picture and reading the text off one both go through here, so they agree about which picture the caret is on.
 	pub fn image_bytes_at(&self, position: DocPos) -> Result<Vec<u8>> {
 		let source = self.image_source_at(position).context("no image at this position")?;
 		self.image_bytes(&source)
 	}
 
-	/// Where the picture of the image or figure at `position` lives. A described image covers its placeholder text; a picture page carries no length and covers its whole line.
+	/// A described image covers its placeholder text; a picture page carries no length and covers its whole line.
 	fn image_source_at(&self, position: DocPos) -> Option<String> {
 		let pos = position.min(self.handle.document().buffer.end());
 		let (line_start, line_end) = self.line_bounds_at(pos)?;
@@ -97,7 +80,7 @@ impl DocumentSession {
 				.map(<[u8]>::to_vec)
 				.context("the book has no such picture");
 		}
-		// A PDF names its pictures by where their objects sit rather than by a file path, so the reference itself says which reader they need and the document's extension cannot.
+		// A PDF names pictures by where their objects sit, so the reference, not the extension, says which reader they need.
 		if source.starts_with("pdf:") {
 			let (page_index, path) = parse_pdf_image_reference(source)?;
 			let password = (!self.password.is_empty()).then_some(self.password.as_str());
@@ -131,7 +114,7 @@ impl DocumentSession {
 	}
 }
 
-/// A document read from disk names its pictures relative to itself, the way a browser would resolve them.
+/// Resolved relative to the document, as a browser would.
 fn local_image_path(document_path: &str, source: &str) -> std::path::PathBuf {
 	let source = source.split(['#', '?']).next().unwrap_or_default();
 	let source = url_decode(source);
@@ -143,7 +126,7 @@ fn local_image_path(document_path: &str, source: &str) -> std::path::PathBuf {
 	Path::new(document_path).parent().unwrap_or_else(|| Path::new("")).join(source)
 }
 
-/// The page and content-stream path a PDF image marker's reference names, which the parser writes as `pdf:<page>:<path>`.
+/// The parser writes these as `pdf:<page>:<path>`.
 fn parse_pdf_image_reference(source: &str) -> Result<(i32, String)> {
 	let mut parts = source.splitn(3, ':');
 	let bad = || anyhow::anyhow!("malformed pdf image reference");
@@ -165,7 +148,6 @@ fn strip_whitespace(text: &str) -> String {
 	text.chars().filter(|c| !c.is_ascii_whitespace()).collect()
 }
 
-/// The name a picture is offered under: the last part of its path, or for one carried inline, a generic name with the extension its media type implies.
 fn image_file_name(source: &str) -> String {
 	// TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 	let fallback = t("image");
@@ -190,7 +172,7 @@ fn image_file_name(source: &str) -> String {
 	if name.is_empty() { fallback } else { name }
 }
 
-/// The name a PDF picture is offered under: the page it was found on, and where it sat in that page's content stream, so a second picture from the same book does not land on the first.
+/// Named by page and content-stream path, so a second picture from the same book does not land on the first.
 fn pdf_image_file_name(source: &str, fallback: &str) -> String {
 	let Some((page, path)) = source.strip_prefix("pdf:").and_then(|rest| rest.split_once(':')) else {
 		return format!("{fallback}.png");

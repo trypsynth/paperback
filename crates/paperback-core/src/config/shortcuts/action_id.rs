@@ -1,6 +1,3 @@
-//! [`ActionId`] names every user-triggerable action and supplies its category, display name,
-//! and default key chord.
-
 use super::{KeyChord, ShortcutCategory};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
@@ -535,6 +532,7 @@ impl ActionId {
 		}
 	}
 
+	#[allow(clippy::match_same_arms, reason = "one action per line reads better as a table than arms merged by chord")]
 	pub fn default_chord(self) -> Option<KeyChord> {
 		#[cfg(target_os = "macos")]
 		match self {
@@ -612,8 +610,7 @@ impl ActionId {
 			Self::ViewSource => Some(KeyChord::new(true, false, false, "U")),
 			Self::ToggleBookmark => Some(KeyChord::new(true, false, true, "B")),
 			Self::BookmarkWithNote => Some(KeyChord::new(true, false, true, "N")),
-			// Option+F9/F10 is a media key chord on an Apple keyboard, and the system eats it
-			// before wx sees it, so the Cmd forms are what actually reach the app here.
+			// Option+F9/F10 is a media key on Apple keyboards and the system eats it before wx sees it.
 			Self::SetSelectionStart => Some(KeyChord::new(true, false, false, "F9")),
 			Self::CopyFromSelectionStart => Some(KeyChord::new(true, false, false, "F10")),
 			Self::JumpToSelectionStart => Some(KeyChord::new(true, false, true, "F9")),
@@ -623,15 +620,13 @@ impl ActionId {
 			Self::SeekAudioBackward => Some(KeyChord::new(false, false, false, ";")),
 			Self::IncreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, "'")),
 			Self::DecreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, ";")),
-			// Plain Shift+,/. (< and >) are already Container Start/End, so speed takes the
-			// same pair with Ctrl added.
+			// Shift+, and Shift+. are already Container Start/End, so speed adds Ctrl.
 			Self::IncreaseAudioSpeed => Some(KeyChord::new(true, false, true, ".")),
 			Self::DecreaseAudioSpeed => Some(KeyChord::new(true, false, true, ",")),
 			// Next to seek on ' and ;, which Shift turns into the seek amount.
 			Self::IncreaseAudioVolume => Some(KeyChord::new(true, false, false, "'")),
 			Self::DecreaseAudioVolume => Some(KeyChord::new(true, false, false, ";")),
-			// The conventional shortcut is Control+Command+F; RawCtrl forces the
-			// physical Control key while plain Ctrl auto-translates to Command on mac.
+			// The conventional Control+Command+F; raw_ctrl forces the physical Control key, since plain Ctrl becomes Command on mac.
 			Self::ToggleFullScreen => Some(KeyChord {
 				ctrl: true,
 				raw_ctrl: true,
@@ -732,8 +727,7 @@ impl ActionId {
 			Self::ViewSource => Some(KeyChord::new(true, false, false, "U")),
 			Self::ToggleBookmark => Some(KeyChord::new(true, false, true, "B")),
 			Self::BookmarkWithNote => Some(KeyChord::new(true, false, true, "N")),
-			// Shift+F10 is the context menu (and Windows' context-menu key), so this pair is on
-			// Alt instead, which is free apart from Alt+Left/Right in the navigation history.
+			// Shift+F10 is the context menu, so this pair is on Alt instead.
 			Self::SetSelectionStart => Some(KeyChord::new(false, true, false, "F9")),
 			Self::CopyFromSelectionStart => Some(KeyChord::new(false, true, false, "F10")),
 			Self::JumpToSelectionStart => Some(KeyChord::new(false, true, true, "F9")),
@@ -743,8 +737,7 @@ impl ActionId {
 			Self::SeekAudioBackward => Some(KeyChord::new(false, false, false, ";")),
 			Self::IncreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, "'")),
 			Self::DecreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, ";")),
-			// Plain Shift+,/. (< and >) are already Container Start/End, so speed takes the
-			// same pair with Ctrl added.
+			// Shift+, and Shift+. are already Container Start/End, so speed adds Ctrl.
 			Self::IncreaseAudioSpeed => Some(KeyChord::new(true, false, true, ".")),
 			Self::DecreaseAudioSpeed => Some(KeyChord::new(true, false, true, ",")),
 			// Next to seek on ' and ;, which Shift turns into the seek amount.

@@ -42,8 +42,7 @@ final class FindPlaybackTests: XCTestCase {
 		return reading
 	}
 
-	// Deliver the same state and callback as a completed audio buffer without waiting
-	// for real speech, keeping navigation and continuation assertions deterministic.
+	// Stands in for a completed audio buffer so the assertions don't wait on real speech.
 	private func finishUtterance(_ reading: ReadingController) {
 		reading.ttsManager.isSpeaking = false
 		reading.ttsManager.isPaused = false

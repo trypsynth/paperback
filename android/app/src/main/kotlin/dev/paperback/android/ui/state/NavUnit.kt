@@ -4,25 +4,14 @@ import dev.paperback.android.nt
 import dev.paperback.android.t
 import uniffi.paperback.SegmentTypeFfi
 
-/**
- * Seek amounts offered as navigation units for documents with recorded audio, in seconds.
- * Mirrors desktop's `dialogs::AUDIO_SEEK_AMOUNTS_SECONDS` so the shared
- * `audio_seek_amount_seconds` setting means the same thing on both platforms.
- */
+/** Mirrors desktop's `dialogs::AUDIO_SEEK_AMOUNTS_SECONDS` so the shared `audio_seek_amount_seconds` setting means the same on both. */
 val AUDIO_SEEK_AMOUNTS_SECONDS = listOf(5, 10, 30, 60, 120, 300, 600, 1800, 3600)
 
-/**
- * What the previous/next controls move by. Text documents step through structural units
- * (paragraph, heading, and friends); recorded audio steps through elapsed time instead, since
- * an audiobook that is just a bundle of narration files has no text spine to walk.
- */
 sealed interface NavUnit {
 	data class Segment(val type: SegmentTypeFfi) : NavUnit
 
 	data class Time(val seconds: Int) : NavUnit
 
-	/** Steps through matches of the active Find query instead of a structural unit or elapsed
-	 * time. Only offered while a search is active; see `MainScreen`'s nav-unit list building. */
 	data object Find : NavUnit
 }
 
@@ -150,7 +139,6 @@ fun getNavUnitName(unit: NavUnit): String = when (unit) {
 	is NavUnit.Find -> t("Find")
 }
 
-/** "1:23" or "1:02:03": the shortest form that still reads unambiguously. */
 fun formatDuration(ms: Long): String {
 	val totalSeconds = (ms.coerceAtLeast(0L) + 500L) / 1000L
 	val hours = totalSeconds / 3600

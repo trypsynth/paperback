@@ -1,14 +1,8 @@
-//! Pre-processing raw RTF text before it reaches `rtf_parser`'s lexer: normalizing
-//! hard-wrapped inter-word spaces, and rewriting `\'xx`/`\uN` escapes and literal tabs into
-//! forms the lexer tokenizes correctly (see [`normalize_escapes`] for the full rationale).
-
 use std::{borrow::Cow, collections::HashMap, fmt::Write as _, str};
 
 use encoding_rs::Encoding;
 
-/// RTF is 7-bit, but plenty of writers put text bytes in raw, in the document codepage. As `\'xx`
-/// escapes they decode under whichever font is active, like the escapes the spec asks for. Valid
-/// UTF-8 is left as it is: a codepage byte run practically never validates.
+/// Plenty of writers put raw codepage bytes in 7-bit RTF; as `\'xx` escapes they decode under the active font. Valid UTF-8 is left alone, since a codepage byte run practically never validates.
 pub(super) fn escape_raw_bytes(bytes: &[u8]) -> Cow<'_, str> {
 	if let Ok(text) = str::from_utf8(bytes) {
 		return Cow::Borrowed(text);
@@ -24,9 +18,7 @@ pub(super) fn escape_raw_bytes(bytes: &[u8]) -> Cow<'_, str> {
 	Cow::Owned(out)
 }
 
-/// Some writers hard-wrap lines and occasionally place an inter-word space on
-/// its own line (`word\r\n \r\nnext`). Preserve that as a single space so words
-/// don't get merged by downstream tokenization.
+/// Some writers hard-wrap an inter-word space onto its own line (`word\r\n \r\nnext`), which must stay a space or the words merge.
 pub(super) fn normalize_wrapped_space_lines(input: &str) -> String {
 	let mut out = String::with_capacity(input.len());
 	let bytes = input.as_bytes();
@@ -45,12 +37,7 @@ pub(super) fn normalize_wrapped_space_lines(input: &str) -> String {
 					.get(k)
 					.copied()
 					.is_some_and(|b| !b.is_ascii_whitespace() && !matches!(b, b'\\' | b'{' | b'}'));
-				// Only a run that really does stand for an inter-word space is swallowed. Every
-				// other one is left as it was: a line break carries meaning of its own in RTF,
-				// and dropping the one after a lone backslash (how a Cocoa writer ends a
-				// paragraph) leaves that backslash against the next control word, where the two
-				// read as an escaped backslash and the control word lands in the text as
-				// literal \f0.
+				// Only a run standing for an inter-word space is swallowed: dropping the break after a lone backslash (a Cocoa paragraph end) left it against the next control word, so the two read as an escaped backslash and a literal \f0 landed in the text.
 				if left && right && !out.ends_with(' ') {
 					out.push(' ');
 					i = k;
@@ -85,15 +72,8 @@ fn consume_line_break(bytes: &[u8], idx: &mut usize) -> bool {
 	}
 }
 
-/// Terminates a control word left open at the end of `out` by pushing the space that
-/// delimits it.
-///
-/// In the source, the backslash of a following escape is what ended the control word:
-/// `{\leveltext\'01-;}`. Once that escape is replaced with the character it stands for, the
-/// control word runs straight into it, and the lexer, which ends a control word only at
-/// whitespace, reads `\leveltext` plus the decoded byte and the `-` after it as one word and
-/// fails on the `-` as a numeric parameter. Word writes exactly this for every dash-bulleted
-/// list, so the whole document would refuse to open.
+/// Once the escape that ended a control word (`{\leveltext\'01-;}`) is decoded, the lexer, which ends control words only at whitespace, fails on the `-` as a numeric parameter.
+/// Word writes this for every dash-bulleted list, so the whole document refused to open.
 fn end_open_control_word(out: &mut String) {
 	let bytes = out.as_bytes();
 	let mut start = bytes.len();
@@ -103,16 +83,14 @@ fn end_open_control_word(out: &mut String) {
 	if start == bytes.len() || start == 0 || !bytes[start].is_ascii_alphabetic() {
 		return;
 	}
-	// An odd run of backslashes before the letters starts a control word; an even run is
-	// escaped backslashes followed by ordinary text.
+	// An odd run of backslashes before the letters starts a control word; an even run is escaped backslashes followed by ordinary text.
 	let backslashes = bytes[..start].iter().rev().take_while(|&&b| b == b'\\').count();
 	if backslashes % 2 == 1 {
 		out.push(' ');
 	}
 }
 
-/// Reads an RTF numeric parameter at `start`, allowing the leading `-` that `\uN`
-/// uses for codepoints above 0x7FFF. Returns the index just past the last digit.
+/// Allows the leading `-` that `\uN` uses for codepoints above 0x7FFF.
 fn read_param_end(bytes: &[u8], start: usize) -> Option<usize> {
 	let mut j = start;
 	if bytes.get(j) == Some(&b'-') {
@@ -125,20 +103,10 @@ fn read_param_end(bytes: &[u8], start: usize) -> Option<usize> {
 	(j > digits_start).then_some(j)
 }
 
-/// Skips the ANSI fallback characters that follow a `\uN` escape, starting at the
-/// index just past its parameter digits.
-///
-/// Each `\uN` is trailed by `uc` characters spelling the same character in the
-/// document codepage, which a reader that understands `\uN` must discard. Only the
-/// two forms that actually appear in the wild are recognised: a `\'xx` hex escape
-/// (`LibreOffice`) and a literal `?` (Word and most ebook converters). Anything else
-/// is left where it is, since writers that disagree with their own `\ucN` are commoner
-/// than exotic fallbacks, and swallowing real text is far worse than leaving a
-/// stray character behind.
+/// Only the fallbacks seen in the wild are skipped, a `\'xx` escape (`LibreOffice`) and a literal `?` (Word and most ebook converters): writers that disagree with their own `\ucN` are commoner than exotic fallbacks, and swallowing real text is far worse than a stray character.
 fn skip_unicode_fallback(bytes: &[u8], mut i: usize, uc: usize) -> usize {
 	for _ in 0..uc {
-		// A hex escape is unambiguously fallback, even across the space that
-		// delimits the control word.
+		// A hex escape is unambiguously fallback, even across the space that delimits the control word.
 		let mut j = i;
 		while bytes.get(j) == Some(&b' ') {
 			j += 1;
@@ -151,9 +119,7 @@ fn skip_unicode_fallback(bytes: &[u8], mut i: usize, uc: usize) -> usize {
 			i = j + 4;
 			continue;
 		}
-		// A bare `?` counts only when it sits directly against the previous
-		// character, where it cannot be document text: something has to terminate
-		// the parameter digits, and the `?` is doing that job.
+		// A bare `?` counts only directly against the digits, where it cannot be document text: it is what terminates the parameter.
 		if bytes.get(i) == Some(&b'?') {
 			i += 1;
 			continue;
@@ -163,27 +129,9 @@ fn skip_unicode_fallback(bytes: &[u8], mut i: usize, uc: usize) -> usize {
 	i
 }
 
-/// Pre-processes RTF text so the lexer sees escapes it can tokenize correctly.
-///
-/// `\'xx` hex escapes are replaced with their correctly decoded UTF-8 characters.
-/// This resolves the ambiguity between `\'xx` (codepage byte) and `\uN` (Unicode)
-/// escapes before the lexer sees them, since the `rtf_parser` crate conflates both
-/// into `ControlWord::Unicode`.
-///
-/// Structural ASCII escapes (`\'7b`, `\'7d`, `\'5c`) are left intact so the lexer
-/// still handles escaped `{`, `}`, and `\` correctly.
-///
-/// `\uN` escapes are rewritten as space-delimited control words with their ANSI
-/// fallback dropped. `rtf_parser` ends a control word at the first whitespace, so
-/// Word's `Majesty\uNNNN?s First` would otherwise lex as one unknown control word
-/// running from the backslash to the space, losing both the apostrophe and the `s`.
-///
-/// Literal tab characters become `\tab` control words, since the lexer trims
-/// whitespace off its slices and would otherwise drop them.
-///
-/// Tracks `\fN` control words to use the charset declared for each font in the
-/// font table, so that Central-European or other non-Latin characters encoded as
-/// `\'xx` bytes decode correctly even when the document-level `\ansicpg` differs.
+/// `rtf_parser` conflates `\'xx` and `\uN` into `ControlWord::Unicode`, so hex escapes are decoded here, except `\'7b`, `\'7d` and `\'5c`, which the lexer must still see as escaped braces and backslash.
+/// The lexer ends a control word only at whitespace, so `\uN` gets a delimiting space and loses its fallback; Word's `Majesty\uNNNN?s First` otherwise lost both the apostrophe and the `s`.
+/// Literal tabs become `\tab`, since the lexer trims whitespace off its slices.
 pub(super) fn normalize_escapes(
 	rtf: &str,
 	encoding: &'static Encoding,
@@ -194,20 +142,17 @@ pub(super) fn normalize_escapes(
 	let len = bytes.len();
 	let mut i = 0;
 	let mut current_encoding = encoding;
-	// RTF scopes \ucN to its group; tracking it flat is an approximation that can
-	// only leave a stray fallback character, never eat real text.
+	// RTF scopes \ucN to its group; tracking it flat is an approximation that can only leave a stray fallback character, never eat real text.
 	let mut uc_count = 1usize;
 	while i < len {
-		// A literal tab in the text stream carries the same meaning as \tab to every
-		// other reader, so promote it rather than let the lexer trim it away.
+		// A literal tab means \tab to every other reader, so promote it rather than let the lexer trim it away.
 		if bytes[i] == b'\t' {
 			result.push_str("\\tab ");
 			i += 1;
 			continue;
 		}
 		if bytes[i] == b'\\' && bytes.get(i + 1) == Some(&b'u') {
-			// \ucN declares how many fallback characters trail each \uN. Fall through
-			// afterwards so the control word still reaches the lexer.
+			// Falls through after reading \ucN so the control word still reaches the lexer.
 			if bytes.get(i + 2) == Some(&b'c') {
 				if let Some(end) = read_param_end(bytes, i + 3)
 					&& let Ok(count) = rtf[i + 3..end].parse::<usize>()
@@ -218,17 +163,14 @@ pub(super) fn normalize_escapes(
 				result.push_str(&rtf[i..digits_end]);
 				result.push(' ');
 				i = skip_unicode_fallback(bytes, digits_end, uc_count);
-				// One space after the digits ends the control word rather than standing for
-				// itself. With \uc0 there is no fallback to step over, so it is still sitting
-				// here, and leaving it is what turns "\u347 roda" into "ś roda".
+				// The space after the digits only ends the control word; with \uc0 nothing stepped over it, and leaving it turned "\u347 roda" into "ś roda".
 				if i == digits_end && bytes.get(i) == Some(&b' ') {
 					i += 1;
 				}
 				continue;
 			}
 		}
-		// Track \fN font switches to use the right charset for subsequent \'xx escapes.
-		// \fcharset, \fbidi, \froman, etc. start with \f + non-digit so won't match.
+		// \fcharset, \fbidi, \froman and the like are \f plus a non-digit, so only font switches match.
 		if bytes[i] == b'\\' && i + 2 < len && bytes[i + 1] == b'f' && bytes[i + 2].is_ascii_digit() {
 			let num_start = i + 2;
 			let mut num_end = num_start;
@@ -240,7 +182,6 @@ pub(super) fn normalize_escapes(
 			{
 				current_encoding = font_table.get(&font_num).copied().unwrap_or(encoding);
 			}
-			// Fall through, emitting the control word bytes as-is for the lexer.
 		}
 		if bytes[i] == b'\\' && i + 1 < len {
 			match bytes[i + 1] {

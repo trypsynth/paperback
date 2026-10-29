@@ -1,8 +1,8 @@
-//! The placeholder a picture shows in the text, shared by the HTML and XML converters so the two describe pictures alike.
+//! Shared by the HTML and XML converters so the two describe pictures alike.
 
 use crate::{t, util::text::collapse_whitespace};
 
-/// The description to show for an image element whose attributes `attribute` reads: its `alt`, `aria-label`, `aria-description` or `title`, the first that says something. An empty `alt` is passed over rather than ending the search, so `alt="" aria-label="Map"` still reads "Map".
+/// An empty `alt` doesn't end the search, so `alt="" aria-label="Map"` still reads "Map".
 pub(super) fn description(attribute: &dyn Fn(&str) -> Option<String>) -> String {
 	["alt", "aria-label", "aria-description", "title"]
 		.into_iter()
@@ -14,7 +14,7 @@ pub(super) fn description(attribute: &dyn Fn(&str) -> Option<String>) -> String 
 		.unwrap_or_default()
 }
 
-/// Whether an undescribed picture is decoration its author marked as such, or a tracking pixel, neither of which is worth announcing. Any other undescribed picture is still shown, so it can be found, saved and read with OCR. Only asked once [`description`] has come back empty, so an `alt` that is present at all was an empty one.
+/// Any other undescribed picture is still shown so it can be found, saved and read with OCR. Only asked once [`description`] is empty, so a present `alt` was an empty one.
 pub(super) fn is_decorative(attribute: &dyn Fn(&str) -> Option<String>) -> bool {
 	let says =
 		|name: &str, value: &str| attribute(name).is_some_and(|actual| actual.trim().eq_ignore_ascii_case(value));
@@ -31,7 +31,6 @@ pub(super) fn is_decorative(attribute: &dyn Fn(&str) -> Option<String>) -> bool 
 		|| tiny("height")
 }
 
-/// `[Image: a cat]`, or `[Image]` for a picture with no description.
 pub fn placeholder(is_figure: bool, description: &str) -> String {
 	// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]", and on its own, "[Image]", for a picture with none
 	let label = if is_figure { t("Figure") } else { t("Image") };

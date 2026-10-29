@@ -18,9 +18,7 @@ rstest = "0.28.0"
 toml = "1.1.8"
 
 # Lint policy for every crate in the workspace; each member opts in with `[lints] workspace = true`.
-# `clippy::all` is denied so CI fails on it. The pedantic and nursery groups are warnings we're
-# driving to zero so CI can gate on them too; the allows further down are the lints from those
-# groups we've decided not to enforce, each with its reason.
+# CI runs clippy with -D warnings, so every lint here fails the build. The allows further down are the pedantic and nursery lints we've decided not to enforce, each with its reason.
 [workspace.lints.rust]
 # `objc`'s `msg_send!` macro (used by the desktop crate on macOS) expands to a
 # `cfg(feature = "cargo-clippy")` check. No crate here defines that feature, so the compiler
@@ -44,6 +42,20 @@ struct_excessive_bools = "allow"
 items_after_statements = "allow"
 too_long_first_doc_paragraph = "allow"
 similar_names = "allow"
+# Would put an attribute on nearly every getter in an application with no outside callers.
+must_use_candidate = "allow"
+# Marking functions const only because they could be adds churn and buys nothing here.
+missing_const_for_fn = "allow"
+# Conflicts with rustc's own unreachable_pub advice, so one of the two always fires.
+redundant_pub_crate = "allow"
+# Rewrites a plain if let/else into map_or_else closures, which reads worse.
+option_if_let_else = "allow"
+# Guesses at where to drop a lock and is often wrong about it.
+significant_drop_tightening = "allow"
+# Its fix is `assert_eq!(x, [] as [T; 0])`, which is harder to read than `assert!(x.is_empty())`.
+assert_is_empty = "allow"
+# Counts turned into ratios and percentages stay far below where a float stops holding whole numbers.
+cast_precision_loss = "allow"
 
 [profile.release]
 strip = true
