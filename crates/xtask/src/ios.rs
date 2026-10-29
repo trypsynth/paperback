@@ -6,7 +6,7 @@ use std::{
 	process::Command,
 };
 
-use crate::workspace::{build_host_ffi_library, project_root};
+use crate::workspace::{MOBILE_CORE_FEATURES, build_host_ffi_library, project_root};
 
 pub fn ios() -> Result<(), Box<dyn Error>> {
 	let release = env::args().any(|a| a == "--release");
@@ -42,7 +42,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	}
 	let profile = if release { "release" } else { "debug" };
 	let mut build_args =
-		vec!["rustc", "-p", "paperback-core", "--features", "uniffi", "--lib", "--crate-type", "staticlib"];
+		vec!["rustc", "-p", "paperback-core", "--features", MOBILE_CORE_FEATURES, "--lib", "--crate-type", "staticlib"];
 	if release {
 		build_args.push("--release");
 	}

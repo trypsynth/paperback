@@ -1,21 +1,10 @@
 use std::path::Path;
 
-use paperback_core::{
-	fetch::{self, FetchError},
-	parser::{is_remote_url, parser_supports_path},
-};
+pub use paperback_core::fetch::{not_a_link, prefill, warning_text};
+use paperback_core::{fetch::FetchError, parser::parser_supports_path};
 use patois::t;
 
 use crate::working_copy::WorkingCopy;
-
-pub fn prefill(clipboard: &str) -> String {
-	clipboard.lines().map(str::trim).find(|line| is_remote_url(line)).unwrap_or_default().to_string()
-}
-
-pub fn not_a_link(text: &str) -> String {
-	// TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
-	format!("{text}: {}", t("this is not a web link"))
-}
 
 #[derive(Debug, Clone, Copy)]
 pub enum Stage {
@@ -36,27 +25,6 @@ pub fn step(stage: Stage, n: usize, m: usize, subject: &str) -> String {
 	};
 	// The subject goes in last, so a % sign in a link is never taken for a placeholder.
 	template.replacen("%d", &n.to_string(), 1).replacen("%d", &m.to_string(), 1).replacen("%s", subject, 1)
-}
-
-pub fn warning_text(link: &str, content_type: Option<&str>) -> String {
-	let reason = match content_type {
-		Some(content_type) if fetch::is_web_page(content_type) => {
-			// TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
-			t("The server sends a web page (%s) instead of the document the link names.").replacen(
-				"%s",
-				content_type,
-				1,
-			)
-		}
-		// TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as application/octet-stream
-		Some(content_type) => {
-			t("The server sends %s, which is not a format Paperback reads.").replacen("%s", content_type, 1)
-		}
-		// TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
-		None => t("The server does not say what it sends."),
-	};
-	// TRANSLATORS: Question at the end of the security warning before downloading a document from a link
-	format!("{link}\n{reason}\n{}", t("Download it anyway?"))
 }
 
 pub fn needs_open_as(warned: bool, copy: &Path) -> bool {

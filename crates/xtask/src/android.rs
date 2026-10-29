@@ -2,7 +2,7 @@ use std::{env, error::Error, process::Command};
 
 use crate::{
 	print_help,
-	workspace::{build_host_ffi_library, project_root},
+	workspace::{MOBILE_CORE_FEATURES, build_host_ffi_library, project_root},
 };
 
 pub fn android() -> Result<(), Box<dyn Error>> {
@@ -67,7 +67,7 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 			"-p",
 			"paperback-core",
 			"--features",
-			"uniffi",
+			MOBILE_CORE_FEATURES,
 			"--lib",
 			"--crate-type",
 			"cdylib",

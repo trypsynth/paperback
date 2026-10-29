@@ -3,12 +3,53 @@ use std::path::Path;
 use paperback_formats::{ALL, FormatMeta};
 use percent_encoding::percent_decode_str;
 
-use crate::parser::{parser_supports_extension, url_extension, url_file_name};
+use crate::{
+	parser::{is_remote_url, parser_supports_extension, url_extension, url_file_name},
+	t,
+};
 
+#[cfg(feature = "fetch")]
+mod download;
 #[cfg(feature = "fetch")]
 mod net;
 #[cfg(feature = "fetch")]
+pub use download::{LinkDownload, LinkDownloadError, LinkDownloadInfoFfi, LinkProgressFfi};
+#[cfg(feature = "fetch")]
 pub use net::{DEFAULT_MAX_SIZE, FetchError, Remote, RemoteInfo, open};
+
+/// The first line of the clipboard that is a link on its own, to offer when asking for one.
+#[must_use]
+pub fn prefill(clipboard: &str) -> String {
+	clipboard.lines().map(str::trim).find(|line| is_remote_url(line)).unwrap_or_default().to_string()
+}
+
+#[must_use]
+pub fn not_a_link(text: &str) -> String {
+	// TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
+	format!("{text}: {}", t("this is not a web link"))
+}
+
+#[must_use]
+pub fn warning_text(link: &str, content_type: Option<&str>) -> String {
+	let reason = match content_type {
+		Some(content_type) if is_web_page(content_type) => {
+			// TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
+			t("The server sends a web page (%s) instead of the document the link names.").replacen(
+				"%s",
+				content_type,
+				1,
+			)
+		}
+		// TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as application/octet-stream
+		Some(content_type) => {
+			t("The server sends %s, which is not a format Paperback reads.").replacen("%s", content_type, 1)
+		}
+		// TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
+		None => t("The server does not say what it sends."),
+	};
+	// TRANSLATORS: Question at the end of the security warning before downloading a document from a link
+	format!("{link}\n{reason}\n{}", t("Download it anyway?"))
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Verdict {
