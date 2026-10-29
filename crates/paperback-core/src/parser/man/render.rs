@@ -188,9 +188,7 @@ impl Renderer {
 		if rows.is_empty() {
 			return;
 		}
-		let escaped: Vec<Vec<String>> =
-			rows.iter().map(|row| row.iter().map(|cell| escape_html(cell)).collect()).collect();
-		let html = build_html_table_from_grid(&escaped);
+		let html = build_html_table_from_grid(rows);
 		let caption = table_caption_from_html(&html).unwrap_or_else(|| "table".to_string());
 		let start = self.buffer.end();
 		self.buffer.append(&html_table_to_display(&html, inline));
@@ -242,18 +240,4 @@ impl Renderer {
 		self.end_paragraph();
 		self.buffer
 	}
-}
-
-/// A manual page is full of angle brackets and ampersands, which the shared table renderer would otherwise read as markup.
-fn escape_html(cell: &str) -> String {
-	let mut out = String::with_capacity(cell.len());
-	for c in cell.chars() {
-		match c {
-			'&' => out.push_str("&amp;"),
-			'<' => out.push_str("&lt;"),
-			'>' => out.push_str("&gt;"),
-			_ => out.push(c),
-		}
-	}
-	out
 }

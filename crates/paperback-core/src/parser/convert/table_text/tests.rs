@@ -135,6 +135,12 @@ fn build_html_table_from_grid_2x2() {
 }
 
 #[test]
+fn build_html_table_from_grid_keeps_markup_characters_as_text() {
+	let rows = vec![vec!["a<b".to_string(), "&lt;".to_string()]];
+	assert_eq!(html_table_to_tsv(&build_html_table_from_grid(&rows)), "a<b	&lt;");
+}
+
+#[test]
 fn build_html_table_from_grid_empty() {
 	assert_eq!(build_html_table_from_grid(&[]), "<table border=\"1\"></table>");
 }

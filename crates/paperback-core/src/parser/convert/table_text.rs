@@ -3,7 +3,10 @@ use scraper::{ElementRef, Html, Node};
 use crate::{
 	document::DocLen,
 	parser::convert::formula::{formula_text, is_dom_formula},
-	util::text::{collapse_whitespace, trim_string},
+	util::{
+		html::push_escaped,
+		text::{collapse_whitespace, trim_string},
+	},
 };
 
 /// Only the outermost table's grid is honoured; a nested `<table>` is flattened into its enclosing cell's text.
@@ -23,7 +26,7 @@ pub fn html_table_to_display(html: &str, inline: bool) -> String {
 	tsv_to_display(&html_table_to_tsv(html), inline)
 }
 
-/// Cells are inserted without HTML-escaping; the `html_table_to_*` functions collapse their whitespace downstream.
+/// Cells are plain text; the `html_table_to_*` functions collapse their whitespace downstream.
 #[must_use]
 pub fn build_html_table_from_grid(rows: &[Vec<String>]) -> String {
 	let mut html = String::from("<table border=\"1\">");
@@ -31,7 +34,9 @@ pub fn build_html_table_from_grid(rows: &[Vec<String>]) -> String {
 		html.push_str("<tr>");
 		for cell in row {
 			html.push_str("<td>");
-			html.push_str(cell);
+			for ch in cell.chars() {
+				push_escaped(ch, &mut html);
+			}
 			html.push_str("</td>");
 		}
 		html.push_str("</tr>");
