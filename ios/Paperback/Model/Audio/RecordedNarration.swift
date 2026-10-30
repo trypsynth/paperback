@@ -73,7 +73,7 @@ final class RecordedNarration {
 		if attachedDocumentPath == path { return }
 		detach()
 		guard let session = tab.session, session.hasAudioFfi() else { return }
-		player.attach(session: session, docKey: tab.id.uuidString)
+		player.attach(session: session, docKey: config.getDocKey(path: path))
 		attachedDocumentPath = path
 		let savedAudioMs = config.getDocumentAudioTimeFfi(path: path)
 		if savedAudioMs >= 0 {

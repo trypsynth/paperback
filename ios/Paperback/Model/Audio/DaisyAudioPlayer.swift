@@ -286,9 +286,12 @@ final class DaisyAudioPlayer {
 		let cacheFile = cacheDir.appendingPathComponent("\(docKey)_\(index)")
 		if !FileManager.default.fileExists(atPath: cacheFile.path) {
 			try? FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
-			guard session.audioExtractSourceFfi(index: index, outputPath: cacheFile.path) else { return nil }
+			// Renamed into place once whole, so an extraction cut short isn't reused on the next launch.
+			let partial = cacheDir.appendingPathComponent("\(docKey)_\(index).part")
+			guard session.audioExtractSourceFfi(index: index, outputPath: partial.path) else { return nil }
+			try? FileManager.default.moveItem(at: partial, to: cacheFile)
 		}
-		return cacheFile.path
+		return FileManager.default.fileExists(atPath: cacheFile.path) ? cacheFile.path : nil
 	}
 
 	private func startPlayer(path: String, sourceIndex: Int32, seek: SourceSeek, generation: Int) {
