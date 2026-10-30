@@ -165,6 +165,8 @@ fn write_notes<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
 	}
 	let documents: HashMap<NoteKind, XmlDocument> =
 		parts.iter().filter_map(|(kind, (xml, _))| Some((*kind, XmlDocument::parse(xml).ok()?))).collect();
+	let notes: HashMap<NoteKind, HashMap<&str, Node>> =
+		documents.iter().map(|(kind, document)| (*kind, elements_by_id(document, kind.part().2))).collect();
 	if !walk.buffer.content.is_empty() && !walk.buffer.content.ends_with('\n') {
 		walk.buffer.append("\n");
 	}
@@ -176,12 +178,7 @@ fn write_notes<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
 	walk.buffer.add_marker(Marker::new(MarkerType::Heading1, heading_offset).with_text(heading.clone()).with_level(1));
 	walk.headings.push(HeadingInfo { offset: heading_offset, level: 1, text: heading });
 	for citation in cited {
-		let (_, _, element) = citation.kind.part();
-		let Some(note) = documents.get(&citation.kind).and_then(|document| {
-			document
-				.descendants()
-				.find(|node| node.tag_name().name() == element && node.attribute("id") == Some(citation.id.as_str()))
-		}) else {
+		let Some(note) = notes.get(&citation.kind).and_then(|by_id| by_id.get(citation.id.as_str()).copied()) else {
 			continue;
 		};
 		let rels = &parts[&citation.kind].1;
@@ -208,6 +205,17 @@ fn write_notes<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
 	}
 }
 
+/// Indexed once, as a long document cites hundreds of notes or comments and finding each by walking the whole part is quadratic; the first of a repeated id wins.
+fn elements_by_id<'a, 'input>(document: &'a XmlDocument<'input>, element: &str) -> HashMap<&'a str, Node<'a, 'input>> {
+	let mut by_id = HashMap::new();
+	for node in document.descendants().filter(|node| node.tag_name().name() == element) {
+		if let Some(id) = node.attribute("id") {
+			by_id.entry(id).or_insert(node);
+		}
+	}
+	by_id
+}
+
 fn write_word_comments<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
 	let placed = std::mem::take(&mut walk.annotations.comments);
 	if placed.is_empty() {
@@ -215,12 +223,11 @@ fn write_word_comments<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut W
 	}
 	let Ok(xml) = read_zip_entry_by_name(archive, "word/comments.xml") else { return };
 	let Ok(document) = XmlDocument::parse(&xml) else { return };
+	let by_id = elements_by_id(&document, "comment");
 	let comments = placed
 		.into_iter()
 		.filter_map(|(id, start, end)| {
-			let comment = document
-				.descendants()
-				.find(|node| node.tag_name().name() == "comment" && node.attribute("id") == Some(id.as_str()))?;
+			let comment = by_id.get(id.as_str()).copied()?;
 			let text = comment
 				.children()
 				.filter(|child| child.tag_name().name() == "p")
