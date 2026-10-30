@@ -66,10 +66,11 @@ impl ConfigManager {
 		if !self.initialized {
 			return Vec::new();
 		}
+		let key = self.get_doc_key(path);
 		self.data
 			.borrow()
 			.documents
-			.get(&self.get_doc_key(path))
+			.get(&key)
 			.map(|d| {
 				d.bookmarks
 					.iter()
@@ -166,6 +167,11 @@ mod tests {
 		config.add_audio_bookmark("book.mp3", 0.into(), 60_000, "");
 		let times: Vec<_> = config.get_bookmarks("book.mp3").iter().map(|bm| bm.audio_ms).collect();
 		assert_eq!(vec![Some(10_000), Some(60_000)], times);
+	}
+
+	#[test]
+	fn bookmarks_of_a_path_never_keyed_before_are_empty() {
+		assert!(config().get_bookmarks("unseen.epub").is_empty());
 	}
 
 	#[test]
