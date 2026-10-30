@@ -446,10 +446,12 @@ fun MainScreen(
 							}
 							LaunchedEffect(ttsPosition) {
 								if (isTextMode) {
-									val line = docState.session.lineFromPosition(ttsPosition)
-									val index = lineIndexFor(line)
-									listState.scrollToItem(index)
-									lineIndexToFocus = index
+									val index = lineIndexFor(docState.session.lineFromPosition(ttsPosition))
+									// A scroll that settles saves its top line as the position, and following that back would snap the reader's scroll flush to the line.
+									if (index != listState.firstVisibleItemIndex) {
+										listState.scrollToItem(index)
+										lineIndexToFocus = index
+									}
 								}
 							}
 							LaunchedEffect(docState.documentUri) {
