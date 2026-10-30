@@ -83,7 +83,7 @@ fn convert_document(input: &str, source: Source, tables: Tables) -> Converted {
 		}
 		Source::Html => {
 			let mut converter = HtmlToText::with_render_tables_inline(inline);
-			assert!(converter.convert(input, HtmlSourceMode::NativeHtml));
+			converter.convert(input, HtmlSourceMode::NativeHtml);
 			Converted {
 				text: converter.get_text(),
 				formulas: converter.get_formulas().to_vec(),
@@ -397,9 +397,9 @@ fn reusing_a_converter_clears_formula_markers(#[values(Source::Html, Source::Xml
 		}
 		Source::Html => {
 			let mut converter = HtmlToText::new();
-			assert!(converter.convert(with_formulas, HtmlSourceMode::NativeHtml));
+			converter.convert(with_formulas, HtmlSourceMode::NativeHtml);
 			assert_eq!(converter.get_formulas().len(), 1);
-			assert!(converter.convert(plain, HtmlSourceMode::NativeHtml));
+			converter.convert(plain, HtmlSourceMode::NativeHtml);
 			assert!(converter.get_formulas().is_empty());
 		}
 	}

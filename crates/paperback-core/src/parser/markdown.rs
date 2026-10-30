@@ -11,7 +11,6 @@ use crate::{
 		convert::html_to_text::{HtmlSourceMode, HtmlToText},
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
-	t,
 	util::encoding::convert_to_utf8,
 };
 
@@ -142,12 +141,7 @@ impl Parser for MarkdownParser {
 		let markdown_content = convert_to_utf8(&bytes);
 		let html_content = markdown_to_html(&markdown_content, context.markdown_dollar_math);
 		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
-		if !converter.convert(&html_content, HtmlSourceMode::Markdown) {
-			// currently unreachable, HtmlToText::convert never returns false today
-			tracing::warn!(path = %context.file_path, "failed to convert markdown to text");
-			// TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
-			anyhow::bail!(t("Failed to convert Markdown to text: {}").replace("{}", &context.file_path));
-		}
+		converter.convert(&html_content, HtmlSourceMode::Markdown);
 		let metadata = front_matter(&markdown_content);
 		// A level-one heading opening the file names it, as it does most READMEs, when there is no front matter to say.
 		let opening_heading = converter
@@ -335,7 +329,7 @@ mod tests {
 		let source = "# Title\n\nFirst paragraph.\n\nSecond paragraph.\n";
 		let html = markdown_to_html(source, true);
 		let mut converter = HtmlToText::new();
-		assert!(converter.convert(&html, HtmlSourceMode::Markdown));
+		converter.convert(&html, HtmlSourceMode::Markdown);
 		let text = converter.get_text();
 		let ids = converter.get_id_positions();
 		assert_eq!(

@@ -121,9 +121,7 @@ pub(super) fn convert_spine_items(
 				let archive = archive_result.as_mut().map_err(|err| format!("{} ({err})", item.path))?;
 				let data =
 					read_zip_entry_by_name(archive, &item.path).map_err(|err| format!("{} ({err})", item.path))?;
-				let section =
-					convert_section(&data, render_tables_inline).map_err(|err| format!("{} ({err})", item.path))?;
-				Ok((item, section))
+				Ok((item, convert_section(&data, render_tables_inline)))
 			},
 		)
 		.collect();
@@ -247,7 +245,7 @@ fn first_image_source(content: &str, text: &str) -> String {
 	HtmlToText::image_source(Html::parse_document(content).tree.root())
 }
 
-fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionContent> {
+fn convert_section(content: &str, render_tables_inline: bool) -> SectionContent {
 	let mut xml_converter = XmlToText::with_render_tables_inline(render_tables_inline);
 	let xml_error = match xml_converter.try_convert(content) {
 		Ok(()) => None,
@@ -255,7 +253,7 @@ fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionC
 	};
 	if xml_error.is_none() {
 		let text = xml_converter.get_text();
-		return Ok(SectionContent {
+		return SectionContent {
 			image_source: first_image_source(content, &text),
 			text,
 			headings: xml_converter.get_headings().to_vec(),
@@ -273,35 +271,30 @@ fn convert_section(content: &str, render_tables_inline: bool) -> Result<SectionC
 			id_positions: xml_converter.get_id_positions().clone(),
 			has_image_markup: content_has_image_markup(content),
 			xml_error: None,
-		});
+		};
 	}
 	let mut html_converter = HtmlToText::with_render_tables_inline(render_tables_inline);
-	if html_converter.convert(content, HtmlSourceMode::NativeHtml) {
-		let text = html_converter.get_text();
-		return Ok(SectionContent {
-			image_source: first_image_source(content, &text),
-			text,
-			headings: html_converter.get_headings().to_vec(),
-			links: html_converter.get_links().to_vec(),
-			images: html_converter.get_images().to_vec(),
-			figures: html_converter.get_figures().to_vec(),
-			tables: html_converter.get_tables().to_vec(),
-			formulas: html_converter.get_formulas().to_vec(),
-			separators: html_converter.get_separators().to_vec(),
-			lists: html_converter.get_lists().to_vec(),
-			list_items: html_converter.get_list_items().to_vec(),
-			bolds: html_converter.get_bolds().to_vec(),
-			italics: html_converter.get_italics().to_vec(),
-			underlines: html_converter.get_underlines().to_vec(),
-			id_positions: html_converter.get_id_positions().clone(),
-			has_image_markup: content_has_image_markup(content),
-			xml_error,
-		});
+	html_converter.convert(content, HtmlSourceMode::NativeHtml);
+	let text = html_converter.get_text();
+	SectionContent {
+		image_source: first_image_source(content, &text),
+		text,
+		headings: html_converter.get_headings().to_vec(),
+		links: html_converter.get_links().to_vec(),
+		images: html_converter.get_images().to_vec(),
+		figures: html_converter.get_figures().to_vec(),
+		tables: html_converter.get_tables().to_vec(),
+		formulas: html_converter.get_formulas().to_vec(),
+		separators: html_converter.get_separators().to_vec(),
+		lists: html_converter.get_lists().to_vec(),
+		list_items: html_converter.get_list_items().to_vec(),
+		bolds: html_converter.get_bolds().to_vec(),
+		italics: html_converter.get_italics().to_vec(),
+		underlines: html_converter.get_underlines().to_vec(),
+		id_positions: html_converter.get_id_positions().clone(),
+		has_image_markup: content_has_image_markup(content),
+		xml_error,
 	}
-	// currently unreachable, HtmlToText::convert always returns true today
-	tracing::warn!("epub section content unsupported by both xml and html converters");
-	// TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
-	anyhow::bail!(t("unsupported content"))
 }
 
 #[cfg(test)]
@@ -310,15 +303,14 @@ mod tests {
 
 	#[test]
 	fn a_section_that_is_not_well_formed_xml_is_read_as_html_and_says_why() {
-		let section =
-			convert_section("<html><body><p>Before <img src='a.jpg'> after</p></body></html>", false).unwrap();
+		let section = convert_section("<html><body><p>Before <img src='a.jpg'> after</p></body></html>", false);
 		assert!(section.text.contains("Before"), "{:?}", section.text);
 		assert!(section.xml_error.is_some());
 	}
 
 	#[test]
 	fn a_well_formed_section_records_no_xml_error() {
-		let section = convert_section("<html><body><p>Fine</p></body></html>", false).unwrap();
+		let section = convert_section("<html><body><p>Fine</p></body></html>", false);
 		assert_eq!(section.xml_error, None);
 	}
 

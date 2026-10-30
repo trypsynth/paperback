@@ -27,12 +27,7 @@ impl Parser for HtmlParser {
 		}
 		let html_content = decode_html(&bytes, None);
 		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
-		if !converter.convert(&html_content, HtmlSourceMode::NativeHtml) {
-			// currently unreachable, HtmlToText::convert never returns false today
-			tracing::warn!(path = %context.file_path, "failed to convert html to text");
-			// TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
-			anyhow::bail!(t("Failed to convert HTML to text: {}").replace("{}", &context.file_path));
-		}
+		converter.convert(&html_content, HtmlSourceMode::NativeHtml);
 		let extracted_title = converter.get_title();
 		let title = if extracted_title.is_empty() {
 			tracing::debug!(path = %context.file_path, "html file has no title element, falling back to file name");

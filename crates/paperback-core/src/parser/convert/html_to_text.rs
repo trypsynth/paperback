@@ -68,14 +68,13 @@ impl HtmlToText {
 		Self { render_tables_inline, ..Self::default() }
 	}
 
-	pub fn convert(&mut self, html_content: &str, mode: HtmlSourceMode) -> bool {
+	pub fn convert(&mut self, html_content: &str, mode: HtmlSourceMode) {
 		self.clear();
 		self.source_mode_markdown = mode == HtmlSourceMode::Markdown;
 		let document = Html::parse_document(html_content);
 		let root = document.tree.root();
 		self.process_node(root, &document);
 		self.text.finalize_current_line();
-		true
 	}
 
 	#[must_use]

@@ -95,8 +95,7 @@ pub(super) fn convert_sections(
 				if content_bytes.is_empty() {
 					return Err(format!("{file_path} (entry is empty)"));
 				}
-				convert_section(&content_bytes, render_tables_inline, encoding)
-					.ok_or_else(|| format!("{file_path} (html conversion failed)"))
+				Ok(convert_section(&content_bytes, render_tables_inline, encoding))
 			},
 		)
 		.collect()
@@ -106,14 +105,11 @@ fn convert_section(
 	content_bytes: &[u8],
 	render_tables_inline: bool,
 	encoding: Option<&'static Encoding>,
-) -> Option<SectionContent> {
+) -> SectionContent {
 	let utf8_content = decode_html(content_bytes, encoding);
 	let mut converter = HtmlToText::with_render_tables_inline(render_tables_inline);
-	// currently always true, HtmlToText::convert has no failure path today
-	if !converter.convert(&utf8_content, HtmlSourceMode::NativeHtml) {
-		return None;
-	}
-	Some(SectionContent {
+	converter.convert(&utf8_content, HtmlSourceMode::NativeHtml);
+	SectionContent {
 		text: converter.get_text(),
 		headings: converter.get_headings().to_vec(),
 		links: converter.get_links().to_vec(),
@@ -128,5 +124,5 @@ fn convert_section(
 		italics: converter.get_italics().to_vec(),
 		underlines: converter.get_underlines().to_vec(),
 		id_positions: converter.get_id_positions().clone(),
-	})
+	}
 }
