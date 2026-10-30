@@ -34,7 +34,7 @@ fn convert_html_file(
 	let mut converter = HtmlToText::with_render_tables_inline(render_tables_inline);
 	converter.convert(&html_content, HtmlSourceMode::NativeHtml);
 	let offset = buffer.end();
-	buffer.append(&converter.get_text());
+	buffer.append(converter.get_text());
 	add_converter_markers(buffer, &converter, offset);
 	for (id, pos) in converter.get_id_positions() {
 		// Bare ids are only unique within their own file, so keep the first file's position and expose a path-qualified key alongside it.
@@ -176,7 +176,7 @@ pub(super) fn build_daisy2_text_only_document(
 	}
 	let mut converter = HtmlToText::with_render_tables_inline(render_tables_inline);
 	converter.convert(&combined_html, HtmlSourceMode::NativeHtml);
-	let mut buffer = DocumentBuffer::with_content(converter.get_text());
+	let mut buffer = DocumentBuffer::with_content(converter.take_text());
 	add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 	let toc_items = build_toc_from_headings(converter.get_headings());
 	Some(Document {

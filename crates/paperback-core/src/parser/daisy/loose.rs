@@ -66,7 +66,7 @@ pub(super) fn parse(context: &ParserContext, path: &Path) -> Result<Document> {
 		);
 		let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
 		if converter.convert(&xml_content) {
-			let mut buffer = DocumentBuffer::with_content(converter.get_text());
+			let mut buffer = DocumentBuffer::with_content(converter.take_text());
 			add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 			for pb in converter.get_page_breaks() {
 				buffer.add_marker(Marker::new(MarkerType::PageBreak, pb.offset).with_text(pb.text.clone()));

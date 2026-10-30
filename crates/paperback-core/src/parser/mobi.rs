@@ -130,7 +130,7 @@ impl Parser for MobiParser {
 			.collect();
 		for html_converter in converted {
 			let offset = buffer.end();
-			buffer.append(&html_converter.get_text());
+			buffer.append(html_converter.get_text());
 			for (id, &relative) in html_converter.get_id_positions() {
 				id_positions.entry(id.clone()).or_insert_with(|| offset + relative.from_start());
 			}

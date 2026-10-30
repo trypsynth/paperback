@@ -102,7 +102,7 @@ impl XmlToText {
 			let offset = self.text.get_current_text_position();
 			self.resync_id_position(node, offset);
 			let line = LineBuilder::separator_line();
-			self.text.current_line.push_str(line);
+			self.text.push_str(line);
 			self.text.finalize_current_line();
 			self.separators.push(SeparatorInfo { offset, length: DocLen::of(line) });
 			return true;
@@ -133,7 +133,7 @@ impl XmlToText {
 					searched = start + image_text.len();
 					self.push_image(info, is_figure);
 				}
-				self.text.current_line.push_str(&processed_link_text);
+				self.text.push_str(&processed_link_text);
 				self.links.push(LinkInfo { offset: link_offset, text: processed_link_text, reference: href });
 				self.record_descendant_ids(node, link_offset);
 				skip_children = true;
@@ -167,7 +167,7 @@ impl XmlToText {
 			&& let Some((image_text, mut info, is_figure)) = Self::described_image(node)
 		{
 			info.offset = self.text.get_current_text_position();
-			self.text.current_line.push_str(&image_text);
+			self.text.push_str(&image_text);
 			self.push_image(info, is_figure);
 		}
 		skip_children
@@ -241,7 +241,7 @@ impl XmlToText {
 		self.resync_id_position(node, offset);
 		self.record_descendant_ids(node, offset);
 		let length = DocLen::of(&rendered);
-		self.text.current_line.push_str(&rendered);
+		self.text.push_str(&rendered);
 		if block {
 			self.text.finalize_current_line();
 		}
@@ -257,7 +257,7 @@ impl XmlToText {
 		// Lines are pushed verbatim so tab separators and empty cells survive whitespace collapsing.
 		let render = table_render_bundle(&table_xml, self.render_tables_inline);
 		for line in render.lines {
-			self.text.push_finalized_line(line);
+			self.text.push_finalized_line(&line);
 		}
 		let table_caption = render.caption;
 		let length = render.length;
@@ -274,7 +274,7 @@ impl XmlToText {
 			text: li_text,
 		});
 		let indent = usize::try_from(self.list_level).unwrap_or(0) * 2;
-		self.text.current_line.push_str(&" ".repeat(indent));
+		self.text.push_str(&" ".repeat(indent));
 		let bullet = if let Some(style) = self.list_style_stack.last_mut() {
 			if style.ordered {
 				let item_text = format_list_item(style.item_number, &style.list_type);
@@ -286,7 +286,7 @@ impl XmlToText {
 		} else {
 			format!("{} ", Self::get_bullet_for_level(self.list_level))
 		};
-		self.text.current_line.push_str(&bullet);
+		self.text.push_str(&bullet);
 	}
 
 	fn handle_list_start_xml(&mut self, tag_name: &str, node: Node<'_, '_>) {
@@ -378,16 +378,16 @@ impl XmlToText {
 			}
 			let processed_text = remove_soft_hyphens(text.to_string());
 			if self.text.is_preserving_whitespace() {
-				self.text.current_line.push_str(&processed_text);
+				self.text.push_str(&processed_text);
 			} else {
 				let mut collapsed = collapse_whitespace(&processed_text);
-				if self.text.current_line.is_empty() {
+				if self.text.current_line().is_empty() {
 					collapsed = collapsed.trim_start().to_string();
-				} else if self.text.current_line.ends_with(' ') && collapsed.starts_with(' ') {
+				} else if self.text.current_line().ends_with(' ') && collapsed.starts_with(' ') {
 					collapsed.remove(0);
 				}
 				if !collapsed.is_empty() {
-					self.text.current_line.push_str(&collapsed);
+					self.text.push_str(&collapsed);
 				}
 			}
 		}

@@ -78,8 +78,13 @@ impl HtmlToText {
 	}
 
 	#[must_use]
-	pub fn get_text(&self) -> String {
+	pub fn get_text(&self) -> &str {
 		self.text.get_text()
+	}
+
+	/// Moves the text out rather than copying a whole book, leaving the markers to read afterwards.
+	pub fn take_text(&mut self) -> String {
+		self.text.take_text()
 	}
 
 	#[must_use]

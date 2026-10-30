@@ -95,7 +95,7 @@ impl HtmlToText {
 			}
 		}
 		let length = DocLen::of(&rendered);
-		self.text.current_line.push_str(&rendered);
+		self.text.push_str(&rendered);
 		if block {
 			self.text.finalize_current_line();
 		}
@@ -109,7 +109,7 @@ impl HtmlToText {
 		// Lines are pushed verbatim so tab separators and empty cells survive whitespace collapsing.
 		let render = table_render_bundle(&table_html, self.render_tables_inline);
 		for line in render.lines {
-			self.text.push_finalized_line(line);
+			self.text.push_finalized_line(&line);
 		}
 		let table_caption = render.caption;
 		let length = render.length;
@@ -129,7 +129,7 @@ impl HtmlToText {
 						self.current_link_images.push((image_text, info, is_figure));
 					} else {
 						info.offset = self.text.get_current_text_position();
-						self.text.current_line.push_str(&image_text);
+						self.text.push_str(&image_text);
 						self.push_image(info, is_figure);
 					}
 				}
@@ -161,7 +161,7 @@ impl HtmlToText {
 			self.text.finalize_current_line();
 			let offset = self.text.get_current_text_position();
 			let line = LineBuilder::separator_line();
-			self.text.current_line.push_str(line);
+			self.text.push_str(line);
 			self.text.finalize_current_line();
 			self.separators.push(SeparatorInfo { offset, length: DocLen::of(line) });
 		} else if tag_name == "code" {
@@ -182,20 +182,20 @@ impl HtmlToText {
 				text: li_text,
 			});
 			for _ in 0..self.list_level {
-				self.text.current_line.push_str("  ");
+				self.text.push_str("  ");
 			}
 			if let Some(style) = self.list_style_stack.last_mut() {
 				if style.ordered {
 					let item_text = format_list_item(style.item_number, &style.list_type);
-					let _ = write!(&mut self.text.current_line, "{item_text}. ");
+					let _ = write!(&mut self.text, "{item_text}. ");
 					style.item_number += 1;
 				} else {
-					self.text.current_line.push_str(Self::get_bullet_for_level(self.list_level));
-					self.text.current_line.push(' ');
+					self.text.push_str(Self::get_bullet_for_level(self.list_level));
+					self.text.push(' ');
 				}
 			} else {
-				self.text.current_line.push_str(Self::get_bullet_for_level(self.list_level));
-				self.text.current_line.push(' ');
+				self.text.push_str(Self::get_bullet_for_level(self.list_level));
+				self.text.push(' ');
 			}
 		}
 	}
@@ -258,7 +258,7 @@ impl HtmlToText {
 			for child in node.children() {
 				if let Node::Element(_) = child.value() {
 					let html_str = Self::serialize_node(child, document);
-					self.text.current_line.push_str(&html_str);
+					self.text.push_str(&html_str);
 				} else {
 					self.process_node(child, document);
 				}
@@ -288,7 +288,7 @@ impl HtmlToText {
 					text: collapsed_text.clone(),
 					reference: self.current_link_href.clone(),
 				});
-				self.text.current_line.push_str(&collapsed_text);
+				self.text.push_str(&collapsed_text);
 			}
 			self.current_link_href.clear();
 			self.current_link_text.clear();
@@ -309,9 +309,9 @@ impl HtmlToText {
 		}
 		if tag_name == "pre" {
 			let has_preserved_trailing_whitespace =
-				self.text.is_preserving_whitespace() && self.text.current_line.trim().is_empty();
+				self.text.is_preserving_whitespace() && self.text.current_line().trim().is_empty();
 			if has_preserved_trailing_whitespace {
-				self.text.current_line.clear();
+				self.text.clear_current_line();
 			} else {
 				self.text.finalize_current_line();
 			}
@@ -340,7 +340,7 @@ impl HtmlToText {
 		if self.text.is_preserving_whitespace() {
 			let lines: Vec<&str> = processed_text.split('\n').collect();
 			for (i, line) in lines.iter().enumerate() {
-				self.text.current_line.push_str(line);
+				self.text.push_str(line);
 				if i < lines.len() - 1 {
 					self.text.finalize_current_line();
 				}
@@ -348,7 +348,7 @@ impl HtmlToText {
 		} else if self.flags.contains(ProcessingFlags::IN_LINK) {
 			self.current_link_text.push_str(&collapse_whitespace(&processed_text));
 		} else {
-			self.text.current_line.push_str(&collapse_whitespace(&processed_text));
+			self.text.push_str(&collapse_whitespace(&processed_text));
 		}
 	}
 

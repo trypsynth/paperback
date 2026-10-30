@@ -35,7 +35,7 @@ impl Parser for HtmlParser {
 		} else {
 			extracted_title.to_string()
 		};
-		let text = converter.get_text();
+		let text = converter.take_text();
 		let mut buffer = DocumentBuffer::with_content(text);
 		let id_positions = converter.get_id_positions().clone();
 		add_converter_markers(&mut buffer, &converter, DocPos::ZERO);

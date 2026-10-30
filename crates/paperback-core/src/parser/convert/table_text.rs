@@ -108,12 +108,6 @@ pub fn display_lines_and_length(display_text: &str) -> (Vec<String>, DocLen) {
 	(lines, length)
 }
 
-/// Shared by `HtmlToText` and `XmlToText` so their `+1` newline accounting can't diverge; table rows' tabs and empty cells must not be collapsed.
-pub fn push_finalized_line(lines: &mut Vec<String>, cached_len: &mut DocLen, line: String) {
-	*cached_len += DocLen::of(&line) + DocLen::ONE;
-	lines.push(line);
-}
-
 #[must_use]
 pub fn table_render_bundle(html: &str, inline: bool) -> TableRenderBundle {
 	let fragment = Html::parse_fragment(html);

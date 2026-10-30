@@ -73,7 +73,7 @@ fn convert_document(input: &str, source: Source, tables: Tables) -> Converted {
 			let mut converter = XmlToText::with_render_tables_inline(inline);
 			assert!(converter.convert(input));
 			Converted {
-				text: converter.get_text(),
+				text: converter.take_text(),
 				formulas: converter.get_formulas().to_vec(),
 				headings: converter.get_headings().to_vec(),
 				links: converter.get_links().to_vec(),
@@ -85,7 +85,7 @@ fn convert_document(input: &str, source: Source, tables: Tables) -> Converted {
 			let mut converter = HtmlToText::with_render_tables_inline(inline);
 			converter.convert(input, HtmlSourceMode::NativeHtml);
 			Converted {
-				text: converter.get_text(),
+				text: converter.take_text(),
 				formulas: converter.get_formulas().to_vec(),
 				headings: converter.get_headings().to_vec(),
 				links: converter.get_links().to_vec(),

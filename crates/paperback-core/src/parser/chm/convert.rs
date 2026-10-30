@@ -110,7 +110,7 @@ fn convert_section(
 	let mut converter = HtmlToText::with_render_tables_inline(render_tables_inline);
 	converter.convert(&utf8_content, HtmlSourceMode::NativeHtml);
 	SectionContent {
-		text: converter.get_text(),
+		text: converter.take_text(),
 		headings: converter.get_headings().to_vec(),
 		links: converter.get_links().to_vec(),
 		images: ConverterOutput::get_images(&converter).to_vec(),

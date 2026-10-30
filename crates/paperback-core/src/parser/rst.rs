@@ -32,7 +32,7 @@ impl Parser for RstParser {
 			.first()
 			.filter(|heading| heading.offset == DocPos::ZERO)
 			.map_or_else(|| extract_title_from_path(&context.file_path), |heading| heading.text.clone());
-		let mut buffer = DocumentBuffer::with_content(converter.get_text());
+		let mut buffer = DocumentBuffer::with_content(converter.take_text());
 		add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 		let toc_items = build_toc_from_headings(converter.get_headings());
 		let mut doc = Document::new().with_title(title).with_author(author(&source));

@@ -154,7 +154,7 @@ impl Parser for MarkdownParser {
 			.or(opening_heading)
 			.unwrap_or_else(|| extract_title_from_path(&context.file_path));
 		let author = metadata.and_then(|metadata| front_matter_field(metadata, "author")).unwrap_or_default();
-		let text = converter.get_text();
+		let text = converter.take_text();
 		let mut buffer = DocumentBuffer::with_content(text);
 		let id_positions = converter.get_id_positions().clone();
 		add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
@@ -330,7 +330,7 @@ mod tests {
 		let html = markdown_to_html(source, true);
 		let mut converter = HtmlToText::new();
 		converter.convert(&html, HtmlSourceMode::Markdown);
-		let text = converter.get_text();
+		let text = converter.take_text();
 		let ids = converter.get_id_positions();
 		assert_eq!(
 			ids.get("pb-block-1"),

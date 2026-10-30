@@ -252,7 +252,7 @@ fn convert_section(content: &str, render_tables_inline: bool) -> SectionContent 
 		Err(error) => Some(error.to_string()),
 	};
 	if xml_error.is_none() {
-		let text = xml_converter.get_text();
+		let text = xml_converter.take_text();
 		return SectionContent {
 			image_source: first_image_source(content, &text),
 			text,
@@ -275,7 +275,7 @@ fn convert_section(content: &str, render_tables_inline: bool) -> SectionContent 
 	}
 	let mut html_converter = HtmlToText::with_render_tables_inline(render_tables_inline);
 	html_converter.convert(content, HtmlSourceMode::NativeHtml);
-	let text = html_converter.get_text();
+	let text = html_converter.take_text();
 	SectionContent {
 		image_source: first_image_source(content, &text),
 		text,

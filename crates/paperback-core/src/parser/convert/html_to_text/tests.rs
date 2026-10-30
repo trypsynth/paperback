@@ -30,7 +30,7 @@ fn html_converter_emits_table_inline_or_placeholder(#[case] inline: bool) {
 	let headings = converter.get_headings();
 	assert_eq!(headings.len(), 1);
 	assert_eq!(headings[0].offset, tables[0].offset + expected_length, "h2 immediately follows the emitted table span");
-	let mut buffer = DocumentBuffer::with_content(converter.get_text());
+	let mut buffer = DocumentBuffer::with_content(converter.take_text());
 	add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 	let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
 	assert_eq!(table_marker.length, expected_length);
@@ -128,7 +128,7 @@ fn test_ordered_list_metadata() {
 	assert!(lists[0].length > 0.into());
 	assert!(lists[0].offset + lists[0].length >= items[1].offset);
 	// One past the content allows for the trailing newline at document end.
-	assert!(lists[0].offset + lists[0].length <= DocLen::of(&converter.get_text()).as_pos() + 1.into());
+	assert!(lists[0].offset + lists[0].length <= DocLen::of(converter.get_text()).as_pos() + 1.into());
 	assert_eq!(items.len(), 2);
 	assert_eq!(items[0].level, 1);
 	assert_eq!(items[0].text, "First");
@@ -264,7 +264,7 @@ fn html_converter_gives_the_image_marker_the_placeholder_span() {
 	assert_eq!(images.len(), 1);
 	assert_eq!(images[0].offset, DocLen::of("Before ").as_pos());
 	assert_eq!(images[0].length, DocLen::of("[Image: a cat]"));
-	let mut buffer = DocumentBuffer::with_content(converter.get_text());
+	let mut buffer = DocumentBuffer::with_content(converter.get_text().to_string());
 	add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 	let marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Image).expect("Image marker");
 	assert_eq!(marker.position, images[0].offset);

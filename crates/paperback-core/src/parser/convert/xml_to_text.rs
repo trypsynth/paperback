@@ -73,13 +73,18 @@ impl XmlToText {
 			self.process_node(child);
 		}
 		self.text.finalize_current_line();
-		tracing::debug!(bytes = xml_content.len(), lines = self.text.lines.len(), "converted xml document to text");
+		tracing::debug!(bytes = xml_content.len(), chars = %self.text.get_current_text_position(), "converted xml document to text");
 		Ok(())
 	}
 
 	#[must_use]
-	pub fn get_text(&self) -> String {
+	pub fn get_text(&self) -> &str {
 		self.text.get_text()
+	}
+
+	/// Moves the text out rather than copying a whole book, leaving the markers to read afterwards.
+	pub fn take_text(&mut self) -> String {
+		self.text.take_text()
 	}
 
 	pub fn find_anchor_byte_offset(&mut self, xml_content: &str, target_position: DocPos) -> Option<usize> {

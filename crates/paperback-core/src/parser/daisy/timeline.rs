@@ -37,7 +37,7 @@ fn convert_dtbook_file(
 		anyhow::bail!(t("Failed to convert DTBook XML to text"));
 	}
 	let offset = buffer.end();
-	buffer.append(&converter.get_text());
+	buffer.append(converter.get_text());
 	add_converter_markers(buffer, &converter, offset);
 	for pb in converter.get_page_breaks() {
 		buffer

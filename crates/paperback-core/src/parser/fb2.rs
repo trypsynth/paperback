@@ -46,7 +46,7 @@ impl Parser for Fb2Parser {
 			anyhow::bail!(t("Failed to convert FB2 XML to text"));
 		}
 		let mut buffer = DocumentBuffer::new();
-		buffer.append(&converter.get_text());
+		buffer.append(converter.get_text());
 		add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 		for offset in converter.get_section_offsets() {
 			buffer.add_marker(Marker::new(MarkerType::SectionBreak, *offset));

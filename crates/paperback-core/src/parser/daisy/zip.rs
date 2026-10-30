@@ -153,7 +153,7 @@ fn parse_archive(context: &ParserContext, path: &Path) -> Result<Document> {
 				)?;
 			let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
 			if converter.convert(&xml_content) {
-				let mut converted_buffer = DocumentBuffer::with_content(converter.get_text());
+				let mut converted_buffer = DocumentBuffer::with_content(converter.take_text());
 				add_converter_markers(&mut converted_buffer, &converter, DocPos::ZERO);
 				for pb in converter.get_page_breaks() {
 					converted_buffer
