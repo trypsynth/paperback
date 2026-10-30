@@ -9,6 +9,7 @@ mod images;
 mod links;
 mod navigation;
 mod ocr;
+mod reading_step;
 mod webview;
 
 fn sample_session(parser_flags: ParserFlags) -> DocumentSession {

@@ -15,6 +15,7 @@ mod find_all;
 mod images;
 mod links;
 mod navigation;
+mod reading_step;
 mod search;
 mod stats;
 mod window;
@@ -166,6 +167,38 @@ pub struct TextSegmentFfi {
 	pub start_pos: DocPos,
 	pub end_pos: DocPos,
 	pub found: bool,
+}
+
+/// What the mobile reading bar steps by; stepping by time is a seek on the app's own audio player.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
+#[derive(Debug, Clone)]
+pub enum ReadingUnitFfi {
+	Segment {
+		segment_type: SegmentTypeFfi,
+	},
+	/// `options.forward` is ignored: the step's direction decides it.
+	Find {
+		query: String,
+		options: SearchOptionsFfi,
+	},
+}
+
+/// `text` is never blank when `found`: a segment with no text of its own reads as its section's title.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReadingStepFfi {
+	pub found: bool,
+	pub position: DocPos,
+	pub text: String,
+}
+
+/// Empty where there is no such paragraph.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ReadingAheadFfi {
+	pub next: String,
+	pub after_next: String,
+	pub previous: String,
 }
 
 #[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
