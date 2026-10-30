@@ -24,7 +24,10 @@ use hayro_interpret::{
 	hayro_cmap::{BfString, WritingMode},
 	kurbo::{Affine, Point, Shape},
 };
-use hayro_syntax::object::{Array, Name};
+use hayro_syntax::{
+	content::{TypedIter, ops::TypedInstruction},
+	object::{Array, Dict, Name, Object, Stream},
+};
 
 use super::{
 	bidi::{self, Direction},
@@ -213,7 +216,7 @@ pub(super) struct FontData {
 	first_char: u32,
 	widths: Vec<f32>,
 	missing_width: f32,
-	/// Codes drawn so far, which is all a composite or standard font can say without its font program.
+	/// Codes drawn so far, which is all a composite or standard font can say without its font program; a Type 3 font's glyphs are all measured up front.
 	observed: RefCell<HashMap<u32, (f32, GlyphBox)>>,
 	space_code: Cell<Option<u32>>,
 	/// For a glyph whose outline is missing.
@@ -256,7 +259,22 @@ impl FontData {
 			flags |= FONT_FLAG_ITALIC;
 		}
 		let stem_v = properties.stem_v().map_or(0, |stem| stem as i32);
-		let widths = dict.get::<Array<'_>>(b"Widths").map(|widths| widths.iter::<f32>().collect()).unwrap_or_default();
+		// pdfium's `CPDF_Type3Font::Load`: a Type 3 font's widths are in its own glyph space.
+		let type3_matrix = (dict.get::<Name<'_>>(b"Subtype").as_deref() == Some(b"Type3".as_slice())).then(|| {
+			dict.get::<Array<'_>>(b"FontMatrix")
+				.map(|matrix| matrix.iter::<f32>().collect::<Vec<_>>())
+				.filter(|matrix| matrix.len() == 6)
+				.map_or(Matrix::IDENTITY, |m| Matrix { a: m[0], b: m[1], c: m[2], d: m[3], e: m[4], f: m[5] })
+		});
+		let widths = dict
+			.get::<Array<'_>>(b"Widths")
+			.map(|widths| {
+				widths
+					.iter::<f32>()
+					.map(|width| type3_matrix.map_or(width, |matrix| (width * matrix.a * 1000.0).round()))
+					.collect()
+			})
+			.unwrap_or_default();
 		let missing_width =
 			properties.descriptor().and_then(|descriptor| descriptor.get::<f32>(b"MissingWidth")).unwrap_or(0.0);
 		let summary = Arc::new(FontSummary { name, flags, weight: weight_from_stem(stem_v) });
@@ -265,7 +283,7 @@ impl FontData {
 			first_char: dict.get::<u32>(b"FirstChar").unwrap_or(0),
 			widths,
 			missing_width,
-			observed: RefCell::new(HashMap::new()),
+			observed: RefCell::new(type3_matrix.map(|matrix| type3_glyphs(dict, &matrix)).unwrap_or_default()),
 			space_code: Cell::new(None),
 			ascent: properties.ascent().filter(|ascent| *ascent > 0.0).map_or(800, |ascent| ascent.round() as i32),
 			descent: properties
@@ -305,6 +323,73 @@ impl FontData {
 /// pdfium's `CPDF_Font::GetFontWeight`, which it works out from the stem width rather than reading `/FontWeight`.
 const fn weight_from_stem(stem_v: i32) -> i32 {
 	if stem_v < 140 { stem_v.saturating_mul(5) } else { stem_v.saturating_mul(4).saturating_add(140) }
+}
+
+/// pdfium's `CPDF_Type3Char`: each glyph's width and box come from its procedure's `d0` or `d1`, in the font's glyph space; hayro draws Type 3 glyphs but doesn't measure them.
+fn type3_glyphs(dict: &Dict<'_>, matrix: &Matrix) -> HashMap<u32, (f32, GlyphBox)> {
+	let font_box = dict
+		.get::<Array<'_>>(b"FontBBox")
+		.map(|bbox| bbox.iter::<f32>().collect::<Vec<_>>())
+		.and_then(|bbox| type3_box(&bbox, matrix))
+		.unwrap_or_default();
+	let (Some(procs), Some(differences)) = (
+		dict.get::<Dict<'_>>(b"CharProcs"),
+		dict.get::<Dict<'_>>(b"Encoding").and_then(|encoding| encoding.get::<Array<'_>>(b"Differences")),
+	) else {
+		return HashMap::new();
+	};
+	let mut glyphs = HashMap::new();
+	let mut code = 0u32;
+	for entry in differences.iter::<Object<'_>>() {
+		match entry {
+			Object::Number(number) => code = number.as_f64() as u32,
+			Object::Name(name) => {
+				let metrics = procs
+					.get::<Stream<'_>>(&*name)
+					.and_then(|proc| proc.decoded().ok())
+					.and_then(|data| glyph_metrics(&data));
+				if let Some((width, bbox)) = metrics {
+					// pdfium measures what a glyph with no box of its own draws, which hayro can't, so the font's box stands in.
+					let bbox = type3_box(&bbox, matrix).unwrap_or(font_box);
+					glyphs.insert(code, (((width * 1000.0).round() * matrix.x_unit() + 0.5).trunc(), bbox));
+				}
+				code += 1;
+			}
+			_ => {}
+		}
+	}
+	glyphs
+}
+
+/// The width and box from a glyph procedure's `d1`, or the width alone from `d0`.
+fn glyph_metrics(data: &[u8]) -> Option<(f32, [f32; 4])> {
+	let mut ops = TypedIter::new(data);
+	while let Some(op) = ops.next() {
+		match op {
+			TypedInstruction::ShapeGlyph(d1) => {
+				return Some((d1.0.as_f32(), [d1.2.as_f32(), d1.3.as_f32(), d1.4.as_f32(), d1.5.as_f32()]));
+			}
+			TypedInstruction::ColorGlyph(d0) => return Some((d0.0.as_f32(), [0.0; 4])),
+			_ => {}
+		}
+	}
+	None
+}
+
+/// A box given in glyph space, as pdfium rounds it into thousandths and maps it through the font matrix; `None` when empty.
+fn type3_box(bbox: &[f32], matrix: &Matrix) -> Option<GlyphBox> {
+	let &[left, bottom, right, top] = bbox else { return None };
+	let [left, bottom, right, top] = [left, bottom, right, top].map(|value| (value * 1000.0).round());
+	if right <= left || bottom >= top {
+		return None;
+	}
+	let rect = matrix.transform_rect(FRect::new(left, bottom, right, top));
+	Some(GlyphBox {
+		left: rect.left.round() as i32,
+		bottom: rect.bottom.round() as i32,
+		right: rect.right.round() as i32,
+		top: rect.top.round() as i32,
+	})
 }
 
 /// The textpage's `GetCharWidth` helper: the width, failing that the width of the glyph's box.
