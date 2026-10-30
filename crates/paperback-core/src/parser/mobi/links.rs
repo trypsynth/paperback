@@ -7,7 +7,10 @@ use std::{
 	sync::LazyLock,
 };
 
-use super::varint::{base32_decode, decode_vwi};
+use super::{
+	pictures::record_bytes,
+	varint::{base32_decode, decode_vwi},
+};
 use crate::document::{DocPos, TocItem};
 
 /// For NCX entries whose `#fp...` reference had no matching fragment id while the NCX was parsed.
@@ -38,7 +41,9 @@ pub(super) fn build_fragment_offsets(data: &[u8], records: &[usize], mobi_header
 	if frag_indx == 0xFFFF_FFFF || frag_indx >= records.len() - 1 {
 		return frag_offsets;
 	}
-	let prim_rec = &data[records[frag_indx]..records[frag_indx + 1]];
+	let Some(prim_rec) = record_bytes(data, records, frag_indx) else {
+		return frag_offsets;
+	};
 	if prim_rec.len() < 28 || &prim_rec[0..4] != b"INDX" {
 		return frag_offsets;
 	}
@@ -47,7 +52,9 @@ pub(super) fn build_fragment_offsets(data: &[u8], records: &[usize], mobi_header
 		if frag_indx + i >= records.len() - 1 {
 			break;
 		}
-		let data_rec = &data[records[frag_indx + i]..records[frag_indx + i + 1]];
+		let Some(data_rec) = record_bytes(data, records, frag_indx + i) else {
+			continue;
+		};
 		if data_rec.len() < 28 || &data_rec[0..4] != b"INDX" {
 			continue;
 		}
@@ -191,4 +198,19 @@ fn snap_past_open_tag(html: &str, pos: usize) -> usize {
 		_ => {}
 	}
 	pos
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	/// A record offset past the end of the file, or before the record it follows, is corruption to skip rather than slice.
+	#[test]
+	fn a_fragment_index_with_bad_record_offsets_is_ignored() {
+		let mut mobi_header = vec![0u8; 236];
+		mobi_header[232..236].copy_from_slice(&1u32.to_be_bytes());
+		let data = vec![0u8; 60];
+		assert!(build_fragment_offsets(&data, &[0, 100, 120], &mobi_header).is_empty());
+		assert!(build_fragment_offsets(&data, &[0, 50, 10], &mobi_header).is_empty());
+	}
 }
