@@ -15,9 +15,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import uniffi.paperback.ConfigManagerFfi
 import uniffi.paperback.DocumentSession
+import uniffi.paperback.ReadingStepFfi
 import uniffi.paperback.SegmentDirectionFfi
 import uniffi.paperback.SegmentTypeFfi
-import uniffi.paperback.TextSegmentFfi
+import uniffi.paperback.StepUnitFfi
 
 private const val AUDIO_SEEK_AMOUNT_KEY = "audio_seek_amount_seconds"
 private const val DEFAULT_AUDIO_SEEK_SECONDS = 10
@@ -184,21 +185,17 @@ class ReadingController(
 		val options = search.options.value
 		val tab = activeTab() ?: return true
 		if (query == null || options == null) return true
-		// Forward search includes the start position and would re-find the current match; backward search already excludes it.
-		val searchPos = if (forward) _ttsPosition.value + 1L else _ttsPosition.value
-		val res = tab.session.searchFfi(query, searchPos, options.copy(forward = forward))
-		if (!res.found) {
+		val direction = if (forward) SegmentDirectionFfi.NEXT else SegmentDirectionFfi.PREVIOUS
+		val step = tab.session.readingStep(_ttsPosition.value, StepUnitFfi.Find(query, options), direction)
+		if (!step.found) {
 			// TRANSLATORS: Announced when stepping to the next/previous Find match runs off the end of the document
 			announcer(t("No more matches."))
 			return true
 		}
-		_ttsPosition.value = res.position
-		val segment = tab.session.getTextSegment(res.position, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
-		val text = displayTextFor(tab, segment)
-		_currentSegmentText.value = text
-		saveTtsPositionToConfig(res.position)
+		landOn(step)
+		val text = step.text
 		if (tab.hasAudio) {
-			narration.seekToPosition(res.position)
+			narration.seekToPosition(step.position)
 			if (speak) {
 				narration.play()
 			} else if (announce) {
@@ -227,7 +224,7 @@ class ReadingController(
 		val time = formatDuration(if (tab.isAudioOnly) cursor.seekMs else elapsedMs)
 		val fileChanged = lastAnnouncedAudioSource != clip.source
 		lastAnnouncedAudioSource = clip.source
-		val sectionTitle = sectionTitleAt(tab.toc, clip.start)
+		val sectionTitle = tab.session.sectionTitleAt(clip.start)
 		announcer(if (fileChanged && sectionTitle.isNotBlank()) "$sectionTitle, $time" else time)
 	}
 
@@ -247,14 +244,12 @@ class ReadingController(
 		val tab = activeTab() ?: return
 		// An audio-only buffer has no newlines, so its "paragraph" is the whole buffer and would pin the label to the first file's name.
 		if (tab.isAudioOnly) {
-			_currentSegmentText.value = sectionTitleAt(tab.toc, _ttsPosition.value)
+			_currentSegmentText.value = tab.session.sectionTitleAt(_ttsPosition.value)
 			return
 		}
-		val current = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
-		_currentSegmentText.value = displayTextFor(tab, current).ifBlank {
-			val next = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT)
-			displayTextFor(tab, next)
-		}
+		val current = paragraphStep(tab, _ttsPosition.value, SegmentDirectionFfi.CURRENT)
+		_currentSegmentText.value =
+			if (current.found) current.text else paragraphStep(tab, _ttsPosition.value, SegmentDirectionFfi.NEXT).text
 	}
 
 	private fun speakCurrentSegment() {
@@ -264,10 +259,10 @@ class ReadingController(
 			return
 		}
 		val tab = activeTab() ?: return
-		val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
-		if (segment.text.isNotBlank()) {
+		val segment = paragraphStep(tab, _ttsPosition.value, SegmentDirectionFfi.CURRENT)
+		if (segment.found) {
 			// Keep the exact match position so Find Next cannot land on that match again.
-			if (_currentNavUnit.value !is NavUnit.Find) _ttsPosition.value = segment.startPos
+			if (_currentNavUnit.value !is NavUnit.Find) _ttsPosition.value = segment.position
 			_currentSegmentText.value = segment.text
 			saveTtsPositionToConfig(_ttsPosition.value)
 			ttsManager.stop()
@@ -278,13 +273,8 @@ class ReadingController(
 		}
 	}
 
-	private fun navigateNarrationToSegment(
-		segment: TextSegmentFfi,
-		announceText: String,
-		speak: Boolean,
-		announce: Boolean
-	) {
-		narration.seekToPosition(segment.startPos)
+	private fun navigateNarrationToSegment(position: Long, announceText: String, speak: Boolean, announce: Boolean) {
+		narration.seekToPosition(position)
 		if (speak) {
 			narration.play()
 		}
@@ -297,18 +287,20 @@ class ReadingController(
 		}
 	}
 
-	/** A plain-audio DAISY section's text is just a placeholder space, hence the TOC title fallback. */
-	private fun displayTextFor(tab: DocumentTabState, segment: TextSegmentFfi): String {
-		if (segment.text.isNotBlank()) return segment.text
-		return sectionTitleAt(tab.toc, segment.startPos)
+	private fun paragraphStep(tab: DocumentTabState, position: Long, direction: SegmentDirectionFfi): ReadingStepFfi =
+		tab.session.readingStep(position, StepUnitFfi.Segment(SegmentTypeFfi.PARAGRAPH), direction)
+
+	private fun landOn(step: ReadingStepFfi) {
+		_ttsPosition.value = step.position
+		_currentSegmentText.value = step.text
+		saveTtsPositionToConfig(step.position)
 	}
 
 	/** Bypasses updateTtsPosition/speakCurrentSegment, which snap to the enclosing paragraph's start and would move a Find jump off its match. */
 	fun jumpToFoundPosition(pos: Long, resume: Boolean) {
 		val tab = activeTab() ?: return
 		_ttsPosition.value = pos
-		val segment = tab.session.getTextSegment(pos, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
-		val text = displayTextFor(tab, segment)
+		val text = paragraphStep(tab, pos, SegmentDirectionFfi.CURRENT).text
 		_currentSegmentText.value = text
 		saveTtsPositionToConfig(pos)
 		if (tab.hasAudio) {
@@ -328,38 +320,40 @@ class ReadingController(
 		}
 	}
 
-	fun playNextSegment(speak: Boolean = true, announce: Boolean = false) {
-		if (navigateByFind(forward = true, speak = speak, announce = announce)) return
-		if (seekAudioByNavUnit(forward = true)) return
+	fun playNextSegment(speak: Boolean = true, announce: Boolean = false) =
+		stepSegment(SegmentDirectionFfi.NEXT, speak, announce)
+
+	fun playPrevSegment(speak: Boolean = true, announce: Boolean = false) =
+		stepSegment(SegmentDirectionFfi.PREVIOUS, speak, announce)
+
+	private fun stepSegment(direction: SegmentDirectionFfi, speak: Boolean, announce: Boolean) {
+		val forward = direction == SegmentDirectionFfi.NEXT
+		if (navigateByFind(forward = forward, speak = speak, announce = announce)) return
+		if (seekAudioByNavUnit(forward = forward)) return
 		val tab = activeTab() ?: return
-		val segment = tab.session.getTextSegment(_ttsPosition.value, navSegmentType(), SegmentDirectionFfi.NEXT)
-		if (segment.found) {
-			val text = displayTextFor(tab, segment)
-			_ttsPosition.value = segment.startPos
-			_currentSegmentText.value = text
-			saveTtsPositionToConfig(segment.startPos)
-			if (tab.hasAudio) {
-				navigateNarrationToSegment(segment, text, speak, announce)
-				return
+		val step = tab.session.readingStep(_ttsPosition.value, StepUnitFfi.Segment(navSegmentType()), direction)
+		if (!step.found) return
+		landOn(step)
+		if (tab.hasAudio) {
+			navigateNarrationToSegment(step.position, step.text, speak, announce)
+			return
+		}
+		if (speak) {
+			ttsManager.speak(step.text)
+			precacheNextContinuousSegment()
+		} else {
+			if (ttsManager.isPaused.value) {
+				ttsManager.stop()
 			}
-			if (speak) {
-				ttsManager.speak(text)
-				precacheNextContinuousSegment()
-			} else {
-				if (ttsManager.isPaused.value) {
-					ttsManager.stop()
-				}
-				if (announce) {
-					announceNavigationCue(text)
-				}
+			if (announce) {
+				announceNavigationCue(step.text)
 			}
 		}
 	}
 
 	fun announceFoundMatch(pos: Long) {
 		val tab = activeTab() ?: return
-		val segment = tab.session.getTextSegment(pos, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.CURRENT)
-		announceNavigationCue(displayTextFor(tab, segment))
+		announceNavigationCue(paragraphStep(tab, pos, SegmentDirectionFfi.CURRENT).text)
 	}
 
 	private fun announceNavigationCue(text: String) {
@@ -369,23 +363,19 @@ class ReadingController(
 
 	private fun playNextContinuousSegment() {
 		val tab = activeTab() ?: return
-		val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT)
-		if (segment.text.isNotBlank()) {
-			_ttsPosition.value = segment.startPos
-			_currentSegmentText.value = segment.text
-			saveTtsPositionToConfig(segment.startPos)
-			ttsManager.speak(segment.text)
+		val step = paragraphStep(tab, _ttsPosition.value, SegmentDirectionFfi.NEXT)
+		if (step.found) {
+			landOn(step)
+			ttsManager.speak(step.text)
 			precacheNextContinuousSegment()
 		}
 	}
 
 	private fun transitionToNextContinuousSegment() {
 		val tab = activeTab() ?: return
-		val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT)
-		if (segment.text.isNotBlank()) {
-			_ttsPosition.value = segment.startPos
-			_currentSegmentText.value = segment.text
-			saveTtsPositionToConfig(segment.startPos)
+		val step = paragraphStep(tab, _ttsPosition.value, SegmentDirectionFfi.NEXT)
+		if (step.found) {
+			landOn(step)
 			precacheNextContinuousSegment()
 		}
 	}
@@ -393,37 +383,9 @@ class ReadingController(
 	private fun precacheNextContinuousSegment() {
 		if (shouldStopAfterFindMatch()) return
 		val tab = activeTab() ?: return
-		val segment = tab.session.getTextSegment(_ttsPosition.value, SegmentTypeFfi.PARAGRAPH, SegmentDirectionFfi.NEXT)
-		if (segment.text.isNotBlank()) {
-			ttsManager.precache(segment.text)
-		}
-	}
-
-	fun playPrevSegment(speak: Boolean = true, announce: Boolean = false) {
-		if (navigateByFind(forward = false, speak = speak, announce = announce)) return
-		if (seekAudioByNavUnit(forward = false)) return
-		val tab = activeTab() ?: return
-		val segment = tab.session.getTextSegment(_ttsPosition.value, navSegmentType(), SegmentDirectionFfi.PREVIOUS)
-		if (segment.found) {
-			val text = displayTextFor(tab, segment)
-			_ttsPosition.value = segment.startPos
-			_currentSegmentText.value = text
-			saveTtsPositionToConfig(segment.startPos)
-			if (tab.hasAudio) {
-				navigateNarrationToSegment(segment, text, speak, announce)
-				return
-			}
-			if (speak) {
-				ttsManager.speak(text)
-				precacheNextContinuousSegment()
-			} else {
-				if (ttsManager.isPaused.value) {
-					ttsManager.stop()
-				}
-				if (announce) {
-					announceNavigationCue(text)
-				}
-			}
+		val next = tab.session.readingAhead(_ttsPosition.value).next
+		if (next.isNotEmpty()) {
+			ttsManager.precache(next)
 		}
 	}
 
@@ -433,18 +395,15 @@ class ReadingController(
 
 	fun navigateByType(type: SegmentTypeFfi, direction: SegmentDirectionFfi) {
 		val tab = activeTab() ?: return
-		val segment = tab.session.getTextSegment(_ttsPosition.value, type, direction)
-		if (segment.found) {
-			val text = displayTextFor(tab, segment)
-			_ttsPosition.value = segment.startPos
-			_currentSegmentText.value = text
-			saveTtsPositionToConfig(segment.startPos)
+		val step = tab.session.readingStep(_ttsPosition.value, StepUnitFfi.Segment(type), direction)
+		if (step.found) {
+			landOn(step)
 			if (tab.hasAudio) {
-				navigateNarrationToSegment(segment, text, speak = true, announce = false)
+				navigateNarrationToSegment(step.position, step.text, speak = true, announce = false)
 				return
 			}
 			ttsManager.stop()
-			ttsManager.speak(text)
+			ttsManager.speak(step.text)
 			precacheNextContinuousSegment()
 		}
 	}

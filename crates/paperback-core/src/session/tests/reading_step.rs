@@ -113,4 +113,11 @@ fn the_section_title_is_the_latest_and_deepest_entry_at_or_before_the_position()
 	assert_eq!(session.section_title_at(29.into()), "Chapter 1");
 	assert_eq!(session.section_title_at(35.into()), "Chapter 2");
 	assert_eq!(session_with_content("x").section_title_at(0.into()), "");
+	// Naming the first section here would announce a chapter the reader has not reached.
+	let late = vec![TocItem::new("Chapter 1".to_string(), String::new(), 10.into())];
+	assert_eq!(
+		session_with_toc(DocumentBuffer::with_content("x".repeat(20)), late, ParserFlags::empty())
+			.section_title_at(5.into()),
+		""
+	);
 }

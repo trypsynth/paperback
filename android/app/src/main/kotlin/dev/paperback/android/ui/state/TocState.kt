@@ -62,7 +62,3 @@ internal fun ancestorsOf(toc: List<TocEntry>, index: Int): Set<Int> {
 	}
 	return ancestors
 }
-
-/** Unlike [activeEntryFor], empty before the first entry: an announcement is better silent than naming a section the reader is not in. */
-fun sectionTitleAt(toc: List<TocEntry>, position: Long): String =
-	toc.lastOrNull { it.position <= position }?.title.orEmpty()
