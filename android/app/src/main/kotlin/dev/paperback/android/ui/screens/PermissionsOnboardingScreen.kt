@@ -38,6 +38,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.paperback.android.saveSoon
 import dev.paperback.android.t
 import dev.paperback.android.ui.state.MainScreenViewModel
 
@@ -92,7 +93,7 @@ fun PermissionsGate(viewModel: MainScreenViewModel) {
 					settings.useInAppFileBrowser.set(true)
 					hasAutoEnabledInAppFileBrowser = true
 					viewModel.configManager.setAppBool(AUTO_ENABLED_IN_APP_FILE_BROWSER_KEY, true)
-					viewModel.configManager.flush()
+					viewModel.configManager.saveSoon()
 				}
 			}
 		}
@@ -119,7 +120,7 @@ fun PermissionsGate(viewModel: MainScreenViewModel) {
 		onContinue = {
 			onboardingCompleted = true
 			viewModel.configManager.setAppBool(ONBOARDING_SHOWN_KEY, true)
-			viewModel.configManager.flush()
+			viewModel.configManager.saveSoon()
 		}
 	)
 }

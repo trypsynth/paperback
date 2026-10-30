@@ -1,5 +1,6 @@
 package dev.paperback.android.ui.state
 
+import dev.paperback.android.saveSoon
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,13 +47,13 @@ class ReaderSettings(private val config: ConfigManagerFfi) {
 
 	private fun boolSetting(key: String, default: Boolean) = Setting(config.getAppBool(key, default)) {
 		config.setAppBool(key, it)
-		config.flush()
+		config.saveSoon()
 	}
 
 	private fun intSetting(key: String, default: Int, sanitize: (Int) -> Int = { it }) =
 		Setting(config.getAppInt(key, default), sanitize) {
 			config.setAppInt(key, it)
-			config.flush()
+			config.saveSoon()
 		}
 
 	companion object {

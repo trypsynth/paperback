@@ -15,6 +15,7 @@ import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import dev.paperback.android.MainActivity
+import dev.paperback.android.saveSoon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -471,7 +472,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		val percentage = ratePercentage.coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE)
 		_currentSpeechRate.value = percentage
 		config.setAppString("${KEY_RATE}_${getCurrentEngine()}", percentage.toString())
-		config.flush()
+		config.saveSoon()
 		tts?.setSpeechRate(speechRateFor(percentage))
 		resynthesizePrecache()
 		applyToCurrentParagraph()
@@ -481,7 +482,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		val percentage = pitchPercentage.coerceIn(MIN_SPEECH_PERCENTAGE, MAX_SPEECH_PERCENTAGE)
 		_currentPitch.value = percentage
 		config.setAppString("${KEY_PITCH}_${getCurrentEngine()}", percentage.toString())
-		config.flush()
+		config.saveSoon()
 		tts?.setPitch(pitchFor(percentage))
 		resynthesizePrecache()
 		applyToCurrentParagraph()
@@ -517,7 +518,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		if (pause == _paragraphPauseMs.value) return
 		_paragraphPauseMs.value = pause
 		config.setAppString(KEY_PARAGRAPH_PAUSE, pause.toString())
-		config.flush()
+		config.saveSoon()
 	}
 
 	fun getAvailableEngines(): List<TextToSpeech.EngineInfo> {
@@ -541,7 +542,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 	fun setEngine(engineName: String) {
 		if (engineName != getCurrentEngine()) {
 			config.setAppString(KEY_ENGINE, engineName)
-			config.flush()
+			config.saveSoon()
 			initTts(engineName)
 		}
 	}
@@ -568,7 +569,7 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 		val engine = _currentEngineName.value
 		if (engine != null && engine != SYSTEM_DEFAULT) {
 			config.setAppString("${KEY_VOICE}_$engine", voice.name)
-			config.flush()
+			config.saveSoon()
 			tts?.voice = voice
 			_currentVoice.value = voice
 		}

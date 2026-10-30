@@ -12,6 +12,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.paperback.android.assetLocaleTags
 import dev.paperback.android.bestLocaleMatch
+import dev.paperback.android.saveSoon
 import dev.paperback.android.t
 import dev.paperback.android.tts.TtsManager
 import dev.paperback.android.ui.dialogs.GO_TO_LINE
@@ -70,7 +71,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 	private fun persistActiveDocument(docKey: String) {
 		viewModelScope.launch(Dispatchers.IO) {
 			config.setAppString(ACTIVE_DOCUMENT_KEY, docKey)
-			config.flush()
+			config.saveSoon()
 		}
 	}
 
@@ -244,7 +245,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 	fun removeRecentDocument(uriString: String) {
 		viewModelScope.launch(Dispatchers.IO) {
 			config.removeDocumentHistory(uriString)
-			config.flush()
+			config.saveSoon()
 			updateRecentDocuments()
 			withContext(Dispatchers.Main) {
 				emitTabsState()
@@ -260,7 +261,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 			} catch (_: SecurityException) {
 			}
 			config.renameDocumentPath(oldUriString, newUriString)
-			config.flush()
+			config.saveSoon()
 			updateRecentDocuments()
 			withContext(Dispatchers.Main) {
 				emitTabsState()
@@ -282,7 +283,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 				if (track) {
 					config.addRecentDocument(uriString)
 					config.addOpenedDocument(uriString)
-					config.flush()
+					config.saveSoon()
 				}
 				loadDocument(uri, true)
 			}
@@ -295,7 +296,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 			viewModelScope.launch(Dispatchers.IO) {
 				config.removeOpenedDocument(closedTab.documentUri)
 				config.setDocumentOpened(closedTab.documentUri, false)
-				config.flush()
+				config.saveSoon()
 				documentCache.directoryFor(closedTab.documentUri).deleteRecursively()
 				updateRecentDocuments()
 				withContext(Dispatchers.Main) {
@@ -333,7 +334,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 		reading.shutdown()
 		Thread {
 			try {
-				config.flush()
+				config.saveSoon()
 			} catch (_: Exception) {
 			}
 		}.start()
@@ -386,7 +387,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 			val session = DocumentSession.newFfi(absolutePath, password, "", false)
 			if (providedPassword != null) {
 				config.setDocumentPassword(uriString, providedPassword)
-				config.flush()
+				config.saveSoon()
 			}
 			val initialScrollIndex = if (savedPosition > 0L) {
 				(session.lineFromPosition(savedPosition) - 1L).toInt().coerceAtLeast(0)
@@ -448,7 +449,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 					viewModelScope.launch(Dispatchers.IO) {
 						config.removeOpenedDocument(oldTab.documentUri)
 						config.addOpenedDocument(uri.toString())
-						config.flush()
+						config.saveSoon()
 					}
 					currentTabs[existingIndex] = tabState
 				}
@@ -602,7 +603,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 						viewModelScope.launch(Dispatchers.IO) {
 							config.removeOpenedDocument(oldTab.documentUri)
 							config.addOpenedDocument(uri.toString())
-							config.flush()
+							config.saveSoon()
 						}
 						currentTabs[existingIndex] = tabState
 					}
@@ -627,7 +628,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 			if (uriStr != null) {
 				config.removeOpenedDocument(uriStr)
 				config.setDocumentOpened(uriStr, false)
-				config.flush()
+				config.saveSoon()
 				updateRecentDocuments()
 			}
 			withContext(Dispatchers.Main) {

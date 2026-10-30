@@ -49,6 +49,11 @@ class MainActivity : ComponentActivity() {
 		setIntent(intent)
 	}
 
+	override fun onStop() {
+		super.onStop()
+		vm.configManager.saveNow()
+	}
+
 	override fun onDestroy() {
 		super.onDestroy()
 		headsethookHandler.removeCallbacks(headsethookRunnable)

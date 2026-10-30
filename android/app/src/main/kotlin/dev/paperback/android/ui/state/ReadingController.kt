@@ -1,6 +1,7 @@
 package dev.paperback.android.ui.state
 
 import android.app.Application
+import dev.paperback.android.saveSoon
 import dev.paperback.android.t
 import dev.paperback.android.tts.Narrator
 import dev.paperback.android.tts.RecordedNarration
@@ -129,7 +130,7 @@ class ReadingController(
 		_ttsPosition.value = position
 		scope.launch(Dispatchers.IO) {
 			config.setDocumentPosition(documentUri, position)
-			config.flush()
+			config.saveSoon()
 		}
 		if (!narration.isNarrating(documentUri) && ttsManager.isPaused.value) {
 			ttsManager.stop()
@@ -142,7 +143,7 @@ class ReadingController(
 		if (unit is NavUnit.Time) {
 			scope.launch(Dispatchers.IO) {
 				config.setAppInt(AUDIO_SEEK_AMOUNT_KEY, unit.seconds)
-				config.flush()
+				config.saveSoon()
 			}
 		}
 	}
@@ -236,7 +237,7 @@ class ReadingController(
 		val docUri = activeTab()?.documentUri ?: return
 		scope.launch(Dispatchers.IO) {
 			config.setDocumentPosition(docUri, pos)
-			config.flush()
+			config.saveSoon()
 		}
 	}
 

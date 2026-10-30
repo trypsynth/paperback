@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import dev.paperback.android.saveSoon
 import dev.paperback.android.t
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -322,7 +323,7 @@ fun BrowseForFileDialog(
 		onDirectoryChanged = { directory ->
 			scope.launch(Dispatchers.IO) {
 				configManager.setAppString(LAST_DIRECTORY_KEY, directory.absolutePath)
-				configManager.flush()
+				configManager.saveSoon()
 			}
 		},
 		onFileSelected = onFileSelected,

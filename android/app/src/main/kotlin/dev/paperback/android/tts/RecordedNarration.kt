@@ -1,6 +1,7 @@
 package dev.paperback.android.tts
 
 import android.content.Context
+import dev.paperback.android.saveSoon
 import dev.paperback.android.ui.state.DocumentTabState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +51,7 @@ class RecordedNarration(context: Context, private val config: ConfigManagerFfi, 
 		_speed.value = clamped
 		scope.launch(Dispatchers.IO) {
 			config.setAppString(SPEED_KEY, clamped.toString())
-			config.flush()
+			config.saveSoon()
 		}
 	}
 
@@ -87,7 +88,7 @@ class RecordedNarration(context: Context, private val config: ConfigManagerFfi, 
 		val ms = player.resumePointMs() ?: return
 		scope.launch(Dispatchers.IO) {
 			config.setDocumentAudioTimeFfi(uri, ms)
-			config.flush()
+			config.saveSoon()
 		}
 	}
 
