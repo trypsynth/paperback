@@ -187,6 +187,11 @@ internal class StreamedPlayback(
 	}
 
 	private fun rest(): Boolean = try {
+		synchronized(lock) {
+			// A paused track takes nothing, so retrying it would only wake the CPU until play.
+			val before = generation
+			while (!wantPlaying && !closed && generation == before) lock.wait()
+		}
 		Thread.sleep(WAIT_MS)
 		true
 	} catch (_: InterruptedException) {
@@ -296,7 +301,7 @@ internal class StreamedPlayback(
 				lastHeardEnd = end.frame
 				heard.add(end.id)
 			}
-			!closed && (ends.isNotEmpty() || segments.isNotEmpty())
+			!closed && wantPlaying && (ends.isNotEmpty() || segments.isNotEmpty())
 		}
 		heard.forEach(onSegmentPlayed)
 		if (keepGoing) main.postDelayed(::poll, POLL_MS) else polling = false
