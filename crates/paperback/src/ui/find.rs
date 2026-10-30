@@ -6,7 +6,8 @@ use std::{
 
 use paperback_core::{
 	config::ConfigManager,
-	document::{DocLen, DocPos},
+	document::DocPos,
+	reader_core::{self, SearchOptions},
 	session::FindAllLine,
 };
 use patois::t;
@@ -16,7 +17,6 @@ use super::{
 	document_manager::{DocumentManager, DocumentTab},
 	navigation,
 };
-use crate::search::{FindOptions, find_text_with_wrap};
 
 mod dialog;
 mod find_all;
@@ -371,19 +371,11 @@ fn do_find(
 	state.add_to_history(config, &query);
 	// Read before taking the document lock, so the two locks are never taken in the opposite order to the rest of the app.
 	let highlight_found_text = config.lock().unwrap().get_app_bool("highlight_found_text", true);
-	let mut options = FindOptions::default();
-	if forward {
-		options |= FindOptions::FORWARD;
-	}
-	if state.match_case.is_checked() {
-		options |= FindOptions::MATCH_CASE;
-	}
-	if state.whole_word.is_checked() {
-		options |= FindOptions::MATCH_WHOLE_WORD;
-	}
-	if state.use_regex.is_checked() {
-		options |= FindOptions::USE_REGEX;
-	}
+	let mut options = SearchOptions::empty();
+	options.set(SearchOptions::FORWARD, forward);
+	options.set(SearchOptions::MATCH_CASE, state.match_case.is_checked());
+	options.set(SearchOptions::WHOLE_WORD, state.whole_word.is_checked());
+	options.set(SearchOptions::REGEX, state.use_regex.is_checked());
 	let mut dm = doc_manager.lock().unwrap();
 	let Some(tab) = dm.active_tab_mut() else {
 		return;
@@ -394,7 +386,8 @@ fn do_find(
 	// Searches the whole document rather than the loaded window, so a match outside the window can still be reached.
 	let (origin_start, origin_end) = state.search_origin(tab);
 	let start_pos = if forward { origin_end } else { origin_start };
-	let result = find_text_with_wrap(&tab.session.handle().document().buffer, &query, start_pos, options);
+	let result =
+		reader_core::reader_search_with_wrap(&tab.session.handle().document().buffer, &query, start_pos, options);
 	tracing::debug!(query = %query, forward, found = result.found, wrapped = result.wrapped, "find search");
 	if !result.found {
 		drop(dm);
@@ -413,7 +406,7 @@ fn do_find(
 		return;
 	}
 	let start = result.position.min(doc_len.as_pos());
-	let end = (start + DocLen::of(&query)).min(doc_len.as_pos());
+	let end = result.end.min(doc_len.as_pos());
 	let found_line = tab.session.get_line_text(start);
 	state.reveal_match(tab, start, end, highlight_found_text);
 	drop(dm);

@@ -14,7 +14,6 @@ mod logging;
 mod ocr;
 #[cfg(any(target_os = "windows", test))]
 mod rtf;
-mod search;
 mod shell;
 #[cfg(test)]
 mod test_locale;

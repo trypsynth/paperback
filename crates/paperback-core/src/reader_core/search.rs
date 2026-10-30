@@ -30,6 +30,15 @@ fn build_matcher(needle: &str, options: SearchOptions) -> Option<Regex> {
 
 #[must_use]
 pub fn reader_search(buffer: &DocumentBuffer, needle: &str, start: DocPos, options: SearchOptions) -> Option<DocPos> {
+	search_range(buffer, needle, start, options).map(|(found, _)| found)
+}
+
+fn search_range(
+	buffer: &DocumentBuffer,
+	needle: &str,
+	start: DocPos,
+	options: SearchOptions,
+) -> Option<(DocPos, DocPos)> {
 	if needle.is_empty() {
 		return None;
 	}
@@ -37,11 +46,13 @@ pub fn reader_search(buffer: &DocumentBuffer, needle: &str, start: DocPos, optio
 	// A case-insensitive regex avoids copying and lowercasing the whole haystack.
 	let re = build_matcher(needle, options)?;
 	let found = if options.contains(SearchOptions::FORWARD) {
-		re.find(buffer.slice(start_byte..)).map(|m| start_byte + m.start())
+		re.find(buffer.slice(start_byte..)).map(|m| (start_byte + m.start(), start_byte + m.end()))
 	} else {
-		re.find_iter(buffer.slice(..start_byte)).last().map(|m| ContentBytePos::from_raw(m.start()))
+		re.find_iter(buffer.slice(..start_byte))
+			.last()
+			.map(|m| (ContentBytePos::from_raw(m.start()), ContentBytePos::from_raw(m.end())))
 	};
-	found.map(|byte| buffer.pos_at_byte(byte))
+	found.map(|(from, to)| (buffer.pos_at_byte(from), buffer.pos_at_byte(to)))
 }
 
 #[must_use]
@@ -70,14 +81,14 @@ pub fn reader_search_with_wrap(
 	start: DocPos,
 	options: SearchOptions,
 ) -> ffi::SearchResult {
-	if let Some(position) = reader_search(buffer, needle, start, options) {
-		return ffi::SearchResult { found: true, wrapped: false, position };
+	if let Some((position, end)) = search_range(buffer, needle, start, options) {
+		return ffi::SearchResult { found: true, wrapped: false, position, end };
 	}
 	let wrap_pos = if options.contains(SearchOptions::FORWARD) { DocPos::ZERO } else { buffer.end() };
-	if let Some(position) = reader_search(buffer, needle, wrap_pos, options) {
-		return ffi::SearchResult { found: true, wrapped: true, position };
+	if let Some((position, end)) = search_range(buffer, needle, wrap_pos, options) {
+		return ffi::SearchResult { found: true, wrapped: true, position, end };
 	}
-	ffi::SearchResult { found: false, wrapped: false, position: DocPos::ZERO }
+	ffi::SearchResult { found: false, wrapped: false, position: DocPos::ZERO, end: DocPos::ZERO }
 }
 
 #[cfg(test)]
@@ -117,6 +128,18 @@ mod tests {
 		assert!(result.found);
 		assert!(result.wrapped);
 		assert_eq!(result.position, DocLen::of("😀😀").as_pos());
+	}
+
+	/// Find selects to here, so a regex must report what it matched rather than the query's own length.
+	#[test]
+	fn a_regex_match_ends_where_its_text_does() {
+		let buffer = DocumentBuffer::with_content("😀 page 1234 of 9".to_string());
+		let options = SearchOptions::FORWARD | SearchOptions::REGEX;
+		let result = reader_search_with_wrap(&buffer, r"\d+", 0.into(), options);
+		assert_eq!(result.position, DocLen::of("😀 page ").as_pos());
+		assert_eq!(result.end, DocLen::of("😀 page 1234").as_pos());
+		let back = reader_search_with_wrap(&buffer, r"\d+", result.end, SearchOptions::REGEX);
+		assert_eq!((back.position, back.end), (result.position, result.end));
 	}
 
 	#[test]

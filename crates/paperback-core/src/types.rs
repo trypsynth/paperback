@@ -118,6 +118,8 @@ pub struct SearchResult {
 	pub wrapped: bool,
 	/// The start of the document when nothing was found.
 	pub position: DocPos,
+	/// Where the match ends, which only for a plain query is its length past `position`.
+	pub end: DocPos,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
