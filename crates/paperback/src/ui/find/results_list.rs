@@ -73,16 +73,14 @@ pub(super) fn populate_results_list(
 	rows: &Rc<RefCell<Vec<FindAllLine>>>,
 	labels: &Rc<RefCell<Vec<String>>>,
 ) {
-	let mut labels = labels.borrow_mut();
-	labels.clear();
-	{
-		let rows = rows.borrow();
-		labels.reserve(rows.len());
-		for row in rows.iter() {
-			labels.push(result_row_label(row));
-		}
-	}
-	list.set_item_count(i64::try_from(labels.len()).unwrap_or(0));
+	// Setting the count can call the virtual text callback, so the borrow must end first or it panics across FFI.
+	let len = {
+		let mut labels = labels.borrow_mut();
+		labels.clear();
+		labels.extend(rows.borrow().iter().map(result_row_label));
+		labels.len()
+	};
+	list.set_item_count(i64::try_from(len).unwrap_or(0));
 }
 
 #[cfg(target_os = "macos")]
