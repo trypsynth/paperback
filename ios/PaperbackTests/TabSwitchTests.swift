@@ -57,4 +57,17 @@ final class TabSwitchTests: XCTestCase {
 		for path in paths { relaunched.configManager.removeDocumentHistory(path: path) }
 		relaunched.configManager.flush()
 	}
+
+	func testRelaunchingReturnsToTheTabBeingRead() throws {
+		let paths = try [book("first.txt", "Alpha paragraph."), book("second.txt", "Beta paragraph.")].map { $0.path(percentEncoded: false) }
+		let config = AppViewModel().configManager
+		for path in paths { config.addOpenedDocument(path: path) }
+		config.setAppString(key: "active_document", value: paths[0])
+		config.flush()
+		let relaunched = AppViewModel()
+		XCTAssertEqual(relaunched.activeTab?.url.path(percentEncoded: false), paths[0])
+		XCTAssertTrue(relaunched.reading.currentSegmentText.contains("Alpha"), relaunched.reading.currentSegmentText)
+		for tab in relaunched.tabs where paths.contains(tab.url.path(percentEncoded: false)) { relaunched.closeTab(tab) }
+		relaunched.configManager.flush()
+	}
 }

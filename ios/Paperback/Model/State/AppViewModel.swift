@@ -10,6 +10,7 @@ final class AppViewModel {
 	var activeTabId: UUID? = nil {
 		didSet {
 			guard activeTabId != oldValue else { return }
+			configManager.setAppString(key: "active_document", value: activeTab?.url.path(percentEncoded: false) ?? "")
 			reading.ttsManager.stop()
 			speech.load(bookAt: activeTab?.url.path(percentEncoded: false))
 			if let tab = activeTab { reading.loadSegment(for: tab) }
@@ -122,8 +123,13 @@ final class AppViewModel {
 			self?.configManager.setAppBool(key: "text_mode", value: isTextMode)
 		}
 		if restorePreviousDocuments {
+			// Read first, since each restored tab becomes active in turn and saves itself over it.
+			let activePath = configManager.getAppString(key: "active_document", defaultValue: "")
 			for path in configManager.getOpenedDocuments() {
 				tryRestoreDocument(path: path)
+			}
+			if let tab = tabs.first(where: { $0.url.path(percentEncoded: false) == activePath }) {
+				activeTabId = tab.id
 			}
 		}
 		NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
