@@ -7,6 +7,7 @@ use crate::{
 	document::{Document, ParserContext},
 	parser::{Parser, text::TextParser, util::path::extract_title_from_path},
 	t,
+	util::text::normalize_line_endings,
 };
 
 mod encoding;
@@ -45,7 +46,7 @@ impl Parser for RtfParser {
 		let font_table = extract_font_table(&content_str, encoding);
 		let content_str = normalize_escapes(&content_str, encoding, &font_table);
 		// A bare \r (classic Mac) must become \n rather than vanish: dropping it from `\<CR>}`, a paragraph break before a closing brace, leaves the escaped brace `\}`.
-		let content_str = content_str.replace("\r\n", "\n").replace('\r', "\n");
+		let content_str = normalize_line_endings(content_str);
 		let tokens = Lexer::scan(&content_str).map_err(|e| {
 			tracing::warn!(path = %context.file_path, error = %e, "failed to scan rtf document tokens");
 			// TRANSLATORS: Error shown when an RTF document's tokens fail to parse; {} is the underlying lexer error
