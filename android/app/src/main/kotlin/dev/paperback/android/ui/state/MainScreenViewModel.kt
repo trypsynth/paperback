@@ -12,6 +12,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.paperback.android.assetLocaleTags
 import dev.paperback.android.bestLocaleMatch
+import dev.paperback.android.saveNow
 import dev.paperback.android.saveSoon
 import dev.paperback.android.t
 import dev.paperback.android.tts.TtsManager
@@ -285,7 +286,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 					config.addOpenedDocument(uriString)
 					config.saveSoon()
 				}
-				loadDocument(uri, true)
+				loadDocument(uri)
 			}
 		}
 	}
@@ -334,7 +335,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 		reading.shutdown()
 		Thread {
 			try {
-				config.saveSoon()
+				config.saveNow()
 			} catch (_: Exception) {
 			}
 		}.start()
@@ -420,14 +421,16 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 		}
 	}
 
-	private suspend fun loadDocument(uri: Uri, makeActive: Boolean) = withContext(Dispatchers.IO) {
+	private suspend fun loadDocument(uri: Uri, password: String? = null) = withContext(Dispatchers.IO) {
 		if (currentTabs.isEmpty()) {
 			_uiState.value = MainScreenUiState.Loading
 		}
-		val tabState = prepareDocumentTabIO(uri)
+		val tabState = prepareDocumentTabIO(uri, password)
 		if (tabState == null) {
 			withContext(Dispatchers.Main) {
-				if (uri.scheme == "file" && needsAllFilesAccessPermission()) {
+				if (password != null) {
+					_uiState.value = MainScreenUiState.Error("Failed to open file or incorrect password")
+				} else if (uri.scheme == "file" && needsAllFilesAccessPermission()) {
 					navigation.permissionRationaleDialog.open()
 				} else {
 					_uiState.value = MainScreenUiState.Error("Failed to open file")
@@ -439,7 +442,6 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 			return@withContext
 		}
 		val recentDocsUpdated = getRecentDocumentsListIO()
-		val activeDocKey = config.getAppString(ACTIVE_DOCUMENT_KEY, "")
 		withContext(Dispatchers.Main) {
 			recentDocumentsList = recentDocsUpdated
 			val existingIndex = currentTabs.indexOfFirst { it.docKey == tabState.docKey }
@@ -453,30 +455,16 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 					}
 					currentTabs[existingIndex] = tabState
 				}
-				if (makeActive) {
-					currentActiveIndex = existingIndex
-					persistActiveDocument(tabState.docKey)
-				} else if (activeDocKey == tabState.docKey && !makeActive) {
-					currentActiveIndex = existingIndex
-				}
+				currentActiveIndex = existingIndex
 			} else {
 				currentTabs.add(tabState)
-				if (makeActive) {
-					currentActiveIndex = currentTabs.size - 1
-					persistActiveDocument(tabState.docKey)
-				} else if (activeDocKey == tabState.docKey) {
-					currentActiveIndex = currentTabs.size - 1
-					persistActiveDocument(tabState.docKey)
-				} else if (currentActiveIndex == -1) {
-					currentActiveIndex = 0
-				}
+				currentActiveIndex = currentTabs.size - 1
 			}
+			persistActiveDocument(tabState.docKey)
 			emitTabsState()
-			if (makeActive) {
-				reading.setPosition(tabState.savedPosition)
-				updateTtsMetadata()
-				reading.refreshSegmentPreview()
-			}
+			reading.setPosition(tabState.savedPosition)
+			updateTtsMetadata()
+			reading.refreshSegmentPreview()
 		}
 	}
 
@@ -578,47 +566,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 	fun submitPassword(password: String) {
 		val uri = _passwordPromptUri.value ?: return
 		_passwordPromptUri.value = null
-		viewModelScope.launch(Dispatchers.IO) {
-			if (currentTabs.isEmpty()) {
-				_uiState.value = MainScreenUiState.Loading
-			}
-			val tabState = prepareDocumentTabIO(uri, password)
-			if (tabState == null) {
-				withContext(Dispatchers.Main) {
-					_uiState.value = MainScreenUiState.Error("Failed to open file or incorrect password")
-					if (currentTabs.isNotEmpty()) {
-						emitTabsState()
-					}
-				}
-				return@launch
-			}
-			val recentDocsUpdated = getRecentDocumentsListIO()
-			val activeDocKey = config.getAppString(ACTIVE_DOCUMENT_KEY, "")
-			withContext(Dispatchers.Main) {
-				recentDocumentsList = recentDocsUpdated
-				val existingIndex = currentTabs.indexOfFirst { it.docKey == tabState.docKey }
-				if (existingIndex != -1) {
-					val oldTab = currentTabs[existingIndex]
-					if (oldTab.documentUri != uri.toString()) {
-						viewModelScope.launch(Dispatchers.IO) {
-							config.removeOpenedDocument(oldTab.documentUri)
-							config.addOpenedDocument(uri.toString())
-							config.saveSoon()
-						}
-						currentTabs[existingIndex] = tabState
-					}
-					currentActiveIndex = existingIndex
-					persistActiveDocument(tabState.docKey)
-				} else {
-					currentTabs.add(tabState)
-					currentActiveIndex = currentTabs.size - 1
-					persistActiveDocument(tabState.docKey)
-				}
-				emitTabsState()
-				reading.setPosition(tabState.savedPosition)
-				reading.refreshSegmentPreview()
-			}
-		}
+		viewModelScope.launch { loadDocument(uri, password) }
 	}
 
 	fun cancelPasswordPrompt() {
