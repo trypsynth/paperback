@@ -451,8 +451,8 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub const fn stats(&self) -> &document::DocumentStats {
-		&self.handle.document().stats
+	pub fn stats(&self) -> &document::DocumentStats {
+		self.handle.document().stats()
 	}
 
 	#[must_use]

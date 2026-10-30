@@ -90,7 +90,6 @@ pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, select
 			failures.len()
 		);
 	}
-	doc.compute_stats();
 	Ok(())
 }
 

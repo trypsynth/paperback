@@ -283,8 +283,6 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 	out.manifest_items.clone_from(&doc.manifest_items);
 	out.audio_only = doc.audio_only;
 	out.set_buffer(buffer);
-	// Or `pb --metadata` would print the whole book's counts.
-	out.compute_stats();
 	Ok(out)
 }
 
@@ -538,7 +536,7 @@ mod tests {
 		let doc = document_of_pages(6, "Page");
 		let out = extract_document("2-3", &doc);
 		assert_eq!(out.buffer.content, "page2 text\npage3 text\n");
-		assert_eq!(out.stats.line_count, 2, "the extract counted lines from the whole document");
+		assert_eq!(out.stats().line_count, 2, "the extract counted lines from the whole document");
 	}
 
 	/// An emoji is one char but four bytes, so treating positions as bytes only works for ASCII.

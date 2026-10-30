@@ -41,6 +41,7 @@ impl DocumentHandle {
 			*position = outcome.shift(*position);
 		}
 		self.doc.buffer.markers.sort_by_key(|m| m.position);
+		self.doc.stats.take();
 		outcome
 	}
 
@@ -375,5 +376,20 @@ mod tests {
 		let handle = sample_handle();
 		assert_eq!(handle.next_heading_index(0.into(), Some(6)), None);
 		assert_eq!(handle.previous_heading_index(100.into(), Some(6)), None);
+	}
+
+	#[test]
+	fn recognized_text_is_in_the_word_count() {
+		let mut doc = Document::new();
+		doc.set_buffer(DocumentBuffer::with_content(
+			"one
+
+two"
+			.to_string(),
+		));
+		let mut handle = DocumentHandle::new(doc);
+		assert_eq!(handle.document().stats().word_count, 2);
+		handle.replace_ranges(vec![Edit { start: 4.into(), end: 4.into(), text: "three four".to_string() }]);
+		assert_eq!(handle.document().stats().word_count, 4);
 	}
 }

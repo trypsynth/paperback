@@ -420,9 +420,9 @@ fn metadata(doc: &Document) -> String {
 	if !doc.author.is_empty() {
 		let _ = writeln!(out, "Author: {}", doc.author);
 	}
-	let _ = writeln!(out, "Words: {}", doc.stats.word_count);
-	let _ = writeln!(out, "Characters: {}", doc.stats.char_count);
-	let _ = writeln!(out, "Lines: {}", doc.stats.line_count);
+	let _ = writeln!(out, "Words: {}", doc.stats().word_count);
+	let _ = writeln!(out, "Characters: {}", doc.stats().char_count);
+	let _ = writeln!(out, "Lines: {}", doc.stats().line_count);
 	out
 }
 

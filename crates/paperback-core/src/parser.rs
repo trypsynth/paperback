@@ -197,8 +197,7 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 	let mut last_error = None;
 	for parser in parsers {
 		match parser.parse(context) {
-			Ok(mut doc) => {
-				doc.compute_stats();
+			Ok(doc) => {
 				tracing::debug!(path = %context.file_path, parser = parser.name(), "parsed document");
 				return Ok(doc);
 			}

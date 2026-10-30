@@ -194,7 +194,6 @@ fn table_session() -> DocumentSession {
 	);
 	let mut doc = Document::new();
 	doc.set_buffer(buffer);
-	doc.compute_stats();
 	DocumentSession {
 		handle: DocumentHandle::new(doc),
 		file_path: "book.epub".to_string(),
@@ -233,7 +232,6 @@ fn get_table_at_position_handles_multibyte_extent() {
 	);
 	let mut doc = Document::new();
 	doc.set_buffer(buffer);
-	doc.compute_stats();
 	let session = DocumentSession {
 		handle: DocumentHandle::new(doc),
 		file_path: "book.epub".to_string(),

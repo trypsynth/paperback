@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::OnceLock};
 
 pub use paperback_formats::ParserFlags;
 
@@ -28,7 +28,7 @@ pub struct Document {
 	pub id_positions: HashMap<String, DocPos>,
 	pub spine_items: Vec<String>,
 	pub manifest_items: HashMap<String, String>,
-	pub stats: DocumentStats,
+	pub(crate) stats: OnceLock<DocumentStats>,
 	pub audio: Option<AudioTimeline>,
 	/// The text only anchors audio (a zip of bare narration files), so read-aloud UIs navigate by time, as text units would have nothing to land on.
 	pub audio_only: bool,
@@ -45,7 +45,7 @@ impl Document {
 			id_positions: HashMap::new(),
 			spine_items: Vec::new(),
 			manifest_items: HashMap::new(),
-			stats: DocumentStats::default(),
+			stats: OnceLock::new(),
 			audio: None,
 			audio_only: false,
 		}
@@ -65,19 +65,24 @@ impl Document {
 
 	pub fn set_buffer(&mut self, buffer: DocumentBuffer) {
 		self.buffer = buffer;
+		self.stats.take();
 	}
 
 	pub fn set_audio(&mut self, audio: AudioTimeline) {
 		self.audio = Some(audio);
+		self.stats.take();
 	}
 
-	pub fn compute_stats(&mut self) {
-		let mut stats = DocumentStats::from_text(&self.buffer.content);
-		if let Some(audio) = &self.audio {
-			stats.audio_file_count = audio.sources().len();
-			stats.audio_total_duration_ms = audio.durations_are_known().then(|| audio.total_duration_ms());
-		}
-		self.stats = stats;
+	/// Counted on first use rather than at open, since it is a pass over the whole text that only the word count and document info need.
+	pub fn stats(&self) -> &DocumentStats {
+		self.stats.get_or_init(|| {
+			let mut stats = DocumentStats::from_text(&self.buffer.content);
+			if let Some(audio) = &self.audio {
+				stats.audio_file_count = audio.sources().len();
+				stats.audio_total_duration_ms = audio.durations_are_known().then(|| audio.total_duration_ms());
+			}
+			stats
+		})
 	}
 }
 
@@ -179,18 +184,17 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn document_compute_stats_uses_buffer_content() {
+	fn document_stats_uses_buffer_content() {
 		let mut doc = Document::new();
 		doc.set_buffer(DocumentBuffer::with_content("one two".to_string()));
-		doc.compute_stats();
-		assert_eq!(doc.stats.word_count, 2);
-		assert_eq!(doc.stats.line_count, 1);
-		assert_eq!(doc.stats.audio_file_count, 0);
-		assert_eq!(doc.stats.audio_total_duration_ms, None);
+		assert_eq!(doc.stats().word_count, 2);
+		assert_eq!(doc.stats().line_count, 1);
+		assert_eq!(doc.stats().audio_file_count, 0);
+		assert_eq!(doc.stats().audio_total_duration_ms, None);
 	}
 
 	#[test]
-	fn document_compute_stats_folds_in_audio_file_count_and_duration() {
+	fn document_stats_folds_in_audio_file_count_and_duration() {
 		let mut builder = crate::audio::AudioTimelineBuilder::new();
 		let source0 = builder.add_source(crate::audio::AudioLocation::File("a.mp3".to_string()), Some(2000));
 		let source1 = builder.add_source(crate::audio::AudioLocation::File("b.mp3".to_string()), Some(3000));
@@ -199,13 +203,12 @@ mod tests {
 		let mut doc = Document::new();
 		doc.set_buffer(DocumentBuffer::with_content("a b".to_string()));
 		doc.set_audio(builder.build());
-		doc.compute_stats();
-		assert_eq!(doc.stats.audio_file_count, 2);
-		assert_eq!(doc.stats.audio_total_duration_ms, Some(5000));
+		assert_eq!(doc.stats().audio_file_count, 2);
+		assert_eq!(doc.stats().audio_total_duration_ms, Some(5000));
 	}
 
 	#[test]
-	fn document_compute_stats_has_no_audio_duration_when_a_file_length_is_unknown() {
+	fn document_stats_has_no_audio_duration_when_a_file_length_is_unknown() {
 		let mut builder = crate::audio::AudioTimelineBuilder::new();
 		let source0 = builder.add_source(crate::audio::AudioLocation::File("a.mp3".to_string()), Some(2000));
 		let source1 = builder.add_source(crate::audio::AudioLocation::File("b.mp3".to_string()), None);
@@ -214,9 +217,8 @@ mod tests {
 		let mut doc = Document::new();
 		doc.set_buffer(DocumentBuffer::with_content("a b".to_string()));
 		doc.set_audio(builder.build());
-		doc.compute_stats();
-		assert_eq!(doc.stats.audio_file_count, 2);
-		assert_eq!(doc.stats.audio_total_duration_ms, None);
+		assert_eq!(doc.stats().audio_file_count, 2);
+		assert_eq!(doc.stats().audio_total_duration_ms, None);
 	}
 
 	#[test]
