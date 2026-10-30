@@ -17,11 +17,8 @@ use super::{
 use crate::{
 	text_window::TextWindow,
 	ui::{
-		readability::{
-			ReadabilityStyle, apply_bg_color_to_ctrl, apply_foreground_color_to_ctrl, apply_readability_format_to_ctrl,
-			build_font_from_readability, readability_style,
-		},
-		text_render::fill_text_ctrl_with_formatting,
+		readability::{ReadabilityStyle, readability_style},
+		text_render::style_and_fill,
 	},
 	working_copy::WorkingCopy,
 };
@@ -230,19 +227,7 @@ fn reparse_tab_in_place(
 	let doc_len = tab.session.document_len();
 	let slice = tab.session.get_window(DocPos::ZERO, doc_len.as_pos());
 	tab.window = TextWindow::of(&slice);
-	fill_text_ctrl_with_formatting(tab.text_ctrl, &slice, &tab.window);
-	if let Some(font) = build_font_from_readability(&style.rf) {
-		tab.text_ctrl.set_font(&font);
-	}
-	apply_foreground_color_to_ctrl(tab.text_ctrl.widget(), style.rf.color);
-	apply_bg_color_to_ctrl(tab.text_ctrl.widget(), style.bg_color);
-	apply_readability_format_to_ctrl(
-		tab.text_ctrl.widget(),
-		style.line_spacing,
-		style.paragraph_spacing,
-		style.letter_spacing,
-		style.text_alignment,
-	);
+	style_and_fill(tab.text_ctrl, &slice, &tab.window, style);
 	tab.panel.layout();
 	let restored_pos = if let Some((ref key, within)) = stable_anchor {
 		match tab.session.handle().document().id_positions.get(key) {

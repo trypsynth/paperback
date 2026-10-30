@@ -6,7 +6,14 @@ use wxdragon::prelude::*;
 
 #[cfg(target_os = "windows")]
 use super::reader_ctrl::ctrl_len;
-use super::{document_manager::DocumentTab, reader_ctrl::ReaderCtrl};
+use super::{
+	document_manager::DocumentTab,
+	readability::{
+		ReadabilityStyle, apply_bg_color_to_ctrl, apply_foreground_color_to_ctrl, apply_readability_format_to_ctrl,
+		build_font_from_readability,
+	},
+	reader_ctrl::ReaderCtrl,
+};
 #[cfg(target_os = "windows")]
 use super::{
 	paragraph_format::apply_paragraph_formats,
@@ -96,6 +103,28 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: ReaderCtrl, slice: &WindowSlice, w
 /// Streaming RTF costs about 3.5s however little formatting it carries, against about 2s for plain text plus 10ms per styled span, so it only pays past a hundred spans or so (#920).
 #[cfg(target_os = "windows")]
 const RTF_STREAM_MIN_SEGMENTS: usize = 128;
+
+/// The font goes on before the fill, which reads it back for the RTF font table.
+pub(super) fn style_and_fill(
+	text_ctrl: ReaderCtrl,
+	slice: &WindowSlice,
+	window: &TextWindow,
+	style: &ReadabilityStyle,
+) {
+	if let Some(font) = build_font_from_readability(&style.rf) {
+		text_ctrl.set_font(&font);
+	}
+	apply_foreground_color_to_ctrl(text_ctrl.widget(), style.rf.color);
+	apply_bg_color_to_ctrl(text_ctrl.widget(), style.bg_color);
+	fill_text_ctrl_with_formatting(text_ctrl, slice, window);
+	apply_readability_format_to_ctrl(
+		text_ctrl.widget(),
+		style.line_spacing,
+		style.paragraph_spacing,
+		style.letter_spacing,
+		style.text_alignment,
+	);
+}
 
 pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: ReaderCtrl, slice: &WindowSlice, window: &TextWindow) {
 	let content = slice.text.as_str();

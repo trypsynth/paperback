@@ -8,11 +8,11 @@ use crate::{
 	ui::{
 		readability::{
 			apply_bg_color_to_ctrl, apply_foreground_color_to_ctrl, apply_letter_spacing_to_ctrl,
-			apply_line_spacing_to_ctrl, apply_paragraph_spacing_to_ctrl, apply_readability_format_to_ctrl,
-			apply_text_alignment_to_ctrl, build_font_from_readability,
+			apply_line_spacing_to_ctrl, apply_paragraph_spacing_to_ctrl, apply_text_alignment_to_ctrl,
+			readability_style,
 		},
 		reader_input,
-		text_render::fill_text_ctrl_with_formatting,
+		text_render::style_and_fill,
 	},
 };
 
@@ -67,17 +67,7 @@ impl DocumentManager {
 	}
 
 	pub fn apply_word_wrap(&mut self, self_rc: &Rc<Mutex<Self>>, word_wrap: bool) {
-		let (rf, line_spacing, bg_color, text_alignment, letter_spacing, paragraph_spacing) = {
-			let cfg = self.config.lock().unwrap();
-			(
-				cfg.get_readability_font(),
-				cfg.get_line_spacing(),
-				cfg.get_bg_color(),
-				cfg.get_text_alignment(),
-				cfg.get_letter_spacing(),
-				cfg.get_paragraph_spacing(),
-			)
-		};
+		let style = readability_style(&self.config.lock().unwrap());
 		for tab in &mut self.tabs {
 			let old_ctrl = tab.text_ctrl;
 			let current_doc_pos = tab.window.to_doc(old_ctrl.get_insertion_point());
@@ -89,19 +79,7 @@ impl DocumentManager {
 			sizer.add(&text_ctrl.widget(), 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
 			tab.window = TextWindow::of(&slice);
-			fill_text_ctrl_with_formatting(text_ctrl, &slice, &tab.window);
-			if let Some(font) = build_font_from_readability(&rf) {
-				text_ctrl.set_font(&font);
-			}
-			apply_foreground_color_to_ctrl(text_ctrl.widget(), rf.color);
-			apply_bg_color_to_ctrl(text_ctrl.widget(), bg_color);
-			apply_readability_format_to_ctrl(
-				text_ctrl.widget(),
-				line_spacing,
-				paragraph_spacing,
-				letter_spacing,
-				text_alignment,
-			);
+			style_and_fill(text_ctrl, &slice, &tab.window, &style);
 			let max_pos = text_ctrl.get_last_position();
 			let pos = tab.window.to_local(current_doc_pos).min(max_pos);
 			tab.panel.layout();
