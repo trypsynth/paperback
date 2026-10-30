@@ -1,6 +1,6 @@
 use super::DocumentSession;
 use crate::{
-	document::{ContentBytePos, DocPos, MarkerType},
+	document::{DocLen, DocPos, MarkerType},
 	reader_core::SearchOptions,
 };
 
@@ -26,9 +26,7 @@ impl DocumentSession {
 		if matches.is_empty() {
 			return Vec::new();
 		}
-		let newline_bytes: Vec<ContentBytePos> =
-			buffer.content.match_indices('\n').map(|(idx, _)| ContentBytePos::from_raw(idx)).collect();
-		let content_end = buffer.content_end();
+		let newlines = buffer.newline_positions();
 		// Collected once, so each line's page is a binary search rather than a walk over every marker.
 		let pagebreak_offsets: Vec<DocPos> = buffer
 			.markers
@@ -37,14 +35,13 @@ impl DocumentSession {
 			.map(|marker| marker.position)
 			.collect();
 		let mut rows: Vec<FindAllLine> = Vec::new();
-		let mut open_line_start: Option<ContentBytePos> = None;
+		let mut open_line_start: Option<DocPos> = None;
 		for (start, end) in matches {
-			let start_byte = buffer.byte_at(start);
-			let line_idx = newline_bytes.partition_point(|&p| p < start_byte);
-			let line_start = if line_idx == 0 { ContentBytePos::ZERO } else { newline_bytes[line_idx - 1] + 1 };
-			let line_end = newline_bytes.get(line_idx).copied().unwrap_or(content_end);
+			let line_idx = newlines.partition_point(|&p| p < start);
+			let line_start = if line_idx == 0 { DocPos::ZERO } else { newlines[line_idx - 1] + DocLen::ONE };
+			let line_end = newlines.get(line_idx).copied().unwrap_or_else(|| buffer.end());
 			if open_line_start != Some(line_start) {
-				let text = buffer.slice(line_start..line_end).trim().to_string();
+				let text = buffer.text(line_start..line_end).trim().to_string();
 				if text.is_empty() {
 					continue;
 				}
