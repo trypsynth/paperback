@@ -214,22 +214,20 @@ impl DocumentSession {
 		let start = self.position_from_line(line);
 		let end_pos = self.position_from_line(line + 1);
 		let end = (start != end_pos).then_some(end_pos);
-		let mut res = Vec::new();
-		for marker in &buf.markers {
-			if marker.position >= start && end.is_none_or(|end| marker.position < end) {
-				res.push(LineMarker {
-					mtype: marker.mtype,
-					position: marker.position,
-					text: marker.text.clone(),
-					reference: marker.reference.clone(),
-					level: marker.level,
-					length: marker.length,
-				});
-			} else if end.is_some_and(|end| marker.position > end) {
-				break;
-			}
-		}
-		res
+		// Markers are kept sorted, so the line's are one run found by binary search; this runs for every line Android shows.
+		let first = buf.markers.partition_point(|marker| marker.position < start);
+		buf.markers[first..]
+			.iter()
+			.take_while(|marker| end.is_none_or(|end| marker.position < end))
+			.map(|marker| LineMarker {
+				mtype: marker.mtype,
+				position: marker.position,
+				text: marker.text.clone(),
+				reference: marker.reference.clone(),
+				level: marker.level,
+				length: marker.length,
+			})
+			.collect()
 	}
 }
 

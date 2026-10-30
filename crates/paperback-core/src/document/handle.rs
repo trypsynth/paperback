@@ -70,10 +70,10 @@ impl DocumentHandle {
 
 	#[must_use]
 	pub fn previous_marker_index(&self, position: DocPos, marker_type: MarkerType) -> Option<usize> {
-		self.markers_by_type(marker_type)
-			.filter(|(_, marker)| marker.position < position)
-			.map(|(idx, _)| idx)
-			.next_back()
+		let markers = &self.doc.buffer.markers;
+		markers[..markers.partition_point(|marker| marker.position < position)]
+			.iter()
+			.rposition(|marker| marker.mtype == marker_type)
 	}
 
 	#[must_use]
@@ -88,15 +88,10 @@ impl DocumentHandle {
 
 	#[must_use]
 	pub fn current_marker_index(&self, position: DocPos, marker_type: MarkerType) -> Option<usize> {
-		let mut result = None;
-		for (idx, marker) in self.doc.buffer.markers.iter().enumerate() {
-			if marker.mtype == marker_type && marker.position <= position {
-				result = Some(idx);
-			} else if marker.position > position {
-				break;
-			}
-		}
-		result
+		let markers = &self.doc.buffer.markers;
+		markers[..markers.partition_point(|marker| marker.position <= position)]
+			.iter()
+			.rposition(|marker| marker.mtype == marker_type)
 	}
 
 	/// A caret exactly at a container's end is past it.
