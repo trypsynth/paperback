@@ -10,13 +10,13 @@ private final class SectionAudioSession: DocumentSession, @unchecked Sendable {
 	override func hasAudioFfi() -> Bool { true }
 	override func isAudioOnlyFfi() -> Bool { true }
 	override func getSupportedSegmentTypesFfi() -> [SegmentTypeFfi] { [.section] }
-	override func getToc() -> [TocEntry] {
-		(0..<3).map { TocEntry(title: "Chapter \($0 + 1)", position: Int64($0), level: 1) }
-	}
-	override func getTextSegment(position: Int64, segmentType: SegmentTypeFfi, direction: SegmentDirectionFfi) -> TextSegmentFfi {
+	override func readingStep(position: Int64, unit: StepUnitFfi, direction: SegmentDirectionFfi) -> ReadingStepFfi {
 		let destination = position + (direction == .next ? 1 : direction == .previous ? -1 : 0)
 		let found = (0..<3).contains(destination)
-		return TextSegmentFfi(text: found ? "Chapter \(destination + 1)" : "", startPos: destination, endPos: destination + 1, found: found)
+		return ReadingStepFfi(found: found, position: found ? destination : position, text: found ? "Chapter \(destination + 1)" : "")
+	}
+	override func sectionTitleAt(position: Int64) -> String {
+		(0..<3).contains(position) ? "Chapter \(position + 1)" : ""
 	}
 	override func audioPointForPositionFfi(position: Int64) -> AudioPointFfi {
 		AudioPointFfi(found: (0..<3).contains(position), position: position, timeMs: position * 10_000)

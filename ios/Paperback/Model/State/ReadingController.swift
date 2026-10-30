@@ -132,54 +132,38 @@ final class ReadingController {
 
 	@discardableResult
 	func playNextSegment(speak: Bool = true, announce: Bool = false) -> Bool {
-		if seekAudioByNavUnit(forward: true) { return true }
-		if navigateByFind(forward: true, speak: speak, announce: announce) { return true }
-		if hasAudio { return navigateRecordedSegment(currentSegmentType, direction: .next) }
-		guard let session = activeSession else { return false }
-		let seg = session.getTextSegment(
-			position: ttsPosition,
-			segmentType: currentSegmentType,
-			direction: .next
-		)
-		if seg.text.isEmpty { return false }
-		ttsPosition = seg.startPos
-		currentSegmentText = seg.text
-		context?.persistPosition(seg.startPos)
-		if speak {
-			ttsManager.speak(seg.text)
-			prefetchAdjacentSegments(around: seg.startPos)
-		} else {
-			// Discard any paused buffer so pressing play starts at the new position.
-			if ttsManager.isPaused { ttsManager.stop() }
-			if announce { announceNavigationCue(seg.text) }
-		}
-		return true
+		stepSegment(.next, speak: speak, announce: announce)
 	}
 
 	@discardableResult
 	func playPrevSegment(speak: Bool = true, announce: Bool = false) -> Bool {
-		if seekAudioByNavUnit(forward: false) { return true }
-		if navigateByFind(forward: false, speak: speak, announce: announce) { return true }
-		if hasAudio { return navigateRecordedSegment(currentSegmentType, direction: .previous) }
+		stepSegment(.previous, speak: speak, announce: announce)
+	}
+
+	private func stepSegment(_ direction: SegmentDirectionFfi, speak: Bool, announce shouldAnnounce: Bool) -> Bool {
+		let forward = direction == .next
+		if seekAudioByNavUnit(forward: forward) { return true }
+		if navigateByFind(forward: forward, speak: speak, announce: shouldAnnounce) { return true }
+		if hasAudio { return navigateRecordedSegment(currentSegmentType, direction: direction) }
 		guard let session = activeSession else { return false }
-		let seg = session.getTextSegment(
-			position: ttsPosition,
-			segmentType: currentSegmentType,
-			direction: .previous
-		)
-		if seg.text.isEmpty || seg.startPos == ttsPosition { return false }
-		ttsPosition = seg.startPos
-		currentSegmentText = seg.text
-		context?.persistPosition(seg.startPos)
+		let step = session.readingStep(position: ttsPosition, unit: .segment(segmentType: currentSegmentType), direction: direction)
+		guard step.found else { return false }
+		land(on: step)
 		if speak {
-			ttsManager.speak(seg.text)
-			prefetchAdjacentSegments(around: seg.startPos)
+			ttsManager.speak(step.text)
+			prefetchAdjacentSegments(around: step.position)
 		} else {
 			// Discard any paused buffer so pressing play starts at the new position.
 			if ttsManager.isPaused { ttsManager.stop() }
-			if announce { announceNavigationCue(seg.text) }
+			if shouldAnnounce { announceNavigationCue(step.text) }
 		}
 		return true
+	}
+
+	private func land(on step: ReadingStepFfi) {
+		ttsPosition = step.position
+		currentSegmentText = step.text
+		context?.persistPosition(step.position)
 	}
 
 	private func advanceTtsAfterUtterance() {
@@ -195,25 +179,11 @@ final class ReadingController {
 	// `isAutoAdvance` only from the utterance-finished callback: speak() treats it as audio already playing, so a press of play would no-op into silence.
 	private func speakNextContinuousSegment(isAutoAdvance: Bool) {
 		guard let session = activeSession else { return }
-		let seg = session.getTextSegment(
-			position: ttsPosition,
-			segmentType: continuousPlaybackSegmentType(),
-			direction: .next
-		)
-		if seg.text.isEmpty { return }
-		ttsPosition = seg.startPos
-		currentSegmentText = seg.text
-		context?.persistPosition(seg.startPos)
-		ttsManager.speak(seg.text, isAutoAdvance: isAutoAdvance)
-		prefetchAdjacentSegments(around: seg.startPos)
-	}
-
-	// Other units are marker jumps that return only the marker's title, so continuous playback would read a heading and skip to the next one forever.
-	private func continuousPlaybackSegmentType() -> SegmentTypeFfi {
-		switch currentSegmentType {
-		case .paragraph, .line: return currentSegmentType
-		default: return .paragraph
-		}
+		let step = session.readingStep(position: ttsPosition, unit: .segment(segmentType: .paragraph), direction: .next)
+		guard step.found else { return }
+		land(on: step)
+		ttsManager.speak(step.text, isAutoAdvance: isAutoAdvance)
+		prefetchAdjacentSegments(around: step.position)
 	}
 
 	private func announceNavigationCue(_ text: String) {
@@ -231,21 +201,10 @@ final class ReadingController {
 
 	private func prefetchAdjacentSegments(around position: Int64) {
 		guard let session = activeSession else { return }
-		let type = continuousPlaybackSegmentType()
-		let next = session.getTextSegment(position: position, segmentType: type, direction: .next)
-		var upcoming: [String] = []
-		if !next.text.isEmpty {
-			upcoming.append(next.text)
-			let nextNext = session.getTextSegment(position: next.startPos, segmentType: type, direction: .next)
-			if !nextNext.text.isEmpty {
-				upcoming.append(nextNext.text)
-			}
-		}
-		ttsManager.prefetch(upcoming: upcoming)
-
-		let prev = session.getTextSegment(position: position, segmentType: type, direction: .previous)
-		if !prev.text.isEmpty {
-			ttsManager.prefetchPrev(prev.text)
+		let ahead = session.readingAhead(position: position)
+		ttsManager.prefetch(upcoming: [ahead.next, ahead.afterNext].filter { !$0.isEmpty })
+		if !ahead.previous.isEmpty {
+			ttsManager.prefetchPrev(ahead.previous)
 		}
 	}
 
@@ -259,33 +218,26 @@ final class ReadingController {
 			return
 		}
 		guard let session = activeSession else { return }
-		let seg = session.getTextSegment(position: ttsPosition, segmentType: type, direction: direction)
-		if seg.text.isEmpty { return }
-		if direction == .previous && seg.startPos == ttsPosition { return }
-		ttsPosition = seg.startPos
-		currentSegmentText = seg.text
-		context?.persistPosition(seg.startPos)
+		let step = session.readingStep(position: ttsPosition, unit: .segment(segmentType: type), direction: direction)
+		guard step.found else { return }
+		land(on: step)
 		if ttsManager.isSpeaking {
-			ttsManager.speak(seg.text)
-			prefetchAdjacentSegments(around: seg.startPos)
+			ttsManager.speak(step.text)
+			prefetchAdjacentSegments(around: step.position)
 		} else {
 			if ttsManager.isPaused { ttsManager.stop() }
-			announceNavigationCue(seg.text)
+			announceNavigationCue(step.text)
 		}
 	}
 
 	@discardableResult
 	private func navigateRecordedSegment(_ type: SegmentTypeFfi, direction: SegmentDirectionFfi) -> Bool {
 		guard let session = activeSession, let narration else { return false }
-		let seg = session.getTextSegment(position: ttsPosition, segmentType: type, direction: direction)
-		guard seg.found, seg.startPos != ttsPosition else { return false }
-		guard narration.seekToPosition(seg.startPos) else { return false }
-		ttsPosition = seg.startPos
-		currentSegmentText = seg.text
-		context?.persistPosition(seg.startPos)
+		let step = session.readingStep(position: ttsPosition, unit: .segment(segmentType: type), direction: direction)
+		guard step.found, narration.seekToPosition(step.position) else { return false }
+		land(on: step)
 		// Section titles can exceed the five-word cue used for ordinary text navigation.
-		let title = seg.text.isEmpty ? sectionTitle(at: seg.startPos) : seg.text
-		if !title.isEmpty { announce(title) }
+		announce(step.text)
 		return true
 	}
 
@@ -342,25 +294,14 @@ final class ReadingController {
 		findMatch(forward: false, skipCurrent: true)
 	}
 
-	// Forward search includes the start position and backward excludes it, so only forward needs the nudge.
 	@discardableResult
 	private func findMatch(forward: Bool, skipCurrent: Bool) -> Bool {
 		guard let session = activeSession, let query = activeSearchQuery else { return false }
-		let start = forward && skipCurrent ? ttsPosition + 1 : ttsPosition
-		let result = session.searchFfi(
-			query: query,
-			startPosition: start,
-			options: SearchOptionsFfi(
-				matchCase: searchOptions.matchCase,
-				wholeWord: searchOptions.wholeWord,
-				regex: searchOptions.regex,
-				forward: forward
-			)
-		)
-		guard result.found else { return false }
-		ttsPosition = result.position
-		context?.persistPosition(result.position)
-		refreshCurrentSegment()
+		let options = SearchOptionsFfi(matchCase: searchOptions.matchCase, wholeWord: searchOptions.wholeWord, regex: searchOptions.regex, forward: forward)
+		let direction: SegmentDirectionFfi = !forward ? .previous : skipCurrent ? .next : .current
+		let step = session.readingStep(position: ttsPosition, unit: .find(query: query, options: options), direction: direction)
+		guard step.found else { return false }
+		land(on: step)
 		return true
 	}
 
@@ -454,12 +395,7 @@ final class ReadingController {
 		narration?.attach(to: tab)
 		ensureNavUnitSupported()
 		ttsPosition = tab.currentPosition
-		let seg = session.getTextSegment(
-			position: ttsPosition,
-			segmentType: currentSegmentType,
-			direction: .current
-		)
-		currentSegmentText = seg.text
+		currentSegmentText = session.readingStep(position: ttsPosition, unit: .segment(segmentType: currentSegmentType), direction: .current).text
 	}
 
 	/// So a seek staying inside the same file doesn't repeat its name.
@@ -468,7 +404,7 @@ final class ReadingController {
 	/// An audio-only buffer has no newlines, so the enclosing paragraph is the whole buffer and would pin the label to the first file's name.
 	func refreshSegmentForAudio() {
 		if isAudioOnly {
-			currentSegmentText = sectionTitle(at: ttsPosition)
+			currentSegmentText = activeSession?.sectionTitleAt(position: ttsPosition) ?? ""
 			return
 		}
 		refreshCurrentSegment()
@@ -484,23 +420,13 @@ final class ReadingController {
 		let time = formatDuration(isAudioOnly ? cursor.seekMs : elapsedMs)
 		let fileChanged = lastAnnouncedAudioSource != clip.source
 		lastAnnouncedAudioSource = clip.source
-		let title = sectionTitle(at: clip.start)
+		let title = session.sectionTitleAt(position: clip.start)
 		announce(fileChanged && !title.isEmpty ? "\(title), \(time)" : time)
-	}
-
-	private func sectionTitle(at position: Int64) -> String {
-		guard let session = activeSession else { return "" }
-		return session.getToc().last { $0.position <= position }?.title ?? ""
 	}
 
 	private func refreshCurrentSegment() {
 		guard let session = activeSession else { return }
-		let seg = session.getTextSegment(
-			position: ttsPosition,
-			segmentType: currentSegmentType,
-			direction: .current
-		)
-		currentSegmentText = seg.text
+		currentSegmentText = session.readingStep(position: ttsPosition, unit: .segment(segmentType: currentSegmentType), direction: .current).text
 	}
 
 	func toggleTextMode() {

@@ -4,20 +4,28 @@ import XCTest
 private final class FindPlaybackSession: DocumentSession, @unchecked Sendable {
 	private let paragraphs = ["First match context", "Following paragraph", "Second match context", "Final paragraph"]
 	private let matches: [Int64] = [5, 25]
-	var searchedFrom: Int64?
 
 	override func hasAudioFfi() -> Bool { false }
-	override func getTextSegment(position: Int64, segmentType: SegmentTypeFfi, direction: SegmentDirectionFfi) -> TextSegmentFfi {
-		let index = Int(position / 10) + (direction == .next ? 1 : direction == .previous ? -1 : 0)
-		let found = paragraphs.indices.contains(index)
-		return TextSegmentFfi(text: found ? paragraphs[index] : "", startPos: Int64(index * 10), endPos: Int64((index + 1) * 10), found: found)
+	override func readingStep(position: Int64, unit: StepUnitFfi, direction: SegmentDirectionFfi) -> ReadingStepFfi {
+		let landed: Int64?
+		switch unit {
+		case .segment:
+			let index = Int(position / 10) + (direction == .next ? 1 : direction == .previous ? -1 : 0)
+			landed = paragraphs.indices.contains(index) ? Int64(index * 10) : nil
+		case .find:
+			switch direction {
+			case .previous: landed = matches.last { $0 < position }
+			case .next: landed = matches.first { $0 > position }
+			case .current: landed = matches.first { $0 >= position }
+			}
+		}
+		guard let landed else { return ReadingStepFfi(found: false, position: position, text: "") }
+		return ReadingStepFfi(found: true, position: landed, text: paragraphs[Int(landed / 10)])
 	}
-	override func searchFfi(query: String, startPosition: Int64, options: SearchOptionsFfi) -> SearchResultFfi {
-		searchedFrom = startPosition
-		let position = options.forward
-			? matches.first { $0 >= startPosition }
-			: matches.last { $0 < startPosition }
-		return SearchResultFfi(found: position != nil, wrapped: false, position: position ?? 0)
+	override func readingAhead(position: Int64) -> ReadingAheadFfi {
+		let index = Int(position / 10)
+		func text(_ i: Int) -> String { paragraphs.indices.contains(i) ? paragraphs[i] : "" }
+		return ReadingAheadFfi(next: text(index + 1), afterNext: text(index + 2), previous: text(index - 1))
 	}
 }
 
@@ -68,8 +76,7 @@ final class FindPlaybackTests: XCTestCase {
 
 	func testFindCanReadContinuouslyAndStillNavigateBetweenMatches() {
 		let context = FindPlaybackContext()
-		let session = FindPlaybackSession(noHandle: .init())
-		context.activeSession = session
+		context.activeSession = FindPlaybackSession(noHandle: .init())
 		let reading = reader(context: context)
 		defer { reading.ttsManager.stop() }
 		reading.stopAfterFindMatch = false
@@ -82,7 +89,6 @@ final class FindPlaybackTests: XCTestCase {
 
 		// The next button still searches, rather than becoming paragraph navigation.
 		XCTAssertTrue(reading.playNextSegment())
-		XCTAssertEqual(session.searchedFrom, 11)
 		XCTAssertEqual(reading.ttsPosition, 25)
 		XCTAssertEqual(reading.currentSegmentText, "Second match context")
 		finishUtterance(reading)
