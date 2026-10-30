@@ -7,7 +7,8 @@ use native_ocr::{Error as OcrError, Line, max_image_dimension, recognize_lines};
 use paperback_core::{
 	document::{ContentBytePos, DocPos, Document, Edit, Marker, MarkerType},
 	ocr::{
-		PageRenderer, RecognizedLine, RecognizedWord, arrange, default_workers, image_only_placeholder, recognize_pages,
+		PageRenderer, RecognizedLine, RecognizedWord, default_workers, image_only_placeholder, page_text,
+		recognize_pages,
 	},
 };
 
@@ -29,7 +30,14 @@ impl Selection {
 }
 
 /// A page that fails is reported and skipped, so one bad page doesn't throw away the rest of a thousand-page scan.
-pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, selection: Selection) -> Result<()> {
+/// Lines are joined into paragraphs only for a PDF, as the app does, since a comic's lines are balloons and belong apart.
+pub fn pages(
+	doc: &mut Document,
+	file_path: &str,
+	password: Option<&str>,
+	selection: Selection,
+	join_paragraphs: bool,
+) -> Result<()> {
 	if !selection.any() {
 		return Ok(());
 	}
@@ -42,6 +50,7 @@ pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, select
 		return Ok(());
 	}
 	let max_dimension = max_image_dimension();
+	let join = join_paragraphs && file_path.to_ascii_lowercase().ends_with(".pdf");
 	// A page number too big for an `i32` could never be rendered, so its edit keeps what it had.
 	let page_numbers: Vec<i32> = edits.iter().filter_map(|edit| i32::try_from(edit.page).ok()).collect();
 	let mut results: HashMap<i32, Result<String, OcrError>> = HashMap::with_capacity(page_numbers.len());
@@ -53,7 +62,7 @@ pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, select
 		&page_numbers,
 		default_workers(),
 		&cancel,
-		|renderer, page| recognize_page(renderer, page, max_dimension),
+		|renderer, page| recognize_page(renderer, page, max_dimension, join),
 		|page, result| {
 			results.insert(page, result);
 		},
@@ -93,12 +102,12 @@ pub fn pages(doc: &mut Document, file_path: &str, password: Option<&str>, select
 	Ok(())
 }
 
-fn recognize_page(renderer: &mut PageRenderer, page: i32, max_dimension: u32) -> Result<String, OcrError> {
+fn recognize_page(renderer: &mut PageRenderer, page: i32, max_dimension: u32, join: bool) -> Result<String, OcrError> {
 	// `render` takes a 0-based index; the document numbers pages from one.
 	let rendered = renderer.render(page - 1, max_dimension).map_err(|error| OcrError::Failed(error.to_string()))?;
 	let lines: Vec<RecognizedLine> =
 		recognize_lines(&rendered.rgba, rendered.width, rendered.height)?.into_iter().map(recognized).collect();
-	Ok(arrange(&lines, true))
+	Ok(page_text(&lines, join))
 }
 
 fn recognized(line: Line) -> RecognizedLine {

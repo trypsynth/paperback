@@ -306,7 +306,7 @@ impl<'a> Converter<'a> {
 		let ocr = ocr::Selection { image_pages: cli.ocr_image_pages, text_pages: cli.ocr_text_pages };
 		if ocr.any() {
 			// After the slice so only kept pages are read, and after the password so an encrypted document opens once.
-			ocr::pages(&mut doc, &context.file_path, context.password.as_deref(), ocr)?;
+			ocr::pages(&mut doc, &context.file_path, context.password.as_deref(), ocr, !cli.no_join_paragraphs)?;
 		}
 		let handle = paperback_core::document::DocumentHandle::new(doc);
 		Ok(if cli.metadata {

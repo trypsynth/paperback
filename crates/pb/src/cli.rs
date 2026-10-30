@@ -50,7 +50,7 @@ pub struct Cli {
 	/// The largest document to download from a link, in MB
 	#[arg(long, value_name = "MB", default_value_t = 512)]
 	pub max_download_size: u64,
-	/// Keep every line of an untagged PDF page separate instead of joining wrapped lines back into paragraphs (for code listings, poetry and transcripts)
+	/// Keep every line of an untagged or OCR-read PDF page separate instead of joining wrapped lines back into paragraphs (for code listings, poetry and transcripts)
 	#[arg(long)]
 	pub no_join_paragraphs: bool,
 	/// Print paperback-core's parser log output to stderr (set `RUST_LOG` for finer control)
