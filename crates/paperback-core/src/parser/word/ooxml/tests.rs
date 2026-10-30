@@ -10,13 +10,11 @@ use crate::{
 
 fn walk(xml_doc: &XmlDocument, render_tables_inline: bool, numbering: Numbering) -> DocumentBuffer {
 	let mut buffer = DocumentBuffer::new();
-	let mut headings = Vec::new();
 	let mut id_positions = HashMap::new();
 	let rels = Relationships::default();
 	let style_heading_map = HashMap::new();
 	let mut walk = Walk {
 		buffer: &mut buffer,
-		headings: &mut headings,
 		id_positions: &mut id_positions,
 		rels: &rels,
 		style_heading_map: &style_heading_map,
@@ -236,13 +234,11 @@ fn links_and_bookmarks_land_on_their_text_after_an_emoji() {
 	let xml = "<document><body><p><r><t xml:space=\"preserve\">  \u{1F600} see </t></r><bookmarkStart name=\"here\"/><hyperlink anchor=\"here\"><r><t>this</t></r></hyperlink><r><t xml:space=\"preserve\"> and </t></r><r><fldChar fldCharType=\"begin\"/></r><r><instrText> HYPERLINK \"https://example.com\" </instrText></r><r><fldChar fldCharType=\"separate\"/></r><r><t>that</t></r><r><fldChar fldCharType=\"end\"/></r></p></body></document>";
 	let xml_doc = XmlDocument::parse(xml).expect("valid xml");
 	let mut buffer = DocumentBuffer::new();
-	let mut headings = Vec::new();
 	let mut id_positions = HashMap::new();
 	let rels = Relationships::default();
 	let style_heading_map = HashMap::new();
 	let mut walk = Walk {
 		buffer: &mut buffer,
-		headings: &mut headings,
 		id_positions: &mut id_positions,
 		rels: &rels,
 		style_heading_map: &style_heading_map,
@@ -332,8 +328,7 @@ fn footnotes_and_endnotes_are_cited_in_the_text_and_written_after_it() {
 		docx(&[("word/document.xml", document), ("word/footnotes.xml", footnotes), ("word/endnotes.xml", endnotes)]);
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
-	let mut headings = Vec::new();
-	super::parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, &mut headings, false).unwrap();
+	super::parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, false).unwrap();
 	assert_eq!(
 		buffer.content,
 		"Water boils[1] at sea level[i].\nMarked[*]\nNotes\n1. At 100 degrees.\ni. See the appendix.\n* A starred note.\n"
@@ -349,7 +344,7 @@ fn footnotes_and_endnotes_are_cited_in_the_text_and_written_after_it() {
 	assert_eq!(first, DocLen::of("Water boils").as_pos());
 	let target = id_positions[reference.trim_start_matches('#')];
 	assert_eq!(target, buffer.content.find("1. At").unwrap());
-	assert!(headings.iter().any(|heading| heading.text == "Notes"));
+	assert!(buffer.markers.iter().any(|marker| marker.mtype == MarkerType::Heading1 && marker.text == "Notes"));
 }
 
 /// #1123: Word comments used to be dropped.
@@ -360,8 +355,7 @@ fn comments_follow_the_text_with_their_authors_and_link_back() {
 	let mut archive = docx(&[("word/document.xml", document), ("word/comments.xml", comments)]);
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
-	let mut headings = Vec::new();
-	super::parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, &mut headings, false).unwrap();
+	super::parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, false).unwrap();
 	assert_eq!(
 		buffer.content,
 		"Sales grew fast this year.\nDone.\nComments\nAnn on \u{201c}grew fast\u{201d}: Check this figure.\nComment: Nice.\n"

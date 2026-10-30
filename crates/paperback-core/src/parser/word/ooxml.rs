@@ -23,7 +23,6 @@ use crate::{
 		},
 	},
 	t,
-	types::HeadingInfo,
 	util::zip::read_zip_entry_by_name,
 };
 
@@ -56,7 +55,6 @@ pub(super) fn parse_word_zip(context: &ParserContext, render_tables_inline: bool
 	docx_names.sort();
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
-	let mut headings = Vec::new();
 	for docx_name in &docx_names {
 		let mut inner_file_data = Vec::new();
 		{
@@ -68,14 +66,8 @@ pub(super) fn parse_word_zip(context: &ParserContext, render_tables_inline: bool
 		}
 		let mut inner_archive = ZipArchive::new(Cursor::new(inner_file_data))
 			.with_context(|| format!("Failed to parse inner DOCX '{docx_name}' as zip"))?;
-		parse_ooxml_from_archive(
-			&mut inner_archive,
-			&mut buffer,
-			&mut id_positions,
-			&mut headings,
-			render_tables_inline,
-		)
-		.with_context(|| format!("Failed to parse DOCX contents of '{docx_name}'"))?;
+		parse_ooxml_from_archive(&mut inner_archive, &mut buffer, &mut id_positions, render_tables_inline)
+			.with_context(|| format!("Failed to parse DOCX contents of '{docx_name}'"))?;
 	}
 	let title = extract_title_from_path(&context.file_path);
 	let toc_items = build_toc_from_buffer(&buffer);
@@ -94,8 +86,7 @@ pub(super) fn parse_ooxml_doc(context: &ParserContext, render_tables_inline: boo
 		.with_context(|| format!("Failed to read DOCX as zip '{}'", context.file_path))?;
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
-	let mut headings = Vec::new();
-	parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, &mut headings, render_tables_inline)?;
+	parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, render_tables_inline)?;
 	let (title, author) = read_core_properties(&mut archive);
 	let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
 	let toc_items = build_toc_from_buffer(&buffer);
@@ -116,7 +107,6 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	buffer: &mut DocumentBuffer,
 	id_positions: &mut HashMap<String, DocPos>,
-	headings: &mut Vec<HeadingInfo>,
 	render_tables_inline: bool,
 ) -> Result<()> {
 	let style_heading_map = build_style_heading_map(archive);
@@ -132,7 +122,6 @@ fn parse_ooxml_from_archive<R: Read + Seek>(
 	let annotations = Annotations::new(read_zip_entry_by_name(archive, "word/settings.xml").ok().as_deref(), start);
 	let mut walk = Walk {
 		buffer,
-		headings,
 		id_positions,
 		rels: &rels,
 		style_heading_map: &style_heading_map,
@@ -175,8 +164,7 @@ fn write_notes<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
 	let heading_offset = walk.buffer.end();
 	walk.buffer.append(&heading);
 	walk.buffer.append("\n");
-	walk.buffer.add_marker(Marker::new(MarkerType::Heading1, heading_offset).with_text(heading.clone()).with_level(1));
-	walk.headings.push(HeadingInfo { offset: heading_offset, level: 1, text: heading });
+	walk.buffer.add_marker(Marker::new(MarkerType::Heading1, heading_offset).with_text(heading).with_level(1));
 	for citation in cited {
 		let Some(note) = notes.get(&citation.kind).and_then(|by_id| by_id.get(citation.id.as_str()).copied()) else {
 			continue;
@@ -190,7 +178,6 @@ fn write_notes<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
 			process_paragraph(
 				paragraph,
 				walk.buffer,
-				walk.headings,
 				walk.id_positions,
 				rels,
 				walk.style_heading_map,
@@ -283,7 +270,6 @@ fn number_pages(buffer: &mut DocumentBuffer, start: DocPos, first_marker: usize)
 
 struct Walk<'a> {
 	buffer: &'a mut DocumentBuffer,
-	headings: &'a mut Vec<HeadingInfo>,
 	id_positions: &'a mut HashMap<String, DocPos>,
 	rels: &'a Relationships,
 	style_heading_map: &'a HashMap<String, i32>,
@@ -378,7 +364,6 @@ fn traverse(node: Node, walk: &mut Walk) {
 			let is_list_item = process_paragraph(
 				node,
 				walk.buffer,
-				walk.headings,
 				walk.id_positions,
 				walk.rels,
 				walk.style_heading_map,

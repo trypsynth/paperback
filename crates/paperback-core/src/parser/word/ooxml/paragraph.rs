@@ -16,7 +16,6 @@ use crate::{
 			xml::find_child_element,
 		},
 	},
-	types::HeadingInfo,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -39,7 +38,6 @@ impl PageSource {
 pub(super) fn process_paragraph(
 	element: Node,
 	buffer: &mut DocumentBuffer,
-	headings: &mut Vec<HeadingInfo>,
 	id_positions: &mut HashMap<String, DocPos>,
 	rels: &Relationships,
 	style_heading_map: &HashMap<String, i32>,
@@ -233,9 +231,8 @@ pub(super) fn process_paragraph(
 		if !heading_text.is_empty() {
 			let marker_type = heading_level_to_marker_type(heading_level);
 			buffer.add_marker(
-				Marker::new(marker_type, paragraph_start).with_text(heading_text.clone()).with_level(heading_level),
+				Marker::new(marker_type, paragraph_start).with_text(heading_text).with_level(heading_level),
 			);
-			headings.push(HeadingInfo { offset: paragraph_start, level: heading_level, text: heading_text });
 		}
 	}
 	// A numbered heading keeps its number but is a heading, not a list item.
