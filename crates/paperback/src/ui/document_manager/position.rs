@@ -4,7 +4,7 @@ use patois::t;
 use super::{DocumentManager, DocumentTab};
 use crate::ui::{
 	navigation::{self, announce_for_command, move_to_offset_and_record_history, persist_navigation_history},
-	sleep_timer, status,
+	status,
 };
 
 impl DocumentManager {
@@ -19,32 +19,19 @@ impl DocumentManager {
 	}
 
 	pub fn update_status_bar(&self) {
-		let sleep_start = sleep_timer::start_ms();
-		let sleep_duration = sleep_timer::duration_minutes();
-		if self.tabs.is_empty() {
+		let status_text = match self.active_tab() {
+			Some(tab) => {
+				let position = navigation::doc_caret(tab);
+				let mut info = tab.session.get_status_info(position);
+				if let Some(percent) = navigation::audio_percent(tab) {
+					info.percentage = percent;
+				}
+				status::format_status_text(&info)
+			}
 			// TRANSLATORS: Default status bar text when no document is open
-			let mut status_text = t("Ready");
-			if sleep_start > 0 {
-				let remaining = status::calculate_sleep_timer_remaining(sleep_start, sleep_duration);
-				if remaining > 0 {
-					status_text = status::format_sleep_timer_status(&status_text, remaining);
-				}
-			}
-			self.frame.set_status_text(&status_text, 0);
-			return;
-		}
-		if let Some(tab) = self.active_tab() {
-			let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-			let status_info = tab.session.get_status_info(position);
-			let mut status_text = status::format_status_text(&status_info);
-			if sleep_start > 0 {
-				let remaining = status::calculate_sleep_timer_remaining(sleep_start, sleep_duration);
-				if remaining > 0 {
-					status_text = status::format_sleep_timer_status(&status_text, remaining);
-				}
-			}
-			self.frame.set_status_text(&status_text, 0);
-		}
+			None => t("Ready"),
+		};
+		self.frame.set_status_text(&status::with_sleep_timer(status_text), 0);
 	}
 
 	pub fn announce_current_percent(&self, from_keyboard: bool) {

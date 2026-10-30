@@ -52,12 +52,12 @@ pub fn seek_audio_to_percent(tab: &mut DocumentTab, percent: i32) -> Option<DocP
 
 /// Audio progress where known, since an audiobook's text spine gives every file an equal share however long it runs.
 pub fn reading_percent(tab: &DocumentTab, position: DocPos) -> i32 {
-	let audio_percent = tab
-		.audio_player
-		.as_ref()
-		.and_then(AudioPlayer::resume_point_ms)
-		.and_then(|elapsed_ms| tab.session.audio_progress_percent(elapsed_ms));
-	audio_percent.unwrap_or_else(|| tab.session.get_status_info(position).percentage).clamp(0, 100)
+	audio_percent(tab).unwrap_or_else(|| tab.session.get_status_info(position).percentage.clamp(0, 100))
+}
+
+pub fn audio_percent(tab: &DocumentTab) -> Option<i32> {
+	let elapsed_ms = tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms)?;
+	tab.session.audio_progress_percent(elapsed_ms).map(|percent| percent.clamp(0, 100))
 }
 
 pub fn doc_selected_range(tab: &DocumentTab) -> (DocPos, DocPos) {

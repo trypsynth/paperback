@@ -2,7 +2,7 @@ use std::{cell::Cell, rc::Rc, sync::Mutex};
 
 use wxdragon::{prelude::*, timer::Timer};
 
-use super::{document_manager::DocumentManager, sleep_timer, status};
+use super::{document_manager::DocumentManager, sleep_timer};
 
 const STATUS_INTERVAL_MS: i32 = 1000;
 const AUDIO_SYNC_INTERVAL_MS: i32 = 250;
@@ -20,7 +20,6 @@ pub fn start_timers(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) -> 
 fn status_timer(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) -> Rc<Timer<Frame>> {
 	let timer = Rc::new(Timer::new(frame));
 	let dm = Rc::clone(doc_manager);
-	let frame_for_tick = *frame;
 	timer.on_tick(move |_| {
 		if !sleep_timer::is_running() {
 			return;
@@ -28,12 +27,7 @@ fn status_timer(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) -> Rc<T
 		let Ok(dm) = dm.try_lock() else {
 			return;
 		};
-		status::update_status_bar_with_sleep_timer(
-			&frame_for_tick,
-			&dm,
-			sleep_timer::start_ms(),
-			sleep_timer::duration_minutes(),
-		);
+		dm.update_status_bar();
 	});
 	timer.start(STATUS_INTERVAL_MS, false);
 	timer

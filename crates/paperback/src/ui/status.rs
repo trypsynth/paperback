@@ -2,9 +2,8 @@ use std::time::{self, SystemTime};
 
 use paperback_core::session::StatusInfo;
 use patois::t;
-use wxdragon::prelude::*;
 
-use super::{document_manager::DocumentManager, navigation};
+use super::sleep_timer;
 
 pub fn format_status_text(info: &StatusInfo) -> String {
 	// TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Progress 45%"
@@ -39,37 +38,11 @@ pub fn format_sleep_timer_status(base_status: &str, remaining_seconds: i32) -> S
 	format!("{base_status} | {sleep_label}: {minutes:02}:{seconds:02}")
 }
 
-pub fn update_status_bar_with_sleep_timer(
-	frame: &Frame,
-	dm: &DocumentManager,
-	sleep_timer_start_ms: i64,
-	sleep_timer_duration_minutes: i32,
-) {
-	if dm.tab_count() == 0 {
-		if sleep_timer_start_ms > 0 {
-			let remaining = calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);
-			if remaining > 0 {
-				// TRANSLATORS: Default status bar text when no document is open
-				let status_text = format_sleep_timer_status(&t("Ready"), remaining);
-				frame.set_status_text(&status_text, 0);
-				return;
-			}
-		}
-		// TRANSLATORS: Default status bar text when no document is open
-		frame.set_status_text(&t("Ready"), 0);
-		return;
+pub fn with_sleep_timer(status_text: String) -> String {
+	let start_ms = sleep_timer::start_ms();
+	if start_ms <= 0 {
+		return status_text;
 	}
-	if let Some(tab) = dm.active_tab() {
-		let position = navigation::doc_caret(tab);
-		let mut status_info = tab.session.get_status_info(position);
-		status_info.percentage = navigation::reading_percent(tab, position);
-		let mut status_text = format_status_text(&status_info);
-		if sleep_timer_start_ms > 0 {
-			let remaining = calculate_sleep_timer_remaining(sleep_timer_start_ms, sleep_timer_duration_minutes);
-			if remaining > 0 {
-				status_text = format_sleep_timer_status(&status_text, remaining);
-			}
-		}
-		frame.set_status_text(&status_text, 0);
-	}
+	let remaining = calculate_sleep_timer_remaining(start_ms, sleep_timer::duration_minutes());
+	if remaining > 0 { format_sleep_timer_status(&status_text, remaining) } else { status_text }
 }

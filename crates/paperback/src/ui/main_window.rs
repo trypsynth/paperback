@@ -14,7 +14,7 @@ use super::{
 	find::{self, FindDialogState},
 	help, icon, menu, menu_ids, navigation,
 	readability::build_font_from_readability,
-	sleep_timer, status, window_geometry,
+	sleep_timer, window_geometry,
 };
 use crate::{
 	config_ext::{UpdateChannel, get_update_channel},
@@ -248,24 +248,6 @@ pub(crate) fn rebuild_menu_bar(
 }
 
 pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
-	let sleep_start = sleep_timer::start_ms();
-	let sleep_duration = sleep_timer::duration_minutes();
-	if dm.tab_count() == 0 {
-		// TRANSLATORS: Main window title when no document is open
-		frame.set_title(&t("Paperback"));
-		#[cfg(target_os = "macos")]
-		frame.set_represented_filename("");
-		// TRANSLATORS: Default status bar text when no document is open
-		let mut status_text = t("Ready");
-		if sleep_start > 0 {
-			let remaining = status::calculate_sleep_timer_remaining(sleep_start, sleep_duration);
-			if remaining > 0 {
-				status_text = status::format_sleep_timer_status(&status_text, remaining);
-			}
-		}
-		frame.set_status_text(&status_text, 0);
-		return;
-	}
 	if let Some(tab) = dm.active_tab() {
 		// Document first: the taskbar and Alt+Tab truncate a title's end, so app-first titles make every book look the same.
 		// TRANSLATORS: Window title when a document is open; {} is the document title
@@ -273,15 +255,11 @@ pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
 		frame.set_title(&template.replace("{}", &display_title(tab)));
 		#[cfg(target_os = "macos")]
 		frame.set_represented_filename(&tab.local_path().to_string_lossy());
-		let position = navigation::doc_caret(tab);
-		let status_info = tab.session.get_status_info(position);
-		let mut status_text = status::format_status_text(&status_info);
-		if sleep_start > 0 {
-			let remaining = status::calculate_sleep_timer_remaining(sleep_start, sleep_duration);
-			if remaining > 0 {
-				status_text = status::format_sleep_timer_status(&status_text, remaining);
-			}
-		}
-		frame.set_status_text(&status_text, 0);
+	} else {
+		// TRANSLATORS: Main window title when no document is open
+		frame.set_title(&t("Paperback"));
+		#[cfg(target_os = "macos")]
+		frame.set_represented_filename("");
 	}
+	dm.update_status_bar();
 }
