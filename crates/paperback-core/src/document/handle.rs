@@ -65,7 +65,9 @@ impl DocumentHandle {
 
 	#[must_use]
 	pub fn next_marker_index(&self, position: DocPos, marker_type: MarkerType) -> Option<usize> {
-		self.markers_by_type(marker_type).find(|(_, marker)| marker.position > position).map(|(idx, _)| idx)
+		let markers = &self.doc.buffer.markers;
+		let start = markers.partition_point(|marker| marker.position <= position);
+		markers[start..].iter().position(|marker| marker.mtype == marker_type).map(|idx| start + idx)
 	}
 
 	#[must_use]

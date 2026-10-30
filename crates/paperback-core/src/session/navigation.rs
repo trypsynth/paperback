@@ -1,7 +1,7 @@
 use super::{DocumentSession, MAX_HISTORY_LEN, NavigationResult, TocEntry};
 use crate::{
 	config::ConfigManager,
-	document::{self, DocPos, MarkerType, ParserFlags},
+	document::{self, DocPos, MarkerType, ParserFlags, is_heading_marker},
 	reader_core::{
 		bookmark_navigate, history_go_next, history_go_previous, reader_container_navigate, reader_navigate,
 	},
@@ -33,7 +33,7 @@ impl DocumentSession {
 	}
 
 	pub(super) fn has_marker(&self, marker_type: MarkerType) -> bool {
-		self.handle.count_markers_by_type(marker_type) > 0
+		self.handle.first_marker_index(marker_type).is_some()
 	}
 
 	fn fill_marker_text_if_empty(&self, nav_result: &mut NavigationResult) {
@@ -289,14 +289,9 @@ impl DocumentSession {
 				6 => MarkerType::Heading6,
 				_ => return false,
 			};
-			self.handle.count_markers_by_type(marker_type) > 0
+			self.has_marker(marker_type)
 		} else {
-			self.handle.count_markers_by_type(MarkerType::Heading1) > 0
-				|| self.handle.count_markers_by_type(MarkerType::Heading2) > 0
-				|| self.handle.count_markers_by_type(MarkerType::Heading3) > 0
-				|| self.handle.count_markers_by_type(MarkerType::Heading4) > 0
-				|| self.handle.count_markers_by_type(MarkerType::Heading5) > 0
-				|| self.handle.count_markers_by_type(MarkerType::Heading6) > 0
+			self.handle.document().buffer.markers.iter().any(|marker| is_heading_marker(marker.mtype))
 		}
 	}
 }
