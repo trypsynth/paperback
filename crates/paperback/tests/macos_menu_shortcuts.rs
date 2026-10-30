@@ -7,7 +7,7 @@ pub mod activation;
 pub mod dialog_activation;
 
 #[cfg(target_os = "macos")]
-#[allow(unused_imports)]
+#[allow(dead_code, unused_imports)]
 #[path = "../src/ui/mac_shortcuts.rs"]
 mod mac_shortcuts;
 #[cfg(target_os = "macos")]
