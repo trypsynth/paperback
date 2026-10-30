@@ -1,6 +1,6 @@
 use super::{
-	DocumentSession, ReadingAheadFfi, ReadingStepFfi, ReadingUnitFfi, SearchOptionsFfi, SegmentDirectionFfi,
-	SegmentTypeFfi,
+	DocumentSession, ReadingAheadFfi, ReadingStepFfi, SearchOptionsFfi, SegmentDirectionFfi, SegmentTypeFfi,
+	StepUnitFfi,
 };
 use crate::document::{DocLen, DocPos, TocItem};
 
@@ -8,18 +8,13 @@ use crate::document::{DocLen, DocPos, TocItem};
 impl DocumentSession {
 	/// One press of the mobile reading bar's previous or next, or the segment under `position` for `Current`.
 	#[must_use]
-	pub fn reading_step(
-		&self,
-		position: DocPos,
-		unit: ReadingUnitFfi,
-		direction: SegmentDirectionFfi,
-	) -> ReadingStepFfi {
+	pub fn reading_step(&self, position: DocPos, unit: StepUnitFfi, direction: SegmentDirectionFfi) -> ReadingStepFfi {
 		let landed = match unit {
-			ReadingUnitFfi::Segment { segment_type } => {
+			StepUnitFfi::Segment { segment_type } => {
 				let segment = self.get_text_segment(position, segment_type, direction);
 				segment.found.then_some((segment.start_pos, segment.text))
 			}
-			ReadingUnitFfi::Find { query, options } => self.find_step(position, &query, options, direction),
+			StepUnitFfi::Find { query, options } => self.find_step(position, &query, options, direction),
 		};
 		let Some((landed_at, text)) = landed else { return ReadingStepFfi::not_found(position) };
 		// A previous that lands where it started, at the top of the book, is no move; reading it again would sound like one.

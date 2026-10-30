@@ -172,7 +172,7 @@ pub struct TextSegmentFfi {
 /// What the mobile reading bar steps by; stepping by time is a seek on the app's own audio player.
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Debug, Clone)]
-pub enum ReadingUnitFfi {
+pub enum StepUnitFfi {
 	Segment {
 		segment_type: SegmentTypeFfi,
 	},

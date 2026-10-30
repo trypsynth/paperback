@@ -1,8 +1,8 @@
 use super::*;
 use crate::document::TocItem;
 
-fn segment(segment_type: SegmentTypeFfi) -> ReadingUnitFfi {
-	ReadingUnitFfi::Segment { segment_type }
+fn segment(segment_type: SegmentTypeFfi) -> StepUnitFfi {
+	StepUnitFfi::Segment { segment_type }
 }
 
 fn session_with_toc(buffer: DocumentBuffer, toc_items: Vec<TocItem>, parser_flags: ParserFlags) -> DocumentSession {
@@ -20,8 +20,8 @@ fn session_with_toc(buffer: DocumentBuffer, toc_items: Vec<TocItem>, parser_flag
 	}
 }
 
-fn find(query: &str) -> ReadingUnitFfi {
-	ReadingUnitFfi::Find { query: query.to_string(), options: SearchOptionsFfi::default() }
+fn find(query: &str) -> StepUnitFfi {
+	StepUnitFfi::Find { query: query.to_string(), options: SearchOptionsFfi::default() }
 }
 
 #[test]
