@@ -24,23 +24,9 @@ impl Parser for CbrParser {
 	}
 }
 
-fn unsupported() -> anyhow::Error {
+pub(crate) fn unsupported() -> anyhow::Error {
 	// TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
 	anyhow::anyhow!(t("Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."))
-}
-
-/// # Errors
-///
-/// Always, for a RAR: see the module note.
-pub fn page_names(_file_path: &str) -> Result<Vec<String>> {
-	Err(unsupported())
-}
-
-/// # Errors
-///
-/// Always, for a RAR: see the module note.
-pub fn page_bytes(_file_path: &str, _name: &str) -> Result<Vec<u8>> {
-	Err(unsupported())
 }
 
 #[cfg(test)]

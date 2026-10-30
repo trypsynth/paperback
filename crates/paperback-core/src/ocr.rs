@@ -53,15 +53,7 @@ pub struct PageRenderer {
 
 enum Source {
 	Pdf(PdfDocument),
-	Comic {
-		archive: ZipArchive<BufReader<File>>,
-		pages: Vec<String>,
-	},
-	/// A RAR is read from the front rather than opened at any member, so each page reopens it.
-	ComicRar {
-		file_path: String,
-		pages: Vec<String>,
-	},
+	Comic { archive: ZipArchive<BufReader<File>>, pages: Vec<String> },
 }
 
 impl PageRenderer {
@@ -92,11 +84,7 @@ impl PageRenderer {
 		if cbz::is_zip(file_path) {
 			return Self::open_comic(file_path);
 		}
-		let pages = cbr::page_names(file_path)?;
-		if pages.is_empty() {
-			anyhow::bail!("comic archive '{file_path}' has no pages to render");
-		}
-		Ok(Self { source: Source::ComicRar { file_path: file_path.to_string(), pages } })
+		Err(cbr::unsupported())
 	}
 
 	pub fn render(&mut self, page_index: i32, max_dimension: u32) -> Result<RenderedPage> {
@@ -107,12 +95,6 @@ impl PageRenderer {
 				let bitmap =
 					page.render(width).ok_or_else(|| anyhow::anyhow!("page {page_index} could not be rasterized"))?;
 				Ok(RenderedPage { width: bitmap.width, height: bitmap.height, rgba: bitmap.rgba })
-			}
-			Source::ComicRar { file_path, pages } => {
-				let index = usize::try_from(page_index).unwrap_or(usize::MAX);
-				let name = pages.get(index).ok_or_else(|| anyhow::anyhow!("page {page_index} is out of range"))?;
-				let bytes = cbr::page_bytes(file_path, name)?;
-				decode_page(&bytes, max_dimension)
 			}
 			Source::Comic { archive, pages } => {
 				let index = usize::try_from(page_index).unwrap_or(usize::MAX);
