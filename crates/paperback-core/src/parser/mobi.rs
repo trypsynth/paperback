@@ -60,13 +60,17 @@ impl Parser for MobiParser {
 		if let Some(title) = exth_title {
 			header.document_title = title;
 		}
-		let content = decode_content(&data, &header)?;
-		let text = if header.text_encoding == 65001 {
-			tracing::debug!("decoding mobi content as utf-8");
-			String::from_utf8_lossy(&content).into_owned()
-		} else {
-			tracing::debug!(text_encoding = header.text_encoding, "decoding mobi content as windows-1252");
-			WINDOWS_1252.decode(&content).0.into_owned()
+		// Each book-sized stage is freed as soon as the next is made, since the function's end is too late: by then every copy has sat through the conversion.
+		let raw = {
+			let content = decode_content(&data, &header)?;
+			if header.text_encoding == 65001 {
+				tracing::debug!("decoding mobi content as utf-8");
+				String::from_utf8(content)
+					.unwrap_or_else(|error| String::from_utf8_lossy(error.as_bytes()).into_owned())
+			} else {
+				tracing::debug!(text_encoding = header.text_encoding, "decoding mobi content as windows-1252");
+				WINDOWS_1252.decode(&content).0.into_owned()
+			}
 		};
 		// A KF8 book was an EPUB before it was compiled, and its skeleton index still records where each file began.
 		let section_starts = if header.is_kf8 {
@@ -97,7 +101,8 @@ impl Parser for MobiParser {
 		extract_targets(&ncx_toc, &mut extra_targets);
 		// Anchoring section starts as link targets is the only way to learn where a raw-text position ends up after rewriting and cleaning move everything.
 		extra_targets.extend(section_starts.iter().copied());
-		let mut text = rewrite_internal_links(&text, &frag_offsets, &extra_targets);
+		let mut text = rewrite_internal_links(&raw, &frag_offsets, &extra_targets);
+		drop(raw);
 		// One pass rather than five, since each was a full copy of a string reaching a hundred megabytes; a title or style element beats an `aid`/`cid` inside it as the leftmost match.
 		// KF8 / AZW3 files often leave `</body></html>` inside unclosed tags at fragment insertion points, which `scraper` cannot parse around.
 		static RE_STRIP: LazyLock<regex::Regex> = LazyLock::new(|| {
@@ -110,6 +115,7 @@ impl Parser for MobiParser {
 		// Old-style Mobipocket files use <font size="N"> instead of <h1>-<h6>.
 		text = rewrite_font_size_headings(&text);
 		text = pictures::point_pictures_at_records(&text, &data, &header.record_offsets, header.mobi_header());
+		drop(data);
 		let mut document_title = header.document_title;
 		if document_title.trim().is_empty() {
 			document_title = extract_title_from_path(&context.file_path);
@@ -128,6 +134,7 @@ impl Parser for MobiParser {
 				html_converter
 			})
 			.collect();
+		drop(text);
 		for html_converter in converted {
 			let offset = buffer.end();
 			buffer.append(html_converter.get_text());
