@@ -306,17 +306,8 @@ fn parse_text_chars_atom(data: &[u8]) -> Option<String> {
 	if data.len() < 2 {
 		return None;
 	}
-	let mut chars = Vec::with_capacity(data.len() / 2);
-	for chunk in data.as_chunks::<2>().0 {
-		let code_unit = u16::from_le_bytes([chunk[0], chunk[1]]);
-		if code_unit == 0 {
-			break;
-		}
-		if let Some(ch) = char::from_u32(u32::from(code_unit)) {
-			chars.push(ch);
-		}
-	}
-	let text: String = chars.into_iter().collect();
+	let units = data.as_chunks::<2>().0.iter().map(|chunk| u16::from_le_bytes(*chunk)).take_while(|&unit| unit != 0);
+	let text: String = char::decode_utf16(units).filter_map(Result::ok).collect();
 	let normalized = text.trim_end_matches('\r').trim_end_matches('\u{0}').trim().to_string();
 	(!normalized.is_empty()).then_some(normalized)
 }
@@ -494,6 +485,12 @@ mod tests {
 	fn parse_text_chars_atom_decodes_utf16le() {
 		let atom_data = [0x48, 0x00, 0x69, 0x00, 0x00, 0x00];
 		assert_eq!(parse_text_chars_atom(&atom_data), Some("Hi".to_string()));
+	}
+
+	#[test]
+	fn parse_text_chars_atom_keeps_characters_outside_the_basic_plane() {
+		let atom_data: Vec<u8> = "Hi \u{1F600}".encode_utf16().flat_map(u16::to_le_bytes).collect();
+		assert_eq!(parse_text_chars_atom(&atom_data), Some("Hi \u{1F600}".to_string()));
 	}
 
 	#[test]
