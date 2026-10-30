@@ -12,6 +12,7 @@ final class AppViewModel {
 			guard activeTabId != oldValue else { return }
 			reading.ttsManager.stop()
 			speech.load(bookAt: activeTab?.url.path(percentEncoded: false))
+			if let tab = activeTab { reading.loadSegment(for: tab) }
 		}
 	}
 
@@ -186,7 +187,6 @@ final class AppViewModel {
 				saveBookmark(for: url, path: path)
 			}
 			if let password { configManager.setDocumentPassword(path: path, password: password) }
-			reading.loadSegment(for: tab)
 			reading.updateNowPlaying()
 			return true
 		} catch {
@@ -296,9 +296,6 @@ final class AppViewModel {
 
 	func setActiveTab(_ tab: DocumentTab) {
 		activeTabId = tab.id
-		if let t = activeTab {
-			reading.loadSegment(for: t)
-		}
 	}
 
 	private func loadRecentsFromConfig() {
