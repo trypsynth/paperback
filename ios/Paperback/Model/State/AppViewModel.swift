@@ -123,14 +123,7 @@ final class AppViewModel {
 			self?.configManager.setAppBool(key: "text_mode", value: isTextMode)
 		}
 		if restorePreviousDocuments {
-			// Read first, since each restored tab becomes active in turn and saves itself over it.
-			let activePath = configManager.getAppString(key: "active_document", defaultValue: "")
-			for path in configManager.getOpenedDocuments() {
-				tryRestoreDocument(path: path)
-			}
-			if let tab = tabs.first(where: { $0.url.path(percentEncoded: false) == activePath }) {
-				activeTabId = tab.id
-			}
+			restoreDocuments()
 		}
 		NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
 			.sink { [weak self] _ in
@@ -169,23 +162,9 @@ final class AppViewModel {
 		}
 		let scopeStarted = url.startAccessingSecurityScopedResource()
 		let path = url.path(percentEncoded: false)
-		let pass = password ?? configManager.getDocumentPassword(path: path)
 		do {
-			let session = try DocumentSession.newFfi(
-				filePath: path,
-				password: pass,
-				forcedExtension: "",
-				renderTablesInline: false
-			)
-			let title = session.title().isEmpty
-				? url.deletingPathExtension().lastPathComponent
-				: session.title()
-			let savedPos = configManager.getDocumentPosition(path: path)
-			var tab = DocumentTab(title: title, url: url, session: session)
-			tab.currentPosition = savedPos
-			tab.securityScopeURL = scopeStarted ? url : nil
-			tabs.append(tab)
-			activeTabId = tab.id
+			let session = try Self.openSession(path: path, password: password ?? configManager.getDocumentPassword(path: path))
+			activeTabId = addTab(url: url, session: session, scopeStarted: scopeStarted)
 			if track {
 				configManager.addRecentDocument(path: path)
 				configManager.addOpenedDocument(path: path)
@@ -197,13 +176,70 @@ final class AppViewModel {
 			return true
 		} catch {
 			if scopeStarted { url.stopAccessingSecurityScopedResource() }
-			// The core starts a missing or wrong password's error with this marker, so the reader is asked for one rather than shown a failure.
-			if "\(error)".contains("[password_required]") {
-				navigation.passwordPromptUrl = url
-				return false
-			}
-			debugMessage = "Error opening '\(url.lastPathComponent)':\n\(error)\n\nPath: \(path)"
+			reportOpenFailure(error, url: url)
 			return false
+		}
+	}
+
+	nonisolated private static func openSession(path: String, password: String) throws -> DocumentSession {
+		try DocumentSession.newFfi(filePath: path, password: password, forcedExtension: "", renderTablesInline: false)
+	}
+
+	private func addTab(url: URL, session: DocumentSession, scopeStarted: Bool) -> UUID {
+		let path = url.path(percentEncoded: false)
+		let title = session.title().isEmpty ? url.deletingPathExtension().lastPathComponent : session.title()
+		var tab = DocumentTab(title: title, url: url, session: session)
+		tab.currentPosition = configManager.getDocumentPosition(path: path)
+		tab.securityScopeURL = scopeStarted ? url : nil
+		tabs.append(tab)
+		return tab.id
+	}
+
+	private func reportOpenFailure(_ error: Error, url: URL) {
+		// The core starts a missing or wrong password's error with this marker, so the reader is asked for one rather than shown a failure.
+		if "\(error)".contains("[password_required]") {
+			navigation.passwordPromptUrl = url
+			return
+		}
+		debugMessage = "Error opening '\(url.lastPathComponent)':\n\(error)\n\nPath: \(url.path(percentEncoded: false))"
+	}
+
+	/// Kept so a test can wait for the tabs a launch brings back.
+	@ObservationIgnored private(set) var restoreTask: Task<Void, Never>?
+
+	/// Parsed off the main thread, since a few large books opened here held up launch until iOS could kill the app.
+	private func restoreDocuments() {
+		let activePath = configManager.getAppString(key: "active_document", defaultValue: "")
+		let requests: [RestoreRequest] = configManager.getOpenedDocuments().compactMap { path in
+			guard let url = resolvedURL(forPath: path) else { return nil }
+			let password = configManager.getDocumentPassword(path: url.path(percentEncoded: false))
+			return RestoreRequest(path: path, url: url, password: password, scopeStarted: url.startAccessingSecurityScopedResource())
+		}
+		restoreTask = Task {
+			let results = await Task.detached {
+				requests.map { request in
+					Result { try Self.openSession(path: request.url.path(percentEncoded: false), password: request.password) }
+				}
+			}.value
+			// A book opened while these parsed keeps the reader; the restored tabs go in behind it.
+			let openedMeanwhile = !tabs.isEmpty
+			var restored: [UUID] = []
+			for (request, result) in zip(requests, results) {
+				switch result {
+				case .success(let session) where !tabs.contains(where: { $0.url == request.url }):
+					restored.append(addTab(url: request.url, session: session, scopeStarted: request.scopeStarted))
+					// Refreshed in case it went stale.
+					saveBookmark(for: request.url, path: request.path)
+				case .success:
+					if request.scopeStarted { request.url.stopAccessingSecurityScopedResource() }
+				case .failure(let error):
+					if request.scopeStarted { request.url.stopAccessingSecurityScopedResource() }
+					reportOpenFailure(error, url: request.url)
+				}
+			}
+			guard !openedMeanwhile, !restored.isEmpty else { return }
+			activeTabId = tabs.first(where: { $0.url.path(percentEncoded: false) == activePath })?.id ?? restored.last
+			reading.updateNowPlaying()
 		}
 	}
 
@@ -343,14 +379,6 @@ final class AppViewModel {
 	func removeRecentDocument(url: URL) {
 		configManager.removeDocumentHistory(path: url.path(percentEncoded: false))
 		recentDocuments.removeAll { $0.url == url }
-	}
-
-	private func tryRestoreDocument(path: String) {
-		guard let url = resolvedURL(forPath: path) else { return }
-		// Tracking would move each tab to the top of recents, reordering them by tab instead of by reading on every launch; the bookmark is still refreshed in case it went stale.
-		if openDocument(url: url, track: false) {
-			saveBookmark(for: url, path: path)
-		}
 	}
 
 	private func resolvedURL(forPath path: String) -> URL? {
@@ -543,4 +571,12 @@ private func configFilePath() -> String {
 	let dir = support.appendingPathComponent("dev.paperback.mobile", isDirectory: true)
 	try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
 	return dir.appendingPathComponent("config.toml").path
+}
+
+/// Restoring doesn't track the documents, since that would move each tab to the top of recents and reorder them by tab instead of by reading on every launch.
+private struct RestoreRequest: Sendable {
+	let path: String
+	let url: URL
+	let password: String
+	let scopeStarted: Bool
 }

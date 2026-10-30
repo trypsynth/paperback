@@ -44,13 +44,14 @@ final class TabSwitchTests: XCTestCase {
 		for tab in viewModel.tabs where tab.url == first || tab.url == second { viewModel.closeTab(tab) }
 	}
 
-	func testRelaunchingKeepsRecentsInReadingOrder() throws {
+	func testRelaunchingKeepsRecentsInReadingOrder() async throws {
 		let paths = try [book("first.txt", "Alpha paragraph."), book("second.txt", "Beta paragraph.")].map { $0.path(percentEncoded: false) }
 		let config = AppViewModel().configManager
 		for path in paths { config.addOpenedDocument(path: path) }
 		for path in paths.reversed() { config.addRecentDocument(path: path) }
 		config.flush()
 		let relaunched = AppViewModel()
+		await relaunched.restoreTask?.value
 		XCTAssertEqual(relaunched.tabs.filter { paths.contains($0.url.path(percentEncoded: false)) }.count, 2)
 		XCTAssertEqual(Array(relaunched.configManager.getRecentDocuments().prefix(2)), paths)
 		for tab in relaunched.tabs where paths.contains(tab.url.path(percentEncoded: false)) { relaunched.closeTab(tab) }
@@ -58,13 +59,31 @@ final class TabSwitchTests: XCTestCase {
 		relaunched.configManager.flush()
 	}
 
-	func testRelaunchingReturnsToTheTabBeingRead() throws {
+	func testABookOpenedWhileTabsAreRestoringKeepsTheReader() async throws {
+		let paths = try [book("first.txt", "Alpha paragraph."), book("second.txt", "Beta paragraph.")].map { $0.path(percentEncoded: false) }
+		let opened = try book("opened.txt", "Gamma paragraph.")
+		let config = AppViewModel().configManager
+		for path in paths { config.addOpenedDocument(path: path) }
+		config.setAppString(key: "active_document", value: paths[0])
+		config.flush()
+		let relaunched = AppViewModel()
+		XCTAssertTrue(relaunched.openDocument(url: opened, track: false))
+		await relaunched.restoreTask?.value
+		XCTAssertEqual(relaunched.activeTab?.url, opened)
+		XCTAssertEqual(relaunched.tabs.filter { paths.contains($0.url.path(percentEncoded: false)) }.count, 2)
+		XCTAssertTrue(relaunched.reading.currentSegmentText.contains("Gamma"), relaunched.reading.currentSegmentText)
+		for tab in relaunched.tabs { relaunched.closeTab(tab) }
+		relaunched.configManager.flush()
+	}
+
+	func testRelaunchingReturnsToTheTabBeingRead() async throws {
 		let paths = try [book("first.txt", "Alpha paragraph."), book("second.txt", "Beta paragraph.")].map { $0.path(percentEncoded: false) }
 		let config = AppViewModel().configManager
 		for path in paths { config.addOpenedDocument(path: path) }
 		config.setAppString(key: "active_document", value: paths[0])
 		config.flush()
 		let relaunched = AppViewModel()
+		await relaunched.restoreTask?.value
 		XCTAssertEqual(relaunched.activeTab?.url.path(percentEncoded: false), paths[0])
 		XCTAssertTrue(relaunched.reading.currentSegmentText.contains("Alpha"), relaunched.reading.currentSegmentText)
 		for tab in relaunched.tabs where paths.contains(tab.url.path(percentEncoded: false)) { relaunched.closeTab(tab) }
