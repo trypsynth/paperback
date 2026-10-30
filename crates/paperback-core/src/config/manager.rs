@@ -22,7 +22,9 @@ mod keybindings;
 mod readability;
 mod sidecar;
 
-pub use document_list::{compute_document_hash, document_missing, document_name, get_sorted_document_list};
+pub use document_list::{
+	compute_document_hash, document_missing, document_name, filter_document_list, get_sorted_document_list,
+};
 
 pub struct ConfigManager {
 	data: RefCell<ConfigData>,
