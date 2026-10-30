@@ -43,4 +43,18 @@ final class TabSwitchTests: XCTestCase {
 		XCTAssertTrue(viewModel.reading.currentSegmentText.contains("Alpha"), viewModel.reading.currentSegmentText)
 		for tab in viewModel.tabs where tab.url == first || tab.url == second { viewModel.closeTab(tab) }
 	}
+
+	func testRelaunchingKeepsRecentsInReadingOrder() throws {
+		let paths = try [book("first.txt", "Alpha paragraph."), book("second.txt", "Beta paragraph.")].map { $0.path(percentEncoded: false) }
+		let config = AppViewModel().configManager
+		for path in paths { config.addOpenedDocument(path: path) }
+		for path in paths.reversed() { config.addRecentDocument(path: path) }
+		config.flush()
+		let relaunched = AppViewModel()
+		XCTAssertEqual(relaunched.tabs.filter { paths.contains($0.url.path(percentEncoded: false)) }.count, 2)
+		XCTAssertEqual(Array(relaunched.configManager.getRecentDocuments().prefix(2)), paths)
+		for tab in relaunched.tabs where paths.contains(tab.url.path(percentEncoded: false)) { relaunched.closeTab(tab) }
+		for path in paths { relaunched.configManager.removeDocumentHistory(path: path) }
+		relaunched.configManager.flush()
+	}
 }

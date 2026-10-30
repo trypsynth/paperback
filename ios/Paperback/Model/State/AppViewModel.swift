@@ -341,7 +341,10 @@ final class AppViewModel {
 
 	private func tryRestoreDocument(path: String) {
 		guard let url = resolvedURL(forPath: path) else { return }
-		openDocument(url: url)
+		// Tracking would move each tab to the top of recents, reordering them by tab instead of by reading on every launch; the bookmark is still refreshed in case it went stale.
+		if openDocument(url: url, track: false) {
+			saveBookmark(for: url, path: path)
+		}
 	}
 
 	private func resolvedURL(forPath path: String) -> URL? {
