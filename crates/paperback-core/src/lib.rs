@@ -73,8 +73,8 @@ pub fn dump_pdf_page_chars(path: &str, password: Option<&str>, page: i32) -> Res
 			}
 		}
 	}
-	let Some(text) = page.text() else { return Ok(out) };
-	for i in 0..text.char_count().unwrap_or(0) {
+	let text = page.text();
+	for i in 0..text.char_count() {
 		let ch = char::from_u32(text.unicode_at(i))
 			.map_or_else(|| format!("U+{:04X}", text.unicode_at(i)), |ch| format!("{ch:?}"));
 		let (x, y) = text.char_origin(i).unwrap_or_default();

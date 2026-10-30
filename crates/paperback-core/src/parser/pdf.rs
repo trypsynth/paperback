@@ -55,10 +55,7 @@ fn read_page(
 		tracing::warn!(page_index, "failed to load pdf page, skipping its text");
 		return PageContent::default();
 	};
-	let Some(text_page) = page.text() else {
-		tracing::warn!(page_index, "failed to load text for pdf page, skipping its text");
-		return PageContent::default();
-	};
+	let text_page = page.text();
 	// Taken before the text so a tagged page whose tree names no figure can place its images among its blocks as it writes them.
 	let announced = page.announced_images();
 	let mut content = PageContent {
@@ -88,7 +85,7 @@ fn read_page(
 	) {
 		content.tagged = Some(tagged);
 	} else {
-		content.lines = extract_text_lines(text_page, page_index, evidence);
+		content.lines = extract_text_lines(text_page, evidence);
 	}
 	content.web_links = collect_web_links(text_page);
 	content.annotation_links = collect_annotation_links(&page, text_page);

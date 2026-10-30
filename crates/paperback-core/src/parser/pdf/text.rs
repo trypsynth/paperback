@@ -362,25 +362,8 @@ fn measure_line(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Line {
 	}
 }
 
-pub(super) fn extract_text_lines(text_page: &PdfTextPage, page_index: i32, evidence: &mut PageEvidence) -> Vec<Line> {
-	let Some(char_count) = text_page.char_count() else {
-		tracing::warn!(
-			page_index,
-			"page text char count unavailable, falling back to whole-page text blob, heading detection by font size will be degraded for this page"
-		);
-		let raw = sanitize_pdf_text(&text_page.text()).replace('\r', "");
-		return raw
-			.lines()
-			.map(|line| Line {
-				text: line.to_string(),
-				size: 0.0,
-				top: f64::NEG_INFINITY,
-				bottom: f64::NEG_INFINITY,
-				monospaced: false,
-				bold: false,
-			})
-			.collect();
-	};
+pub(super) fn extract_text_lines(text_page: &PdfTextPage, evidence: &mut PageEvidence) -> Vec<Line> {
+	let char_count = text_page.char_count();
 	let mut result: Vec<Line> = Vec::new();
 	// Kept with their pdfium index so each line can be reordered visual to logical before paragraph joining.
 	let mut current_chars: Vec<(char, i32)> = Vec::new();

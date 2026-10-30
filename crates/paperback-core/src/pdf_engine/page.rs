@@ -21,9 +21,6 @@ use super::{
 /// A scanned book with an OCR text layer draws each sheet as one image under its invisible text, and announcing that put an "[Image]" with nothing behind it on every page (#1046).
 pub const PAGE_IMAGE_COVERAGE: f64 = 0.9;
 
-/// hayro already draws a form's contents as the page's own objects, so no object here is ever a form and the parser never gets this deep.
-pub const MAX_FORM_DEPTH: u32 = 8;
-
 /// A page laid out from HTML draws its spacers and hairline rules as images a fraction of a point across.
 const MIN_IMAGE_SIDE: f32 = 4.0;
 
@@ -73,10 +70,8 @@ impl<'doc> PdfPage<'doc> {
 		self.height
 	}
 
-	/// Always there; an `Option` because the parser is written for a page whose text cannot be read.
-	#[allow(clippy::unnecessary_wraps)]
-	pub const fn text(&self) -> Option<&PdfTextPage> {
-		Some(&self.text)
+	pub const fn text(&self) -> &PdfTextPage {
+		&self.text
 	}
 
 	pub fn tags(&self) -> Option<TagTree<'_>> {
@@ -242,9 +237,6 @@ pub struct PageBitmap {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ObjectKind {
 	Image,
-	/// hayro draws a form's contents in its place, so no object is ever one, but the parser's walk through forms matches on it.
-	#[allow(dead_code)]
-	Form,
 	Other,
 }
 
@@ -302,17 +294,6 @@ impl<'page> PageObject<'page> {
 
 	pub const fn bounds(&self) -> Option<Bounds> {
 		self.data.bounds
-	}
-
-	/// Always zero: hayro draws a form's contents as the page's own objects.
-	#[allow(clippy::unused_self)]
-	pub const fn form_object_count(&self) -> i32 {
-		0
-	}
-
-	#[allow(clippy::unused_self)]
-	pub const fn form_object(&self, _index: i32) -> Option<Self> {
-		None
 	}
 
 	/// The outermost id, which is the one pdfium reports.

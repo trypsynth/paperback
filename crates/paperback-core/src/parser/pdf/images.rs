@@ -2,7 +2,7 @@
 
 use crate::{
 	document::{DocLen, DocPos, DocumentBuffer, Marker, MarkerType},
-	pdf_engine::{MAX_FORM_DEPTH, ObjectKind, PageObject, PdfPage},
+	pdf_engine::{ObjectKind, PdfPage},
 	t,
 };
 
@@ -39,33 +39,13 @@ pub(super) fn page_largest_image_coverage(page: &PdfPage) -> f64 {
 	if page_area <= 0.0 {
 		return 0.0;
 	}
-	let mut largest = 0.0_f64;
-	for i in 0..page.object_count() {
-		if let Some(object) = page.object(i) {
-			collect_largest_image_area(&object, 0, &mut largest);
-		}
-	}
+	let largest = (0..page.object_count())
+		.filter_map(|i| page.object(i))
+		.filter(|object| object.kind() == ObjectKind::Image)
+		.filter_map(|object| object.bounds())
+		.map(|bounds| f64::from((bounds.right - bounds.left).abs()) * f64::from((bounds.top - bounds.bottom).abs()))
+		.fold(0.0_f64, f64::max);
 	(largest / page_area).min(1.0)
-}
-
-fn collect_largest_image_area(object: &PageObject, depth: u32, largest: &mut f64) {
-	match object.kind() {
-		ObjectKind::Image => {
-			if let Some(bounds) = object.bounds() {
-				let area =
-					f64::from((bounds.right - bounds.left).abs()) * f64::from((bounds.top - bounds.bottom).abs());
-				*largest = largest.max(area);
-			}
-		}
-		ObjectKind::Form if depth < MAX_FORM_DEPTH => {
-			for i in 0..object.form_object_count() {
-				if let Some(child) = object.form_object(i) {
-					collect_largest_image_area(&child, depth + 1, largest);
-				}
-			}
-		}
-		_ => {}
-	}
 }
 
 pub(super) struct UnclaimedImages {

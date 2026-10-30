@@ -88,64 +88,63 @@ pub(super) fn read(
 	let mut order: Vec<i32> = Vec::new();
 	let mut artifacts: HashSet<i32> = HashSet::new();
 	let mut seen: HashSet<i32> = HashSet::new();
-	if let Some(char_count) = text_page.char_count() {
-		let mut current_mcid = -1;
-		// Kept with their pdfium index so RTL runs can be reordered visual to logical per run.
-		let mut current_chars: Vec<(char, i32)> = Vec::new();
-		let spaces = SpaceFilter::new(char_count);
-		let page = page_chars(text_page, char_count);
-		let context = context_chars(&page);
-		evidence.add_chars(&context);
-		for (at, (i, &ch)) in (0..char_count).zip(page.iter()).enumerate() {
-			if let Some(ch) = ch {
-				let ch = match ch {
-					LINE_END_HYPHEN if evidence.keeps_line_end_hyphen(&context, at) => '-',
-					_ => ch,
-				};
-				if (ch.is_control() && !matches!(ch, '\n' | '\r' | '\t')) || ch == '\u{00AD}' {
-					continue;
-				}
-				// A space the page never renders would land mid-word here just as in plain extraction.
-				if ch == ' ' && spaces.hides(text_page, i) {
-					continue;
-				}
-				let is_generated = text_page.is_generated(i);
-				let mut char_mcid = -1;
-				if !is_generated && let Some(obj) = text_page.text_object(i) {
-					char_mcid = object_mcid(&obj, &facts.referenced);
-					if want_order && char_mcid >= 0 && char_mcid != current_mcid && seen.insert(char_mcid) {
-						order.push(char_mcid);
-						if !facts.referenced.contains(&char_mcid) && is_artifact(&obj) {
-							artifacts.insert(char_mcid);
-						}
-					}
-				}
-				if !is_generated && !ch.is_whitespace() {
-					real_char_count += 1;
-					if char_mcid >= 0 {
-						mcid_char_count += 1;
-					}
-				}
-				if char_mcid >= 0
-					&& want_tops
-					&& !content.tops.contains_key(&char_mcid)
-					&& let Some(top) = char_top(text_page, i)
-				{
-					content.tops.insert(char_mcid, top);
-				}
-				if char_mcid >= 0 && char_mcid != current_mcid {
-					if current_mcid >= 0 && !current_chars.is_empty() {
-						content.text.entry(current_mcid).or_default().push_str(&reorder_run(text_page, &current_chars));
-					}
-					current_chars.clear();
-					current_mcid = char_mcid;
-				}
-				current_chars.push((ch, i));
+	let char_count = text_page.char_count();
+	let mut current_mcid = -1;
+	// Kept with their pdfium index so RTL runs can be reordered visual to logical per run.
+	let mut current_chars: Vec<(char, i32)> = Vec::new();
+	let spaces = SpaceFilter::new(char_count);
+	let page = page_chars(text_page, char_count);
+	let context = context_chars(&page);
+	evidence.add_chars(&context);
+	for (at, (i, &ch)) in (0..char_count).zip(page.iter()).enumerate() {
+		if let Some(ch) = ch {
+			let ch = match ch {
+				LINE_END_HYPHEN if evidence.keeps_line_end_hyphen(&context, at) => '-',
+				_ => ch,
+			};
+			if (ch.is_control() && !matches!(ch, '\n' | '\r' | '\t')) || ch == '\u{00AD}' {
+				continue;
 			}
+			// A space the page never renders would land mid-word here just as in plain extraction.
+			if ch == ' ' && spaces.hides(text_page, i) {
+				continue;
+			}
+			let is_generated = text_page.is_generated(i);
+			let mut char_mcid = -1;
+			if !is_generated && let Some(obj) = text_page.text_object(i) {
+				char_mcid = object_mcid(&obj, &facts.referenced);
+				if want_order && char_mcid >= 0 && char_mcid != current_mcid && seen.insert(char_mcid) {
+					order.push(char_mcid);
+					if !facts.referenced.contains(&char_mcid) && is_artifact(&obj) {
+						artifacts.insert(char_mcid);
+					}
+				}
+			}
+			if !is_generated && !ch.is_whitespace() {
+				real_char_count += 1;
+				if char_mcid >= 0 {
+					mcid_char_count += 1;
+				}
+			}
+			if char_mcid >= 0
+				&& want_tops
+				&& !content.tops.contains_key(&char_mcid)
+				&& let Some(top) = char_top(text_page, i)
+			{
+				content.tops.insert(char_mcid, top);
+			}
+			if char_mcid >= 0 && char_mcid != current_mcid {
+				if current_mcid >= 0 && !current_chars.is_empty() {
+					content.text.entry(current_mcid).or_default().push_str(&reorder_run(text_page, &current_chars));
+				}
+				current_chars.clear();
+				current_mcid = char_mcid;
+			}
+			current_chars.push((ch, i));
 		}
-		if current_mcid >= 0 && !current_chars.is_empty() {
-			content.text.entry(current_mcid).or_default().push_str(&reorder_run(text_page, &current_chars));
-		}
+	}
+	if current_mcid >= 0 && !current_chars.is_empty() {
+		content.text.entry(current_mcid).or_default().push_str(&reorder_run(text_page, &current_chars));
 	}
 	if real_char_count > 0 {
 		content.coverage = mcid_char_count as f64 / real_char_count as f64;

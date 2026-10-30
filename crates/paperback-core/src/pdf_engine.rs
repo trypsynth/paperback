@@ -20,8 +20,8 @@ mod text;
 
 #[allow(unused_imports)]
 pub use page::{
-	AnnotationLink, Bounds, LinkTarget, MAX_FORM_DEPTH, ObjectKind, PAGE_IMAGE_COVERAGE, PageBitmap, PageCache,
-	PageImage, PageObject, PdfPage,
+	AnnotationLink, Bounds, LinkTarget, ObjectKind, PAGE_IMAGE_COVERAGE, PageBitmap, PageCache, PageImage, PageObject,
+	PdfPage,
 };
 #[allow(unused_imports)]
 pub use tags::{Tag, TagTree};

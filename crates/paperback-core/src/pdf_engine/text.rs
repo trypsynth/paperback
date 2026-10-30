@@ -1435,14 +1435,8 @@ impl PdfTextPage {
 		self.objects.get(self.info(index)?.text_object?)
 	}
 
-	/// Never `None`, but the parser still handles a page whose count cannot be told.
-	#[allow(clippy::unnecessary_wraps)]
-	pub fn char_count(&self) -> Option<i32> {
-		Some(i32::try_from(self.chars.len()).unwrap_or(i32::MAX))
-	}
-
-	pub fn text(&self) -> String {
-		self.extract(0, self.char_count().unwrap_or(0))
+	pub fn char_count(&self) -> i32 {
+		i32::try_from(self.chars.len()).unwrap_or(i32::MAX)
 	}
 
 	fn text_index_from_char_index(&self, char_index: i32) -> i32 {
@@ -1459,7 +1453,7 @@ impl PdfTextPage {
 
 	/// pdfium's `GetPageText`.
 	pub(super) fn page_text(&self, mut start: i32, count: i32) -> Vec<u32> {
-		let total = self.char_count().unwrap_or(0);
+		let total = self.char_count();
 		if start < 0 || start >= total || count <= 0 || self.text.is_empty() {
 			return Vec::new();
 		}
