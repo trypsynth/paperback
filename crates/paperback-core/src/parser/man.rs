@@ -1,6 +1,10 @@
-//! Only the small part of roff a manual page uses is read; `.if` and friends are skipped rather than evaluated, so a paragraph written inside a conditional is lost.
+//! Only the small part of roff a manual page uses is read; a conditional is followed only when its condition can be known for plain text.
 
-use std::{fs, io::Read, path::Path};
+use std::{
+	fs,
+	io::Read,
+	path::{Path, PathBuf},
+};
 
 use anyhow::{Context, Result};
 use flate2::read::GzDecoder;
@@ -32,10 +36,14 @@ pub struct ManParser;
 impl Parser for ManParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		tracing::debug!(path = %context.file_path, "parsing manual page");
-		let bytes = fs::read(&context.file_path)
-			.with_context(|| format!("Failed to open manual page '{}'", context.file_path))?;
-		let bytes = if is_gzipped(&bytes) { gunzip(&bytes, &context.file_path)? } else { bytes };
-		let source = remove_soft_hyphens(normalize_line_endings(convert_to_utf8(&bytes)));
+		let mut path = PathBuf::from(&context.file_path);
+		let mut source = read_source(&path)?;
+		// A page that is only `.so man1/other.1` stands for that page, as `man` reads it; the hop limit stops a loop.
+		for _ in 0..5 {
+			let Some(next) = redirect_of(&source).and_then(|target| resolve_redirect(&path, target)) else { break };
+			source = read_source(&next)?;
+			path = next;
+		}
 		if !looks_like_roff(&source) {
 			anyhow::bail!("'{}' is not a manual page", context.file_path);
 		}
@@ -56,6 +64,33 @@ impl Parser for ManParser {
 		document.toc_items = page.toc;
 		Ok(document)
 	}
+}
+
+fn read_source(path: &Path) -> Result<String> {
+	let bytes = fs::read(path).with_context(|| format!("Failed to open manual page '{}'", path.display()))?;
+	let bytes = if is_gzipped(&bytes) { gunzip(&bytes, &path.to_string_lossy())? } else { bytes };
+	Ok(remove_soft_hyphens(normalize_line_endings(convert_to_utf8(&bytes))))
+}
+
+/// The target of a page whose only content is a `.so` request.
+fn redirect_of(source: &str) -> Option<&str> {
+	let mut lines = source.lines().map(str::trim).filter(|line| !line.is_empty() && !is_comment(line));
+	let (name, target) = control_line(lines.next()?)?;
+	(name == "so" && !target.is_empty() && lines.next().is_none()).then_some(target)
+}
+
+/// `.so` names a path from the top of the manual tree (`man1/other.1`), so it's looked for above the page's own section folder, then beside it, gzipped or not.
+fn resolve_redirect(page: &Path, target: &str) -> Option<PathBuf> {
+	let section = page.parent()?;
+	let roots = [section.parent(), Some(section)];
+	let names = [Some(Path::new(target)), Path::new(target).file_name().map(Path::new)];
+	roots.into_iter().flatten().flat_map(|root| names.into_iter().flatten().map(move |name| root.join(name))).find_map(
+		|candidate| {
+			let mut gzipped = candidate.clone().into_os_string();
+			gzipped.push(".gz");
+			[candidate, PathBuf::from(gzipped)].into_iter().find(|path| path.is_file())
+		},
+	)
 }
 
 /// The longest licence header seen before a page's `.TH` runs to about forty lines.

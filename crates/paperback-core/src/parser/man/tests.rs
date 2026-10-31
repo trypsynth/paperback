@@ -223,6 +223,25 @@ fn a_gzipped_page_is_unpacked() {
 	assert!(document.buffer.content.contains("Gzipped prose."), "{}", document.buffer.content);
 }
 
+#[test]
+fn a_page_that_only_names_another_reads_that_one() {
+	let dir = TempDir::new("man-redirect");
+	let mut encoder = GzEncoder::new(Vec::new(), Compression::fast());
+	encoder.write_all(page(".SH DESCRIPTION\nThe real page.\n").as_bytes()).unwrap();
+	dir.write("man1/etags.1.gz", encoder.finish().unwrap());
+	let path = dir.write_str("man1/ctags.1", ".\\\" Same as etags.\n.so man1/etags.1\n");
+	let document = ManParser.parse(&ParserContext::new(path)).expect("follow the redirect");
+	assert!(document.buffer.content.contains("The real page."), "{}", document.buffer.content);
+}
+
+#[test]
+fn a_redirect_loop_is_refused_rather_than_followed_forever() {
+	let dir = TempDir::new("man-redirect-loop");
+	dir.write("man1/a.1", ".so man1/b.1\n");
+	let path = dir.write_str("man1/b.1", ".so man1/a.1\n");
+	assert!(ManParser.parse(&ParserContext::new(path)).is_err());
+}
+
 /// `gz` is claimed so an installed page can be offered in an open dialog at all, so any other gzipped file reaches this parser too.
 #[test]
 fn a_gzipped_file_that_is_not_a_page_is_refused() {
