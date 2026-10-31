@@ -120,3 +120,21 @@ Section
 	assert_eq!(untitled.title, "notes");
 	assert_eq!(untitled.author, "");
 }
+
+#[test]
+fn a_sphinx_domain_directive_reads_its_signature_and_body() {
+	let doc = parse_bytes(
+		"curses.rst",
+		"Curses C API\n============\n\n.. c:macro:: PyCurses_API_NAME\n\n   Name of the curses capsule to pass to PyCapsule_Import.\n\nAfter.\n",
+	);
+	let text = &doc.buffer.content;
+	assert!(text.contains("PyCurses_API_NAME") && text.contains("Name of the curses capsule"), "{text}");
+	assert!(text.contains("After."), "{text}");
+}
+
+#[test]
+fn a_structural_directive_reads_its_body_but_not_its_argument() {
+	let doc = parse_bytes("only.rst", ".. only:: html\n\n   Shown in HTML builds.\n");
+	assert!(doc.buffer.content.contains("Shown in HTML builds."), "{}", doc.buffer.content);
+	assert!(!doc.buffer.content.contains("html"), "{}", doc.buffer.content);
+}

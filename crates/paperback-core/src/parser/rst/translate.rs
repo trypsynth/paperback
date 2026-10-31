@@ -48,6 +48,39 @@ const ADMONITIONS: &[&str] = &[
 
 const LITERAL_DIRECTIVES: &[&str] = &["code-block", "code", "sourcecode", "math", "math-block", "productionlist"];
 
+/// Sphinx object descriptions, with or without a domain prefix: the argument is the signature being documented, so it's read ahead of the body.
+const SIGNATURE_DIRECTIVES: &[&str] = &[
+	"function",
+	"method",
+	"classmethod",
+	"staticmethod",
+	"abstractmethod",
+	"coroutinefunction",
+	"coroutinemethod",
+	"decorator",
+	"decoratormethod",
+	"class",
+	"exception",
+	"attribute",
+	"property",
+	"data",
+	"macro",
+	"member",
+	"var",
+	"type",
+	"struct",
+	"union",
+	"enum",
+	"enumerator",
+	"concept",
+	"envvar",
+	"option",
+	"cmdoption",
+	"describe",
+	"object",
+	"event",
+];
+
 /// Their bodies are metadata, links to other files, or raw markup for another output format, with nothing to show a reader.
 const SKIPPED_DIRECTIVES: &[&str] = &[
 	"toctree",
@@ -313,7 +346,10 @@ impl Converter {
 		}
 		if let Some(colon_pos) = rest.find("::") {
 			let name = rest[..colon_pos].trim();
-			if !name.is_empty() && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_') {
+			// Sphinx's domain directives (`c:function`, `py:method`) have colons in the name, as docutils allows.
+			if !name.is_empty()
+				&& name.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | ':' | '.' | '+'))
+			{
 				let arg = rest[colon_pos + 2..].trim().to_string();
 				let name = name.to_string();
 				return Some(self.directive(&name, &arg, i + 1, body_end, indent));
@@ -367,6 +403,10 @@ impl Converter {
 		// Unknown or purely structural directives show their body, since hiding it would silently drop real content.
 		let body_indent = self.first_indent_or(content_start, body_end, indent + 1);
 		let body = self.render_blocks(content_start, body_end, body_indent);
+		let object = name_lower.rsplit(':').next().unwrap_or_default();
+		if SIGNATURE_DIRECTIVES.contains(&object) && !arg.is_empty() {
+			return (format!("<p><code>{}</code></p>{body}", escape_html(arg)), body_end);
+		}
 		(body, body_end)
 	}
 
