@@ -88,6 +88,28 @@ pub(super) fn bind_document_events(
 			activate_reload_guard.set(false);
 		}
 	});
+	// Coming back from Win+D can restore the window in front with focus on nothing and no activation event to put it back, so screen readers hear only the title.
+	#[cfg(target_os = "windows")]
+	{
+		use windows::Win32::{
+			Foundation::HWND,
+			UI::{Input::KeyboardAndMouse::GetFocus, WindowsAndMessaging::GetForegroundWindow},
+		};
+		let dm = Rc::clone(doc_manager);
+		frame.on_size(move |event| {
+			event.skip(true);
+			let hwnd = HWND(frame.get_handle());
+			let focus = unsafe { GetFocus() };
+			if !frame.is_iconized()
+				&& unsafe { GetForegroundWindow() } == hwnd
+				&& (focus.is_invalid() || focus == hwnd)
+				&& let Ok(dm) = dm.try_lock()
+			{
+				dm.restore_focus();
+				dm.announce_focus();
+			}
+		});
+	}
 	let dm = Rc::clone(doc_manager);
 	let frame_copy = frame;
 	notebook.on_key_down(move |event| {
