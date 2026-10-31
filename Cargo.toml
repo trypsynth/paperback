@@ -9,7 +9,6 @@ rust-version = "1.91.1"
 license = "MIT"
 repository = "https://github.com/trypsynth/paperback"
 
-# Deps shared by two or more crates in this workspace.
 [workspace.dependencies]
 anyhow = "1.0.104"
 base64 = "0.23.1"
