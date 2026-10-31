@@ -13,8 +13,7 @@ translatable = true
 [lib]
 name = "paperback_core"
 path = "src/lib.rs"
-# The mobile builds ask for cdylib or staticlib with `cargo rustc --crate-type`, so desktop builds
-# don't also link an FFI library nothing on desktop loads.
+# Mobile builds pass --crate-type to cargo rustc, so desktop doesn't link an unused FFI library.
 crate-type = ["rlib"]
 
 [dependencies]

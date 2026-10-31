@@ -60,7 +60,7 @@ windows-core = "0.62.2"
 [lints]
 workspace = true
 
-# AppKit requires the main thread; Rust's default test harness uses worker threads.
+# AppKit and wxWidgets need the main thread, which the default test harness doesn't use.
 [[test]]
 name = "macos_line_navigation"
 harness = false
@@ -69,7 +69,6 @@ harness = false
 name = "macos_menu_shortcuts"
 harness = false
 
-# wxWidgets runs its windows on the main thread, which the default test harness does not use.
 [[test]]
 name = "windows_rtf_window_append"
 harness = false
