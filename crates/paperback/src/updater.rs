@@ -4,7 +4,7 @@ use paperback_core::version;
 use ship_shape::{InstallKind, UpdateChannel as ShipChannel, UpdaterConfig, ui::CheckTrigger};
 use wxdragon::prelude::*;
 
-use crate::config_ext::UpdateChannel;
+use crate::config_ext::{UpdateChannel, home};
 
 const PAPERBACK_GITHUB_REPO: &str = "trypsynth/paperback";
 const PAPERBACK_MINISIGN_KEY: &str = "RWQasnbWXwK2dhno9ThUm8HONEIo85iiDBZvw3jlNs574QJHEkoRiGX7";
@@ -54,15 +54,5 @@ pub fn run_update_check(parent: &Frame, silent: bool, channel: UpdateChannel) {
 
 pub fn is_installer_distribution() -> bool {
 	// The portable tar.gz would be extracted beside an executable in the AppImage's read-only mount, so the AppImage file itself is replaced.
-	#[cfg(target_os = "linux")]
-	if env::var_os("APPIMAGE").is_some() {
-		return true;
-	}
-	let Ok(exe_path) = env::current_exe() else {
-		return false;
-	};
-	let Some(exe_dir) = exe_path.parent() else {
-		return false;
-	};
-	exe_dir.join("unins000.exe").exists()
+	matches!(home().kind(), homeport::InstallKind::Installed | homeport::InstallKind::AppImage)
 }

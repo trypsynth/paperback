@@ -2959,6 +2959,7 @@ dependencies = [
  "bitflags 2.13.2",
  "block",
  "dunce",
+ "homeport",
  "image",
  "live-region",
  "miniz_oxide 0.9.1",

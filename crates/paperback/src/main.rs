@@ -59,8 +59,7 @@ fn pin_rich_edit() {
 fn promote_unbundled_to_regular_app() {
 	use objc::{class, msg_send, runtime::Object, sel, sel_impl};
 	// When in a bundle, MacOS handles this for us.
-	let in_bundle = env::current_exe().is_ok_and(|exe| exe.to_string_lossy().contains(".app/Contents/MacOS/"));
-	if in_bundle {
+	if config_ext::home().kind() == homeport::InstallKind::MacBundle {
 		return;
 	}
 	// NSApplicationActivationPolicyRegular = 0.
@@ -72,8 +71,7 @@ fn promote_unbundled_to_regular_app() {
 }
 
 fn cleanup_legacy_files() {
-	let Ok(exe) = env::current_exe() else { return };
-	let Some(dir) = exe.parent() else { return };
+	let dir = config_ext::home().exe_dir();
 	for name in ["nvdaControllerClient64.dll", "SAAPI64.dll", "pdfium.dll", "libpdfium.so"] {
 		let path = dir.join(name);
 		if let Err(e) = fs::remove_file(&path)

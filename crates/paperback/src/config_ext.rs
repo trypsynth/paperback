@@ -1,11 +1,12 @@
 use std::{
-	env,
 	fmt::{self, Display, Formatter},
 	fs,
-	path::{Path, PathBuf},
+	path::PathBuf,
 	str::FromStr,
+	sync::OnceLock,
 };
 
+use homeport::Homeport;
 use paperback_core::config::ConfigManager;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
@@ -109,60 +110,18 @@ pub fn log_level_from_disk() -> LogLevel {
 	level.and_then(|level| level.parse().ok()).unwrap_or_default()
 }
 
-pub fn config_dir() -> PathBuf {
-	if let Some(dir) = env::var_os("PAPERBACK_CONFIG_DIR") {
-		let dir = PathBuf::from(dir);
-		let _ = fs::create_dir_all(&dir);
-		return dir;
-	}
-	// An AppImage is mounted read-only at a new path on every launch.
-	#[cfg(target_os = "linux")]
-	if env::var_os("APPIMAGE").is_some() {
-		let dir = xdg_config_home().join("Paperback");
-		let _ = fs::create_dir_all(&dir);
-		return dir;
-	}
-	let exe_dir = get_exe_directory();
-	#[cfg(target_os = "macos")]
-	if is_app_bundle(&exe_dir)
-		&& let Some(home) = env::var_os("HOME")
-	{
-		let dir = PathBuf::from(home).join("Library/Application Support/Paperback");
-		let _ = fs::create_dir_all(&dir);
-		return dir;
-	}
-	#[cfg(target_os = "windows")]
-	{
-		let is_installed = (0..10).any(|i| exe_dir.join(format!("unins{i:03}.exe")).exists());
-		if is_installed && let Some(appdata) = env::var_os("APPDATA") {
-			let dir = PathBuf::from(appdata).join("Paperback");
-			let _ = fs::create_dir_all(&dir);
-			return dir;
-		}
-	}
-	exe_dir
+/// How Paperback was installed, which decides where its settings live: beside a portable copy, or in the user's config folder for an install, an app bundle or an `AppImage`.
+pub fn home() -> &'static Homeport {
+	static HOME: OnceLock<Homeport> = OnceLock::new();
+	HOME.get_or_init(|| Homeport::new("Paperback").with_config_override("PAPERBACK_CONFIG_DIR"))
 }
 
-#[cfg(target_os = "linux")]
-fn xdg_config_home() -> PathBuf {
-	if let Some(dir) = env::var_os("XDG_CONFIG_HOME") {
-		return PathBuf::from(dir);
-	}
-	let home = env::var_os("HOME").unwrap_or_else(|| ".".into());
-	PathBuf::from(home).join(".config")
+pub fn config_dir() -> PathBuf {
+	home().create_config_dir().unwrap_or_else(|_| home().config_dir())
 }
 
 pub fn config_toml_path() -> PathBuf {
 	config_dir().join("Paperback.toml")
-}
-
-#[cfg(target_os = "macos")]
-fn is_app_bundle(exe_dir: &Path) -> bool {
-	exe_dir.components().any(|c| c.as_os_str().to_string_lossy().ends_with(".app"))
-}
-
-fn get_exe_directory() -> PathBuf {
-	env::current_exe().ok().and_then(|p| p.parent().map(Path::to_path_buf)).unwrap_or_else(|| PathBuf::from("."))
 }
 
 #[cfg(test)]
