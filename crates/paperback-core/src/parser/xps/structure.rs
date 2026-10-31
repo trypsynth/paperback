@@ -14,9 +14,9 @@ pub(super) enum FragmentKind {
 pub(super) enum Block {
 	Paragraph(Vec<String>),
 	/// Each item is the blocks inside it.
-	List(Vec<Vec<Block>>),
+	List(Vec<Vec<Self>>),
 	/// Rows of cells, each cell the blocks inside it.
-	Table(Vec<Vec<Vec<Block>>>),
+	Table(Vec<Vec<Vec<Self>>>),
 }
 
 #[derive(Debug)]

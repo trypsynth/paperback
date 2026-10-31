@@ -332,9 +332,9 @@ const BODY: &str =
 #[test]
 fn the_outline_becomes_the_table_of_contents() {
 	let doc = outlined(
-		r##"<OutlineEntry OutlineLevel="1" Description="Chapter" OutlineTarget="Doc.fdoc#one"/>
+		r#"<OutlineEntry OutlineLevel="1" Description="Chapter" OutlineTarget="Doc.fdoc#one"/>
 		<OutlineEntry OutlineLevel="1" Description="Second chapter" OutlineTarget="Doc.fdoc#two"/>
-		<OutlineEntry OutlineLevel="2" Description="A section" OutlineTarget="Doc.fdoc#three"/>"##,
+		<OutlineEntry OutlineLevel="2" Description="A section" OutlineTarget="Doc.fdoc#three"/>"#,
 	);
 	assert_eq!(doc.toc_items.len(), 2);
 	assert_eq!(doc.toc_items[0].name, "Chapter");
@@ -349,13 +349,13 @@ fn the_outline_becomes_the_table_of_contents() {
 
 #[test]
 fn an_outline_entry_whose_text_is_not_on_its_page_leads_to_the_page() {
-	let doc = outlined(r##"<OutlineEntry OutlineLevel="1" Description="Renamed" OutlineTarget="Doc.fdoc#two"/>"##);
+	let doc = outlined(r#"<OutlineEntry OutlineLevel="1" Description="Renamed" OutlineTarget="Doc.fdoc#two"/>"#);
 	assert_eq!(doc.toc_items[0].offset, doc.id_positions["page_1"]);
 }
 
 #[test]
 fn an_outline_entry_leading_nowhere_is_left_out() {
-	let doc = outlined(r##"<OutlineEntry OutlineLevel="1" Description="Gone" OutlineTarget="Doc.fdoc#missing"/>"##);
+	let doc = outlined(r#"<OutlineEntry OutlineLevel="1" Description="Gone" OutlineTarget="Doc.fdoc#missing"/>"#);
 	assert!(doc.toc_items.is_empty() || doc.toc_items.iter().all(|item| item.name != "Gone"));
 }
 
@@ -369,7 +369,7 @@ fn a_file_with_no_outline_finds_headings_by_size_against_its_body_text() {
 
 #[test]
 fn a_declared_outline_wins_over_sizes() {
-	let doc = outlined(r##"<OutlineEntry OutlineLevel="1" Description="Chapter" OutlineTarget="Doc.fdoc#one"/>"##);
+	let doc = outlined(r#"<OutlineEntry OutlineLevel="1" Description="Chapter" OutlineTarget="Doc.fdoc#one"/>"#);
 	assert_eq!(doc.toc_items.len(), 1);
 }
 
@@ -396,7 +396,8 @@ fn unstructured_page() -> String {
 }
 
 fn unstructured_with(pages: &[String], context: &ParserContext) -> Document {
-	let contents: String = (1..=pages.len()).map(|index| format!(r#"<PageContent Source="{index}.fpage"/>"#)).collect();
+	let contents =
+		(1..=pages.len()).map(|index| format!(r#"<PageContent Source="{index}.fpage"/>"#)).collect::<Vec<_>>().concat();
 	let document = format!("<FixedDocument>{contents}</FixedDocument>");
 	let names: Vec<String> = (1..=pages.len()).map(|index| format!("{index}.fpage")).collect();
 	let mut parts = vec![("_rels/.rels", ROOT_RELS), ("Sequence.fdseq", SEQUENCE), ("Doc.fdoc", document.as_str())];
@@ -533,6 +534,12 @@ fn a_web_address_with_a_fragment_stays_a_web_address() {
 		markers(&with_internal_link("https://example.com/#top"), MarkerType::Link)[0].reference,
 		"https://example.com/#top"
 	);
+}
+
+#[test]
+fn fragments_that_name_nothing_leave_a_page_to_its_lines() {
+	let page = format!("{}{}", at_x("a", "whethe", 72.0), at_x("b", "r it joins", 108.0));
+	assert_eq!(structured(&page, "<StoryFragment/>").expect("read").buffer.content, "whether it joins\n");
 }
 
 #[test]

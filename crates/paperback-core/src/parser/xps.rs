@@ -57,6 +57,7 @@ fn page_fragments<R: Read + Seek>(package: &mut Package<R>, page: &str) -> Vec<F
 			Err(error) => tracing::warn!(%part, %error, "failed to read xps story fragments"),
 		}
 	}
+	fragments.retain(|fragment| !fragment.blocks.is_empty());
 	fragments
 }
 

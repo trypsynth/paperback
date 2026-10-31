@@ -20,8 +20,8 @@ impl Transform {
 
 	fn parse(value: &str) -> Option<Self> {
 		let numbers: Vec<f64> = value.split(',').map(|number| number.trim().parse().ok()).collect::<Option<_>>()?;
-		let [a, b, c, d, e, f] = numbers[..] else { return None };
-		Some(Self { a, b, c, d, e, f })
+		let numbers: [f64; 6] = numbers.try_into().ok()?;
+		Some(Self { a: numbers[0], b: numbers[1], c: numbers[2], d: numbers[3], e: numbers[4], f: numbers[5] })
 	}
 
 	fn of(element: Node) -> Self {
@@ -34,18 +34,19 @@ impl Transform {
 	}
 
 	fn then(self, inner: Self) -> Self {
-		Self {
-			a: self.a * inner.a + self.c * inner.b,
-			b: self.b * inner.a + self.d * inner.b,
-			c: self.a * inner.c + self.c * inner.d,
-			d: self.b * inner.c + self.d * inner.d,
-			e: self.a * inner.e + self.c * inner.f + self.e,
-			f: self.b * inner.e + self.d * inner.f + self.f,
-		}
+		let first = self.scaled(inner.a, inner.b);
+		let second = self.scaled(inner.c, inner.d);
+		let origin = self.apply(inner.e, inner.f);
+		Self { a: first.0, b: first.1, c: second.0, d: second.1, e: origin.0, f: origin.1 }
+	}
+
+	fn scaled(self, x: f64, y: f64) -> (f64, f64) {
+		(self.a.mul_add(x, self.c * y), self.b.mul_add(x, self.d * y))
 	}
 
 	fn apply(self, x: f64, y: f64) -> (f64, f64) {
-		(self.a * x + self.c * y + self.e, self.b * x + self.d * y + self.f)
+		let (x, y) = self.scaled(x, y);
+		(x + self.e, y + self.f)
 	}
 
 	fn vertical_scale(self) -> f64 {
@@ -174,7 +175,7 @@ fn outline_points(data: &str) -> Option<Vec<(f64, f64)>> {
 	let tokens = data.split(|c: char| c.is_whitespace() || matches!(c, ',' | 'M' | 'L' | 'Z' | 'z'));
 	let numbers: Vec<f64> =
 		tokens.filter(|token| !token.is_empty()).map(|token| token.parse().ok()).collect::<Option<_>>()?;
-	Some(numbers.chunks_exact(2).map(|pair| (pair[0], pair[1])).collect())
+	Some(numbers.as_chunks().0.iter().map(|[x, y]| (*x, *y)).collect())
 }
 
 fn link_area(path: Node, transform: Transform) -> Option<Area> {

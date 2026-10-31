@@ -32,7 +32,7 @@ fn positioned_characters(runs: &[(&Run, RunStyle)]) -> Vec<(char, f32)> {
 		let count = run.text.chars().count() as f64;
 		let step = style.width.map_or(MIN_CHARACTER_STEP, |width| (width / count).max(MIN_CHARACTER_STEP));
 		let step = if run.bidi_level % 2 == 1 { -step } else { step };
-		characters.extend(run.text.chars().enumerate().map(|(index, c)| (c, (run.x + step * index as f64) as f32)));
+		characters.extend(run.text.chars().enumerate().map(|(index, c)| (c, step.mul_add(index as f64, run.x) as f32)));
 	}
 	characters
 }
@@ -50,7 +50,7 @@ fn line_text(runs: &[(&Run, RunStyle)]) -> String {
 		}
 		text.push_str(&run.text);
 		// Without a width only a gap no run could fill is sure to be one.
-		end = Some(run.x + style.width.unwrap_or(run.text.chars().count() as f64 * run.size));
+		end = Some(run.x + style.width.unwrap_or_else(|| run.text.chars().count() as f64 * run.size));
 	}
 	text
 }
@@ -58,7 +58,7 @@ fn line_text(runs: &[(&Run, RunStyle)]) -> String {
 fn finish_line(runs: &[(&Run, RunStyle)], height: f64) -> Line {
 	let main = runs.iter().map(|(run, _)| *run).max_by_key(|run| run.text.chars().count());
 	let (size, baseline) = main.map_or((0.0, 0.0), |run| (run.size, run.y));
-	let top = height - baseline + size * ASCENT;
+	let top = size.mul_add(ASCENT, height - baseline);
 	let mut visible = runs.iter().filter(|(run, _)| !run.text.trim().is_empty()).map(|(_, style)| style);
 	Line {
 		text: line_text(runs),
