@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: b0171dfc874af9e8; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,808d00fb,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 001b5ced2d6cc026; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - version 1.0
 
@@ -22,7 +22,7 @@ Paperback fonctionne sur Windows 10/11, toutes les versions modernes d'ARM macOS
 * Peut être exécuté entièrement de manière portable, ou installé avec les associations de fichiers configurées automatiquement.
 * Prend en charge un large éventail de formats de fichiers courants.
 * Lit les livres audio, avec une vitesse ajustable et des signets qui mémorisent le temps exact.
-* Lit les pages PDF numérisées avec l'OCR intégré à Windows et macOS.
+* Lit les pages PDF numérisées avec l'OCR intégré à Windows et macOS, ou avec Tesseract sur Linux.
 * Signets et notes, pour que vous puissiez marquer votre place et y revenir.
 * Chaque raccourci clavier peut être modifié.
 * Ouvre les documents directement à partir de liens http et https, et les télécharge à nouveau quand vous les rouvrez ou appuyez sur `F5`, en conservant votre position de lecture et vos signets. Lors de la restauration des documents que vous aviez ouverts, il télécharge à nouveau ceux des liens qui faisaient 2 Mo ou moins.
@@ -236,7 +236,7 @@ Le menu Plus d'options est l'endroit où tout le reste se trouve. Certains élé
 * **Aller à :** sautez à une ligne, une page, ou un pourcentage du document. Choisissez lequel avec le sélecteur Mode.
 * **Documents récents :** tous les documents que vous avez ouverts, chacun marqué comme actuellement ouvert, fermé ou fichier manquant. Chacun a deux actions du lecteur d'écran : Supprimer l'enlève de la liste, et Localiser vous permet de trouver un document dont le fichier a été déplacé. Effacer les documents récents vide la liste sans supprimer de documents.
 * **Nombre de mots :** le nombre de mots du document.
-* **Informations sur le document :** le titre, l'auteur, le nom du fichier, et sur iOS aussi le nombre de lignes et de caractères.
+* **Informations sur le document :** le titre, l'auteur, le nom du fichier, votre progression dans le document, et le nombre de mots, de lignes et de caractères. Pour un livre audio, il affiche également le nombre de fichiers qu'il contient et, lorsque Paperback peut le déterminer, leur durée totale et moyenne.
 * **Exporter :** enregistre le document en texte brut, HTML ou Markdown.
 * **Minuteur de sommeil :** arrête la lecture après 5, 10, 15, 30, 45 ou 60 minutes, ou une durée de votre choix. Ouvrez-le à nouveau pendant qu'il fonctionne pour voir combien de temps il reste, ou pour l'annuler.
 * **Aide :** ouvre ce fichier readme.

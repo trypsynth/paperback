@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: b0171dfc874af9e8; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,808d00fb,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 001b5ced2d6cc026; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - phiên bản 1.0
 
@@ -22,7 +22,7 @@ Paperback chạy trên Windows 10/11, tất cả các phiên bản ARM macOS hi�
 * Có thể chạy hoàn toàn di động hoặc cài đặt với liên kết tệp được thiết lập tự động.
 * Hỗ trợ một loạt lớn các định dạng tệp phổ biến.
 * Phát sách nói, với tốc độ có thể điều chỉnh và dấu trang ghi nhớ thời gian chính xác.
-* Đọc các trang PDF được quét bằng OCR tích hợp trong Windows và macOS.
+* Đọc các trang PDF được quét bằng OCR tích hợp trong Windows và macOS, hoặc bằng Tesseract trên Linux.
 * Dấu trang và ghi chú, để bạn có thể đánh dấu vị trí của mình và quay lại nó.
 * Mọi phím tắt bàn phím có thể được thay đổi.
 * Mở tài liệu trực tiếp từ các liên kết http và https, và tải xuống lại chúng khi bạn mở lại hoặc nhấn `F5`, giữ lại vị trí đọc và dấu trang của bạn. Khi khôi phục các tài liệu bạn đã mở, nó tải xuống lại những tài liệu từ các liên kết có kích thước 2 MB trở xuống.
@@ -236,7 +236,7 @@ Menu More Options là nơi mọi thứ khác nằm. Một số mục hoạt đ�
 * **Go To:** nhảy tới một dòng, một trang hoặc một phần trăm trong tài liệu. Chọn cái nào bằng Bộ chọn Mode.
 * **Recent Documents:** mọi tài liệu bạn đã mở, mỗi tài liệu được đánh dấu là hiện đang mở, đã đóng hoặc tệp bị thiếu. Mỗi tài liệu có hai hành động của trình đọc màn hình: Remove loại bỏ nó khỏi danh sách và Locate cho phép bạn tìm tài liệu có tệp đã được di chuyển. Clear Recent Documents làm trống danh sách mà không xóa bất kỳ tài liệu nào.
 * **Word Count:** số từ trong tài liệu.
-* **Document Info:** tiêu đề, tác giả, tên tệp và trên iOS cũng là số dòng và ký tự.
+* **Thông tin tài liệu:** tiêu đề, tác giả, tên tệp, tiến độ của bạn trong tài liệu và số từ, dòng và ký tự. Đối với sách âm thanh, nó cũng cho biết có bao nhiêu tệp và, khi Paperback có thể xác định, chúng chạy bao lâu tổng cộng và trung bình.
 * **Export:** lưu tài liệu dưới dạng văn bản thuần túy, HTML hoặc Markdown.
 * **Sleep Timer:** dừng đọc sau 5, 10, 15, 30, 45 hoặc 60 phút, hoặc một thời gian của riêng bạn. Mở nó lại khi nó đang chạy để xem còn bao lâu hoặc để hủy nó.
 * **Help:** mở readme này.

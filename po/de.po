@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 18:07+0000\n"
+"POT-Creation-Date: 2026-10-31 21:30+0000\n"
 "PO-Revision-Date: 2026-09-24 20:59+0200\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
@@ -26,11 +26,6 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-1: vcpkg\n"
 "X-Poedit-SearchPathExcluded-2: web\n"
 "X-Poedit-SearchPathExcluded-3: po\n"
-
-#. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
-#, fuzzy
-msgid "this is not a web link"
-msgstr "Das ist kein Weblink"
 
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 #, fuzzy
@@ -51,25 +46,6 @@ msgstr "Lade %s herunter"
 #, fuzzy
 msgid "Downloading %d of %d: %s"
 msgstr "Lade %d von %d herunter: %s"
-
-#. TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
-#, fuzzy
-msgid "The server sends a web page (%s) instead of the document the link names."
-msgstr "Der Server sendet eine Webseite (%s) statt des Dokuments, das der Link benennt."
-
-#, fuzzy
-msgid "The server sends %s, which is not a format Paperback reads."
-msgstr "Der Server sendet %s, ein Format, das Paperback nicht liest."
-
-#. TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
-#, fuzzy
-msgid "The server does not say what it sends."
-msgstr "Der Server teilt nicht mit, was er sendet."
-
-#. TRANSLATORS: Question at the end of the security warning before downloading a document from a link
-#, fuzzy
-msgid "Download it anyway?"
-msgstr "Trotzdem herunterladen?"
 
 #. TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
 #. command-line tool (Paperback's headless document-to-text/HTML converter) runnable
@@ -1189,43 +1165,6 @@ msgstr "Durchgestrichen"
 msgid "Choose a font"
 msgstr "Schriftart wählen"
 
-#. TRANSLATORS: Title of the hotkey customization dialog
-msgid "Window Hotkey"
-msgstr "Fenster-Hotkey"
-
-#. TRANSLATORS: Checkbox label for Control modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
-msgid "&Ctrl"
-msgstr "&Strg"
-
-#. TRANSLATORS: Checkbox label for Alt modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
-msgid "&Alt"
-msgstr "&Alt"
-
-#. TRANSLATORS: Checkbox label for Shift modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
-msgid "&Shift"
-msgstr "&Umschalt"
-
-#. TRANSLATORS: Checkbox label for Windows modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
-msgid "&Win"
-msgstr "&Win"
-
-#. TRANSLATORS: Label for the hotkey key selection input field
-#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
-msgid "&Key:"
-msgstr "&Taste:"
-
-#. TRANSLATORS: Button label to clear the current hotkey selection
-msgid "Clear"
-msgstr "Löschen"
-
-#. TRANSLATORS: Representation of the Spacebar key
-msgid "Space"
-msgstr "Leer"
-
 #. TRANSLATORS: Title of the Settings dialog
 msgid "Settings"
 msgstr "Einstellungen"
@@ -1321,10 +1260,6 @@ msgstr "Entwicklung"
 #, fuzzy
 msgid "Log Level:"
 msgstr "Protokollierungsstufe:"
-
-#. TRANSLATORS: Button label to open the hotkey customization dialog
-msgid "Customize &Window Hotkey..."
-msgstr "&Fenster-Hotkey anpassen..."
 
 #. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 msgid "Customize &Keyboard Shortcuts..."
@@ -1468,6 +1403,14 @@ msgstr "Debug"
 msgid "Trace"
 msgstr "Trace"
 
+#, fuzzy
+msgid "System-Wide"
+msgstr "Systemweit"
+
+#, fuzzy
+msgid "Show or Hide Paperback"
+msgstr "Paperback anzeigen oder verbergen"
+
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "Einschlaftimer"
@@ -1538,12 +1481,10 @@ msgid "OCR in progress."
 msgstr "Texterkennung läuft."
 
 #. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
-#. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
 #, fuzzy
 msgid "The picture could not be read."
 msgstr "Das Bild konnte nicht gelesen werden."
 
-#. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
 #, fuzzy
 msgid "No text was found in the picture."
 msgstr "Im Bild wurde kein Text gefunden."
@@ -3065,6 +3006,30 @@ msgstr "Der sichere Link wurde auf eine unsichere Adresse weitergeleitet, daher 
 msgid "the document is larger than {} MB, so it was not downloaded"
 msgstr "Das Dokument ist größer als {} MB, daher wurde es nicht heruntergeladen"
 
+#. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
+#, fuzzy
+msgid "this is not a web link"
+msgstr "Das ist kein Weblink"
+
+#. TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
+#, fuzzy
+msgid "The server sends a web page (%s) instead of the document the link names."
+msgstr "Der Server sendet eine Webseite (%s) statt des Dokuments, das der Link benennt."
+
+#, fuzzy
+msgid "The server sends %s, which is not a format Paperback reads."
+msgstr "Der Server sendet %s, ein Format, das Paperback nicht liest."
+
+#. TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
+#, fuzzy
+msgid "The server does not say what it sends."
+msgstr "Der Server teilt nicht mit, was er sendet."
+
+#. TRANSLATORS: Question at the end of the security warning before downloading a document from a link
+#, fuzzy
+msgid "Download it anyway?"
+msgstr "Trotzdem herunterladen?"
+
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 msgid "[Image only. Press enter to OCR.]"
 msgstr "[Nur Bild. Drücke Enter für Texterkennung.]"
@@ -3154,10 +3119,6 @@ msgstr "Das Zip-Archiv scheint kein gültiges Buch im Format DAISY 3 oder DAISY 
 msgid "rootfile not found in container.xml"
 msgstr "Hauptdatei nicht in container.xml gefunden"
 
-#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
-msgid "unsupported content"
-msgstr "Nicht unterstützter Inhalt"
-
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 msgid "OPF package element missing"
 msgstr "OPF-Paketelement fehlt"
@@ -3174,6 +3135,10 @@ msgstr "Fehler beim Konvertieren der Buchrückeneinträge: {}"
 msgid "EPUB has no readable content ({})"
 msgstr "EPUB enthält keinen lesbaren Inhalt ({})"
 
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+msgid "No readable content found in the ZIP archive"
+msgstr "Kein lesbarer Inhalt im Zip-Archiv gefunden"
+
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
 msgid "Failed to convert FB2 XML to text"
 msgstr "Fehler beim Konvertieren von FB2-XML in Text"
@@ -3189,14 +3154,6 @@ msgstr "Thema {}"
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 msgid "HTML file is empty: {}"
 msgstr "HTML-Datei ist leer: {}"
-
-#. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
-msgid "Failed to convert HTML to text: {}"
-msgstr "Fehler beim Konvertieren von HTML in Text: {}"
-
-#. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
-msgid "Failed to convert Markdown to text: {}"
-msgstr "Fehler beim Konvertieren von Markdown in Text: {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 msgid "Missing HUFF parameters in header"
@@ -3378,7 +3335,7 @@ msgstr "Kommentar"
 
 #. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
 #, fuzzy
-msgid "{} on \\u{201c}{}\\u{201d}: {}"
+msgid "{} on “{}”: {}"
 msgstr "{} zu „{}‟: {}"
 
 #. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
@@ -3407,17 +3364,15 @@ msgstr "DOC-Datei ist verschlüsselt und benötigt ein Passwort"
 msgid "DOC decryption failed (wrong password?): {}"
 msgstr "DOC-Entschlüsselung fehlgeschlagen (falsches Passwort?): {}"
 
-#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
-msgid "File content does not look like plain text"
-msgstr "Dateiinhalt sieht nicht wie reiner Text aus"
-
+#. TRANSLATORS: Error shown when a DOC file from Word for Windows 1.x or 2.0 has no readable text
 #. TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
+#. TRANSLATORS: Error shown when a Windows Write or Word for DOS file has no readable text
 msgid "No readable text content found"
 msgstr "Kein lesbarer Textinhalt gefunden"
 
-#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
-msgid "No readable content found in the ZIP archive"
-msgstr "Kein lesbarer Inhalt im Zip-Archiv gefunden"
+#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
+msgid "File content does not look like plain text"
+msgstr "Dateiinhalt sieht nicht wie reiner Text aus"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
@@ -3716,6 +3671,26 @@ msgstr "&Cmd"
 msgid "&Option"
 msgstr "&Option"
 
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
+msgid "&Ctrl"
+msgstr "&Strg"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
+msgid "&Alt"
+msgstr "&Alt"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
+msgid "&Shift"
+msgstr "&Umschalt"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
+msgid "&Win"
+msgstr "&Win"
+
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
+msgid "&Key:"
+msgstr "&Taste:"
+
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr "Tipp: Klicke in das Tastenfeld und drücke die gewünschte Tastenkombination."
 
@@ -3926,7 +3901,6 @@ msgstr "Geöffnete Dokumente erscheinen hier."
 msgid "Text to Speech"
 msgstr "Sprachausgabe"
 
-#. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 #: kt swift
 msgid "Voice"
 msgstr "Stimme"
@@ -3951,7 +3925,6 @@ msgstr "Tonhöhe"
 msgid "Speech Dictionary"
 msgstr "Sprachausgabenwörterbuch"
 
-#. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
 #: kt swift
 msgid "Play Sample"
 msgstr "Beispiel abspielen"
@@ -4641,11 +4614,11 @@ msgstr "Das Dokument konnte nicht geladen werden: {}"
 msgid "Speech Engine"
 msgstr "Sprachausgabentreiber"
 
-#: kt swift
+#: kt
 msgid "1 book"
 msgstr "1 Buch"
 
-#: kt swift
+#: kt
 msgid "{} books"
 msgstr "{} Bücher"
 
@@ -4762,7 +4735,7 @@ msgid "{}, {}, modified {}{}"
 msgstr "{}, {}, verändert {}{}"
 
 #. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
-#: kt
+#: swift kt
 msgid "{} percent"
 msgstr "{} Prozent"
 
@@ -4964,10 +4937,124 @@ msgstr "Vorlesen nach Suchergebnissen stoppen"
 msgid "Turn off to continue reading while navigating by search matches."
 msgstr "Ausschalten, um weiterzulesen und gleichzeitig nach Suchergebnissen zu navigieren."
 
-#. TRANSLATORS: 1.5x line spacing option
+#. TRANSLATORS: VoiceOver label for the read-aloud bar's control that speeds up or slows down a book's recorded audio
+#: kt swift
+#, fuzzy
+msgid "Audio Speed"
+msgstr "Audiowiedergabegeschwindigkeit"
+
 #: swift
-msgid "1.5\\u{00d7}"
-msgstr "1.5\\u{00d7}"
+#, fuzzy
+msgid "Speech for This Book"
+msgstr "Sprachausgabe für dieses Buch"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+#, fuzzy
+msgid "{} item"
+msgstr "{} Element"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+#, fuzzy
+msgid "{} items"
+msgstr "{} Elemente"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+#, fuzzy
+msgid "{} items⁣"
+msgstr "{} Elemente⁣"
+
+#. TRANSLATORS: Spoken for an empty table cell in text mode
+#: swift
+#, fuzzy
+msgid "Blank"
+msgstr "Leer"
+
+#. TRANSLATORS: Name of the VoiceOver rotor setting that moves between the entries of a document's table of contents in text mode
+#: swift
+#, fuzzy
+msgid "Sections"
+msgstr "Abschnitte"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a voice of its own instead of the one in Settings
+#: swift
+#, fuzzy
+msgid "Own Voice"
+msgstr "Eigene Stimme"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a speech rate of its own instead of the one in Settings
+#: swift
+#, fuzzy
+msgid "Own Rate"
+msgstr "Eigenes Tempo"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a pitch of its own instead of the one in Settings
+#: swift
+#, fuzzy
+msgid "Own Pitch"
+msgstr "Eigene Tonhöhe"
+
+#. TRANSLATORS: Footer in Speech for This Book explaining what a switch left off does
+#: swift
+#, fuzzy
+msgid "Whatever is switched off follows Settings."
+msgstr "Nicht aktivierte Optionen folgen den Einstellungen."
+
+#. TRANSLATORS: Button that empties the recent documents list
+#: kt swift
+msgid "Clear"
+msgstr "Löschen"
+
+#. TRANSLATORS: Row label for the number of audio files in the document
+#: kt swift
+#, fuzzy
+msgid "Number of files"
+msgstr "Anzahl der Dateien"
+
+#. TRANSLATORS: Row label for the total playback duration across all of the document's audio files
+#: kt swift
+#, fuzzy
+msgid "Total duration"
+msgstr "Gesamtdauer"
+
+#. TRANSLATORS: Row label for the average playback duration per audio file in the document
+#: kt swift
+#, fuzzy
+msgid "Average duration"
+msgstr "Durchschnittliche Dauer"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
+#: kt
+#, fuzzy
+msgid "Select audio speed"
+msgstr "Audiowiedergabegeschwindigkeit wählen"
+
+#~ msgid "Window Hotkey"
+#~ msgstr "Fenster-Hotkey"
+
+#~ msgid "Space"
+#~ msgstr "Leer"
+
+#~ msgid "Customize &Window Hotkey..."
+#~ msgstr "&Fenster-Hotkey anpassen..."
+
+#~ msgid "unsupported content"
+#~ msgstr "Nicht unterstützter Inhalt"
+
+#~ msgid "Failed to convert HTML to text: {}"
+#~ msgstr "Fehler beim Konvertieren von HTML in Text: {}"
+
+#~ msgid "Failed to convert Markdown to text: {}"
+#~ msgstr "Fehler beim Konvertieren von Markdown in Text: {}"
+
+#, fuzzy
+#~ msgid "{} on \\u{201c}{}\\u{201d}: {}"
+#~ msgstr "{} zu „{}‟: {}"
+
+#~ msgid "1.5\\u{00d7}"
+#~ msgstr "1.5\\u{00d7}"
 
 #~ msgid "Update failed"
 #~ msgstr "Update fehlgeschlagen"
