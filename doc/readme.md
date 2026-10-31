@@ -66,6 +66,7 @@ Paperback supports the following formats and extensions:
 * RTF documents (`.rtf`)
 * Windows Write documents (`.wri`)
 * WinHelp files (`.hlp`)
+* XPS and OpenXPS documents (`.xps`, `.oxps`)
 * Plain text and log files (`.txt`, `.log`)
 
 ## Keyboard shortcuts

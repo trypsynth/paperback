@@ -225,6 +225,29 @@
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
+			<string>dev.paperback.xps</string>
+			<key>UTTypeDescription</key>
+			<string>XPS Document</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.zip-archive</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>xps</string>
+					<string>oxps</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/vnd.ms-xpsdocument</string>
+					<string>application/oxps</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
 			<string>dev.paperback.m4b</string>
 			<key>UTTypeDescription</key>
 			<string>M4B Audiobook</string>
@@ -319,6 +342,7 @@
 				<string>org.oasis-open.opendocument.text</string>
 				<string>dev.paperback.fodt</string>
 				<string>dev.paperback.wri</string>
+				<string>dev.paperback.xps</string>
 			</array>
 		</dict>
 		<dict>

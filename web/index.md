@@ -75,6 +75,7 @@ Buying the mobile apps is what pays for the work. If you would rather not, the s
 <li>RTF</li>
 <li>Windows Write (.wri)</li>
 <li>WinHelp (.hlp)</li>
+<li>XPS and OpenXPS</li>
 <li>Plain text and log files</li>
 </ul>
 
