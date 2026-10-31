@@ -520,8 +520,10 @@ fn normalize_doc_text(text: &str) -> String {
 pub(super) fn parse_text_like_doc(context: &ParserContext) -> Result<Document> {
 	let bytes = fs::read(&context.file_path)
 		.with_context(|| format!("Failed to read potential text DOC '{}'", context.file_path))?;
+	// An OLE or zip container its own parsers turned down is still binary, however much of it decodes to letters.
+	let container = bytes.starts_with(&[0xD0, 0xCF, 0x11, 0xE0]) || bytes.starts_with(b"PK\x03\x04");
 	let decoded = convert_to_utf8(&bytes);
-	if !looks_like_text_content(&decoded) {
+	if container || !looks_like_text_content(&decoded) {
 		tracing::warn!(path = %context.file_path, "doc fallback content does not look like plain text");
 		// TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
 		anyhow::bail!(t("File content does not look like plain text"));
@@ -549,7 +551,8 @@ fn looks_like_text_content(content: &str) -> bool {
 		return false;
 	}
 	let total = sample.chars().count();
-	if total == 0 {
+	// Text never holds NULs, while a binary header is full of them even when the text after it makes up most of the sample.
+	if total == 0 || sample.chars().filter(|&c| c == '\0').count() > 8 {
 		return false;
 	}
 	let printable = sample.chars().filter(|c| !c.is_control() || *c == '\n' || *c == '\r' || *c == '\t').count();

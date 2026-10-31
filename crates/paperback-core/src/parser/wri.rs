@@ -13,6 +13,7 @@ use super::{
 };
 use crate::{
 	document::{Document, DocumentBuffer, ParserContext},
+	t,
 	util::{encoding::decode_ansi, text::normalize_line_endings},
 };
 
@@ -51,6 +52,11 @@ impl Parser for WriParser {
 			let mut document = Document::new().with_title(title);
 			document.set_buffer(DocumentBuffer::with_content(text));
 			return Ok(document);
+		}
+		if bytes.len() >= 2 && is_write_magic(u16::from_le_bytes([bytes[0], bytes[1]])) {
+			tracing::warn!(path = %context.file_path, "write file's text run makes no sense");
+			// TRANSLATORS: Error shown when a Windows Write or Word for DOS file has no readable text
+			anyhow::bail!(t("No readable text content found"));
 		}
 		tracing::debug!(path = %context.file_path, "wri file is plain text, routing to the text parser");
 		TextParser.parse(context)

@@ -120,3 +120,10 @@ fn a_word_for_windows_file_reads_its_text_and_footnotes_but_not_its_headers() {
 	file[0x3C..0x40].copy_from_slice(&13u32.to_le_bytes());
 	assert_eq!(winword_text(&file).as_deref(), Some("Body\rNote\r"));
 }
+
+#[test]
+fn a_binary_header_ahead_of_mostly_text_is_not_plain_text() {
+	let mut content = "\0".repeat(200);
+	content.push_str(&"Readable words follow the header. ".repeat(100));
+	assert!(!looks_like_text_content(&content));
+}
