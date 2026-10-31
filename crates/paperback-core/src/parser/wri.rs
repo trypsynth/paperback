@@ -31,6 +31,11 @@ const WRITE_RHC_GRAPHICS: u8 = 0x10;
 
 pub struct WriParser;
 
+/// Word for DOS shares Write's layout, so a `.doc` with this magic is read here too.
+pub(super) const fn is_write_magic(magic: u16) -> bool {
+	matches!(magic, WRITE_MAGIC_PLAIN | WRITE_MAGIC_OLE)
+}
+
 impl Parser for WriParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		tracing::debug!(path = %context.file_path, "parsing wri file");

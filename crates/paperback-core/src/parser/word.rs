@@ -8,7 +8,11 @@ use anyhow::{Context, Result};
 
 use crate::{
 	document::{Document, ParserContext},
-	parser::{Parser, util::ole::apply_summary_information},
+	parser::{
+		Parser,
+		util::ole::apply_summary_information,
+		wri::{WriParser, is_write_magic},
+	},
 	t,
 };
 
@@ -39,10 +43,14 @@ impl Parser for WordParser {
 		if extension == "doc" {
 			let mut magic = [0u8; 2];
 			let read = File::open(&context.file_path).and_then(|mut file| file.read_exact(&mut magic));
-			if read.is_ok() && legacy::is_winword_magic(u16::from_le_bytes(magic)) {
+			let magic = u16::from_le_bytes(magic);
+			if read.is_ok() && legacy::is_winword_magic(magic) {
 				let data = fs::read(&context.file_path)
 					.with_context(|| format!("Failed to read DOC file '{}'", context.file_path))?;
 				return legacy::parse_winword_doc(context, &data);
+			}
+			if read.is_ok() && is_write_magic(magic) {
+				return WriParser.parse(context);
 			}
 			match legacy::parse_legacy_doc(context) {
 				Ok(mut document) => {
@@ -71,3 +79,6 @@ impl Parser for WordParser {
 		ooxml::parse_ooxml_doc(context, render_tables_inline)
 	}
 }
+
+#[cfg(test)]
+mod tests;
