@@ -208,6 +208,42 @@ pub(super) fn normalize_escapes(
 				_ => {}
 			}
 		}
+		// A double-byte character is two escapes in a row, so the run decodes as one under a Japanese, Chinese or Korean font.
+		if !current_encoding.is_single_byte() && bytes[i] == b'\\' && bytes.get(i + 1) == Some(&b'\'') {
+			let mut run = Vec::new();
+			let mut j = i;
+			while bytes.get(j) == Some(&b'\\')
+				&& bytes.get(j + 1) == Some(&b'\'')
+				&& let Some(byte) = bytes.get(j + 2..j + 4).and_then(|hex| parse_hex_pair(hex[0], hex[1]))
+			{
+				run.push(byte);
+				j += 4;
+			}
+			if !run.is_empty() {
+				let mut decoded = current_encoding.decode_without_bom_handling(&run).0.into_owned();
+				// Some writers leave a character's second byte unescaped when it's printable ASCII.
+				if decoded.ends_with('\u{FFFD}')
+					&& let Some(&next) = bytes.get(j)
+					&& (0x40..0x7F).contains(&next)
+					&& !matches!(next, b'\\' | b'{' | b'}')
+				{
+					run.push(next);
+					j += 1;
+					decoded = current_encoding.decode_without_bom_handling(&run).0.into_owned();
+				}
+				end_open_control_word(&mut result);
+				for ch in decoded.chars() {
+					match ch {
+						'\\' => result.push_str("\\'5c"),
+						'{' => result.push_str("\\'7b"),
+						'}' => result.push_str("\\'7d"),
+						_ => result.push(ch),
+					}
+				}
+				i = j;
+				continue;
+			}
+		}
 		if bytes[i] == b'\\' && i + 3 < len && bytes[i + 1] == b'\'' {
 			let h1 = bytes[i + 2];
 			let h2 = bytes[i + 3];

@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use rstest::rstest;
 
 use super::{escape_raw_bytes, hex_digit, normalize_escapes, normalize_wrapped_space_lines, parse_hex_pair};
+use crate::parser::rtf::encoding::extract_font_table;
 
 #[rstest]
 #[case(b'0', Some(0))]
@@ -175,4 +176,12 @@ fn normalize_escapes_keeps_utf8_text_intact() {
 #[test]
 fn normalize_wrapped_space_lines_keeps_utf8_text_intact() {
 	assert_eq!(normalize_wrapped_space_lines("naïve\n \nCafé"), "naïve Café");
+}
+
+#[test]
+fn a_japanese_font_decodes_its_double_byte_escapes_together() {
+	let rtf = r"{\rtf1\ansi\ansicpg1252{\fonttbl{\f0\fcharset128 MS UI Gothic;}{\f1\fcharset0 Arial;}}\f0\'83\'6f\'83\'43\'83\'69\'83\'8a\f1 Binary}";
+	let encoding = encoding_rs::WINDOWS_1252;
+	let output = normalize_escapes(rtf, encoding, &extract_font_table(rtf, encoding));
+	assert!(output.contains("バイナリ") && output.contains("Binary"), "{output}");
 }

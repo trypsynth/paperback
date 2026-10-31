@@ -7,6 +7,10 @@ use encoding_rs::Encoding;
 fn encoding_for_codepage(cpg: i32) -> &'static Encoding {
 	match cpg {
 		874 => encoding_rs::WINDOWS_874,
+		932 => encoding_rs::SHIFT_JIS,
+		936 => encoding_rs::GBK,
+		949 => encoding_rs::EUC_KR,
+		950 => encoding_rs::BIG5,
 		1250 => encoding_rs::WINDOWS_1250,
 		1251 => encoding_rs::WINDOWS_1251,
 		1253 => encoding_rs::WINDOWS_1253,
@@ -33,6 +37,10 @@ pub(super) fn extract_codepage(rtf: &str) -> &'static Encoding {
 
 fn encoding_for_fcharset(charset: i32, default: &'static Encoding) -> &'static Encoding {
 	match charset {
+		128 => encoding_rs::SHIFT_JIS,
+		129 => encoding_rs::EUC_KR,
+		134 => encoding_rs::GBK,
+		136 => encoding_rs::BIG5,
 		161 => encoding_rs::WINDOWS_1253,
 		162 => encoding_rs::WINDOWS_1254,
 		163 => encoding_rs::WINDOWS_1258,
