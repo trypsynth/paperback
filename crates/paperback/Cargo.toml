@@ -16,36 +16,36 @@ base64 = { workspace = true }
 bitflags = { workspace = true }
 dunce = "1.0.5"
 homeport = "0.1.0"
-image = { version = "0.25.10", default-features = false, features = ["png"] }
+image = { workspace = true, features = ["png"] }
 live-region = "0.3.3"
 miniz_oxide = "0.9.1"
-native-ocr = "0.2.1"
-paperback-core = { path = "../paperback-core", features = ["fetch"] }
-paperback-formats = { path = "../paperback-formats" }
-patois = { version = "0.2.4", features = ["ui"] }
+native-ocr = { workspace = true }
+paperback-core = { workspace = true, features = ["fetch"] }
+paperback-formats = { workspace = true }
+patois = { workspace = true, features = ["ui"] }
 rodio = { version = "0.22.2", default-features = false, features = ["playback", "tracing", "flac", "mp3", "mp4", "vorbis", "wav", "symphonia-adpcm", "symphonia-aiff", "symphonia-alac", "symphonia-mp2"] }
 rodio-wsola = "0.2.0"
 ship-shape = "0.5.0"
-tempfile = "3.27.0"
+tempfile = { workspace = true }
 toml = { workspace = true }
-tracing = "0.1.44"
+tracing = { workspace = true }
 tracing-appender = "0.2.5"
-tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+tracing-subscriber = { workspace = true }
 wx-utils = { version = "0.4.4", features = ["global-hotkeys", "shortcuts"] }
 wxdragon = { version = "0.9.24", default-features = false, features = ["webview"] }
-zip = { version = "9.1.3", default-features = false, features = ["deflate"] }
+zip = { workspace = true }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 block = "0.1.6"
 objc = "0.2.7"
 
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.62.2", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Ole", "Win32_System_Pipes", "Win32_System_Threading", "Win32_System_Variant", "Win32_UI_Accessibility", "Win32_UI_Controls_RichEdit", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
+windows = { workspace = true, features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Ole", "Win32_System_Pipes", "Win32_System_Threading", "Win32_System_Variant", "Win32_UI_Accessibility", "Win32_UI_Controls_RichEdit", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
 
 [build-dependencies]
-paperback-formats = { path = "../paperback-formats" }
-patois-build = "0.1.17"
-shipfitter = { version = "0.2.4", features = ["docs", "windows-resources"] }
+paperback-formats = { workspace = true }
+patois-build = { workspace = true }
+shipfitter = { workspace = true, features = ["docs", "windows-resources"] }
 
 [dev-dependencies]
 rstest = { workspace = true }

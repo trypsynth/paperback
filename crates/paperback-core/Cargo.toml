@@ -40,7 +40,7 @@ hayro-interpret = { git = "https://github.com/trypsynth/hayro", branch = "paperb
 hayro-syntax = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
 icu_normalizer = "2.4.0"
 icu_properties = { version = "2.4.0", features = ["unicode_bidi"] }
-image = { version = "0.25.10", default-features = false, features = ["jpeg", "png", "gif", "webp", "bmp"] }
+image = { workspace = true, features = ["jpeg", "png", "gif", "webp", "bmp"] }
 key-chord = { version = "0.2.2", features = ["serde"] }
 libchm = "0.3.0"
 libhlp = "0.2.0"
@@ -51,8 +51,8 @@ memchr = "2.8.3"
 mp4ameta = "0.13.0"
 odf-crypto = { version = "0.1.0-rc.15", features = ["crypto-ops"] }
 office-crypto = "0.4.0"
-paperback-formats = { path = "../paperback-formats" }
-patois = "0.2.4"
+paperback-formats = { workspace = true }
+patois = { workspace = true }
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.5", default-features = false, features = ["html"] }
 rayon = "1.12.0"
@@ -62,27 +62,27 @@ roxmltree = "0.21.2"
 rtf-parser = "0.4.3"
 scraper = "0.29.0"
 serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
-serde_json = "1.0.154"
+serde_json = { workspace = true }
 sha1 = "0.11.0"
 thiserror = "2.0.21"
 toml = { workspace = true }
-tracing = "0.1.44"
+tracing = { workspace = true }
 unicode-bidi = "0.3.18"
 uniffi = { version = "0.32.2", features = ["cli"], optional = true }
 ureq = { version = "3.5.0", default-features = false, features = ["rustls"], optional = true }
 web_atoms = "0.3.0"
-zip = { version = "9.1.3", default-features = false, features = ["deflate"] }
+zip = { workspace = true }
 
 [build-dependencies]
-shipfitter = "0.2.4"
+shipfitter = { workspace = true }
 uniffi = { version = "0.32.2", features = ["build"], optional = true }
 
 [dev-dependencies]
 rstest = { workspace = true }
-zip = { version = "9.1.3", default-features = false, features = ["deflate", "aes-crypto"] }
+zip = { workspace = true, features = ["aes-crypto"] }
 
 [target.'cfg(windows)'.dev-dependencies]
-windows = { version = "0.62.2", features = ["Win32_Foundation", "Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading"] }
+windows = { workspace = true, features = ["Win32_Foundation", "Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading"] }
 
 [lints]
 workspace = true
