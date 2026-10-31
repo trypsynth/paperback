@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 18:07+0000\n"
+"POT-Creation-Date: 2026-10-31 21:30+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,11 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Poedit 3.6\n"
-
-#. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
-#, fuzzy
-msgid "this is not a web link"
-msgstr "đây không phải là liên kết web"
 
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 #, fuzzy
@@ -42,25 +37,6 @@ msgstr "Đang tải %s"
 #, fuzzy
 msgid "Downloading %d of %d: %s"
 msgstr "Đang tải %d của %d: %s"
-
-#. TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
-#, fuzzy
-msgid "The server sends a web page (%s) instead of the document the link names."
-msgstr "Máy chủ gửi một trang web (%s) thay vì tài liệu mà liên kết chỉ định."
-
-#, fuzzy
-msgid "The server sends %s, which is not a format Paperback reads."
-msgstr "Máy chủ gửi %s, đây không phải là định dạng mà Paperback hỗ trợ."
-
-#. TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
-#, fuzzy
-msgid "The server does not say what it sends."
-msgstr "Máy chủ không chỉ định loại nội dung nó gửi."
-
-#. TRANSLATORS: Question at the end of the security warning before downloading a document from a link
-#, fuzzy
-msgid "Download it anyway?"
-msgstr "Vẫn tải xuống?"
 
 #. TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
 #. command-line tool (Paperback's headless document-to-text/HTML converter) runnable
@@ -1351,51 +1327,6 @@ msgstr "Gạch ngang"
 msgid "Choose a font"
 msgstr "Chọn một phông chữ"
 
-#. TRANSLATORS: Title of the hotkey customization dialog
-#, fuzzy
-msgid "Window Hotkey"
-msgstr "Phím tắt cho cửa sổ"
-
-#. TRANSLATORS: Checkbox label for Control modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
-#, fuzzy
-msgid "&Ctrl"
-msgstr "&Ctrl"
-
-#. TRANSLATORS: Checkbox label for Alt modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
-#, fuzzy
-msgid "&Alt"
-msgstr "&Alt"
-
-#. TRANSLATORS: Checkbox label for Shift modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
-#, fuzzy
-msgid "&Shift"
-msgstr "&Shift"
-
-#. TRANSLATORS: Checkbox label for Windows modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
-#, fuzzy
-msgid "&Win"
-msgstr "&Win"
-
-#. TRANSLATORS: Label for the hotkey key selection input field
-#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
-#, fuzzy
-msgid "&Key:"
-msgstr "&Khóa:"
-
-#. TRANSLATORS: Button label to clear the current hotkey selection
-#, fuzzy
-msgid "Clear"
-msgstr "Xóa"
-
-#. TRANSLATORS: Representation of the Spacebar key
-#, fuzzy
-msgid "Space"
-msgstr "Không gian"
-
 #. TRANSLATORS: Title of the Settings dialog
 #, fuzzy
 msgid "Settings"
@@ -1503,11 +1434,6 @@ msgstr "Dev"
 #, fuzzy
 msgid "Log Level:"
 msgstr "Mức ghi nhật ký:"
-
-#. TRANSLATORS: Button label to open the hotkey customization dialog
-#, fuzzy
-msgid "Customize &Window Hotkey..."
-msgstr "Tùy chỉnh &Phím nóng Cửa sổ..."
 
 #. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 #, fuzzy
@@ -1676,6 +1602,14 @@ msgstr "Gỡ lỗi"
 msgid "Trace"
 msgstr "Theo dõi"
 
+#, fuzzy
+msgid "System-Wide"
+msgstr "Toàn hệ thống"
+
+#, fuzzy
+msgid "Show or Hide Paperback"
+msgstr "Hiển thị hoặc ẩn Paperback"
+
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "Hẹn giờ ngủ"
@@ -1751,12 +1685,10 @@ msgid "OCR in progress."
 msgstr "OCR đang xử lý."
 
 #. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
-#. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
 #, fuzzy
 msgid "The picture could not be read."
 msgstr "Không thể đọc hình ảnh."
 
-#. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
 #, fuzzy
 msgid "No text was found in the picture."
 msgstr "Không tìm thấy văn bản trong hình ảnh."
@@ -3534,6 +3466,30 @@ msgstr "liên kết an toàn đã được chuyển hướng đến địa chỉ
 msgid "the document is larger than {} MB, so it was not downloaded"
 msgstr "tài liệu lớn hơn {} MB, vì vậy nó không được tải xuống"
 
+#. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
+#, fuzzy
+msgid "this is not a web link"
+msgstr "đây không phải là liên kết web"
+
+#. TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
+#, fuzzy
+msgid "The server sends a web page (%s) instead of the document the link names."
+msgstr "Máy chủ gửi một trang web (%s) thay vì tài liệu mà liên kết chỉ định."
+
+#, fuzzy
+msgid "The server sends %s, which is not a format Paperback reads."
+msgstr "Máy chủ gửi %s, đây không phải là định dạng mà Paperback hỗ trợ."
+
+#. TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
+#, fuzzy
+msgid "The server does not say what it sends."
+msgstr "Máy chủ không chỉ định loại nội dung nó gửi."
+
+#. TRANSLATORS: Question at the end of the security warning before downloading a document from a link
+#, fuzzy
+msgid "Download it anyway?"
+msgstr "Vẫn tải xuống?"
+
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 #, fuzzy
 msgid "[Image only. Press enter to OCR.]"
@@ -3635,11 +3591,6 @@ msgstr "Tệp nén ZIP dường như không phải là cuốn sách DAISY 3 ho�
 msgid "rootfile not found in container.xml"
 msgstr "Không tìm thấy tệp rootfile trong tệp container.xml"
 
-#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
-#, fuzzy
-msgid "unsupported content"
-msgstr "nội dung không được hỗ trợ"
-
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 #, fuzzy
 msgid "OPF package element missing"
@@ -3660,6 +3611,11 @@ msgstr "Không thể chuyển đổi các mục trong spine: {}"
 msgid "EPUB has no readable content ({})"
 msgstr "EPUB không có nội dung có thể đọc được ({})"
 
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+#, fuzzy
+msgid "No readable content found in the ZIP archive"
+msgstr "Không tìm thấy nội dung có thể đọc được trong tệp nén ZIP"
+
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
 #, fuzzy
 msgid "Failed to convert FB2 XML to text"
@@ -3679,16 +3635,6 @@ msgstr "Chủ đề {}"
 #, fuzzy
 msgid "HTML file is empty: {}"
 msgstr "Tệp HTML trống: {}"
-
-#. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
-#, fuzzy
-msgid "Failed to convert HTML to text: {}"
-msgstr "Không thể chuyển đổi HTML sang văn bản: {}"
-
-#. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
-#, fuzzy
-msgid "Failed to convert Markdown to text: {}"
-msgstr "Không thể chuyển đổi Markdown sang văn bản: {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 #, fuzzy
@@ -3905,8 +3851,8 @@ msgstr "Bình luận"
 
 #. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
 #, fuzzy
-msgid "{} on \\u{201c}{}\\u{201d}: {}"
-msgstr "{} trên \\u{201c}{}\\u{201d}: {}"
+msgid "{} on “{}”: {}"
+msgstr "{} vào \"{}\": {}"
 
 #. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
 #, fuzzy
@@ -3938,20 +3884,17 @@ msgstr "Tệp DOC đã được mã hóa và yêu cầu mật khẩu"
 msgid "DOC decryption failed (wrong password?): {}"
 msgstr "Không thể giải mã tệp DOC (mật khẩu sai?): {}"
 
-#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
-#, fuzzy
-msgid "File content does not look like plain text"
-msgstr "Nội dung tệp không giống như văn bản thuần túy"
-
+#. TRANSLATORS: Error shown when a DOC file from Word for Windows 1.x or 2.0 has no readable text
 #. TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
+#. TRANSLATORS: Error shown when a Windows Write or Word for DOS file has no readable text
 #, fuzzy
 msgid "No readable text content found"
 msgstr "Không tìm thấy nội dung văn bản có thể đọc được"
 
-#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
 #, fuzzy
-msgid "No readable content found in the ZIP archive"
-msgstr "Không tìm thấy nội dung có thể đọc được trong tệp nén ZIP"
+msgid "File content does not look like plain text"
+msgstr "Nội dung tệp không giống như văn bản thuần túy"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 #, fuzzy
@@ -4272,6 +4215,31 @@ msgstr "&Cmd"
 msgid "&Option"
 msgstr "&Option"
 
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
+#, fuzzy
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
+#, fuzzy
+msgid "&Alt"
+msgstr "&Alt"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
+#, fuzzy
+msgid "&Shift"
+msgstr "&Shift"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
+#, fuzzy
+msgid "&Win"
+msgstr "&Win"
+
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
+#, fuzzy
+msgid "&Key:"
+msgstr "&Khóa:"
+
 #, fuzzy
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr "Mẹo: Nhấp vào ô phím và nhấn tổ hợp phím mà bạn muốn."
@@ -4526,7 +4494,6 @@ msgstr "Các tài liệu bạn mở sẽ hiển thị tại đây."
 msgid "Text to Speech"
 msgstr "Chuyển văn bản thành lời nói"
 
-#. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 #: kt swift
 #, fuzzy
 msgid "Voice"
@@ -4556,7 +4523,6 @@ msgstr "Góc nghiêng"
 msgid "Speech Dictionary"
 msgstr "Từ điển phát âm"
 
-#. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
 #: kt swift
 #, fuzzy
 msgid "Play Sample"
@@ -5383,12 +5349,12 @@ msgstr "Lỗi tải tài liệu: {}"
 msgid "Speech Engine"
 msgstr "Động cơ nói"
 
-#: kt swift
+#: kt
 #, fuzzy
 msgid "1 book"
 msgstr "1 cuốn sách"
 
-#: kt swift
+#: kt
 #, fuzzy
 msgid "{} books"
 msgstr "{} cuốn sách"
@@ -5526,7 +5492,7 @@ msgid "{}, {}, modified {}{}"
 msgstr "{}, {}, sửa đổi {}{}"
 
 #. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
-#: kt
+#: swift kt
 #, fuzzy
 msgid "{} percent"
 msgstr "{} phần trăm"
@@ -5752,11 +5718,132 @@ msgstr "Dừng đọc sau kết quả tìm kiếm"
 msgid "Turn off to continue reading while navigating by search matches."
 msgstr "Tắt để tiếp tục đọc trong khi điều hướng bằng kết quả tìm kiếm."
 
-#. TRANSLATORS: 1.5x line spacing option
+#. TRANSLATORS: VoiceOver label for the read-aloud bar's control that speeds up or slows down a book's recorded audio
+#: kt swift
+#, fuzzy
+msgid "Audio Speed"
+msgstr "Tốc độ âm thanh"
+
 #: swift
 #, fuzzy
-msgid "1.5\\u{00d7}"
-msgstr "1,5\\u{00d7}"
+msgid "Speech for This Book"
+msgstr "Phát âm cho cuốn sách này"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+#, fuzzy
+msgid "{} item"
+msgstr "{} mục"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+#, fuzzy
+msgid "{} items"
+msgstr "{} mục"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+#, fuzzy
+msgid "{} items⁣"
+msgstr "{} mục⁣"
+
+#. TRANSLATORS: Spoken for an empty table cell in text mode
+#: swift
+#, fuzzy
+msgid "Blank"
+msgstr "Trống"
+
+#. TRANSLATORS: Name of the VoiceOver rotor setting that moves between the entries of a document's table of contents in text mode
+#: swift
+#, fuzzy
+msgid "Sections"
+msgstr "Các phần"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a voice of its own instead of the one in Settings
+#: swift
+#, fuzzy
+msgid "Own Voice"
+msgstr "Giọng riêng"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a speech rate of its own instead of the one in Settings
+#: swift
+#, fuzzy
+msgid "Own Rate"
+msgstr "Tốc độ riêng"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a pitch of its own instead of the one in Settings
+#: swift
+#, fuzzy
+msgid "Own Pitch"
+msgstr "Cao độ riêng"
+
+#. TRANSLATORS: Footer in Speech for This Book explaining what a switch left off does
+#: swift
+#, fuzzy
+msgid "Whatever is switched off follows Settings."
+msgstr "Mục nào được tắt sẽ theo Cài đặt."
+
+#. TRANSLATORS: Button that empties the recent documents list
+#: kt swift
+#, fuzzy
+msgid "Clear"
+msgstr "Xóa"
+
+#. TRANSLATORS: Row label for the number of audio files in the document
+#: kt swift
+#, fuzzy
+msgid "Number of files"
+msgstr "Số lượng tệp"
+
+#. TRANSLATORS: Row label for the total playback duration across all of the document's audio files
+#: kt swift
+#, fuzzy
+msgid "Total duration"
+msgstr "Tổng thời lượng"
+
+#. TRANSLATORS: Row label for the average playback duration per audio file in the document
+#: kt swift
+#, fuzzy
+msgid "Average duration"
+msgstr "Thời lượng trung bình"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
+#: kt
+#, fuzzy
+msgid "Select audio speed"
+msgstr "Chọn tốc độ âm thanh"
+
+#, fuzzy
+#~ msgid "Window Hotkey"
+#~ msgstr "Phím tắt cho cửa sổ"
+
+#, fuzzy
+#~ msgid "Space"
+#~ msgstr "Không gian"
+
+#, fuzzy
+#~ msgid "Customize &Window Hotkey..."
+#~ msgstr "Tùy chỉnh &Phím nóng Cửa sổ..."
+
+#, fuzzy
+#~ msgid "unsupported content"
+#~ msgstr "nội dung không được hỗ trợ"
+
+#, fuzzy
+#~ msgid "Failed to convert HTML to text: {}"
+#~ msgstr "Không thể chuyển đổi HTML sang văn bản: {}"
+
+#, fuzzy
+#~ msgid "Failed to convert Markdown to text: {}"
+#~ msgstr "Không thể chuyển đổi Markdown sang văn bản: {}"
+
+#, fuzzy
+#~ msgid "{} on \\u{201c}{}\\u{201d}: {}"
+#~ msgstr "{} trên \\u{201c}{}\\u{201d}: {}"
+
+#, fuzzy
+#~ msgid "1.5\\u{00d7}"
+#~ msgstr "1,5\\u{00d7}"
 
 #, fuzzy
 #~ msgid "Update failed"

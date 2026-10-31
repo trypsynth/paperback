@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: b0171dfc874af9e8; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,808d00fb,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 001b5ced2d6cc026; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - versão 1.0
 
@@ -22,7 +22,7 @@ Paperback funciona no Windows 10/11, em todas as versões modernas de ARM macOS,
 * Pode ser executado totalmente portátil ou instalado com associações de arquivo configuradas automaticamente.
 * Suporta uma grande variedade de formatos de arquivo comuns.
 * Reproduz audiolivros, com velocidade ajustável e marcadores que lembram o tempo exato.
-* Lê páginas PDF digitalizadas com o OCR integrado no Windows e macOS.
+* Lê páginas PDF digitalizadas com o OCR integrado no Windows e macOS, ou com Tesseract no Linux.
 * Marcadores e notas, para que você possa marcar seu lugar e voltar a ele.
 * Todos os atalhos de teclado podem ser alterados.
 * Abre documentos diretamente de links http e https, e os baixa novamente quando você os reabre ou pressiona `F5`, mantendo sua posição de leitura e Favoritos. Ao restaurar os documentos que você tinha abertos, ele baixa novamente os dos links que eram 2 MB ou menores.
@@ -236,7 +236,7 @@ O menu More Options é onde tudo mais fica. Alguns itens funcionam um pouco dife
 * **Go To:** salte para uma linha, uma página ou uma porcentagem através do documento. Escolha qual com o Mode picker.
 * **Recent Documents:** cada documento que você abriu, cada um marcado como atualmente aberto, fechado ou arquivo não encontrado. Cada um tem duas ações do leitor de tela: Remove o remove da lista e Locate permite encontrar um documento cujo arquivo foi movido. Clear Recent Documents esvazia a lista sem excluir nenhum documento.
 * **Word Count:** o número de palavras no documento.
-* **Document Info:** o título, o autor, o nome do arquivo e no iOS também as contagens de linhas e caracteres.
+* **Informações do Documento:** o título, o autor, o nome do arquivo, o quanto você avançou no documento e as contagens de palavras, linhas e caracteres. Para um audiolivro, também mostra quantos arquivos ele tem e, quando Paperback consegue determinar, quanto tempo eles levam no total e em média.
 * **Export:** salva o documento como texto simples, HTML ou Markdown.
 * **Sleep Timer:** para de ler após 5, 10, 15, 30, 45 ou 60 minutos, ou um tempo de sua escolha. Abra novamente enquanto está em execução para ver quanto tempo falta ou para cancelá-lo.
 * **Help:** abre este readme.

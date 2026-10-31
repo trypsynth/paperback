@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: b0171dfc874af9e8; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,808d00fb,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 001b5ced2d6cc026; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback – 1.0-s verzió
 
@@ -22,7 +22,7 @@ A Paperback a következő rendszereken fut: Windows 10/11, az ARM-alapú macOS �
 * Teljesen hordozható módon is futtatható, de telepíthető is, ekkor a fájltársítások automatikusan beállnak.
 * A gyakori fájlformátumok rendkívül széles körét támogatja.
 * Hangoskönyveket is lejátszik, állítható sebességgel és olyan könyvjelzőkkel, amelyek a pontos időpontot jegyzik meg.
-* A szkennelt PDF-oldalakat a Windows és a macOS beépített szövegfelismerésével teszi olvashatóvá.
+* A szkennelt PDF-oldalakat a Windows és a macOS beépített Felismeréssével, illetve Linux alatt a Tesseract segítségével teszi olvashatóvá.
 * Könyvjelzők és jegyzetek, hogy megjelölhesse, hol tart, és később visszatérhessen oda.
 * Minden billentyűparancs módosítható.
 * Dokumentumokat közvetlenül http- és https-hivatkozásokról is megnyit, és újra letölti őket, amikor ismét megnyitja őket, vagy megnyomja az `F5` billentyűt; az olvasási pozíció és a könyvjelzők ilyenkor is megmaradnak. A korábban megnyitott dokumentumok visszaállításakor a hivatkozásról megnyitottak közül a legfeljebb 2 MB méretűeket tölti le újra.
@@ -236,7 +236,7 @@ A További lehetőségek menüben található minden más. Egyes elemek a két a
 * **Ugrás:** ugrás egy sorra, egy oldalra vagy a dokumentum adott százalékára. Hogy melyikre, azt a Mód választóval adhatja meg.
 * **Legutóbbi dokumentumok:** az összes dokumentum, amelyet valaha megnyitott; mindegyiknél ott áll, hogy „Jelenleg megnyitva”, „Bezárva” vagy „A fájl hiányzik”. Mindegyikhez két képernyőolvasó-művelet tartozik: az Eltávolítás leveszi a listáról, a Megkeresés segítségével pedig megkeresheti azt a dokumentumot, amelynek a fájlja máshová került. A Legutóbbi dokumentumok listájának kiürítése kiüríti a listát, de egyetlen dokumentumot sem töröl.
 * **Szavak száma:** a dokumentumban lévő szavak száma.
-* **Dokumentuminformáció:** a cím, a szerző, a fájlnév, iOS-en pedig a sorok és a karakterek száma is.
+* **Dokumentuminformáció:** a cím, a szerző, a fájlnév, az olvasási pozíció, valamint a szavak, sorok és karakterek száma. Hangoskönyv esetén azt is mutatja, hány fájlja van, és amikor a Paperback ezt képes megállapítani, azok összes hossza és átlagos hossza.
 * **Exportálás:** a dokumentum mentése egyszerű szövegként, HTML-ként vagy Markdownként.
 * **Elalvási időzítő:** 5, 10, 15, 30, 45 vagy 60 perc, illetve egy saját maga által megadott idő elteltével leállítja a felolvasást. Ha futás közben újra megnyitja, láthatja, mennyi idő van hátra, és le is állíthatja.
 * **Súgó:** megnyitja ezt a kézikönyvet.

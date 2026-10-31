@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: b0171dfc874af9e8; sections: 84030068,db723a70,df2f4c18,e9b82d46,1387e8b7,3887c286,808d00fb,3a4c3efe,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 001b5ced2d6cc026; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
 
 # Paperback - Version 1.0
 
@@ -22,7 +22,7 @@ Paperback läuft auf Windows 10/11, allen modernen ARM-Versionen von macOS, Linu
 * Kann vollständig portabel ausgeführt oder mit automatisch eingerichteten Dateizuordnungen installiert werden.
 * Unterstützt eine riesige Auswahl an gängigen Dateiformaten.
 * Spielt Audiobooks mit verstellbarer Geschwindigkeit und Lesezeichen ab, die die genaue Zeit speichern.
-* Liest gescannte PDF-Seiten mit der in Windows und macOS integrierten Texterkennung.
+* Liest gescannte PDF-Seiten mit der in Windows und macOS integrierten Texterkennung oder mit Tesseract unter Linux.
 * Lesezeichen und Notizen, damit du deine Position markieren und später dorthin zurückkehren kannst.
 * Jede Tastenkombination kann geändert werden.
 * Öffnet Dokumente direkt aus http- und https-Links, und lädt sie erneut herunter, wenn du sie erneut öffnest oder `F5` drückst, wobei die Leseposition und Lesezeichen erhalten bleiben. Beim Wiederherstellen der Dokumente, die du geöffnet hattest, lädt es erneut die Dokumente aus Links herunter, die 2 MB oder kleiner waren.
@@ -236,7 +236,7 @@ Das Menü „Weitere Optionen" enthält alles Übrige. Einige Einträge verhalte
 * **Gehe zu:** springe zu einer Zeile, einer Seite oder einer Prozentzahl im Dokument. Wähle mit der Modusauswahl aus.
 * **Zuletzt geöffnete Dokumente:** alle Dokumente, die du geöffnet hast, jeweils gekennzeichnet als zurzeit offen, geschlossen oder Datei fehlt. Jedes Dokument hat zwei Aktionen des Bildschirmlesers: „Entfernen" nimmt es aus der Liste, und „Suchen" ermöglicht es dir, ein Dokument zu finden, dessen Datei verschoben wurde. „Zuletzt geöffnete Dokumente löschen" leert die Liste, ohne Dokumente zu löschen.
 * **Wortanzahl:** die Anzahl der Wörter im Dokument.
-* **Dokument-Info:** Titel, Autor, Dateiname und unter iOS auch die Zeilen- und Zeichenanzahl.
+* **Dokumentinfo:** Titel, Autor, Dateiname, deine Position im Dokument und die Wort-, Zeilen- und Zeichenanzahl. Bei einem Audiobuch zeigt es auch an, wie viele Dateien es hat, und wenn Paperback das erkennen kann, wie lange sie insgesamt und im Durchschnitt laufen.
 * **Exportieren:** speichert das Dokument als reinen Text, HTML oder Markdown.
 * **Schlaf-Timer:** beendet die Wiedergabe nach 5, 10, 15, 30, 45 oder 60 Minuten oder zu einer selbst festgelegten Zeit. Öffne es erneut während der Ausführung, um zu sehen, wie lange es noch dauert, oder um es abzubrechen.
 * **Hilfe:** öffnet diese Anleitung.
