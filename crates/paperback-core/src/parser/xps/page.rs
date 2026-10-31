@@ -56,19 +56,25 @@ impl Transform {
 /// In hundredths of the size. No glyph is this wide, so it can only be the jump between two strings a printer driver merged into one run.
 const GAP_ADVANCE: f64 = 150.0;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(super) struct Run {
+	/// What a reader gets; `source` is what `indices` counts through.
 	pub text: String,
+	pub source: String,
+	pub indices: String,
+	pub font: String,
 	pub x: f64,
 	pub y: f64,
 	pub size: f64,
 	pub bidi_level: u32,
+	pub simulated_bold: bool,
 }
 
 /// One entry of `Indices` and the UTF-16 code units of the text it draws.
 #[derive(Debug, PartialEq)]
 pub(super) struct Cluster {
 	pub code_units: usize,
+	pub glyph: Option<u32>,
 	pub advance: Option<f64>,
 }
 
@@ -76,12 +82,14 @@ pub(super) fn clusters(indices: &str) -> Vec<Cluster> {
 	let mut clusters: Vec<Cluster> = Vec::new();
 	let mut glyphs_left = 0usize;
 	for entry in indices.split(';') {
-		let (mapping, glyph) = entry.strip_prefix('(').and_then(|entry| entry.split_once(')')).unzip();
+		let (mapping, metrics) = entry.strip_prefix('(').and_then(|entry| entry.split_once(')')).unzip();
 		let (code_units, glyphs) = mapping.map_or((1, 1), |mapping: &str| {
 			let (code_units, glyphs) = mapping.split_once(':').unwrap_or((mapping, "1"));
 			(code_units.trim().parse().unwrap_or(1), glyphs.trim().parse().unwrap_or(1))
 		});
-		let advance = glyph.unwrap_or(entry).split(',').nth(1).and_then(|advance| advance.trim().parse::<f64>().ok());
+		let mut metrics = metrics.unwrap_or(entry).split(',');
+		let glyph = metrics.next().and_then(|glyph| glyph.trim().parse().ok());
+		let advance = metrics.next().and_then(|advance| advance.trim().parse::<f64>().ok());
 		match clusters.last_mut() {
 			Some(cluster) if glyphs_left > 0 => {
 				glyphs_left -= 1;
@@ -89,7 +97,7 @@ pub(super) fn clusters(indices: &str) -> Vec<Cluster> {
 			}
 			_ => {
 				glyphs_left = glyphs.max(1) - 1;
-				clusters.push(Cluster { code_units, advance });
+				clusters.push(Cluster { code_units, glyph, advance });
 			}
 		}
 	}
@@ -154,9 +162,18 @@ fn read_run(element: Node, transform: Transform) -> Option<Run> {
 	let transform = transform.then(Transform::of(element));
 	let (x, y) = transform.apply(number("OriginX")?, number("OriginY")?);
 	let size = number("FontRenderingEmSize")? * transform.vertical_scale();
-	let bidi_level = element.attribute("BidiLevel").and_then(|level| level.parse().ok()).unwrap_or(0);
-	let text = expand_ligatures(&spaced_at_gaps(unicode, element.attribute("Indices").unwrap_or_default()));
-	Some(Run { text, x, y, size, bidi_level })
+	let indices = element.attribute("Indices").unwrap_or_default();
+	Some(Run {
+		text: expand_ligatures(&spaced_at_gaps(unicode, indices)),
+		source: unicode.to_string(),
+		indices: indices.to_string(),
+		font: element.attribute("FontUri").unwrap_or_default().to_string(),
+		x,
+		y,
+		size,
+		bidi_level: element.attribute("BidiLevel").and_then(|level| level.parse().ok()).unwrap_or(0),
+		simulated_bold: element.attribute("StyleSimulations").is_some_and(|style| style.contains("Bold")),
+	})
 }
 
 /// The fallback is the branch every reader is promised to understand.

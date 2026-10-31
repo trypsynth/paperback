@@ -64,6 +64,7 @@ scraper = "0.29.0"
 serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
 serde_json = { workspace = true }
 sha1 = "0.11.0"
+skrifa = "0.46.2"
 thiserror = "2.0.21"
 toml = { workspace = true }
 tracing = { workspace = true }

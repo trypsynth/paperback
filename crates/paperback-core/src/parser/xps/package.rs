@@ -53,7 +53,7 @@ fn part_entries(names: impl Iterator<Item = String>) -> HashMap<String, Vec<Stri
 	whole
 }
 
-fn resolve_part(source: &str, target: &str) -> String {
+pub(super) fn resolve_part(source: &str, target: &str) -> String {
 	resolve_relative_path(source.rsplit_once('/').map_or("", |(folder, _)| folder), target)
 }
 

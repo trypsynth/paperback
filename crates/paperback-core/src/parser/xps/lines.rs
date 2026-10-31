@@ -15,7 +15,8 @@ const MIN_CHARACTER_STEP: f64 = 0.6;
 
 #[derive(Debug, Clone, Copy)]
 pub(super) struct RunStyle {
-	pub width: f64,
+	/// Unknown when the file gives no advances and its font can't be read.
+	pub width: Option<f64>,
 	pub bold: bool,
 	pub monospaced: bool,
 }
@@ -28,8 +29,8 @@ fn is_drawn_mark(run: &Run) -> bool {
 fn positioned_characters(runs: &[(&Run, RunStyle)]) -> Vec<(char, f32)> {
 	let mut characters = Vec::new();
 	for (run, style) in runs {
-		let count = run.text.chars().count();
-		let step = (style.width / count as f64).max(MIN_CHARACTER_STEP);
+		let count = run.text.chars().count() as f64;
+		let step = style.width.map_or(MIN_CHARACTER_STEP, |width| (width / count).max(MIN_CHARACTER_STEP));
 		let step = if run.bidi_level % 2 == 1 { -step } else { step };
 		characters.extend(run.text.chars().enumerate().map(|(index, c)| (c, (run.x + step * index as f64) as f32)));
 	}
@@ -48,7 +49,8 @@ fn line_text(runs: &[(&Run, RunStyle)]) -> String {
 			text.push(' ');
 		}
 		text.push_str(&run.text);
-		end = Some(run.x + style.width);
+		// Without a width only a gap no run could fill is sure to be one.
+		end = Some(run.x + style.width.unwrap_or(run.text.chars().count() as f64 * run.size));
 	}
 	text
 }
@@ -92,12 +94,32 @@ mod tests {
 	const HEIGHT: f64 = 1000.0;
 
 	fn run(text: &str, x: f64, y: f64) -> Run {
-		Run { text: text.to_string(), x, y, size: 12.0, bidi_level: 0 }
+		Run { text: text.to_string(), x, y, size: 12.0, ..Run::default() }
 	}
 
 	/// Every character six units wide.
 	fn measured(run: &Run) -> RunStyle {
-		RunStyle { width: run.text.chars().count() as f64 * 6.0, bold: false, monospaced: false }
+		RunStyle { width: Some(run.text.chars().count() as f64 * 6.0), bold: false, monospaced: false }
+	}
+
+	#[test]
+	fn with_no_width_a_small_gap_is_not_taken_for_a_space() {
+		let unknown = |_: &Run| RunStyle { width: None, bold: false, monospaced: false };
+		let runs = vec![run("whethe", 0.0, 100.0), run("r", 36.0, 100.0)];
+		let lines = page_lines(&Page { height: HEIGHT, runs, ..Page::default() }, unknown);
+		assert_eq!(lines[0].text, "whether");
+	}
+
+	#[test]
+	fn with_no_width_right_to_left_runs_keep_together() {
+		let unknown = |_: &Run| RunStyle { width: None, bold: false, monospaced: false };
+		let runs = vec![
+			run("\u{05DD}\u{05D5}\u{05DC}\u{05E9}", 40.0, 100.0),
+			run(" ", 36.0, 100.0),
+			run("\u{05DD}\u{05DC}\u{05D5}\u{05E2}", 10.0, 100.0),
+		];
+		let lines = page_lines(&Page { height: HEIGHT, runs, ..Page::default() }, unknown);
+		assert_eq!(lines[0].text, "\u{05E9}\u{05DC}\u{05D5}\u{05DD} \u{05E2}\u{05D5}\u{05DC}\u{05DD}");
 	}
 
 	fn lines_of(runs: Vec<Run>) -> Vec<Line> {

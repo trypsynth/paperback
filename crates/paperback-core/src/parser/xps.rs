@@ -8,9 +8,10 @@ use anyhow::{Context, Result};
 use zip::ZipArchive;
 
 use self::{
-	lines::{RunStyle, page_lines},
+	fonts::Fonts,
+	lines::page_lines,
 	package::{CORE_PROPERTIES, DOCUMENT_STRUCTURE, Package, PagePart, STORY_FRAGMENTS},
-	page::{Page, Run, read_page},
+	page::{Page, read_page},
 	structure::{Fragment, OutlineEntry, read_fragments, read_outline},
 	writer::{PageWriter, WrittenParagraph},
 };
@@ -28,6 +29,7 @@ use crate::{
 	util::text::{collapse_whitespace, trim_string},
 };
 
+mod fonts;
 mod lines;
 mod package;
 mod page;
@@ -85,7 +87,7 @@ struct ReadPage {
 
 impl ReadPage {
 	/// A page that can't be read stays empty, so the pages after it keep their numbers.
-	fn of<R: Read + Seek>(package: &mut Package<R>, part: &PagePart) -> Self {
+	fn of<R: Read + Seek>(package: &mut Package<R>, part: &PagePart, fonts: &mut Fonts) -> Self {
 		let page = match package.read_text(&part.name).and_then(|xml| read_page(&xml)) {
 			Ok(page) => page,
 			Err(error) => {
@@ -94,13 +96,13 @@ impl ReadPage {
 			}
 		};
 		let fragments = page_fragments(package, &part.name);
-		let lines = if fragments.is_empty() { page_lines(&page, estimated_style) } else { Vec::new() };
+		let lines = if fragments.is_empty() {
+			page_lines(&page, |run| fonts.style_of(package, &part.name, run))
+		} else {
+			Vec::new()
+		};
 		Self { page, fragments, lines }
 	}
-}
-
-fn estimated_style(run: &Run) -> RunStyle {
-	RunStyle { width: run.text.chars().count() as f64 * run.size, bold: false, monospaced: false }
 }
 
 fn running_text(pages: &[ReadPage], strip: bool) -> RunningText {
@@ -206,7 +208,8 @@ fn read_document<R: Read + Seek>(mut package: Package<R>, context: &ParserContex
 	}
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
-	let read: Vec<ReadPage> = pages.iter().map(|part| ReadPage::of(&mut package, part)).collect();
+	let mut fonts = Fonts::default();
+	let read: Vec<ReadPage> = pages.iter().map(|part| ReadPage::of(&mut package, part, &mut fonts)).collect();
 	let running = running_text(&read, context.strip_running_text);
 	let mut written: Vec<WrittenPage> = Vec::new();
 	for (index, page) in read.iter().enumerate() {

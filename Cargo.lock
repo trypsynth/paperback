@@ -3034,6 +3034,7 @@ dependencies = [
  "serde_json",
  "sha1 0.11.0",
  "shipfitter",
+ "skrifa 0.46.2",
  "thiserror 2.0.21",
  "toml 1.1.8+spec-1.1.0",
  "tracing",
