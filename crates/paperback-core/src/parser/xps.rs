@@ -8,17 +8,24 @@ use anyhow::{Context, Result};
 use zip::ZipArchive;
 
 use self::{
-	package::{Package, PagePart},
+	package::{CORE_PROPERTIES, Package, PagePart, STORY_FRAGMENTS},
 	page::read_page,
+	structure::{Fragment, read_fragments},
+	writer::PageWriter,
 };
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
-	parser::{Parser, util::path::extract_title_from_path},
+	parser::{
+		Parser,
+		util::{ooxml::parse_core_properties, path::extract_title_from_path},
+	},
 	t,
 };
 
 mod package;
 mod page;
+mod structure;
+mod writer;
 
 pub struct XpsParser;
 
@@ -31,6 +38,22 @@ impl Parser for XpsParser {
 			.with_context(|| format!("Failed to read XPS as zip '{}'", context.file_path))?;
 		read_document(Package::new(archive), context)
 	}
+}
+
+fn page_fragments<R: Read + Seek>(package: &mut Package<R>, page: &str) -> Vec<Fragment> {
+	let mut fragments = Vec::new();
+	for part in package.related(page, STORY_FRAGMENTS) {
+		match package.read_text(&part).and_then(|xml| read_fragments(&xml)) {
+			Ok(mut read) => fragments.append(&mut read),
+			Err(error) => tracing::warn!(%part, %error, "failed to read xps story fragments"),
+		}
+	}
+	fragments
+}
+
+fn core_properties<R: Read + Seek>(package: &mut Package<R>) -> (Option<String>, Option<String>) {
+	let Some(part) = package.related("", CORE_PROPERTIES).into_iter().next() else { return (None, None) };
+	package.read_text(&part).map_or((None, None), |xml| parse_core_properties(&xml))
 }
 
 fn read_document<R: Read + Seek>(mut package: Package<R>, context: &ParserContext) -> Result<Document> {
@@ -54,12 +77,19 @@ fn read_document<R: Read + Seek>(mut package: Package<R>, context: &ParserContex
 				continue;
 			}
 		};
-		for run in page.runs {
-			buffer.append(&run.text);
-			buffer.append("\n");
+		let fragments = page_fragments(&mut package, &part.name);
+		if fragments.is_empty() {
+			for run in page.runs {
+				buffer.append(&run.text);
+				buffer.append("\n");
+			}
+		} else {
+			PageWriter::new(&mut buffer, &page).write(&fragments);
 		}
 	}
-	let mut document = Document::new().with_title(extract_title_from_path(&context.file_path));
+	let (title, author) = core_properties(&mut package);
+	let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
+	let mut document = Document::new().with_title(title).with_author(author.unwrap_or_default());
 	document.set_buffer(buffer);
 	document.id_positions = id_positions;
 	tracing::debug!(path = %context.file_path, page_count = pages.len(), "parsed xps file successfully");

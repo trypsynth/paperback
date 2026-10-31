@@ -13,7 +13,9 @@ use crate::{
 };
 
 const FIXED_REPRESENTATION: &str = "/fixedrepresentation";
+pub(super) const CORE_PROPERTIES: &str = "/core-properties";
 pub(super) const DOCUMENT_STRUCTURE: &str = "/documentstructure";
+pub(super) const STORY_FRAGMENTS: &str = "/storyfragments";
 
 #[derive(Debug, PartialEq, Eq)]
 pub(super) struct PagePart {
