@@ -339,8 +339,9 @@ fn parse_cstring(data: &[u8]) -> Option<String> {
 	(((printable_chars as f32) / (total_chars as f32)) >= PRINTABLE_SHARE_OF_A_STRING).then_some(text)
 }
 
+/// A paragraph ends in `\r`, and a line break within one is a vertical tab.
 fn normalize_legacy_slide_text(text: &str) -> String {
-	text.replace("\r\n", "\n").replace('\r', "\n").trim().to_string()
+	text.replace("\r\n", "\n").replace(['\r', '\u{0B}'], "\n").trim().to_string()
 }
 
 fn first_non_empty_line(text: &str) -> Option<String> {
@@ -562,7 +563,7 @@ mod tests {
 
 	#[test]
 	fn normalize_legacy_slide_text_normalizes_line_endings() {
-		assert_eq!(normalize_legacy_slide_text(" a\r\nb\rc "), "a\nb\nc");
+		assert_eq!(normalize_legacy_slide_text(" a\r\nb\rc\u{0B}d "), "a\nb\nc\nd");
 	}
 
 	#[test]
