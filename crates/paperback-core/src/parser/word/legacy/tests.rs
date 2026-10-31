@@ -1,4 +1,6 @@
-use super::{looks_like_text_content, normalize_doc_text, parse_doc_clx, parse_doc_piece_table, winword_text};
+use super::{
+	extract_word6_text, looks_like_text_content, normalize_doc_text, parse_doc_clx, parse_doc_piece_table, winword_text,
+};
 
 #[test]
 fn parse_doc_piece_table_extracts_ansi_text() {
@@ -126,4 +128,26 @@ fn a_binary_header_ahead_of_mostly_text_is_not_plain_text() {
 	let mut content = "\0".repeat(200);
 	content.push_str(&"Readable words follow the header. ".repeat(100));
 	assert!(!looks_like_text_content(&content));
+}
+
+#[test]
+fn a_word_for_the_macintosh_file_reads_its_big_endian_run_as_mac_roman() {
+	let mut file = vec![0u8; 0x100];
+	file[0] = 0xFE;
+	file[1] = 0x37;
+	file[0x14..0x18].copy_from_slice(&0x100u32.to_be_bytes());
+	file[0x18..0x1C].copy_from_slice(&0x10Bu32.to_be_bytes());
+	file.extend_from_slice(b"It\xd5s a map\r");
+	assert_eq!(winword_text(&file).as_deref(), Some("It\u{2019}s a map\r"));
+}
+
+#[test]
+fn a_word_6_unicode_file_reads_its_run_as_utf16() {
+	let text: Vec<u8> = "Date Logger\r".encode_utf16().flat_map(u16::to_le_bytes).collect();
+	let mut stream = vec![0u8; 0x200];
+	stream[0..2].copy_from_slice(&0xA697u16.to_le_bytes());
+	stream[0x18..0x1C].copy_from_slice(&0x200u32.to_le_bytes());
+	stream[0x1C..0x20].copy_from_slice(&u32::try_from(0x200 + text.len()).unwrap().to_le_bytes());
+	stream.extend_from_slice(&text);
+	assert_eq!(extract_word6_text(&stream), "Date Logger\r");
 }
