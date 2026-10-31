@@ -89,13 +89,18 @@ struct ReadPage {
 impl ReadPage {
 	/// A page that can't be read stays empty, so the pages after it keep their numbers.
 	fn of<R: Read + Seek>(package: &mut Package<R>, part: &PagePart, fonts: &mut Fonts) -> Self {
-		let page = match package.read_text(&part.name).and_then(|xml| read_page(&xml)) {
+		let mut page = match package.read_text(&part.name).and_then(|xml| read_page(&xml)) {
 			Ok(page) => page,
 			Err(error) => {
 				tracing::warn!(part = %part.name, %error, "failed to read xps page, skipping its text");
 				return Self::default();
 			}
 		};
+		if page.links.iter().any(|link| matches!(link.place, LinkPlace::Area(_))) {
+			for run in &mut page.runs {
+				run.width = fonts.style_of(package, &part.name, run).width;
+			}
+		}
 		let fragments = page_fragments(package, &part.name);
 		let lines = if fragments.is_empty() {
 			page_lines(&page, |run| fonts.style_of(package, &part.name, run))
@@ -184,10 +189,7 @@ fn page_links(page: &Page, target_pages: &HashMap<&str, usize>) -> Vec<PendingLi
 		let Some(reference) = link_reference(&link.uri, target_pages) else { continue };
 		let runs: Vec<usize> = match &link.place {
 			LinkPlace::Runs(runs) => runs.clone().collect(),
-			LinkPlace::Area(area) => {
-				let inside = |index: &usize| area.contains(page.runs[*index].x, page.runs[*index].y);
-				(0..page.runs.len()).filter(inside).collect()
-			}
+			LinkPlace::Area(area) => (0..page.runs.len()).filter(|index| area.covers(&page.runs[*index])).collect(),
 		};
 		let text: String = runs.iter().map(|index| page.runs[*index].text.as_str()).collect();
 		let text = trim_string(&collapse_whitespace(&text));

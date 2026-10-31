@@ -67,6 +67,8 @@ pub(super) struct Run {
 	pub x: f64,
 	pub y: f64,
 	pub size: f64,
+	/// Only measured on a page with a link rectangle, the one place it decides anything once the lines are laid out.
+	pub width: Option<f64>,
 	pub bidi_level: u32,
 	pub simulated_bold: bool,
 }
@@ -140,9 +142,11 @@ pub(super) struct Area {
 }
 
 impl Area {
-	pub fn contains(&self, x: f64, y: f64) -> bool {
-		(self.left - LINK_TOLERANCE..=self.right + LINK_TOLERANCE).contains(&x)
-			&& (self.top - LINK_TOLERANCE..=self.bottom + LINK_TOLERANCE).contains(&y)
+	/// Word pads a link's rectangle, so the full stop after a link can start inside it and only a run that also ends there belongs to the link.
+	pub fn covers(&self, run: &Run) -> bool {
+		(self.left - LINK_TOLERANCE..=self.right + LINK_TOLERANCE).contains(&run.x)
+			&& (self.top - LINK_TOLERANCE..=self.bottom + LINK_TOLERANCE).contains(&run.y)
+			&& run.width.is_none_or(|width| run.x + width <= self.right + LINK_TOLERANCE)
 	}
 }
 
@@ -228,6 +232,7 @@ fn read_run(element: Node, transform: Transform) -> Option<Run> {
 		x,
 		y,
 		size,
+		width: None,
 		bidi_level: element.attribute("BidiLevel").and_then(|level| level.parse().ok()).unwrap_or(0),
 		simulated_bold: element.attribute("StyleSimulations").is_some_and(|style| style.contains("Bold")),
 	})
@@ -478,6 +483,16 @@ mod tests {
 		let page =
 			page(&format!(r#"<Canvas RenderTransform="2,0,0,2,5,5">{}</Canvas>"#, link_path("M 0,0 L 10,0 L 10,10 Z")));
 		assert_eq!(area_of(&page), &Area { left: 5.0, top: 5.0, right: 25.0, bottom: 25.0 });
+	}
+
+	#[test]
+	fn a_link_covers_a_run_that_fits_inside_it_and_not_one_that_only_starts_there() {
+		let area = Area { left: 272.94, top: 172.0, right: 338.97, bottom: 197.0 };
+		let at = |x: f64, width: Option<f64>| Run { x, y: 183.38, width, ..Run::default() };
+		assert!(area.covers(&at(275.09, Some(61.58))));
+		assert!(!area.covers(&at(336.67, Some(3.4))));
+		assert!(area.covers(&at(336.67, None)));
+		assert!(!area.covers(&at(100.0, None)));
 	}
 
 	#[test]
