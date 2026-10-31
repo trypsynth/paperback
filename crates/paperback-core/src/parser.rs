@@ -43,6 +43,7 @@ pub mod text;
 pub mod util;
 pub mod word;
 pub mod wri;
+pub mod xps;
 
 pub const PASSWORD_REQUIRED_ERROR_PREFIX: &str = "[password_required]";
 
@@ -157,6 +158,7 @@ impl ParserRegistry {
 				RTF => rtf::RtfParser,
 				TEXT => text::TextParser,
 				WRI => wri::WriParser,
+				XPS => xps::XpsParser,
 			}
 		})
 	}
