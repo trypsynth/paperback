@@ -119,7 +119,7 @@ formats! {
 	},
 	FB2 {
 		name: "FictionBook Documents",
-		extensions: ["fb2"],
+		extensions: ["fb2", "zip"],
 		mime_types: ["application/x-fictionbook+xml"],
 		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS,
 		installer: OPT_IN_HANDLER,

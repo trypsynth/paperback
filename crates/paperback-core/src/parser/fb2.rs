@@ -1,7 +1,8 @@
-use std::{collections::HashMap, fmt::Write as _};
+use std::{collections::HashMap, fmt::Write as _, fs, io::Cursor};
 
 use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, Node, NodeType};
+use zip::ZipArchive;
 
 use crate::{
 	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext},
@@ -10,14 +11,31 @@ use crate::{
 		convert::xml_to_text::XmlToText,
 		util::{
 			toc::build_toc_from_headings,
-			xml::{collect_element_text, find_child_element, read_xml_to_string},
+			xml::{collect_element_text, decode_xml, find_child_element},
 		},
 	},
 	t,
-	util::text::collapse_whitespace,
+	util::{text::collapse_whitespace, zip::read_zip_entry_bytes},
 };
 
 type Metadata = (String, String);
+
+/// FictionBook is usually passed around zipped (`book.fb2.zip`), one book to an archive.
+fn read_fb2_bytes(path: &str) -> Result<Vec<u8>> {
+	let bytes = fs::read(path).with_context(|| format!("Failed to read FB2 file '{path}'"))?;
+	if !bytes.starts_with(b"PK\x03\x04") {
+		return Ok(bytes);
+	}
+	let mut archive =
+		ZipArchive::new(Cursor::new(bytes)).with_context(|| format!("Failed to read ZIP archive '{path}'"))?;
+	let Some(name) =
+		archive.file_names().flatten().find(|name| name.to_ascii_lowercase().ends_with(".fb2")).map(String::from)
+	else {
+		// TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+		anyhow::bail!(t("No readable content found in the ZIP archive"));
+	};
+	read_zip_entry_bytes(&mut archive, &name)
+}
 
 pub struct Fb2Parser;
 
@@ -25,8 +43,7 @@ impl Parser for Fb2Parser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		tracing::debug!(path = %context.file_path, "parsing fb2 file");
 		const CLOSING_TAG: &str = "</FictionBook>";
-		let mut xml_content = read_xml_to_string(&context.file_path)
-			.with_context(|| format!("Failed to read FB2 file '{}'", context.file_path))?;
+		let mut xml_content = decode_xml(&read_fb2_bytes(&context.file_path)?);
 		if let Some(pos) = xml_content.rfind(CLOSING_TAG) {
 			xml_content.truncate(pos + CLOSING_TAG.len());
 		}
@@ -66,7 +83,7 @@ impl Parser for Fb2Parser {
 /// Returns an error when the file cannot be read or parsed, even after repair, or holds no binary with that id.
 pub fn binary_data(file_path: &str, href: &str) -> Result<String> {
 	const CLOSING_TAG: &str = "</FictionBook>";
-	let mut xml_content = read_xml_to_string(file_path)?;
+	let mut xml_content = decode_xml(&read_fb2_bytes(file_path)?);
 	if let Some(pos) = xml_content.rfind(CLOSING_TAG) {
 		xml_content.truncate(pos + CLOSING_TAG.len());
 	}
@@ -429,6 +446,21 @@ mod tests {
 		let dir = TempDir::new("fb2-parser");
 		let path = dir.write_str("book.fb2", contents);
 		Fb2Parser.parse(&ParserContext::new(path))
+	}
+
+	#[test]
+	fn a_zipped_book_opens_through_the_zip_extension() {
+		let mut zipped = std::io::Cursor::new(Vec::new());
+		{
+			let mut writer = zip::ZipWriter::new(&mut zipped);
+			writer.start_file("book.fb2", zip::write::SimpleFileOptions::default()).unwrap();
+			std::io::Write::write_all(&mut writer, fb2_document("", BODY).as_bytes()).unwrap();
+			writer.finish().unwrap();
+		}
+		let dir = TempDir::new("fb2-zip");
+		let path = dir.write_str("book.fb2.zip", zipped.into_inner());
+		let doc = crate::parser::parse_document(&ParserContext::new(path)).expect("a zipped FB2 book opens");
+		assert!(doc.buffer.content.contains("Opening line."), "{}", doc.buffer.content);
 	}
 
 	fn parse_ok(contents: &str) -> Document {

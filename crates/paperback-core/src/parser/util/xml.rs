@@ -44,14 +44,18 @@ pub fn find_child_element<'a, 'input>(node: Node<'a, 'input>, name: &str) -> Opt
 
 /// Most FictionBooks are windows-1251, so the declared encoding is honoured rather than assuming UTF-8.
 pub fn read_xml_to_string(path: &str) -> std::io::Result<String> {
-	let bytes = std::fs::read(path)?;
-	let Some(encoding) = crate::util::encoding::xml_declared_encoding(&bytes) else {
+	Ok(decode_xml(&std::fs::read(path)?))
+}
+
+#[must_use]
+pub fn decode_xml(bytes: &[u8]) -> String {
+	let Some(encoding) = crate::util::encoding::xml_declared_encoding(bytes) else {
 		// A windows-1251 FictionBook saved without a declaration is still windows-1251, so it is sniffed like plain text.
-		return Ok(crate::util::encoding::convert_to_utf8(&bytes));
+		return crate::util::encoding::convert_to_utf8(bytes);
 	};
 	// `decode` follows a byte order mark over the declaration, as the XML specification asks.
-	let (text, _, _) = encoding.decode(&bytes);
-	Ok(replace_encoding_declaration(&text))
+	let (text, _, _) = encoding.decode(bytes);
+	replace_encoding_declaration(&text)
 }
 
 /// roxmltree is handed UTF-8 whatever the file held, but refuses a document whose declaration claims otherwise.

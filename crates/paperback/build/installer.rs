@@ -42,7 +42,7 @@ fn format_registry_block() -> String {
 		let task = format!("assoc_{}", slugify(format.name));
 		lines.push(format!("\t; {}.", format.name));
 		for ext in format.extensions {
-			// DAISY and Word-in-zip both register zip, so it has its own standalone task rather than one format's checkbox.
+			// DAISY, Word-in-zip and zipped FB2 all register zip, so it has its own standalone task rather than one format's checkbox.
 			if *ext == "zip" {
 				continue;
 			}
