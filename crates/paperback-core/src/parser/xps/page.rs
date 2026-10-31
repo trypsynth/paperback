@@ -127,12 +127,68 @@ fn spaced_at_gaps(text: &str, indices: &str) -> String {
 	spaced
 }
 
+/// Rectangles are written with fewer decimals than the runs they surround, so a run can start a hair outside its own.
+const LINK_TOLERANCE: f64 = 0.5;
+
+#[derive(Debug, PartialEq)]
+pub(super) struct Area {
+	pub left: f64,
+	pub top: f64,
+	pub right: f64,
+	pub bottom: f64,
+}
+
+impl Area {
+	pub fn contains(&self, x: f64, y: f64) -> bool {
+		(self.left - LINK_TOLERANCE..=self.right + LINK_TOLERANCE).contains(&x)
+			&& (self.top - LINK_TOLERANCE..=self.bottom + LINK_TOLERANCE).contains(&y)
+	}
+}
+
+#[derive(Debug)]
+pub(super) enum LinkPlace {
+	/// A rectangle laid over the page, which says nothing about the text beneath it.
+	Area(Area),
+	Runs(Range<usize>),
+}
+
+#[derive(Debug)]
+pub(super) struct PageLink {
+	pub uri: String,
+	pub place: LinkPlace,
+}
+
 #[derive(Debug, Default)]
 pub(super) struct Page {
 	pub height: f64,
 	pub runs: Vec<Run>,
 	/// The runs under each named element, which is how the document structure points at the page.
 	pub groups: HashMap<String, Range<usize>>,
+	pub links: Vec<PageLink>,
+}
+
+/// Link rectangles are drawn with straight lines alone, so anything else is not one and gives `None`.
+fn outline_points(data: &str) -> Option<Vec<(f64, f64)>> {
+	let data = data.trim_start();
+	let data = data.strip_prefix(['F', 'f']).map_or(data, |rest| rest.get(1..).unwrap_or_default());
+	let tokens = data.split(|c: char| c.is_whitespace() || matches!(c, ',' | 'M' | 'L' | 'Z' | 'z'));
+	let numbers: Vec<f64> =
+		tokens.filter(|token| !token.is_empty()).map(|token| token.parse().ok()).collect::<Option<_>>()?;
+	Some(numbers.chunks_exact(2).map(|pair| (pair[0], pair[1])).collect())
+}
+
+fn link_area(path: Node, transform: Transform) -> Option<Area> {
+	let geometry = || path.descendants().find(|node| is_element(*node, "PathGeometry"))?.attribute("Figures");
+	let points = outline_points(path.attribute("Data").or_else(geometry)?)?;
+	let transform = transform.then(Transform::of(path));
+	let mut points = points.into_iter().map(|(x, y)| transform.apply(x, y));
+	let (x, y) = points.next()?;
+	Some(points.fold(Area { left: x, top: y, right: x, bottom: y }, |area, (x, y)| Area {
+		left: area.left.min(x),
+		top: area.top.min(y),
+		right: area.right.max(x),
+		bottom: area.bottom.max(y),
+	}))
 }
 
 /// Printer drivers keep the ligature a font drew, which search and speech would then trip over.
@@ -185,9 +241,15 @@ fn alternate_branch<'a, 'input>(content: Node<'a, 'input>) -> Option<Node<'a, 'i
 fn walk(parent: Node, transform: Transform, page: &mut Page) {
 	for element in parent.children().filter(Node::is_element) {
 		let first_run = page.runs.len();
+		let uri = element.attribute("FixedPage.NavigateUri").map(String::from);
 		match element.tag_name().name() {
 			"Glyphs" => page.runs.extend(read_run(element, transform)),
 			"Canvas" => walk(element, transform.then(Transform::of(element)), page),
+			"Path" => {
+				if let (Some(uri), Some(area)) = (uri.clone(), link_area(element, transform)) {
+					page.links.push(PageLink { uri, place: LinkPlace::Area(area) });
+				}
+			}
 			"AlternateContent" => {
 				if let Some(branch) = alternate_branch(element) {
 					walk(branch, transform, page);
@@ -195,8 +257,12 @@ fn walk(parent: Node, transform: Transform, page: &mut Page) {
 			}
 			_ => {}
 		}
+		let runs = first_run..page.runs.len();
+		if let Some(uri) = uri.filter(|_| !runs.is_empty()) {
+			page.links.push(PageLink { uri, place: LinkPlace::Runs(runs.clone()) });
+		}
 		if let Some(name) = element.attribute("Name") {
-			page.groups.insert(name.to_string(), first_run..page.runs.len());
+			page.groups.insert(name.to_string(), runs);
 		}
 	}
 }
@@ -380,6 +446,65 @@ mod tests {
 		let page = page(&body);
 		assert_eq!(page.groups["one"], 0..1);
 		assert_eq!(page.groups["many"], 1..3);
+	}
+
+	fn link_path(data: &str) -> String {
+		format!(r#"<Path FixedPage.NavigateUri="https://example.com/" Data="{data}"/>"#)
+	}
+
+	fn area_of(page: &Page) -> &Area {
+		match &page.links[0].place {
+			LinkPlace::Area(area) => area,
+			LinkPlace::Runs(runs) => panic!("expected an area, found {runs:?}"),
+		}
+	}
+
+	#[test]
+	fn a_link_on_a_path_is_the_rectangle_it_draws() {
+		let page = page(&link_path("M 10,20 L 110,20 L 110,50 L 10,50 Z"));
+		assert_eq!(page.links[0].uri, "https://example.com/");
+		assert_eq!(area_of(&page), &Area { left: 10.0, top: 20.0, right: 110.0, bottom: 50.0 });
+	}
+
+	#[test]
+	fn a_link_path_can_open_with_a_fill_rule_and_drop_its_commands() {
+		let page = page(&link_path("F1M111.43,183.73L188.09,183.73 188.09,202.35 111.43,202.35Z"));
+		assert_eq!(area_of(&page), &Area { left: 111.43, top: 183.73, right: 188.09, bottom: 202.35 });
+	}
+
+	#[test]
+	fn a_link_rectangle_moves_with_the_canvas_around_it() {
+		let page =
+			page(&format!(r#"<Canvas RenderTransform="2,0,0,2,5,5">{}</Canvas>"#, link_path("M 0,0 L 10,0 L 10,10 Z")));
+		assert_eq!(area_of(&page), &Area { left: 5.0, top: 5.0, right: 25.0, bottom: 25.0 });
+	}
+
+	#[test]
+	fn a_link_path_can_keep_its_shape_in_a_geometry() {
+		let body =
+			r#"<Path FixedPage.NavigateUri="u"><Path.Data><PathGeometry Figures="M 1,2 L 3,4 Z"/></Path.Data></Path>"#;
+		assert_eq!(area_of(&page(body)), &Area { left: 1.0, top: 2.0, right: 3.0, bottom: 4.0 });
+	}
+
+	#[test]
+	fn a_path_with_no_link_or_a_curved_outline_gives_none() {
+		assert!(page(r#"<Path Data="M 0,0 L 1,1 Z"/>"#).links.is_empty());
+		assert!(page(&link_path("M 0,0 C 1,1 2,2 3,3 Z")).links.is_empty());
+	}
+
+	#[test]
+	fn a_link_on_text_or_a_canvas_covers_its_runs() {
+		let body = format!(
+			r#"{}<Glyphs FixedPage.NavigateUri="one" OriginX="1" OriginY="2" FontRenderingEmSize="12" UnicodeString="Linked"/>
+			<Canvas FixedPage.NavigateUri="two">{}{}</Canvas>"#,
+			glyphs("Plain"),
+			glyphs("Also"),
+			glyphs("linked")
+		);
+		let page = page(&body);
+		assert!(matches!(&page.links[0].place, LinkPlace::Runs(runs) if *runs == (1..2)));
+		assert!(matches!(&page.links[1].place, LinkPlace::Runs(runs) if *runs == (2..4)));
+		assert_eq!(page.links[1].uri, "two");
 	}
 
 	#[test]

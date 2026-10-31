@@ -11,7 +11,7 @@ use self::{
 	fonts::Fonts,
 	lines::page_lines,
 	package::{CORE_PROPERTIES, DOCUMENT_STRUCTURE, Package, PagePart, STORY_FRAGMENTS},
-	page::{Page, read_page},
+	page::{LinkPlace, Page, read_page},
 	structure::{Fragment, OutlineEntry, read_fragments, read_outline},
 	writer::{PageWriter, WrittenParagraph},
 };
@@ -20,8 +20,8 @@ use crate::{
 	parser::{
 		Parser,
 		pdf::{
-			Line, PageEdges, RunningText, build_toc_tree, detect_running_text, join_paragraphs, median_line_font_size,
-			resolve_headings, split_lines, strip_running_text,
+			Line, PageEdges, PendingLink, RunningText, build_toc_tree, detect_running_text, join_paragraphs,
+			median_line_font_size, place_links, resolve_headings, split_lines, strip_running_text,
 		},
 		util::{ooxml::parse_core_properties, path::extract_title_from_path},
 	},
@@ -141,14 +141,20 @@ struct WrittenPage {
 	headings: Vec<(DocPos, String)>,
 }
 
-fn outline_items(entries: Vec<OutlineEntry>, pages: &[PagePart], written: &[WrittenPage]) -> Vec<(u32, TocItem)> {
-	let targets =
-		pages.iter().enumerate().flat_map(|(index, page)| page.link_targets.iter().map(move |name| (name, index)));
-	let target_pages: HashMap<&String, usize> = targets.collect();
+fn link_target_pages(pages: &[PagePart]) -> HashMap<&str, usize> {
+	let targets = pages.iter().enumerate();
+	targets.flat_map(|(index, page)| page.link_targets.iter().map(move |name| (name.as_str(), index))).collect()
+}
+
+fn outline_items(
+	entries: Vec<OutlineEntry>,
+	target_pages: &HashMap<&str, usize>,
+	written: &[WrittenPage],
+) -> Vec<(u32, TocItem)> {
 	let mut next_paragraph = vec![0; written.len()];
 	let mut items = Vec::new();
 	for entry in entries {
-		let Some(&page) = target_pages.get(&entry.target) else {
+		let Some(&page) = target_pages.get(entry.target.as_str()) else {
 			tracing::warn!(target = %entry.target, "xps outline entry leads nowhere");
 			continue;
 		};
@@ -160,6 +166,36 @@ fn outline_items(entries: Vec<OutlineEntry>, pages: &[PagePart], written: &[Writ
 		items.push((entry.level, TocItem::new(title, String::new(), offset)));
 	}
 	items
+}
+
+/// A web address can carry a `#` too, but only a reference within the file has no scheme before it.
+fn link_reference(uri: &str, target_pages: &HashMap<&str, usize>) -> Option<String> {
+	match uri.rsplit_once('#') {
+		Some((document, name)) if !document.contains(':') => Some(format!("#page_{}", target_pages.get(name)?)),
+		_ => Some(uri.to_string()),
+	}
+}
+
+/// In page order, which `place_links` searches in.
+fn page_links(page: &Page, target_pages: &HashMap<&str, usize>) -> Vec<PendingLink> {
+	let mut links = Vec::new();
+	for link in &page.links {
+		let Some(reference) = link_reference(&link.uri, target_pages) else { continue };
+		let runs: Vec<usize> = match &link.place {
+			LinkPlace::Runs(runs) => runs.clone().collect(),
+			LinkPlace::Area(area) => {
+				let inside = |index: &usize| area.contains(page.runs[*index].x, page.runs[*index].y);
+				(0..page.runs.len()).filter(inside).collect()
+			}
+		};
+		let text: String = runs.iter().map(|index| page.runs[*index].text.as_str()).collect();
+		let text = trim_string(&collapse_whitespace(&text));
+		if let (Some(first), false) = (runs.first(), text.is_empty()) {
+			links.push((*first, PendingLink { text, reference }));
+		}
+	}
+	links.sort_by_key(|(first, _)| *first);
+	links.into_iter().map(|(_, link)| link).collect()
 }
 
 /// Counted in characters because a paragraph is one line here, so on a short page the headings would otherwise outnumber the text they head.
@@ -211,6 +247,7 @@ fn read_document<R: Read + Seek>(mut package: Package<R>, context: &ParserContex
 	let mut fonts = Fonts::default();
 	let read: Vec<ReadPage> = pages.iter().map(|part| ReadPage::of(&mut package, part, &mut fonts)).collect();
 	let running = running_text(&read, context.strip_running_text);
+	let target_pages = link_target_pages(&pages);
 	let mut written: Vec<WrittenPage> = Vec::new();
 	for (index, page) in read.iter().enumerate() {
 		let start = buffer.end();
@@ -222,10 +259,17 @@ fn read_document<R: Read + Seek>(mut package: Package<R>, context: &ParserContex
 			let writer = PageWriter::new(&mut buffer, &page.page, context.render_tables_inline);
 			(writer.write(&page.fragments, context.strip_running_text), Vec::new())
 		};
+		if buffer.end() == start {
+			// TRANSLATORS: Shown in place of an XPS page that has no text, such as a scanned one
+			buffer.append(&t("This page has no text."));
+			buffer.append("\n");
+		}
+		let page_text = buffer.text(start..buffer.end()).to_string();
+		place_links(&page_links(&page.page, &target_pages), start, &page_text, &mut buffer);
 		written.push(WrittenPage { start, paragraphs, headings });
 	}
 	let entries = outline_entries(&mut package, &documents);
-	let mut toc_items = build_toc_tree(outline_items(entries, &pages, &written));
+	let mut toc_items = build_toc_tree(outline_items(entries, &target_pages, &written));
 	resolve_headings(&mut buffer, &mut toc_items, Vec::new(), detected_headings(&written), false);
 	let (title, author) = core_properties(&mut package);
 	let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));

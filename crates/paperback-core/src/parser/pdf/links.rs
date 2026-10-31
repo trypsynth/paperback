@@ -7,13 +7,13 @@ use crate::{
 	util::text::{collapse_whitespace, trim_string},
 };
 
-pub(super) struct PendingLink {
+pub(in crate::parser) struct PendingLink {
 	pub text: String,
 	pub reference: String,
 }
 
 /// Searches from the previous link on, mirroring pdfium's order; a link whose text did not survive (a URL in a running header) places nothing.
-pub(super) fn place_links(
+pub(in crate::parser) fn place_links(
 	links: &[PendingLink],
 	page_start_offset: DocPos,
 	page_display_text: &str,

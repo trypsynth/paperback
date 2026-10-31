@@ -79,7 +79,7 @@ fn a_page_that_cannot_be_read_keeps_its_place() {
 		("3.fpage", text),
 	])
 	.expect("read");
-	assert_eq!(doc.buffer.content, "Words\nWords\n");
+	assert_eq!(doc.buffer.content, "Words\nThis page has no text.\nWords\n");
 	assert_eq!(doc.buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::PageBreak).count(), 3);
 }
 
@@ -448,6 +448,97 @@ fn large_lines_on_a_page_with_no_structure_are_headings() {
 	let doc = unstructured(&[page]);
 	assert_eq!(doc.toc_items.iter().map(|item| item.name.as_str()).collect::<Vec<_>>(), ["A heading"]);
 	assert_eq!(markers(&doc, MarkerType::Heading1).len(), 1);
+}
+
+const LINK_AREA: &str =
+	r#"<Path FixedPage.NavigateUri="https://example.com/" Data="M 100,10 L 200,10 L 200,30 L 100,30 Z"/>"#;
+
+fn at_x(name: &str, text: &str, x: f64) -> String {
+	format!(r#"<Glyphs Name="{name}" OriginX="{x}" OriginY="20" FontRenderingEmSize="12" UnicodeString="{text}"/>"#)
+}
+
+#[test]
+fn a_link_rectangle_reaches_the_text_it_covers_on_a_declared_page() {
+	let page =
+		format!("{}{}{}{LINK_AREA}", at_x("a", "Read ", 72.0), at_x("b", "this site", 100.0), at_x("c", " now", 201.0));
+	let fragments = r#"<StoryFragment><ParagraphStructure>
+		<NamedElement NameReference="a"/><NamedElement NameReference="b"/><NamedElement NameReference="c"/>
+	</ParagraphStructure></StoryFragment>"#;
+	let doc = structured(&page, fragments).expect("read");
+	assert_eq!(doc.buffer.content, "Read this site now\n");
+	let links = markers(&doc, MarkerType::Link);
+	assert_eq!(links.len(), 1);
+	assert_eq!((links[0].text.as_str(), links[0].reference.as_str()), ("this site", "https://example.com/"));
+	assert_eq!(links[0].position, DocPos::ZERO + DocLen::of("Read "));
+	assert_eq!(links[0].length, DocLen::of("this site"));
+}
+
+#[test]
+fn a_link_rectangle_reaches_the_text_it_covers_on_a_page_with_no_structure() {
+	let page = format!(
+		"<FixedPage Height=\"1000\">{}{}{LINK_AREA}</FixedPage>",
+		at_x("a", "Read ", 72.0),
+		at_x("b", "this site", 100.0)
+	);
+	let doc = unstructured(&[page]);
+	assert_eq!(markers(&doc, MarkerType::Link)[0].text, "this site");
+}
+
+#[test]
+fn links_go_in_reading_order_whatever_order_the_page_lists_them() {
+	let second =
+		r#"<Path FixedPage.NavigateUri="https://example.com/second" Data="M 300,10 L 400,10 L 400,30 L 300,30 Z"/>"#;
+	let first =
+		r#"<Path FixedPage.NavigateUri="https://example.com/first" Data="M 100,10 L 200,10 L 200,30 L 100,30 Z"/>"#;
+	let page = format!(
+		"<FixedPage Height=\"1000\">{}{}{}{second}{first}</FixedPage>",
+		at_x("a", "same", 100.0),
+		at_x("b", " and ", 200.5),
+		at_x("c", "same", 300.0)
+	);
+	let doc = unstructured(&[page]);
+	let references: Vec<&str> = markers(&doc, MarkerType::Link).iter().map(|link| link.reference.as_str()).collect();
+	assert_eq!(references, ["https://example.com/first", "https://example.com/second"]);
+}
+
+fn with_internal_link(uri: &str) -> Document {
+	let first = format!(
+		r#"<FixedPage Height="1000"><Glyphs FixedPage.NavigateUri="{uri}" OriginX="10" OriginY="20" FontRenderingEmSize="12" UnicodeString="Go on"/></FixedPage>"#
+	);
+	read(&[
+		("_rels/.rels", ROOT_RELS),
+		("Sequence.fdseq", SEQUENCE),
+		("Doc.fdoc", LINKED_PAGES),
+		("1.fpage", &first),
+		("2.fpage", "<FixedPage/>"),
+	])
+	.expect("read")
+}
+
+#[test]
+fn a_link_to_a_name_in_the_file_leads_to_its_page() {
+	for uri in ["#three", "Doc.fdoc#three", "../Doc.fdoc#three"] {
+		assert_eq!(markers(&with_internal_link(uri), MarkerType::Link)[0].reference, "#page_1");
+	}
+}
+
+#[test]
+fn a_link_to_a_name_the_file_lacks_is_left_out() {
+	assert!(markers(&with_internal_link("#gone"), MarkerType::Link).is_empty());
+}
+
+#[test]
+fn a_web_address_with_a_fragment_stays_a_web_address() {
+	assert_eq!(
+		markers(&with_internal_link("https://example.com/#top"), MarkerType::Link)[0].reference,
+		"https://example.com/#top"
+	);
+}
+
+#[test]
+fn a_page_with_no_text_says_so() {
+	let doc = unstructured(&["<FixedPage Height=\"1000\"/>".to_string()]);
+	assert_eq!(doc.buffer.content, "This page has no text.\n");
 }
 
 #[test]

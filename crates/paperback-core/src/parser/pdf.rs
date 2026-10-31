@@ -21,7 +21,8 @@ mod text;
 mod toc;
 
 use images::{append_image, images_before_each_paragraph, page_largest_image_coverage};
-use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
+pub(super) use links::{PendingLink, place_links};
+use links::{collect_annotation_links, collect_web_links};
 use metadata::{map_load_error, metadata_title, metadata_value};
 pub(super) use paragraphs::{join_paragraphs, split_lines};
 pub use paragraphs::{join_wrapped_lines, join_wrapped_runs};
