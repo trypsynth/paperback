@@ -185,6 +185,12 @@ pub(super) fn normalize_escapes(
 		}
 		if bytes[i] == b'\\' && i + 1 < len {
 			match bytes[i + 1] {
+				// The lexer takes the character after a `\\` pair as escaped too, so `{\f6 \\}` lost its closing brace and everything after the group; its hex form lexes as the same backslash.
+				b'\\' => {
+					result.push_str("\\'5c");
+					i += 2;
+					continue;
+				}
 				// RTF non-breaking space
 				b'~' => {
 					end_open_control_word(&mut result);

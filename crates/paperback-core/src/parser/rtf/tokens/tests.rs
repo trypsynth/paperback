@@ -302,3 +302,12 @@ fn trimming_wide_leading_whitespace_keeps_markers_on_their_text() {
 	assert_eq!(bold.len(), 1);
 	assert_eq!(bold[0].position, DocLen::of("plain ").as_pos());
 }
+
+#[test]
+fn an_escaped_backslash_before_a_closing_brace_keeps_the_text_after_it() {
+	let rtf = r#"{\rtf1\ansi\pard {\field{\*\fldinst {\f6 SYMBOL 183 }{\f6 \\}{\f6 f "Symbol" }}{\fldrslt }}{\f6 Consider the set.}\par A path C:\\dos.\par}"#;
+	let normalized = normalize_escapes(rtf, encoding_rs::WINDOWS_1252, &HashMap::new());
+	let tokens = Lexer::scan(&normalized).expect("RTF tokenization should succeed");
+	let buffer = extract_content_from_tokens(&tokens);
+	assert_eq!(buffer.content.trim_end(), "Consider the set.\nA path C:\\dos.");
+}

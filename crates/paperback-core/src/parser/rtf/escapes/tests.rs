@@ -148,7 +148,7 @@ fn normalize_escapes_keeps_a_control_word_terminated_after_replacing_an_escape()
 	assert_eq!(output, r"\pard été");
 	// Text that only looks like a control word, after an escaped backslash, gets no space.
 	let output = normalize_escapes(r"C:\\dir\'e9", encoding_rs::WINDOWS_1252, &HashMap::new());
-	assert_eq!(output, r"C:\\diré");
+	assert_eq!(output, r"C:\'5cdiré");
 }
 
 #[test]
