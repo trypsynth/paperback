@@ -81,6 +81,10 @@ rstest = { workspace = true }
 # default bundle (bzip2, lzma, ppmd, zstd).
 zip = { version = "9.1.3", default-features = false, features = ["deflate", "aes-crypto"] }
 
+# Only for the corpus example, which caps and measures each file's memory with a job object.
+[target.'cfg(windows)'.dev-dependencies]
+windows = { version = "0.62.2", features = ["Win32_Foundation", "Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading"] }
+
 [features]
 fetch = ["dep:ureq"]
 uniffi = ["dep:uniffi"]

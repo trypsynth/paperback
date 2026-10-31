@@ -3038,6 +3038,7 @@ dependencies = [
  "uniffi",
  "ureq",
  "web_atoms",
+ "windows",
  "zip 9.1.3",
 ]
 
