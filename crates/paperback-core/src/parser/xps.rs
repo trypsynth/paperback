@@ -84,7 +84,8 @@ fn read_document<R: Read + Seek>(mut package: Package<R>, context: &ParserContex
 				buffer.append("\n");
 			}
 		} else {
-			PageWriter::new(&mut buffer, &page, context.render_tables_inline).write(&fragments);
+			PageWriter::new(&mut buffer, &page, context.render_tables_inline)
+				.write(&fragments, context.strip_running_text);
 		}
 	}
 	let (title, author) = core_properties(&mut package);

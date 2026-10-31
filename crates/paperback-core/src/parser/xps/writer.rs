@@ -117,10 +117,27 @@ impl<'a> PageWriter<'a> {
 		}
 	}
 
-	pub fn write(mut self, fragments: &[Fragment]) {
+	fn skip_blocks(&mut self, blocks: &[Block]) {
+		for block in blocks {
+			match block {
+				Block::Paragraph(names) => {
+					self.text_of(names);
+				}
+				Block::List(items) => items.iter().for_each(|item| self.skip_blocks(item)),
+				Block::Table(rows) => rows.iter().flatten().for_each(|cell| self.skip_blocks(cell)),
+			}
+		}
+	}
+
+	/// A file can list these after the body, as Word does, but they belong around the page.
+	pub fn write(mut self, fragments: &[Fragment], strip_running_text: bool) {
 		for kind in [FragmentKind::Header, FragmentKind::Content, FragmentKind::Footer] {
 			for fragment in fragments.iter().filter(|fragment| fragment.kind == kind) {
-				self.write_blocks(&fragment.blocks);
+				if strip_running_text && kind != FragmentKind::Content {
+					self.skip_blocks(&fragment.blocks);
+				} else {
+					self.write_blocks(&fragment.blocks);
+				}
 			}
 		}
 		self.write_unnamed_runs();

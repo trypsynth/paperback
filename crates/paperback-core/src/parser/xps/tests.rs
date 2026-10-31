@@ -257,6 +257,32 @@ fn a_table_follows_the_setting_for_showing_tables_inline() {
 	assert!(!doc.buffer.content.contains("Three"));
 }
 
+fn with_running_text() -> (String, String) {
+	let page = format!("{}{}{}", run("f", "Footer"), run("h", "Header"), run("b", "Body"));
+	let fragments = format!(
+		r#"<StoryFragment FragmentType="Content">{}</StoryFragment>
+		<StoryFragment FragmentType="Footer">{}</StoryFragment>
+		<StoryFragment FragmentType="Header">{}</StoryFragment>"#,
+		paragraph("b"),
+		paragraph("f"),
+		paragraph("h")
+	);
+	(page, fragments)
+}
+
+#[test]
+fn declared_headers_and_footers_go_with_the_running_text_setting() {
+	let (page, fragments) = with_running_text();
+	assert_eq!(structured(&page, &fragments).expect("read").buffer.content, "Body\n");
+}
+
+#[test]
+fn kept_headers_and_footers_read_around_the_page_they_belong_to() {
+	let (page, fragments) = with_running_text();
+	let context = ParserContext::new("sample.xps".to_string()).with_strip_running_text(false);
+	assert_eq!(structured_with(&page, &fragments, &context).expect("read").buffer.content, "Header\nBody\nFooter\n");
+}
+
 #[test]
 fn title_and_author_come_from_the_core_properties_relationship() {
 	let rels = r#"<Relationships>
