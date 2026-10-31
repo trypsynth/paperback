@@ -32,7 +32,7 @@ bitflags = { workspace = true }
 cfb = { git = "https://github.com/trypsynth/rust-cfb", branch = "permissive-repairs" }
 chardetng = "1.0.0"
 ego-tree = "0.11.1"
-encoding_rs = "0.8.42"
+encoding_rs = "0.8.44"
 flate2 = "1.1.10"
 fontdb = { version = "0.24.0", default-features = false, features = ["fs"] }
 hayro = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
@@ -49,12 +49,12 @@ math-core = "0.9.0"
 mathcat = { version = "0.7.7", features = ["include-zip"] }
 memchr = "2.8.3"
 mp4ameta = "0.13.0"
-odf-crypto = { version = "0.1.0-rc.15", features = ["crypto-ops"] }
+odf-crypto = { version = "0.1.0-rc.18", features = ["crypto-ops"] }
 office-crypto = "0.4.0"
 paperback-formats = { workspace = true }
 patois = { workspace = true }
 percent-encoding = "2.3.2"
-pulldown-cmark = { version = "0.13.5", default-features = false, features = ["html"] }
+pulldown-cmark = { version = "0.13.6", default-features = false, features = ["html"] }
 rayon = "1.12.0"
 regex = "1.13.1"
 roman = "0.2.1"

@@ -163,6 +163,7 @@ dependencies = [
  "cpufeatures 0.3.1",
  "password-hash",
  "rayon",
+ "zeroize",
 ]
 
 [[package]]
@@ -292,9 +293,9 @@ dependencies = [
 
 [[package]]
 name = "bech32"
-version = "0.11.1"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32637268377fc7b10a8c6d51de3e7fba1ce5dd371a96e342b34e6078db558e7f"
+checksum = "efbd3e1070bbdf4cd88a75264e18e8a26f7cb5c6949eadf0ceb85fb159cf08f8"
 
 [[package]]
 name = "bindgen"
@@ -1178,9 +1179,9 @@ checksum = "ba92c8f4591bf29f89716b45e5f5f56577adbb81426e5620c6e994da7c88bb7a"
 
 [[package]]
 name = "encoding_rs"
-version = "0.8.42"
+version = "0.8.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e985e0451871ad22fb8d2b6b076e2028a502a0d3950998c2c5c0a4f9b5d9679"
+checksum = "89253175e704ab869b04f9db224d38630e0211a53841a79181deae0889e169f5"
 dependencies = [
  "cfg-if",
  "core_detect",
@@ -2394,7 +2395,7 @@ dependencies = [
  "sxd-xpath-no-unsafe",
  "unicode-script",
  "yaml-rust",
- "zip 9.1.3",
+ "zip 9.2.0",
 ]
 
 [[package]]
@@ -2811,9 +2812,9 @@ dependencies = [
 
 [[package]]
 name = "odf-crypto"
-version = "0.1.0-rc.15"
+version = "0.1.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e404c9f001854cd2108d7640724c26067e5f4a4cd8a75475ee32a691561831a3"
+checksum = "9747c13229c9d26d4a9cebe32446213d06fe31702f532b48c67dac4ef7013ac3"
 dependencies = [
  "aes 0.8.4",
  "argon2",
@@ -2825,16 +2826,16 @@ dependencies = [
  "flate2",
  "getrandom 0.4.3",
  "ghash",
- "hmac 0.12.1",
+ "hmac 0.13.0",
  "miniz_oxide 0.8.9",
- "pbkdf2 0.12.2",
+ "pbkdf2 0.13.0",
  "quick-xml 0.41.0",
  "rayon",
  "secure-gate",
- "sha1 0.10.7",
- "sha2 0.10.9",
+ "sha1 0.11.0",
+ "sha2 0.11.1",
  "thiserror 2.0.21",
- "zip 9.1.3",
+ "zip 9.2.0",
 ]
 
 [[package]]
@@ -2984,7 +2985,7 @@ dependencies = [
  "windows-core",
  "wx-utils",
  "wxdragon",
- "zip 9.1.3",
+ "zip 9.2.0",
 ]
 
 [[package]]
@@ -3039,7 +3040,7 @@ dependencies = [
  "ureq",
  "web_atoms",
  "windows",
- "zip 9.1.3",
+ "zip 9.2.0",
 ]
 
 [[package]]
@@ -3427,9 +3428,9 @@ dependencies = [
 
 [[package]]
 name = "pulldown-cmark"
-version = "0.13.5"
+version = "0.13.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "278e9268c93b9e498a2da46c34d90ba93a3255eb99009646398f34bc73ab36eb"
+checksum = "3db2be46835f013dd3f4fa7f5f7402c537787b54ebb6fe2b94bbdd7e2669bb7b"
 dependencies = [
  "bitflags 2.13.2",
  "memchr",
@@ -3938,9 +3939,9 @@ dependencies = [
 
 [[package]]
 name = "secure-gate"
-version = "0.9.0-rc.15"
+version = "0.9.0-rc.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a61215834c24de98e1326f8e7d471fda47419ef1369786add84de59daad7735"
+checksum = "0eb6dee38c7f22d2ed83355f29744042e44fa3b18da4a16da222d1d0523b02b5"
 dependencies = [
  "base16ct",
  "base32ct",
@@ -5970,9 +5971,9 @@ dependencies = [
 
 [[package]]
 name = "zip"
-version = "9.1.3"
+version = "9.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1156b39d142a34b999c2310a50455e0cb3760bf7efad0122f796d813bee26ccb"
+checksum = "3f5b58784007ff6e5f280ec82c8596686a3b9b5dd5836c63288d4479f84728b9"
 dependencies = [
  "aes 0.9.3",
  "bzip2",
