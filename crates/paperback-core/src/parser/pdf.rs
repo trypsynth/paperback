@@ -23,14 +23,13 @@ mod toc;
 use images::{append_image, images_before_each_paragraph, page_largest_image_coverage};
 use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
 use metadata::{map_load_error, metadata_title, metadata_value};
-use paragraphs::join_paragraphs;
-pub(super) use paragraphs::split_lines;
+pub(super) use paragraphs::{join_paragraphs, split_lines};
 pub use paragraphs::{join_wrapped_lines, join_wrapped_runs};
-use running::{EDGE_LINES, PageEdges, RunningText};
+pub(super) use running::{PageEdges, RunningText, detect as detect_running_text};
 use structure::extract_tagged_page_text;
 use tagged::{TaggedPage, append_tagged_page, tagged_running_lines, without_lines};
-pub(super) use text::Line;
-use text::{PageEvidence, WordPages, confirms, extract_text_lines, median_line_font_size};
+pub(super) use text::{Line, median_line_font_size, restore_reading_order};
+use text::{PageEvidence, WordPages, confirms, extract_text_lines};
 pub(super) use toc::build_toc_tree;
 use toc::extract_toc;
 
@@ -231,9 +230,9 @@ fn strip_tagged_running_text(pages: &mut [PageContent], strip: bool) -> RunningT
 }
 
 /// Only edge lines are considered, so a body line reading like a running head stays, and a page whose every line matches (a part title repeating the book's name) is never emptied.
-fn strip_running_text(lines: &mut Vec<Line>, running_text: &RunningText) {
+pub(super) fn strip_running_text(lines: &mut Vec<Line>, running_text: &RunningText) {
 	let is_running = |index: usize, lines: &Vec<Line>| {
-		let at_an_edge = index < EDGE_LINES || index + EDGE_LINES >= lines.len();
+		let at_an_edge = index < running::EDGE_LINES || index + running::EDGE_LINES >= lines.len();
 		at_an_edge && running_text.contains(&lines[index].text, lines[index].size)
 	};
 	let doomed: Vec<usize> = (0..lines.len()).filter(|index| is_running(*index, lines)).collect();

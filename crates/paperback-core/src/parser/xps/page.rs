@@ -53,12 +53,70 @@ impl Transform {
 	}
 }
 
+/// In hundredths of the size. No glyph is this wide, so it can only be the jump between two strings a printer driver merged into one run.
+const GAP_ADVANCE: f64 = 150.0;
+
 #[derive(Debug)]
 pub(super) struct Run {
 	pub text: String,
 	pub x: f64,
 	pub y: f64,
 	pub size: f64,
+	pub bidi_level: u32,
+}
+
+/// One entry of `Indices` and the UTF-16 code units of the text it draws.
+#[derive(Debug, PartialEq)]
+pub(super) struct Cluster {
+	pub code_units: usize,
+	pub advance: Option<f64>,
+}
+
+pub(super) fn clusters(indices: &str) -> Vec<Cluster> {
+	let mut clusters: Vec<Cluster> = Vec::new();
+	let mut glyphs_left = 0usize;
+	for entry in indices.split(';') {
+		let (mapping, glyph) = entry.strip_prefix('(').and_then(|entry| entry.split_once(')')).unzip();
+		let (code_units, glyphs) = mapping.map_or((1, 1), |mapping: &str| {
+			let (code_units, glyphs) = mapping.split_once(':').unwrap_or((mapping, "1"));
+			(code_units.trim().parse().unwrap_or(1), glyphs.trim().parse().unwrap_or(1))
+		});
+		let advance = glyph.unwrap_or(entry).split(',').nth(1).and_then(|advance| advance.trim().parse::<f64>().ok());
+		match clusters.last_mut() {
+			Some(cluster) if glyphs_left > 0 => {
+				glyphs_left -= 1;
+				cluster.advance = cluster.advance.map_or(advance, |sum| Some(sum + advance.unwrap_or(0.0)));
+			}
+			_ => {
+				glyphs_left = glyphs.max(1) - 1;
+				clusters.push(Cluster { code_units, advance });
+			}
+		}
+	}
+	clusters
+}
+
+fn spaced_at_gaps(text: &str, indices: &str) -> String {
+	let mut gaps = Vec::new();
+	let mut code_units = 0;
+	for cluster in clusters(indices) {
+		code_units += cluster.code_units;
+		if cluster.advance.is_some_and(|advance| advance > GAP_ADVANCE) {
+			gaps.push(code_units);
+		}
+	}
+	let mut spaced = String::with_capacity(text.len() + gaps.len());
+	let mut position = 0;
+	let mut characters = text.chars().peekable();
+	while let Some(character) = characters.next() {
+		spaced.push(character);
+		position += character.len_utf16();
+		let next_is_text = characters.peek().is_some_and(|next| !next.is_whitespace());
+		if gaps.contains(&position) && next_is_text && !character.is_whitespace() {
+			spaced.push(' ');
+		}
+	}
+	spaced
 }
 
 #[derive(Debug, Default)]
@@ -96,7 +154,9 @@ fn read_run(element: Node, transform: Transform) -> Option<Run> {
 	let transform = transform.then(Transform::of(element));
 	let (x, y) = transform.apply(number("OriginX")?, number("OriginY")?);
 	let size = number("FontRenderingEmSize")? * transform.vertical_scale();
-	Some(Run { text: expand_ligatures(unicode), x, y, size })
+	let bidi_level = element.attribute("BidiLevel").and_then(|level| level.parse().ok()).unwrap_or(0);
+	let text = expand_ligatures(&spaced_at_gaps(unicode, element.attribute("Indices").unwrap_or_default()));
+	Some(Run { text, x, y, size, bidi_level })
 }
 
 /// The fallback is the branch every reader is promised to understand.
@@ -208,6 +268,56 @@ mod tests {
 			texts(&page(&glyphs("\u{FB01}rst \u{FB00}ect \u{FB03}ce \u{FB04}e \u{FB02}ag"))),
 			["first ffect ffice ffle flag"]
 		);
+	}
+
+	fn with_indices(text: &str, indices: &str) -> String {
+		format!(
+			r#"<Glyphs OriginX="10" OriginY="20" FontRenderingEmSize="16" Indices="{indices}" UnicodeString="{text}"/>"#
+		)
+	}
+
+	#[test]
+	fn a_wide_advance_inside_a_run_is_a_gap_between_two_strings() {
+		let page = page(&with_indices("Cell oneCell two", "38;72;79;79;3;82;81;72,428;38;72,45;79;79;3;87;90;82"));
+		assert_eq!(texts(&page), ["Cell one Cell two"]);
+	}
+
+	#[test]
+	fn an_ordinary_advance_is_no_gap() {
+		assert_eq!(texts(&page(&with_indices("Cell", "38,60;72,45;79;79"))), ["Cell"]);
+	}
+
+	#[test]
+	fn a_wide_advance_beside_a_space_adds_none() {
+		assert_eq!(texts(&page(&with_indices("one two", ";;;,300;;;"))), ["one two"]);
+	}
+
+	#[test]
+	fn a_wide_advance_at_the_end_of_a_run_adds_nothing() {
+		assert_eq!(texts(&page(&with_indices("end", ";;,400"))), ["end"]);
+	}
+
+	#[test]
+	fn cluster_maps_keep_the_advance_on_the_right_character() {
+		assert_eq!(texts(&page(&with_indices("office next", ";(2:1)10,40;;;,300;;;;;"))), ["office next"]);
+		assert_eq!(texts(&page(&with_indices("ffen", "(2:1)10,300;;"))), ["ff en"]);
+	}
+
+	#[test]
+	fn a_cluster_of_several_glyphs_adds_their_advances_up() {
+		assert_eq!(texts(&page(&with_indices("ab", "(1:2)10,100;11,100;12"))), ["a b"]);
+	}
+
+	#[test]
+	fn characters_outside_the_basic_plane_count_as_two_code_units() {
+		assert_eq!(texts(&page(&with_indices("\u{1D400}b", "(2:1)10,300;11"))), ["\u{1D400} b"]);
+	}
+
+	#[test]
+	fn a_run_keeps_its_bidi_level() {
+		let body = r#"<Glyphs BidiLevel="1" OriginX="10" OriginY="20" FontRenderingEmSize="12" UnicodeString="x"/>"#;
+		assert_eq!(page(body).runs[0].bidi_level, 1);
+		assert_eq!(page(&glyphs("x")).runs[0].bidi_level, 0);
 	}
 
 	#[test]

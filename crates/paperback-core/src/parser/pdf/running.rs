@@ -10,13 +10,13 @@ pub(super) const EDGE_LINES: usize = 2;
 /// A count rather than a share of the document, because a running head that changes with the chapter appears only on that chapter's pages.
 const MIN_PAGES: usize = 4;
 
-pub(super) struct PageEdges {
+pub(in crate::parser) struct PageEdges {
 	pub first: Vec<String>,
 	pub last: Vec<String>,
 }
 
 impl PageEdges {
-	pub(super) fn of(lines: &[Line]) -> Self {
+	pub(in crate::parser) fn of(lines: &[Line]) -> Self {
 		let text = |line: &Line| line.text.clone();
 		Self {
 			first: lines.iter().take(EDGE_LINES).map(text).collect(),
@@ -53,14 +53,14 @@ fn signature(line: &str) -> String {
 /// A section heading opening a page repeats across chapters like a running head ("1.1 What's the buzz?" opens thirteen chapters of the PDF from #808), but is set larger than the body.
 const MAX_BODY_RATIO: f64 = 1.05;
 
-pub(super) struct RunningText {
+pub(in crate::parser) struct RunningText {
 	signatures: HashSet<String>,
 	body_font_size: f64,
 }
 
 impl RunningText {
 	/// Keeps the body font size, since that still tells a heading from body text.
-	pub(super) fn recognizing_nothing(mut self) -> Self {
+	pub(in crate::parser) fn recognizing_nothing(mut self) -> Self {
 		self.signatures.clear();
 		self
 	}
@@ -81,7 +81,7 @@ impl RunningText {
 	}
 }
 
-pub(super) fn detect(pages: &[PageEdges], body_font_size: f64) -> RunningText {
+pub(in crate::parser) fn detect(pages: &[PageEdges], body_font_size: f64) -> RunningText {
 	let signatures =
 		edge_counts(pages).into_iter().filter(|(_, count)| *count >= MIN_PAGES).map(|(sig, _)| sig).collect();
 	RunningText { signatures, body_font_size }

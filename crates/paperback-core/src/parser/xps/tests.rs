@@ -380,6 +380,76 @@ fn list_items_and_table_cells_are_never_headings() {
 	assert!(structured(&page, &in_fragment(&body)).expect("read").toc_items.is_empty());
 }
 
+fn at(text: &str, y: f64) -> String {
+	format!(r#"<Glyphs OriginX="72" OriginY="{y}" FontRenderingEmSize="16" UnicodeString="{text}"/>"#)
+}
+
+/// One sentence over three full lines, then a line of its own set well apart.
+fn unstructured_page() -> String {
+	format!(
+		"<FixedPage Height=\"1000\">{}{}{}{}</FixedPage>",
+		at("The first line of this one sentence runs the full width ", 100.0),
+		at("of the page and carries straight on to the next line, ", 118.0),
+		at("where it comes to an end short of the margin. ", 136.0),
+		at("A paragraph of its own.", 200.0)
+	)
+}
+
+fn unstructured_with(pages: &[String], context: &ParserContext) -> Document {
+	let contents: String = (1..=pages.len()).map(|index| format!(r#"<PageContent Source="{index}.fpage"/>"#)).collect();
+	let document = format!("<FixedDocument>{contents}</FixedDocument>");
+	let names: Vec<String> = (1..=pages.len()).map(|index| format!("{index}.fpage")).collect();
+	let mut parts = vec![("_rels/.rels", ROOT_RELS), ("Sequence.fdseq", SEQUENCE), ("Doc.fdoc", document.as_str())];
+	parts.extend(names.iter().map(String::as_str).zip(pages.iter().map(String::as_str)));
+	read_with(&parts, context).expect("read")
+}
+
+fn unstructured(pages: &[String]) -> Document {
+	unstructured_with(pages, &ParserContext::new("sample.xps".to_string()))
+}
+
+#[test]
+fn wrapped_lines_join_into_paragraphs_on_a_page_with_no_structure() {
+	assert_eq!(
+		unstructured(&[unstructured_page()]).buffer.content,
+		"The first line of this one sentence runs the full width of the page and carries straight on to the next line, where it comes to an end short of the margin.\nA paragraph of its own.\n"
+	);
+}
+
+#[test]
+fn lines_stay_apart_when_joining_is_off() {
+	let mut context = ParserContext::new("sample.xps".to_string());
+	context.join_pdf_paragraphs = false;
+	assert_eq!(unstructured_with(&[unstructured_page()], &context).buffer.content.lines().count(), 4);
+}
+
+#[test]
+fn a_line_repeated_at_the_top_of_every_page_is_running_text() {
+	let page = |word: &str| {
+		format!(
+			"<FixedPage Height=\"1000\">{}{}{}{}</FixedPage>",
+			at("Running header", 40.0),
+			at(&format!("Words about {word}, enough of them to make up the body of it."), 100.0),
+			at(&format!("More words about {word}, a second line for the body of it."), 118.0),
+			at(&format!("A third line of words about {word}, also part of its body."), 136.0)
+		)
+	};
+	let pages = ["apples", "pears", "plums", "cherries", "quinces"].map(page);
+	assert!(!unstructured(&pages).buffer.content.contains("Running header"));
+	let kept = ParserContext::new("sample.xps".to_string()).with_strip_running_text(false);
+	assert!(unstructured_with(&pages, &kept).buffer.content.contains("Running header"));
+}
+
+#[test]
+fn large_lines_on_a_page_with_no_structure_are_headings() {
+	let heading = r#"<Glyphs OriginX="72" OriginY="60" FontRenderingEmSize="27" UnicodeString="A heading"/>"#;
+	let body: String = [200.0, 240.0, 280.0].map(|y| at("A paragraph of its own.", y)).concat();
+	let page = format!("<FixedPage Height=\"1000\">{heading}{body}</FixedPage>");
+	let doc = unstructured(&[page]);
+	assert_eq!(doc.toc_items.iter().map(|item| item.name.as_str()).collect::<Vec<_>>(), ["A heading"]);
+	assert_eq!(markers(&doc, MarkerType::Heading1).len(), 1);
+}
+
 #[test]
 fn title_and_author_come_from_the_core_properties_relationship() {
 	let rels = r#"<Relationships>

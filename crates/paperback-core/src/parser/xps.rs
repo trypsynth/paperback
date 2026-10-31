@@ -8,8 +8,9 @@ use anyhow::{Context, Result};
 use zip::ZipArchive;
 
 use self::{
+	lines::{RunStyle, page_lines},
 	package::{CORE_PROPERTIES, DOCUMENT_STRUCTURE, Package, PagePart, STORY_FRAGMENTS},
-	page::read_page,
+	page::{Page, Run, read_page},
 	structure::{Fragment, OutlineEntry, read_fragments, read_outline},
 	writer::{PageWriter, WrittenParagraph},
 };
@@ -17,13 +18,17 @@ use crate::{
 	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		Parser,
-		pdf::{Line, build_toc_tree, resolve_headings, split_lines},
+		pdf::{
+			Line, PageEdges, RunningText, build_toc_tree, detect_running_text, join_paragraphs, median_line_font_size,
+			resolve_headings, split_lines, strip_running_text,
+		},
 		util::{ooxml::parse_core_properties, path::extract_title_from_path},
 	},
 	t,
 	util::text::{collapse_whitespace, trim_string},
 };
 
+mod lines;
 mod package;
 mod page;
 mod structure;
@@ -70,9 +75,68 @@ fn outline_entries<R: Read + Seek>(package: &mut Package<R>, documents: &[String
 	entries
 }
 
+/// Every page is read before any is written, because running text is only known once every page's edges have been seen.
+#[derive(Default)]
+struct ReadPage {
+	page: Page,
+	fragments: Vec<Fragment>,
+	lines: Vec<Line>,
+}
+
+impl ReadPage {
+	/// A page that can't be read stays empty, so the pages after it keep their numbers.
+	fn of<R: Read + Seek>(package: &mut Package<R>, part: &PagePart) -> Self {
+		let page = match package.read_text(&part.name).and_then(|xml| read_page(&xml)) {
+			Ok(page) => page,
+			Err(error) => {
+				tracing::warn!(part = %part.name, %error, "failed to read xps page, skipping its text");
+				return Self::default();
+			}
+		};
+		let fragments = page_fragments(package, &part.name);
+		let lines = if fragments.is_empty() { page_lines(&page, estimated_style) } else { Vec::new() };
+		Self { page, fragments, lines }
+	}
+}
+
+fn estimated_style(run: &Run) -> RunStyle {
+	RunStyle { width: run.text.chars().count() as f64 * run.size, bold: false, monospaced: false }
+}
+
+fn running_text(pages: &[ReadPage], strip: bool) -> RunningText {
+	let drawn = || pages.iter().filter(|page| page.fragments.is_empty());
+	let edges: Vec<PageEdges> = drawn().map(|page| PageEdges::of(&page.lines)).collect();
+	let lines: Vec<Line> = drawn().flat_map(|page| page.lines.clone()).collect();
+	let running = detect_running_text(&edges, median_line_font_size(&lines));
+	if strip { running } else { running.recognizing_nothing() }
+}
+
+fn write_lines(
+	buffer: &mut DocumentBuffer,
+	lines: &[Line],
+	running: &RunningText,
+	join: bool,
+) -> Vec<(DocPos, String)> {
+	let mut lines = lines.to_vec();
+	// Measured before the running text comes out, for the reason `untagged_page_lines` gives.
+	let body_size = median_line_font_size(&lines);
+	strip_running_text(&mut lines, running);
+	let paragraphs = if join { join_paragraphs(&lines, body_size) } else { split_lines(&lines, body_size) };
+	let mut headings = Vec::new();
+	for (text, is_heading, _) in paragraphs {
+		if is_heading {
+			headings.push((buffer.end(), text.clone()));
+		}
+		buffer.append(&text);
+		buffer.append("\n");
+	}
+	headings
+}
+
 struct WrittenPage {
 	start: DocPos,
 	paragraphs: Vec<WrittenParagraph>,
+	headings: Vec<(DocPos, String)>,
 }
 
 fn outline_items(entries: Vec<OutlineEntry>, pages: &[PagePart], written: &[WrittenPage]) -> Vec<(u32, TocItem)> {
@@ -113,6 +177,7 @@ fn detected_headings(written: &[WrittenPage]) -> Vec<(DocPos, String)> {
 	let body = body_size(written);
 	let mut headings = Vec::new();
 	for page in written {
+		headings.extend(page.headings.iter().cloned());
 		let lines: Vec<Line> = page
 			.paragraphs
 			.iter()
@@ -141,30 +206,20 @@ fn read_document<R: Read + Seek>(mut package: Package<R>, context: &ParserContex
 	}
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
+	let read: Vec<ReadPage> = pages.iter().map(|part| ReadPage::of(&mut package, part)).collect();
+	let running = running_text(&read, context.strip_running_text);
 	let mut written: Vec<WrittenPage> = Vec::new();
-	for (index, part) in pages.iter().enumerate() {
-		let page_start = buffer.end();
-		id_positions.insert(format!("page_{index}"), page_start);
-		buffer.add_marker(Marker::new(MarkerType::PageBreak, page_start).with_text(format!("Page {}", index + 1)));
-		written.push(WrittenPage { start: page_start, paragraphs: Vec::new() });
-		// A page that can't be read keeps its place, so the pages after it keep their numbers.
-		let page = match package.read_text(&part.name).and_then(|xml| read_page(&xml)) {
-			Ok(page) => page,
-			Err(error) => {
-				tracing::warn!(part = %part.name, %error, "failed to read xps page, skipping its text");
-				continue;
-			}
-		};
-		let fragments = page_fragments(&mut package, &part.name);
-		if fragments.is_empty() {
-			for run in page.runs {
-				buffer.append(&run.text);
-				buffer.append("\n");
-			}
+	for (index, page) in read.iter().enumerate() {
+		let start = buffer.end();
+		id_positions.insert(format!("page_{index}"), start);
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, start).with_text(format!("Page {}", index + 1)));
+		let (paragraphs, headings) = if page.fragments.is_empty() {
+			(Vec::new(), write_lines(&mut buffer, &page.lines, &running, context.join_pdf_paragraphs))
 		} else {
-			let writer = PageWriter::new(&mut buffer, &page, context.render_tables_inline);
-			written[index].paragraphs = writer.write(&fragments, context.strip_running_text);
-		}
+			let writer = PageWriter::new(&mut buffer, &page.page, context.render_tables_inline);
+			(writer.write(&page.fragments, context.strip_running_text), Vec::new())
+		};
+		written.push(WrittenPage { start, paragraphs, headings });
 	}
 	let entries = outline_entries(&mut package, &documents);
 	let mut toc_items = build_toc_tree(outline_items(entries, &pages, &written));

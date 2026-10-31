@@ -494,7 +494,7 @@ fn sorted_median(values: &mut [f64]) -> f64 {
 	values[values.len() / 2]
 }
 
-pub(super) fn median_line_font_size(line_infos: &[Line]) -> f64 {
+pub(in crate::parser) fn median_line_font_size(line_infos: &[Line]) -> f64 {
 	let mut sizes: Vec<f64> = line_infos
 		.iter()
 		.filter(|line| !line.text.trim().is_empty() && line.size > 0.0)
@@ -507,7 +507,7 @@ pub(super) fn median_line_font_size(line_infos: &[Line]) -> f64 {
 const OUT_OF_ORDER_SHARE: f64 = 0.25;
 
 /// Some form generators draw a page's lower half first, so the form read from its middle; whole regions are moved, so a page drawn in order, columns and a footer drawn first included, comes back unchanged.
-fn restore_reading_order(lines: Vec<Line>) -> Vec<Line> {
+pub(in crate::parser) fn restore_reading_order(lines: Vec<Line>) -> Vec<Line> {
 	// A line with no position, such as an empty one, says nothing about the order and travels with the run it is drawn in.
 	let placed = |line: &&Line| line.top.is_finite() && line.bottom.is_finite();
 	let mut lowest_after = f64::INFINITY;
