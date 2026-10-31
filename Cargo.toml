@@ -27,7 +27,7 @@ toml = "1.1.8"
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 windows = "0.62.2"
-zip = { version = "9.1.3", default-features = false, features = ["deflate"] }
+zip = { version = "9.2.0", default-features = false, features = ["deflate"] }
 
 [workspace.lints.rust]
 # objc's msg_send! checks a cargo-clippy feature no crate defines.
