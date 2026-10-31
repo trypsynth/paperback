@@ -8,7 +8,7 @@ use anyhow::{Context, Result};
 use cfb::CompoundFile;
 use office_crypto::decrypt_from_file;
 
-use super::persist::Presentation;
+use super::{persist::Presentation, pp95};
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
@@ -54,7 +54,11 @@ pub(super) fn parse_legacy_ppt(context: &ParserContext) -> Result<Document> {
 			|e| tracing::warn!(path = %context.file_path, error = %e, "failed to read powerpoint document stream"),
 		)
 		.with_context(|| format!("Failed to read PowerPoint Document stream from '{}'", context.file_path))?;
-	let slide_texts = collect_legacy_slide_texts(&ppt_document_stream, &current_user);
+	let slide_texts = if pp95::is_pp95(&ppt_document_stream) {
+		pp95::slide_texts(&ppt_document_stream).iter().map(|text| normalize_legacy_slide_text(text)).collect()
+	} else {
+		collect_legacy_slide_texts(&ppt_document_stream, &current_user)
+	};
 	if slide_texts.is_empty() {
 		tracing::warn!(path = %context.file_path, "legacy ppt file has no slides");
 		// TRANSLATORS: Error shown when a legacy PPT presentation file has no slides

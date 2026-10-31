@@ -9,6 +9,7 @@ use crate::{
 
 mod legacy;
 mod persist;
+mod pp95;
 mod pptx;
 
 pub struct PowerpointParser;
