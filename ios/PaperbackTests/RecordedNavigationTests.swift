@@ -38,6 +38,7 @@ private final class SectionAudioSession: DocumentSession, @unchecked Sendable {
 
 private final class AudioPositionConfig: ConfigManagerFfi, @unchecked Sendable {
 	var savedMs: Int64 = -1
+	override func getDocKey(path: String) -> String { "doc_test" }
 	override func getDocumentAudioTimeFfi(path: String) -> Int64 { savedMs }
 	override func setDocumentAudioTimeFfi(path: String, timeMs: Int64) { savedMs = timeMs }
 	override func getAppString(key: String, defaultValue: String) -> String { defaultValue }
