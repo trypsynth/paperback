@@ -28,3 +28,8 @@ fn a_word_for_windows_2_file_named_doc_is_read_as_one() {
 	file.extend_from_slice(text);
 	assert_eq!(read("winword.doc", &file).trim_end(), "Word 2 text.");
 }
+
+#[test]
+fn rtf_saved_with_a_doc_name_is_read_as_rtf() {
+	assert_eq!(read("letter.doc", br"{\rtf1\ansi\pard Dear reader.\par}").trim_end(), "Dear reader.");
+}

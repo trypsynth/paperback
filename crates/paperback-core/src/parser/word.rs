@@ -10,6 +10,7 @@ use crate::{
 	document::{Document, ParserContext},
 	parser::{
 		Parser,
+		rtf::{RtfParser, looks_like_rtf},
 		util::ole::apply_summary_information,
 		wri::{WriParser, is_write_magic},
 	},
@@ -41,16 +42,23 @@ impl Parser for WordParser {
 			return ooxml::parse_word_zip(context, render_tables_inline);
 		}
 		if extension == "doc" {
-			let mut magic = [0u8; 2];
-			let read = File::open(&context.file_path).and_then(|mut file| file.read_exact(&mut magic));
-			let magic = u16::from_le_bytes(magic);
-			if read.is_ok() && legacy::is_winword_magic(magic) {
+			// A file that can't be read here fails properly in the OLE path below.
+			let mut head = Vec::with_capacity(64);
+			if let Ok(file) = File::open(&context.file_path) {
+				let _ = file.take(64).read_to_end(&mut head);
+			}
+			let magic = head.get(..2).map_or(0, |bytes| u16::from_le_bytes([bytes[0], bytes[1]]));
+			if legacy::is_winword_magic(magic) {
 				let data = fs::read(&context.file_path)
 					.with_context(|| format!("Failed to read DOC file '{}'", context.file_path))?;
 				return legacy::parse_winword_doc(context, &data);
 			}
-			if read.is_ok() && is_write_magic(magic) {
+			if is_write_magic(magic) {
 				return WriParser.parse(context);
+			}
+			// Word saves RTF under a `.doc` name when asked to, and opens it back as RTF.
+			if looks_like_rtf(&head) {
+				return RtfParser.parse(context);
 			}
 			match legacy::parse_legacy_doc(context) {
 				Ok(mut document) => {
