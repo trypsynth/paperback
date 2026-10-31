@@ -120,9 +120,11 @@ fn decrypt_if_encrypted(compound: &mut CompoundFile<File>, context: &ParserConte
 	Ok(Some(decrypted))
 }
 
-/// An empty result is not an error: a file without this stream is read as it lies.
+/// An empty result is not an error: a file without this stream is read as it lies. It is taken from the same storage as the document stream it points into.
 fn read_current_user_stream<F: Read + std::io::Seek>(compound: &mut CompoundFile<F>) -> Vec<u8> {
-	for stream_path in ["Current User", "/Current User", "PP97_DUALSTORAGE/Current User"] {
+	for stream_path in
+		["PP97_DUALSTORAGE/Current User", "/PP97_DUALSTORAGE/Current User", "Current User", "/Current User"]
+	{
 		if let Ok(mut stream) = compound.open_stream(stream_path) {
 			let mut bytes = Vec::new();
 			if stream.read_to_end(&mut bytes).is_ok() && !bytes.is_empty() {
@@ -133,12 +135,13 @@ fn read_current_user_stream<F: Read + std::io::Seek>(compound: &mut CompoundFile
 	Vec::new()
 }
 
+/// A file saved for both PowerPoint 95 and 97 keeps the 95 format at the top and the 97 one in `PP97_DUALSTORAGE`, which is the one this reads.
 fn read_ppt_document_stream<F: Read + std::io::Seek>(compound: &mut CompoundFile<F>) -> Result<Vec<u8>> {
 	for stream_path in [
-		"PowerPoint Document",
-		"/PowerPoint Document",
 		"PP97_DUALSTORAGE/PowerPoint Document",
 		"/PP97_DUALSTORAGE/PowerPoint Document",
+		"PowerPoint Document",
+		"/PowerPoint Document",
 	] {
 		if let Ok(mut stream) = compound.open_stream(stream_path) {
 			let mut bytes = Vec::new();
@@ -462,6 +465,47 @@ mod tests {
 			collect_legacy_slide_texts(&stream, &current_user),
 			vec!["The first slide".to_string(), "The second slide".to_string()]
 		);
+	}
+
+	/// A file saved for PowerPoint 95 and 97 at once keeps the 95 format at the top, which reads as no slides at all.
+	#[test]
+	fn a_dual_format_file_is_read_from_its_powerpoint_97_copy() {
+		let mut stream = Vec::new();
+		let slide_at = 0u32;
+		stream.extend_from_slice(&record(0x000F, PPT_REC_SLIDE, &[]));
+		let document_at = u32::try_from(stream.len()).expect("offset fits");
+		stream.extend_from_slice(&record(
+			0x000F,
+			1000,
+			&record(0x0000, PPT_REC_SLIDE_LIST_WITH_TEXT, &listed_slide(2, "The Peregrine Falcon")),
+		));
+		let directory_at = u32::try_from(stream.len()).expect("offset fits");
+		stream.extend_from_slice(&persist_directory(&[(1, document_at), (2, slide_at)]));
+		let user_edit_at = u32::try_from(stream.len()).expect("offset fits");
+		stream.extend_from_slice(&user_edit_atom(directory_at, 1));
+		let dir = TempDir::new("ppt-dual");
+		let path = dir.join_str("dual.ppt");
+		let mut compound = cfb::create(&path).expect("create compound file");
+		compound
+			.create_stream("/PowerPoint Document")
+			.expect("stream")
+			.write_all(&[0, 3, 0, 0, 0xFF, 0xFF, 0, 0])
+			.expect("write");
+		compound.create_stream("/Current User").expect("stream").write_all(&[0u8; 10]).expect("write");
+		compound.create_storage("/PP97_DUALSTORAGE").expect("storage");
+		compound
+			.create_stream("/PP97_DUALSTORAGE/PowerPoint Document")
+			.expect("stream")
+			.write_all(&stream)
+			.expect("write");
+		compound
+			.create_stream("/PP97_DUALSTORAGE/Current User")
+			.expect("stream")
+			.write_all(&current_user_stream(user_edit_at))
+			.expect("write");
+		compound.flush().expect("flush");
+		let document = parse_legacy_ppt(&ParserContext::new(path)).expect("the 97 copy reads");
+		assert!(document.buffer.content.contains("The Peregrine Falcon"), "{}", document.buffer.content);
 	}
 
 	/// Reading the stream from the front instead of following the persist directory picks up text from earlier saves.
