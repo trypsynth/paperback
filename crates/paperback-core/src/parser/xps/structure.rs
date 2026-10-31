@@ -13,12 +13,36 @@ pub(super) enum FragmentKind {
 #[derive(Debug)]
 pub(super) enum Block {
 	Paragraph(Vec<String>),
+	/// Each item is the blocks inside it.
+	List(Vec<Vec<Block>>),
+	/// Rows of cells, each cell the blocks inside it.
+	Table(Vec<Vec<Vec<Block>>>),
 }
 
 #[derive(Debug)]
 pub(super) struct Fragment {
 	pub kind: FragmentKind,
 	pub blocks: Vec<Block>,
+}
+
+fn blocks_in(parent: Node) -> Vec<Block> {
+	let mut blocks = Vec::new();
+	read_blocks(parent, &mut blocks);
+	blocks
+}
+
+fn blocks_of_each(parent: Node, element: &str) -> Vec<Vec<Block>> {
+	parent.children().filter(|child| is_element(*child, element)).map(blocks_in).collect()
+}
+
+fn read_rows(parent: Node, rows: &mut Vec<Vec<Vec<Block>>>) {
+	for element in parent.children().filter(Node::is_element) {
+		match element.tag_name().name() {
+			"TableRowStructure" => rows.push(blocks_of_each(element, "TableCellStructure")),
+			"TableRowGroupStructure" => read_rows(element, rows),
+			_ => {}
+		}
+	}
 }
 
 fn read_blocks(parent: Node, blocks: &mut Vec<Block>) {
@@ -30,7 +54,13 @@ fn read_blocks(parent: Node, blocks: &mut Vec<Block>) {
 				blocks.push(Block::Paragraph(names));
 			}
 			"NamedElement" => {
-				blocks.extend(element.attribute("NameReference").map(|name| Block::Paragraph(vec![name.to_string()])))
+				blocks.extend(element.attribute("NameReference").map(|name| Block::Paragraph(vec![name.to_string()])));
+			}
+			"ListStructure" => blocks.push(Block::List(blocks_of_each(element, "ListItemStructure"))),
+			"TableStructure" => {
+				let mut rows = Vec::new();
+				read_rows(element, &mut rows);
+				blocks.push(Block::Table(rows));
 			}
 			_ => read_blocks(element, blocks),
 		}
@@ -61,7 +91,63 @@ mod tests {
 	fn names(block: &Block) -> &[String] {
 		match block {
 			Block::Paragraph(names) => names,
+			other => panic!("expected a paragraph, found {other:?}"),
 		}
+	}
+
+	fn only_block(xml: &str) -> Block {
+		let mut fragments =
+			read_fragments(&format!("<StoryFragments><StoryFragment>{xml}</StoryFragment></StoryFragments>"))
+				.expect("fragments");
+		fragments.remove(0).blocks.remove(0)
+	}
+
+	#[test]
+	fn a_list_keeps_its_items_and_their_paragraphs() {
+		let block = only_block(
+			r#"<ListStructure>
+				<ListItemStructure>
+					<ParagraphStructure><NamedElement NameReference="bullet"/></ParagraphStructure>
+					<ParagraphStructure><NamedElement NameReference="text"/></ParagraphStructure>
+				</ListItemStructure>
+				<ListItemStructure><ParagraphStructure><NamedElement NameReference="other"/></ParagraphStructure></ListItemStructure>
+			</ListStructure>"#,
+		);
+		let Block::List(items) = block else { panic!("expected a list") };
+		assert_eq!(items.len(), 2);
+		assert_eq!(names(&items[0][1]), ["text"]);
+		assert_eq!(names(&items[1][0]), ["other"]);
+	}
+
+	#[test]
+	fn a_list_can_sit_inside_a_list_item() {
+		let block = only_block(
+			r#"<ListStructure><ListItemStructure>
+				<ParagraphStructure><NamedElement NameReference="outer"/></ParagraphStructure>
+				<ListStructure><ListItemStructure><ParagraphStructure><NamedElement NameReference="inner"/></ParagraphStructure></ListItemStructure></ListStructure>
+			</ListItemStructure></ListStructure>"#,
+		);
+		let Block::List(items) = block else { panic!("expected a list") };
+		assert!(matches!(items[0][1], Block::List(_)));
+	}
+
+	#[test]
+	fn a_table_keeps_its_rows_and_cells() {
+		let cell = |name: &str| {
+			format!(
+				r#"<TableCellStructure><ParagraphStructure><NamedElement NameReference="{name}"/></ParagraphStructure></TableCellStructure>"#
+			)
+		};
+		let block = only_block(&format!(
+			"<TableStructure><TableRowGroupStructure><TableRowStructure>{}{}</TableRowStructure><TableRowStructure>{}</TableRowStructure></TableRowGroupStructure></TableStructure>",
+			cell("a"),
+			cell("b"),
+			cell("c")
+		));
+		let Block::Table(rows) = block else { panic!("expected a table") };
+		assert_eq!(rows.iter().map(Vec::len).collect::<Vec<_>>(), [2, 1]);
+		assert_eq!(names(&rows[0][1][0]), ["b"]);
+		assert_eq!(names(&rows[1][0][0]), ["c"]);
 	}
 
 	#[test]

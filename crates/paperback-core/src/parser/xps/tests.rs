@@ -1,6 +1,6 @@
 use super::{XpsParser, read_document};
 use crate::{
-	document::{Document, MarkerType, ParserContext},
+	document::{DocLen, DocPos, Document, Marker, MarkerType, ParserContext},
 	parser::{Parser, ParserRegistry, xps::package::Package},
 };
 
@@ -170,6 +170,91 @@ fn a_broken_fragment_part_falls_back_to_the_page() {
 	])
 	.expect("read");
 	assert_eq!(doc.buffer.content, "Still here\n");
+}
+
+fn paragraph(name: &str) -> String {
+	format!(r#"<ParagraphStructure><NamedElement NameReference="{name}"/></ParagraphStructure>"#)
+}
+
+fn in_fragment(body: &str) -> String {
+	format!("<StoryFragment>{body}</StoryFragment>")
+}
+
+fn item(body: &str) -> String {
+	format!("<ListItemStructure>{body}</ListItemStructure>")
+}
+
+fn markers(doc: &Document, kind: MarkerType) -> Vec<&Marker> {
+	doc.buffer.markers.iter().filter(|marker| marker.mtype == kind).collect()
+}
+
+#[test]
+fn a_list_item_drops_its_drawn_bullet() {
+	let page = format!("{}{}{}{}", run("b1", "·"), run("t1", "First"), run("b2", "\u{F0B7}"), run("t2", "Second"));
+	let list = format!(
+		"<ListStructure>{}{}</ListStructure>",
+		item(&format!("{}{}", paragraph("b1"), paragraph("t1"))),
+		item(&format!("{}{}", paragraph("b2"), paragraph("t2")))
+	);
+	let doc = structured(&page, &in_fragment(&list)).expect("read");
+	assert_eq!(doc.buffer.content, "First\nSecond\n");
+	let items = markers(&doc, MarkerType::ListItem);
+	assert_eq!(items.iter().map(|marker| marker.text.as_str()).collect::<Vec<_>>(), ["First", "Second"]);
+	assert_eq!((items[0].level, items[1].position), (1, DocPos::ZERO + DocLen::of("First\n")));
+	let list = markers(&doc, MarkerType::List);
+	assert_eq!((list[0].level, list[0].length), (2, DocLen::of("First\nSecond\n")));
+}
+
+#[test]
+fn a_list_item_keeps_its_number() {
+	let page = format!("{}{}", run("n", "1."), run("t", "First"));
+	let list = format!("<ListStructure>{}</ListStructure>", item(&format!("{}{}", paragraph("n"), paragraph("t"))));
+	assert_eq!(structured(&page, &in_fragment(&list)).expect("read").buffer.content, "1. First\n");
+}
+
+#[test]
+fn a_nested_list_item_goes_one_level_deeper() {
+	let page = format!("{}{}", run("o", "Outer"), run("i", "Inner"));
+	let inner = format!("<ListStructure>{}</ListStructure>", item(&paragraph("i")));
+	let outer = format!("<ListStructure>{}</ListStructure>", item(&format!("{}{inner}", paragraph("o"))));
+	let doc = structured(&page, &in_fragment(&outer)).expect("read");
+	assert_eq!(doc.buffer.content, "Outer\nInner\n");
+	let levels: Vec<i32> = markers(&doc, MarkerType::ListItem).iter().map(|marker| marker.level).collect();
+	assert_eq!(levels, [1, 2]);
+	assert_eq!(markers(&doc, MarkerType::List).len(), 2);
+}
+
+fn two_by_two() -> String {
+	let cell = |name: &str| format!("<TableCellStructure>{}</TableCellStructure>", paragraph(name));
+	let row = |left: &str, right: &str| format!("<TableRowStructure>{}{}</TableRowStructure>", cell(left), cell(right));
+	in_fragment(&format!(
+		"<TableStructure><TableRowGroupStructure>{}{}</TableRowGroupStructure></TableStructure>",
+		row("a", "b"),
+		row("c", "d")
+	))
+}
+
+#[test]
+fn a_table_gets_its_marker_and_its_html() {
+	let page =
+		format!("{}{}{}{}", run("a", "Cell one "), run("b", "Cell two"), run("c", "Cell three"), run("d", "Cell four"));
+	let doc = structured(&page, &two_by_two()).expect("read");
+	let tables = markers(&doc, MarkerType::Table);
+	assert_eq!(tables.len(), 1);
+	assert_eq!(tables[0].position, DocPos::ZERO);
+	assert!(tables[0].reference.contains("<td>Cell one</td>"), "{}", tables[0].reference);
+	assert!(tables[0].reference.contains("<td>Cell four</td>"), "{}", tables[0].reference);
+	assert!(doc.buffer.content.contains("Cell two"));
+	assert!(doc.buffer.content.ends_with('\n'));
+}
+
+#[test]
+fn a_table_follows_the_setting_for_showing_tables_inline() {
+	let page = format!("{}{}{}{}", run("a", "One"), run("b", "Two"), run("c", "Three"), run("d", "Four"));
+	let mut context = ParserContext::new("sample.xps".to_string());
+	context.render_tables_inline = false;
+	let doc = structured_with(&page, &two_by_two(), &context).expect("read");
+	assert!(!doc.buffer.content.contains("Three"));
 }
 
 #[test]
