@@ -3,17 +3,20 @@ use std::collections::HashMap;
 use anyhow::Result;
 
 use super::{
-	ncx::parse_daisy_ncx,
-	opf::{OpfPackage, dir_of, is_dtbook_like_item},
-	smil::parse_smil_pars,
+	ncx::{ncx_entries, parse_daisy_ncx},
+	opf::{ManifestItem, OpfPackage, dir_of, is_dtbook_like_item},
+	smil::{parse_smil_audio_pars, parse_smil_pars},
 };
 use crate::{
 	audio::{AudioLocation, AudioTimelineBuilder},
-	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType},
+	document::{DocLen, DocPos, Document, DocumentBuffer, Marker, MarkerType},
 	parser::{
 		add_converter_markers,
 		convert::xml_to_text::XmlToText,
-		util::{path::resolve_relative_path, toc::build_toc_from_buffer},
+		util::{
+			path::resolve_relative_path,
+			toc::{build_toc_from_buffer, heading_level_to_marker_type},
+		},
 	},
 	t,
 };
@@ -184,11 +187,10 @@ pub(super) fn build_daisy_document(
 		}
 	}
 	if !converted_any {
-		return None;
+		return build_audio_only_document(package, title, author, read_text, resolve_audio);
 	}
-	let toc_items = if let Some((_, ncx_item)) = package.items.iter().find(|(_, item)| {
-		item.media_type == "application/x-dtbncx+xml" || item.href.to_ascii_lowercase().ends_with(".ncx")
-	}) && let Ok(ncx_content) = read_text(&ncx_item.href)
+	let toc_items = if let Some((_, ncx_item)) = package.items.iter().find(|(_, item)| is_ncx_item(item))
+		&& let Ok(ncx_content) = read_text(&ncx_item.href)
 		&& !ncx_content.is_empty()
 		&& let Some(ncx_toc) = parse_daisy_ncx(&ncx_content, &dir_of(&ncx_item.href), &id_positions, &smil_anchors)
 		&& !ncx_toc.is_empty()
@@ -214,4 +216,97 @@ pub(super) fn build_daisy_document(
 		audio: (!audio.is_empty()).then_some(audio),
 		..Document::default()
 	})
+}
+
+/// An audio-only DAISY 3 book has no text to play against, so each NCX label stands in for its section, as an audio-only DAISY 2.02 book's `ncc.html` headings do.
+fn build_audio_only_document(
+	package: &OpfPackage,
+	title: String,
+	author: String,
+	read_text: &mut dyn FnMut(&str) -> Result<String>,
+	resolve_audio: &dyn Fn(&str) -> AudioLocation,
+) -> Option<Document> {
+	let ncx_item = package.items.iter().map(|(_, item)| item).find(|item| is_ncx_item(item))?;
+	let ncx_content = read_text(&ncx_item.href).ok()?;
+	let ncx_dir = dir_of(&ncx_item.href);
+	let mut buffer = DocumentBuffer::new();
+	let mut smil_anchors: HashMap<String, DocPos> = HashMap::new();
+	for (level, label, src) in ncx_entries(&ncx_content) {
+		let start = buffer.end();
+		buffer.append(&label);
+		buffer.append("\n");
+		buffer.add_marker(
+			Marker::new(heading_level_to_marker_type(level), start)
+				.with_text(label.clone())
+				.with_level(level)
+				.with_length(DocLen::of(&label)),
+		);
+		if let Some((file, fragment)) = src.split_once('#') {
+			smil_anchors.entry(format!("{}#{fragment}", resolve_relative_path(&ncx_dir, file))).or_insert(start);
+			smil_anchors.entry(fragment.to_string()).or_insert(start);
+		}
+	}
+	let mut audio_builder = AudioTimelineBuilder::new();
+	let mut source_indices: HashMap<String, usize> = HashMap::new();
+	let mut pending_clips: Vec<PendingClip> = Vec::new();
+	let mut position = DocPos::ZERO;
+	for idref in &package.spine {
+		let Some(item) = package.item(idref) else { continue };
+		if !item.href.to_ascii_lowercase().ends_with(".smil") {
+			continue;
+		}
+		let Ok(smil_content) = read_text(&item.href) else { continue };
+		let smil_dir = dir_of(&item.href);
+		for par in parse_smil_audio_pars(&smil_content) {
+			let heading = par.anchor_ids.iter().find_map(|anchor| {
+				smil_anchors.get(&format!("{}#{anchor}", item.href)).or_else(|| smil_anchors.get(anchor)).copied()
+			});
+			let audio_href = resolve_relative_path(&smil_dir, &par.audio_src);
+			let source = *source_indices
+				.entry(audio_href.clone())
+				.or_insert_with(|| audio_builder.add_source(resolve_audio(&audio_href), None));
+			// A section's phrases all start at its one heading line, so a run of them from one file plays as one clip.
+			if let Some(last) = pending_clips.last_mut()
+				&& heading.is_none_or(|heading| heading == position)
+				&& last.start == position
+				&& last.source == source
+				&& last.end_ms.is_some_and(|end| end <= par.clip_begin_ms)
+			{
+				last.end_ms = par.clip_end_ms;
+				continue;
+			}
+			position = heading.unwrap_or(position);
+			pending_clips.push(PendingClip {
+				source,
+				begin_ms: par.clip_begin_ms,
+				end_ms: par.clip_end_ms,
+				start: position,
+			});
+		}
+	}
+	if pending_clips.is_empty() {
+		return None;
+	}
+	let resolved_clips = bound_open_ended_clips(&pending_clips);
+	let doc_end = buffer.end();
+	for index in 0..resolved_clips.len() {
+		let clip = &resolved_clips[index];
+		let end = resolved_clips.get(index + 1).map_or(doc_end, |next| next.start);
+		audio_builder.add_clip(clip.source, clip.begin_ms, clip.end_ms, clip.start, end);
+	}
+	let toc_items = parse_daisy_ncx(&ncx_content, &ncx_dir, &HashMap::new(), &smil_anchors)
+		.unwrap_or_else(|| build_toc_from_buffer(&buffer));
+	let audio = audio_builder.build();
+	Some(Document {
+		title,
+		author,
+		buffer,
+		toc_items,
+		audio: (!audio.is_empty()).then_some(audio),
+		..Document::default()
+	})
+}
+
+fn is_ncx_item(item: &ManifestItem) -> bool {
+	item.media_type == "application/x-dtbncx+xml" || item.href.to_ascii_lowercase().ends_with(".ncx")
 }

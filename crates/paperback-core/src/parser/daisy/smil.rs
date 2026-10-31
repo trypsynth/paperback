@@ -23,20 +23,40 @@ pub fn parse_smil_pars(content: &str) -> Vec<SmilPar> {
 	};
 	doc.descendants()
 		.filter(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "par")
-		.filter_map(par_from_node)
+		.filter_map(|par| par_from_node(par, true))
 		.collect()
 }
 
-fn par_from_node(par: Node) -> Option<SmilPar> {
-	let text = par.children().find(|n| n.is_element() && n.tag_name().name() == "text")?;
+/// For an audio-only DAISY 3 book, whose pars hold only `<audio>`: those without a `<text>` are kept, with no text reference.
+#[must_use]
+pub fn parse_smil_audio_pars(content: &str) -> Vec<SmilPar> {
+	let Ok(doc) =
+		XmlDocument::parse_with_options(content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
+	else {
+		return Vec::new();
+	};
+	doc.descendants()
+		.filter(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "par")
+		.filter_map(|par| par_from_node(par, false))
+		.collect()
+}
+
+fn par_from_node(par: Node, needs_text: bool) -> Option<SmilPar> {
+	let text = par.children().find(|n| n.is_element() && n.tag_name().name() == "text");
+	if needs_text && text.is_none() {
+		return None;
+	}
 	// DAISY 2.02 producers commonly nest `<audio>` inside a `<seq>` under `<par>`; a nested `<par>` is its own entry, so its clips are left to it.
 	let own_par = |node: &Node| node.ancestors().skip(1).find(|n| n.tag_name().name() == "par") == Some(par);
 	let is_own_audio = |node: &Node| node.is_element() && node.tag_name().name() == "audio" && own_par(node);
 	let audios: Vec<Node> = par.descendants().filter(is_own_audio).collect();
-	let src = text.attribute("src")?;
-	let (text_file, text_id) = match src.split_once('#') {
-		Some((file, id)) => (if file.is_empty() { None } else { Some(file.to_string()) }, id.to_string()),
-		None => (None, src.to_string()),
+	let (text_file, text_id) = match text.map(|text| text.attribute("src")) {
+		Some(None) => return None,
+		Some(Some(src)) => match src.split_once('#') {
+			Some((file, id)) => (if file.is_empty() { None } else { Some(file.to_string()) }, id.to_string()),
+			None => (None, src.to_string()),
+		},
+		None => (None, String::new()),
 	};
 	let first = audios.first()?;
 	let audio_src = first.attribute("src")?.to_string();
@@ -50,7 +70,7 @@ fn par_from_node(par: Node) -> Option<SmilPar> {
 	let mut anchor_ids: Vec<String> = par
 		.attribute("id")
 		.into_iter()
-		.chain(text.attribute("id"))
+		.chain(text.and_then(|text| text.attribute("id")))
 		.chain(par.ancestors().skip(1).filter_map(|n| n.attribute("id")))
 		.map(str::to_string)
 		.collect();

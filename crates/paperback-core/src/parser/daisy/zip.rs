@@ -1,4 +1,9 @@
-use std::{collections::HashMap, fs::File, io::BufReader, path::Path};
+use std::{
+	collections::HashMap,
+	fs::File,
+	io::{BufReader, Read, Seek},
+	path::Path,
+};
 
 use anyhow::{Context, Result};
 use zip::ZipArchive;
@@ -90,7 +95,6 @@ fn picture_entry(names: &[String], folders: &[String], source: &str) -> Option<S
 fn parse_archive(context: &ParserContext, path: &Path) -> Result<Document> {
 	let mut title = extract_title_from_path(&context.file_path);
 	let mut author = String::new();
-	let buffer;
 	let file = File::open(path).context("Failed to open zip file")?;
 	let mut archive = ZipArchive::new(BufReader::new(file)).context("Failed to read zip archive")?;
 	let entry_name = zip_entry_name_resolver(&archive);
@@ -141,68 +145,8 @@ fn parse_archive(context: &ParserContext, path: &Path) -> Result<Document> {
 			}
 		}
 		if let Some(dtbook_path) = find_single_dtbook_href(&package) {
-			let xml_content =
-				read_zip_entry_by_name_with_password(&mut archive, &dtbook_path, context.password.as_deref()).map_err(
-					|e| {
-						if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
-							e
-						} else {
-							e.context("Failed to read XML file from zip")
-						}
-					},
-				)?;
-			let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
-			if converter.convert(&xml_content) {
-				let mut converted_buffer = DocumentBuffer::with_content(converter.take_text());
-				add_converter_markers(&mut converted_buffer, &converter, DocPos::ZERO);
-				for pb in converter.get_page_breaks() {
-					converted_buffer
-						.add_marker(Marker::new(MarkerType::PageBreak, pb.offset).with_text(pb.text.clone()));
-				}
-				buffer = converted_buffer;
-			} else {
-				// TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
-				anyhow::bail!(t("Failed to convert DTBook XML to text"));
-			}
-			let mut toc_items = None;
-			let ncx_path = archive
-				.file_names()
-				.flatten()
-				.find(|n| Path::new(&**n).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("ncx")))
-				.map(String::from);
-			if let Some(ncx_name) = ncx_path {
-				match read_zip_entry_by_name_with_password(&mut archive, &ncx_name, context.password.as_deref()) {
-					Ok(ncx_content) if !ncx_content.is_empty() => {
-						if let Some(ncx_toc) = parse_daisy_ncx(
-							&ncx_content,
-							&super::opf::dir_of(&ncx_name),
-							converter.get_id_positions(),
-							&HashMap::new(),
-						) && !ncx_toc.is_empty()
-						{
-							toc_items = Some(ncx_toc);
-						}
-					}
-					Ok(_) => {
-						tracing::debug!(ncx_name = %ncx_name, "ncx file is empty, using heading-derived toc");
-					}
-					Err(e) => {
-						tracing::warn!(ncx_name = %ncx_name, error = %e, "ncx file present but failed to read, using heading-derived toc");
-					}
-				}
-			} else {
-				tracing::debug!("no ncx file found in zip archive, using heading-derived toc");
-			}
-			let toc_items = toc_items.unwrap_or_else(|| build_toc_from_headings(converter.get_headings()));
-			tracing::debug!(path = %path.display(), "parsed daisy book as daisy 3 (opf and dtbook xml) from zip archive");
-			return Ok(Document {
-				title,
-				author,
-				buffer,
-				toc_items,
-				id_positions: converter.get_id_positions().clone(),
-				..Document::default()
-			});
+			tracing::debug!(path = %path.display(), "parsing daisy book as daisy 3 (opf and dtbook xml) from zip archive");
+			return dtbook_document(&mut archive, &dtbook_path, context, title, author);
 		}
 		tracing::warn!(opf_name = %opf_name, "opf found but no dtbook manifest item, trying daisy 2.02");
 	}
@@ -265,6 +209,21 @@ fn parse_archive(context: &ParserContext, path: &Path) -> Result<Document> {
 		}
 	}
 	tracing::warn!(opf_found, ncc_found, "exhausted daisy 3 and daisy 2.02 detection attempts in zip archive");
+	// A DTBook on its own, without the package file a full DAISY 3 book has, is how the DAISY Consortium publishes some text samples.
+	#[allow(clippy::needless_collect, reason = "the names borrow the archive the search then reads from")]
+	let xml_names: Vec<String> = archive
+		.file_names()
+		.flatten()
+		.filter(|name| name.to_ascii_lowercase().ends_with(".xml"))
+		.map(String::from)
+		.collect();
+	if let Some(dtbook_name) = xml_names.into_iter().find(|name| {
+		read_zip_entry_by_name_with_password(&mut archive, name, context.password.as_deref())
+			.is_ok_and(|xml| xml.contains("<dtbook"))
+	}) {
+		tracing::debug!(path = %path.display(), dtbook_name = %dtbook_name, "parsing a lone dtbook from zip archive");
+		return dtbook_document(&mut archive, &dtbook_name, context, title, author);
+	}
 	// Plenty of "audiobook" zips (e.g. from AudioVault) are just a folder of narration files with no markup, so each file becomes a textless section rather than the zip being refused.
 	if let Some(document) =
 		build_plain_audio_zip_document(&mut archive, &context.file_path, title, author, context.password.as_deref())
@@ -274,4 +233,72 @@ fn parse_archive(context: &ParserContext, path: &Path) -> Result<Document> {
 	}
 	// TRANSLATORS: Error shown when a ZIP file is not a recognizable DAISY 3 or DAISY 2.02 book
 	anyhow::bail!(t("ZIP archive does not appear to be a valid DAISY 3 or DAISY 2.02 book"));
+}
+
+/// The DTBook text, with the NCX's table of contents when the archive has one and its headings when it doesn't.
+fn dtbook_document<R: Read + Seek>(
+	archive: &mut ZipArchive<R>,
+	dtbook_path: &str,
+	context: &ParserContext,
+	title: String,
+	author: String,
+) -> Result<Document> {
+	let xml_content =
+		read_zip_entry_by_name_with_password(archive, dtbook_path, context.password.as_deref()).map_err(|e| {
+			if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
+				e
+			} else {
+				e.context("Failed to read XML file from zip")
+			}
+		})?;
+	let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
+	let buffer = if converter.convert(&xml_content) {
+		let mut converted_buffer = DocumentBuffer::with_content(converter.take_text());
+		add_converter_markers(&mut converted_buffer, &converter, DocPos::ZERO);
+		for pb in converter.get_page_breaks() {
+			converted_buffer.add_marker(Marker::new(MarkerType::PageBreak, pb.offset).with_text(pb.text.clone()));
+		}
+		converted_buffer
+	} else {
+		// TRANSLATORS: Error shown when a DAISY book's DTBook XML fails to convert to plain text
+		anyhow::bail!(t("Failed to convert DTBook XML to text"));
+	};
+	let mut toc_items = None;
+	let ncx_path = archive
+		.file_names()
+		.flatten()
+		.find(|n| Path::new(&**n).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("ncx")))
+		.map(String::from);
+	if let Some(ncx_name) = ncx_path {
+		match read_zip_entry_by_name_with_password(archive, &ncx_name, context.password.as_deref()) {
+			Ok(ncx_content) if !ncx_content.is_empty() => {
+				if let Some(ncx_toc) = parse_daisy_ncx(
+					&ncx_content,
+					&super::opf::dir_of(&ncx_name),
+					converter.get_id_positions(),
+					&HashMap::new(),
+				) && !ncx_toc.is_empty()
+				{
+					toc_items = Some(ncx_toc);
+				}
+			}
+			Ok(_) => {
+				tracing::debug!(ncx_name = %ncx_name, "ncx file is empty, using heading-derived toc");
+			}
+			Err(e) => {
+				tracing::warn!(ncx_name = %ncx_name, error = %e, "ncx file present but failed to read, using heading-derived toc");
+			}
+		}
+	} else {
+		tracing::debug!("no ncx file found in zip archive, using heading-derived toc");
+	}
+	let toc_items = toc_items.unwrap_or_else(|| build_toc_from_headings(converter.get_headings()));
+	Ok(Document {
+		title,
+		author,
+		buffer,
+		toc_items,
+		id_positions: converter.get_id_positions().clone(),
+		..Document::default()
+	})
 }

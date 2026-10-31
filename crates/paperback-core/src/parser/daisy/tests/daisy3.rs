@@ -433,3 +433,42 @@ fn reads_a_dtbook_in_the_encoding_it_declares() {
 	assert_eq!(document.title, "Wejście na szczyt");
 	assert!(document.buffer.content.contains("Śnieżka, najwyższy"), "text: {:?}", document.buffer.content);
 }
+
+#[test]
+fn a_zip_holding_only_a_dtbook_is_read_as_one() {
+	let dtbook = br#"<?xml version="1.0" encoding="utf-8"?><dtbook xmlns="http://www.daisy.org/z3986/2005/dtbook/"><book><bodymatter><level1><h1>Great Painters</h1><p>Jan van Eyck painted the Ghent Altarpiece.</p></level1></bodymatter></book></dtbook>"#;
+	let zip_bytes = write_zip(&[("2005-3/dtbookbasic.css", b"p {}"), ("2005-3/greatpainters.xml", dtbook)]);
+	let dir = TempDir::new("daisy_lone_dtbook_zip");
+	let zip_path = dir.path().join("great-painters.zip");
+	fs::write(&zip_path, &zip_bytes).expect("write zip");
+	let document =
+		DaisyParser.parse(&ParserContext::new(zip_path.to_string_lossy().to_string())).expect("a lone DTBook opens");
+	assert!(document.buffer.content.contains("Ghent Altarpiece"), "{}", document.buffer.content);
+	assert_eq!(document.toc_items.first().map(|item| item.name.as_str()), Some("Great Painters"));
+}
+
+#[test]
+fn an_audio_only_daisy_3_book_reads_its_ncx_labels_and_plays_each_section() {
+	let opf = br#"<?xml version="1.0"?><package xmlns="http://openebook.org/namespaces/oeb-package/1.0/"><metadata><dc-metadata><dc:Title xmlns:dc="http://purl.org/dc/elements/1.1/">Chimps</dc:Title></dc-metadata></metadata><manifest><item id="ncx" href="nav.ncx" media-type="application/x-dtbncx+xml"/><item id="s1" href="0001.smil" media-type="application/smil"/><item id="s2" href="0002.smil" media-type="application/smil"/><item id="a1" href="aud001.mp3" media-type="audio/mpeg"/><item id="a2" href="aud002.mp3" media-type="audio/mpeg"/></manifest><spine><itemref idref="s1"/><itemref idref="s2"/></spine></package>"#;
+	let ncx = br#"<?xml version="1.0"?><ncx xmlns="http://www.daisy.org/z3986/2005/ncx/"><navMap><navPoint id="n1"><navLabel><text>Great Apes</text></navLabel><content src="0001.smil#p1"/></navPoint><navPoint id="n2"><navLabel><text>Everyday Life</text></navLabel><content src="0002.smil#p3"/></navPoint></navMap></ncx>"#;
+	let smil1 = br#"<?xml version="1.0"?><smil><body><seq id="q1"><par id="p1"><audio src="aud001.mp3" clipBegin="0s" clipEnd="2s"/></par><par id="p2"><audio src="aud001.mp3" clipBegin="2s" clipEnd="5s"/></par></seq></body></smil>"#;
+	let smil2 = br#"<?xml version="1.0"?><smil><body><seq id="q2"><par id="p3"><audio src="aud002.mp3" clipBegin="0s" clipEnd="4s"/></par></seq></body></smil>"#;
+	let zip_bytes = write_zip(&[
+		("book.opf", opf),
+		("nav.ncx", ncx),
+		("0001.smil", smil1),
+		("0002.smil", smil2),
+		("aud001.mp3", b"not-audio"),
+		("aud002.mp3", b"not-audio"),
+	]);
+	let dir = TempDir::new("daisy_audio_only_zip");
+	let zip_path = dir.path().join("chimps.zip");
+	fs::write(&zip_path, &zip_bytes).expect("write zip");
+	let document = DaisyParser
+		.parse(&ParserContext::new(zip_path.to_string_lossy().to_string()))
+		.expect("an audio-only book opens");
+	assert_eq!(document.buffer.content, "Great Apes\nEveryday Life\n");
+	let names: Vec<_> = document.toc_items.iter().map(|item| item.name.as_str()).collect();
+	assert_eq!(names, ["Great Apes", "Everyday Life"]);
+	assert!(document.audio.is_some(), "the sections play their audio");
+}

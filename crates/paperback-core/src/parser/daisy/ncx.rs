@@ -4,7 +4,7 @@ use roxmltree::{Document as XmlDocument, Node, NodeType, ParsingOptions};
 
 use crate::{
 	document::{DocPos, TocItem},
-	parser::util::path::resolve_relative_path,
+	parser::util::{path::resolve_relative_path, xml::find_child_element},
 	types::HeadingInfo,
 };
 
@@ -97,6 +97,28 @@ pub(super) fn parse_daisy_ncx(
 		}
 	}
 	if items.is_empty() || !resolved_any { None } else { Some(items) }
+}
+
+/// Every labelled navPoint as (level, label, content src), in reading order.
+pub(super) fn ncx_entries(ncx_content: &str) -> Vec<(i32, String, String)> {
+	let Ok(ncx_doc) =
+		XmlDocument::parse_with_options(ncx_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
+	else {
+		return Vec::new();
+	};
+	ncx_doc
+		.descendants()
+		.filter(|n| n.is_element() && n.tag_name().name() == "navPoint")
+		.filter_map(|nav| {
+			let label = find_child_element(nav, "navLabel")
+				.and_then(|label| find_child_element(label, "text"))
+				.and_then(|text| text.text())?
+				.trim();
+			let src = find_child_element(nav, "content").and_then(|content| content.attribute("src"))?;
+			let level = nav.ancestors().filter(|n| n.tag_name().name() == "navPoint").count();
+			(!label.is_empty()).then(|| (i32::try_from(level).unwrap_or(6).min(6), label.to_string(), src.to_string()))
+		})
+		.collect()
 }
 
 /// Path-qualified first, since that can't collide across files, then bare.
