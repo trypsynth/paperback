@@ -207,7 +207,7 @@ fn reparse_tab_in_place(
 			.max_by_key(|&(_, &off)| off)
 			.map(|(key, &anchor_off)| (key.clone(), pos - anchor_off))
 	};
-	let fallback_percent = tab.session.get_status_info(current_pos).percentage;
+	let old_len = tab.session.document_len().get().max(1);
 	let parse_path = tab.local_path().to_string_lossy().into_owned();
 	let new_session = match DocumentSession::new(&parse_path, password, forced_extension, settings) {
 		Ok(session) => session,
@@ -216,6 +216,7 @@ fn reparse_tab_in_place(
 			return Err(err);
 		}
 	};
+	let unchanged = new_session.handle().document().buffer.content == tab.session.handle().document().buffer.content;
 	tab.session = new_session;
 	let local_path = tab.local_path().to_path_buf();
 	restore_saved_pages(
@@ -229,13 +230,19 @@ fn reparse_tab_in_place(
 	tab.window = TextWindow::of(&slice);
 	style_and_fill(tab.text_ctrl, &slice, &tab.window, style);
 	tab.panel.layout();
-	let restored_pos = if let Some((ref key, within)) = stable_anchor {
-		match tab.session.handle().document().id_positions.get(key) {
-			Some(&new_anchor_off) => new_anchor_off + within,
-			None => tab.session.position_from_percent(fallback_percent),
-		}
+	// Scaled by length rather than through the whole-number percentage, which in a book of millions of characters is tens of thousands off.
+	let proportional = || DocPos::from_raw(pos.get().saturating_mul(tab.session.document_len().get()) / old_len);
+	let restored_pos = if unchanged {
+		pos
+	} else if let Some((ref key, within)) = stable_anchor {
+		tab.session
+			.handle()
+			.document()
+			.id_positions
+			.get(key)
+			.map_or_else(proportional, |&new_anchor_off| new_anchor_off + within)
 	} else {
-		tab.session.position_from_percent(fallback_percent)
+		proportional()
 	};
 	let restored = tab.window.to_local(restored_pos);
 	tab.text_ctrl.set_insertion_point(restored);
