@@ -1,6 +1,6 @@
 use super::{XpsParser, read_document};
 use crate::{
-	document::{DocLen, DocPos, Document, Marker, MarkerType, ParserContext},
+	document::{DocLen, DocPos, Document, Marker, MarkerType, ParserContext, is_heading_marker},
 	parser::{Parser, ParserRegistry, xps::package::Package},
 };
 
@@ -281,6 +281,103 @@ fn kept_headers_and_footers_read_around_the_page_they_belong_to() {
 	let (page, fragments) = with_running_text();
 	let context = ParserContext::new("sample.xps".to_string()).with_strip_running_text(false);
 	assert_eq!(structured_with(&page, &fragments, &context).expect("read").buffer.content, "Header\nBody\nFooter\n");
+}
+
+const STRUCTURE_RELS: &str = r#"<Relationships>
+	<Relationship Id="R0" Type="http://schemas.microsoft.com/xps/2005/06/documentstructure" Target="Doc.struct"/>
+</Relationships>"#;
+const LINKED_PAGES: &str = r#"<FixedDocument>
+	<PageContent Source="1.fpage"><PageContent.LinkTargets><LinkTarget Name="one"/></PageContent.LinkTargets></PageContent>
+	<PageContent Source="2.fpage"><PageContent.LinkTargets><LinkTarget Name="two"/><LinkTarget Name="three"/></PageContent.LinkTargets></PageContent>
+</FixedDocument>"#;
+const SECOND_FRAGMENT_RELS: &str = r#"<Relationships>
+	<Relationship Id="R0" Type="http://schemas.microsoft.com/xps/2005/06/storyfragments" Target="2.frag"/>
+</Relationships>"#;
+
+fn sized(name: &str, text: &str, size: f64) -> String {
+	format!(r#"<Glyphs Name="{name}" OriginX="10" OriginY="20" FontRenderingEmSize="{size}" UnicodeString="{text}"/>"#)
+}
+
+fn outlined(outline: &str) -> Document {
+	let first = format!("<FixedPage>{}{}</FixedPage>", sized("a", "Chapter", 20.0), sized("b", BODY, 12.0));
+	let second = format!(
+		"<FixedPage>{}{}{}</FixedPage>",
+		sized("c", "Second chapter", 20.0),
+		sized("d", "A section", 16.0),
+		sized("e", BODY, 12.0)
+	);
+	let frag = |names: &[&str]| {
+		let body: String = names.iter().map(|name| paragraph(name)).collect();
+		format!("<StoryFragments>{}</StoryFragments>", in_fragment(&body))
+	};
+	read(&[
+		("_rels/.rels", ROOT_RELS),
+		("Sequence.fdseq", SEQUENCE),
+		("Doc.fdoc", LINKED_PAGES),
+		("_rels/Doc.fdoc.rels", STRUCTURE_RELS),
+		("Doc.struct", &format!("<DocumentStructure><DocumentStructure.Outline><DocumentOutline>{outline}</DocumentOutline></DocumentStructure.Outline></DocumentStructure>")),
+		("1.fpage", &first),
+		("_rels/1.fpage.rels", FRAGMENT_RELS),
+		("1.frag", &frag(&["a", "b"])),
+		("2.fpage", &second),
+		("_rels/2.fpage.rels", SECOND_FRAGMENT_RELS),
+		("2.frag", &frag(&["c", "d", "e"])),
+	])
+	.expect("read")
+}
+
+const BODY: &str =
+	"A paragraph of body text long enough to outweigh every heading in the document put together, by some way.";
+
+#[test]
+fn the_outline_becomes_the_table_of_contents() {
+	let doc = outlined(
+		r##"<OutlineEntry OutlineLevel="1" Description="Chapter" OutlineTarget="Doc.fdoc#one"/>
+		<OutlineEntry OutlineLevel="1" Description="Second chapter" OutlineTarget="Doc.fdoc#two"/>
+		<OutlineEntry OutlineLevel="2" Description="A section" OutlineTarget="Doc.fdoc#three"/>"##,
+	);
+	assert_eq!(doc.toc_items.len(), 2);
+	assert_eq!(doc.toc_items[0].name, "Chapter");
+	assert_eq!(doc.toc_items[0].offset, DocPos::ZERO);
+	assert_eq!(doc.toc_items[1].children[0].name, "A section");
+	let section = doc.buffer.content.find("A section").expect("section");
+	assert_eq!(doc.toc_items[1].children[0].offset, doc.buffer.pos_at_byte(section.into()));
+	let levels: Vec<i32> =
+		doc.buffer.markers.iter().filter(|marker| is_heading_marker(marker.mtype)).map(|marker| marker.level).collect();
+	assert_eq!(levels, [1, 1, 2]);
+}
+
+#[test]
+fn an_outline_entry_whose_text_is_not_on_its_page_leads_to_the_page() {
+	let doc = outlined(r##"<OutlineEntry OutlineLevel="1" Description="Renamed" OutlineTarget="Doc.fdoc#two"/>"##);
+	assert_eq!(doc.toc_items[0].offset, doc.id_positions["page_1"]);
+}
+
+#[test]
+fn an_outline_entry_leading_nowhere_is_left_out() {
+	let doc = outlined(r##"<OutlineEntry OutlineLevel="1" Description="Gone" OutlineTarget="Doc.fdoc#missing"/>"##);
+	assert!(doc.toc_items.is_empty() || doc.toc_items.iter().all(|item| item.name != "Gone"));
+}
+
+#[test]
+fn a_file_with_no_outline_finds_headings_by_size_against_its_body_text() {
+	let doc = outlined("");
+	let names: Vec<&str> = doc.toc_items.iter().map(|item| item.name.as_str()).collect();
+	assert_eq!(names, ["Chapter", "Second chapter", "A section"]);
+	assert_eq!(markers(&doc, MarkerType::Heading1).len(), 3);
+}
+
+#[test]
+fn a_declared_outline_wins_over_sizes() {
+	let doc = outlined(r##"<OutlineEntry OutlineLevel="1" Description="Chapter" OutlineTarget="Doc.fdoc#one"/>"##);
+	assert_eq!(doc.toc_items.len(), 1);
+}
+
+#[test]
+fn list_items_and_table_cells_are_never_headings() {
+	let page = format!("{}{}", sized("a", "Big list item", 30.0), sized("b", BODY, 12.0));
+	let body = format!("<ListStructure>{}</ListStructure>{}", item(&paragraph("a")), paragraph("b"));
+	assert!(structured(&page, &in_fragment(&body)).expect("read").toc_items.is_empty());
 }
 
 #[test]

@@ -213,7 +213,7 @@ fn keeps_written_hyphen(left: &str, right: &str, written: Written) -> bool {
 }
 
 #[derive(Clone, Debug)]
-pub(super) struct Line {
+pub(in crate::parser) struct Line {
 	pub text: String,
 	pub size: f64,
 	pub top: f64,

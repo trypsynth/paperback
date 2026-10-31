@@ -23,13 +23,16 @@ mod toc;
 use images::{append_image, images_before_each_paragraph, page_largest_image_coverage};
 use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
 use metadata::{map_load_error, metadata_title, metadata_value};
-use paragraphs::{join_paragraphs, split_lines};
+use paragraphs::join_paragraphs;
+pub(super) use paragraphs::split_lines;
 pub use paragraphs::{join_wrapped_lines, join_wrapped_runs};
 use running::{EDGE_LINES, PageEdges, RunningText};
 use structure::extract_tagged_page_text;
 use tagged::{TaggedPage, append_tagged_page, tagged_running_lines, without_lines};
-use text::{Line, PageEvidence, WordPages, confirms, extract_text_lines, median_line_font_size};
-use toc::{build_toc_tree, extract_toc};
+pub(super) use text::Line;
+use text::{PageEvidence, WordPages, confirms, extract_text_lines, median_line_font_size};
+pub(super) use toc::build_toc_tree;
+use toc::extract_toc;
 
 /// Every page is read before any is assembled, because running headers are only known once every page's edges have been seen.
 #[derive(Default)]
@@ -251,7 +254,7 @@ fn load_document(context: &ParserContext) -> Result<PdfDocument> {
 }
 
 /// Bookmarks win over structure-tree and font-size headings where they exist, because a person wrote them.
-fn resolve_headings(
+pub(super) fn resolve_headings(
 	buffer: &mut DocumentBuffer,
 	toc_items: &mut Vec<TocItem>,
 	flat_toc_items: Vec<(u32, TocItem)>,

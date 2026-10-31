@@ -67,6 +67,26 @@ fn read_blocks(parent: Node, blocks: &mut Vec<Block>) {
 	}
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub(super) struct OutlineEntry {
+	pub level: u32,
+	pub title: String,
+	/// The name after the `#`, which the fixed document's link targets tie to a page.
+	pub target: String,
+}
+
+pub(super) fn read_outline(xml: &str) -> Result<Vec<OutlineEntry>> {
+	let parsed = XmlDocument::parse(xml).context("Failed to parse XPS document structure")?;
+	let entries = parsed.descendants().filter(|node| is_element(*node, "OutlineEntry"));
+	Ok(entries
+		.filter_map(|entry| {
+			let (_, target) = entry.attribute("OutlineTarget")?.rsplit_once('#')?;
+			let level = entry.attribute("OutlineLevel").and_then(|level| level.parse().ok()).unwrap_or(1);
+			Some(OutlineEntry { level, title: entry.attribute("Description")?.to_string(), target: target.to_string() })
+		})
+		.collect())
+}
+
 pub(super) fn read_fragments(xml: &str) -> Result<Vec<Fragment>> {
 	let parsed = XmlDocument::parse(xml).context("Failed to parse XPS story fragments")?;
 	let elements = parsed.descendants().filter(|node| is_element(*node, "StoryFragment"));
@@ -163,6 +183,38 @@ mod tests {
 		assert_eq!(fragments[0].kind, FragmentKind::Content);
 		assert_eq!(names(&fragments[0].blocks[0]), ["a", "b"]);
 		assert_eq!(names(&fragments[0].blocks[1]), ["c"]);
+	}
+
+	#[test]
+	fn an_outline_entry_keeps_its_level_title_and_target() {
+		let xml = r##"<DocumentStructure xmlns="http://schemas.microsoft.com/xps/2005/06/documentstructure">
+			<DocumentStructure.Outline>
+				<DocumentOutline xml:lang="nl-NL">
+					<OutlineEntry OutlineLevel="1" Description="First" OutlineTarget="../FixedDoc.fdoc#PG_1_LNK_1"/>
+					<OutlineEntry OutlineLevel="2" Description="Second" OutlineTarget="#PG_2_LNK_2"/>
+					<OutlineEntry Description="Third" OutlineTarget="/Doc.fdoc#PG_3"/>
+					<OutlineEntry OutlineLevel="1" OutlineTarget="#untitled"/>
+				</DocumentOutline>
+			</DocumentStructure.Outline>
+			<Story StoryName="MainStory"><StoryFragmentReference Page="1"/></Story>
+		</DocumentStructure>"##;
+		assert_eq!(
+			read_outline(xml).expect("outline"),
+			[
+				OutlineEntry { level: 1, title: "First".into(), target: "PG_1_LNK_1".into() },
+				OutlineEntry { level: 2, title: "Second".into(), target: "PG_2_LNK_2".into() },
+				OutlineEntry { level: 1, title: "Third".into(), target: "PG_3".into() },
+			]
+		);
+	}
+
+	#[test]
+	fn a_structure_part_can_have_no_outline() {
+		assert!(
+			read_outline(r#"<DocumentStructure><Story StoryName="MainStory"/></DocumentStructure>"#)
+				.expect("outline")
+				.is_empty()
+		);
 	}
 
 	#[test]

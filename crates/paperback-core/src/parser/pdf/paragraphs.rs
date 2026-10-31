@@ -112,7 +112,7 @@ fn heading_threshold(body_font_size: f64) -> f64 {
 }
 
 /// Headings are still marked with joining off, since that is a question of size, not of where a paragraph ends.
-pub(super) fn split_lines(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
+pub(in crate::parser) fn split_lines(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
 	let trimmed = trimmed_lines(raw_lines);
 	let marked = HeadingRule::for_page(raw_lines, body_font_size).mark(raw_lines, &trimmed);
 	trimmed

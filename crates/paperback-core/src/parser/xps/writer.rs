@@ -3,12 +3,20 @@ use super::{
 	structure::{Block, Fragment, FragmentKind},
 };
 use crate::{
-	document::{DocumentBuffer, Marker, MarkerType},
+	document::{DocPos, DocumentBuffer, Marker, MarkerType},
 	parser::convert::table_text::{
 		build_html_table_from_grid, display_lines_and_length, html_table_to_display, table_caption_from_html,
 	},
 	util::text::{collapse_whitespace, trim_string},
 };
+
+/// A paragraph outside any list or table, the only place a heading can be.
+#[derive(Debug)]
+pub(super) struct WrittenParagraph {
+	pub position: DocPos,
+	pub text: String,
+	pub size: f64,
+}
 
 /// Writes a page that declares its structure.
 pub(super) struct PageWriter<'a> {
@@ -17,11 +25,19 @@ pub(super) struct PageWriter<'a> {
 	render_tables_inline: bool,
 	/// A fragment need not name everything on its page, and text nothing names must still reach the reader.
 	read: Vec<bool>,
+	paragraphs: Vec<WrittenParagraph>,
 }
 
 impl<'a> PageWriter<'a> {
 	pub fn new(buffer: &'a mut DocumentBuffer, page: &'a Page, render_tables_inline: bool) -> Self {
-		Self { buffer, page, render_tables_inline, read: vec![false; page.runs.len()] }
+		Self { buffer, page, render_tables_inline, read: vec![false; page.runs.len()], paragraphs: Vec::new() }
+	}
+
+	/// The size most of a paragraph is set in, so one large initial doesn't speak for the rest.
+	fn size_of(&self, names: &[String]) -> f64 {
+		let ranges = names.iter().filter_map(|name| self.page.groups.get(name)).cloned();
+		let runs = ranges.flatten().map(|index| &self.page.runs[index]);
+		runs.max_by_key(|run| run.text.chars().count()).map_or(0.0, |run| run.size)
 	}
 
 	fn text_of(&mut self, names: &[String]) -> String {
@@ -100,8 +116,12 @@ impl<'a> PageWriter<'a> {
 		for block in blocks {
 			match block {
 				Block::Paragraph(names) => {
+					let position = self.buffer.end();
 					let text = self.text_of(names);
 					self.write_line(&text);
+					if !text.is_empty() {
+						self.paragraphs.push(WrittenParagraph { position, text, size: self.size_of(names) });
+					}
 				}
 				Block::List(items) => self.write_list(items, 1),
 				Block::Table(rows) => self.write_table(rows),
@@ -130,7 +150,7 @@ impl<'a> PageWriter<'a> {
 	}
 
 	/// A file can list these after the body, as Word does, but they belong around the page.
-	pub fn write(mut self, fragments: &[Fragment], strip_running_text: bool) {
+	pub fn write(mut self, fragments: &[Fragment], strip_running_text: bool) -> Vec<WrittenParagraph> {
 		for kind in [FragmentKind::Header, FragmentKind::Content, FragmentKind::Footer] {
 			for fragment in fragments.iter().filter(|fragment| fragment.kind == kind) {
 				if strip_running_text && kind != FragmentKind::Content {
@@ -141,5 +161,6 @@ impl<'a> PageWriter<'a> {
 			}
 		}
 		self.write_unnamed_runs();
+		self.paragraphs
 	}
 }

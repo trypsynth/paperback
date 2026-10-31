@@ -75,7 +75,7 @@ pub(super) fn extract_toc(
 	build_toc_tree(items)
 }
 
-pub(super) fn build_toc_tree(flat_items: Vec<(u32, TocItem)>) -> Vec<TocItem> {
+pub(in crate::parser) fn build_toc_tree(flat_items: Vec<(u32, TocItem)>) -> Vec<TocItem> {
 	let mut root = Vec::<TocItem>::new();
 	let mut path = Vec::<usize>::new();
 	let mut level_stack = Vec::<u32>::new();
