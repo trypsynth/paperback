@@ -63,6 +63,27 @@ fn each_page_gets_a_marker_and_an_id() {
 }
 
 #[test]
+fn a_page_that_cannot_be_read_keeps_its_place() {
+	let document = r#"<FixedDocument>
+		<PageContent Source="1.fpage"/>
+		<PageContent Source="missing.fpage"/>
+		<PageContent Source="3.fpage"/>
+	</FixedDocument>"#;
+	let text =
+		r#"<FixedPage><Glyphs OriginX="1" OriginY="1" FontRenderingEmSize="12" UnicodeString="Words"/></FixedPage>"#;
+	let doc = read(&[
+		("_rels/.rels", ROOT_RELS),
+		("Sequence.fdseq", SEQUENCE),
+		("Doc.fdoc", document),
+		("1.fpage", text),
+		("3.fpage", text),
+	])
+	.expect("read");
+	assert_eq!(doc.buffer.content, "Words\nWords\n");
+	assert_eq!(doc.buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::PageBreak).count(), 3);
+}
+
+#[test]
 fn the_title_falls_back_to_the_file_name() {
 	let doc = read(&[
 		("_rels/.rels", ROOT_RELS),

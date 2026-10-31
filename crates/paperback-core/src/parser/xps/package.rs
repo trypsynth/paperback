@@ -62,7 +62,7 @@ fn relationships_part(source: &str) -> String {
 	}
 }
 
-fn is_element(node: Node, name: &str) -> bool {
+pub(super) fn is_element(node: Node, name: &str) -> bool {
 	node.is_element() && node.tag_name().name() == name
 }
 
