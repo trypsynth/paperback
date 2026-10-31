@@ -18,7 +18,7 @@ use crate::{
 		},
 	},
 	t,
-	util::encoding::convert_to_utf8,
+	util::encoding::{convert_to_utf8, decode_ansi},
 };
 
 const FIB_MAGIC_DOC: u16 = 0xA5EC;
@@ -32,6 +32,14 @@ const FIB_LCBCLX_OFFSET: usize = 0x1A6;
 const FIB_FLAG_ENCRYPTED: u16 = 0x0100;
 const FIB_FLAG_USE_1_TABLE: u16 = 0x0200;
 const FIB_NFIB_WORD97: u16 = 0x00C1;
+const FIB_FLAG_COMPLEX: u16 = 0x0004;
+const WINWORD1_MAGIC: u16 = 0xA59B;
+const WINWORD2_MAGIC: u16 = 0xA5DB;
+/// Where the clx's file offset sits in each FIB, a 16-bit length after it.
+const WINWORD1_FCCLX_OFFSET: usize = 0x112;
+const WINWORD2_FCCLX_OFFSET: usize = 0x11E;
+/// The main text's character count; the footnotes' follows it.
+const WINWORD_CCPTEXT_OFFSET: usize = 0x34;
 
 mod lists;
 mod properties;
@@ -115,6 +123,77 @@ pub(super) fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 		text = extract_doc_text_simple(&word_document);
 	}
 	Ok(finish_doc(&text, &context.file_path))
+}
+
+/// Word for Windows 1.x and 2.0 predate the OLE container: the file opens with the FIB, and the text is 8-bit, either the fcMin-fcMac run or, after a fast save, pieces at file offsets.
+pub(super) fn parse_winword_doc(context: &ParserContext, data: &[u8]) -> Result<Document> {
+	let Some(text) = winword_text(data) else {
+		tracing::warn!(path = %context.file_path, "word for windows 1 or 2 file has no text run");
+		// TRANSLATORS: Error shown when a DOC file from Word for Windows 1.x or 2.0 has no readable text
+		anyhow::bail!(t("No readable text content found"));
+	};
+	Ok(finish_doc(&text, &context.file_path))
+}
+
+pub(super) const fn is_winword_magic(magic: u16) -> bool {
+	matches!(magic, WINWORD1_MAGIC | WINWORD2_MAGIC)
+}
+
+fn winword_text(data: &[u8]) -> Option<String> {
+	let clx_offset = match read_u16_le(data, 0) {
+		WINWORD1_MAGIC => WINWORD1_FCCLX_OFFSET,
+		WINWORD2_MAGIC => WINWORD2_FCCLX_OFFSET,
+		_ => return None,
+	};
+	let fast_saved = read_u16_le(data, FIB_FLAGS_OFFSET) & FIB_FLAG_COMPLEX != 0;
+	// A fast-saved file whose pieces don't make sense still has its last full save's run to read.
+	let pieces = fast_saved.then(|| winword_clx(data, clx_offset).and_then(|clx| winword_pieces(data, clx))).flatten();
+	let mut bytes = if let Some(bytes) = pieces { bytes } else { winword_run(data)? };
+	// The main text comes first, then footnotes, then headers and footers, which would only repeat as stray lines after the body.
+	let main = usize::try_from(read_u32_le(data, WINWORD_CCPTEXT_OFFSET)).ok()?;
+	let footnotes = usize::try_from(read_u32_le(data, WINWORD_CCPTEXT_OFFSET + 4)).ok()?;
+	if main > 0 {
+		bytes.truncate(main.saturating_add(footnotes));
+	}
+	(!bytes.is_empty()).then(|| decode_ansi(&bytes))
+}
+
+fn winword_clx(data: &[u8], clx_offset: usize) -> Option<&[u8]> {
+	let fc = usize::try_from(read_u32_le(data, clx_offset)).ok()?;
+	let lcb = usize::from(read_u16_le(data, clx_offset + 4));
+	data.get(fc..fc.checked_add(lcb)?)
+}
+
+fn winword_run(data: &[u8]) -> Option<Vec<u8>> {
+	let fc_min = usize::try_from(read_u32_le(data, FIB_FCMIN_OFFSET)).ok()?;
+	let fc_mac = usize::try_from(read_u32_le(data, FIB_FCMAC_OFFSET)).ok()?.min(data.len());
+	Some(data.get(fc_min..fc_mac)?.to_vec())
+}
+
+/// The clx is a run of property blocks (`1`, then a 16-bit length) ending in the piece table (`2`, then a 16-bit length): CPs, then an 8-byte descriptor per piece with its file offset at byte 2.
+fn winword_pieces(data: &[u8], clx: &[u8]) -> Option<Vec<u8>> {
+	let mut at = 0;
+	loop {
+		match *clx.get(at)? {
+			1 => at += 3 + usize::from(read_u16_le(clx, at + 1)),
+			2 => {
+				let len = usize::from(read_u16_le(clx, at + 1));
+				let table = clx.get(at + 3..at + 3 + len)?;
+				let pieces = len.checked_sub(4)? / 12;
+				let mut bytes = Vec::new();
+				for piece in 0..pieces {
+					let count = usize::try_from(
+						read_u32_le(table, 4 * (piece + 1)).checked_sub(read_u32_le(table, 4 * piece))?,
+					)
+					.ok()?;
+					let fc = usize::try_from(read_u32_le(table, 4 * (pieces + 1) + 8 * piece + 2)).ok()?;
+					bytes.extend_from_slice(data.get(fc..fc.checked_add(count)?)?);
+				}
+				return (!bytes.is_empty()).then_some(bytes);
+			}
+			_ => return None,
+		}
+	}
 }
 
 fn read_stream<R: Read + Seek>(compound: &mut CompoundFile<R>, path: &str) -> Result<Vec<u8>> {

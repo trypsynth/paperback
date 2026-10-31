@@ -3,7 +3,6 @@
 use std::fs;
 
 use anyhow::{Context, Result};
-use encoding_rs::WINDOWS_1252;
 
 use super::{
 	Parser,
@@ -14,7 +13,7 @@ use super::{
 };
 use crate::{
 	document::{Document, DocumentBuffer, ParserContext},
-	util::{encoding::convert_to_utf8, text::normalize_line_endings},
+	util::{encoding::decode_ansi, text::normalize_line_endings},
 };
 
 /// Stored little-endian, so the bytes on disk are `31 BE` / `32 BE`.
@@ -78,7 +77,7 @@ fn write_binary_text(bytes: &[u8]) -> Option<String> {
 	kept.extend_from_slice(&bytes[from..end]);
 	let image = format!("{}\n", image_text::placeholder(false, ""));
 	let mut text = String::with_capacity(kept.len());
-	for ch in normalize_line_endings(decode_write(&kept)).chars() {
+	for ch in normalize_line_endings(decode_ansi(&kept)).chars() {
 		match ch {
 			'\0' => text.push_str(&image),
 			// Page and line breaks; the rest of Write's controls are optional hyphens, page-number fields and stray bytes, none of them read.
@@ -89,12 +88,6 @@ fn write_binary_text(bytes: &[u8]) -> Option<String> {
 		}
 	}
 	Some(text)
-}
-
-/// A few symbol-font bytes (checkboxes, bullets) in Western text read as a CJK encoding to the detector, which then swallows the letter after each; text that is almost all ASCII is Windows-1252, as Write wrote it.
-fn decode_write(bytes: &[u8]) -> String {
-	let high = bytes.iter().filter(|&&byte| byte >= 0x80).count();
-	if high * 20 < bytes.len() { WINDOWS_1252.decode(bytes).0.into_owned() } else { convert_to_utf8(bytes) }
 }
 
 /// The text-run spans of picture paragraphs, in order; a property page that doesn't make sense ends the walk, leaving the rest as text.

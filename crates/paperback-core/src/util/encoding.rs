@@ -60,6 +60,13 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 	String::from_utf8_lossy(input).to_string()
 }
 
+/// Text from an ANSI-era format. A few symbol-font bytes (checkboxes, bullets) in Western text read to the detector as a CJK encoding, which then swallows the letter after each, so text that is almost all ASCII is taken as Windows-1252.
+#[must_use]
+pub fn decode_ansi(input: &[u8]) -> String {
+	let high = input.iter().filter(|&&byte| byte >= 0x80).count();
+	if high * 20 < input.len() { WINDOWS_1252.decode(input).0.into_owned() } else { convert_to_utf8(input) }
+}
+
 /// The HTML specification's prescan length for `<meta charset>`.
 const HTML_PRESCAN_BYTES: usize = 1024;
 

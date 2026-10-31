@@ -1,6 +1,10 @@
-use std::path::Path;
+use std::{
+	fs::{self, File},
+	io::Read,
+	path::Path,
+};
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 
 use crate::{
 	document::{Document, ParserContext},
@@ -33,6 +37,13 @@ impl Parser for WordParser {
 			return ooxml::parse_word_zip(context, render_tables_inline);
 		}
 		if extension == "doc" {
+			let mut magic = [0u8; 2];
+			let read = File::open(&context.file_path).and_then(|mut file| file.read_exact(&mut magic));
+			if read.is_ok() && legacy::is_winword_magic(u16::from_le_bytes(magic)) {
+				let data = fs::read(&context.file_path)
+					.with_context(|| format!("Failed to read DOC file '{}'", context.file_path))?;
+				return legacy::parse_winword_doc(context, &data);
+			}
 			match legacy::parse_legacy_doc(context) {
 				Ok(mut document) => {
 					apply_summary_information(&mut document, &context.file_path);

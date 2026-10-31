@@ -1,4 +1,4 @@
-use super::{looks_like_text_content, normalize_doc_text, parse_doc_clx, parse_doc_piece_table};
+use super::{looks_like_text_content, normalize_doc_text, parse_doc_clx, parse_doc_piece_table, winword_text};
 
 #[test]
 fn parse_doc_piece_table_extracts_ansi_text() {
@@ -67,4 +67,56 @@ fn extract_word6_text_survives_nonsense_bounds() {
 	wd[0x18..0x1C].copy_from_slice(&0x30u32.to_le_bytes());
 	wd[0x1C..0x20].copy_from_slice(&0x10u32.to_le_bytes());
 	let _ = extract_word6_text(&wd);
+}
+
+fn winword2(text: &[u8]) -> Vec<u8> {
+	let mut file = vec![0u8; 0x180];
+	file[0..2].copy_from_slice(&0xA5DBu16.to_le_bytes());
+	file[0x18..0x1C].copy_from_slice(&0x180u32.to_le_bytes());
+	file[0x1C..0x20].copy_from_slice(&u32::try_from(0x180 + text.len()).unwrap().to_le_bytes());
+	file.extend_from_slice(text);
+	file
+}
+
+#[test]
+fn a_word_for_windows_2_file_reads_its_text_run() {
+	assert_eq!(winword_text(&winword2(b"Hello\rWorld\r")).as_deref(), Some("Hello\rWorld\r"));
+}
+
+#[test]
+fn a_fast_saved_word_for_windows_file_reads_its_pieces_in_order() {
+	let mut file = winword2(b"World\rHello ");
+	file[0x0A] = 0x04;
+	let clx_at = u32::try_from(file.len()).unwrap();
+	let mut clx = vec![2u8];
+	clx.extend_from_slice(&28u16.to_le_bytes());
+	for cp in [0u32, 6, 12] {
+		clx.extend_from_slice(&cp.to_le_bytes());
+	}
+	for fc in [0x180u32 + 6, 0x180] {
+		clx.extend_from_slice(&0u16.to_le_bytes());
+		clx.extend_from_slice(&fc.to_le_bytes());
+		clx.extend_from_slice(&0u16.to_le_bytes());
+	}
+	file.extend_from_slice(&clx);
+	file[0x11E..0x122].copy_from_slice(&clx_at.to_le_bytes());
+	file[0x122..0x124].copy_from_slice(&u16::try_from(clx.len()).unwrap().to_le_bytes());
+	assert_eq!(winword_text(&file).as_deref(), Some("Hello World\r"));
+}
+
+#[test]
+fn a_fast_saved_file_whose_pieces_make_no_sense_falls_back_to_its_run() {
+	let mut file = winword2(b"Last full save\r");
+	file[0x0A] = 0x04;
+	file[0x11E..0x122].copy_from_slice(&9_999_999u32.to_le_bytes());
+	assert_eq!(winword_text(&file).as_deref(), Some("Last full save\r"));
+}
+
+#[test]
+fn a_word_for_windows_file_reads_its_text_and_footnotes_but_not_its_headers() {
+	let mut file = winword2(b"Body\rNote\rRunning head\r");
+	file[0x34..0x38].copy_from_slice(&5u32.to_le_bytes());
+	file[0x38..0x3C].copy_from_slice(&5u32.to_le_bytes());
+	file[0x3C..0x40].copy_from_slice(&13u32.to_le_bytes());
+	assert_eq!(winword_text(&file).as_deref(), Some("Body\rNote\r"));
 }
