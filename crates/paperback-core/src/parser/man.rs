@@ -117,6 +117,12 @@ struct Reader<'a> {
 	index: usize,
 	toc: Vec<TocItem>,
 	render_tables_inline: bool,
+	/// The body of a condition that held, read as the next line.
+	queued: Option<String>,
+	/// `\{` blocks opened by conditions that held, each closed by the next `\}`.
+	open_blocks: usize,
+	/// Each `.ie` result, for its `.el`; `None` when the condition can't be known, so neither branch is read.
+	else_stack: Vec<Option<bool>>,
 }
 
 impl Page {
@@ -129,6 +135,9 @@ impl Page {
 			index: 0,
 			toc: Vec::new(),
 			render_tables_inline,
+			queued: None,
+			open_blocks: 0,
+			else_stack: Vec::new(),
 		};
 		reader.run();
 		Self { buffer: reader.renderer.finish(), title: reader.title, toc: reader.toc }
@@ -137,8 +146,15 @@ impl Page {
 
 impl Reader<'_> {
 	fn run(&mut self) {
-		while self.index < self.lines.len() {
-			let line = self.joined_line();
+		while let Some(mut line) =
+			self.queued.take().or_else(|| (self.index < self.lines.len()).then(|| self.joined_line()))
+		{
+			while self.open_blocks > 0
+				&& let Some(at) = line.find("\\}")
+			{
+				line.replace_range(at..at + 2, "");
+				self.open_blocks -= 1;
+			}
 			if is_comment(&line) {
 				continue;
 			}
@@ -181,6 +197,11 @@ impl Reader<'_> {
 	}
 
 	fn control(&mut self, name: &str, rest: &str) {
+		// Ahead of the tag check, since translated pages write `.TP` then `.if !'po4a'hide' .B \-\-help`.
+		if matches!(name, "if" | "ie" | "el") {
+			self.conditional(name, rest);
+			return;
+		}
 		// A text-laying macro where a tag was expected supplies the tag: `.TP` then `.B \-\-help` is how most options are written.
 		if self.pending == Pending::Tag {
 			self.pending = Pending::Nothing;
@@ -211,8 +232,9 @@ impl Reader<'_> {
 			"UR" | "MT" => self.open_link(name, &args),
 			"UE" | "ME" => self.close_link(&args),
 			"TS" => self.table(),
-			"de" | "de1" | "am" | "ig" => self.skip_definition(),
-			"if" | "ie" | "el" => self.skip_conditional(rest),
+			// `.ig XX` and `.de name XX` end at `.XX` rather than `..`.
+			"ig" => self.skip_definition(args.first()),
+			"de" | "de1" | "am" => self.skip_definition(args.get(1)),
 			_ => {
 				if let Some(pieces) = font_macro_pieces(name, rest) {
 					self.renderer.write_line(&pieces);
@@ -304,11 +326,41 @@ impl Reader<'_> {
 		self.renderer.table(&rows, self.render_tables_inline);
 	}
 
-	fn skip_definition(&mut self) {
+	fn skip_definition(&mut self, end: Option<&String>) {
+		// `.de Vb \" Begin verbatim text` has a comment where the end marker would go.
+		let end = end
+			.filter(|end| !end.starts_with("\\\"") && !end.starts_with("\\#"))
+			.map_or_else(|| "..".to_string(), |end| format!(".{end}"));
 		while self.index < self.lines.len() {
-			if self.joined_line().trim() == ".." {
+			if self.joined_line().trim() == end {
 				return;
 			}
+		}
+	}
+
+	fn conditional(&mut self, name: &str, rest: &str) {
+		let (taken, body) = if name == "el" {
+			(self.else_stack.pop().flatten().map(|held| !held), rest)
+		} else {
+			let (held, body) = evaluate_condition(rest);
+			if name == "ie" {
+				self.else_stack.push(held);
+			}
+			(held, body)
+		};
+		if taken != Some(true) {
+			self.skip_conditional(body);
+			return;
+		}
+		let body = body.trim_start();
+		let body = if let Some(inner) = body.strip_prefix("\\{") {
+			self.open_blocks += 1;
+			inner.trim_start()
+		} else {
+			body
+		};
+		if !body.is_empty() {
+			self.queued = Some(body.to_string());
 		}
 	}
 
@@ -323,6 +375,31 @@ impl Reader<'_> {
 			depth = depth.saturating_sub(line.matches("\\}").count());
 		}
 	}
+}
+
+/// The condition's truth as far as a reader rendering to plain text can know it, `None` for registers, glyphs, page parity and expressions, and the body after it.
+fn evaluate_condition(rest: &str) -> (Option<bool>, &str) {
+	let (negated, rest) = rest.strip_prefix('!').map_or((false, rest), |rest| (true, rest));
+	let Some(first) = rest.chars().next() else { return (None, "") };
+	let alone = rest[first.len_utf8()..].chars().next().is_none_or(|next| !next.is_alphanumeric());
+	let (held, body) = match first {
+		'n' if alone => (Some(true), &rest[1..]),
+		't' | 'v' if alone => (Some(false), &rest[1..]),
+		'0'..='9' => {
+			let end = rest.find(|c: char| !c.is_ascii_digit()).unwrap_or(rest.len());
+			(rest[..end].parse::<u64>().ok().map(|number| number > 0), &rest[end..])
+		}
+		// `'a'b'`: two strings between three of one delimiter.
+		delimiter if !delimiter.is_alphanumeric() && !matches!(delimiter, '\\' | '(' | ' ' | '\t') => {
+			let mut parts = rest[delimiter.len_utf8()..].splitn(3, delimiter);
+			match (parts.next(), parts.next(), parts.next()) {
+				(Some(left), Some(right), Some(body)) => (Some(escape::plain(left) == escape::plain(right)), body),
+				_ => (None, ""),
+			}
+		}
+		_ => (None, &rest[rest.find(char::is_whitespace).unwrap_or(rest.len())..]),
+	};
+	(held.map(|held| held != negated), body)
 }
 
 fn is_comment(line: &str) -> bool {

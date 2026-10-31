@@ -306,3 +306,58 @@ One:Two
 	));
 	assert!(text.contains("One\tTwo"), "{text}");
 }
+
+#[test]
+fn a_pod2man_item_reads_its_nroff_branch() {
+	let text = text_of(&page(
+		r#".SH METHODS
+.ie n .IP "$e\->set_callback" 4
+.el .IP "\f(CW$e\fR\->set_callback" 4
+Set the custom callback.
+"#,
+	));
+	assert!(text.contains("$e->set_callback") && text.contains("Set the custom callback."), "{text}");
+	assert_eq!(text.matches("set_callback").count(), 1, "{text}");
+}
+
+#[test]
+fn a_po4a_option_tag_is_kept() {
+	let text = text_of(&page(
+		r#".SH OPTIONS
+.TP
+.if !'po4a'hide' .BR \-d ", " \-\-debug
+Print debugging information.
+"#,
+	));
+	assert!(text.contains("-d, --debug") && text.contains("Print debugging information."), "{text}");
+}
+
+#[test]
+fn a_block_is_read_only_when_its_condition_holds() {
+	let text = text_of(&page(
+		r".SH DESCRIPTION
+.if n \{\
+Shown on a terminal.
+.\}
+.if t \{\
+Only typeset.
+.\}
+.if \n(.g Unknown register.
+After.
+",
+	));
+	assert!(text.contains("Shown on a terminal.") && text.contains("After."), "{text}");
+	assert!(!text.contains("Only typeset.") && !text.contains("Unknown register."), "{text}");
+}
+
+#[test]
+fn an_ignored_block_ends_at_its_own_marker() {
+	let text = text_of(&page(".SH DESCRIPTION\n.if n .ig ++\nTypeset only.\n.++\nRead everywhere.\n"));
+	assert!(text.contains("Read everywhere.") && !text.contains("Typeset only."), "{text}");
+}
+
+#[test]
+fn a_comment_after_a_definition_name_is_not_its_end_marker() {
+	let text = text_of(&page(".de Vb \\\" Begin verbatim text\n.ft CW\n..\n.SH DESCRIPTION\nStill read.\n"));
+	assert!(text.contains("Still read."), "{text}");
+}
