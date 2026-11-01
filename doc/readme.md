@@ -303,6 +303,132 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 
 ## Changelog
 
+### Version 1.1
+
+1.1 brings a new PDF engine, a rebuilt iOS text mode, OCR on Linux, documents from links, and decades of older Word, Write, and PowerPoint files.
+
+#### Added
+
+##### General
+* A Hungarian translation and user guide.
+* Open a document from a link, on every platform. `F5` downloads it again.
+* `F5` reloads the document.
+* `Ctrl+1` to `Ctrl+9` jump to your first nine open documents.
+* `Ctrl+Tab` and `Ctrl+Shift+Tab` switch documents on macOS and Linux.
+* The Open dialog and All Documents open every document you pick, each in its own tab.
+* Save a picture from the context menu.
+* Export bookmarks and notes as text or HTML.
+* Settings for the log level, and for whether Find selects its match.
+* The window hotkey can be any key, set on the new System-Wide tab of Keyboard Shortcuts.
+* Copying says how much it copied, and the text stays on the clipboard after Paperback closes.
+* Every menu item has its own access key in every language.
+* An unreadable zip opens as a list of the documents inside.
+
+##### New Formats
+* Word for Windows 1 and 2, Word for DOS, Word for Mac 4 and 5, and the Unicode editions of Word 6 and 95.
+* PowerPoint 95.
+* Zipped FictionBook (`.fb2.zip`).
+* DAISY 3 books that are only a DTBook in a zip, or only audio.
+
+##### OCR
+* OCR on Linux, through Tesseract.
+* Recognize Current Page (`Ctrl+Shift+R`) reads the page you're on again, even if it has text.
+* `Enter` on a picture reads its text.
+* Recognized text follows the page's layout, and is remembered, so a scanned document opens with its text.
+* Batch OCR can redo pages that have text, reads several pages at once, and stops when you close the document.
+
+##### Audio Books
+* Speeds up to 4x everywhere, remembered across sessions.
+* Volume controls.
+
+##### PDF Documents
+* A new PDF engine: faster, uses every CPU core, and needs no pdfium library.
+* Headings found in untagged pages, and better titles.
+* A setting to keep repeated page headers and footers.
+
+##### Other Documents
+* Word: numbered and bulleted lists, footnotes, endnotes, comments, picture alt text, list navigation, and Word's own pages.
+* OpenDocument: footnotes and comments after the text.
+* Titles and authors from the document's metadata in Word, PowerPoint, OpenDocument, RTF, Markdown, and reStructuredText.
+* Comics: title, writer, page types, and bookmarks from ComicInfo.xml.
+* FB2: headings, a table of contents, and separate verse lines.
+* Pictures in MOBI, KF8, and zipped DAISY books can be saved and read with OCR.
+* Dollar-delimited math in Markdown.
+* Sphinx directives in reStructuredText.
+* Pictures with no description show as [Image].
+
+##### iOS and Android
+* A Language row in Settings.
+* Document Info shows your progress, and an audio book's file count and running time.
+* Text mode is remembered.
+* Keep reading continuously after a Find.
+* iOS: text mode rebuilt for VoiceOver. Read All goes through the whole book, the rotors reach all of it, lists and tables are real lists and tables, three-finger flicks turn pages, and the three-finger tap gives the page and percentage.
+* iOS: a voice, rate, and pitch per book, from Speech for This Book.
+* iOS: password-protected documents.
+* iOS: share zipped DAISY books and MP3 audio books to Paperback.
+* iOS: the sleep timer stops audio books.
+* iOS: Slovak and Ukrainian.
+* Android: rate and pitch changes apply to the paragraph being read, and work with the system default engine.
+* Android: runs on x86_64 devices.
+
+##### macOS
+* A universal app, native on Intel and Apple silicon.
+* pb is included in the app.
+
+##### pb
+* Convert by page, a whole folder, a list of files (`--files-from`), or a link.
+
+#### Changed
+* The menu bar is reorganized into eight menus.
+* The status bar says "Progress" instead of "Reading".
+* Menu commands announce what they did, instead of being drowned out as the menu closes.
+* Updates close Paperback normally and bring it back to the front.
+* Huge text files open with a fraction of the memory, and the 4 GB limit is gone.
+* MOBI, Word, and HTML conversion, Find All, and All Documents search are faster.
+* The Windows executable is 3 MB smaller.
+
+#### Fixed
+
+##### General
+* Punctuation shortcuts on keyboard layouts that need Shift for them; Keyboard Shortcuts flags any your layout can't type.
+* Focus returns to the document after `Win+D`.
+* Crashes opening bookmarks for a new document, in Find All, and on some damaged MOBI files.
+* Regex Find selects the whole match.
+* An audio book's status bar no longer flips between audio and text progress.
+* The word count includes text read with OCR.
+* Scanned pages no longer announce their own image.
+* The installer's PATH option.
+* Linux updates find their downloads, and an AppImage updates as an AppImage.
+* The comment line in Word and OpenDocument files is translated.
+
+##### Documents
+* Windows Write files that opened as binary.
+* PDF: text repeated at page breaks in tagged PDFs, second columns read first, lost spaces and line-end hyphens, text in Type 3 fonts, and contents dot leaders.
+* RTF: bare CR line endings, dash-bulleted lists, text before the first paragraph, accented and CJK text, text lost after an escaped backslash, and RTF saved as `.doc`.
+* Word and PowerPoint files with damaged containers that Word still opens.
+* Word text in tracked changes, fields, and table cells.
+* PowerPoint links, slides with no text, and emoji.
+* `<` and `&` in Word, PowerPoint, and OpenDocument table cells.
+* Password-protected OpenDocument files from current LibreOffice.
+* CHM files in their code page, and HTML and DAISY files in their declared encoding.
+* Zipped DAISY books whose references use the wrong case, and DAISY 2.02 books reading only a section's first phrase.
+* Man pages that redirect with `.so`.
+* Markdown front matter read as text.
+
+##### macOS
+* Line-start navigation, keyboard activation, and copy announcements.
+* VoiceOver's context menu command opens Paperback's own.
+* Menu shortcuts are no longer announced over what they do.
+
+##### iOS and Android
+* iOS: launch no longer killed while restoring large books.
+* iOS: reopens on the tab you were reading, closing a tab no longer reads the previous book, and Recent Documents keep their order.
+* iOS: audio books are no longer extracted again at every launch.
+* iOS: speech dictionary regex rules take `\1`.
+* Android: reading aloud from password-protected documents.
+* Android: Previous at the top no longer re-reads the first paragraph, and text mode no longer snaps its scroll.
+* Android: less battery use while reading and paused.
+
 ### Version 1.0
 
 1.0 is the first release on all five platforms: Windows, macOS, Linux, iOS and Android, with the iOS and Android apps in the App Store and Google Play.
