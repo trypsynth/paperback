@@ -305,7 +305,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 
 ### Version 1.1
 
-1.1 brings a new PDF engine, a rebuilt iOS text mode, OCR on Linux, documents from links, and decades of older Word, Write, and PowerPoint files.
+1.1 brings a new PDF engine, a rebuilt iOS text mode, OCR on Linux, documents from links, support for decades of older Word, Write, and PowerPoint files, and much more.
 
 #### Added
 
