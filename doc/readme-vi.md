@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2ee08ef3b88d958e; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,2e336a82); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: c7ae4501120b67cc; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - phiên bản 1.0
 
@@ -307,7 +307,7 @@ Lưu ý: Tôi coi một nhà tài trợ GitHub công khai là căn cứ để t�
 
 ### Phiên bản 1.1
 
-1.1 mang đến một công cụ PDF mới, chế độ văn bản iOS được xây dựng lại, OCR trên Linux, tài liệu từ liên kết và các tệp Word, Write và PowerPoint cũ từ nhiều thập kỷ trước.
+1.1 mang đến một công cụ PDF mới, chế độ văn bản iOS được xây dựng lại, OCR trên Linux, tài liệu từ liên kết, hỗ trợ cho hàng chục năm các tệp Word, Write và PowerPoint cũ hơn, và nhiều hơn nữa.
 
 #### Được thêm
 

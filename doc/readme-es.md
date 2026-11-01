@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2ee08ef3b88d958e; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,2e336a82); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: c7ae4501120b67cc; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versión 1.0
 
@@ -307,7 +307,7 @@ Nota: Considero que ser un patrocinador público de GitHub es motivo suficiente 
 
 ### Versión 1.1
 
-1.1 trae un nuevo motor PDF, un modo de texto iOS reconstruido, OCR en Linux, documentos desde enlaces, y décadas de archivos antiguos de Word, Write y PowerPoint.
+1.1 trae un nuevo motor PDF, un modo de texto iOS reconstruido, OCR en Linux, documentos desde enlaces, compatibilidad con décadas de archivos antiguos de Word, Write y PowerPoint, y mucho más.
 
 #### Agregado
 
