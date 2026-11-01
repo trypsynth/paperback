@@ -146,7 +146,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Teljesen hordozható módon is futtatható, de telepíthető is, ekkor a fájltársítások automatikusan beállnak.</li>
 <li>A gyakori fájlformátumok rendkívül széles körét támogatja.</li>
 <li>Hangoskönyveket is lejátszik, állítható sebességgel és olyan könyvjelzőkkel, amelyek a pontos időpontot jegyzik meg.</li>
-<li>A szkennelt PDF-oldalakat a Windows és a macOS beépített szövegfelismerésével teszi olvashatóvá.</li>
+<li>A szkennelt PDF-oldalakat a Windows és a macOS beépített Felismeréssével, illetve Linux alatt a Tesseract segítségével teszi olvashatóvá.</li>
 <li>Könyvjelzők és jegyzetek, hogy megjelölhesse, hol tart, és később visszatérhessen oda.</li>
 <li>Minden billentyűparancs módosítható.</li>
 <li>Dokumentumokat közvetlenül http- és https-hivatkozásokról is megnyit, és újra letölti őket, amikor ismét megnyitja őket, vagy megnyomja az <code>F5</code> billentyűt; az olvasási pozíció és a könyvjelzők ilyenkor is megmaradnak. A korábban megnyitott dokumentumok visszaállításakor a hivatkozásról megnyitottak közül a legfeljebb 2 MB méretűeket tölti le újra.</li>
@@ -340,7 +340,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>Ugrás:</strong> ugrás egy sorra, egy oldalra vagy a dokumentum adott százalékára. Hogy melyikre, azt a Mód választóval adhatja meg.</li>
 <li><strong>Legutóbbi dokumentumok:</strong> az összes dokumentum, amelyet valaha megnyitott; mindegyiknél ott áll, hogy „Jelenleg megnyitva”, „Bezárva” vagy „A fájl hiányzik”. Mindegyikhez két képernyőolvasó-művelet tartozik: az Eltávolítás leveszi a listáról, a Megkeresés segítségével pedig megkeresheti azt a dokumentumot, amelynek a fájlja máshová került. A Legutóbbi dokumentumok listájának kiürítése kiüríti a listát, de egyetlen dokumentumot sem töröl.</li>
 <li><strong>Szavak száma:</strong> a dokumentumban lévő szavak száma.</li>
-<li><strong>Dokumentuminformáció:</strong> a cím, a szerző, a fájlnév, iOS-en pedig a sorok és a karakterek száma is.</li>
+<li><strong>Dokumentuminformáció:</strong> a cím, a szerző, a fájlnév, az olvasási pozíció, valamint a szavak, sorok és karakterek száma. Hangoskönyv esetén azt is mutatja, hány fájlja van, és amikor a Paperback ezt képes megállapítani, azok összes hossza és átlagos hossza.</li>
 <li><strong>Exportálás:</strong> a dokumentum mentése egyszerű szövegként, HTML-ként vagy Markdownként.</li>
 <li><strong>Elalvási időzítő:</strong> 5, 10, 15, 30, 45 vagy 60 perc, illetve egy saját maga által megadott idő elteltével leállítja a felolvasást. Ha futás közben újra megnyitja, láthatja, mennyi idő van hátra, és le is állíthatja.</li>
 <li><strong>Súgó:</strong> megnyitja ezt a kézikönyvet.</li>
