@@ -99,17 +99,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 </li>
 <li><a href="#registro-de-cambios">Registro de cambios</a><ul>
+<li><a href="#versión-11">Versión 1.1</a><ul>
+<li><a href="#agregado">Agregado</a></li>
+<li><a href="#cambiado">Cambiado</a></li>
+<li><a href="#corregido">Corregido</a></li>
+</ul>
+</li>
 <li><a href="#versión-10">Versión 1.0</a><ul>
 <li><a href="#añadido">Añadido</a></li>
-<li><a href="#corregido">Corregido</a></li>
-<li><a href="#ios-y-android-1">iOS y Android</a></li>
+<li><a href="#corregido-1">Corregido</a></li>
+<li><a href="#ios-y-android-3">iOS y Android</a></li>
 </ul>
 </li>
 <li><a href="#versión-092">Versión 0.9.2</a></li>
 <li><a href="#versión-091">Versión 0.9.1</a></li>
 <li><a href="#versión-090">Versión 0.9.0</a><ul>
-<li><a href="#agregado">Agregado</a></li>
-<li><a href="#corregido-1">Corregido</a></li>
+<li><a href="#agregado-1">Agregado</a></li>
+<li><a href="#corregido-2">Corregido</a></li>
 </ul>
 </li>
 <li><a href="#versión-085">Versión 0.8.5</a></li>
@@ -406,10 +412,146 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Tyler Rodick</li>
 </ul>
 <h2 id="registro-de-cambios">Registro de cambios</h2>
+<h3 id="versión-11">Versión 1.1</h3>
+<p>1.1 trae un nuevo motor PDF, un modo de texto iOS reconstruido, OCR en Linux, documentos desde enlaces, y décadas de archivos antiguos de Word, Write y PowerPoint.</p>
+<h4 id="agregado">Agregado</h4>
+<h5 id="general">General</h5>
+<ul>
+<li>Una traducción al húngaro y una guía de usuario.</li>
+<li>Abrir un documento desde un enlace, en todas las plataformas. <code>F5</code> lo descarga nuevamente.</li>
+<li><code>F5</code> recarga el documento.</li>
+<li><code>Ctrl+1</code> a <code>Ctrl+9</code> saltan a tus primeros nueve documentos abiertos.</li>
+<li><code>Ctrl+Tab</code> y <code>Ctrl+Shift+Tab</code> cambian documentos en macOS y Linux.</li>
+<li>El diálogo Abrir y Todos los documentos abren cada documento que elijas, cada uno en su propia pestaña.</li>
+<li>Guardar una imagen desde el menú contextual.</li>
+<li>Exportar marcapáginas y notas como texto o HTML.</li>
+<li>Configuración para el nivel de registro, y para si Buscar selecciona su coincidencia.</li>
+<li>La tecla de acceso directo de la ventana puede ser cualquier tecla, configurada en la nueva pestaña En todo el sistema de Personalizar atajos de teclado.</li>
+<li>Copiar dice cuánto copió, y el texto permanece en el portapapeles después de que Paperback se cierra.</li>
+<li>Cada elemento del menú tiene su propia tecla de acceso en todos los idiomas.</li>
+<li>Un archivo ZIP ilegible se abre como una lista de los documentos dentro.</li>
+</ul>
+<h5 id="nuevos-formatos">Nuevos formatos</h5>
+<ul>
+<li>Word para Windows 1 y 2, Word para DOS, Word para Mac 4 y 5, y las ediciones Unicode de Word 6 y 95.</li>
+<li>PowerPoint 95.</li>
+<li>FictionBook comprimido (<code>.fb2.zip</code>).</li>
+<li>Libros DAISY 3 que son solo un DTBook en un archivo zip, o solo audio.</li>
+</ul>
+<h5 id="ocr">OCR</h5>
+<ul>
+<li>OCR en Linux, a través de Tesseract.</li>
+<li>Reconocer página actual (<code>Ctrl+Shift+R</code>) lee la página en la que estás nuevamente, incluso si tiene texto.</li>
+<li><code>Enter</code> en una imagen lee su texto.</li>
+<li>El texto reconocido sigue el diseño de la página, y se recuerda, por lo que un documento escaneado se abre con su texto.</li>
+<li>OCR por lotes puede rehacer páginas que tengan texto, lee varias páginas a la vez, y se detiene cuando cierras el documento.</li>
+</ul>
+<h5 id="audiolibros">Audiolibros</h5>
+<ul>
+<li>Velocidades de hasta 4x en todas partes, recordadas entre sesiones.</li>
+<li>Controles de volumen.</li>
+</ul>
+<h5 id="documentos-pdf">Documentos PDF</h5>
+<ul>
+<li>Un nuevo motor PDF: más rápido, utiliza todos los núcleos de CPU, y no necesita biblioteca pdfium.</li>
+<li>Encabezados encontrados en páginas sin etiquetar, y títulos mejores.</li>
+<li>Una configuración para mantener encabezados y pies de página de página repetidos.</li>
+</ul>
+<h5 id="otros-documentos">Otros documentos</h5>
+<ul>
+<li>Word: listas numeradas y con viñetas, notas al pie, notas finales, comentarios, texto alternativo de imagen, navegación de listas, y páginas propias de Word.</li>
+<li>OpenDocument: notas al pie y comentarios después del texto.</li>
+<li>Títulos y autores de los metadatos del documento en Word, PowerPoint, OpenDocument, RTF, Markdown y reStructuredText.</li>
+<li>Cómics: título, escritor, tipos de página y marcadores de ComicInfo.xml.</li>
+<li>FB2: encabezados, tabla de contenidos, y líneas de verso separadas.</li>
+<li>Las imágenes en libros MOBI, KF8 y DAISY comprimidos se pueden guardar y leer con OCR.</li>
+<li>Matemáticas delimitadas por dólares en Markdown.</li>
+<li>Directivas Sphinx en reStructuredText.</li>
+<li>Las imágenes sin descripción se muestran como [Imagen].</li>
+</ul>
+<h5 id="ios-y-android-1">iOS y Android</h5>
+<ul>
+<li>Una fila Idioma en Configuración.</li>
+<li>Información del documento muestra tu progreso, y el recuento de archivos de un audiolibro y su tiempo de ejecución.</li>
+<li>El modo de texto se recuerda.</li>
+<li>Continúa leyendo después de Buscar.</li>
+<li>iOS: modo de texto reconstruido para VoiceOver. Leer todo recorre todo el libro, los rotores llegan a todo, las listas y tablas son listas y tablas reales, los gestos de tres dedos giran páginas, y el toque de tres dedos da la página y el porcentaje.</li>
+<li>iOS: una voz, velocidad y tono por libro, desde Voz para este libro.</li>
+<li>iOS: documentos protegidos por contraseña.</li>
+<li>iOS: comparte libros DAISY comprimidos y audiolibros MP3 con Paperback.</li>
+<li>iOS: el temporizador de sueño detiene los audiolibros.</li>
+<li>iOS: eslovaco y ucraniano.</li>
+<li>Android: los cambios de velocidad y tono se aplican al párrafo que se está leyendo, y funcionan con el motor predeterminado del sistema.</li>
+<li>Android: se ejecuta en dispositivos x86_64.</li>
+</ul>
+<h5 id="macos">macOS</h5>
+<ul>
+<li>Una aplicación universal, nativa en Intel y Apple silicon.</li>
+<li>pb se incluye en la aplicación.</li>
+</ul>
+<h5 id="pb">pb</h5>
+<ul>
+<li>Convertir por página, una carpeta completa, una lista de archivos (<code>--files-from</code>), o un enlace.</li>
+</ul>
+<h4 id="cambiado">Cambiado</h4>
+<ul>
+<li>La barra de menú se reorganiza en ocho menús.</li>
+<li>La barra de estado dice “Progreso” en lugar de “Leyendo”.</li>
+<li>Los comandos del menú anuncian lo que hicieron, en lugar de ser ahogados cuando se cierra el menú.</li>
+<li>Las actualizaciones cierran Paperback normalmente y lo traen al frente.</li>
+<li>Los archivos de texto enormes se abren con una fracción de la memoria, y el límite de 4 GB se ha ido.</li>
+<li>La conversión de MOBI, Word e HTML, Buscar todo y la búsqueda de Todos los documentos son más rápidas.</li>
+<li>El ejecutable de Windows es 3 MB más pequeño.</li>
+</ul>
+<h4 id="corregido">Corregido</h4>
+<h5 id="general-1">General</h5>
+<ul>
+<li>Atajos de puntuación en diseños de teclado que necesitan Mayús para ellos; Personalizar atajos de teclado marca cualquiera que tu diseño no pueda escribir.</li>
+<li>El enfoque vuelve al documento después de <code>Win+D</code>.</li>
+<li>Bloqueos al abrir marcapáginas para un documento nuevo, en Buscar todo, y en algunos archivos MOBI dañados.</li>
+<li>Buscar Regex selecciona la coincidencia completa.</li>
+<li>La barra de estado de un audiolibro ya no se voltea entre el progreso de audio y texto.</li>
+<li>El recuento de palabras incluye texto leído con OCR.</li>
+<li>Las páginas escaneadas ya no anuncian su propia imagen.</li>
+<li>La opción PATH del instalador.</li>
+<li>Las actualizaciones de Linux encuentran sus descargas, y una AppImage se actualiza como una AppImage.</li>
+<li>La línea de comentario en archivos Word y OpenDocument está traducida.</li>
+</ul>
+<h5 id="documentos">Documentos</h5>
+<ul>
+<li>Archivos Windows Write que se abrían como binarios.</li>
+<li>PDF: texto repetido en saltos de página en PDF etiquetados, segundo las columnas se leen primero, espacios perdidos y guiones al final de línea, texto en fuentes Tipo 3, y líderes de puntos de contenido.</li>
+<li>RTF: terminaciones de línea CR desnudas, listas con viñetas de guión, texto antes del primer párrafo, texto acentuado y CJK, texto perdido después de una barra invertida escapada, y RTF guardado como <code>.doc</code>.</li>
+<li>Archivos Word y PowerPoint con contenedores dañados que Word aún abre.</li>
+<li>Texto de Word en cambios rastreados, campos y celdas de tabla.</li>
+<li>Enlaces de PowerPoint, diapositivas sin texto y emoji.</li>
+<li><code>&lt;</code> y <code>&amp;</code> en celdas de tabla de Word, PowerPoint y OpenDocument.</li>
+<li>Archivos OpenDocument protegidos por contraseña de LibreOffice actual.</li>
+<li>Archivos CHM en su página de códigos, y archivos HTML y DAISY en su codificación declarada.</li>
+<li>Libros DAISY comprimidos cuyas referencias usan mayúsculas incorrectas, y libros DAISY 2.02 que leen solo la primera frase de una sección.</li>
+<li>Páginas de manual que redirigen con <code>.so</code>.</li>
+<li>Portada de Markdown leída como texto.</li>
+</ul>
+<h5 id="macos-1">macOS</h5>
+<ul>
+<li>Navegación de inicio de línea, activación de teclado y anuncios de copia.</li>
+<li>El comando del menú contextual de VoiceOver abre el propio de Paperback.</li>
+<li>Los atajos del menú ya no se anuncian sobre lo que hacen.</li>
+</ul>
+<h5 id="ios-y-android-2">iOS y Android</h5>
+<ul>
+<li>iOS: el lanzamiento ya no se mata mientras se restauran libros grandes.</li>
+<li>iOS: se reabre en la pestaña que estabas leyendo, cerrar una pestaña ya no lee el libro anterior, y Documentos recientes mantienen su orden.</li>
+<li>iOS: los audiolibros ya no se extraen nuevamente en cada lanzamiento.</li>
+<li>iOS: las reglas de expresión regular del diccionario de voz toman <code>\1</code>.</li>
+<li>Android: lectura en voz alta desde documentos protegidos por contraseña.</li>
+<li>Android: Anterior en la parte superior ya no relee el primer párrafo, y el modo de texto ya no ajusta su desplazamiento.</li>
+<li>Android: menor uso de batería mientras se lee y se pausa.</li>
+</ul>
 <h3 id="versión-10">Versión 1.0</h3>
 <p>1.0 es el primer lanzamiento en las cinco plataformas: Windows, macOS, Linux, iOS y Android, con las aplicaciones de iOS y Android en la App Store y Google Play.</p>
 <h4 id="añadido">Añadido</h4>
-<h5 id="general">General</h5>
+<h5 id="general-2">General</h5>
 <ul>
 <li>Compatibilidad con Linux, como AppImage o tar.gz, con integración de escritorio para que los documentos se abran desde tu gestor de archivos.</li>
 <li>Marca el comienzo de una selección con <code>Alt+F9</code>, copia todo desde ahí hasta donde hayas llegado con <code>Alt+F10</code>, y vuelve a la marca con <code>Alt+Shift+F9</code>, para copiar un largo fragmento de texto sin usar mayúscula y flechas. Los tres están en Herramientas &gt; Seleccionar y copiar.</li>
@@ -417,7 +559,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>El cuadro Acerca de ahora muestra la licencia de Paperback y todos los traductores.</li>
 <li>Una traducción al ucraniano.</li>
 </ul>
-<h5 id="nuevos-formatos">Nuevos formatos</h5>
+<h5 id="nuevos-formatos-1">Nuevos formatos</h5>
 <ul>
 <li>Archivos de historietas (<code>.cbz</code>).</li>
 <li>Audiolibros M4B, divididos en sus capítulos.</li>
@@ -428,7 +570,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Archivos WinHelp (<code>.hlp</code>).</li>
 <li>Documentos Word 6 y Word 95.</li>
 </ul>
-<h5 id="ocr">OCR</h5>
+<h5 id="ocr-1">OCR</h5>
 <ul>
 <li>Las páginas PDF escaneadas ahora pueden reconocerse con el OCR integrado en Windows y macOS. Presiona <code>Enter</code> en una página escaneada para reconocerla, o usa OCR por lotes (<code>Ctrl+Shift+O</code>) para un rango de páginas.</li>
 </ul>
@@ -442,7 +584,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Los libros KF8 (AZW3) ahora admiten navegación de secciones.</li>
 <li>Las páginas EPUB que son solo una imagen ahora muestran una línea para ella, para que puedas llegar a ellas en lugar de saltarlas directamente.</li>
 </ul>
-<h5 id="audiolibros">Audiolibros</h5>
+<h5 id="audiolibros-1">Audiolibros</h5>
 <ul>
 <li>Controles de velocidad de reproducción, desde media velocidad hasta tres veces más rápido. Usa <code>Ctrl+Shift+.</code> y <code>Ctrl+Shift+,</code>, o el menú Herramientas.</li>
 <li>Los marcadores y notas en libros solo de audio ahora recuerdan la hora exacta en que los estableciste.</li>
@@ -453,7 +595,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Un elemento Borrar documentos recientes en el submenú Documentos recientes.</li>
 </ul>
-<h5 id="documentos-pdf">Documentos PDF</h5>
+<h5 id="documentos-pdf-1">Documentos PDF</h5>
 <ul>
 <li>Una configuración para mantener cada línea de un PDF separada, en lugar de unirlas en párrafos.</li>
 <li>Las imágenes y figuras en PDFs ahora se anuncian.</li>
@@ -467,13 +609,13 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Los encabezados ahora se dibujan en un tamaño que coincide con su nivel, y las imágenes y tablas se separan del texto que las rodea.</li>
 </ul>
-<h5 id="pb">pb</h5>
+<h5 id="pb-1">pb</h5>
 <ul>
 <li><code>pb --list-formats</code> lista todos los formatos que pb puede leer.</li>
 <li>pb ahora indica qué archivo no pudo leer y por qué.</li>
 </ul>
-<h4 id="corregido">Corregido</h4>
-<h5 id="general-1">General</h5>
+<h4 id="corregido-1">Corregido</h4>
+<h5 id="general-3">General</h5>
 <ul>
 <li>Un libro reabierto al iniciar ahora se lee inmediatamente, en lugar de permanecer en silencio hasta que se cierre y se abra de nuevo.</li>
 <li>Un documento cuyo archivo se ha perdido ahora se puede eliminar de Todos los documentos, en lugar de permanecer en la lista sin importar cuántas veces confirmes.</li>
@@ -499,11 +641,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>La tabla de contenidos, la lista de elementos y la lista de marcapáginas ya no se retrasan ni se cuelgan en libros con miles de entradas.</li>
 <li>Las flechas Arriba y Abajo ahora recuerdan su columna por documento, en lugar de llevarla cuando cambias de pestaña.</li>
 </ul>
-<h5 id="audiolibros-1">Audiolibros</h5>
+<h5 id="audiolibros-2">Audiolibros</h5>
 <ul>
 <li>La reproducción de audio ahora usa <code>Control+Space</code> en macOS, ya que <code>Command+Space</code> pertenece a Spotlight.</li>
 </ul>
-<h5 id="documentos-pdf-1">Documentos PDF</h5>
+<h5 id="documentos-pdf-2">Documentos PDF</h5>
 <ul>
 <li>Se corrigieron los PDF exportados desde Apple Pages que se leían como texto sin formato, sin los encabezados y listas con los que se escribieron.</li>
 <li>Se corrigieron los párrafos y encabezados PDF que se dividían en cada línea, y palabras que se dividían en espacios.</li>
@@ -537,7 +679,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Los archivos de texto sin formato guardados con una extensión <code>.rtf</code> ahora se abren como texto, en lugar de fallar con un error.</li>
 <li>Las palabras de control RTF ya no aparecen como texto.</li>
 </ul>
-<h4 id="ios-y-android-1">iOS y Android</h4>
+<h4 id="ios-y-android-3">iOS y Android</h4>
 <p>Las aplicaciones de iOS y Android abren todos los formatos que hace el escritorio, e incluyen:</p>
 <ul>
 <li>Lectura en voz alta, con tu opción de voz, velocidad y tono, un control de velocidad de habla en la barra de lectura y una pausa opcional entre párrafos.</li>
@@ -582,8 +724,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>El diálogo de actualización ahora está traducido.</li>
 </ul>
 <h3 id="versión-090">Versión 0.9.0</h3>
-<h4 id="agregado">Agregado</h4>
-<h5 id="general-2">General</h5>
+<h4 id="agregado-1">Agregado</h4>
+<h5 id="general-4">General</h5>
 <ul>
 <li>Una herramienta de CLI, llamada pb, para convertir rápidamente cualquiera de los formatos compatibles de Paperback a HTML, Markdown o texto sin formato.</li>
 <li>Una opción para recargar documentos que han sido modificados por otros programas en el disco.</li>
@@ -661,7 +803,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Compatibilidad con libros DAISY 2.0.</li>
 <li>Compatibilidad con reproducción de audio DAISY 2.02.</li>
 </ul>
-<h5 id="audiolibros-2">Audiolibros</h5>
+<h5 id="audiolibros-3">Audiolibros</h5>
 <ul>
 <li>La capacidad de reproducir audiolibros, actualmente compatible tanto con audio DAISY (incluyendo audio DAISY + texto) como con archivos ZIP de archivos de audio.</li>
 <li>Atajos de teclado y elementos del menú para reproducir/pausar la narración, avanzar y retroceder, y ajustar la cantidad de búsqueda.</li>
@@ -675,8 +817,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Los documentos de PowerPoint ahora son compatibles con tablas.</li>
 </ul>
-<h4 id="corregido-1">Corregido</h4>
-<h5 id="general-3">General</h5>
+<h4 id="corregido-2">Corregido</h4>
+<h5 id="general-5">General</h5>
 <ul>
 <li>Los documentos codificados en conjuntos de caracteres CJK heredados, como GBK, Big5 y Shift_JIS, ahora se mostrarán correctamente en lugar de como mojibake.</li>
 <li>“Reabrir última cerrada” intentando reabrir el archivo readme incluido.</li>
@@ -746,7 +888,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Los elementos dl, dt y dd no producían saltos de línea en documentos XHTML.</li>
 </ul>
-<h5 id="documentos-pdf-2">Documentos PDF</h5>
+<h5 id="documentos-pdf-3">Documentos PDF</h5>
 <ul>
 <li>Paperback ahora recurre a la extracción de texto sin formato para PDF etiquetados falsamente.</li>
 <li>Los documentos PDF que contienen caracteres de control en sus títulos y/o marcadores ya no harán que Paperback falle al abrirse.</li>

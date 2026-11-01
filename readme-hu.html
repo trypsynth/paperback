@@ -99,17 +99,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 </li>
 <li><a href="#változásnapló">Változásnapló</a><ul>
-<li><a href="#10-s-verzió">1.0-s verzió</a><ul>
+<li><a href="#11-es-verzió">1.1-es verzió</a><ul>
 <li><a href="#újdonságok">Újdonságok</a></li>
+<li><a href="#módosítások">Módosítások</a></li>
 <li><a href="#javítások">Javítások</a></li>
-<li><a href="#ios-és-android-1">iOS és Android</a></li>
+</ul>
+</li>
+<li><a href="#10-s-verzió">1.0-s verzió</a><ul>
+<li><a href="#újdonságok-1">Újdonságok</a></li>
+<li><a href="#javítások-1">Javítások</a></li>
+<li><a href="#ios-és-android-3">iOS és Android</a></li>
 </ul>
 </li>
 <li><a href="#092-es-verzió">0.9.2-es verzió</a></li>
 <li><a href="#091-es-verzió">0.9.1-es verzió</a></li>
 <li><a href="#090-s-verzió">0.9.0-s verzió</a><ul>
-<li><a href="#újdonságok-1">Újdonságok</a></li>
-<li><a href="#javítások-1">Javítások</a></li>
+<li><a href="#újdonságok-2">Újdonságok</a></li>
+<li><a href="#javítások-2">Javítások</a></li>
 </ul>
 </li>
 <li><a href="#085-ös-verzió">0.8.5-ös verzió</a></li>
@@ -406,10 +412,146 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Tyler Rodick</li>
 </ul>
 <h2 id="változásnapló">Változásnapló</h2>
-<h3 id="10-s-verzió">1.0-s verzió</h3>
-<p>Az 1.0 az első kiadás mind az öt platformon: Windowson, macOS-en, Linuxon, iOS-en és Androidon; az iOS- és az Android-alkalmazás az App Store-ban, illetve a Google Playen érhető el.</p>
+<h3 id="11-es-verzió">1.1-es verzió</h3>
+<p>Az 1.1 új PDF-motorral, újraépített iOS-szövegmóddal, linuxos szövegfelismeréssel, weboldalakról nyitható dokumentumokkal, valamint évtizedes régi Word-, Write- és PowerPoint-fájlokkal érkezik.</p>
 <h4 id="újdonságok">Újdonságok</h4>
 <h5 id="általános">Általános</h5>
+<ul>
+<li>Magyar fordítás és felhasználói útmutató.</li>
+<li>Dokumentum megnyitása webcímről, minden platformon. Az <code>F5</code> billentyűvel újra letöltheti.</li>
+<li>Az <code>F5</code> billentyűvel újratölti a dokumentumot.</li>
+<li>A <code>Ctrl+1</code> és <code>Ctrl+9</code> billentyűparancsok az első kilenc megnyitott dokumentumra ugranak.</li>
+<li>A <code>Ctrl+Tab</code> és a <code>Ctrl+Shift+Tab</code> dokumentumok között vált macOS-en és Linuxon.</li>
+<li>A Megnyitás párbeszédpanel és az Összes dokumentum minden kiválasztott dokumentumot megnyit saját lapján.</li>
+<li>Kép mentése a helyi menüből.</li>
+<li>Könyvjelzők és jegyzetek exportálása szövegként vagy HTML-ként.</li>
+<li>Beállítások a naplózási szinthez, valamint ahhoz, hogy a Keresés kijelöli-e a találatot.</li>
+<li>Az ablak gyorsbillentyűje bármely billentyű lehet, amelyet a Billentyűparancsok testreszabása párbeszédpanel új Rendszerszintű lapján állíthat be.</li>
+<li>A másolás megmutatja, mennyit másolt, és a szöveg a vágólapon marad a Paperback bezárása után.</li>
+<li>Minden menüelem rendelkezik a saját, nyelvfüggő elérési billentyűjével.</li>
+<li>Az olvasatlan ZIP-archívum a benne lévő dokumentumok listaként nyílik meg.</li>
+</ul>
+<h5 id="új-formátumok">Új formátumok</h5>
+<ul>
+<li>Word Windows 1 és 2, Word DOS, Word Mac 4 és 5, valamint a Word 6 és 95 Unicode verziói.</li>
+<li>PowerPoint 95.</li>
+<li>Tömörített FictionBook (<code>.fb2.zip</code>).</li>
+<li>DAISY 3-könyvek, amelyek csak egy DTBook ZIP-ben, vagy csak hanganyag.</li>
+</ul>
+<h5 id="szövegfelismerés">Szövegfelismerés</h5>
+<ul>
+<li>Szövegfelismerés Linuxon, a Tesseract segítségével.</li>
+<li>Aktuális oldal szövegfelismerése (<code>Ctrl+Shift+R</code>) ismét felolvassa az aktuális oldalt, akkor is, ha már van rajta szöveg.</li>
+<li>Az <code>Enter</code> billentyű egy képen felolvassa annak szövegét.</li>
+<li>A felismert szöveg követi az oldal elrendezését, és megjegyződik, így a beolvasott dokumentum megnyitásakor már van szövege.</li>
+<li>A kötegelt szövegfelismerés ismételheti a már szöveggel rendelkező oldalakat, több oldalt egyszerre olvas fel, és leáll a dokumentum bezárásakor.</li>
+</ul>
+<h5 id="hangoskönyvek">Hangoskönyvek</h5>
+<ul>
+<li>Akár négyszeres gyorsulás mindenhol, amely megmarad a munkamenetek között.</li>
+<li>Hangerő-szabályzók.</li>
+</ul>
+<h5 id="pdf-dokumentumok">PDF-dokumentumok</h5>
+<ul>
+<li>Új PDF-motor: gyorsabb, minden processzormagot használ, és nem igényel pdfium könyvtárat.</li>
+<li>Címsorok keresése nem címkézett oldalakon, jobb címek.</li>
+<li>Beállítás az ismétlődő élőfejek és élőlábak megtartásához.</li>
+</ul>
+<h5 id="egyéb-dokumentumok">Egyéb dokumentumok</h5>
+<ul>
+<li>Word: számozott és felsorolásjeles listák, lábjegyzetek, végnoták, megjegyzések, képek helyettesítő szövege, listakezelés és Word saját oldalai.</li>
+<li>OpenDocument: lábjegyzetek és megjegyzések a szöveg után.</li>
+<li>Címek és szerzők metaadatokból a Word, PowerPoint, OpenDocument, RTF, Markdown és reStructuredText dokumentumokban.</li>
+<li>Képregények: cím, szerző, oldaltípusok és könyvjelzők a ComicInfo.xml fájlból.</li>
+<li>FB2: címsorok, tartalomjegyzék és elkülönített verssorok.</li>
+<li>MOBI-, KF8- és tömörített DAISY-könyvek képei menthetők és szövegfelismeréssel olvashatók.</li>
+<li>Dollárjelre zárt matematikai képletek a Markdownban.</li>
+<li>Sphinx-direktívák a reStructuredTextben.</li>
+<li>Leírás nélküli képek [Kép] formában jelennek meg.</li>
+</ul>
+<h5 id="ios-és-android-1">iOS és Android</h5>
+<ul>
+<li>Nyelvsor a Beállítások között.</li>
+<li>Dokumentuminformáció megjeleníti a haladást, valamint a hangoskönyv fájlszámát és összes hosszát.</li>
+<li>A szövegmód megjegyződik.</li>
+<li>Folyamatos olvasás a Keresés után.</li>
+<li>iOS: szövegmód újraépítve a VoiceOverhoz. Az Összes felolvasása a teljes könyvön megy végig, a forgatók mindent elérnek, a listák és táblázatok valódi listák és táblázatok, a háromujjas legyintések oldalt lapoznak, a háromujjas érintés az oldalt és a százalékot mutatja.</li>
+<li>iOS: hang, sebesség és hangmagasság könyvenként a Beszédhang ebben a könyvben beállítással.</li>
+<li>iOS: jelszóval védett dokumentumok.</li>
+<li>iOS: tömörített DAISY-könyvek és MP3-hangoskönyvek megosztása a Paperbackhez.</li>
+<li>iOS: az elalvási időzítő leállítja a hangoskönyveket.</li>
+<li>iOS: szlovák és ukrán támogatás.</li>
+<li>Android: a sebesség és hangmagasság módosítása az éppen olvasott bekezdésre vonatkozik, és a rendszer alapértelmezett motorjával működik.</li>
+<li>Android: futtatható x86_64-es eszközökön.</li>
+</ul>
+<h5 id="macos">macOS</h5>
+<ul>
+<li>Univerzális alkalmazás, natívan Intel és Apple Silicon-on.</li>
+<li>A pb az alkalmazásban foglaltatik.</li>
+</ul>
+<h5 id="pb">pb</h5>
+<ul>
+<li>Konvertálás oldalanként, teljes mappáról, fájllistáról (<code>--files-from</code>), vagy webcímről.</li>
+</ul>
+<h4 id="módosítások">Módosítások</h4>
+<ul>
+<li>A menüsor nyolc menüre van szervezve.</li>
+<li>Az állapotsor a „Haladás“ helyett a „Haladás“ szót mutatja.</li>
+<li>A menüparancsok bejelentik, mit tettek, ahelyett hogy elfojtódnának a menü bezárásakor.</li>
+<li>A frissítések normálisan bezárják a Paperbacket, és az újra előtérbe kerül.</li>
+<li>A hatalmas szövegfájlok a memória töredékével nyílnak meg, és a 4 GB-os korlát el van távolítva.</li>
+<li>A MOBI, Word és HTML-konvertálás, a Keresés összes előfordulása, valamint az Összes dokumentum keresése gyorsabb.</li>
+<li>A Windows executable 3 MB-tal kisebb.</li>
+</ul>
+<h4 id="javítások">Javítások</h4>
+<h5 id="általános-1">Általános</h5>
+<ul>
+<li>Központozási billentyűparancsok olyan billentyűzetkiosztásokon, amelyekhez Shift szükséges; a Billentyűparancsok testreszabása megjelöli azokat, amelyeket a kiosztás nem tud gépelni.</li>
+<li>A fókusz visszatér a dokumentumra a <code>Win+D</code> után.</li>
+<li>Összeomlás a könyvjelzők megnyitásakor egy új dokumentumhoz, a Keresés összes előfordulásában, és egyes sérült MOBI-fájloknál.</li>
+<li>A reguláris kifejezéses keresés a teljes egyezést jelöli ki.</li>
+<li>A hangoskönyv állapotsorán már nem váltakozik a hang- és szöveghaladás között.</li>
+<li>A szavak száma tartalmazza a szövegfelismeréssel olvasott szöveget.</li>
+<li>A beolvasott oldalak már nem jelzik saját képüket.</li>
+<li>A telepítő PATH beállítása.</li>
+<li>A Linux frissítések megtalálják a letöltéseket, az AppImage pedig AppImage formában frissül.</li>
+<li>A szöveg- és OpenDocument-fájlok megjegyzési sora le van fordítva.</li>
+</ul>
+<h5 id="dokumentumok">Dokumentumok</h5>
+<ul>
+<li>Windows Write-fájlok, amelyek binárisként nyíltak meg.</li>
+<li>PDF: szöveg ismétlődése a címkézett PDF-ek oldaltöréseknél, a második oszlopok olvasódnak először, elveszett szóközök és sorközi kötőjelek, szöveg Type 3 betűtípusban, valamint tartalom pontvezetékek.</li>
+<li>RTF: nyers CR soremelések, kötőjeles listák, szöveg az első bekezdés előtt, ékezetes és CJK szöveg, szöveg elveszett egy menekített fordított perjel után, és RTF mentve <code>.doc</code> fájlként.</li>
+<li>Word- és PowerPoint-fájlok sérült tárolóval, amelyeket a Word még meg tud nyitni.</li>
+<li>Word-szöveg követett módosításokban, mezőkben és táblázatcellákon.</li>
+<li>PowerPoint-hivatkozások, szöveg nélküli diák és emoji.</li>
+<li><code>&lt;</code> és <code>&amp;</code> Word-, PowerPoint- és OpenDocument-táblázatcellákon.</li>
+<li>Jelszóval védett OpenDocument-fájlok az aktuális LibreOffice-ból.</li>
+<li>CHM-fájlok kódolásukban, HTML- és DAISY-fájlok deklarált kódolásban.</li>
+<li>Tömörített DAISY-könyvek, amelyek hivatkozásai rossz kis- és nagybetűs, valamint a DAISY 2.02-könyvek, amelyek csak a szakasz első kifejezését olvassák.</li>
+<li>Man-oldalak, amelyek <code>.so</code> fájllal átirányítanak.</li>
+<li>Markdown front matter szövegként olvasva.</li>
+</ul>
+<h5 id="macos-1">macOS</h5>
+<ul>
+<li>Sor kezdetéről történő navigáció, billentyűzeti aktiválás és másolási bejelentések.</li>
+<li>A VoiceOver helyi menü parancsa megnyitja a Paperback sajátját.</li>
+<li>A menü gyorsbillentyűi már nem hangzanak el afelett, amit csinálnak.</li>
+</ul>
+<h5 id="ios-és-android-2">iOS és Android</h5>
+<ul>
+<li>iOS: az indítás már nem szakad meg nagy könyvek helyreállítása közben.</li>
+<li>iOS: az olvasott lapon nyílik meg ismét, egy lap bezárása már nem olvassa fel az előző könyvet, a Legutóbbi dokumentumok megtartják sorrendjüket.</li>
+<li>iOS: a hangoskönyveket az indítás során már nem boncolják ki újra.</li>
+<li>iOS: a kiejtési szótár reguláris kifejezési szabályai <code>\1</code> értéket fogadnak el.</li>
+<li>Android: felolvasás jelszóval védett dokumentumokból.</li>
+<li>Android: az Előző az elején már nem olvassa fel újra az első bekezdést, a szövegmód már nem ugorja meg a görgetést.</li>
+<li>Android: kisebb energiafogyasztás olvasás és szüneteltetés közben.</li>
+</ul>
+<h3 id="10-s-verzió">1.0-s verzió</h3>
+<p>Az 1.0 az első kiadás mind az öt platformon: Windowson, macOS-en, Linuxon, iOS-en és Androidon; az iOS- és az Android-alkalmazás az App Store-ban, illetve a Google Playen érhető el.</p>
+<h4 id="újdonságok-1">Újdonságok</h4>
+<h5 id="általános-2">Általános</h5>
 <ul>
 <li>Linux-támogatás AppImage- vagy tar.gz-csomagként, asztali integrációval, így a dokumentumok a fájlkezelőből is megnyithatók.</li>
 <li>Az <code>Alt+F9</code> billentyűparanccsal megjelölheti a kijelölés elejét, az <code>Alt+F10</code> billentyűparanccsal mindent kimásolhat onnan addig, ahová eljutott, az <code>Alt+Shift+F9</code> billentyűparanccsal pedig visszaugorhat a jelöléshez; így hosszú szövegrészt is másolhat anélkül, hogy a Shift és a nyílbillentyűk segítségével végig kellene jelölnie. Mindhárom a Szerkesztés menüben található.</li>
@@ -417,7 +559,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>A névjegy most már megjeleníti a Paperback licencét és az összes fordítót.</li>
 <li>Ukrán fordítás.</li>
 </ul>
-<h5 id="új-formátumok">Új formátumok</h5>
+<h5 id="új-formátumok-1">Új formátumok</h5>
 <ul>
 <li>Képregényarchívumok (<code>.cbz</code>).</li>
 <li>M4B-hangoskönyvek, fejezetekre bontva.</li>
@@ -428,7 +570,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>WinHelp-fájlok (<code>.hlp</code>).</li>
 <li>Word 6- és Word 95-dokumentumok.</li>
 </ul>
-<h5 id="szövegfelismerés">Szövegfelismerés</h5>
+<h5 id="szövegfelismerés-1">Szövegfelismerés</h5>
 <ul>
 <li>A szkennelt PDF-oldalak most már felismerhetők a Windows és a macOS beépített szövegfelismerésével. Egy szkennelt oldal felismeréséhez nyomja meg rajta az <code>Enter</code> billentyűt, egy oldaltartományhoz pedig használja a Kötegelt szövegfelismerés funkciót (<code>Ctrl+Shift+O</code>).</li>
 </ul>
@@ -442,7 +584,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>A KF8 (AZW3) könyvek most már támogatják a szakaszonkénti navigációt.</li>
 <li>Azoknál az EPUB-oldalaknál, amelyek csak egy képből állnak, most már megjelenik egy sor a képhez, így rájuk léphet ahelyett, hogy átugorná őket.</li>
 </ul>
-<h5 id="hangoskönyvek">Hangoskönyvek</h5>
+<h5 id="hangoskönyvek-1">Hangoskönyvek</h5>
 <ul>
 <li>A lejátszási sebesség szabályozása a fél sebességtől a háromszorosig. Használja a <code>Ctrl+Shift+.</code> és a <code>Ctrl+Shift+,</code> billentyűparancsot vagy a Hang menüt.</li>
 <li>A csak hangot tartalmazó könyvekben a könyvjelzők és a jegyzetek most már pontosan azt az időpontot jegyzik meg, amelynél létrehozta őket.</li>
@@ -453,7 +595,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Lista kiürítése elem a Legutóbbi dokumentumok almenüben.</li>
 </ul>
-<h5 id="pdf-dokumentumok">PDF-dokumentumok</h5>
+<h5 id="pdf-dokumentumok-1">PDF-dokumentumok</h5>
 <ul>
 <li>Beállítás, amellyel a PDF-ek minden sora különálló marad, és nem egyesülnek bekezdésekké.</li>
 <li>A PDF-ekben lévő képeket és ábrákat a program most már bejelenti.</li>
@@ -467,13 +609,13 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>A címsorok most már a szintjüknek megfelelő méretben jelennek meg, a képek és a táblázatok pedig elkülönülnek a környező szövegtől.</li>
 </ul>
-<h5 id="pb">pb</h5>
+<h5 id="pb-1">pb</h5>
 <ul>
 <li>A <code>pb --list-formats</code> kilistázza az összes formátumot, amelyet a pb be tud olvasni.</li>
 <li>A pb most már megmondja, melyik fájlt nem tudta beolvasni, és miért.</li>
 </ul>
-<h4 id="javítások">Javítások</h4>
-<h5 id="általános-1">Általános</h5>
+<h4 id="javítások-1">Javítások</h4>
+<h5 id="általános-3">Általános</h5>
 <ul>
 <li>Az indításkor újra megnyitott könyv most már azonnal olvasható, és nem marad néma addig, amíg be nem zárják és újra meg nem nyitják.</li>
 <li>A hiányzó fájlú dokumentum most már eltávolítható az Összes dokumentum listából, és nem marad benne, akárhányszor erősíti is meg az eltávolítást.</li>
@@ -499,11 +641,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>A tartalomjegyzék, az elemlista és a könyvjelzők listája most már nem akad és nem fagy le a több ezer bejegyzést tartalmazó könyveknél.</li>
 <li>A felfelé és a lefelé nyíl most már dokumentumonként jegyzi meg az oszlopot, és nem viszi át, amikor lapot vált.</li>
 </ul>
-<h5 id="hangoskönyvek-1">Hangoskönyvek</h5>
+<h5 id="hangoskönyvek-2">Hangoskönyvek</h5>
 <ul>
 <li>A hanglejátszás macOS-en most már a <code>Control+Space</code> billentyűparancsot használja, mivel a <code>Command+Space</code> a Spotlighthoz tartozik.</li>
 </ul>
-<h5 id="pdf-dokumentumok-1">PDF-dokumentumok</h5>
+<h5 id="pdf-dokumentumok-2">PDF-dokumentumok</h5>
 <ul>
 <li>Az Apple Pagesből exportált PDF-ek most már nem egyszerű szövegként jelennek meg, hanem megmaradnak bennük a címsorok és a listák, amelyekkel írták őket.</li>
 <li>A PDF-bekezdések és -címsorok most már nem törnek szét minden sornál, és a szavak belsejébe sem kerülnek szóközök.</li>
@@ -537,7 +679,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Az <code>.rtf</code> kiterjesztéssel mentett egyszerű szöveges fájlok most már szövegként nyílnak meg, és nem jelenik meg hibaüzenet.</li>
 <li>Az RTF-vezérlőszavak most már nem jelennek meg szövegként.</li>
 </ul>
-<h4 id="ios-és-android-1">iOS és Android</h4>
+<h4 id="ios-és-android-3">iOS és Android</h4>
 <p>Az iOS- és az Android-alkalmazás minden formátumot megnyit, amelyet az asztali változat, és a következőket kínálja:</p>
 <ul>
 <li>Felolvasás választható beszédhanggal, sebességgel és hangmagassággal, beszédsebesség-szabályzóval közvetlenül az olvasósávon, valamint választható szünettel a bekezdések között.</li>
@@ -582,8 +724,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>A frissítési párbeszédpanel most már le van fordítva.</li>
 </ul>
 <h3 id="090-s-verzió">0.9.0-s verzió</h3>
-<h4 id="újdonságok-1">Újdonságok</h4>
-<h5 id="általános-2">Általános</h5>
+<h4 id="újdonságok-2">Újdonságok</h4>
+<h5 id="általános-4">Általános</h5>
 <ul>
 <li>Egy pb nevű parancssori eszköz, amellyel a Paperback által támogatott bármely formátum gyorsan HTML-, Markdown- vagy egyszerű szöveges formátumba alakítható.</li>
 <li>Beállítás a más programok által a lemezen módosított dokumentumok újratöltéséhez.</li>
@@ -661,7 +803,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>A DAISY 2.0 formátumú könyvek támogatása.</li>
 <li>A DAISY 2.02 formátumú hanganyagok lejátszásának támogatása.</li>
 </ul>
-<h5 id="hangoskönyvek-2">Hangoskönyvek</h5>
+<h5 id="hangoskönyvek-3">Hangoskönyvek</h5>
 <ul>
 <li>Hangoskönyvek lejátszása; jelenleg a DAISY-hanganyagok (a hangot és szöveget is tartalmazó DAISY-könyveket is beleértve) és a hangfájlokat tartalmazó ZIP-archívumok támogatottak.</li>
 <li>Billentyűparancsok és menüelemek az audionarráció lejátszásához és szüneteltetéséhez, előre- és visszatekeréséhez, valamint a léptetési időegység módosításához.</li>
@@ -675,8 +817,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>A PowerPoint-dokumentumok most már támogatják a táblázatokat.</li>
 </ul>
-<h4 id="javítások-1">Javítások</h4>
-<h5 id="általános-3">Általános</h5>
+<h4 id="javítások-2">Javítások</h4>
+<h5 id="általános-5">Általános</h5>
 <ul>
 <li>A régi CJK-kódolású (például GBK, Big5 és Shift_JIS kódolású) dokumentumok most már helyesen jelennek meg, nem pedig értelmetlen karakterhalmazként (mojibake).</li>
 <li>A „Legutóbb bezárt dokumentum megnyitása” most már nem próbálja újra megnyitni a mellékelt kézikönyvet.</li>
@@ -746,7 +888,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>A dl, dt és dd elemek most már sortörést eredményeznek az XHTML-dokumentumokban.</li>
 </ul>
-<h5 id="pdf-dokumentumok-2">PDF-dokumentumok</h5>
+<h5 id="pdf-dokumentumok-3">PDF-dokumentumok</h5>
 <ul>
 <li>A hibásan címkézett PDF-eknél a Paperback most már egyszerű szöveg kinyerésére vált.</li>
 <li>A címükben vagy a könyvjelzőikben vezérlőkaraktereket tartalmazó PDF-dokumentumok most már nem okozzák a Paperback összeomlását megnyitáskor.</li>

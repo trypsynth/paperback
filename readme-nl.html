@@ -99,17 +99,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 </li>
 <li><a href="#versiegeschiedenis">Versiegeschiedenis</a><ul>
-<li><a href="#versie-10">Versie 1.0</a><ul>
+<li><a href="#versie-11">Versie 1.1</a><ul>
 <li><a href="#toegevoegd">Toegevoegd</a></li>
+<li><a href="#gewijzigd">Gewijzigd</a></li>
 <li><a href="#opgelost">Opgelost</a></li>
-<li><a href="#ios-en-android-1">iOS en Android</a></li>
+</ul>
+</li>
+<li><a href="#versie-10">Versie 1.0</a><ul>
+<li><a href="#toegevoegd-1">Toegevoegd</a></li>
+<li><a href="#opgelost-1">Opgelost</a></li>
+<li><a href="#ios-en-android-3">iOS en Android</a></li>
 </ul>
 </li>
 <li><a href="#versie-092">Versie 0.9.2</a></li>
 <li><a href="#versie-091">Versie 0.9.1</a></li>
 <li><a href="#versie-090">Versie 0.9.0</a><ul>
-<li><a href="#toegevoegd-1">Toegevoegd</a></li>
-<li><a href="#opgelost-1">Opgelost</a></li>
+<li><a href="#toegevoegd-2">Toegevoegd</a></li>
+<li><a href="#opgelost-2">Opgelost</a></li>
 </ul>
 </li>
 <li><a href="#versie-085">Versie 0.8.5</a></li>
@@ -406,10 +412,146 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Tyler Rodick</li>
 </ul>
 <h2 id="versiegeschiedenis">Versiegeschiedenis</h2>
-<h3 id="versie-10">Versie 1.0</h3>
-<p>1.0 is de eerste release op alle vijf de platforms: Windows, macOS, Linux, iOS en Android, met de iOS- en Android-apps in de App Store en op Google Play.</p>
+<h3 id="versie-11">Versie 1.1</h3>
+<p>1.1 brengt een nieuwe PDF-engine, een herbouwde iOS-tekstmodus, OCR op Linux, documenten van links en decennia oude Word-, Write- en PowerPoint-bestanden.</p>
 <h4 id="toegevoegd">Toegevoegd</h4>
 <h5 id="algemeen">Algemeen</h5>
+<ul>
+<li>Een Hongaarse vertaling en gebruikershandleiding.</li>
+<li>Een document openen van een link, op elk platform. <code>F5</code> downloadt het opnieuw.</li>
+<li><code>F5</code> laadt het document opnieuw.</li>
+<li><code>Ctrl+1</code> tot <code>Ctrl+9</code> springen naar je eerste negen geopende documenten.</li>
+<li><code>Ctrl+Tab</code> en <code>Ctrl+Shift+Tab</code> wisselen documenten op macOS en Linux.</li>
+<li>Het venster Document openen en Alle documenten openen elk document dat je kiest, elk in zijn eigen tabblad.</li>
+<li>Een afbeelding opslaan vanuit het contextmenu.</li>
+<li>Bladwijzers en notities exporteren als tekst of HTML.</li>
+<li>Instellingen voor het logniveau en of Zoeken zijn overeenkomst selecteert.</li>
+<li>De venstersneltoets kan elke toets zijn, ingesteld op het nieuwe tabblad Systeembreedte van Toetsenbordsneltoetsen aanpassen.</li>
+<li>Kopiëren meldt hoeveel het gekopieerd heeft, en de tekst blijft op het klembord nadat Paperback sluit.</li>
+<li>Elk menu-item heeft zijn eigen sneltoets in elke taal.</li>
+<li>Een onleesbare zip opent als een lijst met de documenten erin.</li>
+</ul>
+<h5 id="nieuwe-indelingen">Nieuwe indelingen</h5>
+<ul>
+<li>Word voor Windows 1 en 2, Word voor DOS, Word voor Mac 4 en 5, en de Unicode-edities van Word 6 en 95.</li>
+<li>PowerPoint 95.</li>
+<li>Gecomprimeerde FictionBook (<code>.fb2.zip</code>).</li>
+<li>DAISY 3-boeken die slechts een DTBook in een zip zijn, of alleen audio.</li>
+</ul>
+<h5 id="ocr">OCR</h5>
+<ul>
+<li>OCR op Linux, via Tesseract.</li>
+<li>Huidige pagina herkennen (<code>Ctrl+Shift+R</code>) leest de pagina waarop je bent opnieuw, zelfs als deze tekst bevat.</li>
+<li><code>Enter</code> op een afbeelding leest de bijbehorende tekst.</li>
+<li>Herkende tekst volgt de opmaak van de pagina en wordt onthouden, dus een gescand document opent met zijn tekst.</li>
+<li>Bulk-OCR kan pagina’s met tekst opnieuw doen, leest meerdere pagina’s tegelijk en stopt wanneer je het document sluit.</li>
+</ul>
+<h5 id="audioboeken">Audioboeken</h5>
+<ul>
+<li>Snelheden tot 4x overal, onthouden in sessies.</li>
+<li>Audiovolume-besturingselementen.</li>
+</ul>
+<h5 id="pdf-documenten">PDF-documenten</h5>
+<ul>
+<li>Een nieuwe PDF-engine: sneller, gebruikt elke CPU-kern en heeft geen pdfium-bibliotheek nodig.</li>
+<li>Koppen gevonden in niet-getagde pagina’s en betere titels.</li>
+<li>Een instelling om herhaalde kop- en voetteksten te behouden.</li>
+</ul>
+<h5 id="overige-documenten">Overige documenten</h5>
+<ul>
+<li>Word: genummerde en ingetrokken lijsten, voetnoten, eindnoten, opmerkingen, alternatieve tekst voor afbeeldingen, lijstnavigatie en Word’s eigen pagina’s.</li>
+<li>OpenDocument: voetnoten en opmerkingen na de tekst.</li>
+<li>Titels en auteurs van de metagegevens van het document in Word, PowerPoint, OpenDocument, RTF, Markdown en reStructuredText.</li>
+<li>Stripverhalen: titel, schrijver, paginatypes en bladwijzers van ComicInfo.xml.</li>
+<li>FB2: koppen, inhoudsopgave en aparte verzenregels.</li>
+<li>Afbeeldingen in MOBI-, KF8- en gecomprimeerde DAISY-boeken kunnen worden opgeslagen en gelezen met OCR.</li>
+<li>Dollar-gescheiden wiskunde in Markdown.</li>
+<li>Sphinx-richtlijnen in reStructuredText.</li>
+<li>Afbeeldingen zonder beschrijving tonen als [Image].</li>
+</ul>
+<h5 id="ios-en-android-1">iOS en Android</h5>
+<ul>
+<li>Een rij Taal in Instellingen.</li>
+<li>Documentinformatie toont je voortgang, en het aantal bestanden en totale speelduur van een audioboek.</li>
+<li>Tekstmodus wordt onthouden.</li>
+<li>Doorgaan met lezen na Zoeken.</li>
+<li>iOS: tekstmodus herbouwd voor VoiceOver. Alles lezen gaat door het hele boek, de rotors bereiken alles ervan, lijsten en tabellen zijn echte lijsten en tabellen, drievingerveegbewegingen slaan pagina’s om, en de drievingertik geeft de pagina en het percentage.</li>
+<li>iOS: een stem, snelheid en toonhoogte per boek, van Spraak voor dit boek.</li>
+<li>iOS: wachtwoord-beveiligde documenten.</li>
+<li>iOS: gecomprimeerde DAISY-boeken en MP3-audioboeken delen met Paperback.</li>
+<li>iOS: de slaaptimer stopt audioboeken.</li>
+<li>iOS: Slowaaks en Oekraïens.</li>
+<li>Android: snelheid- en toonhoogtewijzigingen zijn van toepassing op de alinea die wordt gelezen en werken met de standaardengine van het systeem.</li>
+<li>Android: draait op x86_64-apparaten.</li>
+</ul>
+<h5 id="macos">macOS</h5>
+<ul>
+<li>Een universele app, native op Intel en Apple silicon.</li>
+<li>pb is inbegrepen in de app.</li>
+</ul>
+<h5 id="pb">pb</h5>
+<ul>
+<li>Per pagina converteren, een hele map, een lijst met bestanden (<code>--files-from</code>) of een link.</li>
+</ul>
+<h4 id="gewijzigd">Gewijzigd</h4>
+<ul>
+<li>De menubalk is gereorganiseerd in acht menu’s.</li>
+<li>De statusbalk zegt “Voortgang” in plaats van “Lezen”.</li>
+<li>Menucommando’s melden wat ze hebben gedaan, in plaats van te worden overstelpt wanneer het menu sluit.</li>
+<li>Updates sluiten Paperback normaal af en brengen het terug naar voren.</li>
+<li>Enorme tekstbestanden openen met een fractie van het geheugen, en de limiet van 4 GB is verdwenen.</li>
+<li>MOBI-, Word- en HTML-conversie, Alles zoeken en Alles documenten zoeken zijn sneller.</li>
+<li>Het Windows-uitvoerbare bestand is 3 MB kleiner.</li>
+</ul>
+<h4 id="opgelost">Opgelost</h4>
+<h5 id="algemeen-1">Algemeen</h5>
+<ul>
+<li>Interpunctie-sneltoetsen op toetsenbordindelingen waarvoor Shift nodig is; Toetsenbordsneltoetsen aanpassen vlaggen alle sneltoetsen die je indeling niet kan typen.</li>
+<li>Focus keert naar het document terug na <code>Win+D</code>.</li>
+<li>Crashes bij het openen van bladwijzers voor een nieuw document, in Alles zoeken en op enkele beschadigde MOBI-bestanden.</li>
+<li>Regex Zoeken selecteert de volledige overeenkomst.</li>
+<li>De statusbalk van een audioboek schakelt niet langer tussen audio- en tekstvoortgang.</li>
+<li>Het woordenaantal bevat tekst gelezen met OCR.</li>
+<li>Gescande pagina’s melden hun eigen afbeelding niet langer.</li>
+<li>De PATH-optie van het installatieprogramma.</li>
+<li>Linux-updates vinden hun downloads, en een AppImage werkt bij als AppImage.</li>
+<li>De opmerking in Word- en OpenDocument-bestanden wordt vertaald.</li>
+</ul>
+<h5 id="documenten">Documenten</h5>
+<ul>
+<li>Windows Write-bestanden die als binair werden geopend.</li>
+<li>PDF: tekst herhaald bij pagina-einden in getagde PDF’s, tweede kolommen gelezen eerst, verloren spaties en afbreekstreepjes aan regeleinden, tekst in Type 3-lettertypen en inhouds-puntleiders.</li>
+<li>RTF: losse CR-regeleinden, streepje-ingetrokken lijsten, tekst vóór de eerste alinea, geaccentueerde en CJK-tekst, tekst verloren na een ontsnapte backslash en RTF opgeslagen als <code>.doc</code>.</li>
+<li>Word- en PowerPoint-bestanden met beschadigde containers die Word nog steeds opent.</li>
+<li>Word-tekst in bijgehouden wijzigingen, velden en tabelcellen.</li>
+<li>PowerPoint-links, dia’s zonder tekst en emoji.</li>
+<li><code>&lt;</code> en <code>&amp;</code> in Word-, PowerPoint- en OpenDocument-tabelcellen.</li>
+<li>Met een wachtwoord beveiligde OpenDocument-bestanden van de huidige LibreOffice.</li>
+<li>CHM-bestanden in hun codetabel, en HTML- en DAISY-bestanden in hun gedeclareerde codering.</li>
+<li>Gecomprimeerde DAISY-boeken waarvan de verwijzingen de verkeerde hoofdletters gebruiken, en DAISY 2.02-boeken die alleen de eerste zin van een sectie lezen.</li>
+<li>Manual pages die omleiden met <code>.so</code>.</li>
+<li>Markdown-voorzaak als tekst gelezen.</li>
+</ul>
+<h5 id="macos-1">macOS</h5>
+<ul>
+<li>Navigatie aan het begin van regel, toetsenbordactivering en kopieermeldingen.</li>
+<li>Het contextmenucommando van VoiceOver opent dat van Paperback.</li>
+<li>Menusneltoetsen worden niet langer aangekondigd boven wat ze doen.</li>
+</ul>
+<h5 id="ios-en-android-2">iOS en Android</h5>
+<ul>
+<li>iOS: starten wordt niet langer afgebroken terwijl grote boeken worden hersteld.</li>
+<li>iOS: opent opnieuw op het tabblad waarop je las, een tabblad sluiten leest het vorige boek niet langer en Recente documenten behouden hun volgorde.</li>
+<li>iOS: audioboeken worden niet langer bij elke lancering opnieuw uitgepakt.</li>
+<li>iOS: regexregels voor uitspraakwoordenboek accepteren <code>\1</code>.</li>
+<li>Android: voorlezen van wachtwoord-beveiligde documenten.</li>
+<li>Android: Vorige aan de bovenkant leest de eerste alinea niet langer opnieuw en tekstmodus springt niet langer bij het scrollen.</li>
+<li>Android: minder batterijgebruik bij lezen en gepauzeerd.</li>
+</ul>
+<h3 id="versie-10">Versie 1.0</h3>
+<p>1.0 is de eerste release op alle vijf de platforms: Windows, macOS, Linux, iOS en Android, met de iOS- en Android-apps in de App Store en op Google Play.</p>
+<h4 id="toegevoegd-1">Toegevoegd</h4>
+<h5 id="algemeen-2">Algemeen</h5>
 <ul>
 <li>Linux-ondersteuning, als AppImage of tar.gz, met desktopintegratie zodat documenten vanuit je bestandsbeheerder worden geopend.</li>
 <li>Markeer het begin van een selectie met <code>Alt+F9</code>, kopieer alles van daar tot waar je bent uitgekomen met <code>Alt+F10</code> en ga terug naar de markering met <code>Alt+Shift+F9</code>, om een lang stuk tekst te kopiëren zonder er met shift+pijltjes doorheen te hoeven gaan. Alle drie staan onder Extra &gt; Selecteren en kopiëren.</li>
@@ -417,7 +559,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Het venster Over toont nu de licentie van Paperback en alle vertalers.</li>
 <li>Een Oekraïense vertaling.</li>
 </ul>
-<h5 id="nieuwe-indelingen">Nieuwe indelingen</h5>
+<h5 id="nieuwe-indelingen-1">Nieuwe indelingen</h5>
 <ul>
 <li>Comicarchieven (<code>.cbz</code>).</li>
 <li>M4B-audioboeken, opgesplitst in hun hoofdstukken.</li>
@@ -428,7 +570,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>WinHelp-bestanden (<code>.hlp</code>).</li>
 <li>Word 6- en Word 95-documenten.</li>
 </ul>
-<h5 id="ocr">OCR</h5>
+<h5 id="ocr-1">OCR</h5>
 <ul>
 <li>Gescande PDF-pagina’s kunnen nu worden herkend met de OCR die in Windows en macOS is ingebouwd. Druk op <code>Enter</code> op een gescande pagina om die te herkennen, of gebruik Bulk-OCR (<code>Ctrl+Shift+O</code>) voor een reeks pagina’s.</li>
 </ul>
@@ -442,7 +584,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>KF8-boeken (AZW3) ondersteunen nu sectienavigatie.</li>
 <li>EPUB-pagina’s die alleen uit een afbeelding bestaan, tonen daar nu een regel voor, zodat je erop kunt landen in plaats van er direct voorbij te gaan.</li>
 </ul>
-<h5 id="audioboeken">Audioboeken</h5>
+<h5 id="audioboeken-1">Audioboeken</h5>
 <ul>
 <li>Bediening van de afspeelsnelheid, van halve snelheid tot drie keer zo snel. Gebruik <code>Ctrl+Shift+.</code> en <code>Ctrl+Shift+,</code>, of het menu Extra.</li>
 <li>Bladwijzers en notities in boeken met alleen audio onthouden nu het exacte tijdstip waarop je ze hebt gezet.</li>
@@ -453,7 +595,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Een item Recente documenten wissen in het submenu Recente documenten.</li>
 </ul>
-<h5 id="pdf-documenten">PDF-documenten</h5>
+<h5 id="pdf-documenten-1">PDF-documenten</h5>
 <ul>
 <li>Een instelling om elke regel van een PDF apart te houden, in plaats van ze samen te voegen tot alinea’s.</li>
 <li>Afbeeldingen en figuren in PDF’s worden nu gemeld.</li>
@@ -467,13 +609,13 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Koppen worden nu weergegeven in een grootte die past bij hun niveau, en afbeeldingen en tabellen staan los van de tekst eromheen.</li>
 </ul>
-<h5 id="pb">pb</h5>
+<h5 id="pb-1">pb</h5>
 <ul>
 <li><code>pb --list-formats</code> toont elke indeling die pb kan lezen.</li>
 <li>pb meldt nu welk bestand het niet kon lezen, en waarom.</li>
 </ul>
-<h4 id="opgelost">Opgelost</h4>
-<h5 id="algemeen-1">Algemeen</h5>
+<h4 id="opgelost-1">Opgelost</h4>
+<h5 id="algemeen-3">Algemeen</h5>
 <ul>
 <li>Een boek dat bij het opstarten wordt heropend, is nu meteen te lezen, in plaats van stil te blijven tot het gesloten en opnieuw geopend werd.</li>
 <li>Een document waarvan het bestand ontbreekt, kan nu uit Alle documenten worden verwijderd, in plaats van in de lijst te blijven staan hoe vaak je ook bevestigt.</li>
@@ -499,11 +641,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>De inhoudsopgave, de elementenlijst en de bladwijzerlijst haperen of bevriezen niet meer bij boeken met duizenden items.</li>
 <li>Pijl omhoog en pijl omlaag onthouden hun kolom nu per document, in plaats van die mee te nemen wanneer je van tabblad wisselt.</li>
 </ul>
-<h5 id="audioboeken-1">Audioboeken</h5>
+<h5 id="audioboeken-2">Audioboeken</h5>
 <ul>
 <li>Voor het afspelen van audio wordt op macOS nu <code>Control+Spatie</code> gebruikt, omdat <code>Command+Spatie</code> van Spotlight is.</li>
 </ul>
-<h5 id="pdf-documenten-1">PDF-documenten</h5>
+<h5 id="pdf-documenten-2">PDF-documenten</h5>
 <ul>
 <li>Opgelost dat PDF’s die uit Apple Pages zijn geëxporteerd als platte tekst werden gelezen, zonder de koppen en lijsten waarmee ze zijn geschreven.</li>
 <li>Opgelost dat PDF-alinea’s en -koppen bij elke regel werden opgesplitst en woorden bij spaties uit elkaar vielen.</li>
@@ -537,7 +679,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Plattetekstbestanden die met de extensie <code>.rtf</code> zijn opgeslagen, worden nu als tekst geopend, in plaats van te mislukken met een foutmelding.</li>
 <li>RTF-opmaakcodes verschijnen niet langer als tekst.</li>
 </ul>
-<h4 id="ios-en-android-1">iOS en Android</h4>
+<h4 id="ios-en-android-3">iOS en Android</h4>
 <p>De iOS- en Android-apps openen elke indeling die de desktopversie ondersteunt, en bevatten:</p>
 <ul>
 <li>Voorlezen, met je eigen keuze van stem, snelheid en toonhoogte, een regelaar voor de spreeksnelheid direct op de leesbalk, en een optionele pauze tussen alinea’s.</li>
@@ -582,8 +724,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Het updatevenster is nu vertaald.</li>
 </ul>
 <h3 id="versie-090">Versie 0.9.0</h3>
-<h4 id="toegevoegd-1">Toegevoegd</h4>
-<h5 id="algemeen-2">Algemeen</h5>
+<h4 id="toegevoegd-2">Toegevoegd</h4>
+<h5 id="algemeen-4">Algemeen</h5>
 <ul>
 <li>Een terminalprogramma, pb genaamd, om snel elke door Paperback ondersteunde indeling om te zetten naar HTML, Markdown of platte tekst.</li>
 <li>Een optie om documenten opnieuw te laden die door andere programma’s op de schijf zijn gewijzigd.</li>
@@ -661,7 +803,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Ondersteuning voor DAISY 2.0-boeken.</li>
 <li>Ondersteuning voor het afspelen van DAISY 2.02-audio.</li>
 </ul>
-<h5 id="audioboeken-2">Audioboeken</h5>
+<h5 id="audioboeken-3">Audioboeken</h5>
 <ul>
 <li>De mogelijkheid om audioboeken af te spelen, momenteel met ondersteuning voor zowel DAISY-audio (inclusief DAISY-audio + tekst) als ZIP’s met audiobestanden.</li>
 <li>Sneltoetsen en menu-items om de audio af te spelen/te pauzeren, vooruit en terug te spoelen en de spoelstap aan te passen.</li>
@@ -675,8 +817,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>PowerPoint-documenten ondersteunen nu tabellen.</li>
 </ul>
-<h4 id="opgelost-1">Opgelost</h4>
-<h5 id="algemeen-3">Algemeen</h5>
+<h4 id="opgelost-2">Opgelost</h4>
+<h5 id="algemeen-5">Algemeen</h5>
 <ul>
 <li>Documenten in verouderde CJK-coderingen, zoals GBK, Big5 en Shift_JIS, worden nu correct weergegeven in plaats van als een brij mojibake.</li>
 <li>Opgelost dat ‘Laatst gesloten heropenen’ de meegeleverde handleiding probeerde te heropenen.</li>
@@ -746,7 +888,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Opgelost dat dl-, dt- en dd-elementen geen regeleinden opleverden in XHTML-documenten.</li>
 </ul>
-<h5 id="pdf-documenten-2">PDF-documenten</h5>
+<h5 id="pdf-documenten-3">PDF-documenten</h5>
 <ul>
 <li>Paperback valt bij PDF’s met onjuiste tags nu terug op het uitlezen als platte tekst.</li>
 <li>PDF-documenten met besturingstekens in hun titel en/of bladwijzers laten Paperback niet langer crashen bij het openen.</li>
