@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 001b5ced2d6cc026; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2ee08ef3b88d958e; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,2e336a82); please review and edit as needed -->
 
 # Paperback - versie 1.0
 
@@ -304,6 +304,132 @@ Let op: een openbare GitHub-sponsor beschouw ik als grond voor automatische opna
 * Tyler Rodick
 
 ## Versiegeschiedenis
+
+### Versie 1.1
+
+1.1 brengt een nieuwe PDF-engine, een herbouwde iOS-tekstmodus, OCR op Linux, documenten vanuit links en tientallen jaren oude Word-, Write- en PowerPoint-bestanden.
+
+#### Toegevoegd
+
+##### Algemeen
+* Een Hongaarse vertaling en gebruikershandleiding.
+* Open een document vanuit een link, op elk platform. `F5` downloadt het opnieuw.
+* `F5` laadt het document opnieuw.
+* `Ctrl+1` tot `Ctrl+9` springen naar je eerste negen geopende documenten.
+* `Ctrl+Tab` en `Ctrl+Shift+Tab` schakelen tussen documenten op macOS en Linux.
+* Het venster Openen en Alle documenten openen elk document dat je selecteert, elk in een eigen tabblad.
+* Sla een afbeelding op vanuit het contextmenu.
+* Exporteer bladwijzers en notities als tekst of HTML.
+* Instellingen voor het logniveau en of Zoeken de overeenkomst selecteert.
+* De venstersneltoets kan een willekeurige toets zijn, ingesteld op het nieuwe tabblad Systeembreedte van Toetsenbordsneltoetsen aanpassen.
+* Kopiëren meldt hoeveel het heeft gekopieerd, en de tekst blijft op het klembord nadat Paperback sluit.
+* Elk menu-item heeft zijn eigen sneltoetstoets in elke taal.
+* Een onleesbaar ZIP-bestand wordt geopend als een lijst van de documenten erin.
+
+##### Nieuwe indelingen
+* Word voor Windows 1 en 2, Word voor DOS, Word voor Mac 4 en 5, en de Unicode-edities van Word 6 en 95.
+* PowerPoint 95.
+* Gecomprimeerde FictionBook (`.fb2.zip`).
+* DAISY 3-boeken die alleen een DTBook in een ZIP zijn, of alleen audio.
+
+##### OCR
+* OCR op Linux, via Tesseract.
+* Huidige pagina herkennen (`Ctrl+Shift+R`) leest de pagina waarop je bent opnieuw, zelfs als die tekst heeft.
+* `Enter` op een afbeelding leest de tekst ervan.
+* Herkende tekst volgt de indeling van de pagina en wordt onthouden, dus een gescand document wordt geopend met zijn tekst.
+* Bulk-OCR kan pagina's met tekst opnieuw uitvoeren, leest meerdere pagina's tegelijk en stopt wanneer je het document sluit.
+
+##### Audioboeken
+* Snelheden tot 4x overal, onthouden tussen sessies.
+* Audiovolumebediening.
+
+##### PDF-documenten
+* Een nieuwe PDF-engine: sneller, gebruikt elke CPU-kern en heeft geen pdfium-bibliotheek nodig.
+* Koppen gevonden op niet-getagde pagina's en betere titels.
+* Een instelling om herhaalde pagina-kop- en voetteksten te behouden.
+
+##### Overige documenten
+* Word: genummerde en opsommingslijsten, voetnoten, eindnoten, opmerkingen, alt-tekst voor afbeeldingen, lijstnavigatie en Word's eigen pagina's.
+* OpenDocument: voetnoten en opmerkingen na de tekst.
+* Titels en auteurs uit de metagegevens van het document in Word, PowerPoint, OpenDocument, RTF, Markdown en reStructuredText.
+* Comics: titel, auteur, paginatypen en bladwijzers uit ComicInfo.xml.
+* FB2: koppen, een inhoudsopgave en afzonderlijke verseregels.
+* Afbeeldingen in MOBI-, KF8- en gecomprimeerde DAISY-boeken kunnen worden opgeslagen en met OCR worden gelezen.
+* Met dollartekens begrenst wiskundenotatie in Markdown.
+* Sphinx-richtlijnen in reStructuredText.
+* Afbeeldingen zonder omschrijving tonen als [Afbeelding].
+
+##### iOS en Android
+* Een rij Taal in Instellingen.
+* Documentinformatie toont je voortgang en het aantal bestanden en de totale speelduur van een audioboek.
+* Tekstmodus wordt onthouden.
+* Ga door met lezen na Zoeken.
+* iOS: tekstmodus herbouwd voor VoiceOver. Alles lezen gaat door het hele boek, de rotors bereiken alles, lijsten en tabellen zijn echte lijsten en tabellen, drie-vingerflick schakelt pagina's, en de drie-vingerflick geeft pagina en percentage.
+* iOS: een stem, snelheid en toonhoogte per boek, uit Spraak voor dit boek.
+* iOS: met wachtwoord beveiligde documenten.
+* iOS: deel gecomprimeerde DAISY-boeken en MP3-audioboeken naar Paperback.
+* iOS: de slaaptimer stopt audioboeken.
+* iOS: Slowaaks en Oekraïens.
+* Android: snelheid- en toonhoogtewijzigingen gelden voor de alinea die wordt gelezen en werken met de standaardengine van het systeem.
+* Android: werkt op x86_64-apparaten.
+
+##### macOS
+* Een universele app, native op Intel en Apple silicon.
+* pb is in de app opgenomen.
+
+##### pb
+* Converteer per pagina, een hele map, een bestandenlijst (`--files-from`) of een link.
+
+#### Gewijzigd
+* De menubalk is gereorganiseerd tot acht menu's.
+* De statusbalk toont "Voortgang" in plaats van "Lezen".
+* Menuopdrachten melden wat ze hebben gedaan, in plaats van te worden overstemd doordat het menu sluit.
+* Updates sluiten Paperback normaal af en brengen het terug naar voren.
+* Enorme tekstbestanden openen met een fractie van het geheugen, en de 4 GB-limiet is weg.
+* MOBI-, Word- en HTML-conversie, Alles zoeken en Alle documenten zoeken zijn sneller.
+* Het Windows-uitvoerbare bestand is 3 MB kleiner.
+
+#### Opgelost
+
+##### Algemeen
+* Leestekenssneltoetsen op toetsenbordindelingen die Shift daarvoor nodig hebben; Toetsenbordsneltoetsen aanpassen vlaggen elk waarvan je indeling het niet kan typen.
+* De focus keert naar het document terug na `Win+D`.
+* Crashes bij het openen van bladwijzers voor een nieuw document, in Alles zoeken en bij sommige beschadigde MOBI-bestanden.
+* Regex Zoeken selecteert de hele overeenkomst.
+* De statusbalk van een audioboek schakelt niet langer tussen audio- en tekstvoortgang.
+* Het woordenaantal bevat tekst die met OCR is gelezen.
+* Gescande pagina's melden hun eigen afbeelding niet meer.
+* De PATH-optie van het installatieprogramma.
+* Linux-updates vinden hun downloads, en een AppImage werkt bij als AppImage.
+* De opmerkingsregel in Word- en OpenDocument-bestanden wordt vertaald.
+
+##### Documenten
+* Windows Write-bestanden die als binair werden geopend.
+* PDF: tekst herhaald bij pagina-einden in getagde PDF's, tweede kolommen eerst gelezen, verloren spaties en afbreekstreepjes aan regeleindes, tekst in Type 3-lettertypen en puntleiders in inhoudsopgaven.
+* RTF: kale CR-regeleindes, streepje-opsommingslijsten, tekst voor de eerste alinea, geaccentueerde en CJK-tekst, tekst verloren na een geevalueerde backslash en RTF opgeslagen als `.doc`.
+* Word- en PowerPoint-bestanden met beschadigde containers die Word nog opent.
+* Word-tekst in bijgehouden wijzigingen, velden en tabelcellen.
+* PowerPoint-links, dia's zonder tekst en emoji.
+* `<` en `&` in Word-, PowerPoint- en OpenDocument-tabelcellen.
+* Met wachtwoord beveiligde OpenDocument-bestanden van huidige LibreOffice.
+* CHM-bestanden in hun coderingspagina, en HTML- en DAISY-bestanden in hun aangegeven codering.
+* Gecomprimeerde DAISY-boeken waarvan verwijzingen de verkeerde hoofdletters gebruiken, en DAISY 2.02-boeken die alleen de eerste zin van een sectie lezen.
+* Handpagina's die omleiden met `.so`.
+* Markdown-voormateriaal gelezen als tekst.
+
+##### macOS
+* Navigatie naar regelbegin, toetsenbordactivering en kopiërmeldingen.
+* VoiceOver's contextmenuopdracht opent Paperback's eigen menu.
+* Menusneltoetsen worden niet langer aangekondigd over wat ze doen.
+
+##### iOS en Android
+* iOS: lancering wordt niet langer afgebroken bij het herstellen van grote boeken.
+* iOS: heropent op het tabblad dat je aan het lezen was, het sluiten van een tabblad leest het vorige boek niet meer en Recente documenten behouden hun volgorde.
+* iOS: audioboeken worden niet langer bij elke lancering opnieuw uitgepakt.
+* iOS: regex-regels van het uitspraakwoordenboek nemen `\1` op.
+* Android: hardop lezen uit met wachtwoord beveiligde documenten.
+* Android: Vorige bovenaan leest de eerste alinea niet meer opnieuw, en tekstmodus snapt zijn scroll niet meer.
+* Android: minder batterijverbruik bij lezen en pauze.
 
 ### Versie 1.0
 

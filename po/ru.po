@@ -1571,8 +1571,9 @@ msgstr "Трассировка"
 msgid "System-Wide"
 msgstr "Масштаб системы"
 
+#, fuzzy
 msgid "Show or Hide Paperback"
-msgstr ""
+msgstr "Показать или скрыть Paperback"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"

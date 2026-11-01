@@ -1357,8 +1357,9 @@ msgstr "Trace"
 msgid "System-Wide"
 msgstr "Systeembreedte"
 
+#, fuzzy
 msgid "Show or Hide Paperback"
-msgstr ""
+msgstr "Paperback tonen of verbergen"
 
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"

@@ -3751,8 +3751,9 @@ msgid "Comment"
 msgstr "Comentário"
 
 #. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
+#, fuzzy
 msgid "{} on “{}”: {}"
-msgstr ""
+msgstr "{} em \"{}\": {}"
 
 #. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
 #, fuzzy
@@ -5618,57 +5619,68 @@ msgstr "Desative para continuar lendo enquanto navega por correspondências de b
 
 #. TRANSLATORS: VoiceOver label for the read-aloud bar's control that speeds up or slows down a book's recorded audio
 #: kt swift
+#, fuzzy
 msgid "Audio Speed"
-msgstr ""
+msgstr "Velocidade do áudio"
 
 #: swift
+#, fuzzy
 msgid "Speech for This Book"
-msgstr ""
+msgstr "Fala deste livro"
 
 #. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
 #: swift
+#, fuzzy
 msgid "{} item"
-msgstr ""
+msgstr "{} item"
 
 #. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
 #: swift
+#, fuzzy
 msgid "{} items"
-msgstr ""
+msgstr "{} itens"
 
 #. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
 #: swift
+#, fuzzy
 msgid "{} items⁣"
-msgstr ""
+msgstr "{} itens⁣"
 
 #. TRANSLATORS: Spoken for an empty table cell in text mode
 #: swift
+#, fuzzy
 msgid "Blank"
-msgstr ""
+msgstr "Em branco"
 
 #. TRANSLATORS: Name of the VoiceOver rotor setting that moves between the entries of a document's table of contents in text mode
 #: swift
+#, fuzzy
 msgid "Sections"
-msgstr ""
+msgstr "Seções"
 
 #. TRANSLATORS: Switch in Speech for This Book giving the open book a voice of its own instead of the one in Settings
 #: swift
+#, fuzzy
 msgid "Own Voice"
-msgstr ""
+msgstr "Voz própria"
 
 #. TRANSLATORS: Switch in Speech for This Book giving the open book a speech rate of its own instead of the one in Settings
 #: swift
+#, fuzzy
 msgid "Own Rate"
-msgstr ""
+msgstr "Taxa própria"
 
 #. TRANSLATORS: Switch in Speech for This Book giving the open book a pitch of its own instead of the one in Settings
 #: swift
+#, fuzzy
 msgid "Own Pitch"
-msgstr ""
+msgstr "Tom próprio"
 
 #. TRANSLATORS: Footer in Speech for This Book explaining what a switch left off does
 #: swift
+#, fuzzy
 msgid "Whatever is switched off follows Settings."
-msgstr ""
+msgstr "O que estiver desativado segue as Configurações."
 
 #. TRANSLATORS: Button that empties the recent documents list
 #: kt swift
@@ -5678,23 +5690,27 @@ msgstr "Limpar"
 
 #. TRANSLATORS: Row label for the number of audio files in the document
 #: kt swift
+#, fuzzy
 msgid "Number of files"
-msgstr ""
+msgstr "Número de arquivos"
 
 #. TRANSLATORS: Row label for the total playback duration across all of the document's audio files
 #: kt swift
+#, fuzzy
 msgid "Total duration"
-msgstr ""
+msgstr "Duração total"
 
 #. TRANSLATORS: Row label for the average playback duration per audio file in the document
 #: kt swift
+#, fuzzy
 msgid "Average duration"
-msgstr ""
+msgstr "Duração média"
 
 #. TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
 #: kt
+#, fuzzy
 msgid "Select audio speed"
-msgstr ""
+msgstr "Selecionar velocidade de áudio"
 
 #, fuzzy
 #~ msgid "Window Hotkey"

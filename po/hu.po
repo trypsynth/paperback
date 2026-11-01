@@ -3212,8 +3212,9 @@ msgid "Comment"
 msgstr "Megjegyzés"
 
 #. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
+#, fuzzy
 msgid "{} on “{}”: {}"
-msgstr ""
+msgstr "{} a »{}« részhez: {}"
 
 #. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
 msgid "{}: {}"
