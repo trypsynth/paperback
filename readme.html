@@ -99,17 +99,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 </li>
 <li><a href="#changelog">Changelog</a><ul>
-<li><a href="#version-10">Version 1.0</a><ul>
+<li><a href="#version-11">Version 1.1</a><ul>
 <li><a href="#added">Added</a></li>
+<li><a href="#changed">Changed</a></li>
 <li><a href="#fixed">Fixed</a></li>
-<li><a href="#ios-and-android-1">iOS and Android</a></li>
+</ul>
+</li>
+<li><a href="#version-10">Version 1.0</a><ul>
+<li><a href="#added-1">Added</a></li>
+<li><a href="#fixed-1">Fixed</a></li>
+<li><a href="#ios-and-android-3">iOS and Android</a></li>
 </ul>
 </li>
 <li><a href="#version-092">Version 0.9.2</a></li>
 <li><a href="#version-091">Version 0.9.1</a></li>
 <li><a href="#version-090">Version 0.9.0</a><ul>
-<li><a href="#added-1">Added</a></li>
-<li><a href="#fixed-1">Fixed</a></li>
+<li><a href="#added-2">Added</a></li>
+<li><a href="#fixed-2">Fixed</a></li>
 </ul>
 </li>
 <li><a href="#version-085">Version 0.8.5</a></li>
@@ -406,10 +412,146 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Tyler Rodick</li>
 </ul>
 <h2 id="changelog">Changelog</h2>
-<h3 id="version-10">Version 1.0</h3>
-<p>1.0 is the first release on all five platforms: Windows, macOS, Linux, iOS and Android, with the iOS and Android apps in the App Store and Google Play.</p>
+<h3 id="version-11">Version 1.1</h3>
+<p>1.1 brings a new PDF engine, a rebuilt iOS text mode, OCR on Linux, documents from links, and decades of older Word, Write, and PowerPoint files.</p>
 <h4 id="added">Added</h4>
 <h5 id="general">General</h5>
+<ul>
+<li>A Hungarian translation and user guide.</li>
+<li>Open a document from a link, on every platform. <code>F5</code> downloads it again.</li>
+<li><code>F5</code> reloads the document.</li>
+<li><code>Ctrl+1</code> to <code>Ctrl+9</code> jump to your first nine open documents.</li>
+<li><code>Ctrl+Tab</code> and <code>Ctrl+Shift+Tab</code> switch documents on macOS and Linux.</li>
+<li>The Open dialog and All Documents open every document you pick, each in its own tab.</li>
+<li>Save a picture from the context menu.</li>
+<li>Export bookmarks and notes as text or HTML.</li>
+<li>Settings for the log level, and for whether Find selects its match.</li>
+<li>The window hotkey can be any key, set on the new System-Wide tab of Keyboard Shortcuts.</li>
+<li>Copying says how much it copied, and the text stays on the clipboard after Paperback closes.</li>
+<li>Every menu item has its own access key in every language.</li>
+<li>An unreadable zip opens as a list of the documents inside.</li>
+</ul>
+<h5 id="new-formats">New Formats</h5>
+<ul>
+<li>Word for Windows 1 and 2, Word for DOS, Word for Mac 4 and 5, and the Unicode editions of Word 6 and 95.</li>
+<li>PowerPoint 95.</li>
+<li>Zipped FictionBook (<code>.fb2.zip</code>).</li>
+<li>DAISY 3 books that are only a DTBook in a zip, or only audio.</li>
+</ul>
+<h5 id="ocr">OCR</h5>
+<ul>
+<li>OCR on Linux, through Tesseract.</li>
+<li>Recognize Current Page (<code>Ctrl+Shift+R</code>) reads the page you’re on again, even if it has text.</li>
+<li><code>Enter</code> on a picture reads its text.</li>
+<li>Recognized text follows the page’s layout, and is remembered, so a scanned document opens with its text.</li>
+<li>Batch OCR can redo pages that have text, reads several pages at once, and stops when you close the document.</li>
+</ul>
+<h5 id="audio-books">Audio Books</h5>
+<ul>
+<li>Speeds up to 4x everywhere, remembered across sessions.</li>
+<li>Volume controls.</li>
+</ul>
+<h5 id="pdf-documents">PDF Documents</h5>
+<ul>
+<li>A new PDF engine: faster, uses every CPU core, and needs no pdfium library.</li>
+<li>Headings found in untagged pages, and better titles.</li>
+<li>A setting to keep repeated page headers and footers.</li>
+</ul>
+<h5 id="other-documents">Other Documents</h5>
+<ul>
+<li>Word: numbered and bulleted lists, footnotes, endnotes, comments, picture alt text, list navigation, and Word’s own pages.</li>
+<li>OpenDocument: footnotes and comments after the text.</li>
+<li>Titles and authors from the document’s metadata in Word, PowerPoint, OpenDocument, RTF, Markdown, and reStructuredText.</li>
+<li>Comics: title, writer, page types, and bookmarks from ComicInfo.xml.</li>
+<li>FB2: headings, a table of contents, and separate verse lines.</li>
+<li>Pictures in MOBI, KF8, and zipped DAISY books can be saved and read with OCR.</li>
+<li>Dollar-delimited math in Markdown.</li>
+<li>Sphinx directives in reStructuredText.</li>
+<li>Pictures with no description show as [Image].</li>
+</ul>
+<h5 id="ios-and-android-1">iOS and Android</h5>
+<ul>
+<li>A Language row in Settings.</li>
+<li>Document Info shows your progress, and an audio book’s file count and running time.</li>
+<li>Text mode is remembered.</li>
+<li>Keep reading continuously after a Find.</li>
+<li>iOS: text mode rebuilt for VoiceOver. Read All goes through the whole book, the rotors reach all of it, lists and tables are real lists and tables, three-finger flicks turn pages, and the three-finger tap gives the page and percentage.</li>
+<li>iOS: a voice, rate, and pitch per book, from Speech for This Book.</li>
+<li>iOS: password-protected documents.</li>
+<li>iOS: share zipped DAISY books and MP3 audio books to Paperback.</li>
+<li>iOS: the sleep timer stops audio books.</li>
+<li>iOS: Slovak and Ukrainian.</li>
+<li>Android: rate and pitch changes apply to the paragraph being read, and work with the system default engine.</li>
+<li>Android: runs on x86_64 devices.</li>
+</ul>
+<h5 id="macos">macOS</h5>
+<ul>
+<li>A universal app, native on Intel and Apple silicon.</li>
+<li>pb is included in the app.</li>
+</ul>
+<h5 id="pb">pb</h5>
+<ul>
+<li>Convert by page, a whole folder, a list of files (<code>--files-from</code>), or a link.</li>
+</ul>
+<h4 id="changed">Changed</h4>
+<ul>
+<li>The menu bar is reorganized into eight menus.</li>
+<li>The status bar says “Progress” instead of “Reading”.</li>
+<li>Menu commands announce what they did, instead of being drowned out as the menu closes.</li>
+<li>Updates close Paperback normally and bring it back to the front.</li>
+<li>Huge text files open with a fraction of the memory, and the 4 GB limit is gone.</li>
+<li>MOBI, Word, and HTML conversion, Find All, and All Documents search are faster.</li>
+<li>The Windows executable is 3 MB smaller.</li>
+</ul>
+<h4 id="fixed">Fixed</h4>
+<h5 id="general-1">General</h5>
+<ul>
+<li>Punctuation shortcuts on keyboard layouts that need Shift for them; Keyboard Shortcuts flags any your layout can’t type.</li>
+<li>Focus returns to the document after <code>Win+D</code>.</li>
+<li>Crashes opening bookmarks for a new document, in Find All, and on some damaged MOBI files.</li>
+<li>Regex Find selects the whole match.</li>
+<li>An audio book’s status bar no longer flips between audio and text progress.</li>
+<li>The word count includes text read with OCR.</li>
+<li>Scanned pages no longer announce their own image.</li>
+<li>The installer’s PATH option.</li>
+<li>Linux updates find their downloads, and an AppImage updates as an AppImage.</li>
+<li>The comment line in Word and OpenDocument files is translated.</li>
+</ul>
+<h5 id="documents">Documents</h5>
+<ul>
+<li>Windows Write files that opened as binary.</li>
+<li>PDF: text repeated at page breaks in tagged PDFs, second columns read first, lost spaces and line-end hyphens, text in Type 3 fonts, and contents dot leaders.</li>
+<li>RTF: bare CR line endings, dash-bulleted lists, text before the first paragraph, accented and CJK text, text lost after an escaped backslash, and RTF saved as <code>.doc</code>.</li>
+<li>Word and PowerPoint files with damaged containers that Word still opens.</li>
+<li>Word text in tracked changes, fields, and table cells.</li>
+<li>PowerPoint links, slides with no text, and emoji.</li>
+<li><code>&lt;</code> and <code>&amp;</code> in Word, PowerPoint, and OpenDocument table cells.</li>
+<li>Password-protected OpenDocument files from current LibreOffice.</li>
+<li>CHM files in their code page, and HTML and DAISY files in their declared encoding.</li>
+<li>Zipped DAISY books whose references use the wrong case, and DAISY 2.02 books reading only a section’s first phrase.</li>
+<li>Man pages that redirect with <code>.so</code>.</li>
+<li>Markdown front matter read as text.</li>
+</ul>
+<h5 id="macos-1">macOS</h5>
+<ul>
+<li>Line-start navigation, keyboard activation, and copy announcements.</li>
+<li>VoiceOver’s context menu command opens Paperback’s own.</li>
+<li>Menu shortcuts are no longer announced over what they do.</li>
+</ul>
+<h5 id="ios-and-android-2">iOS and Android</h5>
+<ul>
+<li>iOS: launch no longer killed while restoring large books.</li>
+<li>iOS: reopens on the tab you were reading, closing a tab no longer reads the previous book, and Recent Documents keep their order.</li>
+<li>iOS: audio books are no longer extracted again at every launch.</li>
+<li>iOS: speech dictionary regex rules take <code>\1</code>.</li>
+<li>Android: reading aloud from password-protected documents.</li>
+<li>Android: Previous at the top no longer re-reads the first paragraph, and text mode no longer snaps its scroll.</li>
+<li>Android: less battery use while reading and paused.</li>
+</ul>
+<h3 id="version-10">Version 1.0</h3>
+<p>1.0 is the first release on all five platforms: Windows, macOS, Linux, iOS and Android, with the iOS and Android apps in the App Store and Google Play.</p>
+<h4 id="added-1">Added</h4>
+<h5 id="general-2">General</h5>
 <ul>
 <li>Linux support, as an AppImage or a tar.gz, with desktop integration so documents open from your file manager.</li>
 <li>Mark the beginning of a selection with <code>Alt+F9</code>, copy everything from there to wherever you have got to with <code>Alt+F10</code>, and go back to the mark with <code>Alt+Shift+F9</code>, for copying a long span of text without shift-arrowing through it. All three are under Tools &gt; Select and copy.</li>
@@ -417,7 +559,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>The About box now shows Paperback’s license and every translator.</li>
 <li>A Ukrainian translation.</li>
 </ul>
-<h5 id="new-formats">New Formats</h5>
+<h5 id="new-formats-1">New Formats</h5>
 <ul>
 <li>Comic book archives (<code>.cbz</code>).</li>
 <li>M4B audiobooks, split into their chapters.</li>
@@ -428,7 +570,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>WinHelp (<code>.hlp</code>) files.</li>
 <li>Word 6 and Word 95 documents.</li>
 </ul>
-<h5 id="ocr">OCR</h5>
+<h5 id="ocr-1">OCR</h5>
 <ul>
 <li>Scanned PDF pages can now be recognized with the OCR built into Windows and macOS. Press <code>Enter</code> on a scanned page to recognize it, or use Batch OCR (<code>Ctrl+Shift+O</code>) for a range of pages.</li>
 </ul>
@@ -442,7 +584,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>KF8 (AZW3) books now support section navigation.</li>
 <li>EPUB pages that are only a picture now show a line for it, so you can land on them instead of skipping straight past.</li>
 </ul>
-<h5 id="audio-books">Audio Books</h5>
+<h5 id="audio-books-1">Audio Books</h5>
 <ul>
 <li>Playback speed controls, from half speed to three times as fast. Use <code>Ctrl+Shift+.</code> and <code>Ctrl+Shift+,</code>, or the Tools menu.</li>
 <li>Bookmarks and notes in audio-only books now remember the exact time you set them at.</li>
@@ -453,7 +595,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>A Clear Recent Documents item in the Recent Documents submenu.</li>
 </ul>
-<h5 id="pdf-documents">PDF Documents</h5>
+<h5 id="pdf-documents-1">PDF Documents</h5>
 <ul>
 <li>A setting to keep every line of a PDF separate, rather than joining them into paragraphs.</li>
 <li>Images and figures in PDFs are now announced.</li>
@@ -467,13 +609,13 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Headings are now drawn at a size that matches their level, and images and tables are set apart from the text around them.</li>
 </ul>
-<h5 id="pb">pb</h5>
+<h5 id="pb-1">pb</h5>
 <ul>
 <li><code>pb --list-formats</code> lists every format pb can read.</li>
 <li>pb now says which file it could not read, and why.</li>
 </ul>
-<h4 id="fixed">Fixed</h4>
-<h5 id="general-1">General</h5>
+<h4 id="fixed-1">Fixed</h4>
+<h5 id="general-3">General</h5>
 <ul>
 <li>A book reopened at startup now reads straight away, rather than staying silent until it was closed and opened again.</li>
 <li>A document whose file has gone missing can now be removed from All Documents, instead of staying in the list however often you confirm.</li>
@@ -499,11 +641,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>The table of contents, the elements list and the bookmarks list no longer lag or freeze on books with thousands of entries.</li>
 <li>Up and Down arrow now remember their column per document, instead of carrying it over when you switch tabs.</li>
 </ul>
-<h5 id="audio-books-1">Audio Books</h5>
+<h5 id="audio-books-2">Audio Books</h5>
 <ul>
 <li>Audio playback now uses <code>Control+Space</code> on macOS, since <code>Command+Space</code> belongs to Spotlight.</li>
 </ul>
-<h5 id="pdf-documents-1">PDF Documents</h5>
+<h5 id="pdf-documents-2">PDF Documents</h5>
 <ul>
 <li>Fixed PDFs exported from Apple Pages reading as plain text, with none of the headings and lists they were written with.</li>
 <li>Fixed PDF paragraphs and headings splitting at every line, and words splitting apart at spaces.</li>
@@ -537,7 +679,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Plain text files saved with an <code>.rtf</code> extension now open as text, rather than failing with an error.</li>
 <li>RTF control words no longer show up as text.</li>
 </ul>
-<h4 id="ios-and-android-1">iOS and Android</h4>
+<h4 id="ios-and-android-3">iOS and Android</h4>
 <p>The iOS and Android apps open every format the desktop does, and include:</p>
 <ul>
 <li>Read aloud, with your choice of voice, rate and pitch, a speech rate control right on the reading bar, and an optional pause between paragraphs.</li>
@@ -582,8 +724,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>The update dialog is now translated.</li>
 </ul>
 <h3 id="version-090">Version 0.9.0</h3>
-<h4 id="added-1">Added</h4>
-<h5 id="general-2">General</h5>
+<h4 id="added-2">Added</h4>
+<h5 id="general-4">General</h5>
 <ul>
 <li>A CLI tool, called pb, to quickly convert any of Paperback’s supported formats to HTML, Markdown, or plain text.</li>
 <li>An option to reload documents that have been modified by other programs on disk.</li>
@@ -661,7 +803,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Support for DAISY 2.0 books.</li>
 <li>Support for DAISY 2.02 audio playback.</li>
 </ul>
-<h5 id="audio-books-2">Audio Books</h5>
+<h5 id="audio-books-3">Audio Books</h5>
 <ul>
 <li>The ability to play audio books, currently supporting both DAISY audio (including DAISY audio + text) and zips of audio files.</li>
 <li>Keyboard shortcuts and menu items to play/pause narration, seek forward and backward, and adjust the seek amount.</li>
@@ -675,8 +817,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>PowerPoint documents now support tables.</li>
 </ul>
-<h4 id="fixed-1">Fixed</h4>
-<h5 id="general-3">General</h5>
+<h4 id="fixed-2">Fixed</h4>
+<h5 id="general-5">General</h5>
 <ul>
 <li>Documents encoded in legacy CJK encodings, such as GBK, Big5, and Shift_JIS, will now render properly instead of as a bunch of mojibake.</li>
 <li>“Reopen last closed” attempting to reopen the bundled readme.</li>
@@ -746,7 +888,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>dl, dt, and dd elements not producing line breaks in XHTML documents.</li>
 </ul>
-<h5 id="pdf-documents-2">PDF Documents</h5>
+<h5 id="pdf-documents-3">PDF Documents</h5>
 <ul>
 <li>Paperback now falls back to plain text extraction for falsely-tagged PDFs.</li>
 <li>PDF documents containing control characters in their titles and/or bookmarks will no longer crash Paperback on open.</li>
