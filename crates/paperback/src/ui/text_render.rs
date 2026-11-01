@@ -77,7 +77,7 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: ReaderCtrl, slice: &WindowSlice, w
 	let content = slice.text.as_str();
 	let segments = merge_formatting_markers(&slice.markers);
 	#[cfg(target_os = "windows")]
-	if !segments.is_empty()
+	if !(segments.is_empty() && slice.paragraphs.is_empty())
 		&& let Some(font) = text_ctrl.get_font()
 	{
 		let expected = sanitize_for_rich_edit(content);
@@ -105,7 +105,7 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: ReaderCtrl, slice: &WindowSlice, w
 	true
 }
 
-/// Streaming RTF costs about 3.5s however little formatting it carries, against about 2s for plain text plus 10ms per styled span, so it only pays past a hundred spans or so (#920).
+/// Streaming RTF costs about 3.5s however little formatting it carries, against about 2s for plain text plus 10ms per styled span, so it only pays past a hundred spans or so (#920). Headings and lists always take it, since setting them on a visible control costs about 1ms each (#1211).
 #[cfg(target_os = "windows")]
 const RTF_STREAM_MIN_SEGMENTS: usize = 128;
 
@@ -135,7 +135,7 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: ReaderCtrl, slice: &Wind
 	let content = slice.text.as_str();
 	let segments = merge_formatting_markers(&slice.markers);
 	#[cfg(target_os = "windows")]
-	if segments.len() >= RTF_STREAM_MIN_SEGMENTS
+	if (segments.len() >= RTF_STREAM_MIN_SEGMENTS || !slice.paragraphs.is_empty())
 		&& let Some(font) = text_ctrl.get_font()
 	{
 		let started = Instant::now();
