@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 001b5ced2d6cc026; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2ee08ef3b88d958e; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,2e336a82); please review and edit as needed -->
 
 # Paperback - phiên bản 1.0
 
@@ -304,6 +304,132 @@ Lưu ý: Tôi coi một nhà tài trợ GitHub công khai là căn cứ để t�
 * Tyler Rodick
 
 ## Nhật ký thay đổi
+
+### Phiên bản 1.1
+
+1.1 mang đến một công cụ PDF mới, chế độ văn bản iOS được xây dựng lại, OCR trên Linux, tài liệu từ liên kết và các tệp Word, Write và PowerPoint cũ từ nhiều thập kỷ trước.
+
+#### Được thêm
+
+##### Chung
+* Một bản dịch tiếng Hungary và hướng dẫn người dùng.
+* Mở một tài liệu từ liên kết, trên mọi nền tảng. `F5` tải xuống nó lại.
+* `F5` tải lại tài liệu.
+* `Ctrl+1` đến `Ctrl+9` nhảy đến chín tài liệu đầu tiên đang mở của bạn.
+* `Ctrl+Tab` và `Ctrl+Shift+Tab` chuyển đổi tài liệu trên macOS và Linux.
+* Hộp thoại Mở và Tất cả tài liệu mở mọi tài liệu bạn chọn, mỗi cái trong tab riêng của nó.
+* Lưu hình ảnh từ menu bối cảnh.
+* Xuất dấu trang và ghi chú dưới dạng văn bản hoặc HTML.
+* Cài đặt cho mức nhật ký và cho dù Tìm kiếm có chọn kết quả khớp của nó.
+* Phím tắt cửa sổ có thể là bất kỳ phím nào, được đặt trên tab Toàn hệ thống mới của Tùy chỉnh Phím tắt.
+* Sao chép cho biết nó sao chép bao nhiêu, và văn bản vẫn ở trên clipboard sau khi Paperback đóng.
+* Mỗi mục menu có khóa truy cập riêng của nó trong mọi ngôn ngữ.
+* Một tệp zip không đọc được mở dưới dạng danh sách các tài liệu bên trong.
+
+##### Định dạng mới
+* Word cho Windows 1 và 2, Word cho DOS, Word cho Mac 4 và 5, và các phiên bản Unicode của Word 6 và 95.
+* PowerPoint 95.
+* FictionBook được nén (`.fb2.zip`).
+* Sách DAISY 3 chỉ là DTBook trong zip hoặc chỉ âm thanh.
+
+##### OCR
+* OCR trên Linux, thông qua Tesseract.
+* Nhận dạng trang hiện tại (`Ctrl+Shift+R`) đọc lại trang bạn đang ở, ngay cả khi nó có văn bản.
+* `Enter` trên hình ảnh đọc văn bản của nó.
+* Văn bản được nhận dạng tuân theo bố cục trang và được ghi nhớ, vì vậy tài liệu được quét mở cùng với văn bản của nó.
+* Hàng loạt OCR có thể redo các trang có văn bản, đọc nhiều trang cùng một lúc và dừng lại khi bạn đóng tài liệu.
+
+##### Sách nói
+* Tốc độ lên đến 4x ở mọi nơi, được ghi nhớ trong các phiên.
+* Kiểm soát âm lượng.
+
+##### Tài liệu PDF
+* Một công cụ PDF mới: nhanh hơn, sử dụng mọi lõi CPU và không cần thư viện pdfium.
+* Các tiêu đề được tìm thấy trong các trang không được gắn thẻ và tiêu đề tốt hơn.
+* Một cài đặt để giữ lại đầu trang và chân trang lặp lại.
+
+##### Tài liệu khác
+* Word: danh sách được đánh số và có dấu đầu dòng, ghi chú cuối trang, ghi chú cuối, bình luận, văn bản thay thế hình ảnh, điều hướng danh sách và các trang của Word.
+* OpenDocument: ghi chú cuối trang và bình luận sau văn bản.
+* Tiêu đề và tác giả từ siêu dữ liệu của tài liệu trong Word, PowerPoint, OpenDocument, RTF, Markdown và reStructuredText.
+* Truyện tranh: tiêu đề, nhà văn, loại trang và dấu trang từ ComicInfo.xml.
+* FB2: tiêu đề, mục lục và các dòng thơ riêng biệt.
+* Hình ảnh trong sách MOBI, KF8 và DAISY được nén có thể được lưu và đọc bằng OCR.
+* Toán học được phân định bằng dấu đô la trong Markdown.
+* Các chỉ thị Sphinx trong reStructuredText.
+* Hình ảnh không có mô tả hiển thị dưới dạng [Image].
+
+##### iOS và Android
+* Một dòng Ngôn ngữ trong Cài đặt.
+* Thông tin tài liệu hiển thị tiến độ của bạn và số tệp cũng như thời gian chạy của sách nói.
+* Chế độ văn bản được ghi nhớ.
+* Tiếp tục đọc liên tục sau khi Tìm kiếm.
+* iOS: chế độ văn bản được xây dựng lại cho VoiceOver. Đọc tất cả đi qua toàn bộ cuốn sách, các rotor tiếp cận tất cả, danh sách và bảng là danh sách và bảng thực, ba ngón tay lướt quay trang, và ba ngón tay chạm cung cấp trang và phần trăm.
+* iOS: giọng nói, tốc độ và cao độ cho mỗi cuốn sách, từ Phát biểu cho Cuốn sách này.
+* iOS: tài liệu được bảo vệ bằng mật khẩu.
+* iOS: chia sẻ sách DAISY được nén và sách nói MP3 với Paperback.
+* iOS: bộ định thời ngủ dừng sách nói.
+* iOS: tiếng Slovakia và tiếng Ukraina.
+* Android: thay đổi tốc độ và cao độ áp dụng cho đoạn văn được đọc và hoạt động với công cụ mặc định của hệ thống.
+* Android: chạy trên các thiết bị x86_64.
+
+##### macOS
+* Một ứng dụng phổ quát, gốc trên Intel và Apple silicon.
+* pb được bao gồm trong ứng dụng.
+
+##### pb
+* Chuyển đổi theo trang, toàn bộ thư mục, danh sách tệp (`--files-from`) hoặc liên kết.
+
+#### Đã thay đổi
+* Thanh menu được tổ chức lại thành tám menu.
+* Thanh trạng thái nói "Tiến độ" thay vì "Đọc".
+* Các lệnh menu thông báo những gì chúng làm, thay vì bị chìm khi menu đóng.
+* Cập nhật đóng Paperback bình thường và đưa nó trở lại phía trước.
+* Các tệp văn bản khổng lồ mở với một phần bộ nhớ, và giới hạn 4 GB đã biến mất.
+* Chuyển đổi MOBI, Word và HTML, Tìm tất cả và Tìm kiếm tất cả tài liệu nhanh hơn.
+* Tệp thực thi Windows nhỏ hơn 3 MB.
+
+#### Đã sửa lỗi
+
+##### Chung
+* Các phím tắt dấu chấm trên bố cục bàn phím cần Shift cho chúng; Tùy chỉnh Phím tắt cờ bất kỳ cách nào bố cục của bạn không thể gõ.
+* Tiêu điểm quay trở lại tài liệu sau `Win+D`.
+* Sự cố mở dấu trang cho tài liệu mới, trong Tìm tất cả và trên một số tệp MOBI bị hỏng.
+* Regex Tìm kiếm chọn toàn bộ kết quả trùng khớp.
+* Thanh trạng thái của sách nói không còn lật lọng giữa tiến độ âm thanh và văn bản.
+* Số từ bao gồm văn bản được đọc bằng OCR.
+* Các trang được quét không còn thông báo hình ảnh của riêng chúng.
+* Tùy chọn PATH của bộ cài đặt.
+* Cập nhật Linux tìm các bản tải xuống của chúng và AppImage cập nhật dưới dạng AppImage.
+* Dòng bình luận trong các tệp Word và OpenDocument được dịch.
+
+##### Tài liệu
+* Tệp Windows Write được mở dưới dạng tệp nhị phân.
+* PDF: văn bản lặp lại tại ngắt trang trong PDF được gắn thẻ, cột thứ hai đọc trước tiên, khoảng trắng bị mất và dấu gạch ngang ở cuối dòng, văn bản trong phông chữ Loại 3 và các chữ số nội dung.
+* RTF: kết thúc dòng CR trần, danh sách có dấu gạch ngang, văn bản trước đoạn đầu tiên, văn bản có dấu và CJK, văn bản bị mất sau dấu gạch chéo thoát, và RTF được lưu dưới dạng `.doc`.
+* Tệp Word và PowerPoint có vùng chứa bị hỏng mà Word vẫn mở.
+* Văn bản Word trong các thay đổi được theo dõi, trường và ô bảng.
+* Liên kết PowerPoint, slide không có văn bản và emoji.
+* `<` và `&` trong ô bảng Word, PowerPoint và OpenDocument.
+* Tệp OpenDocument được bảo vệ bằng mật khẩu từ LibreOffice hiện tại.
+* Tệp CHM trong trang mã của chúng và tệp HTML và DAISY trong mã hóa được khai báo.
+* Sách DAISY được nén có tham chiếu sử dụng trường hợp sai và sách DAISY 2.02 chỉ đọc cụm từ đầu tiên của phần.
+* Các trang hướng dẫn được chuyển hướng bằng `.so`.
+* Vật liệu trước Markdown được đọc dưới dạng văn bản.
+
+##### macOS
+* Điều hướng bắt đầu dòng, kích hoạt bàn phím và thông báo sao chép.
+* Lệnh menu bối cảnh của VoiceOver mở cái của Paperback.
+* Các phím tắt menu không còn được thông báo qua những gì chúng làm.
+
+##### iOS và Android
+* iOS: khởi chạy không còn bị giết khi khôi phục các cuốn sách lớn.
+* iOS: mở lại trên tab bạn đang đọc, đóng tab không còn đọc cuốn sách trước và Tài liệu gần đây giữ thứ tự của chúng.
+* iOS: sách nói không còn được trích xuất lại ở mỗi lần khởi chạy.
+* iOS: các quy tắc regex từ điển lời nói lấy `\1`.
+* Android: đọc to từ tài liệu được bảo vệ bằng mật khẩu.
+* Android: Trước ở đầu không còn đọc lại đoạn đầu tiên và chế độ văn bản không còn khóa cuộn của nó.
+* Android: sử dụng pin ít hơn khi đọc và tạm dừng.
 
 ### Phiên bản 1.0
 

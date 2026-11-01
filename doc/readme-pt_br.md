@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 001b5ced2d6cc026; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2ee08ef3b88d958e; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,2e336a82); please review and edit as needed -->
 
 # Paperback - versão 1.0
 
@@ -304,6 +304,132 @@ Nota: Considero um patrocinador público no GitHub motivo suficiente para inclus
 * Tyler Rodick
 
 ## Changelog
+
+### Versão 1.1
+
+1.1 traz um novo mecanismo de PDF, um modo de texto iOS reconstruído, OCR no Linux, documentos de links e décadas de arquivos antigos do Word, Write e PowerPoint.
+
+#### Adicionado
+
+##### Geral
+* Uma tradução para húngaro e guia do usuário.
+* Abra um documento de um link, em todas as plataformas. `F5` faz download dele novamente.
+* `F5` recarrega o documento.
+* `Ctrl+1` a `Ctrl+9` pulam para seus nove primeiros documentos abertos.
+* `Ctrl+Tab` e `Ctrl+Shift+Tab` alternância de documentos no macOS e Linux.
+* O diálogo Abrir Documento e Todos os Documentos abrem cada documento que você seleciona, cada um em sua própria aba.
+* Salve uma imagem do menu de contexto.
+* Exporte marcadores e anotações como texto ou HTML.
+* Configurações para o nível de log e se Localizar seleciona sua correspondência.
+* A tecla de atalho da janela pode ser qualquer tecla, definida na nova aba Em todo o sistema de Personalizar Atalhos do Teclado.
+* Copiar diz quanto foi copiado e o texto fica na área de transferência após o Paperback fechar.
+* Cada item de menu tem sua própria tecla de acesso em todos os idiomas.
+* Um zip ilegível abre como uma lista dos documentos dentro.
+
+##### Novos Formatos
+* Word para Windows 1 e 2, Word para DOS, Word para Mac 4 e 5 e as edições Unicode do Word 6 e 95.
+* PowerPoint 95.
+* FictionBook compactado (`.fb2.zip`).
+* Livros DAISY 3 que contêm apenas um DTBook em um zip ou apenas áudio.
+
+##### OCR
+* OCR no Linux, através do Tesseract.
+* Reconhecer Página Atual (`Ctrl+Shift+R`) lê a página em que você está novamente, mesmo que tenha texto.
+* `Enter` em uma imagem lê seu texto.
+* O texto reconhecido segue o layout da página e é lembrado, para que um documento digitalizado abra com seu texto.
+* OCR em Lote pode refazer páginas que têm texto, lê várias páginas de uma vez e para quando você fecha o documento.
+
+##### Audiolivros
+* Velocidades até 4x em qualquer lugar, lembradas entre sessões.
+* Controles de volume.
+
+##### Documentos PDF
+* Um novo mecanismo de PDF: mais rápido, usa cada núcleo de CPU e não precisa de biblioteca pdfium.
+* Títulos encontrados em páginas não marcadas e títulos melhores.
+* Uma configuração para manter cabeçalhos e rodapés de página repetidos.
+
+##### Outros Documentos
+* Word: listas numeradas e com marcadores, notas de rodapé, notas finais, comentários, texto alt de imagem, navegação de listas e páginas próprias do Word.
+* OpenDocument: notas de rodapé e comentários após o texto.
+* Títulos e autores dos metadados do documento em Word, PowerPoint, OpenDocument, RTF, Markdown e reStructuredText.
+* Histórias em quadrinhos: título, escritor, tipos de página e marcadores de ComicInfo.xml.
+* FB2: títulos, tabela de conteúdos e linhas de verso separadas.
+* Imagens em livros MOBI, KF8 e DAISY compactados podem ser salvas e lidas com OCR.
+* Matemática delimitada por dólar em Markdown.
+* Diretivas Sphinx em reStructuredText.
+* Imagens sem descrição aparecem como [Imagem].
+
+##### iOS e Android
+* Uma linha Idioma em Configurações.
+* Informação do Documento mostra seu progresso e a contagem de arquivos e tempo de execução de um audiolivro.
+* O modo de texto é lembrado.
+* Continue lendo continuamente após um Localizar.
+* iOS: modo de texto reconstruído para VoiceOver. Ler Tudo percorre todo o livro, os rotores alcançam tudo, listas e tabelas são listas e tabelas reais, toques com três dedos viram páginas e o toque com três dedos fornece a página e percentagem.
+* iOS: uma voz, velocidade e tom por livro, de Fala para Este Livro.
+* iOS: documentos protegidos por senha.
+* iOS: compartilhe livros DAISY compactados e audiolivros MP3 com o Paperback.
+* iOS: o temporizador de descanso para audiolivros.
+* iOS: Eslovaco e Ucraniano.
+* Android: as mudanças de velocidade e tom se aplicam ao parágrafo sendo lido e funcionam com o mecanismo padrão do sistema.
+* Android: funciona em dispositivos x86_64.
+
+##### macOS
+* Um aplicativo universal, nativo em Intel e Apple silicon.
+* pb está incluído no aplicativo.
+
+##### pb
+* Converter por página, uma pasta inteira, uma lista de arquivos (`--files-from`) ou um link.
+
+#### Alterado
+* A barra de menu é reorganizada em oito menus.
+* A barra de status diz "Progresso" em vez de "Leitura".
+* Os comandos de menu anunciam o que fizeram, em vez de serem afogados conforme o menu fecha.
+* As atualizações fecham o Paperback normalmente e o trazem de volta para a frente.
+* Arquivos de texto enormes abrem com uma fração da memória, e o limite de 4 GB desapareceu.
+* A conversão MOBI, Word e HTML, Localizar Tudo e a busca em Todos os Documentos são mais rápidas.
+* O executável do Windows é 3 MB menor.
+
+#### Corrigido
+
+##### Geral
+* Atalhos de pontuação em layouts de teclado que precisam de Shift para eles; Personalizar Atalhos do Teclado marca qualquer um que seu layout não consegue digitar.
+* O foco retorna ao documento após `Win+D`.
+* Travamentos ao abrir marcadores para um novo documento, em Localizar Tudo e em alguns arquivos MOBI danificados.
+* A Localização com Regex seleciona a correspondência inteira.
+* A barra de status de um audiolivro não alterna mais entre o progresso de áudio e texto.
+* A contagem de palavras inclui texto lido com OCR.
+* Páginas digitalizadas não anunciam mais sua própria imagem.
+* A opção PATH do instalador.
+* As atualizações do Linux encontram seus downloads, e um AppImage é atualizado como um AppImage.
+* A linha de comentário em arquivos Word e OpenDocument é traduzida.
+
+##### Documentos
+* Arquivos Windows Write que se abriram como binários.
+* PDF: texto repetido em quebras de página em PDFs marcados, segundas colunas lidas primeiro, espaços perdidos e hífens no final da linha, texto em fontes Tipo 3 e líderes de ponto de conteúdo.
+* RTF: finais de linha CR simples, listas com marcadores de travessão, texto antes do primeiro parágrafo, texto acentuado e CJK, texto perdido após uma barra invertida escapada e RTF salvo como `.doc`.
+* Arquivos Word e PowerPoint com contêineres danificados que o Word ainda abre.
+* Texto do Word em mudanças rastreadas, campos e células de tabela.
+* Links do PowerPoint, slides sem texto e emoji.
+* `<` e `&` em células de tabela do Word, PowerPoint e OpenDocument.
+* Arquivos OpenDocument protegidos por senha do LibreOffice atual.
+* Arquivos CHM em sua página de código e arquivos HTML e DAISY em sua codificação declarada.
+* Livros DAISY compactados cujas referências usam o caso errado e livros DAISY 2.02 lendo apenas a primeira frase de uma seção.
+* Páginas man que redirecionam com `.so`.
+* Questões preliminares de Markdown lidas como texto.
+
+##### macOS
+* Navegação no início da linha, ativação por teclado e anúncios de cópia.
+* O comando do menu de contexto do VoiceOver abre o próprio do Paperback.
+* Os atalhos de menu não são mais anunciados sobre o que fazem.
+
+##### iOS e Android
+* iOS: o lançamento não é mais interrompido ao restaurar livros grandes.
+* iOS: reabre na aba que você estava lendo, fechar uma aba não lê mais o livro anterior e Documentos Recentes mantêm sua ordem.
+* iOS: audiolivros não são mais extraídos novamente em cada lançamento.
+* iOS: as regras de regex do dicionário de fala usam `\1`.
+* Android: leitura em voz alta de documentos protegidos por senha.
+* Android: Anterior no topo não relê mais o primeiro parágrafo, e o modo de texto não fixa mais sua rolagem.
+* Android: menos uso de bateria durante a leitura e pausa.
 
 ### Versão 1.0
 

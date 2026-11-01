@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 001b5ced2d6cc026; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,80b9b9ca); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2ee08ef3b88d958e; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,2e336a82); please review and edit as needed -->
 
 # Paperback - Version 1.0
 
@@ -305,6 +305,132 @@ Hinweis: Ich betrachte ein öffentliches GitHub-Sponsoring als Grund für die au
 * Tyler Rodick
 
 ## Änderungsprotokoll
+
+### Version 1.1
+
+1.1 bringt eine neue PDF-Engine, einen neu aufgebauten iOS-Textmodus, Texterkennung unter Linux, Dokumente von Links und Jahrzehnte alte Word-, Write- und PowerPoint-Dateien.
+
+#### Hinzugefügt
+
+##### Allgemein
+* Eine ungarische Übersetzung und Anleitung.
+* Öffne ein Dokument von einem Link auf jeder Plattform. `F5` lädt es erneut herunter.
+* `F5` lädt das Dokument erneut.
+* `Ctrl+1` bis `Ctrl+9` springen zu deinen ersten neun geöffneten Dokumenten.
+* `Ctrl+Tab` und `Ctrl+Shift+Tab` wechseln Dokumente unter macOS und Linux.
+* Der Dialog „Dokument öffnen" und „Alle Dokumente" öffnen jedes Dokument, das du auswählst, jeweils in seinem eigenen Tab.
+* Speichere ein Bild aus dem Kontextmenü.
+* Exportiere Lesezeichen und Notizen als Text oder HTML.
+* Einstellungen für das Protokollierungsniveau und ob „Suchen" seine Treffer auswählt.
+* Die Fenster-Hotkey kann eine beliebige Taste sein, die auf der neuen Registerkarte „Systemweit" unter „Tastenkombinationen anpassen" eingestellt ist.
+* Kopieren sagt, wie viel es kopiert hat, und der Text bleibt in der Zwischenablage, nachdem Paperback geschlossen wird.
+* Jedes Menüelement hat in jeder Sprache seine eigene Zugriffstaste.
+* Ein unlesbares ZIP öffnet sich als Liste der Dokumente darin.
+
+##### Neue Formate
+* Word für Windows 1 und 2, Word für DOS, Word für Mac 4 und 5 sowie die Unicode-Editionen von Word 6 und 95.
+* PowerPoint 95.
+* Gezipptes FictionBook (`.fb2.zip`).
+* DAISY-3-Bücher, die nur ein DTBook in einem ZIP sind, oder nur Audio.
+
+##### Texterkennung
+* Texterkennung unter Linux durch Tesseract.
+* „Aktuelle Seite erkennen" (`Ctrl+Shift+R`) liest die Seite, auf der du bist, erneut, auch wenn sie Text enthält.
+* `Enter` auf einem Bild liest seinen Text.
+* Erkannter Text folgt dem Layout der Seite und wird gespeichert, sodass ein gescanntes Dokument mit seinem Text geöffnet wird.
+* „Texterkennung (Stapelverarbeitung)" kann Seiten mit Text erneut verarbeiten, liest mehrere Seiten auf einmal und stoppt, wenn du das Dokument schließt.
+
+##### Hörbücher
+* Geschwindigkeiten bis 4x überall, über Sitzungen hinweg gespeichert.
+* Lautstärkeregler.
+
+##### PDF-Dokumente
+* Eine neue PDF-Engine: schneller, nutzt jeden CPU-Kern und benötigt keine pdfium-Bibliothek.
+* In ungetaggten Seiten gefundene Überschriften und bessere Titel.
+* Eine Einstellung, um wiederholte Seitenkopfzeilen und Fußzeilen beizubehalten.
+
+##### Andere Dokumente
+* Word: nummerierte und Aufzählungslisten, Fußnoten, Endnoten, Kommentare, Bildalt-Text, Listennavigation und Seiten von Word selbst.
+* OpenDocument: Fußnoten und Kommentare nach dem Text.
+* Titel und Autoren aus den Metadaten des Dokuments in Word, PowerPoint, OpenDocument, RTF, Markdown und reStructuredText.
+* Comics: Titel, Autor, Seitentypen und Lesezeichen aus ComicInfo.xml.
+* FB2: Überschriften, ein Inhaltsverzeichnis und separate Verszeilen.
+* Bilder in MOBI-, KF8- und gezippten DAISY-Büchern können gespeichert und mit Texterkennung gelesen werden.
+* Dollarbegrenzte Mathematik in Markdown.
+* Sphinx-Direktiven in reStructuredText.
+* Bilder ohne Beschreibung werden als [Bild] angezeigt.
+
+##### iOS und Android
+* Eine Sprachreihe in „Einstellungen".
+* „Dokumentinfo" zeigt deinen Fortschritt und die Anzahl der Dateien und die Laufzeit eines Hörbuchs.
+* Der Textmodus wird gespeichert.
+* Fortsetzen des kontinuierlichen Lesens nach einer Suche.
+* iOS: Textmodus neu aufgebaut für VoiceOver. „Alles lesen" durchläuft das ganze Buch, die Rotoren erreichen alles davon, Listen und Tabellen sind echte Listen und Tabellen, Drei-Finger-Wischen blättern Seiten um, und das Drei-Finger-Tippen gibt Seite und Prozentsatz.
+* iOS: eine Stimme, Sprechgeschwindigkeit und Tonhöhe pro Buch aus „Sprachausgabe für dieses Buch".
+* iOS: passwortgeschützte Dokumente.
+* iOS: teile gezippte DAISY-Bücher und MP3-Hörbücher mit Paperback.
+* iOS: Der Schlaf-Timer stoppt Hörbücher.
+* iOS: Slowakisch und Ukrainisch.
+* Android: Sprechgeschwindigkeit und Tonhöhenänderungen gelten für den gerade gelesenen Absatz und funktionieren mit der Standard-Engine des Systems.
+* Android: läuft auf x86_64-Geräten.
+
+##### macOS
+* Eine universelle App, nativ auf Intel und Apple-Silizium.
+* pb ist in der App enthalten.
+
+##### pb
+* Konvertiere nach Seite, einen ganzen Ordner, eine Liste von Dateien (`--files-from`) oder einen Link.
+
+#### Geändert
+* Die Menüleiste wird in acht Menüs reorganisiert.
+* Die Statusleiste sagt „Fortschritt" statt „Lesen".
+* Menübefehle kündigen an, was sie getan haben, statt beim Schließen des Menüs überlagert zu werden.
+* Aktualisierungen schließen Paperback ordnungsgemäß und bringen es nach vorne zurück.
+* Riesige Textdateien öffnen sich mit einem Bruchteil des Speichers, und die 4-GB-Grenze ist weg.
+* MOBI-, Word- und HTML-Konvertierung, „Alles finden" und „Alle Dokumente"-Suche sind schneller.
+* Die Windows-Programmdatei ist 3 MB kleiner.
+
+#### Behoben
+
+##### Allgemein
+* Interpunktions-Tastenkombinationen auf Tastaturlayouts, die Shift dafür benötigen; „Tastenkombinationen anpassen" kennzeichnet alle, die dein Layout nicht eingeben kann.
+* Der Fokus kehrt nach `Win+D` zum Dokument zurück.
+* Abstürze beim Öffnen von Lesezeichen für ein neues Dokument, in „Alles finden" und bei einigen beschädigten MOBI-Dateien.
+* Regex-Suche wählt die gesamte Übereinstimmung aus.
+* Die Statusleiste eines Hörbuchs wechselt nicht mehr zwischen Audio- und Textfortschritt.
+* Die Wortanzahl enthält Text, der mit Texterkennung gelesen wurde.
+* Gescannte Seiten kündigen ihr eigenes Bild nicht mehr an.
+* Die PATH-Option des Installers.
+* Linux-Updates finden ihre Downloads, und ein AppImage wird als AppImage aktualisiert.
+* Die Kommentarzeile in Word- und OpenDocument-Dateien wird übersetzt.
+
+##### Dokumente
+* Windows-Write-Dateien, die als Binärdatei geöffnet wurden.
+* PDF: Text, der an Seitenumbrüchen in gekennzeichneten PDFs wiederholt wird, zweite Spalten werden zuerst gelesen, verloren gegangene Leerzeichen und Trennstriche am Zeilenende, Text in Type-3-Schriftarten und Inhalts-Punktführer.
+* RTF: nackte CR-Zeilenumbrüche, Bindestrich-Aufzählungslisten, Text vor dem ersten Absatz, akzentuierter und CJK-Text, Text, der nach einem Escapezeichen-Backslash verloren ging, und RTF, das als `.doc` gespeichert wurde.
+* Word- und PowerPoint-Dateien mit beschädigten Behältern, die Word immer noch öffnet.
+* Word-Text in nachverfolgten Änderungen, Feldern und Tabellenzellen.
+* PowerPoint-Links, Folien ohne Text und Emoji.
+* `<` und `&` in Word-, PowerPoint- und OpenDocument-Tabellenzellen.
+* Passwortgeschützte OpenDocument-Dateien von aktuellem LibreOffice.
+* CHM-Dateien in ihrer Codepage und HTML- und DAISY-Dateien in ihrer deklarierten Codierung.
+* Gezippte DAISY-Bücher, deren Referenzen die falsche Groß-/Kleinschreibung verwenden, und DAISY-2.02-Bücher, die nur die erste Phrase eines Abschnitts lesen.
+* Manpages, die mit `.so` umleiten.
+* Markdown-Präambel, die als Text gelesen wird.
+
+##### macOS
+* Zeilenstart-Navigation, Tastaturaktivierung und Kopier-Ankündigungen.
+* VoiceOvers Kontextmenübefehl öffnet Paperbacks eigenes.
+* Menü-Tastenkombinationen werden nicht mehr über dem angekündigt, was sie tun.
+
+##### iOS und Android
+* iOS: Start wird nicht mehr unterbrochen, während große Bücher wiederhergestellt werden.
+* iOS: öffnet erneut auf der Registerkarte, auf der du warst, das Schließen einer Registerkarte liest das vorherige Buch nicht mehr, und „Zuletzt geöffnete Dokumente" behalten ihre Reihenfolge.
+* iOS: Hörbücher werden nicht mehr bei jedem Start extrahiert.
+* iOS: Sprachverzeichnis-Regex-Regeln akzeptieren `\1`.
+* Android: Vorlesen aus passwortgeschützten Dokumenten.
+* Android: „Zurück" oben liest nicht mehr den ersten Absatz erneut, und der Textmodus springt sein Scroll nicht mehr.
+* Android: weniger Batteriegebrauch beim Lesen und Pausieren.
 
 ### Version 1.0
 
