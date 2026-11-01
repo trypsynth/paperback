@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2ee08ef3b88d958e; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,2e336a82); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: c7ae4501120b67cc; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - Version 1.0
 
@@ -308,7 +308,7 @@ Hinweis: Ich betrachte ein öffentliches GitHub-Sponsoring als Grund für die au
 
 ### Version 1.1
 
-1.1 bringt eine neue PDF-Engine, einen neu aufgebauten iOS-Textmodus, Texterkennung unter Linux, Dokumente von Links und Jahrzehnte alte Word-, Write- und PowerPoint-Dateien.
+1.1 bringt eine neue PDF-Engine, einen neu aufgebauten iOS-Textmodus, Texterkennung unter Linux, Dokumente von Links, Unterstützung für Jahrzehnte alte Word-, Write- und PowerPoint-Dateien und vieles mehr.
 
 #### Hinzugefügt
 

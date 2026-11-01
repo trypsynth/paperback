@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2ee08ef3b88d958e; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,2e336a82); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: c7ae4501120b67cc; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - версия 1.0
 
@@ -307,7 +307,7 @@ Paperback переведён на множество различных язык
 
 ### Версия 1.1
 
-1.1 добавляет новый PDF-движок, переработанный текстовый режим iOS, OCR на Linux, документы из ссылок и десятилетия старых файлов Word, Write и PowerPoint.
+1.1 добавляет новый PDF-движок, переработанный текстовый режим iOS, OCR на Linux, документы из ссылок, поддержку десятилетий старых файлов Word, Write и PowerPoint и многое другое.
 
 #### Добавлено
 

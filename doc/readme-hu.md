@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2ee08ef3b88d958e; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,2e336a82); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: c7ae4501120b67cc; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback – 1.0-s verzió
 
@@ -307,7 +307,7 @@ Megjegyzés: a nyilvános GitHub-támogatást (GitHub Sponsors) elegendő oknak 
 
 ### 1.1-es verzió
 
-Az 1.1 új PDF-motorral, újraépített iOS-szövegmóddal, linuxos szövegfelismeréssel, weboldalakról nyitható dokumentumokkal, valamint évtizedes régi Word-, Write- és PowerPoint-fájlokkal érkezik.
+Az 1.1 új PDF-motorral, újraépített iOS-szövegmóddal, linuxos szövegfelismeréssel, weboldalakról nyitható dokumentumokkal, valamint évtizedes régi Word-, Write- és PowerPoint-fájlokkal érkezik, és még sok egyébbel.
 
 #### Újdonságok
 
