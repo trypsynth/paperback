@@ -20,7 +20,7 @@ Paperback działa w systemach Windows 10/11, we wszystkich nowoczesnych wersjach
 * Może działać w pełni przenośnie albo zostać zainstalowany z automatycznym skojarzeniem typów plików.
 * Obsługuje ogromną liczbę popularnych formatów plików.
 * Odtwarza audiobooki z regulacją szybkości i zakładkami zapamiętującymi dokładną pozycję w nagraniu.
-* Odczytuje zeskanowane strony PDF za pomocą OCR wbudowanego w Windows i macOS.
+* Odczytuje zeskanowane strony PDF za pomocą OCR wbudowanego w Windows i macOS albo programu Tesseract w systemie Linux.
 * Pozwala dodawać zakładki i notatki, aby zaznaczać miejsca i do nich wracać.
 * Umożliwia zmianę każdego skrótu klawiszowego.
 * Otwiera dokumenty bezpośrednio z odnośników HTTP i HTTPS. Pobiera je ponownie przy ponownym otwarciu lub po naciśnięciu `F5`, zachowując pozycję czytania i zakładki. Przy przywracaniu wcześniej otwartych dokumentów ponownie pobiera z odnośników te dokumenty, które przy ostatnim pobraniu miały nie więcej niż 2 MB.
@@ -236,7 +236,7 @@ Menu Więcej opcji zawiera pozostałe funkcje. Niektóre działają nieco inacze
 * **Przejdź do:** przenosi do wybranego wiersza, strony lub pozycji wyrażonej procentowo. Rodzaj pozycji wybiera się w polu Tryb.
 * **Ostatnie dokumenty:** lista wszystkich otwieranych dokumentów. Przy każdym podany jest stan: obecnie otwarty, zamknięty lub brak pliku. Każdy dokument ma dwie akcje czytnika ekranu: Usuń usuwa go z listy, a Zlokalizuj pozwala wskazać plik po jego przeniesieniu. Polecenie Wyczyść listę ostatnich dokumentów opróżnia listę, ale nie usuwa samych dokumentów.
 * **Liczba słów:** liczba słów w dokumencie.
-* **Informacje o dokumencie:** tytuł, autor i nazwa pliku, a w iOS także liczba wierszy i znaków.
+* **Informacje o dokumencie:** tytuł, autor, nazwa pliku, postęp czytania oraz liczba słów, wierszy i znaków. W przypadku audiobooka podawana jest też liczba plików, a jeśli Paperback potrafi to ustalić, również całkowity i średni czas ich trwania.
 * **Eksport (Eksport dokumentu w iOS, Eksportuj jako w Androidzie):** zapisuje dokument jako zwykły tekst, HTML lub Markdown.
 * **Wyłącznik czasowy:** zatrzymuje czytanie po 5, 10, 15, 30, 45 lub 60 minutach albo po podanym przez Ciebie czasie. Otwórz go ponownie, gdy jest włączony, aby sprawdzić pozostały czas lub go anulować.
 * **Pomoc:** otwiera ten dokument.

@@ -1005,9 +1005,8 @@ msgstr "Przekreślenie"
 msgid "Choose a font"
 msgstr "Wybierz czcionkę"
 
-#. TRANSLATORS: Title of the hotkey customization dialog
-msgid "Window Hotkey"
-msgstr "Skrót okna"
+#~ msgid "Window Hotkey"
+#~ msgstr "Skrót okna"
 
 #. TRANSLATORS: Checkbox label for Control modifier key
 #. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
@@ -1037,9 +1036,8 @@ msgstr "&Klawisz:"
 msgid "Clear"
 msgstr "Wyczyść"
 
-#. TRANSLATORS: Representation of the Spacebar key
-msgid "Space"
-msgstr "Spacja"
+#~ msgid "Space"
+#~ msgstr "Spacja"
 
 #. TRANSLATORS: Title of the Settings dialog
 msgid "Settings"
@@ -1121,9 +1119,8 @@ msgstr "Deweloperski"
 msgid "Log Level:"
 msgstr "Poziom szczegółowości dziennika:"
 
-#. TRANSLATORS: Button label to open the hotkey customization dialog
-msgid "Customize &Window Hotkey..."
-msgstr "Dostosuj &skrót okna..."
+#~ msgid "Customize &Window Hotkey..."
+#~ msgstr "Dostosuj &skrót okna..."
 
 #. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 msgid "Customize &Keyboard Shortcuts..."
@@ -1173,9 +1170,8 @@ msgstr "&Odstęp między wierszami:"
 msgid "Normal"
 msgstr "Normalny"
 
-#. TRANSLATORS: 1.5x line spacing option
-msgid "1.5\\u{00d7}"
-msgstr "1,5\\u{00d7}"
+#~ msgid "1.5\\u{00d7}"
+#~ msgstr "1,5\\u{00d7}"
 
 #. TRANSLATORS: Double line spacing option
 msgid "Double"
@@ -2739,9 +2735,8 @@ msgstr "Archiwum ZIP nie wygląda na prawidłową książkę w formacie DAISY 3 
 msgid "rootfile not found in container.xml"
 msgstr "nie znaleziono elementu rootfile w pliku container.xml"
 
-#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
-msgid "unsupported content"
-msgstr "nieobsługiwana treść"
+#~ msgid "unsupported content"
+#~ msgstr "nieobsługiwana treść"
 
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 msgid "OPF package element missing"
@@ -2775,13 +2770,11 @@ msgstr "Temat {}"
 msgid "HTML file is empty: {}"
 msgstr "Plik HTML jest pusty: {}"
 
-#. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
-msgid "Failed to convert HTML to text: {}"
-msgstr "Nie udało się przekonwertować kodu HTML na tekst: {}"
+#~ msgid "Failed to convert HTML to text: {}"
+#~ msgstr "Nie udało się przekonwertować kodu HTML na tekst: {}"
 
-#. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
-msgid "Failed to convert Markdown to text: {}"
-msgstr "Nie udało się przekonwertować pliku Markdown na tekst: {}"
+#~ msgid "Failed to convert Markdown to text: {}"
+#~ msgstr "Nie udało się przekonwertować pliku Markdown na tekst: {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 msgid "Missing HUFF parameters in header"
@@ -5085,9 +5078,8 @@ msgstr "Komentarze"
 msgid "Comment"
 msgstr "Komentarz"
 
-#. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
-msgid "{} on \\u{201c}{}\\u{201d}: {}"
-msgstr "{}, do fragmentu „{}”: {}"
+#~ msgid "{} on \\u{201c}{}\\u{201d}: {}"
+#~ msgstr "{}, do fragmentu „{}”: {}"
 
 #. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
 msgid "{}: {}"
@@ -5156,3 +5148,91 @@ msgstr "Serwer aktualizacji zwrócił błąd HTTP %s."
 
 msgid "Could not reach the update server: %s"
 msgstr "Nie udało się połączyć z serwerem aktualizacji: %s"
+
+msgid "System-Wide"
+msgstr "Globalne"
+
+msgid "Show or Hide Paperback"
+msgstr "Pokaż lub ukryj Paperback"
+
+#. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
+msgid "{} on “{}”: {}"
+msgstr "{}, do fragmentu „{}”: {}"
+
+#. TRANSLATORS: VoiceOver label for the read-aloud bar's control that speeds up or slows down a book's recorded audio
+#: kt
+#: swift
+msgid "Audio Speed"
+msgstr "Szybkość odtwarzania dźwięku"
+
+#: swift
+msgid "Speech for This Book"
+msgstr "Synteza mowy dla tej książki"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} item"
+msgstr "Liczba elementów: {}"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} items"
+msgstr "Liczba elementów: {}"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} items⁣"
+msgstr "Liczba elementów: {}"
+
+#. TRANSLATORS: Spoken for an empty table cell in text mode
+#: swift
+msgid "Blank"
+msgstr "Pusta"
+
+#. TRANSLATORS: Name of the VoiceOver rotor setting that moves between the entries of a document's table of contents in text mode
+#: swift
+msgid "Sections"
+msgstr "Sekcje"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a voice of its own instead of the one in Settings
+#: swift
+msgid "Own Voice"
+msgstr "Własny głos"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a speech rate of its own instead of the one in Settings
+#: swift
+msgid "Own Rate"
+msgstr "Własne tempo"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a pitch of its own instead of the one in Settings
+#: swift
+msgid "Own Pitch"
+msgstr "Własna wysokość głosu"
+
+#. TRANSLATORS: Footer in Speech for This Book explaining what a switch left off does
+#: swift
+msgid "Whatever is switched off follows Settings."
+msgstr "Dla wyłączonych przełączników obowiązują wartości z Ustawień."
+
+#. TRANSLATORS: Row label for the number of audio files in the document
+#: kt
+#: swift
+msgid "Number of files"
+msgstr "Liczba plików"
+
+#. TRANSLATORS: Row label for the total playback duration across all of the document's audio files
+#: kt
+#: swift
+msgid "Total duration"
+msgstr "Czas całkowity"
+
+#. TRANSLATORS: Row label for the average playback duration per audio file in the document
+#: kt
+#: swift
+msgid "Average duration"
+msgstr "Średni czas"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
+#: kt
+msgid "Select audio speed"
+msgstr "wybrać szybkość odtwarzania dźwięku"
