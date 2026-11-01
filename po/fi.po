@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 18:07+0000\n"
-"PO-Revision-Date: 2026-10-28 01:09+0200\n"
+"POT-Creation-Date: 2026-10-31 21:30+0000\n"
+"PO-Revision-Date: 2026-11-01 19:43+0200\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -18,10 +18,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.10\n"
-
-#. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
-msgid "this is not a web link"
-msgstr "tämä ei ole kelvollinen HTTP- tai HTTPS-osoite"
 
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 msgid "Checking %s"
@@ -38,24 +34,6 @@ msgstr "Ladataan %s"
 #. TRANSLATORS: Download window message while one of several documents opened from links downloads; the first %d is its number, the second how many there are, and %s is its file name
 msgid "Downloading %d of %d: %s"
 msgstr "Ladataan %d / %d: %s"
-
-#. TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
-msgid ""
-"The server sends a web page (%s) instead of the document the link names."
-msgstr ""
-"Palvelin palautti pyydetyn asiakirjan sijaan verkkosivun, jonka "
-"sisältötyyppi on %s."
-
-msgid "The server sends %s, which is not a format Paperback reads."
-msgstr "Palvelin lähetti sisältöä muodossa %s, jota Paperback ei tue."
-
-#. TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
-msgid "The server does not say what it sends."
-msgstr "Palvelin ei ilmoita lähettämänsä sisällön tyyppiä."
-
-#. TRANSLATORS: Question at the end of the security warning before downloading a document from a link
-msgid "Download it anyway?"
-msgstr "Haluatko jatkaa lataamista?"
 
 #. TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
 #. command-line tool (Paperback's headless document-to-text/HTML converter) runnable
@@ -1172,43 +1150,6 @@ msgstr "Yliviivattu"
 msgid "Choose a font"
 msgstr "Valitse fontti"
 
-#. TRANSLATORS: Title of the hotkey customization dialog
-msgid "Window Hotkey"
-msgstr "Ikkunan pikanäppäin"
-
-#. TRANSLATORS: Checkbox label for Control modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
-msgid "&Ctrl"
-msgstr "&Ctrl"
-
-#. TRANSLATORS: Checkbox label for Alt modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
-msgid "&Alt"
-msgstr "&Alt"
-
-#. TRANSLATORS: Checkbox label for Shift modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
-msgid "&Shift"
-msgstr "&Vaihto"
-
-#. TRANSLATORS: Checkbox label for Windows modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
-msgid "&Win"
-msgstr "&Win"
-
-#. TRANSLATORS: Label for the hotkey key selection input field
-#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
-msgid "&Key:"
-msgstr "&Näppäin:"
-
-#. TRANSLATORS: Button label to clear the current hotkey selection
-msgid "Clear"
-msgstr "Tyhjennä"
-
-#. TRANSLATORS: Representation of the Spacebar key
-msgid "Space"
-msgstr "Väli"
-
 #. TRANSLATORS: Title of the Settings dialog
 msgid "Settings"
 msgstr "Asetukset"
@@ -1304,10 +1245,6 @@ msgstr "Kehitys"
 #. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
 msgid "Log Level:"
 msgstr "Lokitaso:"
-
-#. TRANSLATORS: Button label to open the hotkey customization dialog
-msgid "Customize &Window Hotkey..."
-msgstr "Muokkaa &ikkunan pikanäppäintä..."
 
 #. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 msgid "Customize &Keyboard Shortcuts..."
@@ -1445,6 +1382,14 @@ msgstr "Vianmääritys"
 msgid "Trace"
 msgstr "Yksityiskohtainen"
 
+#| msgid "System"
+msgid "System-Wide"
+msgstr "Järjestelmänlaajuinen"
+
+#| msgid "Restore Paperback"
+msgid "Show or Hide Paperback"
+msgstr "Näytä tai piilota Paperback"
+
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "Uniajastin"
@@ -1513,11 +1458,9 @@ msgid "OCR in progress."
 msgstr "Tekstintunnistus on käynnissä."
 
 #. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
-#. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
 msgid "The picture could not be read."
 msgstr "Kuvaa ei voitu lukea."
 
-#. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
 msgid "No text was found in the picture."
 msgstr "Kuvasta ei löydy tekstiä."
 
@@ -3001,6 +2944,28 @@ msgstr ""
 msgid "the document is larger than {} MB, so it was not downloaded"
 msgstr "Asiakirjaa ei ladattu, koska sen koko ylittää {} Mt"
 
+#. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
+msgid "this is not a web link"
+msgstr "tämä ei ole kelvollinen HTTP- tai HTTPS-osoite"
+
+#. TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
+msgid ""
+"The server sends a web page (%s) instead of the document the link names."
+msgstr ""
+"Palvelin palautti pyydetyn asiakirjan sijaan verkkosivun, jonka "
+"sisältötyyppi on %s."
+
+msgid "The server sends %s, which is not a format Paperback reads."
+msgstr "Palvelin lähetti sisältöä muodossa %s, jota Paperback ei tue."
+
+#. TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
+msgid "The server does not say what it sends."
+msgstr "Palvelin ei ilmoita lähettämänsä sisällön tyyppiä."
+
+#. TRANSLATORS: Question at the end of the security warning before downloading a document from a link
+msgid "Download it anyway?"
+msgstr "Haluatko jatkaa lataamista?"
+
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 msgid "[Image only. Press enter to OCR.]"
 msgstr "[Pelkkä kuva. Aloita tekstintunnistus painamalla Enter.]"
@@ -3090,10 +3055,6 @@ msgstr "Tämä ZIP-paketti ei ole kelvollinen DAISY 3- tai DAISY 2.02 -kirja"
 msgid "rootfile not found in container.xml"
 msgstr "container.xml-tiedostosta ei löydy rootfile-elementtiä"
 
-#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
-msgid "unsupported content"
-msgstr "sisältöä ei tueta"
-
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 msgid "OPF package element missing"
 msgstr "OPF-tiedostosta puuttuu package-elementti"
@@ -3110,6 +3071,10 @@ msgstr "luettavan sisällön muuntaminen epäonnistui: {}"
 msgid "EPUB has no readable content ({})"
 msgstr "EPUB-kirjassa ei ole luettavaa sisältöä ({})"
 
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+msgid "No readable content found in the ZIP archive"
+msgstr "ZIP-paketista ei löydy luettavaa sisältöä"
+
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
 msgid "Failed to convert FB2 XML to text"
 msgstr "FB2 XML -tiedoston tekstimuunnos epäonnistui"
@@ -3125,14 +3090,6 @@ msgstr "Aihe {}"
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 msgid "HTML file is empty: {}"
 msgstr "HTML-tiedosto on tyhjä: {}"
-
-#. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
-msgid "Failed to convert HTML to text: {}"
-msgstr "HTML-tiedoston tekstimuunnos epäonnistui: {}"
-
-#. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
-msgid "Failed to convert Markdown to text: {}"
-msgstr "Markdown-tiedoston tekstimuunnos epäonnistui: {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 msgid "Missing HUFF parameters in header"
@@ -3306,8 +3263,8 @@ msgid "Comment"
 msgstr "Kommentti"
 
 #. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
-msgid "{} on \\u{201c}{}\\u{201d}: {}"
-msgstr "{} kommentoi tekstin kohtaa \\u{201c}{}\\u{201d}: {}"
+msgid "{} on “{}”: {}"
+msgstr "{} kommentoi tekstin kohtaa ”{}”: {}"
 
 #. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
 msgid "{}: {}"
@@ -3333,17 +3290,15 @@ msgstr "DOC-tiedosto on salattu ja sen avaamiseen tarvitaan salasana"
 msgid "DOC decryption failed (wrong password?): {}"
 msgstr "Virhe purettaessa DOC-tiedoston salausta (tarkista salasana): {}"
 
-#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
-msgid "File content does not look like plain text"
-msgstr "Tiedoston sisältö ei ole pelkkää tekstiä"
-
+#. TRANSLATORS: Error shown when a DOC file from Word for Windows 1.x or 2.0 has no readable text
 #. TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
+#. TRANSLATORS: Error shown when a Windows Write or Word for DOS file has no readable text
 msgid "No readable text content found"
 msgstr "Luettavaa tekstisisältöä ei löydy"
 
-#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
-msgid "No readable content found in the ZIP archive"
-msgstr "ZIP-paketista ei löydy luettavaa sisältöä"
+#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
+msgid "File content does not look like plain text"
+msgstr "Tiedoston sisältö ei ole pelkkää tekstiä"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
@@ -3616,6 +3571,26 @@ msgstr "&Cmd"
 msgid "&Option"
 msgstr "&Alt"
 
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
+msgid "&Alt"
+msgstr "&Alt"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
+msgid "&Shift"
+msgstr "&Vaihto"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
+msgid "&Win"
+msgstr "&Win"
+
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
+msgid "&Key:"
+msgstr "&Näppäin:"
+
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr ""
 "Vihje: Napsauta näppäimen  muokkauskenttää ja paina haluamaasi "
@@ -3831,7 +3806,6 @@ msgstr "Avaamasi asiakirjat näytetään tässä."
 msgid "Text to Speech"
 msgstr "Tekstistä puheeksi"
 
-#. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 #: kt swift
 msgid "Voice"
 msgstr "Ääni"
@@ -3856,7 +3830,6 @@ msgstr "Äänenkorkeus"
 msgid "Speech Dictionary"
 msgstr "Käyttäjän sanasto"
 
-#. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
 #: kt swift
 msgid "Play Sample"
 msgstr "Toista näyte"
@@ -4562,11 +4535,11 @@ msgstr "Virhe avattaessa asiakirjaa: {}"
 msgid "Speech Engine"
 msgstr "Puhemoottori"
 
-#: kt swift
+#: kt
 msgid "1 book"
 msgstr "1 kirja"
 
-#: kt swift
+#: kt
 msgid "{} books"
 msgstr "{} kirjaa"
 
@@ -4711,7 +4684,7 @@ msgid "{}, {}, modified {}{}"
 msgstr "{}, {}, muokattu {}{}"
 
 #. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
-#: kt
+#: swift kt
 msgid "{} percent"
 msgstr "{} prosenttia"
 
@@ -4874,12 +4847,12 @@ msgstr "Sulje {}"
 #. TRANSLATORS: TalkBack action on the read-aloud bar's unit selector, which opens the list of navigation units
 #: kt
 msgid "Select navigation unit"
-msgstr "Valitse navigoinnin tarkkuus"
+msgstr "Navigoinnin tarkkuus"
 
 #. TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
 #: kt
 msgid "Select speech rate"
-msgstr "Valitse puhenopeus"
+msgstr "Puhenopeus"
 
 #. TRANSLATORS: Title of the file manager's top level, which lists the device's storage volumes
 #: kt
@@ -4903,7 +4876,92 @@ msgstr ""
 "Poista asetus käytöstä, jos haluat tekstistä puheeksi -toiminnolla lukemisen "
 "jatkuvan hakutuloksittain navigoitaessa."
 
-#. TRANSLATORS: 1.5x line spacing option
+#. TRANSLATORS: VoiceOver label for the read-aloud bar's control that speeds up or slows down a book's recorded audio
+#: kt swift
+#| msgid "Increase Audio Speed"
+msgid "Audio Speed"
+msgstr "Toistonopeus"
+
 #: swift
-msgid "1.5\\u{00d7}"
-msgstr "1,5\\u{00d7}"
+msgid "Speech for This Book"
+msgstr "Kirjakohtaiset puheasetukset"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} item"
+msgstr "{} kohde"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} items"
+msgstr "{} kohdetta"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} items⁣"
+msgstr "{} kohdetta⁣"
+
+#. TRANSLATORS: Spoken for an empty table cell in text mode
+#: swift
+#| msgid "blank"
+msgid "Blank"
+msgstr "Tyhjä"
+
+#. TRANSLATORS: Name of the VoiceOver rotor setting that moves between the entries of a document's table of contents in text mode
+#: swift
+#| msgid "&Sections"
+msgid "Sections"
+msgstr "Luvut"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a voice of its own instead of the one in Settings
+#: swift
+#| msgid "Voice"
+msgid "Own Voice"
+msgstr "Kirjakohtainen puheääni"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a speech rate of its own instead of the one in Settings
+#: swift
+#| msgid "Rate"
+msgid "Own Rate"
+msgstr "Kirjakohtainen puhenopeus"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a pitch of its own instead of the one in Settings
+#: swift
+#| msgid "Pitch"
+msgid "Own Pitch"
+msgstr "Kirjakohtainen äänenkorkeus"
+
+#. TRANSLATORS: Footer in Speech for This Book explaining what a switch left off does
+#: swift
+msgid "Whatever is switched off follows Settings."
+msgstr ""
+"Sovellus käyttää yleisiä puheasetuksia, jos kirjakohtaisia ei määritetä."
+
+#. TRANSLATORS: Button that empties the recent documents list
+#: kt swift
+msgid "Clear"
+msgstr "Tyhjennä"
+
+#. TRANSLATORS: Row label for the number of audio files in the document
+#: kt swift
+#| msgid "Number of files:"
+msgid "Number of files"
+msgstr "Tiedostojen määrä"
+
+#. TRANSLATORS: Row label for the total playback duration across all of the document's audio files
+#: kt swift
+#| msgid "Total duration:"
+msgid "Total duration"
+msgstr "Kesto yhteensä"
+
+#. TRANSLATORS: Row label for the average playback duration per audio file in the document
+#: kt swift
+#| msgid "Average duration:"
+msgid "Average duration"
+msgstr "Kesto keskimäärin"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
+#: kt
+#| msgid "Increase Audio Speed"
+msgid "Select audio speed"
+msgstr "Äänitteen toistonopeus"
