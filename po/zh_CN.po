@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-09 16:45+0000\n"
-"PO-Revision-Date: 2026-10-10 17:29+0800\n"
+"POT-Creation-Date: 2026-10-25 18:07+0000\n"
+"PO-Revision-Date: 2026-10-26 21:24+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -16,7 +16,43 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 3.9\n"
+"X-Generator: Poedit 3.10\n"
+
+#. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
+msgid "this is not a web link"
+msgstr "这不是 Web 链接"
+
+#. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
+msgid "Checking %s"
+msgstr "正在检查 %s"
+
+#. TRANSLATORS: Download window message while Paperback asks a web server about one of several links; the first %d is the link's number, the second how many links there are, and %s is the link
+msgid "Checking %d of %d: %s"
+msgstr "正在检查第 %d 个，共 %d 个： %s"
+
+#. TRANSLATORS: Download window message while a document opened from a link downloads; %s is its file name
+msgid "Downloading %s"
+msgstr "正在下载 %s"
+
+#. TRANSLATORS: Download window message while one of several documents opened from links downloads; the first %d is its number, the second how many there are, and %s is its file name
+msgid "Downloading %d of %d: %s"
+msgstr "正在下载第 %d 个，共 %d 个： %s"
+
+#. TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
+msgid ""
+"The server sends a web page (%s) instead of the document the link names."
+msgstr "服务器返回的是网页（%s），而不是链接所指的文档。"
+
+msgid "The server sends %s, which is not a format Paperback reads."
+msgstr "服务器返回 %s，这不是 Paperback 可读取的格式。"
+
+#. TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
+msgid "The server does not say what it sends."
+msgstr "服务器未说明它返回的内容类型。"
+
+#. TRANSLATORS: Question at the end of the security warning before downloading a document from a link
+msgid "Download it anyway?"
+msgstr "仍然下载吗？"
 
 #. TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
 #. command-line tool (Paperback's headless document-to-text/HTML converter) runnable
@@ -30,9 +66,9 @@ msgstr "将 pb 命令行工具添加到 PATH"
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP 压缩包 (.zip)"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
-msgstr "未安装 OCR 语言。请在系统语言设置中添加。"
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
+msgid "OCR needs Tesseract. Install it from your package manager."
+msgstr "OCR 需要 Tesseract。请通过您的包管理器安装。"
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 msgid "OCR failed."
@@ -41,6 +77,16 @@ msgstr "OCR 失败。"
 #. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
 msgid "OCR is not available on this system."
 msgstr "此系统不支持 OCR。"
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr "未安装 OCR 语言。请在系统语言设置中添加。"
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+msgid ""
+"No OCR language is installed. Install a Tesseract language package from your "
+"package manager."
+msgstr "未安装 OCR 语言。请通过您的包管理器安装 Tesseract 语言包。"
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -53,6 +99,7 @@ msgstr "警告"
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
 #. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
+#. TRANSLATORS: Announced when trying to change audio volume on a document that has none
 msgid "This document has no audio."
 msgstr "此文档没有音频。"
 
@@ -61,11 +108,13 @@ msgid "Audio hasn't started playing yet."
 msgstr "音频尚未开始播放。"
 
 #. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
+#. TRANSLATORS: Announced when the audio volume is already at its loudest; {} is the current volume, e.g. "200%"
 #. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
 msgid "{} (maximum)"
 msgstr "{}（最大值）"
 
 #. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
+#. TRANSLATORS: Announced when the audio volume is already at its quietest; {} is the current volume, e.g. "10%"
 #. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
 msgid "{} (minimum)"
 msgstr "{}（最小值）"
@@ -184,6 +233,13 @@ msgstr "查看笔记"
 msgid "Open Document"
 msgstr "打开文档"
 
+#. TRANSLATORS: Title of the error shown when what was typed into Open from URL is not a web link
+#. TRANSLATORS: Title of the dialog that asks for the web link to open a document from
+#. TRANSLATORS: Title of the window that shows documents being downloaded from links
+#. TRANSLATORS: Title of the error listing the links that could not be opened
+msgid "Open from URL"
+msgstr "从 URL 打开"
+
 #. TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
 msgid "Document reloaded."
 msgstr "文档已重新加载。"
@@ -204,6 +260,14 @@ msgstr "打开(&O)..."
 #. TRANSLATORS: Status-bar help text for the File > Open menu item.
 msgid "Open a document"
 msgstr "打开文档"
+
+#. TRANSLATORS: Menu item in the File menu to open documents from web links.
+msgid "Open from &URL..."
+msgstr "从 URL 打开(&U)..."
+
+#. TRANSLATORS: Status-bar help text for the File > Open from URL menu item.
+msgid "Open documents from web links"
+msgstr "从 Web 链接打开文档"
 
 #. TRANSLATORS: Menu item in the File menu to close the current document.
 msgid "&Close"
@@ -598,6 +662,22 @@ msgstr "降低音频速度(&D)"
 msgid "Decrease how fast the audio narration plays"
 msgstr "降低音频朗读的播放速度"
 
+#. TRANSLATORS: Menu item in the Audio menu to make the audio narration louder.
+msgid "Increase Audio &Volume"
+msgstr "提高音频音量(&V)"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Volume menu item.
+msgid "Make the audio narration louder"
+msgstr "提高音频朗读音量"
+
+#. TRANSLATORS: Menu item in the Audio menu to make the audio narration quieter.
+msgid "Decrease Audio Vo&lume"
+msgstr "降低音频音量(&L)"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Volume menu item.
+msgid "Make the audio narration quieter"
+msgstr "降低音频朗读音量"
+
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
 msgstr "一款无障碍、轻量、快速的电子书和文档阅读器"
@@ -755,6 +835,7 @@ msgid "Bookmarks"
 msgstr "书签"
 
 #. TRANSLATORS: Option in the filter dropdown to show notes only
+#. TRANSLATORS: Heading over the footnotes and endnotes of a document, written after its text
 msgid "Notes"
 msgstr "笔记"
 
@@ -894,6 +975,40 @@ msgstr "无标题"
 msgid "OK"
 msgstr "确定"
 
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+msgid "Export notes and bookmarks"
+msgstr "导出笔记和书签"
+
+#. TRANSLATORS: Label for the dropdown choosing which entries to export
+msgid "&Export:"
+msgstr "导出(&E)："
+
+#. TRANSLATORS: Option to export both bookmarks and notes
+msgid "Bookmarks and notes"
+msgstr "书签和笔记"
+
+#. TRANSLATORS: Option to export only bookmarks that have no note
+msgid "Bookmarks only"
+msgstr "仅书签"
+
+#. TRANSLATORS: Option to export only bookmarks that have a note
+msgid "Notes only"
+msgstr "仅笔记"
+
+#. TRANSLATORS: Checkbox to include the bookmarked text next to each note
+msgid "Include the &passage each note is attached to"
+msgstr "包含每条笔记所附的文本(&P)"
+
+#. TRANSLATORS: Checkbox to number the exported entries
+msgid "&Number the entries"
+msgstr "为条目编号(&N)"
+
+#. TRANSLATORS: Label for the button that continues to the save dialog
+msgid "Export"
+msgstr "导出"
+
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Go"
@@ -945,6 +1060,10 @@ msgstr "百分比(&P)"
 msgid "Percent out of range."
 msgstr "百分比超出范围。"
 
+#. TRANSLATORS: Title of the view showing the text recognized in a picture
+msgid "Image Text"
+msgstr "图片文本"
+
 #. TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
 msgid "Set Up Paperback"
 msgstr "设置 Paperback"
@@ -984,6 +1103,14 @@ msgstr "HTML"
 #. TRANSLATORS: Choice option to open a file as Markdown
 msgid "Markdown"
 msgstr "Markdown"
+
+#. TRANSLATORS: Label of the field in Open from URL, which takes the web link of a document
+msgid "Link:"
+msgstr "链接："
+
+#. TRANSLATORS: Title of the security warning shown before downloading a document from a link
+msgid "Security Warning"
+msgstr "安全警告"
 
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
@@ -1207,7 +1334,7 @@ msgid "Normal"
 msgstr "正常"
 
 #. TRANSLATORS: 1.5x line spacing option
-msgid "1.5\\u{00d7}"
+msgid "1.5×"
 msgstr "1.5×"
 
 #. TRANSLATORS: Double line spacing option
@@ -1259,7 +1386,6 @@ msgid "General"
 msgstr "常规"
 
 #. TRANSLATORS: Tab label for the Reading options panel
-#. TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Reading"
 msgstr "阅读"
 
@@ -1354,6 +1480,20 @@ msgstr "此压缩包中的文档(&D)："
 msgid "{} to {}"
 msgstr "{} 至 {}"
 
+#. TRANSLATORS: Announced when Enter is pressed on a picture while its text is already being recognized
+#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
+msgid "OCR in progress."
+msgstr "OCR 正在进行。"
+
+#. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
+#. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
+msgid "The picture could not be read."
+msgstr "无法读取该图片。"
+
+#. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
+msgid "No text was found in the picture."
+msgstr "图片中未找到文本。"
+
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
 msgstr "找不到文件： {}"
@@ -1391,18 +1531,20 @@ msgstr "文件： {}"
 msgid "Details: {}"
 msgstr "详细信息： {}"
 
-#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
-msgid "OCR in progress."
-msgstr "OCR 正在进行。"
-
+#. TRANSLATORS: Announced when Recognize Current Page is chosen with no document open
 #. TRANSLATORS: Announced when batch OCR is triggered with no document open
 #. TRANSLATORS: Announced when Batch OCR is chosen with no document open
 msgid "No document open."
 msgstr "未打开文档。"
 
+#. TRANSLATORS: Announced when Recognize Current Page is chosen while OCR is already running
 #. TRANSLATORS: Announced when batch OCR is started while another OCR job is running
 msgid "OCR already in progress."
 msgstr "OCR 已在运行。"
+
+#. TRANSLATORS: Announced when Recognize Current Page is chosen in a document that is not a PDF or a comic book
+msgid "Only PDF and comic book pages can be recognized."
+msgstr "仅 PDF 和漫画页面可被识别。"
 
 #. TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
 msgid "No image-only pages in the given range."
@@ -1514,6 +1656,10 @@ msgstr "没有更多结果。搜索已循环。"
 msgid "Failed to reveal file in folder."
 msgstr "无法在文件夹中显示文件。"
 
+#. TRANSLATORS: Shown by Reveal File in Folder for a document opened from a web link, which is read from a temporary copy
+msgid "This document was opened from a link, so it has no folder to show."
+msgstr "此文档是从链接打开的，因此没有可显示的文件夹。"
+
 #. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
 msgid ""
 "readme.html not found. Please ensure the application was built properly."
@@ -1531,6 +1677,15 @@ msgstr "无法在浏览器中打开捐赠页面。"
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "当 Web 视图打开时，Paperback 无法执行任何操作。"
 
+#. TRANSLATORS: First message in the window that downloads documents from links, before the first server answers
+msgid "Connecting..."
+msgstr "正在连接..."
+
+#. TRANSLATORS: Title of the window that shows a document opened from a link being downloaded again
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Reload"
+msgstr "重新加载"
+
 #. TRANSLATORS: Announced when the copy shortcut is pressed with nothing selected, so there was nothing to put on the clipboard.
 #. TRANSLATORS: Announced when a copy had nothing to copy: no text was selected, or the marked beginning of a selection is at the reader's own position, leaving nothing between the two.
 msgid "Nothing to copy."
@@ -1541,8 +1696,8 @@ msgid "Could not copy to the clipboard."
 msgstr "无法复制到剪贴板。"
 
 #. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
-msgid "Selected %d character."
-msgid_plural "Selected %d characters."
+msgid "%d character selected."
+msgid_plural "%d characters selected."
 msgstr[0] "已选择 %d 个字符。"
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
@@ -1591,10 +1746,6 @@ msgstr "文档"
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback 文件 (*.paperback)|*.paperback"
 
-#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
-msgid "Export notes and bookmarks"
-msgstr "导出笔记和书签"
-
 #. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 msgid "Notes and bookmarks exported successfully."
 msgstr "笔记和书签已成功导出。"
@@ -1602,6 +1753,14 @@ msgstr "笔记和书签已成功导出。"
 #. TRANSLATORS: Title of the export-succeeded dialog
 msgid "Export Successful"
 msgstr "导出成功"
+
+#. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
+msgstr "文本文件 (*.txt)|*.txt|HTML 文件 (*.html)|*.html"
+
+#. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+msgid "Failed to export notes and bookmarks."
+msgstr "导出笔记和书签失败。"
 
 #. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 msgid "Import notes and bookmarks"
@@ -1615,6 +1774,18 @@ msgstr "笔记和书签已成功导入。"
 msgid "Import Successful"
 msgstr "导入成功"
 
+#. TRANSLATORS: Title of the file save dialog when saving a picture from the document
+msgid "Save image"
+msgstr "保存图片"
+
+#. TRANSLATORS: File filter shown in the "Save image" dialog
+msgid "All files (*.*)|*.*"
+msgstr "所有文件 (*.*)|*.*"
+
+#. TRANSLATORS: Error dialog shown when saving a picture from the document fails
+msgid "Failed to save image."
+msgstr "保存图片失败。"
+
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "导出文档失败。"
@@ -1623,9 +1794,6 @@ msgstr "导出文档失败。"
 msgid "Line %d"
 msgstr "第 %d 行"
 
-#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-#. A menu invocation returns focus to the book just like a closed dialog does,
-#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr "没有页面。"
@@ -1768,6 +1936,14 @@ msgstr "导出文档数据(&E)..."
 #. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
 msgid "Export bookmarks and position"
 msgstr "导出书签和阅读位置"
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+msgid "Export &Notes and Bookmarks as Text or HTML..."
+msgstr "将笔记和书签导出为文本或 HTML(&N)..."
+
+#. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
+msgid "Export bookmarks and notes in a readable format"
+msgstr "以可读格式导出书签和笔记"
 
 #. TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
 msgid "Reveal &File in Folder"
@@ -1984,6 +2160,10 @@ msgstr "设置(&S)"
 #. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
 msgid "&Batch OCR..."
 msgstr "批量 OCR(&B)..."
+
+#. TRANSLATORS: Tools menu item that recognizes the page the cursor is on with OCR, replacing any text it already has
+msgid "&Recognize Current Page"
+msgstr "识别当前页(&R)"
 
 #. TRANSLATORS: Checkable menu item in the View menu that toggles whether word wrap is enabled.
 msgid "W&ord wrap"
@@ -2230,6 +2410,19 @@ msgstr "公式视图"
 msgid "Table View"
 msgstr "表格视图"
 
+#. TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
+msgid "Save &image as..."
+msgstr "图片另存为(&I)..."
+
+msgid "Save image as"
+msgstr "图片另存为"
+
+msgid "Read &text in picture"
+msgstr "读取图片中的文本(&T)"
+
+msgid "Read the text in the picture"
+msgstr "读取图片中的文本"
+
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
 msgstr "创建书签(&B)"
@@ -2284,8 +2477,8 @@ msgid "Go to percent"
 msgstr "转到百分比"
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
-msgid "Copied %d character."
-msgid_plural "Copied %d characters."
+msgid "%d character copied."
+msgid_plural "%d characters copied."
 msgstr[0] "已复制 %d 个字符。"
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
@@ -2312,13 +2505,17 @@ msgid "Sleep timer set for %d minute."
 msgid_plural "Sleep timer set for %d minutes."
 msgstr[0] "睡眠定时器已设置为 %d 分钟。"
 
-#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Progress 45%"
 msgid "Line"
 msgstr "行"
 
 #. TRANSLATORS: Status bar label for the current character offset within the line
 msgid "Character"
 msgstr "字符"
+
+#. TRANSLATORS: Status bar label for how far through the document the reader has got, e.g. "Line 5, Character 120, Progress 45%"
+msgid "Progress"
+msgstr "进度"
 
 #. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 msgid "Sleep timer"
@@ -2341,16 +2538,16 @@ msgid "Open..."
 msgstr "打开..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Open from URL..."
+msgstr "从 URL 打开..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Close All"
 msgstr "全部关闭"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Reopen Last Closed"
 msgstr "重新打开上次关闭的文档"
-
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Reload"
-msgstr "重新加载"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
@@ -2629,6 +2826,14 @@ msgid "Decrease Audio Speed"
 msgstr "降低音频速度"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Increase Audio Volume"
+msgstr "提高音频音量"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Decrease Audio Volume"
+msgstr "降低音频音量"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Full Screen"
 msgstr "全屏"
 
@@ -2645,6 +2850,10 @@ msgid "Batch OCR..."
 msgstr "批量 OCR..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Recognize Current Page"
+msgstr "识别当前页"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Customize Keyboard Shortcuts..."
 msgstr "自定义键盘快捷键..."
 
@@ -2655,6 +2864,10 @@ msgstr "导入文档数据..."
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export Document Data..."
 msgstr "导出文档数据..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Export Notes and Bookmarks as Text or HTML..."
+msgstr "将笔记和书签导出为文本或 HTML..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export to Plain Text..."
@@ -2769,10 +2982,43 @@ msgstr ""
 msgid "Failed to parse comic archive: {}"
 msgstr "解析漫画压缩包失败： {}"
 
+#. TRANSLATORS: Spoken for a comic book page that is its front cover
+msgid "Front cover"
+msgstr "封面"
+
+#. TRANSLATORS: Spoken for a comic book page that is an inside cover
+msgid "Inside cover"
+msgstr "内页封面"
+
+#. TRANSLATORS: Spoken for a comic book page that recaps the story so far
+msgid "Recap"
+msgstr "剧情回顾"
+
+#. TRANSLATORS: Spoken for a comic book page that is an advertisement
+msgid "Advertisement"
+msgstr "广告"
+
+#. TRANSLATORS: Spoken for a comic book page written by the editors
+msgid "Editorial"
+msgstr "编者按"
+
+#. TRANSLATORS: Spoken for a comic book page of letters from readers
+msgid "Letters"
+msgstr "读者来信"
+
+#. TRANSLATORS: Spoken for a comic book page previewing another comic
+msgid "Preview"
+msgstr "预览"
+
+#. TRANSLATORS: Spoken for a comic book page that is its back cover
+msgid "Back cover"
+msgstr "封底"
+
 #. TRANSLATORS: Error shown when a comic book archive holds no page images at all
 msgid "This comic archive contains no pages."
 msgstr "此漫画压缩包不包含任何页面。"
 
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]", and on its own, "[Image]", for a picture with none
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr "图形"
@@ -2954,6 +3200,18 @@ msgstr "此文档的加密方式 Paperback 无法打开： {}"
 msgid "ODP file does not contain any pages"
 msgstr "ODP 文件不包含任何页面"
 
+#. TRANSLATORS: Written after a presentation slide's text, before the presenter's notes for that slide; {} is the notes
+msgid "Speaker notes: {}"
+msgstr "演讲者备注： {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it without a name; {} is the comment
+msgid "Comment: {}"
+msgstr "评论： {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it: the first {} is the reviewer, the second the comment
+msgid "Comment from {}: {}"
+msgstr "来自 {} 的评论： {}"
+
 #. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
 msgid "FODP file does not contain any pages"
 msgstr "FODP 文件不包含任何页面"
@@ -2995,6 +3253,26 @@ msgstr "解析 RTF 文档失败： {}"
 #. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
 msgid "Chapter {}"
 msgstr "第 {} 章"
+
+#. TRANSLATORS: Heading over the comments reviewers left on a document, written after its text
+msgid "Comments"
+msgstr "评论"
+
+#. TRANSLATORS: Names a comment's author when the document does not say who wrote it
+msgid "Comment"
+msgstr "评论"
+
+#. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
+msgid "{} on \\u{201c}{}\\u{201d}: {}"
+msgstr "{} 对“{}”的评论： {}"
+
+#. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
+msgid "{}: {}"
+msgstr "{}： {}"
+
+#. TRANSLATORS: Shown in place of a presentation slide that has no text, such as one holding only pictures
+msgid "This slide has no text."
+msgstr "此幻灯片没有文本。"
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
@@ -3040,8 +3318,68 @@ msgstr "未找到支持扩展名 .{} 的解析器"
 msgid "All parsers failed for extension: .{}"
 msgstr "扩展名 .{} 的所有解析器均失败"
 
+#. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
+msgid "image"
+msgstr "图片"
+
+msgid "Current version is not a valid semver."
+msgstr "当前版本不是有效的语义化版本号。"
+
+msgid "Latest release tag is not a valid semver."
+msgstr "最新发布标签不是有效的语义化版本号。"
+
+msgid "Invalid public key"
+msgstr "公钥无效"
+
+msgid "Failed to read signature"
+msgstr "读取签名失败"
+
+msgid "Invalid signature"
+msgstr "签名无效"
+
+msgid "Failed to create private download directory"
+msgstr "创建私有下载目录失败"
+
+msgid "Failed to create file"
+msgstr "创建文件失败"
+
+msgid "Failed to write file"
+msgstr "写入文件失败"
+
+msgid "Failed to read file for verification"
+msgstr "读取文件以进行验证失败"
+
+msgid "Signature verification failed"
+msgstr "签名验证失败"
+
+msgid "Failed to rename verified file"
+msgstr "重命名已验证的文件失败"
+
+msgid "Failed to parse release JSON"
+msgstr "解析发布 JSON 失败"
+
+msgid "Latest release does not include downloadable assets."
+msgstr "最新发布不包含可下载的文件。"
+
+msgid ""
+"Update is available but no matching download asset or signature was found."
+msgstr "有可用更新，但未找到匹配的下载文件或签名。"
+
 msgid "Not running from an AppImage; cannot self-update."
 msgstr "未从 AppImage 运行，无法自我更新。"
+
+msgid "Failed to determine exe path"
+msgstr "无法确定可执行文件路径"
+
+msgid "Failed to get exe directory"
+msgstr "获取可执行文件目录失败"
+
+msgid ""
+"Could not determine a cache directory: neither XDG_CACHE_HOME nor HOME is set"
+msgstr "无法确定缓存目录：XDG_CACHE_HOME 和 HOME 均未设置"
+
+msgid "Failed to create cache directory"
+msgstr "创建缓存目录失败"
 
 msgid "Failed to get current exe path"
 msgstr "无法获取当前 exe 路径"
@@ -3159,9 +3497,6 @@ msgstr "%s 更新"
 msgid "Downloading update..."
 msgstr "正在下载更新..."
 
-msgid "Update failed"
-msgstr "更新失败"
-
 msgid "Preparing update..."
 msgstr "正在准备更新..."
 
@@ -3183,6 +3518,12 @@ msgstr "安全验证失败。更新可能已被篡改： %s"
 
 msgid "Security Error"
 msgstr "安全错误"
+
+msgid "The update server returned HTTP error %s."
+msgstr "更新服务器返回 HTTP 错误 %s。"
+
+msgid "Could not reach the update server: %s"
+msgstr "无法连接到更新服务器： %s"
 
 #. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 msgid "%d hour"
@@ -3285,6 +3626,10 @@ msgstr "将此选项卡中的所有快捷键重置为默认值？"
 #. TRANSLATORS: Title of the confirmation dialog for resetting keyboard shortcuts to their defaults.
 msgid "Reset Shortcuts"
 msgstr "重置快捷键"
+
+#. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
+msgid "{} (not on this keyboard layout)"
+msgstr "{}（不在当前键盘布局上）"
 
 #: kt swift
 msgid "Export Document Data"
@@ -4115,7 +4460,6 @@ msgstr "使用应用内文件浏览器（需要所有文件权限）"
 msgid "Text-to-Speech"
 msgstr "文字转语音"
 
-#. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
 msgid "System Default"
 msgstr "系统默认"
@@ -4139,11 +4483,6 @@ msgstr "输入 {}"
 #: kt
 msgid "Error loading document: {}"
 msgstr "加载文档错误： {}"
-
-#. TRANSLATORS: 1.5x line spacing option
-#: kt
-msgid "1.5×"
-msgstr "1.5×"
 
 #. TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
 #: kt
@@ -4263,7 +4602,7 @@ msgid "File Manager"
 msgstr "文件管理器"
 
 #. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
-#: kt
+#: swift kt
 msgid "{}% through"
 msgstr "已读 {}%"
 
@@ -4468,3 +4807,18 @@ msgstr "存储设备"
 #: kt
 msgid "Go up to parent directory: {}"
 msgstr "转到上级目录： {}"
+
+#. TRANSLATORS: Toggle controlling whether TTS stops after the paragraph containing a Find match while Find is the navigation unit
+#: swift kt
+msgid "Stop reading after search matches"
+msgstr "找到搜索匹配项后停止朗读"
+
+#. TRANSLATORS: Explanation of the Find playback setting; turning it off lets reading continue without changing the navigation unit
+#: swift kt
+msgid "Turn off to continue reading while navigating by search matches."
+msgstr "关闭后可在按搜索匹配项导航时继续朗读。"
+
+#. TRANSLATORS: 1.5x line spacing option
+#: swift
+msgid "1.5\\u{00d7}"
+msgstr "1.5×"

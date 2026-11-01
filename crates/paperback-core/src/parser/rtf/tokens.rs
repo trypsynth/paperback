@@ -1,27 +1,17 @@
-//! Walking the lexed RTF token stream into a [`DocumentBuffer`]: tracking group nesting and
-//! formatting scope (RTF reverts bold/italic/underline to their pre-group state on `}`),
-//! resolving `\uN` surrogate pairs, skipping ignorable destinations and `\pict` groups, and
-//! turning `HYPERLINK` field instructions into link markers.
-
 use rtf_parser::tokens::{ControlWord, Property, Token};
 
-use crate::document::{DocumentBuffer, Marker, MarkerType};
+use crate::document::{DocLen, DocPos, DocumentBuffer, Marker, MarkerType};
 
 struct PendingLink {
 	url: String,
-	start_position: usize,
+	start_position: DocPos,
 }
 
-/// Applies a formatting toggle for a single marker kind, recording spans as they
-/// open and close. No-op when the requested state already matches the current one
-/// (handles redundant toggles and group-close reverts that don't change this kind).
-/// Turning ON records the start position; turning OFF emits the span, guarded by
-/// `position > s` to skip degenerate zero-length spans.
 fn apply_format_toggle(
 	on: &mut bool,
-	start: &mut Option<usize>,
+	start: &mut Option<DocPos>,
 	want_on: bool,
-	position: usize,
+	position: DocPos,
 	kind: MarkerType,
 	buffer: &mut DocumentBuffer,
 ) {
@@ -38,7 +28,6 @@ fn apply_format_toggle(
 	*on = want_on;
 }
 
-/// Whether a token at the top level of the document marks the start of body content.
 fn starts_body(token: &Token) -> bool {
 	match token {
 		Token::PlainText(text) => !text.trim().is_empty(),
@@ -61,23 +50,21 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 	let mut bold_on = false;
 	let mut italic_on = false;
 	let mut underline_on = false;
-	let mut bold_start: Option<usize> = None;
-	let mut italic_start: Option<usize> = None;
-	let mut underline_start: Option<usize> = None;
+	let mut bold_start: Option<DocPos> = None;
+	let mut italic_start: Option<DocPos> = None;
+	let mut underline_start: Option<DocPos> = None;
 	let mut format_stack: Vec<(bool, bool, bool)> = Vec::new();
 	for token in tokens {
-		// Depth tracking for group nesting (needed for IgnorableDestination skipping).
 		match token {
 			Token::OpeningBracket => {
 				depth += 1;
-				// Snapshot formatting state so a group close reverts to it (RTF group scoping).
-				// Push/pop happen unconditionally to stay in lockstep with `depth`.
+				// RTF reverts formatting on group close; push and pop unconditionally to stay in lockstep with `depth`.
 				format_stack.push((bold_on, italic_on, underline_on));
 			}
 			Token::ClosingBracket => {
 				depth -= 1;
 				if let Some((want_bold, want_italic, want_underline)) = format_stack.pop() {
-					let pos = buffer.current_position();
+					let pos = buffer.end();
 					apply_format_toggle(&mut bold_on, &mut bold_start, want_bold, pos, MarkerType::Bold, &mut buffer);
 					apply_format_toggle(
 						&mut italic_on,
@@ -102,10 +89,7 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 				continue;
 			}
 			Token::IgnorableDestination => {
-				// {\* \keyword content}: skip the entire enclosing group. A destination
-				// nested inside another skipped destination (e.g. \picprop inside \pict
-				// inside \shppict) must not shrink the skip window: keep the outermost
-				// (smallest) depth so skipping doesn't end early when the inner group closes.
+				// Keep the outermost depth, so a nested destination (\picprop inside \pict inside \shppict) can't end the skip early when its own group closes.
 				let candidate = depth - 1;
 				skip_until_depth = Some(skip_until_depth.map_or(candidate, |sd| sd.min(candidate)));
 				continue;
@@ -115,10 +99,7 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 		if skip_until_depth.is_some() {
 			continue;
 		}
-		// The header tables (fonts, colours, styles, info) are groups of their own, so the first
-		// text, paragraph mark or character formatting directly in the document's group is body
-		// content even when the writer never emitted \pard; WordPad's minimal files and many
-		// generators start writing text straight after the font table.
+		// The header tables are groups of their own, so text directly in the document's group is body even without \pard; WordPad's minimal files and many generators write text straight after the font table.
 		if in_header && depth == 1 && starts_body(token) {
 			in_header = false;
 		}
@@ -145,7 +126,6 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 							} else {
 								u16::try_from(*code).unwrap_or(0)
 							};
-							// Check for surrogate pairs
 							if (0xD800..=0xDBFF).contains(&code) {
 								pending_high_surrogate = Some(code);
 							} else if (0xDC00..=0xDFFF).contains(&code) {
@@ -170,7 +150,7 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 							&mut bold_on,
 							&mut bold_start,
 							want_on,
-							buffer.current_position(),
+							buffer.end(),
 							MarkerType::Bold,
 							&mut buffer,
 						);
@@ -181,7 +161,7 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 							&mut italic_on,
 							&mut italic_start,
 							want_on,
-							buffer.current_position(),
+							buffer.end(),
 							MarkerType::Italic,
 							&mut buffer,
 						);
@@ -192,7 +172,7 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 							&mut underline_on,
 							&mut underline_start,
 							want_on,
-							buffer.current_position(),
+							buffer.end(),
 							MarkerType::Underline,
 							&mut buffer,
 						);
@@ -202,15 +182,12 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 							&mut underline_on,
 							&mut underline_start,
 							false,
-							buffer.current_position(),
+							buffer.end(),
 							MarkerType::Underline,
 							&mut buffer,
 						);
 					}
-					// rtf_parser 0.4.3 promoted these from `Unknown(name)` to their own dedicated
-					// variants; handled directly here since they no longer reach the `Unknown`
-					// arm below (kept for older/unrecognized spellings, but should be unreachable
-					// against the pinned rtf_parser version).
+					// rtf_parser 0.4.3 gave these their own variants, so they no longer reach the `Unknown` arm below, whose copies should now be unreachable.
 					ControlWord::RightSingleQuote if !in_header => buffer.append("\u{2019}"),
 					ControlWord::LeftSingleQuote if !in_header => buffer.append("\u{2018}"),
 					ControlWord::RightDoubleQuote if !in_header => buffer.append("\u{201D}"),
@@ -224,7 +201,7 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 							if !ends_with_ws && !buffer.content.is_empty() {
 								buffer.append(" ");
 							}
-							buffer.add_marker(Marker::new(MarkerType::PageBreak, buffer.current_position()));
+							buffer.add_marker(Marker::new(MarkerType::PageBreak, buffer.end()));
 						}
 						r"\rquote" => buffer.append("\u{2019}"),
 						r"\lquote" => buffer.append("\u{2018}"),
@@ -242,10 +219,10 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 				if !in_header {
 					if let Some(url) = text.strip_prefix("HYPERLINK ") {
 						let url = url.trim().trim_matches('"').to_string();
-						pending_link = Some(PendingLink { url, start_position: buffer.current_position() });
+						pending_link = Some(PendingLink { url, start_position: buffer.end() });
 					} else if let Some(link) = pending_link.take() {
 						let display_text = text.to_string();
-						let text_len = display_text.chars().count();
+						let text_len = DocLen::of(&display_text);
 						buffer.append(&display_text);
 						buffer.add_marker(
 							Marker::new(MarkerType::Link, link.start_position)
@@ -264,10 +241,8 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 			_ => {}
 		}
 	}
-	// Defensive flush for malformed/truncated RTF with unbalanced braces. In a
-	// well-formed document the outermost group close already reverted all three to
-	// `false` (step 3), so this is a no-op in the common case.
-	let final_pos = buffer.current_position();
+	// Only truncated RTF with unbalanced braces leaves anything open here; the outermost group close reverts everything otherwise.
+	let final_pos = buffer.end();
 	let bold_was_open = bold_on;
 	let italic_was_open = italic_on;
 	let underline_was_open = underline_on;
@@ -284,7 +259,7 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 	}
 	let trimmed = buffer.content.trim().to_string();
 	let mut result = DocumentBuffer::with_content(trimmed);
-	let leading_trim = buffer.content.len() - buffer.content.trim_start().len();
+	let leading_trim = DocLen::of(&buffer.content[..buffer.content.len() - buffer.content.trim_start().len()]);
 	for marker in buffer.markers {
 		let adjusted_pos = marker.position.saturating_sub(leading_trim);
 		result.add_marker(
@@ -296,9 +271,9 @@ pub(super) fn extract_content_from_tokens(tokens: &[Token]) -> DocumentBuffer {
 		);
 	}
 	let has_pages = result.markers.iter().any(|m| m.mtype == MarkerType::PageBreak);
-	let has_start_page = result.markers.iter().any(|m| m.mtype == MarkerType::PageBreak && m.position == 0);
+	let has_start_page = result.markers.iter().any(|m| m.mtype == MarkerType::PageBreak && m.position == DocPos::ZERO);
 	if has_pages && !has_start_page {
-		result.add_marker(Marker::new(MarkerType::PageBreak, 0));
+		result.add_marker(Marker::new(MarkerType::PageBreak, DocPos::ZERO));
 	}
 	result
 }

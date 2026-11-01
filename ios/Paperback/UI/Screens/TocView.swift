@@ -153,7 +153,6 @@ private struct TocTree: View {
 	}
 }
 
-// The entries the given one sits under, which have to be expanded for it to be visible when the list opens.
 private func ancestors(of index: Int, in entries: [TocEntry]) -> Set<Int> {
 	var result: Set<Int> = []
 	var level = entries[index].level

@@ -1,7 +1,3 @@
-//! Building an EPUB's page list (used for "go to page") from its EPUB3 nav document's
-//! `page-list` nav (preferred) or NCX `pageList` (fallback). Mirrors [`super::toc`]'s
-//! nav/NCX handling, reusing its item-parsing helpers since both walk the same node shapes.
-
 use std::{
 	collections::HashMap,
 	io::{Read, Seek},
@@ -14,14 +10,17 @@ use super::{
 	spine::SectionMeta,
 	toc::{convert_navpoint, parse_nav_item, parse_nav_list},
 };
-use crate::{document::TocItem, util::zip::read_zip_entry_by_name};
+use crate::{
+	document::{DocPos, TocItem},
+	util::zip::read_zip_entry_by_name,
+};
 
 pub(super) fn build_epub_pages<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	nav_path: Option<&str>,
 	ncx_path: Option<&str>,
 	sections: &[SectionMeta],
-	id_positions: &HashMap<String, usize>,
+	id_positions: &HashMap<String, DocPos>,
 ) -> Vec<TocItem> {
 	let (items, source) = if let Some(nav_path) = nav_path {
 		if let Some(items) = build_pages_from_nav_document(archive, nav_path, sections, id_positions) {
@@ -47,7 +46,7 @@ fn build_pages_from_nav_document<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	nav_path: &str,
 	sections: &[SectionMeta],
-	id_positions: &HashMap<String, usize>,
+	id_positions: &HashMap<String, DocPos>,
 ) -> Option<Vec<TocItem>> {
 	let nav_content = read_zip_entry_by_name(archive, nav_path).ok()?;
 	let nav_doc =
@@ -95,7 +94,7 @@ fn build_pages_from_ncx<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	ncx_path: &str,
 	sections: &[SectionMeta],
-	id_positions: &HashMap<String, usize>,
+	id_positions: &HashMap<String, DocPos>,
 ) -> Option<Vec<TocItem>> {
 	let ncx_content = read_zip_entry_by_name(archive, ncx_path).ok()?;
 	let ncx_doc =

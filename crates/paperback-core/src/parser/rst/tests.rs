@@ -22,36 +22,25 @@ fn extracts_headings_and_paragraph_text() {
 	assert_eq!(doc.toc_items[0].children[0].name, "Section");
 }
 
-/// End-to-end: a reference to a section title must resolve through the same link-navigation path
-/// every other format uses (`resolve_link`, keyed off `Document::id_positions`), landing on the
-/// heading rather than being treated as an unresolved or external link.
 #[test]
 fn cross_reference_to_a_section_resolves_as_an_internal_link() {
 	let doc = parse_bytes("book.rst", "See Details_ below.\n\nDetails\n=======\n\nBody text here.\n");
 	let handle = DocumentHandle::new(doc);
 	let heading_offset = handle.document().buffer.content.find("Details\n").expect("heading text present");
-	let nav = resolve_link(&handle, "#details", 0);
+	let nav = resolve_link(&handle, "#details", DocPos::ZERO);
 	assert!(nav.found, "reference to the section must resolve");
 	assert!(!nav.is_external, "an in-book cross-reference must not be treated as external");
 	assert_eq!(nav.offset, heading_offset);
 }
 
-/// External links embedded in an RST reference (`` `text <https://...>`_ ``) must be classified
-/// external by the same reader link-navigation path as any other format's hyperlinks.
 #[test]
 fn embedded_external_link_resolves_as_external() {
 	let doc = parse_bytes("book.rst", "See `the docs <https://example.com/>`_ for details.\n");
 	let handle = DocumentHandle::new(doc);
-	let nav = resolve_link(&handle, "https://example.com/", 0);
+	let nav = resolve_link(&handle, "https://example.com/", DocPos::ZERO);
 	assert!(nav.found);
 	assert!(nav.is_external);
 	assert_eq!(nav.url, "https://example.com/");
-}
-
-#[test]
-fn takes_the_title_from_the_file_name_not_the_heading() {
-	let doc = parse_bytes("My Book.rst", "Heading\n=======\n\nText.\n");
-	assert_eq!(doc.title, "My Book");
 }
 
 #[test]
@@ -72,8 +61,7 @@ fn decodes_non_utf8_content() {
 	assert!(doc.buffer.content.contains("héllo"), "got: {:?}", doc.buffer.content);
 }
 
-/// Malformed, deeply nested and pathological input from real files must never panic the parser -
-/// see the module doc comment for why this matters more here than for most formats.
+/// See the module doc for why a panic matters more here than for most formats.
 #[test]
 fn never_panics_on_malformed_input() {
 	let samples = [
@@ -104,4 +92,49 @@ fn never_panics_on_malformed_input() {
 		let result = RstParser.parse(&ParserContext::new(path));
 		assert!(result.is_ok(), "sample must parse without error: {sample:?}");
 	}
+}
+
+#[test]
+fn an_opening_title_and_author_field_name_the_document() {
+	let doc = parse_bytes(
+		"notes.rst",
+		"Field Notes
+===========
+
+:Author: Ann Smith
+:Date: 2026
+
+Text.
+",
+	);
+	assert_eq!(doc.title, "Field Notes");
+	assert_eq!(doc.author, "Ann Smith");
+	let untitled = parse_bytes(
+		"notes.rst",
+		"Just text.
+
+Section
+=======
+",
+	);
+	assert_eq!(untitled.title, "notes");
+	assert_eq!(untitled.author, "");
+}
+
+#[test]
+fn a_sphinx_domain_directive_reads_its_signature_and_body() {
+	let doc = parse_bytes(
+		"curses.rst",
+		"Curses C API\n============\n\n.. c:macro:: PyCurses_API_NAME\n\n   Name of the curses capsule to pass to PyCapsule_Import.\n\nAfter.\n",
+	);
+	let text = &doc.buffer.content;
+	assert!(text.contains("PyCurses_API_NAME") && text.contains("Name of the curses capsule"), "{text}");
+	assert!(text.contains("After."), "{text}");
+}
+
+#[test]
+fn a_structural_directive_reads_its_body_but_not_its_argument() {
+	let doc = parse_bytes("only.rst", ".. only:: html\n\n   Shown in HTML builds.\n");
+	assert!(doc.buffer.content.contains("Shown in HTML builds."), "{}", doc.buffer.content);
+	assert!(!doc.buffer.content.contains("html"), "{}", doc.buffer.content);
 }

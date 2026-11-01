@@ -1,7 +1,3 @@
-//! Variable-width integer and base-32 decoding shared by MOBI's fragment-offset table
-//! ([`super::links`]) and NCX index ([`super::toc`]) parsing, both of which pack values
-//! using these same encodings.
-
 pub(super) fn decode_vwi(data: &[u8], mut pos: usize) -> (usize, usize) {
 	let mut val: usize = 0;
 	while pos < data.len() {

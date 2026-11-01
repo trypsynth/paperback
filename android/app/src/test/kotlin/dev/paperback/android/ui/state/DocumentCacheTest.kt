@@ -13,8 +13,7 @@ class DocumentCacheTest {
 	@get:Rule
 	val folder = TemporaryFolder()
 
-	// Reopening a document has to land on the directory its last opening used, or every opening
-	// leaves another copy of the file behind.
+	// Otherwise every opening leaves another copy of the file behind.
 	@Test
 	fun `the same document always gets the same directory`() {
 		val cache = DocumentCache(folder.root)
@@ -31,8 +30,7 @@ class DocumentCacheTest {
 		)
 	}
 
-	// A content URI can hold anything a provider cares to put in it, including characters no file
-	// name can carry, so the directory name is a hash rather than the URI itself.
+	// A content URI can hold characters no file name can carry, hence a hash.
 	@Test
 	fun `the directory name is plain hex whatever the uri holds`() {
 		val name = cacheKeyFor("content://provider/a b/../%20?q=/x:y")

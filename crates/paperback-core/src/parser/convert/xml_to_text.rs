@@ -4,6 +4,7 @@ use roxmltree::{Document, ParsingOptions};
 
 use super::{format_spans::FormatSpans, line_builder::LineBuilder, list_style::ListStyle};
 use crate::{
+	document::DocPos,
 	parser::ConverterOutput,
 	types::{
 		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo,
@@ -14,7 +15,7 @@ use crate::{
 #[derive(Default)]
 pub struct XmlToText {
 	text: LineBuilder,
-	id_positions: HashMap<String, usize>,
+	id_positions: HashMap<String, DocPos>,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
 	images: Vec<ImageInfo>,
@@ -25,19 +26,16 @@ pub struct XmlToText {
 	page_breaks: Vec<PageBreakInfo>,
 	lists: Vec<ListInfo>,
 	list_items: Vec<ListItemInfo>,
-	section_offsets: Vec<usize>,
-	position_watch: Option<usize>,
+	section_offsets: Vec<DocPos>,
+	position_watch: Option<DocPos>,
 	watched_byte_offset: Option<usize>,
 	in_body: bool,
 	list_level: i32,
 	list_style_stack: Vec<ListStyle>,
-	/// Indices into `lists` for currently open `<ul>`/`<ol>` elements, in nesting order.
-	/// `None` marks an open list that was not recorded (no direct `<li>`), keeping the stack
-	/// balanced with the start/close handlers so list lengths are set on the right entries.
+	/// `None` marks an unrecorded list (no direct `<li>`), keeping the stack balanced so list lengths land on the right entries.
 	open_lists: Vec<Option<usize>>,
 	format_spans: FormatSpans,
-	/// When `true`, tables are emitted as their full tab-separated rendering; otherwise as a
-	/// `"[Table]: <first row>"` placeholder. A config flag, not parse state: it survives `clear()`.
+	/// A config flag, not parse state, so it survives `clear()`.
 	render_tables_inline: bool,
 }
 
@@ -47,41 +45,49 @@ impl XmlToText {
 		Self::default()
 	}
 
-	/// Like [`new`](Self::new) but sets whether tables are rendered inline (full TSV) or as a
-	/// placeholder. Threaded from the owning parser's `ParserContext`; preserved across
-	/// `convert`/`clear`.
 	#[must_use]
 	pub fn with_render_tables_inline(render_tables_inline: bool) -> Self {
 		Self { render_tables_inline, ..Self::default() }
 	}
 
 	pub fn convert(&mut self, xml_content: &str) -> bool {
-		self.clear();
-		let options = ParsingOptions { allow_dtd: true, ..ParsingOptions::default() };
-		let doc = match Document::parse_with_options(xml_content, options) {
-			Ok(doc) => doc,
+		match self.try_convert(xml_content) {
+			Ok(()) => true,
 			Err(e) => {
 				tracing::warn!(error = %e, "failed to parse xml document");
-				return false;
+				false
 			}
-		};
+		}
+	}
+
+	/// For a caller that has a fallback for malformed content and reports that itself.
+	///
+	/// # Errors
+	///
+	/// Returns the parse error when `xml_content` is not well-formed XML.
+	pub fn try_convert(&mut self, xml_content: &str) -> Result<(), roxmltree::Error> {
+		self.clear();
+		let options = ParsingOptions { allow_dtd: true, ..ParsingOptions::default() };
+		let doc = Document::parse_with_options(xml_content, options)?;
 		for child in doc.root().children() {
 			self.process_node(child);
 		}
 		self.text.finalize_current_line();
-		tracing::debug!(bytes = xml_content.len(), lines = self.text.lines.len(), "converted xml document to text");
-		true
+		tracing::debug!(bytes = xml_content.len(), chars = %self.text.get_current_text_position(), "converted xml document to text");
+		Ok(())
 	}
 
 	#[must_use]
-	pub fn get_text(&self) -> String {
+	pub fn get_text(&self) -> &str {
 		self.text.get_text()
 	}
 
-	/// Returns the source byte offset of the start tag of the element nearest
-	/// at-or-before `target_position` (a character position in the converted text),
-	/// suitable as an insertion point for a navigation anchor.
-	pub fn find_anchor_byte_offset(&mut self, xml_content: &str, target_position: usize) -> Option<usize> {
+	/// Moves the text out rather than copying a whole book, leaving the markers to read afterwards.
+	pub fn take_text(&mut self) -> String {
+		self.text.take_text()
+	}
+
+	pub fn find_anchor_byte_offset(&mut self, xml_content: &str, target_position: DocPos) -> Option<usize> {
 		self.position_watch = Some(target_position);
 		self.watched_byte_offset = None;
 		let converted = self.convert(xml_content);
@@ -91,7 +97,7 @@ impl XmlToText {
 	}
 
 	#[must_use]
-	pub const fn get_id_positions(&self) -> &HashMap<String, usize> {
+	pub const fn get_id_positions(&self) -> &HashMap<String, DocPos> {
 		&self.id_positions
 	}
 
@@ -141,7 +147,7 @@ impl XmlToText {
 	}
 
 	#[must_use]
-	pub fn get_section_offsets(&self) -> &[usize] {
+	pub fn get_section_offsets(&self) -> &[DocPos] {
 		&self.section_offsets
 	}
 
@@ -184,13 +190,8 @@ impl XmlToText {
 
 mod process;
 
-/// Inserts an empty `<span id="{anchor_id}"></span>` into `xml_content`.
-///
-/// The span is placed before the element nearest at-or-before `target_position`
-/// (a character position in the converted text). Returns `None` when the
-/// content is not valid XML.
 #[must_use]
-pub fn inject_anchor_at_position(xml_content: &str, target_position: usize, anchor_id: &str) -> Option<String> {
+pub fn inject_anchor_at_position(xml_content: &str, target_position: DocPos, anchor_id: &str) -> Option<String> {
 	let byte_offset = XmlToText::new().find_anchor_byte_offset(xml_content, target_position)?;
 	let mut result = xml_content.to_string();
 	result.insert_str(byte_offset, &format!("<span id=\"{anchor_id}\"></span>"));

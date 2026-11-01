@@ -3,7 +3,10 @@ use std::{iter, ptr};
 use rstest::rstest;
 
 use super::*;
-use crate::types::{FormatInfo, HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo};
+use crate::{
+	document::DocPos,
+	types::{FormatInfo, HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+};
 
 struct MockConverter {
 	headings: Vec<HeadingInfo>,
@@ -71,20 +74,25 @@ impl ConverterOutput for MockConverter {
 }
 fn sample_converter() -> MockConverter {
 	MockConverter {
-		headings: vec![HeadingInfo { offset: 1, level: 2, text: "Heading".to_string() }],
-		links: vec![LinkInfo { offset: 2, text: "Link".to_string(), reference: "#a".to_string() }],
+		headings: vec![HeadingInfo { offset: 1.into(), level: 2, text: "Heading".to_string() }],
+		links: vec![LinkInfo { offset: 2.into(), text: "Link".to_string(), reference: "#a".to_string() }],
 		images: vec![],
 		figures: vec![],
-		tables: vec![TableInfo { offset: 3, text: "T".to_string(), html_content: "<table/>".to_string(), length: 11 }],
+		tables: vec![TableInfo {
+			offset: 3.into(),
+			text: "T".to_string(),
+			html_content: "<table/>".to_string(),
+			length: 11.into(),
+		}],
 		formulas: vec![FormulaInfo {
-			offset: 7,
+			offset: 7.into(),
 			text: "x".to_string(),
 			mathml: "<math><mi>x</mi></math>".to_string(),
-			length: 1,
+			length: 1.into(),
 		}],
-		separators: vec![SeparatorInfo { offset: 4, length: 7 }],
-		lists: vec![ListInfo { offset: 5, item_count: 3, length: 4 }],
-		list_items: vec![ListItemInfo { offset: 6, level: 1, text: "Item".to_string() }],
+		separators: vec![SeparatorInfo { offset: 4.into(), length: 7.into() }],
+		lists: vec![ListInfo { offset: 5.into(), item_count: 3, length: 4.into() }],
+		list_items: vec![ListItemInfo { offset: 6.into(), level: 1, text: "Item".to_string() }],
 		bolds: vec![],
 		italics: vec![],
 		underlines: vec![],
@@ -185,7 +193,7 @@ fn file_filter_string_contains_supported_and_fallback_groups() {
 fn add_converter_markers_transfers_all_marker_types_with_offset() {
 	let converter = sample_converter();
 	let mut buffer = DocumentBuffer::new();
-	add_converter_markers(&mut buffer, &converter, 100);
+	add_converter_markers(&mut buffer, &converter, 100.into());
 	assert_eq!(buffer.markers.len(), 7);
 	assert_eq!(buffer.markers[0].mtype, MarkerType::Heading2);
 	assert_eq!(buffer.markers[0].position, 101);
@@ -212,7 +220,7 @@ fn add_converter_markers_transfers_all_marker_types_with_offset() {
 fn add_converter_markers_excluding_links_skips_link_markers() {
 	let converter = sample_converter();
 	let mut buffer = DocumentBuffer::new();
-	add_converter_markers_excluding_links(&mut buffer, &converter, 10);
+	add_converter_markers_excluding_links(&mut buffer, &converter, 10.into(), &str::to_string);
 	assert_eq!(buffer.markers.len(), 6);
 	assert!(buffer.markers.iter().all(|marker| marker.mtype != MarkerType::Link));
 	assert!(buffer.markers.iter().any(|marker| marker.mtype == MarkerType::Formula && marker.position == 17));
@@ -235,7 +243,7 @@ fn add_converter_markers_handles_empty_converter_output() {
 		underlines: vec![],
 	};
 	let mut buffer = DocumentBuffer::new();
-	add_converter_markers(&mut buffer, &converter, 0);
+	add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 	assert!(buffer.markers.is_empty());
 }
 
@@ -281,9 +289,7 @@ fn m4b_parser_advertises_audio_book_navigation() {
 	);
 }
 
-/// Guards against a format being declared in `paperback-formats` with no parser wired up
-/// in `parser_registry!` (it would show up in the installer and open dialog but fail to
-/// open), and against a parser being registered twice.
+/// A declared format with no parser would show in the installer and open dialog but fail to open.
 #[test]
 fn every_declared_format_has_exactly_one_parser() {
 	let registered: Vec<&'static FormatMeta> =
@@ -295,8 +301,6 @@ fn every_declared_format_has_exactly_one_parser() {
 	assert_eq!(registered.len(), paperback_formats::ALL.len(), "a parser was registered for an unlisted format");
 }
 
-/// Registration order decides which parser wins a shared extension, so it must track the
-/// order of the format table rather than drifting from it.
 #[test]
 fn registration_order_matches_the_format_table() {
 	let registered: Vec<&str> = ParserRegistry::global().all_parsers().iter().map(RegisteredParser::name).collect();
@@ -304,16 +308,12 @@ fn registration_order_matches_the_format_table() {
 	assert_eq!(registered, declared);
 }
 
-/// `.zip` is claimed by both DAISY and Word, and `parse_document` tries claimants in
-/// registration order, so DAISY must stay ahead of Word.
 #[test]
-fn zip_is_offered_to_daisy_before_word() {
+fn zip_is_offered_to_daisy_then_word_then_fb2() {
 	let names: Vec<_> = ParserRegistry::global().get_parsers_for_extension("zip").iter().map(|p| p.name()).collect();
-	assert_eq!(names, vec![paperback_formats::DAISY.name, paperback_formats::WORD.name]);
+	assert_eq!(names, vec![paperback_formats::DAISY.name, paperback_formats::WORD.name, paperback_formats::FB2.name]);
 }
 
-/// The registry stores parsers in a `Vec`, so the file dialog's filter groups appear in a
-/// stable order rather than whatever order a hash map happened to yield.
 #[test]
 fn file_filter_lists_groups_in_registration_order() {
 	let filter = build_file_filter_string();
@@ -330,8 +330,6 @@ fn file_filter_string_contains_text_files_group_name() {
 	let filter = build_file_filter_string();
 	assert!(filter.contains("Text Files ("));
 }
-/// `add_tables_separators_lists` sets the Table marker's `length` to `table.length`
-/// (display units) and offsets it by the base offset.
 #[test]
 fn add_tables_separators_lists_sets_table_marker_length() {
 	let converter = MockConverter {
@@ -340,10 +338,10 @@ fn add_tables_separators_lists_sets_table_marker_length() {
 		images: vec![],
 		figures: vec![],
 		tables: vec![TableInfo {
-			offset: 10,
+			offset: 10.into(),
 			text: "T".to_string(),
 			html_content: "<table/>".to_string(),
-			length: 7, // display-unit field, must appear as marker length
+			length: 7.into(),
 		}],
 		formulas: vec![],
 		separators: vec![],
@@ -354,111 +352,97 @@ fn add_tables_separators_lists_sets_table_marker_length() {
 		underlines: vec![],
 	};
 	let mut buffer = DocumentBuffer::new();
-	let base_offset = 100usize;
+	let base_offset = DocPos::from_raw(100);
 	add_converter_markers(&mut buffer, &converter, base_offset);
 	let table_marker = buffer.markers.iter().find(|m| m.mtype == MarkerType::Table).expect("Table marker");
-	assert_eq!(table_marker.position, base_offset + 10, "position = offset + table.offset");
+	assert_eq!(table_marker.position, base_offset + 10.into(), "position = offset + table.offset");
 	assert_eq!(table_marker.length, 7, "marker length must equal table length, not byte length");
 	assert_eq!(table_marker.reference, "<table/>", "marker reference must be the table HTML");
 }
 
-/// A table of contents whose entries name sections the text never marked up as headings. Every
-/// one of them gets a marker, so the reader can move through a book that carries none of its own.
 #[test]
 fn heading_markers_are_written_for_every_entry_of_a_table_of_contents() {
 	let mut buffer = DocumentBuffer::new();
 	buffer.append("Alpha\nBeta\nGamma\n");
 	let items = vec![
 		with_children(
-			TocItem::new("Alpha".to_string(), String::new(), 0),
-			vec![TocItem::new("Beta".to_string(), String::new(), 6)],
+			TocItem::new("Alpha".to_string(), String::new(), DocPos::ZERO),
+			vec![TocItem::new("Beta".to_string(), String::new(), 6.into())],
 		),
-		TocItem::new("Gamma".to_string(), String::new(), 11),
+		TocItem::new("Gamma".to_string(), String::new(), 11.into()),
 	];
 	add_heading_markers(&mut buffer, &items, 1);
-	let headings: Vec<(MarkerType, usize, String)> =
+	let headings: Vec<(MarkerType, DocPos, String)> =
 		buffer.markers.iter().map(|m| (m.mtype, m.position, m.text.clone())).collect();
 	assert_eq!(
 		headings,
 		vec![
-			(MarkerType::Heading1, 0, "Alpha".to_string()),
-			// A child of the first entry, one level deeper.
-			(MarkerType::Heading2, 6, "Beta".to_string()),
-			(MarkerType::Heading1, 11, "Gamma".to_string()),
+			(MarkerType::Heading1, 0.into(), "Alpha".to_string()),
+			(MarkerType::Heading2, 6.into(), "Beta".to_string()),
+			(MarkerType::Heading1, 11.into(), "Gamma".to_string()),
 		]
 	);
 }
 
-/// A document that marks up some of its headings and not others: the ones it wrote are left alone
-/// and the rest are filled in, so nothing is announced twice. This is the shape of an old CHM
-/// reference that marks up two of its six hundred pages.
+/// The shape of an old CHM reference that marks up two of its six hundred pages.
 #[test]
 fn an_entry_whose_section_wrote_its_own_heading_is_left_alone() {
 	let mut buffer = DocumentBuffer::new();
 	buffer.append("Alpha\nBeta\nGamma\n");
-	// The middle section already carries a heading of its own.
-	buffer.add_marker(Marker::new(MarkerType::Heading1, 6).with_text("Beta".to_string()).with_level(1));
+	buffer.add_marker(Marker::new(MarkerType::Heading1, 6.into()).with_text("Beta".to_string()).with_level(1));
 	let items = vec![
-		TocItem::new("Alpha".to_string(), String::new(), 0),
-		TocItem::new("Beta".to_string(), String::new(), 6),
-		TocItem::new("Gamma".to_string(), String::new(), 11),
+		TocItem::new("Alpha".to_string(), String::new(), DocPos::ZERO),
+		TocItem::new("Beta".to_string(), String::new(), 6.into()),
+		TocItem::new("Gamma".to_string(), String::new(), 11.into()),
 	];
 	add_heading_markers_where(&mut buffer, &items, 1, &|offset| offset != 6);
-	let positions: Vec<usize> =
+	let positions: Vec<DocPos> =
 		buffer.markers.iter().filter(|m| crate::document::is_heading_marker(m.mtype)).map(|m| m.position).collect();
 	assert_eq!(positions, vec![6, 0, 11], "the one already there, then the two filled in");
 	assert_eq!(positions.iter().filter(|p| **p == 6).count(), 1, "the marked-up section is not doubled");
 }
 
-/// A section that wrote its own heading may still sit above subsections that did not, so a turned
-/// down entry does not take its children with it.
 #[test]
 fn the_children_of_a_turned_down_entry_are_still_offered() {
 	let mut buffer = DocumentBuffer::new();
 	buffer.append("Alpha\nBeta\n");
 	let items = vec![with_children(
-		TocItem::new("Alpha".to_string(), String::new(), 0),
-		vec![TocItem::new("Beta".to_string(), String::new(), 6)],
+		TocItem::new("Alpha".to_string(), String::new(), DocPos::ZERO),
+		vec![TocItem::new("Beta".to_string(), String::new(), 6.into())],
 	)];
 	add_heading_markers_where(&mut buffer, &items, 1, &|offset| offset != 0);
-	let positions: Vec<usize> = buffer.markers.iter().map(|m| m.position).collect();
+	let positions: Vec<DocPos> = buffer.markers.iter().map(|m| m.position).collect();
 	assert_eq!(positions, vec![6], "the parent is skipped and the child is kept");
 }
 
-/// `TocItem` is a plain struct with no builder for its children.
 fn with_children(mut item: TocItem, children: Vec<TocItem>) -> TocItem {
 	item.children = children;
 	item
 }
 
-/// A book that lists its chapters in the table of contents but marks none of them up as a heading
-/// gets a heading for each entry, so the heading key reaches every chapter.
 #[test]
 fn add_toc_heading_markers_fills_in_unmarked_chapters() {
 	let mut buffer = DocumentBuffer::new();
 	buffer.append("Chapter One text\nChapter Two text\nChapter Three text\n");
 	let toc = vec![
-		TocItem::new("Chapter One".to_string(), String::new(), 0),
-		TocItem::new("Chapter Two".to_string(), String::new(), 17),
-		TocItem::new("Chapter Three".to_string(), String::new(), 34),
+		TocItem::new("Chapter One".to_string(), String::new(), DocPos::ZERO),
+		TocItem::new("Chapter Two".to_string(), String::new(), 17.into()),
+		TocItem::new("Chapter Three".to_string(), String::new(), 34.into()),
 	];
 	add_toc_heading_markers(&mut buffer, &toc);
-	let headings: Vec<usize> =
+	let headings: Vec<DocPos> =
 		buffer.markers.iter().filter(|m| is_heading_marker(m.mtype)).map(|m| m.position).collect();
 	assert_eq!(headings, vec![0, 17, 34], "one heading per table-of-contents entry");
 }
 
-/// A chapter that already carries its own heading is not given a second one, so a well-marked book
-/// keeps exactly the headings it wrote.
 #[test]
 fn add_toc_heading_markers_does_not_double_an_existing_heading() {
 	let mut buffer = DocumentBuffer::new();
 	buffer.append("Chapter One text\nChapter Two text\n");
-	// The second chapter already has a real heading in its span.
-	buffer.add_marker(Marker::new(MarkerType::Heading1, 17).with_text("Chapter Two".to_string()).with_level(1));
+	buffer.add_marker(Marker::new(MarkerType::Heading1, 17.into()).with_text("Chapter Two".to_string()).with_level(1));
 	let toc = vec![
-		TocItem::new("Chapter One".to_string(), String::new(), 0),
-		TocItem::new("Chapter Two".to_string(), String::new(), 17),
+		TocItem::new("Chapter One".to_string(), String::new(), DocPos::ZERO),
+		TocItem::new("Chapter Two".to_string(), String::new(), 17.into()),
 	];
 	add_toc_heading_markers(&mut buffer, &toc);
 	let heads_at_17 = buffer.markers.iter().filter(|m| is_heading_marker(m.mtype) && m.position == 17).count();

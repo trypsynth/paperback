@@ -7,7 +7,7 @@ pub mod activation;
 pub mod dialog_activation;
 
 #[cfg(target_os = "macos")]
-#[allow(unused_imports)]
+#[allow(dead_code, unused_imports)]
 #[path = "../src/ui/mac_shortcuts.rs"]
 mod mac_shortcuts;
 #[cfg(target_os = "macos")]
@@ -21,6 +21,17 @@ mod ui {
 
 #[cfg(not(target_os = "macos"))]
 fn main() {}
+
+/// The test document is all in the Basic Multilingual Plane, so control units and positions count alike.
+#[cfg(target_os = "macos")]
+fn ctrl(position: paperback_core::document::DocPos) -> i64 {
+	i64::try_from(position).unwrap()
+}
+
+#[cfg(target_os = "macos")]
+fn doc(units: i64) -> paperback_core::document::DocPos {
+	paperback_core::document::DocPos::from_raw(usize::try_from(units).unwrap())
+}
 
 #[cfg(target_os = "macos")]
 fn link_session() -> paperback_core::session::DocumentSession {
@@ -155,7 +166,7 @@ fn main() {
 		let from_keyboard = Rc::new(Cell::new(false));
 		let received = Rc::new(RefCell::new(Vec::new()));
 		let session = Rc::new(link_session());
-		text.set_value(&session.get_text_range_display(0, session.document_len()));
+		text.set_value(&session.text_range(doc(0), session.document_len().as_pos()));
 		let session_for_menu = Rc::clone(&session);
 		let activated = Rc::new(RefCell::new(Vec::new()));
 		let opened_elements = Rc::new(RefCell::new(Vec::new()));
@@ -163,7 +174,7 @@ fn main() {
 		let activated_for_key = Rc::clone(&activated);
 		let session_for_key = Rc::clone(&session);
 		activation::bind_activation(text, move |enter| {
-			let position = text.get_insertion_point();
+			let position = doc(text.get_insertion_point());
 			if let Some(html) = session_for_key.get_formula_at_position(position) {
 				opened_for_key.borrow_mut().push(("formula", html));
 				return;
@@ -174,15 +185,27 @@ fn main() {
 			}
 			let result = session_for_key.activate_link(position);
 			if result.action == paperback_core::session::LinkAction::Internal {
-				text.set_insertion_point(result.offset);
+				text.set_insertion_point(ctrl(result.offset));
 			}
 			activated_for_key.borrow_mut().push((enter, result));
 		});
+		// CI runners never make the test window key, so the reader's focus is stood in for rather than read from AppKit.
+		let reader_focused = Rc::new(Cell::new(true));
+		let reader_focused_for_menu = Rc::clone(&reader_focused);
 		let received_for_menu = Rc::clone(&received);
 		let source_for_menu = Rc::clone(&from_keyboard);
 		frame.on_menu(move |event| {
+			if event.get_id() == menu_ids::COPY && !reader_focused_for_menu.get() {
+				event.skip(true);
+				return;
+			}
 			received_for_menu.borrow_mut().push((event.get_id(), source_for_menu.replace(false)));
-			let position = text.get_insertion_point();
+			if event.get_id() == menu_ids::COPY {
+				event.skip(false);
+				assert!(wxdragon::clipboard::Clipboard::get().set_text(&text.get_string_selection()));
+				return;
+			}
+			let position = doc(text.get_insertion_point());
 			let result = match event.get_id() {
 				menu_ids::NEXT_LINK => Some(session_for_menu.navigate_link(position, false, true)),
 				menu_ids::NEXT_TABLE => Some(session_for_menu.navigate_table(position, false, true)),
@@ -191,10 +214,11 @@ fn main() {
 			};
 			if let Some(result) = result {
 				assert!(result.found);
-				text.set_insertion_point(result.offset);
+				text.set_insertion_point(ctrl(result.offset));
 			}
 		});
 		let menu = Menu::builder()
+			.append_item(menu_ids::COPY, "Copy\tCtrl+C", "")
 			.append_item(menu_ids::FIND_NEXT, "Find Next\tCtrl+G", "")
 			.append_item(menu_ids::FIND_PREVIOUS, "Find Previous\tCtrl+Shift+G", "")
 			.append_item(menu_ids::NEXT_HEADING, "Next Heading\tH", "")
@@ -205,7 +229,10 @@ fn main() {
 			.append_item(menu_ids::PLAY_PAUSE_AUDIO, "Play/Pause\tRawCtrl+Space", "")
 			.build();
 		frame.set_menu_bar(MenuBar::builder().append(menu, "Commands").build());
-		mac_shortcuts::install(frame, Rc::clone(&config), Rc::clone(&from_keyboard));
+		let reader_focused_for_shortcuts = Rc::clone(&reader_focused);
+		mac_shortcuts::install(frame, Rc::clone(&config), Rc::clone(&from_keyboard), move || {
+			reader_focused_for_shortcuts.get()
+		});
 		frame.show(true);
 		text.set_focus();
 		expect_command(&received, frame, "g", COMMAND, 5, menu_ids::FIND_NEXT);
@@ -218,7 +245,7 @@ fn main() {
 		for (character, hardware_key, enter) in [("\r", 36, true), ("\u{3}", 76, true), (" ", 49, false)] {
 			text.set_insertion_point(0);
 			expect_command(&received, frame, "k", 0, 40, menu_ids::NEXT_LINK);
-			let link_position = text.get_insertion_point();
+			let link_position = doc(text.get_insertion_point());
 			activated.borrow_mut().clear();
 			send_key(frame, character, 0, hardware_key);
 			let results = activated.borrow();
@@ -226,7 +253,7 @@ fn main() {
 			assert_eq!(results[0].0, enter);
 			assert_eq!(results[0].1.action, paperback_core::session::LinkAction::Internal);
 			assert!(results[0].1.offset > link_position);
-			assert_eq!(text.get_insertion_point(), results[0].1.offset);
+			assert_eq!(text.get_insertion_point(), ctrl(results[0].1.offset));
 			assert!(session.get_line_text(results[0].1.offset).contains("Destination"));
 			drop(results);
 			text.set_insertion_point(0);
@@ -341,6 +368,17 @@ fn main() {
 		config.lock().unwrap().set_shortcuts(&shortcuts);
 		expect_command(&received, frame, "?", COMMAND | SHIFT, 44, menu_ids::NEXT_HEADING);
 		assert_eq!(bar.find_item(menu_ids::FIND_NEXT).unwrap().get_label(), "Find Next\tCtrl+G");
+		text.set_selection(0, 5);
+		assert!(bar.find_item(menu_ids::COPY).unwrap().is_enabled());
+		expect_command(&received, frame, "c", COMMAND, 8, menu_ids::COPY);
+		assert_eq!(wxdragon::clipboard::Clipboard::get().get_text().as_deref(), Some("Start"));
+		assert_eq!(text.get_selection(), (0, 5), "copy must preserve the reader's selection");
+		assert!(!from_keyboard.get(), "copy must clear its keyboard source");
+		reader_focused.set(false);
+		received.borrow_mut().clear();
+		send_key(frame, "c", COMMAND, 8);
+		assert!(received.borrow().is_empty(), "copy outside the reader must stay native");
+		assert!(!from_keyboard.get(), "a native copy must not leave the keyboard source set");
 		passed_for_app.set(true);
 		frame.close(true);
 		wxdragon::call_after(Box::new(|| wxdragon::app::get_app_instance().unwrap().exit_main_loop()));

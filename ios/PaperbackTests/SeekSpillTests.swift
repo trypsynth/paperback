@@ -22,8 +22,7 @@ final class SeekSpillTests: XCTestCase {
 		XCTAssertEqual(.withinFile, spillOf(rawMs: 10_000, lengthMs: 45_000, deltaMs: -10_000))
 	}
 
-	/// The decoder reports no length until it has loaded. Spilling on that would send the reader
-	/// to another file over a length of zero, which every forward seek runs past.
+	/// The decoder reports no length until loaded, and every forward seek runs past a length of zero.
 	func testAFileOfUnknownLengthCanOnlyBeSeekedWithin() {
 		XCTAssertEqual(.withinFile, spillOf(rawMs: 0, lengthMs: 0, deltaMs: 10_000))
 		XCTAssertEqual(.withinFile, spillOf(rawMs: 0, lengthMs: -1, deltaMs: 10_000))

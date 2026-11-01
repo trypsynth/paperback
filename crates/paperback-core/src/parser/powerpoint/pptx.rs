@@ -1,7 +1,3 @@
-//! Modern OOXML `.pptx` parsing: reads each `ppt/slides/slideN.xml` part directly (`pptx` has no
-//! single flattened text stream the way `.doc`x does), plus relationship-based hyperlink
-//! resolution and `DrawingML` table extraction.
-
 use std::{collections::HashMap, fs, io::Cursor, path::Path};
 
 use anyhow::{Context, Result};
@@ -9,29 +5,28 @@ use roxmltree::{Document as XmlDocument, Node, NodeType};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
+	document::{DocLen, DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		convert::table_text::{
 			build_html_table_from_grid, display_lines_and_length, html_table_to_display, table_caption_from_html,
 		},
 		util::{
-			ooxml::{read_ooxml_relationships, try_decrypt_office_file},
+			ooxml::{read_core_properties, read_ooxml_relationships, try_decrypt_office_file},
 			path::extract_title_from_path,
+			slides::no_text_placeholder,
 			xml::collect_text_from_tagged_elements,
 		},
 	},
 	t,
 	types::LinkInfo,
-	util::{text::display_len, zip::read_zip_entry_by_name},
+	util::zip::read_zip_entry_by_name,
 };
 
-/// A table found while traversing a slide. Markers are added after the slide text is appended to
-/// the buffer (mirroring the deferred link-marker handling), so positions stay in display units.
 struct TableData {
-	offset: usize,
+	offset: DocPos,
 	caption: String,
 	html: String,
-	length: usize,
+	length: DocLen,
 }
 
 pub(super) fn parse_pptx(context: &ParserContext) -> Result<Document> {
@@ -44,10 +39,9 @@ pub(super) fn parse_pptx(context: &ParserContext) -> Result<Document> {
 	};
 	let mut archive = ZipArchive::new(Cursor::new(bytes))
 		.with_context(|| format!("Failed to read PPTX as zip '{}'", context.file_path))?;
-	// zip 9 hands back a Result per name, since decoding one can fail. A name that will not
-	// decode cannot match what this scan is looking for, so drop those rather than fail the file.
+	// A name zip 9 cannot decode cannot be a slide part, so it is dropped rather than failing the file.
 	let mut slides = (0..archive.len())
-		.filter_map(|i| archive.by_index(i).ok().and_then(|entry| entry.name().ok().map(|name| name.into_owned())))
+		.filter_map(|i| archive.by_index(i).ok().and_then(|entry| entry.name().ok().map(std::borrow::Cow::into_owned)))
 		.filter(|name| {
 			name.starts_with("ppt/slides/slide")
 				&& Path::new(name).extension().is_some_and(|ext| ext.eq_ignore_ascii_case("xml"))
@@ -71,7 +65,7 @@ pub(super) fn parse_pptx(context: &ParserContext) -> Result<Document> {
 		let rels_name = format!("ppt/slides/_rels/{slide_base}.rels");
 		let rels = read_ooxml_relationships(&mut archive, &rels_name);
 		let slide_title = extract_slide_title(slide_doc.root());
-		let slide_start = buffer.current_position();
+		let slide_start = buffer.end();
 		let mut links = Vec::new();
 		let mut tables = Vec::new();
 		let slide_text = extract_slide_text(
@@ -82,37 +76,34 @@ pub(super) fn parse_pptx(context: &ParserContext) -> Result<Document> {
 			&rels,
 			context.render_tables_inline,
 		);
-		if !slide_text.trim().is_empty() {
-			buffer.append(&slide_text);
-			if !buffer.content.ends_with('\n') {
-				buffer.append("\n");
-			}
-			if index + 1 < slides.len() {
-				buffer.append("\n");
-			}
-			buffer
-				.add_marker(Marker::new(MarkerType::PageBreak, slide_start).with_text(format!("Slide {}", index + 1)));
-			for link in links {
-				buffer.add_marker(
-					Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
-				);
-			}
-			for table in tables {
-				buffer.add_marker(
-					Marker::new(MarkerType::Table, table.offset)
-						.with_text(table.caption)
-						.with_reference(table.html)
-						.with_length(table.length),
-				);
-			}
-			let toc_name = if slide_title.is_empty() { format!("Slide {}", index + 1) } else { slide_title.clone() };
-			toc_items.push(TocItem::new(toc_name, String::new(), slide_start));
-		} else {
-			tracing::debug!(slide = index + 1, "skipped pptx slide with no text");
+		let slide_text = if slide_text.trim().is_empty() { no_text_placeholder() } else { slide_text };
+		buffer.append(&slide_text);
+		if !buffer.content.ends_with('\n') {
+			buffer.append("\n");
 		}
+		if index + 1 < slides.len() {
+			buffer.append("\n");
+		}
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, slide_start).with_text(format!("Slide {}", index + 1)));
+		for link in links {
+			buffer.add_marker(
+				Marker::new(MarkerType::Link, link.offset).with_text(link.text).with_reference(link.reference),
+			);
+		}
+		for table in tables {
+			buffer.add_marker(
+				Marker::new(MarkerType::Table, table.offset)
+					.with_text(table.caption)
+					.with_reference(table.html)
+					.with_length(table.length),
+			);
+		}
+		let toc_name = if slide_title.is_empty() { format!("Slide {}", index + 1) } else { slide_title.clone() };
+		toc_items.push(TocItem::new(toc_name, String::new(), slide_start));
 	}
-	let title = extract_title_from_path(&context.file_path);
-	let mut document = Document::new().with_title(title);
+	let (title, author) = read_core_properties(&mut archive);
+	let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
+	let mut document = Document::new().with_title(title).with_author(author.unwrap_or_default());
 	document.set_buffer(buffer);
 	document.id_positions = id_positions;
 	document.toc_items = toc_items;
@@ -156,7 +147,7 @@ fn extract_slide_text(
 	root: Node,
 	links: &mut Vec<LinkInfo>,
 	tables: &mut Vec<TableData>,
-	slide_start: usize,
+	slide_start: DocPos,
 	rels: &HashMap<String, String>,
 	render_tables_inline: bool,
 ) -> String {
@@ -170,7 +161,7 @@ fn traverse_for_text(
 	text: &mut String,
 	links: &mut Vec<LinkInfo>,
 	tables: &mut Vec<TableData>,
-	slide_start: usize,
+	slide_start: DocPos,
 	rels: &HashMap<String, String>,
 	render_tables_inline: bool,
 ) {
@@ -189,8 +180,7 @@ fn traverse_for_text(
 					return;
 				}
 				"tbl" => {
-					// Handle the table here and skip generic recursion: otherwise the walk below would
-					// re-emit every cell's `<a:t>` text as flat paragraph lines, duplicating the table.
+					// Generic recursion would re-emit every cell's `<a:t>` text as flat lines, duplicating the table.
 					process_pptx_table(node, text, tables, slide_start, render_tables_inline);
 					return;
 				}
@@ -203,24 +193,31 @@ fn traverse_for_text(
 					}
 					return;
 				}
-				"hlinkClick" => {
-					if let Some(r_id) = node.attribute("id")
-						&& let Some(link_target) = rels.get(r_id)
-						&& let Some(parent) = node.parent()
-					{
-						let link_text = collect_text_from_tagged_elements(parent, "t");
-						if !link_text.is_empty() {
-							let link_offset = slide_start + text.len();
-							text.push_str(&link_text);
-							links.push(LinkInfo {
-								offset: link_offset,
-								text: link_text,
-								reference: link_target.clone(),
-							});
+				"r" => {
+					let link_target = run_link(node).and_then(|id| rels.get(id));
+					let start = text.len();
+					for child in node.children() {
+						traverse_for_text(child, text, links, tables, slide_start, rels, render_tables_inline);
+					}
+					if let Some(target) = link_target {
+						let link_text = text[start..].to_string();
+						let offset = slide_start + DocLen::of(&text[..start]);
+						// PowerPoint splits one link across runs wherever the formatting changes, each carrying the same link.
+						match links.last_mut() {
+							Some(last)
+								if last.reference == *target && last.offset + DocLen::of(&last.text) == offset =>
+							{
+								last.text.push_str(&link_text);
+							}
+							_ if !link_text.is_empty() => {
+								links.push(LinkInfo { offset, text: link_text, reference: target.clone() });
+							}
+							_ => {}
 						}
 					}
 					return;
 				}
+				"hlinkClick" => return,
 				_ => {}
 			}
 		}
@@ -232,14 +229,23 @@ fn traverse_for_text(
 	}
 }
 
-/// Convert a `DrawingML` `<a:tbl>` into the shared HTML-table representation, append its display text
-/// to `text`, and record a [`TableData`] for later marker creation. pptx cells nest one level
-/// deeper than Word (`tc > txBody > p`), so cell text is gathered from every descendant `<a:t>`.
+/// A deck writes the link in the run's properties, `<a:r><a:rPr><a:hlinkClick r:id="..."/></a:rPr><a:t>...</a:t></a:r>`, beside its text rather than around it.
+fn run_link<'a>(run: Node<'a, '_>) -> Option<&'a str> {
+	let properties = run.children().find(|child| child.tag_name().name() == "rPr");
+	properties
+		.into_iter()
+		.flat_map(|properties| properties.children())
+		.chain(run.children())
+		.find(|child| child.tag_name().name() == "hlinkClick")
+		.and_then(|link| link.attribute("id"))
+}
+
+/// pptx cells nest one level deeper than Word (`tc > txBody > p`), so cell text is gathered from every descendant `<a:t>`.
 fn process_pptx_table(
 	node: Node,
 	text: &mut String,
 	tables: &mut Vec<TableData>,
-	slide_start: usize,
+	slide_start: DocPos,
 	render_tables_inline: bool,
 ) {
 	let mut rows: Vec<Vec<String>> = Vec::new();
@@ -252,7 +258,6 @@ fn process_pptx_table(
 			if tc.node_type() != NodeType::Element || tc.tag_name().name() != "tc" {
 				continue;
 			}
-			// Join paragraphs within the cell with a space so multi-paragraph cells stay readable.
 			let mut cell_text = String::new();
 			for p in tc.descendants() {
 				if p.node_type() == NodeType::Element && p.tag_name().name() == "p" {
@@ -273,7 +278,7 @@ fn process_pptx_table(
 	let caption = table_caption_from_html(&html).unwrap_or_else(|| "table".to_string());
 	let display_text = html_table_to_display(&html, render_tables_inline);
 	let (_, length) = display_lines_and_length(&display_text);
-	let offset = slide_start + display_len(text);
+	let offset = slide_start + DocLen::of(text);
 	text.push_str(&display_text);
 	text.push('\n');
 	tables.push(TableData { offset, caption, html, length });

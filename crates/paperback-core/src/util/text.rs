@@ -3,52 +3,51 @@ use std::sync::LazyLock;
 use regex::Regex;
 use roman::to;
 
-/// A run of dot leaders before a page number at the end of a line: `Getting Started.......12`.
 static LEADERS: LazyLock<Regex> = LazyLock::new(|| {
 	Regex::new(r"(?m)[ \t]*(?:[.\u{2026}\u{00B7}][ \t]?){4,}[ \t]*(\d+|[ivxlcdmIVXLCDM]+)[ \t]*$")
 		.expect("leader pattern is valid")
 });
 
-/// Collapses table-of-contents dot leaders into a single space, so a contents line reads
-/// "Getting Started 12" rather than every dot being spoken. Only runs of four or more dots,
-/// ellipses or middle dots followed by a page number at the end of a line count, which leaves
-/// ellipses and fill-in blanks (`Name: ______`) alone.
+/// So every dot of a contents line isn't spoken; requiring four or more and a trailing page number leaves ellipses and fill-in blanks alone.
 #[must_use]
 pub fn collapse_leaders(input: &str) -> String {
 	LEADERS.replace_all(input, " $1").into_owned()
 }
 
+/// In place, so a whole text file is not copied to find it has none.
 #[must_use]
-pub fn remove_soft_hyphens(input: &str) -> String {
-	input.replace("\u{00AD}", "")
+pub fn remove_soft_hyphens(mut text: String) -> String {
+	if text.contains('\u{00AD}') {
+		text.retain(|c| c != '\u{00AD}');
+	}
+	text
 }
 
-/// Normalizes `\r\n` and bare `\r` line endings to `\n`, matching every other parser's output
-/// (RTF, HTML, XML, Markdown all only ever emit bare `\n`). A GUI text control's own line-ending
-/// handling doesn't necessarily count an embedded `\r` as a position the same way `DocumentBuffer`
-/// does, so leaving raw `\r`s in a document's content drifts its stored positions (markers, Find
-/// results, ...) out of sync with the control by roughly one unit per line - worse the further
-/// into the document you go. Plain text files are the one format whose source can contain `\r` at
-/// all, since every other parser builds its output text itself rather than passing source bytes
-/// through.
+/// A text control may not count a raw `\r` as a position the way the buffer does, so stored positions drift by about one per line.
 #[must_use]
-pub fn normalize_line_endings(input: &str) -> String {
-	if !input.contains('\r') {
-		return input.to_string();
+pub fn normalize_line_endings(text: String) -> String {
+	if !text.contains('\r') {
+		return text;
 	}
-	let mut result = String::with_capacity(input.len());
-	let mut chars = input.chars().peekable();
-	while let Some(ch) = chars.next() {
-		if ch == '\r' {
-			if chars.peek() == Some(&'\n') {
-				chars.next();
-			}
-			result.push('\n');
-		} else {
-			result.push(ch);
+	// In place on the bytes, as a whole text file comes through here; `\r` and `\n` are ASCII, so the text stays valid UTF-8.
+	let mut bytes = text.into_bytes();
+	let mut write = 0;
+	let mut read = 0;
+	while let Some(found) = memchr::memchr(b'\r', &bytes[read..]) {
+		let at = read + found;
+		bytes.copy_within(read..at, write);
+		write += at - read;
+		bytes[write] = b'\n';
+		write += 1;
+		read = at + 1;
+		if bytes.get(read) == Some(&b'\n') {
+			read += 1;
 		}
 	}
-	result
+	let end = bytes.len();
+	bytes.copy_within(read..end, write);
+	bytes.truncate(write + end - read);
+	String::from_utf8(bytes).expect("only ASCII bytes were moved, which keeps UTF-8 valid")
 }
 
 #[must_use]
@@ -89,20 +88,6 @@ pub fn collapse_whitespace(input: &str) -> String {
 #[must_use]
 pub fn trim_string(s: &str) -> String {
 	s.trim_matches(is_space_like).to_string()
-}
-
-/// Display units match the index space of the platform text control that the
-/// document text is loaded into: UTF-16 code units on Windows (Win32 edit
-/// control) and macOS (`NSTextView`'s `NSRange`, which wxWidgets passes through
-/// unconverted); Unicode characters on GTK (`GtkTextIter` offsets).
-#[must_use]
-pub fn display_len(s: &str) -> usize {
-	if cfg!(any(windows, target_os = "macos")) { s.encode_utf16().count() } else { s.chars().count() }
-}
-
-#[must_use]
-pub const fn ch_width(ch: char) -> usize {
-	if cfg!(any(windows, target_os = "macos")) { ch.len_utf16() } else { 1 }
 }
 
 #[must_use]
@@ -147,7 +132,7 @@ mod tests {
 	#[case("no hyphens", "no hyphens")]
 	#[case("mul\u{00AD}ti\u{00AD}ple", "multiple")]
 	fn test_remove_soft_hyphens(#[case] input: &str, #[case] expected: &str) {
-		assert_eq!(remove_soft_hyphens(input), expected);
+		assert_eq!(remove_soft_hyphens(input.to_string()), expected);
 	}
 
 	#[rstest]
@@ -157,8 +142,12 @@ mod tests {
 	#[case("mixed\r\nline\rother\nline", "mixed\nline\nother\nline")]
 	#[case("no newlines at all", "no newlines at all")]
 	#[case("", "")]
+	#[case("\r", "\n")]
+	#[case("ends with cr\r", "ends with cr\n")]
+	#[case("\r\n\r\nafter two\r\n\r", "\n\nafter two\n\n")]
+	#[case("caf\u{00E9}\r\n\u{65E5}\u{672C}\r\u{1F600}", "caf\u{00E9}\n\u{65E5}\u{672C}\n\u{1F600}")]
 	fn test_normalize_line_endings(#[case] input: &str, #[case] expected: &str) {
-		assert_eq!(normalize_line_endings(input), expected);
+		assert_eq!(normalize_line_endings(input.to_string()), expected);
 	}
 
 	#[rstest]
@@ -167,7 +156,6 @@ mod tests {
 	#[case("Preface . . . . . . . . . . vii", "Preface vii")]
 	#[case("Index\u{2026}\u{2026}\u{2026}\u{2026}212", "Index 212")]
 	#[case("Line one.......1\nLine two.......2", "Line one 1\nLine two 2")]
-	// Left alone: an ellipsis, a fill-in blank, and leaders not ending in a page number.
 	#[case("Wait for it... then go", "Wait for it... then go")]
 	#[case("Name: ______________", "Name: ______________")]
 	#[case("Loading........ please wait", "Loading........ please wait")]
@@ -207,22 +195,6 @@ mod tests {
 	#[case("\u{200B}\u{00A0}  hello  \u{00A0}\u{200B}", "hello")]
 	fn test_trim_string(#[case] input: &str, #[case] expected: &str) {
 		assert_eq!(trim_string(input), expected);
-	}
-
-	#[cfg(any(windows, target_os = "macos"))]
-	#[test]
-	fn test_display_len_utf16_platforms() {
-		assert_eq!(display_len("abc"), 3);
-		assert_eq!(display_len("💖"), 2);
-		assert_eq!(display_len("line\nwrap"), 9);
-	}
-
-	#[cfg(not(any(windows, target_os = "macos")))]
-	#[test]
-	fn test_display_len_char_platforms() {
-		assert_eq!(display_len("abc"), 3);
-		assert_eq!(display_len("💖"), 1);
-		assert_eq!(display_len("line\nwrap"), 9);
 	}
 
 	#[rstest]
@@ -269,22 +241,5 @@ mod tests {
 	#[test]
 	fn collapse_whitespace_no_whitespace_unchanged() {
 		assert_eq!(collapse_whitespace("hello"), "hello");
-	}
-
-	#[test]
-	fn display_len_empty_string_is_zero() {
-		assert_eq!(display_len(""), 0);
-	}
-
-	// \r and \n are each one code unit on every platform, so \r\n counts as 2.
-	// This property underlies the find-navigation coordinate system.
-	#[test]
-	fn display_len_crlf_counts_as_two_units() {
-		assert_eq!(display_len("\r\n"), 2);
-	}
-
-	#[test]
-	fn display_len_plain_newline_counts_as_one_unit() {
-		assert_eq!(display_len("\n"), 1);
 	}
 }

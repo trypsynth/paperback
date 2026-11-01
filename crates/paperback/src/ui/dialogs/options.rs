@@ -3,7 +3,7 @@ use std::{
 	rc::Rc,
 };
 
-use paperback_core::config::{ConfigManager, HotkeyConfig, ReadabilityFont, ShortcutsConfig};
+use paperback_core::config::{ConfigManager, KeyChord, ReadabilityFont, ShortcutsConfig};
 use patois::{t, ui::populate_language_choice};
 #[cfg(target_os = "windows")]
 use wxdragon::accessible::AccRole;
@@ -13,19 +13,14 @@ use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 use crate::{
 	config_ext::{LogLevel, UpdateChannel, get_log_level, get_update_channel},
 	translation_manager::TranslationManager,
+	ui::readability::stored_colour,
 };
 
 mod font;
-#[cfg(target_os = "windows")]
-mod hotkey;
 
 use font::{color_description, font_description, show_font_picker};
-#[cfg(target_os = "windows")]
-use hotkey::prompt_for_hotkey;
 
-/// Selectable audio seek amounts, in seconds, shown in the Options dialog and indexed by
-/// `audio_seek_amount_ctrl`'s selection. Also the step sequence `audio::handle_change_seek_amount`
-/// walks when nudging the seek amount via keyboard shortcut, so the two stay in lockstep.
+/// Indexed by `audio_seek_amount_ctrl`'s selection and also stepped through by `audio::handle_change_seek_amount`, so it must match the choices in the dialog.
 pub(crate) const AUDIO_SEEK_AMOUNTS_SECONDS: [i32; 9] = [5, 10, 30, 60, 120, 300, 600, 1800, 3600];
 
 #[derive(Clone, Debug)]
@@ -53,7 +48,7 @@ pub struct OptionsDialogResult {
 	pub language: String,
 	pub update_channel: UpdateChannel,
 	pub log_level: LogLevel,
-	pub hotkey: HotkeyConfig,
+	pub hotkey: Option<KeyChord>,
 	pub shortcuts: ShortcutsConfig,
 	pub readability_font: ReadabilityFont,
 	pub line_spacing: i32,
@@ -93,7 +88,7 @@ struct OptionsDialogUi {
 	current_language: String,
 	ok_button: Button,
 	cancel_button: Button,
-	hotkey: Rc<RefCell<HotkeyConfig>>,
+	hotkey: Rc<RefCell<Option<KeyChord>>>,
 	shortcuts: Rc<RefCell<ShortcutsConfig>>,
 	readability_font: Rc<RefCell<ReadabilityFont>>,
 	line_spacing_ctrl: Choice,
@@ -117,11 +112,11 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	let chosen_level = ui.log_level_combo.get_selection().and_then(|index| LogLevel::ALL.get(index as usize).copied());
 	let log_level = chosen_level.unwrap_or_default();
 	let readability_font = ui.readability_font.borrow().clone();
-	let line_spacing = ui.line_spacing_ctrl.get_selection().unwrap_or(0) as i32;
+	let line_spacing = ui.line_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
 	let bg_color = ui.bg_color.get();
-	let text_alignment = ui.text_alignment_ctrl.get_selection().unwrap_or(0) as i32;
-	let letter_spacing = ui.letter_spacing_ctrl.get_selection().unwrap_or(0) as i32;
-	let paragraph_spacing = ui.paragraph_spacing_ctrl.get_selection().unwrap_or(0) as i32;
+	let text_alignment = ui.text_alignment_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
+	let letter_spacing = ui.letter_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
+	let paragraph_spacing = ui.paragraph_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
 	let audio_seek_amount_seconds = ui
 		.audio_seek_amount_ctrl
 		.get_selection()
@@ -280,11 +275,6 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let log_level_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	log_level_sizer.add(&log_level_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	log_level_sizer.add(&log_level_combo, 0, SizerFlag::AlignCenterVertical, 0);
-	// Global window hotkeys are a Windows-only concept (see start_hotkey_listener in
-	// main_window.rs); macOS and Linux have no equivalent, so this button isn't built there.
-	#[cfg(target_os = "windows")]
-	// TRANSLATORS: Button label to open the hotkey customization dialog
-	let hotkey_button = Button::builder(&general_panel).with_label(&t("Customize &Window Hotkey...")).build();
 	// TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 	let shortcuts_button = Button::builder(&general_panel).with_label(&t("Customize &Keyboard Shortcuts...")).build();
 	let option_padding = 5;
@@ -298,8 +288,6 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	general_sizer.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
 	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
 	general_sizer.add_sizer(&log_level_sizer, 0, SizerFlag::All, option_padding);
-	#[cfg(target_os = "windows")]
-	general_sizer.add(&hotkey_button, 0, SizerFlag::All, option_padding);
 	general_sizer.add(&shortcuts_button, 0, SizerFlag::All, option_padding);
 	reading_sizer.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
 	#[cfg(target_os = "windows")]
@@ -370,7 +358,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
 	line_spacing_ctrl.append(&t("Normal"));
 	// TRANSLATORS: 1.5x line spacing option
-	line_spacing_ctrl.append(&t("1.5\u{00d7}"));
+	line_spacing_ctrl.append(&t("1.5×"));
 	// TRANSLATORS: Double line spacing option
 	line_spacing_ctrl.append(&t("Double"));
 	#[cfg(target_os = "macos")]
@@ -519,34 +507,26 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let log_level_index = LogLevel::ALL.iter().position(|level| *level == get_log_level(config)).unwrap_or(0);
 	log_level_combo.set_selection(u32::try_from(log_level_index).unwrap_or(0));
 	let current_hotkey = Rc::new(RefCell::new(config.get_hotkey()));
-	#[cfg(target_os = "windows")]
-	{
-		let hotkey_state = Rc::clone(&current_hotkey);
-		let hotkey_dialog_parent = dialog;
-		hotkey_button.on_click(move |_| {
-			let initial = hotkey_state.borrow().clone();
-			if let Some(updated) = prompt_for_hotkey(&hotkey_dialog_parent, &initial) {
-				*hotkey_state.borrow_mut() = updated;
-			}
-		});
-	}
 	let current_shortcuts = Rc::new(RefCell::new(config.get_shortcuts()));
 	let shortcuts_state = Rc::clone(&current_shortcuts);
+	let hotkey_state = Rc::clone(&current_hotkey);
 	let shortcuts_dialog_parent = dialog;
 	shortcuts_button.on_click(move |_| {
-		let initial = shortcuts_state.borrow().clone();
+		let initial =
+			super::Keymap { shortcuts: shortcuts_state.borrow().clone(), window_hotkey: hotkey_state.borrow().clone() };
 		if let Some(updated) = super::prompt_for_shortcuts(&shortcuts_dialog_parent, &initial) {
-			*shortcuts_state.borrow_mut() = updated;
+			*shortcuts_state.borrow_mut() = updated.shortcuts;
+			*hotkey_state.borrow_mut() = updated.window_hotkey;
 		}
 	});
 	let initial_font = config.get_readability_font();
 	font_preview_label.set_label(&font_description(&initial_font));
 	let readability_font = Rc::new(RefCell::new(initial_font));
-	let stored_line_spacing = config.get_line_spacing().clamp(0, 2) as u32;
+	let stored_line_spacing = config.get_line_spacing().clamp(0, 2).unsigned_abs();
 	line_spacing_ctrl.set_selection(stored_line_spacing);
-	paragraph_spacing_ctrl.set_selection(config.get_paragraph_spacing().clamp(0, 2) as u32);
-	letter_spacing_ctrl.set_selection(config.get_letter_spacing().clamp(0, 2) as u32);
-	text_alignment_ctrl.set_selection(config.get_text_alignment().clamp(0, 3) as u32);
+	paragraph_spacing_ctrl.set_selection(config.get_paragraph_spacing().clamp(0, 2).unsigned_abs());
+	letter_spacing_ctrl.set_selection(config.get_letter_spacing().clamp(0, 2).unsigned_abs());
+	text_alignment_ctrl.set_selection(config.get_text_alignment().clamp(0, 3).unsigned_abs());
 	let stored_bg = config.get_bg_color();
 	bg_color_label.set_label(&color_description(stored_bg));
 	let bg_color = Rc::new(Cell::new(stored_bg));
@@ -572,14 +552,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let dialog_for_bg = dialog_ref;
 	choose_bg_button.on_click(move |_| {
 		let current = bg_state.get();
-		let initial = if current >= 0 {
-			let r = ((current >> 16) & 0xFF) as u8;
-			let g = ((current >> 8) & 0xFF) as u8;
-			let b = (current & 0xFF) as u8;
-			Some(Colour::rgb(r, g, b))
-		} else {
-			None
-		};
+		let initial = stored_colour(current);
 		// TRANSLATORS: Title of the system dialog for picking a background colour
 		let mut dlg = ColourDialog::builder(&dialog_for_bg).with_title(&t("Choose a colour"));
 		if let Some(c) = initial {

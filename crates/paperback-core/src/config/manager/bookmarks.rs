@@ -1,16 +1,13 @@
-//! Per-document bookmarks: add/remove/toggle by `[start, end)` range, editing a bookmark's note,
-//! and reading them all back.
-//!
-//! A bookmark in a document that is only audio is identified by its playback time instead (see
-//! [`StoredBookmark::audio_ms`]), since its text position is shared by everything in its
-//! chapter. The range functions only ever touch text bookmarks and the `audio_` ones only audio
-//! bookmarks, so a text bookmark and an audio one at the same position never get confused.
+//! The range functions touch only text bookmarks and the `audio_` ones only audio bookmarks, since an audio bookmark shares its position with its whole chapter.
 
 use super::ConfigManager;
-use crate::config::settings::{Bookmark, StoredBookmark};
+use crate::{
+	config::settings::{Bookmark, StoredBookmark},
+	document::DocPos,
+};
 
 impl ConfigManager {
-	pub fn add_bookmark(&self, path: &str, start: i64, end: i64, note: &str) {
+	pub fn add_bookmark(&self, path: &str, start: DocPos, end: DocPos, note: &str) {
 		if !self.initialized {
 			return;
 		}
@@ -27,7 +24,7 @@ impl ConfigManager {
 		self.dirty.set(true);
 	}
 
-	pub fn remove_bookmark(&self, path: &str, start: i64, end: i64) {
+	pub fn remove_bookmark(&self, path: &str, start: DocPos, end: DocPos) {
 		if !self.initialized {
 			return;
 		}
@@ -42,7 +39,7 @@ impl ConfigManager {
 		self.dirty.set(true);
 	}
 
-	pub fn toggle_bookmark(&self, path: &str, start: i64, end: i64, note: &str) {
+	pub fn toggle_bookmark(&self, path: &str, start: DocPos, end: DocPos, note: &str) {
 		if self.get_bookmarks(path).iter().any(|bm| bm.audio_ms.is_none() && bm.start == start && bm.end == end) {
 			self.remove_bookmark(path, start, end);
 		} else {
@@ -50,7 +47,7 @@ impl ConfigManager {
 		}
 	}
 
-	pub fn update_bookmark_note(&self, path: &str, start: i64, end: i64, note: &str) {
+	pub fn update_bookmark_note(&self, path: &str, start: DocPos, end: DocPos, note: &str) {
 		if !self.initialized {
 			return;
 		}
@@ -69,10 +66,11 @@ impl ConfigManager {
 		if !self.initialized {
 			return Vec::new();
 		}
+		let key = self.get_doc_key(path);
 		self.data
 			.borrow()
 			.documents
-			.get(&self.get_doc_key(path))
+			.get(&key)
 			.map(|d| {
 				d.bookmarks
 					.iter()
@@ -82,8 +80,7 @@ impl ConfigManager {
 			.unwrap_or_default()
 	}
 
-	/// Adds a bookmark at `audio_ms` in the recording, filed under the chapter at `position`.
-	pub fn add_audio_bookmark(&self, path: &str, position: i64, audio_ms: u64, note: &str) {
+	pub fn add_audio_bookmark(&self, path: &str, position: DocPos, audio_ms: u64, note: &str) {
 		if !self.initialized {
 			return;
 		}
@@ -133,11 +130,7 @@ impl ConfigManager {
 		self.dirty.set(true);
 	}
 
-	/// The audio bookmark nearest `audio_ms` and no further than `within_ms` from it.
-	///
-	/// Playback moves on between one key press and the next, so pressing "toggle bookmark" twice
-	/// never lands on the same millisecond. This is what lets the second press find the bookmark
-	/// the first one set.
+	/// Playback moves on between key presses, so a second toggle never lands on the millisecond the first one set.
 	pub fn audio_bookmark_near(&self, path: &str, audio_ms: u64, within_ms: u64) -> Option<Bookmark> {
 		self.get_bookmarks(path)
 			.into_iter()
@@ -148,11 +141,10 @@ impl ConfigManager {
 	}
 }
 
-fn is_text_bookmark_at(bookmark: &StoredBookmark, start: i64, end: i64) -> bool {
+fn is_text_bookmark_at(bookmark: &StoredBookmark, start: DocPos, end: DocPos) -> bool {
 	bookmark.audio_ms.is_none() && bookmark.start == start && bookmark.end == end
 }
 
-/// Document order: by position, and within one position (the chapter, for an audiobook) by time.
 fn sort_bookmarks(bookmarks: &mut [StoredBookmark]) {
 	bookmarks.sort_by_key(|bm| (bm.start, bm.audio_ms));
 }
@@ -167,34 +159,35 @@ mod tests {
 		config
 	}
 
-	/// The reported case: a chapterless MP3's text is one character, so every bookmark in it is
-	/// at position 0. Stored by position alone, the second bookmark found the first and removed it.
+	/// The reported case: every bookmark in a chapterless MP3 is at position 0, so the second removed the first.
 	#[test]
 	fn two_audio_bookmarks_in_one_chapter_are_both_kept() {
 		let config = config();
-		config.add_audio_bookmark("book.mp3", 0, 10_000, "");
-		config.add_audio_bookmark("book.mp3", 0, 60_000, "");
+		config.add_audio_bookmark("book.mp3", 0.into(), 10_000, "");
+		config.add_audio_bookmark("book.mp3", 0.into(), 60_000, "");
 		let times: Vec<_> = config.get_bookmarks("book.mp3").iter().map(|bm| bm.audio_ms).collect();
 		assert_eq!(vec![Some(10_000), Some(60_000)], times);
 	}
 
-	/// A second press a moment later has to find the bookmark the first press set.
+	#[test]
+	fn bookmarks_of_a_path_never_keyed_before_are_empty() {
+		assert!(config().get_bookmarks("unseen.epub").is_empty());
+	}
+
 	#[test]
 	fn a_bookmark_a_moment_away_is_found_but_one_further_off_is_not() {
 		let config = config();
-		config.add_audio_bookmark("book.mp3", 0, 10_000, "");
+		config.add_audio_bookmark("book.mp3", 0.into(), 10_000, "");
 		assert_eq!(Some(10_000), config.audio_bookmark_near("book.mp3", 10_400, 1000).and_then(|bm| bm.audio_ms));
 		assert!(config.audio_bookmark_near("book.mp3", 12_000, 1000).is_none());
 	}
 
-	/// A text bookmark and an audio bookmark at the same position are different bookmarks, so
-	/// removing or editing one must not touch the other.
 	#[test]
 	fn text_and_audio_bookmarks_at_one_position_stay_separate() {
 		let config = config();
-		config.add_bookmark("book.mp3", 0, 0, "text");
-		config.add_audio_bookmark("book.mp3", 0, 5000, "audio");
-		config.remove_bookmark("book.mp3", 0, 0);
+		config.add_bookmark("book.mp3", 0.into(), 0.into(), "text");
+		config.add_audio_bookmark("book.mp3", 0.into(), 5000, "audio");
+		config.remove_bookmark("book.mp3", 0.into(), 0.into());
 		let left = config.get_bookmarks("book.mp3");
 		assert_eq!(1, left.len());
 		assert_eq!(Some(5000), left[0].audio_ms);
@@ -204,11 +197,10 @@ mod tests {
 		assert!(config.get_bookmarks("book.mp3").is_empty());
 	}
 
-	/// A config written before audio bookmarks existed has no `audio_ms`, and an ordinary
-	/// bookmark written now leaves it out, so neither older nor newer builds see a change.
+	/// Older builds must read a text bookmark written now, and vice versa.
 	#[test]
 	fn a_text_bookmark_serializes_exactly_as_it_did_before() {
-		let stored = StoredBookmark { start: 3, end: 7, note: String::new(), audio_ms: None };
+		let stored = StoredBookmark { start: 3.into(), end: 7.into(), note: String::new(), audio_ms: None };
 		assert!(!toml::to_string(&stored).unwrap().contains("audio_ms"));
 		let read: StoredBookmark = toml::from_str("start = 3\nend = 7\n").unwrap();
 		assert_eq!(None, read.audio_ms);

@@ -11,8 +11,7 @@ class LineIndexTest {
 		assertEquals(41, lineIndexFor(42))
 	}
 
-	// A position before the first line of the document reports line zero. Left alone that indexes
-	// off the front of the list, which is a crash rather than a scroll.
+	// Line zero would index off the front of the list, a crash rather than a scroll.
 	@Test
 	fun `a line before the first one lands on the first`() {
 		assertEquals(0, lineIndexFor(0))

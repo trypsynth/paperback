@@ -1,11 +1,9 @@
+pub mod annotations;
 pub mod epub_direct;
 pub mod html;
 pub mod markdown;
 
-use crate::{
-	document::{DocumentHandle, Marker},
-	util::text::display_len,
-};
+use crate::document::{DocLen, DocPos, DocumentHandle, Marker};
 
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -24,16 +22,11 @@ pub fn render(doc: &DocumentHandle, format: ExportFormat) -> String {
 	}
 }
 
-/// Recovers the end position of a Link marker's implied span. Link markers store no
-/// explicit length; both the HTML and Markdown renderers infer it from the display width
-/// of `marker.text` after collapsing embedded whitespace runs to single spaces, matching
-/// how the text was originally written into the content when the link was parsed. Returns
-/// `None` when the recovered span is empty, in which case the marker has nothing to link
-/// and the caller should skip it entirely.
-fn link_span_end(marker: &Marker) -> Option<usize> {
+// Link markers store no length, so it is inferred from the text with whitespace runs collapsed, as the parser wrote it into the content.
+fn link_span_end(marker: &Marker) -> Option<DocPos> {
 	let text: String = marker.text.split_whitespace().collect::<Vec<_>>().join(" ");
-	let implied_len = if marker.length > 0 { marker.length } else { display_len(&text) };
-	if implied_len == 0 { None } else { Some(marker.position + implied_len) }
+	let implied_len = if marker.length.is_zero() { DocLen::of(&text) } else { marker.length };
+	if implied_len.is_zero() { None } else { Some(marker.position + implied_len) }
 }
 
 #[cfg(test)]
@@ -43,7 +36,8 @@ mod tests {
 
 	fn sample_handle() -> DocumentHandle {
 		let mut buffer = DocumentBuffer::with_content("Chapter One\nBody text.".to_string());
-		buffer.add_marker(Marker::new(MarkerType::Heading1, 0).with_level(1).with_text("Chapter One".to_string()));
+		buffer
+			.add_marker(Marker::new(MarkerType::Heading1, 0.into()).with_level(1).with_text("Chapter One".to_string()));
 		let mut doc = Document::new().with_title("Sample".to_string());
 		doc.set_buffer(buffer);
 		DocumentHandle::new(doc)
@@ -68,8 +62,6 @@ mod tests {
 		assert!(rendered.contains("# Chapter One"), "expected a markdown heading: {rendered:?}");
 	}
 
-	/// Each variant has to reach a different renderer; if two ever aliased, an export menu entry
-	/// would silently produce the wrong format.
 	#[test]
 	fn the_three_formats_render_differently() {
 		let handle = sample_handle();

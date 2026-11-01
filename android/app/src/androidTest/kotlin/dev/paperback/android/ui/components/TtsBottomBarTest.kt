@@ -5,7 +5,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performSemanticsAction
 import dev.paperback.android.ui.state.NavUnit
@@ -14,11 +14,7 @@ import org.junit.Rule
 import org.junit.Test
 import uniffi.paperback.SegmentTypeFfi
 
-/**
- * The reading bar is the one screen a TalkBack user spends a whole book in, so what it does and
- * does not expose to the semantics tree is the behaviour worth pinning down. None of this can be
- * checked from a plain unit test: the tree only exists once the bar is composed.
- */
+/** An instrumented test because the semantics tree TalkBack reads only exists once the bar is composed. */
 class TtsBottomBarTest {
 	@get:Rule
 	val compose = createComposeRule()
@@ -33,6 +29,8 @@ class TtsBottomBarTest {
 		onNext: () -> Unit = {},
 		onPlayPause: () -> Unit = {},
 		onSpeechRateChange: (Int) -> Unit = {},
+		audioSpeed: Float? = null,
+		onAudioSpeedChange: (Float) -> Unit = {},
 		swipeUpMovesForward: Boolean = true
 	) {
 		compose.setContent {
@@ -48,6 +46,8 @@ class TtsBottomBarTest {
 				onNavUnitChange = {},
 				speechRatePercent = speechRatePercent,
 				onSpeechRateChange = onSpeechRateChange,
+				audioSpeed = audioSpeed,
+				onAudioSpeedChange = onAudioSpeedChange,
 				swipeUpMovesForward = swipeUpMovesForward,
 				hidePrevNextButtons = hidePrevNextButtons
 			)
@@ -74,11 +74,7 @@ class TtsBottomBarTest {
 		compose.onNodeWithContentDescription("Next Paragraph").assertDoesNotExist()
 	}
 
-	/**
-	 * The one thing hiding the buttons must never do. Losing play would leave a TalkBack user
-	 * with no way to start the book at all, which is far worse than the extra swipe stops the
-	 * option exists to remove.
-	 */
+	/** Losing play would leave a TalkBack user no way to start the book at all. */
 	@Test
 	fun hidingThePreviousAndNextButtonsLeavesPlayReachable() {
 		bar(hidePrevNextButtons = true)
@@ -99,10 +95,7 @@ class TtsBottomBarTest {
 		compose.onNodeWithContentDescription("Play").assertDoesNotExist()
 	}
 
-	/**
-	 * Play carries the seek gesture, which is what makes hiding the previous and next buttons
-	 * safe in the first place. Without this the option would strand people.
-	 */
+	/** This gesture is what makes hiding the previous and next buttons safe. */
 	@Test
 	fun swipingOnPlayMovesByTheCurrentUnit() {
 		var forward = 0
@@ -116,7 +109,6 @@ class TtsBottomBarTest {
 		assertEquals("swiping down moved back", 1, back)
 	}
 
-	/** With the direction reversed, the same gestures have to mean the opposite. */
 	@Test
 	fun theSeekDirectionFollowsTheSwipeUpSetting() {
 		var forward = 0
@@ -138,10 +130,7 @@ class TtsBottomBarTest {
 			.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "65%"))
 	}
 
-	/**
-	 * Swiping the rate steps it by one rather than jumping to wherever the gesture landed, so
-	 * the rate can be settled on exactly instead of swept past.
-	 */
+	/** Stepping by one, not jumping to where the gesture landed, lets the rate be settled on exactly. */
 	@Test
 	fun swipingTheSpeechRateStepsItUpAndDown() {
 		val asked = mutableListOf<Int>()
@@ -153,10 +142,20 @@ class TtsBottomBarTest {
 		assertEquals(listOf(51, 49), asked)
 	}
 
-	/**
-	 * Both chips report themselves as ranges so TalkBack offers the swipe at all, rather than
-	 * announcing them as plain buttons.
-	 */
+	/** A recording's speed takes the chip, since the voice's rate does nothing to it. */
+	@Test
+	fun aBookWithARecordingGetsItsSpeedInPlaceOfTheVoicesRate() {
+		val asked = mutableListOf<Float>()
+		bar(audioSpeed = 2.5f, onAudioSpeedChange = { asked.add(it) })
+		compose.onNodeWithContentDescription("Speech Rate").assertDoesNotExist()
+		val speed = compose.onNodeWithContentDescription("Audio Speed")
+		speed.assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "2.5x"))
+		speed.performSemanticsAction(SemanticsActions.SetProgress) { it(10000f) }
+		speed.performSemanticsAction(SemanticsActions.SetProgress) { it(0f) }
+		assertEquals(listOf(2.6f, 2.4f), asked)
+	}
+
+	/** As plain buttons TalkBack wouldn't offer the swipe at all. */
 	@Test
 	fun theAdjustableControlsReportThemselvesAsRanges() {
 		bar()

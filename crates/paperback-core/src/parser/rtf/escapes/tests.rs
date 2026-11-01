@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use rstest::rstest;
 
-use super::{hex_digit, normalize_escapes, normalize_wrapped_space_lines, parse_hex_pair};
+use super::{escape_raw_bytes, hex_digit, normalize_escapes, normalize_wrapped_space_lines, parse_hex_pair};
+use crate::parser::rtf::encoding::extract_font_table;
 
 #[rstest]
 #[case(b'0', Some(0))]
@@ -71,8 +72,7 @@ fn normalize_escapes_drops_question_mark_unicode_fallback() {
 
 #[test]
 fn normalize_escapes_keeps_question_mark_that_follows_a_delimiter() {
-	// Here the space already delimits the control word, so the `?` is real text. The space goes
-	// with the control word it ends, which is why one space comes back rather than two.
+	// The space already delimits the control word, so the `?` is real text and only one space comes back.
 	let input = "vraiment\\u8230 ? Non";
 	let output = normalize_escapes(input, encoding_rs::WINDOWS_1252, &HashMap::new());
 	assert_eq!(output, "vraiment\\u8230 ? Non");
@@ -104,34 +104,26 @@ fn normalize_wrapped_space_lines_preserves_inter_word_space_on_its_own_line() {
 	assert_eq!(normalize_wrapped_space_lines(input), "The older man was wordless");
 }
 
-/// The case behind issue #799: a Cocoa writer ends a paragraph with a backslash and a line
-/// break, and follows it with a blank line. Dropping those breaks would put the backslash
-/// against the next control word, where the lexer reads the pair as an escaped backslash and
-/// puts `\f0` in the text for the reader to hear.
+/// Issue #799: a Cocoa writer ends a paragraph with a backslash, a line break and a blank line; dropping the breaks made the lexer read an escaped backslash and put `\f0` in the text.
 #[test]
 fn normalize_wrapped_space_lines_keeps_a_break_that_carries_no_space() {
 	let input = "\\cf0 A\\\n\n\\f0\\b B";
 	assert_eq!(normalize_wrapped_space_lines(input), input);
 }
 
-/// A line break run around something that is not a word on both sides is left where it is.
 #[test]
 fn normalize_wrapped_space_lines_keeps_breaks_around_a_brace() {
 	let input = "was\r\n \r\n{wordless";
 	assert_eq!(normalize_wrapped_space_lines(input), input);
 }
 
-/// With `\uc0` no fallback character trails the escape, so the space that ends the control word
-/// is still in the source. This wrote the delimiter it emits and then that space as well, which
-/// is what read "środa" out as "ś roda" in issue #799. One space comes back, not two.
+/// Issue #799: with `\uc0` the delimiting space was written as well as the emitted one, reading "środa" out as "ś roda".
 #[test]
 fn normalize_escapes_drops_the_delimiter_after_a_unicode_escape() {
 	let output = normalize_escapes("\\uc0 26 (\\u347 roda)", encoding_rs::WINDOWS_1252, &HashMap::new());
 	assert_eq!(output, "\\uc0 26 (\\u347 roda)");
 }
 
-/// Only the one space that ends the control word belongs to it, so a second one is text and
-/// stays: two spaces in, two spaces out, where before there were three.
 #[test]
 fn normalize_escapes_keeps_a_second_space_after_a_unicode_escape() {
 	let output = normalize_escapes("\\uc0 a\\u347  b", encoding_rs::WINDOWS_1252, &HashMap::new());
@@ -149,9 +141,6 @@ fn normalize_escapes_uses_font_charset_for_encoding() {
 	assert!(!out.contains('Æ'), "should not contain Æ (Windows-1252 0xC6)");
 }
 
-/// Word writes every dash-bulleted list level as `{\leveltext...\'01-;}`. Replacing the hex
-/// escape removed the backslash that ended `\leveltext`, and the lexer then read the `-` as the
-/// control word's numeric parameter and refused the whole document.
 #[test]
 fn normalize_escapes_keeps_a_control_word_terminated_after_replacing_an_escape() {
 	let output = normalize_escapes(r"{\leveltext\'01-;}", encoding_rs::WINDOWS_1252, &HashMap::new());
@@ -160,5 +149,39 @@ fn normalize_escapes_keeps_a_control_word_terminated_after_replacing_an_escape()
 	assert_eq!(output, r"\pard été");
 	// Text that only looks like a control word, after an escaped backslash, gets no space.
 	let output = normalize_escapes(r"C:\\dir\'e9", encoding_rs::WINDOWS_1252, &HashMap::new());
-	assert_eq!(output, r"C:\\diré");
+	assert_eq!(output, r"C:\'5cdiré");
+}
+
+#[test]
+fn escape_raw_bytes_turns_codepage_bytes_into_escapes() {
+	assert_eq!(escape_raw_bytes(b"do \x93my thing.\x94"), r"do \'93my thing.\'94");
+}
+
+#[test]
+fn escape_raw_bytes_leaves_utf8_alone() {
+	assert_eq!(escape_raw_bytes("Café “x”".as_bytes()), "Café “x”");
+}
+
+#[test]
+fn raw_codepage_quotes_decode_like_escaped_ones() {
+	let escaped = escape_raw_bytes(b"\\par\x93Hi.\x94");
+	assert_eq!(normalize_escapes(&escaped, encoding_rs::WINDOWS_1252, &HashMap::new()), "\\par “Hi.”");
+}
+
+#[test]
+fn normalize_escapes_keeps_utf8_text_intact() {
+	assert_eq!(normalize_escapes("Café “x”", encoding_rs::WINDOWS_1252, &HashMap::new()), "Café “x”");
+}
+
+#[test]
+fn normalize_wrapped_space_lines_keeps_utf8_text_intact() {
+	assert_eq!(normalize_wrapped_space_lines("naïve\n \nCafé"), "naïve Café");
+}
+
+#[test]
+fn a_japanese_font_decodes_its_double_byte_escapes_together() {
+	let rtf = r"{\rtf1\ansi\ansicpg1252{\fonttbl{\f0\fcharset128 MS UI Gothic;}{\f1\fcharset0 Arial;}}\f0\'83\'6f\'83\'43\'83\'69\'83\'8a\f1 Binary}";
+	let encoding = encoding_rs::WINDOWS_1252;
+	let output = normalize_escapes(rtf, encoding, &extract_font_table(rtf, encoding));
+	assert!(output.contains("バイナリ") && output.contains("Binary"), "{output}");
 }

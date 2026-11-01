@@ -4,7 +4,7 @@ use flate2::{Compression, write::GzEncoder};
 
 use super::*;
 use crate::{
-	document::{Document, MarkerType},
+	document::{DocLen, DocPos, Document, MarkerType},
 	util::test_support::TempDir,
 };
 
@@ -18,12 +18,11 @@ fn text_of(source: &str) -> String {
 	parse_source(source).buffer.content
 }
 
-/// The macros every page opens with, so a test can be about the one thing it is testing.
 fn page(body: &str) -> String {
 	format!(".TH TEST 1 \"1 January 2026\" \"Paperback\" \"Test Pages\"\n.SH NAME\ntest \\- a page\n{body}")
 }
 
-fn markers_of(document: &Document, mtype: MarkerType) -> Vec<(usize, String, usize)> {
+fn markers_of(document: &Document, mtype: MarkerType) -> Vec<(DocPos, String, DocLen)> {
 	document
 		.buffer
 		.markers
@@ -33,34 +32,28 @@ fn markers_of(document: &Document, mtype: MarkerType) -> Vec<(usize, String, usi
 		.collect()
 }
 
-/// The text a marker covers, which is what a reader would hear announced.
 fn covered(document: &Document, mtype: MarkerType) -> Vec<String> {
 	document
 		.buffer
 		.markers
 		.iter()
 		.filter(|marker| marker.mtype == mtype)
-		.map(|marker| document.buffer.content.chars().skip(marker.position).take(marker.length).collect())
+		.map(|marker| document.buffer.text(marker.position..marker.position + marker.length).to_string())
 		.collect()
 }
 
-/// Roff fills text: the line breaks in the source are where the author stopped typing, not where
-/// the paragraph breaks. A page written one sentence to a line has to read as prose.
 #[test]
 fn text_lines_join_into_one_paragraph() {
 	let text = text_of(&page(".SH DESCRIPTION\nThe first sentence.\nThe second sentence.\n"));
 	assert!(text.contains("The first sentence. The second sentence."), "{text}");
 }
 
-/// A blank line ends a paragraph, as it does in roff.
 #[test]
 fn a_blank_line_ends_the_paragraph() {
 	let text = text_of(&page(".SH DESCRIPTION\nFirst paragraph.\n\nSecond paragraph.\n"));
 	assert!(text.contains("First paragraph.\n\nSecond paragraph."), "{text}");
 }
 
-/// `.nf` turns filling off, and there the line breaks are the content: a synopsis, an example,
-/// or anything else laid out by hand.
 #[test]
 fn a_no_fill_block_keeps_its_lines() {
 	let text = text_of(&page(".SH EXAMPLE\n.nf\nint main(void)\n{\n    return 0;\n}\n.fi\nBack to prose.\n"));
@@ -68,7 +61,6 @@ fn a_no_fill_block_keeps_its_lines() {
 	assert!(text.contains("Back to prose."), "{text}");
 }
 
-/// `.EX` and `.EE` are the same thing under another name, and are what a modern page uses.
 #[test]
 fn an_example_block_keeps_its_lines() {
 	let text = text_of(&page(".SH EXAMPLE\n.EX\nfirst line\nsecond line\n.EE\n"));
@@ -84,8 +76,6 @@ fn sections_and_subsections_become_headings() {
 	assert_eq!(subsections, ["Long options"]);
 }
 
-/// A subsection belongs under the section it falls in, so the contents of a page reads the way
-/// the page is laid out.
 #[test]
 fn the_table_of_contents_nests_subsections() {
 	let document = parse_source(&page(".SH OPTIONS\nSome options.\n.SS Long options\nMore.\n.SH FILES\nSome files.\n"));
@@ -95,7 +85,6 @@ fn the_table_of_contents_nests_subsections() {
 	assert_eq!(children, ["Long options"]);
 }
 
-/// `.SH` with no argument takes the line after it as the heading.
 #[test]
 fn a_heading_can_be_on_the_line_after_its_macro() {
 	let document = parse_source(&page(".SH\nSEE ALSO\nls(1)\n"));
@@ -103,8 +92,6 @@ fn a_heading_can_be_on_the_line_after_its_macro() {
 	assert_eq!(sections, ["NAME", "SEE ALSO"]);
 }
 
-/// `.TP` is how a page writes an option: the tag on one line, what it means under it. Each tag
-/// is a list item, so the options of a page can be walked one at a time.
 #[test]
 fn tagged_paragraphs_become_list_items() {
 	let document =
@@ -114,16 +101,14 @@ fn tagged_paragraphs_become_list_items() {
 	assert!(document.buffer.content.contains("-a\nDo the first thing."), "{}", document.buffer.content);
 }
 
-/// A run of tagged paragraphs is a list, which the reader can step over rather than through.
 #[test]
 fn a_run_of_tagged_paragraphs_is_one_list() {
 	let document = parse_source(&page(".SH OPTIONS\n.TP\n.B \\-a\nFirst.\n.TP\n.B \\-b\nSecond.\n.SH FILES\nDone.\n"));
 	let lists = markers_of(&document, MarkerType::List);
 	assert_eq!(lists.len(), 1, "{lists:?}");
-	assert!(lists[0].2 > 0, "the list covers the items in it");
+	assert!(lists[0].2 > 0.into(), "the list covers the items in it");
 }
 
-/// A lone tagged paragraph is not a list worth navigating into.
 #[test]
 fn a_single_tagged_paragraph_is_not_a_list() {
 	let document = parse_source(&page(".SH FILES\n.TP\n.I /etc/passwd\nThe password file.\n"));
@@ -131,7 +116,6 @@ fn a_single_tagged_paragraph_is_not_a_list() {
 	assert_eq!(markers_of(&document, MarkerType::ListItem).len(), 1);
 }
 
-/// `.IP` with a tag is a list item too; without one it is only an indented paragraph.
 #[test]
 fn indented_paragraphs_are_items_only_when_tagged() {
 	let document = parse_source(&page(".SH NOTES\n.IP \\(bu\nA bullet.\n.IP\nJust indented.\n"));
@@ -139,8 +123,7 @@ fn indented_paragraphs_are_items_only_when_tagged() {
 	assert_eq!(tags, ["\u{2022}"]);
 }
 
-/// The alternating font macros put no space between their arguments, which is how a page writes
-/// a cross-reference to another page.
+/// The alternating font macros put no space between their arguments, which is how a page writes a cross-reference.
 #[test]
 fn a_cross_reference_reads_as_one_word() {
 	let document = parse_source(&page(".SH SEE ALSO\n.BR ls (1),\n.BR cat (1)\n"));
@@ -155,7 +138,6 @@ fn font_macros_and_escapes_mark_their_runs() {
 	assert_eq!(covered(&document, MarkerType::Italic), ["italic words"]);
 }
 
-/// `.B` with nothing after it sets the line below it instead.
 #[test]
 fn a_bare_font_macro_sets_the_next_line() {
 	let document = parse_source(&page(".SH DESCRIPTION\n.B\nthe whole line\n"));
@@ -176,7 +158,6 @@ fn comments_and_unknown_macros_leave_nothing_behind() {
 	assert!(!text.contains("hy"), "{text}");
 }
 
-/// A macro definition is instructions for the typesetter, not text, and runs until `..`.
 #[test]
 fn a_macro_definition_is_skipped_whole() {
 	let text = text_of(&page(".de XX\nthis is inside the definition\n..\n.SH DESCRIPTION\nOnly this.\n"));
@@ -184,7 +165,6 @@ fn a_macro_definition_is_skipped_whole() {
 	assert!(text.contains("Only this."), "{text}");
 }
 
-/// A line ending in a backslash continues onto the next one.
 #[test]
 fn a_continued_line_is_read_as_one() {
 	let text = text_of(&page(".SH DESCRIPTION\n.B one \\\ntwo\n"));
@@ -219,7 +199,6 @@ fn an_address_becomes_a_mailto_link() {
 	assert_eq!(targets, ["mailto:someone@example.com"]);
 }
 
-/// A page is named by its name and section together, the way one page refers to another.
 #[test]
 fn the_title_is_the_name_and_section() {
 	assert_eq!(parse_source(&page("")).title, "TEST(1)");
@@ -233,7 +212,6 @@ fn a_page_without_a_title_header_falls_back_to_its_file_name() {
 	assert_eq!(document.title, "mytool");
 }
 
-/// An installed page is gzipped, and nothing in the name says so beyond the extension.
 #[test]
 fn a_gzipped_page_is_unpacked() {
 	let dir = TempDir::new("man-parser");
@@ -245,8 +223,26 @@ fn a_gzipped_page_is_unpacked() {
 	assert!(document.buffer.content.contains("Gzipped prose."), "{}", document.buffer.content);
 }
 
-/// `gz` is claimed so that an installed page can be offered in an open dialog at all, so a
-/// gzipped anything else reaches this parser and has to be turned away rather than read.
+#[test]
+fn a_page_that_only_names_another_reads_that_one() {
+	let dir = TempDir::new("man-redirect");
+	let mut encoder = GzEncoder::new(Vec::new(), Compression::fast());
+	encoder.write_all(page(".SH DESCRIPTION\nThe real page.\n").as_bytes()).unwrap();
+	dir.write("man1/etags.1.gz", encoder.finish().unwrap());
+	let path = dir.write_str("man1/ctags.1", ".\\\" Same as etags.\n.so man1/etags.1\n");
+	let document = ManParser.parse(&ParserContext::new(path)).expect("follow the redirect");
+	assert!(document.buffer.content.contains("The real page."), "{}", document.buffer.content);
+}
+
+#[test]
+fn a_redirect_loop_is_refused_rather_than_followed_forever() {
+	let dir = TempDir::new("man-redirect-loop");
+	dir.write("man1/a.1", ".so man1/b.1\n");
+	let path = dir.write_str("man1/b.1", ".so man1/a.1\n");
+	assert!(ManParser.parse(&ParserContext::new(path)).is_err());
+}
+
+/// `gz` is claimed so an installed page can be offered in an open dialog at all, so any other gzipped file reaches this parser too.
 #[test]
 fn a_gzipped_file_that_is_not_a_page_is_refused() {
 	let dir = TempDir::new("man-parser");
@@ -269,9 +265,6 @@ fn a_section_number_names_a_manual_page() {
 	assert!(!is_manual_page_name(Path::new("page.man")));
 }
 
-/// A table is a table: the same grid every other format hands to the shared renderer, so a
-/// page's table can be stepped into and read a row at a time. The lines describing the shape
-/// of it are not content and do not survive.
 #[test]
 fn a_table_becomes_a_table() {
 	let document = parse_source(&page(
@@ -299,7 +292,6 @@ After.
 	assert!(text.contains("After."), "{text}");
 }
 
-/// With tables set to stand as placeholders, a page's table does too.
 #[test]
 fn a_table_can_stand_as_a_placeholder() {
 	let dir = TempDir::new("man-parser");
@@ -320,7 +312,6 @@ One\tTwo
 	assert_eq!(markers_of(&document, MarkerType::Table).len(), 1);
 }
 
-/// A separator other than the tab is named in the options line.
 #[test]
 fn a_table_can_name_its_own_separator() {
 	let text = text_of(&page(
@@ -333,4 +324,59 @@ One:Two
 ",
 	));
 	assert!(text.contains("One\tTwo"), "{text}");
+}
+
+#[test]
+fn a_pod2man_item_reads_its_nroff_branch() {
+	let text = text_of(&page(
+		r#".SH METHODS
+.ie n .IP "$e\->set_callback" 4
+.el .IP "\f(CW$e\fR\->set_callback" 4
+Set the custom callback.
+"#,
+	));
+	assert!(text.contains("$e->set_callback") && text.contains("Set the custom callback."), "{text}");
+	assert_eq!(text.matches("set_callback").count(), 1, "{text}");
+}
+
+#[test]
+fn a_po4a_option_tag_is_kept() {
+	let text = text_of(&page(
+		r#".SH OPTIONS
+.TP
+.if !'po4a'hide' .BR \-d ", " \-\-debug
+Print debugging information.
+"#,
+	));
+	assert!(text.contains("-d, --debug") && text.contains("Print debugging information."), "{text}");
+}
+
+#[test]
+fn a_block_is_read_only_when_its_condition_holds() {
+	let text = text_of(&page(
+		r".SH DESCRIPTION
+.if n \{\
+Shown on a terminal.
+.\}
+.if t \{\
+Only typeset.
+.\}
+.if \n(.g Unknown register.
+After.
+",
+	));
+	assert!(text.contains("Shown on a terminal.") && text.contains("After."), "{text}");
+	assert!(!text.contains("Only typeset.") && !text.contains("Unknown register."), "{text}");
+}
+
+#[test]
+fn an_ignored_block_ends_at_its_own_marker() {
+	let text = text_of(&page(".SH DESCRIPTION\n.if n .ig ++\nTypeset only.\n.++\nRead everywhere.\n"));
+	assert!(text.contains("Read everywhere.") && !text.contains("Typeset only."), "{text}");
+}
+
+#[test]
+fn a_comment_after_a_definition_name_is_not_its_end_marker() {
+	let text = text_of(&page(".de Vb \\\" Begin verbatim text\n.ft CW\n..\n.SH DESCRIPTION\nStill read.\n"));
+	assert!(text.contains("Still read."), "{text}");
 }

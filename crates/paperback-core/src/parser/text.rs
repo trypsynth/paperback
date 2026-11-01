@@ -6,7 +6,7 @@ use crate::{
 	document::{Document, DocumentBuffer, ParserContext},
 	parser::{Parser, util::path::extract_title_from_path},
 	util::{
-		encoding::convert_to_utf8,
+		encoding::convert_owned_to_utf8,
 		text::{normalize_line_endings, remove_soft_hyphens},
 	},
 };
@@ -18,13 +18,14 @@ impl Parser for TextParser {
 		tracing::debug!(path = %context.file_path, "parsing text file");
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open text file '{}'", context.file_path))?;
-		let utf8_content = convert_to_utf8(&bytes);
-		let processed = remove_soft_hyphens(&normalize_line_endings(&utf8_content));
+		let byte_len = bytes.len();
+		let processed = remove_soft_hyphens(normalize_line_endings(convert_owned_to_utf8(bytes)));
 		let title = extract_title_from_path(&context.file_path);
 		let mut doc = Document::new().with_title(title);
-		let char_len = processed.chars().count();
-		doc.set_buffer(DocumentBuffer::with_content(processed));
-		tracing::debug!(path = %context.file_path, bytes = bytes.len(), chars = char_len, "parsed text file");
+		let buffer = DocumentBuffer::with_content(processed);
+		let char_len = buffer.len().get();
+		doc.set_buffer(buffer);
+		tracing::debug!(path = %context.file_path, bytes = byte_len, chars = char_len, "parsed text file");
 		Ok(doc)
 	}
 }
@@ -46,11 +47,7 @@ mod tests {
 		assert_eq!(doc.buffer.content, "first line\nsecond line\n");
 	}
 
-	/// A raw `\r` in the buffer counts as its own character in `DocumentBuffer`'s position
-	/// tables, but the GUI's native text control doesn't necessarily agree - so Windows-style
-	/// CRLF line endings (extremely common in plain text files) must be normalized away rather
-	/// than passed through, or every position past the first line drifts out of sync with what
-	/// the control actually shows.
+	/// A raw `\r` counts as a character in `DocumentBuffer`'s positions but not necessarily in the native text control, so every later position would drift.
 	#[test]
 	fn normalizes_crlf_and_bare_cr_line_endings() {
 		let doc = parse_bytes("book.txt", "first line\r\nsecond line\rthird line\r\n");
@@ -63,8 +60,7 @@ mod tests {
 		assert_eq!(doc.title, "The Great Novel");
 	}
 
-	/// UTF-16 files are common enough from Windows editors that the parser decodes them by BOM
-	/// rather than mangling them into replacement characters.
+	/// UTF-16 files are common from Windows editors.
 	#[test]
 	fn decodes_utf16_by_byte_order_mark() {
 		let mut bytes = vec![0xFF, 0xFE];
@@ -75,8 +71,7 @@ mod tests {
 		assert_eq!(doc.buffer.content, "héllo");
 	}
 
-	/// Soft hyphens are invisible line-break hints; leaving them in makes searching and
-	/// screen-reader output wrong, so the parser strips them.
+	/// Soft hyphens are invisible line-break hints that would break searching and screen-reader output.
 	#[test]
 	fn strips_soft_hyphens() {
 		let doc = parse_bytes("book.txt", "hy\u{00AD}phen\u{00AD}ated");

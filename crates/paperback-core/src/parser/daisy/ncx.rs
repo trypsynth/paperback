@@ -2,10 +2,13 @@ use std::collections::HashMap;
 
 use roxmltree::{Document as XmlDocument, Node, NodeType, ParsingOptions};
 
-use crate::{document::TocItem, parser::util::path::resolve_relative_path, types::HeadingInfo};
+use crate::{
+	document::{DocPos, TocItem},
+	parser::util::{path::resolve_relative_path, xml::find_child_element},
+	types::HeadingInfo,
+};
 
-/// Reads `dc:title`/`dc:creator` out of `ncc.html`'s `<meta>` tags (case-insensitively, since some
-/// producers write `dc:Title`), the same metadata a DAISY 3 OPF carries in `<dc-metadata>`.
+/// Case-insensitive, since some producers write `dc:Title`.
 pub(super) fn parse_daisy2_ncc_metadata(ncc_content: &str) -> (Option<String>, Option<String>) {
 	let doc = scraper::Html::parse_document(ncc_content);
 	let selector = scraper::Selector::parse("meta[name][content]").unwrap();
@@ -42,17 +45,11 @@ pub(super) fn extract_daisy2_links(ncc_content: &str) -> Vec<String> {
 	links
 }
 
-/// Parses DAISY 2.02 `ncc.html` headings (`h1`-`h6`, each wrapping an `<a href>` into a SMIL
-/// file) into the heading list `build_toc_from_headings` expects. `smil_anchors` (the SMIL id
-/// to text-position map built while walking the SMIL files, keyed both bare and
-/// `{smil_href}#{id}`-qualified) resolves the link the same way a DAISY 3 NCX target is
-/// resolved against its SMIL; `id_positions` is the fallback for a text-only book whose links
-/// point straight at the content HTML instead. Headings whose link target didn't resolve are
-/// dropped rather than stranding them at position 0.
+/// Each heading links into a SMIL file, so `smil_anchors` resolves it; `id_positions` is for a text-only book linking straight at content HTML. Unresolved headings are dropped rather than stranded at position 0.
 pub(super) fn parse_daisy2_ncc_headings(
 	ncc_content: &str,
-	id_positions: &HashMap<String, usize>,
-	smil_anchors: &HashMap<String, usize>,
+	id_positions: &HashMap<String, DocPos>,
+	smil_anchors: &HashMap<String, DocPos>,
 ) -> Vec<HeadingInfo> {
 	let doc = scraper::Html::parse_document(ncc_content);
 	let heading_selector = scraper::Selector::parse("h1, h2, h3, h4, h5, h6").unwrap();
@@ -76,17 +73,13 @@ pub(super) fn parse_daisy2_ncc_headings(
 	headings
 }
 
-/// Parses an NCX `navMap` into TOC items. `smil_anchors` maps ids *within the SMIL files* to
-/// text positions: in an audio DAISY 3 book a navPoint's `content/@src` points into the SMIL,
-/// not into the `DTBook`, so resolving it against `id_positions` alone would silently strand
-/// every entry at the start of the book. Text-only books, whose navPoints do point at
-/// `DTBook` ids, pass an empty map. Returns `None` when nothing resolved at all, letting the
-/// caller fall back to a TOC built from the text itself rather than serve a uniformly wrong one.
+/// In an audio DAISY 3 book a navPoint points into the SMIL, not the `DTBook`, so `id_positions` alone would strand every entry at the start; text-only books pass an empty `smil_anchors`.
+/// `None` when nothing resolved, so the caller builds a TOC from the text rather than serve a uniformly wrong one.
 pub(super) fn parse_daisy_ncx(
 	ncx_content: &str,
 	ncx_dir: &str,
-	id_positions: &HashMap<String, usize>,
-	smil_anchors: &HashMap<String, usize>,
+	id_positions: &HashMap<String, DocPos>,
+	smil_anchors: &HashMap<String, DocPos>,
 ) -> Option<Vec<TocItem>> {
 	let ncx_doc =
 		XmlDocument::parse_with_options(ncx_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
@@ -106,15 +99,35 @@ pub(super) fn parse_daisy_ncx(
 	if items.is_empty() || !resolved_any { None } else { Some(items) }
 }
 
-/// The text position a navPoint's `content/@src` names, looked up path-qualified first (which
-/// can't collide across files) and then bare. `resolved_any` records whether any navPoint in
-/// the whole map found a real target.
+/// Every labelled navPoint as (level, label, content src), in reading order.
+pub(super) fn ncx_entries(ncx_content: &str) -> Vec<(i32, String, String)> {
+	let Ok(ncx_doc) =
+		XmlDocument::parse_with_options(ncx_content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
+	else {
+		return Vec::new();
+	};
+	ncx_doc
+		.descendants()
+		.filter(|n| n.is_element() && n.tag_name().name() == "navPoint")
+		.filter_map(|nav| {
+			let label = find_child_element(nav, "navLabel")
+				.and_then(|label| find_child_element(label, "text"))
+				.and_then(|text| text.text())?
+				.trim();
+			let src = find_child_element(nav, "content").and_then(|content| content.attribute("src"))?;
+			let level = nav.ancestors().filter(|n| n.tag_name().name() == "navPoint").count();
+			(!label.is_empty()).then(|| (i32::try_from(level).unwrap_or(6).min(6), label.to_string(), src.to_string()))
+		})
+		.collect()
+}
+
+/// Path-qualified first, since that can't collide across files, then bare.
 fn resolve_navpoint_offset(
 	content_src: &str,
 	ncx_dir: &str,
-	id_positions: &HashMap<String, usize>,
-	smil_anchors: &HashMap<String, usize>,
-) -> Option<usize> {
+	id_positions: &HashMap<String, DocPos>,
+	smil_anchors: &HashMap<String, DocPos>,
+) -> Option<DocPos> {
 	let (file_part, fragment) = content_src.split_once('#')?;
 	let qualified =
 		(!file_part.is_empty()).then(|| format!("{}#{fragment}", resolve_relative_path(ncx_dir, file_part)));
@@ -129,8 +142,8 @@ fn resolve_navpoint_offset(
 fn convert_daisy_navpoint(
 	nav: Node,
 	ncx_dir: &str,
-	id_positions: &HashMap<String, usize>,
-	smil_anchors: &HashMap<String, usize>,
+	id_positions: &HashMap<String, DocPos>,
+	smil_anchors: &HashMap<String, DocPos>,
 	resolved_any: &mut bool,
 ) -> Option<TocItem> {
 	let label = nav
@@ -157,7 +170,7 @@ fn convert_daisy_navpoint(
 		.or_else(|| id_positions.get(target_id).copied())
 		.or_else(|| nav.attribute("id").and_then(|id| id_positions.get(id)).copied());
 	*resolved_any |= offset.is_some();
-	let mut item = TocItem::new(label, target_id.to_string(), offset.unwrap_or(0));
+	let mut item = TocItem::new(label, target_id.to_string(), offset.unwrap_or(DocPos::ZERO));
 	for child in nav.children() {
 		if child.node_type() == NodeType::Element
 			&& child.tag_name().name() == "navPoint"

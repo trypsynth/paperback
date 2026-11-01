@@ -5,32 +5,64 @@ use math_core::{LatexToMathML, MathCoreConfig, MathDisplay};
 use pulldown_cmark::{Event, Options, Parser as MarkdownParserImpl, Tag, TagEnd, html::push_html};
 
 use crate::{
-	document::{Document, DocumentBuffer, ParserContext},
+	document::{DocPos, Document, DocumentBuffer, ParserContext},
 	parser::{
 		Parser, add_converter_markers,
 		convert::html_to_text::{HtmlSourceMode, HtmlToText},
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
-	t,
 	util::encoding::convert_to_utf8,
 };
 
-/// The grammar for both rendering and source lookup, which must agree to keep block anchors in sync.
+/// Shared by rendering and source lookup, which must agree to keep block anchors in sync.
 const fn markdown_options(dollar_math: bool) -> Options {
-	if dollar_math { Options::ENABLE_TABLES.union(Options::ENABLE_MATH) } else { Options::ENABLE_TABLES }
+	let options = Options::ENABLE_TABLES.union(Options::ENABLE_YAML_STYLE_METADATA_BLOCKS);
+	if dollar_math { options.union(Options::ENABLE_MATH) } else { options }
 }
 
-/// Converts Markdown to HTML with an empty `<span id="pb-block-N"></span>` before each block.
-///
-/// The anchors produce no text but give every block a stable id, so a position
-/// in the converted text can be mapped back to a `#fragment` when the document
-/// is shown in a web view.
+fn front_matter(markdown: &str) -> Option<&str> {
+	let rest = markdown.trim_start_matches('\u{feff}').strip_prefix("---")?;
+	let rest = rest.strip_prefix("\r\n").or_else(|| rest.strip_prefix('\n'))?;
+	let mut offset = 0;
+	for line in rest.split_inclusive('\n') {
+		if matches!(line.trim_end(), "---" | "...") {
+			return Some(&rest[..offset]);
+		}
+		offset += line.len();
+	}
+	None
+}
+
+fn front_matter_field(front_matter: &str, key: &str) -> Option<String> {
+	let mut lines = front_matter.lines().peekable();
+	while let Some(line) = lines.next() {
+		let Some(value) = line.strip_prefix(key).and_then(|rest| rest.strip_prefix(':')) else { continue };
+		let unquote = |text: &str| text.trim().trim_matches(['"', '\'']).trim().to_string();
+		let value = value.trim();
+		let value = if value.is_empty() {
+			let mut items = Vec::new();
+			while let Some(item) = lines.next_if(|next| next.trim_start().starts_with("- ")) {
+				items.push(unquote(&item.trim_start()[2..]));
+			}
+			items.join(", ")
+		} else if let Some(list) = value.strip_prefix('[').and_then(|inner| inner.strip_suffix(']')) {
+			list.split(',').map(unquote).collect::<Vec<_>>().join(", ")
+		} else {
+			unquote(value)
+		};
+		return Some(value).filter(|value| !value.is_empty());
+	}
+	None
+}
+
+/// The empty `pb-block-N` anchors give every block a stable id, so a position in the converted text maps back to a `#fragment` in a web view.
 #[must_use]
 pub fn markdown_to_html(markdown_text: &str, dollar_math: bool) -> String {
 	let parser = MarkdownParserImpl::new_ext(markdown_text, markdown_options(dollar_math)).into_offset_iter();
 	// Created per document so that equations and similar environments are numbered from (1) in each one.
-	let mut math = LatexToMathML::new(MathCoreConfig { xml_namespace: true, annotation: true, ..Default::default() })
-		.expect("math conversion configuration is valid");
+	let mut math =
+		LatexToMathML::new(MathCoreConfig { xml_namespace: true, annotation: true, ..Default::default() }, Vec::new())
+			.expect("math conversion configuration is valid");
 	let mut block_counter = 0usize;
 	let mut image_depth = 0usize;
 	let mut events = Vec::new();
@@ -57,17 +89,10 @@ pub fn markdown_to_html(markdown_text: &str, dollar_math: bool) -> String {
 		if latex.trim().is_empty() {
 			continue;
 		}
-		// Rebuilt from the TeX rather than sliced from the source, because the source range of a multi-line formula
-		// includes container prefixes on its later lines, such as `> ` in a block quote.
+		// Rebuilt from the TeX because a multi-line formula's source range includes container prefixes such as `> ` on later lines.
 		let source_text = Event::Text(format!("{delimiter}{latex}{delimiter}").into());
-		// pulldown-cmark ends inline math at any `$` preceded by a non-space, so in "Tickets cost $10-$20 each." it
-		// interprets "$10-$" as math. Following Pandoc, we don't emit MathML when the closing `$` is followed by a
-		// digit. The span can't be re-parsed, so any Markdown formatting inside it (very unlikely) is shown literally.
-		//
-		// This still misreads a `$` that directly follows a non-space character and isn't followed by a digit, as in
-		// the shell's `$PATH:$HOME` or PHP's `$a.$b`. Markdown is ambiguous here: without knowing whether the writer
-		// uses dollars for math, there is no way to tell which reading is meant, so the reader can turn dollar math
-		// off (see `ParserContext::markdown_dollar_math`).
+		// pulldown-cmark reads "$10-$" in "$10-$20" as math; like Pandoc, a closing `$` followed by a digit isn't math.
+		// `$PATH:$HOME` is still misread, which is ambiguous without knowing the writer, hence `ParserContext::markdown_dollar_math`.
 		let closes_before_digit =
 			display == MathDisplay::Inline && markdown_text[range.end..].starts_with(|c: char| c.is_ascii_digit());
 		if closes_before_digit {
@@ -87,11 +112,7 @@ pub fn markdown_to_html(markdown_text: &str, dollar_math: bool) -> String {
 	html_content
 }
 
-/// Returns the byte offset in `markdown_text` where the 1-based `block_index`
-/// block begins, using the same block numbering as [`markdown_to_html`] given the same `dollar_math`.
-///
-/// This maps a `pb-block-N` anchor (recorded in `id_positions`) back to its
-/// location in the original Markdown source.
+/// Must number blocks exactly as [`markdown_to_html`] does given the same `dollar_math`, to map a `pb-block-N` anchor back to the source.
 #[must_use]
 pub fn block_source_offset(markdown_text: &str, block_index: usize, dollar_math: bool) -> Option<usize> {
 	let parser = MarkdownParserImpl::new_ext(markdown_text, markdown_options(dollar_math)).into_offset_iter();
@@ -120,19 +141,25 @@ impl Parser for MarkdownParser {
 		let markdown_content = convert_to_utf8(&bytes);
 		let html_content = markdown_to_html(&markdown_content, context.markdown_dollar_math);
 		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
-		if !converter.convert(&html_content, HtmlSourceMode::Markdown) {
-			// currently unreachable, HtmlToText::convert never returns false today
-			tracing::warn!(path = %context.file_path, "failed to convert markdown to text");
-			// TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
-			anyhow::bail!(t("Failed to convert Markdown to text: {}").replace("{}", &context.file_path));
-		}
-		let title = extract_title_from_path(&context.file_path);
-		let text = converter.get_text();
+		converter.convert(&html_content, HtmlSourceMode::Markdown);
+		let metadata = front_matter(&markdown_content);
+		// A level-one heading opening the file names it, as it does most READMEs, when there is no front matter to say.
+		let opening_heading = converter
+			.get_headings()
+			.first()
+			.filter(|heading| heading.level == 1 && heading.offset == DocPos::ZERO)
+			.map(|heading| heading.text.clone());
+		let title = metadata
+			.and_then(|metadata| front_matter_field(metadata, "title"))
+			.or(opening_heading)
+			.unwrap_or_else(|| extract_title_from_path(&context.file_path));
+		let author = metadata.and_then(|metadata| front_matter_field(metadata, "author")).unwrap_or_default();
+		let text = converter.take_text();
 		let mut buffer = DocumentBuffer::with_content(text);
 		let id_positions = converter.get_id_positions().clone();
-		add_converter_markers(&mut buffer, &converter, 0);
+		add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 		let toc_items = build_toc_from_headings(converter.get_headings());
-		let mut doc = Document::new().with_title(title);
+		let mut doc = Document::new().with_title(title).with_author(author);
 		doc.set_buffer(buffer);
 		doc.toc_items = toc_items;
 		doc.id_positions = id_positions;
@@ -148,8 +175,8 @@ mod tests {
 
 	use super::*;
 	use crate::{
-		document::{MarkerType, ParseSettings},
-		util::{test_support::TempDir, text::display_len},
+		document::{DocLen, MarkerType, ParseSettings},
+		util::test_support::TempDir,
 	};
 
 	fn parse_markdown(source: &str) -> Document {
@@ -174,8 +201,8 @@ mod tests {
 		assert_eq!(formulas.len(), 1);
 		let formula = formulas[0];
 		assert_eq!(formula.text, formula_text);
-		assert_eq!(formula.position, display_len(prefix));
-		assert_eq!(formula.length, display_len(formula_text));
+		assert_eq!(formula.position, DocLen::of(prefix).as_pos());
+		assert_eq!(formula.length, DocLen::of(formula_text));
 		let mathml = roxmltree::Document::parse(&formula.reference).expect("valid MathML reference");
 		assert_eq!(mathml.root_element().tag_name().namespace(), Some("http://www.w3.org/1998/Math/MathML"));
 	}
@@ -225,7 +252,7 @@ mod tests {
 		let formulas: Vec<_> = doc.buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::Formula).collect();
 		assert_eq!(formulas.len(), 1);
 		assert_eq!(formulas[0].text, "x^2");
-		assert_eq!(formulas[0].position, display_len(&format!("Before {source} then ")));
+		assert_eq!(formulas[0].position, DocLen::of(&format!("Before {source} then ")).as_pos());
 		let html = markdown_to_html(&markdown, true);
 		assert!(!html.contains("<img"));
 	}
@@ -302,11 +329,88 @@ mod tests {
 		let source = "# Title\n\nFirst paragraph.\n\nSecond paragraph.\n";
 		let html = markdown_to_html(source, true);
 		let mut converter = HtmlToText::new();
-		assert!(converter.convert(&html, HtmlSourceMode::Markdown));
-		let text = converter.get_text();
+		converter.convert(&html, HtmlSourceMode::Markdown);
+		let text = converter.take_text();
 		let ids = converter.get_id_positions();
-		assert_eq!(ids.get("pb-block-1"), Some(&text.find("Title").unwrap()), "ids: {ids:?} text: {text:?}");
-		assert_eq!(ids.get("pb-block-3"), Some(&text.find("Second").unwrap()), "ids: {ids:?} text: {text:?}");
+		assert_eq!(
+			ids.get("pb-block-1"),
+			Some(&DocPos::from_raw(text.find("Title").unwrap())),
+			"ids: {ids:?} text: {text:?}"
+		);
+		assert_eq!(
+			ids.get("pb-block-3"),
+			Some(&DocPos::from_raw(text.find("Second").unwrap())),
+			"ids: {ids:?} text: {text:?}"
+		);
 		assert!(!text.contains("pb-block"), "anchors must not leak into text: {text:?}");
+	}
+
+	#[test]
+	fn front_matter_gives_the_title_and_authors_and_is_not_read_as_text() {
+		let document = parse_markdown(
+			"---
+title: \"Field Notes\"
+author:
+  - Ann Smith
+  - Bob Jones
+---
+
+# Chapter
+
+Text.
+",
+		);
+		assert_eq!(document.title, "Field Notes");
+		assert_eq!(document.author, "Ann Smith, Bob Jones");
+		assert!(document.buffer.content.starts_with("Chapter"), "{:?}", document.buffer.content);
+	}
+
+	/// Most READMEs open with a level-one heading naming the project, which beats "README" as a title.
+	#[test]
+	fn an_opening_level_one_heading_is_the_title_when_there_is_no_front_matter() {
+		assert_eq!(
+			parse_markdown(
+				"# Paperback
+
+A reader.
+"
+			)
+			.title,
+			"Paperback"
+		);
+		assert_eq!(
+			parse_markdown(
+				"Intro.
+
+# Later
+"
+			)
+			.title,
+			"formulas"
+		);
+		assert_eq!(
+			parse_markdown(
+				"## Section
+
+Text.
+"
+			)
+			.title,
+			"formulas"
+		);
+	}
+
+	#[test]
+	fn front_matter_lists_and_quotes() {
+		assert_eq!(front_matter_field("author: [Ann, 'Bob']", "author").as_deref(), Some("Ann, Bob"));
+		assert_eq!(
+			front_matter_field(
+				"subtitle: x
+title: ''",
+				"title"
+			),
+			None
+		);
+		assert_eq!(front_matter("no front matter"), None);
 	}
 }

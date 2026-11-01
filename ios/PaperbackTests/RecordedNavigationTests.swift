@@ -3,7 +3,6 @@ import Observation
 import XCTest
 @testable import Paperback
 
-/// Model both M4B chapters sharing one source and audio bundles with a source per section.
 private final class SectionAudioSession: DocumentSession, @unchecked Sendable {
 	var sharedSource = true
 	var audioPath = ""
@@ -11,13 +10,13 @@ private final class SectionAudioSession: DocumentSession, @unchecked Sendable {
 	override func hasAudioFfi() -> Bool { true }
 	override func isAudioOnlyFfi() -> Bool { true }
 	override func getSupportedSegmentTypesFfi() -> [SegmentTypeFfi] { [.section] }
-	override func getToc() -> [TocEntry] {
-		(0..<3).map { TocEntry(title: "Chapter \($0 + 1)", position: Int64($0), level: 1) }
-	}
-	override func getTextSegment(position: Int64, segmentType: SegmentTypeFfi, direction: SegmentDirectionFfi) -> TextSegmentFfi {
+	override func readingStep(position: Int64, unit: StepUnitFfi, direction: SegmentDirectionFfi) -> ReadingStepFfi {
 		let destination = position + (direction == .next ? 1 : direction == .previous ? -1 : 0)
 		let found = (0..<3).contains(destination)
-		return TextSegmentFfi(text: found ? "Chapter \(destination + 1)" : "", startPos: destination, endPos: destination + 1, found: found)
+		return ReadingStepFfi(found: found, position: found ? destination : position, text: found ? "Chapter \(destination + 1)" : "")
+	}
+	override func sectionTitleAt(position: Int64) -> String {
+		(0..<3).contains(position) ? "Chapter \(position + 1)" : ""
 	}
 	override func audioPointForPositionFfi(position: Int64) -> AudioPointFfi {
 		AudioPointFfi(found: (0..<3).contains(position), position: position, timeMs: position * 10_000)
@@ -39,8 +38,11 @@ private final class SectionAudioSession: DocumentSession, @unchecked Sendable {
 
 private final class AudioPositionConfig: ConfigManagerFfi, @unchecked Sendable {
 	var savedMs: Int64 = -1
+	override func getDocKey(path: String) -> String { "doc_test" }
 	override func getDocumentAudioTimeFfi(path: String) -> Int64 { savedMs }
 	override func setDocumentAudioTimeFfi(path: String, timeMs: Int64) { savedMs = timeMs }
+	override func getAppString(key: String, defaultValue: String) -> String { defaultValue }
+	override func setAppString(key: String, value: String) {}
 	override func flush() {}
 }
 
@@ -124,7 +126,6 @@ final class RecordedNavigationTests: XCTestCase {
 		narration.attach(to: tab)
 		defer { narration.detach() }
 		narration.play()
-		// Wait for the real decoder to load and move beyond the pending start position.
 		for _ in 0..<200 {
 			if (player.resumePointMs() ?? 0) > 0 { break }
 			try await Task.sleep(for: .milliseconds(10))
@@ -135,8 +136,7 @@ final class RecordedNavigationTests: XCTestCase {
 		XCTAssertEqual(player.resumePointMs(), 10_000)
 		XCTAssertEqual(config.savedMs, 10_000)
 		XCTAssertFalse(narration.isPlaying)
-		// Returning to the still-loaded file must rewind it, even though its last seek
-		// target was also zero before playback advanced.
+		// Must rewind even though the loaded file's last seek target was also zero before playback advanced.
 		XCTAssertTrue(narration.seekToPosition(0))
 		XCTAssertEqual(player.resumePointMs(), 0)
 		XCTAssertTrue(narration.seekToPosition(1))

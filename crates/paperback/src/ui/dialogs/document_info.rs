@@ -53,9 +53,11 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	let _ = writeln!(info, "{characters_no_spaces_label} {}", stats.char_count_no_whitespace);
 	if stats.audio_file_count > 0 {
 		let _ = writeln!(info, "{audio_file_count_label} {}", stats.audio_file_count);
-		let _ = writeln!(info, "{total_duration_label} {}", format_duration_ms(stats.audio_total_duration_ms));
-		let average_ms = stats.audio_total_duration_ms / stats.audio_file_count as u64;
-		let _ = writeln!(info, "{average_duration_label} {}", format_duration_ms(average_ms));
+		if let Some(total_ms) = stats.audio_total_duration_ms {
+			let _ = writeln!(info, "{total_duration_label} {}", format_duration_ms(total_ms));
+			let average_ms = total_ms / stats.audio_file_count as u64;
+			let _ = writeln!(info, "{average_duration_label} {}", format_duration_ms(average_ms));
+		}
 	}
 	info_ctrl.set_value(&info);
 	// TRANSLATORS: Label for a button that closes the Document Info dialog

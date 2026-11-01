@@ -13,8 +13,7 @@ class SpeechScaleTest {
 		assertEquals(2.0f, pitchFor(100), 0.001f)
 	}
 
-	// 50 is where the slider sits by default, so it has to be an ordinary speaking rate rather
-	// than the midpoint of a range that starts near silence.
+	// The slider defaults to 50, so it has to be an ordinary speaking rate.
 	@Test
 	fun `the default sits in the middle of the range`() {
 		assertEquals(1.55f, speechRateFor(50), 0.001f)
@@ -33,5 +32,22 @@ class SpeechScaleTest {
 		assertTrue(speechRateFor(10) < speechRateFor(50))
 		assertTrue(speechRateFor(50) < speechRateFor(90))
 		assertTrue(pitchFor(10) < pitchFor(90))
+	}
+
+	// The system default engine's sliders start where Android's own settings are, so reading one back has to land on the percentage that means the same speed.
+	@Test
+	fun `Android's normal rate and pitch read back as the percentages that mean them`() {
+		assertEquals(31, speechRatePercentageFor(1.0f))
+		assertEquals(47, pitchPercentageFor(1.0f))
+		for (percentage in listOf(0, 25, 50, 100)) {
+			assertEquals(percentage, speechRatePercentageFor(speechRateFor(percentage)))
+			assertEquals(percentage, pitchPercentageFor(pitchFor(percentage)))
+		}
+	}
+
+	@Test
+	fun `a system rate beyond the slider's range reads back as its end`() {
+		assertEquals(100, speechRatePercentageFor(6.0f))
+		assertEquals(0, pitchPercentageFor(0.01f))
 	}
 }

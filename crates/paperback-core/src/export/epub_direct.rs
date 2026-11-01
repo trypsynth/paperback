@@ -16,10 +16,7 @@ use crate::util::{
 	zip::read_zip_entry_by_name,
 };
 
-/// Render an EPUB directly to HTML by stitching spine-item bodies.
-///
-/// Bypasses the text-buffer pipeline entirely, with no `HtmlToText` and no marker
-/// reconstruction, making it dramatically faster on large EPUBs.
+/// Stitches spine bodies together, skipping `HtmlToText` and marker reconstruction, which is dramatically faster on large EPUBs.
 pub fn render(file_path: &str) -> Result<String> {
 	let file = File::open(file_path).with_context(|| format!("failed to open '{file_path}'"))?;
 	let mut archive = ZipArchive::new(BufReader::new(file)).context("failed to read EPUB as zip")?;
@@ -28,7 +25,6 @@ pub fn render(file_path: &str) -> Result<String> {
 		Path::new(&opf_path).parent().map(|d| d.to_string_lossy().into_owned().replace('\\', "/")).unwrap_or_default();
 	let opf_content = read_zip_entry_by_name(&mut archive, &opf_path)?;
 	let (manifest, spine, title) = parse_opf(&opf_content, &opf_dir)?;
-	// spine file path → <section> id
 	let spine_path_to_id: HashMap<String, String> =
 		spine.iter().filter_map(|id| manifest.get(id).map(|(path, _)| (path.clone(), path_to_id(path)))).collect();
 	let mut out = format!(
@@ -64,10 +60,10 @@ fn find_opf_path<R: Read + Seek>(archive: &mut ZipArchive<R>) -> Result<String> 
 		.ok_or_else(|| anyhow::anyhow!("rootfile not found in container.xml"))
 }
 
-/// Manifest entries from an OPF, keyed by item id: id → (path, media type).
+/// Item id to (path, media type).
 type OpfManifest = HashMap<String, (String, String)>;
 
-/// The parts of an OPF we care about: `(manifest, spine order, document title)`.
+/// `(manifest, spine order, document title)`.
 type OpfContents = (OpfManifest, Vec<String>, String);
 
 fn parse_opf(content: &str, opf_dir: &str) -> Result<OpfContents> {
@@ -120,7 +116,6 @@ fn extract_body(html: &str) -> &str {
 	if content_start <= body_close { &html[content_start..body_close] } else { html }
 }
 
-/// Scan `html` for `href="…"` / `href='…'`, rewrite cross-file links, and append to `out`.
 fn rewrite_hrefs_into(html: &str, current_dir: &str, spine_path_to_id: &HashMap<String, String>, out: &mut String) {
 	let mut pos = 0;
 	while pos < html.len() {

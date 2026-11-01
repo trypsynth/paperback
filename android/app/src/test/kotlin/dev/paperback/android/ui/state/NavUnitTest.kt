@@ -20,8 +20,7 @@ class FormatDurationTest {
 		assertEquals("1:01:01", formatDuration(3_661_000))
 	}
 
-	// Playback positions arrive as raw milliseconds, so a spoken "1:00" that was really 59.6
-	// seconds has to round rather than truncate, or the announced time trails the audio.
+	// Truncating would make the announced time trail the audio.
 	@Test
 	fun `milliseconds round to the nearest second`() {
 		assertEquals("0:00", formatDuration(499))
@@ -45,8 +44,7 @@ class NavUnitNameTest {
 		assertEquals("1 hour", getSeekAmountName(3600))
 	}
 
-	// The saved seek amount is a plain integer in the shared config, so it can be a value the
-	// presets don't cover; that has to read as something rather than falling through blank.
+	// The saved amount is a plain integer in the shared config, so it can be one no preset covers.
 	@Test
 	fun `a seek amount with no preset falls back to counting seconds`() {
 		assertEquals("45 seconds", getSeekAmountName(45))
@@ -59,8 +57,7 @@ class NavUnitNameTest {
 		assertEquals("Find", getNavUnitName(NavUnit.Find))
 	}
 
-	// The bottom bar's unit chip shows nothing but this name, so two units sharing one would be
-	// indistinguishable to a reader cycling through them.
+	// The unit chip shows nothing but this name, so a shared one would be indistinguishable.
 	@Test
 	fun `no two segment types share a name`() {
 		val names = SegmentTypeFfi.entries.map { getSegmentTypeName(it) }
@@ -70,8 +67,7 @@ class NavUnitNameTest {
 }
 
 class SeekAmountsTest {
-	// The bottom bar cycles this list with a TalkBack swipe, so an out-of-order or repeated
-	// amount would read as the selector jumping about or sticking.
+	// TalkBack swipes cycle this list, so disorder or a repeat reads as the selector jumping or sticking.
 	@Test
 	fun `the offered seek amounts are ordered and free of duplicates`() {
 		assertEquals(AUDIO_SEEK_AMOUNTS_SECONDS.sorted(), AUDIO_SEEK_AMOUNTS_SECONDS)

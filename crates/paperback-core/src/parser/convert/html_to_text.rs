@@ -5,6 +5,7 @@ use scraper::Html;
 
 use super::{format_spans::FormatSpans, line_builder::LineBuilder, list_style::ListStyle};
 use crate::{
+	document::DocPos,
 	parser::ConverterOutput,
 	types::{
 		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
@@ -29,7 +30,7 @@ pub enum HtmlSourceMode {
 #[derive(Default)]
 pub struct HtmlToText {
 	text: LineBuilder,
-	id_positions: HashMap<String, usize>,
+	id_positions: HashMap<String, DocPos>,
 	headings: Vec<HeadingInfo>,
 	links: Vec<LinkInfo>,
 	images: Vec<ImageInfo>,
@@ -43,17 +44,16 @@ pub struct HtmlToText {
 	flags: ProcessingFlags,
 	current_link_href: String,
 	current_link_text: String,
+	/// Placeholder in the link's text, info whose offset is still to be found, and whether it is a figure.
+	current_link_images: Vec<(String, ImageInfo, bool)>,
 	list_style_stack: Vec<ListStyle>,
 	list_level: i32,
-	/// Indices into `lists` for currently open `<ul>`/`<ol>` elements, in nesting order.
-	/// `None` marks an open list that was not recorded (no direct `<li>`), keeping the stack
-	/// balanced with the start/close handlers so list lengths are set on the right entries.
+	/// `None` marks an unrecorded list (no direct `<li>`), keeping the stack balanced so list lengths land on the right entries.
 	open_lists: Vec<Option<usize>>,
-	link_start_pos: usize,
+	link_start_pos: DocPos,
 	format_spans: FormatSpans,
 	source_mode_markdown: bool,
-	/// When `true`, tables are emitted as their full tab-separated rendering; otherwise as a
-	/// `"[Table]: <first row>"` placeholder. A config flag, not parse state: it survives `clear()`.
+	/// A config flag, not parse state, so it survives `clear()`.
 	render_tables_inline: bool,
 }
 
@@ -63,27 +63,28 @@ impl HtmlToText {
 		Self::default()
 	}
 
-	/// Like [`new`](Self::new) but sets whether tables are rendered inline (full TSV) or as a
-	/// placeholder. Threaded from the owning parser's `ParserContext`; preserved across
-	/// `convert`/`clear`.
 	#[must_use]
 	pub fn with_render_tables_inline(render_tables_inline: bool) -> Self {
 		Self { render_tables_inline, ..Self::default() }
 	}
 
-	pub fn convert(&mut self, html_content: &str, mode: HtmlSourceMode) -> bool {
+	pub fn convert(&mut self, html_content: &str, mode: HtmlSourceMode) {
 		self.clear();
 		self.source_mode_markdown = mode == HtmlSourceMode::Markdown;
 		let document = Html::parse_document(html_content);
 		let root = document.tree.root();
 		self.process_node(root, &document);
 		self.text.finalize_current_line();
-		true
 	}
 
 	#[must_use]
-	pub fn get_text(&self) -> String {
+	pub fn get_text(&self) -> &str {
 		self.text.get_text()
+	}
+
+	/// Moves the text out rather than copying a whole book, leaving the markers to read afterwards.
+	pub fn take_text(&mut self) -> String {
+		self.text.take_text()
 	}
 
 	#[must_use]
@@ -127,7 +128,7 @@ impl HtmlToText {
 	}
 
 	#[must_use]
-	pub const fn get_id_positions(&self) -> &HashMap<String, usize> {
+	pub const fn get_id_positions(&self) -> &HashMap<String, DocPos> {
 		&self.id_positions
 	}
 
@@ -162,10 +163,11 @@ impl HtmlToText {
 		self.flags = ProcessingFlags::empty();
 		self.current_link_href.clear();
 		self.current_link_text.clear();
+		self.current_link_images.clear();
 		self.list_style_stack.clear();
 		self.list_level = 0;
 		self.open_lists.clear();
-		self.link_start_pos = 0;
+		self.link_start_pos = DocPos::ZERO;
 		self.format_spans.clear();
 	}
 }

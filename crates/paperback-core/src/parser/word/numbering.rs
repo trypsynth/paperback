@@ -1,12 +1,4 @@
-//! Word's automatic numbering: the `1.`, `a)`, `iii.` and bullets that a `.docx` keeps out of
-//! the text and generates from `word/numbering.xml`.
-//!
-//! A paragraph joins a list through `<w:numPr>` (a list instance, `numId`, and a level, `ilvl`),
-//! either directly or through its paragraph style, which is how Word numbers headings. Each
-//! instance points at an abstract list that defines, per level, the number format, the label
-//! template (`%1.%2.`) and the starting value. Instances that share an abstract list continue
-//! one count, unless an instance overrides a level's start, which is what Word's "Restart
-//! numbering" writes.
+//! Instances that share an abstract list continue one count, unless an instance overrides a level's start, which is what Word's "Restart numbering" writes.
 
 use std::collections::{HashMap, HashSet};
 
@@ -18,12 +10,11 @@ const LEVELS: usize = 9;
 
 #[derive(Clone, Debug, Default)]
 pub(super) struct Level {
-	/// `w:numFmt`: decimal, lowerLetter, upperRoman, bullet, none, ...
 	pub(super) format: String,
-	/// `w:lvlText`: the label template, `%N` standing for level N's current number.
+	/// `%N` stands for level N's current number.
 	pub(super) text: String,
 	pub(super) start: i32,
-	/// `w:isLgl`: every level's number is shown in decimal, as legal documents number sections.
+	/// `w:isLgl`: every level's number shows in decimal, as legal documents number sections.
 	pub(super) legal: bool,
 }
 
@@ -34,29 +25,24 @@ pub(super) struct Instance {
 	pub(super) level_overrides: HashMap<usize, Level>,
 }
 
-/// The numbering definitions of one document and the running counts through it.
 #[derive(Debug, Default)]
 pub(super) struct Numbering {
 	abstracts: HashMap<String, Vec<Option<Level>>>,
 	instances: HashMap<String, Instance>,
-	/// Paragraph style id to the list instance and level it numbers its paragraphs with.
+	/// Style id to (`numId`, `ilvl`).
 	styles: HashMap<String, (String, usize)>,
 	counters: HashMap<String, [Option<i32>; LEVELS]>,
 	started: HashSet<String>,
 }
 
-/// A paragraph's place in a list, as [`Numbering::label_for`] reports it.
 #[derive(Debug, PartialEq, Eq)]
 pub(super) struct ListLabel {
-	/// What the paragraph is numbered or bulleted with: `1.`, `b)`, `•`.
 	pub text: String,
-	/// Its level, 1 for the outermost.
+	/// 1 for the outermost.
 	pub level: i32,
 }
 
 impl Numbering {
-	/// Reads the definitions from `word/numbering.xml` and the numbered paragraph styles from
-	/// `word/styles.xml`. Either may be missing, which leaves nothing numbered.
 	pub(super) fn load(numbering_xml: Option<&str>, styles_xml: Option<&str>) -> Self {
 		let mut numbering = Self::default();
 		if let Some(xml) = numbering_xml.and_then(|text| XmlDocument::parse(text).ok()) {
@@ -101,15 +87,12 @@ impl Numbering {
 		numbering
 	}
 
-	/// The label for a paragraph with these properties, advancing the count it belongs to.
-	/// `None` for a paragraph that is not numbered, or whose level shows no label.
+	/// Advances the count, so call it once per paragraph.
 	pub(super) fn label_for(&mut self, paragraph_properties: Option<Node>) -> Option<ListLabel> {
 		let (num_id, ilvl) = self.list_of(paragraph_properties?)?;
 		self.label_of(&num_id, ilvl)
 	}
 
-	/// Numbering already parsed by a reader of its own format (the binary `.doc` one): abstract
-	/// lists by id, each with its levels, and the instances that point at them, by id.
 	pub(super) fn from_definitions(
 		abstracts: HashMap<String, Vec<Option<Level>>>,
 		instances: HashMap<String, Instance>,
@@ -117,8 +100,7 @@ impl Numbering {
 		Self { abstracts, instances, ..Self::default() }
 	}
 
-	/// The label for the next item of list instance `num_id` at level `ilvl` (0-based),
-	/// advancing its count. `None` when the instance or level is unknown, or shows no label.
+	/// `ilvl` is 0-based; advances the count, so call it once per paragraph.
 	pub(super) fn label_of(&mut self, num_id: &str, ilvl: usize) -> Option<ListLabel> {
 		let ilvl = ilvl.min(LEVELS - 1);
 		let num_id = num_id.to_string();
@@ -152,8 +134,7 @@ impl Numbering {
 		(!text.is_empty()).then(|| ListLabel { text, level: i32::try_from(ilvl).unwrap_or(0) + 1 })
 	}
 
-	/// The list instance and level a paragraph belongs to, from its own `<w:numPr>` or, failing
-	/// that, its paragraph style's. A `numId` of 0 takes the paragraph out of its style's list.
+	/// A `numId` of 0 takes the paragraph out of its style's list.
 	fn list_of(&self, ppr: Node) -> Option<(String, usize)> {
 		let direct = find_child_element(ppr, "numPr");
 		let style = find_child_element(ppr, "pStyle").and_then(val).and_then(|id| self.styles.get(id));
@@ -201,8 +182,6 @@ fn read_level(lvl: Node) -> Level {
 	}
 }
 
-/// Paragraph styles that number their paragraphs, following `basedOn` so a style inherits the
-/// numbering of the one it is built on.
 fn read_numbered_styles(xml: &XmlDocument) -> HashMap<String, (String, usize)> {
 	let mut direct: HashMap<String, (Option<String>, Option<usize>)> = HashMap::new();
 	let mut based_on: HashMap<String, String> = HashMap::new();
@@ -237,7 +216,6 @@ fn read_numbered_styles(xml: &XmlDocument) -> HashMap<String, (String, usize)> {
 	resolved
 }
 
-/// Fills a level's label template with the current numbers of the levels it names.
 fn render_label(level: &Level, levels: &[Option<Level>], counters: &[Option<i32>; LEVELS]) -> String {
 	if level.format == "bullet" {
 		return bullet(&level.text);
@@ -265,8 +243,7 @@ fn render_label(level: &Level, levels: &[Option<Level>], counters: &[Option<i32>
 	out.trim().to_string()
 }
 
-/// A bullet's own character, unless it is a symbol-font glyph with no meaning outside that
-/// font (Word's default bullets are private-use characters from Symbol and Wingdings).
+/// Word's default bullets are private-use Symbol and Wingdings glyphs, meaningless outside that font.
 fn bullet(text: &str) -> String {
 	let text = text.trim();
 	match text.chars().next() {

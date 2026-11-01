@@ -1,8 +1,4 @@
-//! The sleep timer: shuts the app down after a chosen number of minutes, saving reading
-//! positions on the way out.
-//!
-//! The countdown lives in atomics rather than on the [`SleepTimer`] itself: the status bar and
-//! `document_manager` both display it, and neither holds the timer.
+//! The countdown lives in atomics because the status bar and `document_manager` display it without holding the [`SleepTimer`].
 
 use std::{
 	rc::Rc,
@@ -20,27 +16,19 @@ use wxdragon::prelude::*;
 use super::{dialogs, document_manager::DocumentManager, main_window::update_title_from_manager, navigation};
 use crate::ui::navigation::{announce, announce_for_command};
 
-/// When the running timer was set, as milliseconds since the epoch, or 0 when none is running.
 static START_MS: AtomicI64 = AtomicI64::new(0);
-/// How long the running timer was set for, in minutes, or 0 when none is running.
 static DURATION_MINUTES: AtomicI32 = AtomicI32::new(0);
-/// Whether a timer is currently counting down.
-///
-/// Kept separately rather than inferred from `START_MS` being non-zero: a clock that cannot be
-/// read falls back to 0, and a timer that is running should not look cancelled because of it.
+/// Not inferred from `START_MS`, since an unreadable clock falls back to 0 and a running timer shouldn't look cancelled.
 static RUNNING: AtomicBool = AtomicBool::new(false);
 
-/// Whether a sleep timer is counting down.
 pub fn is_running() -> bool {
 	RUNNING.load(Ordering::SeqCst)
 }
 
-/// When the running timer started, in milliseconds since the epoch. 0 when none is running.
 pub fn start_ms() -> i64 {
 	START_MS.load(Ordering::SeqCst)
 }
 
-/// How many minutes the running timer was set for. 0 when none is running.
 pub fn duration_minutes() -> i32 {
 	DURATION_MINUTES.load(Ordering::SeqCst)
 }
@@ -49,13 +37,12 @@ fn now_ms() -> i64 {
 	SystemTime::now().duration_since(UNIX_EPOCH).ok().and_then(|d| i64::try_from(d.as_millis()).ok()).unwrap_or(0)
 }
 
-/// Owns the wx timer. Hold one for the window's lifetime: dropping it destroys the timer.
+/// Dropping it destroys the timer, so hold one for the window's lifetime.
 pub struct SleepTimer {
 	timer: Rc<Timer<Frame>>,
 }
 
 impl SleepTimer {
-	/// Creates the timer and installs the tick that closes the app when the deadline passes.
 	pub fn new(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) -> Self {
 		let timer = Rc::new(Timer::new(frame));
 		let timer_for_tick = Rc::clone(&timer);
@@ -63,11 +50,7 @@ impl SleepTimer {
 		let dm_for_tick = Rc::clone(doc_manager);
 		let config_for_tick = Rc::clone(config);
 		timer.on_tick(move |_| {
-			// `Timer::on_tick` binds `EventType::TIMER` on the *owner*, not on the timer, and
-			// wxdragon gives its timers no distinguishing id, so every timer parented to this
-			// frame delivers its ticks to every handler bound here. This one shuts the app down,
-			// so it has to confirm the deadline really passed rather than trust that being
-			// called means its own timer fired.
+			// `Timer::on_tick` binds on the owner and wxdragon timers have no id, so every timer on this frame ticks this handler; confirm the deadline before shutting down.
 			if !is_running() {
 				return;
 			}
@@ -95,12 +78,10 @@ impl SleepTimer {
 		Self { timer }
 	}
 
-	/// The wx timer, to be held alongside the window's other timers.
 	pub const fn timer(&self) -> &Rc<Timer<Frame>> {
 		&self.timer
 	}
 
-	/// Cancels a running timer, or asks for a duration and starts one.
 	pub fn toggle(
 		&self,
 		frame: &Frame,
@@ -154,8 +135,6 @@ fn clear() {
 mod tests {
 	use super::*;
 
-	/// The status bar reads these to show the countdown, so a cancelled timer that left a
-	/// stale start time behind would keep displaying one that is no longer running.
 	#[test]
 	fn clear_resets_every_field() {
 		START_MS.store(1234, Ordering::SeqCst);

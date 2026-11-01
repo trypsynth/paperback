@@ -1,7 +1,3 @@
-//! Confirming a parser exists for a file before opening it: known extensions pass straight
-//! through, while an unrecognized one prompts the user via the "Open As" dialog (remembering
-//! their choice per-path) unless a previous choice for that path is already on record.
-
 use std::{
 	env,
 	fs::File,
@@ -22,7 +18,6 @@ use wxdragon::prelude::*;
 use super::dialogs;
 use crate::ui::dialogs::ZipChoice;
 
-/// Shows Open As for `path` unless a format is already saved for it, and saves the choice.
 pub fn choose_format(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
 	let cfg = config.lock().unwrap();
 	ensure_parser_for_unknown_file(frame, path, &cfg)
@@ -37,7 +32,7 @@ pub(crate) fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &
 	ensure_parser_for_unknown_file(frame, path, &cfg)
 }
 
-/// Lets the user pick a document from a zip that holds several, and returns what to open instead. Runs before the document manager is locked, since the picker is modal.
+/// Runs before the document manager is locked, since the picker is modal.
 pub(crate) fn resolve_zip_path(
 	frame: &Frame,
 	path: &Path,
@@ -53,8 +48,7 @@ pub(crate) fn resolve_zip_path(
 	browse_zip(frame, path, quit_if_closed)
 }
 
-/// [`resolve_zip_path`] without its check for a format saved for `path`, for a downloaded zip
-/// whose settings are kept under its link.
+/// Skips the saved-format check, for a downloaded zip whose settings are kept under its link.
 pub fn browse_zip(frame: &Frame, path: &Path, quit_if_closed: bool) -> Option<PathBuf> {
 	if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip")) {
 		return Some(path.to_path_buf());

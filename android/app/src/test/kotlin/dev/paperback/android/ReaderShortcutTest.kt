@@ -19,8 +19,8 @@ class ReaderShortcutTest {
 
 	private fun ctrlShift(keyCode: Int) = shortcutFor(keyCode, ctrlPressed = true, shiftPressed = true)
 
-	// Several letters mean one thing with Ctrl and another on their own. Getting either side
-	// wrong takes a shortcut away from a reader with no other way to reach the command.
+	private fun ctrlAlt(keyCode: Int) = shortcutFor(keyCode, ctrlPressed = true, shiftPressed = false, altPressed = true)
+
 	@Test
 	fun `the letters that mean two things keep both meanings`() {
 		assertEquals(ReaderShortcut.OpenFind, ctrl(KeyEvent.KEYCODE_F))
@@ -31,6 +31,12 @@ class ReaderShortcutTest {
 		assertEquals(navigate(SegmentTypeFfi.PAGE), plain(KeyEvent.KEYCODE_P))
 		assertEquals(ReaderShortcut.OpenGoTo(GO_TO_LINE), ctrl(KeyEvent.KEYCODE_G))
 		assertEquals(navigate(SegmentTypeFfi.IMAGE), plain(KeyEvent.KEYCODE_G))
+	}
+
+	@Test
+	fun `alt turns opening a file into opening a link, as on desktop`() {
+		assertEquals(ReaderShortcut.OpenBook, ctrl(KeyEvent.KEYCODE_O))
+		assertEquals(ReaderShortcut.OpenFromUrl, ctrlAlt(KeyEvent.KEYCODE_O))
 	}
 
 	@Test
@@ -125,8 +131,7 @@ class ReaderShortcutTest {
 		assertEquals(ReaderShortcut.HeadsetHook, plain(KeyEvent.KEYCODE_HEADSETHOOK))
 	}
 
-	// Anything not in the table has to be handed on, or typing in the reading view would start
-	// swallowing keys that belong to the system or to a text field.
+	// Otherwise the reading view would swallow keys belonging to the system or a text field.
 	@Test
 	fun `a key that means nothing here is passed on`() {
 		assertNull(plain(KeyEvent.KEYCODE_A))
@@ -136,8 +141,6 @@ class ReaderShortcutTest {
 		assertNull(plain(KeyEvent.KEYCODE_ENTER))
 	}
 
-	private fun navigate(
-		type: SegmentTypeFfi,
-		direction: SegmentDirectionFfi = SegmentDirectionFfi.NEXT
-	) = ReaderShortcut.Navigate(type, direction)
+	private fun navigate(type: SegmentTypeFfi, direction: SegmentDirectionFfi = SegmentDirectionFfi.NEXT) =
+		ReaderShortcut.Navigate(type, direction)
 }

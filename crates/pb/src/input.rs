@@ -1,25 +1,12 @@
-//! What pb says when it cannot read the file it was given.
-//!
-//! The check runs before any parser is asked for the file, so that the reason is the one the
-//! reader can act on: a path that is not there reads as a missing file rather than as a parser
-//! failing to open it, and an unknown extension names the file it came from.
-
 use std::{fs, io, path::Path};
 
 use anyhow::{Result, bail};
 use paperback_core::parser::{self, ParserRegistry, RegisteredParser};
 
-/// How far apart two extensions can be before one stops being a plausible typing of the other.
-/// One edit covers the slips people make: a dropped letter (`epb`), a doubled one, a
-/// transposition (`pfd`), a neighbouring key.
+/// One edit covers the usual slips: a dropped letter (`epb`), a doubled one, a transposition (`pfd`), a neighbouring key.
 const NEAREST_EXTENSION_EDITS: usize = 1;
 
-/// Reports why `path` cannot be read, or `Ok` if there is nothing in the way of trying.
-///
-/// # Errors
-///
-/// Returns an error if the file is missing, is a folder, cannot be read at all, or is of a
-/// format no parser is registered for.
+/// Runs before any parser, so a missing path reads as missing rather than as a parser failing to open it.
 pub fn check(path: &Path) -> Result<()> {
 	let metadata = match fs::metadata(path) {
 		Ok(metadata) => metadata,
@@ -47,7 +34,6 @@ pub fn check(path: &Path) -> Result<()> {
 	bail!("pb cannot read .{extension} files: {}\n{}", path.display(), LIST_HINT)
 }
 
-/// Every extension a parser is registered for, in alphabetical order and without repeats.
 fn supported_extensions() -> Vec<&'static str> {
 	let mut extensions: Vec<&'static str> =
 		ParserRegistry::global().all_parsers().iter().flat_map(RegisteredParser::extensions).copied().collect();
@@ -56,28 +42,20 @@ fn supported_extensions() -> Vec<&'static str> {
 	extensions
 }
 
-/// Where to find the formats pb reads. Forty extensions under every error is a wall to read
-/// past, and the reader who wants them can ask.
+/// Forty extensions under every error is a wall to read past, and the reader who wants them can ask.
 const LIST_HINT: &str = "Run pb --list-formats to see what it can read.";
 
-/// The one readable extension close enough to `extension` to be worth suggesting, or `None`
-/// where nothing is close or more than one thing is.
 fn nearest_extension(extension: &str) -> Option<&'static str> {
 	let extension = extension.to_ascii_lowercase();
 	let mut nearest: Vec<&'static str> = supported_extensions()
 		.into_iter()
 		.filter(|candidate| edits_between(&extension, candidate) <= NEAREST_EXTENSION_EDITS)
 		.collect();
-	// Two suggestions are worse than none: the reader has to guess which, and guessing is what
-	// got them here.
+	// Two suggestions are worse than none: the reader has to guess, and guessing is what got them here.
 	(nearest.len() == 1).then(|| nearest.remove(0))
 }
 
-/// How many single-character insertions, deletions, substitutions or swaps of two neighbours
-/// turn `from` into `to`.
-///
-/// Swaps count as one edit rather than the two plain Levenshtein charges them, because
-/// `.pfd` for `.pdf` is one slip of the fingers and reads to everyone as one mistake.
+/// A swap of neighbours counts as one edit, not Levenshtein's two, since `.pfd` for `.pdf` is one slip.
 fn edits_between(from: &str, to: &str) -> usize {
 	let from: Vec<char> = from.chars().collect();
 	let to: Vec<char> = to.chars().collect();
@@ -113,8 +91,7 @@ mod tests {
 
 	use super::*;
 
-	/// A directory of its own for each test, removed with it. paperback-core has one of these
-	/// but keeps it behind `cfg(test)`, where another crate cannot reach it.
+	/// paperback-core's own is behind `cfg(test)`, out of another crate's reach.
 	struct TempDir {
 		path: PathBuf,
 	}
@@ -147,8 +124,6 @@ mod tests {
 		check(path).expect_err("the file cannot be read").to_string()
 	}
 
-	/// The reader's own complaint: an error that does not name the file leaves them guessing which
-	/// one of a batch it was.
 	#[test]
 	fn every_refusal_names_the_file() {
 		let dir = TempDir::new("pb-input");
@@ -170,8 +145,6 @@ mod tests {
 		assert!(message(Path::new(&path)).starts_with("no such file:"));
 	}
 
-	/// A missing file with an extension nothing reads is still a missing file first: that is the
-	/// thing to fix, and the format never came into it.
 	#[test]
 	fn a_missing_file_is_reported_before_its_extension() {
 		let dir = TempDir::new("pb-missing-unknown");
@@ -206,8 +179,6 @@ mod tests {
 		assert!(message.contains("--list-formats"), "{message}");
 	}
 
-	/// A near miss gets the near miss rather than the whole list, which is the answer the reader
-	/// wants and is buried in forty other extensions otherwise.
 	#[test]
 	fn a_typed_extension_is_offered_the_one_it_meant() {
 		let dir = TempDir::new("pb-typo");
@@ -220,8 +191,6 @@ mod tests {
 		}
 	}
 
-	/// The list of forty extensions used to sit under every one of these, which is a wall to
-	/// read past for someone who mistyped a name.
 	#[test]
 	fn no_refusal_runs_past_two_lines() {
 		let dir = TempDir::new("pb-short");
@@ -251,8 +220,6 @@ mod tests {
 		assert!(edits_between("xyz", "epub") > NEAREST_EXTENSION_EDITS);
 	}
 
-	/// An extension a long way from everything gets no suggestion, and one that is a step from
-	/// two things gets none either.
 	#[test]
 	fn a_suggestion_is_offered_only_when_it_is_the_only_one() {
 		assert_eq!(nearest_extension("epb"), Some("epub"));

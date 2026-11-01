@@ -1,10 +1,4 @@
-//! Opening and closing documents: the behaviour behind the File menu's own commands.
-//!
-//! The dynamic recent-document ids and the All Documents dialog are still in
-//! `main_window/menu_file.rs`, since neither is a fixed command with an [`ActionId`]:
-//! they are a range of ids generated from the recent list.
-//!
-//! [`ActionId`]: paperback_core::config::ActionId
+//! Recent-document ids and the All Documents dialog stay in `main_window/menu_file.rs`: they are a generated id range, not a fixed `ActionId`.
 
 use std::{path::Path, process};
 
@@ -18,9 +12,10 @@ use crate::{
 	links,
 	ui::{
 		dialogs,
+		document_manager::DocumentManager,
 		main_window::{
-			close_active_document_announced, ensure_parser_ready_for_path, open_links, rebuild_menu_bar,
-			resolve_zip_path, update_title_from_manager,
+			close_active_document_announced, download_again, ensure_parser_ready_for_path, open_links,
+			rebuild_menu_bar, resolve_zip_path, update_title_from_manager,
 		},
 		menu,
 		navigation::announce_for_command,
@@ -65,10 +60,7 @@ pub fn open(ctx: &Ctx) {
 	let menu_bar = menu::create_menu_bar(&ctx.config.lock().unwrap());
 	ctx.frame.set_menu_bar(menu_bar);
 	menu::update_menu_item_states(ctx.frame, true);
-	// The rebuilt menu bar comes back with every item enabled, so the reopen item has
-	// to be told again whether there is anything to reopen. Every other place that
-	// rebuilds the bar does this; this one did not, which left Reopen Last Closed
-	// enabled and doing nothing after opening a document from a fresh start.
+	// A rebuilt menu bar has every item enabled; skipping this left Reopen Last Closed enabled and inert after a fresh-start open.
 	let has_reopen = ctx.dm.lock().unwrap().has_recently_closed();
 	menu::update_reopen_state(ctx.frame, has_reopen);
 }
@@ -135,9 +127,7 @@ pub fn reopen_last_closed(ctx: &Ctx) {
 	}
 }
 
-/// Re-reads the current document from disk, whether or not it changed and whether or not automatic reloading is on.
-///
-/// `try_lock`, because `reload_tab` can raise a password prompt whose event loop re-enters the menu handlers. A missing file or a failed parse is silent, as on the automatic path: the document they were reading stays put.
+// `try_lock`, because `reload_tab` can raise a password prompt whose event loop re-enters the menu handlers.
 pub fn reload(ctx: &Ctx) {
 	let Ok(mut dm) = ctx.dm.try_lock() else {
 		return;
@@ -145,23 +135,29 @@ pub fn reload(ctx: &Ctx) {
 	let Some(index) = dm.active_tab_index() else {
 		return;
 	};
-	// A file that is gone has nothing to re-read, so a batch running on it keeps going rather than losing its pages for nothing.
-	if !dm.active_tab().is_some_and(|tab| tab.local_path().exists()) {
+	// A document opened from a link is downloaded again rather than re-read from its copy.
+	if let Some(link) =
+		dm.active_tab().filter(|tab| tab.working_copy.is_some()).map(|tab| tab.file_path.to_string_lossy().into_owned())
+	{
+		drop(dm);
+		let (frame, label, from_keyboard) = (*ctx.frame, ctx.live_region_label, ctx.from_keyboard);
+		download_again(ctx.frame, ctx.dm, link, move |dm| {
+			announce_reloaded(&frame, dm, label, from_keyboard);
+		});
 		return;
 	}
-	// Stopped before the re-read, or its pages would be put back into the new buffer, and quietly, since a count of pages recognized describes text the re-read throws away.
-	dm.cancel_ocr(true);
 	if !dm.reload_tab(index, true) {
 		return;
 	}
-	update_title_from_manager(ctx.frame, &dm);
+	announce_reloaded(ctx.frame, &dm, ctx.live_region_label, ctx.from_keyboard);
+}
+
+fn announce_reloaded(frame: &Frame, dm: &DocumentManager, live_region_label: StaticText, from_keyboard: bool) {
+	update_title_from_manager(frame, dm);
 	dm.update_status_bar();
-	// High, unlike the automatic reload's Medium: here the reader asked for it. `announce` is
-	// `announce_with_priority` at High, so going through `announce_for_command` keeps the
-	// priority and adds the menu delay that lets the message land after the chain a closed
-	// menu starts.
+	// High, unlike the automatic reload's Medium, since the reader asked; `announce_for_command` adds the delay that lets it land after a closing menu's chain.
 	// TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
-	announce_for_command(ctx.live_region_label, ctx.from_keyboard, t("Document reloaded."));
+	announce_for_command(live_region_label, from_keyboard, t("Document reloaded."));
 }
 
 pub fn clear_recent_documents(ctx: &Ctx) {

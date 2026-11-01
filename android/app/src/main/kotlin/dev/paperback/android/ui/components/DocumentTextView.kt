@@ -43,10 +43,7 @@ import uniffi.paperback.LinkAction
 import uniffi.paperback.MarkerType
 import uniffi.paperback.SearchOptionsFfi
 
-/**
- * How much bigger than body text each heading level draws, h1 through h6. Bold alone left a chapter
- * title the same size as the prose under it, which flattens a book's structure on screen.
- */
+/** Bold alone left a chapter title the same size as the prose under it, flattening the book's structure on screen. */
 private val HEADING_SCALES = floatArrayOf(1.6f, 1.45f, 1.3f, 1.18f, 1.08f, 1f)
 
 @Composable
@@ -62,8 +59,7 @@ fun DocumentTextView(
 ) {
 	val context = LocalContext.current
 	val scope = rememberCoroutineScope()
-	// Reaching a position means scrolling its line into view and marking it as the line to focus,
-	// so a screen reader lands on it rather than wherever the list happened to stop.
+	// Marked as the line to focus so a screen reader lands on it rather than wherever the list happened to stop.
 	val goToPosition: (Long) -> Unit = { position ->
 		val targetIndex = lineIndexFor(docState.session.lineFromPosition(position))
 		scope.launch {
@@ -102,11 +98,7 @@ fun DocumentTextView(
 					.semantics(mergeDescendants = true) {}
 				var isHeading = false
 				var headingLevel = 0
-				// A picture or a table the reader can't show comes through as a "[Image: ...]" or
-				// "[Table]: ..." placeholder, which set in the body face reads as markup that leaked
-				// into the prose. Drawn as an aside it reads as a note about the page instead. The
-				// wording stays as it is, since that is what a screen reader speaks. High contrast
-				// keeps the italics but not the dimmer colour.
+				// "[Image: ...]" and "[Table]: ..." placeholders in the body face read as leaked markup; restyled only, since the wording is what a screen reader speaks.
 				val asideStyle = SpanStyle(
 					fontStyle = FontStyle.Italic,
 					color = readability.textStyle.color.takeOrElse { MaterialTheme.colorScheme.onSurfaceVariant }
@@ -165,8 +157,7 @@ fun DocumentTextView(
 									currentIdx = markerStartInLine
 								}
 								if (currentIdx < lineText.length) {
-									// A table's span counts the newline that ends its line, so it can
-									// reach past the text this line actually holds.
+									// A table's span counts the newline that ends its line, so it can reach past this line's text.
 									val markerEnd = (currentIdx + marker.length.toInt()).coerceAtMost(lineText.length)
 									if (markerEnd > currentIdx) {
 										withStyle(asideStyle) { append(lineText.substring(currentIdx, markerEnd)) }
@@ -222,8 +213,7 @@ fun DocumentTextView(
 					}
 				}
 				val textStyle = if (isHeading) {
-					// Line height scales with the size so the leading stays in proportion; leaving it
-					// at the body value crowds the lines of a heading that wraps.
+					// Leaving line height at the body value crowds the lines of a heading that wraps.
 					val scale = HEADING_SCALES[(headingLevel - 1).coerceIn(HEADING_SCALES.indices)]
 					readability.textStyle.copy(
 						fontWeight = FontWeight.Bold,

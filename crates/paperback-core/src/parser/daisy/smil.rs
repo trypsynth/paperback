@@ -1,28 +1,19 @@
-//! Extracts the `<par>` alignments (text id ↔ audio clip) from a DAISY SMIL file.
-
 use roxmltree::{Document as XmlDocument, Node, NodeType, ParsingOptions};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SmilPar {
-	/// The text file the `<text src>` names explicitly. A bare `#id` fragment leaves this
-	/// `None` for the caller to resolve.
+	/// `None` for a bare `#id` fragment, which the caller resolves.
 	pub text_file: Option<String>,
 	pub text_id: String,
 	pub audio_src: String,
 	pub clip_begin_ms: u64,
-	/// `None` when `clipEnd` is absent, which SMIL 2.0 defines as running to the end of the
-	/// media. The caller bounds it against whatever plays next from the same audio file.
+	/// `None` when `clipEnd` is absent, which SMIL 2.0 defines as running to the end of the media; the caller bounds it.
 	pub clip_end_ms: Option<u64>,
-	/// Ids within the SMIL document that name this par's position: its own `id`, its
-	/// `<text>`'s `id`, and its ancestors' (`<seq>`, `<a>`, `<body>`). A DAISY 3 NCX points
-	/// its `content/@src` at one of these, not at a `DTBook` id, so the caller needs them to
-	/// resolve the table of contents. Ancestor ids repeat across every par they contain; the
-	/// caller keeps the first, which is where that `<seq>` begins.
+	/// A DAISY 3 NCX points at one of these rather than a `DTBook` id; ancestor ids repeat across every par they contain, and the caller keeps the first, where that `<seq>` begins.
 	pub anchor_ids: Vec<String>,
 }
 
-/// All `<par>` elements with both a `<text>` and an `<audio>` child, in document order.
-/// Pars missing either child (image-only pars, unrecorded text) are skipped.
+/// Pars missing a `<text>` or `<audio>` (image-only pars, unrecorded text) are skipped.
 #[must_use]
 pub fn parse_smil_pars(content: &str) -> Vec<SmilPar> {
 	let Ok(doc) =
@@ -32,37 +23,54 @@ pub fn parse_smil_pars(content: &str) -> Vec<SmilPar> {
 	};
 	doc.descendants()
 		.filter(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "par")
-		.filter_map(par_from_node)
+		.filter_map(|par| par_from_node(par, true))
 		.collect()
 }
 
-fn par_from_node(par: Node) -> Option<SmilPar> {
-	let text = par.children().find(|n| n.is_element() && n.tag_name().name() == "text")?;
-	// DAISY 2.02 producers commonly nest `<audio>` inside a `<seq>` rather than placing it
-	// directly under `<par>`, so this searches descendants, not just direct children. A nested
-	// `<par>` is its own entry with its own audio, so its clips are left to it.
+/// For an audio-only DAISY 3 book, whose pars hold only `<audio>`: those without a `<text>` are kept, with no text reference.
+#[must_use]
+pub fn parse_smil_audio_pars(content: &str) -> Vec<SmilPar> {
+	let Ok(doc) =
+		XmlDocument::parse_with_options(content, ParsingOptions { allow_dtd: true, ..ParsingOptions::default() })
+	else {
+		return Vec::new();
+	};
+	doc.descendants()
+		.filter(|n| n.node_type() == NodeType::Element && n.tag_name().name() == "par")
+		.filter_map(|par| par_from_node(par, false))
+		.collect()
+}
+
+fn par_from_node(par: Node, needs_text: bool) -> Option<SmilPar> {
+	let text = par.children().find(|n| n.is_element() && n.tag_name().name() == "text");
+	if needs_text && text.is_none() {
+		return None;
+	}
+	// DAISY 2.02 producers commonly nest `<audio>` inside a `<seq>` under `<par>`; a nested `<par>` is its own entry, so its clips are left to it.
 	let own_par = |node: &Node| node.ancestors().skip(1).find(|n| n.tag_name().name() == "par") == Some(par);
 	let is_own_audio = |node: &Node| node.is_element() && node.tag_name().name() == "audio" && own_par(node);
 	let audios: Vec<Node> = par.descendants().filter(is_own_audio).collect();
-	let src = text.attribute("src")?;
-	let (text_file, text_id) = match src.split_once('#') {
-		Some((file, id)) => (if file.is_empty() { None } else { Some(file.to_string()) }, id.to_string()),
-		None => (None, src.to_string()),
+	let (text_file, text_id) = match text.map(|text| text.attribute("src")) {
+		Some(None) => return None,
+		Some(Some(src)) => match src.split_once('#') {
+			Some((file, id)) => (if file.is_empty() { None } else { Some(file.to_string()) }, id.to_string()),
+			None => (None, src.to_string()),
+		},
+		None => (None, String::new()),
 	};
 	let first = audios.first()?;
 	let audio_src = first.attribute("src")?.to_string();
 	// An audio-only DAISY 2.02 book gives each heading one par holding every phrase of its section in a `<seq>`, so the par plays from its first clip to the end of the last one in the same file. Taking only the first made a section one phrase long, and a five-second skip landed several headings on (#969).
 	let same_file = |audio: &&Node| audio.attribute("src") == Some(audio_src.as_str());
 	let last = audios.iter().take_while(same_file).last().unwrap_or(first);
-	// SMIL 1.0 (DAISY 2.02) spells these `clip-begin`/`clip-end`; SMIL 2.0 (DAISY 3) uses
-	// `clipBegin`/`clipEnd`.
+	// SMIL 1.0 (DAISY 2.02) spells these `clip-begin`/`clip-end`; SMIL 2.0 (DAISY 3) uses `clipBegin`/`clipEnd`.
 	let clip_begin_ms =
 		first.attribute("clipBegin").or_else(|| first.attribute("clip-begin")).map_or(0, parse_smil_time);
 	let clip_end_ms = last.attribute("clipEnd").or_else(|| last.attribute("clip-end")).map(parse_smil_time);
 	let mut anchor_ids: Vec<String> = par
 		.attribute("id")
 		.into_iter()
-		.chain(text.attribute("id"))
+		.chain(text.and_then(|text| text.attribute("id")))
 		.chain(par.ancestors().skip(1).filter_map(|n| n.attribute("id")))
 		.map(str::to_string)
 		.collect();
@@ -70,13 +78,7 @@ fn par_from_node(par: Node) -> Option<SmilPar> {
 	Some(SmilPar { text_file, text_id, audio_src, clip_begin_ms, clip_end_ms, anchor_ids })
 }
 
-/// Parses a SMIL 2.0 clock value into milliseconds.
-///
-/// Covers both grammars: a full or partial clock value (`"hh:mm:ss.fff"` / `"mm:ss.fff"`) and
-/// a timecount value with any of the defined units (`"12.345"`, `"12.345s"`, `"500ms"`,
-/// `"1.5min"`, `"2h"`), optionally behind the `npt=` prefix DAISY inherits from SMIL 1.0. A
-/// bare number is seconds. Unparseable input maps to zero rather than failing the whole book
-/// over one bad timestamp.
+/// Covers both SMIL 2.0 clock grammars plus the `npt=` prefix DAISY inherits from SMIL 1.0; unparseable input is zero rather than failing the whole book over one bad timestamp.
 #[must_use]
 pub fn parse_smil_time(raw: &str) -> u64 {
 	let mut value = raw.trim();
@@ -97,8 +99,12 @@ pub fn parse_smil_time(raw: &str) -> u64 {
 	value.parse::<f64>().map_or(0, |secs| scale_to_ms(secs, 1000.0))
 }
 
-/// Rounds `count * ms_per_unit` to whole milliseconds, clamping negatives (which a clock
-/// value can't legally hold) to zero rather than wrapping around on the cast.
+/// Clamps negatives, which a clock value can't legally hold, to zero rather than wrapping on the cast.
+#[allow(
+	clippy::cast_possible_truncation,
+	clippy::cast_sign_loss,
+	reason = "rounded and positive by then, and a float cast saturates"
+)]
 fn scale_to_ms(count: f64, ms_per_unit: f64) -> u64 {
 	let ms = (count * ms_per_unit).round();
 	if ms > 0.0 { ms as u64 } else { 0 }
@@ -174,8 +180,7 @@ mod tests {
 		assert_eq!(parse_smil_time("npt=12.345s"), 12345);
 	}
 
-	/// SMIL 2.0's timecount grammar allows `h`, `min`, `ms` as well as `s`. Reading `"500ms"`
-	/// as seconds (or failing it to zero) silently mistimes a clip.
+	/// Reading `"500ms"` as seconds, or failing it to zero, silently mistimes a clip.
 	#[test]
 	fn parses_every_timecount_unit() {
 		assert_eq!(parse_smil_time("500ms"), 500);
@@ -220,8 +225,7 @@ mod tests {
 		assert_eq!(pars[1].clip_begin_ms, 2500);
 	}
 
-	/// `clipEnd` is `#IMPLIED` in the DAISY 3 SMIL DTD and means "to the end of the media" in
-	/// SMIL 2.0, so the par must survive for the caller to bound, not be dropped outright.
+	/// `clipEnd` is `#IMPLIED` in the DAISY 3 SMIL DTD and means "to the end of the media" in SMIL 2.0, so the par must survive for the caller to bound.
 	#[test]
 	fn absent_clip_end_is_none_rather_than_dropping_the_par() {
 		let smil = r#"<smil xmlns="http://www.w3.org/2001/SMIL20/"><body><seq id="s">
@@ -233,8 +237,6 @@ mod tests {
 		assert_eq!(pars[0].clip_end_ms, None);
 	}
 
-	/// A DAISY 3 NCX targets ids in the SMIL, so a par has to report its own id, its
-	/// `<text>`'s id, and the ids of the `<seq>`/`<a>` elements containing it.
 	#[test]
 	fn collects_anchor_ids_from_the_par_its_text_and_its_ancestors() {
 		let smil = r#"<smil xmlns="http://www.w3.org/2001/SMIL20/"><body id="bod"><seq id="baseseq">

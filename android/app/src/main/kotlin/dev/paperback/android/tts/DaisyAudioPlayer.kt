@@ -15,15 +15,7 @@ import java.io.File
 
 private const val POLL_INTERVAL_MS = 250L
 
-/**
- * Plays a DAISY 3 audiobook's recorded narration against its `AudioTimeline`, the Android
- * counterpart to desktop's wxMediaCtrl-backed AudioPlayer. Unlike desktop, there's no "sync
- * caret to audio" toggle: `onClipChanged` always fires, so the caller keeps the existing
- * currently-spoken-text display in step with playback unconditionally.
- */
-class DaisyAudioPlayer(
-	private val context: Context
-) : RecordedPlayer {
+class DaisyAudioPlayer(private val context: Context) : RecordedPlayer {
 	private val scope = CoroutineScope(Dispatchers.Main)
 	private val cacheDir = File(context.cacheDir, "paperback_daisy_audio_cache")
 
@@ -35,39 +27,50 @@ class DaisyAudioPlayer(
 	private var playing = false
 	private var loadGeneration = 0
 
-	/** A seek requested while paused, applied lazily on resume (see `play()`). */
 	private var pendingTargetMs: Long? = null
 
-	/** Most recent seek target, so a jump resolving to the same spot doesn't restart audio. */
+	/** So a jump resolving to the same spot doesn't restart audio. */
 	private var lastSeekTarget: Pair<Int, Long>? = null
 
 	private var lastReportedClip: Int? = null
 	private var pollJob: Job? = null
 
-	/** Invoked with the start position of the clip currently narrating, whenever it changes. */
 	var onClipChanged: ((position: Long) -> Unit)? = null
 
-	/** Invoked whenever play/pause state changes, including auto-advance and end-of-book. */
 	var onPlaybackStateChanged: ((playing: Boolean) -> Unit)? = null
 
-	/** Invoked once a `seekRelativeMs` has actually landed, with where it landed in document
-	 * elapsed time. Fires after the async load a cross-file seek needs, so a caller that wants
-	 * to announce the new position can't just use the value it asked for. Only relative seeks
-	 * report: the ones that follow the caret or restore a saved position have nothing to say. */
+	/** Fires after the async load a cross-file seek needs, so an announcement can't just use the value that was asked for. */
 	var onRelativeSeekLanded: ((elapsedMs: Long) -> Unit)? = null
 
-	/** Set for the duration of one `seekRelativeMs`, so only that seek reports where it lands. */
+	/** Only relative seeks report: those following the caret or restoring a saved position have nothing to announce. */
 	private var reportNextSeek = false
+
+	/** One speed for every recording; it survives loading the next file. */
+	var speed: Float = 1f
+		set(value) {
+			field = value
+			// Only while it plays, since setting a speed on a paused MediaPlayer starts it.
+			mediaPlayer?.takeIf { playing && it.isPlaying }?.let { applySpeed(it) }
+		}
+
+	private fun applySpeed(player: MediaPlayer) {
+		try {
+			player.playbackParams = player.playbackParams.setSpeed(speed)
+		} catch (_: Exception) {
+		}
+	}
+
+	/** The speed is set as it starts, which is the one moment setting it can't start a paused player by surprise. */
+	private fun startAtSpeed(player: MediaPlayer) {
+		applySpeed(player)
+		player.start()
+	}
 
 	private val audioFocus =
 		AudioFocusHolder(context, isPlaying = { playing }, onPause = { pause() }, onResume = { play() })
 
-	/** Switches to narrating `session`, stopping whatever this player was previously doing.
-	 * `docKey` scopes the extracted-source cache so it doesn't collide with another document's. */
-	fun attach(
-		newSession: DocumentSession,
-		newDocKey: String
-	) {
+	/** `newDocKey` scopes the extracted-source cache so it doesn't collide with another document's. */
+	fun attach(newSession: DocumentSession, newDocKey: String) {
 		stop()
 		session = newSession
 		docKey = newDocKey
@@ -95,7 +98,7 @@ class DaisyAudioPlayer(
 			pending != null -> seekToMs(pending)
 			currentSource != null -> {
 				try {
-					mediaPlayer?.start()
+					mediaPlayer?.let { startAtSpeed(it) }
 				} catch (_: Exception) {
 				}
 				onPlaybackStateChanged?.invoke(true)
@@ -121,11 +124,7 @@ class DaisyAudioPlayer(
 		if (playing) pause() else play()
 	}
 
-	/** Stops playback and releases the native player, ahead of switching documents or the
-	 * app going away. Only notifies `onPlaybackStateChanged` when there was actually something
-	 * to stop: `attach`/`detach` call this on every tab switch, including switches involving
-	 * documents that never had DAISY audio attached, and firing unconditionally there would
-	 * force TtsManager's paused state on even when it was never speaking. */
+	/** Notifies only when something was active: this runs on every tab switch, and firing there would force TtsManager into a paused state it was never in. */
 	fun stop() {
 		val wasActive = playing || session != null
 		playing = false
@@ -150,8 +149,6 @@ class DaisyAudioPlayer(
 		if (wasActive) onPlaybackStateChanged?.invoke(false)
 	}
 
-	/** Seeks playback to the point covering `position` in the text, if the timeline narrates
-	 * it. Leaves the transport running or paused as it already was. */
 	override fun seekToPosition(position: Long): Boolean {
 		val session = session ?: return false
 		val point = session.audioPointForPositionFfi(position)
@@ -159,12 +156,10 @@ class DaisyAudioPlayer(
 		return seekToMs(point.timeMs)
 	}
 
-	/** Seeks playback to `elapsedMs` into the overall document timeline. A paused target that
-	 * lands in some other file is only recorded, and applied on resume (mirrors desktop), so
-	 * browsing a paused book with real navigation doesn't drive a full load per keystroke. A
-	 * target inside the file already open is applied straight away even while paused: it costs
-	 * nothing, and it keeps the decoder's reported position honest for `seekRelativeMs`, which
-	 * measures from it. */
+	/**
+	 * A paused target in another file is only recorded and applied on resume, so browsing a paused book doesn't load a file per keystroke.
+	 * One in the open file is applied even while paused, keeping the decoder's position honest for `seekRelativeMs`, which measures from it.
+	 */
 	fun seekToMs(elapsedMs: Long): Boolean {
 		val session = session ?: return false
 		val cursor = session.audioCursorAtElapsedFfi(elapsedMs)
@@ -183,8 +178,7 @@ class DaisyAudioPlayer(
 		pendingTargetMs = null
 		reportClip(cursor.clipIndex)
 		if (lastSeekTarget == (clip.source to cursor.seekMs)) {
-			// Same spot: don't restart the audio, but a play() that routed through here still
-			// has to get the transport moving.
+			// A play() that routed through here still has to get the transport moving.
 			if (playing) resumeLoadedPlayer()
 			return true
 		}
@@ -196,15 +190,6 @@ class DaisyAudioPlayer(
 		return true
 	}
 
-	/** Moves playback `deltaMs` from wherever it is now, the time-unit equivalent of stepping
-	 * by paragraph in a text document.
-	 *
-	 * A seek that runs off either end of the file now playing continues into its neighbour,
-	 * measured against that file's own real length. It has to work that way rather than through
-	 * elapsed time: an audiobook that is just a bundle of narration files gives every clip the
-	 * same placeholder duration, far longer than the recording (see
-	 * `build_plain_audio_zip_document`), so elapsed-time arithmetic would resolve back into the
-	 * same file past its end, where the native seek only clamps. */
 	fun seekRelativeMs(deltaMs: Long): Boolean {
 		val session = session ?: return false
 		reportNextSeek = true
@@ -220,17 +205,10 @@ class DaisyAudioPlayer(
 		return seeked
 	}
 
-	/** Handles the part of `seekRelativeMs` that leaves the current file, loading the
-	 * neighbouring source at the leftover offset. False when the seek stays inside this file,
-	 * when there's no neighbour to spill into, or when no decoder is loaded to measure against. */
-	private fun spillAcrossFileBoundary(
-		session: DocumentSession,
-		deltaMs: Long
-	): Boolean {
+	private fun spillAcrossFileBoundary(session: DocumentSession, deltaMs: Long): Boolean {
 		val source = currentSource ?: return false
 		val player = mediaPlayer ?: return false
-		// A recorded-but-unapplied target means the loaded decoder isn't where we logically
-		// are, so its reported position is the wrong thing to measure a relative seek from.
+		// With a target recorded but unapplied, the decoder's position is the wrong place to measure from.
 		if (pendingTargetMs != null) return false
 		val rawMs: Long
 		val lengthMs: Long
@@ -259,23 +237,20 @@ class DaisyAudioPlayer(
 
 	private fun resumeLoadedPlayer() {
 		try {
-			mediaPlayer?.start()
+			mediaPlayer?.let { startAtSpeed(it) }
 		} catch (_: Exception) {
 		}
 		onPlaybackStateChanged?.invoke(true)
 		startPolling()
 	}
 
-	private fun applySeek(
-		source: Int,
-		seekMs: Long
-	) {
+	private fun applySeek(source: Int, seekMs: Long) {
 		val player = mediaPlayer ?: return
 		val landedMs = seekWithinPlayer(player, seekMs)
 		lastSeekTarget = source to landedMs
 		try {
 			if (playing) {
-				player.start()
+				startAtSpeed(player)
 				startPolling()
 			} else {
 				player.pause()
@@ -285,13 +260,8 @@ class DaisyAudioPlayer(
 		reportSeeked(source, landedMs)
 	}
 
-	/** Seeks `player` to `seekMs`, clamped to the file's real length, and reports where it
-	 * actually went. The clamp matters for a bundle of narration files, whose clips declare a
-	 * placeholder duration hours longer than the recording. */
-	private fun seekWithinPlayer(
-		player: MediaPlayer,
-		seekMs: Long
-	): Long {
+	/** Clamped to the file's real length, since a bundle of narration files declares placeholder clip durations hours longer than the recording. */
+	private fun seekWithinPlayer(player: MediaPlayer, seekMs: Long): Long {
 		val lengthMs = try {
 			player.duration.toLong()
 		} catch (_: Exception) {
@@ -309,10 +279,7 @@ class DaisyAudioPlayer(
 		return target
 	}
 
-	private fun reportSeeked(
-		source: Int,
-		rawMs: Long
-	) {
+	private fun reportSeeked(source: Int, rawMs: Long) {
 		if (!reportNextSeek) return
 		reportNextSeek = false
 		val session = session ?: return
@@ -320,36 +287,25 @@ class DaisyAudioPlayer(
 		if (elapsed >= 0) onRelativeSeekLanded?.invoke(elapsed)
 	}
 
-	/** Where in a source to start: an absolute offset, or a distance back from its real end,
-	 * which only a prepared decoder knows. */
+	/** [FromEnd] is resolved only once the decoder is prepared, since only it knows the real length. */
 	private sealed interface SourceSeek {
-		data class FromStart(
-			val ms: Long
-		) : SourceSeek
+		data class FromStart(val ms: Long) : SourceSeek
 
-		data class FromEnd(
-			val ms: Long
-		) : SourceSeek
+		data class FromEnd(val ms: Long) : SourceSeek
 	}
 
-	private fun loadSource(
-		sourceIndex: Int,
-		seek: SourceSeek
-	) {
+	private fun loadSource(sourceIndex: Int, seek: SourceSeek) {
 		val session = session ?: return
 		lastSeekTarget = null
 		currentSource = sourceIndex
-		// Where we are between here and the decoder being ready, so a second seek arriving in
-		// that window still has something to measure from. A distance back from the end has no
-		// answer until the file's real length is known, so it stays unrecorded until then.
+		// So a second seek arriving before the decoder is ready still has something to measure from.
 		pendingTargetMs = when (seek) {
 			is SourceSeek.FromStart ->
 				session.audioElapsedForSourcePositionFfi(sourceIndex, seek.ms).takeIf { it >= 0 }
 			is SourceSeek.FromEnd -> null
 		}
 		stopPolling()
-		// A fresh MediaPlayer per source lets Android's async prepare run concurrently;
-		// the generation check below discards a superseded load's callback.
+		// The generation check discards a superseded load's prepare callback.
 		val myGeneration = ++loadGeneration
 		val oldPlayer = mediaPlayer
 		mediaPlayer = null
@@ -357,8 +313,7 @@ class DaisyAudioPlayer(
 			oldPlayer?.release()
 		} catch (_: Exception) {
 		}
-		// resolveSourcePath can extract a zip-embedded source to disk, so it runs off the
-		// main thread; the generation check on return discards a superseded load.
+		// Off the main thread because a zip-embedded source is extracted to disk.
 		scope.launch {
 			val path = withContext(Dispatchers.IO) { resolveSourcePath(session, sourceIndex) }
 			if (path == null || myGeneration != loadGeneration) return@launch
@@ -366,10 +321,7 @@ class DaisyAudioPlayer(
 		}
 	}
 
-	/** Clears load/seek state after a source fails to prepare or errors during playback.
-	 * Leaving `currentSource`/`lastSeekTarget` pointing at the failed clip would make a retry
-	 * to that same position a no-op under the same-spot check in `seekToMs`, so playback could
-	 * never recover without seeking somewhere else first. */
+	/** Left pointing at the failed clip, a retry there would be a no-op under `seekToMs`'s same-spot check, and playback could never recover. */
 	private fun resetAfterLoadFailure() {
 		currentSource = null
 		lastSeekTarget = null
@@ -378,12 +330,7 @@ class DaisyAudioPlayer(
 		onPlaybackStateChanged?.invoke(false)
 	}
 
-	private fun startPlayer(
-		path: String,
-		sourceIndex: Int,
-		seek: SourceSeek,
-		myGeneration: Int
-	) {
+	private fun startPlayer(path: String, sourceIndex: Int, seek: SourceSeek, myGeneration: Int) {
 		val player = MediaPlayer()
 		try {
 			player.setAudioAttributes(speechAudioAttributes())
@@ -412,14 +359,13 @@ class DaisyAudioPlayer(
 				lastSeekTarget = sourceIndex to landedMs
 				if (playing) {
 					try {
-						mp.start()
+						startAtSpeed(mp)
 					} catch (_: Exception) {
 					}
 					onPlaybackStateChanged?.invoke(true)
 					startPolling()
 				}
-				// The decoder is now sitting where it was asked to, so it is the authority on
-				// the resume point again (see `resumePointMs`).
+				// The decoder is the authority on the resume point again (see `resumePointMs`).
 				pendingTargetMs = null
 				reportClipAtSourcePosition(sourceIndex, landedMs)
 				reportSeeked(sourceIndex, landedMs)
@@ -448,8 +394,6 @@ class DaisyAudioPlayer(
 		}
 	}
 
-	/** Auto-advances to whichever source continues the narration, or stops at the end of the
-	 * book. Android's analog of desktop's `on_finished` handler. */
 	private fun onSourceCompleted(sourceIndex: Int) {
 		val session = session ?: return
 		val next = session.audioNextSourceAfterFfi(sourceIndex)
@@ -462,12 +406,7 @@ class DaisyAudioPlayer(
 		}
 	}
 
-	/** Resolves source `index` to a real local file MediaPlayer can play: the document's own
-	 * path directly when it isn't zip-embedded, otherwise extracted once and cached. */
-	private fun resolveSourcePath(
-		session: DocumentSession,
-		index: Int
-	): String? {
+	private fun resolveSourcePath(session: DocumentSession, index: Int): String? {
 		val direct = session.audioSourceDirectPathFfi(index)
 		if (direct.isNotEmpty()) return direct
 		val key = docKey ?: return null
@@ -495,8 +434,6 @@ class DaisyAudioPlayer(
 		pollJob = null
 	}
 
-	/** Keeps the reported "currently narrating" clip in step with natural playback advance.
-	 * The always-on equivalent of desktop's `pump_audio`. */
 	private fun pollTick() {
 		val session = session ?: return
 		val source = currentSource ?: return
@@ -514,12 +451,8 @@ class DaisyAudioPlayer(
 		if (cursor.found) reportClip(cursor.clipIndex)
 	}
 
-	/** Reports whichever clip covers `rawMs` in `source`, for a seek that landed somewhere the
-	 * poll loop won't visit on its own (a paused one, most of all). */
-	private fun reportClipAtSourcePosition(
-		source: Int,
-		rawMs: Long
-	) {
+	/** For a seek landing where the poll loop won't visit, a paused one most of all. */
+	private fun reportClipAtSourcePosition(source: Int, rawMs: Long) {
 		val session = session ?: return
 		val elapsed = session.audioElapsedForSourcePositionFfi(source, rawMs)
 		if (elapsed < 0) return
@@ -536,8 +469,7 @@ class DaisyAudioPlayer(
 		onClipChanged?.invoke(clip.start)
 	}
 
-	/** Where playback would resume right now. `null` means no position has been established
-	 * yet; callers must not treat that as "the start", since it would overwrite a stored position. */
+	/** Null means no position yet; treating it as the start would overwrite a stored position. */
 	fun resumePointMs(): Long? {
 		val session = session
 		val source = currentSource
@@ -562,36 +494,16 @@ class DaisyAudioPlayer(
 	}
 }
 
-/** Where a relative seek lands relative to the file it starts in. */
 internal sealed interface SeekSpill {
-	/** The seek stays inside this file, so it is an ordinary seek. */
 	object WithinFile : SeekSpill
 
-	/** The seek runs off the end, [overflowMs] into whatever plays next. */
-	data class PastEnd(
-		val overflowMs: Long
-	) : SeekSpill
+	data class PastEnd(val overflowMs: Long) : SeekSpill
 
-	/** The seek runs off the front, [underflowMs] back from the end of whatever plays before. */
-	data class BeforeStart(
-		val underflowMs: Long
-	) : SeekSpill
+	data class BeforeStart(val underflowMs: Long) : SeekSpill
 }
 
-/**
- * Where seeking [deltaMs] from [rawMs] lands, in a file that really runs for [lengthMs].
- *
- * This works in the file's own time rather than the document's elapsed time on purpose: an
- * audiobook that is only a bundle of narration files gives every clip the same placeholder
- * duration, far longer than the recording it stands for, so elapsed-time arithmetic would resolve
- * back into the same file past its end, where a seek can only clamp. A file whose length is not
- * known yet ([lengthMs] of zero or less) can only be seeked within.
- */
-internal fun spillOf(
-	rawMs: Long,
-	lengthMs: Long,
-	deltaMs: Long
-): SeekSpill {
+/** In the file's own time, not elapsed time: a bundle of narration files gives every clip a placeholder duration far past the recording, so elapsed arithmetic would land back in the same file past its end. */
+internal fun spillOf(rawMs: Long, lengthMs: Long, deltaMs: Long): SeekSpill {
 	if (lengthMs <= 0) return SeekSpill.WithinFile
 	val naiveMs = rawMs + deltaMs
 	return when {

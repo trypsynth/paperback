@@ -14,7 +14,7 @@ use super::{
 	find::{self, FindDialogState},
 	help, icon, menu, menu_ids, navigation,
 	readability::build_font_from_readability,
-	sleep_timer, status, window_geometry,
+	sleep_timer, window_geometry,
 };
 use crate::{
 	config_ext::{UpdateChannel, get_update_channel},
@@ -25,7 +25,6 @@ use crate::{
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 mod ipc;
 mod links;
-#[cfg(not(target_os = "macos"))]
 mod menu_edit;
 mod menu_events;
 mod menu_file;
@@ -35,18 +34,13 @@ mod menu_view;
 mod parser_ready;
 mod restore;
 mod window_events;
-pub use links::open_links;
+pub use links::{download_again, open_links};
 pub(crate) use parser_ready::{ensure_parser_ready_for_path, resolve_zip_path};
 
 #[cfg(target_os = "windows")]
 mod hotkey;
 #[cfg(target_os = "windows")]
 use hotkey::{HotkeyHandle, re_register_hotkey, start_hotkey_listener};
-
-#[cfg(target_os = "windows")]
-mod foreground;
-#[cfg(target_os = "windows")]
-pub(crate) use foreground::{frame_is_disabled, own_dialog_is_up, remember_frame_hwnd};
 
 use crate::ui::navigation::announce;
 
@@ -56,24 +50,16 @@ pub struct MainWindow {
 	config: Rc<Mutex<ConfigManager>>,
 	#[cfg(target_os = "windows")]
 	tray_state: Rc<Mutex<Option<tray::TrayState>>>,
-	#[cfg_attr(
-		not(target_os = "macos"),
-		allow(dead_code, reason = "keeps the announcement label with the main window")
-	)]
 	live_region_label: StaticText,
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
 	#[cfg(target_os = "windows")]
 	_hotkey_handle: Rc<RefCell<Option<HotkeyHandle>>>,
-	/// Recurring timers, held for the window's lifetime. `Timer`'s `Drop` destroys the
-	/// underlying `wxTimer`, which stops it, so a timer that is only started and then dropped
-	/// at the end of the function that set it up never fires again.
+	/// `Timer`'s `Drop` destroys the `wxTimer`, so recurring timers must live as long as the window.
 	_timers: Vec<Rc<Timer<Frame>>>,
 }
 
 impl MainWindow {
-	/// Accessor for background callbacks (e.g. the OCR worker thread) that can't hold the app's
-	/// own `Rc<Mutex<DocumentManager>>` (an `Rc` is not `Send`); they reach the window via
-	/// [`crate::ui::app::main_window_from_ptr`] and then this method.
+	/// For background callbacks (e.g. OCR), which can't hold an `Rc` and reach the window via [`crate::ui::app::main_window_from_ptr`].
 	pub(crate) fn document_manager(&self) -> &Rc<Mutex<DocumentManager>> {
 		&self.doc_manager
 	}
@@ -83,11 +69,7 @@ impl MainWindow {
 		let app_title = t("Paperback");
 		let frame = Frame::builder().with_title(&app_title).build();
 		window_geometry::apply_defaults(&frame);
-		#[cfg(target_os = "windows")]
-		remember_frame_hwnd(&frame);
-		// The title bar and Alt+Tab entry. On Windows the executable's own icon resource
-		// (embedded by build.rs) already covers the taskbar and the shell; this is what the
-		// window itself carries, and is the only icon at all on the other platforms.
+		// On Windows the exe's icon resource covers the taskbar; this is the title bar and Alt+Tab icon, and the only icon elsewhere.
 		if let Some(bitmap) = icon::frame_bitmap() {
 			frame.set_icon(&bitmap);
 		}
@@ -119,7 +101,7 @@ impl MainWindow {
 		)));
 		let find_dialog = Rc::new(Mutex::new(None));
 		#[cfg(target_os = "windows")]
-		let hotkey_handle = Rc::new(RefCell::new(start_hotkey_listener(&config.lock().unwrap().get_hotkey())));
+		let hotkey_handle = Rc::new(RefCell::new(start_hotkey_listener(config.lock().unwrap().get_hotkey().as_ref())));
 		let timers = Self::bind_menu_events(
 			&frame,
 			&doc_manager,
@@ -132,7 +114,12 @@ impl MainWindow {
 		);
 		menu_events::bind_key_source(&frame, &config, Rc::clone(&from_keyboard));
 		#[cfg(target_os = "macos")]
-		super::mac_shortcuts::install(frame, Rc::clone(&config), Rc::clone(&from_keyboard));
+		{
+			let dm = Rc::clone(&doc_manager);
+			super::mac_shortcuts::install(frame, Rc::clone(&config), Rc::clone(&from_keyboard), move || {
+				dm.try_lock().is_ok_and(|dm| dm.active_tab().is_some_and(|tab| tab.text_ctrl.has_focus()))
+			});
+		}
 		#[cfg(not(target_os = "windows"))]
 		window_events::bind_tab_cycling(&frame, &doc_manager);
 		window_events::bind_document_events(frame, &doc_manager, live_region_label);
@@ -168,6 +155,10 @@ impl MainWindow {
 	pub fn show(&self) {
 		window_geometry::restore(&self.frame, &self.config.lock().unwrap());
 		self.frame.show(true);
+		let raised = ship_shape::ui::bring_to_front_after_update(&self.frame);
+		if ship_shape::relaunched_after_update() {
+			tracing::info!(raised, "relaunched after an update");
+		}
 	}
 
 	#[cfg(target_os = "macos")]
@@ -197,7 +188,6 @@ impl MainWindow {
 		result
 	}
 
-	/// Opens what a command line or another Paperback names: a file, or a document behind a link.
 	pub fn open_target(&self, target: Target, quit_if_picker_closed: bool) {
 		match target {
 			Target::File(path) => {
@@ -213,12 +203,10 @@ impl MainWindow {
 		}
 	}
 
-	/// Get the frame
 	pub const fn frame(&self) -> &Frame {
 		&self.frame
 	}
 
-	#[cfg(target_os = "macos")]
 	pub(super) fn announce_update_restart(&self) {
 		live_region::announce(self.live_region_label, &t("Installing the update. Paperback will restart."));
 	}
@@ -232,12 +220,7 @@ impl MainWindow {
 	}
 }
 
-/// Close the active document, announcing the newly focused document for screen readers.
-///
-/// The `set_selection` inside `close_document` fires `on_page_changing` while the
-/// caller holds the manager lock, so the generic switch announcement is suppressed
-/// and this function announces the new focus itself instead, before the focus change
-/// actually happens.
+/// Announces the next tab itself because `close_document`'s `set_selection` fires `on_page_changing` under the manager lock, which suppresses the usual switch announcement.
 pub(crate) fn close_active_document_announced(dm: &mut DocumentManager, live_region_label: StaticText) {
 	let Some(index) = dm.active_tab_index() else {
 		return;
@@ -249,8 +232,6 @@ pub(crate) fn close_active_document_announced(dm: &mut DocumentManager, live_reg
 	dm.close_document(index, true);
 }
 
-/// Replaces `frame`'s menu bar with one built from `config`, then re-applies the item states
-/// that depend on the open documents and the reopen stack.
 pub(crate) fn rebuild_menu_bar(
 	frame: &Frame,
 	doc_manager: &Rc<Mutex<DocumentManager>>,
@@ -267,42 +248,18 @@ pub(crate) fn rebuild_menu_bar(
 }
 
 pub(crate) fn update_title_from_manager(frame: &Frame, dm: &DocumentManager) {
-	let sleep_start = sleep_timer::start_ms();
-	let sleep_duration = sleep_timer::duration_minutes();
-	if dm.tab_count() == 0 {
-		// TRANSLATORS: Main window title when no document is open
-		frame.set_title(&t("Paperback"));
-		#[cfg(target_os = "macos")]
-		frame.set_represented_filename("");
-		// TRANSLATORS: Default status bar text when no document is open
-		let mut status_text = t("Ready");
-		if sleep_start > 0 {
-			let remaining = status::calculate_sleep_timer_remaining(sleep_start, sleep_duration);
-			if remaining > 0 {
-				status_text = status::format_sleep_timer_status(&status_text, remaining);
-			}
-		}
-		frame.set_status_text(&status_text, 0);
-		return;
-	}
 	if let Some(tab) = dm.active_tab() {
-		// The document leads and the app name trails, which is the Windows convention and not
-		// just a cosmetic one: the taskbar and Alt+Tab truncate the end of a title, so an
-		// app-first title makes every open book look identical in both.
+		// Document first: the taskbar and Alt+Tab truncate a title's end, so app-first titles make every book look the same.
 		// TRANSLATORS: Window title when a document is open; {} is the document title
 		let template = t("{} - Paperback");
 		frame.set_title(&template.replace("{}", &display_title(tab)));
 		#[cfg(target_os = "macos")]
 		frame.set_represented_filename(&tab.local_path().to_string_lossy());
-		let position = navigation::doc_caret(tab);
-		let status_info = tab.session.get_status_info(position);
-		let mut status_text = status::format_status_text(&status_info);
-		if sleep_start > 0 {
-			let remaining = status::calculate_sleep_timer_remaining(sleep_start, sleep_duration);
-			if remaining > 0 {
-				status_text = status::format_sleep_timer_status(&status_text, remaining);
-			}
-		}
-		frame.set_status_text(&status_text, 0);
+	} else {
+		// TRANSLATORS: Main window title when no document is open
+		frame.set_title(&t("Paperback"));
+		#[cfg(target_os = "macos")]
+		frame.set_represented_filename("");
 	}
+	dm.update_status_bar();
 }

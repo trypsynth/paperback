@@ -18,10 +18,7 @@ fn play(bytes: &[u8], _name: &str) -> bool {
 	Sound::from_data(bytes).play(SoundFlags::Async)
 }
 
-/// wxOSX cannot build a sound from memory at all: `wxSound::Create(size, data)` is a
-/// `wxFAIL_MSG("not implemented")`, and asserts are compiled into the wxWidgets we link, so
-/// passing the embedded bytes straight to it aborts rather than just failing. The sound API
-/// there wraps `AudioServices`, which needs a file URL, so the bytes have to land on disk first.
+/// On macOS `wxSound::Create(size, data)` is a `wxFAIL_MSG` that aborts with our asserts compiled in, and `AudioServices` needs a file URL, so the bytes go to disk first.
 #[cfg(target_os = "macos")]
 fn play(bytes: &[u8], name: &str) -> bool {
 	match cached_wav(bytes, name) {
@@ -33,8 +30,7 @@ fn play(bytes: &[u8], name: &str) -> bool {
 	}
 }
 
-/// Writes an embedded sound to a stable temp path, once. Rewritten when the file is missing or
-/// its length no longer matches, so a build with different sounds is not stuck with old ones.
+/// Rewritten when the length no longer matches, so a build with different sounds is not stuck with old ones.
 #[cfg(target_os = "macos")]
 fn cached_wav(bytes: &[u8], name: &str) -> io::Result<PathBuf> {
 	let dir = env::temp_dir().join("paperback-sounds");

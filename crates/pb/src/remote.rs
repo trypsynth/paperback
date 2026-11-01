@@ -1,5 +1,3 @@
-//! Downloading the links among the inputs, each into its own folder under one folder per run.
-
 use std::{
 	env,
 	fs::{self, File},
@@ -12,22 +10,16 @@ use anyhow::{Context, Result, anyhow, bail};
 use paperback_core::fetch::{self, FetchError, RemoteInfo, Verdict};
 use tempfile::TempDir;
 
-/// A question put to the reader, answered yes (`true`) or no.
 type Prompt = Box<dyn FnMut(&str) -> bool>;
 
-/// The folder one run downloads into, created on first use under a name no other run shares.
 pub struct Downloads {
 	parent: PathBuf,
 	root: Option<TempDir>,
 	count: usize,
-	/// Asked whether to download a link that got a security warning; without it, such a link is
-	/// refused.
 	ask: Option<Prompt>,
-	/// The largest document downloaded, in bytes.
 	max_size: u64,
 }
 
-/// One downloaded document; the folder it was downloaded into is removed when this is dropped.
 pub struct Downloaded {
 	pub path: PathBuf,
 }
@@ -47,32 +39,23 @@ impl Default for Downloads {
 }
 
 impl Downloads {
-	/// Downloads into a new `pb-` folder inside `parent`.
 	#[must_use]
 	pub const fn in_folder(parent: PathBuf) -> Self {
 		Self { parent, root: None, count: 0, ask: None, max_size: fetch::DEFAULT_MAX_SIZE }
 	}
 
-	/// Refuses documents larger than `max_size` bytes.
 	#[must_use]
 	pub const fn with_max_size(mut self, max_size: u64) -> Self {
 		self.max_size = max_size;
 		self
 	}
 
-	/// Asks `ask` with the warning whether to download a link that got one.
 	#[must_use]
 	pub fn with_prompt(mut self, ask: impl FnMut(&str) -> bool + 'static) -> Self {
 		self.ask = Some(Box::new(ask));
 		self
 	}
 
-	/// Checks `url` against the safety rule and downloads it.
-	///
-	/// # Errors
-	///
-	/// Returns an error naming `url` when the link is refused, when the server gives no sign of a
-	/// format pb reads, or when the request or the download fails.
 	pub fn fetch(&mut self, url: &str) -> Result<Downloaded> {
 		if let Some(extension) = fetch::refused_extension(url) {
 			return Err(not_downloaded(url, &extension));
@@ -85,8 +68,6 @@ impl Downloads {
 		Ok(downloaded)
 	}
 
-	/// Whether the link may be downloaded, by its [`Verdict`]: a refusal is final, and a warning
-	/// is put to the prompt, or refused when there is none.
 	fn allowed(&mut self, url: &str, info: &RemoteInfo) -> Result<()> {
 		match info.verdict(url) {
 			Verdict::Pass => Ok(()),
@@ -102,8 +83,6 @@ impl Downloads {
 		}
 	}
 
-	/// A new, empty folder for one download inside the run's folder, which is created first if
-	/// this is the run's first download.
 	fn next_folder(&mut self) -> Result<PathBuf> {
 		let root = if let Some(root) = &self.root {
 			root.path().to_path_buf()
@@ -122,7 +101,6 @@ impl Downloads {
 		Ok(folder)
 	}
 
-	/// Removes the run's download folder.
 	pub fn remove(&mut self) {
 		drop(self.root.take());
 	}
@@ -134,8 +112,6 @@ fn not_downloaded(url: &str, extension: &str) -> anyhow::Error {
 	)
 }
 
-/// A failed request or download, naming the link; a document over the limit also says how to
-/// raise it.
 fn fetch_failed(url: &str, error: &FetchError) -> anyhow::Error {
 	match error {
 		FetchError::TooLarge(_) => {
@@ -145,7 +121,6 @@ fn fetch_failed(url: &str, error: &FetchError) -> anyhow::Error {
 	}
 }
 
-/// The security warning for a link, naming what the server sends.
 fn warning(url: &str, info: &RemoteInfo) -> String {
 	let content_type = info.content_type.as_deref().unwrap_or("no content type");
 	if fetch::is_web_page(content_type) {
@@ -157,8 +132,6 @@ fn warning(url: &str, info: &RemoteInfo) -> String {
 	}
 }
 
-/// Asks on the console whether to download a link that got `warning`; no when there is no
-/// console to ask on.
 pub fn ask_console(warning: &str) -> bool {
 	#[cfg(windows)]
 	const CONSOLE: &str = "CONIN$";
@@ -170,7 +143,6 @@ pub fn ask_console(warning: &str) -> bool {
 	BufReader::new(console).read_line(&mut answer).is_ok() && is_yes(&answer)
 }
 
-/// Whether a typed answer is yes: `y` or `yes` in any case.
 fn is_yes(answer: &str) -> bool {
 	matches!(answer.trim().to_ascii_lowercase().as_str(), "y" | "yes")
 }

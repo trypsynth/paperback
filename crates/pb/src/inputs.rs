@@ -1,14 +1,4 @@
-//! Turning the paths on the command line into the files to convert.
-//!
-//! A Unix shell expands `*.pdf` into the list of matching files before pb ever sees it. The
-//! Windows shells do not, so a pattern reaches pb as one literal argument, and a reader who
-//! learned the habit on one platform is left typing `pb *.pdf` and being told the file `*.pdf`
-//! does not exist. Expanding it here means one command line works the same everywhere.
-//!
-//! Only `*` and `?` are patterns, and `require_literal_separator` keeps a `*` from crossing a
-//! folder: `*.pdf` is the PDFs beside you. Brackets are escaped rather than left to the globbing
-//! library, because a `[` is a legal character in a path on every platform pb runs on and a
-//! character class would make `Books [2024]/*.pdf` match nothing.
+//! Windows shells don't expand `*.pdf` as Unix shells do, so pb expands it itself and one command line works everywhere.
 
 use std::{
 	collections::HashSet,
@@ -18,7 +8,6 @@ use std::{
 use anyhow::{Result, bail};
 use paperback_core::parser::is_remote_url;
 
-/// One document to convert: a file on disk, or a link to download first.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Source {
 	File(PathBuf),
@@ -26,7 +15,6 @@ pub enum Source {
 }
 
 impl Source {
-	/// The source as the reader named it.
 	#[must_use]
 	pub fn shown(&self) -> String {
 		match self {
@@ -36,45 +24,29 @@ impl Source {
 	}
 }
 
-/// One input as the reader gave it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Given {
-	/// An argument on the command line, which may be a pattern.
 	Argument(PathBuf),
-	/// A line of the list read with `--files-from`, which is never a pattern.
+	/// Never expanded as a pattern.
 	Listed(PathBuf),
-	/// A line of that list that could not be read, described for the reader.
 	Unreadable(String),
 }
 
-/// What the arguments on the command line named.
 #[derive(Debug, Default)]
 pub struct Inputs {
-	/// The documents to convert, in the order the arguments named them.
 	pub sources: Vec<Source>,
-	/// Patterns that matched no file. Carried rather than refused, so that one mistyped pattern
-	/// among several does not stop the run before the patterns that were right have converted.
+	/// Carried rather than refused, so one mistyped pattern doesn't stop the ones that were right from converting.
 	pub unmatched: Vec<String>,
-	/// Listed inputs that cannot be converted, described for the reader.
 	pub problems: Vec<String>,
 }
 
-/// Whether an argument is a pattern to expand rather than a path to convert.
-///
-/// An argument that names a file which exists is always taken as that file, even if it holds a
-/// `*` or a `?`, so a document whose real name contains one of those still converts.
+/// A file that exists is that file even if its real name holds `*` or `?`.
 #[must_use]
 pub fn is_pattern(arg: &Path) -> bool {
 	arg.as_os_str().to_string_lossy().contains(['*', '?']) && !arg.exists()
 }
 
-/// Every file the inputs name, every pattern among the arguments that matched nothing, and every
-/// listed input that cannot be converted.
-///
-/// An http or https link, listed or typed, is a [`Source::Link`]. An argument that is not a
-/// pattern, and a listed input without `*` or `?`, is passed through as it is, whether or not it
-/// exists: `input::check` says why a missing file is a problem in terms
-/// the reader can act on, which is a better place for that than here.
+/// Missing files pass through, since `input::check` explains that problem in terms the reader can act on.
 #[must_use]
 pub fn collect(given: &[Given]) -> Inputs {
 	let mut collected = Inputs::default();
@@ -110,11 +82,6 @@ pub fn collect(given: &[Given]) -> Inputs {
 	collected
 }
 
-/// The arguments, followed by the entries of the list read with `--files-from`.
-///
-/// # Errors
-///
-/// Returns an error if there is a list, it names nothing, and no arguments were given either.
 pub fn gather(args: &[PathBuf], listed: Option<Vec<Given>>) -> Result<Vec<Given>> {
 	let mut given: Vec<Given> = args.iter().cloned().map(Given::Argument).collect();
 	if let Some(listed) = listed {
@@ -126,12 +93,6 @@ pub fn gather(args: &[PathBuf], listed: Option<Vec<Given>>) -> Result<Vec<Given>
 	Ok(given)
 }
 
-/// The entries of a list, one path per line.
-///
-/// Surrounding spaces, Windows line ends and byte order marks are taken off. Blank lines are
-/// skipped, and so are lines starting with `#` unless `exists` says a file of that name does. A
-/// list starting with a UTF-16 byte order mark is read as UTF-16. A line that is not UTF-8 is
-/// decoded with `fallback`, and becomes [`Given::Unreadable`] when that gives nothing.
 pub fn read_list(
 	bytes: &[u8],
 	exists: impl Fn(&str) -> bool,
@@ -161,7 +122,6 @@ fn decode_line(line: &[u8], fallback: &impl Fn(&[u8]) -> Option<String>) -> Opti
 	std::str::from_utf8(line).map(str::to_string).ok().or_else(|| fallback(line))
 }
 
-/// The text of a list that starts with a UTF-16 byte order mark, little- or big-endian.
 fn utf16(bytes: &[u8]) -> Option<String> {
 	let (little_endian, body) = match bytes {
 		[0xFF, 0xFE, rest @ ..] => (true, rest),
@@ -174,7 +134,6 @@ fn utf16(bytes: &[u8]) -> Option<String> {
 	Some(char::decode_utf16(units).map(|decoded| decoded.unwrap_or(char::REPLACEMENT_CHARACTER)).collect())
 }
 
-/// What a listed name holding `*` or `?` is reported as, since a list is not expanded.
 fn listed_pattern(path: &Path) -> String {
 	format!(
 		"{}: patterns are not expanded in a list given with --files-from\nIf the name had other letters in place of a ?, the program that wrote the list could not encode them; in Windows PowerShell 5.1, run $OutputEncoding = [Text.UTF8Encoding]::new() first",
@@ -182,35 +141,27 @@ fn listed_pattern(path: &Path) -> String {
 	)
 }
 
-/// The files one pattern matches, sorted, and whether it matched anything.
-///
-/// Folders are dropped rather than passed on. `pb *` in a folder of books sitting beside some
-/// subfolders should convert the books, and `input::check` already refuses a folder with a
-/// message saying so; naming every subfolder as a failure would bury the one real problem.
+/// Folders are dropped, since `pb *` beside some subfolders means the books and `input::check` would refuse each folder, burying any real problem.
 fn expand(pattern: &Path) -> (Vec<PathBuf>, bool) {
 	let options = glob::MatchOptions {
-		// `SCAN.PDF` is the same file as `scan.pdf` on Windows and a different one on Unix, so a
-		// pattern typed for the platform should match the platform. Matching case-blind on Unix
-		// instead would match a file the reader can see is not the one they named.
+		// `SCAN.PDF` and `scan.pdf` are one file on Windows and two on Unix, so the pattern follows the platform.
 		case_sensitive: !cfg!(windows),
-		// `*` stops at a folder. `**` still reaches into folders, and is not what pb documents.
+		// So `*.pdf` is the PDFs beside the reader, not every PDF below.
 		require_literal_separator: true,
 		..glob::MatchOptions::default()
 	};
-	// A pattern pb cannot read at all matches nothing, which the caller reports by name rather
-	// than as an error it would have to word twice.
+	// The caller reports an unreadable pattern by name, as one that matched nothing.
 	let Ok(matches) = glob::glob_with(&escaped(pattern), options) else { return (Vec::new(), false) };
 	let mut files: Vec<PathBuf> = matches.flatten().filter(|path| path.is_file()).collect();
 	if files.is_empty() {
 		return (files, false);
 	}
-	// Sorted, so that two runs over the same folder convert in the same order and report their
-	// failures in the same order.
+	// So two runs over the same folder convert and report failures in the same order.
 	files.sort();
 	(files, true)
 }
 
-/// The pattern as `glob` should read it, with every bracket escaped as a class of one (`[[]`, `[]]`), since a backslash is the path separator on Windows.
+/// `[` is legal in paths, so `Books [2024]/*.pdf` must not be a character class; escaped as a class of one, since backslash is the Windows path separator.
 fn escaped(pattern: &Path) -> String {
 	let mut out = String::new();
 	for character in pattern.to_string_lossy().chars() {
@@ -223,11 +174,7 @@ fn escaped(pattern: &Path) -> String {
 	out
 }
 
-/// Removes paths already converted, keeping the first mention of each.
-///
-/// Two arguments can name one file -- `pb *.pdf book.epub`, or the same glob twice -- and
-/// converting it twice writes the same output over itself and reports the same failure twice.
-/// The reader asked for it once by the time they see one line.
+/// Converting one file twice writes its output over itself and reports its failure twice.
 fn dedupe(sources: &mut Vec<Source>) {
 	let mut seen = HashSet::new();
 	sources.retain(|source| {
@@ -238,20 +185,14 @@ fn dedupe(sources: &mut Vec<Source>) {
 	});
 }
 
-/// The path as a key for "is this the same file", without the spellings that mean one file.
-///
-/// Windows is case-insensitive and treats `a/b` and `a\b` as one path; Unix is not, and a reader
-/// who passes both `Book.epub` and `book.epub` on Linux means two files that do not both exist.
-/// Normalizing only as far as each platform agrees keeps the comparison honest.
+/// Normalized only as far as the platform agrees: Windows ignores case and slash direction, Unix doesn't.
 #[must_use]
 pub fn same_file(path: &Path) -> PathBuf {
 	#[cfg(windows)]
 	let path = PathBuf::from(path.to_string_lossy().to_lowercase());
 	#[cfg(not(windows))]
 	let path = path.to_path_buf();
-	// Components rather than the whole string, so `a/../b` and `b` meet as the same file. A leading
-	// `./` is dropped too: `components()` keeps one, and `book.txt` is the file a shell means when
-	// it hands over `./book.txt`.
+	// `components()` keeps a leading `./`, but a shell expanding `*.txt` hands over `./book.txt` for the reader's `book.txt`.
 	path.components().filter(|component| *component != Component::CurDir).collect()
 }
 
@@ -261,8 +202,7 @@ mod tests {
 
 	use super::*;
 
-	/// A directory of its own for each test, removed with it. paperback-core has one of these but
-	/// keeps it behind `cfg(test)`, where another crate cannot reach it.
+	/// paperback-core's own is behind `cfg(test)`, out of another crate's reach.
 	struct TempDir {
 		path: PathBuf,
 	}
@@ -280,7 +220,6 @@ mod tests {
 			self.path.join(name)
 		}
 
-		/// A pattern the reader would type to reach these files.
 		fn pattern(&self, tail: &str) -> PathBuf {
 			self.join(tail)
 		}
@@ -315,7 +254,6 @@ mod tests {
 		assert!(is_pattern(Path::new("/books/*/chapters/*.pdf")));
 	}
 
-	/// A real file whose name holds a star is that file, not a pattern that matches everything.
 	#[cfg(not(windows))]
 	#[test]
 	fn a_file_that_really_exists_wins_over_being_read_as_a_pattern() {
@@ -336,7 +274,6 @@ mod tests {
 		assert!(collected.unmatched.is_empty());
 	}
 
-	/// `?` stands for exactly one character, so it separates `a1.txt` from `a12.txt`.
 	#[test]
 	fn a_question_mark_stands_for_one_character() {
 		let dir = TempDir::new("one-char");
@@ -356,8 +293,6 @@ mod tests {
 		assert_eq!(names(&collected.sources), ["a.epub"]);
 	}
 
-	/// A folder of books is as likely to be named with brackets in it as anything else, and
-	/// `Books [2024]/*.pdf` matching nothing is the reader being told their own folder is empty.
 	#[test]
 	fn brackets_in_a_pattern_are_read_as_brackets() {
 		let dir = TempDir::new("brackets");
@@ -368,7 +303,6 @@ mod tests {
 		assert!(collected.unmatched.is_empty(), "{:?}", collected.unmatched);
 	}
 
-	/// Brackets are as ordinary in a file's own name.
 	#[test]
 	fn brackets_in_a_file_name_are_read_as_brackets() {
 		let dir = TempDir::new("brackets-file");
@@ -378,7 +312,6 @@ mod tests {
 		assert!(collected.unmatched.is_empty(), "{:?}", collected.unmatched);
 	}
 
-	/// A bracket on its own, either side of a name.
 	#[test]
 	fn a_lone_bracket_is_read_as_a_bracket() {
 		let dir = TempDir::new("lone-bracket");
@@ -391,7 +324,6 @@ mod tests {
 		}
 	}
 
-	/// A pattern in the middle is followed into the folders it names.
 	#[test]
 	fn a_pattern_names_a_folder_to_look_inside() {
 		let dir = TempDir::new("nested");
@@ -408,7 +340,6 @@ mod tests {
 		);
 	}
 
-	/// `*` stops at a folder, so `*.pdf` is the PDFs beside the reader and not every PDF on disk.
 	#[test]
 	fn a_star_does_not_reach_into_folders() {
 		let dir = TempDir::new("no-descend");
@@ -419,9 +350,6 @@ mod tests {
 		assert_eq!(names(&collected.sources), ["a.pdf"]);
 	}
 
-	/// `SCAN.PDF` and `scan.pdf` are one file on Windows and two elsewhere, so a pattern follows the
-	/// platform. `*.pdf` reaches `SCAN.PDF` on Windows because there it is the file the reader
-	/// named, and misses it on macOS and Linux because there it is a different file.
 	#[test]
 	fn a_pattern_matches_the_case_the_platform_considers_the_same_file() {
 		let dir = TempDir::new("case");
@@ -437,7 +365,6 @@ mod tests {
 		}
 	}
 
-	/// One mistyped pattern among several should not cost the reader the ones that were right.
 	#[test]
 	fn a_pattern_matching_nothing_is_carried_rather_than_fatal() {
 		let dir = TempDir::new("no-match");
@@ -462,7 +389,6 @@ mod tests {
 		assert_eq!(names(&collected.sources), ["a.pdf", "c.pdf", "b.epub"]);
 	}
 
-	/// Converting a file twice writes its output over itself and reports its failure twice.
 	#[test]
 	fn a_file_named_twice_is_converted_once() {
 		let dir = TempDir::new("dupe");
@@ -485,8 +411,6 @@ mod tests {
 		assert!(collect_args(&[]).sources.is_empty());
 	}
 
-	/// A shell that expands `*.txt` hands over `./book.txt`; a reader who types the name gets
-	/// `book.txt`. Those are one file, and a run comparing them must agree.
 	#[test]
 	fn a_leading_dot_slash_does_not_make_a_different_file() {
 		assert_eq!(same_file(Path::new("./book.txt")), same_file(Path::new("book.txt")));

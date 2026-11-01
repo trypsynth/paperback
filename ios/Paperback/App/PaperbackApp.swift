@@ -17,17 +17,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 		return config
 	}
 
-	// Belt-and-suspenders: in UIKit apps AppDelegate is at the end of the responder
-	// chain, but with SwiftUI's @UIApplicationDelegateAdaptor this may never fire.
-	// UIWindow (below) is the reliable catch for in-app magic tap.
+	// Belt-and-suspenders: with @UIApplicationDelegateAdaptor this may never fire, so UIWindow below is the reliable catch.
 	override func accessibilityPerformMagicTap() -> Bool {
 		NotificationCenter.default.post(name: .pbMagicTap, object: nil)
 		return true
 	}
 }
 
-// UIWindow is always in the responder chain as the key window, making it the
-// reliable place to catch VoiceOver magic tap while the app is foregrounded.
+// The key window is always in the responder chain, so it reliably catches VoiceOver magic tap.
 class MagicTapWindow: UIWindow {
 	override func accessibilityPerformMagicTap() -> Bool {
 		NotificationCenter.default.post(name: .pbMagicTap, object: nil)
@@ -38,9 +35,7 @@ class MagicTapWindow: UIWindow {
 @MainActor
 class SceneDelegate: NSObject, UIWindowSceneDelegate {
 	var window: UIWindow?
-	/// Owned here rather than by the view, so the keyboard shortcut handlers and the incoming
-	/// document handler above reach the same one this scene is showing, without going looking
-	/// through UIApplication for a scene that might not be this one.
+	/// Owned here so the shortcut and incoming-document handlers reach this scene's instance without searching UIApplication for a scene.
 	let appViewModel = AppViewModel()
 
 	func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options: UIScene.ConnectionOptions) {

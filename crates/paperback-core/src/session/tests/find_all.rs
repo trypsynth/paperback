@@ -15,6 +15,7 @@ fn session_with_marks(content: &str, markers: Vec<Marker>) -> DocumentSession {
 		history_index: 0,
 		parser_flags: ParserFlags::empty(),
 		parse_settings: ParseSettings::default(),
+		password: String::new(),
 	}
 }
 
@@ -39,8 +40,8 @@ fn find_all_dedupes_by_line_identity_not_text() {
 	assert_eq!(rows[1].text, "same word same");
 	assert_eq!(rows[0].matches.len(), 2, "both occurrences on the line are kept on its one row");
 	assert_eq!(rows[1].matches.len(), 2);
-	assert_eq!((rows[0].matches[0].start, rows[0].matches[0].end), (0, 4));
-	assert_eq!((rows[0].matches[1].start, rows[0].matches[1].end), (10, 14));
+	assert_eq!((rows[0].matches[0].start, rows[0].matches[0].end), (0.into(), 4.into()));
+	assert_eq!((rows[0].matches[1].start, rows[0].matches[1].end), (10.into(), 14.into()));
 }
 
 #[test]
@@ -50,9 +51,9 @@ fn find_all_multiple_matches_on_a_line_preserve_order() {
 	assert_eq!(rows.len(), 1);
 	let spans = &rows[0].matches;
 	assert_eq!(spans.len(), 3);
-	assert_eq!((spans[0].start, spans[0].end), (0, 1));
-	assert_eq!((spans[1].start, spans[1].end), (2, 3));
-	assert_eq!((spans[2].start, spans[2].end), (4, 5));
+	assert_eq!((spans[0].start, spans[0].end), (0.into(), 1.into()));
+	assert_eq!((spans[1].start, spans[1].end), (2.into(), 3.into()));
+	assert_eq!((spans[2].start, spans[2].end), (4.into(), 5.into()));
 }
 
 #[test]
@@ -71,9 +72,9 @@ fn find_all_uses_regex_and_real_spans() {
 	assert_eq!(rows.len(), 1);
 	let spans = &rows[0].matches;
 	assert_eq!(spans.len(), 3);
-	assert_eq!((spans[0].start, spans[0].end), (1, 3));
-	assert_eq!((spans[1].start, spans[1].end), (5, 8));
-	assert_eq!((spans[2].start, spans[2].end), (10, 11));
+	assert_eq!((spans[0].start, spans[0].end), (1.into(), 3.into()));
+	assert_eq!((spans[1].start, spans[1].end), (5.into(), 8.into()));
+	assert_eq!((spans[2].start, spans[2].end), (10.into(), 11.into()));
 }
 
 #[test]
@@ -86,13 +87,12 @@ fn find_all_without_page_markers_reports_page_zero() {
 
 #[test]
 fn find_all_assigns_pages_from_page_break_markers() {
-	// Three lines of identical length; a PageBreak marker sits at each line's start.
 	let session = session_with_marks(
 		"aaa beta\nbbb beta\nccc beta\n",
 		vec![
-			Marker::new(MarkerType::PageBreak, 0),
-			Marker::new(MarkerType::PageBreak, 9),
-			Marker::new(MarkerType::PageBreak, 18),
+			Marker::new(MarkerType::PageBreak, 0.into()),
+			Marker::new(MarkerType::PageBreak, 9.into()),
+			Marker::new(MarkerType::PageBreak, 18.into()),
 		],
 	);
 	let rows = session.find_all_lines("beta", SearchOptions::empty());
@@ -103,8 +103,6 @@ fn find_all_assigns_pages_from_page_break_markers() {
 
 #[test]
 fn find_all_keeps_the_whole_line_across_an_astral_char() {
-	// The emoji is inside the line, between the two matches; the row must still be the whole
-	// line, whichever side of the astral character the match sits on.
 	let session = session_with_content("beta 😀 beta\n");
 	let rows = session.find_all_lines("beta", SearchOptions::empty());
 	assert_eq!(rows.len(), 1);
@@ -112,14 +110,11 @@ fn find_all_keeps_the_whole_line_across_an_astral_char() {
 	assert_eq!(rows[0].matches.len(), 2);
 }
 
-#[cfg(any(target_os = "windows", target_os = "macos"))]
 #[test]
-fn find_all_reports_utf16_spans_past_an_astral_char() {
-	// On Windows/macOS the display unit is a UTF-16 code unit, so the emoji is two units and the
-	// second match starts at 8.
+fn find_all_counts_an_astral_char_as_one_position() {
 	let session = session_with_content("beta 😀 beta\n");
 	let rows = session.find_all_lines("beta", SearchOptions::empty());
-	assert_eq!((rows[0].matches[1].start, rows[0].matches[1].end), (8, 12));
+	assert_eq!((rows[0].matches[1].start, rows[0].matches[1].end), (7.into(), 11.into()));
 }
 
 #[test]

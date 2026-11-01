@@ -20,10 +20,10 @@ android {
 		if (isBundleBuild) {
 			ndk {
 				// A bundle packages every ABI present in jniLibs and in dependency AARs. JNA and
-				// AndroidX ship x86/x86_64 slices we have no libpaperback_core.so for, so without
+				// AndroidX ship 32-bit x86 slices we have no libpaperback_core.so for, so without
 				// this Play would build an x86 split that installs and then crashes on the
 				// missing library. The splits block below does the same job for APK builds.
-				abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+				abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
 			}
 		}
 	}
@@ -32,7 +32,7 @@ android {
 		abi {
 			isEnable = !isBundleBuild
 			reset()
-			include("armeabi-v7a", "arm64-v8a")
+			include("armeabi-v7a", "arm64-v8a", "x86_64")
 			isUniversalApk = false
 		}
 	}
@@ -83,10 +83,18 @@ android {
 			excludes += "/META-INF/{AL2.0,LGPL2.1}"
 		}
 	}
+	lint {
+		warningsAsErrors = true
+		// These go off whenever Google ships a newer SDK or plugin, failing a build that has not changed. Renovate raises those upgrades as pull requests instead.
+		disable += setOf("OldTargetApi", "AndroidGradlePluginVersion", "GradleDependency", "NewerVersionAvailable")
+	}
 }
 
 kotlin {
 	jvmToolchain(17)
+	compilerOptions {
+		allWarningsAsErrors = true
+	}
 }
 
 ktlint {
@@ -130,6 +138,6 @@ dependencies {
 	implementation(libs.androidx.navigation3.ui)
 	implementation(libs.androidx.navigation3.runtime)
 	implementation(libs.androidx.lifecycle.viewmodel.navigation3)
-	// JNA for UniFFI
-	implementation("net.java.dev.jna:jna:5.19.1@aar")
+	// JNA for UniFFI, as the .aar: only it carries the native libraries for Android.
+	implementation(libs.jna) { artifact { type = "aar" } }
 }

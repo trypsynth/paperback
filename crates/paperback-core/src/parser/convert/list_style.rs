@@ -1,7 +1,4 @@
-//! [`ListStyle`]: the per-`<ul>`/`<ol>` numbering state (ordered or not, current item number,
-//! `type` attribute) [`super::xml_to_text::XmlToText`] and [`super::html_to_text::HtmlToText`]
-//! both push onto a stack on `<ul>`/`<ol>` open and pop on close, so a nested list's numbering
-//! doesn't leak into its parent's once it closes.
+//! Converters keep these on a stack so a nested list's numbering doesn't leak into its parent's once it closes.
 
 #[derive(Clone, Debug)]
 pub(super) struct ListStyle {
@@ -17,9 +14,6 @@ impl Default for ListStyle {
 }
 
 impl ListStyle {
-	/// Builds the style for a freshly-opened `<ol>`/`<ul>`: `is_ordered` is whether the tag was
-	/// `<ol>`, and `start_attr`/`type_attr` are its `start`/`type` attributes (only meaningful,
-	/// and only read by the caller, when `is_ordered` is set).
 	pub(super) fn new(is_ordered: bool, start_attr: Option<&str>, type_attr: Option<&str>) -> Self {
 		let mut style = Self::default();
 		if is_ordered {

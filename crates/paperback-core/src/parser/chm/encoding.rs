@@ -1,8 +1,6 @@
 use encoding_rs::Encoding;
 
-/// The ANSI code page Windows uses for a language, for the languages where that is not Windows-1252.
-///
-/// A CHM compiled before Unicode holds its title, contents and usually its pages in the code page of the language it was compiled for, and that language is the one thing about its encoding it reliably records. Western languages are left out so their books keep going through the guessing in [`crate::util::encoding::convert_to_utf8`], which also catches the Chinese CHMs compiled under an English language ID.
+/// A pre-Unicode CHM reliably records only its language; Western ones are left out so they keep going through [`crate::util::encoding::convert_to_utf8`]'s guessing, which also catches Chinese CHMs compiled under an English language ID.
 pub(super) fn encoding_for_lcid(lcid: u32) -> Option<&'static Encoding> {
 	// Serbian, Bosnian, Azeri and Uzbek are each written in both Latin and Cyrillic, which only the full LCID tells apart.
 	let cyrillic_variant = matches!(lcid, 0x0C1A | 0x1C1A | 0x201A | 0x281A | 0x301A | 0x082C | 0x0843);
@@ -26,9 +24,7 @@ pub(super) fn encoding_for_lcid(lcid: u32) -> Option<&'static Encoding> {
 	Some(encoding)
 }
 
-/// Reads text that came out of HTML entities as Latin-1 back as the bytes of the CHM's own code page.
-///
-/// HTML Help Workshop writes the contents file of a non-Western book in ASCII, spelling each byte of the code page as the Latin-1 entity with the same number, so `&Iuml;&eth;` in a Russian book is windows-1251 for "Пр", not "Ïð". Text with anything past U+00FF in it was not written that way and is left alone.
+/// HTML Help Workshop writes a non-Western contents file in ASCII with each code-page byte as the same-numbered Latin-1 entity, so `&Iuml;&eth;` in a Russian book is windows-1251 for "Пр", not "Ïð".
 pub(super) fn reinterpret_latin1(text: &str, encoding: &'static Encoding) -> Option<String> {
 	if text.is_ascii() {
 		return None;

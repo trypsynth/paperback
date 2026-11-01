@@ -30,45 +30,41 @@ import dev.paperback.android.ui.state.lineIndexFor
 import kotlinx.coroutines.launch
 import uniffi.paperback.ExportFormat
 
-/**
- * The dialogs that only report on, or set a timer over, whatever document is open: they need the
- * open document and nothing else from the reading view, so they live here rather than in the
- * middle of `MainScreen`'s layout. Each reads its own open flag, so the caller just places this
- * once and lets the view model decide what is showing.
- */
 @Composable
 fun DocumentToolDialogs(
 	docState: DocumentTabState?,
 	viewModel: MainScreenViewModel,
 	onExportFormatChosen: (ExportFormat, String) -> Unit
 ) {
-	val wordCountOpen by viewModel.wordCountDialog.isOpen.collectAsStateWithLifecycle()
-	val documentInfoOpen by viewModel.documentInfoDialog.isOpen.collectAsStateWithLifecycle()
-	val sleepTimerOpen by viewModel.sleepTimerDialog.isOpen.collectAsStateWithLifecycle()
-	val sleepTimerRemaining by viewModel.sleepTimer.remaining.collectAsStateWithLifecycle()
-	val exportOpen by viewModel.exportDocumentDialog.isOpen.collectAsStateWithLifecycle()
+	val wordCountOpen by viewModel.navigation.wordCountDialog.isOpen.collectAsStateWithLifecycle()
+	val documentInfoOpen by viewModel.navigation.documentInfoDialog.isOpen.collectAsStateWithLifecycle()
+	val sleepTimerOpen by viewModel.navigation.sleepTimerDialog.isOpen.collectAsStateWithLifecycle()
+	val sleepTimerRemaining by viewModel.reading.sleepTimer.remaining.collectAsStateWithLifecycle()
+	val exportOpen by viewModel.navigation.exportDocumentDialog.isOpen.collectAsStateWithLifecycle()
 
 	if (wordCountOpen && docState != null) {
 		val stats = remember(docState.session) { docState.session.getStatsFfi() }
 		WordCountDialog(
 			stats = stats,
-			onDismiss = { viewModel.wordCountDialog.close() }
+			onDismiss = { viewModel.navigation.wordCountDialog.close() }
 		)
 	}
 	if (documentInfoOpen && docState != null) {
 		val stats = remember(docState.session) { docState.session.getStatsFfi() }
+		val progressPercent = remember(docState.session) { viewModel.reading.progressPercent() }
 		DocumentInfoDialog(
 			docState = docState,
 			stats = stats,
-			onDismiss = { viewModel.documentInfoDialog.close() }
+			progressPercent = progressPercent,
+			onDismiss = { viewModel.navigation.documentInfoDialog.close() }
 		)
 	}
 	if (sleepTimerOpen) {
 		SleepTimerDialog(
 			remainingSeconds = sleepTimerRemaining,
-			onSetTimer = { viewModel.sleepTimer.start(it) },
-			onCancelTimer = { viewModel.sleepTimer.cancel() },
-			onDismiss = { viewModel.sleepTimerDialog.close() }
+			onSetTimer = { viewModel.reading.sleepTimer.start(it) },
+			onCancelTimer = { viewModel.reading.sleepTimer.cancel() },
+			onDismiss = { viewModel.navigation.sleepTimerDialog.close() }
 		)
 	}
 	if (exportOpen) {
@@ -76,33 +72,24 @@ fun DocumentToolDialogs(
 			ExportDocumentDialog(
 				supportedFormats = docState.session.getSupportedExportFormatsFfi(),
 				onFormatSelected = { format ->
-					viewModel.exportDocumentDialog.close()
+					viewModel.navigation.exportDocumentDialog.close()
 					onExportFormatChosen(format, "${docState.fileName.substringBeforeLast(".")}.${format.fileExtension()}")
 				},
-				onDismiss = { viewModel.exportDocumentDialog.close() }
+				onDismiss = { viewModel.navigation.exportDocumentDialog.close() }
 			)
 		} else {
-			// Nothing to export: the last tab closed while the dialog was open. Closing from an
-			// effect rather than straight from composition keeps the state change out of the
-			// composition that is reading it.
-			LaunchedEffect(Unit) { viewModel.exportDocumentDialog.close() }
+			// The last tab closed while the dialog was open; closing from an effect keeps the state change out of the composition reading it.
+			LaunchedEffect(Unit) { viewModel.navigation.exportDocumentDialog.close() }
 		}
 	}
 }
 
-/** The extension an exported document is offered under, matching the format it is rendered in. */
-internal fun ExportFormat.fileExtension(): String =
-	when (this) {
-		ExportFormat.TEXT -> "txt"
-		ExportFormat.HTML -> "html"
-		ExportFormat.MARKDOWN -> "md"
-	}
+internal fun ExportFormat.fileExtension(): String = when (this) {
+	ExportFormat.TEXT -> "txt"
+	ExportFormat.HTML -> "html"
+	ExportFormat.MARKDOWN -> "md"
+}
 
-/**
- * The dialogs that act on the open document's text. Unlike the tool dialogs these need the
- * reading view itself: where a search starts, and where landing on a match puts the reader, both
- * depend on which mode is showing and where the list is scrolled to.
- */
 @Composable
 fun DocumentTextDialogs(
 	docState: DocumentTabState,
@@ -113,48 +100,46 @@ fun DocumentTextDialogs(
 	onGoToLine: (Int) -> Unit,
 	onFocusLine: (Int) -> Unit
 ) {
-	val goToOpen by viewModel.showGoToDialog.collectAsStateWithLifecycle()
-	val findOpen by viewModel.findDialog.isOpen.collectAsStateWithLifecycle()
+	val goToOpen by viewModel.navigation.showGoToDialog.collectAsStateWithLifecycle()
+	val findOpen by viewModel.navigation.findDialog.isOpen.collectAsStateWithLifecycle()
 	val activeQuery by viewModel.search.query.collectAsStateWithLifecycle()
 	val scope = rememberCoroutineScope()
 	if (goToOpen) {
 		GoToDialog(
 			docState = docState,
-			onDismiss = { viewModel.closeGoToDialog() },
+			onDismiss = { viewModel.navigation.closeGoToDialog() },
 			initialMode = goToInitialMode,
 			onGoTo = onGoToLine,
-			onSeekPercent = { viewModel.seekAudioToPercent(it) }
+			onSeekPercent = { viewModel.reading.seekAudioToPercent(it) }
 		)
 	}
-	// Focus stays in the Find dialog while it is open, so the line the last match landed on only
-	// takes screen reader focus once the dialog closes.
+	// Focus stays in the Find dialog while it is open, so the last match's line only takes screen reader focus once it closes.
 	var lastMatchLine by remember { mutableStateOf<Int?>(null) }
 	if (findOpen) {
 		FindDialog(
 			configManager = viewModel.configManager,
 			initialQuery = activeQuery ?: "",
 			onDismiss = {
-				viewModel.findDialog.close()
+				viewModel.navigation.findDialog.close()
 				lastMatchLine?.let(onFocusLine)
 				lastMatchLine = null
 			},
 			onSearch = { query, options ->
 				val wasSpeaking = viewModel.ttsManager.isSpeaking.value
 				if (wasSpeaking) {
-					viewModel.pauseTts()
+					viewModel.reading.pauseTts()
 				}
-				// Searching again for what is already running would just re-find the match the
-				// reader is sitting on, so that case starts one step past it.
+				// Searching again for the running query would re-find the match the reader is on, so start one step past it.
 				val isSameQuery = viewModel.search.isSameAs(query, options)
 				viewModel.search.start(query, options)
 				if (!isTextMode) {
-					viewModel.setNavUnit(NavUnit.Find)
+					viewModel.reading.setNavUnit(NavUnit.Find)
 				}
 				val searchPos = if (isTextMode) {
 					val nextLineOffset = if (isSameQuery) 2 else 1
 					docState.session.positionFromLine((listState.firstVisibleItemIndex + nextLineOffset).toLong())
 				} else {
-					val currentPos = viewModel.ttsPosition.value
+					val currentPos = viewModel.reading.ttsPosition.value
 					if (isSameQuery) currentPos + 1L else currentPos
 				}
 				val res = docState.session.searchFfi(query, searchPos, options)
@@ -170,25 +155,23 @@ fun DocumentTextDialogs(
 					lastMatchLine = targetIndex
 					scope.launch { listState.scrollToItem(targetIndex) }
 				} else {
-					viewModel.jumpToFoundPosition(res.position, resume = wasSpeaking)
+					viewModel.reading.jumpToFoundPosition(res.position, resume = wasSpeaking)
 				}
 				if (isTextMode || !wasSpeaking) {
-					viewModel.announceFoundMatch(res.position)
+					viewModel.reading.announceFoundMatch(res.position)
 				}
 			}
 		)
 	}
 }
 
-/**
- * The two prompts opening a document can raise on its own: a password for an encrypted file, and
- * the offer to import a `.paperback` sidecar found next to it. Both are driven entirely by the
- * view model, so unlike the tool dialogs above they need nothing from the caller at all.
- */
 @Composable
 fun DocumentPromptDialogs(viewModel: MainScreenViewModel) {
 	val passwordPromptUri by viewModel.passwordPromptUri.collectAsStateWithLifecycle()
 	val importPromptPath by viewModel.importPromptPath.collectAsStateWithLifecycle()
+	val linkStage by viewModel.links.stage.collectAsStateWithLifecycle()
+	val linkFailure by viewModel.links.failure.collectAsStateWithLifecycle()
+	OpenFromUrlDialogs(viewModel.links, linkStage, linkFailure)
 	if (passwordPromptUri != null) {
 		PasswordDialog(
 			onConfirm = { viewModel.submitPassword(it) },

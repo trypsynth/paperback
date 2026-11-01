@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 00:40+0200\n"
+"POT-Creation-Date: 2026-10-25 18:07+0000\n"
 "PO-Revision-Date: 2026-09-23 13:11+0200\n"
 "Last-Translator: Peter Vágner <pvagner@pvagner.sk>\n"
 "Language-Team: slovak\n"
@@ -16,6 +16,45 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n>=2 && n<=4 ? 1 : 2);\n"
+
+#. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
+msgid "this is not a web link"
+msgstr "Toto nie je webový odkaz"
+
+#. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
+msgid "Checking %s"
+msgstr "Kontroluje sa %s"
+
+#. TRANSLATORS: Download window message while Paperback asks a web server about one of several links; the first %d is the link's number, the second how many links there are, and %s is the link
+msgid "Checking %d of %d: %s"
+msgstr "Kontroluje sa %d z %d: %s"
+
+#. TRANSLATORS: Download window message while a document opened from a link downloads; %s is its file name
+msgid "Downloading %s"
+msgstr "Preberanie %s"
+
+#. TRANSLATORS: Download window message while one of several documents opened from links downloads; the first %d is its number, the second how many there are, and %s is its file name
+msgid "Downloading %d of %d: %s"
+msgstr "Preberanie %d z %d: %s"
+
+#. TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
+msgid ""
+"The server sends a web page (%s) instead of the document the link names."
+msgstr ""
+"Odpoveďou zo servera je webová stránka (%s) namiesto odkazovaného dokumentu."
+
+msgid "The server sends %s, which is not a format Paperback reads."
+msgstr ""
+"Odpoveďov zo servera je dokument %s, čo nie je formát podporovaný aplikáciou "
+"Paperback."
+
+#. TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
+msgid "The server does not say what it sends."
+msgstr "Odpoveď zo servera neobsahuje typ súboru."
+
+#. TRANSLATORS: Question at the end of the security warning before downloading a document from a link
+msgid "Download it anyway?"
+msgstr "Napriek tomu prevziať?"
 
 #. TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
 #. command-line tool (Paperback's headless document-to-text/HTML converter) runnable
@@ -29,11 +68,11 @@ msgstr "Pridať nástroj pb ovládaný z príkazového riadku do premennej PATH"
 msgid "ZIP Archives (.zip)"
 msgstr "Archívy ZIP (.zip)"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
+msgid "OCR needs Tesseract. Install it from your package manager."
 msgstr ""
-"Nie je nainštalovaný žiadny jazyk optického rozpoznávania textu. Jazyky si "
-"môžete nainštalovať v časti Jazyk v systémových nastaveniach"
+"Optické rozpoznávanie textu OCR vyžaduje aplikáciu Tesseract. Nainštalujte "
+"si Tesseract cez správcu balíkov."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 msgid "OCR failed."
@@ -42,6 +81,21 @@ msgstr "Chyba pri optickom rozpoznávaní textu."
 #. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
 msgid "OCR is not available on this system."
 msgstr "Optické rozpoznávanie textu nie je k dispozícii v tomto systéme."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr ""
+"Nie je nainštalovaný žiadny jazyk optického rozpoznávania textu. Jazyky si "
+"môžete nainštalovať v časti Jazyk v systémových nastaveniach"
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+msgid ""
+"No OCR language is installed. Install a Tesseract language package from your "
+"package manager."
+msgstr ""
+"Nie je nainštalovaný žiadny jazyk optického rozpoznávania textu. "
+"Nainštalujte si jazykové balíčky pre aplikáciu Tesseract cez systémového "
+"správcu balíkov."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -54,6 +108,7 @@ msgstr "Upozornenie"
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
 #. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
+#. TRANSLATORS: Announced when trying to change audio volume on a document that has none
 msgid "This document has no audio."
 msgstr "Tento dokument neobsahuje audio."
 
@@ -62,11 +117,13 @@ msgid "Audio hasn't started playing yet."
 msgstr "Prehrávanie zvuku zatiaľ nebolo spustené."
 
 #. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
+#. TRANSLATORS: Announced when the audio volume is already at its loudest; {} is the current volume, e.g. "200%"
 #. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
 msgid "{} (maximum)"
 msgstr "{} (maximum)"
 
 #. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
+#. TRANSLATORS: Announced when the audio volume is already at its quietest; {} is the current volume, e.g. "10%"
 #. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
 msgid "{} (minimum)"
 msgstr "{} (minimum)"
@@ -185,6 +242,13 @@ msgstr "Zobraziť poznámku"
 msgid "Open Document"
 msgstr "Otvoriť dokument"
 
+#. TRANSLATORS: Title of the error shown when what was typed into Open from URL is not a web link
+#. TRANSLATORS: Title of the dialog that asks for the web link to open a document from
+#. TRANSLATORS: Title of the window that shows documents being downloaded from links
+#. TRANSLATORS: Title of the error listing the links that could not be opened
+msgid "Open from URL"
+msgstr "Otvoriť URL"
+
 #. TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
 msgid "Document reloaded."
 msgstr "Dokument znovu načítaný."
@@ -205,6 +269,14 @@ msgstr "&Otvoriť..."
 #. TRANSLATORS: Status-bar help text for the File > Open menu item.
 msgid "Open a document"
 msgstr "Otvoriť dokument"
+
+#. TRANSLATORS: Menu item in the File menu to open documents from web links.
+msgid "Open from &URL..."
+msgstr "Otvoriť &URL..."
+
+#. TRANSLATORS: Status-bar help text for the File > Open from URL menu item.
+msgid "Open documents from web links"
+msgstr "Otvoriť dokumenty z webových odkazov"
 
 #. TRANSLATORS: Menu item in the File menu to close the current document.
 msgid "&Close"
@@ -228,7 +300,7 @@ msgstr "Znovu otvoriť napos&ledy zatvorený"
 
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
-msgstr "Znovu otvoriť napos&ledy zatvorený dokument"
+msgstr "Znovu otvoriť naposledy zatvorený dokument"
 
 #. TRANSLATORS: Menu item in the View menu to re-read the current document from disk.
 msgid "&Reload"
@@ -365,15 +437,15 @@ msgstr "Predchádzajúca &grafika"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next image in the document.
 msgid "Next Ima&ge"
-msgstr "Nasledujúca grafika"
+msgstr "Nasledujúca &grafika"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous figure in the document.
 msgid "Previous Figu&re"
-msgstr "Predchádzajúce znázo&rnenie"
+msgstr "Predchádzajúca ilust&rácia"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the next figure in the document.
 msgid "Next Figu&re"
-msgstr "Nasledujúce znázo&rnenie"
+msgstr "Nasledujúca ilust&rácia"
 
 #. TRANSLATORS: Menu item in the Go menu to move to the previous table in the document.
 msgid "Previous &Table"
@@ -496,8 +568,8 @@ msgid "Show notes only"
 msgstr "Zobraziť len poznámky"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to view the text of the note at the current reading position.
-msgid "&View Note Text"
-msgstr "&Zobraziť text poznámky"
+msgid "&View Note Text..."
+msgstr "&Zobraziť text poznámky..."
 
 #. TRANSLATORS: Status-bar help text for the Bookmarks > View Note Text menu item.
 msgid "View the note at current position"
@@ -508,8 +580,8 @@ msgid "&Toggle Bookmark"
 msgstr "P&repnúť záložku"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
-msgid "Bookmark &with Note"
-msgstr "Záložk&a s poznámkou"
+msgid "Bookmark &with Note..."
+msgstr "Záložk&a s poznámkou..."
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to remember the current reading position as the temporary bookmark.
 msgid "&Set Temporary Bookmark"
@@ -598,6 +670,22 @@ msgstr "Z&nížiť tempo zvuku"
 #. TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
 msgid "Decrease how fast the audio narration plays"
 msgstr "Znížiť rýchlosť prehrávania zvukovej stopy"
+
+#. TRANSLATORS: Menu item in the Audio menu to make the audio narration louder.
+msgid "Increase Audio &Volume"
+msgstr "Zvýšiť hlasitosť z&vuku"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Volume menu item.
+msgid "Make the audio narration louder"
+msgstr "Zosilniť prehrávanie zvuku"
+
+#. TRANSLATORS: Menu item in the Audio menu to make the audio narration quieter.
+msgid "Decrease Audio Vo&lume"
+msgstr "Znížiť h&lasitosť zvuku"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Volume menu item.
+msgid "Make the audio narration quieter"
+msgstr "Zosilniť prehrávanie zvuku"
 
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
@@ -770,6 +858,7 @@ msgid "Bookmarks"
 msgstr "Záložky"
 
 #. TRANSLATORS: Option in the filter dropdown to show notes only
+#. TRANSLATORS: Heading over the footnotes and endnotes of a document, written after its text
 msgid "Notes"
 msgstr "Poznámky"
 
@@ -811,7 +900,6 @@ msgid "Edit bookmark note:"
 msgstr "Upraviť poznámku záložky"
 
 #. TRANSLATORS: Title of the Document Info dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Document Info"
 msgstr "Informácie o dokumente"
 
@@ -910,6 +998,40 @@ msgstr "Nepomenovaný"
 msgid "OK"
 msgstr "OK"
 
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+msgid "Export notes and bookmarks"
+msgstr "Exportovať poznámky a záložky"
+
+#. TRANSLATORS: Label for the dropdown choosing which entries to export
+msgid "&Export:"
+msgstr "&Exportovať:"
+
+#. TRANSLATORS: Option to export both bookmarks and notes
+msgid "Bookmarks and notes"
+msgstr "Záložky a poznámky"
+
+#. TRANSLATORS: Option to export only bookmarks that have no note
+msgid "Bookmarks only"
+msgstr "Len záložky"
+
+#. TRANSLATORS: Option to export only bookmarks that have a note
+msgid "Notes only"
+msgstr "Len poznámky"
+
+#. TRANSLATORS: Checkbox to include the bookmarked text next to each note
+msgid "Include the &passage each note is attached to"
+msgstr "Zahrnúť aj &pasáže prepojené s jednotlivými poznámkami"
+
+#. TRANSLATORS: Checkbox to number the exported entries
+msgid "&Number the entries"
+msgstr "&Očíslovať položky"
+
+#. TRANSLATORS: Label for the button that continues to the save dialog
+msgid "Export"
+msgstr "Exportovať"
+
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Go"
@@ -961,13 +1083,17 @@ msgstr "&Percent"
 msgid "Percent out of range."
 msgstr "Počet percent je mimo povolený rozsah."
 
+#. TRANSLATORS: Title of the view showing the text recognized in a picture
+msgid "Image Text"
+msgstr "Text obrázka"
+
 #. TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
 msgid "Set Up Paperback"
 msgstr "Inštalácia Paperback"
 
 #. TRANSLATORS: Explains the checkbox list below in the Linux file-association setup dialog
 msgid "Choose which file types should open in Paperback:"
-msgstr "Nastavte, ktoré typy súborov sa majú otvárať v programe Paperback:"
+msgstr "Vyberte, ktoré typy súborov sa majú otvárať v programe Paperback:"
 
 #. TRANSLATORS: Confirms the file association choices in the Linux setup dialog and applies them
 msgid "Set Up"
@@ -1000,6 +1126,14 @@ msgstr "HTML"
 #. TRANSLATORS: Choice option to open a file as Markdown
 msgid "Markdown"
 msgstr "Markdown"
+
+#. TRANSLATORS: Label of the field in Open from URL, which takes the web link of a document
+msgid "Link:"
+msgstr "Odkaz:"
+
+#. TRANSLATORS: Title of the security warning shown before downloading a document from a link
+msgid "Security Warning"
+msgstr "Bezpečnostné upozornenie"
 
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
@@ -1114,6 +1248,12 @@ msgstr "Spá&jať zalomené riadky v PDF do odsekov"
 msgid "Remove repeated page &headers and footers in PDFs"
 msgstr "Odstrániť opakujúce sa &hlavičky a päty v PDF"
 
+#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
+msgid "Read text between dollar signs as &math in Markdown"
+msgstr ""
+"Čítať texty obklopené znakmi dolár ako &matematické vzorce v dokumentoch "
+"Markdown"
+
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
 msgstr "Zobrazovať kompaktnú ponuku &prejsť"
@@ -1125,6 +1265,10 @@ msgstr "&Navigácia cez okraje dokumentu"
 #. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
 msgid "Move to &start of line"
 msgstr "Kurzor umiestňovať na &začiatok riadku"
+
+#. TRANSLATORS: Option to select the text Find matches; turned off, Find only moves the caret to the match
+msgid "&Highlight found text"
+msgstr "Vysvietiť nájdený text"
 
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
@@ -1215,8 +1359,8 @@ msgid "Normal"
 msgstr "Normálne"
 
 #. TRANSLATORS: 1.5x line spacing option
-msgid "1.5\\u{00d7}"
-msgstr "1,5\\u{00d7}"
+msgid "1.5×"
+msgstr "1,5×"
 
 #. TRANSLATORS: Double line spacing option
 msgid "Double"
@@ -1267,7 +1411,6 @@ msgid "General"
 msgstr "Všeobecné"
 
 #. TRANSLATORS: Tab label for the Reading options panel
-#. TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Reading"
 msgstr "Čítanie"
 
@@ -1312,7 +1455,6 @@ msgid "&Minutes:"
 msgstr "&Minúty:"
 
 #. TRANSLATORS: Title of the Table of Contents dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Table of Contents"
 msgstr "Obsah"
 
@@ -1357,9 +1499,31 @@ msgstr[0] "Tento dokument obsahuje %d slovo."
 msgstr[1] "Tento dokument obsahuje %d slová."
 msgstr[2] "Tento dokument obsahuje %d slov."
 
+#. TRANSLATORS: Title of the dialog listing the documents inside a zip archive
+msgid "Open from Archive"
+msgstr "Otvoriť archív"
+
+#. TRANSLATORS: Label for the list of documents inside a zip archive
+msgid "&Documents in this archive:"
+msgstr "&Dokumenty v archíve"
+
 #. TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
 msgid "{} to {}"
 msgstr "{} až {}"
+
+#. TRANSLATORS: Announced when Enter is pressed on a picture while its text is already being recognized
+#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
+msgid "OCR in progress."
+msgstr "OCR je už spustené."
+
+#. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
+#. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
+msgid "The picture could not be read."
+msgstr "Nie je možné prečítať obrázok."
+
+#. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
+msgid "No text was found in the picture."
+msgstr "V obrázku nebol nájdený žiadny text."
 
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
@@ -1398,18 +1562,20 @@ msgstr "Súbor: {}"
 msgid "Details: {}"
 msgstr "Podrobnosti: {}"
 
-#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
-msgid "OCR in progress."
-msgstr "OCR je už spustené."
-
+#. TRANSLATORS: Announced when Recognize Current Page is chosen with no document open
 #. TRANSLATORS: Announced when batch OCR is triggered with no document open
 #. TRANSLATORS: Announced when Batch OCR is chosen with no document open
 msgid "No document open."
 msgstr "Nie je otvorený žiadny dokument."
 
+#. TRANSLATORS: Announced when Recognize Current Page is chosen while OCR is already running
 #. TRANSLATORS: Announced when batch OCR is started while another OCR job is running
 msgid "OCR already in progress."
 msgstr "OCR je už spustené."
+
+#. TRANSLATORS: Announced when Recognize Current Page is chosen in a document that is not a PDF or a comic book
+msgid "Only PDF and comic book pages can be recognized."
+msgstr "Rozpoznané môžu byť len stránky dokumentov PDF alebo komixov."
 
 #. TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
 msgid "No image-only pages in the given range."
@@ -1525,6 +1691,12 @@ msgstr "Žiadne ďalšie výsledky. Hľadanie pokračuje dookola."
 msgid "Failed to reveal file in folder."
 msgstr "Nie je možné otvoriť priečinok so súborom."
 
+#. TRANSLATORS: Shown by Reveal File in Folder for a document opened from a web link, which is read from a temporary copy
+msgid "This document was opened from a link, so it has no folder to show."
+msgstr ""
+"Nie je možné zobraziť obsah priečinka, pretože tento súbor bol otvorený z "
+"URL."
+
 #. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
 msgid ""
 "readme.html not found. Please ensure the application was built properly."
@@ -1545,6 +1717,31 @@ msgid "Paperback cannot perform any actions while Web View is open."
 msgstr ""
 "Aplikácia Paperback nemôže vykonávať žiadne akcie, kým je otvorené webové "
 "zobrazenie."
+
+#. TRANSLATORS: First message in the window that downloads documents from links, before the first server answers
+msgid "Connecting..."
+msgstr "Pripájanie..."
+
+#. TRANSLATORS: Title of the window that shows a document opened from a link being downloaded again
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Reload"
+msgstr "Načítať znovu"
+
+#. TRANSLATORS: Announced when the copy shortcut is pressed with nothing selected, so there was nothing to put on the clipboard.
+#. TRANSLATORS: Announced when a copy had nothing to copy: no text was selected, or the marked beginning of a selection is at the reader's own position, leaving nothing between the two.
+msgid "Nothing to copy."
+msgstr "Žiadny text na skopírovanie."
+
+#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
+msgid "Could not copy to the clipboard."
+msgstr "Nie je možné skopírovať do schránky."
+
+#. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
+msgid "%d character selected."
+msgid_plural "%d characters selected."
+msgstr[0] "%d znak vybratý."
+msgstr[1] "%d znaky vybraté."
+msgstr[2] "%d znakov vybratých."
 
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
@@ -1592,10 +1789,6 @@ msgstr "Dokument"
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Súbory aplikácie Paperback (*.paperback)|*.paperback"
 
-#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
-msgid "Export notes and bookmarks"
-msgstr "Exportovať poznámky a záložky"
-
 #. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 msgid "Notes and bookmarks exported successfully."
 msgstr "Poznámky a záložky úspešne exportované."
@@ -1603,6 +1796,14 @@ msgstr "Poznámky a záložky úspešne exportované."
 #. TRANSLATORS: Title of the export-succeeded dialog
 msgid "Export Successful"
 msgstr "Export úspešný"
+
+#. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
+msgstr "Súbory obyčajného textu (*.txt)|*.txt|Súbory HTML (*.html)|*.html"
+
+#. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+msgid "Failed to export notes and bookmarks."
+msgstr "Nie je možné exportovať poznámky a záložky."
 
 #. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 msgid "Import notes and bookmarks"
@@ -1616,6 +1817,18 @@ msgstr "Poznámky a záložky úspešne importované."
 msgid "Import Successful"
 msgstr "Import úspešný"
 
+#. TRANSLATORS: Title of the file save dialog when saving a picture from the document
+msgid "Save image"
+msgstr "Uložiť obrázok"
+
+#. TRANSLATORS: File filter shown in the "Save image" dialog
+msgid "All files (*.*)|*.*"
+msgstr "Všetky súbory (*.*)|*.*"
+
+#. TRANSLATORS: Error dialog shown when saving a picture from the document fails
+msgid "Failed to save image."
+msgstr "Nie je možné uložiť obrázok."
+
 #. TRANSLATORS: Error dialog shown when exporting a document to another format fails
 msgid "Failed to export document."
 msgstr "Nie je možné exportovať dokument."
@@ -1624,9 +1837,6 @@ msgstr "Nie je možné exportovať dokument."
 msgid "Line %d"
 msgstr "Riadok %d"
 
-#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-#. A menu invocation returns focus to the book just like a closed dialog does,
-#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
 #. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
 msgid "No pages."
 msgstr "Žiadne strany."
@@ -1660,6 +1870,10 @@ msgstr ""
 msgid "Could not load the document source."
 msgstr "Nie je možné načítať zdrojový kód dokumentu."
 
+#. TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
+msgid "Couldn't extract the document from the archive: {}"
+msgstr "Nie je možné rozbaliť dokument z archívu: {}"
+
 #. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 msgid "Unsupported format selected."
 msgstr "Vybratý nepodporovaný formát."
@@ -1676,28 +1890,28 @@ msgid "{} - Paperback"
 msgstr "{} - Paperback"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
-msgid "&Undo\tCtrl+Z"
-msgstr "&Späť\tCtrl+Z"
+msgid "&Undo"
+msgstr "&Späť"
 
 #. TRANSLATORS: Menu item in the Edit menu to redo the last undone action.
-msgid "&Redo\tCtrl+Shift+Z"
-msgstr "&Znovu\tCtrl+Shift+Z"
+msgid "&Redo"
+msgstr "&Opakovať"
 
 #. TRANSLATORS: Menu item in the Edit menu to cut the current selection.
-msgid "Cu&t\tCtrl+X"
-msgstr "Vys&trihnúť\tCtrl+X"
+msgid "Cu&t"
+msgstr "Vys&trihnúť"
 
 #. TRANSLATORS: Menu item in the Edit menu to copy the current selection.
-msgid "&Copy\tCtrl+C"
-msgstr "&Kopírovať\tCtrl+C"
+msgid "&Copy"
+msgstr "&Kopírovať"
 
 #. TRANSLATORS: Menu item in the Edit menu to paste from the clipboard.
-msgid "&Paste\tCtrl+V"
-msgstr "&Prilepiť\tCtrl+V"
+msgid "&Paste"
+msgstr "&Prilepiť"
 
 #. TRANSLATORS: Menu item in the Edit menu to select all text.
-msgid "Select &All\tCtrl+A"
-msgstr "Vybr&ať všetko\tCtrl+A"
+msgid "Select &All"
+msgstr "Vybr&ať všetko"
 
 #. TRANSLATORS: Menu item in the Edit menu to open the find dialog.
 msgid "&Find..."
@@ -1767,6 +1981,14 @@ msgstr "&Exportovať údaje dokumentu..."
 msgid "Export bookmarks and position"
 msgstr "Exportovať záložky a pozíciu v texte"
 
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+msgid "Export &Notes and Bookmarks as Text or HTML..."
+msgstr "Exportovať poz&námky a záložky ako Text alebo HTML..."
+
+#. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
+msgid "Export bookmarks and notes in a readable format"
+msgstr "Exportovať záložky a poznámky v čitateľnom formáte"
+
 #. TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
 msgid "Reveal &File in Folder"
 msgstr "Zobraziť súbor v priečinku"
@@ -1825,11 +2047,11 @@ msgstr "Navigácia po grafických prvkoch"
 
 #. TRANSLATORS: Label for the Figures submenu in the compact Go menu.
 msgid "Fig&ures"
-msgstr "Znázo&rnenia"
+msgstr "Il&ustrácie"
 
 #. TRANSLATORS: Status-bar help text for the Go > Figures submenu.
 msgid "Navigate by figures"
-msgstr "Navigácia po znázorneniach"
+msgstr "Navigácia po ilustráciách"
 
 #. TRANSLATORS: Label for the Tables submenu in the compact Go menu.
 msgid "&Tables"
@@ -1896,8 +2118,8 @@ msgid "Go forward in history"
 msgstr "Prejsť vpred v histórii"
 
 #. TRANSLATORS: Menu item in the Go menu to show the document's table of contents.
-msgid "Table &of Contents"
-msgstr "&Obsah"
+msgid "Table &of Contents..."
+msgstr "&Obsah..."
 
 #. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
 msgid "Show table of contents"
@@ -1912,8 +2134,8 @@ msgid "Show elements list"
 msgstr "Zobraziť zoznam prvkov"
 
 #. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
-msgid "&Go to Page"
-msgstr "&Prejsť na stranu"
+msgid "&Go to Page..."
+msgstr "&Prejsť na stranu..."
 
 #. TRANSLATORS: Menu item in the Help menu to show information about the application.
 msgid "&About Paperback"
@@ -1956,16 +2178,16 @@ msgid "Support Paperback development"
 msgstr "Podporiť vývoj aplikácie Paperback"
 
 #. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
-msgid "&Word Count"
-msgstr "Počet slov"
+msgid "&Word Count..."
+msgstr "Počet slov..."
 
 #. TRANSLATORS: Status-bar help text for the Word Count menu item.
 msgid "Show word count"
 msgstr "Zobraziť počet slov"
 
 #. TRANSLATORS: Menu item in the Tools menu to show information about the document.
-msgid "Document &Info"
-msgstr "&Informácie o dokumente"
+msgid "Document &Info..."
+msgstr "&Informácie o dokumente..."
 
 #. TRANSLATORS: Status-bar help text for the Document Info menu item.
 msgid "Show document information"
@@ -1982,6 +2204,10 @@ msgstr "Na&stavenia"
 #. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
 msgid "&Batch OCR..."
 msgstr "&Hromadné OCR..."
+
+#. TRANSLATORS: Tools menu item that recognizes the page the cursor is on with OCR, replacing any text it already has
+msgid "&Recognize Current Page"
+msgstr "&Rozpoznať aktuálnu stranu"
 
 #. TRANSLATORS: Checkable menu item in the View menu that toggles whether word wrap is enabled.
 msgid "W&ord wrap"
@@ -2173,15 +2399,15 @@ msgstr "Žiadna predchádzajúca grafika."
 
 #. TRANSLATORS: Announced when the document has no figures to navigate
 msgid "No figures."
-msgstr "Žiadne znázornenia."
+msgstr "Žiadne ilustrácie."
 
 #. TRANSLATORS: Announced when there is no next figure from the current position
 msgid "No next figure."
-msgstr "Žiadne nasledujúce znázornenie."
+msgstr "Žiadna nasledujúca ilustrácia."
 
 #. TRANSLATORS: Announced when there is no previous figure from the current position
 msgid "No previous figure."
-msgstr "Žiadne predchádzajúce znázornenie."
+msgstr "Žiadna predchádzajúca ilustrácia."
 
 #. TRANSLATORS: Announcement when landing on a heading; %s is the heading text, %d is the heading level number
 msgid "%s Heading level %d"
@@ -2227,6 +2453,19 @@ msgstr "Zobrazenie vzorca"
 #. TRANSLATORS: Title of the dialog showing a table activated in the document
 msgid "Table View"
 msgstr "Zobrazenie tabuľky"
+
+#. TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
+msgid "Save &image as..."
+msgstr "Ulož&iť obrázok ako..."
+
+msgid "Save image as"
+msgstr "Uložiť obrázok ako"
+
+msgid "Read &text in picture"
+msgstr "Čítať &text z obrázka"
+
+msgid "Read the text in the picture"
+msgstr "Prečítať text z obrázka"
 
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
@@ -2281,9 +2520,12 @@ msgstr "Prejsť na &percentá"
 msgid "Go to percent"
 msgstr "Prejsť na percentá"
 
-#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
-msgid "Copied (%d chars)."
-msgstr "Skopírované (%d znakov)."
+#. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
+msgid "%d character copied."
+msgid_plural "%d characters copied."
+msgstr[0] "Skopírovaný %d znak."
+msgstr[1] "Skopírované %d znaky."
+msgstr[2] "Skopírovaných %d znakov."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 msgid "Beginning of selection set."
@@ -2292,14 +2534,6 @@ msgstr "Začiatok výberu nastavený."
 #. TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
 msgid "Cannot copy; set beginning of selection first."
 msgstr "Nie je možné skopírovať. Nastavte najprv začiatok výberu."
-
-#. TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
-msgid "Nothing to copy."
-msgstr "Žiadny text na skopírovanie."
-
-#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
-msgid "Could not copy to the clipboard."
-msgstr "Nie je možné skopírovať do schránky."
 
 #. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
 msgid "Cannot jump; set beginning of selection first."
@@ -2319,13 +2553,17 @@ msgstr[0] "Časovač zaspávania nastavený na %d minútu."
 msgstr[1] "Časovač zaspávania nastavený na %d minút."
 msgstr[2] "Časovač zaspávania nastavený na %d minúty."
 
-#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Progress 45%"
 msgid "Line"
 msgstr "Riadok"
 
 #. TRANSLATORS: Status bar label for the current character offset within the line
 msgid "Character"
 msgstr "Znak"
+
+#. TRANSLATORS: Status bar label for how far through the document the reader has got, e.g. "Line 5, Character 120, Progress 45%"
+msgid "Progress"
+msgstr "Priebeh"
 
 #. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 msgid "Sleep timer"
@@ -2348,16 +2586,16 @@ msgid "Open..."
 msgstr "Otvoriť..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Open from URL..."
+msgstr "Otvoriť URL..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Close All"
 msgstr "Zavrieť všetky"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Reopen Last Closed"
 msgstr "Otvoriť naposledy zatvorené"
-
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Reload"
-msgstr "Načítať znovu"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Show All Recent Documents..."
@@ -2497,19 +2735,19 @@ msgstr "Nasledujúci odkaz"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Image"
-msgstr "Predchádzajúci obrázok"
+msgstr "Predchádzajúca grafika"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Image"
-msgstr "Nasledujúci obrázok"
+msgstr "Nasledujúca grafika"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Figure"
-msgstr "Predchádzajúce znázornenie"
+msgstr "Predchádzajúca ilustrácia"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Next Figure"
-msgstr "Nasledujúce znázornenie"
+msgstr "Nasledujúca ilustrácia"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Previous Table"
@@ -2558,6 +2796,14 @@ msgstr "Začiatok kontajneru"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Past Container End"
 msgstr "Za koniec kontajneru"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Document Info..."
+msgstr "Informácie o dokumente..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Table of Contents..."
+msgstr "Obsah..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Elements List..."
@@ -2628,6 +2874,14 @@ msgid "Decrease Audio Speed"
 msgstr "Znížiť tempo zvuku"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Increase Audio Volume"
+msgstr "Zvýšiť hlasitosť zvuku"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Decrease Audio Volume"
+msgstr "Znížiť hlasitosť zvuku"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Full Screen"
 msgstr "Celá obrazovka"
 
@@ -2644,6 +2898,10 @@ msgid "Batch OCR..."
 msgstr "Hromadné OCR..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Recognize Current Page"
+msgstr "Rozpoznať aktuálnu stranu"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Customize Keyboard Shortcuts..."
 msgstr "Prispôsobiť klávesové skratky..."
 
@@ -2654,6 +2912,10 @@ msgstr "Importovať údaje dokumentu..."
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export Document Data..."
 msgstr "Exportovať údaje dokumentu..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Export Notes and Bookmarks as Text or HTML..."
+msgstr "Exportovať poznámky a záložky ako Text alebo HTML"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export to Plain Text..."
@@ -2719,6 +2981,38 @@ msgstr "Nepriradené"
 msgid "This view shows the part of the document you are reading."
 msgstr "Tu sa zobrazuje časť dokumentu, ktorý práve čítate."
 
+#. TRANSLATORS: Error when downloading a document from a link fails; {} is the HTTP status code, such as 404
+msgid "the server answered with status {}"
+msgstr "stavový kód zo servera {}"
+
+#. TRANSLATORS: Error when the server of a link cannot be reached; {} is the technical reason
+msgid "the server could not be reached: {}"
+msgstr "server nie je dostupný: {}"
+
+#. TRANSLATORS: Error when a document downloaded from a link cannot be saved; {} is the technical reason
+msgid "the download could not be saved: {}"
+msgstr "prevzatý obsah nie je možné uložiť: {}"
+
+#. TRANSLATORS: Message when downloading a document from a link is cancelled
+msgid "the download was cancelled"
+msgstr "preberanie bolo zrušené"
+
+#. TRANSLATORS: Error when a link names a file type that is never downloaded; {} is the extension without the leading dot
+msgid ".{} files cannot be read, so the link was not downloaded"
+msgstr "nie je možné čítať súbory s príponou .{} , obsah nebol prevzatý"
+
+#. TRANSLATORS: Error when a secure https link is redirected to an insecure http address
+msgid ""
+"the secure link was redirected to an insecure address, so it was not "
+"downloaded"
+msgstr ""
+"Zabezpečený odkaz bol presmerovaný na nezabezpečenú adresu, obsah nebol "
+"prevzatý"
+
+#. TRANSLATORS: Error when a document behind a link is too large to download; {} is the limit in megabytes
+msgid "the document is larger than {} MB, so it was not downloaded"
+msgstr "dokument je väčší než {} MB, tak že nebol prevzatý"
+
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 msgid "[Image only. Press enter to OCR.]"
 msgstr ""
@@ -2734,20 +3028,53 @@ msgid ""
 "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it "
 "here."
 msgstr ""
-"Paperback nedokáže čítať archívy RAR. Prekonvertujte súbor na .cbz ak ho "
-"chcete čítať v aplikácii Paperback."
+"Paperback nedokáže čítať archívy komiksov vo formáte RAR. Prekonvertujte "
+"súbor na .cbz ak ho chcete čítať v aplikácii Paperback."
 
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 msgid "Failed to parse comic archive: {}"
-msgstr "Nie je možné prečítať archív comic: {}"
+msgstr "Nie je možné prečítať súbor s archívom komiksov: {}"
+
+#. TRANSLATORS: Spoken for a comic book page that is its front cover
+msgid "Front cover"
+msgstr "Predná obálka"
+
+#. TRANSLATORS: Spoken for a comic book page that is an inside cover
+msgid "Inside cover"
+msgstr "Vnútorná obálka"
+
+#. TRANSLATORS: Spoken for a comic book page that recaps the story so far
+msgid "Recap"
+msgstr "Súhrn"
+
+#. TRANSLATORS: Spoken for a comic book page that is an advertisement
+msgid "Advertisement"
+msgstr "Reklama"
+
+#. TRANSLATORS: Spoken for a comic book page written by the editors
+msgid "Editorial"
+msgstr "Úvodník"
+
+#. TRANSLATORS: Spoken for a comic book page of letters from readers
+msgid "Letters"
+msgstr "Listáreň"
+
+#. TRANSLATORS: Spoken for a comic book page previewing another comic
+msgid "Preview"
+msgstr "Ukážka"
+
+#. TRANSLATORS: Spoken for a comic book page that is its back cover
+msgid "Back cover"
+msgstr "Zadná obálka"
 
 #. TRANSLATORS: Error shown when a comic book archive holds no page images at all
 msgid "This comic archive contains no pages."
-msgstr "Tento comic archív neobsahuje žiadne strany."
+msgstr "Tento archív komixov neobsahuje žiadne strany."
 
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]", and on its own, "[Image]", for a picture with none
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
-msgstr "Znázornenie"
+msgstr "Ilustrácia"
 
 #. TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
 msgid "Image"
@@ -2855,7 +3182,7 @@ msgstr "Nenájdená hlavička formátu MOBI"
 
 #. TRANSLATORS: Error shown when a MOBI file's header signature doesn't match the expected "MOBI" identifier
 msgid "Invalid MOBI identifier"
-msgstr "Neplatný identifkátor formátu MOBI"
+msgstr "Neplatný identifikátor formátu MOBI"
 
 #. TRANSLATORS: Error shown when a MOBI file's content record range is invalid
 msgid "Invalid content record range"
@@ -2923,9 +3250,26 @@ msgstr "Je vyžadované heslo"
 msgid "Password incorrect"
 msgstr "Heslo nie je správne"
 
+msgid "This document is encrypted in a way Paperback cannot open: {}"
+msgstr ""
+"Tento dokument je šifrovaný spôsobom, ktorý aplikácia Paperback nepodporuje: "
+"{}"
+
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 msgid "ODP file does not contain any pages"
 msgstr "Súbor ODP neobsahuje žiadne strany"
+
+#. TRANSLATORS: Written after a presentation slide's text, before the presenter's notes for that slide; {} is the notes
+msgid "Speaker notes: {}"
+msgstr "Poznámky pre rečníka: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it without a name; {} is the comment
+msgid "Comment: {}"
+msgstr "Komentár: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it: the first {} is the reviewer, the second the comment
+msgid "Comment from {}: {}"
+msgstr "Komentár od {}: {}"
 
 #. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
 msgid "FODP file does not contain any pages"
@@ -2968,6 +3312,26 @@ msgstr "Nie je možné prečítať dokument RTF: {}"
 #. TRANSLATORS: Fallback label for an audiobook chapter whose embedded title is empty; {} is the chapter number
 msgid "Chapter {}"
 msgstr "Kapitola {}"
+
+#. TRANSLATORS: Heading over the comments reviewers left on a document, written after its text
+msgid "Comments"
+msgstr "Komentáre"
+
+#. TRANSLATORS: Names a comment's author when the document does not say who wrote it
+msgid "Comment"
+msgstr "KOmentár"
+
+#. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
+msgid "{} on \\u{201c}{}\\u{201d}: {}"
+msgstr "od {} na text \\u{201e}{}\\u{201c}: {}"
+
+#. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
+msgid "{}: {}"
+msgstr "{}: {}"
+
+#. TRANSLATORS: Shown in place of a presentation slide that has no text, such as one holding only pictures
+msgid "This slide has no text."
+msgstr "Táto snímka neobsahuje žiadny text."
 
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
@@ -3015,8 +3379,73 @@ msgstr "Nebol nájdený parser pre súbory s príponou: .{}"
 msgid "All parsers failed for extension: .{}"
 msgstr "Všetky parsery zlyhali pre súbor s príponou: .{}"
 
+#. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
+msgid "image"
+msgstr "obrázok"
+
+msgid "Current version is not a valid semver."
+msgstr "Aktuálna verzia nie je platný semver."
+
+msgid "Latest release tag is not a valid semver."
+msgstr "Tag posledného vydania nie je platný semver."
+
+msgid "Invalid public key"
+msgstr "Neplatný verejný kľúč"
+
+msgid "Failed to read signature"
+msgstr "Nie je možné prečítať podpis"
+
+msgid "Invalid signature"
+msgstr "Neplatný podpis"
+
+msgid "Failed to create private download directory"
+msgstr "Nie je možné vytvoriť súkromný priečinok preberania"
+
+msgid "Failed to create file"
+msgstr "Nie je možné vytvoriť súbor"
+
+msgid "Failed to write file"
+msgstr "Nie je možné zapísať súbor"
+
+msgid "Failed to read file for verification"
+msgstr "Nie je možné prečítať súbor pre overenie"
+
+msgid "Signature verification failed"
+msgstr "Zlyhalo overenie podpisu"
+
+msgid "Failed to rename verified file"
+msgstr "Nie je možné premenovať overený súbor"
+
+msgid "Failed to parse release JSON"
+msgstr "Nie je možné parsovať obsah JSON vydania"
+
+msgid "Latest release does not include downloadable assets."
+msgstr "Posledné vydanie neobsahuje súbory na prevzatie."
+
+msgid ""
+"Update is available but no matching download asset or signature was found."
+msgstr ""
+"K dispozícii je aktualizácia, ale nebol nájdený zodpovedajúci súbor na "
+"prevzatie a jeho podpis."
+
 msgid "Not running from an AppImage; cannot self-update."
-msgstr "Aplikácia nie je spustená zo súboru AppImage; nie je možné aktualizovať."
+msgstr ""
+"Aplikácia nie je spustená zo súboru AppImage; nie je možné aktualizovať."
+
+msgid "Failed to determine exe path"
+msgstr "Nie je možné získať cestu k súboru exe"
+
+msgid "Failed to get exe directory"
+msgstr "Nie je možné získať cestu do priečinka súboru exe"
+
+msgid ""
+"Could not determine a cache directory: neither XDG_CACHE_HOME nor HOME is set"
+msgstr ""
+"Nie je možné nájsť cestu do priečinka cache: Nie sú nastavené premenné "
+"prostredia XDG_CACHE_HOME ani HOME"
+
+msgid "Failed to create cache directory"
+msgstr "Nie je možné vytvoriť priečinok cache"
 
 msgid "Failed to get current exe path"
 msgstr "Nie je možné získať cestu k aktuálnemu súboru exe"
@@ -3040,28 +3469,32 @@ msgid "Failed to launch update helper"
 msgstr "Nie je možné spustiť pomocný aktualizačný nástroj"
 
 msgid "The update helper did not start. See the log:"
-msgstr "Pomocný aktualizačný nástroj sa nespustil, skontrolujte súbor so záznamon:"
+msgstr ""
+"Pomocný aktualizačný nástroj sa nespustil, skontrolujte súbor so záznamon:"
 
 msgid ""
 "The application did not quit within 60 seconds. The current app was kept."
-msgstr ""
-"Aplikácia nebola ukončená za 60 sekúnd. Ponechaná je pôvodná verzia."
+msgstr "Aplikácia nebola ukončená za 60 sekúnd. Ponechaná je pôvodná verzia."
 
 msgid "The installation changed while waiting. The current app was kept."
-msgstr "Počas aktualizácie došlo k zmene inštalátora. Je ponechaná pôvodná verzia."
+msgstr ""
+"Počas aktualizácie došlo k zmene inštalátora. Je ponechaná pôvodná verzia."
 
 msgid "Could not move the current application. The current app was kept."
 msgstr "Nie je možné presunúť aktuálnu aplikáciu. Je ponechaná pôvodná verzia."
 
 msgid "Could not install the update. The previous version was restored."
-msgstr "Nie je možné nainštalovať aktualizáciu. Bola obnovená predchádzajúca verzia."
+msgstr ""
+"Nie je možné nainštalovať aktualizáciu. Bola obnovená predchádzajúca verzia."
 
 msgid "Could not restore the previous version. Recover it from:"
 msgstr "Nie je možné obnoviť predchádzajúcu verziu. Znovu ju získajte z:"
 
 msgid ""
 "macOS could not launch the update. The previous version is preserved at:"
-msgstr "Systém macOS nedokáže spustiť aktualizáciu. Predchádzajúca verzia je zachovaná v:"
+msgstr ""
+"Systém macOS nedokáže spustiť aktualizáciu. Predchádzajúca verzia je "
+"zachovaná v:"
 
 msgid "Application update failed"
 msgstr "Aktualizácia aplikácie zlyhala"
@@ -3137,9 +3570,6 @@ msgstr "Aktualizácia %s"
 msgid "Downloading update..."
 msgstr "Preberanie aktualizácie..."
 
-msgid "Update failed"
-msgstr "Aktualizácia zlyhala"
-
 msgid "Preparing update..."
 msgstr "Príprava aktualizácie..."
 
@@ -3163,6 +3593,12 @@ msgstr ""
 
 msgid "Security Error"
 msgstr "Bezpečnostná chyba"
+
+msgid "The update server returned HTTP error %s."
+msgstr "Aktualizačný server vrátil chybu HTTP %s."
+
+msgid "Could not reach the update server: %s"
+msgstr "Aktualizačný server nie je dostupný: %s"
 
 #. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 msgid "%d hour"
@@ -3246,8 +3682,8 @@ msgid ""
 "A system-wide shortcut needs Ctrl, Alt, or Win, or it would take that key "
 "from every other program."
 msgstr ""
-"Skratka pre celý systém musí zahŕňať Ctrl, Alt, alebo Win, pretože by mohla zabrať kombináciu "
-"klávesov pre všetky ďalšie aplikácie."
+"Skratka pre celý systém musí zahŕňať Ctrl, Alt, alebo Win, pretože by mohla "
+"zabrať kombináciu klávesov pre všetky ďalšie aplikácie."
 
 #. TRANSLATORS: Title of the dialog refusing a shortcut that can't be used.
 msgid "Shortcut Not Allowed"
@@ -3272,6 +3708,10 @@ msgstr "Obnoviť všetky skratky zobrazené na tejto karte na predvolené hodnot
 #. TRANSLATORS: Title of the confirmation dialog for resetting keyboard shortcuts to their defaults.
 msgid "Reset Shortcuts"
 msgstr "Obnoviť skratky"
+
+#. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
+msgid "{} (not on this keyboard layout)"
+msgstr "{} (nedostupné v tomto rozložení)"
 
 #: kt swift
 msgid "Export Document Data"
@@ -3715,8 +4155,8 @@ msgstr "Tento dokument nemá obsah."
 msgid "Navigation unit"
 msgstr "Jednotka navigácie"
 
-#. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
-#: kt swift
+#. TRANSLATORS: Accessibility label for the "previous" button when navigating audio by time; {} is an amount like "30 seconds"
+#: swift
 msgid "Previous {}"
 msgstr "Predchádzajúci {}"
 
@@ -3740,8 +4180,8 @@ msgstr "Koniec dokumentu"
 msgid "Beginning of document"
 msgstr "Začiatok dokumentu"
 
-#. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
-#: kt swift
+#. TRANSLATORS: Accessibility label for the "next" button when navigating audio by time; {} is an amount like "30 seconds"
+#: swift
 msgid "Next {}"
 msgstr "Nasledujúci {}"
 
@@ -4113,7 +4553,6 @@ msgstr ""
 msgid "Text-to-Speech"
 msgstr "Prevod textu na reč"
 
-#. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
 msgid "System Default"
 msgstr "Predvolený systémový"
@@ -4137,11 +4576,6 @@ msgstr "Zadať {}"
 #: kt
 msgid "Error loading document: {}"
 msgstr "Chyba pri načítaní dokumentu: {}"
-
-#. TRANSLATORS: 1.5x line spacing option
-#: kt
-msgid "1.5×"
-msgstr "1,5×"
 
 #. TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
 #: kt
@@ -4265,7 +4699,7 @@ msgid "File Manager"
 msgstr "Správca súborov"
 
 #. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
-#: kt
+#: swift kt
 msgid "{}% through"
 msgstr "{}% hotovo"
 
@@ -4423,4 +4857,82 @@ msgstr "Jazyk:"
 #. TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
 #: kt swift
 msgid "Opens Paperback in the Settings app, where its language can be changed."
-msgstr "Otvorí položku aplikácie Paperback v nastaveniach systému, kde je možné zmeniť jej jazyk."
+msgstr ""
+"Otvorí položku aplikácie Paperback v nastaveniach systému, kde je možné "
+"zmeniť jej jazyk."
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by paragraph
+#: kt swift
+msgid "Previous Paragraph"
+msgstr "Predchádzajúca strana"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by line
+#: kt swift
+msgid "Previous Line"
+msgstr "Predchádzajúci riadok"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by paragraph
+#: kt swift
+msgid "Next Paragraph"
+msgstr "Nasledujúci odsek"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by line
+#: kt swift
+msgid "Next Line"
+msgstr "Nasledujúci riadok"
+
+#. TRANSLATORS: TalkBack action on the top bar's overflow button, which opens its menu
+#: kt
+msgid "Show all options in a menu"
+msgstr "Zobraziť ponuku so všetkými možnosťami"
+
+#. TRANSLATORS: TalkBack action on a document tab that closes it; {} is the document's title
+#: kt
+msgid "Close {}"
+msgstr "Zavrieť {}"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's unit selector, which opens the list of navigation units
+#: kt
+msgid "Select navigation unit"
+msgstr "Vybrať jednotku navigácie"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
+#: kt
+msgid "Select speech rate"
+msgstr "Vybrať tempo reči"
+
+#. TRANSLATORS: Title of the file manager's top level, which lists the device's storage volumes
+#: kt
+msgid "Storage Devices"
+msgstr "Zariadenia úložiska"
+
+#. TRANSLATORS: TalkBack label for the file manager's row that goes up a folder; {} is the parent folder's name
+#: kt
+msgid "Go up to parent directory: {}"
+msgstr "Prejsť do nadradeného priečinka: {}"
+
+#. TRANSLATORS: Toggle controlling whether TTS stops after the paragraph containing a Find match while Find is the navigation unit
+#: swift kt
+msgid "Stop reading after search matches"
+msgstr "Zastaviť čítanie po prechode po výsledkoch hľadania"
+
+#. TRANSLATORS: Explanation of the Find playback setting; turning it off lets reading continue without changing the navigation unit
+#: swift kt
+msgid "Turn off to continue reading while navigating by search matches."
+msgstr ""
+"Vypnite, ak chcete, aby čítanie pokračovalo počas navigácii po výsledkoch "
+"hľadania"
+
+#. TRANSLATORS: 1.5x line spacing option
+#: swift
+msgid "1.5\\u{00d7}"
+msgstr "1,5\\u{00d7}"
+
+#~ msgid "Selected %d character."
+#~ msgid_plural "Selected %d characters."
+#~ msgstr[0] "Vybratý %d znak."
+#~ msgstr[1] "Vybraté %d znaky."
+#~ msgstr[2] "Vybratých %d znakov."
+
+#~ msgid "Update failed"
+#~ msgstr "Aktualizácia zlyhala"

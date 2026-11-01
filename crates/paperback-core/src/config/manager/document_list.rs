@@ -1,9 +1,4 @@
-//! [`get_sorted_document_list`], the "All Documents" dialog's filtering/sorting/status logic
-//! (recents first, then everything else alphabetically by file name), and
-//! [`compute_document_hash`], the content-based fingerprint [`super::ConfigManager::get_doc_key`]
-//! hashes a document path down to.
-
-use std::{cmp, fs, path::Path};
+use std::{cmp, collections::HashSet, fs, path::Path};
 
 use sha1::{Digest, Sha1};
 
@@ -13,60 +8,56 @@ use crate::{
 	types::{DocumentListItem, DocumentListStatus},
 };
 
-pub fn get_sorted_document_list(
-	config: &ConfigManager,
-	open_paths: &[String],
+/// Every file is checked once here, since a missing one on a network drive can take seconds to answer; [`filter_document_list`] narrows the result as the reader types.
+#[must_use]
+pub fn get_sorted_document_list(config: &ConfigManager, open_paths: &[String]) -> Vec<DocumentListItem> {
+	let item = |path: String| {
+		let status = if document_missing(&path) {
+			DocumentListStatus::Missing
+		} else if open_paths.contains(&path) {
+			DocumentListStatus::Open
+		} else {
+			DocumentListStatus::Closed
+		};
+		DocumentListItem { filename: document_name(config, &path), path, status }
+	};
+	let mut seen = HashSet::new();
+	let recent: Vec<String> =
+		config.get_recent_documents().into_iter().filter(|path| seen.insert(path.clone())).collect();
+	let mut rest: Vec<DocumentListItem> =
+		config.get_all_documents().into_iter().filter(|path| !seen.contains(path)).map(item).collect();
+	rest.sort_by_cached_key(|item| (item.filename.to_lowercase(), item.path.to_lowercase()));
+	let mut items: Vec<DocumentListItem> = recent.into_iter().map(item).collect();
+	items.extend(rest);
+	items
+}
+
+#[must_use]
+pub fn filter_document_list<'a>(
+	items: &'a [DocumentListItem],
 	filter: &str,
 	status_filter: Option<DocumentListStatus>,
-) -> Vec<DocumentListItem> {
-	let recent_docs = config.get_recent_documents();
-	let all_docs = config.get_all_documents();
-	let mut doc_paths: Vec<String> = Vec::new();
-	for path in &recent_docs {
-		if !doc_paths.contains(path) {
-			doc_paths.push(path.clone());
-		}
-	}
-	let mut rest: Vec<String> = all_docs.iter().filter(|path| !doc_paths.contains(path)).cloned().collect();
-	rest.sort_by_cached_key(|path| {
-		let name = document_name(path).unwrap_or_else(|| path.clone());
-		(name.to_lowercase(), path.to_lowercase())
-	});
-	doc_paths.extend(rest);
-	let filter_lower = filter.to_lowercase();
-	doc_paths
-		.into_iter()
-		.filter_map(|path| {
-			let filename = document_name(&path).unwrap_or_default();
-			if !filter.is_empty() && !filename.to_lowercase().contains(&filter_lower) {
-				return None;
-			}
-			let status = if document_missing(&path) {
-				DocumentListStatus::Missing
-			} else if open_paths.contains(&path) {
-				DocumentListStatus::Open
-			} else {
-				DocumentListStatus::Closed
-			};
-			if status_filter.is_some_and(|wanted| wanted != status) {
-				return None;
-			}
-			Some(DocumentListItem { path, filename, status })
-		})
+) -> Vec<&'a DocumentListItem> {
+	let filter = filter.to_lowercase();
+	items
+		.iter()
+		.filter(|item| filter.is_empty() || item.filename.to_lowercase().contains(&filter))
+		.filter(|item| status_filter.is_none_or(|wanted| wanted == item.status))
 		.collect()
 }
 
-/// The name a document is listed, sorted and searched by: the file's own name, or for a link the
-/// file name it ends in.
+/// A link's download name wins, since its last segment can be a script like `download` or nothing at all.
 #[must_use]
-pub fn document_name(path: &str) -> Option<String> {
-	if is_remote_url(path) {
-		return url_file_name(path);
-	}
-	Path::new(path).file_name().and_then(|name| name.to_str()).map(str::to_string)
+pub fn document_name(config: &ConfigManager, path: &str) -> String {
+	let name = if is_remote_url(path) {
+		config.get_document_download_name(path).or_else(|| url_file_name(path))
+	} else {
+		Path::new(path).file_name().and_then(|name| name.to_str()).map(str::to_string)
+	};
+	name.unwrap_or_else(|| path.to_string())
 }
 
-/// Whether the document's file is gone. A link never is: opening it downloads it again.
+/// A link is never missing, since opening it downloads it again.
 #[must_use]
 pub fn document_missing(path: &str) -> bool {
 	!is_remote_url(path) && !Path::new(path).exists()
@@ -77,7 +68,7 @@ pub fn compute_document_hash(path: &str) -> [u8; 20] {
 	let mut hasher = Sha1::new();
 	if let Ok(mut file) = fs::File::open(path) {
 		use std::io::{Read, Seek, SeekFrom};
-		let mut buffer = [0; 65536];
+		let mut buffer = vec![0; 65536];
 		let mut total_read = 0;
 		let max_read = 1024 * 1024;
 		while total_read < max_read {
@@ -99,7 +90,7 @@ pub fn compute_document_hash(path: &str) -> [u8; 20] {
 				let seek_pos = cmp::max(file_size.saturating_sub(max_read as u64), max_read as u64);
 				if file.seek(SeekFrom::Start(seek_pos)).is_ok() {
 					let mut end_read = 0;
-					let end_max = (file_size - seek_pos) as usize;
+					let end_max = usize::try_from(file_size - seek_pos).unwrap_or(usize::MAX);
 					while end_read < end_max {
 						let to_read = cmp::min(buffer.len(), end_max - end_read);
 						if let Ok(n) = file.read(&mut buffer[..to_read]) {
@@ -138,28 +129,24 @@ mod tests {
 			config.add_recent_document(path);
 		}
 		let open_paths = vec![open_path.clone()];
-		let all = get_sorted_document_list(&config, &open_paths, "", None);
+		let all = get_sorted_document_list(&config, &open_paths);
 		assert_eq!(all.len(), 3);
-		let open_only = get_sorted_document_list(&config, &open_paths, "", Some(DocumentListStatus::Open));
+		let open_only = filter_document_list(&all, "", Some(DocumentListStatus::Open));
 		assert_eq!(open_only.iter().map(|item| &item.path).collect::<Vec<_>>(), vec![&open_path]);
-		let closed_only = get_sorted_document_list(&config, &open_paths, "", Some(DocumentListStatus::Closed));
+		let closed_only = filter_document_list(&all, "", Some(DocumentListStatus::Closed));
 		assert_eq!(closed_only.iter().map(|item| &item.path).collect::<Vec<_>>(), vec![&closed_path]);
-		let missing_only = get_sorted_document_list(&config, &open_paths, "", Some(DocumentListStatus::Missing));
+		let missing_only = filter_document_list(&all, "", Some(DocumentListStatus::Missing));
 		assert_eq!(missing_only.iter().map(|item| &item.path).collect::<Vec<_>>(), vec![&missing_path]);
 	}
 
-	/// A document opened from a link has no file of its own to go missing; it is downloaded again
-	/// when it is opened.
 	#[test]
 	fn a_link_is_open_or_closed_and_never_missing() {
 		let config = ConfigManager::in_memory();
 		config.add_recent_document("https://example.org/a.epub");
 		config.add_recent_document("https://example.org/b.pdf");
 		let open_paths = vec!["https://example.org/b.pdf".to_string()];
-		let statuses: Vec<_> = get_sorted_document_list(&config, &open_paths, "", None)
-			.into_iter()
-			.map(|item| (item.path, item.status))
-			.collect();
+		let statuses: Vec<_> =
+			get_sorted_document_list(&config, &open_paths).into_iter().map(|item| (item.path, item.status)).collect();
 		assert_eq!(
 			statuses,
 			vec![
@@ -173,18 +160,34 @@ mod tests {
 	fn a_link_is_named_and_found_by_its_file_name() {
 		let config = ConfigManager::in_memory();
 		config.add_recent_document("https://example.org/books/Moby%20Dick.epub?from=aardvark");
-		let found = get_sorted_document_list(&config, &[], "moby", None);
+		let all = get_sorted_document_list(&config, &[]);
+		let found = filter_document_list(&all, "moby", None);
 		assert_eq!(found.iter().map(|item| item.filename.as_str()).collect::<Vec<_>>(), vec!["Moby Dick.epub"]);
-		assert!(get_sorted_document_list(&config, &[], "aardvark", None).is_empty());
+		assert!(filter_document_list(&all, "aardvark", None).is_empty());
+	}
+
+	#[test]
+	fn a_link_is_named_and_found_by_the_name_it_was_downloaded_under() {
+		let config = ConfigManager::in_memory();
+		config.add_recent_document("https://example.org/download?id=7");
+		config.set_document_download("https://example.org/download?id=7", "Moby Dick.epub", 10);
+		let all = get_sorted_document_list(&config, &[]);
+		let found = filter_document_list(&all, "moby", None);
+		assert_eq!(found.iter().map(|item| item.filename.as_str()).collect::<Vec<_>>(), vec!["Moby Dick.epub"]);
+	}
+
+	#[test]
+	fn a_link_ending_in_no_file_name_is_named_by_the_link() {
+		let config = ConfigManager::in_memory();
+		assert_eq!(document_name(&config, "https://example.org/"), "https://example.org/");
 	}
 
 	#[test]
 	fn a_link_is_sorted_by_its_file_name() {
 		let config = ConfigManager::in_memory();
-		config.set_document_position("b.epub-notes.txt", 1);
-		config.set_document_position("https://example.org/b.epub?ref=zzz", 1);
-		let order: Vec<_> =
-			get_sorted_document_list(&config, &[], "", None).into_iter().map(|item| item.filename).collect();
+		config.set_document_position("b.epub-notes.txt", 1.into());
+		config.set_document_position("https://example.org/b.epub?ref=zzz", 1.into());
+		let order: Vec<_> = get_sorted_document_list(&config, &[]).into_iter().map(|item| item.filename).collect();
 		assert_eq!(order, vec!["b.epub", "b.epub-notes.txt"]);
 	}
 }

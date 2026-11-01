@@ -1,25 +1,24 @@
-//! The actual tree-walk: [`XmlToText::process_node`] and everything it dispatches to per tag.
-
 use roxmltree::{Node, NodeType};
 
 use super::XmlToText;
 use crate::{
+	document::{DocLen, DocPos},
 	parser::{
 		convert::{
 			block_elements::is_block_element,
 			format_spans::FormatKind,
 			formula::{formula_text, is_xml_formula, xml_formula_fragment},
+			image_text,
 			line_builder::LineBuilder,
 			list_style::ListStyle,
 			table_text::table_render_bundle,
 		},
 		util::xml::collect_element_text,
 	},
-	t,
 	types::{
 		FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, PageBreakInfo, SeparatorInfo, TableInfo,
 	},
-	util::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
+	util::text::{collapse_whitespace, format_list_item, remove_soft_hyphens, trim_string},
 };
 
 impl XmlToText {
@@ -56,10 +55,8 @@ impl XmlToText {
 		}
 	}
 
-	/// Re-anchors `node`'s `id_positions` entry (if any) to `position`. Headings, list items,
-	/// tables and `<hr>` call `finalize_current_line` while opening, which moves the text
-	/// position past where `handle_element_opening_xml` first captured the id.
-	fn resync_id_position(&mut self, node: Node<'_, '_>, position: usize) {
+	/// Headings, list items, tables and `<hr>` finalize the line while opening, moving the position past where the id was first captured.
+	fn resync_id_position(&mut self, node: Node<'_, '_>, position: DocPos) {
 		if self.in_body
 			&& let Some(id) = node.attribute("id").or_else(|| node.attribute("name"))
 		{
@@ -67,14 +64,9 @@ impl XmlToText {
 		}
 	}
 
-	/// Records every id *inside* `node` at `position`. `<a>` and `<table>` emit their text
-	/// through a helper and skip recursing into their children, so without this the ids on
-	/// those children are never seen at all, and a DAISY SMIL `<par>` anchored to one (a
-	/// narrated `<em>` inside a link, say) loses its audio clip entirely. `position` is the
-	/// containing element's own start, since the skipped subtree's text is emitted as one
-	/// run with no per-descendant offsets to attribute; for the common case of an element
-	/// wrapping the whole link that is exactly right.
-	fn record_descendant_ids(&mut self, node: Node<'_, '_>, position: usize) {
+	/// `<a>` and `<table>` don't recurse, so without this a DAISY SMIL `<par>` anchored to a child (a narrated `<em>` inside a link) loses its audio clip.
+	/// Every id gets the container's start, since the skipped subtree's text is emitted as one run.
+	fn record_descendant_ids(&mut self, node: Node<'_, '_>, position: DocPos) {
 		if !self.in_body {
 			return;
 		}
@@ -89,8 +81,7 @@ impl XmlToText {
 
 	fn handle_element_opening_xml(&mut self, tag_name: &str, node: Node<'_, '_>) -> bool {
 		let mut skip_children = false;
-		// Recorded before the tag-specific handling below, which (notably for `<a>`) can push
-		// this element's own text into `current_line` and shift the position past its start.
+		// Before the tag handling below, which (notably for `<a>`) can push this element's text and shift the position past its start.
 		if self.in_body
 			&& let Some(id) = node.attribute("id").or_else(|| node.attribute("name"))
 		{
@@ -111,9 +102,9 @@ impl XmlToText {
 			let offset = self.text.get_current_text_position();
 			self.resync_id_position(node, offset);
 			let line = LineBuilder::separator_line();
-			self.text.current_line.push_str(line);
+			self.text.push_str(line);
 			self.text.finalize_current_line();
-			self.separators.push(SeparatorInfo { offset, length: display_len(line) });
+			self.separators.push(SeparatorInfo { offset, length: DocLen::of(line) });
 			return true;
 		}
 		if Self::tag_is(tag_name, "pagenum") {
@@ -125,12 +116,24 @@ impl XmlToText {
 			self.section_offsets.push(self.text.get_current_text_position());
 		}
 		if Self::tag_is(tag_name, "a") {
-			let link_text = collect_element_text(node);
+			let mut link_text = String::new();
+			let mut link_images = Vec::new();
+			Self::collect_link_content(node, &mut link_text, &mut link_images);
+			let link_text = link_text.trim();
 			if !link_text.is_empty() {
 				let href = node.attribute("href").unwrap_or("").to_string();
-				let processed_link_text = collapse_whitespace(&link_text);
+				let processed_link_text = collapse_whitespace(link_text);
 				let link_offset = self.text.get_current_text_position();
-				self.text.current_line.push_str(&processed_link_text);
+				// Found in the finished text, since collapsing its whitespace can move them.
+				let mut searched = 0;
+				for (image_text, mut info, is_figure) in link_images {
+					let Some(found) = processed_link_text[searched..].find(&image_text) else { continue };
+					let start = searched + found;
+					info.offset = link_offset + DocLen::of(&processed_link_text[..start]);
+					searched = start + image_text.len();
+					self.push_image(info, is_figure);
+				}
+				self.text.push_str(&processed_link_text);
 				self.links.push(LinkInfo { offset: link_offset, text: processed_link_text, reference: href });
 				self.record_descendant_ids(node, link_offset);
 				skip_children = true;
@@ -161,39 +164,68 @@ impl XmlToText {
 			self.format_spans.open(&FormatKind::Underline, self.text.get_current_text_position());
 		}
 		if self.in_body
-			&& (Self::tag_is(tag_name, "img") || Self::tag_is(tag_name, "image") || Self::tag_is(tag_name, "figure"))
+			&& let Some((image_text, mut info, is_figure)) = Self::described_image(node)
 		{
-			let mut description = node
-				.attribute("alt")
-				.or_else(|| node.attribute("aria-label"))
-				.or_else(|| node.attribute("aria-description"))
-				.or_else(|| node.attribute("title"))
-				.map(collapse_whitespace)
-				.unwrap_or_default();
-			if description.is_empty() && Self::tag_is(tag_name, "figure") {
-				for child in node.children() {
-					if child.is_element() && Self::tag_is(child.tag_name().name(), "figcaption") {
-						description = collapse_whitespace(&collect_element_text(child));
-						break;
-					}
-				}
+			info.offset = self.text.get_current_text_position();
+			self.text.push_str(&image_text);
+			self.push_image(info, is_figure);
+		}
+		skip_children
+	}
+
+	/// Described images contribute their placeholders, so a link made of a picture is still a link.
+	fn collect_link_content(node: Node<'_, '_>, text: &mut String, images: &mut Vec<(String, ImageInfo, bool)>) {
+		for child in node.children() {
+			if let Some(child_text) = child.text().filter(|_| child.is_text()) {
+				text.push_str(child_text);
+			} else if let Some((image_text, info, is_figure)) = Self::described_image(child) {
+				text.push_str(&image_text);
+				images.push((image_text, info, is_figure));
+			} else {
+				Self::collect_link_content(child, text, images);
 			}
-			if !description.is_empty() {
-				let is_figure = Self::tag_is(tag_name, "figure");
-				// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
-				let label = if is_figure { t("Figure") } else { t("Image") };
-				let image_text = format!("[{label}: {description}]");
-				let offset = self.text.get_current_text_position();
-				self.text.current_line.push_str(&image_text);
-				let info = ImageInfo { offset, alt_text: description, length: display_len(&image_text) };
-				if is_figure {
-					self.figures.push(info);
-				} else {
-					self.images.push(info);
+		}
+	}
+
+	fn described_image(node: Node<'_, '_>) -> Option<(String, ImageInfo, bool)> {
+		if !node.is_element() {
+			return None;
+		}
+		let tag_name = node.tag_name().name();
+		let is_figure = Self::tag_is(tag_name, "figure");
+		if !is_figure && !Self::tag_is(tag_name, "img") && !Self::tag_is(tag_name, "image") {
+			return None;
+		}
+		let attribute = |name: &str| node.attribute(name).map(str::to_string);
+		let mut description = image_text::description(&attribute);
+		if description.is_empty() && is_figure {
+			for child in node.children() {
+				if child.is_element() && Self::tag_is(child.tag_name().name(), "figcaption") {
+					description = collapse_whitespace(&collect_element_text(child));
+					break;
 				}
 			}
 		}
-		skip_children
+		// A figure with no caption says nothing itself: the picture inside it is announced instead.
+		if description.is_empty() && (is_figure || image_text::is_decorative(&attribute)) {
+			return None;
+		}
+		let image_text = image_text::placeholder(is_figure, &description);
+		let info = ImageInfo {
+			offset: DocPos::ZERO,
+			alt_text: description,
+			length: DocLen::of(&image_text),
+			source: Self::image_source(node),
+		};
+		Some((image_text, info, is_figure))
+	}
+
+	fn push_image(&mut self, info: ImageInfo, is_figure: bool) {
+		if is_figure {
+			self.figures.push(info);
+		} else {
+			self.images.push(info);
+		}
 	}
 
 	fn handle_formula_xml(&mut self, node: Node<'_, '_>) {
@@ -208,8 +240,8 @@ impl XmlToText {
 		let offset = self.text.get_current_text_position();
 		self.resync_id_position(node, offset);
 		self.record_descendant_ids(node, offset);
-		let length = display_len(&rendered);
-		self.text.current_line.push_str(&rendered);
+		let length = DocLen::of(&rendered);
+		self.text.push_str(&rendered);
 		if block {
 			self.text.finalize_current_line();
 		}
@@ -222,21 +254,14 @@ impl XmlToText {
 		let start_offset = self.text.get_current_text_position();
 		self.resync_id_position(node, start_offset);
 		self.record_descendant_ids(node, start_offset);
-		// Emit the table's on-screen text via the shared helper instead of recursing children to
-		// emit one cell per line. The helper output may contain tabs and span multiple lines; push
-		// each line verbatim so tab separators and empty cells survive whitespace collapsing.
+		// Lines are pushed verbatim so tab separators and empty cells survive whitespace collapsing.
 		let render = table_render_bundle(&table_xml, self.render_tables_inline);
 		for line in render.lines {
-			self.text.push_finalized_line(line);
+			self.text.push_finalized_line(&line);
 		}
 		let table_caption = render.caption;
-		let display_length = render.display_length;
-		self.tables.push(TableInfo {
-			offset: start_offset,
-			text: table_caption,
-			html_content: table_xml,
-			length: display_length,
-		});
+		let length = render.length;
+		self.tables.push(TableInfo { offset: start_offset, text: table_caption, html_content: table_xml, length });
 	}
 
 	fn handle_list_item_xml(&mut self, node: Node<'_, '_>) {
@@ -249,7 +274,7 @@ impl XmlToText {
 			text: li_text,
 		});
 		let indent = usize::try_from(self.list_level).unwrap_or(0) * 2;
-		self.text.current_line.push_str(&" ".repeat(indent));
+		self.text.push_str(&" ".repeat(indent));
 		let bullet = if let Some(style) = self.list_style_stack.last_mut() {
 			if style.ordered {
 				let item_text = format_list_item(style.item_number, &style.list_type);
@@ -261,7 +286,7 @@ impl XmlToText {
 		} else {
 			format!("{} ", Self::get_bullet_for_level(self.list_level))
 		};
-		self.text.current_line.push_str(&bullet);
+		self.text.push_str(&bullet);
 	}
 
 	fn handle_list_start_xml(&mut self, tag_name: &str, node: Node<'_, '_>) {
@@ -279,7 +304,7 @@ impl XmlToText {
 			let offset = self.text.get_current_text_position();
 			self.resync_id_position(node, offset);
 			self.open_lists.push(Some(self.lists.len()));
-			self.lists.push(ListInfo { offset, item_count, length: 0 });
+			self.lists.push(ListInfo { offset, item_count, length: DocLen::ZERO });
 		} else {
 			self.open_lists.push(None);
 		}
@@ -338,7 +363,7 @@ impl XmlToText {
 			if let Some(open) = self.open_lists.pop().flatten() {
 				self.text.finalize_current_line();
 				let offset = self.lists[open].offset;
-				self.lists[open].length = self.text.get_current_text_position().saturating_sub(offset);
+				self.lists[open].length = self.text.get_current_text_position().since(offset);
 			}
 		}
 	}
@@ -351,18 +376,18 @@ impl XmlToText {
 			if text.is_empty() {
 				return;
 			}
-			let processed_text = remove_soft_hyphens(text);
+			let processed_text = remove_soft_hyphens(text.to_string());
 			if self.text.is_preserving_whitespace() {
-				self.text.current_line.push_str(&processed_text);
+				self.text.push_str(&processed_text);
 			} else {
 				let mut collapsed = collapse_whitespace(&processed_text);
-				if self.text.current_line.is_empty() {
+				if self.text.current_line().is_empty() {
 					collapsed = collapsed.trim_start().to_string();
-				} else if self.text.current_line.ends_with(' ') && collapsed.starts_with(' ') {
+				} else if self.text.current_line().ends_with(' ') && collapsed.starts_with(' ') {
 					collapsed.remove(0);
 				}
 				if !collapsed.is_empty() {
-					self.text.current_line.push_str(&collapsed);
+					self.text.push_str(&collapsed);
 				}
 			}
 		}
@@ -370,6 +395,25 @@ impl XmlToText {
 
 	fn is_ignored_element(tag_name: &str) -> bool {
 		["script", "style", "noscript", "iframe", "object", "embed"].iter().any(|t| Self::tag_is(tag_name, t))
+	}
+
+	/// SVG and FB2 put `href` in the `xlink` namespace, so the attribute is matched by local name.
+	fn image_source(node: Node<'_, '_>) -> String {
+		node.descendants()
+			.filter(Node::is_element)
+			.find_map(|descendant| {
+				let tag_name = descendant.tag_name().name();
+				let wanted = if Self::tag_is(tag_name, "img") {
+					"src"
+				} else if Self::tag_is(tag_name, "image") {
+					"href"
+				} else {
+					return None;
+				};
+				descendant.attributes().find(|attribute| attribute.name() == wanted).map(|attribute| attribute.value())
+			})
+			.map(|source| source.trim().to_string())
+			.unwrap_or_default()
 	}
 
 	const fn tag_is(tag_name: &str, expected: &str) -> bool {

@@ -3,7 +3,7 @@ use std::fs;
 use anyhow::{Context, Result};
 
 use crate::{
-	document::{Document, DocumentBuffer, ParserContext},
+	document::{DocPos, Document, DocumentBuffer, ParserContext},
 	parser::{
 		Parser, add_converter_markers,
 		convert::html_to_text::{HtmlSourceMode, HtmlToText},
@@ -27,12 +27,7 @@ impl Parser for HtmlParser {
 		}
 		let html_content = decode_html(&bytes, None);
 		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
-		if !converter.convert(&html_content, HtmlSourceMode::NativeHtml) {
-			// currently unreachable, HtmlToText::convert never returns false today
-			tracing::warn!(path = %context.file_path, "failed to convert html to text");
-			// TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
-			anyhow::bail!(t("Failed to convert HTML to text: {}").replace("{}", &context.file_path));
-		}
+		converter.convert(&html_content, HtmlSourceMode::NativeHtml);
 		let extracted_title = converter.get_title();
 		let title = if extracted_title.is_empty() {
 			tracing::debug!(path = %context.file_path, "html file has no title element, falling back to file name");
@@ -40,10 +35,10 @@ impl Parser for HtmlParser {
 		} else {
 			extracted_title.to_string()
 		};
-		let text = converter.get_text();
+		let text = converter.take_text();
 		let mut buffer = DocumentBuffer::with_content(text);
 		let id_positions = converter.get_id_positions().clone();
-		add_converter_markers(&mut buffer, &converter, 0);
+		add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 		let toc_items = build_toc_from_headings(converter.get_headings());
 		let mut doc = Document::new().with_title(title);
 		doc.set_buffer(buffer);

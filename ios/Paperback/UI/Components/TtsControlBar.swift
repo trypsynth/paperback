@@ -3,8 +3,7 @@ import SwiftUI
 struct TtsControlBar: View {
 	@Environment(AppViewModel.self) private var viewModel
 
-	// Find reads as "Find Previous"/"Find Next", matching the Find screen's own buttons, rather
-	// than "Previous Find"/"Next Find".
+	// Find reads as "Find Previous"/"Find Next" to match the Find screen's own buttons.
 	private var prevLabel: String {
 		if viewModel.reading.currentNavUnit == .find {
 			// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by Find matches
@@ -113,20 +112,24 @@ struct TtsControlBar: View {
 			.contentShape(Rectangle())
 			.accessibilityHidden(viewModel.hidePrevNextButtons)
 
-			// Speech rate sits opposite the navigation unit and is built the same way: a menu
-			// of presets to tap, and an adjustable value so a screen reader changes it with a
-			// swipe rather than a trip into Settings.
-			SpeechPercentMenu(
-				// TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
-				accessibilityLabel: t("Speech Rate"),
-				percent: $ttsManager.speechRatePercent,
-				presets: speechRatePresets
-			) {
-				Text("\(ttsManager.speechRatePercent)%")
-					.font(.caption)
-					.foregroundStyle(.secondary)
-					.monospacedDigit()
-					.frame(width: 72, alignment: .trailing)
+			// Adjustable so a screen reader changes the rate with a swipe rather than a trip into Settings; a recording has a speed of its own instead of the voice's rate.
+			Group {
+				if viewModel.reading.hasAudio, let narration = viewModel.reading.narration {
+					AudioSpeedMenu(narration: narration)
+				} else {
+					SpeechPercentMenu(
+						// TRANSLATORS: VoiceOver accessibility label for the read-aloud bar's speech rate control
+						accessibilityLabel: t("Speech Rate"),
+						percent: $ttsManager.speechRatePercent,
+						presets: speechRatePresets
+					) {
+						Text("\(ttsManager.speechRatePercent)%")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+							.monospacedDigit()
+							.frame(width: 72, alignment: .trailing)
+					}
+				}
 			}
 			.padding(.trailing, 16)
 		}

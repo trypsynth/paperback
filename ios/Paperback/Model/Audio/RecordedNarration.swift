@@ -1,37 +1,38 @@
 import Foundation
 import Observation
 
-/// An audiobook's own recorded narration, moved from tab to tab as the reader switches
-/// documents. One player serves every open document: only one of them can be narrating at a
-/// time, and holding a decoder open per tab would keep a file handle and a chunk of memory per
-/// book.
-///
-/// Where playback has reached is written back to the config on every clip change and every
-/// pause rather than at some later checkpoint, because a book resumed from the wrong place is a
-/// book the reader has to find their way back through.
+/// Up to 4x because audiobook listeners commonly go past 3x; desktop and Android keep to the same range.
+let audioSpeedRange: ClosedRange<Float> = 0.5...4.0
+let audioSpeedStep: Float = 0.1
+let audioSpeedPresets: [Float] = [1, 1.25, 1.5, 2, 2.5, 3, 3.5, 4]
+
+/// "2.5x", as desktop says it.
+func audioSpeedLabel(_ speed: Float) -> String {
+	var label = String(format: "%.2f", speed)
+	while label.hasSuffix("0") { label.removeLast() }
+	if label.hasSuffix(".") { label.removeLast() }
+	return label + "x"
+}
+
+/// One player shared by every tab, since only one book narrates at a time and a decoder per tab would hold a file and memory per book.
 @MainActor
 @Observable
 final class RecordedNarration {
 	private let player: DaisyAudioPlayer
 	private let config: ConfigManagerFfi
 
-	/// The document the player is currently narrating, if any.
 	private var attachedDocumentPath: String?
 
-	/// Invoked whenever playback starts or stops, including at the end of the book.
 	var onPlayingChanged: ((Bool) -> Void)?
-	/// Invoked with where a relative seek actually landed, in document elapsed time.
 	var onSeekLanded: ((Int64) -> Void)?
-	/// Invoked with the text position of the clip now narrating, whenever it changes.
 	var onClipChanged: ((Int64) -> Void)?
-	/// Invoked when the player moves off a document, so a caller tracking what it last said
-	/// about this one can forget it.
 	var onDetached: (() -> Void)?
 
 	init(config: ConfigManagerFfi, player: DaisyAudioPlayer? = nil) {
 		self.config = config
 		let player = player ?? DaisyAudioPlayer()
 		self.player = player
+		// Saved on every pause and clip change rather than at a later checkpoint, so the book never resumes from the wrong place.
 		player.onPlaybackStateChanged = { [weak self] playing in
 			self?.isPlaying = playing
 			self?.onPlayingChanged?(playing)
@@ -44,19 +45,35 @@ final class RecordedNarration {
 			self?.onClipChanged?(position)
 			self?.persistPosition()
 		}
+		player.speed = Float(config.getAppString(key: Self.speedKey, defaultValue: "")).map(Self.clamped) ?? 1
+		speed = player.speed
+	}
+
+	/// One speed for every recording, under the key desktop and Android use too.
+	private static let speedKey = "audio_speed"
+
+	private static func clamped(_ speed: Float) -> Float {
+		(min(max(speed, audioSpeedRange.lowerBound), audioSpeedRange.upperBound) * 100).rounded() / 100
+	}
+
+	private(set) var speed: Float = 1
+
+	func setSpeed(_ newSpeed: Float) {
+		let clamped = Self.clamped(newSpeed)
+		guard clamped != speed else { return }
+		speed = clamped
+		player.speed = clamped
+		config.setAppString(key: Self.speedKey, value: "\(clamped)")
 	}
 
 	private(set) var isPlaying = false
 
-	/// Switches to narrating `tab`, picking up from its saved audio position, or from its saved
-	/// reading position when it has never been listened to. Does nothing for a tab with no
-	/// recording, or one that is already attached.
 	func attach(to tab: DocumentTab) {
 		let path = tab.url.path(percentEncoded: false)
 		if attachedDocumentPath == path { return }
 		detach()
 		guard let session = tab.session, session.hasAudioFfi() else { return }
-		player.attach(session: session, docKey: tab.id.uuidString)
+		player.attach(session: session, docKey: config.getDocKey(path: path))
 		attachedDocumentPath = path
 		let savedAudioMs = config.getDocumentAudioTimeFfi(path: path)
 		if savedAudioMs >= 0 {
@@ -66,8 +83,6 @@ final class RecordedNarration {
 		}
 	}
 
-	/// Saves where playback had reached and lets the document go, ahead of switching to another
-	/// one or the app going away.
 	func detach() {
 		persistPosition()
 		player.detach()
@@ -75,7 +90,6 @@ final class RecordedNarration {
 		onDetached?()
 	}
 
-	/// Whether the recording currently loaded belongs to this document.
 	func isNarrating(_ path: String) -> Bool { attachedDocumentPath == path }
 
 	func persistPosition() {
@@ -97,6 +111,8 @@ final class RecordedNarration {
 
 	@discardableResult
 	func seekToMs(_ elapsedMs: Int64) -> Bool { player.seekToMs(elapsedMs) }
+
+	var elapsedMs: Int64? { player.elapsedMs }
 
 	@discardableResult
 	func seekRelativeMs(_ deltaMs: Int64) -> Bool { player.seekRelativeMs(deltaMs) }

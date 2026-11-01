@@ -1,36 +1,21 @@
-//! Extracting a PDF page's links: implicit "web links" (bare URLs pdfium's own scanner
-//! recognizes in the text) and explicit link annotations (internal page-destination links as
-//! well as `/URI` actions).
-//!
-//! Reading a link out of pdfium and placing it in the assembled text are two separate steps.
-//! pdfium reports a link's location as a character range in its own indexing rather than as a
-//! display offset, so a link is found in the page's rendered text by searching for the text it
-//! covers - and that text is not settled until the page has been through paragraph joining and
-//! had its running headers removed, which happens after every page has been read (see
-//! [`super::running`]). So [`collect_web_links`] and [`collect_annotation_links`] gather what
-//! pdfium knows, and [`place_links`] turns it into markers once there is text to place them in.
+//! A link's location comes as a character range in pdfium's own indexing, so it is placed later by searching for its text, once paragraph joining and running-header removal have settled the page.
 
 use super::text::sanitize_pdf_text;
 use crate::{
-	document::{DocumentBuffer, Marker, MarkerType},
-	pdfium::{LinkTarget, PdfPage, PdfTextPage},
-	util::text::{collapse_whitespace, display_len, trim_string},
+	document::{DocLen, DocPos, DocumentBuffer, Marker, MarkerType},
+	pdf_engine::{LinkTarget, PdfPage, PdfTextPage},
+	util::text::{collapse_whitespace, trim_string},
 };
 
-/// A link pdfium reported, waiting for the page text that will say where it sits.
 pub(super) struct PendingLink {
-	/// The text the link covers, as it will read in the assembled document.
 	pub text: String,
-	/// Where the link goes: a URL, or `#page_<n>` for a link within the document.
 	pub reference: String,
 }
 
-/// Place each link at the first occurrence of its text at or after the previous link's, mirroring
-/// the order pdfium reports them in. A link whose text did not survive into the page - a URL
-/// inside a running header, say - simply places nothing.
+/// Searches from the previous link on, mirroring pdfium's order; a link whose text did not survive (a URL in a running header) places nothing.
 pub(super) fn place_links(
 	links: &[PendingLink],
-	page_start_offset: usize,
+	page_start_offset: DocPos,
 	page_display_text: &str,
 	buffer: &mut DocumentBuffer,
 ) {
@@ -39,8 +24,8 @@ pub(super) fn place_links(
 		if let Some(pos) = page_display_text[last_search_pos..].find(&link.text) {
 			let text_before = &page_display_text[last_search_pos..last_search_pos + pos];
 			let marker_pos =
-				page_start_offset + display_len(&page_display_text[..last_search_pos]) + display_len(text_before);
-			let link_len = display_len(&link.text);
+				page_start_offset + DocLen::of(&page_display_text[..last_search_pos]) + DocLen::of(text_before);
+			let link_len = DocLen::of(&link.text);
 			buffer.add_marker(
 				Marker::new(MarkerType::Link, marker_pos)
 					.with_text(link.text.clone())

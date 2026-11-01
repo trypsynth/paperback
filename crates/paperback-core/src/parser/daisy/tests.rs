@@ -20,9 +20,7 @@ fn write_zip(entries: &[(&str, &[u8])]) -> Vec<u8> {
 	buf
 }
 
-/// A minimal valid mono 8-bit PCM WAV file with `num_samples` samples at `sample_rate`, for
-/// exercising real audio-duration probing without shipping a binary fixture. Its duration is
-/// exactly `num_samples / sample_rate` seconds; the sample bytes themselves are silence.
+/// Exercises real audio-duration probing without shipping a binary fixture.
 fn make_wav(sample_rate: u32, num_samples: u32) -> Vec<u8> {
 	let block_align: u16 = 1; // mono, 8 bits per sample
 	let byte_rate = sample_rate * u32::from(block_align);

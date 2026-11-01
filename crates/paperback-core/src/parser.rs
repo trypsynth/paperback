@@ -9,7 +9,9 @@ use anyhow::Result;
 use paperback_formats::FormatMeta;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem, is_heading_marker},
+	document::{
+		DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem, is_heading_marker,
+	},
 	t,
 	types::{
 		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
@@ -51,11 +53,7 @@ pub trait Parser: Send + Sync {
 	fn parse(&self, context: &ParserContext) -> Result<Document>;
 }
 
-/// A parser paired with the format it was registered for.
-///
-/// Every fact about a format (its name, extensions and supported navigation features) lives
-/// in `paperback-formats` and is attached here at registration time, so parsers themselves hold
-/// no metadata that could drift from that table.
+/// Format metadata is attached here at registration so parsers hold none that could drift from the `paperback-formats` table.
 pub struct RegisteredParser {
 	format: &'static FormatMeta,
 	parser: Box<dyn Parser>,
@@ -90,10 +88,7 @@ impl RegisteredParser {
 	}
 }
 
-/// Builds a registry from a `FORMAT => parser` table, where `FORMAT` names a static in
-/// `paperback-formats`. Registration order is the order the entries appear in: it decides
-/// which parser is tried first for an extension more than one format claims, so it should
-/// match the declaration order of the format table.
+/// Entry order decides which parser is tried first for an extension several formats claim, so it should match the format table's declaration order.
 macro_rules! parser_registry {
 	($($format:ident => $parser:expr),+ $(,)?) => {{
 		let mut registry = ParserRegistry::new();
@@ -103,10 +98,7 @@ macro_rules! parser_registry {
 }
 
 pub struct ParserRegistry {
-	/// Registered parsers in registration order, which is the order they're offered to the
-	/// user (file dialog filters) and tried in (extensions claimed by more than one format).
 	parsers: Vec<RegisteredParser>,
-	/// Lowercase extension to indices into `parsers`, preserving registration order.
 	extension_map: HashMap<String, Vec<usize>>,
 }
 
@@ -170,21 +162,12 @@ impl ParserRegistry {
 	}
 }
 
-/// The extension that selects a file's parser: ordinarily just `path`'s own extension, with
-/// two exceptions.
-///
-/// A loose DAISY 2.02 book's master file is named `ncc.html`, which would otherwise route to
-/// the HTML parser since DAISY only claims `opf`/`zip` (an `.html` extension can't be reserved
-/// for DAISY without also capturing every ordinary HTML file).
-///
-/// A manual page is named for its section rather than its format, and an installed one is
-/// gzipped on top of that: `ls.1`, `Tcl_Init.3tcl`, `printf.3.gz`. The section names the
-/// format as surely as an extension would, so those route to the manual page parser, which
-/// unpacks the gzipped ones itself.
 fn resolve_extension(path: &Path) -> Option<&str> {
+	// A loose DAISY 2.02 book's master file; DAISY can't claim `.html` without capturing every ordinary HTML file.
 	if path.file_name().is_some_and(|n| n.eq_ignore_ascii_case("ncc.html")) {
 		return Some("opf");
 	}
+	// Manual pages are named for their section (`ls.1`, `Tcl_Init.3tcl`, `printf.3.gz`), which names the format as surely as an extension.
 	if man::is_manual_page_name(path) {
 		return Some("man");
 	}
@@ -193,10 +176,7 @@ fn resolve_extension(path: &Path) -> Option<&str> {
 
 /// # Errors
 ///
-/// Returns an error if:
-/// - No file extension is found
-/// - No parser is available for the file extension
-/// - The parser fails to parse the file
+/// Returns an error if no parser for the file's extension can parse it.
 pub fn parse_document(context: &ParserContext) -> Result<Document> {
 	let path = Path::new(&context.file_path);
 	let extension = context.forced_extension.as_ref().map_or_else(
@@ -217,8 +197,7 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 	let mut last_error = None;
 	for parser in parsers {
 		match parser.parse(context) {
-			Ok(mut doc) => {
-				doc.compute_stats();
+			Ok(doc) => {
 				tracing::debug!(path = %context.file_path, parser = parser.name(), "parsed document");
 				return Ok(doc);
 			}
@@ -249,10 +228,7 @@ pub fn get_parser_flags_for_context(context: &ParserContext) -> ParserFlags {
 		.fold(ParserFlags::NONE, |acc, p| acc | p.supported_flags())
 }
 
-/// Whether any parser can read the file at `path`, judged the same way [`parse_document`]
-/// picks one. Prefer this to [`parser_supports_extension`] wherever a path is at hand: a
-/// manual page is named for its section rather than for its format, which only the whole name
-/// can tell.
+/// Prefer this to [`parser_supports_extension`] when a path is at hand: a manual page is named for its section, which only the whole name shows.
 #[must_use]
 pub fn parser_supports_path(path: &Path) -> bool {
 	resolve_extension(path).is_some_and(parser_supports_extension)
@@ -315,13 +291,11 @@ pub fn build_file_filter_string() -> String {
 		parts.push_str(&ext_part);
 		parts.push('|');
 	}
-	// On macOS, NSOpenPanel treats *.*  as "allow everything", which disables
-	// filtering for all groups.  Only add the catch-all on other platforms.
+	// NSOpenPanel treats *.* as "allow everything", which disables filtering for every group.
 	#[cfg(not(target_os = "macos"))]
 	parts.push_str("All Files (*.*)|*.*");
 	#[cfg(target_os = "macos")]
 	{
-		// Remove the trailing '|' left by the last per-parser entry.
 		if parts.ends_with('|') {
 			parts.pop();
 		}
@@ -344,49 +318,63 @@ pub trait ConverterOutput {
 	fn get_underlines(&self) -> &[FormatInfo];
 }
 
-fn add_headings(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+fn add_headings(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: DocPos) {
 	for heading in converter.get_headings() {
 		let marker_type = util::toc::heading_level_to_marker_type(heading.level);
 		buffer.add_marker(
-			Marker::new(marker_type, offset + heading.offset).with_text(heading.text.clone()).with_level(heading.level),
+			Marker::new(marker_type, offset + heading.offset.from_start())
+				.with_text(heading.text.clone())
+				.with_level(heading.level),
 		);
 	}
 }
 
-fn add_links(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+fn add_links(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: DocPos) {
 	for link in converter.get_links() {
 		buffer.add_marker(
-			Marker::new(MarkerType::Link, offset + link.offset)
+			Marker::new(MarkerType::Link, offset + link.offset.from_start())
 				.with_text(link.text.clone())
 				.with_reference(link.reference.clone()),
 		);
 	}
 }
 
-fn add_images(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+/// The picture's location goes in the marker's reference so it can be saved; `resolve` is for formats whose sections each have their own base.
+fn add_images(
+	buffer: &mut DocumentBuffer,
+	converter: &dyn ConverterOutput,
+	offset: DocPos,
+	resolve: &dyn Fn(&str) -> String,
+) {
+	let reference = |image: &ImageInfo| {
+		if image.source.is_empty() || is_data_uri(&image.source) {
+			image.source.clone()
+		} else {
+			resolve(&image.source)
+		}
+	};
 	for image in converter.get_images() {
 		buffer.add_marker(
-			Marker::new(MarkerType::Image, offset + image.offset)
+			Marker::new(MarkerType::Image, offset + image.offset.from_start())
 				.with_text(image.alt_text.clone())
+				.with_reference(reference(image))
 				.with_length(image.length),
 		);
 	}
-}
-
-fn add_figures(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
 	for figure in converter.get_figures() {
 		buffer.add_marker(
-			Marker::new(MarkerType::Figure, offset + figure.offset)
+			Marker::new(MarkerType::Figure, offset + figure.offset.from_start())
 				.with_text(figure.alt_text.clone())
+				.with_reference(reference(figure))
 				.with_length(figure.length),
 		);
 	}
 }
 
-fn add_tables_separators_lists(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+fn add_tables_separators_lists(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: DocPos) {
 	for table in converter.get_tables() {
 		buffer.add_marker(
-			Marker::new(MarkerType::Table, offset + table.offset)
+			Marker::new(MarkerType::Table, offset + table.offset.from_start())
 				.with_text(table.text.clone())
 				.with_reference(table.html_content.clone())
 				.with_length(table.length),
@@ -394,29 +382,31 @@ fn add_tables_separators_lists(buffer: &mut DocumentBuffer, converter: &dyn Conv
 	}
 	for separator in converter.get_separators() {
 		buffer.add_marker(
-			Marker::new(MarkerType::Separator, offset + separator.offset)
+			Marker::new(MarkerType::Separator, offset + separator.offset.from_start())
 				.with_text("Separator".to_string())
 				.with_length(separator.length),
 		);
 	}
 	for list in converter.get_lists() {
 		buffer.add_marker(
-			Marker::new(MarkerType::List, offset + list.offset).with_level(list.item_count).with_length(list.length),
+			Marker::new(MarkerType::List, offset + list.offset.from_start())
+				.with_level(list.item_count)
+				.with_length(list.length),
 		);
 	}
 	for list_item in converter.get_list_items() {
 		buffer.add_marker(
-			Marker::new(MarkerType::ListItem, offset + list_item.offset)
+			Marker::new(MarkerType::ListItem, offset + list_item.offset.from_start())
 				.with_text(list_item.text.clone())
 				.with_level(list_item.level),
 		);
 	}
 }
 
-fn add_formulas(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+fn add_formulas(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: DocPos) {
 	for formula in converter.get_formulas() {
 		buffer.add_marker(
-			Marker::new(MarkerType::Formula, offset + formula.offset)
+			Marker::new(MarkerType::Formula, offset + formula.offset.from_start())
 				.with_text(formula.text.clone())
 				.with_reference(formula.mathml.clone())
 				.with_length(formula.length),
@@ -424,40 +414,33 @@ fn add_formulas(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, of
 	}
 }
 
-fn add_formatting(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+fn add_formatting(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: DocPos) {
 	for bold in converter.get_bolds() {
-		buffer.add_marker(Marker::new(MarkerType::Bold, offset + bold.offset).with_length(bold.length));
+		buffer.add_marker(Marker::new(MarkerType::Bold, offset + bold.offset.from_start()).with_length(bold.length));
 	}
 	for italic in converter.get_italics() {
-		buffer.add_marker(Marker::new(MarkerType::Italic, offset + italic.offset).with_length(italic.length));
+		buffer.add_marker(
+			Marker::new(MarkerType::Italic, offset + italic.offset.from_start()).with_length(italic.length),
+		);
 	}
 	for underline in converter.get_underlines() {
-		buffer.add_marker(Marker::new(MarkerType::Underline, offset + underline.offset).with_length(underline.length));
+		buffer.add_marker(
+			Marker::new(MarkerType::Underline, offset + underline.offset.from_start()).with_length(underline.length),
+		);
 	}
 }
 
-/// Writes a heading marker for every entry of a table of contents, so that a document whose own
-/// text carries no headings can still be moved through by heading.
-///
-/// Some documents name every one of their sections and mark up none of them. A PDF may carry a
-/// full bookmark outline over pages whose text is all one size; an old CHM names each of its
-/// topics in its `.hhc` and writes them as styled paragraphs rather than as `<h1>`. The reader of
-/// one of those gets a working table of contents and nothing at all to jump between, which on a
-/// 7,000 topic reference is the difference between a usable book and an unusable one.
+/// For documents that name their sections only in a table of contents, such as a PDF outline over same-size text or an old CHM whose `.hhc` topics are styled paragraphs rather than `<h1>`.
 pub fn add_heading_markers(buffer: &mut DocumentBuffer, items: &[TocItem], level: i32) {
 	add_heading_markers_where(buffer, items, level, &|_| true);
 }
 
-/// [`add_heading_markers`], for a document that marks up some of its headings and not others.
-///
-/// `wanted` is asked about each entry's offset and says whether that entry still needs a marker.
-/// An entry it turns down is skipped and its children are still offered, because a section that
-/// wrote its own heading may sit above subsections that did not.
+/// An entry `wanted` turns down still has its children offered, since a section that wrote its own heading may sit above subsections that did not.
 pub fn add_heading_markers_where(
 	buffer: &mut DocumentBuffer,
 	items: &[TocItem],
 	level: i32,
-	wanted: &dyn Fn(usize) -> bool,
+	wanted: &dyn Fn(DocPos) -> bool,
 ) {
 	for item in items {
 		if wanted(item.offset) {
@@ -475,72 +458,57 @@ pub fn add_heading_markers_where(
 	}
 }
 
-/// Gives a document heading navigation from its table of contents where its own text carries none.
-///
-/// A book that names every chapter in its table of contents but marks none of them up as a heading
-/// hands the reader a working Ctrl+T and nothing to move between with the heading key. This adds a
-/// heading marker for each table-of-contents entry, skipping any entry whose stretch of the book
-/// already holds a real heading, so a well-marked-up book is left alone and a poorly-marked one
-/// gains its chapters without anything being announced twice. Classic Gutenberg EPUBs and old CHMs
-/// and MOBIs all need this.
+/// Skips entries whose span already holds a real heading, so a well-marked-up book is left alone and nothing is announced twice; classic Gutenberg EPUBs and old CHMs and MOBIs need this.
 pub fn add_toc_heading_markers(buffer: &mut DocumentBuffer, toc_items: &[TocItem]) {
 	let existing = heading_positions(buffer);
 	let spans = toc_entry_offsets(toc_items);
 	add_heading_markers_where(buffer, toc_items, 1, &|offset| !span_has_heading(&spans, &existing, offset));
 }
 
-/// Where the document's own text already carries a heading, sorted for the span check.
-fn heading_positions(buffer: &DocumentBuffer) -> Vec<usize> {
-	let mut positions: Vec<usize> =
+fn heading_positions(buffer: &DocumentBuffer) -> Vec<DocPos> {
+	let mut positions: Vec<DocPos> =
 		buffer.markers.iter().filter(|marker| is_heading_marker(marker.mtype)).map(|marker| marker.position).collect();
 	positions.sort_unstable();
 	positions
 }
 
-/// Every table-of-contents entry offset in the tree, sorted, so the stretch one entry speaks for
-/// runs to wherever the next entry starts.
-fn toc_entry_offsets(items: &[TocItem]) -> Vec<usize> {
+fn toc_entry_offsets(items: &[TocItem]) -> Vec<DocPos> {
 	let mut offsets = Vec::new();
 	collect_toc_offsets(items, &mut offsets);
 	offsets.sort_unstable();
 	offsets
 }
 
-fn collect_toc_offsets(items: &[TocItem], out: &mut Vec<usize>) {
+fn collect_toc_offsets(items: &[TocItem], out: &mut Vec<DocPos>) {
 	for item in items {
 		out.push(item.offset);
 		collect_toc_offsets(&item.children, out);
 	}
 }
 
-/// Whether the stretch of the book starting at `offset` and running to the next entry already holds
-/// a heading of its own.
-fn span_has_heading(spans: &[usize], existing: &[usize], offset: usize) -> bool {
-	let end = spans.iter().copied().find(|start| *start > offset).unwrap_or(usize::MAX);
-	existing.iter().any(|position| *position >= offset && *position < end)
+fn span_has_heading(spans: &[DocPos], existing: &[DocPos], offset: DocPos) -> bool {
+	let end = spans.iter().copied().find(|start| *start > offset);
+	existing.iter().any(|position| *position >= offset && end.is_none_or(|end| *position < end))
 }
 
-/// Transfer all converter markers to a `DocumentBuffer`.
-/// `offset` is added to each marker position (for multi-section parsers like CHM/EPUB).
-pub fn add_converter_markers(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: usize) {
+pub fn add_converter_markers(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: DocPos) {
 	add_headings(buffer, converter, offset);
 	add_links(buffer, converter, offset);
-	add_images(buffer, converter, offset);
-	add_figures(buffer, converter, offset);
+	add_images(buffer, converter, offset, &str::to_string);
 	add_tables_separators_lists(buffer, converter, offset);
 	add_formulas(buffer, converter, offset);
 	add_formatting(buffer, converter, offset);
 }
 
-/// Like `add_converter_markers` but excludes links, for parsers that resolve link hrefs specially.
+/// For parsers that resolve link hrefs and image sources against their own sections.
 pub fn add_converter_markers_excluding_links(
 	buffer: &mut DocumentBuffer,
 	converter: &dyn ConverterOutput,
-	offset: usize,
+	offset: DocPos,
+	resolve_image: &dyn Fn(&str) -> String,
 ) {
 	add_headings(buffer, converter, offset);
-	add_images(buffer, converter, offset);
-	add_figures(buffer, converter, offset);
+	add_images(buffer, converter, offset, resolve_image);
 	add_tables_separators_lists(buffer, converter, offset);
 	add_formulas(buffer, converter, offset);
 	add_formatting(buffer, converter, offset);
@@ -552,7 +520,11 @@ pub fn is_external_url(url: &str) -> bool {
 	lower.starts_with("http:") || lower.starts_with("https:") || lower.starts_with("mailto:")
 }
 
-/// Whether `text` is an http or https link.
+#[must_use]
+pub fn is_data_uri(source: &str) -> bool {
+	source.get(..5).is_some_and(|scheme| scheme.eq_ignore_ascii_case("data:"))
+}
+
 #[must_use]
 pub fn is_remote_url(text: &str) -> bool {
 	["http://", "https://"].iter().any(|scheme| {
@@ -560,7 +532,6 @@ pub fn is_remote_url(text: &str) -> bool {
 	})
 }
 
-/// The last path segment of a link, percent-decoded, without query or fragment.
 #[must_use]
 pub fn url_file_name(url: &str) -> Option<String> {
 	let after_scheme = url.split_once("://").map_or(url, |(_, rest)| rest);
@@ -572,7 +543,6 @@ pub fn url_file_name(url: &str) -> Option<String> {
 	(!name.is_empty()).then(|| name.to_string())
 }
 
-/// The lowercase extension of [`url_file_name`].
 #[must_use]
 pub fn url_extension(url: &str) -> Option<String> {
 	let name = url_file_name(url)?;

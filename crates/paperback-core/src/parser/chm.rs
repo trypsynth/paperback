@@ -7,10 +7,11 @@ use anyhow::{Context, Result};
 use libchm::{ChmFile, Entry, EntryCategory, EntrySel};
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, is_heading_marker},
+	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, is_heading_marker},
 	parser::{
 		Parser, add_converter_markers_excluding_links, add_heading_markers_where, util::path::extract_title_from_path,
 	},
+	util::text::url_decode,
 };
 
 mod convert;
@@ -30,8 +31,7 @@ impl Parser for ChmParser {
 		let mut chm = ChmFile::open(&context.file_path)
 			.with_context(|| format!("Failed to open CHM file: {}", context.file_path))?;
 		let mut html_files = Vec::new();
-		// Keep the directory entry for each HTML file. Enumeration has already decoded it, so
-		// holding on to it saves a full directory B-tree descent per file when we read them below.
+		// Enumeration already decoded each entry, so keeping it saves a directory B-tree descent per file below.
 		let mut entries_by_path: HashMap<String, Entry> = HashMap::new();
 		let mut hhc_file = String::new();
 		for entry in chm.entries(EntrySel::ALL)? {
@@ -66,8 +66,7 @@ impl Parser for ChmParser {
 			context.render_tables_inline,
 			system.encoding,
 		);
-		// Keep each file's original index so the "Section N" label still reflects its position in
-		// the document even when earlier files were skipped.
+		// The original index is kept so the "Section N" label reflects position even when earlier files were skipped.
 		let mut sections: Vec<(usize, &String, SectionContent)> = Vec::with_capacity(converted.len());
 		for (idx, slot) in converted.into_iter().enumerate() {
 			match slot {
@@ -77,9 +76,7 @@ impl Parser for ChmParser {
 				}
 			}
 		}
-		// Sections are separated exactly as the one-at-a-time build separated them: a section that
-		// does not already end with a newline gets one appended. An empty section after the first
-		// adds nothing, because the text so far already ends with a newline.
+		// An empty section after the first adds nothing, because the text so far already ends with a newline.
 		let texts: Vec<String> = sections
 			.iter_mut()
 			.enumerate()
@@ -88,8 +85,6 @@ impl Parser for ChmParser {
 				if text.ends_with('\n') || (text.is_empty() && pos > 0) { text } else { text + "\n" }
 			})
 			.collect();
-		// `from_parts` builds the content and its per-character indices for every section in one
-		// parallel pass, handing back where each section landed so markers can be placed after.
 		let (mut buffer, spans) = DocumentBuffer::from_parts(texts);
 		let mut id_positions = HashMap::new();
 		let mut file_positions = HashMap::new();
@@ -100,30 +95,27 @@ impl Parser for ChmParser {
 			// Store file-level position so fragment-less internal links can be resolved.
 			id_positions.insert(normalized_path.clone(), section_start);
 			for (id, relative_pos) in &section.id_positions {
-				id_positions.insert(format!("{normalized_path}#{id}"), section_start + relative_pos);
+				id_positions.insert(format!("{normalized_path}#{id}"), section_start + relative_pos.from_start());
 			}
 			buffer.add_marker(
 				Marker::new(MarkerType::SectionBreak, section_start)
 					.with_text(format!("Section {}", idx + 1))
 					.with_reference((*file_path).clone()),
 			);
-			add_converter_markers_excluding_links(&mut buffer, section, section_start);
+			add_converter_markers_excluding_links(&mut buffer, section, section_start, &|source| {
+				url_decode(resolve_chm_href(file_path, source).split('#').next().unwrap_or_default())
+			});
 			for link in &section.links {
 				let resolved_href = resolve_chm_href(file_path, &link.reference);
 				buffer.add_marker(
-					Marker::new(MarkerType::Link, section_start + link.offset)
+					Marker::new(MarkerType::Link, section_start + link.offset.from_start())
 						.with_text(link.text.clone())
 						.with_reference(resolved_href),
 				);
 			}
 		}
 		calculate_toc_offsets(&mut toc_items, &file_positions, &id_positions);
-		// An old CHM writes its topic titles as styled paragraphs rather than as `<h1>`, so the
-		// book arrives with a full table of contents and nothing to move between by heading. Its
-		// `.hhc` names every topic, so the headings are there for the taking. Asked one topic at a
-		// time rather than of the book as a whole: a reference that marks up two of its six
-		// hundred pages needs the other five hundred and ninety eight, and must not have those two
-		// announced twice.
+		// Asked per topic, not per book: a reference that marks up two of its six hundred pages needs the other 598, without those two announced twice.
 		let headed = sections_with_headings(&buffer, &file_positions);
 		add_heading_markers_where(&mut buffer, &toc_items, 1, &|offset| {
 			!headed.contains(&section_start(&file_positions, offset))
@@ -137,14 +129,11 @@ impl Parser for ChmParser {
 	}
 }
 
-/// The start of the section an offset falls in, which is how a heading already in the text is
-/// matched up with the table of contents entry that names the same topic.
-fn section_start(file_positions: &HashMap<String, usize>, offset: usize) -> usize {
-	file_positions.values().copied().filter(|start| *start <= offset).max().unwrap_or(0)
+fn section_start(file_positions: &HashMap<String, DocPos>, offset: DocPos) -> DocPos {
+	file_positions.values().copied().filter(|start| *start <= offset).max().unwrap_or_default()
 }
 
-/// The sections whose own text already carries a heading, which need no other.
-fn sections_with_headings(buffer: &DocumentBuffer, file_positions: &HashMap<String, usize>) -> HashSet<usize> {
+fn sections_with_headings(buffer: &DocumentBuffer, file_positions: &HashMap<String, DocPos>) -> HashSet<DocPos> {
 	buffer
 		.markers
 		.iter()

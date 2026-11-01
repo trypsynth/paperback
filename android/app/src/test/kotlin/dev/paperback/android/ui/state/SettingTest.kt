@@ -20,8 +20,7 @@ class SettingTest {
 		assertEquals(listOf(2), persisted)
 	}
 
-	// The whole reason persist runs per write rather than at some checkpoint: Android can kill
-	// the process between two changes, and the second one must not take the first down with it.
+	// Android can kill the process between two changes without any callback.
 	@Test
 	fun `every write is persisted, not just the last`() {
 		val persisted = mutableListOf<Int>()
@@ -41,17 +40,14 @@ class SettingTest {
 		assertEquals(listOf(300), persisted)
 	}
 
-	// A config file written by a different version (or hand-edited) can hold anything at all.
-	// Sanitizing only on write would hand that raw value straight to the UI, which for the text
-	// scale means a slider pinned outside its own range.
+	// A hand-edited or older config can hold anything, which would pin the text scale slider outside its range.
 	@Test
 	fun `a stored value outside the accepted range is clamped too`() {
 		val setting = Setting(9000, { it.coerceIn(70, 300) }) { }
 		assertEquals(300, setting.state.value)
 	}
 
-	// SettingsScreen builds its slider as MIN..MAX in whole steps, so a MAX the steps can't
-	// land on exactly would leave the largest text size unreachable by the slider.
+	// The slider runs MIN..MAX in whole steps, so a MAX off the steps would be unreachable.
 	@Test
 	fun `the text scale range divides evenly into steps`() {
 		val span = ReaderSettings.MAX_TEXT_SCALE_PERCENT - ReaderSettings.MIN_TEXT_SCALE_PERCENT

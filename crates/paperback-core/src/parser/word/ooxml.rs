@@ -1,7 +1,3 @@
-//! Modern OOXML `.docx` parsing, including the batch-`.zip`-of-`.docx` and single-file
-//! password-protected cases (the latter via [`util::ooxml::try_decrypt_office_file`], the
-//! shared OLE-container decryption check also reused by `powerpoint`'s `.pptx` parsing).
-
 use std::{
 	collections::HashMap,
 	fs::{self, File},
@@ -13,23 +9,28 @@ use roxmltree::{Document as XmlDocument, Node, NodeType};
 use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
+	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
 		convert::table_text::{build_html_table_from_grid, html_table_to_display, table_caption_from_html},
 		util::{
-			ooxml::{collect_ooxml_run_text, read_ooxml_relationships, try_decrypt_office_file},
+			comments::{self, Comment},
+			ooxml::{
+				Relationships, collect_ooxml_run_text, read_core_properties, read_relationships,
+				try_decrypt_office_file,
+			},
 			path::extract_title_from_path,
 			toc::build_toc_from_buffer,
 		},
 	},
 	t,
-	types::HeadingInfo,
 	util::zip::read_zip_entry_by_name,
 };
 
+mod annotations;
 mod paragraph;
 
-use paragraph::{extract_number_from_string, process_paragraph};
+use annotations::{Annotations, NoteKind};
+use paragraph::{PageSource, extract_number_from_string, paragraph_plain_text, process_paragraph, starts_page};
 
 use super::numbering::Numbering;
 
@@ -39,8 +40,7 @@ pub(super) fn parse_word_zip(context: &ParserContext, render_tables_inline: bool
 	let mut archive = ZipArchive::new(BufReader::new(file))
 		.with_context(|| format!("Failed to read ZIP archive '{}'", context.file_path))?;
 	tracing::debug!(path = %context.file_path, entries = archive.len(), "scanning zip archive for embedded docx entries");
-	// zip 9 hands back a Result per name, since decoding one can fail. A name that will not
-	// decode cannot match what this scan is looking for, so drop those rather than fail the file.
+	// zip 9 hands back a Result per name; one that will not decode cannot be a `.docx` we want, so drop it rather than fail the file.
 	let mut docx_names: Vec<String> = archive
 		.file_names()
 		.flatten()
@@ -55,7 +55,6 @@ pub(super) fn parse_word_zip(context: &ParserContext, render_tables_inline: bool
 	docx_names.sort();
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
-	let mut headings = Vec::new();
 	for docx_name in &docx_names {
 		let mut inner_file_data = Vec::new();
 		{
@@ -63,18 +62,12 @@ pub(super) fn parse_word_zip(context: &ParserContext, render_tables_inline: bool
 			inner_file.read_to_end(&mut inner_file_data)?;
 		}
 		if !buffer.content.is_empty() {
-			buffer.add_marker(Marker::new(MarkerType::SectionBreak, buffer.current_position()));
+			buffer.add_marker(Marker::new(MarkerType::SectionBreak, buffer.end()));
 		}
 		let mut inner_archive = ZipArchive::new(Cursor::new(inner_file_data))
 			.with_context(|| format!("Failed to parse inner DOCX '{docx_name}' as zip"))?;
-		parse_ooxml_from_archive(
-			&mut inner_archive,
-			&mut buffer,
-			&mut id_positions,
-			&mut headings,
-			render_tables_inline,
-		)
-		.with_context(|| format!("Failed to parse DOCX contents of '{docx_name}'"))?;
+		parse_ooxml_from_archive(&mut inner_archive, &mut buffer, &mut id_positions, render_tables_inline)
+			.with_context(|| format!("Failed to parse DOCX contents of '{docx_name}'"))?;
 	}
 	let title = extract_title_from_path(&context.file_path);
 	let toc_items = build_toc_from_buffer(&buffer);
@@ -93,11 +86,11 @@ pub(super) fn parse_ooxml_doc(context: &ParserContext, render_tables_inline: boo
 		.with_context(|| format!("Failed to read DOCX as zip '{}'", context.file_path))?;
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
-	let mut headings = Vec::new();
-	parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, &mut headings, render_tables_inline)?;
-	let title = extract_title_from_path(&context.file_path);
+	parse_ooxml_from_archive(&mut archive, &mut buffer, &mut id_positions, render_tables_inline)?;
+	let (title, author) = read_core_properties(&mut archive);
+	let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
 	let toc_items = build_toc_from_buffer(&buffer);
-	let mut document = Document::new().with_title(title);
+	let mut document = Document::new().with_title(title).with_author(author.unwrap_or_default());
 	document.set_buffer(buffer);
 	document.id_positions = id_positions;
 	document.toc_items = toc_items;
@@ -105,7 +98,6 @@ pub(super) fn parse_ooxml_doc(context: &ParserContext, render_tables_inline: boo
 	Ok(document)
 }
 
-/// Read a DOCX/OOXML file's raw bytes, decrypting first if the file is an encrypted OLE container.
 fn load_ooxml_bytes(path: &str, password: Option<&str>) -> Result<Vec<u8>> {
 	try_decrypt_office_file(path, password)?
 		.map_or_else(|| fs::read(path).with_context(|| format!("Failed to read '{path}'")), Ok)
@@ -114,68 +106,198 @@ fn load_ooxml_bytes(path: &str, password: Option<&str>) -> Result<Vec<u8>> {
 fn parse_ooxml_from_archive<R: Read + Seek>(
 	archive: &mut ZipArchive<R>,
 	buffer: &mut DocumentBuffer,
-	id_positions: &mut HashMap<String, usize>,
-	headings: &mut Vec<HeadingInfo>,
+	id_positions: &mut HashMap<String, DocPos>,
 	render_tables_inline: bool,
 ) -> Result<()> {
 	let style_heading_map = build_style_heading_map(archive);
-	let rels = read_ooxml_relationships(archive, "word/_rels/document.xml.rels");
+	let rels = read_relationships(archive, "word/_rels/document.xml.rels");
 	let numbering = Numbering::load(
 		read_zip_entry_by_name(archive, "word/numbering.xml").ok().as_deref(),
 		read_zip_entry_by_name(archive, "word/styles.xml").ok().as_deref(),
 	);
 	let doc_content = read_zip_entry_by_name(archive, "word/document.xml")?;
 	let doc_xml = XmlDocument::parse(&doc_content).context("Failed to parse word/document.xml")?;
+	let start = buffer.end();
+	let first_marker = buffer.markers.len();
+	let annotations = Annotations::new(read_zip_entry_by_name(archive, "word/settings.xml").ok().as_deref(), start);
 	let mut walk = Walk {
 		buffer,
-		headings,
 		id_positions,
 		rels: &rels,
 		style_heading_map: &style_heading_map,
 		render_tables_inline,
 		numbering,
 		list: None,
+		page_source: PageSource::for_document(&doc_content),
+		annotations,
 	};
 	traverse(doc_xml.root(), &mut walk);
 	walk.end_list();
+	write_notes(archive, &mut walk);
+	write_word_comments(archive, &mut walk);
+	number_pages(buffer, start, first_marker);
 	Ok(())
 }
 
-/// What a walk of `word/document.xml` writes into and consults.
+/// After the text rather than at the foot of a page, where they would interrupt it; dropped, as they used to be, the citation numbers led nowhere.
+fn write_notes<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
+	let cited = std::mem::take(&mut walk.annotations.cited);
+	if cited.is_empty() {
+		return;
+	}
+	let mut parts = HashMap::new();
+	for kind in [NoteKind::Footnote, NoteKind::Endnote] {
+		let (part, rels_part, _) = kind.part();
+		if let Ok(xml) = read_zip_entry_by_name(archive, part) {
+			parts.insert(kind, (xml, read_relationships(archive, rels_part)));
+		}
+	}
+	let documents: HashMap<NoteKind, XmlDocument> =
+		parts.iter().filter_map(|(kind, (xml, _))| Some((*kind, XmlDocument::parse(xml).ok()?))).collect();
+	let notes: HashMap<NoteKind, HashMap<&str, Node>> =
+		documents.iter().map(|(kind, document)| (*kind, elements_by_id(document, kind.part().2))).collect();
+	if !walk.buffer.content.is_empty() && !walk.buffer.content.ends_with('\n') {
+		walk.buffer.append("\n");
+	}
+	// TRANSLATORS: Heading over the footnotes and endnotes of a document, written after its text
+	let heading = t("Notes");
+	let heading_offset = walk.buffer.end();
+	walk.buffer.append(&heading);
+	walk.buffer.append("\n");
+	walk.buffer.add_marker(Marker::new(MarkerType::Heading1, heading_offset).with_text(heading).with_level(1));
+	for citation in cited {
+		let Some(note) = notes.get(&citation.kind).and_then(|by_id| by_id.get(citation.id.as_str()).copied()) else {
+			continue;
+		};
+		let rels = &parts[&citation.kind].1;
+		walk.id_positions.insert(citation.key, walk.buffer.end());
+		// A number or letter reads as "1." before its note, and a typed mark such as an asterisk as itself.
+		let separator = if citation.label.chars().all(char::is_alphanumeric) { ". " } else { " " };
+		walk.buffer.append(&format!("{}{separator}", citation.label));
+		for paragraph in note.children().filter(|child| child.tag_name().name() == "p") {
+			process_paragraph(
+				paragraph,
+				walk.buffer,
+				walk.id_positions,
+				rels,
+				walk.style_heading_map,
+				&mut walk.numbering,
+				walk.page_source,
+				&mut walk.annotations,
+			);
+		}
+		if !walk.buffer.content.ends_with('\n') {
+			walk.buffer.append("\n");
+		}
+	}
+}
+
+/// Indexed once, as a long document cites hundreds of notes or comments and finding each by walking the whole part is quadratic; the first of a repeated id wins.
+fn elements_by_id<'a, 'input>(document: &'a XmlDocument<'input>, element: &str) -> HashMap<&'a str, Node<'a, 'input>> {
+	let mut by_id = HashMap::new();
+	for node in document.descendants().filter(|node| node.tag_name().name() == element) {
+		if let Some(id) = node.attribute("id") {
+			by_id.entry(id).or_insert(node);
+		}
+	}
+	by_id
+}
+
+fn write_word_comments<R: Read + Seek>(archive: &mut ZipArchive<R>, walk: &mut Walk) {
+	let placed = std::mem::take(&mut walk.annotations.comments);
+	if placed.is_empty() {
+		return;
+	}
+	let Ok(xml) = read_zip_entry_by_name(archive, "word/comments.xml") else { return };
+	let Ok(document) = XmlDocument::parse(&xml) else { return };
+	let by_id = elements_by_id(&document, "comment");
+	let comments = placed
+		.into_iter()
+		.filter_map(|(id, start, end)| {
+			let comment = by_id.get(id.as_str()).copied()?;
+			let text = comment
+				.children()
+				.filter(|child| child.tag_name().name() == "p")
+				.map(|paragraph| {
+					paragraph
+						.descendants()
+						.filter(|node| node.tag_name().name() == "r")
+						.map(collect_ooxml_run_text)
+						.collect::<String>()
+						.trim()
+						.to_string()
+				})
+				.filter(|paragraph| !paragraph.is_empty())
+				.collect::<Vec<_>>()
+				.join(" ");
+			(!text.is_empty()).then(|| Comment {
+				key: walk.annotations.comment_key(&id),
+				author: comment.attribute("author").unwrap_or_default().trim().to_string(),
+				text,
+				start,
+				end,
+			})
+		})
+		.collect();
+	comments::write_comments(walk.buffer, comments);
+}
+
+/// Word records no break for the first page; a document Word never laid out records none at all, and gets no pages rather than one that would claim more than is known.
+fn number_pages(buffer: &mut DocumentBuffer, start: DocPos, first_marker: usize) {
+	// A break after the last words, such as one closing the document, would start a page with nothing on it.
+	let end = buffer.end();
+	let mut index = 0;
+	buffer.markers.retain(|marker| {
+		index += 1;
+		index <= first_marker || marker.mtype != MarkerType::PageBreak || marker.position < end
+	});
+	if !buffer.markers[first_marker..].iter().any(|marker| marker.mtype == MarkerType::PageBreak) {
+		return;
+	}
+	if !buffer.markers[first_marker..]
+		.iter()
+		.any(|marker| marker.mtype == MarkerType::PageBreak && marker.position == start)
+	{
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, start));
+	}
+	let mut pages: Vec<&mut Marker> =
+		buffer.markers[first_marker..].iter_mut().filter(|marker| marker.mtype == MarkerType::PageBreak).collect();
+	pages.sort_by_key(|marker| marker.position);
+	for (index, marker) in pages.into_iter().enumerate() {
+		marker.text = format!("Page {}", index + 1);
+	}
+}
+
 struct Walk<'a> {
 	buffer: &'a mut DocumentBuffer,
-	headings: &'a mut Vec<HeadingInfo>,
-	id_positions: &'a mut HashMap<String, usize>,
-	rels: &'a HashMap<String, String>,
+	id_positions: &'a mut HashMap<String, DocPos>,
+	rels: &'a Relationships,
 	style_heading_map: &'a HashMap<String, i32>,
 	render_tables_inline: bool,
 	numbering: Numbering,
-	/// The run of numbered or bulleted paragraphs being built: where it starts, how many items
-	/// it has, and where its last item ends. Any other paragraph, or a table, ends it.
+	/// Any other paragraph, or a table, ends the run.
 	list: Option<ListRun>,
+	page_source: PageSource,
+	annotations: Annotations,
 }
 
 struct ListRun {
-	start: usize,
+	start: DocPos,
 	items: i32,
-	end: usize,
+	end: DocPos,
 }
 
 impl Walk<'_> {
-	/// Marks the run of list items just finished as one list, so the reader can step over it
-	/// the way it steps over an HTML list.
 	fn end_list(&mut self) {
 		let Some(ListRun { start, items, end }) = self.list.take() else { return };
-		let length = end.saturating_sub(start);
-		if length > 0 {
+		let length = end.since(start);
+		if !length.is_zero() {
 			self.buffer.add_marker(Marker::new(MarkerType::List, start).with_level(items).with_length(length));
 		}
 	}
 }
 
-/// Reads `word/styles.xml` and returns a map of style ID → heading level (1-9).
-/// Detects headings via `<w:name w:val="heading N"/>` (the canonical semantic name
-/// Word assigns regardless of locale) or a fallback `<w:outlineLvl>` in the style's pPr.
+/// Matches `<w:name w:val="heading N"/>`, the name Word assigns regardless of locale, with `<w:outlineLvl>` as the fallback.
 fn build_style_heading_map<R: Read + Seek>(archive: &mut ZipArchive<R>) -> HashMap<String, i32> {
 	let mut map = HashMap::new();
 	let Ok(content) = read_zip_entry_by_name(archive, "word/styles.xml") else {
@@ -235,21 +357,22 @@ fn traverse(node: Node, walk: &mut Walk) {
 	if node.node_type() == NodeType::Element {
 		let tag_name = node.tag_name().name();
 		if let Some(id) = node.attribute("id") {
-			walk.id_positions.insert(id.to_string(), walk.buffer.current_position());
+			walk.id_positions.insert(id.to_string(), walk.buffer.end());
 		}
 		if tag_name == "p" {
-			let start = walk.buffer.current_position();
+			let start = walk.buffer.end();
 			let is_list_item = process_paragraph(
 				node,
 				walk.buffer,
-				walk.headings,
 				walk.id_positions,
 				walk.rels,
 				walk.style_heading_map,
 				&mut walk.numbering,
+				walk.page_source,
+				&mut walk.annotations,
 			);
 			if is_list_item {
-				let end = walk.buffer.current_position();
+				let end = walk.buffer.end();
 				let run = walk.list.get_or_insert(ListRun { start, items: 0, end });
 				run.items += 1;
 				run.end = end;
@@ -259,7 +382,7 @@ fn traverse(node: Node, walk: &mut Walk) {
 			return;
 		} else if tag_name == "tbl" {
 			walk.end_list();
-			process_table(node, walk.buffer, walk.rels, walk.render_tables_inline);
+			process_table(node, walk.buffer, walk.rels, walk.render_tables_inline, walk.page_source);
 			return;
 		}
 	}
@@ -271,46 +394,46 @@ fn traverse(node: Node, walk: &mut Walk) {
 fn process_table(
 	element: Node,
 	buffer: &mut DocumentBuffer,
-	_rels: &HashMap<String, String>,
+	_rels: &Relationships,
 	render_tables_inline: bool,
+	page_source: PageSource,
 ) {
-	let table_start = buffer.current_position();
+	let table_start = buffer.end();
+	// The table's text has no row positions to put a page on, so a page that starts inside it starts with it. Dropping it instead would number every later page one short.
+	for _ in element.descendants().filter(|node| node.tag_name().name() == "r" && starts_page(*node, page_source)) {
+		buffer.add_marker(Marker::new(MarkerType::PageBreak, table_start));
+	}
 	let mut rows: Vec<Vec<String>> = Vec::new();
 	for child in element.children() {
 		if child.node_type() == NodeType::Element && child.tag_name().name() == "tr" {
 			let mut cells: Vec<String> = Vec::new();
 			for tc in child.children() {
 				if tc.node_type() == NodeType::Element && tc.tag_name().name() == "tc" {
-					let mut cell_text = String::new();
-					for p in tc.children() {
-						if p.node_type() == NodeType::Element && p.tag_name().name() == "p" {
-							for r in p.children() {
-								if r.node_type() == NodeType::Element && r.tag_name().name() == "r" {
-									cell_text.push_str(&collect_ooxml_run_text(r));
-								}
-							}
-							cell_text.push(' ');
-						}
-					}
-					cells.push(cell_text.trim().to_string());
+					// Every paragraph in the cell, a nested table's and a content control's included, rather than only those directly in it.
+					let cell_text: Vec<String> = tc
+						.descendants()
+						.filter(|node| node.tag_name().name() == "p")
+						.map(|paragraph| paragraph_plain_text(paragraph).trim().to_string())
+						.filter(|text| !text.is_empty())
+						.collect();
+					cells.push(cell_text.join(" "));
 				}
 			}
 			rows.push(cells);
 		}
 	}
 	let html_content = build_html_table_from_grid(&rows);
-	// Derive the caption the same way HTML/XML do (first-row text, no prefix) for consistent
-	// labels across formats; fall back to "table" for an empty table like `table_caption_from_tsv`.
+	// Captioned as HTML/XML tables are, for consistent labels across formats.
 	let final_caption = table_caption_from_html(&html_content).unwrap_or_else(|| "table".to_string());
 	let display_text = html_table_to_display(&html_content, render_tables_inline);
 	buffer.append(&display_text);
 	buffer.append("\n");
-	let display_len = buffer.current_position() - table_start;
+	let table_len = buffer.end() - table_start;
 	buffer.add_marker(
 		Marker::new(MarkerType::Table, table_start)
 			.with_text(final_caption)
 			.with_reference(html_content)
-			.with_length(display_len),
+			.with_length(table_len),
 	);
 }
 

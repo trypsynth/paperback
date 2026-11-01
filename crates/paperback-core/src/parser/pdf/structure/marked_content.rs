@@ -1,40 +1,20 @@
-//! Reading a page's marked content, which is what the structure tree is written against.
-//!
-//! A tagged page's content stream wraps each piece of text in a marked-content sequence with an
-//! id, and the tree's leaves name those ids rather than carrying text of their own. So before the
-//! tree can be walked, every glyph on the page has to be gathered under the id it belongs to.
-//! [`PageMarkedContent`] is that gathering, and [`TreeFacts`] is the one pass over the tree it
-//! needs first.
-
 use std::collections::{HashMap, HashSet};
 
 use super::super::text::{
-	HyphenEvidence, LINE_END_HYPHEN, SpaceFilter, char_top, context_chars, keeps_line_end_hyphen, page_chars,
-	reorder_run,
+	LINE_END_HYPHEN, PageEvidence, SpaceFilter, char_top, context_chars, page_chars, reorder_run,
 };
-use crate::pdfium::{PageObject, PdfTextPage, Tag, TagTree};
+use crate::pdf_engine::{PageObject, PdfTextPage, Tag, TagTree};
 
-/// The mark parameter a tagged page stamps its glyphs with, and the one the tree points at.
 const MCID_KEY: &str = "MCID";
 
-/// Minimum fraction of visible text glyphs that must be associated with a marked-content id for
-/// the tagged-extraction path to be trusted. Some PDFs advertise a structure tree while leaving
-/// their text essentially untagged (no ids, or wrapped only in `/Artifact` marks); below this
-/// threshold the structure tree is treated as unreliable and plain extraction is used instead.
+/// Some PDFs advertise a structure tree while leaving their text essentially untagged (no ids, or only `/Artifact` marks).
 pub(super) const MIN_MCID_COVERAGE: f64 = 0.5;
 
-/// What one walk of the tree finds out before any text is read.
 #[derive(Default)]
 pub(super) struct TreeFacts {
-	/// Every marked-content id the tree points at, so [`object_mcid`] knows which of an object's
-	/// marks the tree is going to ask for.
 	pub referenced: HashSet<i32>,
-	/// How many more times the tree names each id after the first time on this page. Ids named
-	/// once are not in it.
+	/// Ids named only once are not in it.
 	pub repeats: HashMap<i32, usize>,
-	/// Whether the tree names an image anywhere. A tree that names none leaves the page's images
-	/// to be placed by the height they were drawn at; see
-	/// [`crate::parser::pdf::images::UnclaimedImages`].
 	pub claims_figures: bool,
 }
 
@@ -49,7 +29,6 @@ impl TreeFacts {
 		facts
 	}
 
-	/// Note one of the tree's references to a marked-content id.
 	pub(super) fn note_reference(&mut self, mcid: i32) {
 		if !self.referenced.insert(mcid) {
 			*self.repeats.entry(mcid).or_default() += 1;
@@ -71,20 +50,12 @@ impl TreeFacts {
 	}
 }
 
-/// One page's glyphs, gathered under the marked-content ids the tree names them by.
 pub(super) struct PageMarkedContent {
-	/// The text of each id, in reading order within the id.
 	pub text: HashMap<i32, String>,
-	/// The top edge of each id, which is where the text under it starts down the page. Only
-	/// filled in when the caller asked for it; see [`read`].
 	pub tops: HashMap<i32, f64>,
-	/// The fraction of the page's visible glyphs that carry an id at all, against
-	/// [`MIN_MCID_COVERAGE`].
 	pub coverage: f64,
 }
 
-/// A page's text by marked-content id, handing each id's text out once however many times the
-/// tree names it.
 pub(super) struct PageText<'a> {
 	pub text: &'a HashMap<i32, String>,
 	read: HashSet<i32>,
@@ -95,7 +66,6 @@ impl<'a> PageText<'a> {
 		Self { text, read: HashSet::new() }
 	}
 
-	/// The text of `mcid`, or `None` when it has none or has been handed out already.
 	pub(super) fn take(&mut self, mcid: i32) -> Option<&'a str> {
 		if !self.read.insert(mcid) {
 			return None;
@@ -104,18 +74,12 @@ impl<'a> PageText<'a> {
 	}
 }
 
-/// Walks the page's characters into [`PageMarkedContent`].
-///
-/// `want_tops` asks for each id's height as well, which costs one pdfium call per id. Only a page
-/// placing images by height needs it, so a page whose tree names its figures does not pay for it.
-///
-/// An id the tree names more than once also gets the text of the ids lost in its place; see
-/// [`fold_repeated_references`].
+/// `want_tops` costs one more lookup per id, so only a page placing images by height asks for it.
 pub(super) fn read(
 	text_page: &PdfTextPage,
 	facts: &TreeFacts,
 	want_tops: bool,
-	evidence: &mut HyphenEvidence,
+	evidence: &mut PageEvidence,
 ) -> PageMarkedContent {
 	let mut content = PageMarkedContent { text: HashMap::new(), tops: HashMap::new(), coverage: 1.0 };
 	let mut real_char_count: usize = 0;
@@ -124,68 +88,63 @@ pub(super) fn read(
 	let mut order: Vec<i32> = Vec::new();
 	let mut artifacts: HashSet<i32> = HashSet::new();
 	let mut seen: HashSet<i32> = HashSet::new();
-	if let Some(char_count) = text_page.char_count() {
-		let mut current_mcid = -1;
-		// Chars of the current marked-content run with their pdfium index, so RTL
-		// runs can be reordered visual→logical per run.
-		let mut current_chars: Vec<(char, i32)> = Vec::new();
-		let spaces = SpaceFilter::new(char_count);
-		let page = page_chars(text_page, char_count);
-		let context = context_chars(&page);
-		evidence.add_chars(&context);
-		for (at, (i, &ch)) in (0..char_count).zip(page.iter()).enumerate() {
-			if let Some(ch) = ch {
-				// A hyphen pdfium found at a line end is part of the word or only splits it; see
-				// `keeps_line_end_hyphen`.
-				let ch = match ch {
-					LINE_END_HYPHEN if keeps_line_end_hyphen(&context, at, evidence) => '-',
-					_ => ch,
-				};
-				if (ch.is_control() && !matches!(ch, '\n' | '\r' | '\t')) || ch == '\u{00AD}' {
-					continue;
-				}
-				// A space the page never renders (see `SpaceFilter`) would land in the
-				// middle of a word here just as it does in plain extraction.
-				if ch == ' ' && spaces.hides(text_page, i) {
-					continue;
-				}
-				let is_generated = text_page.is_generated(i);
-				let mut char_mcid = -1;
-				if !is_generated && let Some(obj) = text_page.text_object(i) {
-					char_mcid = object_mcid(&obj, &facts.referenced);
-					if want_order && char_mcid >= 0 && char_mcid != current_mcid && seen.insert(char_mcid) {
-						order.push(char_mcid);
-						if !facts.referenced.contains(&char_mcid) && is_artifact(&obj) {
-							artifacts.insert(char_mcid);
-						}
-					}
-				}
-				if !is_generated && !ch.is_whitespace() {
-					real_char_count += 1;
-					if char_mcid >= 0 {
-						mcid_char_count += 1;
-					}
-				}
-				if char_mcid >= 0
-					&& want_tops
-					&& !content.tops.contains_key(&char_mcid)
-					&& let Some(top) = char_top(text_page, i)
-				{
-					content.tops.insert(char_mcid, top);
-				}
-				if char_mcid >= 0 && char_mcid != current_mcid {
-					if current_mcid >= 0 && !current_chars.is_empty() {
-						content.text.entry(current_mcid).or_default().push_str(&reorder_run(text_page, &current_chars));
-					}
-					current_chars.clear();
-					current_mcid = char_mcid;
-				}
-				current_chars.push((ch, i));
+	let char_count = text_page.char_count();
+	let mut current_mcid = -1;
+	// Kept with their pdfium index so RTL runs can be reordered visual to logical per run.
+	let mut current_chars: Vec<(char, i32)> = Vec::new();
+	let spaces = SpaceFilter::new(char_count);
+	let page = page_chars(text_page, char_count);
+	let context = context_chars(&page);
+	evidence.add_chars(&context);
+	for (at, (i, &ch)) in (0..char_count).zip(page.iter()).enumerate() {
+		if let Some(ch) = ch {
+			let ch = match ch {
+				LINE_END_HYPHEN if evidence.keeps_line_end_hyphen(&context, at) => '-',
+				_ => ch,
+			};
+			if (ch.is_control() && !matches!(ch, '\n' | '\r' | '\t')) || ch == '\u{00AD}' {
+				continue;
 			}
+			// A space the page never renders would land mid-word here just as in plain extraction.
+			if ch == ' ' && spaces.hides(text_page, i) {
+				continue;
+			}
+			let is_generated = text_page.is_generated(i);
+			let mut char_mcid = -1;
+			if !is_generated && let Some(obj) = text_page.text_object(i) {
+				char_mcid = object_mcid(&obj, &facts.referenced);
+				if want_order && char_mcid >= 0 && char_mcid != current_mcid && seen.insert(char_mcid) {
+					order.push(char_mcid);
+					if !facts.referenced.contains(&char_mcid) && is_artifact(&obj) {
+						artifacts.insert(char_mcid);
+					}
+				}
+			}
+			if !is_generated && !ch.is_whitespace() {
+				real_char_count += 1;
+				if char_mcid >= 0 {
+					mcid_char_count += 1;
+				}
+			}
+			if char_mcid >= 0
+				&& want_tops
+				&& !content.tops.contains_key(&char_mcid)
+				&& let Some(top) = char_top(text_page, i)
+			{
+				content.tops.insert(char_mcid, top);
+			}
+			if char_mcid >= 0 && char_mcid != current_mcid {
+				if current_mcid >= 0 && !current_chars.is_empty() {
+					content.text.entry(current_mcid).or_default().push_str(&reorder_run(text_page, &current_chars));
+				}
+				current_chars.clear();
+				current_mcid = char_mcid;
+			}
+			current_chars.push((ch, i));
 		}
-		if current_mcid >= 0 && !current_chars.is_empty() {
-			content.text.entry(current_mcid).or_default().push_str(&reorder_run(text_page, &current_chars));
-		}
+	}
+	if current_mcid >= 0 && !current_chars.is_empty() {
+		content.text.entry(current_mcid).or_default().push_str(&reorder_run(text_page, &current_chars));
 	}
 	if real_char_count > 0 {
 		content.coverage = mcid_char_count as f64 / real_char_count as f64;
@@ -194,12 +153,7 @@ pub(super) fn read(
 	content
 }
 
-/// Gives each repeated reference the text the tree lost in its place.
-///
-/// For every id `m` the tree names `k` extra times, `order` is read forward from `m`: `artifacts`
-/// are passed over, the first id the tree does name ends the search, and up to `k` ids the tree
-/// never names have their text appended to `m`'s. `order` holds each id of the page once, where it
-/// first appears in the content.
+/// A paragraph running onto a new page names that page's first id once more for each piece of text it lost, so that many unnamed non-artifact ids after it are folded back in.
 pub(super) fn fold_repeated_references(
 	order: &[i32],
 	artifacts: &HashSet<i32>,
@@ -222,15 +176,7 @@ pub(super) fn fold_repeated_references(
 	}
 }
 
-/// The marked-content id a text object's glyphs belong to.
-///
-/// pdfium reports the outermost mark carrying an id, which is the whole answer for the single
-/// mark a tagged PDF normally writes around a piece of text. A PDF exported from Apple Pages
-/// nests them: the list's mark wraps the item's, which wraps the label's, so every glyph in the
-/// list reports the list's id and the ids the structure tree actually points at are left holding
-/// nothing. Taking the innermost mark the tree refers to puts the text where the tree looks for
-/// it. An object with one mark, which is every object in a document written the usual way, skips
-/// all of this and keeps the id pdfium gives.
+/// Apple Pages nests marks (the list's wraps the item's wraps the label's), so the outermost id pdfium reports leaves the ids the tree points at empty; the innermost referenced one is taken.
 fn object_mcid(obj: &PageObject, referenced: &HashSet<i32>) -> i32 {
 	let outermost = obj.marked_content_id().unwrap_or(-1);
 	let count = obj.mark_count();
@@ -249,14 +195,10 @@ fn object_mcid(obj: &PageObject, referenced: &HashSet<i32>) -> i32 {
 	deepest
 }
 
-/// Whether any of an object's marks is an `Artifact` one: a running head, a page or line number,
-/// or other page furniture.
 fn is_artifact(obj: &PageObject) -> bool {
 	(0..obj.mark_count()).filter_map(|index| obj.mark(index)).any(|mark| mark.name().as_deref() == Some("Artifact"))
 }
 
-/// The first marked-content id anywhere under an element, which is where its text starts on the
-/// page.
 pub(super) fn first_marked_content_id(elem: &Tag) -> Option<i32> {
 	let count = elem.child_count();
 	for i in 0..count {
@@ -271,9 +213,6 @@ pub(super) fn first_marked_content_id(elem: &Tag) -> Option<i32> {
 	None
 }
 
-/// All the text under an element, ids resolved and run together, for the places that want an
-/// element's words rather than its layout: a heading's title, a list item's label, a table cell.
-/// An id the element names more than once is read the first time only.
 pub(super) fn collect_text(elem: &Tag, mcid_to_text: &HashMap<i32, String>, out: &mut String) {
 	collect_unread_text(elem, &mut PageText::new(mcid_to_text), out);
 }

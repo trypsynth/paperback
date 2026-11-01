@@ -1,14 +1,3 @@
-// `build_ok_cancel_buttons` translates its own "Cancel" label via patois, since
-// wx-utils is itself a `[package.metadata.patois] translatable = true` crate whose
-// `t()` calls patois-build folds into this app's own catalog at build time (see
-// `build()` in `build/translations.rs`), the same mechanism ship-shape uses. `ok_label`
-// is still supplied by each dialog, since it varies ("OK" vs. a verb like "Go").
-//
-// Not a fit for every dialog: `toc.rs` deliberately gives its OK button a non-stock
-// ID so a custom handler can block ending the modal until a selection is made, and
-// `options.rs`'s `prompt_for_hotkey` parents its buttons to a `Panel` (with an extra
-// "Clear" button) rather than the dialog directly. Both build their buttons by hand
-// instead of calling this.
 pub(super) use wx_utils::{
 	DIALOG_PADDING, add_ok_cancel_footer, add_single_button_footer, bind_enter_confirms, build_ok_cancel_buttons,
 };
@@ -18,14 +7,10 @@ mod activation;
 #[cfg(target_os = "macos")]
 use activation::bind_enter_button;
 
-/// The most entries a table of contents or heading tree shows under one parent on Windows. More
-/// than that are split into groups under it. On every move in a tree, NVDA counts the focused
-/// item's siblings with one cross-process message each, so thousands of chapters under one parent
-/// lag on each arrow key.
+/// NVDA counts the focused item's siblings with one cross-process message each on every tree move, so more than this under one parent are split into groups to keep arrow keys from lagging.
 #[cfg(target_os = "windows")]
 const MAX_TREE_SIBLINGS: usize = 500;
 
-/// The label of a group of tree entries, named after its first and last entry.
 #[cfg(target_os = "windows")]
 fn tree_group_label(first: &str, last: &str) -> String {
 	// TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
@@ -34,16 +19,16 @@ fn tree_group_label(first: &str, last: &str) -> String {
 
 mod about;
 pub use about::show_about_dialog;
-#[cfg(any(target_os = "windows", target_os = "macos"))]
 mod batch_ocr;
-#[cfg(any(target_os = "windows", target_os = "macos"))]
 pub use batch_ocr::show_batch_ocr_dialog;
 mod all_documents;
 pub use all_documents::show_all_documents_dialog;
 mod bookmark;
 pub use bookmark::show_bookmark_dialog;
 mod document_info;
+mod export_annotations;
 pub use document_info::show_document_info_dialog;
+pub use export_annotations::show_export_annotations_dialog;
 mod elements;
 pub use elements::{ElementsKind, show_elements_dialog};
 mod go_to;
@@ -53,6 +38,8 @@ mod go_to_page;
 pub use go_to_page::show_go_to_page_dialog;
 mod go_to_percent;
 pub use go_to_percent::show_go_to_percent_dialog;
+mod image_text;
+pub use image_text::show_image_text_dialog;
 #[cfg(target_os = "linux")]
 mod linux_setup;
 #[cfg(target_os = "linux")]
@@ -67,7 +54,7 @@ mod options;
 pub(crate) use options::AUDIO_SEEK_AMOUNTS_SECONDS;
 pub use options::show_options_dialog;
 mod shortcuts;
-pub use shortcuts::prompt_for_shortcuts;
+pub use shortcuts::{Keymap, prompt_for_shortcuts};
 mod sleep_timer;
 pub use sleep_timer::show_sleep_timer_dialog;
 mod toc;

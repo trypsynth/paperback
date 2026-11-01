@@ -1,6 +1,4 @@
-//! Reading the content of an `OpenDocument` file, which a password may protect.
-//!
-//! An encrypted ODF is still an ordinary ZIP, but its `content.xml` is ciphertext, so handing it to an XML parser fails with an error that says nothing about the password the reader is missing. The decryption is odf-crypto's, which follows what `LibreOffice` itself writes: AES-GCM with Argon2id from current versions, AES-CBC from older ones, and Blowfish for ODF 1.1. It works on the whole package, so an encrypted file is turned into a plain package in memory and read from there, while a plain file is read as it stands without going near it.
+//! An encrypted ODF's `content.xml` is ciphertext, which an XML parser rejects with an error that says nothing about the missing password.
 
 use std::{
 	fs,
@@ -17,9 +15,7 @@ use crate::{
 	util::{encoding::convert_to_utf8, zip::read_zip_entry_bytes},
 };
 
-/// Reads `entry` of the `OpenDocument` file at `path` as text, decrypting the file with `password` first when it is encrypted.
-///
-/// Returns the `[password_required]` error when the file is encrypted and there is no password, or the password is wrong, so the reader is asked for one rather than told the file is broken.
+/// A missing or wrong password gives the `[password_required]` error, so the reader is asked for one rather than told the file is broken.
 pub fn read_odf_content(path: &str, entry: &str, password: Option<&str>) -> Result<String> {
 	let package = fs::read(path).with_context(|| format!("Failed to open '{path}'"))?;
 	let mut archive =
@@ -32,7 +28,6 @@ pub fn read_odf_content(path: &str, entry: &str, password: Option<&str>) -> Resu
 	read_entry(&mut archive, entry)
 }
 
-/// Whether the package says it is encrypted, either as one `encrypted-package` stream or entry by entry in its manifest. A file with neither never reaches the decryption.
 fn is_encrypted<R: Read + Seek>(archive: &mut ZipArchive<R>) -> bool {
 	archive.by_name("encrypted-package").is_ok()
 		|| read_zip_entry_bytes(archive, "META-INF/manifest.xml")

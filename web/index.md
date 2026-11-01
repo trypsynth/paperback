@@ -7,7 +7,7 @@ description: Paperback is a fast, fully accessible ebook and document reader for
 
 <div class="hero">
 <h1>Read anything, on anything</h1>
-<p class="lede">Paperback is a fast, fully accessible reader for ebooks, documents and audio books. It opens over twenty formats and speaks sixteen languages. Windows, macOS and Linux are free downloads. The iOS and Android apps are paid, and the source is MIT licensed if you would rather build them yourself.</p>
+<p class="lede">Paperback is a fast, fully accessible reader for ebooks, documents and audio books. It opens over twenty formats and speaks seventeen languages. Windows, macOS and Linux are free downloads. The iOS and Android apps are paid, and the source is MIT licensed if you would rather build them yourself.</p>
 <ul class="cta">
 <li><a href="/downloads">Download Paperback</a></li>
 <li><a href="/readme.html">Read the manual</a></li>
@@ -48,7 +48,7 @@ description: Paperback is a fast, fully accessible ebook and document reader for
 - **Windows** &ndash; free. Installer and portable builds, for x64 and ARM64. Windows 10 and later.
 - **macOS** &ndash; free. Signed and notarized, so it opens with no security warnings.
 - **Linux** &ndash; free. AppImage or tar.gz, for x64 and ARM64, with desktop integration so documents open from your file manager.
-- **iOS** &ndash; paid, on the App Store, for iPhone and iPad running iOS 17 or later.
+- **iOS** &ndash; paid, [on the App Store](https://apps.apple.com/app/id6775220909), for iPhone and iPad running iOS 17 or later.
 - **Android** &ndash; paid, [on Google Play](https://play.google.com/store/apps/details?id=dev.paperback.android), Android 7 and later, with read-aloud that keeps playing in the background.
 
 Buying the mobile apps is what pays for the work. If you would rather not, the source is public and builds for both.
@@ -89,6 +89,7 @@ Buying the mobile apps is what pays for the work. If you would rather not, the s
 <li>Finnish</li>
 <li>French</li>
 <li>German</li>
+<li>Hungarian</li>
 <li>Japanese</li>
 <li>Polish</li>
 <li>Portuguese (Brazil)</li>

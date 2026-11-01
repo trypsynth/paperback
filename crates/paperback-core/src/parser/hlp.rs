@@ -1,13 +1,4 @@
-//! WinHelp (`.hlp`) documents, read through the `libhlp` crate.
-//!
-//! A help file is a set of topics rather than one flowing document, so each topic becomes a
-//! section with its title as a heading, and the topics are concatenated in the order the
-//! file stores them.
-//!
-//! Links are the awkward part. WinHelp stores a hotspot's destination as the hash of the
-//! target's context string, never as an offset, so `libhlp` resolves the hash through the
-//! file's own `|CONTEXT` index and this parser turns the topic offset that comes back into
-//! a key in [`Document::id_positions`] that the reader's link machinery can look up.
+//! WinHelp stores a hotspot's destination as the hash of the target's context string, never an offset, so links resolve through the file's `|CONTEXT` index into [`Document::id_positions`] keys.
 
 use std::{collections::HashMap, fs};
 
@@ -15,23 +6,17 @@ use anyhow::{Context, Result};
 use libhlp::{Block, Format, HlpFile, Paragraph, Run, Table, Target, Topic};
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem, format_marker_types},
+	document::{
+		DocLen, DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem, format_marker_types,
+	},
 	parser::{Parser, util::path::extract_title_from_path},
 	t,
-	util::text::display_len,
 };
 
-/// Prefix for the [`Document::id_positions`] key naming a topic by its offset.
-///
-/// WinHelp has no file paths to key link targets by, so a topic's own numbering stands in.
-/// The prefix keeps those keys clear of anything else and stops a bare number reading as a
-/// fragment when the reader resolves a link.
+/// The prefix stops a bare topic number reading as a fragment when the reader resolves a link.
 const OFFSET_KEY: &str = "topic";
 
-/// Prefix for the key naming a topic by its number.
-///
-/// Every topic has a distinct number in both format generations, where topic offsets exist
-/// only in WinHelp 3.1 and later, so this is what the table of contents points at.
+/// Topic numbers are distinct in both format generations while offsets exist only from WinHelp 3.1, so the table of contents points at these.
 const NUMBER_KEY: &str = "topicnum";
 
 pub struct HlpParser;
@@ -64,28 +49,23 @@ impl Parser for HlpParser {
 	}
 }
 
-/// Report a `libhlp` failure as a parse error, logging the detail the user does not see.
 fn failed(path: &str, error: &libhlp::HlpError) -> anyhow::Error {
 	tracing::warn!(path = %path, error = %error, "failed to read winhelp file");
 	// TRANSLATORS: Error shown when a WinHelp (.hlp) file cannot be read; {} is the underlying error
 	anyhow::anyhow!(t("Failed to parse WinHelp file: {}").replace("{}", &error.to_string()))
 }
 
-/// What the walk produced.
 struct Built {
 	buffer: DocumentBuffer,
-	id_positions: HashMap<String, usize>,
+	id_positions: HashMap<String, DocPos>,
 	toc_items: Vec<TocItem>,
 }
 
-/// Builds the document's text and markers one topic at a time.
 struct Builder<'a> {
-	/// The file's `|CONTEXT` index, mapping a hotspot's context hash to a topic offset.
-	/// Taking the map rather than the file keeps the walk testable without one.
+	/// Taking the `|CONTEXT` map rather than the file keeps the walk testable without one.
 	contexts: &'a HashMap<u32, u32>,
 	buffer: DocumentBuffer,
-	/// Where each topic started, in the same order as the topics themselves.
-	starts: Vec<usize>,
+	starts: Vec<DocPos>,
 }
 
 impl<'a> Builder<'a> {
@@ -94,11 +74,10 @@ impl<'a> Builder<'a> {
 	}
 
 	fn add_topic(&mut self, topic: &Topic) {
-		let start = self.buffer.current_position();
+		let start = self.buffer.end();
 		self.starts.push(start);
 		if !topic.title.is_empty() {
-			// A WinHelp topic almost always repeats its title as the first line of its own
-			// text, and adding it again would have a reader announce it twice.
+			// A WinHelp topic almost always repeats its title as its first line, and adding it again would be announced twice.
 			if !starts_with_title(topic) {
 				self.buffer.append(&topic.title);
 				self.buffer.append("\n");
@@ -106,7 +85,7 @@ impl<'a> Builder<'a> {
 			self.buffer.add_marker(
 				Marker::new(MarkerType::Heading1, start)
 					.with_text(topic.title.clone())
-					.with_length(display_len(&topic.title)),
+					.with_length(DocLen::of(&topic.title)),
 			);
 		}
 		self.buffer.add_marker(Marker::new(MarkerType::SectionBreak, start).with_text(section_label(topic)));
@@ -125,17 +104,14 @@ impl<'a> Builder<'a> {
 		}
 	}
 
-	/// Lay a table out as one line per row with tabs between cells, and mark the whole of
-	/// it so the reader can jump table to table.
 	fn add_table(&mut self, table: &Table) {
-		let start = self.buffer.current_position();
+		let start = self.buffer.end();
 		for row in &table.rows {
 			for (index, cell) in row.cells.iter().enumerate() {
 				if index > 0 {
 					self.buffer.append("\t");
 				}
-				// A cell holding several paragraphs still has to stay on the row's one
-				// line, so they run together with a space rather than a break.
+				// A cell's paragraphs join with a space so the row stays on one line.
 				for (index, paragraph) in cell.paragraphs.iter().enumerate() {
 					if index > 0 {
 						self.buffer.append(" ");
@@ -145,17 +121,15 @@ impl<'a> Builder<'a> {
 			}
 			self.buffer.append("\n");
 		}
-		let length = self.buffer.current_position().saturating_sub(start);
-		if length > 0 {
+		let length = self.buffer.end().since(start);
+		if !length.is_zero() {
 			self.buffer.add_marker(Marker::new(MarkerType::Table, start).with_length(length));
 		}
 	}
 
 	fn add_paragraph(&mut self, paragraph: &Paragraph) {
-		// Runs split wherever a formatting command falls, so neighbouring runs usually
-		// share their emphasis. Merging them leaves one marker per visible span rather
-		// than one per command.
-		let mut span: Option<(Format, usize)> = None;
+		// Runs split at every formatting command, so neighbours sharing emphasis are merged into one marker per visible span.
+		let mut span: Option<(Format, DocPos)> = None;
 		let mut links = Vec::new();
 		for run in &paragraph.runs {
 			let format = match run {
@@ -166,25 +140,22 @@ impl<'a> Builder<'a> {
 				if let Some((open, start)) = span {
 					self.close_span(open, start);
 				}
-				span = Some((format, self.buffer.current_position()));
+				span = Some((format, self.buffer.end()));
 			}
 			self.add_run(run, &mut links);
 		}
 		if let Some((open, start)) = span {
 			self.close_span(open, start);
 		}
-		// An emphasis marker is only added once its span closes, so a hotspot's own marker
-		// would otherwise land first and leave exporters interleaving the two rather than
-		// wrapping one around the other.
+		// Emphasis markers are only added when their span closes; adding links first would have exporters interleave the two rather than nest them.
 		for marker in links {
 			self.buffer.add_marker(marker);
 		}
 	}
 
-	/// Emit the emphasis markers for a finished run of same-formatted text.
-	fn close_span(&mut self, format: Format, start: usize) {
-		let length = self.buffer.current_position().saturating_sub(start);
-		if length == 0 {
+	fn close_span(&mut self, format: Format, start: DocPos) {
+		let length = self.buffer.end().since(start);
+		if length.is_zero() {
 			return;
 		}
 		for mtype in format_marker_types(format.bold, format.italic, format.underline) {
@@ -192,25 +163,19 @@ impl<'a> Builder<'a> {
 		}
 	}
 
-	/// Append one run. A hotspot's marker goes into `links` rather than straight into the
-	/// buffer, so the caller can order it after the emphasis covering the same text.
 	fn add_run(&mut self, run: &Run, links: &mut Vec<Marker>) {
 		match run {
 			Run::Text { text, link, .. } => {
-				let position = self.buffer.current_position();
+				let position = self.buffer.end();
 				self.buffer.append(text);
 				let Some(link) = link else { return };
-				// A hotspot's reference is a key rather than a position, so it can be
-				// written now even though the target topic may not have been read yet. A
-				// target this file never defines leaves the reference empty, which the
-				// reader treats as a link that goes nowhere.
+				// A key rather than a position, so the target topic needn't be read yet; an undefined target leaves it empty, a link to nowhere.
 				let reference = match &link.target {
 					// WinHelp 3.1 names a target by the hash of its context string.
 					Target::Context(hash) => self.contexts.get(hash).copied().map(offset_key),
 					// WinHelp 3.0 names it by topic number instead.
 					Target::Number(number) => Some(number_key(*number)),
-					// A macro runs rather than going anywhere, and a jump into another help
-					// file has nothing in this document to land on.
+					// A macro runs rather than going anywhere, and another help file has nothing here to land on.
 					Target::External { .. } | Target::Macro(_) => None,
 				}
 				.unwrap_or_default();
@@ -221,8 +186,8 @@ impl<'a> Builder<'a> {
 			Run::Image(_) => {
 				// TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
 				let line = format!("[{}]", t("Image"));
-				let position = self.buffer.current_position();
-				self.buffer.add_marker(Marker::new(MarkerType::Image, position).with_length(display_len(&line)));
+				let position = self.buffer.end();
+				self.buffer.add_marker(Marker::new(MarkerType::Image, position).with_length(DocLen::of(&line)));
 				self.buffer.append(&line);
 			}
 		}
@@ -233,8 +198,7 @@ impl<'a> Builder<'a> {
 		let mut toc_items = Vec::new();
 		for (topic, &start) in topics.iter().zip(&self.starts) {
 			id_positions.insert(number_key(topic.number), start);
-			// A WinHelp 3.0 file has no topic offsets, so every topic there reports zero.
-			// Only the first can claim the key, and nothing in such a file references it.
+			// Every WinHelp 3.0 topic reports offset zero; only the first claims the key, and nothing in such a file references it.
 			id_positions.entry(offset_key(topic.offset)).or_insert(start);
 			if !topic.title.is_empty() {
 				toc_items.push(TocItem::new(topic.title.clone(), number_key(topic.number), start));
@@ -244,22 +208,18 @@ impl<'a> Builder<'a> {
 	}
 }
 
-/// The key a WinHelp 3.1 hotspot's resolved target is stored under.
 fn offset_key(offset: u32) -> String {
 	format!("{OFFSET_KEY}{offset}")
 }
 
-/// The key naming a topic by its number, which every topic has in either format.
 fn number_key(number: u32) -> String {
 	format!("{NUMBER_KEY}{number}")
 }
 
-/// Whether the topic's own text already opens with its title.
 fn starts_with_title(topic: &Topic) -> bool {
 	topic.blocks.first().is_some_and(|block| block.text().trim_start().starts_with(topic.title.trim()))
 }
 
-/// What a section break announces. An untitled topic still needs naming.
 fn section_label(topic: &Topic) -> String {
 	if topic.title.is_empty() {
 		// TRANSLATORS: Name given to a WinHelp topic that carries no title of its own; {} is the topic's number
@@ -295,7 +255,6 @@ mod tests {
 		Topic { number, offset, title: title.to_string(), blocks }
 	}
 
-	/// Run the builder over `topics` with no context index, as a file with no links has.
 	fn build(topics: &[Topic]) -> Built {
 		build_with(topics, &HashMap::new())
 	}
@@ -327,8 +286,6 @@ mod tests {
 		assert_eq!(markers(&built, MarkerType::SectionBreak).len(), 2);
 	}
 
-	// A WinHelp topic almost always opens with its own title, so writing the title out as
-	// well would have a reader announce it twice over.
 	#[test]
 	fn a_title_the_body_repeats_is_not_written_twice() {
 		let built = build(&[topic(16, 0, "Intro", vec![paragraph(vec![text_run("Intro")])])]);
@@ -341,8 +298,7 @@ mod tests {
 		assert_eq!(built.buffer.content, "Intro\nBody only.\n");
 	}
 
-	// An untitled topic still has to be reachable by section navigation, so its break gets
-	// the topic's number rather than an empty name.
+	// An untitled topic still has to be reachable by section navigation.
 	#[test]
 	fn an_untitled_topic_still_gets_a_named_section() {
 		let built = build(&[topic(19, 0, "", vec![paragraph(vec![text_run("Body.")])])]);
@@ -362,8 +318,6 @@ mod tests {
 		assert_eq!(bolds[0].length, 4);
 	}
 
-	// Runs split wherever a formatting command falls, so a sentence often arrives as
-	// several runs that look identical. One marker per run would be noise.
 	#[test]
 	fn neighbouring_runs_sharing_emphasis_get_one_marker() {
 		let runs = vec![styled_run("one ", bold()), styled_run("two", bold())];
@@ -373,8 +327,6 @@ mod tests {
 		assert_eq!(bolds[0].length, 7);
 	}
 
-	// WinHelp names a link's target by a hash, and the reader navigates by looking a key up
-	// in id_positions, so the two have to agree on what that key is.
 	#[test]
 	fn a_hotspot_references_the_topic_its_hash_resolves_to() {
 		let link = Link::jump(Target::Context(0xABC));
@@ -389,14 +341,11 @@ mod tests {
 		assert_eq!(links.len(), 1);
 		assert_eq!(links[0].text, "go");
 		assert_eq!(links[0].reference, "topic55");
-		// The key the link names has to be the one the target topic registered. The first
-		// topic writes its title as well as its body, so the second starts nine
-		// characters in.
-		assert_eq!(built.id_positions.get("topic55"), Some(&9));
+		// The first topic writes its title as well as its body, so the second starts nine characters in.
+		assert_eq!(built.id_positions.get("topic55"), Some(&9.into()));
 	}
 
-	// A WinHelp 3.0 hotspot names its target by topic number rather than by context hash,
-	// and the file has no context index at all for the other path to fall back on.
+	// A WinHelp 3.0 file has no context index at all for the hash path to fall back on.
 	#[test]
 	fn a_30_hotspot_references_the_topic_number_it_names() {
 		let link = Link::jump(Target::Number(17));
@@ -409,11 +358,10 @@ mod tests {
 		let built = build(&topics);
 		let links = markers(&built, MarkerType::Link);
 		assert_eq!(links[0].reference, "topicnum17");
-		assert_eq!(built.id_positions.get("topicnum17"), Some(&9));
+		assert_eq!(built.id_positions.get("topicnum17"), Some(&9.into()));
 	}
 
-	// Every topic in a WinHelp 3.0 file reports offset zero, so keying only by offset would
-	// collapse the whole contents onto the first topic.
+	// Every WinHelp 3.0 topic reports offset zero, so keying only by offset would collapse the contents onto the first topic.
 	#[test]
 	fn topics_sharing_an_offset_stay_reachable_by_number() {
 		let topics = vec![
@@ -421,14 +369,13 @@ mod tests {
 			topic(17, 0, "Second", vec![paragraph(vec![text_run("Second")])]),
 		];
 		let built = build(&topics);
-		assert_eq!(built.id_positions.get("topicnum16"), Some(&0));
-		assert_eq!(built.id_positions.get("topicnum17"), Some(&6));
+		assert_eq!(built.id_positions.get("topicnum16"), Some(&0.into()));
+		assert_eq!(built.id_positions.get("topicnum17"), Some(&6.into()));
 		let offsets: Vec<&str> = built.toc_items.iter().map(|i| i.reference.as_str()).collect();
 		assert_eq!(offsets, ["topicnum16", "topicnum17"]);
 	}
 
-	// A hotspot whose context the file never defines is still a hotspot worth announcing,
-	// but activating it must not land somewhere arbitrary.
+	// Still worth announcing, but activating it must not land somewhere arbitrary.
 	#[test]
 	fn a_hotspot_with_no_target_gets_no_reference() {
 		let link = Link::jump(Target::Context(0x999));
@@ -439,8 +386,6 @@ mod tests {
 		assert!(links[0].reference.is_empty());
 	}
 
-	// A macro hotspot runs a WinHelp macro rather than going anywhere, so it has no topic
-	// to reference even though the file resolved it.
 	#[test]
 	fn a_macro_hotspot_gets_no_reference() {
 		let link = Link::jump(Target::Macro("Exit()".into()));
@@ -493,8 +438,6 @@ mod tests {
 		let built = build(&topics);
 		let names: Vec<&str> = built.toc_items.iter().map(|i| i.name.as_str()).collect();
 		assert_eq!(names, ["First", "Third"]);
-		// Topic numbers are unique in both format generations, where topic offsets exist
-		// only in WinHelp 3.1, so the contents points at the number.
 		assert_eq!(built.toc_items[1].reference, "topicnum18");
 	}
 

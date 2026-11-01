@@ -1,6 +1,8 @@
 use objc::{msg_send, runtime::Object, sel, sel_impl};
 use wxdragon::prelude::*;
 
+use crate::{text_window::CtrlPos, ui::reader_ctrl::ReaderCtrl};
+
 #[repr(C)]
 #[derive(Default)]
 struct NativeRange {
@@ -8,12 +10,10 @@ struct NativeRange {
 	length: usize,
 }
 
-/// Cocoa's PositionToXY/XYToPosition count paragraphs rather than wrapped visual lines.
-/// Ask the layout manager for adjacent line fragments, whose character offsets use the same
-/// UTF-16 units as `wxTextCtrl`. Movement commands are ineffective on a read-only `NSTextView`.
-// Match reader_input's retry protocol: unknown position vs. a known loaded-window boundary.
+// Cocoa's `PositionToXY` counts paragraphs, not wrapped lines, and movement commands do nothing on a read-only `NSTextView`, so this asks the layout manager.
+// `None`: position unknown; `Some(None)`: target is outside the loaded window, as in reader_input's retry.
 #[allow(clippy::option_option)]
-pub(super) fn try_adjacent_line_start(text_ctrl: TextCtrl, going_down: bool) -> Option<Option<(i64, i64)>> {
+pub(super) fn try_adjacent_line_start(text_ctrl: ReaderCtrl, going_down: bool) -> Option<Option<(CtrlPos, i64)>> {
 	#[repr(C)]
 	struct NativePoint {
 		x: f64,
@@ -28,8 +28,7 @@ pub(super) fn try_adjacent_line_start(text_ctrl: TextCtrl, going_down: bool) -> 
 	if scroll_view.is_null() {
 		return None;
 	}
-	// wxWidgets owns both native views for the control's lifetime. This key handler runs on
-	// the UI thread; ranges and rectangles below match AppKit's 64-bit C ABI.
+	// wxWidgets owns both views for the control's lifetime, this runs on the UI thread, and the structs match AppKit's 64-bit ABI.
 	unsafe {
 		let text_view: *mut Object = msg_send![scroll_view, documentView];
 		if text_view.is_null() {
@@ -43,8 +42,8 @@ pub(super) fn try_adjacent_line_start(text_ctrl: TextCtrl, going_down: bool) -> 
 		if glyph_count == 0 {
 			return Some(None);
 		}
-		let text_len = usize::try_from(text_ctrl.get_last_position()).ok()?;
-		let current_pos = usize::try_from(text_ctrl.get_insertion_point().max(0)).ok()?.min(text_len);
+		let text_len = usize::try_from(text_ctrl.get_last_position().get()).ok()?;
+		let current_pos = usize::try_from(text_ctrl.get_insertion_point().get().max(0)).ok()?.min(text_len);
 		let string: *mut Object = msg_send![text_view, string];
 		let last_char: u16 = msg_send![string, characterAtIndex: text_len - 1];
 		let has_empty_last_line = matches!(last_char, 10 | 13 | 0x2028 | 0x2029);
@@ -75,7 +74,7 @@ pub(super) fn try_adjacent_line_start(text_ctrl: TextCtrl, going_down: bool) -> 
 			if going_down {
 				let next = current_line.location + current_line.length;
 				if next >= glyph_count {
-					return Some(has_empty_last_line.then_some((i64::try_from(text_len).ok()?, 0)));
+					return Some(has_empty_last_line.then_some((CtrlPos::from_raw(i64::try_from(text_len).ok()?), 0)));
 				}
 				next
 			} else if current_line.location > 0 {
@@ -86,13 +85,13 @@ pub(super) fn try_adjacent_line_start(text_ctrl: TextCtrl, going_down: bool) -> 
 		};
 		let target_line = line_range(target_glyph);
 		let new_pos: usize = msg_send![layout, characterIndexForGlyphAtIndex: target_line.location];
-		Some(Some((i64::try_from(new_pos).ok()?, 0)))
+		Some(Some((CtrlPos::from_raw(i64::try_from(new_pos).ok()?), 0)))
 	}
 }
 
 /// Downstream affinity puts a wrap-boundary caret at the beginning of the next visual line.
-pub(super) fn set_line_start(text_ctrl: TextCtrl, position: i64) {
-	let range = NativeRange { location: usize::try_from(position).unwrap_or(0), length: 0 };
+pub(super) fn set_line_start(text_ctrl: ReaderCtrl, position: CtrlPos) {
+	let range = NativeRange { location: usize::try_from(position.get()).unwrap_or(0), length: 0 };
 	// The caller has just navigated this live control on the UI thread.
 	unsafe {
 		let scroll_view = text_ctrl.get_handle().cast::<Object>();

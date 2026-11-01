@@ -1,5 +1,3 @@
-//! The actual tree-walk: [`HtmlToText::process_node`] and everything it dispatches to per tag.
-
 use std::fmt::Write;
 
 use ego_tree::NodeRef;
@@ -7,17 +5,18 @@ use scraper::{ElementRef, Html, Node, node};
 
 use super::{HtmlToText, ProcessingFlags};
 use crate::{
+	document::{DocLen, DocPos},
 	parser::convert::{
 		block_elements::is_block_element,
 		format_spans::FormatKind,
 		formula::{formula_text, is_dom_formula},
+		image_text,
 		line_builder::LineBuilder,
 		list_style::ListStyle,
 		table_text::{collect_dom_text, table_render_bundle},
 	},
-	t,
 	types::{FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
-	util::text::{collapse_whitespace, display_len, format_list_item, remove_soft_hyphens, trim_string},
+	util::text::{collapse_whitespace, format_list_item, remove_soft_hyphens, trim_string},
 };
 
 impl HtmlToText {
@@ -95,8 +94,8 @@ impl HtmlToText {
 				self.id_positions.insert(id.to_string(), offset);
 			}
 		}
-		let length = display_len(&rendered);
-		self.text.current_line.push_str(&rendered);
+		let length = DocLen::of(&rendered);
+		self.text.push_str(&rendered);
 		if block {
 			self.text.finalize_current_line();
 		}
@@ -107,21 +106,14 @@ impl HtmlToText {
 		self.text.finalize_current_line();
 		let table_html = Self::serialize_node(node, document);
 		let start_offset = self.text.get_current_text_position();
-		// Emit the table's on-screen text via the shared helper instead of recursing children to
-		// emit one cell per line. The helper output may contain tabs and span multiple lines; push
-		// each line verbatim so tab separators and empty cells survive whitespace collapsing.
+		// Lines are pushed verbatim so tab separators and empty cells survive whitespace collapsing.
 		let render = table_render_bundle(&table_html, self.render_tables_inline);
 		for line in render.lines {
-			self.text.push_finalized_line(line);
+			self.text.push_finalized_line(&line);
 		}
 		let table_caption = render.caption;
-		let display_length = render.display_length;
-		self.tables.push(TableInfo {
-			offset: start_offset,
-			text: table_caption,
-			html_content: table_html,
-			length: display_length,
-		});
+		let length = render.length;
+		self.tables.push(TableInfo { offset: start_offset, text: table_caption, html_content: table_html, length });
 	}
 
 	fn handle_element_opening(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {
@@ -130,37 +122,15 @@ impl HtmlToText {
 				if let Some(id) = element.attr("id").or_else(|| element.attr("name")) {
 					self.id_positions.insert(id.to_string(), self.text.get_current_text_position());
 				}
-				if tag_name == "img" || tag_name == "image" || tag_name == "figure" {
-					let mut description = element
-						.attr("alt")
-						.or_else(|| element.attr("aria-label"))
-						.or_else(|| element.attr("aria-description"))
-						.or_else(|| element.attr("title"))
-						.map(collapse_whitespace)
-						.unwrap_or_default();
-					if description.is_empty() && tag_name == "figure" {
-						for child in node.children() {
-							if let Node::Element(child_elem) = child.value()
-								&& child_elem.name() == "figcaption"
-							{
-								description = collapse_whitespace(&Self::collect_text(child));
-								break;
-							}
-						}
-					}
-					if !description.is_empty() {
-						let is_figure = tag_name == "figure";
-						// TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
-						let label = if is_figure { t("Figure") } else { t("Image") };
-						let image_text = format!("[{label}: {description}]");
-						let offset = self.text.get_current_text_position();
-						self.text.current_line.push_str(&image_text);
-						let info = ImageInfo { offset, alt_text: description, length: display_len(&image_text) };
-						if is_figure {
-							self.figures.push(info);
-						} else {
-							self.images.push(info);
-						}
+				if let Some((image_text, mut info, is_figure)) = Self::described_image(tag_name, node) {
+					if self.flags.contains(ProcessingFlags::IN_LINK) {
+						// Placed once the link's text is known, since collapsing its whitespace can move it.
+						self.current_link_text.push_str(&image_text);
+						self.current_link_images.push((image_text, info, is_figure));
+					} else {
+						info.offset = self.text.get_current_text_position();
+						self.text.push_str(&image_text);
+						self.push_image(info, is_figure);
 					}
 				}
 			}
@@ -191,9 +161,9 @@ impl HtmlToText {
 			self.text.finalize_current_line();
 			let offset = self.text.get_current_text_position();
 			let line = LineBuilder::separator_line();
-			self.text.current_line.push_str(line);
+			self.text.push_str(line);
 			self.text.finalize_current_line();
-			self.separators.push(SeparatorInfo { offset, length: display_len(line) });
+			self.separators.push(SeparatorInfo { offset, length: DocLen::of(line) });
 		} else if tag_name == "code" {
 			self.flags.insert(ProcessingFlags::IN_CODE);
 			self.text.start_preserve_whitespace();
@@ -212,20 +182,20 @@ impl HtmlToText {
 				text: li_text,
 			});
 			for _ in 0..self.list_level {
-				self.text.current_line.push_str("  ");
+				self.text.push_str("  ");
 			}
 			if let Some(style) = self.list_style_stack.last_mut() {
 				if style.ordered {
 					let item_text = format_list_item(style.item_number, &style.list_type);
-					let _ = write!(&mut self.text.current_line, "{item_text}. ");
+					let _ = write!(&mut self.text, "{item_text}. ");
 					style.item_number += 1;
 				} else {
-					self.text.current_line.push_str(Self::get_bullet_for_level(self.list_level));
-					self.text.current_line.push(' ');
+					self.text.push_str(Self::get_bullet_for_level(self.list_level));
+					self.text.push(' ');
 				}
 			} else {
-				self.text.current_line.push_str(Self::get_bullet_for_level(self.list_level));
-				self.text.current_line.push(' ');
+				self.text.push_str(Self::get_bullet_for_level(self.list_level));
+				self.text.push(' ');
 			}
 		}
 	}
@@ -249,7 +219,11 @@ impl HtmlToText {
 			if item_count > 0 {
 				self.text.finalize_current_line();
 				self.open_lists.push(Some(self.lists.len()));
-				self.lists.push(ListInfo { offset: self.text.get_current_text_position(), item_count, length: 0 });
+				self.lists.push(ListInfo {
+					offset: self.text.get_current_text_position(),
+					item_count,
+					length: DocLen::ZERO,
+				});
 			} else {
 				self.open_lists.push(None);
 			}
@@ -284,7 +258,7 @@ impl HtmlToText {
 			for child in node.children() {
 				if let Node::Element(_) = child.value() {
 					let html_str = Self::serialize_node(child, document);
-					self.text.current_line.push_str(&html_str);
+					self.text.push_str(&html_str);
 				} else {
 					self.process_node(child, document);
 				}
@@ -301,15 +275,24 @@ impl HtmlToText {
 			self.flags.remove(ProcessingFlags::IN_LINK);
 			if !self.current_link_text.is_empty() {
 				let collapsed_text = collapse_whitespace(&self.current_link_text);
+				let mut searched = 0;
+				for (image_text, mut info, is_figure) in std::mem::take(&mut self.current_link_images) {
+					let Some(found) = collapsed_text[searched..].find(&image_text) else { continue };
+					let start = searched + found;
+					info.offset = self.link_start_pos + DocLen::of(&collapsed_text[..start]);
+					searched = start + image_text.len();
+					self.push_image(info, is_figure);
+				}
 				self.links.push(LinkInfo {
 					offset: self.link_start_pos,
 					text: collapsed_text.clone(),
 					reference: self.current_link_href.clone(),
 				});
-				self.text.current_line.push_str(&collapsed_text);
+				self.text.push_str(&collapsed_text);
 			}
 			self.current_link_href.clear();
 			self.current_link_text.clear();
+			self.current_link_images.clear();
 		}
 		if tag_name == "code" {
 			self.flags.remove(ProcessingFlags::IN_CODE);
@@ -321,14 +304,14 @@ impl HtmlToText {
 			if let Some(open) = self.open_lists.pop().flatten() {
 				self.text.finalize_current_line();
 				let offset = self.lists[open].offset;
-				self.lists[open].length = self.text.get_current_text_position().saturating_sub(offset);
+				self.lists[open].length = self.text.get_current_text_position().since(offset);
 			}
 		}
 		if tag_name == "pre" {
 			let has_preserved_trailing_whitespace =
-				self.text.is_preserving_whitespace() && self.text.current_line.trim().is_empty();
+				self.text.is_preserving_whitespace() && self.text.current_line().trim().is_empty();
 			if has_preserved_trailing_whitespace {
-				self.text.current_line.clear();
+				self.text.clear_current_line();
 			} else {
 				self.text.finalize_current_line();
 			}
@@ -353,11 +336,11 @@ impl HtmlToText {
 		if text_content.is_empty() {
 			return;
 		}
-		let processed_text = remove_soft_hyphens(&text_content);
+		let processed_text = remove_soft_hyphens(text_content);
 		if self.text.is_preserving_whitespace() {
 			let lines: Vec<&str> = processed_text.split('\n').collect();
 			for (i, line) in lines.iter().enumerate() {
-				self.text.current_line.push_str(line);
+				self.text.push_str(line);
 				if i < lines.len() - 1 {
 					self.text.finalize_current_line();
 				}
@@ -365,8 +348,63 @@ impl HtmlToText {
 		} else if self.flags.contains(ProcessingFlags::IN_LINK) {
 			self.current_link_text.push_str(&collapse_whitespace(&processed_text));
 		} else {
-			self.text.current_line.push_str(&collapse_whitespace(&processed_text));
+			self.text.push_str(&collapse_whitespace(&processed_text));
 		}
+	}
+
+	fn described_image(tag_name: &str, node: NodeRef<'_, Node>) -> Option<(String, ImageInfo, bool)> {
+		if tag_name != "img" && tag_name != "image" && tag_name != "figure" {
+			return None;
+		}
+		let element = ElementRef::wrap(node)?;
+		let attribute = |name: &str| element.attr(name).map(str::to_string);
+		let mut description = image_text::description(&attribute);
+		let is_figure = tag_name == "figure";
+		if description.is_empty() && is_figure {
+			for child in node.children() {
+				if let Node::Element(child_elem) = child.value()
+					&& child_elem.name() == "figcaption"
+				{
+					description = collapse_whitespace(&Self::collect_text(child));
+					break;
+				}
+			}
+		}
+		// A figure with no caption says nothing itself: the picture inside it is announced instead.
+		if description.is_empty() && (is_figure || image_text::is_decorative(&attribute)) {
+			return None;
+		}
+		let image_text = image_text::placeholder(is_figure, &description);
+		let info = ImageInfo {
+			offset: DocPos::ZERO,
+			alt_text: description,
+			length: DocLen::of(&image_text),
+			source: Self::image_source(node),
+		};
+		Some((image_text, info, is_figure))
+	}
+
+	fn push_image(&mut self, info: ImageInfo, is_figure: bool) {
+		if is_figure {
+			self.figures.push(info);
+		} else {
+			self.images.push(info);
+		}
+	}
+
+	/// Older SVG markup writes `href` as `xlink:href`, so the attribute is matched by local name.
+	pub(crate) fn image_source(node: NodeRef<'_, Node>) -> String {
+		node.descendants()
+			.find_map(|descendant| {
+				let Node::Element(element) = descendant.value() else { return None };
+				match element.name() {
+					"img" => element.attr("src"),
+					"image" => element.attrs().find(|(name, _)| *name == "href").map(|(_, value)| value),
+					_ => None,
+				}
+			})
+			.map(|source| source.trim().to_string())
+			.unwrap_or_default()
 	}
 
 	fn get_element_text(node: NodeRef<'_, Node>, _document: &Html) -> String {

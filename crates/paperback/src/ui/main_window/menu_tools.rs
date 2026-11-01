@@ -1,6 +1,3 @@
-//! The Tools menu's heavier handlers: word/document info, batch OCR, the Options dialog (and
-//! applying whatever changed), and shortcut customization.
-
 #[cfg(target_os = "windows")]
 use std::cell::RefCell;
 use std::{rc::Rc, sync::Mutex};
@@ -18,7 +15,7 @@ use super::{HotkeyHandle, re_register_hotkey};
 use crate::{
 	config_ext::{set_log_level, set_update_channel},
 	translation_manager::TranslationManager,
-	ui::navigation::announce,
+	ui::navigation::announce_for_command,
 };
 
 pub(super) fn handle_word_count(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
@@ -57,16 +54,18 @@ pub(super) fn handle_document_info(frame: &Frame, dm: &Rc<Mutex<DocumentManager>
 	}
 }
 
-/// Opens the Batch OCR range dialog, or offers to stop the batch that is already running. One
-/// menu item covers both so there is nothing to enable and disable as a job starts and ends, and
-/// the answer to "how do I stop this" is the same item that started it.
-#[cfg(any(target_os = "windows", target_os = "macos"))]
-pub(super) fn handle_batch_ocr(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, live_region_label: StaticText) {
+/// One item both starts and stops a batch, so nothing needs enabling or disabling as a job starts and ends.
+pub(super) fn handle_batch_ocr(
+	frame: &Frame,
+	dm: &Rc<Mutex<DocumentManager>>,
+	live_region_label: StaticText,
+	from_keyboard: bool,
+) {
 	let (max_page, running) = {
 		let dm_ref = dm.lock().unwrap();
 		let Some(tab) = dm_ref.active_tab() else {
 			// TRANSLATORS: Announced when Batch OCR is chosen with no document open
-			announce(live_region_label, t("No document open."));
+			announce_for_command(live_region_label, from_keyboard, t("No document open."));
 			return;
 		};
 		(i32::try_from(tab.session.page_count()).unwrap_or(i32::MAX), dm_ref.batch_ocr_running())
@@ -147,9 +146,7 @@ pub(super) fn handle_options(
 	cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
 	cfg.set_app_bool("navigation_wrap", options.navigation_wrap);
 	cfg.set_app_bool("line_start_navigation", options.line_start_navigation);
-	// Read at each Find rather than applied here: nothing on screen changes until the next
-	// search, and a match already selected is left as it is rather than cleared out from under
-	// the reader as the dialog closes.
+	// Read at the next Find, so a match already selected isn't cleared out from under the reader as the dialog closes.
 	cfg.set_app_bool("highlight_found_text", options.highlight_found_text);
 	cfg.set_app_bool("check_for_updates_on_startup", options.check_for_updates_on_startup);
 	cfg.set_app_bool("bookmark_sounds", options.bookmark_sounds);
@@ -163,7 +160,7 @@ pub(super) fn handle_options(
 	set_update_channel(&cfg, options.update_channel);
 	set_log_level(&cfg, options.log_level);
 	crate::logging::set_level(options.log_level);
-	cfg.set_hotkey(&options.hotkey);
+	cfg.set_hotkey(options.hotkey.as_ref());
 	cfg.set_shortcuts(&options.shortcuts);
 	cfg.set_readability_font(&options.readability_font);
 	cfg.set_line_spacing(options.line_spacing);
@@ -175,7 +172,7 @@ pub(super) fn handle_options(
 	tracing::info!("settings saved");
 	#[cfg(target_os = "windows")]
 	{
-		re_register_hotkey(hotkey_handle, &options.hotkey);
+		re_register_hotkey(hotkey_handle, options.hotkey.as_ref());
 	}
 	drop(cfg);
 	let options_word_wrap = options.word_wrap;
@@ -255,13 +252,22 @@ pub(super) fn handle_customize_shortcuts(
 	frame: &Frame,
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
+	#[cfg(target_os = "windows")] hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
 ) {
-	let initial_shortcuts = config.lock().unwrap().get_shortcuts();
-	if let Some(updated) = dialogs::prompt_for_shortcuts(frame, &initial_shortcuts) {
+	let initial = {
+		let cfg = config.lock().unwrap();
+		dialogs::Keymap { shortcuts: cfg.get_shortcuts(), window_hotkey: cfg.get_hotkey() }
+	};
+	if let Some(updated) = dialogs::prompt_for_shortcuts(frame, &initial) {
 		{
 			let cfg = config.lock().unwrap();
-			cfg.set_shortcuts(&updated);
+			cfg.set_shortcuts(&updated.shortcuts);
+			cfg.set_hotkey(updated.window_hotkey.as_ref());
 			cfg.flush();
+		}
+		#[cfg(target_os = "windows")]
+		if updated.window_hotkey != initial.window_hotkey {
+			re_register_hotkey(hotkey_handle, updated.window_hotkey.as_ref());
 		}
 		let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 		frame.set_menu_bar(menu_bar);

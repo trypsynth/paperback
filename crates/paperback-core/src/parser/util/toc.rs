@@ -89,11 +89,11 @@ mod tests {
 	#[test]
 	fn build_toc_from_headings_creates_tree() {
 		let headings = vec![
-			HeadingInfo { offset: 0, level: 1, text: "A".to_string() },
-			HeadingInfo { offset: 10, level: 2, text: "A.1".to_string() },
-			HeadingInfo { offset: 20, level: 2, text: "A.2".to_string() },
-			HeadingInfo { offset: 30, level: 1, text: "B".to_string() },
-			HeadingInfo { offset: 40, level: 3, text: "B.1.a".to_string() },
+			HeadingInfo { offset: 0.into(), level: 1, text: "A".to_string() },
+			HeadingInfo { offset: 10.into(), level: 2, text: "A.1".to_string() },
+			HeadingInfo { offset: 20.into(), level: 2, text: "A.2".to_string() },
+			HeadingInfo { offset: 30.into(), level: 1, text: "B".to_string() },
+			HeadingInfo { offset: 40.into(), level: 3, text: "B.1.a".to_string() },
 		];
 		let toc = build_toc_from_headings(&headings);
 		assert_eq!(toc.len(), 2);
@@ -108,9 +108,9 @@ mod tests {
 	#[test]
 	fn build_toc_from_headings_ignores_invalid_levels() {
 		let headings = vec![
-			HeadingInfo { offset: 0, level: 0, text: "Skip".to_string() },
-			HeadingInfo { offset: 5, level: -1, text: "Skip".to_string() },
-			HeadingInfo { offset: 10, level: 1, text: "Keep".to_string() },
+			HeadingInfo { offset: 0.into(), level: 0, text: "Skip".to_string() },
+			HeadingInfo { offset: 5.into(), level: -1, text: "Skip".to_string() },
+			HeadingInfo { offset: 10.into(), level: 1, text: "Keep".to_string() },
 		];
 		let toc = build_toc_from_headings(&headings);
 		assert_eq!(toc.len(), 1);
@@ -133,9 +133,9 @@ mod tests {
 	#[test]
 	fn build_toc_from_buffer_uses_only_heading_markers() {
 		let mut buffer = DocumentBuffer::new();
-		buffer.add_marker(Marker::new(MarkerType::Link, 5).with_text("ignored".to_string()));
-		buffer.add_marker(Marker::new(MarkerType::Heading1, 10).with_text("Root".to_string()));
-		buffer.add_marker(Marker::new(MarkerType::Heading2, 20).with_text("Child".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::Link, 5.into()).with_text("ignored".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::Heading1, 10.into()).with_text("Root".to_string()));
+		buffer.add_marker(Marker::new(MarkerType::Heading2, 20.into()).with_text("Child".to_string()));
 		let toc = build_toc_from_buffer(&buffer);
 		assert_eq!(toc.len(), 1);
 		assert_eq!(toc[0].name, "Root");
@@ -146,9 +146,9 @@ mod tests {
 	#[test]
 	fn build_toc_from_headings_handles_level_drops_to_root() {
 		let headings = vec![
-			HeadingInfo { offset: 1, level: 1, text: "A".to_string() },
-			HeadingInfo { offset: 2, level: 3, text: "A.1.1".to_string() },
-			HeadingInfo { offset: 3, level: 1, text: "B".to_string() },
+			HeadingInfo { offset: 1.into(), level: 1, text: "A".to_string() },
+			HeadingInfo { offset: 2.into(), level: 3, text: "A.1.1".to_string() },
+			HeadingInfo { offset: 3.into(), level: 1, text: "B".to_string() },
 		];
 		let toc = build_toc_from_headings(&headings);
 		assert_eq!(toc.len(), 2);
@@ -159,8 +159,8 @@ mod tests {
 	#[test]
 	fn build_toc_from_headings_preserves_offsets() {
 		let headings = vec![
-			HeadingInfo { offset: 7, level: 1, text: "One".to_string() },
-			HeadingInfo { offset: 11, level: 2, text: "Two".to_string() },
+			HeadingInfo { offset: 7.into(), level: 1, text: "One".to_string() },
+			HeadingInfo { offset: 11.into(), level: 2, text: "Two".to_string() },
 		];
 		let toc = build_toc_from_headings(&headings);
 		assert_eq!(toc[0].offset, 7);
@@ -182,9 +182,9 @@ mod tests {
 	#[test]
 	fn build_toc_from_headings_with_same_level_creates_siblings() {
 		let headings = vec![
-			HeadingInfo { offset: 1, level: 2, text: "A".to_string() },
-			HeadingInfo { offset: 2, level: 2, text: "B".to_string() },
-			HeadingInfo { offset: 3, level: 2, text: "C".to_string() },
+			HeadingInfo { offset: 1.into(), level: 2, text: "A".to_string() },
+			HeadingInfo { offset: 2.into(), level: 2, text: "B".to_string() },
+			HeadingInfo { offset: 3.into(), level: 2, text: "C".to_string() },
 		];
 		let toc = build_toc_from_headings(&headings);
 		assert_eq!(toc.len(), 3);

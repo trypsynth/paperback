@@ -1,8 +1,3 @@
-//! Opening and closing documents: turning a path into a parsed `DocumentSession` and a tab (with
-//! its password prompt, settings import, and format/password lookups), building the tab's text
-//! control, closing tabs, and saving reading positions. Split out of the main `DocumentManager`
-//! impl.
-
 use std::{cell::Cell, path::Path, rc::Rc, sync::Mutex, time::Instant};
 
 use paperback_core::{parser::PASSWORD_REQUIRED_ERROR_PREFIX, session::DocumentSession};
@@ -10,8 +5,9 @@ use patois::t;
 use wxdragon::prelude::*;
 
 use super::{
-	DocumentManager, DocumentTab, POSITION_SAVE_INTERVAL_SECS, parse_settings, read_fingerprint, reading_path,
-	title_or_filename,
+	DocumentManager, DocumentTab, POSITION_SAVE_INTERVAL_SECS,
+	ocr::{joins_recognized_text, restore_saved_pages, saved_pages_of},
+	parse_settings, read_fingerprint, reading_path, title_or_filename,
 };
 use crate::{
 	audio_player::AudioPlayer,
@@ -40,13 +36,10 @@ impl DocumentManager {
 		self.open_file_impl(self_rc, path, false, false, None)
 	}
 
-	/// Opens a synthetic source-view document (untracked) with an explicit tab title.
 	pub fn open_source_file(&mut self, self_rc: &Rc<Mutex<Self>>, path: &Path, title: &str) -> bool {
 		self.open_file_impl(self_rc, path, false, false, Some(title))
 	}
 
-	/// Opens a document downloaded from `link`, reading it from `copy` but keeping its settings and
-	/// its place in the recent documents under the link. The copy is deleted with the tab.
 	pub fn open_link(&mut self, self_rc: &Rc<Mutex<Self>>, link: &str, copy: WorkingCopy) -> bool {
 		self.parse_and_add_tab(self_rc, Path::new(link), Some(copy), true, None)
 	}
@@ -88,8 +81,6 @@ impl DocumentManager {
 		self.parse_and_add_tab(self_rc, path, None, track, title_override)
 	}
 
-	/// Parses the document and gives it a tab. `path` is what the reader opened, under which its
-	/// settings are kept; the file parsed is `working_copy` when there is one.
 	fn parse_and_add_tab(
 		&mut self,
 		self_rc: &Rc<Mutex<Self>>,
@@ -167,6 +158,8 @@ impl DocumentManager {
 		let panel = Panel::builder(&self.notebook).build();
 		let config = self.config.lock().unwrap();
 		let mut session = session;
+		// Before the position is read, since it was saved against the text OCR put in.
+		restore_saved_pages(&mut session, &saved_pages_of(&local_path), joins_recognized_text(&local_path, &config));
 		let word_wrap = config.get_app_bool("word_wrap", false);
 		let text_ctrl =
 			reader_input::build_text_ctrl(panel, word_wrap, self_rc, self.frame, self.from_keyboard.clone());
@@ -174,36 +167,33 @@ impl DocumentManager {
 		if let Some(font) = build_font_from_readability(&rf) {
 			text_ctrl.set_font(&font);
 		}
-		apply_foreground_color_to_ctrl(text_ctrl, rf.color);
-		apply_bg_color_to_ctrl(text_ctrl, config.get_bg_color());
+		apply_foreground_color_to_ctrl(text_ctrl.widget(), rf.color);
+		apply_bg_color_to_ctrl(text_ctrl.widget(), config.get_bg_color());
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
-		sizer.add(&text_ctrl, 1, SizerFlag::Expand | SizerFlag::All, 0);
+		sizer.add(&text_ctrl.widget(), 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
 		let path_str = path.to_string_lossy();
 		let doc_len = session.document_len();
-		let saved_pos = config.get_validated_document_position(&path_str, doc_len);
-		let initial_pos = if saved_pos >= 0 { saved_pos } else { 0 };
+		let initial_pos = config.get_validated_document_position(&path_str, doc_len.as_pos()).unwrap_or_default();
 		let window = load_window_into_ctrl(text_ctrl, &session, initial_pos, doc_len);
 		apply_readability_format_to_ctrl(
-			text_ctrl,
+			text_ctrl.widget(),
 			config.get_line_spacing(),
 			config.get_paragraph_spacing(),
 			config.get_letter_spacing(),
 			config.get_text_alignment(),
 		);
-		// `add_page(select: true)` can synchronously fire the notebook's page-changed event
-		// before returning (e.g. while it's still the only page, or otherwise reentering here
-		// on this same thread), and that handler path can itself want `self.config` again.
-		// `Mutex` isn't reentrant, so holding this lock across the call self-deadlocks the app
-		// forever on documents whose formatting makes that reentrant path reachable - drop it
-		// first and reacquire once `add_page` returns.
+		// `add_page(select: true)` can synchronously fire page-changed, whose handler locks `self.config` again; `Mutex` isn't reentrant, so holding it here deadlocked the app.
 		drop(config);
 		self.notebook.add_page(&panel, &title, true, None);
 		let config = self.config.lock().unwrap();
 		let nav_history = config.get_navigation_history(&path_str);
 		session.set_history(&nav_history.positions, nav_history.index);
 		let audio_player = session.audio().cloned().and_then(|timeline| match AudioPlayer::new(timeline) {
-			Ok(player) => Some(player),
+			Ok(mut player) => {
+				player.set_speed(crate::audio_player::saved_speed(&config));
+				Some(player)
+			}
 			Err(err) => {
 				tracing::warn!(error = %err, "failed to initialize audio playback for this document");
 				None
@@ -233,10 +223,7 @@ impl DocumentManager {
 			tab.text_ctrl.set_insertion_point(local);
 			tab.text_ctrl.show_position(local);
 		}
-		// Resume the narration from the time that was actually reached, not from the caret.
-		// Deriving it from the caret only lands on the start of whichever clip contains that
-		// position, so it loses however much of that clip had already played, and loses
-		// everything since the last explicit jump if the caret wasn't following the audio.
+		// Resume from the saved time rather than the caret, which only lands on a clip start and is stale if the caret wasn't following the audio.
 		let saved_audio_time = config.get_document_audio_time(&path_str);
 		if let Some(player) = self.tabs[tab_index].audio_player.as_mut() {
 			match saved_audio_time {
@@ -244,7 +231,7 @@ impl DocumentManager {
 					player.seek_to_ms(time_ms);
 				}
 				None => {
-					player.seek_to_position(usize::try_from(initial_pos).unwrap_or(0));
+					player.seek_to_position(initial_pos);
 				}
 			}
 		}
@@ -256,6 +243,10 @@ impl DocumentManager {
 			}
 			config.set_document_opened(&path_str, true);
 			config.add_opened_document(&path_str);
+			let tab = &self.tabs[tab_index];
+			if let (Some(copy), Some(fingerprint)) = (&tab.working_copy, tab.disk_fingerprint) {
+				config.set_document_download(&path_str, &copy.file_name(), fingerprint.len());
+			}
 		}
 		config.flush();
 		true
@@ -267,7 +258,7 @@ impl DocumentManager {
 		}
 		if let Some(tab) = self.tabs.get(index) {
 			tracing::info!(path = %tab.file_path.display(), "closing document");
-			// don't make an untracked document reopenable; reopening would give it the wrong title and make it tracked.
+			// Reopening an untracked document would give it the wrong title and make it tracked.
 			if tab.track {
 				self.recently_closed.push(tab.file_path.clone());
 			}
@@ -292,9 +283,7 @@ impl DocumentManager {
 		{
 			player.stop();
 		}
-		// Stopped before the tab goes, which drops this end of the cancel flag: the worker keeps its own
-		// clone and would otherwise read on to the end of the range for a document nobody is looking
-		// at. Quiet, because the count would describe text belonging to a document no longer open.
+		// Before the tab goes, or the worker keeps its own clone of the cancel flag and reads on for a closed document; quiet, since the count would describe a document no longer open.
 		self.stop_ocr_at(index, true);
 		let _page = self.notebook.get_page(index);
 		self.notebook.remove_page(index);
@@ -341,8 +330,7 @@ impl DocumentManager {
 		config.flush();
 	}
 
-	/// Deletes the working copies of the documents opened from links, for quitting: the app exits
-	/// without dropping its tabs, so their copies would otherwise stay in the temporary folder.
+	/// The app exits without dropping its tabs, so link copies would otherwise stay in the temporary folder.
 	pub fn remove_working_copies(&mut self) {
 		for tab in &mut self.tabs {
 			tab.working_copy = None;

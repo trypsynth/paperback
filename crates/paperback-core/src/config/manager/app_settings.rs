@@ -1,7 +1,4 @@
-//! The generic `get_app_*`/`set_app_*` accessors: a handful of named boolean/integer settings
-//! get dedicated [`super::super::settings::AppSettings`] fields (for the ones every reader
-//! needs), with everything else falling through to `AppSettings::extra`, a free-form TOML map -
-//! host UIs can introduce a new setting without a `ConfigData` schema change.
+//! Unknown keys fall through to `AppSettings::extra`, so a front end can add a setting without a schema change.
 
 use super::ConfigManager;
 
@@ -44,9 +41,7 @@ impl ConfigManager {
 			"recent_documents_to_show" => data.app.recent_documents_to_show,
 			"sleep_timer_duration" => data.app.sleep_timer_duration,
 			"reading_speed_wpm" => data.app.reading_speed_wpm,
-			// Readability settings have typed fields on AppConfig. Without these arms the
-			// generic API would read a stale copy from `extra` while writing a second one
-			// beside the real field, giving the [app] table two entries with the same name.
+			// Without these arms `extra` would get a second entry beside the typed field, and the [app] table two keys of one name.
 			"line_spacing" => data.app.line_spacing,
 			"paragraph_spacing" => data.app.paragraph_spacing,
 			"letter_spacing" => data.app.letter_spacing,
@@ -175,8 +170,6 @@ mod tests {
 		assert!(config.get_app_bool("render_tables_inline", true));
 	}
 
-	// These have typed fields on AppConfig, so the generic int API has to reach the field
-	// rather than the `extra` map: two entries under one name make the [app] table invalid.
 	#[test]
 	fn readability_ints_use_their_typed_fields() {
 		let mut config = ConfigManager::new();

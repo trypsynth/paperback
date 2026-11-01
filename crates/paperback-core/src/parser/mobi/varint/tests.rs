@@ -23,8 +23,7 @@ fn decoding_past_the_end_of_the_data_returns_zero_without_advancing() {
 #[case("A", 10)]
 #[case("10", 32)]
 #[case("", 0)]
-// 'z' is not a valid base-32 digit (radix 32 only covers 0-9, a-v); to_digit returns None,
-// which base32_decode treats as a zero digit rather than an error.
+// 'z' is past base 32's 0-9 and a-v, and an invalid digit counts as zero rather than an error.
 #[case("z", 0)]
 fn decodes_base32_strings(#[case] input: &str, #[case] expected: usize) {
 	assert_eq!(base32_decode(input), expected);

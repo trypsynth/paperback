@@ -1005,9 +1005,8 @@ msgstr "Przekreślenie"
 msgid "Choose a font"
 msgstr "Wybierz czcionkę"
 
-#. TRANSLATORS: Title of the hotkey customization dialog
-msgid "Window Hotkey"
-msgstr "Skrót okna"
+#~ msgid "Window Hotkey"
+#~ msgstr "Skrót okna"
 
 #. TRANSLATORS: Checkbox label for Control modifier key
 #. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
@@ -1037,9 +1036,8 @@ msgstr "&Klawisz:"
 msgid "Clear"
 msgstr "Wyczyść"
 
-#. TRANSLATORS: Representation of the Spacebar key
-msgid "Space"
-msgstr "Spacja"
+#~ msgid "Space"
+#~ msgstr "Spacja"
 
 #. TRANSLATORS: Title of the Settings dialog
 msgid "Settings"
@@ -1121,9 +1119,8 @@ msgstr "Deweloperski"
 msgid "Log Level:"
 msgstr "Poziom szczegółowości dziennika:"
 
-#. TRANSLATORS: Button label to open the hotkey customization dialog
-msgid "Customize &Window Hotkey..."
-msgstr "Dostosuj &skrót okna..."
+#~ msgid "Customize &Window Hotkey..."
+#~ msgstr "Dostosuj &skrót okna..."
 
 #. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 msgid "Customize &Keyboard Shortcuts..."
@@ -1173,9 +1170,8 @@ msgstr "&Odstęp między wierszami:"
 msgid "Normal"
 msgstr "Normalny"
 
-#. TRANSLATORS: 1.5x line spacing option
-msgid "1.5\\u{00d7}"
-msgstr "1,5\\u{00d7}"
+#~ msgid "1.5\\u{00d7}"
+#~ msgstr "1,5\\u{00d7}"
 
 #. TRANSLATORS: Double line spacing option
 msgid "Double"
@@ -2259,12 +2255,11 @@ msgstr "Przejdź do &procentu"
 msgid "Go to percent"
 msgstr "Przejdź do procentu"
 
-#. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
-msgid "Copied %d character."
-msgid_plural "Copied %d characters."
-msgstr[0] "Skopiowano %d znak."
-msgstr[1] "Skopiowano %d znaki."
-msgstr[2] "Skopiowano %d znaków."
+#~ msgid "Copied %d character."
+#~ msgid_plural "Copied %d characters."
+#~ msgstr[0] "Skopiowano %d znak."
+#~ msgstr[1] "Skopiowano %d znaki."
+#~ msgstr[2] "Skopiowano %d znaków."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 msgid "Beginning of selection set."
@@ -2282,12 +2277,11 @@ msgstr "Nie ma nic do skopiowania."
 msgid "Could not copy to the clipboard."
 msgstr "Nie udało się skopiować tekstu do schowka."
 
-#. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
-msgid "Selected %d character."
-msgid_plural "Selected %d characters."
-msgstr[0] "Zaznaczono %d znak."
-msgstr[1] "Zaznaczono %d znaki."
-msgstr[2] "Zaznaczono %d znaków."
+#~ msgid "Selected %d character."
+#~ msgid_plural "Selected %d characters."
+#~ msgstr[0] "Zaznaczono %d znak."
+#~ msgstr[1] "Zaznaczono %d znaki."
+#~ msgstr[2] "Zaznaczono %d znaków."
 
 #. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
 msgid "Cannot jump; set beginning of selection first."
@@ -2741,9 +2735,8 @@ msgstr "Archiwum ZIP nie wygląda na prawidłową książkę w formacie DAISY 3 
 msgid "rootfile not found in container.xml"
 msgstr "nie znaleziono elementu rootfile w pliku container.xml"
 
-#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
-msgid "unsupported content"
-msgstr "nieobsługiwana treść"
+#~ msgid "unsupported content"
+#~ msgstr "nieobsługiwana treść"
 
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 msgid "OPF package element missing"
@@ -2777,13 +2770,11 @@ msgstr "Temat {}"
 msgid "HTML file is empty: {}"
 msgstr "Plik HTML jest pusty: {}"
 
-#. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
-msgid "Failed to convert HTML to text: {}"
-msgstr "Nie udało się przekonwertować kodu HTML na tekst: {}"
+#~ msgid "Failed to convert HTML to text: {}"
+#~ msgstr "Nie udało się przekonwertować kodu HTML na tekst: {}"
 
-#. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
-msgid "Failed to convert Markdown to text: {}"
-msgstr "Nie udało się przekonwertować pliku Markdown na tekst: {}"
+#~ msgid "Failed to convert Markdown to text: {}"
+#~ msgstr "Nie udało się przekonwertować pliku Markdown na tekst: {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 msgid "Missing HUFF parameters in header"
@@ -2998,8 +2989,8 @@ msgstr "Nie udało się pobrać bieżącej ścieżki pliku exe"
 msgid "Failed to launch update script"
 msgstr "Nie udało się uruchomić skryptu aktualizacji"
 
-msgid "Update failed"
-msgstr "Aktualizacja nie powiodła się"
+#~ msgid "Update failed"
+#~ msgstr "Aktualizacja nie powiodła się"
 
 msgid ""
 "Update downloaded to: %s\n"
@@ -4757,6 +4748,112 @@ msgstr "nie udało się połączyć z serwerem: {}"
 msgid "This document is encrypted in a way Paperback cannot open: {}"
 msgstr "Ten dokument zaszyfrowano w sposób nieobsługiwany przez Paperbacka: {}"
 
+#. TRANSLATORS: Menu item in the File menu to open documents from web links.
+msgid "Open from &URL..."
+msgstr "Otwórz z adresu &URL..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Open from URL..."
+msgstr "Otwórz z adresu URL..."
+
+#. TRANSLATORS: Title of the error shown when what was typed into Open from URL is not a web link
+#. TRANSLATORS: Title of the dialog that asks for the web link to open a document from
+#. TRANSLATORS: Title of the window that shows documents being downloaded from links
+#. TRANSLATORS: Title of the error listing the links that could not be opened
+msgid "Open from URL"
+msgstr "Otwórz z adresu URL"
+
+#. TRANSLATORS: Status-bar help text for the File > Open from URL menu item.
+msgid "Open documents from web links"
+msgstr "Otwórz dokumenty z odnośników internetowych"
+
+#. TRANSLATORS: Label of the field in Open from URL, which takes the web link of a document
+msgid "Link:"
+msgstr "Odnośnik:"
+
+#. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
+msgid "this is not a web link"
+msgstr "to nie jest odnośnik internetowy"
+
+#. TRANSLATORS: First message in the window that downloads documents from links, before the first server answers
+msgid "Connecting..."
+msgstr "Łączenie..."
+
+#. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
+msgid "Checking %s"
+msgstr "Sprawdzanie odnośnika: %s"
+
+#. TRANSLATORS: Download window message while Paperback asks a web server about one of several links; the first %d is the link's number, the second how many links there are, and %s is the link
+msgid "Checking %d of %d: %s"
+msgstr "Sprawdzanie odnośnika %d z %d: %s"
+
+#. TRANSLATORS: Download window message while a document opened from a link downloads; %s is its file name
+msgid "Downloading %s"
+msgstr "Pobieranie pliku: %s"
+
+#. TRANSLATORS: Download window message while one of several documents opened from links downloads; the first %d is its number, the second how many there are, and %s is its file name
+msgid "Downloading %d of %d: %s"
+msgstr "Pobieranie pliku %d z %d: %s"
+
+#. TRANSLATORS: Title of the security warning shown before downloading a document from a link
+msgid "Security Warning"
+msgstr "Ostrzeżenie dotyczące bezpieczeństwa"
+
+#. TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
+msgid "The server sends a web page (%s) instead of the document the link names."
+msgstr "Serwer przesyła stronę internetową (%s) zamiast dokumentu wskazanego w odnośniku."
+
+msgid "The server sends %s, which is not a format Paperback reads."
+msgstr "Serwer przesyła dane w formacie %s, którego Paperback nie obsługuje."
+
+#. TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
+msgid "The server does not say what it sends."
+msgstr "Serwer nie podaje formatu przesyłanych danych."
+
+#. TRANSLATORS: Question at the end of the security warning before downloading a document from a link
+msgid "Download it anyway?"
+msgstr "Czy mimo to pobrać plik?"
+
+#. TRANSLATORS: Shown by Reveal File in Folder for a document opened from a web link, which is read from a temporary copy
+msgid "This document was opened from a link, so it has no folder to show."
+msgstr "Dokument otwarto z odnośnika internetowego, więc nie można pokazać jego folderu."
+
+#. TRANSLATORS: Menu item in the Audio menu to make the audio narration louder.
+msgid "Increase Audio &Volume"
+msgstr "Zwiększ &głośność dźwięku"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Increase Audio Volume"
+msgstr "Zwiększ głośność dźwięku"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Volume menu item.
+msgid "Make the audio narration louder"
+msgstr "Zwiększ głośność narracji dźwiękowej"
+
+#. TRANSLATORS: Menu item in the Audio menu to make the audio narration quieter.
+msgid "Decrease Audio Vo&lume"
+msgstr "Zmniejsz głoś&ność dźwięku"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Decrease Audio Volume"
+msgstr "Zmniejsz głośność dźwięku"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Volume menu item.
+msgid "Make the audio narration quieter"
+msgstr "Zmniejsz głośność narracji dźwiękowej"
+
+#. TRANSLATORS: Toggle controlling whether TTS stops after the paragraph containing a Find match while Find is the navigation unit
+#: kt
+#: swift
+msgid "Stop reading after search matches"
+msgstr "Zatrzymuj czytanie po akapicie z dopasowaniem"
+
+#. TRANSLATORS: Explanation of the Find playback setting; turning it off lets reading continue without changing the navigation unit
+#: kt
+#: swift
+msgid "Turn off to continue reading while navigating by search matches."
+msgstr "Wyłącz, aby czytać dalej podczas przechodzenia między wynikami wyszukiwania."
+
 #~ msgid "&Copy\tCtrl+C"
 #~ msgstr "&Kopiuj\tCtrl+C"
 
@@ -4795,3 +4892,347 @@ msgstr "Ten dokument zaszyfrowano w sposób nieobsługiwany przez Paperbacka: {}
 
 #~ msgid "Copied (%d chars)."
 #~ msgstr "Skopiowano (liczba znaków: %d)."
+
+#. TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
+msgid "Save &image as..."
+msgstr "Zapisz &obraz jako..."
+
+msgid "Save image as"
+msgstr "Zapisz obraz jako"
+
+#. TRANSLATORS: Title of the file save dialog when saving a picture from the document
+msgid "Save image"
+msgstr "Zapisz obraz"
+
+#. TRANSLATORS: File filter shown in the "Save image" dialog
+msgid "All files (*.*)|*.*"
+msgstr "Wszystkie pliki (*.*)|*.*"
+
+#. TRANSLATORS: Error dialog shown when saving a picture from the document fails
+msgid "Failed to save image."
+msgstr "Nie udało się zapisać obrazu."
+
+#. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
+msgid "image"
+msgstr "obraz"
+
+#. TRANSLATORS: Row label in the Document Info sheet for how far through the document the reader has got
+#: swift
+msgid "Progress"
+msgstr "Postęp"
+
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
+msgid "OCR needs Tesseract. Install it from your package manager."
+msgstr "OCR wymaga programu Tesseract. Zainstaluj go za pomocą menedżera pakietów."
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
+msgstr "Nie zainstalowano żadnego języka OCR. Zainstaluj pakiet językowy programu Tesseract za pomocą menedżera pakietów."
+
+#. TRANSLATORS: Label for the dropdown choosing which entries to export
+msgid "&Export:"
+msgstr "&Eksportuj:"
+
+#. TRANSLATORS: Option to export both bookmarks and notes
+msgid "Bookmarks and notes"
+msgstr "Zakładki i notatki"
+
+#. TRANSLATORS: Option to export only bookmarks that have no note
+msgid "Bookmarks only"
+msgstr "Tylko zakładki"
+
+#. TRANSLATORS: Option to export only bookmarks that have a note
+msgid "Notes only"
+msgstr "Tylko notatki"
+
+#. TRANSLATORS: Checkbox to include the bookmarked text next to each note
+msgid "Include the &passage each note is attached to"
+msgstr "Dołącz &fragment tekstu, do którego przypięta jest każda notatka"
+
+#. TRANSLATORS: Checkbox to number the exported entries
+msgid "&Number the entries"
+msgstr "&Numeruj wpisy"
+
+#. TRANSLATORS: Label for the button that continues to the save dialog
+msgid "Export"
+msgstr "Eksportuj"
+
+#. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
+msgid "%d character selected."
+msgid_plural "%d characters selected."
+msgstr[0] "Zaznaczono %d znak."
+msgstr[1] "Zaznaczono %d znaki."
+msgstr[2] "Zaznaczono %d znaków."
+
+#. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
+msgstr "Pliki tekstowe (*.txt)|*.txt|Pliki HTML (*.html)|*.html"
+
+#. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+msgid "Failed to export notes and bookmarks."
+msgstr "Nie udało się wyeksportować zakładek i notatek."
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+msgid "Export &Notes and Bookmarks as Text or HTML..."
+msgstr "Eksportuj zakładki i no&tatki jako tekst lub HTML..."
+
+#. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
+msgid "Export bookmarks and notes in a readable format"
+msgstr "Eksportuj zakładki i notatki w czytelnym formacie"
+
+#. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
+msgid "%d character copied."
+msgid_plural "%d characters copied."
+msgstr[0] "Skopiowano %d znak."
+msgstr[1] "Skopiowano %d znaki."
+msgstr[2] "Skopiowano %d znaków."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Export Notes and Bookmarks as Text or HTML..."
+msgstr "Eksportuj zakładki i notatki jako tekst lub HTML..."
+
+#. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
+msgid "{} (not on this keyboard layout)"
+msgstr "{} (niedostępny w tym układzie klawiatury)"
+
+#. TRANSLATORS: Title of the view showing the text recognized in a picture
+msgid "Image Text"
+msgstr "Tekst z obrazu"
+
+#. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
+#. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
+msgid "The picture could not be read."
+msgstr "Nie udało się odczytać obrazu."
+
+#. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
+msgid "No text was found in the picture."
+msgstr "Na obrazie nie znaleziono tekstu."
+
+#. TRANSLATORS: Announced when Recognize Current Page is chosen in a document that is not a PDF or a comic book
+msgid "Only PDF and comic book pages can be recognized."
+msgstr "Tekst można rozpoznawać tylko na stronach plików PDF i komiksów."
+
+#. TRANSLATORS: Tools menu item that recognizes the page the cursor is on with OCR, replacing any text it already has
+msgid "&Recognize Current Page"
+msgstr "&Rozpoznaj bieżącą stronę"
+
+msgid "Read &text in picture"
+msgstr "Odczytaj &tekst z obrazu"
+
+msgid "Read the text in the picture"
+msgstr "Odczytaj tekst z obrazu"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Recognize Current Page"
+msgstr "Rozpoznaj bieżącą stronę"
+
+#. TRANSLATORS: Spoken for a comic book page that is its front cover
+msgid "Front cover"
+msgstr "Przednia okładka"
+
+#. TRANSLATORS: Spoken for a comic book page that is an inside cover
+msgid "Inside cover"
+msgstr "Wewnętrzna strona okładki"
+
+#. TRANSLATORS: Spoken for a comic book page that recaps the story so far
+msgid "Recap"
+msgstr "Streszczenie"
+
+#. TRANSLATORS: Spoken for a comic book page that is an advertisement
+msgid "Advertisement"
+msgstr "Reklama"
+
+#. TRANSLATORS: Spoken for a comic book page written by the editors
+msgid "Editorial"
+msgstr "Od redakcji"
+
+#. TRANSLATORS: Spoken for a comic book page of letters from readers
+msgid "Letters"
+msgstr "Listy czytelników"
+
+#. TRANSLATORS: Spoken for a comic book page previewing another comic
+msgid "Preview"
+msgstr "Zapowiedź"
+
+#. TRANSLATORS: Spoken for a comic book page that is its back cover
+msgid "Back cover"
+msgstr "Tylna okładka"
+
+#. TRANSLATORS: Written after a presentation slide's text, before the presenter's notes for that slide; {} is the notes
+msgid "Speaker notes: {}"
+msgstr "Notatki prelegenta: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it without a name; {} is the comment
+msgid "Comment: {}"
+msgstr "Komentarz: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it: the first {} is the reviewer, the second the comment
+msgid "Comment from {}: {}"
+msgstr "Komentarz ({}): {}"
+
+#. TRANSLATORS: Heading over the comments reviewers left on a document, written after its text
+msgid "Comments"
+msgstr "Komentarze"
+
+#. TRANSLATORS: Names a comment's author when the document does not say who wrote it
+msgid "Comment"
+msgstr "Komentarz"
+
+#~ msgid "{} on \\u{201c}{}\\u{201d}: {}"
+#~ msgstr "{}, do fragmentu „{}”: {}"
+
+#. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
+msgid "{}: {}"
+msgstr "{}: {}"
+
+#. TRANSLATORS: Shown in place of a presentation slide that has no text, such as one holding only pictures
+msgid "This slide has no text."
+msgstr "Ten slajd nie zawiera tekstu."
+
+msgid "Current version is not a valid semver."
+msgstr "Numer bieżącej wersji nie jest zgodny ze schematem semver."
+
+msgid "Latest release tag is not a valid semver."
+msgstr "Znacznik najnowszego wydania nie jest zgodny ze schematem semver."
+
+msgid "Invalid public key"
+msgstr "Nieprawidłowy klucz publiczny"
+
+msgid "Failed to read signature"
+msgstr "Nie udało się odczytać podpisu"
+
+msgid "Invalid signature"
+msgstr "Nieprawidłowy podpis"
+
+msgid "Failed to create private download directory"
+msgstr "Nie udało się utworzyć prywatnego folderu pobierania"
+
+msgid "Failed to create file"
+msgstr "Nie udało się utworzyć pliku"
+
+msgid "Failed to write file"
+msgstr "Nie udało się zapisać pliku"
+
+msgid "Failed to read file for verification"
+msgstr "Nie udało się odczytać pliku do weryfikacji"
+
+msgid "Signature verification failed"
+msgstr "Błąd weryfikacji podpisu"
+
+msgid "Failed to rename verified file"
+msgstr "Nie udało się zmienić nazwy zweryfikowanego pliku"
+
+msgid "Failed to parse release JSON"
+msgstr "Nie udało się przetworzyć danych JSON o wydaniu"
+
+msgid "Latest release does not include downloadable assets."
+msgstr "Najnowsze wydanie nie zawiera plików do pobrania."
+
+msgid "Update is available but no matching download asset or signature was found."
+msgstr "Aktualizacja jest dostępna, ale nie znaleziono pasującego pliku do pobrania lub jego podpisu."
+
+msgid "Failed to determine exe path"
+msgstr "Nie udało się ustalić ścieżki pliku exe"
+
+msgid "Failed to get exe directory"
+msgstr "Nie udało się ustalić folderu pliku exe"
+
+msgid "Could not determine a cache directory: neither XDG_CACHE_HOME nor HOME is set"
+msgstr "Nie udało się ustalić folderu pamięci podręcznej: nie ustawiono zmiennych XDG_CACHE_HOME ani HOME"
+
+msgid "Failed to create cache directory"
+msgstr "Nie udało się utworzyć folderu pamięci podręcznej"
+
+msgid "The update server returned HTTP error %s."
+msgstr "Serwer aktualizacji zwrócił błąd HTTP %s."
+
+msgid "Could not reach the update server: %s"
+msgstr "Nie udało się połączyć z serwerem aktualizacji: %s"
+
+msgid "System-Wide"
+msgstr "Globalne"
+
+msgid "Show or Hide Paperback"
+msgstr "Pokaż lub ukryj Paperback"
+
+#. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
+msgid "{} on “{}”: {}"
+msgstr "{}, do fragmentu „{}”: {}"
+
+#. TRANSLATORS: VoiceOver label for the read-aloud bar's control that speeds up or slows down a book's recorded audio
+#: kt
+#: swift
+msgid "Audio Speed"
+msgstr "Szybkość odtwarzania dźwięku"
+
+#: swift
+msgid "Speech for This Book"
+msgstr "Synteza mowy dla tej książki"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} item"
+msgstr "Liczba elementów: {}"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} items"
+msgstr "Liczba elementów: {}"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} items⁣"
+msgstr "Liczba elementów: {}"
+
+#. TRANSLATORS: Spoken for an empty table cell in text mode
+#: swift
+msgid "Blank"
+msgstr "Pusta"
+
+#. TRANSLATORS: Name of the VoiceOver rotor setting that moves between the entries of a document's table of contents in text mode
+#: swift
+msgid "Sections"
+msgstr "Sekcje"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a voice of its own instead of the one in Settings
+#: swift
+msgid "Own Voice"
+msgstr "Własny głos"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a speech rate of its own instead of the one in Settings
+#: swift
+msgid "Own Rate"
+msgstr "Własne tempo"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a pitch of its own instead of the one in Settings
+#: swift
+msgid "Own Pitch"
+msgstr "Własna wysokość głosu"
+
+#. TRANSLATORS: Footer in Speech for This Book explaining what a switch left off does
+#: swift
+msgid "Whatever is switched off follows Settings."
+msgstr "Dla wyłączonych przełączników obowiązują wartości z Ustawień."
+
+#. TRANSLATORS: Row label for the number of audio files in the document
+#: kt
+#: swift
+msgid "Number of files"
+msgstr "Liczba plików"
+
+#. TRANSLATORS: Row label for the total playback duration across all of the document's audio files
+#: kt
+#: swift
+msgid "Total duration"
+msgstr "Czas całkowity"
+
+#. TRANSLATORS: Row label for the average playback duration per audio file in the document
+#: kt
+#: swift
+msgid "Average duration"
+msgstr "Średni czas"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
+#: kt
+msgid "Select audio speed"
+msgstr "wybrać szybkość odtwarzania dźwięku"

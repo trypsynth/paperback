@@ -12,7 +12,35 @@ Paperback itself is under the [MIT license](https://github.com/trypsynth/paperba
 
 ## PDFium and wxWidgets
 
-Paperback reads PDFs with [PDFium](https://pdfium.googlesource.com/pdfium/), the same engine Chrome uses, which is under the BSD 3-Clause license. The prebuilt copies it ships come from [bblanchon/pdfium-binaries](https://github.com/bblanchon/pdfium-binaries).
+Paperback reads PDFs with [hayro](https://github.com/LaurenzV/hayro), listed with the other Rust libraries below. The way it lays out a page's text, finds the links in it and orders right-to-left runs is ported from [PDFium](https://pdfium.googlesource.com/pdfium/), the engine Chrome uses, which is under the BSD 3-Clause license:
+
+<pre>Copyright 2014 The PDFium Authors
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+   * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+   * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+   * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</pre>
 
 The desktop interface is [wxWidgets](https://www.wxwidgets.org/), under the wxWindows Library Licence.
 

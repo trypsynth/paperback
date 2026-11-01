@@ -1,17 +1,11 @@
-//! Per-document reading state: last position, audio playback time, the temporary bookmark,
-//! navigation history, and the detected format/password used to reopen it.
-
 use super::ConfigManager;
-use crate::{config::settings::NavigationHistory, document::ReplaceOutcome};
+use crate::{
+	config::settings::{DocumentSpeech, NavigationHistory},
+	document::{DocPos, ReplaceOutcome},
+};
 
 impl ConfigManager {
-	/// Remaps every stored position for `path` through `outcome`, after the document buffer was
-	/// edited in place. Covers the reading position, the navigation history, the temporary
-	/// bookmark, and every bookmark range.
-	///
-	/// Without this, editing the buffer silently drifts all of them: they are document-absolute
-	/// display offsets, so inserting OCR text on page 40 moves everything after it. OCR is the
-	/// only thing that mutates a parsed document today, and it goes through here.
+	/// Inserting OCR text on page 40 moves every stored position after it, so they would all drift without this.
 	pub fn shift_document_positions(&self, path: &str, outcome: &ReplaceOutcome) {
 		if !self.initialized || outcome.is_empty() {
 			return;
@@ -20,23 +14,23 @@ impl ConfigManager {
 			let key = self.get_doc_key(path);
 			let mut data = self.data.borrow_mut();
 			let doc = Self::doc_entry_mut(&mut data, key, path);
-			doc.last_position = shift(outcome, doc.last_position);
+			doc.last_position = outcome.shift(doc.last_position);
 			for position in &mut doc.navigation_history {
-				*position = shift(outcome, *position);
+				*position = outcome.shift(*position);
 			}
 			if let Some(position) = doc.temporary_bookmark.as_mut() {
-				*position = shift(outcome, *position);
+				*position = outcome.shift(*position);
 			}
 			for bookmark in &mut doc.bookmarks {
-				bookmark.start = shift(outcome, bookmark.start);
-				bookmark.end = shift(outcome, bookmark.end);
+				bookmark.start = outcome.shift(bookmark.start);
+				bookmark.end = outcome.shift(bookmark.end);
 			}
 			doc.bookmarks.sort_by_key(|bookmark| bookmark.start);
 		}
 		self.dirty.set(true);
 	}
 
-	pub fn set_document_position(&self, path: &str, position: i64) {
+	pub fn set_document_position(&self, path: &str, position: DocPos) {
 		if !self.initialized {
 			return;
 		}
@@ -48,8 +42,7 @@ impl ConfigManager {
 		self.dirty.set(true);
 	}
 
-	/// Records how far into its narration an audio document had played. `None` leaves any
-	/// stored value alone, so a document that hasn't started playing can't wipe it.
+	/// `None` leaves the stored value alone, so a document that hasn't started playing can't wipe it.
 	pub fn set_document_audio_time(&self, path: &str, time_ms: Option<u64>) {
 		if !self.initialized {
 			return;
@@ -73,22 +66,21 @@ impl ConfigManager {
 	}
 
 	#[must_use]
-	pub fn get_document_position(&self, path: &str) -> i64 {
+	pub fn get_document_position(&self, path: &str) -> DocPos {
 		if !self.initialized {
-			return 0;
+			return DocPos::ZERO;
 		}
 		let key = self.get_doc_key(path);
-		self.data.borrow().documents.get(&key).map_or(0, |d| d.last_position)
+		self.data.borrow().documents.get(&key).map_or(DocPos::ZERO, |d| d.last_position)
 	}
 
 	#[must_use]
-	pub fn get_validated_document_position(&self, path: &str, max_position: i64) -> i64 {
+	pub fn get_validated_document_position(&self, path: &str, max_position: DocPos) -> Option<DocPos> {
 		let saved = self.get_document_position(path);
-		if saved > 0 && saved <= max_position { saved } else { -1 }
+		(saved > DocPos::ZERO && saved <= max_position).then_some(saved)
 	}
 
-	/// Sets the single per-document temporary bookmark position (`None` clears it).
-	pub fn set_temporary_bookmark(&self, path: &str, position: Option<i64>) {
+	pub fn set_temporary_bookmark(&self, path: &str, position: Option<DocPos>) {
 		if !self.initialized {
 			return;
 		}
@@ -101,7 +93,7 @@ impl ConfigManager {
 	}
 
 	#[must_use]
-	pub fn get_temporary_bookmark(&self, path: &str) -> Option<i64> {
+	pub fn get_temporary_bookmark(&self, path: &str) -> Option<DocPos> {
 		if !self.initialized {
 			return None;
 		}
@@ -109,7 +101,7 @@ impl ConfigManager {
 		self.data.borrow().documents.get(&key).and_then(|d| d.temporary_bookmark)
 	}
 
-	pub fn set_navigation_history(&self, path: &str, history: &[i64], history_index: usize) {
+	pub fn set_navigation_history(&self, path: &str, history: &[DocPos], history_index: usize) {
 		if !self.initialized {
 			return;
 		}
@@ -130,7 +122,7 @@ impl ConfigManager {
 		}
 		let key = self.get_doc_key(path);
 		if let Some(doc) = self.data.borrow().documents.get(&key) {
-			nav.positions = doc.navigation_history.clone();
+			nav.positions.clone_from(&doc.navigation_history);
 			nav.index = doc.navigation_history_index;
 		}
 		nav
@@ -156,6 +148,27 @@ impl ConfigManager {
 		self.data.borrow().documents.get(&key).map(|d| d.format.clone()).unwrap_or_default()
 	}
 
+	pub fn set_document_speech(&self, path: &str, speech: &DocumentSpeech) {
+		if !self.initialized {
+			return;
+		}
+		{
+			let key = self.get_doc_key(path);
+			let mut data = self.data.borrow_mut();
+			Self::doc_entry_mut(&mut data, key, path).speech = speech.clone();
+		}
+		self.dirty.set(true);
+	}
+
+	#[must_use]
+	pub fn get_document_speech(&self, path: &str) -> DocumentSpeech {
+		if !self.initialized {
+			return DocumentSpeech::default();
+		}
+		let key = self.get_doc_key(path);
+		self.data.borrow().documents.get(&key).map(|d| d.speech.clone()).unwrap_or_default()
+	}
+
 	pub fn set_document_password(&self, path: &str, password: &str) {
 		if !self.initialized {
 			return;
@@ -175,12 +188,36 @@ impl ConfigManager {
 		let key = self.get_doc_key(path);
 		self.data.borrow().documents.get(&key).map(|d| d.password.clone()).unwrap_or_default()
 	}
-}
 
-/// [`ReplaceOutcome::shift`] over the `i64` offsets the config stores.
-fn shift(outcome: &ReplaceOutcome, position: i64) -> i64 {
-	let shifted = outcome.shift(usize::try_from(position.max(0)).unwrap_or(0));
-	i64::try_from(shifted).unwrap_or(position)
+	pub fn set_document_download(&self, path: &str, name: &str, size: u64) {
+		if !self.initialized {
+			return;
+		}
+		{
+			let key = self.get_doc_key(path);
+			let mut data = self.data.borrow_mut();
+			let entry = Self::doc_entry_mut(&mut data, key, path);
+			entry.download_size = Some(size);
+			entry.download_name = Some(name.to_string());
+		}
+		self.dirty.set(true);
+	}
+
+	pub fn get_document_download_name(&self, path: &str) -> Option<String> {
+		if !self.initialized {
+			return None;
+		}
+		let key = self.get_doc_key(path);
+		self.data.borrow().documents.get(&key).and_then(|d| d.download_name.clone())
+	}
+
+	pub fn get_document_download_size(&self, path: &str) -> Option<u64> {
+		if !self.initialized {
+			return None;
+		}
+		let key = self.get_doc_key(path);
+		self.data.borrow().documents.get(&key).and_then(|d| d.download_size)
+	}
 }
 
 #[cfg(test)]
@@ -188,15 +225,38 @@ mod tests {
 	use super::*;
 
 	#[test]
+	fn the_download_size_is_kept_for_each_link() {
+		let config = ConfigManager::in_memory();
+		assert_eq!(config.get_document_download_size("https://example.org/a.epub"), None);
+		config.set_document_download("https://example.org/a.epub", "a.epub", 1_500_000);
+		config.set_document_download("https://example.org/a.epub", "a.epub", 1_600_000);
+		assert_eq!(config.get_document_download_size("https://example.org/a.epub"), Some(1_600_000));
+		assert_eq!(config.get_document_download_size("https://example.org/b.epub"), None);
+	}
+
+	#[test]
+	fn the_download_name_is_kept_for_each_link() {
+		let config = ConfigManager::in_memory();
+		assert_eq!(config.get_document_download_name("https://example.org/get?id=1"), None);
+		config.set_document_download("https://example.org/get?id=1", "Old.epub", 10);
+		config.set_document_download("https://example.org/get?id=1", "Moby Dick.epub", 10);
+		assert_eq!(
+			config.get_document_download_name("https://example.org/get?id=1").as_deref(),
+			Some("Moby Dick.epub")
+		);
+		assert_eq!(config.get_document_download_name("https://example.org/get?id=2"), None);
+	}
+
+	#[test]
 	fn temporary_bookmark_set_get_overwrite_clear() {
 		let mut config = ConfigManager::new();
 		config.initialized = true;
 		let path = "book.epub";
 		assert_eq!(config.get_temporary_bookmark(path), None);
-		config.set_temporary_bookmark(path, Some(42_000));
-		assert_eq!(config.get_temporary_bookmark(path), Some(42_000));
-		config.set_temporary_bookmark(path, Some(43_000));
-		assert_eq!(config.get_temporary_bookmark(path), Some(43_000));
+		config.set_temporary_bookmark(path, Some(42_000.into()));
+		assert_eq!(config.get_temporary_bookmark(path), Some(42_000.into()));
+		config.set_temporary_bookmark(path, Some(43_000.into()));
+		assert_eq!(config.get_temporary_bookmark(path), Some(43_000.into()));
 		config.set_temporary_bookmark(path, None);
 		assert_eq!(config.get_temporary_bookmark(path), None);
 	}
@@ -213,8 +273,6 @@ mod tests {
 		assert_eq!(config.get_document_audio_time(path), Some(24_800_000));
 	}
 
-	/// A player that hasn't established a position yet reports `None`, and that must not wipe
-	/// the stored time, since otherwise merely opening a book would discard where it was up to.
 	#[test]
 	fn audio_time_none_does_not_clear_a_stored_value() {
 		let mut config = ConfigManager::new();

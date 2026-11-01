@@ -2,13 +2,7 @@ package dev.paperback.android.ui.state
 
 import android.webkit.MimeTypeMap
 
-/**
- * The MIME types Android's own table does not know for the formats Paperback reads. Without
- * these the system file picker greys out perfectly readable books, since it filters on the types
- * it is handed and takes no notice of the extension.
- *
- * Anything Android does know stays out of this table: [mimeTypesFor] asks it first.
- */
+/** Types Android's own table lacks; without them the system picker, which ignores extensions, greys out readable books. */
 private val EXTRA_MIME_TYPES = mapOf(
 	"chm" to setOf("application/vnd.ms-htmlhelp"),
 	"doc" to setOf("application/msword"),
@@ -32,14 +26,9 @@ private val EXTRA_MIME_TYPES = mapOf(
 	"zip" to setOf("application/zip")
 )
 
-/** Every MIME type a file with this extension might be offered under. */
 internal fun extraMimeTypesFor(extension: String): Set<String> = EXTRA_MIME_TYPES[extension.lowercase()].orEmpty()
 
-/**
- * The types to hand the system file picker so it offers every format this build can read.
- * Falls back to everything rather than nothing, since a picker filtered down to no type at all
- * would leave the reader unable to open anything.
- */
+/** Falls back to everything, since a picker filtered to no type at all would leave the reader unable to open anything. */
 fun mimeTypesFor(extensions: List<String>): Array<String> {
 	val mimeMap = MimeTypeMap.getSingleton()
 	val mimes = mutableSetOf<String>()

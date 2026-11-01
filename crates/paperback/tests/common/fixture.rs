@@ -6,8 +6,6 @@ pub const H1: &str = "Paperback UI test";
 pub const H2_FIRST: &str = "Introduction";
 pub const H2_LAST: &str = "Conclusion";
 
-/// Writes a small HTML book into `dir`: an opening paragraph, then an `h1` and two `h2`s,
-/// each followed by text, plus a link and a list.
 pub fn write_html(dir: &Path) -> PathBuf {
 	std::fs::create_dir_all(dir).expect("create fixture dir");
 	let path = dir.join(HTML_NAME);
@@ -24,5 +22,19 @@ pub fn write_html(dir: &Path) -> PathBuf {
 		</body></html>\n"
 	);
 	std::fs::write(&path, html).expect("write fixture");
+	path
+}
+
+pub const COMIC_NAME: &str = "ui-test.cbz";
+pub const COMIC_WORDS: &str = "quick brown fox";
+
+pub fn write_comic(dir: &Path) -> PathBuf {
+	use std::io::Write as _;
+	std::fs::create_dir_all(dir).expect("create fixture dir");
+	let path = dir.join(COMIC_NAME);
+	let mut zip = zip::ZipWriter::new(std::fs::File::create(&path).expect("create comic"));
+	zip.start_file("001.png", zip::write::SimpleFileOptions::default()).expect("start page");
+	zip.write_all(include_bytes!("ocr-sample.png")).expect("write page");
+	zip.finish().expect("finish comic");
 	path
 }

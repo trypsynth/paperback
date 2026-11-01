@@ -1,6 +1,4 @@
-//! Post-processing of the decoded MOBI HTML content: old-style Mobipocket files use
-//! `<font size="N">` instead of semantic `<h1>`-`<h6>` tags, so this rewrites them into real
-//! headings when the document has none, letting the heading-based TOC builder pick them up.
+//! Old Mobipocket files use `<font size="N">` instead of heading tags, so a document with none gets them rewritten into headings the TOC builder can find.
 
 use std::sync::LazyLock;
 
@@ -11,15 +9,11 @@ pub(super) fn rewrite_font_size_headings(html: &str) -> String {
 		return html.to_string();
 	}
 	tracing::debug!("no existing heading tags found, applying font size heading heuristic");
-	// One pass over the whole book, not one per size: each pass was a full scan and a full copy
-	// of a string that runs to a hundred megabytes on the largest books. Where a font tag is left
-	// unclosed, the size that opens first now wins rather than the largest size; see
-	// `an_unclosed_font_tag_is_taken_in_the_order_it_opens`.
+	// One pass, not one per size: each pass was a full scan and copy of a string that runs to a hundred megabytes on the largest books. An unclosed font tag now goes to the size that opens first; see `an_unclosed_font_tag_is_taken_in_the_order_it_opens`.
 	static RE_FONT: LazyLock<regex::Regex> =
 		LazyLock::new(|| regex::Regex::new(r#"(?is)<font\b[^>]*\bsize=["']?([4-7])["']?[^>]*>(.*?)</font>"#).unwrap());
 	RE_FONT
 		.replace_all(html, |caps: &regex::Captures<'_>| {
-			// Size 7 is the largest and becomes <h1>, down to size 4 becoming <h4>.
 			let level = b'7' - caps[1].as_bytes()[0] + 1;
 			format!("<h{level}>{}</h{level}>", &caps[2])
 		})

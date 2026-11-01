@@ -1,7 +1,3 @@
-//! Locating and parsing an EPUB's OPF package document: `META-INF/container.xml` (to find
-//! the OPF itself), then the OPF's `<manifest>`/`<spine>`/`<metadata>` into the pieces the
-//! rest of the parser needs (manifest items, reading order, nav/NCX paths, title/author).
-
 use std::{
 	collections::HashMap,
 	io::{Read, Seek},

@@ -1,15 +1,15 @@
-//! Content search: [`DocumentSession::search_ffi`] runs an in-memory search over the
-//! rendered document text with the reader's case/whole-word/regex/direction options.
-
 use super::{DocumentSession, SearchOptionsFfi, SearchResultFfi};
-use crate::reader_core::{SearchOptions, reader_search_with_wrap};
+use crate::{
+	document::DocPos,
+	reader_core::{SearchOptions, reader_search_with_wrap},
+};
 
 #[cfg_attr(feature = "uniffi", uniffi::export)]
 impl DocumentSession {
 	// `query: String` (not `&str`) because that is the signature UniFFI generates for.
 	#[must_use]
 	#[allow(clippy::needless_pass_by_value)]
-	pub fn search_ffi(&self, query: String, start_position: i64, options: SearchOptionsFfi) -> SearchResultFfi {
+	pub fn search_ffi(&self, query: String, start_position: DocPos, options: SearchOptionsFfi) -> SearchResultFfi {
 		let mut search_options = SearchOptions::empty();
 		if options.match_case {
 			search_options.insert(SearchOptions::MATCH_CASE);
@@ -23,8 +23,7 @@ impl DocumentSession {
 		if options.forward {
 			search_options.insert(SearchOptions::FORWARD);
 		}
-		let result =
-			reader_search_with_wrap(&self.handle.document().buffer.content, &query, start_position, search_options);
+		let result = reader_search_with_wrap(&self.handle.document().buffer, &query, start_position, search_options);
 		SearchResultFfi { found: result.found, wrapped: result.wrapped, position: result.position }
 	}
 }

@@ -1,28 +1,12 @@
-//! reStructuredText: section titles marked by underlining (and optionally overlining) with a
-//! repeated punctuation character, directives (`.. name:: argument`), and a small set of inline
-//! markup (`**strong**`, `*emphasis*`, ` ``literal`` `, hyperlink references).
-//!
-//! This is a hand-written translator to HTML rather than a wrapper around a crate, because the
-//! available Rust implementation (`rst_parser`/`rst_renderer`) panics via `unimplemented!()` on
-//! constructs real documents actually contain: broken inline markup and Sphinx substitution
-//! references both hit it. Everything here is written to degrade instead of failing outright: a
-//! directive it doesn't recognize still shows its body, a reference to an undefined target is
-//! shown as plain text, and no input should ever panic it. The produced HTML is fed through the
-//! same [`HtmlToText`](super::convert::html_to_text::HtmlToText) converter Markdown uses, which is
-//! where headings, links, lists and formatting turn into the document's markers.
-//!
-//! Left unsupported: the docutils section-nesting algorithm proper (adornment characters are
-//! mapped to heading levels in first-seen order instead, which matches the common convention of
-//! using one character per level consistently), grid and simple tables (rendered as their literal
-//! source lines rather than parsed), and footnote/citation bodies (a `[1]_` reference renders as
-//! `[1]` with no link to where it's defined).
+//! Hand-written because `rst_parser`/`rst_renderer` panic via `unimplemented!()` on broken inline markup and Sphinx substitution references, so everything here degrades rather than fails.
+//! Unsupported: docutils' section nesting (adornments map to levels in first-seen order), grid and simple tables (shown as source), and footnote bodies (`[1]_` renders as an unlinked `[1]`).
 
 use std::fs;
 
 use anyhow::{Context, Result};
 
 use crate::{
-	document::{Document, DocumentBuffer, ParserContext},
+	document::{DocPos, Document, DocumentBuffer, ParserContext},
 	parser::{
 		Parser, add_converter_markers,
 		convert::html_to_text::{HtmlSourceMode, HtmlToText},
@@ -42,17 +26,33 @@ impl Parser for RstParser {
 		let html_content = translate::rst_to_html(&source);
 		let mut converter = HtmlToText::with_render_tables_inline(context.render_tables_inline);
 		converter.convert(&html_content, HtmlSourceMode::NativeHtml);
-		let title = extract_title_from_path(&context.file_path);
-		let mut buffer = DocumentBuffer::with_content(converter.get_text());
-		add_converter_markers(&mut buffer, &converter, 0);
+		// A title opening the document is its title, as docutils reads it.
+		let title = converter
+			.get_headings()
+			.first()
+			.filter(|heading| heading.offset == DocPos::ZERO)
+			.map_or_else(|| extract_title_from_path(&context.file_path), |heading| heading.text.clone());
+		let mut buffer = DocumentBuffer::with_content(converter.take_text());
+		add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 		let toc_items = build_toc_from_headings(converter.get_headings());
-		let mut doc = Document::new().with_title(title);
+		let mut doc = Document::new().with_title(title).with_author(author(&source));
 		doc.set_buffer(buffer);
 		doc.toc_items = toc_items;
 		doc.id_positions.clone_from(converter.get_id_positions());
 		tracing::debug!(path = %context.file_path, chars = doc.buffer.content.chars().count(), "parsed reStructuredText file");
 		Ok(doc)
 	}
+}
+
+fn author(source: &str) -> String {
+	source
+		.lines()
+		.find_map(|line| {
+			let (name, value) = line.strip_prefix(':')?.split_once(':')?;
+			(name.eq_ignore_ascii_case("author") || name.eq_ignore_ascii_case("authors"))
+				.then(|| value.trim().to_string())
+		})
+		.unwrap_or_default()
 }
 
 pub mod translate;

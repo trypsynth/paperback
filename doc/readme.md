@@ -20,10 +20,10 @@ Paperback runs on Windows 10/11, all the modern versions of ARM macOS, Linux, iO
 * Can be run entirely portably, or installed with file associations automatically set up.
 * Supports a massive array of common file formats.
 * Plays audio books, with adjustable speed and bookmarks that remember the exact time.
-* Reads scanned PDF pages with the OCR built into Windows and macOS.
+* Reads scanned PDF pages with the OCR built into Windows and macOS, or with Tesseract on Linux.
 * Bookmarks and notes, so you can mark your place and come back to it.
 * Every keyboard shortcut can be changed.
-* Opens documents straight from http and https links, and downloads them again when you reopen them, keeping your reading position and bookmarks.
+* Opens documents straight from http and https links, and downloads them again when you reopen them or press `F5`, keeping your reading position and bookmarks. When restoring the documents you had open, it downloads again the ones from links that were 2 MB or smaller.
 * Comes with `pb`, a command line tool that converts any supported document to HTML, Markdown, or plain text. It takes as many documents as you give it, expands `*.pdf` and the like itself so the same command line works on Windows, and can write one file per document into a folder. It can also read a list of documents from a file or from stdin with `--files-from`, and convert documents straight from http and https links.
 
 ## Screen Reader Compatibility
@@ -84,6 +84,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Ctrl+R`: Show the "All Documents" dialog (from Recent Documents).
 * `Ctrl+Shift+C`: Open containing folder.
 * `Ctrl+Shift+E`: Export document data (`.paperback`).
+* `Ctrl+Alt+E`: Export bookmarks and notes as a readable text or HTML file.
 * `Ctrl+Shift+I`: Import document data (`.paperback`).
 * `Ctrl+E`: Export the current document to plain text.
 * `Ctrl+Q`: Exit (Windows only; on macOS this is under the app menu instead).
@@ -99,7 +100,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 
 ### View menu
 
-* `F5`: Re-read the current document from disk. Works whether or not "Automatically reload changed documents" is switched on in Settings.
+* `F5`: Re-read the current document from disk, or download it again if it was opened from a link. Works whether or not "Automatically reload changed documents" is switched on in Settings.
 * `Ctrl+Alt+W`: Toggle word wrap.
 * `F11` (macOS: `RawCtrl+Ctrl+F`, i.e. Control+Command+F): Toggle full screen.
 * `Ctrl+Shift+V`: Open current content in Web View.
@@ -166,12 +167,15 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Shift+;`: Decrease the audio seek amount.
 * `Ctrl+Shift+.`: Speed up audio narration.
 * `Ctrl+Shift+,`: Slow down audio narration.
+* `Ctrl+'`: Make audio narration louder.
+* `Ctrl+;`: Make audio narration quieter.
 
 ### Tools menu
 
 * `Ctrl+W` (macOS: `RawCtrl+W`, i.e. the physical Control key rather than Cmd): Show word count for the current document.
 * `Ctrl+I`: Show document info.
 * `Ctrl+Shift+O`: Recognize a range of scanned PDF pages with OCR.
+* `Ctrl+Shift+R`: Recognize the PDF or comic book page the cursor is on with OCR, replacing any text it already has.
 * `Ctrl+Shift+S`: Toggle sleep timer.
 * `Ctrl+,`: Open Settings (macOS: under the app menu).
 
@@ -190,7 +194,8 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Ctrl+Tab` and `Ctrl+Shift+Tab`: Go to the next or previous open document, wrapping around at either end.
 * `Enter` or `Space` in the document text: Follow a link or open a table or formula view at the cursor.
 * `Enter` on a scanned PDF page: Recognize the page with OCR.
-* `Shift+F10` or the Menu/Application key in the document text: Open the context menu.
+* `Enter` on a picture that is not a link: Show the text recognized in the picture, in a view `Escape` closes. The picture itself is left alone, and the document's text is not changed.
+* `Shift+F10` or the Menu/Application key in the document text: Open the context menu. On a picture in a PDF, EPUB, HTML, Markdown, CHM, FB2 or comic book, it also offers to save the picture to a file, and on Windows and macOS to read the text in it, which is how to read a picture that is also a link.
 
 ## iOS and Android
 
@@ -225,11 +230,11 @@ The More Options menu is where everything else lives. Some items work a little d
 * **Switch to TTS Mode or Switch to Text Mode:** moves between read aloud mode and text mode, described above. In text mode, a Read Aloud item starts and pauses reading aloud without leaving text mode.
 * **Table of Contents:** the book's chapters, opened at the one you're reading. Pick one to go straight to it. Entries with chapters under them can be expanded and collapsed with the screen reader's actions.
 * **Elements:** a list of the document's headings or links. Switch between the two with the Type picker on iOS, or the tabs on Android, then pick one to go to it.
-* **Find:** type what to look for, or pick an earlier search from Search History, and choose whether to match case, match whole words only, or use a regular expression. Find Previous and Find Next jump to a match and say where it landed, and Find stays open so you can keep going. In read aloud mode, Find also shows up as a navigation unit on the reading bar, so you can step through the matches from there too.
+* **Find:** type what to look for, or pick an earlier search from Search History, and choose whether to match case, match whole words only, or use a regular expression. Find Previous and Find Next jump to a match and say where it landed, and Find stays open so you can keep going. In read aloud mode, Find also shows up as a navigation unit on the reading bar, so you can step through the matches from there too. **Stop reading after search matches** in Settings under Text to Speech is on by default and stops after reading the paragraph containing a match. Turn it off to keep reading from the match while the reading bar's previous and next controls still navigate by Find.
 * **Go To:** jump to a line, a page, or a percentage through the document. Pick which with the Mode picker.
 * **Recent Documents:** every document you've opened, each marked as currently open, closed, or file missing. Each one has two screen reader actions: Remove takes it off the list, and Locate lets you find a document whose file has moved. Clear Recent Documents empties the list without deleting any documents.
 * **Word Count:** the number of words in the document.
-* **Document Info:** the title, the author, the file name, and on iOS the line and character counts too.
+* **Document Info:** the title, the author, the file name, how far through the document you are, and the word, line, and character counts. For an audio book, it also shows how many files it has and, when Paperback can tell, how long they run in total and on average.
 * **Export:** saves the document as plain text, HTML, or Markdown.
 * **Sleep Timer:** stops reading after 5, 10, 15, 30, 45, or 60 minutes, or a time of your own. Open it again while it's running to see how long is left, or to cancel it.
 * **Help:** opens this readme.
@@ -256,6 +261,7 @@ To learn how to contribute, please read our [Translation Guide](translating.md).
 * Finnish
 * French
 * German
+* Hungarian
 * Japanese
 * Polish
 * Portuguese (Brazil)
@@ -296,6 +302,132 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Tyler Rodick
 
 ## Changelog
+
+### Version 1.1
+
+1.1 brings a new PDF engine, a rebuilt iOS text mode, OCR on Linux, documents from links, support for decades of older Word, Write, and PowerPoint files, and much more.
+
+#### Added
+
+##### General
+* A Hungarian translation and user guide.
+* Open a document from a link, on every platform. `F5` downloads it again.
+* `F5` reloads the document.
+* `Ctrl+1` to `Ctrl+9` jump to your first nine open documents.
+* `Ctrl+Tab` and `Ctrl+Shift+Tab` switch documents on macOS and Linux.
+* The Open dialog and All Documents open every document you pick, each in its own tab.
+* Save a picture from the context menu.
+* Export bookmarks and notes as text or HTML.
+* Settings for the log level, and for whether Find selects its match.
+* The window hotkey can be any key, set on the new System-Wide tab of Keyboard Shortcuts.
+* Copying says how much it copied, and the text stays on the clipboard after Paperback closes.
+* Every menu item has its own access key in every language.
+* An unreadable zip opens as a list of the documents inside.
+
+##### New Formats
+* Word for Windows 1 and 2, Word for DOS, Word for Mac 4 and 5, and the Unicode editions of Word 6 and 95.
+* PowerPoint 95.
+* Zipped FictionBook (`.fb2.zip`).
+* DAISY 3 books that are only a DTBook in a zip, or only audio.
+
+##### OCR
+* OCR on Linux, through Tesseract.
+* Recognize Current Page (`Ctrl+Shift+R`) reads the page you're on again, even if it has text.
+* `Enter` on a picture reads its text.
+* Recognized text follows the page's layout, and is remembered, so a scanned document opens with its text.
+* Batch OCR can redo pages that have text, reads several pages at once, and stops when you close the document.
+
+##### Audio Books
+* Speeds up to 4x everywhere, remembered across sessions.
+* Volume controls.
+
+##### PDF Documents
+* A new PDF engine: faster, uses every CPU core, and needs no pdfium library.
+* Headings found in untagged pages, and better titles.
+* A setting to keep repeated page headers and footers.
+
+##### Other Documents
+* Word: numbered and bulleted lists, footnotes, endnotes, comments, picture alt text, list navigation, and Word's own pages.
+* OpenDocument: footnotes and comments after the text.
+* Titles and authors from the document's metadata in Word, PowerPoint, OpenDocument, RTF, Markdown, and reStructuredText.
+* Comics: title, writer, page types, and bookmarks from ComicInfo.xml.
+* FB2: headings, a table of contents, and separate verse lines.
+* Pictures in MOBI, KF8, and zipped DAISY books can be saved and read with OCR.
+* Dollar-delimited math in Markdown.
+* Sphinx directives in reStructuredText.
+* Pictures with no description show as [Image].
+
+##### iOS and Android
+* A Language row in Settings.
+* Document Info shows your progress, and an audio book's file count and running time.
+* Text mode is remembered.
+* Keep reading continuously after a Find.
+* iOS: text mode rebuilt for VoiceOver. Read All goes through the whole book, the rotors reach all of it, lists and tables are real lists and tables, three-finger flicks turn pages, and the three-finger tap gives the page and percentage.
+* iOS: a voice, rate, and pitch per book, from Speech for This Book.
+* iOS: password-protected documents.
+* iOS: share zipped DAISY books and MP3 audio books to Paperback.
+* iOS: the sleep timer stops audio books.
+* iOS: Slovak and Ukrainian.
+* Android: rate and pitch changes apply to the paragraph being read, and work with the system default engine.
+* Android: runs on x86_64 devices.
+
+##### macOS
+* A universal app, native on Intel and Apple silicon.
+* pb is included in the app.
+
+##### pb
+* Convert by page, a whole folder, a list of files (`--files-from`), or a link.
+
+#### Changed
+* The menu bar is reorganized into eight menus.
+* The status bar says "Progress" instead of "Reading".
+* Menu commands announce what they did, instead of being drowned out as the menu closes.
+* Updates close Paperback normally and bring it back to the front.
+* Huge text files open with a fraction of the memory, and the 4 GB limit is gone.
+* MOBI, Word, and HTML conversion, Find All, and All Documents search are faster.
+* The Windows executable is 3 MB smaller.
+
+#### Fixed
+
+##### General
+* Punctuation shortcuts on keyboard layouts that need Shift for them; Keyboard Shortcuts flags any your layout can't type.
+* Focus returns to the document after `Win+D`.
+* Crashes opening bookmarks for a new document, in Find All, and on some damaged MOBI files.
+* Regex Find selects the whole match.
+* An audio book's status bar no longer flips between audio and text progress.
+* The word count includes text read with OCR.
+* Scanned pages no longer announce their own image.
+* The installer's PATH option.
+* Linux updates find their downloads, and an AppImage updates as an AppImage.
+* The comment line in Word and OpenDocument files is translated.
+
+##### Documents
+* Windows Write files that opened as binary.
+* PDF: text repeated at page breaks in tagged PDFs, second columns read first, lost spaces and line-end hyphens, text in Type 3 fonts, and contents dot leaders.
+* RTF: bare CR line endings, dash-bulleted lists, text before the first paragraph, accented and CJK text, text lost after an escaped backslash, and RTF saved as `.doc`.
+* Word and PowerPoint files with damaged containers that Word still opens.
+* Word text in tracked changes, fields, and table cells.
+* PowerPoint links, slides with no text, and emoji.
+* `<` and `&` in Word, PowerPoint, and OpenDocument table cells.
+* Password-protected OpenDocument files from current LibreOffice.
+* CHM files in their code page, and HTML and DAISY files in their declared encoding.
+* Zipped DAISY books whose references use the wrong case, and DAISY 2.02 books reading only a section's first phrase.
+* Man pages that redirect with `.so`.
+* Markdown front matter read as text.
+
+##### macOS
+* Line-start navigation, keyboard activation, and copy announcements.
+* VoiceOver's context menu command opens Paperback's own.
+* Menu shortcuts are no longer announced over what they do.
+
+##### iOS and Android
+* iOS: launch no longer killed while restoring large books.
+* iOS: reopens on the tab you were reading, closing a tab no longer reads the previous book, and Recent Documents keep their order.
+* iOS: audio books are no longer extracted again at every launch.
+* iOS: speech dictionary regex rules take `\1`.
+* Android: reading aloud from password-protected documents.
+* Android: Previous at the top no longer re-reads the first paragraph, and text mode no longer snaps its scroll.
+* Android: less battery use while reading and paused.
 
 ### Version 1.0
 

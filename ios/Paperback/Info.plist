@@ -15,6 +15,7 @@
 		<string>es</string>
 		<string>fi</string>
 		<string>fr</string>
+		<string>hu</string>
 		<string>ja</string>
 		<string>nl</string>
 		<string>pl</string>
@@ -63,11 +64,6 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
-	</array>
-	<key>UIDeviceFamily</key>
-	<array>
-		<integer>1</integer>
-		<integer>2</integer>
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
@@ -378,6 +374,19 @@
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>dev.paperback.m4b</string>
+				<string>public.mp3</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Archives</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.zip-archive</string>
 			</array>
 		</dict>
 		<dict>

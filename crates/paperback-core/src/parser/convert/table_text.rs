@@ -1,15 +1,15 @@
 use scraper::{ElementRef, Html, Node};
 
 use crate::{
+	document::DocLen,
 	parser::convert::formula::{formula_text, is_dom_formula},
-	util::text::{collapse_whitespace, display_len, trim_string},
+	util::{
+		html::push_escaped,
+		text::{collapse_whitespace, trim_string},
+	},
 };
 
-/// `<table>…</table>` HTML -> tab-separated text: rows by '\n', cells (`<td>`/`<th>`) by '\t'.
-/// Cell text whitespace-collapsed + trimmed; internal '\t'/'\n' -> space; nested tables flattened.
-///
-/// Only the outermost table's grid structure is honored: rows and cells that belong to a nested
-/// `<table>` do not start new rows/cells, they are flattened into the enclosing cell's text.
+/// Only the outermost table's grid is honoured; a nested `<table>` is flattened into its enclosing cell's text.
 #[must_use]
 pub fn html_table_to_tsv(html: &str) -> String {
 	let fragment = Html::parse_fragment(html);
@@ -21,16 +21,12 @@ pub fn html_table_to_tsv(html: &str) -> String {
 	rows.join("\n")
 }
 
-/// Produce the on-screen text for a table in the requested display mode (see `tsv_to_display`).
 #[must_use]
 pub fn html_table_to_display(html: &str, inline: bool) -> String {
 	tsv_to_display(&html_table_to_tsv(html), inline)
 }
 
-/// Build a `<table border="1">…</table>` string from a rectangular grid of pre-extracted,
-/// plain-text cell values (one inner `Vec` per row). Cells are inserted verbatim (no
-/// HTML-escaping); the downstream `html_table_to_*` functions handle whitespace collapsing.
-/// Callers extract the cell text themselves, so this only owns the grid-to-HTML wrapping.
+/// Cells are plain text; the `html_table_to_*` functions collapse their whitespace downstream.
 #[must_use]
 pub fn build_html_table_from_grid(rows: &[Vec<String>]) -> String {
 	let mut html = String::from("<table border=\"1\">");
@@ -38,7 +34,9 @@ pub fn build_html_table_from_grid(rows: &[Vec<String>]) -> String {
 		html.push_str("<tr>");
 		for cell in row {
 			html.push_str("<td>");
-			html.push_str(cell);
+			for ch in cell.chars() {
+				push_escaped(ch, &mut html);
+			}
 			html.push_str("</td>");
 		}
 		html.push_str("</tr>");
@@ -47,11 +45,6 @@ pub fn build_html_table_from_grid(rows: &[Vec<String>]) -> String {
 	html
 }
 
-/// Render a tab-separated table body in the requested display mode.
-///
-/// - `inline == true`  -> the TSV unchanged.
-/// - `inline == false` -> a uniform placeholder `"[Table]: <first row>"`, where `<first row>` is
-///   the first row with tab separators replaced by single spaces. Empty TSV -> just `"[Table]"`.
 fn tsv_to_display(tsv: &str, inline: bool) -> String {
 	if inline {
 		return tsv.to_string();
@@ -74,7 +67,6 @@ pub fn table_caption_from_html(html: &str) -> Option<String> {
 	if first_row.is_empty() { None } else { Some(first_row) }
 }
 
-/// Text of the table's explicit `<caption>` element, if present and non-empty.
 fn caption_element_text(table: ego_tree::NodeRef<'_, Node>) -> Option<String> {
 	for child in table.children() {
 		if let Node::Element(element) = child.value()
@@ -103,33 +95,21 @@ fn first_tsv_row_text(tsv: &str) -> String {
 pub struct TableRenderBundle {
 	pub caption: String,
 	pub lines: Vec<String>,
-	pub display_length: usize,
+	pub length: DocLen,
 }
 
-/// Split `display_text` into lines and compute the total display-unit length (each line's
-/// display width + 1 for its trailing newline).  Returns `(lines, display_length)`.
 #[must_use]
-pub fn display_lines_and_length(display_text: &str) -> (Vec<String>, usize) {
+pub fn display_lines_and_length(display_text: &str) -> (Vec<String>, DocLen) {
 	if display_text.is_empty() {
-		return (Vec::new(), 0);
+		return (Vec::new(), DocLen::ZERO);
 	}
 	let lines: Vec<String> = display_text.split('\n').map(str::to_string).collect();
-	let display_length = lines.iter().map(|line| display_len(line) + 1).sum();
-	(lines, display_length)
-}
-
-/// Push a line to a parser's output verbatim (no whitespace collapsing/trimming), updating its
-/// cached display length so position tracking stays correct. Shared by `HtmlToText` and `XmlToText`
-/// so the `+1` newline accounting can never diverge between the two. Used for table rows whose tab
-/// separators and empty cells must not be mangled.
-pub fn push_finalized_line(lines: &mut Vec<String>, cached_len: &mut usize, line: String) {
-	*cached_len += display_len(&line) + 1; // +1 for the line's newline
-	lines.push(line);
+	let length = lines.iter().map(|line| DocLen::of(line) + DocLen::ONE).sum();
+	(lines, length)
 }
 
 #[must_use]
 pub fn table_render_bundle(html: &str, inline: bool) -> TableRenderBundle {
-	// Parse the HTML once; derive TSV, caption, and display text from the same tree.
 	let fragment = Html::parse_fragment(html);
 	let (tsv, caption) = find_first_table(fragment.tree.root()).map_or_else(
 		|| (String::new(), table_caption_from_tsv("")),
@@ -137,16 +117,142 @@ pub fn table_render_bundle(html: &str, inline: bool) -> TableRenderBundle {
 			let mut rows: Vec<String> = Vec::new();
 			collect_rows(table, &mut rows);
 			let tsv = rows.join("\n");
-			// Prefer an explicit <caption> element; fall back to the first TSV row.
 			let caption = caption_element_text(table).unwrap_or_else(|| table_caption_from_tsv(&tsv));
 			(tsv, caption)
 		},
 	);
-	let (lines, display_length) = display_lines_and_length(&tsv_to_display(&tsv, inline));
-	TableRenderBundle { caption, lines, display_length }
+	let (lines, length) = display_lines_and_length(&tsv_to_display(&tsv, inline));
+	TableRenderBundle { caption, lines, length }
 }
 
-/// Find the first (outermost) `<table>` element in document order, descending through wrappers.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TableCell {
+	pub text: String,
+	pub is_header: bool,
+	pub row: usize,
+	pub column: usize,
+	pub row_span: usize,
+	pub column_span: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TableGrid {
+	/// Only a `<caption>`; unlike the table's display caption, never its first row.
+	pub caption: String,
+	/// Each cell once, at the row and column it starts in, in reading order.
+	pub cells: Vec<TableCell>,
+	pub row_count: usize,
+	pub column_count: usize,
+	/// The leading rows that name the columns below them.
+	pub header_row_count: usize,
+}
+
+impl TableGrid {
+	#[must_use]
+	pub fn row_text(&self, row: usize) -> String {
+		let cells: Vec<&str> = self
+			.cells
+			.iter()
+			.filter(|cell| cell.row == row && !cell.text.is_empty())
+			.map(|cell| cell.text.as_str())
+			.collect();
+		cells.join(" ")
+	}
+}
+
+/// The outermost table's cells placed on its grid, spans and all, or `None` when it has no rows.
+#[must_use]
+pub fn html_table_grid(html: &str) -> Option<TableGrid> {
+	let fragment = Html::parse_fragment(html);
+	let table = find_first_table(fragment.tree.root())?;
+	let mut rows = Vec::new();
+	collect_row_nodes(table, false, &mut rows);
+	if rows.is_empty() {
+		return None;
+	}
+	let mut occupied: Vec<Vec<bool>> = vec![Vec::new(); rows.len()];
+	let mut cells = Vec::new();
+	let mut header_rows = Vec::with_capacity(rows.len());
+	for (row, &(node, in_head)) in rows.iter().enumerate() {
+		let mut cell_nodes = Vec::new();
+		collect_cell_nodes(node, &mut cell_nodes);
+		header_rows.push(in_head || (!cell_nodes.is_empty() && cell_nodes.iter().all(|cell| is_element(*cell, "th"))));
+		let mut column = 0;
+		for cell in cell_nodes {
+			while occupied[row].get(column).copied().unwrap_or(false) {
+				column += 1;
+			}
+			let row_span = span(cell, "rowspan").min(rows.len() - row);
+			let column_span = span(cell, "colspan");
+			for taken in &mut occupied[row..row + row_span] {
+				if taken.len() < column + column_span {
+					taken.resize(column + column_span, false);
+				}
+				taken[column..column + column_span].fill(true);
+			}
+			cells.push(TableCell {
+				text: cell_text(cell),
+				is_header: in_head || is_element(cell, "th"),
+				row,
+				column,
+				row_span,
+				column_span,
+			});
+			column += column_span;
+		}
+	}
+	let column_count = occupied.iter().map(Vec::len).max().unwrap_or(0).max(1);
+	let header_row_count = header_rows.iter().take_while(|&&header| header).count();
+	Some(TableGrid {
+		caption: caption_element_text(table).unwrap_or_default(),
+		cells,
+		row_count: rows.len(),
+		column_count,
+		header_row_count,
+	})
+}
+
+// A span past this is a broken attribute, not a table that wide.
+const MAX_SPAN: usize = 1000;
+
+fn span(cell: ego_tree::NodeRef<'_, Node>, attribute: &str) -> usize {
+	let Node::Element(element) = cell.value() else { return 1 };
+	element.attr(attribute).and_then(|value| value.trim().parse::<usize>().ok()).unwrap_or(1).clamp(1, MAX_SPAN)
+}
+
+fn is_element(node: ego_tree::NodeRef<'_, Node>, name: &str) -> bool {
+	matches!(node.value(), Node::Element(element) if element.name() == name)
+}
+
+fn collect_row_nodes<'a>(
+	node: ego_tree::NodeRef<'a, Node>,
+	in_head: bool,
+	rows: &mut Vec<(ego_tree::NodeRef<'a, Node>, bool)>,
+) {
+	for child in node.children() {
+		if let Node::Element(element) = child.value() {
+			match element.name() {
+				"tr" => rows.push((child, in_head)),
+				"table" => {}
+				"thead" => collect_row_nodes(child, true, rows),
+				_ => collect_row_nodes(child, in_head, rows),
+			}
+		}
+	}
+}
+
+fn collect_cell_nodes<'a>(node: ego_tree::NodeRef<'a, Node>, cells: &mut Vec<ego_tree::NodeRef<'a, Node>>) {
+	for child in node.children() {
+		if let Node::Element(element) = child.value() {
+			match element.name() {
+				"td" | "th" => cells.push(child),
+				"table" => {}
+				_ => collect_cell_nodes(child, cells),
+			}
+		}
+	}
+}
+
 fn find_first_table(node: ego_tree::NodeRef<'_, Node>) -> Option<ego_tree::NodeRef<'_, Node>> {
 	for child in node.children() {
 		if let Node::Element(element) = child.value() {
@@ -161,8 +267,6 @@ fn find_first_table(node: ego_tree::NodeRef<'_, Node>) -> Option<ego_tree::NodeR
 	None
 }
 
-/// Gather the rows of `table`, descending through grouping wrappers (`thead`/`tbody`/`tfoot`)
-/// to reach `<tr>` elements, but never descending into a nested table.
 fn collect_rows(node: ego_tree::NodeRef<'_, Node>, rows: &mut Vec<String>) {
 	for child in node.children() {
 		if let Node::Element(element) = child.value() {
@@ -176,8 +280,6 @@ fn collect_rows(node: ego_tree::NodeRef<'_, Node>, rows: &mut Vec<String>) {
 	}
 }
 
-/// Collect the cells of a single row, joined by tabs. Recurses through wrapper elements to find
-/// `<td>`/`<th>` but stops at nested tables (their cells are flattened into the parent cell text).
 fn collect_row(row: ego_tree::NodeRef<'_, Node>) -> String {
 	let mut cells: Vec<String> = Vec::new();
 	collect_cells(row, &mut cells);
@@ -197,9 +299,6 @@ fn collect_cells(node: ego_tree::NodeRef<'_, Node>, cells: &mut Vec<String>) {
 	}
 }
 
-/// Collect the flattened text of a single cell: descendant text nodes concatenated, with
-/// `<br>` rendered as a space, then whitespace-collapsed, trimmed, and any residual `\t`/`\n`
-/// replaced by a single space. Nested tables contribute only their text (no grid structure).
 fn cell_text(cell: ego_tree::NodeRef<'_, Node>) -> String {
 	let mut raw = String::new();
 	collect_dom_text(cell, &mut raw, true);
@@ -208,14 +307,8 @@ fn cell_text(cell: ego_tree::NodeRef<'_, Node>) -> String {
 	trimmed.replace(['\t', '\n'], " ")
 }
 
-/// Recursively concatenates the descendant text nodes of `node` into `buffer`. When
-/// `br_as_space` is true, a `<br>` element contributes a single space instead of nothing,
-/// keeping content on either side of a line break from gluing together. Shared by
-/// `cell_text` above (`br_as_space: true`) and by `HtmlToText`'s title/heading/list-item/
-/// figcaption text extraction (`br_as_space: false`, its existing behavior).
-///
-/// A formula contributes the text the reading buffer shows for it, not its descendant text, which would
-/// concatenate every token and repeat any TeX annotation.
+/// `br_as_space` keeps text either side of a `<br>` from gluing together in table cells.
+/// A formula contributes the text the reading buffer shows for it, since its descendant text would concatenate every token and repeat any TeX annotation.
 pub(crate) fn collect_dom_text(node: ego_tree::NodeRef<'_, Node>, buffer: &mut String, br_as_space: bool) {
 	match node.value() {
 		Node::Text(text) => buffer.push_str(&text.text),

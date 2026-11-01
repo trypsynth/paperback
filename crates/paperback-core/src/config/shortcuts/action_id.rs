@@ -1,6 +1,3 @@
-//! [`ActionId`] names every user-triggerable action and supplies its category, display name,
-//! and default key chord.
-
 use super::{KeyChord, ShortcutCategory};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
@@ -90,13 +87,17 @@ pub enum ActionId {
 	DecreaseAudioSeekAmount,
 	IncreaseAudioSpeed,
 	DecreaseAudioSpeed,
+	IncreaseAudioVolume,
+	DecreaseAudioVolume,
 	ToggleFullScreen,
 	Options,
 	SleepTimer,
 	BatchOcr,
+	RecognizeCurrentPage,
 	CustomizeShortcuts,
 	ImportDocumentData,
 	ExportDocumentData,
+	ExportNotesAndBookmarks,
 	ExportToPlainText,
 	ExportToHtml,
 	ExportToMarkdown,
@@ -194,13 +195,17 @@ impl ActionId {
 			Self::DecreaseAudioSeekAmount,
 			Self::IncreaseAudioSpeed,
 			Self::DecreaseAudioSpeed,
+			Self::IncreaseAudioVolume,
+			Self::DecreaseAudioVolume,
 			Self::ToggleFullScreen,
 			Self::Options,
 			Self::SleepTimer,
 			Self::BatchOcr,
+			Self::RecognizeCurrentPage,
 			Self::CustomizeShortcuts,
 			Self::ImportDocumentData,
 			Self::ExportDocumentData,
+			Self::ExportNotesAndBookmarks,
 			Self::ExportToPlainText,
 			Self::ExportToHtml,
 			Self::ExportToMarkdown,
@@ -225,6 +230,7 @@ impl ActionId {
 			| Self::RevealFileInFolder
 			| Self::ImportDocumentData
 			| Self::ExportDocumentData
+			| Self::ExportNotesAndBookmarks
 			| Self::ExportToPlainText
 			| Self::ExportToHtml
 			| Self::ExportToMarkdown => ShortcutCategory::File,
@@ -298,6 +304,7 @@ impl ActionId {
 			| Self::Options
 			| Self::SleepTimer
 			| Self::BatchOcr
+			| Self::RecognizeCurrentPage
 			| Self::CustomizeShortcuts => ShortcutCategory::Tools,
 			Self::PlayPauseAudio
 			| Self::SeekAudioForward
@@ -305,7 +312,9 @@ impl ActionId {
 			| Self::IncreaseAudioSeekAmount
 			| Self::DecreaseAudioSeekAmount
 			| Self::IncreaseAudioSpeed
-			| Self::DecreaseAudioSpeed => ShortcutCategory::Audio,
+			| Self::DecreaseAudioSpeed
+			| Self::IncreaseAudioVolume
+			| Self::DecreaseAudioVolume => ShortcutCategory::Audio,
 			Self::About | Self::ViewHelpBrowser | Self::ViewHelpPaperback | Self::CheckForUpdates | Self::Donate => {
 				ShortcutCategory::Help
 			}
@@ -483,6 +492,10 @@ impl ActionId {
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::DecreaseAudioSpeed => crate::t("Decrease Audio Speed"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::IncreaseAudioVolume => crate::t("Increase Audio Volume"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::DecreaseAudioVolume => crate::t("Decrease Audio Volume"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ToggleFullScreen => crate::t("Full Screen"),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::Options => crate::t("Settings..."),
@@ -491,11 +504,15 @@ impl ActionId {
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::BatchOcr => crate::t("Batch OCR..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::RecognizeCurrentPage => crate::t("Recognize Current Page"),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::CustomizeShortcuts => crate::t("Customize Keyboard Shortcuts..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ImportDocumentData => crate::t("Import Document Data..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ExportDocumentData => crate::t("Export Document Data..."),
+			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+			Self::ExportNotesAndBookmarks => crate::t("Export Notes and Bookmarks as Text or HTML..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 			Self::ExportToPlainText => crate::t("Export to Plain Text..."),
 			// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
@@ -515,6 +532,7 @@ impl ActionId {
 		}
 	}
 
+	#[allow(clippy::match_same_arms, reason = "one action per line reads better as a table than arms merged by chord")]
 	pub fn default_chord(self) -> Option<KeyChord> {
 		#[cfg(target_os = "macos")]
 		match self {
@@ -592,8 +610,7 @@ impl ActionId {
 			Self::ViewSource => Some(KeyChord::new(true, false, false, "U")),
 			Self::ToggleBookmark => Some(KeyChord::new(true, false, true, "B")),
 			Self::BookmarkWithNote => Some(KeyChord::new(true, false, true, "N")),
-			// Option+F9/F10 is a media key chord on an Apple keyboard, and the system eats it
-			// before wx sees it, so the Cmd forms are what actually reach the app here.
+			// Option+F9/F10 is a media key on Apple keyboards and the system eats it before wx sees it.
 			Self::SetSelectionStart => Some(KeyChord::new(true, false, false, "F9")),
 			Self::CopyFromSelectionStart => Some(KeyChord::new(true, false, false, "F10")),
 			Self::JumpToSelectionStart => Some(KeyChord::new(true, false, true, "F9")),
@@ -603,12 +620,13 @@ impl ActionId {
 			Self::SeekAudioBackward => Some(KeyChord::new(false, false, false, ";")),
 			Self::IncreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, "'")),
 			Self::DecreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, ";")),
-			// Plain Shift+,/. (< and >) are already Container Start/End, so speed takes the
-			// same pair with Ctrl added.
+			// Shift+, and Shift+. are already Container Start/End, so speed adds Ctrl.
 			Self::IncreaseAudioSpeed => Some(KeyChord::new(true, false, true, ".")),
 			Self::DecreaseAudioSpeed => Some(KeyChord::new(true, false, true, ",")),
-			// The conventional shortcut is Control+Command+F; RawCtrl forces the
-			// physical Control key while plain Ctrl auto-translates to Command on mac.
+			// Next to seek on ' and ;, which Shift turns into the seek amount.
+			Self::IncreaseAudioVolume => Some(KeyChord::new(true, false, false, "'")),
+			Self::DecreaseAudioVolume => Some(KeyChord::new(true, false, false, ";")),
+			// The conventional Control+Command+F; raw_ctrl forces the physical Control key, since plain Ctrl becomes Command on mac.
 			Self::ToggleFullScreen => Some(KeyChord {
 				ctrl: true,
 				raw_ctrl: true,
@@ -620,9 +638,11 @@ impl ActionId {
 			Self::Options => Some(KeyChord::new(true, false, false, ",")),
 			Self::SleepTimer => Some(KeyChord::new(true, false, true, "S")),
 			Self::BatchOcr => Some(KeyChord::new(true, false, true, "O")),
+			Self::RecognizeCurrentPage => Some(KeyChord::new(true, false, true, "R")),
 			Self::CustomizeShortcuts => None,
 			Self::ImportDocumentData => Some(KeyChord::new(true, false, true, "I")),
 			Self::ExportDocumentData => Some(KeyChord::new(true, false, true, "E")),
+			Self::ExportNotesAndBookmarks => Some(KeyChord::new(true, true, false, "E")),
 			Self::ExportToPlainText => Some(KeyChord::new(true, false, false, "E")),
 			Self::ExportToHtml => None,
 			Self::ExportToMarkdown => None,
@@ -707,8 +727,7 @@ impl ActionId {
 			Self::ViewSource => Some(KeyChord::new(true, false, false, "U")),
 			Self::ToggleBookmark => Some(KeyChord::new(true, false, true, "B")),
 			Self::BookmarkWithNote => Some(KeyChord::new(true, false, true, "N")),
-			// Shift+F10 is the context menu (and Windows' context-menu key), so this pair is on
-			// Alt instead, which is free apart from Alt+Left/Right in the navigation history.
+			// Shift+F10 is the context menu, so this pair is on Alt instead.
 			Self::SetSelectionStart => Some(KeyChord::new(false, true, false, "F9")),
 			Self::CopyFromSelectionStart => Some(KeyChord::new(false, true, false, "F10")),
 			Self::JumpToSelectionStart => Some(KeyChord::new(false, true, true, "F9")),
@@ -718,17 +737,21 @@ impl ActionId {
 			Self::SeekAudioBackward => Some(KeyChord::new(false, false, false, ";")),
 			Self::IncreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, "'")),
 			Self::DecreaseAudioSeekAmount => Some(KeyChord::new(false, false, true, ";")),
-			// Plain Shift+,/. (< and >) are already Container Start/End, so speed takes the
-			// same pair with Ctrl added.
+			// Shift+, and Shift+. are already Container Start/End, so speed adds Ctrl.
 			Self::IncreaseAudioSpeed => Some(KeyChord::new(true, false, true, ".")),
 			Self::DecreaseAudioSpeed => Some(KeyChord::new(true, false, true, ",")),
+			// Next to seek on ' and ;, which Shift turns into the seek amount.
+			Self::IncreaseAudioVolume => Some(KeyChord::new(true, false, false, "'")),
+			Self::DecreaseAudioVolume => Some(KeyChord::new(true, false, false, ";")),
 			Self::ToggleFullScreen => Some(KeyChord::new(false, false, false, "F11")),
 			Self::Options => Some(KeyChord::new(true, false, false, ",")),
 			Self::SleepTimer => Some(KeyChord::new(true, false, true, "S")),
 			Self::BatchOcr => Some(KeyChord::new(true, false, true, "O")),
+			Self::RecognizeCurrentPage => Some(KeyChord::new(true, false, true, "R")),
 			Self::CustomizeShortcuts => None,
 			Self::ImportDocumentData => Some(KeyChord::new(true, false, true, "I")),
 			Self::ExportDocumentData => Some(KeyChord::new(true, false, true, "E")),
+			Self::ExportNotesAndBookmarks => Some(KeyChord::new(true, true, false, "E")),
 			Self::ExportToPlainText => Some(KeyChord::new(true, false, false, "E")),
 			Self::ExportToHtml => None,
 			Self::ExportToMarkdown => None,

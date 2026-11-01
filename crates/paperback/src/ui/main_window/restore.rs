@@ -1,12 +1,11 @@
-//! Reopening the documents that were open when the app last exited, and forgetting the ones
-//! that can no longer be reopened.
-
 use std::{cell::RefCell, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{config::ConfigManager, parser::is_remote_url};
 use wxdragon::prelude::*;
 
-use super::{DocumentManager, ensure_parser_ready_for_path, rebuild_menu_bar, update_title_from_manager};
+use super::{
+	DocumentManager, ensure_parser_ready_for_path, links::open_links_then, rebuild_menu_bar, update_title_from_manager,
+};
 
 #[derive(Default)]
 struct RestoreState {
@@ -44,11 +43,11 @@ pub(super) fn schedule_restore_documents(
 		let active_path = config.lock().unwrap().get_app_string("active_document", "");
 		let paths = config.lock().unwrap().get_opened_documents();
 		tracing::info!(count = paths.len(), "restoring previously open documents");
-		let failed = restore_each(paths, |path_str| {
-			// Not reopened at startup yet, but kept in the list rather than forgotten, so the reopening still to come finds it.
-			if is_remote_url(path_str) {
-				return true;
-			}
+		let plan = {
+			let cfg = config.lock().unwrap();
+			plan(paths, |link| cfg.get_document_download_size(link), RESTORE_DOWNLOAD_LIMIT)
+		};
+		let failed = restore_each(plan.files, |path_str| {
 			let path = Path::new(path_str);
 			if !path.exists() {
 				tracing::info!(path = %path.display(), "previously open document is missing; forgetting it");
@@ -61,40 +60,39 @@ pub(super) fn schedule_restore_documents(
 		});
 		{
 			let config = config.lock().unwrap();
-			for path in &failed {
+			// A link too large to download again stays in the recent documents only.
+			for path in failed.iter().chain(&plan.dropped) {
 				config.remove_opened_document(path);
 			}
 			config.flush();
 		}
-		let mut target_idx = pre_restore_active;
-		if target_idx.is_none() && !active_path.is_empty() {
-			target_idx = doc_manager.lock().unwrap().find_tab_by_path(Path::new(&active_path));
-		}
-		if let Some(idx) = target_idx {
-			doc_manager.lock().unwrap().notebook().set_selection(idx);
-		}
-		update_title_from_manager(&frame, &doc_manager.lock().unwrap());
-		rebuild_menu_bar(&frame, &doc_manager, &config);
-		doc_manager.lock().unwrap().restore_focus();
-		// A large book keeps the window busy for seconds after this, and a screen reader that
-		// was told about the focus during that stretch has nothing to read: the reader is left
-		// on a document where no key says anything until it is closed and opened again
-		// (<https://github.com/trypsynth/paperback/issues/920>). Saying it again once the queue
-		// has drained costs nothing when the first one did arrive, since focus does not move.
-		focus_again_once_settled(&frame, &doc_manager);
+		let (dm, cfg) = (Rc::clone(&doc_manager), Rc::clone(&config));
+		// After the links open, since opening them selects their tabs.
+		open_links_then(&frame, &doc_manager, &config, plan.links, move || {
+			select_restored_tab(&dm, pre_restore_active, &active_path);
+			update_title_from_manager(&frame, &dm.lock().unwrap());
+			rebuild_menu_bar(&frame, &dm, &cfg);
+			dm.lock().unwrap().restore_focus();
+			// A large book keeps the window busy for seconds, and a screen reader told about focus meanwhile is left silent on it (#920); repeating it costs nothing otherwise.
+			focus_again_once_settled(&frame, &dm);
+		});
 	});
 }
 
-/// How long after the restore to say where focus is a second time. Long enough for the window
-/// to have finished laying out a large book, short enough that a reader who starts pressing keys
-/// straight away is not moved from under their own first keystroke.
+const RESTORE_DOWNLOAD_LIMIT: u64 = 2 * 1024 * 1024;
+
+fn select_restored_tab(doc_manager: &Rc<Mutex<DocumentManager>>, pre_restore_active: Option<usize>, active_path: &str) {
+	let dm = doc_manager.lock().unwrap();
+	let target = pre_restore_active
+		.or_else(|| if active_path.is_empty() { None } else { dm.find_tab_by_path(Path::new(active_path)) });
+	if let Some(index) = target {
+		dm.notebook().set_selection(index);
+	}
+}
+
+/// Long enough for a large book to finish laying out, short enough not to move a reader from under their first keystroke.
 const FOCUS_SETTLE_DELAY_MS: i32 = 250;
 
-/// Focuses the restored document again once the window has stopped working, so a screen reader
-/// that missed the first focus while the text was still loading hears this one.
-///
-/// The one-shot `wxTimer` keeps itself alive through its single tick by the `Rc`/`RefCell` it
-/// hands its own callback, the same way delayed announcements do.
 fn focus_again_once_settled(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
 	let timer_holder: Rc<RefCell<Option<Timer<Frame>>>> = Rc::new(RefCell::new(None));
 	let holder = Rc::clone(&timer_holder);
@@ -103,8 +101,7 @@ fn focus_again_once_settled(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManage
 	timer.on_tick(move |_event| {
 		let dm = doc_manager.lock().unwrap();
 		dm.restore_focus();
-		// Focus is normally already on the text by now, and focusing a control that has focus
-		// tells a screen reader nothing, so the retry has to say so itself.
+		// Focus is usually already on the text, and refocusing tells a screen reader nothing, so the retry announces itself.
 		#[cfg(target_os = "windows")]
 		dm.announce_focus();
 		drop(dm);
@@ -115,7 +112,27 @@ fn focus_again_once_settled(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManage
 	}
 }
 
-/// Runs `open` on every stored path in order and returns the ones it could not reopen.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub(super) struct RestorePlan {
+	files: Vec<String>,
+	links: Vec<String>,
+	dropped: Vec<String>,
+}
+
+pub(super) fn plan(paths: Vec<String>, size_of: impl Fn(&str) -> Option<u64>, limit: u64) -> RestorePlan {
+	let mut plan = RestorePlan::default();
+	for path in paths {
+		if !is_remote_url(&path) {
+			plan.files.push(path);
+		} else if size_of(&path).is_some_and(|size| size <= limit) {
+			plan.links.push(path);
+		} else {
+			plan.dropped.push(path);
+		}
+	}
+	plan
+}
+
 pub(super) fn restore_each(paths: Vec<String>, mut open: impl FnMut(&str) -> bool) -> Vec<String> {
 	paths.into_iter().filter(|path| !open(path)).collect()
 }
@@ -139,5 +156,35 @@ mod tests {
 	fn restore_each_returns_empty_when_all_succeed() {
 		let failed = restore_each(vec!["a".to_string(), "b".to_string()], |_| true);
 		assert!(failed.is_empty());
+	}
+
+	fn strings(items: &[&str]) -> Vec<String> {
+		items.iter().map(ToString::to_string).collect()
+	}
+
+	#[test]
+	fn plan_downloads_again_only_the_links_whose_last_download_was_small() {
+		let sizes = |link: &str| match link {
+			"https://a.org/small.epub" => Some(100),
+			"https://a.org/limit.epub" => Some(1_000),
+			"https://a.org/large.pdf" => Some(1_001),
+			_ => None,
+		};
+		let paths = strings(&[
+			"https://a.org/large.pdf",
+			"C:\\books\\one.epub",
+			"https://a.org/small.epub",
+			"https://a.org/never-sized.epub",
+			"C:\\books\\two.epub",
+			"https://a.org/limit.epub",
+		]);
+		assert_eq!(
+			plan(paths, sizes, 1_000),
+			RestorePlan {
+				files: strings(&["C:\\books\\one.epub", "C:\\books\\two.epub"]),
+				links: strings(&["https://a.org/small.epub", "https://a.org/limit.epub"]),
+				dropped: strings(&["https://a.org/large.pdf", "https://a.org/never-sized.epub"]),
+			}
+		);
 	}
 }

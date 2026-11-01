@@ -1,7 +1,3 @@
-//! PalmDOC (compression mode 2) decompression, plus the trailing-byte-entry size decoder
-//! used to strip MOBI's optional multibyte/index trailing data off the end of each raw
-//! content record before it's decompressed.
-
 pub(super) fn get_trailing_size(data: &[u8]) -> usize {
 	let mut size = 0usize;
 	let mut pos = data.len() - 1;

@@ -3,6 +3,8 @@ import AVFoundation
 
 struct VoicePickerView: View {
 	let ttsManager: TtsManager
+	/// nil for the system's default voice.
+	let selected: String?
 	let onSelect: (String?) -> Void
 	@Environment(\.dismiss) private var dismiss
 
@@ -28,7 +30,7 @@ struct VoicePickerView: View {
 	}
 
 	private func voiceRow(label: String, identifier: String?) -> some View {
-		let isSelected = ttsManager.selectedVoiceIdentifier == identifier
+		let isSelected = selected == identifier
 		return Button {
 			onSelect(identifier)
 			dismiss()

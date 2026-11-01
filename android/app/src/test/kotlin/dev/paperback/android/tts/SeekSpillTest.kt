@@ -29,8 +29,7 @@ class SeekSpillTest {
 		assertEquals(SeekSpill.WithinFile, spillOf(rawMs = 10_000, lengthMs = 45_000, deltaMs = -10_000))
 	}
 
-	// The decoder reports no length until it has prepared. Spilling on that would send the reader
-	// to another file over a length of zero, which every forward seek runs past.
+	// The decoder reports no length until prepared, and every forward seek runs past a length of zero.
 	@Test
 	fun `a file of unknown length can only be seeked within`() {
 		assertEquals(SeekSpill.WithinFile, spillOf(rawMs = 0, lengthMs = 0, deltaMs = 10_000))

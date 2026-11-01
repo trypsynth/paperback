@@ -1,3 +1,5 @@
+#[cfg(target_os = "windows")]
+use paperback_core::config::KeyChord;
 use paperback_core::config::{ActionId, ConfigManager};
 use wxdragon::prelude::*;
 
@@ -9,16 +11,10 @@ pub struct MenuItemSpec {
 
 pub enum MenuEntry {
 	Item(MenuItemSpec),
-	/// A checkable item, and whether it starts checked.
 	Check(MenuItemSpec, bool),
-	/// An item that is shown greyed out and has no id of its own.
 	Disabled(String),
 	Separator,
-	Submenu {
-		label: String,
-		help: String,
-		entries: Vec<Self>,
-	},
+	Submenu { label: String, help: String, entries: Vec<Self> },
 }
 
 pub const fn item(id: i32, label: String) -> MenuEntry {
@@ -66,13 +62,7 @@ pub fn append_menu_entries(menu: &Menu, entries: &[MenuEntry]) {
 	}
 }
 
-/// Gives every item at each level of `entries` an access key of its own, where its label has a
-/// free letter to give it.
-///
-/// Each label is translated on its own, so two items of one menu can arrive with the same letter,
-/// and pressing it then only cycles between them. The first keeps its letter and a later one moves
-/// to the first free letter of its label. A Latin letter only ever moves to another, so the one in a
-/// Japanese label's "(&F)" is never moved onto a kana.
+/// Labels are translated separately, so two items can share a letter, and pressing it then only cycles between them.
 pub fn deduplicate_access_keys(entries: &mut [MenuEntry]) {
 	let mut used = Vec::new();
 	for entry in entries {
@@ -87,8 +77,6 @@ pub fn deduplicate_access_keys(entries: &mut [MenuEntry]) {
 	}
 }
 
-/// Moves `label`'s access key off a letter in `used` when it can, then adds the key it ends up
-/// with to `used`.
 pub fn claim_access_key(label: &mut String, used: &mut Vec<char>) {
 	// The shortcut after a tab is shown in its own column and is no part of the access key.
 	let text_end = label.find('\t').unwrap_or(label.len());
@@ -105,8 +93,7 @@ pub fn claim_access_key(label: &mut String, used: &mut Vec<char>) {
 			c.is_alphanumeric() && (!same_kind || c.is_ascii() == key.is_ascii()) && !used.contains(&fold(c))
 		})
 	};
-	// A letter like the one it had first. A Latin key stays Latin, but an accented or Cyrillic one
-	// may fall back to any letter, as "Á" in Portuguese has nowhere else to go.
+	// A Latin key stays Latin so a Japanese "(&F)" never moves onto a kana; an accented or Cyrillic one may take any letter, as "Á" in Portuguese has nowhere else to go.
 	let free = free(true).or_else(|| if key.is_ascii() { None } else { free(false) });
 	if let Some((i, c)) = free {
 		used.push(fold(c));
@@ -115,8 +102,6 @@ pub fn claim_access_key(label: &mut String, used: &mut Vec<char>) {
 	}
 }
 
-/// Where the `&` that marks `text`'s access key is, and the key after it. `&&` is a literal
-/// ampersand, not a marker.
 fn access_key(text: &str) -> Option<(usize, char)> {
 	let mut chars = text.char_indices();
 	while let Some((at, c)) = chars.next() {
@@ -136,7 +121,15 @@ fn fold(c: char) -> char {
 }
 
 pub fn format_menu_label(base: &str, action: ActionId, config: &ConfigManager) -> String {
-	wx_utils::menu_label(base, &config.get_shortcut_menu_str(action))
+	let shortcut = config.get_shortcut_menu_str(action);
+	// A trailing no-break space keeps the shortcut on show but stops wxWidgets parsing it into an accelerator, as it is one character too many for a key.
+	#[cfg(target_os = "windows")]
+	let shortcut = if KeyChord::parse(&shortcut).is_some_and(|chord| super::is_punctuation_chord(&chord)) {
+		format!("{shortcut}\u{a0}")
+	} else {
+		shortcut
+	};
+	wx_utils::menu_label(base, &shortcut)
 }
 
 #[cfg(test)]
@@ -208,6 +201,14 @@ mod tests {
 		let mut entries = vec![item(1, "Avançar &Áudio".to_string()), item(2, "Retroceder &Áudio".to_string())];
 		deduplicate_access_keys(&mut entries);
 		assert_eq!(labels(&entries), vec!["Avançar &Áudio", "&Retroceder Áudio"]);
+	}
+
+	#[cfg(target_os = "windows")]
+	#[test]
+	fn a_punctuation_shortcut_is_shown_but_not_parsed_as_an_accelerator() {
+		let config = ConfigManager::new();
+		assert_eq!(format_menu_label("&Settings...", ActionId::Options, &config), "&Settings...\tCtrl+,\u{a0}");
+		assert_eq!(format_menu_label("&Find...", ActionId::Find, &config), "&Find...\tCtrl+F");
 	}
 
 	#[test]

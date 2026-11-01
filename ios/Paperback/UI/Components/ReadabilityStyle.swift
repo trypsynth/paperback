@@ -1,10 +1,6 @@
 import SwiftUI
 
-/// Applies the reader's readability preferences to document text: size, line spacing, the
-/// spacing between paragraphs, and alignment.
-///
-/// The size is a multiplier on the Dynamic Type body size rather than a fixed point size, so a
-/// reader who has already enlarged text system-wide keeps that and scales it further here.
+/// Size multiplies Dynamic Type rather than fixing a point size, so text already enlarged system-wide scales further here.
 struct ReadabilityStyle: ViewModifier {
 	let scalePercent: Int
 	let lineSpacingChoice: Int
@@ -13,8 +9,7 @@ struct ReadabilityStyle: ViewModifier {
 	let highContrast: Bool
 
 	@Environment(\.colorScheme) private var colorScheme
-	/// True when the reader has asked for stronger contrast in iOS Settings, which counts as
-	/// asking for it here as well.
+	/// Increase Contrast in iOS Settings counts as asking for high contrast here too.
 	@Environment(\.colorSchemeContrast) private var systemContrast
 
 	@ScaledMetric(relativeTo: .body) private var baseSize: CGFloat = 17
@@ -37,8 +32,7 @@ struct ReadabilityStyle: ViewModifier {
 		}
 	}
 
-	/// SwiftUI's Text has no justified alignment, so the desktop's fourth choice is not offered
-	/// and a justified value carried in from elsewhere reads as leading.
+	/// SwiftUI's Text can't justify, so desktop's justified choice carried in from elsewhere reads as leading.
 	private var alignment: TextAlignment {
 		switch alignmentChoice {
 		case 1: return .center
@@ -55,8 +49,6 @@ struct ReadabilityStyle: ViewModifier {
 		}
 	}
 
-	/// Black on white, or white on black, rather than the softer system label colour. Nil
-	/// leaves the system's own colours alone, which already adapt to light and dark.
 	private var textColor: Color? {
 		guard highContrast || systemContrast == .increased else { return nil }
 		return colorScheme == .dark ? .white : .black
@@ -73,8 +65,7 @@ struct ReadabilityStyle: ViewModifier {
 	}
 }
 
-/// The page behind the text, which has to move with the text colour or high contrast would put
-/// pure white on the system's off-white background.
+/// Without this, high contrast would put pure white text on the system's off-white background.
 struct ReadingBackground: ViewModifier {
 	let highContrast: Bool
 
@@ -109,7 +100,6 @@ extension View {
 }
 
 extension Int {
-	/// The scheme an appearance choice forces, or nil to follow the system.
 	var preferredColorSchemeChoice: ColorScheme? {
 		switch self {
 		case 1: return .light

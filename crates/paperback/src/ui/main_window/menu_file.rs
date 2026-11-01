@@ -1,11 +1,14 @@
-//! The heavier File menu handlers: dynamic recent-document ids
-//! (`menu_ids::RECENT_DOCUMENT_BASE..=RECENT_DOCUMENT_MAX`), the "All Documents" dialog, exporting
-//! the document, and importing and exporting its data. `Open`/`Close`/`Close All`/`Reopen Last
-//! Closed`/`Exit` are thin enough to stay inlined in `bind_menu_events`'s dispatch match.
-
 use std::{path::Path, rc::Rc, sync::Mutex};
 
-use paperback_core::{config::ConfigManager, export::ExportFormat, parser::is_remote_url};
+use paperback_core::{
+	config::ConfigManager,
+	export::{
+		ExportFormat,
+		annotations::{AnnotationFormat, render_annotations},
+	},
+	parser::is_remote_url,
+	types::BookmarkFilterType,
+};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -13,16 +16,18 @@ use super::{
 	DocumentManager, DocumentTab, dialogs, ensure_parser_ready_for_path, menu, menu_ids, open_links, resolve_zip_path,
 	update_title_from_manager,
 };
-use crate::ui::navigation::announce;
+use crate::ui::{
+	document_manager::display_title,
+	navigation::{announce_for_command, set_caret_to_doc_offset},
+};
 
-/// Handles every menu id not covered by `bind_menu_events`'s own dispatch match: dynamic
-/// recent-document entries and "Show All Documents". Does nothing if `id` matches neither.
 pub(super) fn handle_fallback(
 	id: i32,
 	frame: &Frame,
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
+	from_keyboard: bool,
 ) {
 	if (menu_ids::RECENT_DOCUMENT_BASE..=menu_ids::RECENT_DOCUMENT_MAX).contains(&id) {
 		let doc_index = id - menu_ids::RECENT_DOCUMENT_BASE;
@@ -55,7 +60,7 @@ pub(super) fn handle_fallback(
 			}
 		}
 	} else if id == menu_ids::SHOW_ALL_DOCUMENTS {
-		handle_show_all_documents(frame, dm, config, live_region_label);
+		handle_show_all_documents(frame, dm, config, live_region_label, from_keyboard);
 	}
 }
 
@@ -64,6 +69,7 @@ fn handle_show_all_documents(
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
+	from_keyboard: bool,
 ) {
 	let has_documents = {
 		let config_guard = config.lock().unwrap();
@@ -71,7 +77,7 @@ fn handle_show_all_documents(
 	};
 	if !has_documents {
 		// TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
-		announce(live_region_label, t("No recent documents."));
+		announce_for_command(live_region_label, from_keyboard, t("No recent documents."));
 		return;
 	}
 	let open_paths = dm.lock().unwrap().open_paths();
@@ -219,15 +225,84 @@ pub(super) fn handle_export_document_data(
 	}
 }
 
+pub(super) fn handle_export_notes_and_bookmarks(
+	frame: &Frame,
+	dm: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+) {
+	let Some(choice) = dialogs::show_export_annotations_dialog(frame, config) else {
+		return;
+	};
+	let (title, stem, entries) = {
+		let Ok(dm_ref) = dm.try_lock() else {
+			return;
+		};
+		let Some(tab) = dm_ref.active_tab() else {
+			return;
+		};
+		// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+		let stem = tab.local_path().file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
+		// Bookmarks are kept under the link for a document opened from one, not under its downloaded copy.
+		let entries =
+			tab.session.annotation_entries(&config.lock().unwrap(), &tab.file_path.to_string_lossy(), choice.filter);
+		(display_title(tab), stem, entries)
+	};
+	// TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+	let caption = t("Export notes and bookmarks");
+	if entries.is_empty() {
+		let message = if choice.filter == BookmarkFilterType::NotesOnly { t("No notes.") } else { t("No bookmarks.") };
+		MessageDialog::builder(frame, &message, &caption)
+			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
+			.build()
+			.show_modal();
+		return;
+	}
+	// TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+	let wildcard = t("Text files (*.txt)|*.txt|HTML files (*.html)|*.html");
+	let dialog = FileDialog::builder(frame)
+		.with_message(&caption)
+		.with_default_file(&format!("{stem}.txt"))
+		.with_wildcard(&wildcard)
+		.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
+		.build();
+	if dialog.show_modal() != ID_OK {
+		return;
+	}
+	let Some(path) = dialog.get_path() else {
+		return;
+	};
+	// GTK leaves the typed name alone when the HTML filter is picked, so the filter counts as well as the extension.
+	let extension = Path::new(&path).extension().map(|e| e.to_string_lossy().to_ascii_lowercase());
+	let format = if matches!(extension.as_deref(), Some("html" | "htm")) || dialog.get_filter_index() == 1 {
+		AnnotationFormat::Html
+	} else {
+		AnnotationFormat::Text
+	};
+	if let Err(e) = std::fs::write(&path, render_annotations(&title, &entries, choice.options, format)) {
+		tracing::error!(path = %path, error = %e, "failed to export notes and bookmarks");
+		// TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+		MessageDialog::builder(frame, &t("Failed to export notes and bookmarks."), &t("Error"))
+			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+			.build()
+			.show_modal();
+		return;
+	}
+	// TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
+	MessageDialog::builder(frame, &t("Notes and bookmarks exported successfully."), &t("Export Successful"))
+		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
+		.build()
+		.show_modal();
+}
+
 pub(super) fn handle_import_document_data(
 	frame: &Frame,
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 ) {
-	let Ok(dm_ref) = dm.try_lock() else {
+	let Ok(mut dm_ref) = dm.try_lock() else {
 		return;
 	};
-	let Some(tab) = dm_ref.active_tab() else {
+	let Some(tab) = dm_ref.active_tab_mut() else {
 		return;
 	};
 	// TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
@@ -245,13 +320,11 @@ pub(super) fn handle_import_document_data(
 		let pos = {
 			let config = config.lock().unwrap();
 			config.import_settings_from_file(&path_str, &path);
-			let max_pos = tab.text_ctrl.get_last_position();
-			config.get_validated_document_position(&path_str, max_pos)
+			config.get_validated_document_position(&path_str, tab.session.document_len().as_pos())
 		};
 		tracing::info!(doc = %tab.file_path.display(), import = %path, "document data imported");
-		if pos >= 0 {
-			tab.text_ctrl.set_insertion_point(pos);
-			tab.text_ctrl.show_position(pos);
+		if let Some(pos) = pos {
+			set_caret_to_doc_offset(tab, pos);
 		}
 		let dialog = MessageDialog::builder(
 			frame,
@@ -266,11 +339,39 @@ pub(super) fn handle_import_document_data(
 	}
 }
 
-/// Prompts for a save path and exports `tab`'s document as `format`, showing a
-/// generic failure dialog on error. Shared by the `EXPORT_TO_PLAIN_TEXT` /
-/// `EXPORT_TO_HTML` / `EXPORT_TO_MARKDOWN` menu handlers, which differ only in
-/// `format`, the default file `extension`, the file-picker `wildcard`, and the
-/// file-picker `dialog_title`.
+pub(super) fn handle_save_image(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>) {
+	let Ok(dm_ref) = dm.try_lock() else {
+		return;
+	};
+	let Some(tab) = dm_ref.active_tab() else {
+		return;
+	};
+	let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+	let Some(file_name) = tab.session.image_file_name_at(position) else {
+		return;
+	};
+	let dialog = FileDialog::builder(frame)
+		// TRANSLATORS: Title of the file save dialog when saving a picture from the document
+		.with_message(&t("Save image"))
+		.with_default_file(&file_name)
+		// TRANSLATORS: File filter shown in the "Save image" dialog
+		.with_wildcard(&t("All files (*.*)|*.*"))
+		.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
+		.build();
+	if dialog.show_modal() == ID_OK
+		&& let Some(path) = dialog.get_path()
+		&& let Err(e) = tab.session.save_image(position, &path)
+	{
+		tracing::error!(path = %path, error = %e, "failed to save image");
+		let dialog =
+			// TRANSLATORS: Error dialog shown when saving a picture from the document fails
+			MessageDialog::builder(frame, &t("Failed to save image."), &t("Error"))
+				.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+				.build();
+		dialog.show_modal();
+	}
+}
+
 fn export_document_as(
 	frame: &Frame,
 	tab: &DocumentTab,

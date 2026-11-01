@@ -1,38 +1,26 @@
-//! The parts of opening documents from links that need no window: the link Open from URL starts
-//! with, and the wording of the download window, the security warning and what went wrong.
-
-use std::path::Path;
-
-use paperback_core::{
-	fetch::{self, FetchError},
-	parser::{is_remote_url, parser_supports_path},
+use std::{
+	path::Path,
+	sync::{
+		Arc,
+		atomic::{AtomicBool, Ordering},
+		mpsc::{self, RecvTimeoutError},
+	},
+	thread,
+	time::Duration,
 };
+
+pub use paperback_core::fetch::{not_a_link, prefill, warning_text};
+use paperback_core::{fetch::FetchError, parser::parser_supports_path};
 use patois::t;
 
 use crate::working_copy::WorkingCopy;
 
-/// What Open from URL's field starts with: the first line of `clipboard` that is a link.
-pub fn prefill(clipboard: &str) -> String {
-	clipboard.lines().map(str::trim).find(|line| is_remote_url(line)).unwrap_or_default().to_string()
-}
-
-/// The error for text typed into Open from URL that is not an http or https link.
-pub fn not_a_link(text: &str) -> String {
-	// TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
-	format!("{text}: {}", t("this is not a web link"))
-}
-
-/// What the download window is doing with a link.
 #[derive(Debug, Clone, Copy)]
 pub enum Stage {
-	/// Asking the server what it sends.
 	Checking,
-	/// Downloading the document.
 	Downloading,
 }
 
-/// The download window's message for link `n` of `m`, naming `subject`: the link while it is
-/// checked, the document's file name while it downloads.
 pub fn step(stage: Stage, n: usize, m: usize, subject: &str) -> String {
 	let template = match (stage, m > 1) {
 		// TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
@@ -48,52 +36,56 @@ pub fn step(stage: Stage, n: usize, m: usize, subject: &str) -> String {
 	template.replacen("%d", &n.to_string(), 1).replacen("%d", &m.to_string(), 1).replacen("%s", subject, 1)
 }
 
-/// The question asked before downloading a link whose server does not say it sends a document
-/// Paperback reads.
-pub fn warning_text(link: &str, content_type: Option<&str>) -> String {
-	let reason = match content_type {
-		Some(content_type) if fetch::is_web_page(content_type) => {
-			// TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
-			t("The server sends a web page (%s) instead of the document the link names.").replacen(
-				"%s",
-				content_type,
-				1,
-			)
+/// How often a step waiting on the network looks for Cancel: soon enough that the window seems to close at once.
+const CANCEL_POLL: Duration = Duration::from_millis(100);
+
+/// Runs `step` on a thread of its own and waits for it, passing on its progress, unless `cancelled` turns true first.
+///
+/// A server can take minutes to answer or to send the next part of a document, and nothing can interrupt a read that is waiting on one. So Cancel stops the waiting instead: `step` is told through its flag, and whatever it returns once the server does answer is dropped.
+pub fn unless_cancelled<T: Send + 'static>(
+	cancelled: impl Fn() -> bool,
+	mut on_progress: impl FnMut(u64, Option<u64>),
+	step: impl FnOnce(&AtomicBool, &dyn Fn(u64, Option<u64>)) -> T + Send + 'static,
+) -> Option<T> {
+	let cancel = Arc::new(AtomicBool::new(false));
+	let step_cancel = Arc::clone(&cancel);
+	let (result_tx, result_rx) = mpsc::channel();
+	let (moved_tx, moved_rx) = mpsc::channel();
+	thread::spawn(move || {
+		let result = step(&step_cancel, &|done, total| {
+			let _ = moved_tx.send((done, total));
+		});
+		let _ = result_tx.send(result);
+	});
+	loop {
+		while let Ok((done, total)) = moved_rx.try_recv() {
+			on_progress(done, total);
 		}
-		// TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as application/octet-stream
-		Some(content_type) => {
-			t("The server sends %s, which is not a format Paperback reads.").replacen("%s", content_type, 1)
+		match result_rx.recv_timeout(CANCEL_POLL) {
+			Ok(result) => return Some(result),
+			Err(RecvTimeoutError::Timeout) if cancelled() => {
+				cancel.store(true, Ordering::Relaxed);
+				return None;
+			}
+			Err(RecvTimeoutError::Timeout) => {}
+			Err(RecvTimeoutError::Disconnected) => {
+				tracing::warn!("a link download's network thread ended without a result");
+				return None;
+			}
 		}
-		// TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
-		None => t("The server does not say what it sends."),
-	};
-	// TRANSLATORS: Question at the end of the security warning before downloading a document from a link
-	format!("{link}\n{reason}\n{}", t("Download it anyway?"))
+	}
 }
 
-/// Whether the reader picks a format before the downloaded `copy` opens: after a security
-/// warning, and when Paperback does not read its kind of file. A format already picked for the
-/// link is used without asking again.
 pub fn needs_open_as(warned: bool, copy: &Path) -> bool {
 	warned || !parser_supports_path(copy)
 }
 
-/// What became of one link.
 pub enum Outcome {
-	Downloaded {
-		link: String,
-		copy: WorkingCopy,
-		/// The reader said yes to a security warning for it.
-		warned: bool,
-	},
-	/// Refused, or the download failed.
+	Downloaded { link: String, copy: WorkingCopy, warned: bool },
 	Failed { link: String, error: FetchError },
-	/// The reader said no to a security warning, or cancelled.
 	Skipped,
 }
 
-/// The lines of the error shown after the links were downloaded: one per link that was refused
-/// or failed.
 pub fn report(outcomes: &[Outcome]) -> Vec<String> {
 	outcomes
 		.iter()
@@ -110,6 +102,44 @@ mod tests {
 
 	use super::*;
 	use crate::{test_locale, working_copy::WorkingCopy};
+
+	#[test]
+	fn a_step_s_result_and_progress_come_back_when_nothing_cancels_it() {
+		let mut seen = Vec::new();
+		let result = unless_cancelled(
+			|| false,
+			|done, total| seen.push((done, total)),
+			|_, progress| {
+				progress(5, Some(10));
+				progress(10, Some(10));
+				thread::sleep(CANCEL_POLL * 2);
+				"saved"
+			},
+		);
+		assert_eq!(result, Some("saved"));
+		assert_eq!(seen, vec![(5, Some(10)), (10, Some(10))]);
+	}
+
+	#[test]
+	fn cancel_stops_waiting_on_a_step_that_is_still_blocked_and_tells_it() {
+		let told = Arc::new(AtomicBool::new(false));
+		let told_by_step = Arc::clone(&told);
+		let started = std::time::Instant::now();
+		let result = unless_cancelled(
+			|| started.elapsed() > CANCEL_POLL,
+			|_, _| {},
+			move |cancel, _| {
+				while !cancel.load(Ordering::Relaxed) {
+					thread::sleep(Duration::from_millis(10));
+				}
+				told_by_step.store(true, Ordering::Relaxed);
+			},
+		);
+		assert_eq!(result, None);
+		assert!(started.elapsed() < Duration::from_secs(2), "{:?}", started.elapsed());
+		thread::sleep(CANCEL_POLL);
+		assert!(told.load(Ordering::Relaxed));
+	}
 
 	#[test]
 	fn prefill_takes_the_first_link_on_the_clipboard() {

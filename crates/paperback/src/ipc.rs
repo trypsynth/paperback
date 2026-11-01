@@ -21,12 +21,9 @@ pub enum IpcCommand {
 	Open(Target),
 }
 
-/// What a command-line argument asks Paperback to open.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Target {
-	/// A file, by its full path.
 	File(PathBuf),
-	/// A web link, as given.
 	Link(String),
 }
 
@@ -71,8 +68,7 @@ pub fn normalize_cli_path(path: &Path) -> PathBuf {
 	env::current_dir().map_or_else(|_| path.to_path_buf(), |cwd| cwd.join(path))
 }
 
-/// Named pipe path scoped to the current user, preventing cross-user connections.
-/// The default pipe security descriptor further enforces same-user access.
+/// Scoped to the user so one user's instance never receives another's files.
 #[cfg(windows)]
 pub fn named_pipe_path() -> String {
 	let user = env::var("USERNAME").unwrap_or_else(|_| "user".to_string());

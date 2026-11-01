@@ -1,7 +1,3 @@
-//! Legacy binary `.doc` parsing: the OLE compound-file container, its FIB header, the
-//! piece table that locates run text, and the plain-text fallback used when neither this
-//! nor `super::ooxml` can make sense of the file.
-
 use std::{
 	fs::{self, File},
 	io::{Cursor, Read, Seek},
@@ -9,11 +5,11 @@ use std::{
 
 use anyhow::{Context, Result};
 use cfb::CompoundFile;
-use encoding_rs::WINDOWS_1252;
+use encoding_rs::{MACINTOSH, UTF_16LE, WINDOWS_1252};
 use office_crypto::decrypt_from_file;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
+	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
 		PASSWORD_REQUIRED_ERROR_PREFIX,
 		util::{
@@ -22,11 +18,14 @@ use crate::{
 		},
 	},
 	t,
-	util::encoding::convert_to_utf8,
+	util::encoding::{convert_to_utf8, decode_ansi},
 };
 
 const FIB_MAGIC_DOC: u16 = 0xA5EC;
 const FIB_MAGIC_DOC_OLD: u16 = 0xA5DC;
+/// The Word 6 and Word 95 editions for bidirectional and East Asian scripts keep their text as UTF-16.
+const FIB_MAGIC_WORD6_UNICODE: u16 = 0xA697;
+const FIB_MAGIC_WORD95_UNICODE: u16 = 0xA699;
 const FIB_NFIB_OFFSET: usize = 0x02;
 const FIB_FLAGS_OFFSET: usize = 0x0A;
 const FIB_FCMIN_OFFSET: usize = 0x18;
@@ -35,10 +34,19 @@ const FIB_FCCLX_OFFSET: usize = 0x1A2;
 const FIB_LCBCLX_OFFSET: usize = 0x1A6;
 const FIB_FLAG_ENCRYPTED: u16 = 0x0100;
 const FIB_FLAG_USE_1_TABLE: u16 = 0x0200;
-/// `nFib` values below this are Word 6.0 and Word 95, which predate the Word 97 file format. They
-/// keep their text in the `WordDocument` stream itself and write no `0Table`/`1Table`, so the
-/// Word 97 path below cannot read them. Word 97 is `nFib` 0x00C1 and up.
 const FIB_NFIB_WORD97: u16 = 0x00C1;
+const FIB_FLAG_COMPLEX: u16 = 0x0004;
+const WINWORD1_MAGIC: u16 = 0xA59B;
+const WINWORD2_MAGIC: u16 = 0xA5DB;
+/// Word for the Macintosh 4.0 and 5.0, stored big-endian, so the bytes on disk are `FE 37`.
+const WORD_MAC_MAGIC: u16 = 0x37FE;
+/// Where its big-endian fcMin sits, with fcMac after it.
+const WORD_MAC_FCMIN_OFFSET: usize = 0x14;
+/// Where the clx's file offset sits in each FIB, a 16-bit length after it.
+const WINWORD1_FCCLX_OFFSET: usize = 0x112;
+const WINWORD2_FCCLX_OFFSET: usize = 0x11E;
+/// The main text's character count; the footnotes' follows it.
+const WINWORD_CCPTEXT_OFFSET: usize = 0x34;
 
 mod lists;
 mod properties;
@@ -48,9 +56,7 @@ use lists::DocLists;
 use properties::Paragraphs;
 use styles::{OUTLINE_BODY_TEXT, ParagraphStyle};
 
-/// Marks where a list item starts in the extracted text, through normalization, until
-/// [`finish_doc`] turns it into a list-item marker. Level N (1-9) is `U+FDD0 + N - 1`:
-/// noncharacters, which no document can contain and which normalization leaves alone.
+/// Level N is `U+FDD0 + N - 1`: noncharacters, which no document can contain and normalization leaves alone, so they survive until [`finish_doc`].
 const LIST_ITEM_MARK: u32 = 0xFDD0;
 /// Marks where a heading starts, as [`LIST_ITEM_MARK`] does a list item: level N is `U+FDE0 + N - 1`.
 const HEADING_MARK: u32 = 0xFDE0;
@@ -68,7 +74,7 @@ pub(super) fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 		anyhow::bail!(t("DOC file is missing required FIB fields"));
 	}
 	let fib_magic = read_u16_le(&word_document, 0);
-	if fib_magic != FIB_MAGIC_DOC && fib_magic != FIB_MAGIC_DOC_OLD {
+	if !matches!(fib_magic, FIB_MAGIC_DOC | FIB_MAGIC_DOC_OLD | FIB_MAGIC_WORD6_UNICODE | FIB_MAGIC_WORD95_UNICODE) {
 		tracing::warn!(path = %context.file_path, magic = fib_magic, "doc file has an invalid fib magic number");
 		// TRANSLATORS: Error shown when a legacy DOC file's header signature is invalid
 		anyhow::bail!(t("Not a valid DOC file (invalid FIB magic)"));
@@ -103,14 +109,12 @@ pub(super) fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 			tracing::warn!(path = %context.file_path, "doc text extraction produced no content, simple fallback extraction also found nothing");
 			text = extract_doc_text_simple(&word_document);
 		}
-		return finish_doc(text, &context.file_path);
+		return Ok(finish_doc(&text, &context.file_path));
 	}
-	// Word 6.0 and Word 95 keep their text in the WordDocument stream and write no table stream, so
-	// the Word 97 path below would fail at the very first step. Their text is the run between fcMin
-	// and fcMac; read it straight out rather than turning a thirty-year-old file into an error.
+	// Word 6.0 and Word 95 write no table stream, so the Word 97 path would fail; their text is the fcMin-fcMac run of the WordDocument stream.
 	let nfib = read_u16_le(&word_document, FIB_NFIB_OFFSET);
 	if nfib < FIB_NFIB_WORD97 {
-		return finish_doc(extract_word6_text(&word_document), &context.file_path);
+		return Ok(finish_doc(&extract_word6_text(&word_document), &context.file_path));
 	}
 	let table_stream_name = if (fib_flags & FIB_FLAG_USE_1_TABLE) != 0 { "1Table" } else { "0Table" };
 	let table_stream = read_stream(&mut compound, table_stream_name)
@@ -125,7 +129,89 @@ pub(super) fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 		tracing::warn!(path = %context.file_path, "doc text extraction produced no content, simple fallback extraction also found nothing");
 		text = extract_doc_text_simple(&word_document);
 	}
-	finish_doc(text, &context.file_path)
+	Ok(finish_doc(&text, &context.file_path))
+}
+
+/// Word for Windows 1.x and 2.0, and Word for the Macintosh 4.0 and 5.0, predate the OLE container: the file opens with the FIB, and the text is 8-bit, either the fcMin-fcMac run or, after a fast save, pieces at file offsets.
+pub(super) fn parse_winword_doc(context: &ParserContext, data: &[u8]) -> Result<Document> {
+	let Some(text) = winword_text(data) else {
+		tracing::warn!(path = %context.file_path, "word for windows 1 or 2 file has no text run");
+		// TRANSLATORS: Error shown when a DOC file from Word for Windows 1.x or 2.0 has no readable text
+		anyhow::bail!(t("No readable text content found"));
+	};
+	Ok(finish_doc(&text, &context.file_path))
+}
+
+pub(super) const fn is_winword_magic(magic: u16) -> bool {
+	matches!(magic, WINWORD1_MAGIC | WINWORD2_MAGIC | WORD_MAC_MAGIC)
+}
+
+fn winword_text(data: &[u8]) -> Option<String> {
+	let clx_offset = match read_u16_le(data, 0) {
+		WINWORD1_MAGIC => WINWORD1_FCCLX_OFFSET,
+		WINWORD2_MAGIC => WINWORD2_FCCLX_OFFSET,
+		WORD_MAC_MAGIC => return word_mac_text(data),
+		_ => return None,
+	};
+	let fast_saved = read_u16_le(data, FIB_FLAGS_OFFSET) & FIB_FLAG_COMPLEX != 0;
+	// A fast-saved file whose pieces don't make sense still has its last full save's run to read.
+	let pieces = fast_saved.then(|| winword_clx(data, clx_offset).and_then(|clx| winword_pieces(data, clx))).flatten();
+	let mut bytes = if let Some(bytes) = pieces { bytes } else { winword_run(data)? };
+	// The main text comes first, then footnotes, then headers and footers, which would only repeat as stray lines after the body.
+	let main = usize::try_from(read_u32_le(data, WINWORD_CCPTEXT_OFFSET)).ok()?;
+	let footnotes = usize::try_from(read_u32_le(data, WINWORD_CCPTEXT_OFFSET + 4)).ok()?;
+	if main > 0 {
+		bytes.truncate(main.saturating_add(footnotes));
+	}
+	(!bytes.is_empty()).then(|| decode_ansi(&bytes))
+}
+
+/// Its fields are big-endian and its text Mac Roman.
+fn word_mac_text(data: &[u8]) -> Option<String> {
+	let field =
+		|at: usize| data.get(at..at + 4).map(|bytes| u32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]));
+	let fc_min = usize::try_from(field(WORD_MAC_FCMIN_OFFSET)?).ok()?;
+	let fc_mac = usize::try_from(field(WORD_MAC_FCMIN_OFFSET + 4)?).ok()?.min(data.len());
+	let run = data.get(fc_min..fc_mac).filter(|run| !run.is_empty())?;
+	Some(MACINTOSH.decode(run).0.into_owned())
+}
+
+fn winword_clx(data: &[u8], clx_offset: usize) -> Option<&[u8]> {
+	let fc = usize::try_from(read_u32_le(data, clx_offset)).ok()?;
+	let lcb = usize::from(read_u16_le(data, clx_offset + 4));
+	data.get(fc..fc.checked_add(lcb)?)
+}
+
+fn winword_run(data: &[u8]) -> Option<Vec<u8>> {
+	let fc_min = usize::try_from(read_u32_le(data, FIB_FCMIN_OFFSET)).ok()?;
+	let fc_mac = usize::try_from(read_u32_le(data, FIB_FCMAC_OFFSET)).ok()?.min(data.len());
+	Some(data.get(fc_min..fc_mac)?.to_vec())
+}
+
+/// The clx is a run of property blocks (`1`, then a 16-bit length) ending in the piece table (`2`, then a 16-bit length): CPs, then an 8-byte descriptor per piece with its file offset at byte 2.
+fn winword_pieces(data: &[u8], clx: &[u8]) -> Option<Vec<u8>> {
+	let mut at = 0;
+	loop {
+		match *clx.get(at)? {
+			1 => at += 3 + usize::from(read_u16_le(clx, at + 1)),
+			2 => {
+				let len = usize::from(read_u16_le(clx, at + 1));
+				let table = clx.get(at + 3..at + 3 + len)?;
+				let pieces = len.checked_sub(4)? / 12;
+				let mut bytes = Vec::new();
+				for piece in 0..pieces {
+					let count = usize::try_from(
+						read_u32_le(table, 4 * (piece + 1)).checked_sub(read_u32_le(table, 4 * piece))?,
+					)
+					.ok()?;
+					let fc = usize::try_from(read_u32_le(table, 4 * (pieces + 1) + 8 * piece + 2)).ok()?;
+					bytes.extend_from_slice(data.get(fc..fc.checked_add(count)?)?);
+				}
+				return (!bytes.is_empty()).then_some(bytes);
+			}
+			_ => return None,
+		}
+	}
 }
 
 fn read_stream<R: Read + Seek>(compound: &mut CompoundFile<R>, path: &str) -> Result<Vec<u8>> {
@@ -151,15 +237,12 @@ fn extract_doc_text_from_piece_table(word_document: &[u8], table_stream: &[u8]) 
 	Some(mark_paragraphs(&units, &pieces, formatting, word_document))
 }
 
-/// What the document's formatting says about each paragraph's place in its structure.
 struct Formatting {
 	paragraphs: Paragraphs,
 	lists: Option<DocLists>,
-	/// What each paragraph style gives its paragraphs, by `istd`.
 	styles: Vec<ParagraphStyle>,
 }
 
-/// One piece of the piece table: the character positions it covers and where its text is.
 struct Piece {
 	cp_start: usize,
 	cp_end: usize,
@@ -168,16 +251,12 @@ struct Piece {
 }
 
 impl Piece {
-	/// The file offset of character position `cp`, which this piece covers.
 	const fn fc_of(&self, cp: usize) -> usize {
 		self.fc + (cp - self.cp_start) * if self.ansi { 1 } else { 2 }
 	}
 }
 
-/// The document's text with each heading marked by a [`HEADING_MARK`], and each list paragraph's
-/// label in front of it (with a [`LIST_ITEM_MARK`] before that), in the order Word shows them. A
-/// numbered heading keeps its number, but is a heading rather than a list item. `units` is the
-/// text by character position, one UTF-16 unit each, as the piece table lays it out.
+/// A numbered heading keeps its number but is a heading rather than a list item; `units` holds one UTF-16 unit per character position.
 fn mark_paragraphs(units: &[u16], pieces: &[Piece], formatting: Option<Formatting>, word_document: &[u8]) -> String {
 	let Some(mut formatting) = formatting else { return String::from_utf16_lossy(units) };
 	let mut out: Vec<u16> = Vec::with_capacity(units.len());
@@ -218,7 +297,6 @@ fn mark_paragraphs(units: &[u16], pieces: &[Piece], formatting: Option<Formattin
 	String::from_utf16_lossy(&out)
 }
 
-/// Appends the noncharacter that marks a level-`level` (1-9) heading or list item.
 fn push_mark(out: &mut Vec<u16>, base: u32, level: i32) {
 	let level = u32::try_from(level.clamp(1, 9) - 1).unwrap_or(0);
 	out.extend(char::from_u32(base + level).unwrap_or(' ').encode_utf16(&mut [0; 2]).iter());
@@ -229,7 +307,6 @@ fn parse_doc_clx(clx: &[u8], word_document: &[u8]) -> Option<String> {
 	clx_pieces(clx, word_document).map(|(units, _)| String::from_utf16_lossy(&units))
 }
 
-/// The piece table inside a Clx, read into text by character position and the pieces that lay it out.
 fn clx_pieces(clx: &[u8], word_document: &[u8]) -> Option<(Vec<u16>, Vec<Piece>)> {
 	let mut offset = 0usize;
 	while offset < clx.len() {
@@ -308,8 +385,7 @@ fn read_piece_table(piece_table: &[u8], word_document: &[u8]) -> Option<(Vec<u16
 		let slice = &word_document[fc..end];
 		let cp_start = units.len();
 		if is_ansi {
-			// Every byte of a compressed piece is one character position, and Windows-1252 maps
-			// each to one character in the Basic Multilingual Plane, so positions stay aligned.
+			// Every byte of a compressed piece is one character position, and Windows-1252 maps each to one BMP character, so positions stay aligned.
 			let (decoded, _, _) = WINDOWS_1252.decode(slice);
 			units.extend(decoded.encode_utf16());
 		} else {
@@ -320,12 +396,6 @@ fn read_piece_table(piece_table: &[u8], word_document: &[u8]) -> Option<(Vec<u16
 	Some((units, pieces))
 }
 
-/// The main text of a Word 6.0 / Word 95 document, which is the byte run between `fcMin` and
-/// `fcMac` in the WordDocument stream. Those bytes are 8-bit codepage text, not the UTF-16 Word 97
-/// switched to, so they are decoded with the same detector the plain-text and HTML parsers use,
-/// which recovers a Cyrillic or Central European document rather than turning it into question
-/// marks. A fast-saved file's edits may sit outside this run, so the order can be imperfect, but
-/// the words are there, which is the whole point against a hard error.
 fn extract_word6_text(word_document: &[u8]) -> String {
 	let fc_min = usize::try_from(read_u32_le(word_document, FIB_FCMIN_OFFSET)).unwrap_or(0);
 	let fc_mac = usize::try_from(read_u32_le(word_document, FIB_FCMAC_OFFSET)).unwrap_or(0);
@@ -334,13 +404,14 @@ fn extract_word6_text(word_document: &[u8]) -> String {
 		return extract_doc_text_simple(word_document);
 	}
 	let end = fc_mac.min(word_document.len());
+	if matches!(read_u16_le(word_document, 0), FIB_MAGIC_WORD6_UNICODE | FIB_MAGIC_WORD95_UNICODE) {
+		return UTF_16LE.decode_without_bom_handling(&word_document[fc_min..end]).0.into_owned();
+	}
 	convert_to_utf8(&word_document[fc_min..end])
 }
 
-/// Builds the finished document from extracted DOC text: normalize field codes, drop it into a
-/// buffer with a trailing newline, and title it from the path. Shared by the extraction paths.
-fn finish_doc(text: String, file_path: &str) -> Result<Document> {
-	let normalized = normalize_doc_text(&text);
+fn finish_doc(text: &str, file_path: &str) -> Document {
+	let normalized = normalize_doc_text(text);
 	let mut buffer = DocumentBuffer::new();
 	if !normalized.is_empty() {
 		append_marked(&mut buffer, &normalized);
@@ -353,15 +424,12 @@ fn finish_doc(text: String, file_path: &str) -> Result<Document> {
 	let mut document = Document::new().with_title(title);
 	document.set_buffer(buffer);
 	document.toc_items = toc_items;
-	Ok(document)
+	document
 }
 
-/// Appends the normalized text, turning each [`HEADING_MARK`] at the start of a line into a
-/// heading marker and each [`LIST_ITEM_MARK`] into a list-item marker, and each run of list items
-/// into one list the reader can step over, as HTML and `.docx` headings and lists are.
 fn append_marked(buffer: &mut DocumentBuffer, text: &str) {
-	let mut run: Option<(usize, i32, usize)> = None; // start, items, end of last item
-	let close = |buffer: &mut DocumentBuffer, run: &mut Option<(usize, i32, usize)>| {
+	let mut run: Option<(DocPos, i32, DocPos)> = None; // start, items, end of last item
+	let close = |buffer: &mut DocumentBuffer, run: &mut Option<(DocPos, i32, DocPos)>| {
 		if let Some((start, items, end)) = run.take()
 			&& end > start
 		{
@@ -375,7 +443,7 @@ fn append_marked(buffer: &mut DocumentBuffer, text: &str) {
 		let (heading, item) = (level_of(HEADING_MARK), level_of(LIST_ITEM_MARK));
 		let body: String =
 			if heading.or(item).is_some() { chars.as_str() } else { line }.chars().filter(|&c| !is_mark(c)).collect();
-		let start = buffer.current_position();
+		let start = buffer.end();
 		buffer.append(&body);
 		if let Some(level) = heading.filter(|_| !body.trim().is_empty()) {
 			close(buffer, &mut run);
@@ -393,7 +461,7 @@ fn append_marked(buffer: &mut DocumentBuffer, text: &str) {
 				);
 				let (_, items, end) = run.get_or_insert((start, 0, start));
 				*items += 1;
-				*end = buffer.current_position();
+				*end = buffer.end();
 			}
 			_ if body.trim().is_empty() => {}
 			_ => close(buffer, &mut run),
@@ -402,7 +470,6 @@ fn append_marked(buffer: &mut DocumentBuffer, text: &str) {
 	close(buffer, &mut run);
 }
 
-/// Whether `c` is one of the noncharacters that mark a heading or a list item.
 fn is_mark(c: char) -> bool {
 	let c = u32::from(c);
 	(LIST_ITEM_MARK..LIST_ITEM_MARK + 9).contains(&c) || (HEADING_MARK..HEADING_MARK + 9).contains(&c)
@@ -419,8 +486,7 @@ fn extract_doc_text_simple(word_document: &[u8]) -> String {
 }
 
 fn normalize_doc_text(text: &str) -> String {
-	// Strip Word field codes: \u{13}=begin, \u{14}=separator (display text follows), \u{15}=end.
-	// Keep only text outside fields or in the display portion of a field; discard instructions.
+	// Word field codes: \u{13} begin, \u{14} separator (display text follows), \u{15} end; only the display text is kept, never the instructions.
 	let stripped = {
 		let mut out = String::with_capacity(text.len());
 		// Each entry on the stack is true when we have passed the \u{14} separator at that depth.
@@ -475,8 +541,10 @@ fn normalize_doc_text(text: &str) -> String {
 pub(super) fn parse_text_like_doc(context: &ParserContext) -> Result<Document> {
 	let bytes = fs::read(&context.file_path)
 		.with_context(|| format!("Failed to read potential text DOC '{}'", context.file_path))?;
+	// An OLE or zip container its own parsers turned down is still binary, however much of it decodes to letters.
+	let container = bytes.starts_with(&[0xD0, 0xCF, 0x11, 0xE0]) || bytes.starts_with(b"PK\x03\x04");
 	let decoded = convert_to_utf8(&bytes);
-	if !looks_like_text_content(&decoded) {
+	if container || !looks_like_text_content(&decoded) {
 		tracing::warn!(path = %context.file_path, "doc fallback content does not look like plain text");
 		// TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
 		anyhow::bail!(t("File content does not look like plain text"));
@@ -504,7 +572,8 @@ fn looks_like_text_content(content: &str) -> bool {
 		return false;
 	}
 	let total = sample.chars().count();
-	if total == 0 {
+	// Text never holds NULs, while a binary header is full of them even when the text after it makes up most of the sample.
+	if total == 0 || sample.chars().filter(|&c| c == '\0').count() > 8 {
 		return false;
 	}
 	let printable = sample.chars().filter(|c| !c.is_control() || *c == '\n' || *c == '\r' || *c == '\t').count();

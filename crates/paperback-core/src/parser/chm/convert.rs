@@ -5,6 +5,7 @@ use libchm::{ChmFile, Entry};
 use rayon::prelude::*;
 
 use crate::{
+	document::DocPos,
 	parser::{
 		ConverterOutput,
 		convert::html_to_text::{HtmlSourceMode, HtmlToText},
@@ -15,10 +16,7 @@ use crate::{
 	util::encoding::decode_html,
 };
 
-/// One converted HTML file: its text plus everything the converter recorded about it.
-///
-/// This is what crosses back from a rayon worker to the sequential assembly step, so it owns
-/// its data rather than borrowing the converter that produced it.
+/// Owns its data because it crosses back from a rayon worker to the sequential assembly step.
 pub(super) struct SectionContent {
 	pub text: String,
 	headings: Vec<HeadingInfo>,
@@ -33,7 +31,7 @@ pub(super) struct SectionContent {
 	bolds: Vec<FormatInfo>,
 	italics: Vec<FormatInfo>,
 	underlines: Vec<FormatInfo>,
-	pub id_positions: HashMap<String, usize>,
+	pub id_positions: HashMap<String, DocPos>,
 }
 
 impl ConverterOutput for SectionContent {
@@ -75,13 +73,7 @@ impl ConverterOutput for SectionContent {
 	}
 }
 
-/// Reads and converts every HTML file to text, returning one result per file in order.
-///
-/// Conversion dominates the cost of parsing a CHM (around 90% of the time on a large one) and
-/// each file is independent, so this runs across cores. Each rayon worker opens its own
-/// [`ChmFile`] via `map_init` (once per task rather than once per file), so the reads and the
-/// LZX decompression parallelise too instead of being serialised through one shared handle.
-/// Failures are returned rather than dropped, so the caller can log each one and carry on.
+/// Conversion is around 90% of a large CHM's parse time, so each rayon worker opens its own [`ChmFile`] and the reads and LZX decompression parallelise too.
 pub(super) fn convert_sections(
 	source_path: &str,
 	ordered_files: &[String],
@@ -95,8 +87,6 @@ pub(super) fn convert_sections(
 			|| ChmFile::open(source_path).map_err(|err| err.to_string()),
 			|chm_result, file_path| {
 				let chm = chm_result.as_mut().map_err(|err| format!("{file_path} ({err})"))?;
-				// Enumeration already handed us the entry; look it up again only if this path
-				// somehow was not one of the files we enumerated.
 				let content_bytes = match entries_by_path.get(file_path) {
 					Some(entry) => chm.read(entry),
 					None => chm.find(file_path).and_then(|entry| chm.read(&entry)),
@@ -105,27 +95,22 @@ pub(super) fn convert_sections(
 				if content_bytes.is_empty() {
 					return Err(format!("{file_path} (entry is empty)"));
 				}
-				convert_section(&content_bytes, render_tables_inline, encoding)
-					.ok_or_else(|| format!("{file_path} (html conversion failed)"))
+				Ok(convert_section(&content_bytes, render_tables_inline, encoding))
 			},
 		)
 		.collect()
 }
 
-/// Convert one file's raw bytes to text, decoding them to UTF-8 first.
 fn convert_section(
 	content_bytes: &[u8],
 	render_tables_inline: bool,
 	encoding: Option<&'static Encoding>,
-) -> Option<SectionContent> {
+) -> SectionContent {
 	let utf8_content = decode_html(content_bytes, encoding);
 	let mut converter = HtmlToText::with_render_tables_inline(render_tables_inline);
-	// currently always true, HtmlToText::convert has no failure path today
-	if !converter.convert(&utf8_content, HtmlSourceMode::NativeHtml) {
-		return None;
-	}
-	Some(SectionContent {
-		text: converter.get_text(),
+	converter.convert(&utf8_content, HtmlSourceMode::NativeHtml);
+	SectionContent {
+		text: converter.take_text(),
 		headings: converter.get_headings().to_vec(),
 		links: converter.get_links().to_vec(),
 		images: ConverterOutput::get_images(&converter).to_vec(),
@@ -139,5 +124,5 @@ fn convert_section(
 		italics: converter.get_italics().to_vec(),
 		underlines: converter.get_underlines().to_vec(),
 		id_positions: converter.get_id_positions().clone(),
-	})
+	}
 }

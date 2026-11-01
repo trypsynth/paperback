@@ -23,6 +23,7 @@ Paperback radi na Windowsu 10/11, svim modernim verzijama macOS-a za ARM proceso
 * Čita skenirane PDF stranice pomoću OCR-a ugrađenog u Windows i macOS.
 * Podržava oznake i bilješke, pa možete obilježiti mjesto do kojeg ste stigli i kasnije mu se vratiti.
 * Svaka prečica na tastaturi može se promijeniti.
+* Otvara dokumente direktno s http i https poveznica i ponovo ih preuzima kada ih ponovo otvorite ili pritisnete `F5`, uz zadržavanje položaja čitanja i oznaka. Pri vraćanju dokumenata koje ste imali otvorene ponovo preuzima one s poveznica koji nisu veći od 2 MB.
 * Uključuje `pb`, alat za komandnu liniju koji bilo koji podržani dokument pretvara u HTML, Markdown ili običan tekst. Prihvata onoliko dokumenata koliko mu navedete, sam proširuje obrasce poput `*.pdf`, tako da ista komandna linija radi i na Windowsu, i može upisati po jednu datoteku za svaki dokument u mapu. Može pročitati i popis dokumenata iz datoteke ili sa standardnog ulaza pomoću `--files-from`, te pretvarati dokumente direktno s http i https poveznica.
 
 ## Kompatibilnost s čitačima zaslona
@@ -76,6 +77,7 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 ### Izbornik `Datoteka`
 
 * `Ctrl+O`: Otvara dokument.
+* `Ctrl+L` (macOS: `Cmd+Option+O`): Otvara dokument s web poveznice.
 * `Ctrl+F4` (macOS: `Cmd+W`): Zatvara trenutni dokument.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): Zatvara sve otvorene dokumente.
 * `Ctrl+Shift+T`: Ponovo otvara posljednji zatvoreni dokument.
@@ -97,7 +99,7 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 
 ### Izbornik `Prikaz`
 
-* `F5`: Ponovo učitava trenutni dokument s diska. Radi bez obzira na to da li je u postavkama uključena opcija "Automatski ponovo učitaj izmijenjene dokumente".
+* `F5`: Ponovo učitava trenutni dokument s diska ili ga ponovo preuzima ako je otvoren s poveznice. Radi bez obzira na to da li je u postavkama uključena opcija "Automatski ponovo učitaj izmijenjene dokumente".
 * `Ctrl+Alt+W`: Uključuje i isključuje prelamanje riječi.
 * `F11` (macOS: `RawCtrl+Ctrl+F`, tj. Ctrl+Command+F): Uključuje i isključuje prikaz preko cijelog zaslona.
 * `Ctrl+Shift+V`: Otvara trenutni sadržaj u web prikazu.
@@ -164,6 +166,8 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 * `Shift+;`: Smanjuje korak premotavanja.
 * `Ctrl+Shift+.`: Ubrzava zvučnu naraciju.
 * `Ctrl+Shift+,`: Usporava zvučnu naraciju.
+* `Ctrl+'`: Pojačava zvučnu naraciju.
+* `Ctrl+;`: Utišava zvučnu naraciju.
 
 ### Izbornik `Alati`
 
@@ -188,7 +192,7 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 * `Ctrl+Tab` i `Ctrl+Shift+Tab`: Prelaze na sljedeći ili prethodni otvoreni dokument; nakon posljednjeg dokumenta prelazi se na prvi i obrnuto.
 * `Enter` ili `Razmak` u dokumentu: Otvara poveznicu na položaju kursora ili otvara prikaz tabele ili formule.
 * `Enter` na skeniranoj PDF stranici: Prepoznaje stranicu pomoću OCR-a.
-* `Shift+F10` ili taster `Aplikacije` u dokumentu: Otvara kontekstni izbornik.
+* `Shift+F10` ili taster `Aplikacije` u dokumentu: Otvara kontekstni izbornik. Kada je kursor na slici u EPUB, HTML, Markdown, CHM ili FB2 dokumentu ili u stripu, nudi i spremanje slike u datoteku.
 
 ## iOS i Android
 
@@ -223,7 +227,7 @@ U izborniku "Više opcija" nalazi se sve ostalo. Neke stavke rade malo drugačij
 * **Prebaci na čitanje naglas ili Prebaci na tekstualni način:** prebacuje između načina čitanja naglas i tekstualnog načina rada, opisanih iznad. U tekstualnom načinu rada stavka "Čitaj naglas" pokreće i pauzira čitanje naglas bez napuštanja tekstualnog načina rada.
 * **Sadržaj:** poglavlja knjige, otvorena na poglavlju koje trenutno čitate. Odaberite poglavlje da biste odmah prešli na njega. Stavke koje sadrže podređena poglavlja mogu se proširiti i sažeti pomoću radnji čitača zaslona.
 * **Elementi:** popis naslova ili poveznica u dokumentu. Između njih se prebacujete biračem "Vrsta" na iOS-u ili karticama na Androidu, a zatim odaberete stavku da biste prešli na nju.
-* **Traži:** upišite šta tražite ili odaberite raniju pretragu iz historije pretraživanja te odaberite želite li razlikovati velika i mala slova, tražiti samo cijele riječi ili koristiti regularni izraz. "Traži prethodno" i "Traži sljedeće" prelaze na podudaranje i izgovaraju gdje ste se našli, a pretraga ostaje otvorena kako biste mogli nastaviti. U načinu čitanja naglas traženje se pojavljuje i kao jedinica kretanja na traci za čitanje, pa se i odatle možete kretati kroz podudaranja.
+* **Traži:** upišite šta tražite ili odaberite raniju pretragu iz historije pretraživanja te odaberite želite li razlikovati velika i mala slova, tražiti samo cijele riječi ili koristiti regularni izraz. "Traži prethodno" i "Traži sljedeće" prelaze na rezultat i izgovaraju gdje ste se našli, a pretraga ostaje otvorena kako biste mogli nastaviti. U načinu čitanja naglas traženje se pojavljuje i kao jedinica kretanja na traci za čitanje, pa se i odatle možete kretati kroz rezultate. Opcija **Zaustavi čitanje nakon rezultata pretrage** u postavkama, pod "Tekst u govor", podrazumijevano je uključena i zaustavlja čitanje nakon odlomka koji sadrži rezultat. Isključite je ako želite da se čitanje nastavi od rezultata, a da se kontrolama za prethodno i sljedeće na traci za čitanje i dalje krećete po pretrazi.
 * **Idi na:** prelazi na red, stranicu ili postotak dokumenta. Šta od toga želite, birate biračem "Način".
 * **Nedavni dokumenti:** svi dokumenti koje ste otvorili, pri čemu svaki ima status "Trenutno otvoreno", "Zatvoreno" ili "Datoteka nedostaje". Svaki od njih ima dvije radnje čitača zaslona: "Ukloni" ga uklanja s popisa, a "Pronađi" vam omogućava da pronađete dokument čija je datoteka premještena. "Očisti nedavne dokumente" prazni popis bez brisanja ijednog dokumenta.
 * **Broj riječi:** broj riječi u dokumentu.
@@ -254,6 +258,7 @@ Ako želite doprinijeti projektu prevođenjem, pročitajte naš [vodič za prevo
 * Francuski
 * Japanski
 * Kineski (pojednostavljeni)
+* Mađarski
 * Nizozemski
 * Njemački
 * Poljski
@@ -326,7 +331,7 @@ Verzija 1.0 je prvo izdanje dostupno na svih pet platformi: Windowsu, macOS-u, L
 
 ##### Kretanje
 * MathML formule u EPUB i HTML dokumentima prikazuju se kao AsciiMath pomoću alata MathCAT. Koristite `M` ili `Shift+M` za kretanje po formulama, a zatim `Enter` ili `Razmak` da biste izvorni MathML otvorili u prikazu formule.
-* Dugme "Traži sve" u dijalogu "Traži", koje prikazuje popis svih redova s podudaranjem, tako da možete odmah preći na onaj koji želite.
+* Dugme "Traži sve" u dijalogu "Traži", koje prikazuje popis svih redova s rezultatima, tako da možete odmah preći na onaj koji želite.
 * Prikazi tabela, popisa i stranica u popisu elemenata (`F7`).
 * Dijalozi "Idi na red", "Idi na stranicu" i "Idi na postotak" sada prihvataju `+n` i `-n` za pomjeranje u odnosu na trenutni položaj.
 * EPUB, MOBI i CHM knjige koje nemaju vlastite naslove sada dobijaju kretanje po naslovima na osnovu sadržaja.

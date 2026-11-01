@@ -16,10 +16,7 @@ func voiceBaseName(_ voice: AVSpeechSynthesisVoice) -> String {
 	voiceBaseName(ofName: voice.name)
 }
 
-/// The voice's name without the quality in brackets that the system appends, so the picker can
-/// group one voice's qualities together instead of listing them as separate voices. Only the
-/// last bracketed part is a quality marker: a voice whose own name carries one, like
-/// "Alice (US)", keeps it.
+/// Lets the picker group one voice's qualities; only the last bracket is a quality, so "Alice (US)" keeps its own.
 func voiceBaseName(ofName name: String) -> String {
 	guard name.hasSuffix(")"), let range = name.range(of: " (", options: .backwards) else {
 		return name

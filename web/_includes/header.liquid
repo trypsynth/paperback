@@ -6,13 +6,24 @@
 	<title>{{ page.title }} &ndash; {{ site.title }}</title>
 	<meta name="description" content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}" />
 	<meta name="color-scheme" content="light dark" />
+	{% comment %}What Mastodon, Discord, iMessage and the like show for a shared link. Without these they guess, usually showing the bare address.{% endcomment %}
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="{{ site.title }}" />
+	<meta property="og:title" content="{% if page.permalink == "" %}{{ site.title }}{% else %}{{ page.title }} &ndash; {{ site.title }}{% endif %}" />
+	<meta property="og:description" content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}" />
+	<meta property="og:url" content="{{ site.base_url }}/{{ page.permalink }}" />
+	<meta property="og:image" content="{{ site.base_url }}/images/icon-512.png" />
+	<meta property="og:image:alt" content="The Paperback icon: a white book standing open, with an orange ribbon bookmark, on a purple background." />
+	<meta name="twitter:card" content="summary" />
+	<link rel="icon" type="image/png" href="/images/icon-512.png" />
+	<link rel="apple-touch-icon" href="/images/icon-512.png" />
 	<link rel="stylesheet" href="/css/site.css" />
 </head>
 <body>
 	<a class="skip-link" href="#content-anchor">Skip to main content</a>
 	<header class="site-header">
 		<div class="wrap">
-			<a class="brand" href="/">Paperback</a>
+			<a class="brand" href="/"><img src="/images/icon-512.png" alt="" width="28" height="28" />Paperback</a>
 			<nav class="site-nav" aria-label="Main">
 				<ul>
 					{% comment %}cobalt hands the permalink back with no leading slash, and empty for

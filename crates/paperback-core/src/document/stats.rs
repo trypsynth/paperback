@@ -1,7 +1,3 @@
-//! Word/line/char counting for a document's full text, parallelized by splitting the text into
-//! roughly-equal chunks (one per core) and merging each chunk's counts, correcting for words
-//! split across a chunk boundary (see [`ChunkStats`]).
-
 use rayon::prelude::*;
 
 use crate::util::text::is_space_like;
@@ -12,18 +8,12 @@ pub struct DocumentStats {
 	pub line_count: usize,
 	pub char_count: usize,
 	pub char_count_no_whitespace: usize,
-	/// Number of recorded audio files, when the document has any. Filled in by
-	/// [`crate::document::Document::compute_stats`] from the document's audio timeline, not by
-	/// [`DocumentStats::from_text`], which only ever sees the text spine.
 	pub audio_file_count: usize,
-	/// Total playback length across every recorded audio file, in milliseconds. See
-	/// `audio_file_count`.
-	pub audio_total_duration_ms: u64,
+	/// `None` when any file's length is unknown, since its placeholder length would make the total hours too long.
+	pub audio_total_duration_ms: Option<u64>,
 }
 
-/// Per-chunk counts from [`count_chunk`], plus the whitespace-ness of the chunk's first and last
-/// chars so [`DocumentStats::from_text`] can correct `word_count` for words split across a chunk
-/// boundary (each half otherwise counts as its own word).
+/// The edge whitespace lets a word split across a chunk boundary be counted once, not as two.
 struct ChunkStats {
 	char_count: usize,
 	char_count_no_whitespace: usize,
@@ -70,8 +60,6 @@ fn count_chunk(text: &str) -> ChunkStats {
 	}
 }
 
-/// Splits `text` into up to `target_chunks` roughly-equal pieces, snapped to char boundaries, for
-/// parallel counting. Never splits mid-char, and returns fewer/no chunks for short input.
 fn split_into_chunks(text: &str, target_chunks: usize) -> Vec<&str> {
 	if text.is_empty() || target_chunks <= 1 {
 		return vec![text];
@@ -109,7 +97,6 @@ impl DocumentStats {
 			char_count_no_whitespace += chunk.char_count_no_whitespace;
 			newline_count += chunk.newline_count;
 			word_count += chunk.word_count;
-			// A word split across the boundary was counted once by each neighboring chunk; merge them.
 			if chunk.char_count > 0 && !prev_last_is_whitespace && !chunk.first_is_whitespace {
 				word_count -= 1;
 			}
@@ -143,8 +130,6 @@ mod tests {
 		assert_eq!(stats.char_count_no_whitespace, 3);
 	}
 
-	/// Naive reference matching the pre-parallel single-pass implementation, used to check the
-	/// chunked version agrees regardless of how the text happens to get split.
 	fn naive_stats(text: &str) -> (usize, usize, usize, usize) {
 		let char_count = text.chars().count();
 		let line_count = text.lines().count();

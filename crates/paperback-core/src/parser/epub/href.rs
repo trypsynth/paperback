@@ -1,6 +1,3 @@
-//! Resolving EPUB-internal hrefs (nav/NCX/spine link targets) against the path they were
-//! found in, and splitting a href into its path and `#fragment` parts.
-
 use crate::{
 	parser::{is_external_url, util::path::resolve_relative_path},
 	util::text::url_decode,

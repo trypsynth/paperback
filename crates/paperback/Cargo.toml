@@ -15,55 +15,37 @@ anyhow = { workspace = true }
 base64 = { workspace = true }
 bitflags = { workspace = true }
 dunce = "1.0.5"
-# Decodes the embedded application icon in `ui::icon`; already in the tree via pdfium.
-image = { version = "0.25.10", default-features = false, features = ["png"] }
+homeport = "0.1.0"
+image = { workspace = true, features = ["png"] }
 live-region = "0.3.3"
-native-ocr = "0.1.0"
-# `fetch` downloads documents opened from links.
-paperback-core = { path = "../paperback-core", features = ["fetch"] }
-paperback-formats = { path = "../paperback-formats" }
-patois = { version = "0.2.3", features = ["ui"] }
-# Decodes and plays DAISY narration in process. Recording and dithering are off: neither is
-# used, and both pull dependencies of their own. The symphonia extras cover the formats a
-# DAISY book can name that rodio's defaults leave out.
-rodio = { version = "0.22.2", default-features = false, features = [
-	"playback", "tracing", "flac", "mp3", "mp4", "vorbis", "wav",
-	"symphonia-adpcm", "symphonia-aiff", "symphonia-alac", "symphonia-mp2",
-] }
-# WSOLA time-stretching, so changing playback speed doesn't shift pitch the way naively
-# resampling (rodio's own `Player::set_speed`) does.
+miniz_oxide = "0.9.1"
+native-ocr = { workspace = true }
+paperback-core = { workspace = true, features = ["fetch"] }
+paperback-formats = { workspace = true }
+patois = { workspace = true, features = ["ui"] }
+rodio = { version = "0.22.2", default-features = false, features = ["playback", "tracing", "flac", "mp3", "mp4", "vorbis", "wav", "symphonia-adpcm", "symphonia-aiff", "symphonia-alac", "symphonia-mp2"] }
 rodio-wsola = "0.2.0"
-tracing = "0.1.44"
-tracing-appender = "0.2.5"
-tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
-ship-shape = "0.4.1"
-# The temporary folder a document opened from a link is downloaded into.
-tempfile = "3.27.0"
+ship-shape = "0.5.0"
+tempfile = { workspace = true }
 toml = { workspace = true }
-wx-utils = { version = "0.4.3", features = ["shortcuts"] }
-# `default-features = false` turns off the seven size knobs wxdragon enables by default, all of
-# which Paperback pays for and none of which it uses: it never prints, it decodes its own icon
-# with the `image` crate and hands wx raw pixels rather than going through wx's JPEG, TIFF, GIF
-# and friends handlers, its Find uses Rust regex, and its dialogs use the system icons rather
-# than the Tango set built into wxArtProvider. Asserts go too, since a release build cannot act
-# on them.
-wxdragon = { version = "0.9.22", default-features = false, features = ["webview"] }
-zip = { version = "9.0.0-pre3", default-features = false, features = ["deflate"] }
-
-[target.'cfg(windows)'.dependencies]
-windows = { version = "0.62.2", features = ["Win32_UI_Accessibility", "Win32_System_Com", "Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_System_Ole", "Win32_System_Variant", "Win32_UI_Controls_RichEdit", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Pipes", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading", "Win32_UI_Shell"] }
+tracing = { workspace = true }
+tracing-appender = "0.2.5"
+tracing-subscriber = { workspace = true }
+wx-utils = { version = "0.4.4", features = ["global-hotkeys", "shortcuts"] }
+wxdragon = { version = "0.9.24", default-features = false, features = ["webview"] }
+zip = { workspace = true }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 block = "0.1.6"
 objc = "0.2.7"
 
+[target.'cfg(windows)'.dependencies]
+windows = { workspace = true, features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Ole", "Win32_System_Pipes", "Win32_System_Threading", "Win32_System_Variant", "Win32_UI_Accessibility", "Win32_UI_Controls_RichEdit", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
+
 [build-dependencies]
-flate2 = { version = "1.1.10", default-features = false }
-paperback-formats = { path = "../paperback-formats" }
-patois-build = "0.1.16"
-shipfitter = { version = "0.2.2", features = ["docs", "windows-resources"] }
-tar = "0.4.46"
-ureq = { version = "3.4.2", default-features = false, features = ["rustls"] }
+paperback-formats = { workspace = true }
+patois-build = { workspace = true }
+shipfitter = { workspace = true, features = ["docs", "windows-resources"] }
 
 [dev-dependencies]
 rstest = { workspace = true }
@@ -75,11 +57,19 @@ windows-core = "0.62.2"
 [lints]
 workspace = true
 
-# AppKit requires the main thread; Rust's default test harness uses worker threads.
+# AppKit and wxWidgets need the main thread, which the default test harness doesn't use.
 [[test]]
 name = "macos_line_navigation"
 harness = false
 
 [[test]]
 name = "macos_menu_shortcuts"
+harness = false
+
+[[test]]
+name = "windows_rtf_window_append"
+harness = false
+
+[[test]]
+name = "windows_paragraph_styles"
 harness = false

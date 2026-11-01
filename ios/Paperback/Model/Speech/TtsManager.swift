@@ -3,11 +3,7 @@ import OSLog
 
 private let ttsLog = Logger(subsystem: "dev.paperback.ios", category: "tts")
 
-/// Rewrites `text` through the reader's speech dictionary.
-///
-/// Paragraph rules run first and word rules second, which is the order that lets a paragraph
-/// rule set up text for a word rule to refine. Running them the other way round would let a
-/// paragraph rule overwrite what a word rule had just produced.
+/// Paragraph rules run before word rules so a paragraph rule can't overwrite what a word rule produced.
 func applyRules(_ rules: [TtsRule], to text: String, voiceId: String?) -> String {
 	guard !rules.isEmpty else { return text }
 	var result = text
@@ -20,57 +16,43 @@ func applyRules(_ rules: [TtsRule], to text: String, voiceId: String?) -> String
 	return result
 }
 
-/// The silence the reader can add between paragraphs, in milliseconds, and how far one press of
-/// the setting moves it. The step is small because the difference between a pause that sounds
-/// right and one that drags is a few tens of milliseconds; the range stops at a second, past
-/// which it is no longer a pause between paragraphs.
+/// The step is small because a pause that sounds right and one that drags differ by tens of milliseconds; past a second it is no longer a paragraph pause.
 let paragraphPauseRangeMs = 0...1000
 let paragraphPauseStepMs = 10
 
-/// The engine rate a whole-number slider percentage stands for. A stored value from outside the
-/// slider's own range is brought back inside it rather than handed to the engine as-is.
 func speechRateForPercent(_ percent: Int) -> Float {
 	let range = AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate
 	let clamped = Float(min(max(percent, 0), 100)) / 100
 	return AVSpeechUtteranceMinimumSpeechRate + clamped * range
 }
 
-/// The slider percentage an engine rate reads as, the inverse of `speechRateForPercent`.
 func percentForSpeechRate(_ rate: Float) -> Int {
 	let range = AVSpeechUtteranceMaximumSpeechRate - AVSpeechUtteranceMinimumSpeechRate
 	return Int((((rate - AVSpeechUtteranceMinimumSpeechRate) / range) * 100).rounded())
 }
 
-/// The engine pitch multipliers the reader can choose between, 0% to 100% of which is what the
-/// settings show.
 let pitchRange: ClosedRange<Float> = 0.5...2.0
 
-/// The engine pitch a whole-number percentage of `pitchRange` stands for, clamped like
-/// `speechRateForPercent`.
 func pitchForPercent(_ percent: Int) -> Float {
 	let range = pitchRange.upperBound - pitchRange.lowerBound
 	let clamped = Float(min(max(percent, 0), 100)) / 100
 	return pitchRange.lowerBound + clamped * range
 }
 
-/// The percentage an engine pitch reads as, the inverse of `pitchForPercent`.
 func percentForPitch(_ pitch: Float) -> Int {
 	let range = pitchRange.upperBound - pitchRange.lowerBound
 	return Int((((pitch - pitchRange.lowerBound) / range) * 100).rounded())
 }
 
-/// How far one screen reader swipe moves a speech percentage.
 let speechPercentStep = 1
 
-/// Whole percentages of the rate range offered as presets, the same list on the reading bar and
-/// in Settings.
 let speechRatePresets = [25, 50, 75, 100]
 
-/// Pitch presets: the engine's 0.5 to 2.0 in steps of 0.25, as percentages of `pitchRange`.
+/// The engine's 0.5 to 2.0 in steps of 0.25, as percentages of `pitchRange`.
 let pitchPresets = [0, 16, 33, 50, 67, 83, 100]
 
-// Lets an armed buffer's completion handler validate against a generation assigned later, at
-// consume time, rather than one captured when the closure was created (see armNextBuffer).
+// The generation is assigned when speak() consumes the armed buffer, not when its completion closure is created (see armNextBuffer).
+@MainActor
 private final class GenBox {
 	var gen: Int? = nil
 }
@@ -88,28 +70,17 @@ final class TtsManager: NSObject {
 	private var speechGeneration = 0
 	private var lastScheduledGen = -1
 
-	// The next utterance's buffer, already handed to the player node while the current one is
-	// still playing (gapless queueing) — AVAudioPlayerNode.scheduleBuffer()/play() measurably
-	// slower under lock, so doing it ahead of time keeps that cost out of the audible gap.
-	// speechGeneration is NOT bumped at arm time (only once this is actually consumed in
-	// speak()) — bumping it early would invalidate the still-playing utterance's own pending
-	// completion handler as "stale", permanently desyncing playback from position tracking.
+	// Scheduled on the node while the current utterance plays, because scheduleBuffer()/play() is measurably slower under lock and would widen the gap.
 	private var armedBox: GenBox? = nil
 	private var armedText: String? = nil
-	// Set when a speech setting (rate, pitch, voice, paragraph pause or rules) changes while a
-	// buffer is already armed. That
-	// buffer was synthesized under the old settings, and once handed to the player node it
-	// cannot be taken back, so it is dropped at the paragraph boundary instead (see `speak`).
+	// A buffer on the player node can't be taken back, so one synthesized under old settings is dropped at the paragraph boundary instead (see `speak`).
 	private var armedIsStale = false
 
 	private struct PrefetchEntry {
 		let text: String
 		var buffer: AVAudioPCMBuffer?
 	}
-	// Ordered queue of upcoming paragraphs synthesized ahead of playback, nearest first.
-	// Buffering more than one paragraph deep absorbs iOS's tendency to slow down background
-	// speech synthesis while the screen is locked, which otherwise reintroduces an audible
-	// gap between paragraphs (a single paragraph's playback time may not be enough lead time).
+	// More than one paragraph deep because iOS slows background synthesis while locked, and one paragraph of lead time can leave an audible gap.
 	private var prefetchQueue: [PrefetchEntry] = []
 	private var prefetchGeneration = 0
 
@@ -120,8 +91,7 @@ final class TtsManager: NSObject {
 	private var wasInterruptedWhilePlaying = false
 	private var ignoreExternalPlayUntil: Date = .distantPast
 
-	/// True within ~1.5 s of a new Bluetooth device connecting while paused.
-	/// Lets us ignore the spurious play command some speakers send on auto-pair.
+	/// Some Bluetooth speakers send a spurious play command on auto-pair.
 	var suppressExternalPlay: Bool { Date() < ignoreExternalPlayUntil }
 
 	var isSpeaking = false {
@@ -138,8 +108,7 @@ final class TtsManager: NSObject {
 			onSpeechRateChanged?(speechRate)
 		}
 	}
-	/// The rate as the whole-number percentage of its range that the settings slider and the
-	/// reading bar both show, so the two can never disagree about what a given number means.
+	/// One conversion shared by the settings slider and the reading bar so the two never disagree about what a number means.
 	var speechRatePercent: Int {
 		get { percentForSpeechRate(speechRate) }
 		set { speechRate = speechRateForPercent(newValue) }
@@ -152,17 +121,11 @@ final class TtsManager: NSObject {
 			onPitchChanged?(pitch)
 		}
 	}
-	/// The pitch as the whole-number percentage of `pitchRange` that Settings shows.
 	var pitchPercent: Int {
 		get { percentForPitch(pitch) }
 		set { pitch = pitchForPercent(newValue) }
 	}
-	/// Extra silence after each paragraph, in milliseconds. Zero, the default, adds none.
-	///
-	/// Paragraphs are synthesized one at a time and played back to back, so the only gap between
-	/// them is whatever tail the voice leaves. How long that is depends entirely on the voice:
-	/// Eloquence leaves a clear break and wants nothing added, while the Vocalizer voices leave
-	/// barely more than a comma's worth. No single value suits both, so it is left to the reader.
+	/// A reader setting because the natural gap is the voice's own tail: Eloquence leaves a clear break, Vocalizer barely a comma's worth.
 	var paragraphPauseMs: Int = 0 {
 		didSet {
 			guard oldValue != paragraphPauseMs else { return }
@@ -174,20 +137,16 @@ final class TtsManager: NSObject {
 		didSet {
 			guard oldValue != selectedVoiceIdentifier else { return }
 			invalidatePrefetch()
-			onVoiceChanged?(selectedVoiceIdentifier)
 		}
 	}
 
 	@ObservationIgnored private let voiceCatalog = VoiceCatalog { AVSpeechSynthesisVoice.speechVoices() }
 	var availableVoices: [AVSpeechSynthesisVoice] { voiceCatalog.voices }
 	@ObservationIgnored var onUtteranceFinished: (() -> Void)?
-	// Observation replaces the old Combine forwarding for redraws; these carry the side effects
-	// that used to ride those sinks — refreshing Now Playing and persisting settings. One per
-	// setting, so changing the rate does not rewrite the pitch and voice keys as well.
+	// One per setting, so changing the rate does not rewrite the pitch and voice keys as well.
 	@ObservationIgnored var onPlaybackStateChanged: (() -> Void)?
 	@ObservationIgnored var onSpeechRateChanged: ((Float) -> Void)?
 	@ObservationIgnored var onPitchChanged: ((Float) -> Void)?
-	@ObservationIgnored var onVoiceChanged: ((String?) -> Void)?
 	@ObservationIgnored var onParagraphPauseChanged: ((Int) -> Void)?
 	@ObservationIgnored var rules: [TtsRule] = [] {
 		didSet { invalidatePrefetch() }
@@ -199,9 +158,7 @@ final class TtsManager: NSObject {
 
 	override init() {
 		super.init()
-		// The audio session is deliberately left alone here. Configuring it at launch claims
-		// the route and stops whatever else the device is playing before the user has asked
-		// for any speech, so both the category and activation wait for playback.
+		// The audio session is left alone until playback, since configuring it at launch stops whatever else the device is playing.
 		let hwRate = AVAudioSession.sharedInstance().sampleRate
 		outputFormat = AVAudioFormat(
 			standardFormatWithSampleRate: hwRate > 0 ? hwRate : 44100,
@@ -280,7 +237,6 @@ final class TtsManager: NSObject {
 			guard let self else { return }
 			switch reason {
 			case .oldDeviceUnavailable:
-				// Pause when headphones are unplugged (standard iOS behavior).
 				if isSpeaking {
 					player.pause()
 					isSpeaking = false
@@ -289,7 +245,6 @@ final class TtsManager: NSObject {
 				}
 			case .newDeviceAvailable:
 				// Some Bluetooth speakers (e.g. JBL) fire a play command on auto-pair.
-				// Gate external play commands for 1.5 s so that spurious command is dropped.
 				if isPaused {
 					ignoreExternalPlayUntil = Date().addingTimeInterval(1.5)
 				}
@@ -299,9 +254,6 @@ final class TtsManager: NSObject {
 		}
 	}
 
-	// Fires when AVAudioEngine stops due to a hardware reconfiguration (e.g. Bluetooth
-	// device connects and changes the output format). Reconnect and restart the engine,
-	// but never auto-resume: respect the current isSpeaking / isPaused state.
 	@objc private func handleEngineConfigurationChange() {
 		Task { @MainActor [weak self] in
 			guard let self else { return }
@@ -322,7 +274,7 @@ final class TtsManager: NSObject {
 			engine.connect(player, to: engine.mainMixerNode, format: outputFormat)
 			try? engine.start()
 			if wasSpeaking {
-				// The scheduled buffer was lost; advance to the next segment.
+				// The reconfiguration dropped the scheduled buffer.
 				onUtteranceFinished?()
 			}
 		}
@@ -344,8 +296,7 @@ final class TtsManager: NSObject {
 					isPaused = true
 				}
 			case .ended:
-				// Only reactivate if TTS was actually interrupted; a call ending while
-				// Paperback was already stopped must not restart playback.
+				// A call ending while Paperback was already stopped must not restart playback.
 				guard wasInterruptedWhilePlaying else { return }
 				wasInterruptedWhilePlaying = false
 				let optionsValue = info[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
@@ -385,8 +336,7 @@ final class TtsManager: NSObject {
 			engine.detach(player)
 			engine.attach(player)
 			engine.connect(player, to: engine.mainMixerNode, format: outputFormat)
-			// Only reactivate if audio was actually playing/paused before the reset;
-			// unconditionally starting the engine keeps the app alive in the background.
+			// Starting the engine unconditionally would keep the app alive in the background.
 			if wasActive {
 				activateAudioSession()
 				try? engine.start()
@@ -394,21 +344,10 @@ final class TtsManager: NSObject {
 		}
 	}
 
-	// `isAutoAdvance` must be true only when this call is the natural continuation onto the
-	// buffer already queued next (i.e. from the utterance-finished callback) — never for a
-	// user-initiated seek that merely happens to target the same text as the armed buffer,
-	// since that would silently no-op instead of cutting off the currently-playing audio.
+	// `isAutoAdvance` only from the utterance-finished callback: a user seek to the same text as the armed buffer would otherwise no-op instead of cutting off the audio.
 	func speak(_ text: String, isAutoAdvance: Bool = false) {
 		let text = preprocessText(text)
-		// Already handed to the player node while the previous utterance was still playing
-		// (see armNextBuffer) — it's already audibly playing (or about to be). Just assign it
-		// the generation it's now logically current under; no re-scheduling needed.
-		//
-		// Unless it is stale, meaning a speech setting changed after it was synthesized. Then it is deliberately not claimed: falling through stops the node,
-		// which drops it a few milliseconds in, and the paragraph is taken instead from the
-		// queue that was re-synthesized under the new settings. That trades a blip at one
-		// paragraph boundary for the change being heard on the next paragraph rather than the
-		// one after it.
+		// A stale armed buffer is not claimed: falling through stops the node and takes the re-synthesized one, so a setting change is heard a paragraph sooner at the cost of a blip.
 		if isAutoAdvance, !armedIsStale, text == armedText, let box = armedBox {
 			armedBox = nil
 			armedText = nil
@@ -421,7 +360,6 @@ final class TtsManager: NSObject {
 			isPaused = false
 			return
 		}
-		// Use a prefetched buffer if one is queued and ready (no synthesis needed).
 		if let idx = prefetchQueue.firstIndex(where: { $0.text == text }), let cached = prefetchQueue[idx].buffer {
 			prefetchQueue.removeSubrange(0...idx)
 			internalStop()
@@ -466,10 +404,6 @@ final class TtsManager: NSObject {
 		}
 	}
 
-	// Synthesise the given upcoming paragraphs (nearest first) in the background so they're
-	// ready by the time speak() needs them. Buffers already synthesized for entries that
-	// remain in the new list are kept; the queue is only reset when the immediate next
-	// paragraph changes (navigation, voice/rate change, etc).
 	func prefetch(upcoming texts: [String]) {
 		let texts = texts.map { preprocessText($0) }
 		guard texts != prefetchQueue.map(\.text) else { return }
@@ -486,9 +420,7 @@ final class TtsManager: NSObject {
 			uniquingKeysWith: { first, _ in first }
 		)
 		prefetchQueue = texts.map { PrefetchEntry(text: $0, buffer: cachedBuffers[$0]) }
-		// The new front slot may already have a buffer carried over from the old queue
-		// (e.g. it was slot 1 a moment ago) — try to arm it now rather than waiting for a
-		// synthesis completion that already happened.
+		// A carried-over front buffer has no synthesis completion left to arm it.
 		tryArmFirstSlotIfReady()
 
 		for text in texts where cachedBuffers[text] == nil {
@@ -510,7 +442,6 @@ final class TtsManager: NSObject {
 		}
 	}
 
-	// Synthesise `text` in the background so it's ready if the user navigates backward.
 	func prefetchPrev(_ text: String) {
 		let text = preprocessText(text)
 		guard text != prevPrefetchedText else { return }
@@ -546,8 +477,7 @@ final class TtsManager: NSObject {
 
 	func resume() {
 		guard isPaused else { return }
-		// pause() deactivated the session so other apps could take the route back; resuming has
-		// to claim it again, and no new buffer is scheduled here to do it for us.
+		// pause() deactivated the session, and no new buffer is scheduled here to reclaim it.
 		activateAudioSession()
 		if !engine.isRunning { try? engine.start() }
 		player.play()
@@ -559,11 +489,7 @@ final class TtsManager: NSObject {
 		speechGeneration += 1
 		invalidatePrefetch()
 		internalStop()
-		// Only tear the engine/session down on an explicit stop. Between back-to-back
-		// paragraphs (the common case) we keep both alive: stopping and restarting the
-		// AVAudioEngine/AVAudioSession on every utterance round-trips through CoreAudio,
-		// which gets noticeably slower while the screen is locked and was the real cause
-		// of the growing gap between paragraphs during background playback.
+		// Only an explicit stop tears these down: restarting them per paragraph round-trips through CoreAudio, which slows while locked and caused growing gaps in background playback.
 		engine.stop()
 		try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
 	}
@@ -580,11 +506,7 @@ final class TtsManager: NSObject {
 		armedIsStale = false
 	}
 
-	// Arms the front of prefetchQueue onto the player node if it's ready and it's currently
-	// safe to do so: something must be actively playing, and its own buffer must already be
-	// committed to the player node (lastScheduledGen == speechGeneration) rather than still
-	// mid on-demand-synthesis — otherwise this could schedule the next paragraph ahead of the
-	// current one, playing it first.
+	// The current paragraph must already be on the node (lastScheduledGen == speechGeneration), or the next one would be scheduled ahead of it and play first.
 	private func tryArmFirstSlotIfReady() {
 		guard armedBox == nil, isSpeaking, !isPaused, lastScheduledGen == speechGeneration else { return }
 		guard let first = prefetchQueue.first, let buf = first.buffer else { return }
@@ -593,12 +515,7 @@ final class TtsManager: NSObject {
 		armNextBuffer(buf, text: text)
 	}
 
-	// Hands `pcm` to the player node immediately so it plays back-to-back after whatever's
-	// currently playing, with no stop/restart round-trip at the transition itself. Does NOT
-	// touch speechGeneration yet — that only happens once speak() actually consumes this (see
-	// the armedText check there), once the currently-playing utterance's own completion has
-	// legitimately fired. Bumping it here, before that, would make the still-in-flight
-	// completion look stale and get silently dropped, desyncing playback from position tracking.
+	// Must not bump speechGeneration: the playing utterance's completion would look stale and be dropped, desyncing playback from position tracking.
 	private func armNextBuffer(_ pcm: AVAudioPCMBuffer, text: String) {
 		let box = GenBox()
 		armedBox = box
@@ -607,9 +524,7 @@ final class TtsManager: NSObject {
 		player.scheduleBuffer(pcm) { [weak self] in
 			DispatchQueue.main.async { [weak self] in
 				guard let self else { return }
-				// No generation means speak() never claimed this buffer, so the paragraph
-				// before it never reported finishing. Nothing is queued behind this and
-				// nothing else will restart the chain.
+				// No generation means speak() never claimed it, and nothing else will restart the chain.
 				guard let gen = box.gen else {
 					self.recoverFromUnclaimedArmedBuffer(box)
 					return
@@ -622,21 +537,13 @@ final class TtsManager: NSObject {
 		}
 	}
 
-	/// Keeps playback going when an armed buffer finishes without `speak()` ever claiming it.
-	///
-	/// That happens when the completion for the paragraph before it is late enough that this
-	/// one plays all the way through first, which background throttling while the screen is
-	/// locked can cause. Left alone it stops the book with the app still reporting that it is
-	/// speaking, recoverable only by a remote command.
-	///
-	/// Bumping the generation is the part that makes this safe: it drops the earlier
-	/// completion if it does turn up late, which would otherwise advance a second time and
-	/// skip a paragraph. Trading a rare stall for a rare skip would be no improvement.
+	/// Background throttling while locked can delay the previous completion until this buffer has played through; left alone the book stalls while still reporting speaking (#761).
 	private func recoverFromUnclaimedArmedBuffer(_ box: GenBox) {
 		guard armedBox === box else { return }
 		armedBox = nil
 		armedText = nil
 		armedIsStale = false
+		// Drops the earlier completion if it turns up late, which would otherwise advance again and skip a paragraph.
 		speechGeneration += 1
 		isSpeaking = false
 		isPaused = false
@@ -645,8 +552,7 @@ final class TtsManager: NSObject {
 	}
 
 	private func invalidatePrefetch() {
-		// Whatever is armed was synthesized under the settings being replaced. Leaving it alone
-		// is what made a rate change take two paragraphs to be heard rather than one.
+		// Leaving the armed buffer alone made a rate change take two paragraphs to be heard rather than one.
 		armedIsStale = armedBox != nil
 		prefetchGeneration += 1
 		prefetchSynthesizer.stopSpeaking(at: .immediate)
@@ -665,10 +571,7 @@ final class TtsManager: NSObject {
 		return u
 	}
 
-	// Soft hyphens (\u{00AD}) and null bytes cause AVSpeechSynthesizer to truncate utterances.
-	// The synthesizer also parses its input as markup, so a bare `<` swallows everything up to
-	// the next `>` (and an unterminated one swallows the rest of the utterance, wedging playback
-	// until the app is restarted). Escaping the three markup characters makes them literal again.
+	// Soft hyphens and nulls truncate utterances, and the synthesizer parses markup, so a bare `<` swallows text up to the next `>` (or wedges playback if unterminated).
 	private func sanitizeForSpeech(_ text: String) -> String {
 		var out = ""
 		out.reserveCapacity(text.count)
@@ -696,11 +599,7 @@ final class TtsManager: NSObject {
 		schedule(pcm, gen: gen, suppress: suppress)
 	}
 
-	/// Configures and activates the session, immediately before audio is actually produced.
-	/// The category is set here rather than once at startup because `.playback` is not
-	/// mixable: applying it interrupts other apps' audio, which must not happen just because
-	/// Paperback was opened. Setting it again on every activation is cheap, and it is also
-	/// what restores the configuration after a media services reset wipes it.
+	/// Set here, not at startup, because `.playback` is not mixable and would interrupt other apps on launch; repeating it also restores it after a media services reset.
 	private func activateAudioSession() {
 		let session = AVAudioSession.sharedInstance()
 		try? session.setCategory(.playback, mode: .spokenAudio)
@@ -724,17 +623,11 @@ final class TtsManager: NSObject {
 		}
 	}
 
-	// Concatenate synthesis chunks then convert to the hardware output format in one pass.
 	private func convertToOutput(_ buffers: [AVAudioPCMBuffer]) -> AVAudioPCMBuffer? {
 		joinAndConvert(buffers).flatMap(withParagraphPause)
 	}
 
-	/// Appends the reader's paragraph pause to a finished paragraph, or returns it untouched when
-	/// the pause is zero.
-	///
-	/// Done inside the buffer rather than through `postUtteranceDelay` so the silence survives
-	/// the gapless hand-off to the next paragraph. A change to the setting re-synthesizes
-	/// everything queued, so every paragraph carries the pause that was set when it was read.
+	/// In the buffer rather than `postUtteranceDelay` so the silence survives the gapless hand-off to the next paragraph.
 	private func withParagraphPause(_ buffer: AVAudioPCMBuffer) -> AVAudioPCMBuffer? {
 		let format = buffer.format
 		let silenceFrames = AVAudioFrameCount(format.sampleRate * Double(paragraphPauseMs) / 1000)
@@ -748,8 +641,7 @@ final class TtsManager: NSObject {
 		let frames = Int(buffer.frameLength)
 		for channel in 0..<Int(format.channelCount) {
 			memcpy(destination[channel], source[channel], frames * MemoryLayout<Float>.size)
-			// `AVAudioPCMBuffer` does not promise zeroed storage, so the silence is written
-			// rather than assumed; whatever was in that memory would otherwise be audible.
+			// `AVAudioPCMBuffer` does not promise zeroed storage.
 			memset(destination[channel].advanced(by: frames), 0, Int(silenceFrames) * MemoryLayout<Float>.size)
 		}
 		padded.frameLength = buffer.frameLength + silenceFrames
@@ -781,6 +673,8 @@ final class TtsManager: NSObject {
 
 		var inputConsumed = false
 		var error: NSError?
+		// The converter calls the input block synchronously, before convert() returns, so the buffer never leaves this thread.
+		nonisolated(unsafe) let input = synthBuf
 		converter.convert(to: outBuf, error: &error) { _, outStatus in
 			if inputConsumed {
 				// Signal end-of-stream so the resampler flushes its tail; .noDataNow would discard it.
@@ -789,7 +683,7 @@ final class TtsManager: NSObject {
 			}
 			outStatus.pointee = .haveData
 			inputConsumed = true
-			return synthBuf
+			return input
 		}
 
 		return error == nil ? outBuf : nil

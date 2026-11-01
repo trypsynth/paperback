@@ -1,14 +1,10 @@
-/// One-time migration from the legacy wxWidgets INI config (Paperback.ini) to TOML.
-///
-/// Called at startup before `ConfigManager::initialize()`. If an INI file exists
-/// and no TOML file exists yet, reads the INI via wxdragon's Config and writes a
-/// TOML file that the core's `ConfigManager` can load normally, then deletes the
-/// INI. This module is the only place in the binary that directly constructs
-/// `ConfigData`.
 use std::{fs, path::Path};
 
 use base64::{Engine, engine::general_purpose::STANDARD};
-use paperback_core::config::{ConfigData, DocumentConfig, StoredBookmark};
+use paperback_core::{
+	config::{ConfigData, DocumentConfig, StoredBookmark},
+	document::DocPos,
+};
 use toml::Value as TomlValue;
 use wxdragon::config::{Config, ConfigStyle};
 
@@ -19,12 +15,7 @@ pub fn migrate_if_needed() {
 	settle(&toml_path.with_extension("ini"), &toml_path, migrate);
 }
 
-/// Migrates the INI when there is no TOML yet, and deletes it once its contents are in one.
-///
-/// A TOML already sitting there means an earlier launch migrated the INI but kept it, which is
-/// what every version before this one did, so the INI is deleted then too. The one case it
-/// survives is a migration that failed, where it is still the only copy of the reader's
-/// bookmarks and positions.
+/// Older versions migrated but kept the INI, so an existing TOML still means delete it; only a failed migration keeps it, as the only copy of the reader's data.
 fn settle(ini_path: &Path, toml_path: &Path, migrate: impl FnOnce(&Path, &Path) -> bool) {
 	if !ini_path.exists() {
 		return;
@@ -38,7 +29,6 @@ fn settle(ini_path: &Path, toml_path: &Path, migrate: impl FnOnce(&Path, &Path) 
 	}
 }
 
-/// Writes the INI's contents out as TOML, reporting whether the TOML now holds them.
 fn migrate(ini_path: &Path, toml_path: &Path) -> bool {
 	tracing::info!(ini = %ini_path.display(), toml = %toml_path.display(), "migrating config from INI to TOML");
 	let data = read_ini(ini_path);
@@ -82,8 +72,7 @@ fn read_ini(ini_path: &Path) -> ConfigData {
 	data.app.find_use_regex = config.read_bool("find_use_regex", false);
 	data.app.recent_documents_to_show = config.read_long("recent_documents_to_show", 25);
 	data.app.sleep_timer_duration = config.read_long("sleep_timer_duration", 30);
-	// Desktop-only settings go into the extra passthrough map so they are preserved
-	// in the TOML file even though core's AppSettings doesn't know about them.
+	// Core's AppSettings doesn't know the desktop-only settings, so they go through `extra` to survive.
 	data.app
 		.extra
 		.insert("minimize_to_tray".to_string(), TomlValue::Boolean(config.read_bool("minimize_to_tray", false)));
@@ -159,7 +148,7 @@ fn read_ini(ini_path: &Path) -> ConfigData {
 		}
 		let mut doc = DocumentConfig {
 			path: path.clone(),
-			last_position: config.read_long("last_position", 0),
+			last_position: saved_position(config.read_long("last_position", 0)),
 			opened: config.read_bool("opened", false),
 			format: config.read_string("format", ""),
 			password: config.read_string("password", ""),
@@ -167,7 +156,8 @@ fn read_ini(ini_path: &Path) -> ConfigData {
 		};
 		let history_str = config.read_string("navigation_history", "");
 		if !history_str.is_empty() {
-			doc.navigation_history = history_str.split(',').filter_map(|t| t.trim().parse::<i64>().ok()).collect();
+			doc.navigation_history =
+				history_str.split(',').filter_map(|t| t.trim().parse::<i64>().ok()).map(saved_position).collect();
 		}
 		let history_index = config.read_long("navigation_history_index", 0);
 		doc.navigation_history_index = usize::try_from(history_index).unwrap_or(0);
@@ -184,9 +174,15 @@ fn read_ini(ini_path: &Path) -> ConfigData {
 					let end_str = parts.next().unwrap_or_default();
 					let note_str = parts.next().unwrap_or_default();
 					if let (Ok(start), Ok(end)) = (start_str.parse::<i64>(), end_str.parse::<i64>()) {
-						doc.bookmarks.push(StoredBookmark { start, end, note: decode_note(note_str), audio_ms: None });
+						doc.bookmarks.push(StoredBookmark {
+							start: saved_position(start),
+							end: saved_position(end),
+							note: decode_note(note_str),
+							audio_ms: None,
+						});
 					}
 				} else if let Ok(pos) = trimmed.parse::<i64>() {
+					let pos = saved_position(pos);
 					doc.bookmarks.push(StoredBookmark { start: pos, end: pos, note: String::new(), audio_ms: None });
 				}
 			}
@@ -196,6 +192,10 @@ fn read_ini(ini_path: &Path) -> ConfigData {
 		config.set_path("/");
 	}
 	data
+}
+
+fn saved_position(raw: i64) -> DocPos {
+	DocPos::from_raw(usize::try_from(raw).unwrap_or(0))
 }
 
 fn decode_note(encoded: &str) -> String {
@@ -211,7 +211,6 @@ mod tests {
 
 	use super::settle;
 
-	/// A fresh directory per test, so they can run side by side without seeing each other's files.
 	fn scratch(name: &str) -> PathBuf {
 		let dir = env::temp_dir().join(format!("paperback-legacy-config-{name}-{}", std::process::id()));
 		let _ = fs::remove_dir_all(&dir);
@@ -240,7 +239,6 @@ mod tests {
 		assert!(!ini.exists());
 	}
 
-	/// A failed migration leaves the INI as the only copy of the reader's data, so it has to stay.
 	#[test]
 	fn a_failed_migration_keeps_the_ini() {
 		let dir = scratch("failure");

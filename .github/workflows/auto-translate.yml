@@ -20,6 +20,10 @@ on:
         description: Re-translate machine translations that share their text with a different string
         type: boolean
         default: false
+# Runs that overlap race to push the same branch, and an older master's run pushing last re-translates text already merged.
+concurrency:
+  group: auto-translate
+  cancel-in-progress: true
 permissions:
   contents: write
   pull-requests: write

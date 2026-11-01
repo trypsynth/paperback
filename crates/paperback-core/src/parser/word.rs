@@ -1,10 +1,19 @@
-use std::path::Path;
+use std::{
+	fs::{self, File},
+	io::Read,
+	path::Path,
+};
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 
 use crate::{
 	document::{Document, ParserContext},
-	parser::Parser,
+	parser::{
+		Parser,
+		rtf::{RtfParser, looks_like_rtf},
+		util::ole::apply_summary_information,
+		wri::{WriParser, is_write_magic},
+	},
 	t,
 };
 
@@ -33,8 +42,29 @@ impl Parser for WordParser {
 			return ooxml::parse_word_zip(context, render_tables_inline);
 		}
 		if extension == "doc" {
+			// A file that can't be read here fails properly in the OLE path below.
+			let mut head = Vec::with_capacity(64);
+			if let Ok(file) = File::open(&context.file_path) {
+				let _ = file.take(64).read_to_end(&mut head);
+			}
+			let magic = head.get(..2).map_or(0, |bytes| u16::from_le_bytes([bytes[0], bytes[1]]));
+			if legacy::is_winword_magic(magic) {
+				let data = fs::read(&context.file_path)
+					.with_context(|| format!("Failed to read DOC file '{}'", context.file_path))?;
+				return legacy::parse_winword_doc(context, &data);
+			}
+			if is_write_magic(magic) {
+				return WriParser.parse(context);
+			}
+			// Word saves RTF under a `.doc` name when asked to, and opens it back as RTF.
+			if looks_like_rtf(&head) {
+				return RtfParser.parse(context);
+			}
 			match legacy::parse_legacy_doc(context) {
-				Ok(document) => return Ok(document),
+				Ok(mut document) => {
+					apply_summary_information(&mut document, &context.file_path);
+					return Ok(document);
+				}
 				Err(legacy_err) => {
 					tracing::warn!(path = %context.file_path, error = %legacy_err, "legacy doc parsing failed, falling back to ooxml parsing");
 					match ooxml::parse_ooxml_doc(context, render_tables_inline) {
@@ -57,3 +87,6 @@ impl Parser for WordParser {
 		ooxml::parse_ooxml_doc(context, render_tables_inline)
 	}
 }
+
+#[cfg(test)]
+mod tests;

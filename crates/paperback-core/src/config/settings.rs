@@ -1,32 +1,24 @@
-//! The serializable config data model: per-session view types ([`Bookmark`],
-//! [`NavigationHistory`], [`FindSettings`], [`ReadabilityFont`]), their on-disk TOML
-//! shapes ([`StoredBookmark`], [`AppSettings`], [`DocumentConfig`]), and [`ConfigData`],
-//! the root structure [`super::manager::ConfigManager`] reads and writes as a whole.
-//! Behavior (persistence, per-document lookups) lives in `manager`; this module only
-//! defines what the data looks like and its defaults.
-
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use super::shortcuts::{HotkeyConfig, ShortcutsConfig};
+use super::shortcuts::{KeyChord, ShortcutsConfig, default_window_hotkey};
+use crate::document::DocPos;
 
 const CONFIG_VERSION: u32 = 4;
 const DEFAULT_RECENT_DOCUMENTS_TO_SHOW: i64 = 25;
 
 #[derive(Clone, Debug, Default)]
 pub struct Bookmark {
-	pub start: i64,
-	pub end: i64,
+	pub start: DocPos,
+	pub end: DocPos,
 	pub note: String,
-	/// Where in the recording the bookmark was set, for a document that is only audio. See
-	/// [`StoredBookmark::audio_ms`].
 	pub audio_ms: Option<u64>,
 }
 
 #[derive(Clone, Debug, Default)]
 pub struct NavigationHistory {
-	pub positions: Vec<i64>,
+	pub positions: Vec<DocPos>,
 	pub index: usize,
 }
 
@@ -45,10 +37,9 @@ pub struct ReadabilityFont {
 	pub weight: i32,
 	pub underlined: bool,
 	pub strikethrough: bool,
-	/// RGB color packed as 0xRRGGBB, or -1 for default (no override)
+	/// 0xRRGGBB, or -1 for no override.
 	pub color: i32,
-	/// Platform-specific font encoding identifier; 0 means default. Ignored on
-	/// platforms that manage encoding themselves (e.g. Android/iOS Unicode rendering).
+	/// 0 means default.
 	pub encoding: i32,
 }
 
@@ -76,16 +67,11 @@ impl ReadabilityFont {
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct StoredBookmark {
-	pub start: i64,
-	pub end: i64,
+	pub start: DocPos,
+	pub end: DocPos,
 	#[serde(default)]
 	pub note: String,
-	/// Where in the recording the bookmark was set, for a document that is only audio.
-	///
-	/// An audiobook's text is one blank line per chapter, so a text position can only say which
-	/// chapter a bookmark is in: every bookmark in a chapterless MP3 lands on the same spot. The
-	/// playback time is what tells two of them apart. `start` and `end` still hold the chapter's
-	/// position, so everything that lists bookmarks by position keeps working.
+	/// An audiobook's text is a blank line per chapter, so every bookmark in a chapterless MP3 has the same position and only the playback time tells them apart.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub audio_ms: Option<u64>,
 }
@@ -131,12 +117,7 @@ pub struct AppSettings {
 	pub find_whole_word: bool,
 	#[serde(default)]
 	pub find_use_regex: bool,
-	/// Whether a Find match is left selected.
-	///
-	/// On is what a sighted reader expects: the match is picked out on screen. Off moves the
-	/// caret to the match instead of selecting it, which suits a screen reader listener, who
-	/// hears the line around the caret either way and gains nothing from the match being a
-	/// selection - a selected string is spoken as a selection rather than as text.
+	/// Off suits a screen reader user, who hears the line either way and would otherwise hear the match spoken as a selection.
 	#[serde(default = "default_true")]
 	pub highlight_found_text: bool,
 	#[serde(default = "default_recent_documents_to_show")]
@@ -169,13 +150,12 @@ pub struct AppSettings {
 	pub paragraph_spacing: i64,
 	#[serde(default)]
 	pub line_spacing: i64,
-	#[serde(default)]
-	pub hotkey: HotkeyConfig,
+	/// An empty key is no hotkey. Read through `ConfigManager::get_hotkey`, since older configs kept one key as a char and wrote a cleared hotkey as NUL.
+	#[serde(default = "default_window_hotkey")]
+	pub hotkey: KeyChord,
 	#[serde(default)]
 	pub shortcuts: ShortcutsConfig,
-	/// Pass-through storage for host-specific settings (e.g. desktop UI preferences).
-	/// Keys written here are preserved on read/write so host consumers can store their
-	/// own fields alongside the generic ones without conflict.
+	/// Host-specific settings, kept through a read and write so each front end can store its own fields.
 	#[serde(flatten, default)]
 	pub extra: HashMap<String, toml::Value>,
 }
@@ -209,10 +189,31 @@ impl Default for AppSettings {
 			letter_spacing: 0,
 			paragraph_spacing: 0,
 			line_spacing: 0,
-			hotkey: HotkeyConfig::default(),
+			hotkey: default_window_hotkey(),
 			shortcuts: ShortcutsConfig::default(),
 			extra: HashMap::new(),
 		}
+	}
+}
+
+/// Speech settings a reader chose for one document; each left out follows the app's own.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq, Eq)]
+pub struct DocumentSpeech {
+	/// The platform's own voice identifier, which another platform won't find and so ignores.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub voice: Option<String>,
+	/// Percentages of the platform's own range, as its rate and pitch controls show them, since each engine scales differently.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub rate_percent: Option<i32>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub pitch_percent: Option<i32>,
+}
+
+impl DocumentSpeech {
+	#[must_use]
+	pub fn is_empty(&self) -> bool {
+		*self == Self::default()
 	}
 }
 
@@ -220,27 +221,32 @@ impl Default for AppSettings {
 pub struct DocumentConfig {
 	pub path: String,
 	#[serde(default)]
-	pub last_position: i64,
-	/// Elapsed milliseconds into a recorded narration, for documents that have one. Kept
-	/// separately from `last_position` because the caret and the audio are independent axes:
-	/// resuming an audiobook should return to what was last *heard*, which a text position can
-	/// only approximate to the nearest clip. `None` for documents with no audio.
+	pub last_position: DocPos,
+	/// Apart from `last_position` because resuming should return to what was last heard, which a text position only approximates to the nearest clip.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub audio_time_ms: Option<u64>,
 	#[serde(default)]
-	pub navigation_history: Vec<i64>,
+	pub navigation_history: Vec<DocPos>,
 	#[serde(default)]
 	pub navigation_history_index: usize,
 	#[serde(default)]
 	pub bookmarks: Vec<StoredBookmark>,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
-	pub temporary_bookmark: Option<i64>,
+	pub temporary_bookmark: Option<DocPos>,
 	#[serde(default, skip_serializing_if = "String::is_empty")]
 	pub format: String,
 	#[serde(default, skip_serializing_if = "String::is_empty")]
 	pub password: String,
 	#[serde(default)]
 	pub opened: bool,
+	/// Decides whether a document opened from a link is downloaded again at startup.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub download_size: Option<u64>,
+	/// Names a document opened from a link in lists better than its link can.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub download_name: Option<String>,
+	#[serde(default, skip_serializing_if = "DocumentSpeech::is_empty")]
+	pub speech: DocumentSpeech,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -280,15 +286,17 @@ mod tests {
 
 	#[test]
 	fn temporary_bookmark_serializes_and_loads() {
-		let doc =
-			DocumentConfig { path: "book.epub".into(), temporary_bookmark: Some(12_345), ..DocumentConfig::default() };
+		let doc = DocumentConfig {
+			path: "book.epub".into(),
+			temporary_bookmark: Some(12_345.into()),
+			..DocumentConfig::default()
+		};
 		let serialized = toml::to_string(&doc).unwrap();
 		let parsed: DocumentConfig = toml::from_str(&serialized).unwrap();
-		assert_eq!(parsed.temporary_bookmark, Some(12_345));
+		assert_eq!(parsed.temporary_bookmark, Some(12_345.into()));
 	}
 
-	/// Every config file written before this setting existed has no such key, and all of them
-	/// must keep the highlighting they have always had rather than quietly lose it.
+	/// Config files from before this setting must keep the highlighting they always had.
 	#[test]
 	fn highlight_found_text_defaults_to_true_when_missing() {
 		let parsed: AppSettings = toml::from_str("word_wrap = true\n").unwrap();
@@ -296,8 +304,27 @@ mod tests {
 	}
 
 	#[test]
+	fn positions_round_trip_as_plain_integers() {
+		let saved = "path = \"book.epub\"\nlast_position = 4321\nnavigation_history = [10, 200, 4321]\nnavigation_history_index = 2\ntemporary_bookmark = 77\nopened = false\n\n[[bookmarks]]\nstart = 5\nend = 9\nnote = \"a note\"\n";
+		let doc: DocumentConfig = toml::from_str(saved).unwrap();
+		assert_eq!(doc.last_position, 4321);
+		assert_eq!(doc.navigation_history, vec![10, 200, 4321]);
+		assert_eq!(doc.temporary_bookmark, Some(77.into()));
+		assert_eq!((doc.bookmarks[0].start, doc.bookmarks[0].end), (5.into(), 9.into()));
+		assert_eq!(toml::to_string(&doc).unwrap(), saved);
+	}
+
+	/// An edited file's negative position must not lose the whole config.
+	#[test]
+	fn a_negative_position_loads_as_the_start() {
+		let doc: DocumentConfig =
+			toml::from_str("path = \"book.epub\"\nlast_position = -1\nnavigation_history = [-5, 30]\n").unwrap();
+		assert_eq!(doc.last_position, DocPos::ZERO);
+		assert_eq!(doc.navigation_history, vec![0, 30]);
+	}
+
+	#[test]
 	fn temporary_bookmark_defaults_to_none_when_missing() {
-		// Old config files without the field must load as None.
 		let parsed: DocumentConfig = toml::from_str("path = \"book.epub\"\n").unwrap();
 		assert_eq!(parsed.temporary_bookmark, None);
 	}
@@ -307,9 +334,48 @@ mod tests {
 		let doc = DocumentConfig { path: "book.zip".into(), audio_time_ms: Some(999), ..DocumentConfig::default() };
 		let parsed: DocumentConfig = toml::from_str(&toml::to_string(&doc).unwrap()).unwrap();
 		assert_eq!(parsed.audio_time_ms, Some(999));
-		// Text-only documents and older config files carry no field at all.
 		let bare: DocumentConfig = toml::from_str("path = \"book.epub\"\n").unwrap();
 		assert_eq!(bare.audio_time_ms, None);
 		assert!(!toml::to_string(&bare).unwrap().contains("audio_time_ms"));
+	}
+
+	#[test]
+	fn a_documents_own_speech_round_trips_and_is_left_out_when_it_has_none() {
+		let speech =
+			DocumentSpeech { voice: Some("com.apple.voice.Alex".into()), rate_percent: Some(60), pitch_percent: None };
+		let doc = DocumentConfig { path: "book.epub".into(), speech: speech.clone(), ..DocumentConfig::default() };
+		let saved = toml::to_string(&doc).unwrap();
+		assert!(!saved.contains("pitch_percent"));
+		assert_eq!(toml::from_str::<DocumentConfig>(&saved).unwrap().speech, speech);
+		let bare = DocumentConfig { path: "book.epub".into(), ..DocumentConfig::default() };
+		assert!(!toml::to_string(&bare).unwrap().contains("speech"));
+	}
+
+	#[test]
+	fn download_size_round_trips_and_defaults_to_none_when_missing() {
+		let doc = DocumentConfig {
+			path: "https://example.org/book.epub".into(),
+			download_size: Some(1_500_000),
+			..DocumentConfig::default()
+		};
+		let parsed: DocumentConfig = toml::from_str(&toml::to_string(&doc).unwrap()).unwrap();
+		assert_eq!(parsed.download_size, Some(1_500_000));
+		let bare: DocumentConfig = toml::from_str("path = \"book.epub\"\n").unwrap();
+		assert_eq!(bare.download_size, None);
+		assert!(!toml::to_string(&bare).unwrap().contains("download_size"));
+	}
+
+	#[test]
+	fn download_name_round_trips_and_defaults_to_none_when_missing() {
+		let doc = DocumentConfig {
+			path: "https://example.org/download?id=7".into(),
+			download_name: Some("Moby Dick.epub".into()),
+			..DocumentConfig::default()
+		};
+		let parsed: DocumentConfig = toml::from_str(&toml::to_string(&doc).unwrap()).unwrap();
+		assert_eq!(parsed.download_name.as_deref(), Some("Moby Dick.epub"));
+		let bare: DocumentConfig = toml::from_str("path = \"book.epub\"\n").unwrap();
+		assert_eq!(bare.download_name, None);
+		assert!(!toml::to_string(&bare).unwrap().contains("download_name"));
 	}
 }

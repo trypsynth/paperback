@@ -19,9 +19,7 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32, live_regi
 	let percent_slider =
 		Slider::builder(&dialog).with_value(current_percent).with_min_value(0).with_max_value(100).build();
 	let entry = Rc::new(NumberEntry::new(dialog, current_percent, 0, 100));
-	// Keep the slider and the field in step. Dragging the slider rewrites the field
-	// (`change_value` fires no event, so there is no loop); typing moves the slider to the
-	// number that was entered.
+	// `change_value` fires no event, so syncing the slider and field both ways cannot loop.
 	let input_for_slider = entry.ctrl;
 	percent_slider.on_slider(move |event| {
 		input_for_slider.change_value(&event.get_value().to_string());
@@ -33,13 +31,10 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32, live_regi
 			slider_for_input.set_value(resolved);
 		}
 	});
-	// Enter in the field, Enter on the slider, and the Go button all submit through the
-	// same validation.
 	// TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
 	let out_of_range = t("Percent out of range.");
 	let entry_for_submit = Rc::clone(&entry);
 	let submit = Rc::new(move || entry_for_submit.submit(dialog, live_region_label, &out_of_range));
-	// Keyboard control of the slider: arrows/Page/Home/End move it, Enter submits.
 	let submit_for_slider = Rc::clone(&submit);
 	percent_slider.bind_internal(EventType::KEY_DOWN, move |event| {
 		let key = event.get_key_code().unwrap_or(0);

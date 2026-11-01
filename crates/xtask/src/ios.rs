@@ -2,25 +2,11 @@ use std::{
 	env,
 	error::Error,
 	fs,
-	io::{Cursor, Read},
 	path::{Path, PathBuf},
 	process::Command,
 };
 
-use flate2::read::GzDecoder;
-use tar::Archive;
-
-use crate::workspace::{build_host_ffi_library, project_root};
-
-// Pinned instead of `releases/latest`: whatever `latest` currently resolves to
-// crashes on real iOS devices (not the Simulator) with
-// `[FATAL:partition_address_space.cc(81)] Check failed: false.` inside
-// libpdfium.dylib the moment PDFium is initialized, even though the release
-// sets `pdf_use_partition_alloc = false` in its build args. chromium/7920 is
-// confirmed (by direct on-device test) not to hit this. Re-verify on a real
-// device before bumping this pin.
-const PDFIUM_IOS_ARM64_URL: &str =
-	"https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F7920/pdfium-ios-device-arm64.tgz";
+use crate::workspace::{MOBILE_CORE_FEATURES, build_host_ffi_library, project_root};
 
 pub fn ios() -> Result<(), Box<dyn Error>> {
 	let release = env::args().any(|a| a == "--release");
@@ -28,9 +14,6 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	let root = project_root();
 	let generated_dir = root.join("ios/Paperback/Generated");
 	fs::create_dir_all(&generated_dir)?;
-	let pdfium_dest = root.join("ios/libpdfium.dylib");
-	download_pdfium_dylib(PDFIUM_IOS_ARM64_URL, &pdfium_dest)?;
-	wrap_pdfium_framework(&root, &pdfium_dest)?;
 	println!("Generating Swift bindings via uniffi-bindgen...");
 	let ffi_library = build_host_ffi_library(&cargo)?.to_string_lossy().into_owned();
 	let status = Command::new(&cargo)
@@ -58,12 +41,12 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 		return Err("uniffi-bindgen Swift generation failed".into());
 	}
 	let profile = if release { "release" } else { "debug" };
-	let mut build_args = vec!["build", "-p", "paperback-core", "--features", "uniffi"];
+	let mut build_args =
+		vec!["rustc", "-p", "paperback-core", "--features", MOBILE_CORE_FEATURES, "--lib", "--crate-type", "staticlib"];
 	if release {
 		build_args.push("--release");
 	}
-	// Both slices: without the simulator one the app cannot be built for, let alone run in
-	// the Simulator. xcodebuild fails with "no library for this platform was found".
+	// Without the simulator slice xcodebuild fails with "no library for this platform was found".
 	for (target, label) in [("aarch64-apple-ios", "device"), ("aarch64-apple-ios-sim", "simulator")] {
 		println!("Building for {target} ({label})...");
 		let status = Command::new(&cargo).current_dir(&root).args(&build_args).args(["--target", target]).status()?;
@@ -101,11 +84,7 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 		if let Err(e) = patois_build::gen_ios_strings(&po_dir, &ios_dir) {
 			println!("Warning: could not generate Localizable.strings: {e}");
 		}
-		// gen_ios_strings names .lproj folders after the po file stem (Android-style,
-		// e.g. pt_br, zh_CN). iOS expects canonical BCP-47 identifiers to match a
-		// device's language automatically, so rename the two that differ. Keep this
-		// in sync with the language list checked into project.pbxproj's knownRegions
-		// and the Localizable.strings variant group.
+		// iOS only matches a device's language to BCP-47 folder names, not po stems; keep in sync with knownRegions in project.pbxproj and the Localizable.strings variant group.
 		for (from, to) in [("pt_br", "pt-BR"), ("zh_CN", "zh-Hans")] {
 			let from_dir = ios_dir.join(format!("{from}.lproj"));
 			let to_dir = ios_dir.join(format!("{to}.lproj"));
@@ -118,7 +97,6 @@ pub fn ios() -> Result<(), Box<dyn Error>> {
 	crate::docs::write_app_readmes(&ios_dir.join("Readmes"))?;
 	println!("iOS build complete.");
 	println!("  XCFramework: ios/paperbackFFI.xcframework");
-	println!("  PDFium framework: ios/libpdfium.framework");
 	println!("  Swift bindings: ios/Paperback/Generated/paperback.swift");
 	println!("  Localizable.strings: ios/Paperback/<lang>.lproj/Localizable.strings");
 	println!("  Add both XCFramework and Swift bindings to the Xcode project to use the Rust core.");
@@ -182,13 +160,8 @@ pub fn ios_release() -> Result<(), Box<dyn Error>> {
 	Ok(())
 }
 
-/// Hands the IPA to App Store Connect with the same App Store Connect API key the macOS
-/// notarization step uses, named by the same environment variables so there is one set of
-/// credentials to keep rather than two.
-///
-/// altool finds the key itself by id, looking for `AuthKey_<id>.p8` under `./private_keys`,
-/// `~/private_keys`, `~/.private_keys` and `~/.appstoreconnect/private_keys`. A missing key or
-/// id is reported here rather than left to altool, whose own message for it is easy to miss.
+/// Uses the macOS notarization step's API key and variables, so there's one set of credentials to keep.
+/// A missing key is reported here because altool's own message for it is easy to miss.
 fn upload_ipa(ipa: &Path) -> Result<(), Box<dyn Error>> {
 	let key_id = env::var("APPSTORE_API_KEY_ID").unwrap_or_default().trim().to_string();
 	let issuer_id = env::var("APPSTORE_API_ISSUER_ID").unwrap_or_default().trim().to_string();
@@ -235,122 +208,4 @@ fn upload_ipa(ipa: &Path) -> Result<(), Box<dyn Error>> {
 
 fn home_dir() -> PathBuf {
 	PathBuf::from(env::var("HOME").unwrap_or_default())
-}
-
-fn download_pdfium_dylib(url: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
-	let skip = env::var("PAPERBACK_SKIP_PDFIUM_DOWNLOAD").is_ok_and(|v| v == "1" || v.eq_ignore_ascii_case("true"));
-	if dest.exists() && !skip {
-		return Ok(());
-	}
-	if skip {
-		return Ok(());
-	}
-	if let Some(parent) = dest.parent() {
-		fs::create_dir_all(parent)?;
-	}
-	println!("Downloading {url} ...");
-	let response = ureq::get(url).call().map_err(|e| format!("download failed: {e}"))?;
-	let mut archive_bytes = Vec::new();
-	response.into_body().as_reader().read_to_end(&mut archive_bytes)?;
-	let mut archive = Archive::new(GzDecoder::new(Cursor::new(archive_bytes)));
-	for entry in archive.entries()? {
-		let mut entry = entry?;
-		if entry.path()?.file_name().and_then(|n| n.to_str()) == Some("libpdfium.dylib") {
-			let tmp = dest.with_extension("dylib.tmp");
-			entry.unpack(&tmp)?;
-			if dest.exists() {
-				fs::remove_file(dest)?;
-			}
-			fs::rename(&tmp, dest)?;
-			println!("Saved {}", dest.display());
-			return Ok(());
-		}
-	}
-	Err(format!("libpdfium.dylib not found in archive from {url}").into())
-}
-
-// Wraps libpdfium.dylib in a proper .framework bundle. iOS doesn't support standalone
-// third-party dylibs at all, only .framework bundles, regardless of whether the dylib is
-// wrapped in an XCFramework container; App Store Connect's upload validator rejects a
-// bare-dylib XCFramework with ITMS-90426 ("SwiftSupport folder is missing"), because it still
-// routes through the legacy validation path that a raw dylib triggers. A real .framework
-// bundle takes the modern, SwiftSupport-free path instead.
-//
-// This is embedded directly (not further wrapped in an XCFramework like paperbackFFI): we
-// only ever ship one platform slice, so XCFramework's multi-platform packaging buys nothing
-// here, and `xcodebuild -create-xcframework -framework` insists the binary inside be named
-// after the bundle itself (e.g. `libpdfium.framework/libpdfium`, no `.dylib`), which would
-// conflict with the fixed filename below.
-//
-// The framework's binary keeps the "libpdfium.dylib" filename (not the usual extension-less
-// framework-binary convention) because the `pdfium` crate's dlopen call constructs exactly
-// that filename via `libloading::library_filename("pdfium")`. AppViewModel.swift points
-// setPdfiumLibraryPath at .../Frameworks/libpdfium.framework to match.
-fn wrap_pdfium_framework(root: &Path, dylib: &Path) -> Result<(), Box<dyn Error>> {
-	let framework_dir = root.join("ios/libpdfium.framework");
-	if framework_dir.exists() {
-		fs::remove_dir_all(&framework_dir)?;
-	}
-	fs::create_dir_all(&framework_dir)?;
-	let framework_binary = framework_dir.join("libpdfium.dylib");
-	fs::copy(dylib, &framework_binary)?;
-	let status = Command::new("install_name_tool")
-		.args(["-id", "@rpath/libpdfium.framework/libpdfium.dylib"])
-		.arg(&framework_binary)
-		.status()?;
-	if !status.success() {
-		return Err("install_name_tool -id failed on libpdfium.framework/libpdfium.dylib".into());
-	}
-	// The prebuilt binary's LC_BUILD_VERSION load command declares a minos far above our own
-	// deployment target (observed: iOS 26.0, just whatever SDK the upstream release happened to
-	// be built with). Nothing in PDFium actually requires that OS version, but App Store
-	// Connect's validator takes the declaration at face value and rejects the bundle as
-	// unsupported on our (lower) deployment target. Rewrite it to match.
-	let status = Command::new("xcrun")
-		.args(["vtool", "-set-build-version", "ios", IOS_DEPLOYMENT_TARGET, IOS_DEPLOYMENT_TARGET])
-		.arg("-replace")
-		.arg("-output")
-		.arg(&framework_binary)
-		.arg(&framework_binary)
-		.status()?;
-	if !status.success() {
-		return Err("vtool -set-build-version failed on libpdfium.framework/libpdfium.dylib".into());
-	}
-	fs::write(framework_dir.join("Info.plist"), pdfium_framework_info_plist())?;
-	Ok(())
-}
-
-// Keep in sync with IPHONEOS_DEPLOYMENT_TARGET in Paperback.xcodeproj/project.pbxproj.
-const IOS_DEPLOYMENT_TARGET: &str = "16.0";
-
-fn pdfium_framework_info_plist() -> String {
-	format!(
-		r#"<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>CFBundleExecutable</key>
-	<string>libpdfium.dylib</string>
-	<key>CFBundleIdentifier</key>
-	<string>org.pdfium.libpdfium</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>libpdfium</string>
-	<key>CFBundlePackageType</key>
-	<string>FMWK</string>
-	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
-	<key>CFBundleVersion</key>
-	<string>1</string>
-	<key>CFBundleSupportedPlatforms</key>
-	<array>
-		<string>iPhoneOS</string>
-	</array>
-	<key>MinimumOSVersion</key>
-	<string>{IOS_DEPLOYMENT_TARGET}</string>
-</dict>
-</plist>
-"#
-	)
 }

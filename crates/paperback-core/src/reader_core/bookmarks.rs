@@ -1,14 +1,13 @@
-//! Bookmark navigation and filtering, backed by [`ConfigManager`]'s per-document bookmark list.
-
 use crate::{
 	config::{Bookmark, ConfigManager as RustConfigManager},
+	document::DocPos,
 	types as ffi,
 };
 
 pub fn bookmark_navigate(
 	manager: &RustConfigManager,
 	path: &str,
-	position: i64,
+	position: DocPos,
 	wrap: bool,
 	next: bool,
 	notes_only: bool,
@@ -18,54 +17,46 @@ pub fn bookmark_navigate(
 		bookmarks.retain(|b| !b.note.is_empty());
 	}
 	if bookmarks.is_empty() {
-		return ffi::BookmarkNavResult { found: false, start: -1, note: String::new(), index: -1, wrapped: false };
+		return ffi::BookmarkNavResult {
+			found: false,
+			start: DocPos::ZERO,
+			note: String::new(),
+			index: -1,
+			wrapped: false,
+		};
 	}
 	bookmarks.sort_by_key(|b| b.start);
-	let find_from = |from: i64, forward: bool, list: &[Bookmark]| -> Option<(usize, Bookmark)> {
-		if forward {
-			list.iter().enumerate().find(|(_, b)| b.start > from).map(|(i, b)| (i, b.clone()))
-		} else {
-			list.iter().enumerate().rev().find(|(_, b)| b.start < from).map(|(i, b)| (i, b.clone()))
-		}
-	};
 	let mut wrapped = false;
-	let mut hit = if next { find_from(position, true, &bookmarks) } else { find_from(position, false, &bookmarks) };
+	let mut hit = if next {
+		bookmarks.iter().position(|b| b.start > position)
+	} else {
+		bookmarks.iter().rposition(|b| b.start < position)
+	};
 	if hit.is_none() && wrap {
 		wrapped = true;
-		hit = if next { find_from(-1, true, &bookmarks) } else { find_from(i64::MAX / 2, false, &bookmarks) };
+		hit = Some(if next { 0 } else { bookmarks.len() - 1 });
 	}
+	let hit = hit.map(|idx| (idx, bookmarks[idx].clone()));
 	if let Some((idx, bm)) = hit {
 		let index = i32::try_from(idx).unwrap_or(-1);
 		return ffi::BookmarkNavResult { found: true, start: bm.start, note: bm.note, index, wrapped };
 	}
-	ffi::BookmarkNavResult { found: false, start: -1, note: String::new(), index: -1, wrapped }
+	ffi::BookmarkNavResult { found: false, start: DocPos::ZERO, note: String::new(), index: -1, wrapped }
 }
 
-/// How far behind the current playback time a bookmark has to be for "previous" to go to it.
-///
-/// Jumping to a bookmark and then asking for the previous one would otherwise find the bookmark
-/// just jumped to, since playback has moved a moment past it and it now counts as behind. This is
-/// the same allowance a media player gives its "previous track" button.
+/// Playback has moved a moment past a bookmark just jumped to, so without this "previous" would find it again, as a media player's previous-track button allows for.
 const PREVIOUS_SLACK_MS: u64 = 1500;
 
-/// Where an audio bookmark search landed.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct AudioBookmarkHit {
-	/// The playback time to seek to.
 	pub audio_ms: u64,
-	/// The chapter's position in the text, for the caret.
-	pub start: i64,
+	pub start: DocPos,
 	pub note: String,
-	/// The bookmark's place among the ones searched, counting from zero.
 	pub index: usize,
 	pub wrapped: bool,
 }
 
-/// The next or previous audio bookmark from `current_ms`, for a document that is only audio.
-///
-/// The playback-time counterpart to [`bookmark_navigate`]. It has to be separate because an
-/// audiobook's text positions cannot order its bookmarks: every bookmark in a chapter shares the
-/// chapter's position. Text bookmarks are ignored.
+/// Separate from [`bookmark_navigate`] because every bookmark in an audiobook chapter shares the chapter's position, so positions cannot order them.
 pub fn audio_bookmark_navigate(
 	manager: &RustConfigManager,
 	path: &str,
@@ -97,7 +88,7 @@ pub fn audio_bookmark_navigate(
 	Some(AudioBookmarkHit { audio_ms, start: bookmark.start, note: bookmark.note, index, wrapped })
 }
 
-pub fn bookmark_note_at_position(manager: &RustConfigManager, path: &str, position: i64) -> String {
+pub fn bookmark_note_at_position(manager: &RustConfigManager, path: &str, position: DocPos) -> String {
 	manager
 		.get_bookmarks(path)
 		.into_iter()
@@ -109,7 +100,7 @@ pub fn bookmark_note_at_position(manager: &RustConfigManager, path: &str, positi
 pub fn get_filtered_bookmarks(
 	manager: &RustConfigManager,
 	path: &str,
-	current_pos: i64,
+	current_pos: DocPos,
 	filter: ffi::BookmarkFilterType,
 ) -> ffi::FilteredBookmarks {
 	let mut bookmarks: Vec<Bookmark> = manager.get_bookmarks(path);
@@ -133,20 +124,11 @@ pub fn get_filtered_bookmarks(
 			audio_ms: b.audio_ms,
 		})
 		.collect();
-	let closest_index = if bookmarks.is_empty() {
-		-1
-	} else {
-		let mut closest_idx = 0;
-		let mut min_distance = i64::MAX;
-		for (idx, b) in bookmarks.iter().enumerate() {
-			let distance = (b.start - current_pos).abs();
-			if distance < min_distance {
-				min_distance = distance;
-				closest_idx = idx;
-			}
-		}
-		i32::try_from(closest_idx).unwrap_or(-1)
-	};
+	let closest_index = bookmarks
+		.iter()
+		.enumerate()
+		.min_by_key(|(_, b)| b.start.since(current_pos).max(current_pos.since(b.start)))
+		.map_or(-1, |(idx, _)| i32::try_from(idx).unwrap_or(-1));
 	ffi::FilteredBookmarks { items, closest_index }
 }
 
@@ -157,7 +139,7 @@ mod audio_tests {
 	fn config_with(times: &[(u64, &str)]) -> RustConfigManager {
 		let config = RustConfigManager::in_memory();
 		for (ms, note) in times {
-			config.add_audio_bookmark("book.mp3", 0, *ms, note);
+			config.add_audio_bookmark("book.mp3", 0.into(), *ms, note);
 		}
 		config
 	}
@@ -169,8 +151,6 @@ mod audio_tests {
 		assert_eq!((60_000, 1, false), (hit.audio_ms, hit.index, hit.wrapped));
 	}
 
-	/// Just after jumping to a bookmark, playback is a moment past it. "Previous" has to skip it
-	/// and go to the one before, or it would keep landing on the same bookmark.
 	#[test]
 	fn previous_skips_the_bookmark_playback_just_left() {
 		let config = config_with(&[(10_000, ""), (60_000, "")]);
@@ -196,7 +176,7 @@ mod audio_tests {
 	#[test]
 	fn text_bookmarks_are_not_audio_bookmarks() {
 		let config = RustConfigManager::in_memory();
-		config.add_bookmark("book.mp3", 0, 0, "");
+		config.add_bookmark("book.mp3", 0.into(), 0.into(), "");
 		assert!(audio_bookmark_navigate(&config, "book.mp3", 0, true, true, false).is_none());
 	}
 }

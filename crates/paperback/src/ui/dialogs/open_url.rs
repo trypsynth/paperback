@@ -2,7 +2,6 @@ use patois::t;
 use wx_utils::{add_yes_no_footer, build_yes_no_buttons, dialog_padding};
 use wxdragon::prelude::*;
 
-/// Asks for the link to open a document from, starting with `initial`.
 pub fn show_open_url_dialog(parent: &Frame, initial: &str) -> Option<String> {
 	// TRANSLATORS: Label of the field in Open from URL, which takes the web link of a document
 	let label = t("Link:");
@@ -11,7 +10,6 @@ pub fn show_open_url_dialog(parent: &Frame, initial: &str) -> Option<String> {
 	if dialog.show_modal() == ID_OK { dialog.get_value() } else { None }
 }
 
-/// The security warning before downloading a link, with No as the default answer.
 pub fn confirm_download(parent: &dyn WxWidget, warning: &str) -> bool {
 	// TRANSLATORS: Title of the security warning shown before downloading a document from a link
 	let dialog = Dialog::builder(parent, &t("Security Warning")).build();

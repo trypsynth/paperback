@@ -14,8 +14,7 @@ final class FormatDurationTests: XCTestCase {
 		XCTAssertEqual("1:01:01", formatDuration(3_661_000))
 	}
 
-	/// Playback positions arrive as raw milliseconds, so a spoken "1:00" that was really 59.6
-	/// seconds has to round rather than truncate, or the announced time trails the audio.
+	/// Truncating would make the announced time trail the audio.
 	func testMillisecondsRoundToTheNearestSecond() {
 		XCTAssertEqual("0:00", formatDuration(499))
 		XCTAssertEqual("0:01", formatDuration(500))
@@ -30,8 +29,7 @@ final class FormatDurationTests: XCTestCase {
 }
 
 final class ExportFormatTests: XCTestCase {
-	/// The picker offers the name this builds, so a format whose extension does not match what
-	/// is actually written would hand the reader a file their system opens with the wrong app.
+	/// A mismatched extension would hand the reader a file their system opens with the wrong app.
 	func testEveryFormatHasTheExtensionItsContentIsWrittenIn() {
 		XCTAssertEqual("txt", ExportFormat.text.fileExtension)
 		XCTAssertEqual("html", ExportFormat.html.fileExtension)
@@ -46,8 +44,6 @@ final class ExportFormatTests: XCTestCase {
 }
 
 final class NavUnitTests: XCTestCase {
-	/// Find only earns a place in the list once there is a query to step through, so a unit that
-	/// is a segment must never compare equal to one that is a seek amount.
 	func testUnitsOfDifferentKindsAreDistinct() {
 		XCTAssertNotEqual(NavUnit.segment(.paragraph), NavUnit.time(seconds: 5))
 		XCTAssertNotEqual(NavUnit.find, NavUnit.segment(.paragraph))
@@ -55,8 +51,7 @@ final class NavUnitTests: XCTestCase {
 		XCTAssertNotEqual(NavUnit.segment(.heading), NavUnit.segment(.line))
 	}
 
-	/// `ensureNavUnitSupported` looks the current unit up in the offered list, so seek amounts
-	/// have to compare by their length rather than by identity.
+	/// `ensureNavUnitSupported` looks the current unit up in the offered list.
 	func testSeekAmountsCompareByTheirLength() {
 		XCTAssertEqual(NavUnit.time(seconds: 30), NavUnit.time(seconds: 30))
 		XCTAssertNotEqual(NavUnit.time(seconds: 30), NavUnit.time(seconds: 60))

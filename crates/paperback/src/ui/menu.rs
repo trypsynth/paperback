@@ -1,3 +1,5 @@
+#[cfg(target_os = "windows")]
+use paperback_core::config::KeyChord;
 use paperback_core::config::{ActionId, ConfigManager, ShortcutCategory};
 use patois::t;
 use wxdragon::prelude::*;
@@ -20,13 +22,11 @@ use builder::{build_menu, claim_access_key, deduplicate_access_keys};
 pub use file_menu::recent_documents_for_menu;
 pub use state::{update_menu_item_states, update_reopen_state};
 
-/// One menu of the menu bar, holding the commands of one shortcut category.
 pub struct TopMenu {
 	pub category: ShortcutCategory,
 	pub entries: Vec<MenuEntry>,
 }
 
-/// The menu bar's menus, in order.
 pub fn menus(config: &ConfigManager, compact_go: bool) -> Vec<TopMenu> {
 	let mut menus = vec![
 		TopMenu { category: ShortcutCategory::File, entries: file_menu::entries(config) },
@@ -44,7 +44,6 @@ pub fn menus(config: &ConfigManager, compact_go: bool) -> Vec<TopMenu> {
 	menus
 }
 
-/// The menu bar labels of `menus`, each with an access key of its own where it has a free letter.
 fn titles(menus: &[TopMenu]) -> Vec<String> {
 	let mut used = Vec::new();
 	menus
@@ -57,7 +56,6 @@ fn titles(menus: &[TopMenu]) -> Vec<String> {
 		.collect()
 }
 
-/// The menu bar label of the menu holding `category`'s commands.
 fn title(category: ShortcutCategory) -> String {
 	match category {
 		// TRANSLATORS: Top-level "File" menu label in the menu bar
@@ -79,9 +77,15 @@ fn title(category: ShortcutCategory) -> String {
 	}
 }
 
-/// Commands reachable only through their keyboard shortcut.
 pub const fn is_keyboard_only(action: ActionId) -> bool {
 	matches!(action, ActionId::AnnouncePercent)
+}
+
+/// Kept out of the accelerator table: wxMSW maps punctuation with `VkKeyScan` once for the layout at build time and drops its modifiers, so on layouts where `;` is Shift+comma (Finnish, German), Ctrl+; ran Ctrl+comma (#1134).
+#[cfg(target_os = "windows")]
+pub fn is_punctuation_chord(chord: &KeyChord) -> bool {
+	let mut chars = chord.key.chars();
+	matches!((chars.next(), chars.next()), (Some(ch), None) if !ch.is_ascii_alphanumeric())
 }
 
 pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
@@ -117,18 +121,12 @@ mod tests {
 		ActionId::all().iter().copied().find(|&action| menu_ids::action_to_menu_id(action) == id)
 	}
 
-	/// macOS puts Exit and Settings in the application menu, and Linux has no OCR engine.
+	/// macOS puts Exit and Settings in the application menu.
 	const fn omitted_on_this_platform(action: ActionId) -> bool {
-		if cfg!(target_os = "macos") {
-			matches!(action, ActionId::Exit | ActionId::Options)
-		} else if cfg!(target_os = "linux") {
-			matches!(action, ActionId::BatchOcr)
-		} else {
-			false
-		}
+		cfg!(target_os = "macos") && matches!(action, ActionId::Exit | ActionId::Options)
 	}
 
-	/// The letter after the label's `&`, lowercased; the shortcut after a tab is not part of it.
+	#[cfg(not(target_os = "macos"))]
 	fn access_key(label: &str) -> Option<char> {
 		let text = label.split('\t').next().unwrap_or(label);
 		let mut chars = text.chars();
@@ -144,6 +142,7 @@ mod tests {
 		None
 	}
 
+	#[cfg(not(target_os = "macos"))]
 	fn top_level_labels(entries: &[MenuEntry]) -> Vec<&str> {
 		entries
 			.iter()
@@ -155,7 +154,7 @@ mod tests {
 			.collect()
 	}
 
-	/// One line per label whose access key an earlier label already has.
+	#[cfg(not(target_os = "macos"))]
 	fn access_key_clashes<'a>(labels: impl IntoIterator<Item = &'a str>) -> Vec<String> {
 		let mut seen: Vec<(char, &str)> = Vec::new();
 		let mut clashes = Vec::new();

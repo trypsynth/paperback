@@ -5,6 +5,7 @@ struct PasswordSheet: View {
 	@Environment(\.dismiss) private var dismiss
 
 	@State private var password = ""
+	@State private var wasWrong = false
 	@FocusState private var isFocused: Bool
 
 	var body: some View {
@@ -16,7 +17,9 @@ struct PasswordSheet: View {
 						.focused($isFocused)
 						.onSubmit { submit() }
 				} footer: {
-					if let url = viewModel.navigation.passwordPromptUrl {
+					if wasWrong {
+						Text(t("Password incorrect"))
+					} else if let url = viewModel.navigation.passwordPromptUrl {
 						// TRANSLATORS: Footer text naming the file that needs a password; {} is the file name
 						Text(t("Enter password for {}").replacingOccurrences(of: "{}", with: url.lastPathComponent))
 					}
@@ -40,9 +43,15 @@ struct PasswordSheet: View {
 		}
 	}
 
+	/// A wrong password leaves the sheet up to try again.
 	private func submit() {
 		guard !password.isEmpty, let url = viewModel.navigation.passwordPromptUrl else { return }
-		viewModel.openDocument(url: url, password: password)
+		guard viewModel.openDocument(url: url, password: password) else {
+			password = ""
+			wasWrong = true
+			UIAccessibility.post(notification: .announcement, argument: t("Password incorrect"))
+			return
+		}
 		dismiss()
 	}
 }

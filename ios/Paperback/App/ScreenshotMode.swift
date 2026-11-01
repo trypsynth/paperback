@@ -59,8 +59,6 @@ enum ScreenshotMode {
 			switch screen {
 			case .text:
 				viewModel.reading.toggleTextMode()
-				// The line text mode opens on sits under the tab strip, which would cut the chapter title in half.
-				viewModel.activeLineScrollIndex = max(0, viewModel.activeLineScrollIndex - 1)
 			case .toc: viewModel.navigation.showToc = true
 			case .recents: viewModel.navigation.showRecents = true
 			case .settings: viewModel.navigation.showSettings = true

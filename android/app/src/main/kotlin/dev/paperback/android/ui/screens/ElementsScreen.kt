@@ -33,21 +33,15 @@ import dev.paperback.android.ui.dialogs.hasTreeChildren
 import dev.paperback.android.ui.state.MainScreenViewModel
 import uniffi.paperback.HeadingTreeItemFfi
 
-/**
- * The document's headings and links, as a real destination rather than a dialog, so the lists get
- * the whole window and the system back gesture leaves them.
- */
+/** A real destination rather than a dialog, so the lists get the whole window and the system back gesture leaves them. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ElementsScreen(
-	viewModel: MainScreenViewModel = viewModel(),
-	onDismiss: () -> Unit
-) {
+fun ElementsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -> Unit) {
 	val headings by viewModel.currentHeadings.collectAsStateWithLifecycle()
 	val links by viewModel.currentLinks.collectAsStateWithLifecycle()
 	var selectedTabIndex by remember { mutableIntStateOf(0) }
 	var expandedHeadingIndices by remember { mutableStateOf(setOf<Int>()) }
-	// The lists are only needed while this screen is up, and they can be large.
+	// The lists can be large and are only needed while this screen is up.
 	DisposableEffect(Unit) {
 		onDispose { viewModel.clearElements() }
 	}
@@ -90,9 +84,7 @@ fun ElementsScreen(
 					flattenVisibleTreeIndices(items.size, levelAt, expandedHeadingIndices)
 				}
 
-				// The list runs to the bottom of the window and so under the navigation bar, which
-				// leaves its last row half covered without this. The top bar pads itself, so the
-				// bottom is the only side that belongs here.
+				// Otherwise the navigation bar half covers the last row; the top bar pads itself.
 				LazyColumn(
 					modifier = Modifier.fillMaxSize(),
 					contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom).asPaddingValues()
@@ -119,11 +111,10 @@ fun ElementsScreen(
 								.fillMaxWidth()
 								// TRANSLATORS: TalkBack action label for a heading in the elements list, read as "double tap to go to heading"
 								.clickable(onClickLabel = t("go to heading")) {
-									viewModel.requestJumpToOffset(item.offset)
+									viewModel.navigation.requestJumpToOffset(item.offset)
 									onDismiss()
 								}.semantics(mergeDescendants = true) {
-									// The row's indentation shows the level on screen, so the
-									// number itself is spoken rather than drawn.
+									// Indentation shows the level on screen, so the number is spoken rather than drawn.
 									// TRANSLATORS: TalkBack description of a heading in the elements list: its text, then how deep it sits
 									contentDescription = t("{}, Level {}", headingLabel, (level + 1).toString())
 									applyTreeExpandSemantics(hasChildren, isExpanded, toggleExpanded)
@@ -139,9 +130,7 @@ fun ElementsScreen(
 					}
 				}
 			} else {
-				// The list runs to the bottom of the window and so under the navigation bar, which
-				// leaves its last row half covered without this. The top bar pads itself, so the
-				// bottom is the only side that belongs here.
+				// Otherwise the navigation bar half covers the last row; the top bar pads itself.
 				LazyColumn(
 					modifier = Modifier.fillMaxSize(),
 					contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom).asPaddingValues()
@@ -153,7 +142,7 @@ fun ElementsScreen(
 									.fillMaxWidth()
 									// TRANSLATORS: TalkBack action label for a link in the elements list, read as "double tap to go to link"
 									.clickable(onClickLabel = t("go to link")) {
-										viewModel.requestJumpToOffset(item.offset)
+										viewModel.navigation.requestJumpToOffset(item.offset)
 										onDismiss()
 									}.padding(16.dp)
 							) {
@@ -168,10 +157,7 @@ fun ElementsScreen(
 	}
 }
 
-private fun calculateDepth(
-	items: List<HeadingTreeItemFfi>,
-	parentIndex: Int
-): Int {
+private fun calculateDepth(items: List<HeadingTreeItemFfi>, parentIndex: Int): Int {
 	var depth = 0
 	var currentIndex = parentIndex
 	while (currentIndex >= 0 && currentIndex < items.size) {

@@ -1,7 +1,3 @@
-//! The pieces the Go to line, page and percent dialogs share: a text entry that takes a
-//! bare number or a relative `+n`/`-n` offset, validation that keeps the dialog open and
-//! speaks a rejection when the entry is out of range, and the Go/Cancel footer.
-
 use std::{cell::Cell, rc::Rc};
 
 use patois::t;
@@ -9,8 +5,6 @@ use wxdragon::prelude::*;
 
 use crate::ui::navigation::announce;
 
-/// The numeric entry of a Go to dialog together with the range it validates against and
-/// the value it resolved to when the dialog was confirmed.
 pub(super) struct NumberEntry {
 	pub ctrl: TextCtrl,
 	current: i32,
@@ -20,10 +14,7 @@ pub(super) struct NumberEntry {
 }
 
 impl NumberEntry {
-	/// Builds the entry seeded with `current`, accepting only the keystrokes a number
-	/// expression can contain. A plain text field rather than a spin control: out-of-range
-	/// values must be rejected, not silently clamped, and relative `+n`/`-n` input has no
-	/// spinner equivalent.
+	/// A text field rather than a spin control, since out-of-range values must be rejected rather than clamped and `+n`/`-n` has no spinner equivalent.
 	pub fn new(dialog: Dialog, current: i32, min: i32, max: i32) -> Self {
 		let ctrl =
 			TextCtrl::builder(&dialog).with_value(&current.to_string()).with_style(TextCtrlStyle::ProcessEnter).build();
@@ -31,24 +22,19 @@ impl NumberEntry {
 		Self { ctrl, current, min, max, result: Rc::new(Cell::new(None)) }
 	}
 
-	/// The number the field currently resolves to, or `None` when it is invalid or out of range.
 	pub fn resolve(&self) -> Option<i32> {
 		resolve_number(&self.ctrl.get_value(), self.current, self.min, self.max)
 	}
 
-	/// The value the dialog was confirmed with, if it was.
 	pub fn result(&self) -> Option<i32> {
 		self.result.get()
 	}
 
-	/// Puts the caret in the field with its contents selected, ready to be overtyped.
 	pub fn focus(&self) {
 		self.ctrl.set_focus();
 		self.ctrl.select_all();
 	}
 
-	/// Validates the field and either confirms `dialog` with the resolved number or, when
-	/// the entry is invalid, announces `out_of_range` and keeps the dialog open for a retry.
 	pub fn submit(&self, dialog: Dialog, live_region_label: StaticText, out_of_range: &str) {
 		let Some(value) = self.resolve() else {
 			announce(live_region_label, out_of_range);
@@ -60,19 +46,15 @@ impl NumberEntry {
 	}
 }
 
-/// What a single-field Go to dialog (line or page) shows and accepts.
 pub(super) struct NumberPrompt<'a> {
 	pub title: &'a str,
 	pub label: &'a str,
-	/// Announced when the entry does not resolve to a number in `min..=max`.
 	pub out_of_range: &'a str,
 	pub current: i32,
 	pub min: i32,
 	pub max: i32,
 }
 
-/// Shows a modal dialog with one labelled [`NumberEntry`] and a Go/Cancel footer, and
-/// returns the number it was confirmed with.
 pub(super) fn show_number_dialog(parent: &Frame, prompt: &NumberPrompt, live_region_label: StaticText) -> Option<i32> {
 	let dialog = Dialog::builder(parent, prompt.title).build();
 	let label = StaticText::builder(&dialog).with_label(prompt.label).build();
@@ -93,13 +75,7 @@ pub(super) fn show_number_dialog(parent: &Frame, prompt: &NumberPrompt, live_reg
 	if dialog.show_modal() == ID_OK { entry.result() } else { None }
 }
 
-/// Appends the Go/Cancel row to `content_sizer`. Enter in `entry` and a click on Go both
-/// run `submit`, which is expected to validate and end the modal itself; Escape and
-/// Cancel close the dialog without navigating.
-///
-/// Go gets a non-stock ID so a click does not end the modal before `submit` has had a
-/// chance to reject the entry. The `wxStdDialogButtonSizer` still lays the pair out in
-/// platform order, since it takes custom affirmative and cancel buttons explicitly.
+/// Go gets a non-stock ID so a click cannot end the modal before `submit` has had a chance to reject the entry.
 pub(super) fn add_go_cancel_footer(
 	dialog: Dialog,
 	content_sizer: BoxSizer,
@@ -126,11 +102,6 @@ pub(super) fn add_go_cancel_footer(
 	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::All, super::DIALOG_PADDING);
 }
 
-/// Resolves the entered `text` to a number in `min..=max`, or `None` when the text is not
-/// a valid number expression or resolves out of range.
-///
-/// A bare number is the value itself; a leading `+`/`-` moves that far forward or
-/// backward from `current`, so "+5" is five past the current value and "-3" three before.
 pub(super) fn resolve_number(text: &str, current: i32, min: i32, max: i32) -> Option<i32> {
 	let trimmed = text.trim();
 	if trimmed.is_empty() {
@@ -150,16 +121,7 @@ pub(super) fn resolve_number(text: &str, current: i32, min: i32, max: i32) -> Op
 	if (i64::from(min)..=i64::from(max)).contains(&resolved) { i32::try_from(resolved).ok() } else { None }
 }
 
-/// Swallows any keystroke that cannot be part of a number expression: digits, `+`/`-`
-/// (for relative jumps), and Enter (which submits). Letters and punctuation never reach
-/// the field, so an invalid entry can't be typed in the first place.
-///
-/// Only `CHAR` events are filtered, which fire for character insertion. Everything that
-/// is not a printable Latin-1 character passes through untouched, so every navigation,
-/// editing and shortcut key keeps working: control codes below space (Tab, Backspace,
-/// Enter, Escape), Delete, the special keys at [`WXK_START`] and above (arrows, Home/End,
-/// Page keys, Insert, F-keys, numpad Enter), and all Ctrl/Cmd shortcuts. Characters
-/// outside Latin-1 report no key code and slip through too; submit still rejects them.
+/// Non-printable keys pass so navigation and shortcuts keep working; characters outside Latin-1 report no key code and slip through, but submit still rejects them.
 fn restrict_to_number_input(ctrl: TextCtrl) {
 	ctrl.bind_internal(EventType::CHAR, move |event| {
 		let key = event.get_key_code().unwrap_or(0);

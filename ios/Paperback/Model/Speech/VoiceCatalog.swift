@@ -1,6 +1,5 @@
 import AVFoundation
 
-/// The installed voices, loaded on first read and kept until `invalidate` is called.
 final class VoiceCatalog {
 	private let load: () -> [AVSpeechSynthesisVoice]
 	private var cached: [AVSpeechSynthesisVoice]?
@@ -16,7 +15,6 @@ final class VoiceCatalog {
 		return loaded
 	}
 
-	/// Drops the cached list so the next read loads it again.
 	func invalidate() {
 		cached = nil
 	}

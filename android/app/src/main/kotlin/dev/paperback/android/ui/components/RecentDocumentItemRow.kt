@@ -17,10 +17,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import dev.paperback.android.t
 import dev.paperback.android.ui.state.RecentDocumentItem
 
-/**
- * One entry in a recent-documents list, shared by the short preview on the no-document screen and
- * the full Recent Documents screen.
- */
 @Composable
 fun RecentDocumentItemRow(
 	item: RecentDocumentItem,

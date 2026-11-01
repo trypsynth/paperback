@@ -1,24 +1,9 @@
-use std::{
-	env,
-	error::Error,
-	fs,
-	io::{Cursor, Read},
-	path::Path,
-	process::Command,
-};
-
-use flate2::read::GzDecoder;
-use tar::Archive;
+use std::{env, error::Error, process::Command};
 
 use crate::{
 	print_help,
-	workspace::{build_host_ffi_library, project_root},
+	workspace::{MOBILE_CORE_FEATURES, build_host_ffi_library, project_root},
 };
-
-const PDFIUM_ANDROID_ARM64_URL: &str =
-	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-android-arm64.tgz";
-const PDFIUM_ANDROID_ARM_URL: &str =
-	"https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-android-arm.tgz";
 
 pub fn android() -> Result<(), Box<dyn Error>> {
 	let args = env::args().skip(2);
@@ -38,9 +23,6 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 		}
 	}
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
-	let jni_libs = project_root().join("android/app/src/main/jniLibs");
-	download_pdfium_so(PDFIUM_ANDROID_ARM64_URL, &jni_libs.join("arm64-v8a/libpdfium.so"))?;
-	download_pdfium_so(PDFIUM_ANDROID_ARM_URL, &jni_libs.join("armeabi-v7a/libpdfium.so"))?;
 	println!("Generating Kotlin bindings via uniffi-bindgen...");
 	let ffi_library = build_host_ffi_library(&cargo)?.to_string_lossy().into_owned();
 	let status = Command::new(&cargo)
@@ -67,7 +49,7 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 	if !status.success() {
 		return Err("uniffi-bindgen generation failed".into());
 	}
-	println!("Building native libraries for arm64-v8a and armeabi-v7a...");
+	println!("Building native libraries for arm64-v8a, armeabi-v7a, and x86_64...");
 	let status = Command::new(&cargo)
 		.current_dir(project_root())
 		.args([
@@ -76,14 +58,19 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 			"arm64-v8a",
 			"-t",
 			"armeabi-v7a",
+			"-t",
+			"x86_64",
 			"-o",
 			"android/app/src/main/jniLibs",
-			"build",
+			"rustc",
 			"--release",
 			"-p",
 			"paperback-core",
 			"--features",
-			"uniffi",
+			MOBILE_CORE_FEATURES,
+			"--lib",
+			"--crate-type",
+			"cdylib",
 		])
 		.status()?;
 	if !status.success() {
@@ -108,12 +95,7 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 			println!("Gradle tasks complete.");
 		}
 		if build_aab {
-			// Always its own gradle invocation, never combined with the assemble*/install*
-			// tasks above: android/app/build.gradle.kts disables per-ABI APK splitting
-			// whenever any task in the *same* gradle invocation contains "bundle" (bundle
-			// builds handle per-ABI delivery themselves), which would silently rename the
-			// assembleRelease outputs CI expects (app-arm64-v8a-release.apk etc.) if the
-			// two ran together.
+			// Its own invocation: build.gradle.kts disables per-ABI splits when any task in the same invocation contains "bundle", which would rename the APKs CI expects.
 			run_gradle(&["bundleRelease"])?;
 			println!("App Bundle built: android/app/build/outputs/bundle/release/app-release.aab");
 		}
@@ -126,9 +108,7 @@ fn run_gradle(tasks: &[&str]) -> Result<(), Box<dyn Error>> {
 	let android_dir = project_root().join("android");
 	let mut cmd = if cfg!(windows) {
 		let mut c = Command::new("cmd");
-		// The leading .\ matters: some Windows configs (NoDefaultCurrentDirectoryInExePath)
-		// stop cmd /C from finding a bare "gradlew.bat" in the working directory at all,
-		// failing with "'gradlew.bat' is not recognized..." even though it's right there.
+		// With NoDefaultCurrentDirectoryInExePath set, cmd /C can't find a bare "gradlew.bat" in the working directory.
 		c.arg("/C").arg(".\\gradlew.bat");
 		c
 	} else {
@@ -140,36 +120,4 @@ fn run_gradle(tasks: &[&str]) -> Result<(), Box<dyn Error>> {
 		return Err(format!("gradlew failed for tasks: {tasks:?}").into());
 	}
 	Ok(())
-}
-
-fn download_pdfium_so(url: &str, dest: &Path) -> Result<(), Box<dyn Error>> {
-	let skip = env::var("PAPERBACK_SKIP_PDFIUM_DOWNLOAD").is_ok_and(|v| v == "1" || v.eq_ignore_ascii_case("true"));
-	if dest.exists() && !skip {
-		return Ok(());
-	}
-	if skip {
-		return Ok(());
-	}
-	if let Some(parent) = dest.parent() {
-		fs::create_dir_all(parent)?;
-	}
-	println!("Downloading {url} ...");
-	let response = ureq::get(url).call().map_err(|e| format!("download failed: {e}"))?;
-	let mut archive_bytes = Vec::new();
-	response.into_body().as_reader().read_to_end(&mut archive_bytes)?;
-	let mut archive = Archive::new(GzDecoder::new(Cursor::new(archive_bytes)));
-	for entry in archive.entries()? {
-		let mut entry = entry?;
-		if entry.path()?.file_name().and_then(|n| n.to_str()) == Some("libpdfium.so") {
-			let tmp = dest.with_extension("so.tmp");
-			entry.unpack(&tmp)?;
-			if dest.exists() {
-				fs::remove_file(dest)?;
-			}
-			fs::rename(&tmp, dest)?;
-			println!("Saved {}", dest.display());
-			return Ok(());
-		}
-	}
-	Err(format!("libpdfium.so not found in archive from {url}").into())
 }

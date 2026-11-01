@@ -1,19 +1,41 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Write as _, fs, io::Cursor};
 
 use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, Node, NodeType};
+use zip::ZipArchive;
 
 use crate::{
-	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext},
+	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
 		Parser, add_converter_markers,
 		convert::xml_to_text::XmlToText,
-		util::xml::{collect_element_text, find_child_element, read_xml_to_string},
+		util::{
+			toc::build_toc_from_headings,
+			xml::{collect_element_text, decode_xml, find_child_element},
+		},
 	},
 	t,
+	util::{text::collapse_whitespace, zip::read_zip_entry_bytes},
 };
 
 type Metadata = (String, String);
+
+/// FictionBook is usually passed around zipped (`book.fb2.zip`), one book to an archive.
+fn read_fb2_bytes(path: &str) -> Result<Vec<u8>> {
+	let bytes = fs::read(path).with_context(|| format!("Failed to read FB2 file '{path}'"))?;
+	if !bytes.starts_with(b"PK\x03\x04") {
+		return Ok(bytes);
+	}
+	let mut archive =
+		ZipArchive::new(Cursor::new(bytes)).with_context(|| format!("Failed to read ZIP archive '{path}'"))?;
+	let Some(name) =
+		archive.file_names().flatten().find(|name| name.to_ascii_lowercase().ends_with(".fb2")).map(String::from)
+	else {
+		// TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+		anyhow::bail!(t("No readable content found in the ZIP archive"));
+	};
+	read_zip_entry_bytes(&mut archive, &name)
+}
 
 pub struct Fb2Parser;
 
@@ -21,8 +43,7 @@ impl Parser for Fb2Parser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		tracing::debug!(path = %context.file_path, "parsing fb2 file");
 		const CLOSING_TAG: &str = "</FictionBook>";
-		let mut xml_content = read_xml_to_string(&context.file_path)
-			.with_context(|| format!("Failed to read FB2 file '{}'", context.file_path))?;
+		let mut xml_content = decode_xml(&read_fb2_bytes(&context.file_path)?);
 		if let Some(pos) = xml_content.rfind(CLOSING_TAG) {
 			xml_content.truncate(pos + CLOSING_TAG.len());
 		}
@@ -42,33 +63,69 @@ impl Parser for Fb2Parser {
 			anyhow::bail!(t("Failed to convert FB2 XML to text"));
 		}
 		let mut buffer = DocumentBuffer::new();
-		buffer.append(&converter.get_text());
-		add_converter_markers(&mut buffer, &converter, 0);
+		buffer.append(converter.get_text());
+		add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
 		for offset in converter.get_section_offsets() {
 			buffer.add_marker(Marker::new(MarkerType::SectionBreak, *offset));
 		}
-		let id_positions: HashMap<String, usize> = converter.get_id_positions().clone();
+		let id_positions: HashMap<String, DocPos> = converter.get_id_positions().clone();
 		let mut document = Document::new().with_title(title).with_author(author);
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
+		document.toc_items = build_toc_from_headings(converter.get_headings());
 		tracing::debug!(path = %context.file_path, "parsed fb2 file successfully");
 		Ok(document)
 	}
 }
 
+/// # Errors
+///
+/// Returns an error when the file cannot be read or parsed, even after repair, or holds no binary with that id.
+pub fn binary_data(file_path: &str, href: &str) -> Result<String> {
+	const CLOSING_TAG: &str = "</FictionBook>";
+	let mut xml_content = decode_xml(&read_fb2_bytes(file_path)?);
+	if let Some(pos) = xml_content.rfind(CLOSING_TAG) {
+		xml_content.truncate(pos + CLOSING_TAG.len());
+	}
+	let repaired;
+	let doc = match XmlDocument::parse(&xml_content) {
+		Ok(doc) => doc,
+		Err(error) => {
+			repaired = repair_fb2_xml(&xml_content).ok_or(error)?;
+			XmlDocument::parse(&repaired)?
+		}
+	};
+	let id = href.strip_prefix('#').unwrap_or(href);
+	let binary = doc
+		.descendants()
+		.find(|node| node.tag_name().name() == "binary" && node.attribute("id") == Some(id))
+		.with_context(|| format!("no binary with id '{id}'"))?;
+	Ok(binary.descendants().filter(Node::is_text).filter_map(|node| node.text()).collect())
+}
+
 fn clean_fb2(xml_content: &str) -> Option<(String, Metadata)> {
 	let doc = XmlDocument::parse(xml_content).ok()?;
 	let mut result = String::new();
-	serialize_without_binary(doc.root(), &mut result);
+	serialize_without_binary(doc.root(), &mut result, Place::default());
 	let meta = extract_metadata_from_doc(&doc);
 	Some((result, meta))
 }
 
-fn serialize_without_binary(node: Node, output: &mut String) {
+#[derive(Clone, Copy, Default)]
+struct Place {
+	sections: usize,
+	in_body: bool,
+	/// A named `<body>` such as the notes, whose numbered section titles would fill the contents with numbers as headings.
+	in_notes: bool,
+	/// Poem, stanza, epigraph and quotation titles are part of the text rather than the book's structure.
+	in_verse: bool,
+}
+
+fn serialize_without_binary(node: Node, output: &mut String, place: Place) {
 	match node.node_type() {
 		NodeType::Root => {
 			for child in node.children() {
-				serialize_without_binary(child, output);
+				serialize_without_binary(child, output, place);
 			}
 		}
 		NodeType::Element => {
@@ -76,6 +133,36 @@ fn serialize_without_binary(node: Node, output: &mut String) {
 			if tag_name == "binary" {
 				return;
 			}
+			let mut place = place;
+			let tag_name = match tag_name {
+				"body" => {
+					place.in_body = true;
+					place.in_notes = node.attribute("name").is_some();
+					tag_name
+				}
+				"section" => {
+					place.sections += 1;
+					tag_name
+				}
+				"title" if place.in_body && !place.in_verse => {
+					let text = escape_xml(&title_text(node));
+					if place.in_notes && place.sections > 0 {
+						let _ = write!(output, "<p>{text}</p>");
+					} else {
+						let level = (place.sections + 1).min(6);
+						let _ = write!(output, "<h{level}>{text}</h{level}>");
+					}
+					return;
+				}
+				"poem" | "stanza" | "epigraph" | "cite" => {
+					place.in_verse = true;
+					"div"
+				}
+				"title" | "annotation" => "div",
+				"v" | "subtitle" | "text-author" => "p",
+				"empty-line" => "br",
+				_ => tag_name,
+			};
 			output.push('<');
 			output.push_str(tag_name);
 			for attr in node.attributes() {
@@ -90,7 +177,7 @@ fn serialize_without_binary(node: Node, output: &mut String) {
 			} else {
 				output.push('>');
 				for child in node.children() {
-					serialize_without_binary(child, output);
+					serialize_without_binary(child, output, place);
 				}
 				output.push_str("</");
 				output.push_str(tag_name);
@@ -117,6 +204,28 @@ fn serialize_without_binary(node: Node, output: &mut String) {
 			}
 		}
 	}
+}
+
+/// FB2 often splits "Chapter 1" and its name into two paragraphs, which run together into "Chapter 1The Beginning" if simply joined.
+fn title_text(title: Node) -> String {
+	let lines: Vec<String> = title
+		.children()
+		.filter(|child| child.tag_name().name() == "p")
+		.map(|line| collapse_whitespace(&collect_element_text(line)).trim().to_string())
+		.filter(|line| !line.is_empty())
+		.collect();
+	if lines.is_empty() {
+		return collapse_whitespace(&collect_element_text(title)).trim().to_string();
+	}
+	let mut text = String::new();
+	for line in lines {
+		if !text.is_empty() {
+			let ends_a_sentence = text.ends_with(['.', ':', '!', '?', ';', '\u{2014}', '-']);
+			text.push_str(if ends_a_sentence { " " } else { ": " });
+		}
+		text.push_str(&line);
+	}
+	text
 }
 
 fn escape_xml(s: &str) -> String {
@@ -193,16 +302,7 @@ fn find_element_by_path<'a, 'input>(node: Node<'a, 'input>, path: &[&str]) -> Op
 	None
 }
 
-/// Declares the namespace prefixes a document uses and never declared, so a strict XML parser will
-/// read it.
-///
-/// A FictionBook written by hand or by a careless converter often opens with a bare
-/// `<FictionBook>` and then writes a footnote as `<a l:href="#n1">`, with no `xmlns:l` anywhere.
-/// That is not valid XML and roxmltree refuses the whole file, though every FictionBook reader
-/// takes it: Bulgakov's "The White Guard" in FBReader's own test corpus is written exactly that
-/// way. Nothing downstream looks at namespaces, only at local names, so the declarations added
-/// here need only exist. Returns `None` when every prefix the document uses is already declared,
-/// which is when there is nothing to gain by parsing it again.
+/// FictionBooks often use a prefix such as `l:href` with no `xmlns:l`, which roxmltree refuses.
 fn declare_missing_namespaces(xml: &str) -> Option<String> {
 	let mut missing: Vec<&str> = Vec::new();
 	for prefix in used_prefixes(xml) {
@@ -218,32 +318,26 @@ fn declare_missing_namespaces(xml: &str) -> Option<String> {
 	let mut out = String::with_capacity(xml.len() + missing.len() * 48);
 	out.push_str(&xml[..insert_at]);
 	for prefix in &missing {
-		// The one prefix worth naming properly: `l` and `xlink` are both how FictionBook writes a
-		// link. Anything else gets a URI of its own so that two prefixes never collide.
+		// `l` and `xlink` are both how FictionBook writes a link; anything else gets its own URI so two prefixes never collide.
 		let uri = if matches!(*prefix, "l" | "xlink") {
 			"http://www.w3.org/1999/xlink".to_string()
 		} else {
 			format!("urn:paperback:undeclared:{prefix}")
 		};
-		out.push_str(&format!(" xmlns:{prefix}=\"{uri}\""));
+		let _ = write!(out, " xmlns:{prefix}=\"{uri}\"");
 	}
 	out.push_str(&xml[insert_at..]);
 	Some(out)
 }
 
-/// The prefixes a document uses on an element or an attribute name.
 fn used_prefixes(xml: &str) -> Vec<&str> {
 	let mut prefixes = Vec::new();
 	let is_name_char = |c: char| c.is_alphanumeric() || matches!(c, '_' | '-' | '.');
 	for (index, _) in xml.match_indices(':') {
 		let before = &xml[..index];
-		// Stepping over the character that ended the name, not over one byte of it: a file of
-		// random bytes reaches here, and one byte into a multi-byte character is not a place a
-		// string can be cut.
+		// Step over the whole character that ended the name: random bytes reach here, and one byte into a multi-byte character panics.
 		let start = before.char_indices().rev().find(|(_, c)| !is_name_char(*c)).map_or(0, |(at, c)| at + c.len_utf8());
 		let prefix = &before[start..];
-		// A prefix is a name, it follows either the `<` of a tag or the whitespace before an
-		// attribute, and what comes after the colon is a name too.
 		let opener = before[..start].chars().next_back();
 		let follows_name_start = opener.is_some_and(|c| c == '<' || c.is_whitespace());
 		let next_is_name = xml[index + 1..].chars().next().is_some_and(|c| c.is_alphabetic() || c == '_');
@@ -261,15 +355,12 @@ fn used_prefixes(xml: &str) -> Vec<&str> {
 	prefixes
 }
 
-/// Where an attribute can be added to the root element's start tag, which is just before the `>`
-/// that closes it.
 fn root_element_attribute_position(xml: &str) -> Option<usize> {
 	let mut at = 0;
 	loop {
 		let open = xml[at..].find('<')? + at;
 		let after = xml[open + 1..].chars().next()?;
 		if after == '?' || after == '!' {
-			// A declaration, a comment or a doctype, none of which is the root element.
 			at = xml[open..].find('>')? + open + 1;
 			continue;
 		}
@@ -280,8 +371,7 @@ fn root_element_attribute_position(xml: &str) -> Option<usize> {
 				(Some(open_quote), ch) if ch == open_quote => quote = None,
 				(None, '>') => {
 					let end = open + offset;
-					// A tag that closes itself has nothing under it, so `/` belongs after what is
-					// being added rather than before it.
+					// In a self-closing tag the `/` belongs after what is being added.
 					let insert = if xml[..end].ends_with('/') { end - 1 } else { end };
 					return Some(insert);
 				}
@@ -292,25 +382,14 @@ fn root_element_attribute_position(xml: &str) -> Option<usize> {
 	}
 }
 
-/// Makes a FictionBook that is not quite valid XML readable, or returns `None` when there was
-/// nothing to mend.
-///
-/// Both repairs are for files that every FictionBook reader opens and a strict XML parser will
-/// not, which is a large share of what is out there: the format is old, and much of its library
-/// was converted from HTML by tools that were not careful.
+/// Mends FictionBooks that other readers open but a strict XML parser refuses.
 fn repair_fb2_xml(xml: &str) -> Option<String> {
 	let namespaced = declare_missing_namespaces(xml);
 	let entities = resolve_html_entities(namespaced.as_deref().unwrap_or(xml));
 	entities.or(namespaced)
 }
 
-/// Replaces the HTML character entities an XML parser does not know with the characters they
-/// stand for.
-///
-/// XML declares five entities and no more, so `&nbsp;` or `&mdash;` in a FictionBook is an error
-/// that costs the whole book. They are common: a converter that has just read HTML writes what it
-/// read. An entity that is not in the HTML set either is dropped, because a missing character is
-/// a smaller loss than a missing book.
+/// Any HTML entity XML doesn't define, such as `&nbsp;`, would otherwise lose the whole book, so unknown ones are dropped.
 fn resolve_html_entities(xml: &str) -> Option<String> {
 	/// Longest HTML entity name, `CounterClockwiseContourIntegral;`, plus room.
 	const MAX_ENTITY_LEN: usize = 34;
@@ -338,8 +417,7 @@ fn resolve_html_entities(xml: &str) -> Option<String> {
 		changed = true;
 		if let Some((first, second)) = web_atoms::NAMED_ENTITIES.get(&format!("{name};")) {
 			out.extend(char::from_u32(*first));
-			// The table gives a second code point of zero for the entities that stand for one
-			// character, which is most of them.
+			// The table gives a second code point of zero for single-character entities.
 			out.extend(char::from_u32(*second).filter(|c| *c != '\0'));
 		}
 	}
@@ -370,12 +448,26 @@ mod tests {
 		Fb2Parser.parse(&ParserContext::new(path))
 	}
 
+	#[test]
+	fn a_zipped_book_opens_through_the_zip_extension() {
+		let mut zipped = std::io::Cursor::new(Vec::new());
+		{
+			let mut writer = zip::ZipWriter::new(&mut zipped);
+			writer.start_file("book.fb2", zip::write::SimpleFileOptions::default()).unwrap();
+			std::io::Write::write_all(&mut writer, fb2_document("", BODY).as_bytes()).unwrap();
+			writer.finish().unwrap();
+		}
+		let dir = TempDir::new("fb2-zip");
+		let path = dir.write_str("book.fb2.zip", zipped.into_inner());
+		let doc = crate::parser::parse_document(&ParserContext::new(path)).expect("a zipped FB2 book opens");
+		assert!(doc.buffer.content.contains("Opening line."), "{}", doc.buffer.content);
+	}
+
 	fn parse_ok(contents: &str) -> Document {
 		parse_fb2(contents).expect("parse fb2 document")
 	}
 
-	/// FictionBook came out of the Russian ebook world and most of its books are written in
-	/// windows-1251, named in the XML declaration. Reading one as UTF-8 loses the whole book.
+	/// Most FictionBooks are windows-1251, named in the XML declaration.
 	#[test]
 	fn reads_a_book_written_in_windows_1251() {
 		let xml = concat!(
@@ -396,8 +488,7 @@ mod tests {
 		assert!(doc.buffer.content.contains("Анна Каренина"), "got {:?}", doc.buffer.content);
 	}
 
-	/// A FictionBook written by hand often opens with a bare `<FictionBook>` and then uses `l:href`
-	/// for a footnote without declaring the prefix. Every reader of the format takes it.
+	/// Hand-written FictionBooks often use `l:href` without declaring the prefix.
 	#[test]
 	fn reads_a_book_that_never_declared_its_namespace_prefix() {
 		let doc = parse_ok(
@@ -416,13 +507,11 @@ mod tests {
 			"<title-info><book-title>Entities</book-title></title-info>",
 			"<body><section><p>Hello&nbsp;world&mdash;and&hellip;</p></section></body>",
 		));
-		// The no-break space resolves and then collapses with the rest of the whitespace, which is
-		// what the converter does to every run of spaces in a book.
+		// The no-break space resolves and then collapses like every run of whitespace.
 		assert!(doc.buffer.content.contains("Hello world—and…"), "got {:?}", doc.buffer.content);
 	}
 
-	/// An entity nothing knows is dropped rather than taken as a reason to lose the book. FBReader's
-	/// own help files are written with an undeclared `&FBReaderVersion;` in them.
+	/// FBReader's own help files use an undeclared `&FBReaderVersion;`.
 	#[test]
 	fn an_entity_nothing_knows_costs_only_itself() {
 		let doc = parse_ok(&fb2_document(
@@ -432,10 +521,7 @@ mod tests {
 		assert!(doc.buffer.content.contains("Version of it."), "got {:?}", doc.buffer.content);
 	}
 
-	/// Anything at all can be handed to a parser, and a file of random bytes has to come back as an
-	/// error rather than take the program down with it. This one found a panic in the namespace
-	/// repair: the byte after the character that ended a name is not a place a string can be cut
-	/// when that character is more than one byte long.
+	/// This found a panic in the namespace repair, cutting a string one byte into a multi-byte character.
 	#[test]
 	fn random_bytes_are_an_error_and_not_a_panic() {
 		let dir = TempDir::new("fb2-random");
@@ -483,8 +569,6 @@ mod tests {
 		assert_eq!(breaks, 2);
 	}
 
-	/// Cover images arrive as base64 `<binary>` blobs. They must not be decoded into the text,
-	/// which is what `clean_fb2` strips them for.
 	#[test]
 	fn drops_base64_binary_payloads() {
 		let doc = parse_ok(&fb2_document(
@@ -495,8 +579,7 @@ mod tests {
 		assert!(!doc.buffer.content.contains("iVBORw0KGgo"), "binary payload leaked: {:?}", doc.buffer.content);
 	}
 
-	/// Some writers append junk after the closing tag; the parser truncates there rather than
-	/// failing, so the document still opens.
+	/// Some writers append junk after the closing tag.
 	#[test]
 	fn ignores_trailing_junk_after_the_closing_tag() {
 		let doc = parse_ok(&format!(
@@ -512,5 +595,59 @@ mod tests {
 		let missing = dir.join_str("nope.fb2");
 		let err = Fb2Parser.parse(&ParserContext::new(missing.clone())).expect_err("missing file must fail");
 		assert!(err.to_string().contains(&missing), "error should name the file: {err}");
+	}
+
+	fn headings(document: &Document) -> Vec<(i32, String)> {
+		document
+			.buffer
+			.markers
+			.iter()
+			.filter(|m| crate::document::is_heading_marker(m.mtype))
+			.map(|m| (crate::parser::util::toc::marker_type_to_heading_level(m.mtype), m.text.clone()))
+			.collect()
+	}
+
+	/// FB2 marks a chapter with a section and its title, not h1 to h6, so without this a book has no headings or contents.
+	#[test]
+	fn section_titles_are_headings_by_depth_and_make_the_contents() {
+		let body = r#"<body><title><p>The Book</p></title><section><title><p>Part One</p></title><section><title><p>Chapter 1</p><p>The Beginning</p></title><p>Text.</p></section></section></body><body name="notes"><title><p>Notes</p></title><section id="n1"><title><p>1</p></title><p>A note.</p></section></body>"#;
+		let document = parse_ok(&fb2_document("", body));
+		assert_eq!(
+			headings(&document),
+			[
+				(1, "The Book".to_string()),
+				(2, "Part One".to_string()),
+				(3, "Chapter 1: The Beginning".to_string()),
+				(1, "Notes".to_string())
+			]
+		);
+		let top: Vec<&str> = document.toc_items.iter().map(|item| item.name.as_str()).collect();
+		assert_eq!(top, ["The Book", "Notes"]);
+		assert!(
+			document.buffer.content.contains(
+				"
+1
+A note."
+			),
+			"a note keeps its number as text: {:?}",
+			document.buffer.content
+		);
+	}
+
+	#[test]
+	fn verse_keeps_its_lines_and_its_title_is_not_a_heading() {
+		let body = r"<body><section><title><p>Chapter</p></title><poem><title><p>Ode</p></title><stanza><v>Line one</v><v>Line two</v></stanza><text-author>Someone</text-author></poem></section></body>";
+		let document = parse_ok(&fb2_document("", body));
+		assert!(
+			document.buffer.content.contains(
+				"Ode
+Line one
+Line two
+Someone"
+			),
+			"{:?}",
+			document.buffer.content
+		);
+		assert_eq!(headings(&document), [(2, "Chapter".to_string())]);
 	}
 }

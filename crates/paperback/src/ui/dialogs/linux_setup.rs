@@ -3,28 +3,17 @@ use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 
-/// What checking a [`AssociationChoice`] applies.
 pub enum ChoiceAction {
-	/// Register these MIME types with the desktop file and `xdg-mime`.
 	Associate(&'static [&'static str]),
-	/// Symlink the `pb` command-line tool into `~/.local/bin`.
 	AddPbToPath,
 }
 
-/// One line item in the Linux setup dialog: a real document format from
-/// `paperback_formats::ALL`, the standalone ZIP entry shared by DAISY and Word-in-zip (see
-/// `FormatMeta::mime_types`'s doc comment for why zip isn't part of either format's own entry),
-/// or the "add `pb` to PATH" action.
 pub struct AssociationChoice {
 	pub label: String,
 	pub action: ChoiceAction,
 	pub default_checked: bool,
 }
 
-/// Shows the one-time "set up file associations" dialog offered the first time Paperback runs
-/// from an AppImage, mirroring the Windows installer's per-format Tasks page. Returns `None` if
-/// the user dismissed the dialog without applying anything (Cancel/Escape), or `Some` with one
-/// bool per `choices` entry, in the same order, if they confirmed.
 pub fn show_linux_setup_dialog(parent: &Frame, choices: &[AssociationChoice]) -> Option<Vec<bool>> {
 	// TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
 	let title = t("Set Up Paperback");

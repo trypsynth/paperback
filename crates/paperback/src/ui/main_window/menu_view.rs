@@ -1,7 +1,3 @@
-//! The heavier "View" menu handlers: opening the document in a web view and viewing its source.
-//! Reload and the word wrap and full screen toggles stay inlined in `bind_menu_events`'s
-//! dispatch match.
-
 use std::{env, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::{parser::is_external_url, session::SourceView};
@@ -58,9 +54,7 @@ pub(super) fn handle_open_in_web_view(frame: &Frame, dm: &Rc<Mutex<DocumentManag
 }
 
 pub(super) fn handle_view_source(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>) {
-	// `None` => format has no text source; `Some(None)` => source could not
-	// be loaded; `Some(Some(..))` => source ready. Locks are dropped before
-	// any dialog is shown.
+	// `None`: the format has no source; `Some(None)`: it failed to load. Locks drop before any dialog shows.
 	let outcome: Option<Option<(SourceView, String)>> = {
 		let Ok(dm_ref) = dm.try_lock() else {
 			return;
@@ -87,10 +81,9 @@ pub(super) fn handle_view_source(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>)
 			let title = format!("{} {orig_name}", t("Source:"));
 			let opened = dm.lock().unwrap().open_source_file(dm, Path::new(&view.path), &title);
 			if opened {
-				let dm_ref = dm.lock().unwrap();
-				if let Some(tab) = dm_ref.active_tab() {
-					tab.text_ctrl.set_insertion_point(view.caret);
-					tab.text_ctrl.show_position(view.caret);
+				let mut dm_ref = dm.lock().unwrap();
+				if let Some(tab) = dm_ref.active_tab_mut() {
+					navigation::set_caret_to_doc_offset(tab, view.caret);
 				}
 			}
 		}

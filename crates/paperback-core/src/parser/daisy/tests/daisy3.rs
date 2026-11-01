@@ -2,15 +2,12 @@ use std::fs;
 
 use super::*;
 use crate::{
-	document::ParserContext,
+	document::{ContentBytePos, ParserContext},
 	parser::{Parser, daisy::DaisyParser},
 	util::test_support::TempDir,
 };
 
-// Regression test for https://github.com/trypsynth/paperback/issues/606: a real-world DAISY
-// book declared its DTBook XML as ISO-8859-1 but was actually encoded as Windows-1252 (a very
-// common mislabeling), which made `fs::read_to_string` fail outright since the bytes were not
-// valid UTF-8.
+// https://github.com/trypsynth/paperback/issues/606: a real book declared its DTBook XML as ISO-8859-1 but was Windows-1252, a common mislabeling, so `fs::read_to_string` failed outright.
 #[test]
 fn parses_dtbook_xml_declared_as_iso_8859_1_but_encoded_as_windows_1252() {
 	let dir = TempDir::new("daisy");
@@ -33,8 +30,7 @@ fn parses_dtbook_xml_declared_as_iso_8859_1_but_encoded_as_windows_1252() {
 "#,
 	)
 	.expect("write opf");
-	// Windows-1252 bytes for curly quotes (0x93/0x94) and 0xE7 for the c-cedilla in
-	// "Fran\xE7ois" -- both invalid as standalone UTF-8.
+	// Windows-1252 bytes for curly quotes (0x93/0x94) and 0xE7 for the c-cedilla in "Fran\xE7ois" -- both invalid as standalone UTF-8.
 	let mut xml_bytes = Vec::new();
 	xml_bytes.extend_from_slice(b"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n");
 	xml_bytes.extend_from_slice(b"<dtbook><book><frontmatter><p id=\"p1\">Fran\xE7ois said, \x93hello\x94.</p>");
@@ -51,8 +47,6 @@ fn parses_dtbook_xml_declared_as_iso_8859_1_but_encoded_as_windows_1252() {
 	assert!(document.audio.is_none());
 }
 
-/// A minimal two-section DAISY 3 "full text, full audio" book, exercising the multi-file
-/// offset math and the SMIL-to-text-position audio linkage end to end.
 #[test]
 fn parses_multi_file_daisy_book_with_audio() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
@@ -129,13 +123,12 @@ fn parses_multi_file_daisy_book_with_audio() {
 	assert_eq!(audio.sources().len(), 2);
 	// The second file's clips resume the elapsed clock where the first file's left off.
 	assert_eq!(audio.total_duration_ms(), 2000 + 3000 + 1500 + 2500);
-	let h2_pos = document.buffer.content.find("Chapter Two").unwrap();
+	let h2_pos =
+		document.buffer.pos_at_byte(ContentBytePos::from_raw(document.buffer.content.find("Chapter Two").unwrap()));
 	let clip_index = audio.clip_index_at_position(h2_pos).expect("chapter two should be narrated");
 	assert_eq!(audio.clip_start_ms(clip_index), Some(5000));
 }
 
-/// Two chapters can legally reuse the same bare id; the merged map keeps the first file's
-/// position while still exposing both via their path-qualified keys.
 #[test]
 fn multi_file_daisy_book_keeps_first_occurrence_of_a_duplicate_bare_id() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
@@ -165,8 +158,12 @@ fn multi_file_daisy_book_keeps_first_occurrence_of_a_duplicate_bare_id() {
 	fs::write(&zip_path, &zip_bytes).expect("write zip");
 	let context = ParserContext::new(zip_path.to_string_lossy().to_string());
 	let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
-	let first_pos = document.buffer.content.find("First occurrence.").unwrap();
-	let second_pos = document.buffer.content.find("Second occurrence.").unwrap();
+	let first_pos = document
+		.buffer
+		.pos_at_byte(ContentBytePos::from_raw(document.buffer.content.find("First occurrence.").unwrap()));
+	let second_pos = document
+		.buffer
+		.pos_at_byte(ContentBytePos::from_raw(document.buffer.content.find("Second occurrence.").unwrap()));
 	assert_eq!(
 		document.id_positions.get("dup").copied(),
 		Some(first_pos),
@@ -176,11 +173,7 @@ fn multi_file_daisy_book_keeps_first_occurrence_of_a_duplicate_bare_id() {
 	assert_eq!(document.id_positions.get("book2.xml#dup").copied(), Some(second_pos));
 }
 
-/// Some OPFs label their DTBook items as generic `text/xml` rather than the proper
-/// `application/x-dtbook+xml`. `find_single_dtbook_href`'s legacy fallback already tolerates
-/// this for a single-file book; the multi-file spine walk in `build_daisy_document` must too,
-/// or every such chapter gets skipped, `converted_any` never becomes true, and the whole book
-/// falls back to that same single-file path, which then only recovers the first chapter.
+/// Chapters an OPF labels `text/xml` must still be read, or the book falls back to the single-file path and keeps only its first chapter.
 #[test]
 fn multi_file_daisy_book_accepts_untyped_xml_chapters_referenced_directly_from_the_spine() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
@@ -217,8 +210,6 @@ fn multi_file_daisy_book_accepts_untyped_xml_chapters_referenced_directly_from_t
 	);
 }
 
-/// A `<text src="#id">` with no file part resolves against the most recent explicit
-/// `<text src="file#id">` in the same SMIL, rather than losing that clip.
 #[test]
 fn smil_bare_fragment_resolves_against_the_last_explicit_text_file() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
@@ -259,14 +250,14 @@ fn smil_bare_fragment_resolves_against_the_last_explicit_text_file() {
 	let document = DaisyParser.parse(&context).expect("DAISY parse should succeed");
 	let audio = document.audio.expect("audio timeline should be populated");
 	assert_eq!(audio.clips().len(), 2, "the bare-fragment par's clip must not be dropped");
-	let p2_pos = document.buffer.content.find("Second sentence.").unwrap();
+	let p2_pos = document
+		.buffer
+		.pos_at_byte(ContentBytePos::from_raw(document.buffer.content.find("Second sentence.").unwrap()));
 	let clip_index = audio.clip_index_at_position(p2_pos).expect("second sentence should be narrated");
 	assert_eq!(audio.clip_start_ms(clip_index), Some(2000));
 }
 
-/// A DAISY 3 NCX points `content/@src` at SMIL ids, not `DTBook` ids. Here the SMIL par
-/// ids are deliberately unrelated to the `DTBook` ids (as producers other than Bookshare
-/// number them), so resolving against `DTBook` ids alone would strand every entry at 0.
+/// Producers other than Bookshare number SMIL par ids unrelated to the `DTBook` ids, so resolving against `DTBook` ids alone would strand every entry at 0.
 #[test]
 fn ncx_targets_resolve_through_smil_par_ids() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
@@ -314,7 +305,6 @@ fn ncx_targets_resolve_through_smil_par_ids() {
 	assert_eq!(document.toc_items[1].offset, chapter_two, "second entry must not be stranded at 0");
 }
 
-/// An NCX naming a `<seq>` rather than a `<par>` resolves to where that `<seq>` begins.
 #[test]
 fn ncx_targets_resolve_through_smil_seq_ids() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
@@ -357,8 +347,6 @@ fn ncx_targets_resolve_through_smil_seq_ids() {
 	assert_eq!(document.toc_items[0].offset, document.buffer.content.find("Chapter Two").unwrap());
 }
 
-/// `clipEnd` is optional in SMIL 2.0 and means "to the end of the media". Such a par must
-/// keep its audio, bounded by whatever plays next from the same file.
 #[test]
 fn par_without_clip_end_is_bounded_by_the_next_clip_on_the_same_source() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
@@ -377,8 +365,7 @@ fn par_without_clip_end_is_bounded_by_the_next_clip_on_the_same_source() {
 <p id="p2">Second sentence.</p>
 <p id="p3">Third sentence.</p>
 </bodymatter></book></dtbook>"#;
-	// p1 has no clipEnd and must be bounded by p2's clipBegin; p3 is the trailing
-	// open-ended clip, which has nothing to measure against.
+	// p1 has no clipEnd and must be bounded by p2's clipBegin; p3 is the trailing open-ended clip, which has nothing to measure against.
 	let smil1 = br#"<smil xmlns="http://www.w3.org/2001/SMIL20/"><body><seq id="s">
 <par id="par1"><text src="book1.xml#p1" /><audio src="book1.mp3" clipBegin="0s" /></par>
 <par id="par2"><text src="book1.xml#p2" /><audio src="book1.mp3" clipBegin="3s" clipEnd="5s" /></par>
@@ -402,7 +389,6 @@ fn par_without_clip_end_is_bounded_by_the_next_clip_on_the_same_source() {
 	assert_eq!(audio.total_duration_ms(), 3000 + 2000);
 }
 
-/// One unparseable chapter shouldn't cost the reader the rest of the book.
 #[test]
 fn corrupt_chapter_does_not_abort_the_whole_book() {
 	let opf = br#"<?xml version="1.0" encoding="UTF-8"?>
@@ -446,4 +432,43 @@ fn reads_a_dtbook_in_the_encoding_it_declares() {
 		DaisyParser.parse(&ParserContext::new(opf_path.to_string_lossy().to_string())).expect("parse the book");
 	assert_eq!(document.title, "Wejście na szczyt");
 	assert!(document.buffer.content.contains("Śnieżka, najwyższy"), "text: {:?}", document.buffer.content);
+}
+
+#[test]
+fn a_zip_holding_only_a_dtbook_is_read_as_one() {
+	let dtbook = br#"<?xml version="1.0" encoding="utf-8"?><dtbook xmlns="http://www.daisy.org/z3986/2005/dtbook/"><book><bodymatter><level1><h1>Great Painters</h1><p>Jan van Eyck painted the Ghent Altarpiece.</p></level1></bodymatter></book></dtbook>"#;
+	let zip_bytes = write_zip(&[("2005-3/dtbookbasic.css", b"p {}"), ("2005-3/greatpainters.xml", dtbook)]);
+	let dir = TempDir::new("daisy_lone_dtbook_zip");
+	let zip_path = dir.path().join("great-painters.zip");
+	fs::write(&zip_path, &zip_bytes).expect("write zip");
+	let document =
+		DaisyParser.parse(&ParserContext::new(zip_path.to_string_lossy().to_string())).expect("a lone DTBook opens");
+	assert!(document.buffer.content.contains("Ghent Altarpiece"), "{}", document.buffer.content);
+	assert_eq!(document.toc_items.first().map(|item| item.name.as_str()), Some("Great Painters"));
+}
+
+#[test]
+fn an_audio_only_daisy_3_book_reads_its_ncx_labels_and_plays_each_section() {
+	let opf = br#"<?xml version="1.0"?><package xmlns="http://openebook.org/namespaces/oeb-package/1.0/"><metadata><dc-metadata><dc:Title xmlns:dc="http://purl.org/dc/elements/1.1/">Chimps</dc:Title></dc-metadata></metadata><manifest><item id="ncx" href="nav.ncx" media-type="application/x-dtbncx+xml"/><item id="s1" href="0001.smil" media-type="application/smil"/><item id="s2" href="0002.smil" media-type="application/smil"/><item id="a1" href="aud001.mp3" media-type="audio/mpeg"/><item id="a2" href="aud002.mp3" media-type="audio/mpeg"/></manifest><spine><itemref idref="s1"/><itemref idref="s2"/></spine></package>"#;
+	let ncx = br#"<?xml version="1.0"?><ncx xmlns="http://www.daisy.org/z3986/2005/ncx/"><navMap><navPoint id="n1"><navLabel><text>Great Apes</text></navLabel><content src="0001.smil#p1"/></navPoint><navPoint id="n2"><navLabel><text>Everyday Life</text></navLabel><content src="0002.smil#p3"/></navPoint></navMap></ncx>"#;
+	let smil1 = br#"<?xml version="1.0"?><smil><body><seq id="q1"><par id="p1"><audio src="aud001.mp3" clipBegin="0s" clipEnd="2s"/></par><par id="p2"><audio src="aud001.mp3" clipBegin="2s" clipEnd="5s"/></par></seq></body></smil>"#;
+	let smil2 = br#"<?xml version="1.0"?><smil><body><seq id="q2"><par id="p3"><audio src="aud002.mp3" clipBegin="0s" clipEnd="4s"/></par></seq></body></smil>"#;
+	let zip_bytes = write_zip(&[
+		("book.opf", opf),
+		("nav.ncx", ncx),
+		("0001.smil", smil1),
+		("0002.smil", smil2),
+		("aud001.mp3", b"not-audio"),
+		("aud002.mp3", b"not-audio"),
+	]);
+	let dir = TempDir::new("daisy_audio_only_zip");
+	let zip_path = dir.path().join("chimps.zip");
+	fs::write(&zip_path, &zip_bytes).expect("write zip");
+	let document = DaisyParser
+		.parse(&ParserContext::new(zip_path.to_string_lossy().to_string()))
+		.expect("an audio-only book opens");
+	assert_eq!(document.buffer.content, "Great Apes\nEveryday Life\n");
+	let names: Vec<_> = document.toc_items.iter().map(|item| item.name.as_str()).collect();
+	assert_eq!(names, ["Great Apes", "Everyday Life"]);
+	assert!(document.audio.is_some(), "the sections play their audio");
 }

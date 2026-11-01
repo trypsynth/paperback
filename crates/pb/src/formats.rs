@@ -1,13 +1,8 @@
-//! What pb can read, for the reader who asks.
-
 use std::fmt::Write as _;
 
 use paperback_core::parser::ParserRegistry;
 
-/// One line per format: its name, then the extensions it is known by.
-///
-/// Grouped by format rather than listed as bare extensions, because `.1` and `.opf` say
-/// nothing on their own and "Manual pages" and "DAISY Books" say all of it.
+/// Grouped by format rather than as bare extensions, because `.1` and `.opf` say nothing on their own.
 #[must_use]
 pub fn listing() -> String {
 	let mut formats: Vec<(&'static str, String)> = ParserRegistry::global()
@@ -42,8 +37,6 @@ mod tests {
 		}
 	}
 
-	/// The listing is what the errors send people to, so it has to be readable: one line each,
-	/// in an order someone can scan.
 	#[test]
 	fn the_listing_is_one_sorted_line_per_format() {
 		let listing = listing();
@@ -54,7 +47,6 @@ mod tests {
 		assert_eq!(lines, sorted, "the formats are not in order");
 	}
 
-	/// A manual page is `grep.1`, and the digits only make sense next to the name.
 	#[test]
 	fn the_manual_page_sections_are_listed_under_their_format() {
 		let listing = listing();

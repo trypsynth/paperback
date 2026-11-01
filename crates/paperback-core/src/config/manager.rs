@@ -1,11 +1,3 @@
-//! [`ConfigManager`], the stateful TOML-backed store built on [`super::settings::ConfigData`]:
-//! this file holds its core lifecycle (init/flush) and the content-hash-keyed document lookup
-//! every other accessor goes through, with the accessors themselves grouped into submodules by
-//! concern - generic app settings, readability, keybindings, the recent/opened document lists,
-//! Find, per-document reading state, bookmarks, and `.paperback` sidecar import/export - plus
-//! [`get_sorted_document_list`] and [`compute_document_hash`], the two free functions built on
-//! top of it.
-
 use std::{
 	cell::{Cell, RefCell},
 	fs,
@@ -15,7 +7,10 @@ use std::{
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use sha1::{Digest, Sha1};
 
-use super::settings::{ConfigData, DocumentConfig};
+use super::{
+	ActionId, KeyChord,
+	settings::{ConfigData, DocumentConfig},
+};
 
 mod app_settings;
 mod bookmarks;
@@ -27,13 +22,17 @@ mod keybindings;
 mod readability;
 mod sidecar;
 
-pub use document_list::{compute_document_hash, document_missing, document_name, get_sorted_document_list};
+pub use document_list::{
+	compute_document_hash, document_missing, document_name, filter_document_list, get_sorted_document_list,
+};
 
 pub struct ConfigManager {
 	data: RefCell<ConfigData>,
 	config_path: PathBuf,
 	dirty: Cell<bool>,
 	initialized: bool,
+	// Parsed once per change, as every keystroke looks a chord up here.
+	shortcut_chords: RefCell<Vec<(ActionId, KeyChord)>>,
 }
 
 impl Default for ConfigManager {
@@ -50,11 +49,10 @@ impl ConfigManager {
 			config_path: PathBuf::new(),
 			dirty: Cell::new(false),
 			initialized: false,
+			shortcut_chords: RefCell::new(super::ShortcutsConfig::default().chords()),
 		}
 	}
 
-	/// An initialized manager that lives only in memory, for tests outside this module that need
-	/// to store and read settings without a file.
 	#[cfg(test)]
 	pub(crate) fn in_memory() -> Self {
 		let mut manager = Self::new();
@@ -73,6 +71,7 @@ impl ConfigManager {
 		};
 		self.config_path = config_path;
 		self.initialized = true;
+		*self.shortcut_chords.borrow_mut() = data.app.shortcuts.chords();
 		*self.data.borrow_mut() = data;
 		if needs_save {
 			self.dirty.set(true);

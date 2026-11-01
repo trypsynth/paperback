@@ -6,8 +6,7 @@ import org.junit.Test
 import uniffi.paperback.MarkerType
 
 class HeadingLevelTest {
-	// The level sizes the line and tells a screen reader how deep in the book it is, so an
-	// off-by-one here reads a chapter title out as a subsection.
+	// The screen reader announces this level, so an off-by-one reads a chapter title out as a subsection.
 	@Test
 	fun `each heading marker reports its own level`() {
 		assertEquals(1, headingLevelOf(MarkerType.HEADING1))

@@ -1,7 +1,11 @@
-//! MOBI HUFF/CDIC decompression (`compression` mode 17480): builds a code table from the
-//! `HUFF` record and a phrase dictionary from the `CDIC` record(s), then recursively
-//! expands compressed text through them. A dictionary phrase can itself reference other
-//! phrases, hence the explicit stack in `decode` rather than plain recursion.
+//! A `CDIC` dictionary phrase can itself reference other phrases, hence the explicit stack in `decode` rather than plain recursion.
+
+#![allow(
+	clippy::cast_possible_truncation,
+	clippy::cast_possible_wrap,
+	clippy::cast_sign_loss,
+	reason = "bit arithmetic on codes the format limits to 32 bits"
+)]
 
 use anyhow::Result;
 
@@ -41,9 +45,9 @@ impl HuffmanDecoder {
 		decoder.load_huff(huffs[0])?;
 		decoder.load_cdic_records(&huffs[1..])?;
 		for i in 0..decoder.dictionary.len() {
-			let (slice, flag) = decoder.dictionary[i].clone().unwrap();
-			if !flag {
-				decoder.dictionary[i] = None;
+			if matches!(decoder.dictionary[i], Some((_, false)))
+				&& let Some((slice, _)) = decoder.dictionary[i].take()
+			{
 				let decoded = decoder.decode(&slice).unwrap_or(slice);
 				decoder.dictionary[i] = Some((decoded, true));
 			}
@@ -173,7 +177,6 @@ impl HuffmanDecoder {
 				if current.pos + 8 <= current.data.len() {
 					x_bytes.copy_from_slice(&current.data[current.pos..current.pos + 8]);
 				} else {
-					// 1-3 remaining bytes: load zero-padded to 4 bytes
 					let rem = current.data.len() - current.pos;
 					x_bytes[..rem].copy_from_slice(&current.data[current.pos..]);
 				}
@@ -206,34 +209,30 @@ impl HuffmanDecoder {
 					let index = ((max_code - code) >> (32 - code_len)) as usize;
 					if index >= self.dictionary.len() {
 						current.bits_left = 0;
-					} else {
-						let (slice, flag) = self.dictionary[index].clone().unwrap_or_else(|| (Vec::new(), true));
-						if flag {
-							current.out.extend_from_slice(&slice);
-						} else {
-							self.dictionary[index] = None;
-							stack.push(current);
-							if stack.len() > 1024 {
-								// TRANSLATORS: Error shown when a MOBI file's Huffman decoder recurses too deeply (likely corrupt data)
-								anyhow::bail!(t("Decode stack overflow"));
-							}
-							current = {
-								let mut padded_data = Vec::with_capacity(slice.len() + 8);
-								padded_data.extend_from_slice(&slice);
-								padded_data.extend_from_slice(&[0u8; 8]);
-								let mut x_bytes = [0u8; 8];
-								x_bytes.copy_from_slice(&padded_data[0..8]);
-								DecodeFrame {
-									data: padded_data,
-									pos: 0,
-									bits_left: slice.len() * 8,
-									x: u64::from_be_bytes(x_bytes),
-									n: 32,
-									out: Vec::new(),
-									target_dict_index: Some(index),
-								}
-							};
+					} else if let Some((slice, true)) = &self.dictionary[index] {
+						current.out.extend_from_slice(slice);
+					} else if let Some((slice, _)) = self.dictionary[index].take() {
+						stack.push(current);
+						if stack.len() > 1024 {
+							// TRANSLATORS: Error shown when a MOBI file's Huffman decoder recurses too deeply (likely corrupt data)
+							anyhow::bail!(t("Decode stack overflow"));
 						}
+						current = {
+							let mut padded_data = Vec::with_capacity(slice.len() + 8);
+							padded_data.extend_from_slice(&slice);
+							padded_data.extend_from_slice(&[0u8; 8]);
+							let mut x_bytes = [0u8; 8];
+							x_bytes.copy_from_slice(&padded_data[0..8]);
+							DecodeFrame {
+								data: padded_data,
+								pos: 0,
+								bits_left: slice.len() * 8,
+								x: u64::from_be_bytes(x_bytes),
+								n: 32,
+								out: Vec::new(),
+								target_dict_index: Some(index),
+							}
+						};
 					}
 				}
 			}
