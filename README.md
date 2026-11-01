@@ -1,25 +1,8 @@
 # Paperback
 
-[Paperback](https://paperback.dev) is an accessible reader for ebooks, documents, and audiobooks, designed for screen reader users first. It runs on Windows, macOS, Linux, iOS, and Android, and all five apps share one reading engine written in Rust.
+[Paperback](https://paperback.dev) is an accessible reader for ebooks, documents, and audiobooks, designed for screen reader users first. It runs on Windows, macOS, Linux, iOS, and Android, with all five apps sharing one reading engine written in Rust.
 
 This file is for people who work on Paperback. To use it, see the [user guide](doc/readme.md) or download it from [paperback.dev](https://paperback.dev). To contribute, see [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Features
-
-- Opens EPUB, PDF, Word, PowerPoint, OpenDocument, RTF, HTML, Markdown, reStructuredText, FictionBook, MOBI and Kindle, CHM, WinHelp, DAISY, comic book archives, man pages, Windows Write, plain text, and M4B and MP3 audiobooks. For the full list of file extensions, see the [user guide](doc/readme.md#currently-supported-file-types).
-- Opens documents in tabs. Files opened from the shell or through a file association go to the window that's already running.
-- Moves by heading, page, link, list, table, image, figure, formula, and more with single-letter keys, like a screen reader's browse mode. A table of contents and an elements list are also available.
-- Finds text, with options for case, whole words, and regular expressions, and remembers past searches.
-- Keeps bookmarks, notes, and navigation history, and goes to a line, page, or percentage.
-- Plays audiobooks and DAISY audio at adjustable speeds, with a sleep timer.
-- Reads scanned PDF pages with the OCR engine built into Windows and macOS.
-- Reads MathML as AsciiMath through MathCAT.
-- Reads untagged PDFs in order, joins their wrapped lines into paragraphs, finds headings by size and weight, and removes running headers and footers. You can turn off each of these.
-- Lets you change the font, colors, spacing, alignment, word wrap, and every keyboard shortcut.
-- Exports and imports each document's position, bookmarks, and notes as a `.paperback` file.
-- Updates itself, from either the stable or the dev channel.
-- Includes `pb`, a command-line tool that converts any supported document to plain text, HTML, or Markdown.
-- Is translated into 15 languages.
 
 ## Repository layout
 
@@ -46,11 +29,7 @@ To build the desktop app, you need the following:
 - CMake and Ninja, which compile wxWidgets.
 - gettext, for `msgfmt`, which compiles the translations. Without it, the app builds but is English only.
 - On Windows, the [WebView2 SDK](https://www.nuget.org/packages/Microsoft.Web.WebView2) on the linker's `LIB` path.
-- On Linux, the GTK 3 and WebKitGTK development packages. On Debian or Ubuntu, install them with this command:
-
-  ```
-  sudo apt install cmake ninja-build gettext libgtk-3-dev libwebkit2gtk-4.1-dev libpng-dev libjpeg-dev libtiff-dev libgl1-mesa-dev libglu1-mesa-dev libxkbcommon-dev libwayland-dev libexpat1-dev libxtst-dev libsm-dev libice-dev libasound2-dev
-  ```
+- On Linux, the GTK 3 and WebKitGTK development packages.
 
 ### Build and run
 
