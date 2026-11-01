@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use paperback_core::{
 	document::{DocLen, DocPos},
 	session::{DocumentSession, WindowSlice},
@@ -51,7 +53,9 @@ pub(super) fn load_window_into_ctrl(
 pub fn reload_window_around(tab: &mut DocumentTab, doc_offset: DocPos, reason: &'static str) {
 	let doc_len = tab.session.document_len();
 	let (from_start, from_end) = (tab.window.start(), tab.window.end());
+	let started = Instant::now();
 	tab.window = load_window_into_ctrl(tab.text_ctrl, &tab.session, doc_offset, doc_len);
+	let elapsed_ms = started.elapsed().as_millis();
 	// Moving the loaded start is what can lose a screen reader's place mid Say-All, so every move is logged with the path that caused it.
 	if from_start != tab.window.start() {
 		tracing::info!(
@@ -62,6 +66,7 @@ pub fn reload_window_around(tab: &mut DocumentTab, doc_offset: DocPos, reason: &
 			to_start = tab.window.start().get(),
 			to_end = tab.window.end().get(),
 			doc_len = doc_len.get(),
+			elapsed_ms,
 			"loaded window start moved"
 		);
 	}
@@ -72,7 +77,7 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: ReaderCtrl, slice: &WindowSlice, w
 	let content = slice.text.as_str();
 	let segments = merge_formatting_markers(&slice.markers);
 	#[cfg(target_os = "windows")]
-	if !segments.is_empty()
+	if !(segments.is_empty() && slice.paragraphs.is_empty())
 		&& let Some(font) = text_ctrl.get_font()
 	{
 		let expected = sanitize_for_rich_edit(content);
@@ -100,7 +105,7 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: ReaderCtrl, slice: &WindowSlice, w
 	true
 }
 
-/// Streaming RTF costs about 3.5s however little formatting it carries, against about 2s for plain text plus 10ms per styled span, so it only pays past a hundred spans or so (#920).
+/// Streaming RTF costs about 3.5s however little formatting it carries, against about 2s for plain text plus 10ms per styled span, so it only pays past a hundred spans or so (#920). Headings and lists always take it, since setting them on a visible control costs about 1ms each (#1211).
 #[cfg(target_os = "windows")]
 const RTF_STREAM_MIN_SEGMENTS: usize = 128;
 
@@ -130,9 +135,10 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: ReaderCtrl, slice: &Wind
 	let content = slice.text.as_str();
 	let segments = merge_formatting_markers(&slice.markers);
 	#[cfg(target_os = "windows")]
-	if segments.len() >= RTF_STREAM_MIN_SEGMENTS
+	if (segments.len() >= RTF_STREAM_MIN_SEGMENTS || !slice.paragraphs.is_empty())
 		&& let Some(font) = text_ctrl.get_font()
 	{
+		let started = Instant::now();
 		// RichEdit does not always store exactly what it is handed, so everything below compares against this rather than `content`.
 		let expected = sanitize_for_rich_edit(content);
 		let rtf = build_rtf_for_whole_control(
@@ -143,6 +149,13 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: ReaderCtrl, slice: &Wind
 		);
 		if stream_rtf_into_ctrl(text_ctrl.widget(), &rtf) {
 			if text_ctrl.get_value() == *expected {
+				tracing::debug!(
+					chars = content.len(),
+					paragraphs = slice.paragraphs.len(),
+					spans = segments.len(),
+					rtf_ms = started.elapsed().as_millis(),
+					"filled the reading control through RTF"
+				);
 				return;
 			}
 			// RichEdit makes same-width substitutions of its own (U+2028 to a vertical tab, U+FDD0..=U+FDEF to spaces) that are only cosmetic; a length change would break every offset, and unparsed RTF stored as text is always far longer.
@@ -164,11 +177,26 @@ pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: ReaderCtrl, slice: &Wind
 			tracing::warn!("RTF stream-in did not complete; falling back");
 		}
 	}
+	let started = Instant::now();
 	fill_text_ctrl(text_ctrl, content);
+	let fill_ms = started.elapsed().as_millis();
 	let place = |offset: DocPos| window.to_local(slice.start + offset.from_start());
+	let started = Instant::now();
 	#[cfg(target_os = "windows")]
 	apply_paragraph_formats(text_ctrl, place, &slice.paragraphs);
+	let paragraphs_ms = started.elapsed().as_millis();
+	let started = Instant::now();
 	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &segments, place);
+	let spans_ms = started.elapsed().as_millis();
+	tracing::debug!(
+		chars = slice.text.len(),
+		paragraphs = slice.paragraphs.len(),
+		spans = segments.len(),
+		fill_ms,
+		paragraphs_ms,
+		spans_ms,
+		"filled the reading control"
+	);
 }
 
 fn apply_formatting_markers_to_ctrl_from_segments(
