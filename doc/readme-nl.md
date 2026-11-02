@@ -1,6 +1,6 @@
-<!-- machine-translated from doc/readme.md (source-hash: c7ae4501120b67cc; sections: 84030068,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4976e03120c0eb49; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
-# Paperback - versie 1.0
+# Paperback - versie 1.1
 
 ## Inleiding
 
