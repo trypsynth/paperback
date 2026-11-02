@@ -22,6 +22,7 @@
 		A4A4A4A4A4A4A4A4A4A40003 /* paperback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = paperback.swift; sourceTree = "<group>"; };
 		A5A5A5A5A5A5A5A5A5A50001 /* PaperbackBridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PaperbackBridgingHeader.h; sourceTree = "<group>"; };
 		F7F7F7F7F7F7F7F7F7F70001 /* Translations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Translations.swift; sourceTree = "<group>"; };
+		C0C0C0C0C0C0C0C0C0C00001 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		C9C9C9C9C9C9C9C9C9C90001 /* Readmes */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Readmes; sourceTree = "<group>"; };
 		D8D8D8D8D8D8D8D8D8D81001 /* bs */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bs; path = "bs.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		D8D8D8D8D8D8D8D8D8D81002 /* cs */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = cs; path = "cs.lproj/Localizable.strings"; sourceTree = "<group>"; };
@@ -131,6 +132,7 @@
 				A1A1A1A1A1A1A1A1A1A10013 /* Paperback */,
 				5F5F5F5F5F5F5F5F5F5F0004 /* PaperbackTests */,
 				5F5F5F5F5F5F5F5F5F5F0005 /* PaperbackUITests */,
+				C0C0C0C0C0C0C0C0C0C00002 /* Config */,
 				A4A4A4A4A4A4A4A4A4A40001 /* paperbackFFI.xcframework */,
 				A1A1A1A1A1A1A1A1A1A10003 /* Products */,
 			);
@@ -162,6 +164,14 @@
 			path = Paperback;
 			sourceTree = "<group>";
 		};
+		C0C0C0C0C0C0C0C0C0C00002 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				C0C0C0C0C0C0C0C0C0C00001 /* Signing.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		A4A4A4A4A4A4A4A4A4A40005 /* Generated */ = {
 			isa = PBXGroup;
 			children = (
@@ -177,6 +187,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A1A1A1A1A1A1A1A1A1A10009 /* Build configuration list for PBXNativeTarget "Paperback" */;
 			buildPhases = (
+				C0C0C0C0C0C0C0C0C0C00003 /* Check signing settings */,
 				A1A1A1A1A1A1A1A1A1A10005 /* Sources */,
 				A1A1A1A1A1A1A1A1A1A10006 /* Resources */,
 				A1A1A1A1A1A1A1A1A1A10007 /* Frameworks */,
@@ -354,6 +365,30 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		C0C0C0C0C0C0C0C0C0C00003 /* Check signing settings */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Scripts/check-signing-settings.sh",
+				"$(PROJECT_FILE_PATH)/project.pbxproj",
+			);
+			name = "Check signing settings";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "sh \"$SCRIPT_INPUT_FILE_0\" \"$SCRIPT_INPUT_FILE_1\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		A1A1A1A1A1A1A1A1A1A10005 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -383,6 +418,7 @@
 /* Begin XCBuildConfiguration section */
 		A1A1A1A1A1A1A1A1A1A1000A /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C0C0C0C0C0C0C0C0C0C00001 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -445,6 +481,7 @@
 		};
 		A1A1A1A1A1A1A1A1A1A1000B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C0C0C0C0C0C0C0C0C0C00001 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -502,9 +539,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 63Z3C555W6;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Paperback/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Paperback;
@@ -522,7 +557,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.paperback.ios;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(PAPERBACK_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = Paperback/PaperbackBridgingHeader.h;
@@ -536,9 +571,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 63Z3C555W6;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Paperback/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Paperback;
@@ -556,7 +589,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.paperback.ios;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(PAPERBACK_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = Paperback/PaperbackBridgingHeader.h;
@@ -569,13 +602,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 63Z3C555W6;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.paperback.ios.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(PAPERBACK_BUNDLE_ID).tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -588,13 +619,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 63Z3C555W6;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.paperback.ios.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(PAPERBACK_BUNDLE_ID).tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -606,13 +635,11 @@
 		U1U1U1U1U1U1U1U1U1U10007 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 63Z3C555W6;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.paperback.ios.uitests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(PAPERBACK_BUNDLE_ID).uitests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -624,13 +651,11 @@
 		U1U1U1U1U1U1U1U1U1U10008 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_TEAM = 63Z3C555W6;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.paperback.ios.uitests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(PAPERBACK_BUNDLE_ID).uitests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;

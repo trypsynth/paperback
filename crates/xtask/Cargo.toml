@@ -6,9 +6,11 @@ license.workspace = true
 publish = false
 
 [dependencies]
+clap = { version = "4.6.7", features = ["derive"] }
 patois = { workspace = true }
 patois-build = { workspace = true }
 patois-translate = "0.1.5"
+serde = { version = "1.0.229", features = ["derive"] }
 serde_json = { workspace = true }
 shipfitter = { workspace = true, features = ["docs", "package"] }
 
