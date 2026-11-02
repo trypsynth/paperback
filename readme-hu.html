@@ -152,7 +152,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Teljesen hordozható módon is futtatható, de telepíthető is, ekkor a fájltársítások automatikusan beállnak.</li>
 <li>A gyakori fájlformátumok rendkívül széles körét támogatja.</li>
 <li>Hangoskönyveket is lejátszik, állítható sebességgel és olyan könyvjelzőkkel, amelyek a pontos időpontot jegyzik meg.</li>
-<li>A szkennelt PDF-oldalakat a Windows és a macOS beépített Felismeréssével, illetve Linux alatt a Tesseract segítségével teszi olvashatóvá.</li>
+<li>A szkennelt PDF-oldalakat a Windows és a macOS beépített szövegfelismerésével, Linuxon pedig a Tesseract segítségével teszi olvashatóvá.</li>
 <li>Könyvjelzők és jegyzetek, hogy megjelölhesse, hol tart, és később visszatérhessen oda.</li>
 <li>Minden billentyűparancs módosítható.</li>
 <li>Dokumentumokat közvetlenül http- és https-hivatkozásokról is megnyit, és újra letölti őket, amikor ismét megnyitja őket, vagy megnyomja az <code>F5</code> billentyűt; az olvasási pozíció és a könyvjelzők ilyenkor is megmaradnak. A korábban megnyitott dokumentumok visszaállításakor a hivatkozásról megnyitottak közül a legfeljebb 2 MB méretűeket tölti le újra.</li>
@@ -346,7 +346,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>Ugrás:</strong> ugrás egy sorra, egy oldalra vagy a dokumentum adott százalékára. Hogy melyikre, azt a Mód választóval adhatja meg.</li>
 <li><strong>Legutóbbi dokumentumok:</strong> az összes dokumentum, amelyet valaha megnyitott; mindegyiknél ott áll, hogy „Jelenleg megnyitva”, „Bezárva” vagy „A fájl hiányzik”. Mindegyikhez két képernyőolvasó-művelet tartozik: az Eltávolítás leveszi a listáról, a Megkeresés segítségével pedig megkeresheti azt a dokumentumot, amelynek a fájlja máshová került. A Legutóbbi dokumentumok listájának kiürítése kiüríti a listát, de egyetlen dokumentumot sem töröl.</li>
 <li><strong>Szavak száma:</strong> a dokumentumban lévő szavak száma.</li>
-<li><strong>Dokumentuminformáció:</strong> a cím, a szerző, a fájlnév, az olvasási pozíció, valamint a szavak, sorok és karakterek száma. Hangoskönyv esetén azt is mutatja, hány fájlja van, és amikor a Paperback ezt képes megállapítani, azok összes hossza és átlagos hossza.</li>
+<li><strong>Dokumentuminformáció:</strong> a cím, a szerző, a fájlnév, az, hogy hol tart a dokumentumban, valamint a szavak, a sorok és a karakterek száma. Hangoskönyvnél azt is mutatja, hány fájlból áll, és ha a Paperback meg tudja állapítani, a fájlok teljes és átlagos lejátszási idejét.</li>
 <li><strong>Exportálás:</strong> a dokumentum mentése egyszerű szövegként, HTML-ként vagy Markdownként.</li>
 <li><strong>Elalvási időzítő:</strong> 5, 10, 15, 30, 45 vagy 60 perc, illetve egy saját maga által megadott idő elteltével leállítja a felolvasást. Ha futás közben újra megnyitja, láthatja, mennyi idő van hátra, és le is állíthatja.</li>
 <li><strong>Súgó:</strong> megnyitja ezt a kézikönyvet.</li>
@@ -413,140 +413,140 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h2 id="változásnapló">Változásnapló</h2>
 <h3 id="11-es-verzió">1.1-es verzió</h3>
-<p>Az 1.1 új PDF-motorral, újraépített iOS-szövegmóddal, linuxos szövegfelismeréssel, weboldalakról nyitható dokumentumokkal, valamint évtizedes régi Word-, Write- és PowerPoint-fájlokkal érkezik, és még sok egyébbel.</p>
+<p>Az 1.1 új PDF-motort, újraépített iOS-es szövegmódot, linuxos szövegfelismerést, webcímről megnyitható dokumentumokat, több évtizednyi régebbi Word-, Write- és PowerPoint-fájl támogatását és még sok mást hoz.</p>
 <h4 id="újdonságok">Újdonságok</h4>
 <h5 id="általános">Általános</h5>
 <ul>
-<li>Magyar fordítás és felhasználói útmutató.</li>
-<li>Dokumentum megnyitása webcímről, minden platformon. Az <code>F5</code> billentyűvel újra letöltheti.</li>
-<li>Az <code>F5</code> billentyűvel újratölti a dokumentumot.</li>
-<li>A <code>Ctrl+1</code> és <code>Ctrl+9</code> billentyűparancsok az első kilenc megnyitott dokumentumra ugranak.</li>
-<li>A <code>Ctrl+Tab</code> és a <code>Ctrl+Shift+Tab</code> dokumentumok között vált macOS-en és Linuxon.</li>
-<li>A Megnyitás párbeszédpanel és az Összes dokumentum minden kiválasztott dokumentumot megnyit saját lapján.</li>
+<li>Magyar fordítás és kézikönyv.</li>
+<li>Dokumentum megnyitása webcímről, minden platformon. Az <code>F5</code> újra letölti.</li>
+<li>Az <code>F5</code> újratölti a dokumentumot.</li>
+<li>A <code>Ctrl+1</code>–<code>Ctrl+9</code> billentyűparancs az első kilenc megnyitott dokumentumra ugrik.</li>
+<li>A <code>Ctrl+Tab</code> és a <code>Ctrl+Shift+Tab</code> macOS-en és Linuxon is vált a dokumentumok között.</li>
+<li>A Megnyitás párbeszédpanel és az Összes dokumentum ablak minden kiválasztott dokumentumot megnyit, mindegyiket külön lapon.</li>
 <li>Kép mentése a helyi menüből.</li>
 <li>Könyvjelzők és jegyzetek exportálása szövegként vagy HTML-ként.</li>
-<li>Beállítások a naplózási szinthez, valamint ahhoz, hogy a Keresés kijelöli-e a találatot.</li>
-<li>Az ablak gyorsbillentyűje bármely billentyű lehet, amelyet a Billentyűparancsok testreszabása párbeszédpanel új Rendszerszintű lapján állíthat be.</li>
-<li>A másolás megmutatja, mennyit másolt, és a szöveg a vágólapon marad a Paperback bezárása után.</li>
-<li>Minden menüelem rendelkezik a saját, nyelvfüggő elérési billentyűjével.</li>
-<li>Az olvasatlan ZIP-archívum a benne lévő dokumentumok listaként nyílik meg.</li>
+<li>Beállítás a naplózási szinthez, és ahhoz, hogy a Keresés kijelölje-e a találatot.</li>
+<li>Az ablak billentyűparancsa bármelyik billentyű lehet; a Billentyűparancsok testreszabása ablak új Rendszerszintű lapján állítható be.</li>
+<li>Másoláskor a Paperback bejelenti, mennyit másolt, és a szöveg a Paperback bezárása után is a vágólapon marad.</li>
+<li>Minden menüpontnak saját gyorsbillentyűje van, minden nyelven.</li>
+<li>A nem olvasható ZIP-fájl a benne lévő dokumentumok listájaként nyílik meg.</li>
 </ul>
 <h5 id="új-formátumok">Új formátumok</h5>
 <ul>
-<li>Word Windows 1 és 2, Word DOS, Word Mac 4 és 5, valamint a Word 6 és 95 Unicode verziói.</li>
+<li>Word for Windows 1 és 2, Word for DOS, Word for Mac 4 és 5, valamint a Word 6 és a Word 95 Unicode-os kiadásai.</li>
 <li>PowerPoint 95.</li>
 <li>Tömörített FictionBook (<code>.fb2.zip</code>).</li>
-<li>DAISY 3-könyvek, amelyek csak egy DTBook ZIP-ben, vagy csak hanganyag.</li>
+<li>Azok a DAISY 3-könyvek, amelyek csak egy ZIP-be csomagolt DTBookból vagy csak hangból állnak.</li>
 </ul>
 <h5 id="szövegfelismerés">Szövegfelismerés</h5>
 <ul>
 <li>Szövegfelismerés Linuxon, a Tesseract segítségével.</li>
-<li>Aktuális oldal szövegfelismerése (<code>Ctrl+Shift+R</code>) ismét felolvassa az aktuális oldalt, akkor is, ha már van rajta szöveg.</li>
-<li>Az <code>Enter</code> billentyű egy képen felolvassa annak szövegét.</li>
-<li>A felismert szöveg követi az oldal elrendezését, és megjegyződik, így a beolvasott dokumentum megnyitásakor már van szövege.</li>
-<li>A kötegelt szövegfelismerés ismételheti a már szöveggel rendelkező oldalakat, több oldalt egyszerre olvas fel, és leáll a dokumentum bezárásakor.</li>
+<li>Az Aktuális oldal szövegfelismerése (<code>Ctrl+Shift+R</code>) újra felismeri az aktuális oldalt, akkor is, ha már van rajta szöveg.</li>
+<li>Egy képen az <code>Enter</code> felolvassa a kép szövegét.</li>
+<li>A felismert szöveg követi az oldal elrendezését, és a Paperback megjegyzi, így a szkennelt dokumentum a szövegével együtt nyílik meg.</li>
+<li>A kötegelt szövegfelismerés a már szöveget tartalmazó oldalakat is újra feldolgozhatja, egyszerre több oldalt ismer fel, és leáll, ha bezárja a dokumentumot.</li>
 </ul>
 <h5 id="hangoskönyvek">Hangoskönyvek</h5>
 <ul>
-<li>Akár négyszeres gyorsulás mindenhol, amely megmarad a munkamenetek között.</li>
-<li>Hangerő-szabályzók.</li>
+<li>Mindenhol akár négyszeres sebesség, amely újraindítás után is megmarad.</li>
+<li>Hangerő-szabályozás.</li>
 </ul>
 <h5 id="pdf-dokumentumok">PDF-dokumentumok</h5>
 <ul>
-<li>Új PDF-motor: gyorsabb, minden processzormagot használ, és nem igényel pdfium könyvtárat.</li>
-<li>Címsorok keresése nem címkézett oldalakon, jobb címek.</li>
-<li>Beállítás az ismétlődő élőfejek és élőlábak megtartásához.</li>
+<li>Új PDF-motor: gyorsabb, minden processzormagot kihasznál, és nincs szüksége a pdfium könyvtárra.</li>
+<li>Címsorok a címkézetlen oldalakon is, és jobb címek.</li>
+<li>Beállítás az ismétlődő élőfejek és élőlábak megtartására.</li>
 </ul>
 <h5 id="egyéb-dokumentumok">Egyéb dokumentumok</h5>
 <ul>
-<li>Word: számozott és felsorolásjeles listák, lábjegyzetek, végnoták, megjegyzések, képek helyettesítő szövege, listakezelés és Word saját oldalai.</li>
+<li>Word: számozott és felsorolásos listák, lábjegyzetek, végjegyzetek, megjegyzések, a képek helyettesítő szövege, navigáció a listák között, és a Word saját oldalbeosztása.</li>
 <li>OpenDocument: lábjegyzetek és megjegyzések a szöveg után.</li>
-<li>Címek és szerzők metaadatokból a Word, PowerPoint, OpenDocument, RTF, Markdown és reStructuredText dokumentumokban.</li>
-<li>Képregények: cím, szerző, oldaltípusok és könyvjelzők a ComicInfo.xml fájlból.</li>
-<li>FB2: címsorok, tartalomjegyzék és elkülönített verssorok.</li>
-<li>MOBI-, KF8- és tömörített DAISY-könyvek képei menthetők és szövegfelismeréssel olvashatók.</li>
-<li>Dollárjelre zárt matematikai képletek a Markdownban.</li>
+<li>Cím és szerző a dokumentum metaadataiból a Word-, PowerPoint-, OpenDocument-, RTF-, Markdown- és reStructuredText-dokumentumokban.</li>
+<li>Képregények: cím, író, oldaltípusok és könyvjelzők a ComicInfo.xml fájlból.</li>
+<li>FB2: címsorok, tartalomjegyzék és különálló verssorok.</li>
+<li>A MOBI-, KF8- és tömörített DAISY-könyvek képei menthetők, és szövegfelismeréssel olvashatók.</li>
+<li>Dollárjelek közé írt matematikai képletek a Markdownban.</li>
 <li>Sphinx-direktívák a reStructuredTextben.</li>
-<li>Leírás nélküli képek [Kép] formában jelennek meg.</li>
+<li>A leírás nélküli képek [Kép] formában jelennek meg.</li>
 </ul>
 <h5 id="ios-és-android-1">iOS és Android</h5>
 <ul>
-<li>Nyelvsor a Beállítások között.</li>
-<li>Dokumentuminformáció megjeleníti a haladást, valamint a hangoskönyv fájlszámát és összes hosszát.</li>
-<li>A szövegmód megjegyződik.</li>
-<li>Folyamatos olvasás a Keresés után.</li>
-<li>iOS: szövegmód újraépítve a VoiceOverhoz. Az Összes felolvasása a teljes könyvön megy végig, a forgatók mindent elérnek, a listák és táblázatok valódi listák és táblázatok, a háromujjas legyintések oldalt lapoznak, a háromujjas érintés az oldalt és a százalékot mutatja.</li>
-<li>iOS: hang, sebesség és hangmagasság könyvenként a Beszédhang ebben a könyvben beállítással.</li>
+<li>A nyelv kiválasztható a Beállításokban.</li>
+<li>A Dokumentuminformáció mutatja, hol tart, valamint a hangoskönyv fájljainak számát és lejátszási idejét.</li>
+<li>A Paperback megjegyzi a szövegmódot.</li>
+<li>A keresés után is folytatható a folyamatos felolvasás.</li>
+<li>iOS: a szövegmód újraépítve a VoiceOverhez. Az Összes felolvasása az egész könyvön végigmegy, a rotor mindenhová elér, a listák és a táblázatok valódi listák és táblázatok, a háromujjas legyintés lapoz, a háromujjas koppintás pedig bejelenti az oldalt és a százalékot.</li>
+<li>iOS: könyvenként saját beszédhang, beszédsebesség és hangmagasság (A könyv felolvasási beállításai).</li>
 <li>iOS: jelszóval védett dokumentumok.</li>
-<li>iOS: tömörített DAISY-könyvek és MP3-hangoskönyvek megosztása a Paperbackhez.</li>
-<li>iOS: az elalvási időzítő leállítja a hangoskönyveket.</li>
-<li>iOS: szlovák és ukrán támogatás.</li>
-<li>Android: a sebesség és hangmagasság módosítása az éppen olvasott bekezdésre vonatkozik, és a rendszer alapértelmezett motorjával működik.</li>
-<li>Android: futtatható x86_64-es eszközökön.</li>
+<li>iOS: a tömörített DAISY-könyvek és az MP3-hangoskönyvek megosztással is megnyithatók a Paperbackben.</li>
+<li>iOS: az elalvási időzítő a hangoskönyveket is leállítja.</li>
+<li>iOS: szlovák és ukrán nyelv.</li>
+<li>Android: a beszédsebesség és a hangmagasság módosítása már az éppen felolvasott bekezdésre is érvényes, és a rendszer alapértelmezett beszédmotorjával is működik.</li>
+<li>Android: x86_64-es eszközökön is fut.</li>
 </ul>
 <h5 id="macos">macOS</h5>
 <ul>
-<li>Univerzális alkalmazás, natívan Intel és Apple Silicon-on.</li>
-<li>A pb az alkalmazásban foglaltatik.</li>
+<li>Univerzális alkalmazás, amely az Intel- és az Apple-chipes Macen is natívan fut.</li>
+<li>A pb az alkalmazás része.</li>
 </ul>
 <h5 id="pb">pb</h5>
 <ul>
-<li>Konvertálás oldalanként, teljes mappáról, fájllistáról (<code>--files-from</code>), vagy webcímről.</li>
+<li>Konvertálás oldalanként, teljes mappából, fájllistából (<code>--files-from</code>) vagy webcímről.</li>
 </ul>
 <h4 id="módosítások">Módosítások</h4>
 <ul>
-<li>A menüsor nyolc menüre van szervezve.</li>
-<li>Az állapotsor a „Haladás“ helyett a „Haladás“ szót mutatja.</li>
-<li>A menüparancsok bejelentik, mit tettek, ahelyett hogy elfojtódnának a menü bezárásakor.</li>
-<li>A frissítések normálisan bezárják a Paperbacket, és az újra előtérbe kerül.</li>
-<li>A hatalmas szövegfájlok a memória töredékével nyílnak meg, és a 4 GB-os korlát el van távolítva.</li>
-<li>A MOBI, Word és HTML-konvertálás, a Keresés összes előfordulása, valamint az Összes dokumentum keresése gyorsabb.</li>
-<li>A Windows executable 3 MB-tal kisebb.</li>
+<li>A menüsor átrendezve, most nyolc menüből áll.</li>
+<li>Az állapotsoron az „Olvasás” helyett a „Haladás” szó áll.</li>
+<li>A menüparancsok bejelentik, mit tettek, és a menü bezárása már nem nyomja el a bejelentést.</li>
+<li>A frissítés szabályosan bezárja a Paperbacket, majd újra előtérbe hozza.</li>
+<li>A hatalmas szövegfájlok a korábbi memóriaigény töredékével nyílnak meg, és megszűnt a 4 GB-os korlát.</li>
+<li>Gyorsabb a MOBI-, Word- és HTML-konvertálás, az Összes keresése és a keresés az Összes dokumentum ablakban.</li>
+<li>A Windowsra készült programfájl 3 MB-tal kisebb.</li>
 </ul>
 <h4 id="javítások">Javítások</h4>
 <h5 id="általános-1">Általános</h5>
 <ul>
-<li>Központozási billentyűparancsok olyan billentyűzetkiosztásokon, amelyekhez Shift szükséges; a Billentyűparancsok testreszabása megjelöli azokat, amelyeket a kiosztás nem tud gépelni.</li>
-<li>A fókusz visszatér a dokumentumra a <code>Win+D</code> után.</li>
-<li>Összeomlás a könyvjelzők megnyitásakor egy új dokumentumhoz, a Keresés összes előfordulásában, és egyes sérült MOBI-fájloknál.</li>
-<li>A reguláris kifejezéses keresés a teljes egyezést jelöli ki.</li>
-<li>A hangoskönyv állapotsorán már nem váltakozik a hang- és szöveghaladás között.</li>
-<li>A szavak száma tartalmazza a szövegfelismeréssel olvasott szöveget.</li>
-<li>A beolvasott oldalak már nem jelzik saját képüket.</li>
-<li>A telepítő PATH beállítása.</li>
-<li>A Linux frissítések megtalálják a letöltéseket, az AppImage pedig AppImage formában frissül.</li>
-<li>A szöveg- és OpenDocument-fájlok megjegyzési sora le van fordítva.</li>
+<li>Az írásjeles billentyűparancsok azokon a billentyűzetkiosztásokon is működnek, amelyeken ezekhez Shift kell; a Billentyűparancsok testreszabása megjelöli azokat, amelyeket az Ön kiosztásán nem lehet begépelni.</li>
+<li>A <code>Win+D</code> után a fókusz visszatér a dokumentumra.</li>
+<li>Összeomlás egy új dokumentum könyvjelzőinek megnyitásakor, az Összes keresésében és néhány sérült MOBI-fájlnál.</li>
+<li>A reguláris kifejezéses keresés a teljes találatot jelöli ki.</li>
+<li>A hangoskönyvek állapotsora már nem váltogat a hang és a szöveg szerinti haladás között.</li>
+<li>A szavak száma a szövegfelismeréssel beolvasott szöveget is tartalmazza.</li>
+<li>A szkennelt oldalak már nem jelentik be a saját képüket.</li>
+<li>A telepítő PATH-beállítása.</li>
+<li>Linuxon a frissítés megtalálja a letöltött fájlt, és az AppImage AppImage-ként frissül.</li>
+<li>A Word- és OpenDocument-fájlokban a megjegyzések sora le van fordítva.</li>
 </ul>
 <h5 id="dokumentumok">Dokumentumok</h5>
 <ul>
-<li>Windows Write-fájlok, amelyek binárisként nyíltak meg.</li>
-<li>PDF: szöveg ismétlődése a címkézett PDF-ek oldaltöréseknél, a második oszlopok olvasódnak először, elveszett szóközök és sorközi kötőjelek, szöveg Type 3 betűtípusban, valamint tartalom pontvezetékek.</li>
-<li>RTF: nyers CR soremelések, kötőjeles listák, szöveg az első bekezdés előtt, ékezetes és CJK szöveg, szöveg elveszett egy menekített fordított perjel után, és RTF mentve <code>.doc</code> fájlként.</li>
-<li>Word- és PowerPoint-fájlok sérült tárolóval, amelyeket a Word még meg tud nyitni.</li>
-<li>Word-szöveg követett módosításokban, mezőkben és táblázatcellákon.</li>
-<li>PowerPoint-hivatkozások, szöveg nélküli diák és emoji.</li>
-<li><code>&lt;</code> és <code>&amp;</code> Word-, PowerPoint- és OpenDocument-táblázatcellákon.</li>
-<li>Jelszóval védett OpenDocument-fájlok az aktuális LibreOffice-ból.</li>
-<li>CHM-fájlok kódolásukban, HTML- és DAISY-fájlok deklarált kódolásban.</li>
-<li>Tömörített DAISY-könyvek, amelyek hivatkozásai rossz kis- és nagybetűs, valamint a DAISY 2.02-könyvek, amelyek csak a szakasz első kifejezését olvassák.</li>
-<li>Man-oldalak, amelyek <code>.so</code> fájllal átirányítanak.</li>
-<li>Markdown front matter szövegként olvasva.</li>
+<li>A bináris adatként megnyíló Windows Write-fájlok.</li>
+<li>PDF: oldaltöréseknél ismétlődő szöveg a címkézett PDF-ekben, elsőként felolvasott második hasáb, elveszett szóközök és sorvégi elválasztójelek, Type 3 betűtípusú szöveg, valamint a tartalomjegyzékek pontozott vezetővonalai.</li>
+<li>RTF: csak CR karakteres sorvégek, kötőjellel felsorolt listák, az első bekezdés előtti szöveg, ékezetes és CJK-szöveg, egy kettőzött fordított perjel után elveszett szöveg, valamint <code>.doc</code> néven mentett RTF.</li>
+<li>Sérült tárolójú Word- és PowerPoint-fájlok, amelyeket a Word még meg tud nyitni.</li>
+<li>Word: szöveg a követett változásokban, a mezőkben és a táblázatcellákban.</li>
+<li>PowerPoint: hivatkozások, szöveg nélküli diák és emojik.</li>
+<li><code>&lt;</code> és <code>&amp;</code> a Word-, PowerPoint- és OpenDocument-táblázatok celláiban.</li>
+<li>A LibreOffice mostani verziójával mentett, jelszóval védett OpenDocument-fájlok.</li>
+<li>A CHM-fájlok a saját kódlapjukkal, a HTML- és DAISY-fájlok a bennük megadott kódolással.</li>
+<li>Azok a tömörített DAISY-könyvek, amelyek hivatkozásaiban eltér a kis- és nagybetű, valamint azok a DAISY 2.02-könyvek, amelyekből csak a szakaszok első mondatrésze hangzott el.</li>
+<li>A <code>.so</code>-val más oldalra átirányító man-oldalak.</li>
+<li>A Markdown-fájlok elején álló metaadatblokk (front matter) már nem jelenik meg szövegként.</li>
 </ul>
 <h5 id="macos-1">macOS</h5>
 <ul>
-<li>Sor kezdetéről történő navigáció, billentyűzeti aktiválás és másolási bejelentések.</li>
-<li>A VoiceOver helyi menü parancsa megnyitja a Paperback sajátját.</li>
-<li>A menü gyorsbillentyűi már nem hangzanak el afelett, amit csinálnak.</li>
+<li>A sor elejére ugró navigáció, az elemek aktiválása billentyűzetről és a másolás bejelentése.</li>
+<li>A VoiceOver helyi menü parancsa a Paperback saját helyi menüjét nyitja meg.</li>
+<li>Billentyűparancs használatakor a VoiceOver már nem olvassa fel a menüpont nevét, így nem szól bele a parancs bejelentésébe.</li>
 </ul>
 <h5 id="ios-és-android-2">iOS és Android</h5>
 <ul>
-<li>iOS: az indítás már nem szakad meg nagy könyvek helyreállítása közben.</li>
-<li>iOS: az olvasott lapon nyílik meg ismét, egy lap bezárása már nem olvassa fel az előző könyvet, a Legutóbbi dokumentumok megtartják sorrendjüket.</li>
-<li>iOS: a hangoskönyveket az indítás során már nem boncolják ki újra.</li>
-<li>iOS: a kiejtési szótár reguláris kifejezési szabályai <code>\1</code> értéket fogadnak el.</li>
+<li>iOS: nagy könyvek helyreállítása közben a rendszer már nem állítja le az indítást.</li>
+<li>iOS: az alkalmazás azon a lapon nyílik meg újra, amelyen olvasott, egy lap bezárása után már nem kezdi felolvasni az előző könyvet, és a Legutóbbi dokumentumok megtartja a sorrendjét.</li>
+<li>iOS: a hangoskönyveket már nem bontja ki újra minden indításkor.</li>
+<li>iOS: a kiejtési szótár reguláris kifejezéses szabályai elfogadják a <code>\1</code> hivatkozást.</li>
 <li>Android: felolvasás jelszóval védett dokumentumokból.</li>
-<li>Android: az Előző az elején már nem olvassa fel újra az első bekezdést, a szövegmód már nem ugorja meg a görgetést.</li>
-<li>Android: kisebb energiafogyasztás olvasás és szüneteltetés közben.</li>
+<li>Android: az Előző a dokumentum elején már nem olvassa fel újra az első bekezdést, és a szövegmód már nem ugrik görgetés közben.</li>
+<li>Android: kisebb akkumulátorhasználat olvasás és szüneteltetés közben.</li>
 </ul>
 <h3 id="10-s-verzió">1.0-s verzió</h3>
 <p>Az 1.0 az első kiadás mind az öt platformon: Windowson, macOS-en, Linuxon, iOS-en és Androidon; az iOS- és az Android-alkalmazás az App Store-ban, illetve a Google Playen érhető el.</p>
