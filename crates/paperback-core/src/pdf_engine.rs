@@ -301,7 +301,43 @@ fn pdf_doc_char(byte: u8) -> char {
 
 #[cfg(test)]
 mod tests {
-	use super::decode_text_string;
+	use std::fmt::Write as _;
+
+	use super::{PdfDocument, decode_text_string};
+
+	fn pdf_with_content(content: &str) -> Vec<u8> {
+		let objects = [
+			"<< /Type /Catalog /Pages 2 0 R >>".to_string(),
+			"<< /Type /Pages /Kids [3 0 R] /Count 1 >>".to_string(),
+			"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>".to_string(),
+			format!("<< /Length {} >>\nstream\n{content}\nendstream", content.len()),
+			"<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman >>".to_string(),
+		];
+		let mut pdf = String::from("%PDF-1.4\n");
+		let mut offsets = Vec::new();
+		for (index, object) in objects.iter().enumerate() {
+			offsets.push(pdf.len());
+			let _ = writeln!(pdf, "{} 0 obj\n{object}\nendobj", index + 1);
+		}
+		let xref = pdf.len();
+		let size = objects.len() + 1;
+		let _ = writeln!(pdf, "xref\n0 {size}\n0000000000 65535 f ");
+		for offset in offsets {
+			let _ = writeln!(pdf, "{offset:010} 00000 n ");
+		}
+		let _ = writeln!(pdf, "trailer\n<< /Size {size} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF");
+		pdf.into_bytes()
+	}
+
+	/// A page squeezed by `Tz` once lost its doubled letters as fake bold and read "Gren" (the NBER working papers).
+	#[test]
+	fn horizontal_scaling_keeps_doubled_letters_and_spaces() {
+		let content = "BT /F1 100 Tf 10 Tz 1 0 0 1 72 700 Tm (Green 4332) Tj ET";
+		let document = PdfDocument::from_bytes(pdf_with_content(content), None).unwrap();
+		let page = document.page(0).unwrap();
+		let text = page.text();
+		assert_eq!(text.extract(0, text.char_count()).trim(), "Green 4332");
+	}
 
 	#[test]
 	fn a_text_string_with_a_byte_order_mark_is_utf16() {

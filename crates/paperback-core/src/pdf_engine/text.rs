@@ -465,14 +465,9 @@ impl TextObject {
 			return None;
 		}
 		let font = fonts.font(run.font());
-		// A glyph's transform is the text matrix times the font size and horizontal scaling, over the 1000 units of glyph space. Taking those back out of the first glyph's leaves pdfium's text matrix, which keeps the font size apart.
+		// A glyph's transform is the text matrix times the font size and horizontal scaling, over the 1000 units of glyph space. Taking the font size back out of the first glyph's leaves pdfium's text matrix, which holds the horizontal scaling.
 		let g = first.transform().as_coeffs();
-		let text = [
-			g[0] * 1000.0 / (size * scale),
-			g[1] * 1000.0 / (size * scale),
-			g[2] * 1000.0 / size,
-			g[3] * 1000.0 / size,
-		];
+		let text = [g[0] * 1000.0 / size, g[1] * 1000.0 / size, g[2] * 1000.0 / size, g[3] * 1000.0 / size];
 		let c = ctm.as_coeffs();
 		let linear = [
 			c[0] * text[0] + c[2] * text[1],
