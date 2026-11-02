@@ -109,9 +109,22 @@ pub fn decode_html(bytes: &[u8], fallback: Option<&'static Encoding>) -> String 
 	if let Ok(text) = str::from_utf8(bytes) {
 		return text.to_owned();
 	}
-	html_declared_encoding(bytes)
-		.filter(|encoding| *encoding != UTF_8)
-		.or(fallback)
+	let declared = html_declared_encoding(bytes).filter(|encoding| *encoding != UTF_8);
+	if let Some(declared) = declared {
+		let (text, had_errors) = declared.decode_without_bom_handling(bytes);
+		if !had_errors {
+			return text.into_owned();
+		}
+		// Japanese help authors label Shift-JIS pages ISO-2022-JP, which a wrong label turns into replacement characters.
+		if let Some(fallback) = fallback {
+			let (text, had_errors) = fallback.decode_without_bom_handling(bytes);
+			if !had_errors {
+				return text.into_owned();
+			}
+		}
+		return text.into_owned();
+	}
+	fallback
 		.map_or_else(|| convert_to_utf8(bytes), |encoding| encoding.decode_without_bom_handling(bytes).0.into_owned())
 }
 
@@ -186,6 +199,19 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
+
+	const MISLABELED: &[u8] = b"<meta charset=ISO-2022-JP><p>\x83\x43\x83\x93</p>";
+
+	#[test]
+	fn a_declared_encoding_that_does_not_fit_gives_way_to_the_fallback() {
+		assert!(decode_html(MISLABELED, Some(encoding_rs::SHIFT_JIS)).contains("\u{30A4}\u{30F3}"));
+	}
+
+	#[test]
+	fn a_declared_encoding_that_fits_beats_the_fallback() {
+		let html = b"<meta charset=windows-1251><p>\xCF\xF0\xE8</p>";
+		assert!(decode_html(html, Some(encoding_rs::SHIFT_JIS)).contains("\u{041F}\u{0440}\u{0438}"));
+	}
 
 	#[rstest]
 	#[case(b"\xEF\xBB\xBFHello", "Hello")]
