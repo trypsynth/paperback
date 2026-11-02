@@ -339,6 +339,17 @@ mod tests {
 		assert_eq!(text.extract(0, text.char_count()).trim(), "Green 4332");
 	}
 
+	/// A PDF that draws its whole text on every page and shifts it read back once per page (pdf.js issue 1721).
+	#[test]
+	fn text_off_the_page_is_not_read() {
+		let content = "BT /F1 12 Tf 1 0 0 1 72 700 Tm (kept) Tj 1 0 0 1 72 -500 Tm (below) Tj 1 0 0 1 72 900 Tm (above) Tj 1 0 0 1 -400 700 Tm (left) Tj 1 0 0 1 700 700 Tm (right) Tj 1 0 0 1 600 650 Tm (edge) Tj ET";
+		let document = PdfDocument::from_bytes(pdf_with_content(content), None).unwrap();
+		let page = document.page(0).unwrap();
+		let text = page.text();
+		let read = text.extract(0, text.char_count());
+		assert_eq!(read.split_whitespace().collect::<Vec<_>>(), ["kept", "edge"]);
+	}
+
 	#[test]
 	fn a_text_string_with_a_byte_order_mark_is_utf16() {
 		assert_eq!(decode_text_string(&[0xFE, 0xFF, 0x00, 0x48, 0x00, 0x69]), "Hi");

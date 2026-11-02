@@ -48,7 +48,7 @@ impl<'doc> PdfPage<'doc> {
 		let index = usize::try_from(index).map_err(|_| PdfError::Failed)?;
 		let page = document.pdf().pages().get(index).ok_or(PdfError::Failed)?;
 		let (width, height) = page.render_dimensions();
-		// The bounds only decide what gets drawn, and text off the page is still text to pdfium, so they are made too large to leave anything out.
+		// The bounds only decide what gets drawn, so they are made too large to leave anything out; the collector leaves out what's off the page.
 		let mut context = Context::new(
 			Affine::IDENTITY,
 			Rect::new(-1e7, -1e7, 1e7, 1e7),
@@ -56,7 +56,8 @@ impl<'doc> PdfPage<'doc> {
 			document.pdf().xref(),
 			fonts::settings(),
 		);
-		let mut collector = Collector::default();
+		let crop = page.intersected_crop_box();
+		let mut collector = Collector { page: Rect::new(crop.x0, crop.y0, crop.x1, crop.y1), ..Collector::default() };
 		interpret_page(page, &mut context, &mut collector);
 		let text = PdfTextPage::build(&collector.text_objects, &collector.objects, width, height, display_matrix(page));
 		Ok(Self { document, index, width, height, objects: collector.objects, text })
@@ -328,6 +329,7 @@ impl ObjectMark<'_> {
 
 #[derive(Default)]
 struct Collector {
+	page: Rect,
 	objects: Vec<ObjectData>,
 	text_objects: Vec<TextObject>,
 	marks: Vec<Mark>,
@@ -340,6 +342,17 @@ struct Collector {
 }
 
 impl Collector {
+	/// Some PDFs draw a whole long document on every page and shift it so one window shows, and reading what's outside the page would repeat the document once per page.
+	fn off_page(&self, bounds: &Bounds) -> bool {
+		let page = self.page;
+		page.width() > 0.0
+			&& page.height() > 0.0
+			&& (f64::from(bounds.right) < page.x0
+				|| f64::from(bounds.left) > page.x1
+				|| f64::from(bounds.top) < page.y0
+				|| f64::from(bounds.bottom) > page.y1)
+	}
+
 	fn marks(&mut self) -> Arc<[Mark]> {
 		self.current_marks.get_or_insert_with(|| self.marks.as_slice().into()).clone()
 	}
@@ -385,18 +398,25 @@ impl<'a> Device<'a> for Collector {
 		}
 		let rect = text_object.rect();
 		let bounds = Bounds { left: rect.left, bottom: rect.bottom, right: rect.right, top: rect.top };
+		if self.off_page(&bounds) {
+			// Its stroke pass must not widen the object before it.
+			self.last_run = None;
+			return;
+		}
 		self.objects.push(ObjectData { kind: ObjectKind::Other, bounds: Some(bounds), marks, image: None });
 		self.text_objects.push(text_object);
 	}
 	fn draw_image(&mut self, image: Image<'a, '_>, props: ImageDrawProps<'a>) {
 		let marks = self.marks();
 		let bounds = image_bounds(props.transform, f64::from(image.width()), f64::from(image.height()));
-		self.objects.push(ObjectData {
-			kind: ObjectKind::Image,
-			bounds: Some(bounds),
-			marks,
-			image: Some(self.images),
-		});
+		if !self.off_page(&bounds) {
+			self.objects.push(ObjectData {
+				kind: ObjectKind::Image,
+				bounds: Some(bounds),
+				marks,
+				image: Some(self.images),
+			});
+		}
 		self.images += 1;
 	}
 	fn pop_clip(&mut self) {}
