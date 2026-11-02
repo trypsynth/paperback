@@ -175,7 +175,13 @@ impl DocumentManager {
 		let path_str = path.to_string_lossy();
 		let doc_len = session.document_len();
 		let initial_pos = config.get_validated_document_position(&path_str, doc_len.as_pos()).unwrap_or_default();
-		let window = load_window_into_ctrl(text_ctrl, &session, initial_pos, doc_len);
+		let window = load_window_into_ctrl(
+			text_ctrl,
+			&session,
+			initial_pos,
+			doc_len,
+			crate::text_window::target_from_char_count(crate::config_ext::get_text_window_len(&config)),
+		);
 		apply_readability_format_to_ctrl(
 			text_ctrl.widget(),
 			config.get_line_spacing(),

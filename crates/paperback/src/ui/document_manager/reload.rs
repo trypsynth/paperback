@@ -227,7 +227,7 @@ fn reparse_tab_in_place(
 	// TODO(windowing): still whole-document on every reparse; should load a window centred on `restored_pos` instead.
 	let doc_len = tab.session.document_len();
 	let slice = tab.session.get_window(DocPos::ZERO, doc_len.as_pos());
-	tab.window = TextWindow::of(&slice);
+	tab.window = TextWindow::of(&slice, tab.window.target());
 	style_and_fill(tab.text_ctrl, &slice, &tab.window, style);
 	tab.panel.layout();
 	// Scaled by length rather than through the whole-number percentage, which in a book of millions of characters is tens of thousands off.

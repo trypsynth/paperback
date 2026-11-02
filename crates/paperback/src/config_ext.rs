@@ -102,6 +102,19 @@ pub fn set_log_level(config: &ConfigManager, level: LogLevel) {
 	config.set_app_string("log_level", &level.to_string());
 }
 
+/// The window sizes the Advanced tab offers, in characters, with zero meaning the whole document. The first is the default, matching `paperback_core::WINDOW_LEN`. A stored value outside this list falls back to the default, so a hand-edited config can't pick a size the app has never been tested with.
+pub const TEXT_WINDOW_LENGTHS: [i32; 8] =
+	[500_000, 1_000_000, 2_000_000, 5_000_000, 10_000_000, 15_000_000, 20_000_000, 0];
+
+pub fn get_text_window_len(config: &ConfigManager) -> i32 {
+	let stored = config.get_app_int("text_window_len", TEXT_WINDOW_LENGTHS[0]);
+	if TEXT_WINDOW_LENGTHS.contains(&stored) { stored } else { TEXT_WINDOW_LENGTHS[0] }
+}
+
+pub fn set_text_window_len(config: &ConfigManager, chars: i32) {
+	config.set_app_int("text_window_len", chars);
+}
+
 /// Read without a [`ConfigManager`], since initializing one writes a fresh config when the file is missing or unreadable, too early at startup.
 pub fn log_level_from_disk() -> LogLevel {
 	let text = fs::read_to_string(config_toml_path()).unwrap_or_default();

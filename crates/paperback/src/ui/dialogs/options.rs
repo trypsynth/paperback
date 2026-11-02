@@ -11,7 +11,9 @@ use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 use crate::{
-	config_ext::{LogLevel, UpdateChannel, get_log_level, get_update_channel},
+	config_ext::{
+		LogLevel, TEXT_WINDOW_LENGTHS, UpdateChannel, get_log_level, get_text_window_len, get_update_channel,
+	},
 	translation_manager::TranslationManager,
 	ui::readability::stored_colour,
 };
@@ -45,6 +47,7 @@ pub struct OptionsDialogResult {
 	pub auto_reload_documents: bool,
 	pub recent_documents_to_show: i32,
 	pub reading_speed_wpm: i32,
+	pub text_window_len: i32,
 	pub language: String,
 	pub update_channel: UpdateChannel,
 	pub log_level: LogLevel,
@@ -81,6 +84,7 @@ struct OptionsDialogUi {
 	auto_reload_check: CheckBox,
 	recent_docs_ctrl: SpinCtrl,
 	reading_speed_ctrl: SpinCtrl,
+	text_window_len_ctrl: Choice,
 	language_combo: Choice,
 	update_channel_combo: Choice,
 	log_level_combo: Choice,
@@ -122,6 +126,11 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		.get_selection()
 		.and_then(|idx| AUDIO_SEEK_AMOUNTS_SECONDS.get(idx as usize).copied())
 		.unwrap_or(10);
+	let text_window_len = ui
+		.text_window_len_ctrl
+		.get_selection()
+		.and_then(|idx| TEXT_WINDOW_LENGTHS.get(idx as usize).copied())
+		.unwrap_or(TEXT_WINDOW_LENGTHS[0]);
 	Some(OptionsDialogResult {
 		restore_previous_documents: ui.restore_docs_check.is_checked(),
 		word_wrap: ui.word_wrap_check.is_checked(),
@@ -143,6 +152,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		auto_reload_documents: ui.auto_reload_check.is_checked(),
 		recent_documents_to_show: ui.recent_docs_ctrl.value(),
 		reading_speed_wpm: ui.reading_speed_ctrl.value(),
+		text_window_len,
 		language,
 		update_channel,
 		log_level,
@@ -164,9 +174,11 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let general_panel = Panel::builder(&notebook).build();
 	let reading_panel = Panel::builder(&notebook).build();
 	let readability_panel = Panel::builder(&notebook).build();
+	let advanced_panel = Panel::builder(&notebook).build();
 	let general_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let reading_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let readability_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	let advanced_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let restore_docs_check =
 		// TRANSLATORS: Option to restore documents that were open when the app was last closed
 		CheckBox::builder(&general_panel).with_label(&t("&Restore previously opened documents on startup")).build();
@@ -432,6 +444,38 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		DIALOG_PADDING,
 	);
 	text_alignment_sizer.add(&text_alignment_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
+	// TRANSLATORS: Label for the dropdown that sets how much text the reading view loads at once; smaller windows reload more often while the user reads
+	let text_window_len_label_text = t("&Text loaded at once:");
+	let text_window_len_label = StaticText::builder(&advanced_panel).with_label(&text_window_len_label_text).build();
+	let text_window_len_ctrl = Choice::builder(&advanced_panel).build();
+	// TRANSLATORS: Reading window size option, about half a megabyte of text
+	text_window_len_ctrl.append(&t("500 KB"));
+	// TRANSLATORS: Reading window size option, about one megabyte of text
+	text_window_len_ctrl.append(&t("1 MB"));
+	// TRANSLATORS: Reading window size option, about two megabytes of text
+	text_window_len_ctrl.append(&t("2 MB"));
+	// TRANSLATORS: Reading window size option, about five megabytes of text
+	text_window_len_ctrl.append(&t("5 MB"));
+	// TRANSLATORS: Reading window size option, about ten megabytes of text
+	text_window_len_ctrl.append(&t("10 MB"));
+	// TRANSLATORS: Reading window size option, about fifteen megabytes of text
+	text_window_len_ctrl.append(&t("15 MB"));
+	// TRANSLATORS: Reading window size option, about twenty megabytes of text
+	text_window_len_ctrl.append(&t("20 MB"));
+	// TRANSLATORS: Reading window size option that loads the whole document at once, however long it is
+	text_window_len_ctrl.append(&t("Unlimited"));
+	#[cfg(target_os = "macos")]
+	text_window_len_ctrl
+		.set_accessibility_label(text_window_len_label_text.replace('&', "").trim_end_matches(':').trim());
+	let text_window_len_sizer = BoxSizer::builder(Orientation::Horizontal).build();
+	text_window_len_sizer.add(
+		&text_window_len_label,
+		0,
+		SizerFlag::AlignCenterVertical | SizerFlag::Right,
+		DIALOG_PADDING,
+	);
+	text_window_len_sizer.add(&text_window_len_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
+	advanced_sizer.add_sizer(&text_window_len_sizer, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&word_wrap_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&render_tables_inline_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&join_pdf_paragraphs_check, 0, SizerFlag::All, option_padding);
@@ -444,24 +488,30 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	readability_panel.set_sizer(readability_sizer, true);
 	general_panel.set_sizer(general_sizer, true);
 	reading_panel.set_sizer(reading_sizer, true);
+	advanced_panel.set_sizer(advanced_sizer, true);
 	// TRANSLATORS: Tab label for the General options panel
 	let general_label = t("General");
 	// TRANSLATORS: Tab label for the Reading options panel
 	let reading_label = t("Reading");
 	// TRANSLATORS: Tab label for the Readability options panel
 	let readability_label = t("Readability");
+	// TRANSLATORS: Tab label for the Advanced options panel
+	let advanced_label = t("Advanced");
 	general_panel.set_accessibility_label(&general_label);
 	reading_panel.set_accessibility_label(&reading_label);
 	readability_panel.set_accessibility_label(&readability_label);
+	advanced_panel.set_accessibility_label(&advanced_label);
 	#[cfg(target_os = "windows")]
 	{
 		general_panel.set_accessibility_role(AccRole::PropertyPage);
 		reading_panel.set_accessibility_role(AccRole::PropertyPage);
 		readability_panel.set_accessibility_role(AccRole::PropertyPage);
+		advanced_panel.set_accessibility_role(AccRole::PropertyPage);
 	}
 	notebook.add_page(&general_panel, &general_label, true, None);
 	notebook.add_page(&reading_panel, &reading_label, false, None);
 	notebook.add_page(&readability_panel, &readability_label, false, None);
+	notebook.add_page(&advanced_panel, &advanced_label, false, None);
 	restore_docs_check.set_value(config.get_app_bool("restore_previous_documents", true));
 	word_wrap_check.set_value(config.get_app_bool("word_wrap", false));
 	render_tables_inline_check.set_value(config.get_app_bool("render_tables_inline", true));
@@ -489,6 +539,9 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	check_for_updates_check.set_value(config.get_app_bool("check_for_updates_on_startup", true));
 	recent_docs_ctrl.set_value(config.get_app_int("recent_documents_to_show", 25).clamp(0, max_recent_docs));
 	reading_speed_ctrl.set_value(config.get_app_int("reading_speed_wpm", 150).clamp(1, 2000));
+	let stored_window_len = get_text_window_len(config);
+	let window_len_index = TEXT_WINDOW_LENGTHS.iter().position(|&len| len == stored_window_len).unwrap_or(0);
+	text_window_len_ctrl.set_selection(u32::try_from(window_len_index).unwrap_or(0));
 	let stored_language = config.get_app_string("language", "");
 	let current_language = if stored_language.is_empty() {
 		TranslationManager::instance().lock().unwrap().current_language()
@@ -598,6 +651,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		auto_reload_check,
 		recent_docs_ctrl,
 		reading_speed_ctrl,
+		text_window_len_ctrl,
 		language_combo,
 		update_channel_combo,
 		log_level_combo,

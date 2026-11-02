@@ -8,6 +8,14 @@ use crate::{
 };
 
 impl DocumentManager {
+	/// The setting takes effect at each tab's next reload; the text already loaded stays where it is, so changing it never moves a reader.
+	pub fn apply_text_window_len(&mut self, chars: i32) {
+		let target = text_window::target_from_char_count(chars);
+		for tab in &mut self.tabs {
+			tab.window.set_target(target);
+		}
+	}
+
 	/// Extends the loaded window ahead of a caret moving forward, on a timer because NVDA's Say-All reads through UI Automation and never reaches our key handlers.
 	///
 	/// It only ever appends. Say-All keeps its own offsets into the control, and recentring or compacting here once walked a Say-All back to the top of a large file. Compaction happens where the user moves instead (see [`Self::compact_window_after_user_move`]).
@@ -75,7 +83,7 @@ impl DocumentManager {
 		let Some(tab) = self.active_tab_mut() else {
 			return;
 		};
-		if tab.window.loaded_len() <= text_window::compaction_threshold() {
+		if tab.window.loaded_len() <= tab.window.compaction_threshold() {
 			return;
 		}
 		let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());

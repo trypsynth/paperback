@@ -37,14 +37,15 @@ pub(super) fn load_window_into_ctrl(
 	session: &DocumentSession,
 	target_pos: DocPos,
 	doc_len: DocLen,
+	target: DocLen,
 ) -> TextWindow {
-	let slice = if text_window::should_use_whole_document(doc_len) {
+	let slice = if text_window::should_use_whole_document(doc_len, target) {
 		session.get_window(DocPos::ZERO, doc_len.as_pos())
 	} else {
-		let (raw_start, raw_end) = text_window::target_window_bounds(target_pos, doc_len);
+		let (raw_start, raw_end) = text_window::target_window_bounds(target_pos, doc_len, target);
 		session.get_window(raw_start, raw_end)
 	};
-	let window = TextWindow::of(&slice);
+	let window = TextWindow::of(&slice, target);
 	fill_text_ctrl_with_formatting(text_ctrl, &slice, &window);
 	window
 }
@@ -54,7 +55,8 @@ pub fn reload_window_around(tab: &mut DocumentTab, doc_offset: DocPos, reason: &
 	let doc_len = tab.session.document_len();
 	let (from_start, from_end) = (tab.window.start(), tab.window.end());
 	let started = Instant::now();
-	tab.window = load_window_into_ctrl(tab.text_ctrl, &tab.session, doc_offset, doc_len);
+	let target = tab.window.target();
+	tab.window = load_window_into_ctrl(tab.text_ctrl, &tab.session, doc_offset, doc_len, target);
 	let elapsed_ms = started.elapsed().as_millis();
 	// Moving the loaded start is what can lose a screen reader's place mid Say-All, so every move is logged with the path that caused it.
 	if from_start != tab.window.start() {

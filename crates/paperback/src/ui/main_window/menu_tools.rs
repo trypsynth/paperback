@@ -13,7 +13,7 @@ use super::{DocumentManager, build_font_from_readability, dialogs, menu, update_
 #[cfg(target_os = "windows")]
 use super::{HotkeyHandle, re_register_hotkey};
 use crate::{
-	config_ext::{set_log_level, set_update_channel},
+	config_ext::{get_text_window_len, set_log_level, set_text_window_len, set_update_channel},
 	translation_manager::TranslationManager,
 	ui::navigation::announce_for_command,
 };
@@ -117,6 +117,7 @@ pub(super) fn handle_options(
 		old_text_alignment,
 		old_letter_spacing,
 		old_paragraph_spacing,
+		old_text_window_len,
 	) = {
 		let cfg = config.lock().unwrap();
 		(
@@ -132,6 +133,7 @@ pub(super) fn handle_options(
 			cfg.get_text_alignment(),
 			cfg.get_letter_spacing(),
 			cfg.get_paragraph_spacing(),
+			get_text_window_len(&cfg),
 		)
 	};
 	let cfg = config.lock().unwrap();
@@ -168,6 +170,7 @@ pub(super) fn handle_options(
 	cfg.set_text_alignment(options.text_alignment);
 	cfg.set_letter_spacing(options.letter_spacing);
 	cfg.set_paragraph_spacing(options.paragraph_spacing);
+	set_text_window_len(&cfg, options.text_window_len);
 	cfg.flush();
 	tracing::info!("settings saved");
 	#[cfg(target_os = "windows")]
@@ -175,6 +178,9 @@ pub(super) fn handle_options(
 		re_register_hotkey(hotkey_handle, options.hotkey.as_ref());
 	}
 	drop(cfg);
+	if old_text_window_len != options.text_window_len {
+		dm.lock().unwrap().apply_text_window_len(options.text_window_len);
+	}
 	let options_word_wrap = options.word_wrap;
 	let options_render_tables_inline = options.render_tables_inline;
 	let parse_settings_changed = old_render_tables_inline != options_render_tables_inline
