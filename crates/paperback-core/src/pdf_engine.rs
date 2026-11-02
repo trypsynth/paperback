@@ -391,6 +391,25 @@ mod tests {
 		assert_eq!(text.extract(0, text.char_count()).trim(), "neza");
 	}
 
+	/// Narrow columns made the page look vertical, and every digit drawn on its own started a new line (a USGS table).
+	#[test]
+	fn table_columns_of_single_digits_stay_on_their_baselines() {
+		let mut content = String::from("BT /F1 12 Tf ");
+		for row in 0..50 {
+			let y = 720 - row * 10;
+			let _ = write!(
+				content,
+				"1 0 0 1 72 {y} Tm (4) Tj 1 0 0 1 78 {y} Tm (1) Tj 1 0 0 1 500 {y} Tm (4) Tj 1 0 0 1 506 {y} Tm (1) Tj "
+			);
+		}
+		content.push_str("ET");
+		let document = PdfDocument::from_bytes(pdf_with_content(&content), None).unwrap();
+		let page = document.page(0).unwrap();
+		let text = page.text();
+		let read = text.extract(0, text.char_count());
+		assert_eq!(read.split_whitespace().collect::<Vec<_>>(), vec!["41"; 100]);
+	}
+
 	#[test]
 	fn a_text_string_with_a_byte_order_mark_is_utf16() {
 		assert_eq!(decode_text_string(&[0xFE, 0xFF, 0x00, 0x48, 0x00, 0x69]), "Hi");

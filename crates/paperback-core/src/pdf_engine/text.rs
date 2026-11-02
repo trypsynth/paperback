@@ -860,10 +860,25 @@ impl<'p> Builder<'p> {
 		if sum_h > sum_v {
 			Orientation::Horizontal
 		} else if sum_h < sum_v {
-			Orientation::Vertical
+			// Table columns fill more of a page's height than its width, though their characters still run along baselines.
+			if self.objects_follow_baselines() { Orientation::Horizontal } else { Orientation::Vertical }
 		} else {
 			Orientation::Unknown
 		}
+	}
+
+	fn objects_follow_baselines(&self) -> bool {
+		let (mut along, mut across) = (0_usize, 0_usize);
+		for pair in self.objects.windows(2) {
+			let tolerance = pair[0].rect.height().abs() / 4.0;
+			let (dx, dy) = ((pair[1].pos.0 - pair[0].pos.0).abs(), (pair[1].pos.1 - pair[0].pos.1).abs());
+			if dy <= tolerance && dx > tolerance {
+				along += 1;
+			} else if dx <= tolerance && dy > tolerance {
+				across += 1;
+			}
+		}
+		along > across
 	}
 
 	fn process_text_object(&mut self, index: usize) {
