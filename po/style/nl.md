@@ -19,11 +19,13 @@
 
 English → Dutch. Use these consistently.
 
+- access key → letter (of a menu item), never sneltoets
 - announce → melden
 - appearance (iOS setting) → uiterlijk
 - application → applicatie on desktop; app on iOS and Android
 - audio narration → audio
 - audio seek amount → audiospoelstap; seek (audio) → spoelen; seek forward/backward → vooruitspoelen/terugspoelen
+- audio speed → audiosnelheid
 - audio volume → audiovolume; increase/decrease audio volume, louder/quieter → audiovolume verhogen/verlagen, never luider/stiller maken
 - batch OCR → bulk-OCR
 - bookmark → bladwijzer; note → notitie; bookmark note → bladwijzernotitie
@@ -31,7 +33,7 @@ English → Dutch. Use these consistently.
 - command line, command-line tool → terminal, terminalprogramma
 - comic archive → comicarchief; comic book page → comicpagina; front cover → voorkaft; inside cover → binnenkant kaft; back cover → achterkaft
 - comment (in a document) → opmerking; speaker notes → sprekersnotities
-- container → container; list → lijst; list item → lijstitem; table → tabel; figure → figuur; image, picture → afbeelding
+- container → container; list → lijst; list item → lijstitem; bulleted list → lijst met opsommingstekens; table → tabel; figure → figuur; image, picture → afbeelding
 - disk image (macOS) → schijfkopie; mount/unmount a disk image → activeren/deactiveren
 - document info → documentinformatie; document data (.paperback file) → documentgegevens
 - download (the file) → download; downloading → downloaden
@@ -39,9 +41,12 @@ English → Dutch. Use these consistently.
 - elements list → elementenlijst
 - executable → uitvoerbaar bestand; exe path → exe-pad
 - file manager → bestandsbeheerder; in-app file browser → bestandsbrowser in de app; file picker → bestandskiezer
+- front matter (Markdown) → frontmatter
 - find → zoeken; find next/previous → volgende/vorige zoeken; match (search result) → overeenkomst; search match → zoekovereenkomst; match case → hoofdlettergevoelig; whole word → heel woord
 - File menu → Bestand; Edit menu → Bewerken; View menu → Beeld; Go menu → Ga; Bookmarks menu → Bladwijzers; Audio menu → Audio; Tools menu → Extra; Help menu → Help
 - menu bar access keys: `&Bestand`, `Be&werken`, `Bee&ld`, `&Ga`, `Bla&dwijzers`, `&Audio`, `E&xtra`, `&Help`
+- menu command → menuopdracht
+- metadata → metadata, never metagegevens
 - headers and footers (of a page) → kop- en voetteksten
 - heading → kop (plural koppen); heading level 2 → kop niveau 2
 - keyboard shortcut → toetsenbordsneltoets; shortcut (on its own) → sneltoets; customize keyboard shortcuts → toetsenbordsneltoetsen aanpassen; window hotkey → venstersneltoets
@@ -60,6 +65,7 @@ English → Dutch. Use these consistently.
 - reading bar → leesbalk; navigation unit → navigatie-eenheid
 - recent documents → recente documenten; reopen last closed → laatst gesloten heropenen
 - render tables inline → tabellen in de tekst weergeven
+- restore (open documents at startup) → heropenen; restore (a window from the tray) → herstellen
 - reveal file in folder → bestandslocatie openen
 - screen reader → schermlezer; browse mode → bladermodus
 - section → sectie; separator → scheiding
@@ -70,8 +76,11 @@ English → Dutch. Use these consistently.
 - sleep timer → slaaptimer
 - speech engine → spraakengine; speech dictionary → uitspraakwoordenboek; speech rate → spreeksnelheid; pitch → toonhoogte; text to speech → tekst-naar-spraak
 - system tray → systeemvak
+- system-wide → systeembreed
 - table of contents → inhoudsopgave
+- text mode → tekstmodus
 - toggle bookmark → bladwijzer plaatsen/verwijderen; toggle word wrap → automatische terugloop in-/uitschakelen
 - web view → webweergave; table view → tabelweergave; formula view → formuleweergave
 - word wrap → automatische terugloop
 - wrap around (navigation) → rondlopen
+- zipped (book) → gecomprimeerd; zip (the file) → ZIP-bestand
