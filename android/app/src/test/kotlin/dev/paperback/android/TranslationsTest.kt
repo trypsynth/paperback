@@ -141,7 +141,7 @@ class PluralFormTest {
 		assertEquals("many", forCount(121))
 	}
 
-	// The language the hardcoded fallback and the plural marker were written for.
+	// The language the plural marker was written for.
 	@Test
 	fun `Serbian keeps giving twenty-one the singular`() {
 		Translations.pluralRule = PluralRule.parse(SERBIAN)
@@ -193,12 +193,13 @@ class PluralFormTest {
 		assertEquals("many", forCount(5))
 	}
 
-	// From here down: an untrustworthy header must be no worse than the hardcoded rule.
+	// English has no catalogue.
 	@Test
-	fun `no catalogue keeps the previous behaviour`() {
-		assertEquals("one", forCount(21))
-		assertEquals("few", forCount(22))
-		assertEquals("many", forCount(11))
+	fun `no catalogue gives the singular to one alone`() {
+		assertEquals("one", forCount(1))
+		assertEquals("many", forCount(0))
+		assertEquals("many", forCount(21))
+		assertEquals("many", forCount(22))
 	}
 
 	@Test
@@ -214,13 +215,11 @@ class PluralFormTest {
 		assertNull(PluralRule.parse("Plural-Forms: nplurals=2;"))
 	}
 
-	// The hardcoded rule at least keeps three-form Slavic languages readable.
 	@Test
 	fun `an unevaluatable expression falls back instead of picking form zero`() {
 		Translations.pluralRule = PluralRule.parse("Plural-Forms: nplurals=3; plural=(n==1 ? 0 : ;")
 		assertEquals("one", forCount(1))
-		assertEquals("few", forCount(22))
-		assertEquals("many", forCount(11))
+		assertEquals("many", forCount(22))
 	}
 
 	// An out-of-range index is a malformed header, not a form to index with.
