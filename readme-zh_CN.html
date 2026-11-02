@@ -99,17 +99,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 </li>
 <li><a href="#更新日志">更新日志</a><ul>
-<li><a href="#版本-10">版本 1.0</a><ul>
+<li><a href="#版本-11">版本 1.1</a><ul>
 <li><a href="#新增">新增</a></li>
+<li><a href="#更改">更改</a></li>
 <li><a href="#修复">修复</a></li>
-<li><a href="#ios-和-android-1">iOS 和 Android</a></li>
+</ul>
+</li>
+<li><a href="#版本-10">版本 1.0</a><ul>
+<li><a href="#新增-1">新增</a></li>
+<li><a href="#修复-1">修复</a></li>
+<li><a href="#ios-和-android-3">iOS 和 Android</a></li>
 </ul>
 </li>
 <li><a href="#版本-092">版本 0.9.2</a></li>
 <li><a href="#版本-091">版本 0.9.1</a></li>
 <li><a href="#版本-090">版本 0.9.0</a><ul>
-<li><a href="#新增-1">新增</a></li>
-<li><a href="#修复-1">修复</a></li>
+<li><a href="#新增-2">新增</a></li>
+<li><a href="#修复-2">修复</a></li>
 </ul>
 </li>
 <li><a href="#版本-085">版本 0.8.5</a></li>
@@ -146,7 +152,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>既可以完全便携运行，也可以安装并自动设置文件关联。</li>
 <li>支持大量常见文件格式。</li>
 <li>可播放有声书，支持可调速度，以及能记住精确时间的书签。</li>
-<li>使用 Windows 和 macOS 内置的 OCR 读取扫描版 PDF 页面。</li>
+<li>使用 Windows 和 macOS 内置的 OCR 读取扫描版 PDF 页面，在 Linux 上则通过 Tesseract 实现。</li>
 <li>书签和笔记，让您可以标记位置并随时返回。</li>
 <li>每个键盘快捷键都可以更改。</li>
 <li>直接从 http 和 https 链接打开文档，并在您重新打开它们或按 <code>F5</code> 时再次下载，同时保留您的阅读位置和书签。恢复上次打开的文档时，来自链接且大小为 2 MB 或更小的文档会被重新下载。</li>
@@ -340,7 +346,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>转到：</strong> 跳转到文档中的某一行、某一页或某个百分比。使用“模式”选择器选择。</li>
 <li><strong>最近文档：</strong> 您打开过的每个文档，每个都标记为当前已打开、已关闭或文件缺失。每个都有两个屏幕阅读器操作：“移除”将其从列表中删除，“定位”让您找到文件已移动的文档。“清除最近文档”会清空列表而不删除任何文档。</li>
 <li><strong>字数统计：</strong> 文档中的单词数。</li>
-<li><strong>文档信息：</strong> 标题、作者、文件名，在 iOS 上还包括行数和字符数。</li>
+<li><strong>文档信息：</strong> 标题、作者、文件名、您在文档中的阅读进度，以及字数、行数和字符数。对于有声书，还会显示其包含的文件数量，并在 Paperback 能够判断时显示它们的总时长和平均时长。</li>
 <li><strong>导出：</strong> 将文档保存为纯文本、HTML 或 Markdown。</li>
 <li><strong>睡眠定时器：</strong> 在 5、10、15、30、45 或 60 分钟后停止阅读，或使用您自己的时间。运行时再次打开可查看剩余时间或取消。</li>
 <li><strong>帮助：</strong> 打开此 readme。</li>
@@ -406,10 +412,146 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Tyler Rodick</li>
 </ul>
 <h2 id="更新日志">更新日志</h2>
-<h3 id="版本-10">版本 1.0</h3>
-<p>1.0 是首个在全部五个平台——Windows、macOS、Linux、iOS 和 Android——上发布的版本，其中 iOS 和 Android 应用已在 App Store 和 Google Play 上架。</p>
+<h3 id="版本-11">版本 1.1</h3>
+<p>1.1 带来了全新的 PDF 引擎、重建的 iOS 文本模式、Linux 上的 OCR、从链接打开文档、对数十年历史的旧版 Word、Write 和 PowerPoint 文件的支持，以及更多改进。</p>
 <h4 id="新增">新增</h4>
 <h5 id="常规">常规</h5>
+<ul>
+<li>匈牙利语翻译和用户手册。</li>
+<li>在所有平台上都支持从链接打开文档。按 <code>F5</code> 可重新下载。</li>
+<li><code>F5</code> 重新加载文档。</li>
+<li><code>Ctrl+1</code> 至 <code>Ctrl+9</code> 跳转到前九个已打开的文档。</li>
+<li><code>Ctrl+Tab</code> 和 <code>Ctrl+Shift+Tab</code> 在 macOS 和 Linux 上切换文档。</li>
+<li>“打开”对话框和“所有文档”会打开您选择的每个文档，各自位于独立的标签页。</li>
+<li>可从上下文菜单保存图片。</li>
+<li>可将书签和笔记导出为文本或 HTML。</li>
+<li>新增日志级别设置，以及查找是否选中匹配项的设置。</li>
+<li>窗口热键可以是任意按键，在“自定义快捷键”新增的“系统级”选项卡中设置。</li>
+<li>复制时会朗读复制了多少内容，且 Paperback 关闭后文本仍保留在剪贴板上。</li>
+<li>每种语言下，每个菜单项都拥有各自的访问键。</li>
+<li>无法读取的 zip 会打开为其中文档的列表。</li>
+</ul>
+<h5 id="新格式">新格式</h5>
+<ul>
+<li>Word for Windows 1 和 2、Word for DOS、Word for Mac 4 和 5，以及 Word 6 和 95 的 Unicode 版本。</li>
+<li>PowerPoint 95。</li>
+<li>压缩的 FictionBook（<code>.fb2.zip</code>）。</li>
+<li>仅包含 zip 中 DTBook 或仅含音频的 DAISY 3 图书。</li>
+</ul>
+<h5 id="ocr">OCR</h5>
+<ul>
+<li>通过 Tesseract 在 Linux 上支持 OCR。</li>
+<li>“识别当前页”（<code>Ctrl+Shift+R</code>）可重新读取您所在的页面，即使该页已有文本。</li>
+<li>在图片上按 <code>Enter</code> 可读取其中的文本。</li>
+<li>识别出的文本会遵循页面布局并被记住，因此扫描文档再次打开时会带有其文本。</li>
+<li>批量 OCR 可重新处理已有文本的页面、同时读取多页，并在您关闭文档时停止。</li>
+</ul>
+<h5 id="有声书">有声书</h5>
+<ul>
+<li>各处最高支持 4 倍速，并在不同会话间保持记忆。</li>
+<li>音量控制。</li>
+</ul>
+<h5 id="pdf-文档">PDF 文档</h5>
+<ul>
+<li>全新的 PDF 引擎：更快、可使用每个 CPU 核心，且不再需要 pdfium 库。</li>
+<li>可在无标签页面中识别标题，并获得更好的书名。</li>
+<li>新增保留每页重复的页眉和页脚的设置。</li>
+</ul>
+<h5 id="其他文档">其他文档</h5>
+<ul>
+<li>Word：编号列表和项目符号列表、脚注、尾注、批注、图片替代文本、列表导航，以及 Word 自身的页码。</li>
+<li>OpenDocument：正文之后的脚注和批注。</li>
+<li>从 Word、PowerPoint、OpenDocument、RTF、Markdown 和 reStructuredText 文档的元数据中读取书名和作者。</li>
+<li>漫画：书名、作者、页面类型，以及来自 ComicInfo.xml 的书签。</li>
+<li>FB2：标题、目录，以及独立的诗行。</li>
+<li>MOBI、KF8 和压缩 DAISY 图书中的图片可以保存并用 OCR 读取。</li>
+<li>Markdown 中以美元符号分隔的数学公式。</li>
+<li>reStructuredText 中的 Sphinx 指令。</li>
+<li>没有描述的图片显示为 [Image]。</li>
+</ul>
+<h5 id="ios-和-android-1">iOS 和 Android</h5>
+<ul>
+<li>设置中的语言行。</li>
+<li>文档信息显示您的阅读进度，以及有声书的文件数量和播放时长。</li>
+<li>文本模式会被记住。</li>
+<li>查找后可继续朗读。</li>
+<li>iOS：为 VoiceOver 重建了文本模式。“全部朗读”会读完整本书，转子可到达书中每一处，列表和表格是真正的列表和表格，三指轻扫可翻页，三指轻点会朗读页码和百分比。</li>
+<li>iOS：通过“本书的语音设置”可为每本书单独设置语音、语速和音高。</li>
+<li>iOS：支持密码保护的文档。</li>
+<li>iOS：可将压缩的 DAISY 图书和 MP3 有声书分享到 Paperback。</li>
+<li>iOS：睡眠定时器可停止有声书播放。</li>
+<li>iOS：斯洛伐克语和乌克兰语。</li>
+<li>Android：语速和音高的更改会应用于正在朗读的段落，并可与系统默认引擎配合使用。</li>
+<li>Android：可在 x86_64 设备上运行。</li>
+</ul>
+<h5 id="macos">macOS</h5>
+<ul>
+<li>通用应用，在 Intel 和 Apple 芯片上均为原生运行。</li>
+<li>应用内含 pb。</li>
+</ul>
+<h5 id="pb">pb</h5>
+<ul>
+<li>可按页、整个文件夹、文件列表（<code>--files-from</code>）或链接进行转换。</li>
+</ul>
+<h4 id="更改">更改</h4>
+<ul>
+<li>菜单栏重组为八个菜单。</li>
+<li>状态栏显示“进度”，而非“阅读”。</li>
+<li>菜单命令会朗读其执行结果，而不会在菜单关闭时被淹没。</li>
+<li>更新会正常关闭 Paperback 并将其重新置于前台。</li>
+<li>超大文本文件仅占用一小部分内存即可打开，且 4 GB 限制已取消。</li>
+<li>MOBI、Word 和 HTML 转换、“查找全部”以及“所有文档”搜索都更快。</li>
+<li>Windows 可执行文件减小了 3 MB。</li>
+</ul>
+<h4 id="修复">修复</h4>
+<h5 id="常规-1">常规</h5>
+<ul>
+<li>需要 Shift 才能输入标点符号的键盘布局上的标点快捷键；“自定义快捷键”会标记出您的布局无法输入的按键。</li>
+<li>按 <code>Win+D</code> 后焦点会返回文档。</li>
+<li>修复了为新文档打开书签、在“查找全部”中以及打开某些损坏的 MOBI 文件时崩溃的问题。</li>
+<li>正则表达式查找会选中整个匹配项。</li>
+<li>有声书的状态栏不再在音频进度和文本进度之间来回切换。</li>
+<li>字数统计包含通过 OCR 读取的文本。</li>
+<li>扫描页面不再朗读其自身的图片。</li>
+<li>安装程序的 PATH 选项。</li>
+<li>Linux 更新能找到其下载内容，且 AppImage 会以 AppImage 方式更新。</li>
+<li>Word 和 OpenDocument 文件中的批注行已可翻译。</li>
+</ul>
+<h5 id="文档">文档</h5>
+<ul>
+<li>以二进制打开的 Windows Write 文件。</li>
+<li>PDF：带标签 PDF 中在分页处重复的文本、第二列被优先读取、丢失的空格和行末连字符、Type 3 字体中的文本，以及目录的省略号引导线。</li>
+<li>RTF：仅含 CR 的行尾、以短横线作为项目符号的列表、首个段落之前的文本、带重音字符和 CJK 文本、转义反斜杠后丢失的文本，以及保存为 <code>.doc</code> 的 RTF。</li>
+<li>容器损坏但 Word 仍可打开的 Word 和 PowerPoint 文件。</li>
+<li>修订、域和表格单元格中的 Word 文本。</li>
+<li>PowerPoint 的链接、无文本的幻灯片和表情符号。</li>
+<li>Word、PowerPoint 和 OpenDocument 表格单元格中的 <code>&lt;</code> 和 <code>&amp;</code>。</li>
+<li>当前 LibreOffice 生成的受密码保护的 OpenDocument 文件。</li>
+<li>CHM 文件按其代码页读取，HTML 和 DAISY 文件按其声明的编码读取。</li>
+<li>引用大小写错误的压缩 DAISY 图书，以及只读取章节首个短语的 DAISY 2.02 图书。</li>
+<li>使用 <code>.so</code> 重定向的 man 手册页。</li>
+<li>Markdown 的 front matter 被当作文本读取。</li>
+</ul>
+<h5 id="macos-1">macOS</h5>
+<ul>
+<li>行首导航、键盘激活和复制提示。</li>
+<li>VoiceOver 的上下文菜单命令会打开 Paperback 自己的菜单。</li>
+<li>菜单快捷键不再覆盖其执行结果的朗读。</li>
+</ul>
+<h5 id="ios-和-android-2">iOS 和 Android</h5>
+<ul>
+<li>iOS：恢复大型图书时启动不再被终止。</li>
+<li>iOS：会在您正在阅读的标签页上重新打开，关闭标签页不再朗读上一本书，且“最近文档”会保持其顺序。</li>
+<li>iOS：有声书不再在每次启动时被重新解压。</li>
+<li>iOS：语音词典的正则表达式规则支持 <code>\1</code>。</li>
+<li>Android：可朗读受密码保护的文档。</li>
+<li>Android：在开头处按“上一个”不再重复朗读第一段，且文本模式不再出现滚动跳变。</li>
+<li>Android：朗读和暂停时耗电更少。</li>
+</ul>
+<h3 id="版本-10">版本 1.0</h3>
+<p>1.0 是首个在全部五个平台——Windows、macOS、Linux、iOS 和 Android——上发布的版本，其中 iOS 和 Android 应用已在 App Store 和 Google Play 上架。</p>
+<h4 id="新增-1">新增</h4>
+<h5 id="常规-2">常规</h5>
 <ul>
 <li>Linux 支持，以 AppImage 或 tar.gz 形式提供，并具有桌面集成，因此文档可以从文件管理器中打开。</li>
 <li>使用 <code>Alt+F9</code> 标记选区起点，使用 <code>Alt+F10</code> 将从那里到您到达位置的所有内容复制，使用 <code>Alt+Shift+F9</code> 跳回标记处，从而无需用 Shift+方向键选取即可复制长段文本。这三项都在“工具 &gt; 选择并复制”下。</li>
@@ -417,7 +559,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>关于对话框现在显示 Paperback 的许可证和所有翻译者。</li>
 <li>乌克兰语翻译。</li>
 </ul>
-<h5 id="新格式">新格式</h5>
+<h5 id="新格式-1">新格式</h5>
 <ul>
 <li>漫画压缩包（<code>.cbz</code>）。</li>
 <li>M4B 有声书，按章节分割。</li>
@@ -428,7 +570,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>WinHelp（<code>.hlp</code>）文件。</li>
 <li>Word 6 和 Word 95 文档。</li>
 </ul>
-<h5 id="ocr">OCR</h5>
+<h5 id="ocr-1">OCR</h5>
 <ul>
 <li>扫描版 PDF 页面现在可以使用 Windows 和 macOS 内置的 OCR 进行识别。在扫描页面上按 <code>Enter</code> 即可识别，或使用批量 OCR（<code>Ctrl+Shift+O</code>）识别页面范围。</li>
 </ul>
@@ -442,7 +584,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>KF8（AZW3）图书现在支持章节导航。</li>
 <li>仅包含图片的 EPUB 页面现在会为其显示一行，因此您可以定位到它们，而不是直接跳过。</li>
 </ul>
-<h5 id="有声书">有声书</h5>
+<h5 id="有声书-1">有声书</h5>
 <ul>
 <li>播放速度控制，从半速到三倍速。使用 <code>Ctrl+Shift+.</code> 和 <code>Ctrl+Shift+,</code>，或工具菜单。</li>
 <li>纯音频图书中的书签和笔记现在会记住您设置它们的确切时间。</li>
@@ -453,7 +595,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>“最近文档”子菜单中的“清除最近文档”项目。</li>
 </ul>
-<h5 id="pdf-文档">PDF 文档</h5>
+<h5 id="pdf-文档-1">PDF 文档</h5>
 <ul>
 <li>一个设置，用于保持 PDF 的每一行独立，而不是将它们合并为段落。</li>
 <li>PDF 中的图片和图形现在会被朗读。</li>
@@ -467,13 +609,13 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>标题现在按其级别以相应大小绘制，图片和表格与周围文本分开。</li>
 </ul>
-<h5 id="pb">pb</h5>
+<h5 id="pb-1">pb</h5>
 <ul>
 <li><code>pb --list-formats</code> 列出 pb 可以读取的所有格式。</li>
 <li>pb 现在会说明它无法读取哪个文件以及原因。</li>
 </ul>
-<h4 id="修复">修复</h4>
-<h5 id="常规-1">常规</h5>
+<h4 id="修复-1">修复</h4>
+<h5 id="常规-3">常规</h5>
 <ul>
 <li>启动时重新打开的图书现在会立即朗读，而不是保持沉默直到关闭并再次打开。</li>
 <li>文件已丢失的文档现在可以从“所有文档”中移除，而不是无论您确认多少次都留在列表中。</li>
@@ -499,11 +641,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>目录、元素列表和书签列表在有数千个条目的书籍上不再卡顿或冻结。</li>
 <li>上箭头和下箭头现在会按文档记住其列位置，而不是在切换选项卡时延续。</li>
 </ul>
-<h5 id="有声书-1">有声书</h5>
+<h5 id="有声书-2">有声书</h5>
 <ul>
 <li>音频播放在 macOS 上现在使用 <code>Control+Space</code>，因为 <code>Command+Space</code> 属于 Spotlight。</li>
 </ul>
-<h5 id="pdf-文档-1">PDF 文档</h5>
+<h5 id="pdf-文档-2">PDF 文档</h5>
 <ul>
 <li>修复了从 Apple Pages 导出的 PDF 被读取为纯文本，丢失其编写时的标题和列表的问题。</li>
 <li>修复了 PDF 段落和标题在每一行处断开，以及单词在空格处断开的问题。</li>
@@ -537,7 +679,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>以 <code>.rtf</code> 扩展名保存的纯文本文件现在作为文本打开，而不是因错误而失败。</li>
 <li>RTF 控制字不再显示为文本。</li>
 </ul>
-<h4 id="ios-和-android-1">iOS 和 Android</h4>
+<h4 id="ios-和-android-3">iOS 和 Android</h4>
 <p>iOS 和 Android 应用可打开桌面版支持的所有格式，并包括：</p>
 <ul>
 <li>朗读，可选择语音、速率和音高，阅读栏上直接有语音速率控制，以及可选的段落间暂停。</li>
@@ -582,8 +724,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>更新对话框现已翻译。</li>
 </ul>
 <h3 id="版本-090">版本 0.9.0</h3>
-<h4 id="新增-1">新增</h4>
-<h5 id="常规-2">常规</h5>
+<h4 id="新增-2">新增</h4>
+<h5 id="常规-4">常规</h5>
 <ul>
 <li>一个名为 pb 的命令行工具，可快速将 Paperback 支持的任何格式转换为 HTML、Markdown 或纯文本。</li>
 <li>一个选项，用于重新加载已被其他程序在磁盘上修改的文档。</li>
@@ -661,7 +803,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>支持 DAISY 2.0 图书。</li>
 <li>支持 DAISY 2.02 音频播放。</li>
 </ul>
-<h5 id="有声书-2">有声书</h5>
+<h5 id="有声书-3">有声书</h5>
 <ul>
 <li>能够播放有声书，目前支持 DAISY 音频（包括 DAISY 音频+文本）和音频文件压缩包。</li>
 <li>用于播放/暂停朗读、前后跳转以及调整跳转步长的键盘快捷键和菜单项。</li>
@@ -675,8 +817,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>PowerPoint 文档现在支持表格。</li>
 </ul>
-<h4 id="修复-1">修复</h4>
-<h5 id="常规-3">常规</h5>
+<h4 id="修复-2">修复</h4>
+<h5 id="常规-5">常规</h5>
 <ul>
 <li>使用旧版 CJK 编码（如 GBK、Big5 和 Shift_JIS）的文档现在可以正确渲染，而不会显示为一堆乱码。</li>
 <li>“重新打开上次关闭的文档”试图重新打开捆绑的 readme。</li>
@@ -746,7 +888,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>dl、dt 和 dd 元素在 XHTML 文档中不产生换行符。</li>
 </ul>
-<h5 id="pdf-文档-2">PDF 文档</h5>
+<h5 id="pdf-文档-3">PDF 文档</h5>
 <ul>
 <li>对于标记错误的 PDF，Paperback 现在会回退到纯文本提取。</li>
 <li>标题和/或书签中包含控制字符的 PDF 文档在打开时不再导致 Paperback 崩溃。</li>
