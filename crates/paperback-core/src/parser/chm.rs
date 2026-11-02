@@ -27,8 +27,7 @@ pub struct ChmParser;
 
 /// By extension alone, since a page saved from a browser keeps its pictures in a folder such as `page.htm_files`. Windows ignores a trailing dot, so `page.htm.` is still a page.
 fn is_html_path(lower_path: &str) -> bool {
-	let path = lower_path.trim_end_matches('.');
-	path.ends_with(".htm") || path.ends_with(".html")
+	lower_path.trim_end_matches('.').rsplit_once('.').is_some_and(|(_, extension)| matches!(extension, "htm" | "html"))
 }
 
 impl Parser for ChmParser {
