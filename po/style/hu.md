@@ -141,6 +141,7 @@ English → Hungarian. Use these consistently.
   elérhető.`
 - archive → archívum; open from archive → megnyitás archívumból
 - audio narration → audionarráció; audiobook → hangoskönyv
+- audio speed (playback speed of recorded audio) → lejátszási sebesség, never `audiosebesség`
 - audio seek amount → léptetési időegység (the setting lists units of time); seek
   forward/backward → előretekerés/visszatekerés
 - batch OCR → kötegelt szövegfelismerés
@@ -157,6 +158,8 @@ English → Hungarian. Use these consistently.
   comment from {} → `{} megjegyzése`; speaker notes → előadói jegyzetek; slide → dia
 - container → tároló; list → lista; list item → listaelem; table → táblázat; figure → ábra;
   image → kép; formula → képlet; link → hivatkozás, never `link`; web link → webhivatkozás
+- count of a list's items (spoken on entering a list) → `{} elem`, not `listaelem`: the screen
+  reader already says it is a list
 - directory, folder → mappa, never `könyvtár`
 - document data (.paperback file) → dokumentumadatok; document info → dokumentuminformáció
 - elements list → elemlista
@@ -194,13 +197,18 @@ English → Hungarian. Use these consistently.
 - settings → beállítások; option → beállítás
 - share → megosztás
 - sleep timer → elalvási időzítő
+- Speech for This Book → `A könyv felolvasási beállításai`
 - swipe (touch gesture, on iOS and Android alike) → legyintés; swipe up → felfelé legyintés;
   never `csúsztatás`, which is a different gesture
 - system tray → rendszertálca
+- System-Wide (the tab of Keyboard Shortcuts) → Rendszerszintű; window hotkey → az ablak
+  billentyűparancsa
 - table of contents → tartalomjegyzék
 - text in a picture → a képen lévő szöveg (`képen`, never `képben`); read text in picture → kép
   szövegének felismerése; image text (the title of its view) → képből felismert szöveg
 - word wrap → sortörés
+- With VoiceOver, … / With TalkBack, … (a hint for one screen reader) → `VoiceOver használata
+  esetén …` / `TalkBack használata esetén …`, never `VoiceOverrel …`
 
 ## JAWS
 
