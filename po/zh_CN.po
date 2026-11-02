@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 18:07+0000\n"
-"PO-Revision-Date: 2026-10-26 21:24+0800\n"
+"POT-Creation-Date: 2026-10-31 21:30+0000\n"
+"PO-Revision-Date: 2026-11-02 19:09+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -17,10 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Poedit 3.10\n"
-
-#. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
-msgid "this is not a web link"
-msgstr "这不是 Web 链接"
 
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 msgid "Checking %s"
@@ -37,22 +33,6 @@ msgstr "正在下载 %s"
 #. TRANSLATORS: Download window message while one of several documents opened from links downloads; the first %d is its number, the second how many there are, and %s is its file name
 msgid "Downloading %d of %d: %s"
 msgstr "正在下载第 %d 个，共 %d 个： %s"
-
-#. TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
-msgid ""
-"The server sends a web page (%s) instead of the document the link names."
-msgstr "服务器返回的是网页（%s），而不是链接所指的文档。"
-
-msgid "The server sends %s, which is not a format Paperback reads."
-msgstr "服务器返回 %s，这不是 Paperback 可读取的格式。"
-
-#. TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
-msgid "The server does not say what it sends."
-msgstr "服务器未说明它返回的内容类型。"
-
-#. TRANSLATORS: Question at the end of the security warning before downloading a document from a link
-msgid "Download it anyway?"
-msgstr "仍然下载吗？"
 
 #. TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
 #. command-line tool (Paperback's headless document-to-text/HTML converter) runnable
@@ -1152,43 +1132,6 @@ msgstr "删除线"
 msgid "Choose a font"
 msgstr "选择字体"
 
-#. TRANSLATORS: Title of the hotkey customization dialog
-msgid "Window Hotkey"
-msgstr "窗口热键"
-
-#. TRANSLATORS: Checkbox label for Control modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
-msgid "&Ctrl"
-msgstr "Ctrl(&C)"
-
-#. TRANSLATORS: Checkbox label for Alt modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
-msgid "&Alt"
-msgstr "Alt(&A)"
-
-#. TRANSLATORS: Checkbox label for Shift modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
-msgid "&Shift"
-msgstr "Shift(&S)"
-
-#. TRANSLATORS: Checkbox label for Windows modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
-msgid "&Win"
-msgstr "Win(&W)"
-
-#. TRANSLATORS: Label for the hotkey key selection input field
-#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
-msgid "&Key:"
-msgstr "键(&K)："
-
-#. TRANSLATORS: Button label to clear the current hotkey selection
-msgid "Clear"
-msgstr "清除"
-
-#. TRANSLATORS: Representation of the Spacebar key
-msgid "Space"
-msgstr "空格"
-
 #. TRANSLATORS: Title of the Settings dialog
 msgid "Settings"
 msgstr "设置"
@@ -1280,10 +1223,6 @@ msgstr "开发版"
 #. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
 msgid "Log Level:"
 msgstr "日志级别："
-
-#. TRANSLATORS: Button label to open the hotkey customization dialog
-msgid "Customize &Window Hotkey..."
-msgstr "自定义窗口热键(&W)..."
 
 #. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 msgid "Customize &Keyboard Shortcuts..."
@@ -1421,6 +1360,12 @@ msgstr "调试"
 msgid "Trace"
 msgstr "跟踪"
 
+msgid "System-Wide"
+msgstr "系统级"
+
+msgid "Show or Hide Paperback"
+msgstr "显示或隐藏 Paperback"
+
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "睡眠定时器"
@@ -1486,11 +1431,9 @@ msgid "OCR in progress."
 msgstr "OCR 正在进行。"
 
 #. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
-#. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
 msgid "The picture could not be read."
 msgstr "无法读取该图片。"
 
-#. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
 msgid "No text was found in the picture."
 msgstr "图片中未找到文本。"
 
@@ -2963,6 +2906,26 @@ msgstr "安全链接被重定向到不安全地址，因此未下载"
 msgid "the document is larger than {} MB, so it was not downloaded"
 msgstr "文档大于 {} MB，因此未下载"
 
+#. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
+msgid "this is not a web link"
+msgstr "这不是 Web 链接"
+
+#. TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
+msgid ""
+"The server sends a web page (%s) instead of the document the link names."
+msgstr "服务器返回的是网页（%s），而不是链接所指的文档。"
+
+msgid "The server sends %s, which is not a format Paperback reads."
+msgstr "服务器返回 %s，这不是 Paperback 可读取的格式。"
+
+#. TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
+msgid "The server does not say what it sends."
+msgstr "服务器未说明它返回的内容类型。"
+
+#. TRANSLATORS: Question at the end of the security warning before downloading a document from a link
+msgid "Download it anyway?"
+msgstr "仍然下载吗？"
+
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 msgid "[Image only. Press enter to OCR.]"
 msgstr "[仅图片。按回车进行 OCR。]"
@@ -3047,10 +3010,6 @@ msgstr "ZIP 压缩包似乎不是有效的 DAISY 3 或 DAISY 2.02 图书"
 msgid "rootfile not found in container.xml"
 msgstr "在 container.xml 中未找到 rootfile"
 
-#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
-msgid "unsupported content"
-msgstr "不支持的内容"
-
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 msgid "OPF package element missing"
 msgstr "缺少 OPF package 元素"
@@ -3067,6 +3026,10 @@ msgstr "转换 spine 项目失败： {}"
 msgid "EPUB has no readable content ({})"
 msgstr "EPUB 没有可读内容（{}）"
 
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+msgid "No readable content found in the ZIP archive"
+msgstr "在 ZIP 压缩包中未找到可读内容"
+
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
 msgid "Failed to convert FB2 XML to text"
 msgstr "无法将 FB2 XML 转换为文本"
@@ -3082,14 +3045,6 @@ msgstr "主题 {}"
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 msgid "HTML file is empty: {}"
 msgstr "HTML 文件为空： {}"
-
-#. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
-msgid "Failed to convert HTML to text: {}"
-msgstr "无法将 HTML 转换为文本： {}"
-
-#. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
-msgid "Failed to convert Markdown to text: {}"
-msgstr "无法将 Markdown 转换为文本： {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 msgid "Missing HUFF parameters in header"
@@ -3263,7 +3218,7 @@ msgid "Comment"
 msgstr "评论"
 
 #. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
-msgid "{} on \\u{201c}{}\\u{201d}: {}"
+msgid "{} on “{}”: {}"
 msgstr "{} 对“{}”的评论： {}"
 
 #. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
@@ -3290,17 +3245,15 @@ msgstr "DOC 文件已加密，需要密码"
 msgid "DOC decryption failed (wrong password?): {}"
 msgstr "DOC 解密失败（密码错误？）： {}"
 
-#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
-msgid "File content does not look like plain text"
-msgstr "文件内容看起来不像纯文本"
-
+#. TRANSLATORS: Error shown when a DOC file from Word for Windows 1.x or 2.0 has no readable text
 #. TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
+#. TRANSLATORS: Error shown when a Windows Write or Word for DOS file has no readable text
 msgid "No readable text content found"
 msgstr "未找到可读的文本内容"
 
-#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
-msgid "No readable content found in the ZIP archive"
-msgstr "在 ZIP 压缩包中未找到可读内容"
+#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
+msgid "File content does not look like plain text"
+msgstr "文件内容看起来不像纯文本"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
@@ -3556,6 +3509,26 @@ msgstr "Cmd(&C)"
 msgid "&Option"
 msgstr "Option(&O)"
 
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
+msgid "&Ctrl"
+msgstr "Ctrl(&C)"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
+msgid "&Alt"
+msgstr "Alt(&A)"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
+msgid "&Shift"
+msgstr "Shift(&S)"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
+msgid "&Win"
+msgstr "Win(&W)"
+
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
+msgid "&Key:"
+msgstr "键(&K)："
+
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr "提示： 单击按键字段，然后按下所需的组合键。"
 
@@ -3766,7 +3739,6 @@ msgstr "您打开的文档将显示在这里。"
 msgid "Text to Speech"
 msgstr "文字转语音"
 
-#. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 #: kt swift
 msgid "Voice"
 msgstr "语音"
@@ -3791,7 +3763,6 @@ msgstr "音高"
 msgid "Speech Dictionary"
 msgstr "语音词典"
 
-#. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
 #: kt swift
 msgid "Play Sample"
 msgstr "播放示例"
@@ -4489,11 +4460,11 @@ msgstr "加载文档错误： {}"
 msgid "Speech Engine"
 msgstr "语音引擎"
 
-#: kt swift
+#: kt
 msgid "1 book"
 msgstr "1 本书"
 
-#: kt swift
+#: kt
 msgid "{} books"
 msgstr "{} 本书"
 
@@ -4630,7 +4601,7 @@ msgid "{}, {}, modified {}{}"
 msgstr "{}，{}，修改于 {}{}"
 
 #. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
-#: kt
+#: swift kt
 msgid "{} percent"
 msgstr "{} 百分比"
 
@@ -4818,7 +4789,81 @@ msgstr "找到搜索匹配项后停止朗读"
 msgid "Turn off to continue reading while navigating by search matches."
 msgstr "关闭后可在按搜索匹配项导航时继续朗读。"
 
-#. TRANSLATORS: 1.5x line spacing option
+#. TRANSLATORS: VoiceOver label for the read-aloud bar's control that speeds up or slows down a book's recorded audio
+#: kt swift
+msgid "Audio Speed"
+msgstr "音频速度"
+
 #: swift
-msgid "1.5\\u{00d7}"
-msgstr "1.5×"
+msgid "Speech for This Book"
+msgstr "本书的语音设置"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} item"
+msgstr "{} 项"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} items"
+msgstr "{} 项"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} items⁣"
+msgstr "{} 项⁣"
+
+#. TRANSLATORS: Spoken for an empty table cell in text mode
+#: swift
+msgid "Blank"
+msgstr "空白"
+
+#. TRANSLATORS: Name of the VoiceOver rotor setting that moves between the entries of a document's table of contents in text mode
+#: swift
+msgid "Sections"
+msgstr "章节"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a voice of its own instead of the one in Settings
+#: swift
+msgid "Own Voice"
+msgstr "自己的语音"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a speech rate of its own instead of the one in Settings
+#: swift
+msgid "Own Rate"
+msgstr "自己的速率"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a pitch of its own instead of the one in Settings
+#: swift
+msgid "Own Pitch"
+msgstr "自己的音高"
+
+#. TRANSLATORS: Footer in Speech for This Book explaining what a switch left off does
+#: swift
+msgid "Whatever is switched off follows Settings."
+msgstr "未开启的项将沿用设置中的值。"
+
+#. TRANSLATORS: Button that empties the recent documents list
+#: kt swift
+msgid "Clear"
+msgstr "清除"
+
+#. TRANSLATORS: Row label for the number of audio files in the document
+#: kt swift
+msgid "Number of files"
+msgstr "文件数量"
+
+#. TRANSLATORS: Row label for the total playback duration across all of the document's audio files
+#: kt swift
+msgid "Total duration"
+msgstr "总时长"
+
+#. TRANSLATORS: Row label for the average playback duration per audio file in the document
+#: kt swift
+msgid "Average duration"
+msgstr "平均时长"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
+#: kt
+msgid "Select audio speed"
+msgstr "选择音频速度"
