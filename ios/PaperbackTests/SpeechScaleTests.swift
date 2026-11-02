@@ -65,39 +65,85 @@ final class PitchScaleTests: XCTestCase {
 }
 
 final class PluralFormTests: XCTestCase {
-	private func form(_ count: Int) -> String {
-		nt("one", "few", "many", count)
+	private let polish = "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);"
+	private let serbian = "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);"
+	private let czech = "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;"
+
+	private func form(_ count: Int, _ header: String?) -> String {
+		nt("one", "few", "many", count, rule: PluralRule(header: header))
 	}
 
-	func testACountEndingInOneTakesTheSingularForm() {
-		XCTAssertEqual("one", form(1))
-		XCTAssertEqual("one", form(21))
-		XCTAssertEqual("one", form(101))
+	func testEnglishGivesTheSingularToOneAlone() {
+		XCTAssertEqual("one", form(1, nil))
+		XCTAssertEqual("many", form(0, nil))
+		XCTAssertEqual("many", form(21, nil))
+		XCTAssertEqual("many", form(101, nil))
 	}
 
-	/// Eleven is why the rule looks at the last two digits as well as the last one.
-	func testElevenIsNotSingularDespiteEndingInOne() {
-		XCTAssertEqual("many", form(11))
-		XCTAssertEqual("many", form(111))
+	func testPolishGivesTheSingularToOneAlone() {
+		XCTAssertEqual("one", form(1, polish))
+		XCTAssertEqual("few", form(22, polish))
+		XCTAssertEqual("many", form(11, polish))
+		XCTAssertEqual("many", form(21, polish))
+		XCTAssertEqual("many", form(121, polish))
 	}
 
-	func testCountsEndingTwoToFourTakeTheFewForm() {
-		XCTAssertEqual("few", form(2))
-		XCTAssertEqual("few", form(4))
-		XCTAssertEqual("few", form(23))
+	func testSerbianGivesTwentyOneTheSingular() {
+		XCTAssertEqual("one", form(21, serbian))
+		XCTAssertEqual("few", form(23, serbian))
+		XCTAssertEqual("many", form(11, serbian))
+		XCTAssertEqual("many", form(14, serbian))
 	}
 
-	/// Twelve through fourteen end in 2 to 4 but are not "few", the same trap as eleven.
-	func testTwelveThroughFourteenAreNotFew() {
-		XCTAssertEqual("many", form(12))
-		XCTAssertEqual("many", form(13))
-		XCTAssertEqual("many", form(14))
+	func testCzechReadsItsParenthesizedRule() {
+		XCTAssertEqual("one", form(1, czech))
+		XCTAssertEqual("few", form(3, czech))
+		XCTAssertEqual("many", form(21, czech))
+		XCTAssertEqual("many", form(22, czech))
 	}
 
-	func testEverythingElseTakesTheManyForm() {
-		XCTAssertEqual("many", form(0))
-		XCTAssertEqual("many", form(5))
-		XCTAssertEqual("many", form(20))
+	func testATwoFormLanguageUsesOnlyTheFirstTwoForms() {
+		let german = "Plural-Forms: nplurals=2; plural=(n != 1);"
+		XCTAssertEqual("one", form(1, german))
+		XCTAssertEqual("few", form(0, german))
+		XCTAssertEqual("few", form(21, german))
+	}
+
+	func testFrenchGivesZeroTheSingular() {
+		let french = "Plural-Forms: nplurals=2; plural=(n > 1);"
+		XCTAssertEqual("one", form(0, french))
+		XCTAssertEqual("few", form(2, french))
+	}
+
+	func testAOneFormLanguageAlwaysUsesTheFirstForm() {
+		let chinese = "Plural-Forms: nplurals=1; plural=0;"
+		XCTAssertEqual("one", form(1, chinese))
+		XCTAssertEqual("one", form(21, chinese))
+	}
+
+	func testTheRuleIsFoundAmongTheOtherHeaderLines() {
+		XCTAssertEqual("many", form(21, "Language: pl\nMIME-Version: 1.0\n\(polish)\nX-Generator: Poedit\n"))
+	}
+
+	/// An untrustworthy header must not pick form 0 for every count.
+	func testAMalformedHeaderFallsBack() {
+		XCTAssertNil(PluralRule(header: "Language: pl\n"))
+		XCTAssertNil(PluralRule(header: "Plural-Forms: nplurals=0; plural=0;"))
+		XCTAssertNil(PluralRule(header: "Plural-Forms: nplurals=2; plural=5;")?.formIndex(1))
+		XCTAssertEqual("many", form(21, "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : ;"))
+	}
+
+	/// The strings file is generated, so this is what catches a header that stops reaching the app.
+	func testEveryShippedCatalogueHasARuleThatWorks() {
+		var checked = 0
+		for language in Bundle.main.localizations {
+			guard let path = Bundle.main.path(forResource: "Localizable", ofType: "strings", inDirectory: nil, forLocalization: language), let strings = NSDictionary(contentsOfFile: path) else {
+				continue
+			}
+			XCTAssertNotNil(PluralRule(header: strings[""] as? String)?.formIndex(21), language)
+			checked += 1
+		}
+		XCTAssertGreaterThan(checked, 0)
 	}
 }
 

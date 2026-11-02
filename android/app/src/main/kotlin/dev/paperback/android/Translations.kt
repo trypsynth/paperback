@@ -252,7 +252,7 @@ internal class PluralRule private constructor(private val nplurals: Int, private
 
 /**
  * Callers pass forms already wrapped in [t] (`nt(t("1 book"), t("{} books"), ...)`): the pot scanner only extracts plain `t("...")` calls.
- * The hardcoded fallback is the Bosnian/Serbian rule, wrong for Polish, so the catalogue's header wins whenever it parses.
+ * English is what reaches the fallback, since it has no catalogue.
  */
 fun nt(one: String, few: String, many: String, count: Long): String {
 	val forms = listOf(one, few, many)
@@ -261,11 +261,5 @@ fun nt(one: String, few: String, many: String, count: Long): String {
 			return forms[index.coerceAtMost(forms.size - 1)]
 		}
 	}
-	val mod10 = count % 10
-	val mod100 = count % 100
-	return when {
-		mod10 == 1L && mod100 != 11L -> one
-		mod10 in 2L..4L && mod100 !in 12L..14L -> few
-		else -> many
-	}
+	return if (count == 1L) one else many
 }
