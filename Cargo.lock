@@ -1568,7 +1568,7 @@ dependencies = [
 [[package]]
 name = "hayro"
 version = "0.8.0"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#203a3b180763ab4d4a6583b12485750a418f868d"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
 dependencies = [
  "bytemuck",
  "fearless_simd 1.2.0",
@@ -1583,12 +1583,12 @@ dependencies = [
 [[package]]
 name = "hayro-ccitt"
 version = "0.4.0"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#203a3b180763ab4d4a6583b12485750a418f868d"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
 
 [[package]]
 name = "hayro-cmap"
 version = "0.1.0"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#203a3b180763ab4d4a6583b12485750a418f868d"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
 dependencies = [
  "brotli",
  "hayro-postscript",
@@ -1597,7 +1597,7 @@ dependencies = [
 [[package]]
 name = "hayro-interpret"
 version = "0.8.0"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#203a3b180763ab4d4a6583b12485750a418f868d"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
 dependencies = [
  "bitflags 2.13.2",
  "hayro-cmap",
@@ -1615,7 +1615,7 @@ dependencies = [
 [[package]]
 name = "hayro-jbig2"
 version = "0.3.1"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#203a3b180763ab4d4a6583b12485750a418f868d"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
 dependencies = [
  "fearless_simd 1.2.0",
  "hayro-ccitt",
@@ -1624,7 +1624,7 @@ dependencies = [
 [[package]]
 name = "hayro-jpeg2000"
 version = "0.4.1"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#203a3b180763ab4d4a6583b12485750a418f868d"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
 dependencies = [
  "fearless_simd 1.2.0",
 ]
@@ -1632,12 +1632,12 @@ dependencies = [
 [[package]]
 name = "hayro-postscript"
 version = "0.1.0"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#203a3b180763ab4d4a6583b12485750a418f868d"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
 
 [[package]]
 name = "hayro-syntax"
 version = "0.8.0"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#203a3b180763ab4d4a6583b12485750a418f868d"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
 dependencies = [
  "flate2",
  "hayro-ccitt",

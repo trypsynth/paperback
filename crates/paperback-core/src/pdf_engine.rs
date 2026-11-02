@@ -306,13 +306,18 @@ mod tests {
 	use super::{PdfDocument, decode_text_string};
 
 	fn pdf_with_content(content: &str) -> Vec<u8> {
-		let objects = [
+		pdf_with_font(content, &["<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman >>".to_string()])
+	}
+
+	/// The font's first object is `5 0`, and the rest follow it.
+	fn pdf_with_font(content: &str, font: &[String]) -> Vec<u8> {
+		let mut objects = vec![
 			"<< /Type /Catalog /Pages 2 0 R >>".to_string(),
 			"<< /Type /Pages /Kids [3 0 R] /Count 1 >>".to_string(),
 			"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>".to_string(),
 			format!("<< /Length {} >>\nstream\n{content}\nendstream", content.len()),
-			"<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman >>".to_string(),
 		];
+		objects.extend_from_slice(font);
 		let mut pdf = String::from("%PDF-1.4\n");
 		let mut offsets = Vec::new();
 		for (index, object) in objects.iter().enumerate() {
@@ -348,6 +353,22 @@ mod tests {
 		let text = page.text();
 		let read = text.extract(0, text.char_count());
 		assert_eq!(read.split_whitespace().collect::<Vec<_>>(), ["kept", "edge"]);
+	}
+
+	/// Its Unicode values sit in `cidrange`s, and it read as the raw codes (pdf.js issue 9367).
+	#[test]
+	fn a_to_unicode_map_written_with_cid_ranges_is_read() {
+		let map = "/CIDInit /ProcSet findresource begin begincmap 1 begincodespacerange <0000> <FFFF> endcodespacerange 1 begincidrange <0003> <0004> 72 endcidrange endcmap end";
+		let font = [
+			"<< /Type /Font /Subtype /Type0 /BaseFont /Tahoma /Encoding /Identity-H /DescendantFonts [6 0 R] /ToUnicode 7 0 R >>".to_string(),
+			"<< /Type /Font /Subtype /CIDFontType2 /BaseFont /Tahoma /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /DW 500 >>".to_string(),
+			format!("<< /Length {} >>\nstream\n{map}\nendstream", map.len()),
+		];
+		let document =
+			PdfDocument::from_bytes(pdf_with_font("BT /F1 12 Tf 72 700 Td <00030004> Tj ET", &font), None).unwrap();
+		let page = document.page(0).unwrap();
+		let text = page.text();
+		assert_eq!(text.extract(0, text.char_count()).trim(), "HI");
 	}
 
 	#[test]
