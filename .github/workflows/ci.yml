@@ -225,11 +225,12 @@ jobs:
       # The unit tests are hosted by the app, so they need a simulator to run in. Picking the
       # first available iPhone by udid rather than naming a model keeps this working when the
       # runner image changes which devices it ships.
+      # CoreAudio sometimes aborts the app in the runner's simulator ("fetchWorkgroup: RPC timeout") while a test plays audio, so a failed test gets more tries.
       - name: Run the unit tests
         run: |
           UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for rt in d for x in d[rt] if 'iPhone' in x['name']))")
           echo "Testing on simulator $UDID"
-          xcodebuild -project ios/Paperback.xcodeproj -scheme Paperback             -destination "id=$UDID" CODE_SIGNING_ALLOWED=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES test
+          xcodebuild -project ios/Paperback.xcodeproj -scheme Paperback             -destination "id=$UDID" CODE_SIGNING_ALLOWED=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES -retry-tests-on-failure -test-iterations 3 test
 
   test:
     name: Tests
