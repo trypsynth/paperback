@@ -186,13 +186,9 @@ impl TextWindow {
 	}
 }
 
-/// A window and a half: a document only slightly larger than one window loads whole rather than reloading at the first step.
-fn whole_document_threshold(target: DocLen) -> DocLen {
-	DocLen::from_raw(target.get().saturating_add(target.get() / 2))
-}
-
+/// A document no larger than the chosen size loads whole; anything larger is windowed in chunks of that size, so the setting caps how much text is ever loaded at once.
 pub fn should_use_whole_document(doc_len: DocLen, target: DocLen) -> bool {
-	target.is_zero() || doc_len <= whole_document_threshold(target)
+	target.is_zero() || doc_len <= target
 }
 
 /// Slides inward near a document edge rather than truncating, or Ctrl+End would load half a window and reload again on the first Up.
@@ -321,6 +317,13 @@ mod tests {
 	fn should_use_whole_document_below_threshold_only() {
 		assert!(should_use_whole_document(l(1000), DEFAULT_TARGET));
 		assert!(!should_use_whole_document(l(10_000_000), DEFAULT_TARGET));
+	}
+
+	#[test]
+	fn a_document_loads_whole_only_up_to_the_chosen_size() {
+		assert!(should_use_whole_document(DEFAULT_TARGET, DEFAULT_TARGET));
+		assert!(!should_use_whole_document(DEFAULT_TARGET + DocLen::ONE, DEFAULT_TARGET));
+		assert!(should_use_whole_document(l(10_000_000), UNLIMITED));
 	}
 
 	#[test]
