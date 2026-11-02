@@ -1,4 +1,4 @@
-# Paperback - バージョン1.0
+# Paperback - バージョン1.1
 
 ## はじめに
 

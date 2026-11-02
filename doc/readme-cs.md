@@ -1,4 +1,4 @@
-# Paperback - verze 1.0
+# Paperback - verze 1.1
 
 ## Představení
 

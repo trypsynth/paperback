@@ -1,4 +1,4 @@
-# Paperback - verzija 1.0
+# Paperback - verzija 1.1
 
 ## Uvod
 

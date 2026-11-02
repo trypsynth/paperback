@@ -1,4 +1,4 @@
-# Paperback - 版本 1.0
+# Paperback - 版本 1.1
 
 ## 简介
 
