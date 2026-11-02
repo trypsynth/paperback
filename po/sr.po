@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-24 08:33-0600\n"
-"PO-Revision-Date: 2026-09-24 23:35+0200\n"
+"POT-Creation-Date: 2026-10-31 21:30+0000\n"
+"PO-Revision-Date: 2026-11-02 20:36+0100\n"
 "Last-Translator: Nikola Jović <wwenikola123@gmail.com>\n"
 "Language-Team: \n"
 "Language: sr\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 3.9\n"
+"X-Generator: Poedit 3.10\n"
 "X-Poedit-Basepath: ../src\n"
 "X-Poedit-KeywordsList: _;wxTRANSLATE;wxPLURAL:1,2\n"
 "X-Poedit-SourceCharset: UTF-8\n"
@@ -26,6 +26,23 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-0: ../build\n"
 "X-Poedit-SearchPathExcluded-1: ../vcpkg\n"
 "X-Poedit-SearchPathExcluded-2: ../web\n"
+
+#. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
+msgid "Checking %s"
+msgstr "Proverava se %s"
+
+#. TRANSLATORS: Download window message while Paperback asks a web server about one of several links; the first %d is the link's number, the second how many links there are, and %s is the link
+msgid "Checking %d of %d: %s"
+msgstr "Proverava se %d od %d: %s"
+
+#. TRANSLATORS: Download window message while a document opened from a link downloads; %s is its file name
+#| msgid "Downloading update..."
+msgid "Downloading %s"
+msgstr "Preuzimanje %s"
+
+#. TRANSLATORS: Download window message while one of several documents opened from links downloads; the first %d is its number, the second how many there are, and %s is its file name
+msgid "Downloading %d of %d: %s"
+msgstr "Preuzimanje %d od %d: %s"
 
 #. TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
 #. command-line tool (Paperback's headless document-to-text/HTML converter) runnable
@@ -39,11 +56,11 @@ msgstr "Dodaj pb alatku komandne linije u putanju"
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP arhive (.zip)"
 
-#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
-msgid "No OCR language is installed. Add one in your system language settings."
+#. TRANSLATORS: Announced on Linux when OCR is requested but the Tesseract OCR engine isn't installed
+msgid "OCR needs Tesseract. Install it from your package manager."
 msgstr ""
-"Nijedan jezik za optičko prepoznavanje nije instaliran. Možete dodati neki u "
-"podešavanjima jezika vašeg sistema."
+"Za optičko prepoznavanje znakova je neophodan Tesseract. Instalirajte ga iz "
+"vašeg upravljača paketima."
 
 #. TRANSLATORS: Announced when the OCR engine fails on a page
 msgid "OCR failed."
@@ -52,6 +69,22 @@ msgstr "Optičko prepoznavanje znakova nije uspelo."
 #. TRANSLATORS: Announced when OCR is requested on a system that has no OCR engine
 msgid "OCR is not available on this system."
 msgstr "Optičko prepoznavanje znakova nije dostupno na ovom sistemu."
+
+#. TRANSLATORS: Announced when OCR can't run because the system has no OCR language installed
+msgid "No OCR language is installed. Add one in your system language settings."
+msgstr ""
+"Nijedan jezik za optičko prepoznavanje nije instaliran. Možete dodati neki u "
+"podešavanjima jezika vašeg sistema."
+
+#. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
+#| msgid ""
+#| "No OCR language is installed. Add one in your system language settings."
+msgid ""
+"No OCR language is installed. Install a Tesseract language package from your "
+"package manager."
+msgstr ""
+"Nijedan jezik za optičko prepoznavanje znakova nije instaliran. Instalirajte "
+"Tesseract paket jezika iz vašeg upravljača paketima."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
 msgid "Failed to create IPC server"
@@ -64,6 +97,7 @@ msgstr "Upozorenje"
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
 #. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
+#. TRANSLATORS: Announced when trying to change audio volume on a document that has none
 msgid "This document has no audio."
 msgstr "Ovaj dokument nema zvuk."
 
@@ -72,11 +106,13 @@ msgid "Audio hasn't started playing yet."
 msgstr "Reprodukcija zvuka još uvek nije započeta."
 
 #. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
+#. TRANSLATORS: Announced when the audio volume is already at its loudest; {} is the current volume, e.g. "200%"
 #. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
 msgid "{} (maximum)"
 msgstr "{} (maksimalno)"
 
 #. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
+#. TRANSLATORS: Announced when the audio volume is already at its quietest; {} is the current volume, e.g. "10%"
 #. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
 msgid "{} (minimum)"
 msgstr "{} (minimalno)"
@@ -195,6 +231,18 @@ msgstr "Prikaži napomenu"
 msgid "Open Document"
 msgstr "Otvori dokument"
 
+#. TRANSLATORS: Title of the error shown when what was typed into Open from URL is not a web link
+#. TRANSLATORS: Title of the dialog that asks for the web link to open a document from
+#. TRANSLATORS: Title of the window that shows documents being downloaded from links
+#. TRANSLATORS: Title of the error listing the links that could not be opened
+#| msgid "Open Error"
+msgid "Open from URL"
+msgstr "Otvori sa web adrese"
+
+#. TRANSLATORS: Announced by screen readers after a document was re-read from disk, either because the reader asked for it with F5 or because its file changed on disk
+msgid "Document reloaded."
+msgstr "Dokument ponovo učitan."
+
 #. TRANSLATORS: Announced when clearing the Recent Documents list while it is already empty
 #. TRANSLATORS: Announced when opening "All Documents" while the recent-documents list is empty
 msgid "No recent documents."
@@ -211,6 +259,15 @@ msgstr "&Otvori..."
 #. TRANSLATORS: Status-bar help text for the File > Open menu item.
 msgid "Open a document"
 msgstr "Otvori dokument"
+
+#. TRANSLATORS: Menu item in the File menu to open documents from web links.
+msgid "Open from &URL..."
+msgstr "Otvori sa &Web adrese..."
+
+#. TRANSLATORS: Status-bar help text for the File > Open from URL menu item.
+#| msgid "Open document in web view"
+msgid "Open documents from web links"
+msgstr "Otvori dokumente iz web linkova"
 
 #. TRANSLATORS: Menu item in the File menu to close the current document.
 msgid "&Close"
@@ -235,6 +292,15 @@ msgstr "Ponovo otvori pos&lednje zatvoreno"
 #. TRANSLATORS: Status-bar help text for the File > Reopen Last Closed menu item.
 msgid "Reopen the last closed document"
 msgstr "Ponovo otvori poslednji zatvoreni dokument"
+
+#. TRANSLATORS: Menu item in the View menu to re-read the current document from disk.
+msgid "&Reload"
+msgstr "&Ponovo učitaj"
+
+#. TRANSLATORS: Status-bar help text for the View > Reload menu item.
+#| msgid "Close the current document"
+msgid "Re-read the current document from disk"
+msgstr "Ponovo pročitaj trenutni dokument sa diska"
 
 #. TRANSLATORS: Menu item in the File > Recent Documents submenu to empty the recent documents list.
 msgid "Clea&r Recent Documents"
@@ -437,103 +503,120 @@ msgstr "Nakon &kraja sadrživača"
 msgid "Go past the end of the current list or table"
 msgstr "Idi nakon kraja trenutne liste ili tabele"
 
-#. TRANSLATORS: Menu item in the Go menu to move to the previous bookmark in the document.
+#. TRANSLATORS: Menu item in the Bookmarks menu to move to the previous bookmark in the document.
 msgid "&Previous Bookmark"
 msgstr "&Prethodna knjižna oznaka"
 
-#. TRANSLATORS: Status-bar help text for the Go > Previous Bookmark menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Previous Bookmark menu item.
 msgid "Go to previous bookmark"
 msgstr "Pređi na prethodnu knjižnu oznaku"
 
-#. TRANSLATORS: Menu item in the Go menu to move to the next bookmark in the document.
+#. TRANSLATORS: Menu item in the Bookmarks menu to move to the next bookmark in the document.
 msgid "&Next Bookmark"
 msgstr "&Naredna knjižna oznaka"
 
-#. TRANSLATORS: Status-bar help text for the Go > Next Bookmark menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Next Bookmark menu item.
 msgid "Go to next bookmark"
 msgstr "Pređi na narednu knjižnu oznaku"
 
-#. TRANSLATORS: Menu item in the Go menu to move to the previous note in the document.
-msgid "Previous &Note"
-msgstr "Prethodna &napomena"
+#. TRANSLATORS: Menu item in the Bookmarks menu to move to the previous note in the document.
+#| msgid "Previous Note"
+msgid "Previous Not&e"
+msgstr "Prethodna napom&ena"
 
-#. TRANSLATORS: Status-bar help text for the Go > Previous Note menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Previous Note menu item.
 msgid "Go to previous note"
 msgstr "Pređi na prethodnu napomenu"
 
-#. TRANSLATORS: Menu item in the Go menu to move to the next note in the document.
+#. TRANSLATORS: Menu item in the Bookmarks menu to move to the next note in the document.
 msgid "Next N&ote"
 msgstr "Naredna Nap&omena"
 
-#. TRANSLATORS: Status-bar help text for the Go > Next Note menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Next Note menu item.
 msgid "Go to next note"
 msgstr "Pređi na narednu napomenu"
 
-#. TRANSLATORS: Menu item in the Go menu to open a dialog listing all bookmarks and notes.
+#. TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing all bookmarks and notes.
 msgid "Jump to &All..."
 msgstr "Skoči n&a sve..."
 
-#. TRANSLATORS: Status-bar help text for the Go > Jump to All menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Jump to All menu item.
 msgid "Show all bookmarks and notes"
 msgstr "Prikaži sve knjižne oznake i napomene"
 
-#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only bookmarks.
+#. TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing only bookmarks.
 msgid "Jump to &Bookmarks Only..."
 msgstr "Skoči samo na &knjižne oznake..."
 
-#. TRANSLATORS: Status-bar help text for the Go > Jump to Bookmarks Only menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Jump to Bookmarks Only menu item.
 msgid "Show bookmarks only"
 msgstr "Prikaži samo knjižne oznake"
 
-#. TRANSLATORS: Menu item in the Go menu to open a dialog listing only notes.
-msgid "Jump to Notes &Only..."
+#. TRANSLATORS: Menu item in the Bookmarks menu to open a dialog listing only notes.
+#| msgid "Jump to Notes Only..."
+msgid "Jump to Notes Onl&y..."
 msgstr "Skoči sam&o na napomene..."
 
-#. TRANSLATORS: Status-bar help text for the Go > Jump to Notes Only menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > Jump to Notes Only menu item.
 msgid "Show notes only"
 msgstr "Prikaži samo napomene"
 
-#. TRANSLATORS: Menu item in the Go menu to view the text of the note at the current reading position.
-msgid "&View Note Text"
-msgstr "Prikaži tekst napomene"
+#. TRANSLATORS: Menu item in the Bookmarks menu to view the text of the note at the current reading position.
+#| msgid "&View Note Text"
+msgid "&View Note Text..."
+msgstr "&Prikaži tekst napomene..."
 
-#. TRANSLATORS: Status-bar help text for the Go > View Note Text menu item.
+#. TRANSLATORS: Status-bar help text for the Bookmarks > View Note Text menu item.
 msgid "View the note at current position"
 msgstr "Prikaži napomenu na trenutnoj poziciji"
 
-#. TRANSLATORS: Menu item in the Tools menu to add or remove a bookmark at the current reading position.
-msgid "Toggle &Bookmark"
-msgstr "Dodaj ili ukloni &knjižnu oznaku"
+#. TRANSLATORS: Menu item in the Bookmarks menu to add or remove a bookmark at the current reading position.
+#| msgid "Toggle Bookmark"
+msgid "&Toggle Bookmark"
+msgstr "&Dodaj ili ukloni knjižnu oznaku"
 
-#. TRANSLATORS: Menu item in the Tools menu to add a bookmark with an attached note at the current reading position.
-msgid "Bookmark with &Note"
-msgstr "Knjižna oznaka sa &napomenom"
+#. TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
+#| msgid "Bookmark with Note"
+msgid "Bookmark &with Note..."
+msgstr "Dodaj knjižnu oznaku &sa napomenom..."
 
-#. TRANSLATORS: Menu item in the Tools menu to mark the current position as the beginning of a selection to copy from later.
-msgid "Set Selection St&art"
-msgstr "Podesi Po&četak izbora"
+#. TRANSLATORS: Menu item in the Bookmarks menu to remember the current reading position as the temporary bookmark.
+#| msgid "Set Temporary Bookmark"
+msgid "&Set Temporary Bookmark"
+msgstr "&Postavi privremenu knjižnu oznaku"
 
-#. TRANSLATORS: Status-bar help text for the Tools > Set Selection Start menu item.
+#. TRANSLATORS: Menu item in the Bookmarks menu to go back to the position remembered as the temporary bookmark.
+#| msgid "Jump to Temporary Bookmark"
+msgid "&Jump to Temporary Bookmark"
+msgstr "&Skoči na privremenu knjižnu oznaku"
+
+#. TRANSLATORS: Menu item in the Edit menu to mark the current position as the beginning of a selection to copy from later.
+#| msgid "Set Selection Start"
+msgid "Set &Selection Start"
+msgstr "Podesi &početak izbora"
+
+#. TRANSLATORS: Status-bar help text for the Edit > Set Selection Start menu item.
 msgid "Mark the beginning of a selection to copy from"
 msgstr "Označi početak izbora za kopiranje"
 
-#. TRANSLATORS: Menu item in the Tools menu to copy everything from the marked beginning of a selection to the current position.
-msgid "&Copy from Selection Start"
-msgstr "&Kopiraj od početka izbora"
+#. TRANSLATORS: Menu item in the Edit menu to copy everything from the marked beginning of a selection to the current position.
+#| msgid "Copy from Selection Start"
+msgid "Copy fro&m Selection Start"
+msgstr "Kopiraj o&d početka izbora"
 
-#. TRANSLATORS: Status-bar help text for the Tools > Copy from Selection Start menu item.
+#. TRANSLATORS: Status-bar help text for the Edit > Copy from Selection Start menu item.
 msgid "Copy from the beginning of the selection to here"
 msgstr "Kopiraj od početka izbora do ovde"
 
-#. TRANSLATORS: Menu item in the Tools > Select and copy submenu to go back to the marked beginning of the selection.
+#. TRANSLATORS: Menu item in the Edit menu to go back to the marked beginning of the selection.
 msgid "&Jump to Selection Start"
 msgstr "&Premesti se na početak izbora"
 
-#. TRANSLATORS: Status-bar help text for the Tools > Select and copy > Jump to Selection Start menu item.
+#. TRANSLATORS: Status-bar help text for the Edit > Jump to Selection Start menu item.
 msgid "Go back to the beginning of the selection"
 msgstr "Vrati se nazad na početak izbora"
 
-#. TRANSLATORS: Menu item in the Tools menu to play or pause the document's audio narration.
+#. TRANSLATORS: Menu item in the Audio menu to play or pause the document's audio narration.
 msgid "&Play/Pause Audio"
 msgstr "&Reprodukuj/pauziraj zvuk"
 
@@ -541,7 +624,7 @@ msgstr "&Reprodukuj/pauziraj zvuk"
 msgid "Play or pause this document's audio narration"
 msgstr "Reprodukuj ili pauziraj zvučnu naraciju ovog dokumenta"
 
-#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration forward.
+#. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 msgid "Seek Audio &Forward"
 msgstr "Premotaj zvuk &napred"
 
@@ -549,7 +632,7 @@ msgstr "Premotaj zvuk &napred"
 msgid "Skip the audio narration forward"
 msgstr "Premotaj zvučnu naraciju napred"
 
-#. TRANSLATORS: Menu item in the Tools menu to skip the audio narration backward.
+#. TRANSLATORS: Menu item in the Audio menu to skip the audio narration backward.
 msgid "Seek Audio &Backward"
 msgstr "Premotaj zvuk na&zad"
 
@@ -557,23 +640,23 @@ msgstr "Premotaj zvuk na&zad"
 msgid "Skip the audio narration backward"
 msgstr "Premotaj zvučnu naraciju nazad"
 
-#. TRANSLATORS: Menu item in the Tools menu to increase the amount of time each audio seek skips.
-msgid "&Increase Audio Seek Amount"
-msgstr "&Povećaj količinu premotavanja zvuka"
+#. TRANSLATORS: Menu item in the Audio menu to increase the amount of time each audio seek skips.
+msgid "Increase Audio Seek &Amount"
+msgstr "Povećaj & količinu premotavanja zvuka"
 
 #. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
 msgid "Increase how far seeking the audio narration moves"
 msgstr "Povećaj koliko daleko će se premotavanje naracije zvuka pomerati"
 
-#. TRANSLATORS: Menu item in the Tools menu to decrease the amount of time each audio seek skips.
-msgid "&Decrease Audio Seek Amount"
-msgstr "&Smanji količinu premotavanja zvuka"
+#. TRANSLATORS: Menu item in the Audio menu to decrease the amount of time each audio seek skips.
+msgid "Decrease Audio Seek Am&ount"
+msgstr "Smanji ko&ličinu premotavanja zvuka"
 
 #. TRANSLATORS: Status-bar help text for the Decrease Audio Seek Amount menu item.
 msgid "Decrease how far seeking the audio narration moves"
 msgstr "Smanji koliko daleko će se premotavanje naracije zvuka pomerati"
 
-#. TRANSLATORS: Menu item in the Tools menu to increase the audio narration's playback speed.
+#. TRANSLATORS: Menu item in the Audio menu to increase the audio narration's playback speed.
 msgid "&Increase Audio Speed"
 msgstr "&Ubrzaj zvuk"
 
@@ -581,13 +664,30 @@ msgstr "&Ubrzaj zvuk"
 msgid "Increase how fast the audio narration plays"
 msgstr "Ubrzaj reprodukciju zvučne naracije"
 
-#. TRANSLATORS: Menu item in the Tools menu to decrease the audio narration's playback speed.
+#. TRANSLATORS: Menu item in the Audio menu to decrease the audio narration's playback speed.
 msgid "&Decrease Audio Speed"
 msgstr "U&spori zvuk"
 
 #. TRANSLATORS: Status-bar help text for the Decrease Audio Speed menu item.
 msgid "Decrease how fast the audio narration plays"
 msgstr "Uspori reprodukciju zvučne naracije"
+
+#. TRANSLATORS: Menu item in the Audio menu to make the audio narration louder.
+#| msgid "Increase Audio Speed"
+msgid "Increase Audio &Volume"
+msgstr "&Pojačaj zvuk"
+
+#. TRANSLATORS: Status-bar help text for the Increase Audio Volume menu item.
+msgid "Make the audio narration louder"
+msgstr "Pojačaj zvučnu naraciju"
+
+#. TRANSLATORS: Menu item in the Audio menu to make the audio narration quieter.
+msgid "Decrease Audio Vo&lume"
+msgstr "Sm&anji zvuk"
+
+#. TRANSLATORS: Status-bar help text for the Decrease Audio Volume menu item.
+msgid "Make the audio narration quieter"
+msgstr "Utišaj zvučnu naraciju"
 
 #. TRANSLATORS: Description/tagline of the application shown in the About dialog
 msgid "An accessible, lightweight, fast ebook and document reader"
@@ -738,6 +838,10 @@ msgstr "&Prva stranica:"
 msgid "&End page:"
 msgstr "Po&slednja stranica:"
 
+#. TRANSLATORS: Checkbox to OCR pages that already have a text layer, not only image-only pages
+msgid "&Include text pages too"
+msgstr "&Takođe uključi stranice sa tekstom"
+
 #. TRANSLATORS: Label for the button that starts the batch OCR
 msgid "OCR"
 msgstr "Optičko prepoznavanje znakova"
@@ -751,10 +855,12 @@ msgid "&Filter:"
 msgstr "&Filter:"
 
 #. TRANSLATORS: Option in the filter dropdown to show bookmarks only
+#. TRANSLATORS: Name of the "Bookmarks" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Bookmarks"
 msgstr "Knjižne oznake"
 
 #. TRANSLATORS: Option in the filter dropdown to show notes only
+#. TRANSLATORS: Heading over the footnotes and endnotes of a document, written after its text
 msgid "Notes"
 msgstr "Napomene"
 
@@ -796,7 +902,6 @@ msgid "Edit bookmark note:"
 msgstr "Uredi napomenu knjižne oznake:"
 
 #. TRANSLATORS: Title of the Document Info dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Document Info"
 msgstr "Informacije o dokumentu"
 
@@ -895,6 +1000,43 @@ msgstr "Nenaslovljeno"
 msgid "OK"
 msgstr "U redu"
 
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
+#. TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
+msgid "Export notes and bookmarks"
+msgstr "Izvezi napomene i knjižne oznake"
+
+#. TRANSLATORS: Label for the dropdown choosing which entries to export
+#| msgid "Export As"
+msgid "&Export:"
+msgstr "&Izvezi:"
+
+#. TRANSLATORS: Option to export both bookmarks and notes
+msgid "Bookmarks and notes"
+msgstr "Knjižne oznake i napomene"
+
+#. TRANSLATORS: Option to export only bookmarks that have no note
+msgid "Bookmarks only"
+msgstr "Samo knjižne oznake"
+
+#. TRANSLATORS: Option to export only bookmarks that have a note
+msgid "Notes only"
+msgstr "Samo napomene"
+
+#. TRANSLATORS: Checkbox to include the bookmarked text next to each note
+msgid "Include the &passage each note is attached to"
+msgstr "Uključi &deo kojem je svaka napomena priložena"
+
+#. TRANSLATORS: Checkbox to number the exported entries
+#| msgid "Number of files:"
+msgid "&Number the entries"
+msgstr "&Brojčano označi stavke"
+
+#. TRANSLATORS: Label for the button that continues to the save dialog
+#| msgid "Export As"
+msgid "Export"
+msgstr "Izvezi"
+
 #. TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Go"
@@ -946,6 +1088,10 @@ msgstr "&procenat"
 msgid "Percent out of range."
 msgstr "Procenat van opsega."
 
+#. TRANSLATORS: Title of the view showing the text recognized in a picture
+msgid "Image Text"
+msgstr "Tekst slike"
+
 #. TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
 msgid "Set Up Paperback"
 msgstr "Podesi Paperback"
@@ -985,6 +1131,16 @@ msgstr "HTML"
 #. TRANSLATORS: Choice option to open a file as Markdown
 msgid "Markdown"
 msgstr "Markdown"
+
+#. TRANSLATORS: Label of the field in Open from URL, which takes the web link of a document
+#| msgid "Link"
+msgid "Link:"
+msgstr "Link:"
+
+#. TRANSLATORS: Title of the security warning shown before downloading a document from a link
+#| msgid "Security Error"
+msgid "Security Warning"
+msgstr "Bezbednosno upozorenje"
 
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
@@ -1026,42 +1182,6 @@ msgstr "Precrtano"
 msgid "Choose a font"
 msgstr "Izaberi font"
 
-#. TRANSLATORS: Title of the hotkey customization dialog
-msgid "Window Hotkey"
-msgstr "Prečica prozora"
-
-#. TRANSLATORS: Checkbox label for Control modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
-msgid "&Ctrl"
-msgstr "&Ctrl"
-
-#. TRANSLATORS: Checkbox label for Alt modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
-msgid "&Alt"
-msgstr "&Alt"
-
-#. TRANSLATORS: Checkbox label for Shift modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
-msgid "&Shift"
-msgstr "&Šift"
-
-#. TRANSLATORS: Checkbox label for Windows modifier key
-msgid "&Win"
-msgstr "&Win"
-
-#. TRANSLATORS: Label for the hotkey key selection input field
-#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
-msgid "&Key:"
-msgstr "&Taster:"
-
-#. TRANSLATORS: Button label to clear the current hotkey selection
-msgid "Clear"
-msgstr "Očisti"
-
-#. TRANSLATORS: Representation of the Spacebar key
-msgid "Space"
-msgstr "Razmak"
-
 #. TRANSLATORS: Title of the Settings dialog
 msgid "Settings"
 msgstr "Podešavanja"
@@ -1090,9 +1210,19 @@ msgstr "&Prelamanje reči"
 msgid "Render tables &inline"
 msgstr "Obradi tabele &u redu"
 
-#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs. Turning it off keeps every line separate, which suits code listings and poetry.
+#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
 msgid "&Join wrapped lines into paragraphs in PDFs"
 msgstr "&Pridruži spojene redove pasusima u PDF datotekama"
+
+#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
+msgid "Remove repeated page &headers and footers in PDFs"
+msgstr ""
+"Ukloni & podnožja i zaglavlja stranica u PDF datotekama kada se ponavljaju"
+
+#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
+msgid "Read text between dollar signs as &math in Markdown"
+msgstr ""
+"Čitaj tekst između znakova za dolar kao &matematiku kada se koristi Markdown"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -1105,6 +1235,10 @@ msgstr "&Kružna navigacija"
 #. TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
 msgid "Move to &start of line"
 msgstr "Pređi na &početak reda"
+
+#. TRANSLATORS: Option to select the text Find matches; turned off, Find only moves the caret to the match
+msgid "&Highlight found text"
+msgstr "&Obeleži pronađen tekst"
 
 #. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
 msgid "Play &sounds on bookmarks and notes"
@@ -1138,9 +1272,9 @@ msgstr "Stabilni"
 msgid "Dev"
 msgstr "Razvojni"
 
-#. TRANSLATORS: Button label to open the hotkey customization dialog
-msgid "Customize &Window Hotkey..."
-msgstr "Prilagodi &prečicu prozora..."
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+msgid "Log Level:"
+msgstr "Nivo evidentiranja:"
 
 #. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 msgid "Customize &Keyboard Shortcuts..."
@@ -1191,8 +1325,8 @@ msgid "Normal"
 msgstr "Normalno"
 
 #. TRANSLATORS: 1.5x line spacing option
-msgid "1.5\\u{00d7}"
-msgstr "1.5\\u{00d7}"
+msgid "1.5×"
+msgstr "1.5×"
 
 #. TRANSLATORS: Double line spacing option
 msgid "Double"
@@ -1243,7 +1377,6 @@ msgid "General"
 msgstr "Opšta"
 
 #. TRANSLATORS: Tab label for the Reading options panel
-#. TRANSLATORS: Status bar label for the reading progress percentage, e.g. "Line 5, Character 120, Reading 45%"
 msgid "Reading"
 msgstr "Čitanje"
 
@@ -1255,6 +1388,36 @@ msgstr "Čitljivost"
 msgid "Choose a colour"
 msgstr "Izaberi boju"
 
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+msgid "Off"
+msgstr "Isključeno"
+
+#. TRANSLATORS: Log level choice that records only errors
+msgid "Errors"
+msgstr "Greške"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+msgid "Warnings"
+msgstr "Upozorenja"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+msgid "Information"
+msgstr "Informacije"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+msgid "Debug"
+msgstr "Otklanjanje greške"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+msgid "Trace"
+msgstr "Praćenje"
+
+msgid "System-Wide"
+msgstr "Sistemski"
+
+msgid "Show or Hide Paperback"
+msgstr "Prikaži ili sakrij Paperback"
+
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "Tajmer pre spavanja"
@@ -1264,7 +1427,6 @@ msgid "&Minutes:"
 msgstr "&Minuti:"
 
 #. TRANSLATORS: Title of the Table of Contents dialog
-#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Table of Contents"
 msgstr "Sadržaj"
 
@@ -1309,9 +1471,29 @@ msgstr[0] "Ovaj dokument sadrži %d reč."
 msgstr[1] "Ovaj dokument sadrži %d reči."
 msgstr[2] "Ovaj dokument sadrži %d reči."
 
+#. TRANSLATORS: Title of the dialog listing the documents inside a zip archive
+msgid "Open from Archive"
+msgstr "Otvori iz arhive"
+
+#. TRANSLATORS: Label for the list of documents inside a zip archive
+msgid "&Documents in this archive:"
+msgstr "&dokumenti u ovoj arhivi:"
+
 #. TRANSLATORS: A group of entries in the table of contents or the headings tree, when a book has too many to list under one heading. The first {} is the first entry in the group, the second the last.
 msgid "{} to {}"
 msgstr "{} do {}"
+
+#. TRANSLATORS: Announced when Enter is pressed on a picture while its text is already being recognized
+#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
+msgid "OCR in progress."
+msgstr "Optičko prepoznavanje znakova u toku."
+
+#. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
+msgid "The picture could not be read."
+msgstr "Slika nije mogla da se pročita."
+
+msgid "No text was found in the picture."
+msgstr "Tekst nije pronađen u slici."
 
 #. TRANSLATORS: Error message shown when the requested document file does not exist; {} is the file path
 msgid "File not found: {}"
@@ -1332,18 +1514,40 @@ msgstr "Uvezi podatke o dokumentu"
 msgid "Password is required."
 msgstr "Lozinka je obavezna."
 
-#. TRANSLATORS: Announced when Enter is pressed on an OCR placeholder while OCR is already running
-msgid "OCR in progress."
-msgstr "Optičko prepoznavanje znakova u toku."
+#. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
+msgid "&Password:"
+msgstr "&Lozinka:"
 
+msgid "Document Password"
+msgstr "Lozinka dokumenta"
+
+#. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
+#. TRANSLATORS: Generic error message shown when a document fails to load, followed by file and detail lines
+msgid "Failed to load document."
+msgstr "Učitavanje dokumenta nije uspelo."
+
+#. TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
+msgid "File: {}"
+msgstr "Datoteka: {}"
+
+#. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
+msgid "Details: {}"
+msgstr "Detalji: {}"
+
+#. TRANSLATORS: Announced when Recognize Current Page is chosen with no document open
 #. TRANSLATORS: Announced when batch OCR is triggered with no document open
 #. TRANSLATORS: Announced when Batch OCR is chosen with no document open
 msgid "No document open."
 msgstr "Nijedan dokument nije otvoren."
 
+#. TRANSLATORS: Announced when Recognize Current Page is chosen while OCR is already running
 #. TRANSLATORS: Announced when batch OCR is started while another OCR job is running
 msgid "OCR already in progress."
 msgstr "Optičko prepoznavanje znakova je već u toku."
+
+#. TRANSLATORS: Announced when Recognize Current Page is chosen in a document that is not a PDF or a comic book
+msgid "Only PDF and comic book pages can be recognized."
+msgstr "Samo PDF datoteke i stranice stripova se mogu prepoznati."
 
 #. TRANSLATORS: Announced when the chosen batch OCR range contains no image-only pages
 msgid "No image-only pages in the given range."
@@ -1381,10 +1585,6 @@ msgstr[1] ""
 msgstr[2] ""
 "Grupno optičko prepoznavanje znakova završeno. %d stranica prepoznato."
 
-#. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
-msgid "Navigated to internal link."
-msgstr "Prebačen do unutrašnjeg linka."
-
 #. TRANSLATORS: Default status bar text when no document is open
 msgid "Ready"
 msgstr "Spreman"
@@ -1405,33 +1605,9 @@ msgstr "Privremena knjižna oznaka."
 msgid "%s, page %d"
 msgstr "%s, stranica %d"
 
-#. TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
-msgid "&Password:"
-msgstr "&Lozinka:"
-
-msgid "Document Password"
-msgstr "Lozinka dokumenta"
-
-#. TRANSLATORS: Generic error message shown when a document fails to load with no further detail available
-#. TRANSLATORS: Generic error message shown when a document fails to load, followed by file and detail lines
-msgid "Failed to load document."
-msgstr "Učitavanje dokumenta nije uspelo."
-
-#. TRANSLATORS: "File" label prefix in the document-load error dialog; {} is the file path
-msgid "File: {}"
-msgstr "Datoteka: {}"
-
-#. TRANSLATORS: "Details" label prefix in the document-load error dialog; {} is the underlying error message
-msgid "Details: {}"
-msgstr "Detalji: {}"
-
-#. TRANSLATORS: Accessible name of the list of Find All results
-msgid "Results"
-msgstr "Rezultati"
-
-#. TRANSLATORS: Title of the Find dialog
-msgid "Find"
-msgstr "Pronađi"
+#. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
+msgid "Navigated to internal link."
+msgstr "Prebačen do unutrašnjeg linka."
 
 #. TRANSLATORS: Label for the text field where the user types what to search for
 msgid "Find &what:"
@@ -1454,12 +1630,12 @@ msgid "Use &regular expressions"
 msgstr "Koristi &regularne izraze"
 
 #. TRANSLATORS: Button to search backward for the previous match
-#. TRANSLATORS: Menu item in the Go menu to find the previous occurrence of the current search term.
+#. TRANSLATORS: Menu item in the Edit menu to find the previous occurrence of the current search term.
 msgid "Find &Previous"
 msgstr "Pronađi &prethodno"
 
 #. TRANSLATORS: Button to search forward for the next match
-#. TRANSLATORS: Menu item in the Go menu to find the next occurrence of the current search term.
+#. TRANSLATORS: Menu item in the Edit menu to find the next occurrence of the current search term.
 msgid "Find &Next"
 msgstr "Pronađi &naredno"
 
@@ -1476,6 +1652,14 @@ msgstr "&Kretanje"
 msgid "Not found."
 msgstr "Nije pronađeno."
 
+#. TRANSLATORS: Accessible name of the list of Find All results
+msgid "Results"
+msgstr "Rezultati"
+
+#. TRANSLATORS: Title of the Find dialog
+msgid "Find"
+msgstr "Pronađi"
+
 #. TRANSLATORS: Announced when a search reaches the end of the document and wraps back to the start
 msgid "No more results. Wrapping search."
 msgstr "Nema više rezultata. Vraćanje pretrage na početak."
@@ -1484,6 +1668,12 @@ msgstr "Nema više rezultata. Vraćanje pretrage na početak."
 #. TRANSLATORS: Error shown when the file manager could not be launched to reveal the active document's file
 msgid "Failed to reveal file in folder."
 msgstr "Neuspešno otkrivanje datoteke u folderu."
+
+#. TRANSLATORS: Shown by Reveal File in Folder for a document opened from a web link, which is read from a temporary copy
+msgid "This document was opened from a link, so it has no folder to show."
+msgstr ""
+"Ovaj dokument je otvoren iz linka, tako da nema folder koji se može "
+"prikazati."
 
 #. TRANSLATORS: Error shown when the bundled help/readme file could not be located on disk
 msgid ""
@@ -1501,6 +1691,38 @@ msgid "Failed to open donation page in browser."
 msgstr ""
 "Otvaranje stranice za doniranje u podrazumevanom pretraživaču nije uspelo."
 
+#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
+msgid "Paperback cannot perform any actions while Web View is open."
+msgstr "Paperback ne može da vrši druge radnje dok je Web prikaz otvoren."
+
+#. TRANSLATORS: First message in the window that downloads documents from links, before the first server answers
+#| msgid "Settings..."
+msgid "Connecting..."
+msgstr "Povezivanje..."
+
+#. TRANSLATORS: Title of the window that shows a document opened from a link being downloaded again
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Reload"
+msgstr "Ponovo učitaj"
+
+#. TRANSLATORS: Announced when the copy shortcut is pressed with nothing selected, so there was nothing to put on the clipboard.
+#. TRANSLATORS: Announced when a copy had nothing to copy: no text was selected, or the marked beginning of a selection is at the reader's own position, leaving nothing between the two.
+msgid "Nothing to copy."
+msgstr "Nema ničega za kopiranje."
+
+#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
+msgid "Could not copy to the clipboard."
+msgstr "Nemoguće kopirati u privremenu memoriju."
+
+#. TRANSLATORS: Announced after Select All, from the Edit menu or with Ctrl+A. The %d placeholder is replaced with the number of characters in the document. Plural form is chosen by that count.
+#| msgid "All %d document selected."
+#| msgid_plural "All %d documents selected."
+msgid "%d character selected."
+msgid_plural "%d characters selected."
+msgstr[0] "%d znak izabran."
+msgstr[1] "%d znaka izabrana."
+msgstr[2] "%d znakova izabrano."
+
 #. TRANSLATORS: Announced when toggling word wrap; the message reflects the new state
 msgid "Word wrap on."
 msgstr "Uključeno prelamanje reči."
@@ -1514,51 +1736,6 @@ msgstr "Uključen režim celog ekrana."
 
 msgid "Full screen off."
 msgstr "Isključen režim celog ekrana."
-
-#. TRANSLATORS: Announced when landing on a blank line; %d is the line number
-msgid "Line %d"
-msgstr "Red %d"
-
-#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-#. A menu invocation returns focus to the book just like a closed dialog does,
-#. so the announcement needs the same delay to cut off NVDA's focus-chain read.
-#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
-msgid "No pages."
-msgstr "Nema stranica."
-
-#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
-msgid "No table of contents."
-msgstr "Nema sadržaja."
-
-#. TRANSLATORS: Confirmation asked when Batch OCR is chosen while a batch is already running
-msgid "Batch OCR is running. Stop it?"
-msgstr ""
-"Grupno optičko prepoznavanje znakova je u toku. Da li želite da ga "
-"zaustavite?"
-
-#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
-msgid "Web View"
-msgstr "Web prikaz"
-
-#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
-msgid "Could not determine content to display in Web View."
-msgstr "Nemoguće odrediti sadržaj koji će se prikazati u Web prikazu."
-
-#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-msgid "document"
-msgstr "dokument"
-
-#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
-msgid "Source:"
-msgstr "Izvor:"
-
-#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
-msgid "Source view is not available for this document format."
-msgstr "Prikaz izvora nije dostupan za ovaj format dokumenta."
-
-#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
-msgid "Could not load the document source."
-msgstr "Nemoguće učitati izvor dokumenta."
 
 #. TRANSLATORS: File filter shown in the "Export to plain text" save dialog
 msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
@@ -1584,13 +1761,13 @@ msgstr "Markdown datoteke (*.md)|*.md|Sve datoteke (*.*)|*.*"
 msgid "Export document to Markdown"
 msgstr "Izvezi dokument kao Markdown"
 
+#. TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+msgid "document"
+msgstr "dokument"
+
 #. TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
 msgid "Paperback files (*.paperback)|*.paperback"
 msgstr "Paperback datoteke (*.paperback)|*.paperback"
-
-#. TRANSLATORS: Title of the file save dialog when exporting a document's notes and bookmarks
-msgid "Export notes and bookmarks"
-msgstr "Izvezi napomene i knjižne oznake"
 
 #. TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
 msgid "Notes and bookmarks exported successfully."
@@ -1599,6 +1776,16 @@ msgstr "Uspešan izvoz napomena i knjižnih oznaka."
 #. TRANSLATORS: Title of the export-succeeded dialog
 msgid "Export Successful"
 msgstr "Izvoz uspešan"
+
+#. TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog
+#| msgid "Plain text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgid "Text files (*.txt)|*.txt|HTML files (*.html)|*.html"
+msgstr "Tekstualne datoteke (*.txt)|*.txt|HTML datoteke (*.html)|*.html"
+
+#. TRANSLATORS: Error dialog shown when exporting notes and bookmarks as text or HTML fails
+#| msgid "Export notes and bookmarks"
+msgid "Failed to export notes and bookmarks."
+msgstr "Izvoz napomena i knjižnih oznaka nije uspeo."
 
 #. TRANSLATORS: Title of the file open dialog when importing a document's notes and bookmarks
 msgid "Import notes and bookmarks"
@@ -1612,6 +1799,67 @@ msgstr "Uspešan uvoz napomena i knjižnih oznaka."
 msgid "Import Successful"
 msgstr "Uvoz uspešan"
 
+#. TRANSLATORS: Title of the file save dialog when saving a picture from the document
+#| msgid "Navigate by images"
+msgid "Save image"
+msgstr "Sačuvaj sliku"
+
+#. TRANSLATORS: File filter shown in the "Save image" dialog
+msgid "All files (*.*)|*.*"
+msgstr "Sve datoteke (*.*)|*.*"
+
+#. TRANSLATORS: Error dialog shown when saving a picture from the document fails
+#| msgid "Failed to open disk image"
+msgid "Failed to save image."
+msgstr "Čuvanje slike nije uspelo."
+
+#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
+msgid "Failed to export document."
+msgstr "Izvoz dokumenta nije uspeo."
+
+#. TRANSLATORS: Announced when landing on a blank line; %d is the line number
+msgid "Line %d"
+msgstr "Red %d"
+
+#. TRANSLATORS: Announced when "Go to Page" is used on a document that has no page numbers
+msgid "No pages."
+msgstr "Nema stranica."
+
+#. TRANSLATORS: Announced when opening the Table of Contents for a document that has none
+msgid "No table of contents."
+msgstr "Nema sadržaja."
+
+#. TRANSLATORS: Confirmation asked when Batch OCR is chosen while a batch is already running
+msgid "Batch OCR is running. Stop it?"
+msgstr ""
+"Grupno optičko prepoznavanje znakova je u toku. Da li želite da ga "
+"zaustavite?"
+
+#. TRANSLATORS: Title of the window that renders a document's content as HTML (e.g. for embedded web pages)
+msgid "Web View"
+msgstr "Web prikaz"
+
+#. TRANSLATORS: Error shown when the document has no content that can be rendered in the Web View
+msgid "Could not determine content to display in Web View."
+msgstr "Nemoguće odrediti sadržaj koji će se prikazati u Web prikazu."
+
+#. TRANSLATORS: Prefix before the file name in the tab title for a "View Source" tab, e.g. "Source: book.epub"
+msgid "Source:"
+msgstr "Izvor:"
+
+#. TRANSLATORS: Error shown when "View Source" is used on a document format that has no raw source to view
+msgid "Source view is not available for this document format."
+msgstr "Prikaz izvora nije dostupan za ovaj format dokumenta."
+
+#. TRANSLATORS: Error shown when "View Source" fails to load the document's underlying source
+msgid "Could not load the document source."
+msgstr "Nemoguće učitati izvor dokumenta."
+
+#. TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
+#| msgid "Could not load the document source."
+msgid "Couldn't extract the document from the archive: {}"
+msgstr "Nemoguće raspakovati dokument iz arhive: {}"
+
 #. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 msgid "Unsupported format selected."
 msgstr "Izabran je format koji nije podržan."
@@ -1620,44 +1868,54 @@ msgstr "Izabran je format koji nije podržan."
 msgid "Paperback"
 msgstr "Paperback"
 
-msgid "Document reloaded."
-msgstr "Dokument ponovo učitan."
-
-#. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
-msgid "Paperback cannot perform any actions while Web View is open."
-msgstr "Paperback ne može da vrši druge radnje dok je Web prikaz otvoren."
-
-#. TRANSLATORS: Error dialog shown when exporting a document to another format fails
-msgid "Failed to export document."
-msgstr "Izvoz dokumenta nije uspeo."
+msgid "Installing the update. Paperback will restart."
+msgstr "Instaliranje ažuriranja. Paperback će se ponovo pokrenuti."
 
 #. TRANSLATORS: Window title when a document is open; {} is the document title
 msgid "{} - Paperback"
 msgstr "{} - Paperback"
 
 #. TRANSLATORS: Menu item in the Edit menu to undo the last action.
-msgid "&Undo\tCtrl+Z"
-msgstr "&Poništi\tCtrl+Z"
+msgid "&Undo"
+msgstr "&Poništi"
 
 #. TRANSLATORS: Menu item in the Edit menu to redo the last undone action.
-msgid "&Redo\tCtrl+Shift+Z"
-msgstr "&Ponovi\tCtrl+Shift+Z"
+msgid "&Redo"
+msgstr "&Ponovi"
 
 #. TRANSLATORS: Menu item in the Edit menu to cut the current selection.
-msgid "Cu&t\tCtrl+X"
-msgstr "Isec&i\tCtrl+X"
+msgid "Cu&t"
+msgstr "I&seci"
 
 #. TRANSLATORS: Menu item in the Edit menu to copy the current selection.
-msgid "&Copy\tCtrl+C"
-msgstr "&Kopiraj\tCtrl+C"
+msgid "&Copy"
+msgstr "&Kopiraj"
 
 #. TRANSLATORS: Menu item in the Edit menu to paste from the clipboard.
-msgid "&Paste\tCtrl+V"
-msgstr "&Nalepi\tCtrl+V"
+#| msgid "&Paste\tCtrl+V"
+msgid "&Paste"
+msgstr "&Nalepi"
 
 #. TRANSLATORS: Menu item in the Edit menu to select all text.
-msgid "Select &All\tCtrl+A"
-msgstr "Izaberi &sve\tCtrl+A"
+#| msgid "Select &All\tCtrl+A"
+msgid "Select &All"
+msgstr "Izaberi &sve"
+
+#. TRANSLATORS: Menu item in the Edit menu to open the find dialog.
+msgid "&Find..."
+msgstr "&Pronađi..."
+
+#. TRANSLATORS: Status-bar help text for the Edit > Find menu item.
+msgid "Find text in the document"
+msgstr "Pronađi tekst u dokumentu"
+
+#. TRANSLATORS: Status-bar help text for the Edit > Find Next menu item.
+msgid "Find next occurrence"
+msgstr "Pronađi sledeću pojavu"
+
+#. TRANSLATORS: Status-bar help text for the Edit > Find Previous menu item.
+msgid "Find previous occurrence"
+msgstr "Pronađi prethodnu pojavu"
 
 #. TRANSLATORS: Label for the Recent Documents submenu in the File menu.
 msgid "&Recent Documents"
@@ -1667,6 +1925,68 @@ msgstr "&Nedavni dokumenti"
 msgid "Open a recent document"
 msgstr "Otvori nedavni dokument"
 
+#. TRANSLATORS: Label for the Export submenu in the File menu, which lists the formats a document can be exported to.
+msgid "Ex&port"
+msgstr "Iz&vezi"
+
+#. TRANSLATORS: Menu item in the File > Export submenu to export the document as a plain text file.
+msgid "Export to &Plain Text..."
+msgstr "Izvezi kao &običan tekst..."
+
+#. TRANSLATORS: Status-bar help text for the Export to Plain Text menu item.
+msgid "Export document as plain text"
+msgstr "Izvezi dokument kao običan tekst"
+
+#. TRANSLATORS: Menu item in the File > Export submenu to export the document as an HTML file.
+msgid "Export to &HTML..."
+msgstr "Izvezi kao &HTML..."
+
+#. TRANSLATORS: Status-bar help text for the Export to HTML menu item.
+msgid "Export document as HTML"
+msgstr "Izvezi dokument kao HTML"
+
+#. TRANSLATORS: Menu item in the File > Export submenu to export the document as a Markdown file.
+msgid "Export to &Markdown..."
+msgstr "Izvezi kao &Markdown..."
+
+#. TRANSLATORS: Status-bar help text for the Export to Markdown menu item.
+msgid "Export document as Markdown"
+msgstr "Izvezi dokument kao Markdown"
+
+#. TRANSLATORS: Menu item in the File menu to import bookmarks and reading position from a file.
+msgid "&Import Document Data..."
+msgstr "&Uvezi podatke o dokumentu..."
+
+#. TRANSLATORS: Status-bar help text for the Import Document Data menu item.
+msgid "Import bookmarks and position"
+msgstr "Uvezi knjižne oznake i poziciju"
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and reading position to a file.
+msgid "&Export Document Data..."
+msgstr "&Izvezi podatke o dokumentu..."
+
+#. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
+msgid "Export bookmarks and position"
+msgstr "Izvezi knjižne oznake i poziciju"
+
+#. TRANSLATORS: Menu item in the File menu to export bookmarks and notes as a readable text or HTML file.
+#| msgid "Export notes and bookmarks"
+msgid "Export &Notes and Bookmarks as Text or HTML..."
+msgstr "Izvezi &napomene i knjižne oznake kao tekst ili HTML..."
+
+#. TRANSLATORS: Status-bar help text for the Export Notes and Bookmarks menu item.
+#| msgid "Export bookmarks and position"
+msgid "Export bookmarks and notes in a readable format"
+msgstr "Izvezi napomene i knjižne oznake u čitljivom formatu"
+
+#. TRANSLATORS: Menu item in the File menu to reveal the document's file in the system file manager.
+msgid "Reveal &File in Folder"
+msgstr "Otkrij &datoteku u folderu"
+
+#. TRANSLATORS: Status-bar help text for the Reveal File in Folder menu item.
+msgid "Reveal document in the file manager"
+msgstr "Otkri dokument u upravljaču datoteka"
+
 #. TRANSLATORS: Placeholder menu item shown in the Recent Documents submenu when there are no recent documents.
 msgid "(No recent documents)"
 msgstr "(nema nedavnih dokumenata)"
@@ -1674,50 +1994,6 @@ msgstr "(nema nedavnih dokumenata)"
 #. TRANSLATORS: Menu item at the bottom of the Recent Documents submenu to open the full list of documents.
 msgid "Show All..."
 msgstr "Prikaži sve..."
-
-#. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
-msgid "Go to &Page"
-msgstr "Pređi na &stranicu"
-
-#. TRANSLATORS: Menu item in the Go menu to open the find dialog.
-msgid "&Find..."
-msgstr "&Pronađi..."
-
-#. TRANSLATORS: Status-bar help text for the Go > Find menu item.
-msgid "Find text in the document"
-msgstr "Pronađi tekst u dokumentu"
-
-#. TRANSLATORS: Status-bar help text for the Go > Find Next menu item.
-msgid "Find next occurrence"
-msgstr "Pronađi sledeću pojavu"
-
-#. TRANSLATORS: Status-bar help text for the Go > Find Previous menu item.
-msgid "Find previous occurrence"
-msgstr "Pronađi prethodnu pojavu"
-
-#. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
-msgid "Go to &line..."
-msgstr "Pređi u &red..."
-
-#. TRANSLATORS: Status-bar help text for the Go > Go to Line menu item.
-msgid "Go to a specific line"
-msgstr "Pređi u određeni red"
-
-#. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
-msgid "Go to &percent..."
-msgstr "Pređi na &procenat..."
-
-#. TRANSLATORS: Status-bar help text for the Go > Go to Percent menu item.
-msgid "Go to a percentage of the document"
-msgstr "Pređi na procenat dokumenta"
-
-#. TRANSLATORS: Status-bar help text for the Go > Go Back menu item.
-msgid "Go back in history"
-msgstr "Vrati se nazad u istoriji"
-
-#. TRANSLATORS: Status-bar help text for the Go > Go Forward menu item.
-msgid "Go forward in history"
-msgstr "Kreni napred u istoriji"
 
 #. TRANSLATORS: Label for the Sections submenu in the compact Go menu.
 msgid "&Sections"
@@ -1743,17 +2019,10 @@ msgstr "&stranice"
 msgid "Navigate by pages"
 msgstr "Kreći se po stranicama"
 
-#. TRANSLATORS: Label for the Bookmarks submenu in the compact Go menu.
-msgid "&Bookmarks"
-msgstr "&knjižne oznake"
-
-#. TRANSLATORS: Status-bar help text for the Go > Bookmarks submenu.
-msgid "Navigate by bookmarks"
-msgstr "Kreći se po knjižnim oznakama"
-
 #. TRANSLATORS: Label for the Links submenu in the compact Go menu.
-msgid "&Links"
-msgstr "&linkovi"
+#| msgid "Next Lin&k"
+msgid "Lin&ks"
+msgstr "Lin&kovi"
 
 #. TRANSLATORS: Status-bar help text for the Go > Links submenu.
 msgid "Navigate by links"
@@ -1768,8 +2037,9 @@ msgid "Navigate by images"
 msgstr "Kreći se po slikama"
 
 #. TRANSLATORS: Label for the Figures submenu in the compact Go menu.
-msgid "&Figures"
-msgstr "&Figure"
+#| msgid "&Figures"
+msgid "Fig&ures"
+msgstr "Fig&ure"
 
 #. TRANSLATORS: Status-bar help text for the Go > Figures submenu.
 msgid "Navigate by figures"
@@ -1792,8 +2062,9 @@ msgid "Navigate by formulas"
 msgstr "Kreći se po formulama"
 
 #. TRANSLATORS: Label for the Separators submenu in the compact Go menu.
-msgid "&Separators"
-msgstr "&Razdvajači"
+#| msgid "&Separators"
+msgid "Sep&arators"
+msgstr "Raz&dvajači"
 
 #. TRANSLATORS: Status-bar help text for the Go > Separators submenu.
 msgid "Navigate by separators"
@@ -1814,6 +2085,54 @@ msgstr "&Sadrživači"
 #. TRANSLATORS: Status-bar help text for the Go > Containers submenu.
 msgid "Navigate by containers"
 msgstr "Kreći se po sadrživačima"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific line number.
+#| msgid "Go to &line..."
+msgid "Go to li&ne..."
+msgstr "Pređi u re&d..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Go to Line menu item.
+msgid "Go to a specific line"
+msgstr "Pređi u određeni red"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a percentage position within the document.
+#| msgid "Go to &percent..."
+msgid "Go to pe&rcent..."
+msgstr "Pređi na pr&ocenat..."
+
+#. TRANSLATORS: Status-bar help text for the Go > Go to Percent menu item.
+msgid "Go to a percentage of the document"
+msgstr "Pređi na procenat dokumenta"
+
+#. TRANSLATORS: Status-bar help text for the Go > Go Back menu item.
+msgid "Go back in history"
+msgstr "Vrati se nazad u istoriji"
+
+#. TRANSLATORS: Status-bar help text for the Go > Go Forward menu item.
+msgid "Go forward in history"
+msgstr "Kreni napred u istoriji"
+
+#. TRANSLATORS: Menu item in the Go menu to show the document's table of contents.
+#| msgid "Table of Contents"
+msgid "Table &of Contents..."
+msgstr "&Sadržaj..."
+
+#. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
+msgid "Show table of contents"
+msgstr "Prikaži sadržaj"
+
+#. TRANSLATORS: Menu item in the Go menu to show a list of the document's structural elements.
+msgid "&Elements List..."
+msgstr "&Lista elemenata..."
+
+#. TRANSLATORS: Status-bar help text for the Elements List menu item.
+msgid "Show elements list"
+msgstr "Prikaži listu elemenata"
+
+#. TRANSLATORS: Menu item in the Go menu to jump to a specific page number.
+#| msgid "Go to Page..."
+msgid "&Go to Page..."
+msgstr "&Pređi na stranicu..."
 
 #. TRANSLATORS: Menu item in the Help menu to show information about the application.
 msgid "&About Paperback"
@@ -1855,127 +2174,51 @@ msgstr "&Doniraj"
 msgid "Support Paperback development"
 msgstr "Podrži razvoj Paperbacka"
 
-#. TRANSLATORS: Menu item in Tools > Import/Export to import bookmarks and reading position from a file.
-msgid "&Import Document Data..."
-msgstr "&Uvezi podatke o dokumentu..."
-
-#. TRANSLATORS: Status-bar help text for the Import Document Data menu item.
-msgid "Import bookmarks and position"
-msgstr "Uvezi knjižne oznake i poziciju"
-
-#. TRANSLATORS: Menu item in Tools > Import/Export to export bookmarks and reading position to a file.
-msgid "&Export Document Data..."
-msgstr "&Izvezi podatke o dokumentu..."
-
-#. TRANSLATORS: Status-bar help text for the Export Document Data menu item.
-msgid "Export bookmarks and position"
-msgstr "Izvezi knjižne oznake i poziciju"
-
-#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a plain text file.
-msgid "Export to &Plain Text..."
-msgstr "Izvezi kao &običan tekst..."
-
-#. TRANSLATORS: Status-bar help text for the Export to Plain Text menu item.
-msgid "Export document as plain text"
-msgstr "Izvezi dokument kao običan tekst"
-
-#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as an HTML file.
-msgid "Export to &HTML..."
-msgstr "Izvezi kao &HTML..."
-
-#. TRANSLATORS: Status-bar help text for the Export to HTML menu item.
-msgid "Export document as HTML"
-msgstr "Izvezi dokument kao HTML"
-
-#. TRANSLATORS: Menu item in Tools > Import/Export to export the document as a Markdown file.
-msgid "Export to &Markdown..."
-msgstr "Izvezi kao &Markdown..."
-
-#. TRANSLATORS: Status-bar help text for the Export to Markdown menu item.
-msgid "Export document as Markdown"
-msgstr "Izvezi dokument kao Markdown"
-
 #. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
-msgid "&Word Count"
-msgstr "Broj &reči"
+#| msgid "&Word Count"
+msgid "&Word Count..."
+msgstr "&Broj reči..."
 
 #. TRANSLATORS: Status-bar help text for the Word Count menu item.
 msgid "Show word count"
 msgstr "Prikaži broj reči"
 
 #. TRANSLATORS: Menu item in the Tools menu to show information about the document.
-msgid "Document &Info"
-msgstr "&Informacije o dokumentu"
+#| msgid "Document &Info"
+msgid "Document &Info..."
+msgstr "&Informacije o dokumentu..."
 
 #. TRANSLATORS: Status-bar help text for the Document Info menu item.
 msgid "Show document information"
 msgstr "Prikaži informacije o dokumentu"
 
-#. TRANSLATORS: Menu item in the Tools menu to show the document's table of contents.
-msgid "&Table of Contents"
-msgstr "&Sadržaj"
+#. TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
+#| msgid "Sleep Timer..."
+msgid "Sleep &Timer..."
+msgstr "&Tajmer pre spavanja..."
 
-#. TRANSLATORS: Status-bar help text for the Table of Contents menu item.
-msgid "Show table of contents"
-msgstr "Prikaži sadržaj"
+#. TRANSLATORS: Menu item in the Tools menu to open the application's settings dialog.
+msgid "&Settings"
+msgstr "&Podešavanja"
 
-#. TRANSLATORS: Menu item in the Tools menu to show a list of the document's structural elements.
-msgid "&Elements List..."
-msgstr "&Lista elemenata..."
+#. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
+msgid "&Batch OCR..."
+msgstr "&Grupno optičko prepoznavanje znakova..."
 
-#. TRANSLATORS: Status-bar help text for the Elements List menu item.
-msgid "Show elements list"
-msgstr "Prikaži listu elemenata"
+#. TRANSLATORS: Tools menu item that recognizes the page the cursor is on with OCR, replacing any text it already has
+msgid "&Recognize Current Page"
+msgstr "&Prepoznaj trenutnu stranicu"
 
-#. TRANSLATORS: Menu item in the Tools menu to reveal the document's file in the system file manager.
-msgid "Reveal &File in Folder"
-msgstr "Otkrij &datoteku u folderu"
-
-#. TRANSLATORS: Status-bar help text for the Reveal File in Folder menu item.
-msgid "Reveal document in the file manager"
-msgstr "Otkri dokument u upravljaču datoteka"
-
-#. TRANSLATORS: Menu item in the Tools menu to open the document in a web view.
-msgid "Open in &Web View"
-msgstr "Otvori u &Web prikazu"
-
-#. TRANSLATORS: Status-bar help text for the Open in Web View menu item.
-msgid "Open document in web view"
-msgstr "Otvori dokument u Web prikazu"
-
-#. TRANSLATORS: Menu item in the Tools menu to open the document's underlying source markup in a new tab.
-msgid "View &Source"
-msgstr "Prikaži &izvor"
-
-#. TRANSLATORS: Status-bar help text for the View Source menu item.
-msgid "Open the document source in a new tab"
-msgstr "Otvori izvor dokumenta u novoj kartici"
-
-#. TRANSLATORS: Label for the Import/Export submenu in the Tools menu.
-msgid "I&mport/Export"
-msgstr "U&vezi ili izvezi"
-
-#. TRANSLATORS: Status-bar help text for the Tools > Import/Export submenu.
-msgid "Import and export options"
-msgstr "Opcije uvoza i izvoza"
-
-#. TRANSLATORS: Label for the Select and copy submenu in the Tools menu.
-msgid "Select and &copy"
-msgstr "Izaberi i &kopiraj"
-
-#. TRANSLATORS: Status-bar help text for the Tools > Select and copy submenu.
-msgid "Mark a selection and copy from it"
-msgstr "Označi izbor i kopiraj od oznake"
-
-#. TRANSLATORS: Checkable menu item in the Tools menu that toggles whether word wrap is enabled.
-msgid "Word w&rap"
-msgstr "&Prelamanje reči"
+#. TRANSLATORS: Checkable menu item in the View menu that toggles whether word wrap is enabled.
+#| msgid "&Word wrap"
+msgid "W&ord wrap"
+msgstr "Prelamanje r&eči"
 
 #. TRANSLATORS: Status-bar help text for the Word Wrap menu item.
 msgid "Toggle word wrap"
 msgstr "Uključi ili isključi prelamanje reči"
 
-#. TRANSLATORS: Checkable menu item in the Tools menu that toggles full screen mode.
+#. TRANSLATORS: Checkable menu item in the View menu that toggles full screen mode.
 msgid "&Full Screen"
 msgstr "&Režim celog ekrana"
 
@@ -1983,21 +2226,42 @@ msgstr "&Režim celog ekrana"
 msgid "Toggle full screen"
 msgstr "Uključi ili isključi režim celog ekrana"
 
-#. TRANSLATORS: Menu item in the Tools menu to open the application's settings dialog.
-msgid "&Settings"
-msgstr "&Podešavanja"
+#. TRANSLATORS: Menu item in the View menu to open the document in a web view.
+msgid "Open in &Web View"
+msgstr "Otvori u &Web prikazu"
 
-#. TRANSLATORS: Menu item in the Tools menu to open the sleep timer dialog.
-msgid "&Sleep Timer..."
-msgstr "&Tajmer pre spavanja..."
+#. TRANSLATORS: Status-bar help text for the Open in Web View menu item.
+msgid "Open document in web view"
+msgstr "Otvori dokument u Web prikazu"
 
-#. TRANSLATORS: Tools menu item that opens the Batch OCR dialog for image-only PDF pages
-msgid "&Batch OCR..."
-msgstr "&Grupno optičko prepoznavanje znakova..."
+#. TRANSLATORS: Menu item in the View menu to open the document's underlying source markup in a new tab.
+msgid "View &Source"
+msgstr "Prikaži &izvor"
+
+#. TRANSLATORS: Status-bar help text for the View Source menu item.
+msgid "Open the document source in a new tab"
+msgstr "Otvori izvor dokumenta u novoj kartici"
 
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
 msgstr "&Datoteka"
+
+#. TRANSLATORS: Top-level "Edit" menu label in the menu bar
+msgid "&Edit"
+msgstr "&Uredi"
+
+#. TRANSLATORS: Top-level "View" menu label in the menu bar
+#| msgid "&View:"
+msgid "&View"
+msgstr "&Prikaz"
+
+#. TRANSLATORS: Top-level "Bookmarks" menu label in the menu bar
+msgid "&Bookmarks"
+msgstr "&knjižne oznake"
+
+#. TRANSLATORS: Top-level "Audio" menu label in the menu bar
+msgid "&Audio"
+msgstr "&Zvuk"
 
 #. TRANSLATORS: Top-level "Tools" menu label in the menu bar
 msgid "&Tools"
@@ -2006,10 +2270,6 @@ msgstr "&Alati"
 #. TRANSLATORS: Top-level "Help" menu label in the menu bar
 msgid "&Help"
 msgstr "&Pomoć"
-
-#. TRANSLATORS: Top-level "Edit" menu label in the menu bar (macOS only)
-msgid "&Edit"
-msgstr "&Uredi"
 
 #. TRANSLATORS: Announced when the document has no sections to navigate
 msgid "No sections."
@@ -2196,6 +2456,19 @@ msgstr "Prikaz formule"
 msgid "Table View"
 msgstr "Prikaz tabele"
 
+#. TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
+msgid "Save &image as..."
+msgstr "Sačuvaj &sliku kao..."
+
+msgid "Save image as"
+msgstr "Sačuvaj sliku kao"
+
+msgid "Read &text in picture"
+msgstr "Pročitaj &tekst na slici"
+
+msgid "Read the text in the picture"
+msgstr "Pročitaj tekst na slici"
+
 #. TRANSLATORS: Right-click context menu item and status text to bookmark the current position
 msgid "Create &bookmark"
 msgstr "Napravi &knjižnu oznaku"
@@ -2249,9 +2522,12 @@ msgstr "Pređi na &procenat"
 msgid "Go to percent"
 msgstr "Pređi na procenat"
 
-#. TRANSLATORS: Announced after copying from the beginning of a marked selection. %d is the number of characters copied to the clipboard.
-msgid "Copied (%d chars)."
-msgstr "Kopirano (%d znakova)."
+#. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
+msgid "%d character copied."
+msgid_plural "%d characters copied."
+msgstr[0] "%d znak kopiran."
+msgstr[1] "%d znaka kopirana."
+msgstr[2] "%d znakova kopirano."
 
 #. TRANSLATORS: Announced when the reader marks the beginning of a selection to copy from later.
 msgid "Beginning of selection set."
@@ -2260,14 +2536,6 @@ msgstr "Početak izbora podešen."
 #. TRANSLATORS: Announced when the copy-from-selection shortcut is pressed before any beginning of a selection has been marked.
 msgid "Cannot copy; set beginning of selection first."
 msgstr "Nemoguće kopirati; prvo označite početak izbora."
-
-#. TRANSLATORS: Announced when the beginning of the selection was marked at the reader's current position, leaving nothing between the two to copy.
-msgid "Nothing to copy."
-msgstr "Nema ničega za kopiranje."
-
-#. TRANSLATORS: Announced when the copy ran but the text could not be put on the clipboard, so nothing was copied.
-msgid "Could not copy to the clipboard."
-msgstr "Nemoguće kopirati u privremenu memoriju."
 
 #. TRANSLATORS: Announced when the shortcut that jumps back to the beginning of a marked selection is pressed with no beginning marked.
 msgid "Cannot jump; set beginning of selection first."
@@ -2287,13 +2555,17 @@ msgstr[0] "Tajmer pre spavanja podešen na %d minut."
 msgstr[1] "Tajmer pre spavanja podešen na %d minuta."
 msgstr[2] "Tajmer pre spavanja podešen na %d minuta."
 
-#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Reading 45%"
+#. TRANSLATORS: Status bar label for the current line number, e.g. "Line 5, Character 120, Progress 45%"
 msgid "Line"
 msgstr "Red"
 
 #. TRANSLATORS: Status bar label for the current character offset within the line
 msgid "Character"
 msgstr "Znak"
+
+#. TRANSLATORS: Status bar label for how far through the document the reader has got, e.g. "Line 5, Character 120, Progress 45%"
+msgid "Progress"
+msgstr "Napredak"
 
 #. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 msgid "Sleep timer"
@@ -2314,6 +2586,11 @@ msgstr "Zatvori Paperback"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Open..."
 msgstr "Otvori..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "Open..."
+msgid "Open from URL..."
+msgstr "Otvori sa web adrese..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Close All"
@@ -2524,6 +2801,16 @@ msgid "Past Container End"
 msgstr "Nakon kraja sadrživača"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "Document Info"
+msgid "Document Info..."
+msgstr "Informacije o dokumentu..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "Table of Contents"
+msgid "Table of Contents..."
+msgstr "Sadržaj..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Elements List..."
 msgstr "Lista elemenata..."
 
@@ -2592,6 +2879,16 @@ msgid "Decrease Audio Speed"
 msgstr "Uspori zvuk"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "Increase Audio Speed"
+msgid "Increase Audio Volume"
+msgstr "Pojačaj zvuk"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "Decrease Audio Speed"
+msgid "Decrease Audio Volume"
+msgstr "Smanji zvuk"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Full Screen"
 msgstr "Režim celog ekrana"
 
@@ -2608,6 +2905,10 @@ msgid "Batch OCR..."
 msgstr "Grupno optičko prepoznavanje znakova..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Recognize Current Page"
+msgstr "Prepoznaj trenutnu stranicu"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Customize Keyboard Shortcuts..."
 msgstr "Prilagodi tasterske prečice..."
 
@@ -2618,6 +2919,11 @@ msgstr "Uvezi podatke o dokumentu..."
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export Document Data..."
 msgstr "Izvezi podatke o dokumentu..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "Export notes and bookmarks"
+msgid "Export Notes and Bookmarks as Text or HTML..."
+msgstr "Izvezi napomene i knjižne oznake kao tekst ili HTML..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Export to Plain Text..."
@@ -2655,6 +2961,19 @@ msgstr "Doniraj"
 msgid "File"
 msgstr "Datoteka"
 
+#. TRANSLATORS: Name of the "Edit" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Edit"
+msgstr "Uredi"
+
+#. TRANSLATORS: Name of the "View" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+#| msgid "&View:"
+msgid "View"
+msgstr "Prikaz"
+
+#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Audio"
+msgstr "Zvuk"
+
 #. TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Tools"
 msgstr "Alati"
@@ -2670,6 +2989,57 @@ msgstr "Ništa"
 #. TRANSLATORS: Note at the top of a web view showing only the part of a very long document around the reading position
 msgid "This view shows the part of the document you are reading."
 msgstr "Ovaj prikaz prikazuje deo dokumenta koji čitate."
+
+#. TRANSLATORS: Error when downloading a document from a link fails; {} is the HTTP status code, such as 404
+msgid "the server answered with status {}"
+msgstr "server je odgovorio statusom {}"
+
+#. TRANSLATORS: Error when the server of a link cannot be reached; {} is the technical reason
+msgid "the server could not be reached: {}"
+msgstr "nije moguće uspostaviti vezu sa serverom: {}"
+
+#. TRANSLATORS: Error when a document downloaded from a link cannot be saved; {} is the technical reason
+msgid "the download could not be saved: {}"
+msgstr "čuvanje preuzimanja nije uspelo: {}"
+
+#. TRANSLATORS: Message when downloading a document from a link is cancelled
+msgid "the download was cancelled"
+msgstr "preuzimanje je otkazano"
+
+#. TRANSLATORS: Error when a link names a file type that is never downloaded; {} is the extension without the leading dot
+msgid ".{} files cannot be read, so the link was not downloaded"
+msgstr ".{} datoteka se ne može pročitati, link zbog toga nije preuzet"
+
+#. TRANSLATORS: Error when a secure https link is redirected to an insecure http address
+msgid ""
+"the secure link was redirected to an insecure address, so it was not "
+"downloaded"
+msgstr ""
+"bezbedan link je preusmeren na nebezbednu adresu, zbog toga nije preuzet"
+
+#. TRANSLATORS: Error when a document behind a link is too large to download; {} is the limit in megabytes
+msgid "the document is larger than {} MB, so it was not downloaded"
+msgstr "dokument je veći od {} MB, zbog toga nije preuzet"
+
+#. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
+msgid "this is not a web link"
+msgstr "ovo nije web link"
+
+#. TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
+msgid ""
+"The server sends a web page (%s) instead of the document the link names."
+msgstr "Server šalje web stranicu (%s) umesto dokumenta iz naziva linka."
+
+msgid "The server sends %s, which is not a format Paperback reads."
+msgstr "Server šalje %s, što nije format koji Paperback čita."
+
+#. TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
+msgid "The server does not say what it sends."
+msgstr "Server ne govori šta je poslao."
+
+#. TRANSLATORS: Question at the end of the security warning before downloading a document from a link
+msgid "Download it anyway?"
+msgstr "Ipak ga preuzeti?"
 
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 msgid "[Image only. Press enter to OCR.]"
@@ -2691,10 +3061,44 @@ msgstr ""
 msgid "Failed to parse comic archive: {}"
 msgstr "Nemoguće obraditi arhivu stripa: {}"
 
+#. TRANSLATORS: Spoken for a comic book page that is its front cover
+msgid "Front cover"
+msgstr "Prednja korica"
+
+#. TRANSLATORS: Spoken for a comic book page that is an inside cover
+msgid "Inside cover"
+msgstr "Unutrašnja korica"
+
+#. TRANSLATORS: Spoken for a comic book page that recaps the story so far
+msgid "Recap"
+msgstr "Sažetak"
+
+#. TRANSLATORS: Spoken for a comic book page that is an advertisement
+msgid "Advertisement"
+msgstr "Reklama"
+
+#. TRANSLATORS: Spoken for a comic book page written by the editors
+msgid "Editorial"
+msgstr "Od urednika"
+
+#. TRANSLATORS: Spoken for a comic book page of letters from readers
+msgid "Letters"
+msgstr "Pisma"
+
+#. TRANSLATORS: Spoken for a comic book page previewing another comic
+#| msgid "Previous Page"
+msgid "Preview"
+msgstr "Pregled"
+
+#. TRANSLATORS: Spoken for a comic book page that is its back cover
+msgid "Back cover"
+msgstr "Zadnja korica"
+
 #. TRANSLATORS: Error shown when a comic book archive holds no page images at all
 msgid "This comic archive contains no pages."
 msgstr "Ova arhiva stripa ne sadrži stranice."
 
+#. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]", and on its own, "[Image]", for a picture with none
 #. TRANSLATORS: Label inserted before a figure or image's description, e.g. "[Figure: a cat sleeping]"
 msgid "Figure"
 msgstr "Figura"
@@ -2726,10 +3130,6 @@ msgstr "Izgleda da ZIP arhiva nije ispravna DAISY 3 ili DAISY 2.02 knjiga"
 msgid "rootfile not found in container.xml"
 msgstr "rootfile nije pronađen u container.xml"
 
-#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
-msgid "unsupported content"
-msgstr "sadržaj nije podržan"
-
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 msgid "OPF package element missing"
 msgstr "OPF element paketa nedostaje"
@@ -2746,6 +3146,10 @@ msgstr "neuspešno pretvaranje stavki korice: {}"
 msgid "EPUB has no readable content ({})"
 msgstr "EPUB nema čitljivog sadržaja ({})"
 
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+msgid "No readable content found in the ZIP archive"
+msgstr "Čitljiv sadržaj nije pronađen u ZIP arhivi"
+
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
 msgid "Failed to convert FB2 XML to text"
 msgstr "Neuspešno pretvaranje FB2 XML-a u tekst"
@@ -2761,14 +3165,6 @@ msgstr "Tema {}"
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 msgid "HTML file is empty: {}"
 msgstr "HTML datoteka je prazna: {}"
-
-#. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
-msgid "Failed to convert HTML to text: {}"
-msgstr "Neuspešno pretvaranje HTML-a u tekst: {}"
-
-#. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
-msgid "Failed to convert Markdown to text: {}"
-msgstr "Neuspešno pretvaranje Markdowna u tekst: {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 msgid "Missing HUFF parameters in header"
@@ -2872,9 +3268,27 @@ msgstr "Lozinka je obavezna"
 msgid "Password incorrect"
 msgstr "Lozinka je netačna"
 
+msgid "This document is encrypted in a way Paperback cannot open: {}"
+msgstr ""
+"Ovaj dokument je šifrovan na način koji Paperback ne može da otvori: {}"
+
 #. TRANSLATORS: Error shown when an ODP presentation file has no pages/slides
 msgid "ODP file does not contain any pages"
 msgstr "ODP datoteka ne sadrži nijednu stranicu"
+
+#. TRANSLATORS: Written after a presentation slide's text, before the presenter's notes for that slide; {} is the notes
+#| msgid "Sleep timer: {}"
+msgid "Speaker notes: {}"
+msgstr "Napomene za govornika: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it without a name; {} is the comment
+#| msgid "Font: {}"
+msgid "Comment: {}"
+msgstr "Komentar: {}"
+
+#. TRANSLATORS: Written after a presentation slide, for a comment a reviewer left on it: the first {} is the reviewer, the second the comment
+msgid "Comment from {}: {}"
+msgstr "Komentar autora {}: {}"
 
 #. TRANSLATORS: Error shown when a flat-XML ODP presentation file has no pages/slides
 msgid "FODP file does not contain any pages"
@@ -2918,6 +3332,29 @@ msgstr "Neuspešna obrada RTF dokumenta: {}"
 msgid "Chapter {}"
 msgstr "Poglavlje {}"
 
+#. TRANSLATORS: Heading over the comments reviewers left on a document, written after its text
+#| msgid "Contents"
+msgid "Comments"
+msgstr "Komentari"
+
+#. TRANSLATORS: Names a comment's author when the document does not say who wrote it
+#| msgid "document"
+msgid "Comment"
+msgstr "Komentar"
+
+#. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
+msgid "{} on “{}”: {}"
+msgstr "{} za “{}”: {}"
+
+#. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
+msgid "{}: {}"
+msgstr "{}: {}"
+
+#. TRANSLATORS: Shown in place of a presentation slide that has no text, such as one holding only pictures
+#| msgid "This document has no audio."
+msgid "This slide has no text."
+msgstr "Ovaj slajd nema tekst."
+
 #. TRANSLATORS: Error shown when a legacy DOC file is missing required header fields
 msgid "DOC file is missing required FIB fields"
 msgstr "DOC datoteci nedostaju neophodna FIB polja"
@@ -2934,17 +3371,15 @@ msgstr "DOC datoteka je šifrovana i zahteva lozinku"
 msgid "DOC decryption failed (wrong password?): {}"
 msgstr "Dešifrovanje DOC-a nije uspelo (pogrešna lozinka?): {}"
 
-#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
-msgid "File content does not look like plain text"
-msgstr "Sadržaj datoteke ne izgleda kao običan tekst"
-
+#. TRANSLATORS: Error shown when a DOC file from Word for Windows 1.x or 2.0 has no readable text
 #. TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
+#. TRANSLATORS: Error shown when a Windows Write or Word for DOS file has no readable text
 msgid "No readable text content found"
 msgstr "Čitljiv tekstualni sadržaj nije pronađen"
 
-#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
-msgid "No readable content found in the ZIP archive"
-msgstr "Čitljiv sadržaj nije pronađen u ZIP arhivi"
+#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
+msgid "File content does not look like plain text"
+msgstr "Sadržaj datoteke ne izgleda kao običan tekst"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
@@ -2964,8 +3399,147 @@ msgstr "Nijedan obrađivač nije pronađen za ekstenziju: .{}"
 msgid "All parsers failed for extension: .{}"
 msgstr "Svi obrađivači su neuspešni za ekstenziju: .{}"
 
-msgid "Unknown update file format."
-msgstr "Nepoznat format datoteke ažuriranja."
+#. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
+#| msgid "Image"
+msgid "image"
+msgstr "slika"
+
+msgid "Current version is not a valid semver."
+msgstr "Trenutna verzija nije ispravan semver."
+
+msgid "Latest release tag is not a valid semver."
+msgstr "Oznaka najnovijeg izdanja nije ispravan semver."
+
+msgid "Invalid public key"
+msgstr "Neispravan javni ključ"
+
+#| msgid "Failed to create IPC server"
+msgid "Failed to read signature"
+msgstr "Neuspešno čitanje potpisa"
+
+#| msgid "Invalid MOBI identifier"
+msgid "Invalid signature"
+msgstr "Neispravan potpis"
+
+#| msgid "Failed to create update request."
+msgid "Failed to create private download directory"
+msgstr "Neuspešno pravljenje privatnog direktorijuma za preuzimanje"
+
+#| msgid "Failed to create IPC server"
+msgid "Failed to create file"
+msgstr "Neuspešno pravljenje datoteke"
+
+#| msgid "Failed to parse WinHelp file: {}"
+msgid "Failed to write file"
+msgstr "Neuspešno pisanje datoteke"
+
+#| msgid "Failed to reveal file in folder."
+msgid "Failed to read file for verification"
+msgstr "Neuspešno čitanje datoteke radi potvrde"
+
+msgid "Signature verification failed"
+msgstr "Potvrda potpisa nije uspela"
+
+#| msgid "Failed to reveal file in folder."
+msgid "Failed to rename verified file"
+msgstr "Neuspešno preimenovanje potvrđene datoteke"
+
+#| msgid "Failed to parse WinHelp file: {}"
+msgid "Failed to parse release JSON"
+msgstr "Neuspešno obrađivanje JSON-a izdanja"
+
+msgid "Latest release does not include downloadable assets."
+msgstr "Najnovija verzija ne sadrži datoteke za preuzimanje."
+
+#| msgid "Update is available but download link could not be found."
+msgid ""
+"Update is available but no matching download asset or signature was found."
+msgstr ""
+"Ažuriranje je dostupno ali odgovarajuća datoteka za preuzimanje ili potpis "
+"nisu pronađeni."
+
+msgid "Not running from an AppImage; cannot self-update."
+msgstr "Nije pokrenut uz AppImage; sopstveno ažuriranje nije moguće."
+
+#| msgid "Failed to get current exe path"
+msgid "Failed to determine exe path"
+msgstr "Neuspešno određivanje putanje exe datoteke"
+
+#| msgid "Failed to get current exe path"
+msgid "Failed to get exe directory"
+msgstr "Neuspešno pribavljanje direktorijuma exe datoteke"
+
+msgid ""
+"Could not determine a cache directory: neither XDG_CACHE_HOME nor HOME is set"
+msgstr ""
+"Nemoguće odrediti direktorijum keša: ni XDG_CACHE_HOME ni HOME nisu podešeni"
+
+#| msgid "Failed to create update request."
+msgid "Failed to create cache directory"
+msgstr "Neuspešno pravljenje direktorijuma keša"
+
+msgid "Failed to get current exe path"
+msgstr "Pribavljanje putanje do trenutne izvršne datoteke nije uspelo"
+
+msgid "Failed to launch update script"
+msgstr "Pokretanje skripte ažuriranja nije uspelo"
+
+#| msgid "Failed to export settings"
+msgid "Failed to start installation"
+msgstr "Neuspešno pokretanje instalacije"
+
+msgid "Failed to stage the application"
+msgstr "Neuspešna priprema aplikacije"
+
+msgid "The update contains a different application."
+msgstr "Ažuriranje sadrži drugu aplikaciju."
+
+#| msgid "Could not determine content to display in Web View."
+msgid "Could not determine the update log directory."
+msgstr "Nemoguće odrediti direktorijum dnevnika ažuriranja."
+
+#| msgid "Failed to launch update script"
+msgid "Failed to launch update helper"
+msgstr "Neuspešno pokretanje pomoćnika ažuriranja"
+
+msgid "The update helper did not start. See the log:"
+msgstr "Pomoćnik ažuriranja se nije pokrenuo. Pogledajte dnevnik:"
+
+msgid ""
+"The application did not quit within 60 seconds. The current app was kept."
+msgstr ""
+"Aplikacija se nije zatvorila tokom 60 sekundi. Trenutna aplikacija je "
+"zadržana."
+
+msgid "The installation changed while waiting. The current app was kept."
+msgstr ""
+"Instalacija se promenila tokom čekanja. Trenutna aplikacija je zadržana."
+
+msgid "Could not move the current application. The current app was kept."
+msgstr ""
+"Nemoguće premestiti trenutnu aplikaciju. Trenutna aplikacija je zadržana."
+
+msgid "Could not install the update. The previous version was restored."
+msgstr "Nemoguće instalirati ažuriranje. Prethodna verzija je vraćena."
+
+msgid "Could not restore the previous version. Recover it from:"
+msgstr "Nemoguće vratiti prethodnu verziju. Oporavite je iz:"
+
+msgid ""
+"macOS could not launch the update. The previous version is preserved at:"
+msgstr ""
+"macOS nije mogao da pokrene ažuriranje. Prethodna verzija je sačuvana u:"
+
+#| msgid "Update failed"
+msgid "Application update failed"
+msgstr "Ažuriranje aplikacije nije uspelo"
+
+msgid "Log:"
+msgstr "Dnevnik:"
+
+#| msgid "Update failed"
+msgid "Update cancelled."
+msgstr "Ažuriranje otkazano."
 
 msgid "Failed to open disk image"
 msgstr "Otvaranje slike diska nije uspelo"
@@ -2978,20 +3552,30 @@ msgstr ""
 "zatim prevucite novu verziju u aplikacije kako biste završili njenu "
 "instalaciju."
 
-msgid "Update Ready"
-msgstr "Ažuriranje je spremno"
+msgid "Invalid application metadata"
+msgstr "Neispravni meta podaci aplikacije"
 
-msgid "Failed to get current exe path"
-msgstr "Pribavljanje putanje do trenutne izvršne datoteke nije uspelo"
+msgid "The disk image must contain exactly one matching application."
+msgstr "Slika diska mora da sadrži tačno jednu odgovarajuću aplikaciju."
 
-msgid "Failed to launch installer script"
-msgstr "Pokretanje instalacione skripte nije uspelo"
+msgid "The update must be signed by the application's developer team"
+msgstr "Ažuriranje mora da potpiše razvojni tim aplikacije"
 
-msgid "Failed to launch update script"
-msgstr "Pokretanje skripte ažuriranja nije uspelo"
+msgid "Invalid application executable."
+msgstr "Neispravna izvršna datoteka aplikacije."
 
-msgid "Update failed"
-msgstr "Ažuriranje nije uspelo"
+msgid "Invalid application executable"
+msgstr "Neispravna izvršna datoteka aplikacije"
+
+msgid "Application signature verification failed"
+msgstr "Provera potpisa aplikacije nije uspela"
+
+#| msgid "Failed to open disk image"
+msgid "Failed to mount disk image"
+msgstr "Neuspešno montiranje slike diska"
+
+msgid "Failed to unmount disk image"
+msgstr "Neuspešno demontiranje slike diska"
 
 msgid ""
 "Update downloaded to: %s\n"
@@ -3023,6 +3607,12 @@ msgstr "%s ažuriranje"
 msgid "Downloading update..."
 msgstr "Preuzimanje ažuriranja..."
 
+msgid "Preparing update..."
+msgstr "Priprema ažuriranja..."
+
+msgid "Update Ready"
+msgstr "Ažuriranje je spremno"
+
 msgid "No updates available."
 msgstr "Nema dostupnih ažuriranja."
 
@@ -3041,21 +3631,28 @@ msgstr ""
 msgid "Security Error"
 msgstr "Bezbednosna greška"
 
-#. TRANSLATORS: Duration segment for hours (e.g. "1 hour" / "5 hours"). The %d placeholder is replaced with the count.
+msgid "The update server returned HTTP error %s."
+msgstr "Server ažuriranja je poslao HTTP grešku %s."
+
+#| msgid "Could not load the document source."
+msgid "Could not reach the update server: %s"
+msgstr "Nemoguće doći do servera ažuriranja: %s"
+
+#. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] "%d sat"
 msgstr[1] "%d sata"
 msgstr[2] "%d sati"
 
-#. TRANSLATORS: Duration segment for minutes (e.g. "1 minute" / "5 minutes"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for minutes (for example, "1 minute" or "5 minutes"). The %d placeholder is replaced with the count.
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d minut"
 msgstr[1] "%d minuta"
 msgstr[2] "%d minuta"
 
-#. TRANSLATORS: Duration segment for seconds (e.g. "1 second" / "5 seconds"). The %d placeholder is replaced with the count.
+#. TRANSLATORS: Duration segment for seconds (for example, "1 second" or "5 seconds"). The %d placeholder is replaced with the count.
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] "%d sekunda"
@@ -3069,6 +3666,35 @@ msgstr "Podesi prečicu za {}"
 #. TRANSLATORS: Instruction text in the Set Shortcut dialog. The {} placeholder is replaced with the action's display name.
 msgid "Configure shortcut for {}:"
 msgstr "Podesi prečicu za{}:"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Command modifier in the shortcut, on macOS.
+msgid "&Cmd"
+msgstr "&Cmd"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Option modifier in the shortcut, on macOS.
+#| msgid "&Options"
+msgid "&Option"
+msgstr "&Opcija"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
+msgid "&Alt"
+msgstr "&Alt"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
+msgid "&Shift"
+msgstr "&Šift"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
+msgid "&Win"
+msgstr "&Win"
+
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
+msgid "&Key:"
+msgstr "&Taster:"
 
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr ""
@@ -3112,6 +3738,17 @@ msgstr "&Vrati na podrazumevano"
 msgid "Reset &All to Defaults"
 msgstr "Vrati &sve na podrazumevano"
 
+msgid ""
+"A system-wide shortcut needs Ctrl, Alt, or Win, or it would take that key "
+"from every other program."
+msgstr ""
+"Sistemska prečica zahteva Ctrl, Alt, ili Win, u suprotnom će taj taster "
+"preuzeti od svakog drugog programa."
+
+#. TRANSLATORS: Title of the dialog refusing a shortcut that can't be used.
+msgid "Shortcut Not Allowed"
+msgstr "Prečica nije dozvoljena"
+
 #. TRANSLATORS: the three {} are, in order: the key chord, the action it's currently assigned to, and the action being (re)assigned to it
 msgid "'{}' is already assigned to '{}'. Reassign it to '{}'?"
 msgstr ""
@@ -3122,7 +3759,7 @@ msgstr ""
 msgid "Shortcut Conflict"
 msgstr "Sukob prečica"
 
-#. TRANSLATORS: Confirmation prompt shown when resetting all keyboard shortcuts to their defaults.
+#. TRANSLATORS: Confirmation prompt shown when resetting keyboard shortcuts that span more than one tab to their defaults.
 msgid "Reset all shortcuts to their default values?"
 msgstr "Da li želite da vratite sve prečice na podrazumevane?"
 
@@ -3135,6 +3772,10 @@ msgstr ""
 #. TRANSLATORS: Title of the confirmation dialog for resetting keyboard shortcuts to their defaults.
 msgid "Reset Shortcuts"
 msgstr "Vrati prečice"
+
+#. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
+msgid "{} (not on this keyboard layout)"
+msgstr "{} (nije na ovom rasporedu tastature)"
 
 #: kt swift
 msgid "Export Document Data"
@@ -3271,7 +3912,6 @@ msgstr "Dokumenti koje otvorite će se pojaviti ovde."
 msgid "Text to Speech"
 msgstr "Tekst u govor"
 
-#. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 #: kt swift
 msgid "Voice"
 msgstr "Glas"
@@ -3296,7 +3936,6 @@ msgstr "Visina"
 msgid "Speech Dictionary"
 msgstr "Govorni rečnik"
 
-#. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
 #: kt swift
 msgid "Play Sample"
 msgstr "Reprodukuj primer"
@@ -3543,11 +4182,6 @@ msgstr "Zaustavi tajmer"
 msgid "Start Timer"
 msgstr "Započni tajmer"
 
-#. TRANSLATORS: Toolbar button toggling the rule list's edit mode; label reflects the action it will perform next (finish editing / start editing)
-#: swift
-msgid "Edit"
-msgstr "Uredi"
-
 #. TRANSLATORS: Accessibility label for the "+" button that adds a new speech dictionary rule
 #: swift
 msgid "Add Rule"
@@ -3583,8 +4217,8 @@ msgstr "Ovaj dokument nema sadržaj."
 msgid "Navigation unit"
 msgstr "Jedinica navigacije"
 
-#. TRANSLATORS: Accessibility label for the "previous unit" button; {} is the current navigation unit name, e.g. "Previous Paragraph"
-#: kt swift
+#. TRANSLATORS: Accessibility label for the "previous" button when navigating audio by time; {} is an amount like "30 seconds"
+#: swift
 msgid "Previous {}"
 msgstr "Prethodni {}"
 
@@ -3608,8 +4242,8 @@ msgstr "Kraj dokumenta"
 msgid "Beginning of document"
 msgstr "Početak dokumenta"
 
-#. TRANSLATORS: Accessibility label for the "next unit" button; {} is the current navigation unit name, e.g. "Next Paragraph"
-#: kt swift
+#. TRANSLATORS: Accessibility label for the "next" button when navigating audio by time; {} is an amount like "30 seconds"
+#: swift
 msgid "Next {}"
 msgstr "Naredni {}"
 
@@ -3978,7 +4612,6 @@ msgstr ""
 msgid "Text-to-Speech"
 msgstr "Tekst u govor"
 
-#. TRANSLATORS: TalkBack value announced when a TTS setting is following the system/engine default rather than a custom value
 #: kt
 msgid "System Default"
 msgstr "Sistemski podrazumevani"
@@ -4003,21 +4636,16 @@ msgstr "Upišite {}"
 msgid "Error loading document: {}"
 msgstr "Greška pri učitavanju dokumenta: {}"
 
-#. TRANSLATORS: 1.5x line spacing option
-#: kt
-msgid "1.5×"
-msgstr "1.5×"
-
 #. TRANSLATORS: Label for the dropdown choosing which text-to-speech engine to speak with
 #: kt
 msgid "Speech Engine"
 msgstr "Govorni izlaz"
 
-#: kt swift
+#: kt
 msgid "1 book"
 msgstr "1 knjiga"
 
-#: kt swift
+#: kt
 msgid "{} books"
 msgstr "{} knjiga"
 
@@ -4129,7 +4757,7 @@ msgid "File Manager"
 msgstr "Upravljač datoteka"
 
 #. TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
-#: kt
+#: swift kt
 msgid "{}% through"
 msgstr "{}% kroz"
 
@@ -4161,7 +4789,7 @@ msgid "{}, {}, modified {}{}"
 msgstr "{}, {}, izmenjeno {}{}"
 
 #. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
-#: kt
+#: swift kt
 msgid "{} percent"
 msgstr "{} procenata"
 
@@ -4279,14 +4907,271 @@ msgstr "Originalna datoteka"
 msgid "Settings exported"
 msgstr "Podešavanja izvezena"
 
+#. TRANSLATORS: Settings row showing the language Paperback is shown in; choosing it opens Paperback's page in the system Settings app, where the language can be changed
+#: kt swift
+#| msgid "&Language:"
+msgid "Language"
+msgstr "Jezik"
+
+#. TRANSLATORS: Footer under the Language row in Settings, explaining where it leads
+#: kt swift
+msgid "Opens Paperback in the Settings app, where its language can be changed."
+msgstr ""
+"Otvara Paperback u aplikaciji podešavanja, gde se njegov jezik može "
+"promeniti."
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by paragraph
+#: kt swift
+#| msgid "Previous Page"
+msgid "Previous Paragraph"
+msgstr "Prethodni pasus"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by line
+#: kt swift
+msgid "Previous Line"
+msgstr "Prethodni red"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by paragraph
+#: kt swift
+msgid "Next Paragraph"
+msgstr "Naredni pasus"
+
+#. TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by line
+#: kt swift
+msgid "Next Line"
+msgstr "Naredni red"
+
+#. TRANSLATORS: TalkBack action on the top bar's overflow button, which opens its menu
+#: kt
+msgid "Show all options in a menu"
+msgstr "Prikaži sve opcije u meniju"
+
+#. TRANSLATORS: TalkBack action on a document tab that closes it; {} is the document's title
+#: kt
+#| msgid "Close"
+msgid "Close {}"
+msgstr "Zatvori {}"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's unit selector, which opens the list of navigation units
+#: kt
+#| msgid "Navigation unit"
+msgid "Select navigation unit"
+msgstr "Izaberi jedinicu navigacije"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's speech rate control, which opens the list of rates
+#: kt
+#| msgid "Speech Rate"
+msgid "Select speech rate"
+msgstr "Izaberi brzinu govora"
+
+#. TRANSLATORS: Title of the file manager's top level, which lists the device's storage volumes
+#: kt
+msgid "Storage Devices"
+msgstr "Memorijski uređaji"
+
+#. TRANSLATORS: TalkBack label for the file manager's row that goes up a folder; {} is the parent folder's name
+#: kt
+msgid "Go up to parent directory: {}"
+msgstr "Vrati se u početni direktorijum: {}"
+
+#. TRANSLATORS: Toggle controlling whether TTS stops after the paragraph containing a Find match while Find is the navigation unit
+#: swift kt
+msgid "Stop reading after search matches"
+msgstr "Zaustavi čitanje nakon rezultata pretrage"
+
+#. TRANSLATORS: Explanation of the Find playback setting; turning it off lets reading continue without changing the navigation unit
+#: swift kt
+msgid "Turn off to continue reading while navigating by search matches."
+msgstr ""
+"Isključite kako biste nastavili čitanje dok se krećete po rezultatima "
+"pretrage."
+
+#. TRANSLATORS: VoiceOver label for the read-aloud bar's control that speeds up or slows down a book's recorded audio
+#: kt swift
+#| msgid "Increase Audio Speed"
+msgid "Audio Speed"
+msgstr "Brzina zvuka"
+
+#: swift
+msgid "Speech for This Book"
+msgstr "Govor za ovu knjigu"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} item"
+msgstr "{} stavka"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} items"
+msgstr "{} stavke"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} items⁣"
+msgstr "{} stavki⁣"
+
+#. TRANSLATORS: Spoken for an empty table cell in text mode
+#: swift
+#| msgid "blank"
+msgid "Blank"
+msgstr "Prazno"
+
+#. TRANSLATORS: Name of the VoiceOver rotor setting that moves between the entries of a document's table of contents in text mode
+#: swift
+#| msgid "&Sections"
+msgid "Sections"
+msgstr "Odeljci"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a voice of its own instead of the one in Settings
+#: swift
+#| msgid "Voice"
+msgid "Own Voice"
+msgstr "Sopstveni glas"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a speech rate of its own instead of the one in Settings
+#: swift
+#| msgid "Rate"
+msgid "Own Rate"
+msgstr "Sopstvena brzina"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a pitch of its own instead of the one in Settings
+#: swift
+msgid "Own Pitch"
+msgstr "Sopstvena visina"
+
+#. TRANSLATORS: Footer in Speech for This Book explaining what a switch left off does
+#: swift
+msgid "Whatever is switched off follows Settings."
+msgstr "Ono što je isključeno prati podešavanja."
+
+#. TRANSLATORS: Button that empties the recent documents list
+#: kt swift
+msgid "Clear"
+msgstr "Očisti"
+
+#. TRANSLATORS: Row label for the number of audio files in the document
+#: kt swift
+#| msgid "Number of files:"
+msgid "Number of files"
+msgstr "Broj datoteka"
+
+#. TRANSLATORS: Row label for the total playback duration across all of the document's audio files
+#: kt swift
+#| msgid "Total duration:"
+msgid "Total duration"
+msgstr "Ukupno trajanje"
+
+#. TRANSLATORS: Row label for the average playback duration per audio file in the document
+#: kt swift
+#| msgid "Average duration:"
+msgid "Average duration"
+msgstr "Prosečno trajanje"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
+#: kt
+#| msgid "Select and &copy"
+msgid "Select audio speed"
+msgstr "Izaberi brzinu zvuka"
+
+#~ msgid "Previous &Note"
+#~ msgstr "Prethodna &napomena"
+
+#~ msgid "Jump to Notes &Only..."
+#~ msgstr "Skoči sam&o na napomene..."
+
+#~ msgid "Toggle &Bookmark"
+#~ msgstr "Dodaj ili ukloni &knjižnu oznaku"
+
+#~ msgid "Bookmark with &Note"
+#~ msgstr "Knjižna oznaka sa &napomenom"
+
+#~ msgid "Set Selection St&art"
+#~ msgstr "Podesi Po&četak izbora"
+
+#~ msgid "&Copy from Selection Start"
+#~ msgstr "&Kopiraj od početka izbora"
+
+#~ msgid "&Increase Audio Seek Amount"
+#~ msgstr "&Povećaj količinu premotavanja zvuka"
+
+#~ msgid "&Decrease Audio Seek Amount"
+#~ msgstr "&Smanji količinu premotavanja zvuka"
+
+#~ msgid "Window Hotkey"
+#~ msgstr "Prečica prozora"
+
+#~ msgid "Space"
+#~ msgstr "Razmak"
+
+#~ msgid "Customize &Window Hotkey..."
+#~ msgstr "Prilagodi &prečicu prozora..."
+
+#~ msgid "1.5\\u{00d7}"
+#~ msgstr "1.5\\u{00d7}"
+
+#~ msgid "&Undo\tCtrl+Z"
+#~ msgstr "&Poništi\tCtrl+Z"
+
+#~ msgid "&Redo\tCtrl+Shift+Z"
+#~ msgstr "&Ponovi\tCtrl+Shift+Z"
+
+#~ msgid "Cu&t\tCtrl+X"
+#~ msgstr "Isec&i\tCtrl+X"
+
+#~ msgid "&Copy\tCtrl+C"
+#~ msgstr "&Kopiraj\tCtrl+C"
+
+#~ msgid "Go to &Page"
+#~ msgstr "Pređi na &stranicu"
+
+#~ msgid "Navigate by bookmarks"
+#~ msgstr "Kreći se po knjižnim oznakama"
+
+#~ msgid "&Links"
+#~ msgstr "&linkovi"
+
+#~ msgid "&Table of Contents"
+#~ msgstr "&Sadržaj"
+
+#~ msgid "I&mport/Export"
+#~ msgstr "U&vezi ili izvezi"
+
+#~ msgid "Import and export options"
+#~ msgstr "Opcije uvoza i izvoza"
+
+#~ msgid "Mark a selection and copy from it"
+#~ msgstr "Označi izbor i kopiraj od oznake"
+
+#~ msgid "Word w&rap"
+#~ msgstr "&Prelamanje reči"
+
+#~ msgid "&Sleep Timer..."
+#~ msgstr "&Tajmer pre spavanja..."
+
+#~ msgid "Copied (%d chars)."
+#~ msgstr "Kopirano (%d znakova)."
+
+#~ msgid "unsupported content"
+#~ msgstr "sadržaj nije podržan"
+
+#~ msgid "Failed to convert HTML to text: {}"
+#~ msgstr "Neuspešno pretvaranje HTML-a u tekst: {}"
+
+#~ msgid "Failed to convert Markdown to text: {}"
+#~ msgstr "Neuspešno pretvaranje Markdowna u tekst: {}"
+
+#~ msgid "Unknown update file format."
+#~ msgstr "Nepoznat format datoteke ažuriranja."
+
+#~ msgid "Failed to launch installer script"
+#~ msgstr "Pokretanje instalacione skripte nije uspelo"
+
 #~ msgid "%d char"
 #~ msgid_plural "%d chars"
 #~ msgstr[0] "%d znak"
 #~ msgstr[1] "%d znaka"
 #~ msgstr[2] "%d znakova"
-
-#~ msgid "Document Information"
-#~ msgstr "Informacije o dokumentu"
 
 #~ msgid "&Line number:"
 #~ msgstr "&Broj reda:"
@@ -4343,9 +5228,6 @@ msgstr "Podešavanja izvezena"
 
 #~ msgid "&Locate…"
 #~ msgstr "&Lociraj…"
-
-#~ msgid "&Options"
-#~ msgstr "&Podešavanja"
 
 #~ msgid "1 document."
 #~ msgstr "1 dokument."
@@ -4856,14 +5738,6 @@ msgstr "Podešavanja izvezena"
 
 #~ msgid "Parsing of links in the document failed."
 #~ msgstr "Obrada linkova u dokumentu nije uspela."
-
-#~| msgid "Failed to create IPC server"
-#~ msgid "Failed to create update request."
-#~ msgstr "Zahtev za ažuriranje nije uspešno kreiran."
-
-#~ msgid "Update is available but download link could not be found."
-#~ msgstr ""
-#~ "Ažuriranje je dostupno ali link za preuzimanje nije mogao biti pronađen."
 
 #~ msgid ""
 #~ "This book contains malformed content. Some files claim to be XML but "
