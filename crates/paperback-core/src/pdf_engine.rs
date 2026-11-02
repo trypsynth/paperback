@@ -381,6 +381,16 @@ mod tests {
 		assert_eq!(text.extract(0, text.char_count()).trim(), "font");
 	}
 
+	/// The IRS's Russian glossary lost every letter it drew on its own, and read "не аконных".
+	#[test]
+	fn a_lone_glyph_at_a_negative_font_size_is_read() {
+		let content = "BT /F1 -12 Tf -1 0 0 -1 72 700 Tm (ne) Tj (z) Tj (a) Tj ET";
+		let document = PdfDocument::from_bytes(pdf_with_content(content), None).unwrap();
+		let page = document.page(0).unwrap();
+		let text = page.text();
+		assert_eq!(text.extract(0, text.char_count()).trim(), "neza");
+	}
+
 	#[test]
 	fn a_text_string_with_a_byte_order_mark_is_utf16() {
 		assert_eq!(decode_text_string(&[0xFE, 0xFF, 0x00, 0x48, 0x00, 0x69]), "Hi");

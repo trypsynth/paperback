@@ -585,10 +585,13 @@ fn object_rect(items: &[Item], font: &FontData, font_size: f32, matrix: &Matrix,
 			min_y = min_y.min(y);
 			max_y = max_y.max(y);
 		} else {
-			min_x = min_x.min(x + bbox.left as f32 * scale);
-			max_x = max_x.max(x + bbox.right as f32 * scale);
-			min_y = min_y.min(y + bbox.bottom as f32 * scale);
-			max_y = max_y.max(y + bbox.top as f32 * scale);
+			// A negative size flips the box, and left of right would read as an empty object and lose a lone glyph.
+			let (left, right) = (bbox.left as f32 * scale, bbox.right as f32 * scale);
+			let (bottom, top) = (bbox.bottom as f32 * scale, bbox.top as f32 * scale);
+			min_x = min_x.min(x + left.min(right));
+			max_x = max_x.max(x + left.max(right));
+			min_y = min_y.min(y + bottom.min(top));
+			max_y = max_y.max(y + bottom.max(top));
 		}
 	}
 	if items.is_empty() || min_x > max_x {
