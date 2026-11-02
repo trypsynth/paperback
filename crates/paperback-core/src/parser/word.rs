@@ -18,6 +18,7 @@ use crate::{
 };
 
 mod legacy;
+pub(super) use legacy::looks_like_text_content;
 mod numbering;
 pub mod ooxml;
 

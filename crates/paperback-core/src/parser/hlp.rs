@@ -9,8 +9,9 @@ use crate::{
 	document::{
 		DocLen, DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem, format_marker_types,
 	},
-	parser::{Parser, util::path::extract_title_from_path},
+	parser::{Parser, text::TextParser, util::path::extract_title_from_path, word::looks_like_text_content},
 	t,
+	util::encoding::convert_to_utf8,
 };
 
 /// The prefix stops a bare topic number reading as a fragment when the reader resolves a link.
@@ -26,7 +27,11 @@ impl Parser for HlpParser {
 		tracing::debug!(path = %context.file_path, "parsing hlp file");
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open WinHelp file '{}'", context.file_path))?;
-		let hlp = HlpFile::from_bytes(bytes).map_err(|e| failed(&context.file_path, &e))?;
+		let hlp = match HlpFile::from_bytes(bytes) {
+			Ok(hlp) => hlp,
+			Err(libhlp::HlpError::BadMagic) if is_plain_text(&context.file_path) => return TextParser.parse(context),
+			Err(error) => return Err(failed(&context.file_path, &error)),
+		};
 		let topics = hlp.topics().map_err(|e| failed(&context.file_path, &e))?;
 		tracing::debug!(
 			path = %context.file_path,
@@ -47,6 +52,22 @@ impl Parser for HlpParser {
 		tracing::debug!(path = %context.file_path, "parsed hlp file successfully");
 		Ok(document)
 	}
+}
+
+/// DOS programs often shipped their help as a plain text file with this extension. Others shipped obfuscated data or ANSI art, which decodes to control codes and few letters.
+fn is_plain_text(path: &str) -> bool {
+	let Ok(bytes) = fs::read(path) else { return false };
+	let text = convert_to_utf8(&bytes);
+	if !looks_like_text_content(&text) {
+		return false;
+	}
+	let (mut total, mut letters, mut controls) = (0_usize, 0_usize, 0_usize);
+	for ch in text.chars().take(4096) {
+		total += 1;
+		letters += usize::from(ch.is_alphabetic());
+		controls += usize::from(ch.is_control() && !matches!(ch, '\n' | '\r' | '\t'));
+	}
+	controls * 50 <= total || letters * 100 >= total * 35
 }
 
 fn failed(path: &str, error: &libhlp::HlpError) -> anyhow::Error {
@@ -234,6 +255,36 @@ mod tests {
 	use libhlp::{Cell, Link, Row};
 
 	use super::*;
+	use crate::util::test_support::TempDir;
+
+	#[test]
+	fn a_plain_text_help_file_opens_as_text() {
+		let dir = TempDir::new("hlp_text");
+		let path = dir.path().join("readme.hlp");
+		fs::write(&path, "This installation program copies the files.\r\nPress any key to go on.\r\n").unwrap();
+		let document = HlpParser.parse(&ParserContext::new(path.to_string_lossy().into_owned())).unwrap();
+		assert!(document.buffer.content.starts_with("This installation program"));
+	}
+
+	#[test]
+	fn obfuscated_data_with_few_letters_is_not_plain_text() {
+		let dir = TempDir::new("hlp_noise");
+		let path = dir.path().join("noise.hlp");
+		fs::write(
+			&path,
+			b"3|1@G\x02\x1d\x1d\x1e 1 2 3 4 @G@G\x1d!(,>(5 6 7 8 9 0 12 34 56 78 90 ==== ---- ++++".repeat(8),
+		)
+		.unwrap();
+		assert!(HlpParser.parse(&ParserContext::new(path.to_string_lossy().into_owned())).is_err());
+	}
+
+	#[test]
+	fn a_help_file_of_another_binary_format_is_still_refused() {
+		let dir = TempDir::new("hlp_binary");
+		let path = dir.path().join("other.hlp");
+		fs::write(&path, b"HSP\x10\x9b\x00\x02\x02\x00\x01\xff\xfe\x80\x81\x00\x00\x10\x20").unwrap();
+		assert!(HlpParser.parse(&ParserContext::new(path.to_string_lossy().into_owned())).is_err());
+	}
 
 	fn text_run(text: &str) -> Run {
 		Run::Text { text: text.to_string(), format: Format::default(), link: None }
