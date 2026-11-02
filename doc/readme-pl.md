@@ -305,6 +305,132 @@ Uwaga: publiczne sponsorowanie w GitHub traktuję jako podstawę do automatyczne
 
 ## Lista zmian
 
+### Wersja 1.1
+
+Wersja 1.1 przynosi nowy silnik PDF, przebudowany tryb tekstowy w iOS, OCR w systemie Linux, otwieranie dokumentów z odnośników, obsługę plików Word, Write i PowerPoint sprzed kilkudziesięciu lat oraz wiele innych nowości.
+
+#### Dodano
+
+##### Ogólne
+* Węgierskie tłumaczenie programu i pomocy.
+* Otwieranie dokumentu z odnośnika na wszystkich platformach. `F5` pobiera go ponownie.
+* Skrót `F5` przeładowuje dokument.
+* Skróty od `Ctrl+1` do `Ctrl+9` przenoszą do pierwszych dziewięciu otwartych dokumentów.
+* Skróty `Ctrl+Tab` i `Ctrl+Shift+Tab` przełączają między dokumentami w systemach macOS i Linux.
+* Dialogi Otwórz i Wszystkie dokumenty otwierają wszystkie wybrane dokumenty, każdy na osobnej karcie.
+* Zapisywanie obrazu z menu kontekstowego.
+* Eksport zakładek i notatek do zwykłego tekstu lub HTML.
+* Ustawienia poziomu szczegółowości dziennika oraz tego, czy Znajdź zaznacza znaleziony tekst.
+* Globalnemu skrótowi pokazującemu i ukrywającemu okno można przypisać dowolny klawisz. Ustawia się go na nowej karcie Globalne w dialogu Dostosuj skróty klawiszowe.
+* Po skopiowaniu Paperback informuje, ile skopiowano, a tekst pozostaje w schowku także po zamknięciu programu.
+* Każda pozycja menu ma w każdym języku własny klawisz dostępu.
+* Archiwum ZIP, którego nie da się odczytać jako dokumentu, otwiera się jako lista zawartych w nim dokumentów.
+
+##### Nowe formaty
+* Dokumenty Word for Windows 1 i 2, Word for DOS, Word for Mac 4 i 5 oraz Word 6 i Word 95 w wydaniach Unicode.
+* Prezentacje PowerPoint 95.
+* Spakowane książki FictionBook (`.fb2.zip`).
+* Książki DAISY 3 zawierające tylko plik DTBook w archiwum ZIP albo tylko dźwięk.
+
+##### OCR
+* OCR w systemie Linux za pomocą programu Tesseract.
+* Polecenie Rozpoznaj bieżącą stronę (`Ctrl+Shift+R`) ponownie rozpoznaje stronę, na której jesteś, nawet jeśli ma ona już warstwę tekstową.
+* Naciśnięcie `Enter` na obrazie odczytuje znajdujący się na nim tekst.
+* Rozpoznany tekst zachowuje układ strony i jest zapamiętywany, więc zeskanowany dokument otwiera się od razu z tekstem.
+* Zbiorcze OCR może ponownie rozpoznawać strony z warstwą tekstową, rozpoznaje kilka stron jednocześnie i zatrzymuje się po zamknięciu dokumentu.
+
+##### Audiobooki
+* Szybkość odtwarzania aż do czterokrotnej na wszystkich platformach. Wybrana szybkość jest zapamiętywana między uruchomieniami programu.
+* Regulację głośności.
+
+##### Dokumenty PDF
+* Nowy silnik PDF: szybszy, wykorzystujący wszystkie rdzenie procesora i niewymagający biblioteki pdfium.
+* Wykrywanie nagłówków na nieotagowanych stronach oraz trafniejsze tytuły.
+* Ustawienie pozwalające zachować powtarzające się nagłówki i stopki stron.
+
+##### Inne dokumenty
+* Word: listy numerowane i wypunktowane, przypisy dolne i końcowe, komentarze, teksty alternatywne obrazów, nawigacja po listach oraz podział na strony taki, jaki zapisał sam Word.
+* OpenDocument: przypisy i komentarze umieszczane po tekście głównym.
+* Tytuł i autor pobierane z metadanych dokumentu w plikach Word, PowerPoint, OpenDocument, RTF, Markdown i reStructuredText.
+* Komiksy: tytuł, scenarzysta, typy stron i zakładki z pliku ComicInfo.xml.
+* FB2: nagłówki, spis treści i osobne wersy w utworach poetyckich.
+* Obrazy w książkach MOBI, KF8 i spakowanych książkach DAISY można zapisywać, a ich tekst odczytywać za pomocą OCR.
+* Wzory matematyczne zapisane między znakami dolara w dokumentach Markdown.
+* Dyrektywy Sphinx w dokumentach reStructuredText.
+* Obrazy bez opisu są oznaczane jako [Obraz].
+
+##### iOS i Android
+* Pozycję Język w Ustawieniach.
+* Informacje o dokumencie pokazują postęp czytania, a w audiobookach także liczbę plików i łączny czas trwania.
+* Tryb tekstowy jest zapamiętywany.
+* Możliwość nieprzerwanego czytania dalej po znalezieniu tekstu funkcją Znajdź.
+* iOS: tryb tekstowy przebudowany z myślą o VoiceOver. Czytaj wszystko obejmuje całą książkę, pokrętłem można dotrzeć do całej treści, listy i tabele są prawdziwymi listami i tabelami, przesunięcia trzema palcami zmieniają strony, a stuknięcie trzema palcami podaje numer strony i procent postępu.
+* iOS: osobny głos, tempo i wysokość głosu dla każdej książki, ustawiane na ekranie Synteza mowy dla tej książki.
+* iOS: obsługę dokumentów chronionych hasłem.
+* iOS: udostępnianie do Paperbacka spakowanych książek DAISY i audiobooków MP3.
+* iOS: wyłącznik czasowy zatrzymuje także audiobooki.
+* iOS: tłumaczenie słowackie i ukraińskie.
+* Android: zmiany tempa i wysokości głosu obowiązują już w czytanym akapicie i działają także z domyślnym silnikiem systemowym.
+* Android: działanie na urządzeniach x86_64.
+
+##### macOS
+* Aplikację uniwersalną, działającą natywnie na procesorach Intel i Apple Silicon.
+* Narzędzie pb jest dołączone do aplikacji.
+
+##### pb
+* Konwersję wybranych stron, całego folderu, listy plików (`--files-from`) albo dokumentu z odnośnika.
+
+#### Zmieniono
+* Pasek menu ma nowy układ, podzielony na osiem menu.
+* Pasek stanu podaje „Postęp” zamiast „Czytanie”.
+* Polecenia z menu informują, co zrobiły, a ich komunikat nie ginie już przy zamykaniu menu.
+* Aktualizacja zamyka Paperbacka w zwykły sposób i przywraca go potem na pierwszy plan.
+* Ogromne pliki tekstowe otwierają się, zużywając ułamek dotychczasowej pamięci, a limit 4 GB został zniesiony.
+* Konwersja plików MOBI, Word i HTML, funkcja Znajdź wszystkie oraz wyszukiwanie w dialogu Wszystkie dokumenty działają szybciej.
+* Plik wykonywalny dla systemu Windows jest mniejszy o 3 MB.
+
+#### Naprawiono
+
+##### Ogólne
+* Skróty ze znakami interpunkcyjnymi w układach klawiatury, w których wymagają one klawisza Shift. Dialog Dostosuj skróty klawiszowe oznacza teraz skróty, których nie da się wpisać w bieżącym układzie.
+* Fokus wraca do dokumentu po użyciu skrótu `Win+D`.
+* Awarie przy otwieraniu zakładek nowego dokumentu, w funkcji Znajdź wszystkie oraz przy niektórych uszkodzonych plikach MOBI.
+* Znajdź z wyrażeniem regularnym zaznacza całe dopasowanie.
+* Pasek stanu audiobooka nie przeskakuje już między postępem nagrania a postępem tekstu.
+* Liczba słów obejmuje tekst rozpoznany przez OCR.
+* Paperback nie informuje już o obrazie samej zeskanowanej strony.
+* Opcja PATH w instalatorze.
+* Aktualizacja w systemie Linux znajduje pobrane pliki, a wersja AppImage aktualizuje się jako AppImage.
+* Wiersz komentarza w plikach Word i OpenDocument jest tłumaczony.
+
+##### Dokumenty
+* Pliki Windows Write, które otwierały się jako dane binarne.
+* PDF: tekst powtarzany na granicach stron w otagowanych plikach PDF, drugie kolumny odczytywane przed pierwszymi, gubione spacje i dywizy na końcach wierszy, tekst w czcionkach Type 3 oraz kropki wypełniające wiersze spisu treści.
+* RTF: końce wierszy zapisane samym znakiem CR, listy wypunktowane myślnikami, tekst przed pierwszym akapitem, tekst ze znakami diakrytycznymi i tekst CJK, tekst gubiony po ukośniku odwrotnym poprzedzonym znakiem ucieczki oraz pliki RTF zapisane z rozszerzeniem `.doc`.
+* Pliki Word i PowerPoint z uszkodzoną strukturą, które Word mimo to otwiera.
+* Tekst w śledzonych zmianach, polach i komórkach tabel w dokumentach Word.
+* Odnośniki w prezentacjach PowerPoint, slajdy bez tekstu oraz emoji.
+* Znaki `<` i `&` w komórkach tabel plików Word, PowerPoint i OpenDocument.
+* Chronione hasłem pliki OpenDocument z aktualnej wersji LibreOffice.
+* Pliki CHM są odczytywane zgodnie z ich stroną kodową, a pliki HTML i DAISY zgodnie z zadeklarowanym kodowaniem.
+* Spakowane książki DAISY z odwołaniami zapisanymi niewłaściwą wielkością liter oraz książki DAISY 2.02, z których odczytywana była tylko pierwsza fraza sekcji.
+* Strony podręcznika systemowego przekierowujące poleceniem `.so`.
+* Blok metadanych (front matter) w dokumentach Markdown nie jest już odczytywany jako tekst.
+
+##### macOS
+* Przechodzenie na początek wiersza, aktywowanie elementów klawiaturą i komunikaty o kopiowaniu.
+* Polecenie menu kontekstowego w VoiceOver otwiera własne menu kontekstowe Paperbacka.
+* VoiceOver nie odczytuje już nazwy pozycji menu przy każdym użyciu jej skrótu, więc nie zagłusza wyniku polecenia.
+
+##### iOS i Android
+* iOS: system nie przerywa już uruchamiania aplikacji podczas przywracania dużych książek.
+* iOS: aplikacja otwiera się na ostatnio czytanej karcie, zamknięcie karty nie powoduje już czytania poprzedniej książki, a Ostatnie dokumenty zachowują swoją kolejność.
+* iOS: audiobooki nie są już ponownie rozpakowywane przy każdym uruchomieniu.
+* iOS: reguły słownika mowy z wyrażeniami regularnymi przyjmują `\1`.
+* Android: czytanie na głos dokumentów chronionych hasłem.
+* Android: przycisk przejścia wstecz na pasku czytania nie odczytuje już ponownie pierwszego akapitu na początku dokumentu, a przewijanie w trybie tekstowym nie odskakuje.
+* Android: mniejsze zużycie baterii podczas czytania i gdy czytanie jest wstrzymane.
+
 ### Wersja 1.0
 
 Wersja 1.0 to pierwsze wydanie na wszystkich pięciu platformach: Windows, macOS, Linux, iOS i Android, a aplikacje na iOS i Androida są dostępne w App Store i Google Play.
