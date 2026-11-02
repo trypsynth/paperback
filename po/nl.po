@@ -1131,7 +1131,7 @@ msgstr "Instellingen"
 
 #. TRANSLATORS: Option to restore documents that were open when the app was last closed
 msgid "&Restore previously opened documents on startup"
-msgstr "Eerder geopende documenten &herstellen bij opstarten"
+msgstr "Eerder geopende documenten &heropenen bij opstarten"
 
 #. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
 msgid "&Automatically reload changed documents"
@@ -1353,11 +1353,9 @@ msgstr "Debug"
 msgid "Trace"
 msgstr "Trace"
 
-#, fuzzy
 msgid "System-Wide"
-msgstr "Systeembreedte"
+msgstr "Systeembreed"
 
-#, fuzzy
 msgid "Show or Hide Paperback"
 msgstr "Paperback tonen of verbergen"
 
@@ -3213,9 +3211,8 @@ msgid "Comment"
 msgstr "Opmerking"
 
 #. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
-#, fuzzy
 msgid "{} on “{}”: {}"
-msgstr "{} op \"{}\": {}"
+msgstr "{} op “{}”: {}"
 
 #. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
 msgid "{}: {}"
@@ -3386,7 +3383,7 @@ msgid "The update has been downloaded and its disk image opened. Quit %s and dra
 msgstr "De update is gedownload en de schijfkopie is geopend. Sluit %s af en sleep de nieuwe versie naar Programma's om de installatie te voltooien."
 
 msgid "Invalid application metadata"
-msgstr "Ongeldige metagegevens van applicatie"
+msgstr "Ongeldige metadata van applicatie"
 
 msgid "The disk image must contain exactly one matching application."
 msgstr "De schijfkopie moet precies één overeenkomende applicatie bevatten."
@@ -3783,7 +3780,7 @@ msgstr "Gedrag"
 #. TRANSLATORS: Toggle to reopen previously open documents on next launch
 #: swift
 msgid "Restore last open documents"
-msgstr "Laatst geopende documenten herstellen"
+msgstr "Laatst geopende documenten heropenen"
 
 #. TRANSLATORS: Toggle controlling whether an upward swipe advances (vs. reverses) navigation
 #: kt swift
@@ -4399,7 +4396,7 @@ msgstr "Doorgaan"
 #. TRANSLATORS: Settings switch: reopen the last-read book automatically on launch
 #: kt
 msgid "Restore last open book"
-msgstr "Laatst geopende boek herstellen"
+msgstr "Laatst geopende boek heropenen"
 
 #. TRANSLATORS: Settings switch: use the app's built-in file browser instead of the system document picker
 #: kt
@@ -4751,68 +4748,57 @@ msgstr "Schakel dit uit om door te blijven lezen terwijl je per zoekovereenkomst
 
 #. TRANSLATORS: VoiceOver label for the read-aloud bar's control that speeds up or slows down a book's recorded audio
 #: kt swift
-#, fuzzy
 msgid "Audio Speed"
-msgstr "Audiospoelasnelheid"
+msgstr "Audiosnelheid"
 
 #: swift
-#, fuzzy
 msgid "Speech for This Book"
 msgstr "Spraak voor dit boek"
 
 #. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
 #: swift
-#, fuzzy
 msgid "{} item"
 msgstr "{} item"
 
 #. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
 #: swift
-#, fuzzy
 msgid "{} items"
 msgstr "{} items"
 
 #. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
 #: swift
-#, fuzzy
 msgid "{} items⁣"
 msgstr "{} items⁣"
 
 #. TRANSLATORS: Spoken for an empty table cell in text mode
 #: swift
-#, fuzzy
 msgid "Blank"
 msgstr "Leeg"
 
 #. TRANSLATORS: Name of the VoiceOver rotor setting that moves between the entries of a document's table of contents in text mode
 #: swift
-#, fuzzy
 msgid "Sections"
 msgstr "Secties"
 
 #. TRANSLATORS: Switch in Speech for This Book giving the open book a voice of its own instead of the one in Settings
 #: swift
-#, fuzzy
 msgid "Own Voice"
 msgstr "Eigen stem"
 
 #. TRANSLATORS: Switch in Speech for This Book giving the open book a speech rate of its own instead of the one in Settings
 #: swift
-#, fuzzy
 msgid "Own Rate"
 msgstr "Eigen spreeksnelheid"
 
 #. TRANSLATORS: Switch in Speech for This Book giving the open book a pitch of its own instead of the one in Settings
 #: swift
-#, fuzzy
 msgid "Own Pitch"
 msgstr "Eigen toonhoogte"
 
 #. TRANSLATORS: Footer in Speech for This Book explaining what a switch left off does
 #: swift
-#, fuzzy
 msgid "Whatever is switched off follows Settings."
-msgstr "Wat is uitgeschakeld volgt de instellingen."
+msgstr "Wat uitgeschakeld is, volgt de instellingen."
 
 #. TRANSLATORS: Button that empties the recent documents list
 #: kt swift
@@ -4836,9 +4822,8 @@ msgstr "Gemiddelde tijdsduur"
 
 #. TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
 #: kt
-#, fuzzy
 msgid "Select audio speed"
-msgstr "audiospoelasnelheid selecteren"
+msgstr "audiosnelheid selecteren"
 
 #~ msgid "Window Hotkey"
 #~ msgstr "Venstersneltoets"
