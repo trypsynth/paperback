@@ -1352,11 +1352,9 @@ msgstr "Hibakeresés"
 msgid "Trace"
 msgstr "Nyomkövetés"
 
-#, fuzzy
 msgid "System-Wide"
 msgstr "Rendszerszintű"
 
-#, fuzzy
 msgid "Show or Hide Paperback"
 msgstr "A Paperback megjelenítése vagy elrejtése"
 
@@ -3212,9 +3210,8 @@ msgid "Comment"
 msgstr "Megjegyzés"
 
 #. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
-#, fuzzy
 msgid "{} on “{}”: {}"
-msgstr "{} – „{}\" alatt: {}"
+msgstr "{} („{}”): {}"
 
 #. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
 msgid "{}: {}"
@@ -4543,12 +4540,12 @@ msgstr "{}%-nál tart"
 #. TRANSLATORS: Footer explaining the "Swipe up moves forward" toggle above it
 #: swift
 msgid "With VoiceOver, swipe up on the play button to move forward, or down to move back."
-msgstr "VoiceOverrel a lejátszás gombon felfelé legyintve előre, lefelé legyintve visszafelé léphet."
+msgstr "VoiceOver használata esetén a lejátszás gombon felfelé legyintve előre, lefelé legyintve visszafelé léphet."
 
 #. TRANSLATORS: Explanation shown under the "Swipe up moves forward" switch
 #: kt
 msgid "With TalkBack, swipe up on the play button to move forward, or down to move back."
-msgstr "TalkBackkel a lejátszás gombon felfelé legyintve előre, lefelé legyintve visszafelé léphet."
+msgstr "TalkBack használata esetén a lejátszás gombon felfelé legyintve előre, lefelé legyintve visszafelé léphet."
 
 #. TRANSLATORS: TalkBack description of the folder the file browser is showing; {} is its path
 #: kt
@@ -4750,68 +4747,57 @@ msgstr "Kapcsolja ki, ha a keresési találatok közötti navigálás közben fo
 
 #. TRANSLATORS: VoiceOver label for the read-aloud bar's control that speeds up or slows down a book's recorded audio
 #: kt swift
-#, fuzzy
 msgid "Audio Speed"
-msgstr "Audiosebesség"
+msgstr "Lejátszási sebesség"
 
 #: swift
-#, fuzzy
 msgid "Speech for This Book"
-msgstr "Beszédhang ebben a könyvben"
+msgstr "A könyv felolvasási beállításai"
 
 #. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
 #: swift
-#, fuzzy
 msgid "{} item"
-msgstr "{} listaelem"
+msgstr "{} elem"
 
 #. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
 #: swift
-#, fuzzy
 msgid "{} items"
-msgstr "{} listaelem"
+msgstr "{} elem"
 
 #. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
 #: swift
-#, fuzzy
 msgid "{} items⁣"
-msgstr "{} listaelem⁣"
+msgstr "{} elem⁣"
 
 #. TRANSLATORS: Spoken for an empty table cell in text mode
 #: swift
-#, fuzzy
 msgid "Blank"
 msgstr "Üres"
 
 #. TRANSLATORS: Name of the VoiceOver rotor setting that moves between the entries of a document's table of contents in text mode
 #: swift
-#, fuzzy
 msgid "Sections"
 msgstr "Szakaszok"
 
 #. TRANSLATORS: Switch in Speech for This Book giving the open book a voice of its own instead of the one in Settings
 #: swift
-#, fuzzy
 msgid "Own Voice"
 msgstr "Saját beszédhang"
 
 #. TRANSLATORS: Switch in Speech for This Book giving the open book a speech rate of its own instead of the one in Settings
 #: swift
-#, fuzzy
 msgid "Own Rate"
 msgstr "Saját beszédsebesség"
 
 #. TRANSLATORS: Switch in Speech for This Book giving the open book a pitch of its own instead of the one in Settings
 #: swift
-#, fuzzy
 msgid "Own Pitch"
 msgstr "Saját hangmagasság"
 
 #. TRANSLATORS: Footer in Speech for This Book explaining what a switch left off does
 #: swift
-#, fuzzy
 msgid "Whatever is switched off follows Settings."
-msgstr "A kikapcsolt beállítások a Beállításokból következnek."
+msgstr "Ami ki van kapcsolva, az a Beállításokat követi."
 
 #. TRANSLATORS: Button that empties the recent documents list
 #: kt swift
@@ -4820,27 +4806,23 @@ msgstr "Törlés"
 
 #. TRANSLATORS: Row label for the number of audio files in the document
 #: kt swift
-#, fuzzy
 msgid "Number of files"
 msgstr "Fájlok száma"
 
 #. TRANSLATORS: Row label for the total playback duration across all of the document's audio files
 #: kt swift
-#, fuzzy
 msgid "Total duration"
 msgstr "Teljes lejátszási idő"
 
 #. TRANSLATORS: Row label for the average playback duration per audio file in the document
 #: kt swift
-#, fuzzy
 msgid "Average duration"
 msgstr "Átlagos lejátszási idő"
 
 #. TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
 #: kt
-#, fuzzy
 msgid "Select audio speed"
-msgstr "Audiosebesség kiválasztása"
+msgstr "Lejátszási sebesség kiválasztása"
 
 #~ msgid "Window Hotkey"
 #~ msgstr "Az ablak billentyűparancsa"
