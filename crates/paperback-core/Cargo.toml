@@ -42,8 +42,8 @@ icu_normalizer = "2.4.0"
 icu_properties = { version = "2.4.0", features = ["unicode_bidi"] }
 image = { workspace = true, features = ["jpeg", "png", "gif", "webp", "bmp"] }
 key-chord = { version = "0.2.2", features = ["serde"] }
-libchm = "0.3.0"
-libhlp = "0.2.0"
+libchm = "0.3.1"
+libhlp = "0.3.0"
 lofty = "0.25.5"
 math-core = "0.9.0"
 mathcat = { version = "0.7.7", features = ["include-zip"] }
