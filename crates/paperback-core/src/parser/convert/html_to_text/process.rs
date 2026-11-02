@@ -52,7 +52,8 @@ impl HtmlToText {
 				self.handle_list_item(tag_name, node, document);
 				self.handle_list_start(tag_name, node);
 				self.handle_heading(tag_name, node, document);
-				if matches!(tag_name, "script" | "style" | "noscript" | "iframe" | "object" | "embed") {
+				// An <object> stays in: its content is the fallback a reader wants, and a page that forgets </object> has the rest of its body inside one.
+				if matches!(tag_name, "script" | "style" | "noscript" | "iframe" | "embed") {
 					return;
 				}
 				self.process_element_children(node, document, tag_name);
