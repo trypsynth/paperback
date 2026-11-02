@@ -19,15 +19,17 @@ impl Parser for TextParser {
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open text file '{}'", context.file_path))?;
 		let byte_len = bytes.len();
-		let processed = remove_soft_hyphens(normalize_line_endings(convert_owned_to_utf8(bytes)));
-		let title = extract_title_from_path(&context.file_path);
-		let mut doc = Document::new().with_title(title);
-		let buffer = DocumentBuffer::with_content(processed);
-		let char_len = buffer.len().get();
-		doc.set_buffer(buffer);
-		tracing::debug!(path = %context.file_path, bytes = byte_len, chars = char_len, "parsed text file");
+		let doc = text_document(&context.file_path, convert_owned_to_utf8(bytes));
+		tracing::debug!(path = %context.file_path, bytes = byte_len, chars = doc.buffer.len().get(), "parsed text file");
 		Ok(doc)
 	}
+}
+
+/// A document of already decoded text, titled after its file.
+pub(super) fn text_document(path: &str, text: String) -> Document {
+	let mut doc = Document::new().with_title(extract_title_from_path(path));
+	doc.set_buffer(DocumentBuffer::with_content(remove_soft_hyphens(normalize_line_endings(text))));
+	doc
 }
 
 #[cfg(test)]

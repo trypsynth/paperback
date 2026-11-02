@@ -128,6 +128,37 @@ pub fn decode_html(bytes: &[u8], fallback: Option<&'static Encoding>) -> String 
 		.map_or_else(|| convert_to_utf8(bytes), |encoding| encoding.decode_without_bom_handling(bytes).0.into_owned())
 }
 
+/// Code page 437 from 0x80 up; the bytes below it are ASCII.
+const CP437_HIGH: &str = "\u{C7}\u{FC}\u{E9}\u{E2}\u{E4}\u{E0}\u{E5}\u{E7}\u{EA}\u{EB}\u{E8}\u{EF}\u{EE}\u{EC}\u{C4}\u{C5}\u{C9}\u{E6}\u{C6}\u{F4}\u{F6}\u{F2}\u{FB}\u{F9}\u{FF}\u{D6}\u{DC}\u{A2}\u{A3}\u{A5}\u{20A7}\u{192}\u{E1}\u{ED}\u{F3}\u{FA}\u{F1}\u{D1}\u{AA}\u{BA}\u{BF}\u{2310}\u{AC}\u{BD}\u{BC}\u{A1}\u{AB}\u{BB}\u{2591}\u{2592}\u{2593}\u{2502}\u{2524}\u{2561}\u{2562}\u{2556}\u{2555}\u{2563}\u{2551}\u{2557}\u{255D}\u{255C}\u{255B}\u{2510}\u{2514}\u{2534}\u{252C}\u{251C}\u{2500}\u{253C}\u{255E}\u{255F}\u{255A}\u{2554}\u{2569}\u{2566}\u{2560}\u{2550}\u{256C}\u{2567}\u{2568}\u{2564}\u{2565}\u{2559}\u{2558}\u{2552}\u{2553}\u{256B}\u{256A}\u{2518}\u{250C}\u{2588}\u{2584}\u{258C}\u{2590}\u{2580}\u{3B1}\u{DF}\u{393}\u{3C0}\u{3A3}\u{3C3}\u{B5}\u{3C4}\u{3A6}\u{398}\u{3A9}\u{3B4}\u{221E}\u{3C6}\u{3B5}\u{2229}\u{2261}\u{B1}\u{2265}\u{2264}\u{2320}\u{2321}\u{F7}\u{2248}\u{B0}\u{2219}\u{B7}\u{221A}\u{207F}\u{B2}\u{25A0}\u{A0}";
+
+/// `encoding_rs` follows the web, which has no code page 437.
+#[must_use]
+pub fn decode_cp437(bytes: &[u8]) -> String {
+	let high: Vec<char> = CP437_HIGH.chars().collect();
+	bytes.iter().map(|&byte| if byte < 0x80 { char::from(byte) } else { high[usize::from(byte) - 0x80] }).collect()
+}
+
+/// DOS text gives itself away by a line of box drawing, which is one byte repeated, or by accented letters in a range Windows code pages keep for punctuation. A double-byte script fills that range too, but it is mostly non-ASCII and rarely repeats a byte.
+#[must_use]
+pub fn looks_like_cp437(bytes: &[u8]) -> bool {
+	if str::from_utf8(bytes).is_ok() {
+		return false;
+	}
+	let box_drawing_run = bytes
+		.windows(4)
+		.any(|run| matches!(run[0], 0xB0..=0xDF | 0xF9 | 0xFA | 0xFE) && run.iter().all(|&byte| byte == run[0]));
+	if box_drawing_run {
+		return true;
+	}
+	let non_ascii = bytes.iter().filter(|byte| !byte.is_ascii()).count();
+	non_ascii * 100 < bytes.len() * 15
+		&& bytes.windows(3).any(|around| {
+			around[0].is_ascii_alphabetic()
+				&& around[2].is_ascii_alphabetic()
+				&& matches!(around[1], 0x81..=0x84 | 0x86..=0x8F)
+		})
+}
+
 /// Takes ownership so UTF-8 becomes the text without a copy, which for a whole text file would cost as much memory again.
 #[must_use]
 pub fn convert_owned_to_utf8(mut bytes: Vec<u8>) -> String {
@@ -199,6 +230,27 @@ mod tests {
 	use rstest::rstest;
 
 	use super::*;
+
+	#[test]
+	fn code_page_437_covers_its_whole_upper_half() {
+		assert_eq!(CP437_HIGH.chars().count(), 128);
+		assert_eq!(decode_cp437(b"Hi \xC9\xCD\xBB \x81\xFF"), "Hi \u{2554}\u{2550}\u{2557} \u{FC}\u{A0}");
+	}
+
+	#[rstest]
+	#[case(b"\xC9\xCD\xCD\xCD\xCD\xBB Help", true)]
+	#[case(b"f\x81r die Hilfe", true)]
+	// Windows-1252 French, with its accents above the punctuation range.
+	#[case(b"Le caf\xE9 est pr\xEAt.", false)]
+	// A curly apostrophe and a dash between letters are Windows-1252, not accents.
+	#[case(b"don\x92t wait\x97now", false)]
+	// Shift-JIS, whose lead bytes share the accent range, in text that is mostly non-ASCII.
+	#[case(b"a\x83Ab\x83Ac\x83Ad\x82\xA0\x82\xA2\x82\xA4", false)]
+	#[case(b"plain ASCII", false)]
+	#[case("caf\u{E9} in UTF-8".as_bytes(), false)]
+	fn cp437_is_told_from_other_encodings(#[case] bytes: &[u8], #[case] expected: bool) {
+		assert_eq!(looks_like_cp437(bytes), expected);
+	}
 
 	const MISLABELED: &[u8] = b"<meta charset=ISO-2022-JP><p>\x83\x43\x83\x93</p>";
 

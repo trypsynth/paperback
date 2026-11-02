@@ -9,9 +9,9 @@ use crate::{
 	document::{
 		DocLen, DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem, format_marker_types,
 	},
-	parser::{Parser, text::TextParser, util::path::extract_title_from_path, word::looks_like_text_content},
+	parser::{Parser, text::text_document, util::path::extract_title_from_path, word::looks_like_text_content},
 	t,
-	util::encoding::convert_to_utf8,
+	util::encoding::{convert_to_utf8, decode_cp437, looks_like_cp437},
 };
 
 /// The prefix stops a bare topic number reading as a fragment when the reader resolves a link.
@@ -29,7 +29,11 @@ impl Parser for HlpParser {
 			.with_context(|| format!("Failed to open WinHelp file '{}'", context.file_path))?;
 		let hlp = match HlpFile::from_bytes(bytes) {
 			Ok(hlp) => hlp,
-			Err(libhlp::HlpError::BadMagic) if is_plain_text(&context.file_path) => return TextParser.parse(context),
+			Err(error @ libhlp::HlpError::BadMagic) => {
+				return plain_text(&context.file_path)
+					.map(|text| text_document(&context.file_path, text))
+					.ok_or_else(|| failed(&context.file_path, &error));
+			}
 			Err(error) => return Err(failed(&context.file_path, &error)),
 		};
 		let topics = hlp.topics().map_err(|e| failed(&context.file_path, &e))?;
@@ -55,11 +59,11 @@ impl Parser for HlpParser {
 }
 
 /// DOS programs often shipped their help as a plain text file with this extension. Others shipped obfuscated data or ANSI art, which decodes to control codes and few letters.
-fn is_plain_text(path: &str) -> bool {
-	let Ok(bytes) = fs::read(path) else { return false };
-	let text = convert_to_utf8(&bytes);
+fn plain_text(path: &str) -> Option<String> {
+	let bytes = fs::read(path).ok()?;
+	let text = if looks_like_cp437(&bytes) { decode_cp437(&bytes) } else { convert_to_utf8(&bytes) };
 	if !looks_like_text_content(&text) {
-		return false;
+		return None;
 	}
 	let (mut total, mut letters, mut controls) = (0_usize, 0_usize, 0_usize);
 	for ch in text.chars().take(4096) {
@@ -67,7 +71,7 @@ fn is_plain_text(path: &str) -> bool {
 		letters += usize::from(ch.is_alphabetic());
 		controls += usize::from(ch.is_control() && !matches!(ch, '\n' | '\r' | '\t'));
 	}
-	controls * 50 <= total || letters * 100 >= total * 35
+	(controls * 50 <= total || letters * 100 >= total * 35).then_some(text)
 }
 
 fn failed(path: &str, error: &libhlp::HlpError) -> anyhow::Error {
@@ -264,6 +268,18 @@ mod tests {
 		fs::write(&path, "This installation program copies the files.\r\nPress any key to go on.\r\n").unwrap();
 		let document = HlpParser.parse(&ParserContext::new(path.to_string_lossy().into_owned())).unwrap();
 		assert!(document.buffer.content.starts_with("This installation program"));
+	}
+
+	#[test]
+	fn a_dos_help_file_reads_its_box_drawing_and_accents() {
+		let dir = TempDir::new("hlp_dos");
+		let path = dir.path().join("dos.hlp");
+		fs::write(&path, b"\xC9\xCD\xCD\xCD\xCD\xBB\r\nDr\x81cken Sie eine Taste.\r\n").unwrap();
+		let document = HlpParser.parse(&ParserContext::new(path.to_string_lossy().into_owned())).unwrap();
+		assert_eq!(
+			document.buffer.content,
+			"\u{2554}\u{2550}\u{2550}\u{2550}\u{2550}\u{2557}\nDr\u{FC}cken Sie eine Taste.\n"
+		);
 	}
 
 	#[test]
