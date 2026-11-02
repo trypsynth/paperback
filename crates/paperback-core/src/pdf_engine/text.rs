@@ -538,7 +538,8 @@ impl TextObject {
 			kernings.push(glyphs.get(index + 1).map_or(0.0, PositionedGlyph::adjustment));
 		}
 		let font_size = state.font_size;
-		let font_size_h = matrix.a.hypot(matrix.c) * font_size;
+		// A negative size is legal, with the matrix flipping the text back, and a negative threshold would make a space of every kerning gap.
+		let font_size_h = matrix.a.hypot(matrix.c) * font_size.abs();
 		let rect = object_rect(&items, &font, font_size, &matrix, run.writing_mode() == WritingMode::Vertical);
 		Some(Self {
 			object,
@@ -938,7 +939,7 @@ impl<'p> Builder<'p> {
 		let font_size = two.font_size;
 		let char_size = char_width_or_box(last.code, &two.font) as f32;
 		let max_pre_size = prev_obj_rect.height().max(prev_obj_rect.width()).max(font_size);
-		diff.0.abs() <= 0.9 * char_size * font_size / 1000.0 && diff.1.abs() <= max_pre_size / 8.0
+		diff.0.abs() <= 0.9 * char_size * font_size.abs() / 1000.0 && diff.1.abs() <= max_pre_size / 8.0
 	}
 
 	fn process_transformed_text_objects(&mut self) {
@@ -1281,7 +1282,7 @@ impl<'p> Builder<'p> {
 		if font_size == 0.0 {
 			font_size = DEFAULT_FONT_SIZE;
 		}
-		let origin = (prev.origin.0 + pre_width as f32 * font_size / 1000.0, prev.origin.1);
+		let origin = (prev.origin.0 + pre_width as f32 * font_size.abs() / 1000.0, prev.origin.1);
 		Some(CharInfo {
 			char_type: CharType::Generated,
 			char_code: INVALID_CODE,
@@ -1359,7 +1360,7 @@ impl<'p> Builder<'p> {
 				continue;
 			}
 			// A glyph overprinted at almost the same place in the same font is fake bold, and reads once.
-			let threshold = info.matrix.transform_x_distance(0.07 * object.font_size);
+			let threshold = info.matrix.transform_x_distance(0.07 * object.font_size.abs());
 			let count = self.temp_char_list.len().min(7);
 			let overprinted = self.temp_char_list[self.temp_char_list.len() - count..].iter().rev().any(|candidate| {
 				candidate.char_code == info.char_code
