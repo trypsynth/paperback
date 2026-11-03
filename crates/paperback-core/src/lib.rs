@@ -36,7 +36,7 @@ pub(crate) use patois::t;
 pub fn dump_pdf_page_chars(path: &str, password: Option<&str>, page: i32) -> Result<String, String> {
 	use std::fmt::Write as _;
 	let document = pdf_engine::PdfDocument::open(path, password).map_err(|error| error.to_string())?;
-	let page = document.page(page).map_err(|error| error.to_string())?;
+	let page = document.page(usize::try_from(page).unwrap_or(usize::MAX)).map_err(|error| error.to_string())?;
 	let mut out = String::new();
 	for (i, object) in page.objects().enumerate() {
 		if object.kind() != pdf_engine::ObjectKind::Other {

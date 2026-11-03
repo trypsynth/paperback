@@ -44,9 +44,8 @@ impl PageCache<'_> {
 }
 
 impl<'doc> PdfPage<'doc> {
-	pub(super) fn load(document: &'doc PdfDocument, index: i32, cache: &PageCache<'doc>) -> Result<Self, PdfError> {
-		let index = usize::try_from(index).map_err(|_| PdfError::Failed)?;
-		let page = document.pdf().pages().get(index).ok_or(PdfError::Failed)?;
+	pub(super) fn load(document: &'doc PdfDocument, index: usize, cache: &PageCache<'doc>) -> Result<Self, PdfError> {
+		let page = document.pdf().pages().get(index).ok_or(PdfError::PageOutOfRange)?;
 		let (width, height) = page.render_dimensions();
 		// The bounds only decide what gets drawn, so they are made too large to leave anything out; the collector leaves out what's off the page.
 		let mut context = Context::new(
@@ -76,7 +75,7 @@ impl<'doc> PdfPage<'doc> {
 	}
 
 	pub fn tags(&self) -> Option<TagTree<'_>> {
-		Some(TagTree::of(self.document.structure()?, i32::try_from(self.index).ok()?))
+		Some(TagTree::of(self.document.structure()?, self.index))
 	}
 
 	/// The page's text runs and images, in the order they are drawn.
@@ -198,7 +197,7 @@ fn display_matrix(page: &hayro_syntax::page::Page<'_>) -> [f32; 6] {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LinkTarget {
 	Url(String),
-	Page(i32),
+	Page(usize),
 }
 
 #[derive(Debug, Clone, PartialEq)]

@@ -47,7 +47,7 @@ struct PageContent {
 
 fn read_page(
 	page: Result<PdfPage<'_>, PdfError>,
-	page_index: i32,
+	page_index: usize,
 	render_tables_inline: bool,
 	evidence: &mut PageEvidence,
 ) -> PageContent {
@@ -275,11 +275,11 @@ fn resolve_headings(
 }
 
 /// Runs of neighbouring pages, so the pages a thread judges hyphens by lie close to the ones it reads.
-const RUN_LENGTH: i32 = 16;
+const RUN_LENGTH: usize = 16;
 
 /// Each thread keeps one page cache so a book's fonts are read once per thread, and reads runs in order so [`PageEvidence`] judges almost every hyphen from its own pages; the few it misjudges are read again against every page.
-fn read_pages(document: &PdfDocument, page_count: i32, render_tables_inline: bool) -> Vec<PageContent> {
-	let runs = usize::try_from((page_count + RUN_LENGTH - 1) / RUN_LENGTH).unwrap_or(0);
+fn read_pages(document: &PdfDocument, page_count: usize, render_tables_inline: bool) -> Vec<PageContent> {
+	let runs = page_count.div_ceil(RUN_LENGTH);
 	let threads = std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get).clamp(1, runs.max(1));
 	let (read, words): (Vec<_>, Vec<_>) = std::thread::scope(|scope| {
 		#[allow(clippy::needless_collect, reason = "every thread has to be started before the first one is waited on")]
@@ -290,7 +290,7 @@ fn read_pages(document: &PdfDocument, page_count: i32, render_tables_inline: boo
 					let mut words = WordPages::default();
 					let mut pages = Vec::new();
 					for run in (thread..runs).step_by(threads) {
-						let start = i32::try_from(run).unwrap_or(i32::MAX).saturating_mul(RUN_LENGTH);
+						let start = run * RUN_LENGTH;
 						for index in start..(start + RUN_LENGTH).min(page_count) {
 							let mut evidence = PageEvidence::new(index, std::slice::from_ref(&words));
 							let content = read_page(
@@ -312,7 +312,7 @@ fn read_pages(document: &PdfDocument, page_count: i32, render_tables_inline: boo
 	});
 	let mut read: Vec<_> = read.into_iter().flatten().collect();
 	read.sort_unstable_by_key(|(index, ..)| *index);
-	let misjudged: Vec<i32> = read
+	let misjudged: Vec<usize> = read
 		.iter()
 		.filter(|(index, _, judgements)| !confirms(judgements, *index, &words))
 		.map(|(index, ..)| *index)
@@ -334,7 +334,7 @@ fn read_pages(document: &PdfDocument, page_count: i32, render_tables_inline: boo
 		.collect();
 	let mut pages: Vec<PageContent> = read.into_iter().map(|(_, content, _)| content).collect();
 	for (index, content) in misjudged.into_iter().zip(reread) {
-		pages[usize::try_from(index).unwrap_or(usize::MAX)] = content;
+		pages[index] = content;
 	}
 	pages
 }

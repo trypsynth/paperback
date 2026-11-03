@@ -23,7 +23,7 @@ mod tables;
 pub(super) fn extract_tagged_page_text(
 	page: &PdfPage,
 	text_page: &PdfTextPage,
-	page_index: i32,
+	page_index: usize,
 	buffer: &mut DocumentBuffer,
 	page_display_text: &mut String,
 	current_lines_info: &mut Vec<(DocPos, String)>,
@@ -95,7 +95,7 @@ pub(super) fn extract_tagged_page_text(
 struct ImagePlacement<'a> {
 	mcid_tops: &'a HashMap<i32, f64>,
 	unclaimed: UnclaimedImages,
-	page_index: i32,
+	page_index: usize,
 	figure_images: &'a HashMap<i32, String>,
 	block_top: Option<f64>,
 }

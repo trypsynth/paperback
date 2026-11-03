@@ -29,11 +29,13 @@ pub use tags::{Tag, TagChild, TagTree};
 pub use text::{CharBox, CharFont, PageChar, PdfTextPage, TextMatrix, WebLink};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum PdfError {
 	/// Kept separate because it is the one failure the reader can do something about.
 	PasswordRequired,
 	CouldNotOpen,
-	Failed,
+	/// The document has no page at the index asked for.
+	PageOutOfRange,
 }
 
 impl std::fmt::Display for PdfError {
@@ -41,7 +43,7 @@ impl std::fmt::Display for PdfError {
 		match self {
 			Self::PasswordRequired => write!(f, "the document is password protected"),
 			Self::CouldNotOpen => write!(f, "the document could not be opened"),
-			Self::Failed => write!(f, "the request on the document failed"),
+			Self::PageOutOfRange => write!(f, "the document has no such page"),
 		}
 	}
 }
@@ -50,10 +52,10 @@ impl std::error::Error for PdfError {}
 
 pub struct PdfDocument {
 	pdf: Pdf,
-	page_numbers: HashMap<ObjectIdentifier, i32>,
+	page_numbers: HashMap<ObjectIdentifier, usize>,
 	structure: OnceLock<Option<tags::Structure>>,
 	/// Walking the name tree again for every link made a few hundred hyperlinked pages take a minute.
-	named_destinations: OnceLock<HashMap<Vec<u8>, i32>>,
+	named_destinations: OnceLock<HashMap<Vec<u8>, usize>>,
 }
 
 impl PdfDocument {
@@ -73,23 +75,19 @@ impl PdfDocument {
 			LoadPdfError::Decryption(DecryptionError::PasswordProtected) => PdfError::PasswordRequired,
 			_ => PdfError::CouldNotOpen,
 		})?;
-		let page_numbers = pdf
-			.pages()
-			.iter()
-			.enumerate()
-			.filter_map(|(index, page)| Some((page.raw().obj_id()?, i32::try_from(index).ok()?)))
-			.collect();
+		let page_numbers =
+			pdf.pages().iter().enumerate().filter_map(|(index, page)| Some((page.raw().obj_id()?, index))).collect();
 		Ok(Self { pdf, page_numbers, structure: OnceLock::new(), named_destinations: OnceLock::new() })
 	}
 
-	pub fn page_count(&self) -> i32 {
-		i32::try_from(self.pdf.pages().len()).unwrap_or(i32::MAX)
+	pub fn page_count(&self) -> usize {
+		self.pdf.pages().len()
 	}
 
 	/// # Errors
 	///
-	/// [`PdfError::Failed`] when there is no such page.
-	pub fn page(&self, index: i32) -> Result<PdfPage<'_>, PdfError> {
+	/// [`PdfError::PageOutOfRange`] when there is no such page.
+	pub fn page(&self, index: usize) -> Result<PdfPage<'_>, PdfError> {
 		PdfPage::load(self, index, &PageCache::new())
 	}
 
@@ -101,8 +99,8 @@ impl PdfDocument {
 
 	/// # Errors
 	///
-	/// [`PdfError::Failed`] when there is no such page.
-	pub fn page_with<'doc>(&'doc self, index: i32, cache: &PageCache<'doc>) -> Result<PdfPage<'doc>, PdfError> {
+	/// [`PdfError::PageOutOfRange`] when there is no such page.
+	pub fn page_with<'doc>(&'doc self, index: usize, cache: &PageCache<'doc>) -> Result<PdfPage<'doc>, PdfError> {
 		PdfPage::load(self, index, cache)
 	}
 
@@ -161,7 +159,7 @@ impl PdfDocument {
 	}
 
 	/// `/Dest` before a `GoTo` action's destination, the order pdfium tries them in.
-	fn destination_page(&self, item: &Dict<'_>) -> Option<i32> {
+	fn destination_page(&self, item: &Dict<'_>) -> Option<usize> {
 		if let Some(destination) = item.get::<Object<'_>>(b"Dest")
 			&& let Some(page) = self.resolve_destination(destination, 0, true)
 		{
@@ -175,7 +173,7 @@ impl PdfDocument {
 	}
 
 	/// `named` is off while the name tree itself is being read, so a value that is itself a name does not ask for the tree it is part of.
-	fn resolve_destination(&self, destination: Object<'_>, depth: u32, named: bool) -> Option<i32> {
+	fn resolve_destination(&self, destination: Object<'_>, depth: u32, named: bool) -> Option<usize> {
 		if depth > 8 {
 			return None;
 		}
@@ -191,7 +189,7 @@ impl PdfDocument {
 		}
 	}
 
-	fn named_destinations(&self) -> &HashMap<Vec<u8>, i32> {
+	fn named_destinations(&self) -> &HashMap<Vec<u8>, usize> {
 		self.named_destinations.get_or_init(|| {
 			let mut pairs = Vec::new();
 			if let Some(tree) =
@@ -212,7 +210,7 @@ impl PdfDocument {
 		})
 	}
 
-	fn page_of_explicit_destination(&self, array: &Array<'_>) -> Option<i32> {
+	fn page_of_explicit_destination(&self, array: &Array<'_>) -> Option<usize> {
 		match array.raw_iter().next()? {
 			MaybeRef::Ref(reference) => self.page_numbers.get(&reference.into()).copied(),
 			// A destination into another document names its page by number; this one has no such page to give.
@@ -229,7 +227,7 @@ impl PdfDocument {
 		&self.pdf
 	}
 
-	fn page_number(&self, id: ObjectIdentifier) -> Option<i32> {
+	fn page_number(&self, id: ObjectIdentifier) -> Option<usize> {
 		self.page_numbers.get(&id).copied()
 	}
 
@@ -243,7 +241,7 @@ pub struct OutlineEntry {
 	pub level: u32,
 	pub title: String,
 	/// Always a real page: entries pointing nowhere are left out.
-	pub page: i32,
+	pub page: usize,
 }
 
 /// In the order a search of the tree meets them, own `/Names` before `/Kids`, since the first entry for a name is the one that counts.

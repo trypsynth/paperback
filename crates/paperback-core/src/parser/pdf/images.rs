@@ -50,11 +50,11 @@ pub(super) fn page_largest_image_coverage(page: &PdfPage) -> f64 {
 
 pub(super) struct UnclaimedImages {
 	images: std::collections::VecDeque<(f64, String)>,
-	page_index: i32,
+	page_index: usize,
 }
 
 impl UnclaimedImages {
-	pub(super) fn new(tops: &[f64], paths: &[String], page_index: i32) -> Self {
+	pub(super) fn new(tops: &[f64], paths: &[String], page_index: usize) -> Self {
 		Self { images: tops.iter().copied().zip(paths.iter().cloned()).collect(), page_index }
 	}
 

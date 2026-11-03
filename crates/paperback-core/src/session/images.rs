@@ -127,7 +127,7 @@ fn local_image_path(document_path: &str, source: &str) -> std::path::PathBuf {
 }
 
 /// The parser writes these as `pdf:<page>:<path>`.
-fn parse_pdf_image_reference(source: &str) -> Result<(i32, String)> {
+fn parse_pdf_image_reference(source: &str) -> Result<(usize, String)> {
 	let mut parts = source.splitn(3, ':');
 	let bad = || anyhow::anyhow!("malformed pdf image reference");
 	let page = parts.nth(1).and_then(|text| text.parse().ok()).ok_or_else(bad)?;

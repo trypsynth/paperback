@@ -32,10 +32,7 @@ pub(super) fn extract_toc(
 			skipped_count += 1;
 			continue;
 		}
-		let Ok(page_index) = usize::try_from(bookmark.page) else {
-			skipped_count += 1;
-			continue;
-		};
+		let page_index = bookmark.page;
 		let Some(&page_start_offset) = page_offsets.get(page_index) else {
 			skipped_count += 1;
 			continue;

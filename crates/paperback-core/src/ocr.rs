@@ -90,7 +90,7 @@ impl PageRenderer {
 	pub fn render(&mut self, page_index: i32, max_dimension: u32) -> Result<RenderedPage> {
 		match &mut self.source {
 			Source::Pdf(document) => {
-				let page = document.page(page_index)?;
+				let page = document.page(usize::try_from(page_index).unwrap_or(usize::MAX))?;
 				let width = u32::try_from(pixel_width(page.width(), page.height(), max_dimension)).unwrap_or(1);
 				let bitmap =
 					page.render(width).ok_or_else(|| anyhow::anyhow!("page {page_index} could not be rasterized"))?;

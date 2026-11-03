@@ -97,13 +97,13 @@ impl Written {
 
 #[derive(Default)]
 pub(super) struct WordPages {
-	hyphenated: HashMap<String, i32>,
-	words: HashMap<String, i32>,
+	hyphenated: HashMap<String, usize>,
+	words: HashMap<String, usize>,
 }
 
 impl WordPages {
 	/// A thread reads its pages in order, so the first page a word is added for is the first of them it is written on.
-	pub(super) fn add(&mut self, page: i32, evidence: HyphenEvidence) {
+	pub(super) fn add(&mut self, page: usize, evidence: HyphenEvidence) {
 		for word in evidence.hyphenated {
 			self.hyphenated.entry(word).or_insert(page);
 		}
@@ -113,8 +113,8 @@ impl WordPages {
 	}
 }
 
-fn written_before(pages: &[WordPages], page: i32, hyphenated: &str, whole: &str) -> Written {
-	let before = |words: &HashMap<String, i32>, word: &str| words.get(word).is_some_and(|&first| first < page);
+fn written_before(pages: &[WordPages], page: usize, hyphenated: &str, whole: &str) -> Written {
+	let before = |words: &HashMap<String, usize>, word: &str| words.get(word).is_some_and(|&first| first < page);
 	Written {
 		hyphenated: pages.iter().any(|words| before(&words.hyphenated, hyphenated)),
 		whole: pages.iter().any(|words| before(&words.words, whole)),
@@ -131,14 +131,14 @@ pub(super) struct Judgement {
 }
 
 pub(super) struct PageEvidence<'a> {
-	page: i32,
+	page: usize,
 	earlier: &'a [WordPages],
 	own: HyphenEvidence,
 	judgements: Vec<Judgement>,
 }
 
 impl<'a> PageEvidence<'a> {
-	pub(super) fn new(page: i32, earlier: &'a [WordPages]) -> Self {
+	pub(super) fn new(page: usize, earlier: &'a [WordPages]) -> Self {
 		Self { page, earlier, own: HyphenEvidence::default(), judgements: Vec::new() }
 	}
 
@@ -165,7 +165,7 @@ impl<'a> PageEvidence<'a> {
 }
 
 /// Once every page is read, `pages` judge a hyphen as reading the pages in order would have.
-pub(super) fn confirms(judgements: &[Judgement], page: i32, pages: &[WordPages]) -> bool {
+pub(super) fn confirms(judgements: &[Judgement], page: usize, pages: &[WordPages]) -> bool {
 	judgements.iter().all(|judgement| {
 		let (hyphenated, whole) = written_forms(&judgement.left, &judgement.right);
 		let written = judgement.own.or(written_before(pages, page, &hyphenated, &whole));
