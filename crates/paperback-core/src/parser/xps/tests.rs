@@ -4,18 +4,28 @@ use crate::{
 	parser::{Parser, ParserRegistry, xps::package::Package},
 };
 
-pub(super) const ROOT_RELS: &str = r#"<Relationships>
+const ROOT_RELS: &str = r#"<Relationships>
 	<Relationship Id="R0" Type="http://schemas.microsoft.com/xps/2005/06/fixedrepresentation" Target="/Sequence.fdseq"/>
 </Relationships>"#;
-pub(super) const SEQUENCE: &str =
-	r#"<FixedDocumentSequence><DocumentReference Source="Doc.fdoc"/></FixedDocumentSequence>"#;
+const SEQUENCE: &str = r#"<FixedDocumentSequence><DocumentReference Source="Doc.fdoc"/></FixedDocumentSequence>"#;
 
-pub(super) fn read(parts: &[(&str, &str)]) -> anyhow::Result<Document> {
-	read_with(parts, &ParserContext::new("sample.xps".to_string()))
+fn context() -> ParserContext {
+	ParserContext::new("sample.xps".to_string())
 }
 
-pub(super) fn read_with(parts: &[(&str, &str)], context: &ParserContext) -> anyhow::Result<Document> {
+fn read_parts(parts: &[(&str, &str)], context: &ParserContext) -> anyhow::Result<Document> {
 	read_document(Package::from_parts(parts), context)
+}
+
+/// A package whose one document is `document`, with `rest` beside it.
+fn read_with(document: &str, rest: &[(&str, &str)], context: &ParserContext) -> anyhow::Result<Document> {
+	let mut parts = vec![("_rels/.rels", ROOT_RELS), ("Sequence.fdseq", SEQUENCE), ("Doc.fdoc", document)];
+	parts.extend_from_slice(rest);
+	read_parts(&parts, context)
+}
+
+fn read(document: &str, rest: &[(&str, &str)]) -> anyhow::Result<Document> {
+	read_with(document, rest, &context())
 }
 
 #[test]
@@ -37,9 +47,7 @@ fn a_file_that_is_not_a_zip_is_refused() {
 
 #[test]
 fn a_package_with_no_pages_is_refused() {
-	assert!(
-		read(&[("_rels/.rels", ROOT_RELS), ("Sequence.fdseq", SEQUENCE), ("Doc.fdoc", "<FixedDocument/>")]).is_err()
-	);
+	assert!(read("<FixedDocument/>", &[]).is_err());
 }
 
 #[test]
@@ -48,14 +56,7 @@ fn each_page_gets_a_marker_and_an_id() {
 		<PageContent Source="1.fpage"/>
 		<PageContent Source="2.fpage"/>
 	</FixedDocument>"#;
-	let doc = read(&[
-		("_rels/.rels", ROOT_RELS),
-		("Sequence.fdseq", SEQUENCE),
-		("Doc.fdoc", document),
-		("1.fpage", "<FixedPage/>"),
-		("2.fpage", "<FixedPage/>"),
-	])
-	.expect("read");
+	let doc = read(document, &[("1.fpage", "<FixedPage/>"), ("2.fpage", "<FixedPage/>")]).expect("read");
 	let pages: Vec<_> = doc.buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::PageBreak).collect();
 	assert_eq!(pages.iter().map(|marker| marker.text.as_str()).collect::<Vec<_>>(), ["Page 1", "Page 2"]);
 	assert_eq!(doc.id_positions["page_0"], pages[0].position);
@@ -71,43 +72,32 @@ fn a_page_that_cannot_be_read_keeps_its_place() {
 	</FixedDocument>"#;
 	let text =
 		r#"<FixedPage><Glyphs OriginX="1" OriginY="1" FontRenderingEmSize="12" UnicodeString="Words"/></FixedPage>"#;
-	let doc = read(&[
-		("_rels/.rels", ROOT_RELS),
-		("Sequence.fdseq", SEQUENCE),
-		("Doc.fdoc", document),
-		("1.fpage", text),
-		("3.fpage", text),
-	])
-	.expect("read");
+	let doc = read(document, &[("1.fpage", text), ("3.fpage", text)]).expect("read");
 	assert_eq!(doc.buffer.content, "Words\nThis page has no text.\nWords\n");
 	assert_eq!(doc.buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::PageBreak).count(), 3);
 }
 
-pub(super) const FRAGMENT_RELS: &str = r#"<Relationships>
+const FRAGMENT_RELS: &str = r#"<Relationships>
 	<Relationship Id="R0" Type="http://schemas.microsoft.com/xps/2005/06/storyfragments" Target="1.frag"/>
 </Relationships>"#;
-pub(super) const ONE_PAGE: &str = r#"<FixedDocument><PageContent Source="1.fpage"/></FixedDocument>"#;
+const ONE_PAGE: &str = r#"<FixedDocument><PageContent Source="1.fpage"/></FixedDocument>"#;
 
-pub(super) fn run(name: &str, text: &str) -> String {
-	format!(r#"<Glyphs Name="{name}" OriginX="10" OriginY="20" FontRenderingEmSize="12" UnicodeString="{text}"/>"#)
+fn glyphs(name: &str, text: &str, x: f64, size: f64) -> String {
+	format!(r#"<Glyphs Name="{name}" OriginX="{x}" OriginY="20" FontRenderingEmSize="{size}" UnicodeString="{text}"/>"#)
 }
 
-pub(super) fn structured(page: &str, fragments: &str) -> anyhow::Result<Document> {
-	structured_with(page, fragments, &ParserContext::new("sample.xps".to_string()))
+fn run(name: &str, text: &str) -> String {
+	glyphs(name, text, 10.0, 12.0)
 }
 
-pub(super) fn structured_with(page: &str, fragments: &str, context: &ParserContext) -> anyhow::Result<Document> {
-	read_with(
-		&[
-			("_rels/.rels", ROOT_RELS),
-			("Sequence.fdseq", SEQUENCE),
-			("Doc.fdoc", ONE_PAGE),
-			("1.fpage", &format!("<FixedPage>{page}</FixedPage>")),
-			("_rels/1.fpage.rels", FRAGMENT_RELS),
-			("1.frag", &format!("<StoryFragments>{fragments}</StoryFragments>")),
-		],
-		context,
-	)
+fn structured(page: &str, fragments: &str) -> anyhow::Result<Document> {
+	structured_with(page, fragments, &context())
+}
+
+fn structured_with(page: &str, fragments: &str, context: &ParserContext) -> anyhow::Result<Document> {
+	let page = format!("<FixedPage>{page}</FixedPage>");
+	let fragments = format!("<StoryFragments>{fragments}</StoryFragments>");
+	read_with(ONE_PAGE, &[("1.fpage", &page), ("_rels/1.fpage.rels", FRAGMENT_RELS), ("1.frag", &fragments)], context)
 }
 
 #[test]
@@ -160,15 +150,9 @@ fn a_reference_to_a_name_the_page_lacks_is_ignored() {
 
 #[test]
 fn a_broken_fragment_part_falls_back_to_the_page() {
-	let doc = read(&[
-		("_rels/.rels", ROOT_RELS),
-		("Sequence.fdseq", SEQUENCE),
-		("Doc.fdoc", ONE_PAGE),
-		("1.fpage", &format!("<FixedPage>{}</FixedPage>", run("a", "Still here"))),
-		("_rels/1.fpage.rels", FRAGMENT_RELS),
-		("1.frag", "<StoryFragments"),
-	])
-	.expect("read");
+	let page = format!("<FixedPage>{}</FixedPage>", run("a", "Still here"));
+	let rest = [("1.fpage", page.as_str()), ("_rels/1.fpage.rels", FRAGMENT_RELS), ("1.frag", "<StoryFragments")];
+	let doc = read(ONE_PAGE, &rest).expect("read");
 	assert_eq!(doc.buffer.content, "Still here\n");
 }
 
@@ -251,7 +235,7 @@ fn a_table_gets_its_marker_and_its_html() {
 #[test]
 fn a_table_follows_the_setting_for_showing_tables_inline() {
 	let page = format!("{}{}{}{}", run("a", "One"), run("b", "Two"), run("c", "Three"), run("d", "Four"));
-	let mut context = ParserContext::new("sample.xps".to_string());
+	let mut context = context();
 	context.render_tables_inline = false;
 	let doc = structured_with(&page, &two_by_two(), &context).expect("read");
 	assert!(!doc.buffer.content.contains("Three"));
@@ -279,7 +263,7 @@ fn declared_headers_and_footers_go_with_the_running_text_setting() {
 #[test]
 fn kept_headers_and_footers_read_around_the_page_they_belong_to() {
 	let (page, fragments) = with_running_text();
-	let context = ParserContext::new("sample.xps".to_string()).with_strip_running_text(false);
+	let context = context().with_strip_running_text(false);
 	assert_eq!(structured_with(&page, &fragments, &context).expect("read").buffer.content, "Header\nBody\nFooter\n");
 }
 
@@ -295,7 +279,7 @@ const SECOND_FRAGMENT_RELS: &str = r#"<Relationships>
 </Relationships>"#;
 
 fn sized(name: &str, text: &str, size: f64) -> String {
-	format!(r#"<Glyphs Name="{name}" OriginX="10" OriginY="20" FontRenderingEmSize="{size}" UnicodeString="{text}"/>"#)
+	glyphs(name, text, 10.0, size)
 }
 
 fn outlined(outline: &str) -> Document {
@@ -310,10 +294,7 @@ fn outlined(outline: &str) -> Document {
 		let body: String = names.iter().map(|name| paragraph(name)).collect();
 		format!("<StoryFragments>{}</StoryFragments>", in_fragment(&body))
 	};
-	read(&[
-		("_rels/.rels", ROOT_RELS),
-		("Sequence.fdseq", SEQUENCE),
-		("Doc.fdoc", LINKED_PAGES),
+	read(LINKED_PAGES, &[
 		("_rels/Doc.fdoc.rels", STRUCTURE_RELS),
 		("Doc.struct", &format!("<DocumentStructure><DocumentStructure.Outline><DocumentOutline>{outline}</DocumentOutline></DocumentStructure.Outline></DocumentStructure>")),
 		("1.fpage", &first),
@@ -400,13 +381,12 @@ fn unstructured_with(pages: &[String], context: &ParserContext) -> Document {
 		(1..=pages.len()).map(|index| format!(r#"<PageContent Source="{index}.fpage"/>"#)).collect::<Vec<_>>().concat();
 	let document = format!("<FixedDocument>{contents}</FixedDocument>");
 	let names: Vec<String> = (1..=pages.len()).map(|index| format!("{index}.fpage")).collect();
-	let mut parts = vec![("_rels/.rels", ROOT_RELS), ("Sequence.fdseq", SEQUENCE), ("Doc.fdoc", document.as_str())];
-	parts.extend(names.iter().map(String::as_str).zip(pages.iter().map(String::as_str)));
-	read_with(&parts, context).expect("read")
+	let parts: Vec<(&str, &str)> = names.iter().map(String::as_str).zip(pages.iter().map(String::as_str)).collect();
+	read_with(&document, &parts, context).expect("read")
 }
 
 fn unstructured(pages: &[String]) -> Document {
-	unstructured_with(pages, &ParserContext::new("sample.xps".to_string()))
+	unstructured_with(pages, &context())
 }
 
 #[test]
@@ -419,7 +399,7 @@ fn wrapped_lines_join_into_paragraphs_on_a_page_with_no_structure() {
 
 #[test]
 fn lines_stay_apart_when_joining_is_off() {
-	let mut context = ParserContext::new("sample.xps".to_string());
+	let mut context = context();
 	context.join_pdf_paragraphs = false;
 	assert_eq!(unstructured_with(&[unstructured_page()], &context).buffer.content.lines().count(), 4);
 }
@@ -437,7 +417,7 @@ fn a_line_repeated_at_the_top_of_every_page_is_running_text() {
 	};
 	let pages = ["apples", "pears", "plums", "cherries", "quinces"].map(page);
 	assert!(!unstructured(&pages).buffer.content.contains("Running header"));
-	let kept = ParserContext::new("sample.xps".to_string()).with_strip_running_text(false);
+	let kept = context().with_strip_running_text(false);
 	assert!(unstructured_with(&pages, &kept).buffer.content.contains("Running header"));
 }
 
@@ -455,7 +435,7 @@ const LINK_AREA: &str =
 	r#"<Path FixedPage.NavigateUri="https://example.com/" Data="M 100,10 L 200,10 L 200,30 L 100,30 Z"/>"#;
 
 fn at_x(name: &str, text: &str, x: f64) -> String {
-	format!(r#"<Glyphs Name="{name}" OriginX="{x}" OriginY="20" FontRenderingEmSize="12" UnicodeString="{text}"/>"#)
+	glyphs(name, text, x, 12.0)
 }
 
 #[test]
@@ -506,14 +486,7 @@ fn with_internal_link(uri: &str) -> Document {
 	let first = format!(
 		r#"<FixedPage Height="1000"><Glyphs FixedPage.NavigateUri="{uri}" OriginX="10" OriginY="20" FontRenderingEmSize="12" UnicodeString="Go on"/></FixedPage>"#
 	);
-	read(&[
-		("_rels/.rels", ROOT_RELS),
-		("Sequence.fdseq", SEQUENCE),
-		("Doc.fdoc", LINKED_PAGES),
-		("1.fpage", &first),
-		("2.fpage", "<FixedPage/>"),
-	])
-	.expect("read")
+	read(LINKED_PAGES, &[("1.fpage", &first), ("2.fpage", "<FixedPage/>")]).expect("read")
 }
 
 #[test]
@@ -557,25 +530,22 @@ fn title_and_author_come_from_the_core_properties_relationship() {
 	let core = r#"<cp:coreProperties xmlns:cp="c" xmlns:dc="http://purl.org/dc/elements/1.1/">
 		<dc:title>The title</dc:title><dc:creator>The author</dc:creator>
 	</cp:coreProperties>"#;
-	let doc = read(&[
-		("_rels/.rels", rels),
-		("Sequence.fdseq", SEQUENCE),
-		("Doc.fdoc", ONE_PAGE),
-		("1.fpage", "<FixedPage/>"),
-		("Metadata/props.xml", core),
-	])
+	let doc = read_parts(
+		&[
+			("_rels/.rels", rels),
+			("Sequence.fdseq", SEQUENCE),
+			("Doc.fdoc", ONE_PAGE),
+			("1.fpage", "<FixedPage/>"),
+			("Metadata/props.xml", core),
+		],
+		&context(),
+	)
 	.expect("read");
 	assert_eq!((doc.title.as_str(), doc.author.as_str()), ("The title", "The author"));
 }
 
 #[test]
 fn the_title_falls_back_to_the_file_name() {
-	let doc = read(&[
-		("_rels/.rels", ROOT_RELS),
-		("Sequence.fdseq", SEQUENCE),
-		("Doc.fdoc", r#"<FixedDocument><PageContent Source="1.fpage"/></FixedDocument>"#),
-		("1.fpage", "<FixedPage/>"),
-	])
-	.expect("read");
+	let doc = read(ONE_PAGE, &[("1.fpage", "<FixedPage/>")]).expect("read");
 	assert_eq!(doc.title, "sample");
 }

@@ -206,7 +206,7 @@ fn recognized_lines(text: &str) -> Vec<Line> {
 }
 
 /// The third field indexes the paragraph's first line in `raw_lines`, which an untagged page needs to place its images.
-pub(in crate::parser) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
+pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
 	join_paragraphs_measured(raw_lines, body_font_size, None)
 }
 

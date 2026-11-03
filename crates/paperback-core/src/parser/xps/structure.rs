@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, Node};
 
-use super::package::is_element;
+use crate::parser::util::xml::is_element;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum FragmentKind {
@@ -97,9 +97,7 @@ pub(super) fn read_fragments(xml: &str) -> Result<Vec<Fragment>> {
 				Some("Footer") => FragmentKind::Footer,
 				_ => FragmentKind::Content,
 			};
-			let mut blocks = Vec::new();
-			read_blocks(fragment, &mut blocks);
-			Fragment { kind, blocks }
+			Fragment { kind, blocks: blocks_in(fragment) }
 		})
 		.collect())
 }

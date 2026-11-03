@@ -70,16 +70,16 @@ fn finish_line(runs: &[(&Run, RunStyle)], height: f64) -> Line {
 	}
 }
 
-/// Nothing marks where a line ends and a run can stop anywhere, even mid-word, so only the baseline tells.
-pub(super) fn page_lines(page: &Page, mut style_of: impl FnMut(&Run) -> RunStyle) -> Vec<Line> {
+/// Nothing marks where a line ends and a run can stop anywhere, even mid-word, so only the baseline tells. `styles` go with the page's runs, one each.
+pub(super) fn page_lines(page: &Page, styles: &[RunStyle]) -> Vec<Line> {
 	let mut lines = Vec::new();
 	let mut current: Vec<(&Run, RunStyle)> = Vec::new();
-	for run in page.runs.iter().filter(|run| !is_drawn_mark(run)) {
+	for (run, style) in page.runs.iter().zip(styles).filter(|(run, _)| !is_drawn_mark(run)) {
 		let moved = |(last, _): &(&Run, RunStyle)| (last.y - run.y).abs() > last.size.max(run.size) / 2.0;
 		if current.last().is_some_and(moved) {
 			lines.push(finish_line(&mem::take(&mut current), page.height));
 		}
-		current.push((run, style_of(run)));
+		current.push((run, *style));
 	}
 	if !current.is_empty() {
 		lines.push(finish_line(&current, page.height));
@@ -102,28 +102,34 @@ mod tests {
 		RunStyle { width: Some(run.text.chars().count() as f64 * 6.0), bold: false, monospaced: false }
 	}
 
+	fn unknown(_: &Run) -> RunStyle {
+		RunStyle { width: None, bold: false, monospaced: false }
+	}
+
+	fn lines_with(runs: Vec<Run>, style_of: impl Fn(&Run) -> RunStyle) -> Vec<Line> {
+		let styles: Vec<RunStyle> = runs.iter().map(style_of).collect();
+		page_lines(&Page { height: HEIGHT, runs, ..Page::default() }, &styles)
+	}
+
 	#[test]
 	fn with_no_width_a_small_gap_is_not_taken_for_a_space() {
-		let unknown = |_: &Run| RunStyle { width: None, bold: false, monospaced: false };
-		let runs = vec![run("whethe", 0.0, 100.0), run("r", 36.0, 100.0)];
-		let lines = page_lines(&Page { height: HEIGHT, runs, ..Page::default() }, unknown);
+		let lines = lines_with(vec![run("whethe", 0.0, 100.0), run("r", 36.0, 100.0)], unknown);
 		assert_eq!(lines[0].text, "whether");
 	}
 
 	#[test]
 	fn with_no_width_right_to_left_runs_keep_together() {
-		let unknown = |_: &Run| RunStyle { width: None, bold: false, monospaced: false };
 		let runs = vec![
 			run("\u{05DD}\u{05D5}\u{05DC}\u{05E9}", 40.0, 100.0),
 			run(" ", 36.0, 100.0),
 			run("\u{05DD}\u{05DC}\u{05D5}\u{05E2}", 10.0, 100.0),
 		];
-		let lines = page_lines(&Page { height: HEIGHT, runs, ..Page::default() }, unknown);
+		let lines = lines_with(runs, unknown);
 		assert_eq!(lines[0].text, "\u{05E9}\u{05DC}\u{05D5}\u{05DD} \u{05E2}\u{05D5}\u{05DC}\u{05DD}");
 	}
 
 	fn lines_of(runs: Vec<Run>) -> Vec<Line> {
-		page_lines(&Page { height: HEIGHT, runs, ..Page::default() }, measured)
+		lines_with(runs, measured)
 	}
 
 	fn texts(runs: Vec<Run>) -> Vec<String> {
@@ -202,19 +208,12 @@ mod tests {
 
 	#[test]
 	fn a_line_is_bold_or_monospaced_only_if_all_of_it_is() {
-		let style = |bold: bool| {
-			move |run: &Run| RunStyle {
-				bold: bold || run.text == "bold",
-				monospaced: run.text == "code",
-				..measured(run)
-			}
-		};
-		let page = |runs| Page { height: HEIGHT, runs, ..Page::default() };
-		let mixed = page_lines(&page(vec![run("bold", 0.0, 100.0), run(" plain", 24.0, 100.0)]), style(false));
+		let style = |run: &Run| RunStyle { bold: run.text == "bold", monospaced: run.text == "code", ..measured(run) };
+		let mixed = lines_with(vec![run("bold", 0.0, 100.0), run(" plain", 24.0, 100.0)], style);
 		assert!(!mixed[0].bold);
-		let bold = page_lines(&page(vec![run("bold", 0.0, 100.0), run(" ", 24.0, 100.0)]), style(false));
+		let bold = lines_with(vec![run("bold", 0.0, 100.0), run(" ", 24.0, 100.0)], style);
 		assert!(bold[0].bold);
-		let code = page_lines(&page(vec![run("code", 0.0, 100.0)]), style(false));
+		let code = lines_with(vec![run("code", 0.0, 100.0)], style);
 		assert!(code[0].monospaced);
 	}
 

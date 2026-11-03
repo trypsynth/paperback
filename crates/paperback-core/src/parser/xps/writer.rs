@@ -4,9 +4,7 @@ use super::{
 };
 use crate::{
 	document::{DocPos, DocumentBuffer, Marker, MarkerType},
-	parser::convert::table_text::{
-		build_html_table_from_grid, display_lines_and_length, html_table_to_display, table_caption_from_html,
-	},
+	parser::convert::table_text::{build_html_table_from_grid, table_render_bundle},
 	util::text::{collapse_whitespace, trim_string},
 };
 
@@ -103,12 +101,13 @@ impl<'a> PageWriter<'a> {
 		let grid: Vec<Vec<String>> =
 			rows.iter().map(|row| row.iter().map(|cell| self.paragraphs(cell).join(" ")).collect()).collect();
 		let html = build_html_table_from_grid(&grid);
-		let caption = table_caption_from_html(&html).unwrap_or_else(|| "table".to_string());
-		let display = html_table_to_display(&html, self.render_tables_inline);
-		let (_, length) = display_lines_and_length(&display);
+		let table = table_render_bundle(&html, self.render_tables_inline);
 		let offset = self.buffer.end();
-		self.write_line(&display);
-		let marker = Marker::new(MarkerType::Table, offset).with_text(caption).with_reference(html).with_length(length);
+		self.write_line(&table.lines.join("\n"));
+		let marker = Marker::new(MarkerType::Table, offset)
+			.with_text(table.caption)
+			.with_reference(html)
+			.with_length(table.length);
 		self.buffer.add_marker(marker);
 	}
 

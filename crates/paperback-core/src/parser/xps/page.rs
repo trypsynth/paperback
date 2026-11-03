@@ -1,57 +1,25 @@
 use std::{collections::HashMap, ops::Range};
 
 use anyhow::{Context, Result};
+use hayro_interpret::kurbo::{Affine, Point};
 use roxmltree::{Document as XmlDocument, Node};
 
-use super::package::is_element;
+use crate::parser::util::xml::{find_child_element, is_element};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-struct Transform {
-	a: f64,
-	b: f64,
-	c: f64,
-	d: f64,
-	e: f64,
-	f: f64,
+fn parse_transform(value: &str) -> Option<Affine> {
+	let numbers: Vec<f64> = value.split(',').map(|number| number.trim().parse().ok()).collect::<Option<_>>()?;
+	Some(Affine::new(numbers.try_into().ok()?))
 }
 
-impl Transform {
-	const IDENTITY: Self = Self { a: 1.0, b: 0.0, c: 0.0, d: 1.0, e: 0.0, f: 0.0 };
+fn transform_of(element: Node) -> Affine {
+	let property = format!("{}.RenderTransform", element.tag_name().name());
+	let matrix = || find_child_element(find_child_element(element, &property)?, "MatrixTransform")?.attribute("Matrix");
+	element.attribute("RenderTransform").or_else(matrix).and_then(parse_transform).unwrap_or(Affine::IDENTITY)
+}
 
-	fn parse(value: &str) -> Option<Self> {
-		let numbers: Vec<f64> = value.split(',').map(|number| number.trim().parse().ok()).collect::<Option<_>>()?;
-		let numbers: [f64; 6] = numbers.try_into().ok()?;
-		Some(Self { a: numbers[0], b: numbers[1], c: numbers[2], d: numbers[3], e: numbers[4], f: numbers[5] })
-	}
-
-	fn of(element: Node) -> Self {
-		let property = format!("{}.RenderTransform", element.tag_name().name());
-		let matrix = || {
-			let holder = element.children().find(|child| is_element(*child, &property))?;
-			holder.children().find(|child| is_element(*child, "MatrixTransform"))?.attribute("Matrix")
-		};
-		element.attribute("RenderTransform").or_else(matrix).and_then(Self::parse).unwrap_or(Self::IDENTITY)
-	}
-
-	fn then(self, inner: Self) -> Self {
-		let first = self.scaled(inner.a, inner.b);
-		let second = self.scaled(inner.c, inner.d);
-		let origin = self.apply(inner.e, inner.f);
-		Self { a: first.0, b: first.1, c: second.0, d: second.1, e: origin.0, f: origin.1 }
-	}
-
-	fn scaled(self, x: f64, y: f64) -> (f64, f64) {
-		(self.a.mul_add(x, self.c * y), self.b.mul_add(x, self.d * y))
-	}
-
-	fn apply(self, x: f64, y: f64) -> (f64, f64) {
-		let (x, y) = self.scaled(x, y);
-		(x + self.e, y + self.f)
-	}
-
-	fn vertical_scale(self) -> f64 {
-		self.c.hypot(self.d)
-	}
+fn vertical_scale(transform: Affine) -> f64 {
+	let [_, _, c, d, _, _] = transform.as_coeffs();
+	c.hypot(d)
 }
 
 /// In hundredths of the size. No glyph is this wide, so it can only be the jump between two strings a printer driver merged into one run.
@@ -67,8 +35,6 @@ pub(super) struct Run {
 	pub x: f64,
 	pub y: f64,
 	pub size: f64,
-	/// Only measured on a page with a link rectangle, the one place it decides anything once the lines are laid out.
-	pub width: Option<f64>,
 	pub bidi_level: u32,
 	pub simulated_bold: bool,
 }
@@ -143,10 +109,10 @@ pub(super) struct Area {
 
 impl Area {
 	/// Word pads a link's rectangle, so the full stop after a link can start inside it and only a run that also ends there belongs to the link.
-	pub fn covers(&self, run: &Run) -> bool {
+	pub fn covers(&self, run: &Run, width: Option<f64>) -> bool {
 		(self.left - LINK_TOLERANCE..=self.right + LINK_TOLERANCE).contains(&run.x)
 			&& (self.top - LINK_TOLERANCE..=self.bottom + LINK_TOLERANCE).contains(&run.y)
-			&& run.width.is_none_or(|width| run.x + width <= self.right + LINK_TOLERANCE)
+			&& width.is_none_or(|width| run.x + width <= self.right + LINK_TOLERANCE)
 	}
 }
 
@@ -182,17 +148,17 @@ fn outline_points(data: &str) -> Option<Vec<(f64, f64)>> {
 	Some(numbers.as_chunks().0.iter().map(|[x, y]| (*x, *y)).collect())
 }
 
-fn link_area(path: Node, transform: Transform) -> Option<Area> {
+fn link_area(path: Node, transform: Affine) -> Option<Area> {
 	let geometry = || path.descendants().find(|node| is_element(*node, "PathGeometry"))?.attribute("Figures");
 	let points = outline_points(path.attribute("Data").or_else(geometry)?)?;
-	let transform = transform.then(Transform::of(path));
-	let mut points = points.into_iter().map(|(x, y)| transform.apply(x, y));
-	let (x, y) = points.next()?;
-	Some(points.fold(Area { left: x, top: y, right: x, bottom: y }, |area, (x, y)| Area {
-		left: area.left.min(x),
-		top: area.top.min(y),
-		right: area.right.max(x),
-		bottom: area.bottom.max(y),
+	let transform = transform * transform_of(path);
+	let mut points = points.into_iter().map(|(x, y)| transform * Point::new(x, y));
+	let first = points.next()?;
+	Some(points.fold(Area { left: first.x, top: first.y, right: first.x, bottom: first.y }, |area, point| Area {
+		left: area.left.min(point.x),
+		top: area.top.min(point.y),
+		right: area.right.max(point.x),
+		bottom: area.bottom.max(point.y),
 	}))
 }
 
@@ -213,26 +179,25 @@ fn expand_ligatures(text: &str) -> String {
 	expanded
 }
 
-fn read_run(element: Node, transform: Transform) -> Option<Run> {
+fn read_run(element: Node, transform: Affine) -> Option<Run> {
 	let unicode = element.attribute("UnicodeString")?;
 	let unicode = unicode.strip_prefix("{}").unwrap_or(unicode);
 	if unicode.is_empty() {
 		return None;
 	}
 	let number = |name: &str| element.attribute(name).and_then(|value| value.trim().parse::<f64>().ok());
-	let transform = transform.then(Transform::of(element));
-	let (x, y) = transform.apply(number("OriginX")?, number("OriginY")?);
-	let size = number("FontRenderingEmSize")? * transform.vertical_scale();
+	let transform = transform * transform_of(element);
+	let origin = transform * Point::new(number("OriginX")?, number("OriginY")?);
+	let size = number("FontRenderingEmSize")? * vertical_scale(transform);
 	let indices = element.attribute("Indices").unwrap_or_default();
 	Some(Run {
 		text: expand_ligatures(&spaced_at_gaps(unicode, indices)),
 		source: unicode.to_string(),
 		indices: indices.to_string(),
 		font: element.attribute("FontUri").unwrap_or_default().to_string(),
-		x,
-		y,
+		x: origin.x,
+		y: origin.y,
 		size,
-		width: None,
 		bidi_level: element.attribute("BidiLevel").and_then(|level| level.parse().ok()).unwrap_or(0),
 		simulated_bold: element.attribute("StyleSimulations").is_some_and(|style| style.contains("Bold")),
 	})
@@ -240,17 +205,17 @@ fn read_run(element: Node, transform: Transform) -> Option<Run> {
 
 /// The fallback is the branch every reader is promised to understand.
 fn alternate_branch<'a, 'input>(content: Node<'a, 'input>) -> Option<Node<'a, 'input>> {
-	let branch = |name: &str| content.children().find(|child| is_element(*child, name));
+	let branch = |name: &str| find_child_element(content, name);
 	branch("Fallback").or_else(|| branch("Choice"))
 }
 
-fn walk(parent: Node, transform: Transform, page: &mut Page) {
+fn walk(parent: Node, transform: Affine, page: &mut Page) {
 	for element in parent.children().filter(Node::is_element) {
 		let first_run = page.runs.len();
 		let uri = element.attribute("FixedPage.NavigateUri").map(String::from);
 		match element.tag_name().name() {
 			"Glyphs" => page.runs.extend(read_run(element, transform)),
-			"Canvas" => walk(element, transform.then(Transform::of(element)), page),
+			"Canvas" => walk(element, transform * transform_of(element), page),
 			"Path" => {
 				if let (Some(uri), Some(area)) = (uri.clone(), link_area(element, transform)) {
 					page.links.push(PageLink { uri, place: LinkPlace::Area(area) });
@@ -280,7 +245,7 @@ pub(super) fn read_page(xml: &str) -> Result<Page> {
 		height: root.attribute("Height").and_then(|value| value.parse().ok()).unwrap_or(0.0),
 		..Page::default()
 	};
-	walk(root, Transform::IDENTITY, &mut page);
+	walk(root, Affine::IDENTITY, &mut page);
 	Ok(page)
 }
 
@@ -488,11 +453,11 @@ mod tests {
 	#[test]
 	fn a_link_covers_a_run_that_fits_inside_it_and_not_one_that_only_starts_there() {
 		let area = Area { left: 272.94, top: 172.0, right: 338.97, bottom: 197.0 };
-		let at = |x: f64, width: Option<f64>| Run { x, y: 183.38, width, ..Run::default() };
-		assert!(area.covers(&at(275.09, Some(61.58))));
-		assert!(!area.covers(&at(336.67, Some(3.4))));
-		assert!(area.covers(&at(336.67, None)));
-		assert!(!area.covers(&at(100.0, None)));
+		let at = |x: f64| Run { x, y: 183.38, ..Run::default() };
+		assert!(area.covers(&at(275.09), Some(61.58)));
+		assert!(!area.covers(&at(336.67), Some(3.4)));
+		assert!(area.covers(&at(336.67), None));
+		assert!(!area.covers(&at(100.0), None));
 	}
 
 	#[test]

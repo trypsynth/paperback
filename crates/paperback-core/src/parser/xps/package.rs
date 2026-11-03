@@ -4,11 +4,11 @@ use std::{
 };
 
 use anyhow::{Result, bail};
-use roxmltree::{Document as XmlDocument, Node};
+use roxmltree::Document as XmlDocument;
 use zip::ZipArchive;
 
 use crate::{
-	parser::util::path::resolve_relative_path,
+	parser::util::{path::resolve_relative_path, xml::is_element},
 	util::{encoding::decode_html, zip::read_zip_entry_bytes},
 };
 
@@ -32,8 +32,10 @@ pub(super) struct Package<R> {
 /// A printer driver streams a part as pieces while it is still being written, each an entry named for its place in the sequence.
 fn piece_number(segment: &str) -> Option<u32> {
 	let (number, suffix) = segment.strip_prefix('[')?.split_once(']')?;
-	(suffix.eq_ignore_ascii_case(".piece") || suffix.eq_ignore_ascii_case(".last.piece"))
-		.then(|| number.parse().ok())?
+	if !suffix.eq_ignore_ascii_case(".piece") && !suffix.eq_ignore_ascii_case(".last.piece") {
+		return None;
+	}
+	number.parse().ok()
 }
 
 fn part_entries(names: impl Iterator<Item = String>) -> HashMap<String, Vec<String>> {
@@ -62,10 +64,6 @@ fn relationships_part(source: &str) -> String {
 		Some((folder, file)) => format!("{folder}/_rels/{file}.rels"),
 		None => format!("_rels/{source}.rels"),
 	}
-}
-
-pub(super) fn is_element(node: Node, name: &str) -> bool {
-	node.is_element() && node.tag_name().name() == name
 }
 
 impl<R: Read + Seek> Package<R> {

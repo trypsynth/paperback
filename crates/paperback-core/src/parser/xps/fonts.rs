@@ -35,20 +35,20 @@ fn unscrambled(mut data: Vec<u8>, part: &str) -> Option<Vec<u8>> {
 struct Face {
 	data: Vec<u8>,
 	index: u32,
+	units_per_em: f64,
+	bold: bool,
+	monospaced: bool,
 }
 
 impl Face {
 	fn load<R: Read + Seek>(package: &mut Package<R>, part: &str, index: u32) -> Option<Self> {
 		let data = package.read_bytes(part).ok()?;
-		if FontRef::from_index(&data, index).is_ok() {
-			return Some(Self { data, index });
-		}
-		let data = unscrambled(data, part)?;
-		FontRef::from_index(&data, index).is_ok().then_some(Self { data, index })
-	}
-
-	fn font(&self) -> Option<FontRef<'_>> {
-		FontRef::from_index(&self.data, self.index).ok()
+		let data = if FontRef::from_index(&data, index).is_ok() { data } else { unscrambled(data, part)? };
+		let font = FontRef::from_index(&data, index).ok()?;
+		let metrics = font.metrics(Size::unscaled(), LocationRef::default());
+		let units_per_em = f64::from(metrics.units_per_em).max(1.0);
+		let bold = font.attributes().weight >= Weight::BOLD;
+		Some(Self { data, index, units_per_em, bold, monospaced: metrics.is_monospace })
 	}
 }
 
@@ -60,13 +60,13 @@ struct Metrics<'a> {
 }
 
 impl<'a> Metrics<'a> {
-	fn of(font: &FontRef<'a>) -> Self {
-		let units_per_em = f64::from(font.metrics(Size::unscaled(), LocationRef::default()).units_per_em).max(1.0);
-		Self {
+	fn of(face: &'a Face) -> Option<Self> {
+		let font = FontRef::from_index(&face.data, face.index).ok()?;
+		Some(Self {
 			charmap: font.charmap(),
 			glyphs: font.glyph_metrics(Size::unscaled(), LocationRef::default()),
-			units_per_em,
-		}
+			units_per_em: face.units_per_em,
+		})
 	}
 
 	fn of_glyph(&self, glyph: GlyphId) -> Option<f64> {
@@ -78,8 +78,8 @@ impl<'a> Metrics<'a> {
 	}
 }
 
-fn run_width(font: Option<&FontRef>, run: &Run) -> Option<f64> {
-	let metrics = font.map(Metrics::of);
+fn run_width(face: Option<&Face>, run: &Run) -> Option<f64> {
+	let metrics = face.and_then(Metrics::of);
 	let mut characters = run.source.chars();
 	let mut hundredths = 0.0;
 	for cluster in clusters(&run.indices) {
@@ -120,12 +120,11 @@ impl Fonts {
 		let part = resolve_part(page_part, uri);
 		let index = fragment.parse().unwrap_or(0);
 		let face = self.faces.entry(format!("{part}#{index}")).or_insert_with(|| Face::load(package, &part, index));
-		let font = face.as_ref().and_then(Face::font);
-		let font = font.as_ref();
+		let face = face.as_ref();
 		RunStyle {
-			width: run_width(font, run),
-			bold: run.simulated_bold || font.is_some_and(|font| font.attributes().weight >= Weight::BOLD),
-			monospaced: font.is_some_and(|font| font.metrics(Size::unscaled(), LocationRef::default()).is_monospace),
+			width: run_width(face, run),
+			bold: run.simulated_bold || face.is_some_and(|face| face.bold),
+			monospaced: face.is_some_and(|face| face.monospaced),
 		}
 	}
 }
@@ -270,14 +269,14 @@ mod tests {
 	#[test]
 	fn a_missing_or_unreadable_font_leaves_the_width_unknown() {
 		let run = Run { font: "Gone.ttf".to_string(), ..run("ab", "") };
-		assert_eq!(style_of(&test_font(400, false), "F.ttf", &run).width, None);
+		assert_eq!(width_of(&run), None);
 		assert_eq!(style_of(b"not a font", "F.ttf", &run).width, None);
 	}
 
 	#[test]
 	fn declared_advances_alone_measure_a_run_with_no_font() {
 		let run = Run { font: "Gone.ttf".to_string(), ..run("ab", ",50;,100") };
-		assert_eq!(style_of(&test_font(400, false), "F.ttf", &run).width, Some(15.0));
+		assert_eq!(width_of(&run), Some(15.0));
 	}
 
 	#[test]

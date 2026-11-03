@@ -38,8 +38,13 @@ fn collect_tagged_text_recursive(node: Node, tag_name: &str, text: &mut String) 
 }
 
 #[must_use]
+pub fn is_element(node: Node, name: &str) -> bool {
+	node.is_element() && node.tag_name().name() == name
+}
+
+#[must_use]
 pub fn find_child_element<'a, 'input>(node: Node<'a, 'input>, name: &str) -> Option<Node<'a, 'input>> {
-	node.children().find(|child| child.node_type() == NodeType::Element && child.tag_name().name() == name)
+	node.children().find(|child| is_element(*child, name))
 }
 
 /// Most FictionBooks are windows-1251, so the declared encoding is honoured rather than assuming UTF-8.

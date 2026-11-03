@@ -9,7 +9,7 @@ use zip::ZipArchive;
 
 use self::{
 	fonts::Fonts,
-	lines::page_lines,
+	lines::{RunStyle, page_lines},
 	package::{CORE_PROPERTIES, DOCUMENT_STRUCTURE, Package, PagePart, STORY_FRAGMENTS},
 	page::{LinkPlace, Page, read_page},
 	structure::{Fragment, OutlineEntry, read_fragments, read_outline},
@@ -20,8 +20,8 @@ use crate::{
 	parser::{
 		Parser,
 		pdf::{
-			Line, PageEdges, PendingLink, RunningText, build_toc_tree, detect_running_text, join_paragraphs,
-			median_line_font_size, place_links, resolve_headings, split_lines, strip_running_text,
+			Line, PendingLink, RunningText, build_toc_tree, page_paragraphs, place_links, resolve_headings,
+			split_lines, survey_running_text,
 		},
 		util::{ooxml::parse_core_properties, path::extract_title_from_path},
 	},
@@ -49,14 +49,24 @@ impl Parser for XpsParser {
 	}
 }
 
-fn page_fragments<R: Read + Seek>(package: &mut Package<R>, page: &str) -> Vec<Fragment> {
-	let mut fragments = Vec::new();
-	for part in package.related(page, STORY_FRAGMENTS) {
-		match package.read_text(&part).and_then(|xml| read_fragments(&xml)) {
-			Ok(mut read) => fragments.append(&mut read),
-			Err(error) => tracing::warn!(%part, %error, "failed to read xps story fragments"),
+fn read_related<R: Read + Seek, T>(
+	package: &mut Package<R>,
+	source: &str,
+	kind: &str,
+	read: fn(&str) -> Result<Vec<T>>,
+) -> Vec<T> {
+	let mut items = Vec::new();
+	for part in package.related(source, kind) {
+		match package.read_text(&part).and_then(|xml| read(&xml)) {
+			Ok(mut found) => items.append(&mut found),
+			Err(error) => tracing::warn!(%part, %error, kind, "failed to read xps part"),
 		}
 	}
+	items
+}
+
+fn page_fragments<R: Read + Seek>(package: &mut Package<R>, page: &str) -> Vec<Fragment> {
+	let mut fragments = read_related(package, page, STORY_FRAGMENTS, read_fragments);
 	fragments.retain(|fragment| !fragment.blocks.is_empty());
 	fragments
 }
@@ -66,70 +76,64 @@ fn core_properties<R: Read + Seek>(package: &mut Package<R>) -> (Option<String>,
 	package.read_text(&part).map_or((None, None), |xml| parse_core_properties(&xml))
 }
 
-fn outline_entries<R: Read + Seek>(package: &mut Package<R>, documents: &[String]) -> Vec<OutlineEntry> {
-	let mut entries = Vec::new();
-	for part in documents.iter().flat_map(|document| package.related(document, DOCUMENT_STRUCTURE)).collect::<Vec<_>>()
-	{
-		match package.read_text(&part).and_then(|xml| read_outline(&xml)) {
-			Ok(mut read) => entries.append(&mut read),
-			Err(error) => tracing::warn!(%part, %error, "failed to read xps document structure"),
-		}
-	}
-	entries
+enum Content {
+	Declared(Page, Vec<Fragment>),
+	Drawn(Vec<Line>),
 }
 
 /// Every page is read before any is written, because running text is only known once every page's edges have been seen.
-#[derive(Default)]
 struct ReadPage {
-	page: Page,
-	fragments: Vec<Fragment>,
-	lines: Vec<Line>,
+	content: Content,
+	links: Vec<PendingLink>,
 }
 
 impl ReadPage {
 	/// A page that can't be read stays empty, so the pages after it keep their numbers.
-	fn of<R: Read + Seek>(package: &mut Package<R>, part: &PagePart, fonts: &mut Fonts) -> Self {
-		let mut page = match package.read_text(&part.name).and_then(|xml| read_page(&xml)) {
+	fn of<R: Read + Seek>(
+		package: &mut Package<R>,
+		part: &str,
+		fonts: &mut Fonts,
+		target_pages: &HashMap<&str, usize>,
+	) -> Self {
+		let page = match package.read_text(part).and_then(|xml| read_page(&xml)) {
 			Ok(page) => page,
 			Err(error) => {
-				tracing::warn!(part = %part.name, %error, "failed to read xps page, skipping its text");
-				return Self::default();
+				tracing::warn!(part, %error, "failed to read xps page, skipping its text");
+				return Self { content: Content::Drawn(Vec::new()), links: Vec::new() };
 			}
 		};
-		if page.links.iter().any(|link| matches!(link.place, LinkPlace::Area(_))) {
-			for run in &mut page.runs {
-				run.width = fonts.style_of(package, &part.name, run).width;
-			}
-		}
-		let fragments = page_fragments(package, &part.name);
-		let lines = if fragments.is_empty() {
-			page_lines(&page, |run| fonts.style_of(package, &part.name, run))
+		let fragments = page_fragments(package, part);
+		let has_area = page.links.iter().any(|link| matches!(link.place, LinkPlace::Area(_)));
+		// Only laying out lines and testing a run against a link rectangle need to know how wide it is.
+		let styles: Vec<RunStyle> = if fragments.is_empty() || has_area {
+			page.runs.iter().map(|run| fonts.style_of(package, part, run)).collect()
 		} else {
 			Vec::new()
 		};
-		Self { page, fragments, lines }
+		let links = page_links(&page, &styles, target_pages);
+		let content = if fragments.is_empty() {
+			Content::Drawn(page_lines(&page, &styles))
+		} else {
+			Content::Declared(page, fragments)
+		};
+		Self { content, links }
 	}
-}
 
-fn running_text(pages: &[ReadPage], strip: bool) -> RunningText {
-	let drawn = || pages.iter().filter(|page| page.fragments.is_empty());
-	let edges: Vec<PageEdges> = drawn().map(|page| PageEdges::of(&page.lines)).collect();
-	let lines: Vec<Line> = drawn().flat_map(|page| page.lines.clone()).collect();
-	let running = detect_running_text(&edges, median_line_font_size(&lines));
-	if strip { running } else { running.recognizing_nothing() }
+	fn drawn_lines(&self) -> Option<&[Line]> {
+		match &self.content {
+			Content::Drawn(lines) => Some(lines.as_slice()),
+			Content::Declared(..) => None,
+		}
+	}
 }
 
 fn write_lines(
 	buffer: &mut DocumentBuffer,
-	lines: &[Line],
+	lines: Vec<Line>,
 	running: &RunningText,
 	join: bool,
 ) -> Vec<(DocPos, String)> {
-	let mut lines = lines.to_vec();
-	// Measured before the running text comes out, for the reason `untagged_page_lines` gives.
-	let body_size = median_line_font_size(&lines);
-	strip_running_text(&mut lines, running);
-	let paragraphs = if join { join_paragraphs(&lines, body_size) } else { split_lines(&lines, body_size) };
+	let (_, paragraphs) = page_paragraphs(lines, running, join);
 	let mut headings = Vec::new();
 	for (text, is_heading, _) in paragraphs {
 		if is_heading {
@@ -183,18 +187,23 @@ fn link_reference(uri: &str, target_pages: &HashMap<&str, usize>) -> Option<Stri
 }
 
 /// In page order, which `place_links` searches in.
-fn page_links(page: &Page, target_pages: &HashMap<&str, usize>) -> Vec<PendingLink> {
+fn page_links(page: &Page, styles: &[RunStyle], target_pages: &HashMap<&str, usize>) -> Vec<PendingLink> {
 	let mut links = Vec::new();
 	for link in &page.links {
 		let Some(reference) = link_reference(&link.uri, target_pages) else { continue };
 		let runs: Vec<usize> = match &link.place {
 			LinkPlace::Runs(runs) => runs.clone().collect(),
-			LinkPlace::Area(area) => (0..page.runs.len()).filter(|index| area.covers(&page.runs[*index])).collect(),
+			LinkPlace::Area(area) => {
+				let runs = page.runs.iter().zip(styles).enumerate();
+				runs.filter(|(_, (run, style))| area.covers(run, style.width)).map(|(index, _)| index).collect()
+			}
 		};
 		let text: String = runs.iter().map(|index| page.runs[*index].text.as_str()).collect();
 		let text = trim_string(&collapse_whitespace(&text));
-		if let (Some(first), false) = (runs.first(), text.is_empty()) {
-			links.push((*first, PendingLink { text, reference }));
+		if !text.is_empty()
+			&& let Some(&first) = runs.first()
+		{
+			links.push((first, PendingLink { text, reference }));
 		}
 	}
 	links.sort_by_key(|(first, _)| *first);
@@ -214,25 +223,28 @@ fn body_size(written: &[WrittenPage]) -> f64 {
 	sizes.into_iter().max_by_key(|(_, characters)| *characters).map_or(0.0, |(size, _)| size)
 }
 
-fn detected_headings(written: &[WrittenPage]) -> Vec<(DocPos, String)> {
-	let body = body_size(written);
+fn detected_headings(written: Vec<WrittenPage>) -> Vec<(DocPos, String)> {
+	let body = body_size(&written);
 	let mut headings = Vec::new();
 	for page in written {
-		headings.extend(page.headings.iter().cloned());
-		let lines: Vec<Line> = page
+		headings.extend(page.headings);
+		let (positions, lines): (Vec<DocPos>, Vec<Line>) = page
 			.paragraphs
-			.iter()
-			.map(|paragraph| Line {
-				text: paragraph.text.clone(),
-				size: paragraph.size,
-				top: 0.0,
-				bottom: 0.0,
-				monospaced: false,
-				bold: false,
+			.into_iter()
+			.map(|paragraph| {
+				let line = Line {
+					text: paragraph.text,
+					size: paragraph.size,
+					top: 0.0,
+					bottom: 0.0,
+					monospaced: false,
+					bold: false,
+				};
+				(paragraph.position, line)
 			})
-			.collect();
+			.unzip();
 		let marked = split_lines(&lines, body).into_iter().filter(|(_, is_heading, _)| *is_heading);
-		headings.extend(marked.map(|(text, _, index)| (page.paragraphs[index].position, text)));
+		headings.extend(marked.map(|(text, _, index)| (positions[index], text)));
 	}
 	headings
 }
@@ -245,22 +257,26 @@ fn read_document<R: Read + Seek>(mut package: Package<R>, context: &ParserContex
 		// TRANSLATORS: Error shown when an XPS document has no pages
 		anyhow::bail!(t("XPS file contains no pages"));
 	}
+	let target_pages = link_target_pages(&pages);
+	let mut fonts = Fonts::default();
+	let read: Vec<ReadPage> =
+		pages.iter().map(|part| ReadPage::of(&mut package, &part.name, &mut fonts, &target_pages)).collect();
+	let running = survey_running_text(read.iter().filter_map(ReadPage::drawn_lines), context.strip_running_text);
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
-	let mut fonts = Fonts::default();
-	let read: Vec<ReadPage> = pages.iter().map(|part| ReadPage::of(&mut package, part, &mut fonts)).collect();
-	let running = running_text(&read, context.strip_running_text);
-	let target_pages = link_target_pages(&pages);
 	let mut written: Vec<WrittenPage> = Vec::new();
-	for (index, page) in read.iter().enumerate() {
+	for (index, page) in read.into_iter().enumerate() {
 		let start = buffer.end();
 		id_positions.insert(format!("page_{index}"), start);
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, start).with_text(format!("Page {}", index + 1)));
-		let (paragraphs, headings) = if page.fragments.is_empty() {
-			(Vec::new(), write_lines(&mut buffer, &page.lines, &running, context.join_pdf_paragraphs))
-		} else {
-			let writer = PageWriter::new(&mut buffer, &page.page, context.render_tables_inline);
-			(writer.write(&page.fragments, context.strip_running_text), Vec::new())
+		let (paragraphs, headings) = match page.content {
+			Content::Drawn(lines) => {
+				(Vec::new(), write_lines(&mut buffer, lines, &running, context.join_pdf_paragraphs))
+			}
+			Content::Declared(declared, fragments) => {
+				let writer = PageWriter::new(&mut buffer, &declared, context.render_tables_inline);
+				(writer.write(&fragments, context.strip_running_text), Vec::new())
+			}
 		};
 		if buffer.end() == start {
 			// TRANSLATORS: Shown in place of an XPS page that has no text, such as a scanned one
@@ -268,12 +284,15 @@ fn read_document<R: Read + Seek>(mut package: Package<R>, context: &ParserContex
 			buffer.append("\n");
 		}
 		let page_text = buffer.text(start..buffer.end()).to_string();
-		place_links(&page_links(&page.page, &target_pages), start, &page_text, &mut buffer);
+		place_links(&page.links, start, &page_text, &mut buffer);
 		written.push(WrittenPage { start, paragraphs, headings });
 	}
-	let entries = outline_entries(&mut package, &documents);
+	let entries: Vec<OutlineEntry> = documents
+		.iter()
+		.flat_map(|document| read_related(&mut package, document, DOCUMENT_STRUCTURE, read_outline))
+		.collect();
 	let mut toc_items = build_toc_tree(outline_items(entries, &target_pages, &written));
-	resolve_headings(&mut buffer, &mut toc_items, Vec::new(), detected_headings(&written), false);
+	resolve_headings(&mut buffer, &mut toc_items, Vec::new(), detected_headings(written), false);
 	let (title, author) = core_properties(&mut package);
 	let title = title.unwrap_or_else(|| extract_title_from_path(&context.file_path));
 	let mut document = Document::new().with_title(title).with_author(author.unwrap_or_default());

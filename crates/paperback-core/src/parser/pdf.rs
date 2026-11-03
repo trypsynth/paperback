@@ -24,13 +24,15 @@ use images::{append_image, images_before_each_paragraph, page_largest_image_cove
 pub(super) use links::{PendingLink, place_links};
 use links::{collect_annotation_links, collect_web_links};
 use metadata::{map_load_error, metadata_title, metadata_value};
-pub(super) use paragraphs::{join_paragraphs, split_lines};
+use paragraphs::join_paragraphs;
+pub(super) use paragraphs::split_lines;
 pub use paragraphs::{join_wrapped_lines, join_wrapped_runs};
-pub(super) use running::{PageEdges, RunningText, detect as detect_running_text};
+pub(super) use running::RunningText;
+use running::{EDGE_LINES, PageEdges};
 use structure::extract_tagged_page_text;
 use tagged::{TaggedPage, append_tagged_page, tagged_running_lines, without_lines};
-pub(super) use text::{Line, median_line_font_size, restore_reading_order};
-use text::{PageEvidence, WordPages, confirms, extract_text_lines};
+pub(super) use text::{Line, restore_reading_order};
+use text::{PageEvidence, WordPages, confirms, extract_text_lines, median_line_font_size};
 pub(super) use toc::build_toc_tree;
 use toc::extract_toc;
 
@@ -156,13 +158,22 @@ enum UntaggedLine {
 	Image(String),
 }
 
-fn untagged_page_lines(page: &PageContent, running_text: &RunningText, join: bool) -> Vec<UntaggedLine> {
-	let mut line_infos = page.lines.clone();
+/// Gives back the lines left once the running text is out, which the paragraphs' line indexes point into.
+pub(super) fn page_paragraphs(
+	mut lines: Vec<Line>,
+	running_text: &RunningText,
+	join: bool,
+) -> (Vec<Line>, Vec<(String, bool, usize)>) {
 	// Measured before the running headers come out: they sit at or below body size, so dropping them would pull the median up past a heading only just above it.
-	let body_size = median_line_font_size(&line_infos);
-	strip_running_text(&mut line_infos, running_text);
+	let body_size = median_line_font_size(&lines);
+	strip_running_text(&mut lines, running_text);
+	let paragraphs = if join { join_paragraphs(&lines, body_size) } else { split_lines(&lines, body_size) };
+	(lines, paragraphs)
+}
+
+fn untagged_page_lines(page: &PageContent, running_text: &RunningText, join: bool) -> Vec<UntaggedLine> {
+	let (line_infos, paragraphs) = page_paragraphs(page.lines.clone(), running_text, join);
 	let line_tops: Vec<f64> = line_infos.iter().map(|line| line.top).collect();
-	let paragraphs = if join { join_paragraphs(&line_infos, body_size) } else { split_lines(&line_infos, body_size) };
 	// The caller's image-only placeholder is more use on a scanned page than a line for each piece it was scanned into.
 	if paragraphs.is_empty() {
 		return Vec::new();
@@ -192,18 +203,24 @@ fn untagged_page_lines(page: &PageContent, running_text: &RunningText, join: boo
 	lines
 }
 
-/// Tagged lines are only taken out here, so `strip` has to be honoured here rather than by ignoring the returned survey.
-fn strip_tagged_running_text(pages: &mut [PageContent], strip: bool) -> RunningText {
-	let untagged = || pages.iter().filter(|page| page.tagged.is_none());
-	let edges: Vec<PageEdges> = untagged().map(|page| PageEdges::of(&page.lines)).collect();
+/// The survey always runs because it also measures body text size; `strip` only decides whether its answer is used.
+pub(super) fn survey_running_text<'a>(pages: impl Iterator<Item = &'a [Line]> + Clone, strip: bool) -> RunningText {
+	let edges: Vec<PageEdges> = pages.clone().map(PageEdges::of).collect();
 	// Taken over the whole document because a chapter opening is mostly heading.
-	let body_font_size = median_line_font_size(&untagged().flat_map(|page| page.lines.clone()).collect::<Vec<_>>());
+	let body_font_size = median_line_font_size(pages.flatten());
 	let running_text = running::detect(&edges, body_font_size);
 	tracing::debug!(
 		running_text_count = running_text.len(),
 		body_font_size,
 		"surveyed pages for running headers and footers"
 	);
+	if strip { running_text } else { running_text.recognizing_nothing() }
+}
+
+/// Tagged lines are only taken out here, so `strip` has to be honoured here rather than by ignoring the returned survey.
+fn strip_tagged_running_text(pages: &mut [PageContent], strip: bool) -> RunningText {
+	let untagged = pages.iter().filter(|page| page.tagged.is_none()).map(|page| page.lines.as_slice());
+	let running_text = survey_running_text(untagged, strip);
 	// Most tagged PDFs mark running headers as artifacts, but some tag them as ordinary paragraphs.
 	let tagged_edges: Vec<PageEdges> = pages
 		.iter()
@@ -231,9 +248,9 @@ fn strip_tagged_running_text(pages: &mut [PageContent], strip: bool) -> RunningT
 }
 
 /// Only edge lines are considered, so a body line reading like a running head stays, and a page whose every line matches (a part title repeating the book's name) is never emptied.
-pub(super) fn strip_running_text(lines: &mut Vec<Line>, running_text: &RunningText) {
+fn strip_running_text(lines: &mut Vec<Line>, running_text: &RunningText) {
 	let is_running = |index: usize, lines: &Vec<Line>| {
-		let at_an_edge = index < running::EDGE_LINES || index + running::EDGE_LINES >= lines.len();
+		let at_an_edge = index < EDGE_LINES || index + EDGE_LINES >= lines.len();
 		at_an_edge && running_text.contains(&lines[index].text, lines[index].size)
 	};
 	let doomed: Vec<usize> = (0..lines.len()).filter(|index| is_running(*index, lines)).collect();
@@ -365,9 +382,7 @@ impl Parser for PdfParser {
 		let mut has_any_images = false;
 		let mut detected_heading_positions: Vec<(DocPos, String)> = Vec::new();
 		let mut pages = read_pages(&document, page_count, render_tables_inline);
-		// The survey always runs because it also measures body text size; the flag only decides whether its answer is used.
-		let survey = strip_tagged_running_text(&mut pages, context.strip_running_text);
-		let running_text = if context.strip_running_text { survey } else { survey.recognizing_nothing() };
+		let running_text = strip_tagged_running_text(&mut pages, context.strip_running_text);
 		// Laying out an untagged page is what putting the document together spends its time on, and it needs only the page and the survey, so every page is laid out at once.
 		let untagged: Vec<Vec<UntaggedLine>> = pages
 			.par_iter()

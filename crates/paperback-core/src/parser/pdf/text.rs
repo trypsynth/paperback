@@ -494,9 +494,9 @@ fn sorted_median(values: &mut [f64]) -> f64 {
 	values[values.len() / 2]
 }
 
-pub(in crate::parser) fn median_line_font_size(line_infos: &[Line]) -> f64 {
+pub(super) fn median_line_font_size<'a>(line_infos: impl IntoIterator<Item = &'a Line>) -> f64 {
 	let mut sizes: Vec<f64> = line_infos
-		.iter()
+		.into_iter()
 		.filter(|line| !line.text.trim().is_empty() && line.size > 0.0)
 		.map(|line| line.size)
 		.collect();
