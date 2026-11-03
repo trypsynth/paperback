@@ -58,10 +58,12 @@ pub fn unless_cancelled<T: Send + 'static>(
 		let _ = result_tx.send(result);
 	});
 	loop {
+		let outcome = result_rx.recv_timeout(CANCEL_POLL);
+		// After the wait, since a step that finishes during it has already sent its last progress.
 		while let Ok((done, total)) = moved_rx.try_recv() {
 			on_progress(done, total);
 		}
-		match result_rx.recv_timeout(CANCEL_POLL) {
+		match outcome {
 			Ok(result) => return Some(result),
 			Err(RecvTimeoutError::Timeout) if cancelled() => {
 				cancel.store(true, Ordering::Relaxed);
@@ -112,7 +114,6 @@ mod tests {
 			|_, progress| {
 				progress(5, Some(10));
 				progress(10, Some(10));
-				thread::sleep(CANCEL_POLL * 2);
 				"saved"
 			},
 		);
