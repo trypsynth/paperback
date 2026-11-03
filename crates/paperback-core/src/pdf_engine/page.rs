@@ -1,4 +1,4 @@
-// The surface hands coordinates out as `f32`, as pdfium's does, while hayro works in `f64`.
+// What a page keeps is in `f32`, as pdfium's is, while hayro works in `f64`.
 #![allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
 
 use std::sync::Arc;
@@ -18,7 +18,7 @@ use super::{
 	text::{FontCache, TextObject},
 };
 
-/// Owns what was read, the text layer included, so pages can be read on several threads at once and handed back to one.
+/// One page of a document. It owns what was read, the text layer included, so pages can be read on several threads at once and handed back to one.
 pub struct Page<'doc> {
 	document: &'doc Document,
 	index: usize,
@@ -56,18 +56,22 @@ impl<'doc> Page<'doc> {
 		Ok(Self { document, index, width, height, objects: collector.objects, text })
 	}
 
+	/// In points, after the page's rotation.
 	pub fn width(&self) -> f64 {
 		f64::from(self.width)
 	}
 
+	/// In points, after the page's rotation.
 	pub fn height(&self) -> f64 {
 		f64::from(self.height)
 	}
 
+	/// The page's characters.
 	pub const fn text(&self) -> &TextPage {
 		&self.text
 	}
 
+	/// The document's structure tree as this page sees it, or `None` for a document without one.
 	pub fn tags(&self) -> Option<TagTree<'_>> {
 		Some(TagTree::of(self.document.structure()?, self.index))
 	}
@@ -113,6 +117,7 @@ impl<'doc> Page<'doc> {
 		images
 	}
 
+	/// Draws the page on white at the given width in pixels, keeping its proportions. `None` when the page or the width is empty.
 	pub fn render(&self, width: u32) -> Option<PageBitmap> {
 		if self.width <= 0.0 || self.height <= 0.0 || width == 0 {
 			return None;
@@ -130,6 +135,7 @@ impl<'doc> Page<'doc> {
 		Some(PageBitmap { width, height, rgba: pixmap.data_as_u8_slice().to_vec() })
 	}
 
+	/// The page's link annotations that lead somewhere. A web address that is only written out in the text is in [`TextPage::web_links`] instead.
 	pub fn annotation_links(&self) -> Vec<AnnotationLink> {
 		let Some(page) = self.document.pdf().pages().get(self.index) else { return Vec::new() };
 		let Some(annotations) = page.raw().get::<Array<'_>>(b"Annots") else { return Vec::new() };
@@ -177,12 +183,15 @@ fn display_matrix(page: &hayro_syntax::page::Page<'_>) -> [f32; 6] {
 	}
 }
 
+/// Where a link goes.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LinkTarget {
 	Url(String),
+	/// The index of a page in the same document.
 	Page(usize),
 }
 
+/// A link annotation on a page.
 #[derive(Debug, Clone, PartialEq)]
 pub struct AnnotationLink {
 	pub rect: super::Rect,
@@ -222,15 +231,19 @@ fn rect_of(bounds: Bounds) -> super::Rect {
 	}
 }
 
+/// A page drawn to pixels.
 pub struct PageBitmap {
 	pub width: u32,
 	pub height: u32,
+	/// Four bytes a pixel, row by row from the top.
 	pub rgba: Vec<u8>,
 }
 
+/// What a [`PageObject`] is.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ObjectKind {
 	Image,
+	/// A run of text, the only other thing a page keeps.
 	Other,
 }
 
@@ -273,6 +286,7 @@ impl ObjectData {
 	}
 }
 
+/// A run of text or an image drawn on a page.
 pub struct PageObject<'page> {
 	data: &'page ObjectData,
 }
@@ -302,6 +316,7 @@ impl<'page> PageObject<'page> {
 	}
 }
 
+/// A marked content sequence an object sits in.
 pub struct ObjectMark<'object> {
 	mark: &'object Mark,
 }

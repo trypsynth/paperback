@@ -50,10 +50,12 @@ pub struct Rect {
 }
 
 impl Rect {
+	/// Never negative, whichever way round the edges are.
 	pub const fn width(self) -> f64 {
 		(self.right - self.left).abs()
 	}
 
+	/// Never negative, whichever way round the edges are.
 	pub const fn height(self) -> f64 {
 		(self.top - self.bottom).abs()
 	}
@@ -70,6 +72,7 @@ pub struct WebLink {
 	pub url: String,
 }
 
+/// How a character is scaled, turned, and placed: the six values of a PDF matrix, `[a b c d e f]`. They stay `f32` because that's what the text layer computes in.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TextMatrix {
 	pub a: f32,
@@ -84,6 +87,7 @@ pub struct TextMatrix {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CharFont<'page> {
 	pub name: &'page str,
+	/// What its descriptor declares. A standard font without a descriptor gets [`FontFlags::SYMBOLIC`] or [`FontFlags::NON_SYMBOLIC`], and a font with an italic angle gets [`FontFlags::ITALIC`], as with pdfium.
 	pub flags: FontFlags,
 }
 
@@ -1515,6 +1519,7 @@ impl<'page> PageChar<'page> {
 		Point::new(f64::from(self.info.origin.0), f64::from(self.info.origin.1))
 	}
 
+	/// The character's box on the page.
 	pub fn bounds(self) -> Rect {
 		let r = self.info.char_box;
 		Rect { left: f64::from(r.left), right: f64::from(r.right), bottom: f64::from(r.bottom), top: f64::from(r.top) }
@@ -1525,6 +1530,7 @@ impl<'page> PageChar<'page> {
 		f64::from(self.object().map_or(DEFAULT_FONT_SIZE, |object| object.font_size))
 	}
 
+	/// The matrix the character was drawn with.
 	pub const fn text_matrix(self) -> TextMatrix {
 		let m = self.info.matrix;
 		TextMatrix { a: m.a, b: m.b, c: m.c, d: m.d, e: m.e, f: m.f }
@@ -1553,7 +1559,7 @@ impl<'page> PageChar<'page> {
 	}
 }
 
-/// Owns everything it answers from, the fonts reduced to what the parser asks of them, so a page read on one thread can be handed to another.
+/// A page's characters, including the spaces and line breaks inferred between them. It owns everything it answers from, the fonts reduced to what the parser asks of them, so a page read on one thread can be handed to another.
 pub struct TextPage {
 	chars: Vec<CharInfo>,
 	text: Vec<u32>,
@@ -1706,7 +1712,7 @@ impl TextPage {
 		out
 	}
 
-	/// pdfium's `CPDF_LinkExtract`.
+	/// The web addresses written out in the page's text. A port of pdfium's `CPDF_LinkExtract`.
 	pub fn web_links(&self) -> Vec<WebLink> {
 		let page_text = self.page_text(0, i32::try_from(self.chars.len()).unwrap_or(i32::MAX));
 		let chars: Vec<links::LinkChar> = self

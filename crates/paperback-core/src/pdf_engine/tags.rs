@@ -242,10 +242,12 @@ impl<'tree> Tag<'tree> {
 		self.node.kind.as_deref()
 	}
 
+	/// The text the element stands for, when that differs from what is drawn.
 	pub fn actual_text(&self) -> Option<&'tree str> {
 		self.node.actual_text.as_deref()
 	}
 
+	/// A description of the element for someone who cannot see it.
 	pub fn alt_text(&self) -> Option<&'tree str> {
 		self.node.alt_text.as_deref()
 	}

@@ -1,5 +1,9 @@
-//! hayro interprets a page's content stream once into a device rather than answering questions one at a time, so a page here is read in full when it is loaded.
-//! Paperback read PDFs with pdfium before this, and the text layer is a port of pdfium's own (`core/fpdftext`) rather than a fresh design: the parser's heuristics were measured against the characters, inferred spaces and line breaks pdfium produces, and they only hold if those come out the same.
+//! Reads the text, structure, images, and links of a PDF, on top of hayro.
+//!
+//! Open a [`Document`], load a [`Page`] from it, and read from that: [`Page::text`] for the characters, [`Page::tags`] for the structure tree, [`Page::images`] for the images, and [`Page::annotation_links`] for the links. Everything on a page is measured in points in page space, where y grows upward.
+//!
+//! hayro interprets a page's content stream once into a device rather than answering questions one at a time, so a page is read in full when it is loaded.
+//! The text layer is a port of pdfium's own (`core/fpdftext`) rather than a fresh design: Paperback read PDFs with pdfium before this, its heuristics were measured against the characters, inferred spaces, and line breaks pdfium produces, and they only hold if those come out the same.
 
 use std::{
 	collections::{HashMap, HashSet},
@@ -28,11 +32,13 @@ pub use tags::{Tag, TagChild, TagTree};
 #[allow(unused_imports)]
 pub use text::{CharFont, PageChar, Rect, TextMatrix, TextPage, WebLink};
 
+/// Why a document or page could not be read.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum Error {
 	/// Kept separate because it is the one failure the reader can do something about.
 	PasswordRequired,
+	/// The file could not be read, or is not a PDF hayro can read.
 	CouldNotOpen,
 	/// The document has no page at the index asked for.
 	PageOutOfRange,
@@ -58,10 +64,13 @@ pub struct Metadata {
 	pub author: Option<String>,
 	pub subject: Option<String>,
 	pub keywords: Option<String>,
+	/// The program that made what the PDF was converted from.
 	pub creator: Option<String>,
+	/// The program that wrote the PDF.
 	pub producer: Option<String>,
 }
 
+/// An open PDF. Pages can be loaded from it on several threads at once.
 pub struct Document {
 	pdf: Pdf,
 	page_numbers: HashMap<ObjectIdentifier, usize>,
@@ -249,7 +258,9 @@ impl Document {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+/// One entry of the document's bookmarks.
 pub struct OutlineEntry {
+	/// How deeply it is nested, starting from 0.
 	pub level: u32,
 	pub title: String,
 	/// Always a real page: entries pointing nowhere are left out.
