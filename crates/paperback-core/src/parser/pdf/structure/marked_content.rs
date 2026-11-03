@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use super::super::text::{
 	LINE_END_HYPHEN, PageEvidence, SpaceFilter, char_top, context_chars, page_chars, reorder_run,
 };
-use crate::pdf_engine::{PageObject, PdfTextPage, Tag, TagTree};
+use crate::pdf_engine::{PageObject, PdfTextPage, Tag, TagChild, TagTree};
 
 /// Some PDFs advertise a structure tree while leaving their text essentially untagged (no ids, or only `/Artifact` marks).
 pub(super) const MIN_MCID_COVERAGE: f64 = 0.5;
@@ -19,10 +19,8 @@ pub(super) struct TreeFacts {
 impl TreeFacts {
 	pub(super) fn of(struct_tree: &TagTree) -> Self {
 		let mut facts = Self::default();
-		for i in 0..struct_tree.child_count() {
-			if let Some(child) = struct_tree.child(i) {
-				facts.gather(&child);
-			}
+		for child in struct_tree.roots() {
+			facts.gather(&child);
 		}
 		facts
 	}
@@ -37,11 +35,10 @@ impl TreeFacts {
 		if elem.kind().unwrap_or_default() == "Figure" {
 			self.claims_figures = true;
 		}
-		let count = elem.child_count();
-		for i in 0..count {
-			if let Some(child) = elem.child(i) {
+		for child in elem.children() {
+			if let TagChild::Tag(child) = child {
 				self.gather(&child);
-			} else if let Some(mcid) = elem.child_mcid(i) {
+			} else if let TagChild::Content(mcid) = child {
 				self.note_reference(mcid);
 			}
 		}
@@ -197,13 +194,12 @@ fn is_artifact(obj: &PageObject) -> bool {
 }
 
 pub(super) fn first_marked_content_id(elem: &Tag) -> Option<i32> {
-	let count = elem.child_count();
-	for i in 0..count {
-		if let Some(child) = elem.child(i) {
+	for child in elem.children() {
+		if let TagChild::Tag(child) = child {
 			if let Some(mcid) = first_marked_content_id(&child) {
 				return Some(mcid);
 			}
-		} else if let Some(mcid) = elem.child_mcid(i) {
+		} else if let TagChild::Content(mcid) = child {
 			return Some(mcid);
 		}
 	}
@@ -215,11 +211,10 @@ pub(super) fn collect_text(elem: &Tag, mcid_to_text: &HashMap<i32, String>, out:
 }
 
 fn collect_unread_text(elem: &Tag, page_text: &mut PageText, out: &mut String) {
-	let count = elem.child_count();
-	for i in 0..count {
-		if let Some(child) = elem.child(i) {
+	for child in elem.children() {
+		if let TagChild::Tag(child) = child {
 			collect_unread_text(&child, page_text, out);
-		} else if let Some(mcid) = elem.child_mcid(i)
+		} else if let TagChild::Content(mcid) = child
 			&& let Some(text) = page_text.take(mcid)
 		{
 			out.push_str(text);

@@ -48,27 +48,25 @@ pub fn dump_pdf_page_chars(path: &str, password: Option<&str>, page: i32) -> Res
 	}
 	fn walk(tag: &pdf_engine::Tag<'_>, depth: usize, out: &mut String) {
 		let mut line = format!("{}{}", "  ".repeat(depth), tag.kind().unwrap_or_default());
-		for i in 0..tag.child_count() {
-			if let Some(child) = tag.child(i) {
-				out.push_str(&line);
-				out.push('\n');
-				line = "  ".repeat(depth) + "  ...";
-				walk(&child, depth + 1, out);
-			} else if let Some(mcid) = tag.child_mcid(i) {
-				let _ = write!(line, " {mcid}");
-			} else {
-				line.push_str(" -");
+		for child in tag.children() {
+			match child {
+				pdf_engine::TagChild::Tag(child) => {
+					out.push_str(&line);
+					out.push('\n');
+					line = "  ".repeat(depth) + "  ...";
+					walk(&child, depth + 1, out);
+				}
+				pdf_engine::TagChild::Content(mcid) => {
+					let _ = write!(line, " {mcid}");
+				}
 			}
 		}
 		out.push_str(&line);
 		out.push('\n');
 	}
 	if let Some(tree) = page.tags() {
-		for i in 0..tree.child_count() {
-			match tree.child(i) {
-				Some(tag) => walk(&tag, 0, &mut out),
-				None => out.push_str("(root child not on page)\n"),
-			}
+		for tag in tree.roots() {
+			walk(&tag, 0, &mut out);
 		}
 	}
 	let text = page.text();

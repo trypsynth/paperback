@@ -186,6 +186,7 @@ fn text_field(dict: &Dict<'_>, key: &[u8]) -> Option<String> {
 		.filter(|text| !text.is_empty())
 }
 
+/// A page's view of the document's structure tree.
 pub struct TagTree<'page> {
 	structure: &'page Structure,
 	page: i32,
@@ -196,12 +197,15 @@ impl<'page> TagTree<'page> {
 		Self { structure, page }
 	}
 
-	pub fn child_count(&self) -> i32 {
-		i32::try_from(self.structure.roots.len()).unwrap_or(i32::MAX)
+	/// Whether the document's tree has no top-level elements at all, on any page.
+	pub const fn is_empty(&self) -> bool {
+		self.structure.roots.is_empty()
 	}
 
-	pub fn child(&self, index: i32) -> Option<Tag<'page>> {
-		element_on_page(self.structure, self.structure.roots.get(usize::try_from(index).ok()?)?, self.page)
+	/// The top-level elements with something on this page.
+	pub fn roots(&self) -> impl Iterator<Item = Tag<'page>> + use<'page> {
+		let (structure, page) = (self.structure, self.page);
+		structure.roots.iter().filter_map(move |kid| element_on_page(structure, kid, page))
 	}
 }
 
@@ -211,36 +215,47 @@ fn element_on_page<'page>(structure: &'page Structure, kid: &Kid, page: i32) -> 
 	node.pages.binary_search(&page).is_ok().then_some(Tag { structure, node, page })
 }
 
+/// One element of the structure tree, as seen from a page.
 pub struct Tag<'tree> {
 	structure: &'tree Structure,
 	node: &'tree Node,
 	page: i32,
 }
 
-impl Tag<'_> {
-	pub fn kind(&self) -> Option<String> {
-		self.node.kind.clone()
+/// What a structure element holds on the page being read.
+pub enum TagChild<'tree> {
+	/// A nested element.
+	Tag(Tag<'tree>),
+	/// The id of a marked content sequence, which the page's objects carry in their marks.
+	Content(i32),
+}
+
+impl<'tree> Tag<'tree> {
+	/// The element's structure type, such as `P`, `H1`, or `Figure`.
+	pub fn kind(&self) -> Option<&'tree str> {
+		self.node.kind.as_deref()
 	}
 
-	pub fn actual_text(&self) -> Option<String> {
-		self.node.actual_text.clone()
+	pub fn actual_text(&self) -> Option<&'tree str> {
+		self.node.actual_text.as_deref()
 	}
 
-	pub fn alt_text(&self) -> Option<String> {
-		self.node.alt_text.clone()
+	pub fn alt_text(&self) -> Option<&'tree str> {
+		self.node.alt_text.as_deref()
 	}
 
-	pub fn child_count(&self) -> i32 {
-		i32::try_from(self.node.kids.len()).unwrap_or(i32::MAX)
+	/// How many children the element has across the whole document, which a list's size needs even when it runs over several pages.
+	pub const fn child_count(&self) -> usize {
+		self.node.kids.len()
 	}
 
-	pub fn child(&self, index: i32) -> Option<Tag<'_>> {
-		element_on_page(self.structure, self.node.kids.get(usize::try_from(index).ok()?)?, self.page)
-	}
-
-	pub fn child_mcid(&self, index: i32) -> Option<i32> {
-		let Kid::Content { mcid, page } = self.node.kids.get(usize::try_from(index).ok()?)? else { return None };
-		let id = if *page == Some(self.page) { *mcid } else { return None };
-		(id >= 0).then_some(id)
+	/// The children on this page, in order.
+	pub fn children(&self) -> impl Iterator<Item = TagChild<'tree>> + use<'tree> {
+		let (structure, kids, page) = (self.structure, &self.node.kids, self.page);
+		kids.iter().filter_map(move |kid| match kid {
+			Kid::Element(_) => element_on_page(structure, kid, page).map(TagChild::Tag),
+			Kid::Content { mcid, page: on } => (*on == Some(page) && *mcid >= 0).then_some(TagChild::Content(*mcid)),
+			Kid::Other => None,
+		})
 	}
 }

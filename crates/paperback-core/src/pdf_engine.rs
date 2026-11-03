@@ -24,7 +24,7 @@ pub use page::{
 	PdfPage,
 };
 #[allow(unused_imports)]
-pub use tags::{Tag, TagTree};
+pub use tags::{Tag, TagChild, TagTree};
 #[allow(unused_imports)]
 pub use text::{CharBox, FontInfo, PdfTextPage, TextMatrix, WebLink};
 
