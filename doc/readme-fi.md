@@ -6,7 +6,7 @@ Paperback on kevyt ja saavutettava e- ja asiakirjojen luku- ja äänikirjojen ku
 
 ## Järjestelmävaatimukset
 
-Paperback toimii Windows 10:ssä ja 11:ssä, kaikissa nykyaikaisissa ARM-pohjaisissa macOSin versioissa, Linuxissa, iOS 17:ssä ja sitä uudemmissa sekä Android 7:ssä ja sitä uudemmissa versioissa. iOS- ja Android-sovellukset ovat saatavilla App Storesta ja Google Playsta.
+Paperback toimii Windows 10:ssä ja 11:ssä, kaikissa uusissa ARM-pohjaisissa macOSin versioissa, Linuxissa, iOS 17:ssä ja sitä uudemmissa sekä Android 7:ssä ja sitä uudemmissa versioissa. iOS- ja Android-sovellukset ovat saatavilla App Storesta ja Google Playsta.
 
 ## Ominaisuudet
 
@@ -332,7 +332,7 @@ Versio 1.1 tuo mukanaan uuden PDF-moottorin, uudistetun iOSin tekstitilan, Linux
 
 ##### Tekstintunnistus
 * Tekstintunnistus Linuxissa Tesseractin avulla.
-* Tunnista sivun teksti (`Ctrl+Vaihto+R`) suorittaa nykyisen sivun tekstintunnistuksen uudelleen, vaikka sivulla olisi jo tekstiä.
+* Tunnista nykyisen sivun teksti (`Ctrl+Vaihto+R`) suorittaa tekstintunnistuksen uudelleen, vaikka sivulla olisi jo tekstiä.
 * `Enter`-näppäimen painaminen kuvan kohdalla tunnistaa sen tekstin.
 * Tekstintunnistus säilyttää sivun asettelun ja tallentaa tunnistetun tekstin myöhempää käyttöä varten.
 * Usean sivun tekstintunnistuksella on mahdollista tunnistaa uudelleen myös tekstiä sisältäviä sivuja. Se käsittelee useita sivuja samanaikaisesti, ja tunnistus keskeytetään asiakirjaa suljettaessa.

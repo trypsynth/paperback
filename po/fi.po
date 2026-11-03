@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-31 21:30+0000\n"
-"PO-Revision-Date: 2026-11-03 02:27+0200\n"
+"PO-Revision-Date: 2026-11-03 14:49+0200\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -1184,7 +1184,7 @@ msgstr "&Yhdistä PDF-tiedostojen rivitetyt tekstit kappaleiksi"
 
 #. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
 msgid "Remove repeated page &headers and footers in PDFs"
-msgstr "Poista PDF-asiakirjoista toistuvat &ylä- ja alatunnisteet"
+msgstr "Poista PDF-asiakirjoista toistuvat y&lä- ja alatunnisteet"
 
 #. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
 msgid "Read text between dollar signs as &math in Markdown"
@@ -1384,7 +1384,7 @@ msgstr "Yksityiskohtainen"
 
 #| msgid "System"
 msgid "System-Wide"
-msgstr "Järjestelmänlaajuinen"
+msgstr "Järjestelmänlaajuiset"
 
 #| msgid "Restore Paperback"
 msgid "Show or Hide Paperback"
