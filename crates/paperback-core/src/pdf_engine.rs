@@ -26,7 +26,7 @@ pub use page::{
 #[allow(unused_imports)]
 pub use tags::{Tag, TagTree};
 #[allow(unused_imports)]
-pub use text::{CharBox, FontInfo, PdfTextPage, TextMatrix};
+pub use text::{CharBox, FontInfo, PdfTextPage, TextMatrix, WebLink};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PdfError {

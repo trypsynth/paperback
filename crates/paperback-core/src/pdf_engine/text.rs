@@ -51,6 +51,17 @@ pub struct CharBox {
 	pub top: f64,
 }
 
+/// A web address written out in the page's text.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WebLink {
+	/// The index of its first character.
+	pub start: i32,
+	/// How many characters it spans.
+	pub char_count: i32,
+	/// The address, with a scheme added if the text left it out.
+	pub url: String,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TextMatrix {
 	pub a: f32,
@@ -1671,7 +1682,7 @@ impl PdfTextPage {
 	}
 
 	/// pdfium's `CPDF_LinkExtract`.
-	pub fn web_links(&self) -> Vec<(i32, i32, String)> {
+	pub fn web_links(&self) -> Vec<WebLink> {
 		let total = self.chars.len();
 		let page_text = self.page_text(0, i32::try_from(total).unwrap_or(i32::MAX));
 		let chars: Vec<links::LinkChar> = self
@@ -1685,5 +1696,8 @@ impl PdfTextPage {
 			})
 			.collect();
 		links::extract(&chars, &page_text)
+			.into_iter()
+			.map(|(start, char_count, url)| WebLink { start, char_count, url })
+			.collect()
 	}
 }

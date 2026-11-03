@@ -39,13 +39,13 @@ pub(super) fn place_links(
 
 pub(super) fn collect_web_links(text_page: &PdfTextPage) -> Vec<PendingLink> {
 	let mut pending = Vec::new();
-	for (start, char_count, url) in text_page.web_links() {
-		let link_text = sanitize_pdf_text(&text_page.extract(start, char_count));
+	for link in text_page.web_links() {
+		let link_text = sanitize_pdf_text(&text_page.extract(link.start, link.char_count));
 		let trimmed_link = trim_string(&collapse_whitespace(&link_text));
 		if trimmed_link.is_empty() {
 			continue;
 		}
-		pending.push(PendingLink { text: trimmed_link, reference: url });
+		pending.push(PendingLink { text: trimmed_link, reference: link.url });
 	}
 	pending
 }
