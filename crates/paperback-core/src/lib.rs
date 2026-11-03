@@ -77,7 +77,7 @@ pub fn dump_pdf_page_chars(path: &str, password: Option<&str>, page: i32) -> Res
 		let (x, y) = (origin.x, origin.y);
 		let b = page_char.bounds();
 		let boxed = format!("{:.2} {:.2} {:.2} {:.2}", b.left, b.bottom, b.right, b.top);
-		let font = page_char.font().map(|font| format!("{} {}", font.name, font.flags)).unwrap_or_default();
+		let font = page_char.font().map(|font| format!("{} {}", font.name, font.flags.bits())).unwrap_or_default();
 		let generated = if page_char.is_generated() { "gen" } else { "   " };
 		let marks = page_char
 			.text_object()

@@ -6,7 +6,7 @@ use std::{
 
 use crate::{
 	parser::util::bidi,
-	pdf_engine::{PageChar, PdfTextPage, Rect},
+	pdf_engine::{FontFlags, PageChar, PdfTextPage, Rect},
 };
 
 pub(super) fn sanitize_pdf_text(input: &str) -> String {
@@ -429,9 +429,6 @@ fn line_font_size(text_page: &PdfTextPage, chars: &[(char, usize)]) -> f64 {
 	sorted_median(&mut sizes)
 }
 
-/// Reliable when set and worth nothing when not: the Computer Modern typewriter faces LaTeX sets code in leave it clear.
-const FIXED_PITCH_FLAG: i32 = 1;
-
 /// `monotype` comes out before looking for `mono` because it is a foundry, not a width: Monotype Corsiva is a script face.
 fn looks_monospaced(font_name: &str) -> bool {
 	const HINTS: [&str; 6] = ["mono", "courier", "consol", "menlo", "typewriter", "inconsolata"];
@@ -444,10 +441,8 @@ fn looks_monospaced(font_name: &str) -> bool {
 
 fn char_is_monospaced(text_page: &PdfTextPage, index: usize) -> bool {
 	let Some(font) = text_page.char(index).and_then(PageChar::font) else { return false };
-	if font.flags & FIXED_PITCH_FLAG != 0 {
-		return true;
-	}
-	looks_monospaced(font.name)
+	// Reliable when set and worth nothing when not: the Computer Modern typewriter faces LaTeX sets code in leave it clear.
+	font.flags.contains(FontFlags::FIXED_PITCH) || looks_monospaced(font.name)
 }
 
 const BOLD_WEIGHT: i32 = 600;

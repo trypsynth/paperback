@@ -20,7 +20,7 @@ use std::{
 };
 
 use hayro_interpret::{
-	font::{FontProperties, Glyph, GlyphRun, PositionedGlyph},
+	font::{FontFlags, FontProperties, Glyph, GlyphRun, PositionedGlyph},
 	hayro_cmap::{BfString, WritingMode},
 	kurbo::{Affine, Point, Shape},
 };
@@ -39,9 +39,6 @@ use super::{
 pub(super) const INVALID_CODE: u32 = u32::MAX;
 const DEFAULT_FONT_SIZE: f32 = 1.0;
 const SIZE_EPSILON: f32 = 0.01;
-const FONT_FLAG_SYMBOLIC: i32 = 1 << 2;
-const FONT_FLAG_NONSYMBOLIC: i32 = 1 << 5;
-const FONT_FLAG_ITALIC: i32 = 1 << 6;
 
 /// An area of a page, in page space, where y grows upward.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -87,7 +84,7 @@ pub struct TextMatrix {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CharFont<'page> {
 	pub name: &'page str,
-	pub flags: i32,
+	pub flags: FontFlags,
 }
 
 /// pdfium's `CFX_FloatRect`.
@@ -229,7 +226,7 @@ struct GlyphBox {
 
 struct FontSummary {
 	name: String,
-	flags: i32,
+	flags: FontFlags,
 	weight: i32,
 }
 
@@ -260,26 +257,23 @@ impl FontData {
 				space_code: Cell::new(None),
 				ascent: 800,
 				descent: -200,
-				summary: Arc::new(FontSummary { name: String::new(), flags: FONT_FLAG_NONSYMBOLIC, weight: 0 }),
+				summary: Arc::new(FontSummary { name: String::new(), flags: FontFlags::NON_SYMBOLIC, weight: 0 }),
 			};
 		};
 		let dict = properties.dict();
 		let name = properties.base_font().map(|name| name.as_str().to_string()).unwrap_or_default();
 		let simple = dict.get::<Name<'_>>(b"Subtype").as_deref() != Some(b"Type0".as_slice());
 		// pdfium fills in the flags of a standard font that has no descriptor, and marks italic any font that slants.
-		let mut flags = properties.flags().map_or_else(
-			|| {
-				let bare = name.rsplit('+').next().unwrap_or(&name);
-				if bare.starts_with("Symbol") || bare.starts_with("ZapfDingbats") {
-					FONT_FLAG_SYMBOLIC
-				} else {
-					FONT_FLAG_NONSYMBOLIC
-				}
-			},
-			|flags| flags.bits().cast_signed(),
-		);
+		let mut flags = properties.flags().unwrap_or_else(|| {
+			let bare = name.rsplit('+').next().unwrap_or(&name);
+			if bare.starts_with("Symbol") || bare.starts_with("ZapfDingbats") {
+				FontFlags::SYMBOLIC
+			} else {
+				FontFlags::NON_SYMBOLIC
+			}
+		});
 		if properties.italic_angle().is_some_and(|angle| angle != 0.0) {
-			flags |= FONT_FLAG_ITALIC;
+			flags |= FontFlags::ITALIC;
 		}
 		let stem_v = properties.stem_v().map_or(0, |stem| stem as i32);
 		// pdfium's `CPDF_Type3Font::Load`: a Type 3 font's widths are in its own glyph space.

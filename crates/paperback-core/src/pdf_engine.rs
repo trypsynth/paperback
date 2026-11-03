@@ -19,7 +19,7 @@ mod tags;
 mod text;
 
 #[allow(unused_imports)]
-pub use hayro_interpret::kurbo::Point;
+pub use hayro_interpret::{font::FontFlags, kurbo::Point};
 #[allow(unused_imports)]
 pub use page::{
 	AnnotationLink, ImageId, LinkTarget, ObjectKind, PageBitmap, PageCache, PageImage, PageObject, PdfPage,
