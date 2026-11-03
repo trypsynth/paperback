@@ -142,33 +142,35 @@ mod tests {
 	#[test]
 	fn no_two_actions_share_a_default_chord() {
 		let all = ActionId::all();
-		for (index, &first) in all.iter().enumerate() {
-			let Some(first_chord) = first.default_chord() else {
-				continue;
-			};
-			for &second in &all[index + 1..] {
-				let Some(second_chord) = second.default_chord() else {
+		for mac in [false, true] {
+			for (index, &first) in all.iter().enumerate() {
+				let Some(first_chord) = first.default_chord_on(mac) else {
 					continue;
 				};
-				assert_ne!(
-					(
-						&first_chord.key,
-						first_chord.ctrl,
-						first_chord.raw_ctrl,
-						first_chord.alt,
-						first_chord.shift,
-						first_chord.win
-					),
-					(
-						&second_chord.key,
-						second_chord.ctrl,
-						second_chord.raw_ctrl,
-						second_chord.alt,
-						second_chord.shift,
-						second_chord.win
-					),
-					"{first:?} and {second:?} ship the same default chord"
-				);
+				for &second in &all[index + 1..] {
+					let Some(second_chord) = second.default_chord_on(mac) else {
+						continue;
+					};
+					assert_ne!(
+						(
+							&first_chord.key,
+							first_chord.ctrl,
+							first_chord.raw_ctrl,
+							first_chord.alt,
+							first_chord.shift,
+							first_chord.win
+						),
+						(
+							&second_chord.key,
+							second_chord.ctrl,
+							second_chord.raw_ctrl,
+							second_chord.alt,
+							second_chord.shift,
+							second_chord.win
+						),
+						"{first:?} and {second:?} ship the same default chord (mac: {mac})"
+					);
+				}
 			}
 		}
 	}
