@@ -60,7 +60,7 @@ fn read_page(
 	let announced = page.announced_images();
 	let mut content = PageContent {
 		image_tops: announced.iter().map(|image| image.top).collect(),
-		image_paths: announced.into_iter().map(|image| image.path).collect(),
+		image_paths: announced.iter().map(|image| image.id.to_string()).collect(),
 		largest_image_coverage: page_largest_image_coverage(&page),
 		..Default::default()
 	};

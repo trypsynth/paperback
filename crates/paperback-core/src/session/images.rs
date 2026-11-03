@@ -86,7 +86,11 @@ impl DocumentSession {
 			let password = (!self.password.is_empty()).then_some(self.password.as_str());
 			let document = crate::pdf_engine::PdfDocument::open(&self.file_path, password)?;
 			let page = document.page(page_index)?;
-			return page.image_png(&path).context("the picture could not be read from the pdf");
+			return path
+				.parse()
+				.ok()
+				.and_then(|id| page.image_png(id))
+				.context("the picture could not be read from the pdf");
 		}
 		let extension = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
 		match extension.as_deref() {

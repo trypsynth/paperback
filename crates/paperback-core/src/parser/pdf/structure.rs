@@ -65,7 +65,11 @@ pub(super) fn extract_tagged_page_text(
 	let mut pending_label = String::new();
 	let mut page_text = PageText::new(&content.text);
 	// Only a tree that names figures can ask for one's picture, so the walk over the page's objects that answers where each image sits is skipped for the rest.
-	let figure_images = if facts.claims_figures { page.image_paths_by_mcid() } else { HashMap::new() };
+	let figure_images: HashMap<i32, String> = if facts.claims_figures {
+		page.images_by_mcid().into_iter().map(|(mcid, id)| (mcid, id.to_string())).collect()
+	} else {
+		HashMap::new()
+	};
 	let mut images = ImagePlacement {
 		mcid_tops: &content.tops,
 		unclaimed,

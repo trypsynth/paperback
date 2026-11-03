@@ -83,9 +83,9 @@ impl<'doc> PdfPage<'doc> {
 		self.objects.iter().map(|data| PageObject { data })
 	}
 
-	pub fn announced_images(&self) -> Vec<PageImage<'_>> {
+	pub fn announced_images(&self) -> Vec<PageImage> {
 		let page_area = f64::from(self.width) * f64::from(self.height);
-		let mut images: Vec<PageImage<'_>> = self
+		let mut images: Vec<PageImage> = self
 			.images()
 			.filter(|(_, data)| {
 				data.bounds.is_some_and(|bounds| {
@@ -103,9 +103,8 @@ impl<'doc> PdfPage<'doc> {
 	}
 
 	/// Taken at the resolution the file stores rather than as drawn, so a photo placed small still saves at full size.
-	pub fn image_png(&self, path: &str) -> Option<Vec<u8>> {
-		let index: usize = path.parse().ok()?;
-		let ordinal = self.objects.get(index)?.image?;
+	pub fn image_png(&self, id: ImageId) -> Option<Vec<u8>> {
+		let ordinal = self.objects.get(id.0)?.image?;
 		let page = self.document.pdf().pages().get(self.index)?;
 		let cache = InterpreterCache::new();
 		let mut context = Context::new(
@@ -120,14 +119,15 @@ impl<'doc> PdfPage<'doc> {
 		extractor.png
 	}
 
-	pub fn image_paths_by_mcid(&self) -> std::collections::HashMap<i32, String> {
-		let mut paths = std::collections::HashMap::new();
+	/// Which image each marked content id draws, for a structure tree that tags its figures.
+	pub fn images_by_mcid(&self) -> std::collections::HashMap<i32, ImageId> {
+		let mut images = std::collections::HashMap::new();
 		for (index, data) in self.images() {
 			for mcid in data.marked_content_ids() {
-				paths.entry(mcid).or_insert_with(|| index.to_string());
+				images.entry(mcid).or_insert(ImageId(index));
 			}
 		}
-		paths
+		images
 	}
 
 	pub fn render(&self, width: u32) -> Option<PageBitmap> {
@@ -206,16 +206,33 @@ pub struct AnnotationLink {
 	pub target: LinkTarget,
 }
 
-pub struct PageImage<'page> {
-	pub top: f64,
-	pub path: String,
-	_page: std::marker::PhantomData<&'page ()>,
+/// Names an image on its page. It stays valid as long as the document is unchanged, and its text form can be stored and parsed back.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ImageId(usize);
+
+impl std::fmt::Display for ImageId {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		self.0.fmt(f)
+	}
 }
 
-impl PageImage<'_> {
+impl std::str::FromStr for ImageId {
+	type Err = std::num::ParseIntError;
+
+	fn from_str(text: &str) -> Result<Self, Self::Err> {
+		text.parse().map(Self)
+	}
+}
+
+pub struct PageImage {
+	pub id: ImageId,
+	pub top: f64,
+}
+
+impl PageImage {
 	fn new(index: usize, data: &ObjectData) -> Self {
 		let top = data.bounds.map_or(0.0, |bounds| f64::from(bounds.top));
-		Self { top, path: index.to_string(), _page: std::marker::PhantomData }
+		Self { id: ImageId(index), top }
 	}
 }
 
