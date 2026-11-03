@@ -20,10 +20,11 @@ Paperback trenutno radi na Windowsu 10 i 11 kao i svim modernim verzijama ARM ma
 * Može se u potpunosti pokrenuti kao prenosni program, ili se instalirati uz automatsko pridruživanje podržanih vrsta datoteka.
 * Podržava ogromnu listu čestih formata datoteka.
 * Reprodukuje zvučne knjige, uz promenljivu brzinu i knjižne oznake koje pamte tačno vreme.
-* Čita skenirane PDF stranice uz optičko prepoznavanje ugrađeno u Windows i macOS.
+* Čita skenirane PDF stranice uz optičko prepoznavanje znakova ugrađeno u Windows i macOS, ili uz Tesseract na Linuxu.
 * Knjižne oznake i napomene, kako biste mogli da označite vaše mesto i vratite se na njega.
 * Svaka tasterska prečica se može promeniti.
-* Dolazi uz `pb`, alatku komandne linije koja pretvara bilo koji podržan dokument u HTML, Markdown, ili običan tekst.
+* Otvara dokumente direktno iz http i https linkova, i ponovo ih preuzima kada ih ponovo otvorite ili pritisnete `F5`, čuvajući vašu poziciju čitanja i knjižne oznake. Kada vratite dokumente koje ste imali otvorene, ponovo preuzima one sa linkova od 2 MB ili manje.
+* Dolazi uz `pb`, alatku komandne linije koja pretvara bilo koji podržan dokument u HTML, Markdown, ili običan tekst. Prihvata onoliko dokumenata koliko joj date, sama proširuje `*.pdf` i slično kako bi ista komandna linija radila na Windowsu, i može da piše jednu datoteku po dokumentu u folder. Može takođe da pročita listu dokumenata iz datoteke ili iz stdin uz `--files-from`, i da pretvori dokumente direktno iz http i https linkova.
 
 ## Kompatibilnost sa čitačima ekrana
 
@@ -76,17 +77,39 @@ Prečice ispod su za Windows. Kada se macOS razlikuje, ekvivalentne prečice su 
 ### Meni datoteke
 
 * `Ctrl+O`: otvori dokument.
+* `Ctrl+L` (macOS: `Cmd+Option+O`): otvori dokument sa web linka.
 * `Ctrl+F4` (macOS: `Cmd+W`): zatvori trenutni dokument.
 * `Ctrl+Shift+F4` (macOS: `Cmd+Shift+W`): zatvori sve otvorene dokumente.
 * `Ctrl+Shift+T`: ponovo otvori poslednji zatvoren dokument.
 * `Ctrl+R`: prikaži dijalog sa svim dokumentima (iz nedavnih dokumenata).
+* `Ctrl+Shift+C`: otvara izvorni folder.
+* `Ctrl+Shift+E`: Izvezi podatke o dokumentu (`.paperback`).
+* `Ctrl+Alt+E`: Izvezi knjižne oznake i napomene kao čitljiv tekst ili HTML datoteku.
+* `Ctrl+Shift+I`: uvezi podatke o dokumentu (`.paperback`).
+* `Ctrl+E`: izvezi trenutni dokument kao običan tekst.
 * `Ctrl+Q`: Izlaz iz aplikacije (Samo na Windowsu; na macOS-u ovo je u meniju aplikacije).
 
-### Meni kretanja
+### Meni uređivanja
 
 * `Ctrl+F`: prikaži dijalog pretrage.
 * `F3`(macOS: `Cmd+G`): pronađi naredno.
 * `Shift+F3` (macOS: `Cmd+Shift+G`): pronađi prethodno.
+* `Alt+F9` (macOS: `Cmd+F9`): označi početak izbora, kako bi sve od označenog dela do dela na koji pređete moglo odjednom da se kopira.
+* `Alt+F10` (macOS: `Cmd+F10`): kopira sve od označenog početka izbora do trenutne pozicije.
+* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): skoči nazad na označen početak izbora, ostavljajući oznaku.
+
+### Meni prikaza
+
+* `F5`: ponovo čita izabrani dokument sa diska, ili ga ponovo preuzima ako je otvoren sa linka. Radi bez obzira na to da li je opcija "Automatski ponovo učitaj promenjene dokumente" uključena u podešavanjima.
+* `Ctrl+Alt+W`: uključuje ili isključuje prelamanje reči.
+* `F11` (macOS: `FizičkiCtrl+Ctrl+F`, to jest Control+Command+F): uključuje ili isključuje režim celog ekrana.
+* `Ctrl+Shift+V`: otvori trenutni sadržaj u web prikazu.
+* `Ctrl+U`: Prikaži izvor dokumenta u novoj kartici.
+
+### Meni kretanja
+
+* `Ctrl+T`: prikaži sadržaj.
+* `F7`: prikaži listu elemenata.
 * `Ctrl+G` (macOS: `Cmd+L`): pređi u red.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): pređi na procenat.
 * `Ctrl+P`: pređi na stranicu (kada trenutni dokument ovo podržava).
@@ -101,16 +124,6 @@ Prečice ispod su za Windows. Kada se macOS razlikuje, ekvivalentne prečice su 
 * `1` do `6`: naredni naslov na nivou 1-6.
 * `Shift+P`: prethodna stranica.
 * `P`: naredna stranica.
-* `Shift+B`: prethodna knjižna oznaka.
-* `B`: naredna knjižna oznaka.
-* `/`: postavi  privremenu knjižnu oznaku.
-* `\`: skoči na privremenu knjižnu oznaku.
-* `Shift+N`: prethodna napomena.
-* `N`: naredna napomena.
-* `Ctrl+B`: skoči na sve knjižne oznake i napomene.
-* `Ctrl+Alt+B`: skoči samo na knjižne oznake.
-* `Ctrl+Alt+M`: skoči samo na napomene.
-* `Ctrl+Shift+W` (macOS: `FizičkiCtrl+Shift+W`, kontrol taster, a ne CMD): prikaži tekst napomene na trenutnoj poziciji.
 * `Shift+K`: prethodni link.
 * `K`: naredni link.
 * `Shift+G`: prethodna slika.
@@ -130,21 +143,23 @@ Prečice ispod su za Windows. Kada se macOS razlikuje, ekvivalentne prečice su 
 * `Shift+,`: idi na početak trenutnog sadrživača (liste ili tabele).
 * `,`: prebaci se nakon kraja trenutnog sadrživača (liste ili tabele).
 
-### Meni sa alatima
+### Meni knjižnih oznaka
 
-* `Ctrl+W` (macOS: `FizičkiCtrl+W`, CTRL taster, a ne CMD): prikaži broj reči za trenutni dokument.
-* `Ctrl+I`: prikaži informacije o dokumentu.
-* `Ctrl+T`: prikaži sadržaj.
-* `F7`: prikaži listu elemenata.
-* `Ctrl+Shift+C`: otvori izvorni folder.
-* `Ctrl+Shift+V`: Otvori trenutni sadržaj u Web prikazu.
-* `Ctrl+U`: prikaži izvor dokumenta u novoj kartici.
-* `Ctrl+Shift+E`: izvezi podatke o dokumentu (`.paperback`).
-* `Ctrl+Shift+I`: uvezi podatke o dokumentu (`.paperback`).
-* `Ctrl+E`: izvezi trenutni dokument kao običan tekst.
 * `Ctrl+Shift+B`: dodaj ili ukloni knjižnu oznaku na poziciji trenutno izabranog teksta ili kursora.
 * `Ctrl+Shift+N`: dodaj ili izmeni napomenu knjižne oznake na poziciji trenutno izabranog teksta ili kursora.
-* `Ctrl+Alt+W`: uključi ili isključi prelamanje reči.
+* `Shift+B`: Prethodna knjižna oznaka.
+* `B`: Naredna knjižna oznaka.
+* `Shift+N`: Prethodna napomena.
+* `N`: Naredna napomena.
+* `Ctrl+Shift+W` (macOS: `fizičkiCtrl+Shift+W`, to jest stvarni taster CTRL a ne Cmd): prikaži tekst napomene na trenutnoj poziciji.
+* `Ctrl+B`: skoči na sve knjižne oznake i napomene.
+* `Ctrl+Alt+B`: skoči samo na knjižne oznake.
+* `Ctrl+Alt+M`: Skoči samo na napomene.
+* `/`: Podesi svoju privremenu knjižnu oznaku.
+* `\`: Skoči na svoju privremenu knjižnu oznaku.
+
+### Meni zvuka
+
 * `Ctrl+razmak` (macOS: `FizičkiCtrl+Space`,  taster CTRL, budući da Cmd+razmak otvara Spotlight): reprodukuj ili pauziraj zvučnu naraciju.
 * `'`: premotaj zvučnu naraciju napred.
 * `;`: premotaj zvučnu naraciju nazad.
@@ -152,13 +167,17 @@ Prečice ispod su za Windows. Kada se macOS razlikuje, ekvivalentne prečice su 
 * `Shift+;`: smanji količinu premotavanja zvuka.
 * `Ctrl+Shift+.`: ubrzaj zvučnu naraciju.
 * `Ctrl+Shift+,`: uspori zvučnu naraciju.
-* `F11` (macOS: `FizičkiCtrl+Ctrl+F`, CTRL+Command+F): uključi ili isključi režim celog ekrana.
-* `Ctrl+,`: otvori podešavanja (macOS: postavke, u meniju aplikacije).
-* `Ctrl+Shift+S`: uključi ili isključi tajmer pre spavanja.
+* `Ctrl+'`: Pojačaj zvučnu naraciju.
+* `Ctrl+;`: Smanji zvučnu naraciju.
+
+### Meni alata
+
+* `Ctrl+W` (macOS: `FizičkiCtrl+W`, to jest stvarni taster CTRL a ne Cmd): Prikaži broj reči u trenutnom dokumentu.
+* `Ctrl+I`: Prikaži informacije o dokumentu.
 * `Ctrl+Shift+O`: prepoznaj opseg skeniranih PDF stranica uz optičko prepoznavanje znakova.
-* `Alt+F9` (macOS: `Cmd+F9`): označi početak izbora, kako bi se sve od početka do mesta na koje stanete kopiralo odjednom.
-* `Alt+F10` (macOS: `Cmd+F10`): kopiraj sve od označenog početka do trenutne pozicije.
-* `Alt+Shift+F9` (macOS: `Cmd+Shift+F9`): vrati se nazad na označen početak izbora, ostavljajući oznaku.
+* `Ctrl+Shift+R`: Prepoznaj stranicu PDF-a ili stripa na kojoj je kursor uz optičko prepoznavanje znakova, menjajući bilo koji tekst koji već postoji.
+* `Ctrl+Shift+S`: Pokreće ili zaustavlja tajmer pre spavanja.
+* `Ctrl+,`: Otvara podešavanja (macOS: u meniju aplikacije).
 
 ### Meni pomoći
 
@@ -171,9 +190,12 @@ Prečice ispod su za Windows. Kada se macOS razlikuje, ekvivalentne prečice su 
 ### Dodatni tasteri pri prikazivanju dokumenta
 
 * `Delete` ili `numerički Delete` na kontroli kartica: zatvara izabranu karticu dokumenta.
+* `Ctrl+1` do `Ctrl+9` (macOS: `Cmd+1` do `Cmd+9`) u tekstu dokumenta ili na kontroli kartica: Prebacuju se na prvih devet otvorenih dokumenata, prema redosledu otvaranja.
+* `Ctrl+Tab` i `Ctrl+Shift+Tab`: Prelaze na naredni ili prethodni otvoreni dokument, kruže nazad na početak nakon što dođete do bilo kog kraja.
 * `Enter` ili `razmak` u tekstu dokumenta: prati link  ili otvara tabelu ili prikaz formule na poziciji kursora.
 * `Enter` na skeniranoj PDF stranici: prepoznaje stranicu uz optičko prepoznavanje znakova.
-* `Shift+F10` ili aplikacioni/taster za meni u tekstu dokumenta: otvara kontekstni meni.
+* `Enter` na slici koja nije link: Prikazuje tekst koji je prepoznat na slici, u prikazu koji `Escape` zatvara. Slika ostaje onakva kakva je bila, a tekst dokumenta se ne menja.
+* `Shift+F10` ili aplikacioni/taster za meni u tekstu dokumenta: otvara kontekstni meni. Na slici u PDF-u, EPUB-u, HTML-u, Markdownu, CHM-u, FB2-u ili stripu, takođe nudi čuvanje slike kao datoteku, i na Windowsu i macOS-u čitanje teksta u njoj, što je način čitanja slika koje su takođe linkovi.
 
 ## iOS i Android
 
@@ -208,11 +230,11 @@ Meni još opcija je gde se sve ostalo nalazi. Neke stavke se blago razlikuju u j
 * **Pređi u režim čitanja na glas ili tekstualni režim:** prebacuje se između režima čitanja na glas i tekstualnog režima, opisanih iznad. U tekstualnom režimu, stavka čitanja na glas pokreće i zaustavlja čitanje na glas bez napuštanja tekstualnog režima.
 * **Sadržaj:** poglavlja knjige, otvaraju se na poglavlju koje čitate. Izaberite neko kako biste odmah prešli na njega. Stavke koje imaju podnaslove se mogu proširiti i skupiti radnjama čitača ekrana.
 * **Elementi:** lista naslova ili linkova dokumenta. Prebacujte se između vrste biračom vrste na iOS-u, ili karticama na Androidu, a zatim izaberite element kako biste se prebacili na njega.
-* **Pretraga:** upišite tekst pretrage, ili izaberite raniju pretragu iz istorije pretrage, i izaberite da li želite da pretraga bude osetljiva na veličinu slova, obuhvata samo cele reči, ili koristi regularni izraz. Tasteri za pronalazak narednog ili prethodnog termina se premeštaju na rezultat i izgovaraju gde ste se prebacili, a pretraga ostaje otvorena kako biste mogli da nastavite. U režimu čitanja na glas, pretraga se takođe prikazuje kao jedinica navigacije na traci čitanja, kako biste takođe mogli da se krećete kroz rezultate na ovaj način.
+* **Pretraga:** upišite tekst pretrage, ili izaberite raniju pretragu iz istorije pretrage, i izaberite da li želite da pretraga bude osetljiva na veličinu slova, obuhvata samo cele reči, ili koristi regularni izraz. Tasteri za pronalazak narednog ili prethodnog termina se premeštaju na rezultat i izgovaraju gde ste se prebacili, a pretraga ostaje otvorena kako biste mogli da nastavite. U režimu čitanja na glas, pretraga se takođe prikazuje kao jedinica navigacije na traci čitanja, kako biste takođe mogli da se krećete kroz rezultate na ovaj način. **Zaustavi čitanje nakon rezultata pretrage**u podešavanjima, u odeljku tekst u govor je podrazumevano omogućeno i zaustavlja čitanje nakon čitanja pasusa koji sadrži rezultat. Možete ovo isključiti kako biste nastavili čitanje od rezultata pretrage dok kontrole na traci čitanja za prethodno i naredno nastavljaju da se kreću po rezultatima pretrage.
 * **Pređi na:** pređi u red, na stranicu, ili na procenat dokumenta. Izaberite koji od ovih načina želite biračom režima.
 * **Nedavni dokumenti:** svaki dokument koji ste otvorili, označeni kao trenutno otvoren, zatvoren, ili datoteka nedostaje. Svaki od njih ima dve radnje čitača ekrana: uklanjanje ga briše iz liste, a pronalazak vam dozvoljava da pronađete dokument čija datoteka je premeštena. Čišćenje nedavnih dokumenata prazni listu bez brisanja bilo kog dokumenta.
 * **Broj reči:** broj reči u dokumentu.
-* **Informacije o dokumentu:** naslov, autor, ime datoteke i na iOS-u brojevi znakova i redova.
+* **Informacije o dokumentu:** Naslov, autor, ime datoteke, koliko ste daleko u dokumentu, kao i brojevi reči, reda i znakova. Za zvučnu knjigu, takođe prikazuje koliko datoteka ima i, kada Paperback može da prepozna, koliko ukupno i prosečno traju.
 * **Izvoz:** čuva dokument kao običan tekst, HTML, ili Markdown.
 * **Tajmer pre spavanja:** prekida čitanje nakon 5, 10, 15, 30, 45, ili 60 minuta, ili nakon vremena koje izaberete. Ponovo ga otvorite dok je pokrenut kako biste videli koliko dugo je preostalo, ili ga otkazali.
 * **Pomoć:** otvara ovo uputstvo.
@@ -236,6 +258,7 @@ Kako biste saznali kako da doprinesete, molimo pročitajte naš [vodič za prevo
 * bosanski
 * vijetnamski
 * japanski
+* mađarski
 * nemački
 * pojednostavljeni kineski
 * poljski
@@ -279,6 +302,132 @@ Napomena: smatram javno GitHub sponzorisanje osnovu za automatsko dodavanje u ov
 * Tyler Rodick
 
 ## Dnevnik promena
+
+### Verzija 1.1
+
+1.1 donosi novi obrađivač PDF datoteka, redizajniran iOS tekstualni režim, optičko prepoznavanje znakova na Linuxu, dokumente sa linkova, podršku za decenijama starije Word, Write i PowerPoint datoteke i još mnogo toga.
+
+#### Dodato
+
+##### Opšte
+* Mađarski prevod i korisničko uputstvo.
+* Otvaranje dokumenta sa linka, na svakoj platformi. `F5` ga ponovo preuzima.
+* `F5` ponovo učitava dokument.
+* `Ctrl+1` do `Ctrl+9` skaču kroz vaših prvih devet otvorenih dokumenata.
+* `Ctrl+Tab` i `Ctrl+Shift+Tab` prelaze kroz dokumente na macOS-u i Linuxu.
+* Dijalog za otvaranje i dijalog svih dokumenata otvaraju sve dokumente koje izaberete, svaki u svojoj kartici.
+* Čuvanje slika iz kontekstnog menija.
+* Izvoz knjižnih oznaka ili napomena kao običan tekst ili HTML.
+* Podešavanja za nivo evidentiranja, i da li će pretraga izabrati svoj rezultat.
+* Prečica za prozor može biti bilo koji taster, podešava se na novoj kartici sistemskih tasterskih prečica.
+* Kopiranje će izgovoriti koliko je kopirano, a tekst ostaje u privremenoj memoriji nakon što se Paperback zatvori.
+* Svaka stavka menija ima svoju pristupnu prečicu na svakom jeziku.
+* Nečitljiva zip arhiva će se otvoriti kao lista dokumenata u njoj.
+
+##### Novi formati
+* Word za Windows 1 i 2, Word za DOS, Word za Mac 4 i 5 i unikodna izdanja Word 6 i 95.
+* PowerPoint 95.
+* Zipovan FictionBook (`.fb2.zip`).
+* DAISY 3 knjige koje su samo DTBook u zipu, ili samo zvuk.
+
+##### Optičko prepoznavanje znakova
+* Optičko prepoznavanje znakova na Linuxu, kroz Tesseract.
+* Prepoznavanje trenutne stranice (`Ctrl+Shift+R`) ponovo čita stranicu na kojoj se nalazite, čak i kada ima tekst.
+* `Enter` na slici čita njen tekst.
+* Prepoznat tekst prati izgled stranice, pamti se, tako da se skeniran dokument otvara sa svojim tekstom.
+* Grupno optičko prepoznavanje znakova može da ponovi stranice koje imaju tekst, čita nekoliko stranica odjednom, i zaustavlja se kada zatvorite dokument.
+
+##### Zvučne knjige
+* Brzine do 4 puta svuda, pamte se kroz sesije.
+* Kontrole jačine.
+
+##### PDF dokumenti
+* Novi PDF obrađivač: Brži, koristi svako jezgro procesora, i ne zahteva pdfium biblioteku.
+* Naslovi se pronalaze u neoznačenim stranicama, i bolje prikazani naslovi.
+* Podešavanje za zadržavanje ponovljenih zaglavlja i podnožja stranica.
+
+##### Drugi dokumenti
+* Word: brojčane liste i liste sa nabrajanjima, fusnote, endnote, komentari, alternativni tekstovi za slike, navigacija po listama, i Wordove sopstvene stranice.
+* OpenDocument: Fusnote i komentari nakon teksta.
+* Naslovi i autori iz meta podataka dokumenata za Word, PowerPoint, OpenDocument, RTF, Markdown i reStructuredText.
+* Stripovi: Naslov, pisac, vrste stranica i knjižne oznake iz ComicInfo.xml.
+* FB2: Naslovi, sadržaj i posebni redovi stihova.
+* Slike u MOBI, KF8 i zipovanim DAISY knjigama se mogu sačuvati i pročitati uz optičko prepoznavanje znakova.
+* Matematika odvojena dolarom u Markdownu.
+* Sphinx direktive u reStructuredText.
+* Slike bez opisa se prikazuju kao [Slika].
+
+##### iOS i Android
+* Stavka za jezik u podešavanjima.
+* Informacije o dokumentu prikazuju vaš napredak, kao i broj datoteka zvučne knjige i vremensko trajanje.
+* Tekstualni režim se pamti.
+* Neprekidno čitanje nakon pretrage.
+* iOS: Tekstualni režim redizajniran za VoiceOver. Neprekidno čitanje ide kroz celu knjigu, rotori dolaze do celine, liste i tabele su prave liste i tabele, prevlačenja sa tri prsta pomeraju stranice, a dodir sa tri prsta daje stranicu i procenat.
+* iOS: Glas, brzina i visina posebno podešeni za knjigu, iz opcije govor za ovu knjigu.
+* iOS: dokumenti zaštićeni lozinkom.
+* iOS: Deljenje zipovanih DAISY knjiga i MP3 zvučnih knjiga sa Paperbackom.
+* iOS: Tajmer pre spavanja zaustavlja zvučne knjige.
+* iOS: Slovački i ukrajinski.
+* Android: Promene brzine i visine se primenjuju za pasus koji se čita, i rade uz podrazumevani sistemski glas.
+* Android: Pokreće se na x86_64 uređajima.
+
+##### macOS
+* Univerzalna aplikacija, nativna na Intelu i Apple silikonu.
+* pb je ugrađen u aplikaciju.
+
+##### pb
+* Pretvaranje po stranicama, celog foldera, liste datoteka (`--files-from`), ili linka.
+
+#### Promenjeno
+* Traka menija je reorganizovana na osam menija.
+* Statusna traka izgovara "napredak" umesto "čitanje".
+* Komande menija izgovaraju ono što su uradile, umesto da se prekinu kada se meni zatvori.
+* Ažuriranja normalno zatvaraju Paperback i vraćaju ga u fokus.
+* Ogromne tekstualne datoteke se otvaraju sa znatno manjim delom memorije, a ograničenje od 4 GB je nestalo.
+* MOBI, Word i HTML pretvaranje, pretraga i pretraga svih dokumenta su dosta brži.
+* Windows izvršna datoteka je 3 MB manja.
+
+#### Ispravljeno
+
+##### Opšte
+* Prečice sa interpunkcijom na rasporedima tastature koje za njih zahtevaju Shift; dijalog tasterskih prečica će označiti svaku koju vaš raspored tastature ne može da izvrši.
+* Fokus se vraća u dokument nakon što se pritisne `Win+D`.
+* Rušenja pri otvaranju knjižnih oznaka u novom dokumentu, u pretrazi svih i u nekim oštećenim MOBI datotekama.
+* Regex pretraga bira ceo rezultat.
+* Statusna traka zvučne knjige se više ne prebacuje između napretka u tekstu i kroz zvuk.
+* Broj reči uključuje tekst pročitan uz optičko prepoznavanje znakova.
+* Skenirane stranice više ne izgovaraju sopstvene slike.
+* Opcija putanje u instalaciji.
+* Linux ažuriranja pronalaze svoja preuzimanja, a AppImage se ažurira kao AppImage.
+* Red sa komentarom u Word i OpenDocument datotekama je preveden.
+
+##### Dokumenti
+* Windows Write datoteke koje su se otvarale kao binarne.
+* PDF: Tekst koji se ponavljao nakon prelaska sa jedne stranice na drugu u označenim PDF-ovima, druge kolone pročitane kao prve, izgubljeni razmaci icrtice za prekid reda, tekst u Type 3 fontovima i sadržaj predvođen tačkama.
+* RTF: Čisti CR krajevi redova, liste nabrajanja crticama, tekst pre prvog pasusa, akcentovan tekst i tekst uz CJK, tekst koji se izgubio nakon ignorisane obrnute kose crte i RTF sačuvan kao `.doc`.
+* Word i PowerPoint datoteke sa oštećenim sadrživačima koje Word nastavlja da otvara.
+* Word tekst u praćenim promenama, poljima i ćelijama tabela.
+* PowerPoint linkovi, slajdovi bez teksta i emodži.
+* `<` i `&` u Word, PowerPoint i OpenDocument ćelijama tabela.
+* OpenDocument datoteke zaštićene lozinkom u trenutnom LibreOfisu.
+* CHM datoteke na njihovoj kodnoj stranici i HTML i DAISY datoteke u njihovom deklarisanom kodiranju.
+* Zipovane DAISY knjige čije reference koriste pogrešnu veličinu, i DAISY 2.02 knjige koje čitaju samo prvu frazu odeljka.
+* Man stranice koje se preusmeravaju uz `.so`.
+* Markdown front matter pročitan kao tekst.
+
+##### macOS
+* Kretanje na početak reda, aktivacija tastaturom i izgovor kopiranja.
+* VoiceOverova komanda za kontekstni meni otvara Paperbackov sopstveni meni.
+* Prečice menija se više ne izgovaraju preko onoga što je prečica uradila.
+
+##### iOS i Android
+* iOS: Pokretanje se više ne zaustavlja tokom vraćanja velikih knjiga.
+* iOS: Ponovno otvaranje kartice koju ste čitali, zatvaranje kartice više ne čita prethodnu knjigu i nedavni dokumenti zadržavaju svoj redosled.
+* iOS: Zvučne knjige se više ne raspakuju ponovo pri svakom pokretanju.
+* iOS: Pravila regularnih izraza govornih rečnika prihvataju `\1`.
+* Android: Čitanje dokumenata zaštićenih lozinkom na glas.
+* Android: Taster za prethodno na vrhu više neće ponovo čitati prvi pasus, a tekstualni režim više ne prekida svoje pomeranje.
+* Android: Manje korišćenje baterije tokom čitanja i pauziranja.
 
 ### Verzija 1.0
 
