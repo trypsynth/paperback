@@ -55,9 +55,9 @@ pub struct CharBox {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WebLink {
 	/// The index of its first character.
-	pub start: i32,
+	pub start: usize,
 	/// How many characters it spans.
-	pub char_count: i32,
+	pub char_count: usize,
 	/// The address, with a scheme added if the text left it out.
 	pub url: String,
 }
@@ -72,9 +72,10 @@ pub struct TextMatrix {
 	pub f: f32,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FontInfo {
-	pub name: String,
+/// What a character's font says about itself.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct CharFont<'page> {
+	pub name: &'page str,
 	pub flags: i32,
 }
 
@@ -1487,6 +1488,71 @@ struct ObjectSummary {
 	font_size: f32,
 }
 
+/// One character of a page, cheap enough to ask for every character it holds.
+#[derive(Clone, Copy)]
+pub struct PageChar<'page> {
+	page: &'page PdfTextPage,
+	info: &'page CharInfo,
+}
+
+impl<'page> PageChar<'page> {
+	fn object(self) -> Option<&'page ObjectSummary> {
+		self.page.objects.get(self.info.text_object?)
+	}
+
+	/// The code point, which isn't always a valid `char`: a font's private codes can reach the text layer as they are.
+	pub const fn unicode(self) -> u32 {
+		self.info.unicode
+	}
+
+	/// Where the glyph starts on the baseline, in page space.
+	pub fn origin(self) -> (f64, f64) {
+		(f64::from(self.info.origin.0), f64::from(self.info.origin.1))
+	}
+
+	pub fn bounds(self) -> CharBox {
+		let r = self.info.char_box;
+		CharBox {
+			left: f64::from(r.left),
+			right: f64::from(r.right),
+			bottom: f64::from(r.bottom),
+			top: f64::from(r.top),
+		}
+	}
+
+	/// The size the content stream set, before the text matrix scales it, so a PDF that scales through the matrix reports 1.
+	pub fn font_size(self) -> f64 {
+		f64::from(self.object().map_or(DEFAULT_FONT_SIZE, |object| object.font_size))
+	}
+
+	pub const fn text_matrix(self) -> TextMatrix {
+		let m = self.info.matrix;
+		TextMatrix { a: m.a, b: m.b, c: m.c, d: m.d, e: m.e, f: m.f }
+	}
+
+	/// The font's stated weight, if it states one.
+	pub fn font_weight(self) -> Option<i32> {
+		let weight = self.object()?.font.weight;
+		(weight > 0).then_some(weight)
+	}
+
+	/// `None` for a character with no font, such as a generated space.
+	pub fn font(self) -> Option<CharFont<'page>> {
+		let font = &self.object()?.font;
+		Some(CharFont { name: &font.name, flags: font.flags })
+	}
+
+	/// Whether the character was inferred rather than drawn, as spaces and line breaks are.
+	pub fn is_generated(self) -> bool {
+		self.info.char_type == CharType::Generated
+	}
+
+	/// The text object that drew the character.
+	pub fn text_object(self) -> Option<PageObject<'page>> {
+		Some(PageObject::new(&self.object()?.data))
+	}
+}
+
 /// Owns everything it answers from, the fonts reduced to what the parser asks of them, so a page read on one thread can be handed to another.
 pub struct PdfTextPage {
 	chars: Vec<CharInfo>,
@@ -1537,16 +1603,19 @@ impl PdfTextPage {
 		Self { chars, text, segments, objects }
 	}
 
-	fn info(&self, index: i32) -> Option<&CharInfo> {
-		self.chars.get(usize::try_from(index).ok()?)
+	/// How many characters the page has, generated spaces and line breaks included.
+	pub const fn char_count(&self) -> usize {
+		self.chars.len()
 	}
 
-	fn object_of(&self, index: i32) -> Option<&ObjectSummary> {
-		self.objects.get(self.info(index)?.text_object?)
+	/// The character at `index`, where the parser needs a neighbour rather than the next in turn.
+	pub fn char(&self, index: usize) -> Option<PageChar<'_>> {
+		self.chars.get(index).map(|info| PageChar { page: self, info })
 	}
 
-	pub fn char_count(&self) -> i32 {
-		i32::try_from(self.chars.len()).unwrap_or(i32::MAX)
+	/// The page's characters in reading order.
+	pub fn chars(&self) -> impl ExactSizeIterator<Item = PageChar<'_>> {
+		self.chars.iter().map(|info| PageChar { page: self, info })
 	}
 
 	fn text_index_from_char_index(&self, char_index: i32) -> i32 {
@@ -1563,7 +1632,7 @@ impl PdfTextPage {
 
 	/// pdfium's `GetPageText`.
 	pub(super) fn page_text(&self, mut start: i32, count: i32) -> Vec<u32> {
-		let total = self.char_count();
+		let total = i32::try_from(self.chars.len()).unwrap_or(i32::MAX);
 		if start < 0 || start >= total || count <= 0 || self.text.is_empty() {
 			return Vec::new();
 		}
@@ -1592,55 +1661,11 @@ impl PdfTextPage {
 		self.text.get(from..to).map(<[u32]>::to_vec).unwrap_or_default()
 	}
 
-	pub fn extract(&self, start: i32, count: i32) -> String {
+	/// The text of a range of characters, which is what a run of them reads as: a generated hyphen, for one, has no text.
+	pub fn text(&self, range: std::ops::Range<usize>) -> String {
+		let start = i32::try_from(range.start).unwrap_or(i32::MAX);
+		let count = i32::try_from(range.len()).unwrap_or(i32::MAX);
 		self.page_text(start, count).into_iter().filter_map(char::from_u32).collect()
-	}
-
-	pub fn unicode_at(&self, index: i32) -> u32 {
-		self.info(index).map_or(0, |info| info.unicode)
-	}
-
-	pub fn char_origin(&self, index: i32) -> Option<(f64, f64)> {
-		self.info(index).map(|info| (f64::from(info.origin.0), f64::from(info.origin.1)))
-	}
-
-	pub fn char_box(&self, index: i32) -> Option<CharBox> {
-		let r = self.info(index)?.char_box;
-		Some(CharBox {
-			left: f64::from(r.left),
-			right: f64::from(r.right),
-			bottom: f64::from(r.bottom),
-			top: f64::from(r.top),
-		})
-	}
-
-	pub fn font_weight(&self, index: i32) -> Option<i32> {
-		let weight = self.object_of(index)?.font.weight;
-		(weight > 0).then_some(weight)
-	}
-
-	pub fn font_size(&self, index: i32) -> f64 {
-		f64::from(self.object_of(index).map_or(DEFAULT_FONT_SIZE, |object| object.font_size))
-	}
-
-	pub fn text_matrix(&self, index: i32) -> Option<TextMatrix> {
-		let m = self.info(index)?.matrix;
-		Some(TextMatrix { a: m.a, b: m.b, c: m.c, d: m.d, e: m.e, f: m.f })
-	}
-
-	/// Like pdfium, a character with no font, such as a generated space, reports an empty name and no flags rather than nothing.
-	#[allow(clippy::unnecessary_wraps)]
-	pub fn font(&self, index: i32) -> Option<FontInfo> {
-		let Some(object) = self.object_of(index) else { return Some(FontInfo { name: String::new(), flags: 0 }) };
-		Some(FontInfo { name: object.font.name.clone(), flags: object.font.flags })
-	}
-
-	pub fn is_generated(&self, index: i32) -> bool {
-		self.info(index).is_some_and(|info| info.char_type == CharType::Generated)
-	}
-
-	pub fn text_object(&self, index: i32) -> Option<PageObject<'_>> {
-		Some(PageObject::new(&self.object_of(index)?.data))
 	}
 
 	/// pdfium's `GetTextByRect`.
@@ -1683,8 +1708,7 @@ impl PdfTextPage {
 
 	/// pdfium's `CPDF_LinkExtract`.
 	pub fn web_links(&self) -> Vec<WebLink> {
-		let total = self.chars.len();
-		let page_text = self.page_text(0, i32::try_from(total).unwrap_or(i32::MAX));
+		let page_text = self.page_text(0, i32::try_from(self.chars.len()).unwrap_or(i32::MAX));
 		let chars: Vec<links::LinkChar> = self
 			.chars
 			.iter()
@@ -1697,7 +1721,11 @@ impl PdfTextPage {
 			.collect();
 		links::extract(&chars, &page_text)
 			.into_iter()
-			.map(|(start, char_count, url)| WebLink { start, char_count, url })
+			.map(|(start, char_count, url)| WebLink {
+				start: usize::try_from(start).unwrap_or_default(),
+				char_count: usize::try_from(char_count).unwrap_or_default(),
+				url,
+			})
 			.collect()
 	}
 }

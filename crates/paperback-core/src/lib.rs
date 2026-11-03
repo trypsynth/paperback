@@ -70,18 +70,16 @@ pub fn dump_pdf_page_chars(path: &str, password: Option<&str>, page: i32) -> Res
 		}
 	}
 	let text = page.text();
-	for i in 0..text.char_count() {
-		let ch = char::from_u32(text.unicode_at(i))
-			.map_or_else(|| format!("U+{:04X}", text.unicode_at(i)), |ch| format!("{ch:?}"));
-		let (x, y) = text.char_origin(i).unwrap_or_default();
-		let boxed = text
-			.char_box(i)
-			.map(|b| format!("{:.2} {:.2} {:.2} {:.2}", b.left, b.bottom, b.right, b.top))
-			.unwrap_or_default();
-		let font = text.font(i).map(|font| format!("{} {}", font.name, font.flags)).unwrap_or_default();
-		let generated = if text.is_generated(i) { "gen" } else { "   " };
-		let marks = text
-			.text_object(i)
+	for (i, page_char) in text.chars().enumerate() {
+		let ch = char::from_u32(page_char.unicode())
+			.map_or_else(|| format!("U+{:04X}", page_char.unicode()), |ch| format!("{ch:?}"));
+		let (x, y) = page_char.origin();
+		let b = page_char.bounds();
+		let boxed = format!("{:.2} {:.2} {:.2} {:.2}", b.left, b.bottom, b.right, b.top);
+		let font = page_char.font().map(|font| format!("{} {}", font.name, font.flags)).unwrap_or_default();
+		let generated = if page_char.is_generated() { "gen" } else { "   " };
+		let marks = page_char
+			.text_object()
 			.map(|object| {
 				let ids: Vec<String> = object
 					.marks()
@@ -99,7 +97,7 @@ pub fn dump_pdf_page_chars(path: &str, password: Option<&str>, page: i32) -> Res
 		let _ = writeln!(
 			out,
 			"{i:>6} {ch:<10} {generated} ({x:.2}, {y:.2}) [{boxed}] size {:.2} {font} {marks}",
-			text.font_size(i)
+			page_char.font_size()
 		);
 	}
 	Ok(out)

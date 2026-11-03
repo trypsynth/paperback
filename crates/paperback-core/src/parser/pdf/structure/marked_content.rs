@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use super::super::text::{
 	LINE_END_HYPHEN, PageEvidence, SpaceFilter, char_top, context_chars, page_chars, reorder_run,
 };
-use crate::pdf_engine::{PageObject, PdfTextPage, Tag, TagChild, TagTree};
+use crate::pdf_engine::{PageChar, PageObject, PdfTextPage, Tag, TagChild, TagTree};
 
 /// Some PDFs advertise a structure tree while leaving their text essentially untagged (no ids, or only `/Artifact` marks).
 pub(super) const MIN_MCID_COVERAGE: f64 = 0.5;
@@ -86,9 +86,9 @@ pub(super) fn read(
 	let char_count = text_page.char_count();
 	let mut current_mcid = -1;
 	// Kept with their pdfium index so RTL runs can be reordered visual to logical per run.
-	let mut current_chars: Vec<(char, i32)> = Vec::new();
+	let mut current_chars: Vec<(char, usize)> = Vec::new();
 	let spaces = SpaceFilter::new(char_count);
-	let page = page_chars(text_page, char_count);
+	let page = page_chars(text_page);
 	let context = context_chars(&page);
 	evidence.add_chars(&context);
 	for (at, (i, &ch)) in (0..char_count).zip(page.iter()).enumerate() {
@@ -104,9 +104,10 @@ pub(super) fn read(
 			if ch == ' ' && spaces.hides(text_page, i) {
 				continue;
 			}
-			let is_generated = text_page.is_generated(i);
+			let page_char = text_page.char(i);
+			let is_generated = page_char.is_some_and(PageChar::is_generated);
 			let mut char_mcid = -1;
-			if !is_generated && let Some(obj) = text_page.text_object(i) {
+			if !is_generated && let Some(obj) = page_char.and_then(PageChar::text_object) {
 				char_mcid = object_mcid(&obj, &facts.referenced);
 				if want_order && char_mcid >= 0 && char_mcid != current_mcid && seen.insert(char_mcid) {
 					order.push(char_mcid);

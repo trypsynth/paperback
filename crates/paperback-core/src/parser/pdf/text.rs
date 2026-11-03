@@ -6,7 +6,7 @@ use std::{
 
 use crate::{
 	parser::util::bidi,
-	pdf_engine::{CharBox, PdfTextPage},
+	pdf_engine::{CharBox, PageChar, PdfTextPage},
 };
 
 pub(super) fn sanitize_pdf_text(input: &str) -> String {
@@ -26,8 +26,8 @@ pub(super) fn sanitize_pdf_text(input: &str) -> String {
 	out
 }
 
-pub(super) fn page_chars(text_page: &PdfTextPage, char_count: i32) -> Vec<Option<char>> {
-	(0..char_count).map(|i| char::from_u32(text_page.unicode_at(i))).collect()
+pub(super) fn page_chars(text_page: &PdfTextPage) -> Vec<Option<char>> {
+	text_page.chars().map(|ch| char::from_u32(ch.unicode())).collect()
 }
 
 pub(super) fn context_chars(page: &[Option<char>]) -> Vec<char> {
@@ -267,31 +267,30 @@ fn covering_hides(covered: usize, measured: usize) -> bool {
 }
 
 /// The structure tree never records a block's height, so its first character's top stands in.
-pub(super) fn char_top(text_page: &PdfTextPage, index: i32) -> Option<f64> {
-	text_page.char_box(index).map(|boxed| boxed.top)
+pub(super) fn char_top(text_page: &PdfTextPage, index: usize) -> Option<f64> {
+	text_page.char(index).map(|ch| ch.bounds().top)
 }
 
 /// Fetches geometry only for space characters, so a page pays in proportion to its spaces rather than its length, the per-character cost #747 had to undo.
 pub(super) struct SpaceFilter {
-	char_count: i32,
+	char_count: usize,
 	/// Measured the first time a covered space turns up, so a page without one never pays for it.
 	covering_hides: Cell<Option<bool>>,
 }
 
 impl SpaceFilter {
-	pub(super) const fn new(char_count: i32) -> Self {
+	pub(super) const fn new(char_count: usize) -> Self {
 		Self { char_count, covering_hides: Cell::new(None) }
 	}
 
-	pub(super) fn hides(&self, text_page: &PdfTextPage, index: i32) -> bool {
-		let (Some(origin), Some(space_box)) = (text_page.char_origin(index), text_page.char_box(index)) else {
-			return false;
-		};
-		let next_origin = if index + 1 < self.char_count { text_page.char_origin(index + 1) } else { None };
+	pub(super) fn hides(&self, text_page: &PdfTextPage, index: usize) -> bool {
+		let Some(space) = text_page.char(index) else { return false };
+		let (origin, space_box) = (space.origin(), space.bounds());
+		let next_origin = text_page.char(index + 1).map(PageChar::origin);
 		if space_is_invisible(origin, space_box, next_origin, None) {
 			return true;
 		}
-		let prev_box = if index > 0 { text_page.char_box(index - 1) } else { None };
+		let prev_box = index.checked_sub(1).and_then(|prev| text_page.char(prev)).map(PageChar::bounds);
 		space_is_invisible(origin, space_box, None, prev_box) && self.covering_hides(text_page)
 	}
 
@@ -304,14 +303,12 @@ impl SpaceFilter {
 			if measured == COVER_SAMPLE {
 				break;
 			}
-			if text_page.unicode_at(index) != u32::from(' ') {
+			let (Some(space), Some(prev)) = (text_page.char(index), text_page.char(index - 1)) else { continue };
+			if space.unicode() != u32::from(' ') {
 				continue;
 			}
-			let (Some(space_box), Some(prev)) = (text_page.char_box(index), text_page.char_box(index - 1)) else {
-				continue;
-			};
 			measured += 1;
-			if covers(prev, space_box) {
+			if covers(prev.bounds(), space.bounds()) {
 				covered += 1;
 			}
 		}
@@ -337,12 +334,12 @@ pub(super) fn is_cjk(c: char) -> bool {
 }
 
 #[allow(clippy::cast_possible_truncation, reason = "a page coordinate fits an f32")]
-fn char_x_origin(text_page: &PdfTextPage, i: i32) -> f32 {
-	text_page.char_origin(i).map_or(0.0, |(x, _)| x as f32)
+fn char_x_origin(text_page: &PdfTextPage, i: usize) -> f32 {
+	text_page.char(i).map_or(0.0, |ch| ch.origin().0 as f32)
 }
 
 /// Fetches x origins (a lookup per char) only for runs containing an RTL character, so LTR runs pay a single classification scan.
-pub(super) fn reorder_run(text_page: &PdfTextPage, chars: &[(char, i32)]) -> String {
+pub(super) fn reorder_run(text_page: &PdfTextPage, chars: &[(char, usize)]) -> String {
 	if !bidi::contains_rtl(chars.iter().map(|&(c, _)| c)) {
 		return chars.iter().map(|&(c, _)| c).collect();
 	}
@@ -350,7 +347,7 @@ pub(super) fn reorder_run(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Str
 	bidi::reorder_line(&with_origin)
 }
 
-fn measure_line(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Line {
+fn measure_line(text_page: &PdfTextPage, chars: &[(char, usize)]) -> Line {
 	let (top, bottom) = line_edges(text_page, chars);
 	Line {
 		size: line_font_size(text_page, chars),
@@ -366,10 +363,10 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, evidence: &mut PageEvi
 	let char_count = text_page.char_count();
 	let mut result: Vec<Line> = Vec::new();
 	// Kept with their pdfium index so each line can be reordered visual to logical before paragraph joining.
-	let mut current_chars: Vec<(char, i32)> = Vec::new();
+	let mut current_chars: Vec<(char, usize)> = Vec::new();
 	let mut previous_char = None;
 	let spaces = SpaceFilter::new(char_count);
-	let page = page_chars(text_page, char_count);
+	let page = page_chars(text_page);
 	let context = context_chars(&page);
 	evidence.add_chars(&context);
 	for (at, (i, &ch)) in (0..char_count).zip(page.iter()).enumerate() {
@@ -396,29 +393,32 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, evidence: &mut PageEvi
 }
 
 /// The top is the first character's, since a few points decide nothing about where an image falls; the bottom must be the lowest, since the next line's gap is measured from it and pdfium's doubled lines reach a whole line lower.
-fn line_edges(text_page: &PdfTextPage, chars: &[(char, i32)]) -> (f64, f64) {
-	let top = chars.first().and_then(|(_, index)| text_page.char_box(*index)).map_or(f64::NEG_INFINITY, |b| b.top);
+fn line_edges(text_page: &PdfTextPage, chars: &[(char, usize)]) -> (f64, f64) {
+	let top =
+		chars.first().and_then(|(_, index)| text_page.char(*index)).map_or(f64::NEG_INFINITY, |ch| ch.bounds().top);
 	let mut bottom = f64::INFINITY;
 	for (_, index) in chars {
-		if let Some(boxed) = text_page.char_box(*index) {
-			bottom = bottom.min(boxed.bottom);
+		if let Some(ch) = text_page.char(*index) {
+			bottom = bottom.min(ch.bounds().bottom);
 		}
 	}
 	(top, bottom)
 }
 
 /// The `Tf` size alone is 1.0 in PDFs that scale text through the matrix instead (#808 and #813 both do), so no line was ever tall enough to be a heading.
-fn effective_font_size(text_page: &PdfTextPage, index: i32) -> f64 {
-	let size = text_page.font_size(index);
-	text_page.text_matrix(index).map_or(size, |matrix| size * f64::from(matrix.b.hypot(matrix.d)))
+fn effective_font_size(text_page: &PdfTextPage, index: usize) -> f64 {
+	text_page.char(index).map_or(0.0, |ch| {
+		let matrix = ch.text_matrix();
+		ch.font_size() * f64::from(matrix.b.hypot(matrix.d))
+	})
 }
 
 /// The first character alone believes a drop cap three times the line's size; a median of a few does not, and stays a per-line cost rather than the per-character one #747 had to undo.
 const LINE_FONT_SIZE_SAMPLES: usize = 5;
 
 /// Whitespace is skipped because a font may set it in a size of its own.
-fn line_font_size(text_page: &PdfTextPage, chars: &[(char, i32)]) -> f64 {
-	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
+fn line_font_size(text_page: &PdfTextPage, chars: &[(char, usize)]) -> f64 {
+	let indices: Vec<usize> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
 	if indices.is_empty() {
 		return 0.0;
 	}
@@ -441,12 +441,12 @@ fn looks_monospaced(font_name: &str) -> bool {
 		|| (name.starts_with("cm") && name.contains("tt"))
 }
 
-fn char_is_monospaced(text_page: &PdfTextPage, index: i32) -> bool {
-	let Some(font) = text_page.font(index) else { return false };
+fn char_is_monospaced(text_page: &PdfTextPage, index: usize) -> bool {
+	let Some(font) = text_page.char(index).and_then(PageChar::font) else { return false };
 	if font.flags & FIXED_PITCH_FLAG != 0 {
 		return true;
 	}
-	looks_monospaced(&font.name)
+	looks_monospaced(font.name)
 }
 
 const BOLD_WEIGHT: i32 = 600;
@@ -457,16 +457,17 @@ fn looks_bold(font_name: &str) -> bool {
 	HINTS.iter().any(|hint| name.contains(hint))
 }
 
-fn char_is_bold(text_page: &PdfTextPage, index: i32) -> bool {
-	if let Some(weight) = text_page.font_weight(index) {
+fn char_is_bold(text_page: &PdfTextPage, index: usize) -> bool {
+	let Some(ch) = text_page.char(index) else { return false };
+	if let Some(weight) = ch.font_weight() {
 		return weight >= BOLD_WEIGHT;
 	}
-	text_page.font(index).is_some_and(|font| looks_bold(&font.name))
+	ch.font().is_some_and(|font| looks_bold(font.name))
 }
 
 /// Every sampled character has to be bold: a paragraph that opens with a bold word is not a heading.
-fn line_is_bold(text_page: &PdfTextPage, chars: &[(char, i32)]) -> bool {
-	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
+fn line_is_bold(text_page: &PdfTextPage, chars: &[(char, usize)]) -> bool {
+	let indices: Vec<usize> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
 	if indices.is_empty() {
 		return false;
 	}
@@ -475,13 +476,13 @@ fn line_is_bold(text_page: &PdfTextPage, chars: &[(char, i32)]) -> bool {
 }
 
 /// Most sampled characters have to agree: one word of code quoted in prose does not make the sentence a listing.
-fn line_is_monospaced(text_page: &PdfTextPage, chars: &[(char, i32)]) -> bool {
-	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
+fn line_is_monospaced(text_page: &PdfTextPage, chars: &[(char, usize)]) -> bool {
+	let indices: Vec<usize> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
 	if indices.is_empty() {
 		return false;
 	}
 	let step = indices.len().div_ceil(LINE_FONT_SIZE_SAMPLES).max(1);
-	let sampled: Vec<i32> = indices.iter().step_by(step).copied().collect();
+	let sampled: Vec<usize> = indices.iter().step_by(step).copied().collect();
 	let monospaced = sampled.iter().filter(|&&i| char_is_monospaced(text_page, i)).count();
 	monospaced * 2 > sampled.len()
 }

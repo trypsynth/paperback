@@ -26,7 +26,7 @@ pub use page::{
 #[allow(unused_imports)]
 pub use tags::{Tag, TagChild, TagTree};
 #[allow(unused_imports)]
-pub use text::{CharBox, FontInfo, PdfTextPage, TextMatrix, WebLink};
+pub use text::{CharBox, CharFont, PageChar, PdfTextPage, TextMatrix, WebLink};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PdfError {
@@ -341,7 +341,7 @@ mod tests {
 		let document = PdfDocument::from_bytes(pdf_with_content(content), None).unwrap();
 		let page = document.page(0).unwrap();
 		let text = page.text();
-		assert_eq!(text.extract(0, text.char_count()).trim(), "Green 4332");
+		assert_eq!(text.text(0..text.char_count()).trim(), "Green 4332");
 	}
 
 	/// A PDF that draws its whole text on every page and shifts it read back once per page (pdf.js issue 1721).
@@ -351,7 +351,7 @@ mod tests {
 		let document = PdfDocument::from_bytes(pdf_with_content(content), None).unwrap();
 		let page = document.page(0).unwrap();
 		let text = page.text();
-		let read = text.extract(0, text.char_count());
+		let read = text.text(0..text.char_count());
 		assert_eq!(read.split_whitespace().collect::<Vec<_>>(), ["kept", "edge"]);
 	}
 
@@ -368,7 +368,7 @@ mod tests {
 			PdfDocument::from_bytes(pdf_with_font("BT /F1 12 Tf 72 700 Td <00030004> Tj ET", &font), None).unwrap();
 		let page = document.page(0).unwrap();
 		let text = page.text();
-		assert_eq!(text.extract(0, text.char_count()).trim(), "HI");
+		assert_eq!(text.text(0..text.char_count()).trim(), "HI");
 	}
 
 	/// A negative size with a flipping matrix read as "f o n t" (pdf.js issue 1049).
@@ -378,7 +378,7 @@ mod tests {
 		let document = PdfDocument::from_bytes(pdf_with_content(content), None).unwrap();
 		let page = document.page(0).unwrap();
 		let text = page.text();
-		assert_eq!(text.extract(0, text.char_count()).trim(), "font");
+		assert_eq!(text.text(0..text.char_count()).trim(), "font");
 	}
 
 	/// The IRS's Russian glossary lost every letter it drew on its own, and read "не аконных".
@@ -388,7 +388,7 @@ mod tests {
 		let document = PdfDocument::from_bytes(pdf_with_content(content), None).unwrap();
 		let page = document.page(0).unwrap();
 		let text = page.text();
-		assert_eq!(text.extract(0, text.char_count()).trim(), "neza");
+		assert_eq!(text.text(0..text.char_count()).trim(), "neza");
 	}
 
 	/// Narrow columns made the page look vertical, and every digit drawn on its own started a new line (a USGS table).
@@ -406,7 +406,7 @@ mod tests {
 		let document = PdfDocument::from_bytes(pdf_with_content(&content), None).unwrap();
 		let page = document.page(0).unwrap();
 		let text = page.text();
-		let read = text.extract(0, text.char_count());
+		let read = text.text(0..text.char_count());
 		assert_eq!(read.split_whitespace().collect::<Vec<_>>(), vec!["41"; 100]);
 	}
 
