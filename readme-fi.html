@@ -99,17 +99,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 </li>
 <li><a href="#versiohistoria">Versiohistoria</a><ul>
-<li><a href="#versio-10">Versio 1.0</a><ul>
+<li><a href="#versio-11">Versio 1.1</a><ul>
 <li><a href="#lisätty">Lisätty</a></li>
+<li><a href="#muutettu">Muutettu</a></li>
 <li><a href="#korjattu">Korjattu</a></li>
-<li><a href="#ios-ja-android-1">iOS ja Android</a></li>
+</ul>
+</li>
+<li><a href="#versio-10">Versio 1.0</a><ul>
+<li><a href="#lisätty-1">Lisätty</a></li>
+<li><a href="#korjattu-1">Korjattu</a></li>
+<li><a href="#ios-ja-android-3">iOS ja Android</a></li>
 </ul>
 </li>
 <li><a href="#versio-092">Versio 0.9.2</a></li>
 <li><a href="#versio-091">Versio 0.9.1</a></li>
 <li><a href="#versio-090">Versio 0.9.0</a><ul>
-<li><a href="#lisätty-1">Lisätty</a></li>
-<li><a href="#korjattu-1">Korjattu</a></li>
+<li><a href="#lisätty-2">Lisätty</a></li>
+<li><a href="#korjattu-2">Korjattu</a></li>
 </ul>
 </li>
 <li><a href="#versio-085">Versio 0.8.5</a></li>
@@ -406,9 +412,145 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Tyler Rodick</li>
 </ul>
 <h2 id="versiohistoria">Versiohistoria</h2>
+<h3 id="versio-11">Versio 1.1</h3>
+<p>Versio 1.1 tuo mukanaan uuden PDF-moottorin, uudistetun iOSin tekstitilan, Linuxissa toimivan tekstintunnistuksen, asiakirjojen avaamisen URL-osoitteista sekä tuen vanhoille Word-, Write- ja PowerPoint-tiedostoille.</p>
+<h4 id="lisätty">Lisätty</h4>
+<h5 id="yleiset">Yleiset</h5>
+<ul>
+<li>Unkarinkielinen käännös ja käyttöohje.</li>
+<li>Avaa asiakirjoja URL-osoitteista kaikilla alustoilla. <code>F5</code> lataa ne uudelleen.</li>
+<li><code>F5</code> päivittää asiakirjan.</li>
+<li><code>Ctrl+1–9</code> siirtää johonkin yhdeksästä ensimmäisestä avoinna olevasta asiakirjasta.</li>
+<li><code>Ctrl+Sarkain</code> ja <code>Ctrl+Vaihto+Sarkain</code> vaihtavat asiakirjaa macOSissa ja Linuxissa.</li>
+<li>Valitut asiakirjat avautuvat omiin välilehtiinsä Avaa- ja Kaikki asiakirjat -valintaikkunoista.</li>
+<li>Kuvan tallennus pikavalikosta.</li>
+<li>Kirjanmerkkien ja muistiinpanojen vienti teksti- tai HTML-muodossa.</li>
+<li>Lokitason määrittämisen ja Etsi-toiminnon hakutuloksen valitsemisen asetukset.</li>
+<li>Ikkunan pikanäppäimeksi voi määrittää minkä tahansa näppäimen Pikanäppäimet-valintaikkunan uudella Järjestelmänlaajuiset-välilehdellä.</li>
+<li>Kopioinnin yhteydessä ilmoitetaan kopioidun tekstin määrä, ja teksti säilyy leikepöydällä myös Paperbackin sulkemisen jälkeen.</li>
+<li>Jokaisella valikkokomennolla on oma pikanäppäimensä kaikissa tuetuissa kielissä.</li>
+<li>Jos ZIP-pakettia ei voida lukea sellaisenaan, sen sisältämät asiakirjat näytetään luettelona.</li>
+</ul>
+<h5 id="uudet-tiedostomuodot">Uudet tiedostomuodot</h5>
+<ul>
+<li>Word for Windows 1 ja 2, Word for DOS, Word for Mac 4 ja 5 sekä Word 6:n ja 95:n Unicode-versiot.</li>
+<li>PowerPoint 95.</li>
+<li>ZIP-pakattu FictionBook (<code>.fb2.zip</code>).</li>
+<li>DAISY 3 -kirjat, joissa on vain ZIP-pakattu DTBook-asiakirja tai pelkkää ääntä.</li>
+</ul>
+<h5 id="tekstintunnistus">Tekstintunnistus</h5>
+<ul>
+<li>Tekstintunnistus Linuxissa Tesseractin avulla.</li>
+<li>Tunnista sivun teksti (<code>Ctrl+Vaihto+R</code>) suorittaa nykyisen sivun tekstintunnistuksen uudelleen, vaikka sivulla olisi jo tekstiä.</li>
+<li><code>Enter</code>-näppäimen painaminen kuvan kohdalla tunnistaa sen tekstin.</li>
+<li>Tekstintunnistus säilyttää sivun asettelun ja tallentaa tunnistetun tekstin myöhempää käyttöä varten.</li>
+<li>Usean sivun tekstintunnistuksella on mahdollista tunnistaa uudelleen myös tekstiä sisältäviä sivuja. Se käsittelee useita sivuja samanaikaisesti, ja tunnistus keskeytetään asiakirjaa suljettaessa.</li>
+</ul>
+<h5 id="äänikirjat">Äänikirjat</h5>
+<ul>
+<li>Toistonopeuden voi säätää kaikilla alustoilla jopa nelinkertaiseksi, ja valittu nopeus säilyy myös sovelluksen uudelleenkäynnistyksen jälkeen.</li>
+<li>Äänenvoimakkuuden säätimet.</li>
+</ul>
+<h5 id="pdf-asiakirjat">PDF-asiakirjat</h5>
+<ul>
+<li>Uusi PDF-moottori, joka on aiempaa nopeampi, hyödyntää kaikkia suorittimen ytimiä eikä tarvitse pdfium-kirjastoa.</li>
+<li>Otsikoiden tunnistaminen myös rakenteellisesti merkitsemättömiltä sivuilta sekä aiempaa paremmat asiakirjojen nimet.</li>
+<li>Asetus, joka säilyttää sivujen toistuvat ylä- ja alatunnisteet.</li>
+</ul>
+<h5 id="muut-asiakirjat">Muut asiakirjat</h5>
+<ul>
+<li>Word: numeroitujen ja luettelomerkittyjen luetteloiden, ala- ja loppuviitteiden, kommenttien, kuvien vaihtoehtoisten tekstien, luetteloissa navigoimisen sekä Wordin omien sivujakojen tuki.</li>
+<li>OpenDocument: loppuviitteet ja kommentit näytetään tekstin lopussa.</li>
+<li>Asiakirjojen nimet ja tekijätiedot luetaan Word-, PowerPoint-, OpenDocument-, RTF-, Markdown- ja reStructuredText-tiedostojen metatiedoista.</li>
+<li>Sarjakuvat: nimi, käsikirjoittaja, sivutyypit ja kirjanmerkit luetaan ComicInfo.xml-tiedostosta.</li>
+<li>FB2: otsikot, sisällysluettelo ja runojen säkeiden erottaminen omille riveilleen.</li>
+<li>MOBI-, KF8- ja ZIP-pakattujen DAISY-kirjojen kuvat on mahdollista tallentaa ja niissä oleva teksti tunnistaa tekstintunnistuksen avulla.</li>
+<li>Dollarimerkeillä rajattujen matemaattisten kaavojen tunnistaminen Markdown-asiakirjoissa.</li>
+<li>Sphinx-direktiivien tuki reStructuredText-asiakirjoissa.</li>
+<li>Kuvien kohdalla lukee [Kuva], jos niillä ei ole kuvauksia.</li>
+</ul>
+<h5 id="ios-ja-android-1">iOS ja Android</h5>
+<ul>
+<li>Asetuksiin on lisätty kielen valintakohta.</li>
+<li>Asiakirjan tiedot -toiminto näyttää lukemisen edistymisen sekä äänikirjan tiedostojen määrän ja kokonaiskeston.</li>
+<li>Tekstitilan asetus tallennetaan.</li>
+<li>Tekstistä puheeksi -toiminnolla lukeminen jatkuu keskeytyksettä haun jälkeen.</li>
+<li>iOS: Tekstitila on uudistettu VoiceOveria varten. Lue kaikki -toiminto lukee koko kirjan, roottoritoiminnoilla voi siirtyä kaikkialle kirjan sisältöön, luettelot ja taulukot tunnistetaan oikein, kolmen sormen pyyhkäisyllä vaihdetaan sivua ja kolmen sormen napautuksella ilmoitetaan sivunumero ja lukemisen edistyminen prosentteina.</li>
+<li>iOS: Kullekin kirjalle voi määrittää oman puheäänen, puhenopeuden ja äänenkorkeuden kirjakohtaisissa puheasetuksissa.</li>
+<li>iOS: Salasanalla suojattujen asiakirjojen tuki.</li>
+<li>iOS: ZIP-pakattuja DAISY-kirjoja ja MP3-äänikirjoja voi jakaa Paperbackiin muista sovelluksista.</li>
+<li>iOS: Uniajastin pysäyttää myös äänikirjojen toiston.</li>
+<li>iOS: Slovakin ja ukrainan kielen tuki.</li>
+<li>Android: Puhenopeuden ja äänenkorkeuden muutokset vaikuttavat myös parhaillaan luettavaan kappaleeseen ja toimivat järjestelmän oletusarvoisella puhemoottorilla.</li>
+<li>Android: Toimii myös x86_64-arkkitehtuuriin perustuvissa laitteissa.</li>
+</ul>
+<h5 id="macos">macOS</h5>
+<ul>
+<li>Yleissovellus, joka toimii suoraan sekä Intel- että Apple Silicon -suorittimilla.</li>
+<li>Sovelluksen mukana toimitetaan pb-komentorivityökalu.</li>
+</ul>
+<h5 id="pb-komentorivityökalu">pb-komentorivityökalu</h5>
+<ul>
+<li>Muunna yksittäisiä sivuja, kokonaisia kansioita, tiedostoluettelossa olevia tiedostoja (<code>--files-from</code>) tai URL-osoitteista avattuja asiakirjoja.</li>
+</ul>
+<h4 id="muutettu">Muutettu</h4>
+<ul>
+<li>Valikkorivin rakenne on uudistettu, ja siinä on nyt kahdeksan valikkoa.</li>
+<li>Tilarivillä lukee nyt ”Edistyminen” aiemman ”Lukeminen”-tekstin sijaan.</li>
+<li>Valikkokomentojen suorittamisesta ilmoitetaan nyt selvästi valikon sulkeutuessa.</li>
+<li>Paperback suljetaan normaalisti päivityksen yhteydessä ja tuodaan etualalle uudelleenkäynnistyksen jälkeen.</li>
+<li>Erittäin suurten tekstitiedostojen avaaminen kuluttaa huomattavasti vähemmän muistia, eikä neljän gigatavun kokorajoitusta enää ole.</li>
+<li>MOBI-, Word- ja HTML-tiedostojen muuntaminen, Etsi kaikki -toiminto sekä Kaikki asiakirjat -ikkunassa hakeminen ovat aiempaa nopeampia.</li>
+<li>Windows-version ohjelmatiedoston koko on pienentynyt kolmella megatavulla.</li>
+</ul>
+<h4 id="korjattu">Korjattu</h4>
+<h5 id="yleiset-1">Yleiset</h5>
+<ul>
+<li>Välimerkkejä käyttävät pikanäppäimet toimivat myös näppäimistöasetteluilla, joissa välimerkkien kirjoittamiseen tarvitaan Vaihto-näppäintä. Pikanäppäinasetuksissa ilmoitetaan pikanäppäimistä, joita ei voi käyttää nykyisellä näppäimistöasettelulla.</li>
+<li>Kohdistus palaa asiakirjaan <code>Win+D</code>-näppäinyhdistelmän käytön jälkeen.</li>
+<li>Kaatumisia, jotka aiheutuivat uuden asiakirjan kirjanmerkkien avaamisesta, Etsi kaikki -toiminnon käytöstä ja joidenkin vioittuneiden MOBI-tiedostojen avaamisesta.</li>
+<li>Etsi-toiminto valitsee säännöllisiä lausekkeita käytettäessä koko hakutuloksen.</li>
+<li>Tilarivillä ei enää vaihdella äänentoiston ja tekstin edistymistietojen välillä äänikirjan ollessa avoinna.</li>
+<li>Sanamäärään lasketaan mukaan myös tekstintunnistuksella tunnistettu teksti.</li>
+<li>Skannatuilla sivuilla ei enää ilmoiteta erikseen sivun kuvaa.</li>
+<li>Asennusohjelman PATH-asetus.</li>
+<li>Päivitystoiminto löytää Linuxissa lataamansa tiedostot, ja AppImage päivitetään AppImage-muodossa.</li>
+<li>Word- ja OpenDocument-asiakirjojen kommenttirivi näytetään nyt käännettynä.</li>
+</ul>
+<h5 id="asiakirjat">Asiakirjat</h5>
+<ul>
+<li>Windows Write -tiedostot avautuivat binäärimuodossa.</li>
+<li>PDF: Tekstin toistuminen sivunvaihtojen kohdalla rakenteellisesti merkityissä PDF-asiakirjoissa, toisen palstan lukeminen ennen ensimmäistä, välilyöntien ja rivin lopussa olevien yhdysmerkkien katoaminen, Type 3 -fontteja käyttävän tekstin käsittely sekä sisällysluetteloiden pisteviivat.</li>
+<li>RTF: Pelkät CR-rivinvaihdot, ajatusviivoilla merkityt luettelot, ensimmäistä kappaletta edeltävä teksti, aksenttimerkkejä ja kiinalaisia, japanilaisia tai korealaisia merkkejä sisältävän tekstin käsittely, kenoviivan koodauksen jälkeisen tekstin katoaminen sekä .doc-tarkenteella tallennettujen RTF-tiedostojen käsittely.</li>
+<li>Sellaisten Word- ja PowerPoint-tiedostojen avaaminen, joiden tiedostorakenne on vioittunut mutta jotka Microsoft Word pystyy silti avaamaan.</li>
+<li>Tekstin käsittely Wordin muutosmerkinnöissä, kentissä ja taulukon soluissa.</li>
+<li>PowerPoint-esitysten linkkien, tekstiä sisältämättömien diojen ja emojien käsittely.</li>
+<li>Taulukon soluissa olevien <code>&lt;</code>- ja <code>&amp;</code>-merkkien käsittely Word-, PowerPoint- ja OpenDocument-tiedostoissa.</li>
+<li>LibreOfficen uusilla versioilla luotujen salasanasuojattujen OpenDocument-tiedostojen avaaminen.</li>
+<li>CHM-tiedostojen koodisivujen ja HTML- sekä DAISY-tiedostojen merkistökoodausten tunnistaminen.</li>
+<li>ZIP-pakattujen DAISY-kirjojen viittausten virheellisen kirjainkoon käsittely sekä ongelma, jonka vuoksi DAISY 2.02 -kirjojen luvuista luettiin vain ensimmäinen lause.</li>
+<li><code>.so</code>-direktiivillä toiseen ohjesivuun viittaavien man-ohjesivujen käsittely.</li>
+<li>Markdown-asiakirjojen alussa olevien metatietojen lukeminen tavallisena tekstinä.</li>
+</ul>
+<h5 id="macos-1">macOS</h5>
+<ul>
+<li>Rivien alkuun siirtyminen, toimintojen käynnistäminen näppäimistöllä ja kopioinnista annettavat ilmoitukset.</li>
+<li>VoiceOverin pikavalikkokomento avaa nyt Paperbackin oman pikavalikon.</li>
+<li>Valikkokomentojen pikanäppäinten ilmoittaminen ei enää keskeytä komentojen suorittamisesta annettavia ilmoituksia.</li>
+</ul>
+<h5 id="ios-ja-android-2">iOS ja Android</h5>
+<ul>
+<li>iOS: Sovelluksen käynnistyminen ei enää keskeydy suuria kirjoja palautettaessa.</li>
+<li>iOS: Sovellus avautuu uudelleen sille välilehdelle, jolla olit lukemassa. Välilehden sulkeminen ei enää käynnistä edellisen kirjan tekstistä puheeksi -lukutoimintoa, ja viimeksi avatut asiakirjat säilyvät oikeassa järjestyksessä.</li>
+<li>iOS: Äänikirjojen sisältöä ei enää pureta uudelleen jokaisella käynnistyskerralla.</li>
+<li>iOS: Käyttäjän sanaston säännöllisissä lausekkeissa voi nyt käyttää <code>\1</code>-takaisinviittausta.</li>
+<li>Android: Salasanalla suojattujen asiakirjojen lukeminen tekstistä puheeksi -toiminnolla.</li>
+<li>Android: Edellinen-komento ei enää aloita ensimmäisen kappaleen tekstistä puheeksi -toiminnolla lukemista uudelleen asiakirjan alussa, eikä tekstitilan vieritys enää siirrä odottamatta toiseen kohtaan.</li>
+<li>Android: Akkua kuluu nyt vähemmän tekstistä puheeksi -toiminnolla luettaessa ja sen ollessa keskeytettynä.</li>
+</ul>
 <h3 id="versio-10">Versio 1.0</h3>
 <p>Tämä on ensimmäinen julkaisu kaikille viidelle alustalle: Windowsille, macOSille, Linuxille, iOSille ja Androidille. iOS- ja Android-sovellukset ovat saatavilla App Storesta ja Google Playsta.</p>
-<h4 id="lisätty">Lisätty</h4>
+<h4 id="lisätty-1">Lisätty</h4>
 <h5 id="yleistä">Yleistä</h5>
 <ul>
 <li>Linux-tuki AppImage- ja tar.gz-paketteina sekä työpöytäintegraatiolla, jonka ansiosta asiakirjat avautuvat suoraan tiedostonhallinnasta.</li>
@@ -417,7 +559,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Tietoja-ikkunassa näkyvät nyt Paperbackin lisenssi ja kaikki kääntäjät.</li>
 <li>Ukrainankielinen käännös.</li>
 </ul>
-<h5 id="uudet-tiedostomuodot">Uudet tiedostomuodot</h5>
+<h5 id="uudet-tiedostomuodot-1">Uudet tiedostomuodot</h5>
 <ul>
 <li>Sarjakuvapaketit (<code>.cbz</code>).</li>
 <li>Lukuihin jaetut M4B-äänikirjat.</li>
@@ -428,7 +570,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>WinHelp-ohjetiedostot (<code>.hlp</code>).</li>
 <li>Word 6- ja 95-asiakirjat.</li>
 </ul>
-<h5 id="tekstintunnistus">Tekstintunnistus</h5>
+<h5 id="tekstintunnistus-1">Tekstintunnistus</h5>
 <ul>
 <li>Skannatuille PDF-asiakirjojen sivuille voidaan nyt suorittaa tekstintunnistus Windowsin ja macOSin omalla tekstintunnistustoiminnolla. Suorita tunnistus skannatulle sivulle painamalla <code>Enter</code> sen kohdalla tai käytä tietylle sivualueelle usean sivun tunnistusta (<code>Ctrl+Vaihto+O</code>).</li>
 </ul>
@@ -442,7 +584,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>KF8- eli AZW3-kirjat tukevat nyt luvuittain navigointia.</li>
 <li>Pelkän kuvan sisältävillä EPUB-kirjan sivuilla näytetään nyt kuvasta ilmoittava rivi, jotta niille on mahdollista siirtyä, eikä niitä enää ohiteta.</li>
 </ul>
-<h5 id="äänikirjat">Äänikirjat</h5>
+<h5 id="äänikirjat-1">Äänikirjat</h5>
 <ul>
 <li>Toistonopeuden muuttaminen puolikkaasta kolminkertaiseen. Käytä näppäinyhdistelmiä <code>Ctrl+Vaihto+.</code> ja <code>Ctrl+Vaihto+,</code> tai Työkalut-valikkoa.</li>
 <li>Äänikirjojen kirjanmerkit ja muistiinpanot muistavat nyt tarkan kohdan, johon ne lisättiin.</li>
@@ -453,7 +595,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Viimeksi avatut -alivalikkoon Tyhjennä viimeksi avattujen luettelo -toiminto.</li>
 </ul>
-<h5 id="pdf-asiakirjat">PDF-asiakirjat</h5>
+<h5 id="pdf-asiakirjat-1">PDF-asiakirjat</h5>
 <ul>
 <li>Asetus, joka pitää PDF-tiedoston kaikki rivit erillisinä sen sijaan, että ne yhdistettäisiin kappaleiksi.</li>
 <li>PDF-tiedostojen kuvat ja kuvitukset ilmoitetaan.</li>
@@ -467,13 +609,13 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Otsikot näytetään nyt niiden tasoa vastaavassa koossa, ja kuvat sekä taulukot erotetaan selkeästi ympäröivästä tekstistä.</li>
 </ul>
-<h5 id="pb-komentorivityökalu">Pb-komentorivityökalu</h5>
+<h5 id="pb-komentorivityökalu-1">Pb-komentorivityökalu</h5>
 <ul>
 <li>Komento <code>pb --list-formats</code> näyttää luettelon kaikista tiedostomuodoista, joita pb pystyy lukemaan.</li>
 <li>Työkalu ilmoittaa nyt, mitä tiedostoa se ei voinut lukea ja miksi.</li>
 </ul>
-<h4 id="korjattu">Korjattu</h4>
-<h5 id="yleiset">Yleiset</h5>
+<h4 id="korjattu-1">Korjattu</h4>
+<h5 id="yleiset-2">Yleiset</h5>
 <ul>
 <li>Sovelluksen käynnistyksen yhteydessä uudelleen avatun kirjan lukeminen alkaa nyt heti eikä vasta sulkemisen ja uudelleen avaamisen jälkeen.</li>
 <li>Asiakirjan, jonka tiedostoa ei enää löydy, voi nyt poistaa Kaikki asiakirjat -luettelosta. Aiemmin se jäi luetteloon poiston vahvistamisesta huolimatta.</li>
@@ -499,11 +641,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Sisällysluettelo, elementtilista ja kirjanmerkkiluettelo eivät enää hidastele tai jumiudu kirjoissa, joissa on tuhansia kohteita.</li>
 <li>Ylä- ja alanuolinäppäimillä vaihdettu sarake on nyt asiakirjakohtainen sen sijaan, että se olisi sama kaikilla välilehdillä.</li>
 </ul>
-<h5 id="äänikirjat-1">Äänikirjat</h5>
+<h5 id="äänikirjat-2">Äänikirjat</h5>
 <ul>
 <li>Äänitteen toiston pikanäppäin on nyt macOSissa <code>Ctrl+Välilyönti</code>, koska <code>Cmd+Välilyönti</code> on varattu Spotlight-haulle.</li>
 </ul>
-<h5 id="pdf-asiakirjat-1">PDF-asiakirjat</h5>
+<h5 id="pdf-asiakirjat-2">PDF-asiakirjat</h5>
 <ul>
 <li>Ongelma, jonka vuoksi Apple Pages -sovelluksesta viedyt PDF-tiedostot luettiin pelkkänä tekstinä ilman niihin sisältyviä otsikoita ja luetteloita.</li>
 <li>Ongelma, jonka vuoksi PDF-tiedostojen kappaleet ja otsikot katkesivat jokaiselta riviltä ja sanat jakautuivat välilyöntien kohdalta.</li>
@@ -537,7 +679,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>RTF-päätteellä tallennetut tekstitiedostot avautuvat nyt sen sijaan, että niistä annettaisiin virheilmoitus.</li>
 <li>RTF-tiedostojen muotoilukoodit eivät näy enää tekstinä.</li>
 </ul>
-<h4 id="ios-ja-android-1">iOS ja Android</h4>
+<h4 id="ios-ja-android-3">iOS ja Android</h4>
 <p>iOS- ja Android-sovellukset tukevat samoja tiedostomuotoja kuin työpöytäversio, ja niissä on lisäksi seuraavat ominaisuudet:</p>
 <ul>
 <li>Tekstistä puheeksi -toiminnolla lukeminen valitsemallasi äänellä, nopeudella ja äänenkorkeudella, puhenopeuden muuttaminen lukupalkissa sekä valinnainen tauko kappaleiden välissä.</li>
@@ -582,8 +724,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Päivitysikkuna on nyt käännetty eri kielille.</li>
 </ul>
 <h3 id="versio-090">Versio 0.9.0</h3>
-<h4 id="lisätty-1">Lisätty</h4>
-<h5 id="yleiset-1">Yleiset</h5>
+<h4 id="lisätty-2">Lisätty</h4>
+<h5 id="yleiset-3">Yleiset</h5>
 <ul>
 <li>Pb-niminen komentorivityökalu, jolla voi muuntaa nopeasti minkä tahansa Paperbackin tukeman tiedostomuodon HTML:ksi, Markdowniksi tai pelkäksi tekstiksi.</li>
 <li>Asetusz, joka päivittää muilla sovelluksilla muokattujen asiakirjojen sisällön automaattisesti tekstinäkymään.</li>
@@ -661,7 +803,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>DAISY 2.0 -kirjojen tuki.</li>
 <li>DAISY 2.02 -äänikirjojen tuki.</li>
 </ul>
-<h5 id="äänikirjat-2">Äänikirjat</h5>
+<h5 id="äänikirjat-3">Äänikirjat</h5>
 <ul>
 <li>Mahdollisuus äänikirjojen kuunteluun. Sovellus tukee ZIP-tiedostoiksi pakattuja tai niistä purettuja pelkkää ääntä tai sekä tekstiä että ääntä sisältäviä DAISY-kirjoja.</li>
 <li>Äänitteen toiston ja pysäytyksen, eteen- ja taaksepäin kelauksen sekä kelattaessa käytettävän aikasiirtymän muuttamisen näppäinkomennot ja valikkokohteet.</li>
@@ -675,8 +817,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>PowerPoint-esitykset tukevat nyt taulukoita.</li>
 </ul>
-<h4 id="korjattu-1">Korjattu</h4>
-<h5 id="yleiset-2">Yleiset</h5>
+<h4 id="korjattu-2">Korjattu</h4>
+<h5 id="yleiset-4">Yleiset</h5>
 <ul>
 <li>Vanhoja CJK-merkistöjä, kuten GBK, Big5 ja Shift_JIS, käyttäviä asiakirjoja ei näytetä enää pelkkänä merkkisotkuna.</li>
 <li>Avaa viimeksi suljettu -toiminto yritti avata sovelluksen mukana toimitettavan readme-tiedoston.</li>
@@ -746,7 +888,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>XHTML-asiakirjojen dl-, dt- ja dd-elementit eivät tehneet rivinvaihtoja.</li>
 </ul>
-<h5 id="pdf-asiakirjat-2">PDF-asiakirjat</h5>
+<h5 id="pdf-asiakirjat-3">PDF-asiakirjat</h5>
 <ul>
 <li>Paperback käyttää nyt virheellisesti merkityille PDF-tiedostoille varavaihtoehtona pelkän tekstin poimimista.</li>
 <li>Paperback ei enää kaadu avattaessa PDF-asiakirjoja, joiden otsikoissa ja/tai kirjanmerkeissä on ohjausmerkkejä.</li>
