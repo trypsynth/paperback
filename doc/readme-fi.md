@@ -303,6 +303,132 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 
 ## Versiohistoria
 
+### Versio 1.1
+
+Versio 1.1 tuo mukanaan uuden PDF-moottorin, uudistetun iOSin tekstitilan, Linuxissa toimivan tekstintunnistuksen, asiakirjojen avaamisen URL-osoitteista sekä tuen vanhoille Word-, Write- ja PowerPoint-tiedostoille.
+
+#### Lisätty
+
+##### Yleiset
+* Unkarinkielinen käännös ja käyttöohje.
+* Avaa asiakirjoja URL-osoitteista kaikilla alustoilla. `F5` lataa ne uudelleen.
+* `F5` päivittää asiakirjan.
+* `Ctrl+1–9` siirtää johonkin yhdeksästä ensimmäisestä avoinna olevasta asiakirjasta.
+* `Ctrl+Sarkain` ja `Ctrl+Vaihto+Sarkain` vaihtavat asiakirjaa macOSissa ja Linuxissa.
+* Valitut asiakirjat avautuvat omiin välilehtiinsä Avaa- ja Kaikki asiakirjat -valintaikkunoista.
+* Kuvan tallennus pikavalikosta.
+* Kirjanmerkkien ja muistiinpanojen vienti teksti- tai HTML-muodossa.
+* Lokitason määrittämisen ja Etsi-toiminnon hakutuloksen valitsemisen asetukset.
+* Ikkunan pikanäppäimeksi voi määrittää minkä tahansa näppäimen Pikanäppäimet-valintaikkunan uudella Järjestelmänlaajuiset-välilehdellä.
+* Kopioinnin yhteydessä ilmoitetaan kopioidun tekstin määrä, ja teksti säilyy leikepöydällä myös Paperbackin sulkemisen jälkeen.
+* Jokaisella valikkokomennolla on oma pikanäppäimensä kaikissa tuetuissa kielissä.
+* Jos ZIP-pakettia ei voida lukea sellaisenaan, sen sisältämät asiakirjat näytetään luettelona.
+
+##### Uudet tiedostomuodot
+* Word for Windows 1 ja 2, Word for DOS, Word for Mac 4 ja 5 sekä Word 6:n ja 95:n Unicode-versiot.
+* PowerPoint 95.
+* ZIP-pakattu FictionBook (`.fb2.zip`).
+* DAISY 3 -kirjat, joissa on vain ZIP-pakattu DTBook-asiakirja tai pelkkää ääntä.
+
+##### Tekstintunnistus
+* Tekstintunnistus Linuxissa Tesseractin avulla.
+* Tunnista sivun teksti (`Ctrl+Vaihto+R`) suorittaa nykyisen sivun tekstintunnistuksen uudelleen, vaikka sivulla olisi jo tekstiä.
+* `Enter`-näppäimen painaminen kuvan kohdalla tunnistaa sen tekstin.
+* Tekstintunnistus säilyttää sivun asettelun ja tallentaa tunnistetun tekstin myöhempää käyttöä varten.
+* Usean sivun tekstintunnistuksella on mahdollista tunnistaa uudelleen myös tekstiä sisältäviä sivuja. Se käsittelee useita sivuja samanaikaisesti, ja tunnistus keskeytetään asiakirjaa suljettaessa.
+
+##### Äänikirjat
+* Toistonopeuden voi säätää kaikilla alustoilla jopa nelinkertaiseksi, ja valittu nopeus säilyy myös sovelluksen uudelleenkäynnistyksen jälkeen.
+* Äänenvoimakkuuden säätimet.
+
+##### PDF-asiakirjat
+* Uusi PDF-moottori, joka on aiempaa nopeampi, hyödyntää kaikkia suorittimen ytimiä eikä tarvitse pdfium-kirjastoa.
+* Otsikoiden tunnistaminen myös rakenteellisesti merkitsemättömiltä sivuilta sekä aiempaa paremmat asiakirjojen nimet.
+* Asetus, joka säilyttää sivujen toistuvat ylä- ja alatunnisteet.
+
+##### Muut asiakirjat
+* Word: numeroitujen ja luettelomerkittyjen luetteloiden, ala- ja loppuviitteiden, kommenttien, kuvien vaihtoehtoisten tekstien, luetteloissa navigoimisen sekä Wordin omien sivujakojen tuki.
+* OpenDocument: loppuviitteet ja kommentit näytetään tekstin lopussa.
+* Asiakirjojen nimet ja tekijätiedot luetaan Word-, PowerPoint-, OpenDocument-, RTF-, Markdown- ja reStructuredText-tiedostojen metatiedoista.
+* Sarjakuvat: nimi, käsikirjoittaja, sivutyypit ja kirjanmerkit luetaan ComicInfo.xml-tiedostosta.
+* FB2: otsikot, sisällysluettelo ja runojen säkeiden erottaminen omille riveilleen.
+* MOBI-, KF8- ja ZIP-pakattujen DAISY-kirjojen kuvat on mahdollista tallentaa ja niissä oleva teksti tunnistaa tekstintunnistuksen avulla.
+* Dollarimerkeillä rajattujen matemaattisten kaavojen tunnistaminen Markdown-asiakirjoissa.
+* Sphinx-direktiivien tuki reStructuredText-asiakirjoissa.
+* Kuvien kohdalla lukee [Kuva], jos niillä ei ole kuvauksia.
+
+##### iOS ja Android
+* Asetuksiin on lisätty kielen valintakohta.
+* Asiakirjan tiedot -toiminto näyttää lukemisen edistymisen sekä äänikirjan tiedostojen määrän ja kokonaiskeston.
+* Tekstitilan asetus tallennetaan.
+* Tekstistä puheeksi -toiminnolla lukeminen jatkuu keskeytyksettä haun jälkeen.
+* iOS: Tekstitila on uudistettu VoiceOveria varten. Lue kaikki -toiminto lukee koko kirjan, roottoritoiminnoilla voi siirtyä kaikkialle kirjan sisältöön, luettelot ja taulukot tunnistetaan oikein, kolmen sormen pyyhkäisyllä vaihdetaan sivua ja kolmen sormen napautuksella ilmoitetaan sivunumero ja lukemisen edistyminen prosentteina.
+* iOS: Kullekin kirjalle voi määrittää oman puheäänen, puhenopeuden ja äänenkorkeuden kirjakohtaisissa puheasetuksissa.
+* iOS: Salasanalla suojattujen asiakirjojen tuki.
+* iOS: ZIP-pakattuja DAISY-kirjoja ja MP3-äänikirjoja voi jakaa Paperbackiin muista sovelluksista.
+* iOS: Uniajastin pysäyttää myös äänikirjojen toiston.
+* iOS: Slovakin ja ukrainan kielen tuki.
+* Android: Puhenopeuden ja äänenkorkeuden muutokset vaikuttavat myös parhaillaan luettavaan kappaleeseen ja toimivat järjestelmän oletusarvoisella puhemoottorilla.
+* Android: Toimii myös x86_64-arkkitehtuuriin perustuvissa laitteissa.
+
+##### macOS
+* Yleissovellus, joka toimii suoraan sekä Intel- että Apple Silicon -suorittimilla.
+* Sovelluksen mukana toimitetaan pb-komentorivityökalu.
+
+##### pb-komentorivityökalu
+* Muunna yksittäisiä sivuja, kokonaisia kansioita, tiedostoluettelossa olevia tiedostoja (`--files-from`) tai URL-osoitteista avattuja asiakirjoja.
+
+#### Muutettu
+* Valikkorivin rakenne on uudistettu, ja siinä on nyt kahdeksan valikkoa.
+* Tilarivillä lukee nyt ”Edistyminen” aiemman ”Lukeminen”-tekstin sijaan.
+* Valikkokomentojen suorittamisesta ilmoitetaan nyt selvästi valikon sulkeutuessa.
+* Paperback suljetaan normaalisti päivityksen yhteydessä ja tuodaan etualalle uudelleenkäynnistyksen jälkeen.
+* Erittäin suurten tekstitiedostojen avaaminen kuluttaa huomattavasti vähemmän muistia, eikä neljän gigatavun kokorajoitusta enää ole.
+* MOBI-, Word- ja HTML-tiedostojen muuntaminen, Etsi kaikki -toiminto sekä Kaikki asiakirjat -ikkunassa hakeminen ovat aiempaa nopeampia.
+* Windows-version ohjelmatiedoston koko on pienentynyt kolmella megatavulla.
+
+#### Korjattu
+
+##### Yleiset
+* Välimerkkejä käyttävät pikanäppäimet toimivat myös näppäimistöasetteluilla, joissa välimerkkien kirjoittamiseen tarvitaan Vaihto-näppäintä. Pikanäppäinasetuksissa ilmoitetaan pikanäppäimistä, joita ei voi käyttää nykyisellä näppäimistöasettelulla.
+* Kohdistus palaa asiakirjaan `Win+D`-näppäinyhdistelmän käytön jälkeen.
+* Kaatumisia, jotka aiheutuivat uuden asiakirjan kirjanmerkkien avaamisesta, Etsi kaikki -toiminnon käytöstä ja joidenkin vioittuneiden MOBI-tiedostojen avaamisesta.
+* Etsi-toiminto valitsee säännöllisiä lausekkeita käytettäessä koko hakutuloksen.
+* Tilarivillä ei enää vaihdella äänentoiston ja tekstin edistymistietojen välillä äänikirjan ollessa avoinna.
+* Sanamäärään lasketaan mukaan myös tekstintunnistuksella tunnistettu teksti.
+* Skannatuilla sivuilla ei enää ilmoiteta erikseen sivun kuvaa.
+* Asennusohjelman PATH-asetus.
+* Päivitystoiminto löytää Linuxissa lataamansa tiedostot, ja AppImage päivitetään AppImage-muodossa.
+* Word- ja OpenDocument-asiakirjojen kommenttirivi näytetään nyt käännettynä.
+
+##### Asiakirjat
+* Windows Write -tiedostot avautuivat binäärimuodossa.
+* PDF: Tekstin toistuminen sivunvaihtojen kohdalla rakenteellisesti merkityissä PDF-asiakirjoissa, toisen palstan lukeminen ennen ensimmäistä, välilyöntien ja rivin lopussa olevien yhdysmerkkien katoaminen, Type 3 -fontteja käyttävän tekstin käsittely sekä sisällysluetteloiden pisteviivat.
+* RTF: Pelkät CR-rivinvaihdot, ajatusviivoilla merkityt luettelot, ensimmäistä kappaletta edeltävä teksti, aksenttimerkkejä ja kiinalaisia, japanilaisia tai korealaisia merkkejä sisältävän tekstin käsittely, kenoviivan koodauksen jälkeisen tekstin katoaminen sekä .doc-tarkenteella tallennettujen RTF-tiedostojen käsittely.
+* Sellaisten Word- ja PowerPoint-tiedostojen avaaminen, joiden tiedostorakenne on vioittunut mutta jotka Microsoft Word pystyy silti avaamaan.
+* Tekstin käsittely Wordin muutosmerkinnöissä, kentissä ja taulukon soluissa.
+* PowerPoint-esitysten linkkien, tekstiä sisältämättömien diojen ja emojien käsittely.
+* Taulukon soluissa olevien `<`- ja `&`-merkkien käsittely Word-, PowerPoint- ja OpenDocument-tiedostoissa.
+* LibreOfficen uusilla versioilla luotujen salasanasuojattujen OpenDocument-tiedostojen avaaminen.
+* CHM-tiedostojen koodisivujen ja HTML- sekä DAISY-tiedostojen merkistökoodausten tunnistaminen.
+* ZIP-pakattujen DAISY-kirjojen viittausten virheellisen kirjainkoon käsittely sekä ongelma, jonka vuoksi DAISY 2.02 -kirjojen luvuista luettiin vain ensimmäinen lause.
+* `.so`-direktiivillä toiseen ohjesivuun viittaavien man-ohjesivujen käsittely.
+* Markdown-asiakirjojen alussa olevien metatietojen lukeminen tavallisena tekstinä.
+
+##### macOS
+* Rivien alkuun siirtyminen, toimintojen käynnistäminen näppäimistöllä ja kopioinnista annettavat ilmoitukset.
+* VoiceOverin pikavalikkokomento avaa nyt Paperbackin oman pikavalikon.
+* Valikkokomentojen pikanäppäinten ilmoittaminen ei enää keskeytä komentojen suorittamisesta annettavia ilmoituksia.
+
+##### iOS ja Android
+* iOS: Sovelluksen käynnistyminen ei enää keskeydy suuria kirjoja palautettaessa.
+* iOS: Sovellus avautuu uudelleen sille välilehdelle, jolla olit lukemassa. Välilehden sulkeminen ei enää käynnistä edellisen kirjan tekstistä puheeksi -lukutoimintoa, ja viimeksi avatut asiakirjat säilyvät oikeassa järjestyksessä.
+* iOS: Äänikirjojen sisältöä ei enää pureta uudelleen jokaisella käynnistyskerralla.
+* iOS: Käyttäjän sanaston säännöllisissä lausekkeissa voi nyt käyttää `\1`-takaisinviittausta.
+* Android: Salasanalla suojattujen asiakirjojen lukeminen tekstistä puheeksi -toiminnolla.
+* Android: Edellinen-komento ei enää aloita ensimmäisen kappaleen tekstistä puheeksi -toiminnolla lukemista uudelleen asiakirjan alussa, eikä tekstitilan vieritys enää siirrä odottamatta toiseen kohtaan.
+* Android: Akkua kuluu nyt vähemmän tekstistä puheeksi -toiminnolla luettaessa ja sen ollessa keskeytettynä.
+
 ### Versio 1.0
 
 Tämä on ensimmäinen julkaisu kaikille viidelle alustalle: Windowsille, macOSille, Linuxille, iOSille ja Androidille. iOS- ja Android-sovellukset ovat saatavilla App Storesta ja Google Playsta.
