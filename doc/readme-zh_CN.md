@@ -355,7 +355,7 @@ Paperback 已被翻译成多种语言，并且数量在不断增加。完整列�
 * MOBI、KF8 和压缩 DAISY 图书中的图片可以保存并用 OCR 读取。
 * Markdown 中以美元符号分隔的数学公式。
 * reStructuredText 中的 Sphinx 指令。
-* 没有描述的图片显示为 [Image]。
+* 没有描述的图片显示为 [图片]。
 
 ##### iOS 和 Android
 * 设置中的语言行。

@@ -566,7 +566,7 @@ pub(super) fn parse_text_like_doc(context: &ParserContext) -> Result<Document> {
 	Ok(document)
 }
 
-fn looks_like_text_content(content: &str) -> bool {
+pub(in crate::parser) fn looks_like_text_content(content: &str) -> bool {
 	let sample: String = content.chars().take(4096).collect();
 	if sample.trim().is_empty() {
 		return false;

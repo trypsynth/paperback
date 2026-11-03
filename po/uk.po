@@ -6,10 +6,10 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: paperback 1.0.0\n"
+"Project-Id-Version: paperback 1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 18:07+0000\n"
-"PO-Revision-Date: 2026-10-27 13:50+0200\n"
+"POT-Creation-Date: 2026-10-31 21:30+0000\n"
+"PO-Revision-Date: 2026-11-02 23:57+0200\n"
 "Last-Translator: Ivan Shtefuriak <ip0877@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -19,10 +19,6 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 "X-Generator: Poedit 3.10\n"
-
-#. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
-msgid "this is not a web link"
-msgstr "це не вебпосилання"
 
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 msgid "Checking %s"
@@ -39,24 +35,6 @@ msgstr "Завантаження %s"
 #. TRANSLATORS: Download window message while one of several documents opened from links downloads; the first %d is its number, the second how many there are, and %s is its file name
 msgid "Downloading %d of %d: %s"
 msgstr "Завантаження %d з %d: %s"
-
-#. TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
-msgid ""
-"The server sends a web page (%s) instead of the document the link names."
-msgstr ""
-"Сервер надсилає вебсторінку (%s) замість документа, на який вказує посилання."
-
-msgid "The server sends %s, which is not a format Paperback reads."
-msgstr ""
-"Сервер надсилає %s, який не є форматом, що підтримується програмою Paperback."
-
-#. TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
-msgid "The server does not say what it sends."
-msgstr "Сервер не повідомляє, що саме він надсилає."
-
-#. TRANSLATORS: Question at the end of the security warning before downloading a document from a link
-msgid "Download it anyway?"
-msgstr "Все одно завантажити?"
 
 #. TRANSLATORS: Checkbox label in the Linux setup dialog, offering to make the `pb`
 #. command-line tool (Paperback's headless document-to-text/HTML converter) runnable
@@ -1178,50 +1156,13 @@ msgstr "Закреслений"
 msgid "Choose a font"
 msgstr "Вибірь шрифта"
 
-#. TRANSLATORS: Title of the hotkey customization dialog
-msgid "Window Hotkey"
-msgstr "Комбінація клавіш показу/приховування програми"
-
-#. TRANSLATORS: Checkbox label for Control modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
-msgid "&Ctrl"
-msgstr "&Ctrl"
-
-#. TRANSLATORS: Checkbox label for Alt modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
-msgid "&Alt"
-msgstr "&Alt"
-
-#. TRANSLATORS: Checkbox label for Shift modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
-msgid "&Shift"
-msgstr "&Shift"
-
-#. TRANSLATORS: Checkbox label for Windows modifier key
-#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
-msgid "&Win"
-msgstr "&Win"
-
-#. TRANSLATORS: Label for the hotkey key selection input field
-#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
-msgid "&Key:"
-msgstr "&Клавіша:"
-
-#. TRANSLATORS: Button label to clear the current hotkey selection
-msgid "Clear"
-msgstr "Очистити"
-
-#. TRANSLATORS: Representation of the Spacebar key
-msgid "Space"
-msgstr "Пробіл"
-
 #. TRANSLATORS: Title of the Settings dialog
 msgid "Settings"
 msgstr "Налаштування"
 
 #. TRANSLATORS: Option to restore documents that were open when the app was last closed
 msgid "&Restore previously opened documents on startup"
-msgstr "&Під час запуску відновлювати раніше відкриті документи"
+msgstr "Відновлювати раніше відкриті документи під час &запуску"
 
 #. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
 msgid "&Automatically reload changed documents"
@@ -1253,7 +1194,7 @@ msgstr "Видаляти повторювані верхні та нижні &к
 
 #. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
 msgid "Read text between dollar signs as &math in Markdown"
-msgstr "У Markdown Текст між знаками долара слід читати як математичний вираз"
+msgstr "У Markdown Текст між знаками долара слід читати як математичний &вираз"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -1306,10 +1247,6 @@ msgstr "Розробницький"
 #. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
 msgid "Log Level:"
 msgstr "Рівень журналу:"
-
-#. TRANSLATORS: Button label to open the hotkey customization dialog
-msgid "Customize &Window Hotkey..."
-msgstr "&Налаштувати клавіші показу/приховування програми..."
 
 #. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 msgid "Customize &Keyboard Shortcuts..."
@@ -1447,6 +1384,12 @@ msgstr "Налагодження"
 msgid "Trace"
 msgstr "Трасування (найвищий)"
 
+msgid "System-Wide"
+msgstr "Загальносистемні"
+
+msgid "Show or Hide Paperback"
+msgstr "Показати або приховати Paperback"
+
 #. TRANSLATORS: Title of the Sleep Timer dialog
 msgid "Sleep Timer"
 msgstr "Таймер сну"
@@ -1518,11 +1461,9 @@ msgid "OCR in progress."
 msgstr "Триває розпізнавання тексту."
 
 #. TRANSLATORS: Announced when the picture under the caret cannot be read out of the document
-#. TRANSLATORS: Announced when the picture under the caret is not an image this build can decode
 msgid "The picture could not be read."
 msgstr "Не вдалося прочитати зображення."
 
-#. TRANSLATORS: Announced when a picture is read and the OCR engine finds no text in it
 msgid "No text was found in the picture."
 msgstr "На зображенні не виявлено тексту."
 
@@ -1871,7 +1812,7 @@ msgstr "Не вдалося завантажити джерело докумен
 
 #. TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
 msgid "Couldn't extract the document from the archive: {}"
-msgstr "Не вдалося видобути документ з архіву."
+msgstr "Не вдалося видобути документ з архіву: {}"
 
 #. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 msgid "Unsupported format selected."
@@ -2455,7 +2396,7 @@ msgstr "Перегляд таблиці"
 
 #. TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
 msgid "Save &image as..."
-msgstr "Зберегти зображення як..."
+msgstr "Зберегти зображення &як..."
 
 msgid "Save image as"
 msgstr "Зберегти зображення як"
@@ -2562,7 +2503,7 @@ msgstr "Символ"
 
 #. TRANSLATORS: Status bar label for how far through the document the reader has got, e.g. "Line 5, Character 120, Progress 45%"
 msgid "Progress"
-msgstr "Прогрес"
+msgstr "Перебіг"
 
 #. TRANSLATORS: Status bar label prefixed before the remaining sleep timer countdown, e.g. "Sleep timer: 04:32"
 msgid "Sleep timer"
@@ -3013,6 +2954,28 @@ msgstr ""
 msgid "the document is larger than {} MB, so it was not downloaded"
 msgstr "розмір документа перевищує {} МБ, тому його не вдалося завантажити"
 
+#. TRANSLATORS: Follows text typed into Open from URL that is not an http or https link
+msgid "this is not a web link"
+msgstr "це не вебпосилання"
+
+#. TRANSLATORS: Security warning before downloading a document from a link; %s is the type the server gave, such as text/html
+msgid ""
+"The server sends a web page (%s) instead of the document the link names."
+msgstr ""
+"Сервер надсилає вебсторінку (%s) замість документа, на який вказує посилання."
+
+msgid "The server sends %s, which is not a format Paperback reads."
+msgstr ""
+"Сервер надсилає %s, який не є форматом, що підтримується програмою Paperback."
+
+#. TRANSLATORS: Security warning before downloading a document from a link whose server gave no type
+msgid "The server does not say what it sends."
+msgstr "Сервер не повідомляє, що саме він надсилає."
+
+#. TRANSLATORS: Question at the end of the security warning before downloading a document from a link
+msgid "Download it anyway?"
+msgstr "Все одно завантажити?"
+
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer; Enter on it runs OCR
 msgid "[Image only. Press enter to OCR.]"
 msgstr "[Лише зображення. Натисніть Enter для розпізнавання тексту.]"
@@ -3102,10 +3065,6 @@ msgstr ""
 msgid "rootfile not found in container.xml"
 msgstr "Файл rootfile не знайдено у файлі container.xml"
 
-#. TRANSLATORS: Error shown when an EPUB spine item's content type cannot be converted
-msgid "unsupported content"
-msgstr "непідтримуваний вміст"
-
 #. TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 msgid "OPF package element missing"
 msgstr "Відсутній елемент пакета OPF"
@@ -3122,6 +3081,10 @@ msgstr "не вдалося конвертувати елементи струк
 msgid "EPUB has no readable content ({})"
 msgstr "Файл EPUB не містить доступного для читання вмісту ({})"
 
+#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
+msgid "No readable content found in the ZIP archive"
+msgstr "У ZIP-архіві не знайдено вмісту, придатного для читання"
+
 #. TRANSLATORS: Error shown when an FB2 (FictionBook) file's XML fails to convert to plain text
 msgid "Failed to convert FB2 XML to text"
 msgstr "Не вдалося конвертувати FB2 XML у текст"
@@ -3137,14 +3100,6 @@ msgstr "Тема {}"
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 msgid "HTML file is empty: {}"
 msgstr "HTML-файл порожній: {}"
-
-#. TRANSLATORS: Error shown when an HTML file fails to convert to plain text; {} is the file path
-msgid "Failed to convert HTML to text: {}"
-msgstr "Не вдалося перетворити HTML на текст: {}"
-
-#. TRANSLATORS: Error shown when a Markdown file fails to convert to plain text; {} is the file path
-msgid "Failed to convert Markdown to text: {}"
-msgstr "Не вдалося перетворити Markdown на текст: {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 msgid "Missing HUFF parameters in header"
@@ -3320,8 +3275,8 @@ msgid "Comment"
 msgstr "Коментар"
 
 #. TRANSLATORS: One comment, after the document's text: the first {} is its author, the second the words it was made on, and the third the comment
-msgid "{} on \\u{201c}{}\\u{201d}: {}"
-msgstr "{} на \\u{201c}{}\\u{201d}: {}"
+msgid "{} on “{}”: {}"
+msgstr "{} на \"{}\": {}"
 
 #. TRANSLATORS: One comment made on a point rather than on words, after the document's text: the first {} is its author, the second the comment
 msgid "{}: {}"
@@ -3347,17 +3302,15 @@ msgstr "Файл DOC зашифрований і потребує пароля"
 msgid "DOC decryption failed (wrong password?): {}"
 msgstr "Помилка розшифрування DOC (неправильний пароль?): {}"
 
-#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
-msgid "File content does not look like plain text"
-msgstr "Вміст файлу не схожий на звичайний текст"
-
+#. TRANSLATORS: Error shown when a DOC file from Word for Windows 1.x or 2.0 has no readable text
 #. TRANSLATORS: Error shown when a DOC file's fallback content has no readable text
+#. TRANSLATORS: Error shown when a Windows Write or Word for DOS file has no readable text
 msgid "No readable text content found"
 msgstr "Не знайдено тексту, придатного для читання"
 
-#. TRANSLATORS: Error shown when a ZIP file contains no readable Word document content
-msgid "No readable content found in the ZIP archive"
-msgstr "У ZIP-архіві не знайдено вмісту, придатного для читання"
+#. TRANSLATORS: Error shown when a DOC file's fallback content doesn't look like plain text
+msgid "File content does not look like plain text"
+msgstr "Вміст файлу не схожий на звичайний текст"
 
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
@@ -3626,6 +3579,26 @@ msgstr "&Cmd"
 msgid "&Option"
 msgstr "&Option"
 
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Ctrl modifier in the shortcut.
+msgid "&Ctrl"
+msgstr "&Ctrl"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Alt modifier in the shortcut.
+msgid "&Alt"
+msgstr "&Alt"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Shift modifier in the shortcut.
+msgid "&Shift"
+msgstr "&Shift"
+
+#. TRANSLATORS: Checkbox in the Set Shortcut dialog that includes the Windows logo key in a system-wide shortcut.
+msgid "&Win"
+msgstr "&Win"
+
+#. TRANSLATORS: Label next to the key field in the Set Shortcut dialog.
+msgid "&Key:"
+msgstr "&Клавіша:"
+
 msgid "Tip: click in the key field and press the key combination you want."
 msgstr ""
 "Порада: виберіть поле «Клавіша» та натисніть потрібну комбінацію клавіш."
@@ -3838,7 +3811,6 @@ msgstr "Тут з’являтимуться документи, які ви в�
 msgid "Text to Speech"
 msgstr "Мовлення"
 
-#. TRANSLATORS: Row label for the current TTS voice, navigates to the voice picker
 #: kt swift
 msgid "Voice"
 msgstr "Голос"
@@ -3863,7 +3835,6 @@ msgstr "Тон"
 msgid "Speech Dictionary"
 msgstr "Словник вимови"
 
-#. TRANSLATORS: Button that reads a sample sentence aloud using the current voice/rate/pitch settings
 #: kt swift
 msgid "Play Sample"
 msgstr "Відтворити зразок"
@@ -4570,11 +4541,11 @@ msgstr "Помилка завантаження документа: {}"
 msgid "Speech Engine"
 msgstr "Синтезатор мовлення"
 
-#: kt swift
+#: kt
 msgid "1 book"
 msgstr "1 книга"
 
-#: kt swift
+#: kt
 msgid "{} books"
 msgstr "{} книги"
 
@@ -4718,7 +4689,7 @@ msgid "{}, {}, modified {}{}"
 msgstr "{}, {}, змінено {}{}"
 
 #. TRANSLATORS: TalkBack state of a slider; {} is the number it is set to
-#: kt
+#: swift kt
 msgid "{} percent"
 msgstr "{} відсотків"
 
@@ -4908,10 +4879,108 @@ msgstr "Зупиняти читання на результатах пошуку
 msgid "Turn off to continue reading while navigating by search matches."
 msgstr "Якщо вимкнено, читання продовжуватиметься далі."
 
-#. TRANSLATORS: 1.5x line spacing option
+#. TRANSLATORS: VoiceOver label for the read-aloud bar's control that speeds up or slows down a book's recorded audio
+#: kt swift
+msgid "Audio Speed"
+msgstr "Швидкість відтворення"
+
 #: swift
-msgid "1.5\\u{00d7}"
-msgstr "1.5\\u{00d7}"
+msgid "Speech for This Book"
+msgstr "Озвучення цієї книги"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} item"
+msgstr "{} елемент"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} items"
+msgstr "{} елементів"
+
+#. TRANSLATORS: Spoken on entering a list in text mode; {} is how many items it has. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: swift
+msgid "{} items⁣"
+msgstr "{} елементів⁣"
+
+#. TRANSLATORS: Spoken for an empty table cell in text mode
+#: swift
+msgid "Blank"
+msgstr "Порожньо"
+
+#. TRANSLATORS: Name of the VoiceOver rotor setting that moves between the entries of a document's table of contents in text mode
+#: swift
+msgid "Sections"
+msgstr "Розділи"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a voice of its own instead of the one in Settings
+#: swift
+msgid "Own Voice"
+msgstr "Власний голос"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a speech rate of its own instead of the one in Settings
+#: swift
+msgid "Own Rate"
+msgstr "Власний темп"
+
+#. TRANSLATORS: Switch in Speech for This Book giving the open book a pitch of its own instead of the one in Settings
+#: swift
+msgid "Own Pitch"
+msgstr "Власний тон"
+
+#. TRANSLATORS: Footer in Speech for This Book explaining what a switch left off does
+#: swift
+msgid "Whatever is switched off follows Settings."
+msgstr "Вимкнені параметри відповідають типовим налаштуванням."
+
+#. TRANSLATORS: Button that empties the recent documents list
+#: kt swift
+msgid "Clear"
+msgstr "Очистити"
+
+#. TRANSLATORS: Row label for the number of audio files in the document
+#: kt swift
+msgid "Number of files"
+msgstr "Кількість файлів"
+
+#. TRANSLATORS: Row label for the total playback duration across all of the document's audio files
+#: kt swift
+msgid "Total duration"
+msgstr "Загальна тривалість"
+
+#. TRANSLATORS: Row label for the average playback duration per audio file in the document
+#: kt swift
+msgid "Average duration"
+msgstr "Середня тривалість"
+
+#. TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
+#: kt
+msgid "Select audio speed"
+msgstr "Вибрати швидкість відтворення"
+
+#~ msgid "Window Hotkey"
+#~ msgstr "Комбінація клавіш показу/приховування програми"
+
+#~ msgid "Space"
+#~ msgstr "Пробіл"
+
+#~ msgid "Customize &Window Hotkey..."
+#~ msgstr "&Налаштувати клавіші показу/приховування програми..."
+
+#~ msgid "unsupported content"
+#~ msgstr "непідтримуваний вміст"
+
+#~ msgid "Failed to convert HTML to text: {}"
+#~ msgstr "Не вдалося перетворити HTML на текст: {}"
+
+#~ msgid "Failed to convert Markdown to text: {}"
+#~ msgstr "Не вдалося перетворити Markdown на текст: {}"
+
+#~ msgid "{} on \\u{201c}{}\\u{201d}: {}"
+#~ msgstr "{} на \\u{201c}{}\\u{201d}: {}"
+
+#~ msgid "1.5\\u{00d7}"
+#~ msgstr "1.5\\u{00d7}"
 
 #~ msgid "Selected %d character."
 #~ msgid_plural "Selected %d characters."
@@ -4975,9 +5044,6 @@ msgstr "1.5\\u{00d7}"
 
 #~ msgid "Import and export options"
 #~ msgstr "Параметри імпорту та експорту"
-
-#~ msgid "Select and &copy"
-#~ msgstr "Виділити та &скопіювати"
 
 #~ msgid "Mark a selection and copy from it"
 #~ msgstr "Позначення початку виділення та копіювання від нього"

@@ -2166,9 +2166,9 @@ checksum = "65cd87c9a6d60536580b316ad985726104730a5151c99845f2490428ef91240a"
 
 [[package]]
 name = "libchm"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4c8e206aaeeee4150ca5615c2ce3e023f5c5ae10f8d21f22dd4e2cce2f58100"
+checksum = "474e241c4bcbfe250a9b5658ae1844eb81c868c812fda38e926305facf046725"
 dependencies = [
  "bitflags 2.13.2",
  "thiserror 2.0.21",
@@ -2176,10 +2176,12 @@ dependencies = [
 
 [[package]]
 name = "libhlp"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "406209fb85f7fa21799fa90dbc548e7882aebc626d8a1c27e5afe67992769039"
+checksum = "a0c4ff210ddeeec95c89cafa25fce07884067928d9a6c6c3dd8da2c13b9577d2"
 dependencies = [
+ "chardetng",
+ "encoding_rs",
  "thiserror 2.0.21",
 ]
 

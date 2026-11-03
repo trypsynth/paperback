@@ -309,6 +309,17 @@ fn html_converter_shows_an_undescribed_picture_and_skips_decoration() {
 	assert_eq!((images[0].offset, images[0].source.as_str()), (DocLen::of("A ").as_pos(), "chart.png"));
 }
 
+// Microsoft's Swedish DirectX help never closes its <object>, and lost all but its first page.
+#[test]
+fn html_converter_reads_a_page_inside_an_unclosed_object() {
+	let html = "<html><body><object type=\"application/x-oleobject\"><param name=\"ALink Name\" value=\"a\"><h1>Title</h1><p>Body</p></body></html>";
+	let mut converter = HtmlToText::new();
+	converter.convert(html, HtmlSourceMode::NativeHtml);
+	assert!(converter.get_text().contains("Title"));
+	assert!(converter.get_text().contains("Body"));
+	assert_eq!(converter.get_headings().len(), 1);
+}
+
 #[test]
 fn html_converter_makes_a_link_of_an_undescribed_picture() {
 	let html = "<html><body><p><a href=\"/home\"><img src=\"logo.png\"></a></p></body></html>";

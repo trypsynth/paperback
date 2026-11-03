@@ -25,6 +25,11 @@ use toc::{build_ordered_file_list, calculate_toc_offsets, parse_hhc_file, parse_
 
 pub struct ChmParser;
 
+/// By extension alone, since a page saved from a browser keeps its pictures in a folder such as `page.htm_files`. Windows ignores a trailing dot, so `page.htm.` is still a page.
+fn is_html_path(lower_path: &str) -> bool {
+	lower_path.trim_end_matches('.').rsplit_once('.').is_some_and(|(_, extension)| matches!(extension, "htm" | "html"))
+}
+
 impl Parser for ChmParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		tracing::debug!(path = %context.file_path, "parsing chm file");
@@ -39,8 +44,7 @@ impl Parser for ChmParser {
 			if lower_path.contains(".hhc") && (hhc_file.is_empty() || lower_path.contains("index.hhc")) {
 				hhc_file.clone_from(&entry.path);
 			}
-			if (lower_path.contains(".htm") || lower_path.contains(".html")) && entry.category != EntryCategory::Special
-			{
+			if is_html_path(&lower_path) && entry.category != EntryCategory::Special {
 				let path = entry.path.clone();
 				entries_by_path.insert(path.clone(), entry);
 				html_files.push(path);
@@ -140,4 +144,19 @@ fn sections_with_headings(buffer: &DocumentBuffer, file_positions: &HashMap<Stri
 		.filter(|marker| is_heading_marker(marker.mtype))
 		.map(|marker| section_start(file_positions, marker.position))
 		.collect()
+}
+
+#[cfg(test)]
+mod tests {
+	use super::is_html_path;
+
+	#[test]
+	fn only_an_html_extension_makes_a_page() {
+		assert!(is_html_path("/a/page.htm"));
+		assert!(is_html_path("/page.html"));
+		assert!(is_html_path("/setsecur.htm."));
+		assert!(!is_html_path("/page.htm_files/picture.gif"));
+		assert!(!is_html_path("/page.htm_files/"));
+		assert!(!is_html_path("/page.html.bak"));
+	}
 }
