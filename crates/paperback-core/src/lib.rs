@@ -43,8 +43,8 @@ pub fn dump_pdf_page_chars(path: &str, password: Option<&str>, page: i32) -> Res
 			let _ = writeln!(out, "object {i} {:?} {:?}", object.kind(), object.bounds());
 		}
 	}
-	for image in page.announced_images() {
-		let _ = writeln!(out, "announced image {} top {:.2}", image.id, image.top);
+	for image in page.images() {
+		let _ = writeln!(out, "image {} top {:.2}", image.id, image.bounds.top);
 	}
 	fn walk(tag: &pdf_engine::Tag<'_>, depth: usize, out: &mut String) {
 		let mut line = format!("{}{}", "  ".repeat(depth), tag.kind().unwrap_or_default());

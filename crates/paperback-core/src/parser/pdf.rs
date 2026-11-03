@@ -7,7 +7,7 @@ use crate::{
 	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	ocr::image_only_placeholder,
 	parser::{Parser, add_heading_markers, util::path::extract_title_from_path},
-	pdf_engine::{PAGE_IMAGE_COVERAGE, PdfDocument, PdfError, PdfPage},
+	pdf_engine::{PdfDocument, PdfError, PdfPage},
 };
 
 mod images;
@@ -20,7 +20,9 @@ mod tagged;
 mod text;
 mod toc;
 
-use images::{append_image, images_before_each_paragraph, page_largest_image_coverage};
+use images::{
+	PAGE_IMAGE_COVERAGE, announced_images, append_image, images_before_each_paragraph, page_largest_image_coverage,
+};
 use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
 use metadata::{map_load_error, metadata_title, metadata_value};
 use paragraphs::{join_paragraphs, split_lines};
@@ -57,9 +59,9 @@ fn read_page(
 	};
 	let text_page = page.text();
 	// Taken before the text so a tagged page whose tree names no figure can place its images among its blocks as it writes them.
-	let announced = page.announced_images();
+	let announced = announced_images(&page);
 	let mut content = PageContent {
-		image_tops: announced.iter().map(|image| image.top).collect(),
+		image_tops: announced.iter().map(|image| image.bounds.top).collect(),
 		image_paths: announced.iter().map(|image| image.id.to_string()).collect(),
 		largest_image_coverage: page_largest_image_coverage(&page),
 		..Default::default()

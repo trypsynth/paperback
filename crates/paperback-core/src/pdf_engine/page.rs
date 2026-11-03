@@ -18,12 +18,6 @@ use super::{
 	text::{FontCache, TextObject},
 };
 
-/// A scanned book with an OCR text layer draws each sheet as one image under its invisible text, and announcing that put an "[Image]" with nothing behind it on every page (#1046).
-pub const PAGE_IMAGE_COVERAGE: f64 = 0.9;
-
-/// A page laid out from HTML draws its spacers and hairline rules as images a fraction of a point across.
-const MIN_IMAGE_SIDE: f32 = 4.0;
-
 /// Owns what was read, the text layer included, so pages can be read on several threads at once and handed back to one.
 pub struct PdfPage<'doc> {
 	document: &'doc PdfDocument,
@@ -83,23 +77,12 @@ impl<'doc> PdfPage<'doc> {
 		self.objects.iter().map(|data| PageObject { data })
 	}
 
-	pub fn announced_images(&self) -> Vec<PageImage> {
-		let page_area = f64::from(self.width) * f64::from(self.height);
-		let mut images: Vec<PageImage> = self
-			.images()
-			.filter(|(_, data)| {
-				data.bounds.is_some_and(|bounds| {
-					is_announced_image(
-						(bounds.right - bounds.left).abs(),
-						(bounds.top - bounds.bottom).abs(),
-						page_area,
-					)
-				})
-			})
-			.map(|(index, data)| PageImage::new(index, data))
-			.collect();
-		images.sort_by(|a, b| b.top.total_cmp(&a.top));
-		images
+	/// Every image the page draws, in drawing order.
+	pub fn images(&self) -> impl Iterator<Item = PageImage> {
+		self.image_objects().filter_map(|(index, data)| {
+			let bounds = data.bounds?;
+			Some(PageImage { id: ImageId(index), bounds: rect_of(bounds) })
+		})
 	}
 
 	/// Taken at the resolution the file stores rather than as drawn, so a photo placed small still saves at full size.
@@ -122,7 +105,7 @@ impl<'doc> PdfPage<'doc> {
 	/// Which image each marked content id draws, for a structure tree that tags its figures.
 	pub fn images_by_mcid(&self) -> std::collections::HashMap<i32, ImageId> {
 		let mut images = std::collections::HashMap::new();
-		for (index, data) in self.images() {
+		for (index, data) in self.image_objects() {
 			for mcid in data.marked_content_ids() {
 				images.entry(mcid).or_insert(ImageId(index));
 			}
@@ -177,7 +160,7 @@ impl<'doc> PdfPage<'doc> {
 		Some(AnnotationLink { rect, target })
 	}
 
-	fn images(&self) -> impl Iterator<Item = (usize, &ObjectData)> {
+	fn image_objects(&self) -> impl Iterator<Item = (usize, &ObjectData)> {
 		self.objects.iter().enumerate().filter(|(_, data)| data.kind == ObjectKind::Image)
 	}
 }
@@ -224,21 +207,19 @@ impl std::str::FromStr for ImageId {
 	}
 }
 
+/// An image the page draws.
 pub struct PageImage {
 	pub id: ImageId,
-	pub top: f64,
+	pub bounds: super::Rect,
 }
 
-impl PageImage {
-	fn new(index: usize, data: &ObjectData) -> Self {
-		let top = data.bounds.map_or(0.0, |bounds| f64::from(bounds.top));
-		Self { id: ImageId(index), top }
+fn rect_of(bounds: Bounds) -> super::Rect {
+	super::Rect {
+		left: f64::from(bounds.left),
+		bottom: f64::from(bounds.bottom),
+		right: f64::from(bounds.right),
+		top: f64::from(bounds.top),
 	}
-}
-
-fn is_announced_image(width: f32, height: f32, page_area: f64) -> bool {
-	let covers_page = page_area > 0.0 && f64::from(width) * f64::from(height) / page_area >= PAGE_IMAGE_COVERAGE;
-	width >= MIN_IMAGE_SIDE && height >= MIN_IMAGE_SIDE && !covers_page
 }
 
 pub struct PageBitmap {
@@ -307,12 +288,7 @@ impl<'page> PageObject<'page> {
 
 	/// The area the object covers, if it has one.
 	pub fn bounds(&self) -> Option<super::Rect> {
-		self.data.bounds.map(|bounds| super::Rect {
-			left: f64::from(bounds.left),
-			bottom: f64::from(bounds.bottom),
-			right: f64::from(bounds.right),
-			top: f64::from(bounds.top),
-		})
+		self.data.bounds.map(rect_of)
 	}
 
 	/// The outermost id, which is the one pdfium reports.

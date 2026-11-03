@@ -22,8 +22,7 @@ mod text;
 pub use hayro_interpret::kurbo::Point;
 #[allow(unused_imports)]
 pub use page::{
-	AnnotationLink, ImageId, LinkTarget, ObjectKind, PAGE_IMAGE_COVERAGE, PageBitmap, PageCache, PageImage, PageObject,
-	PdfPage,
+	AnnotationLink, ImageId, LinkTarget, ObjectKind, PageBitmap, PageCache, PageImage, PageObject, PdfPage,
 };
 #[allow(unused_imports)]
 pub use tags::{Tag, TagChild, TagTree};

@@ -2,7 +2,7 @@
 
 use crate::{
 	document::{DocLen, DocPos, DocumentBuffer, Marker, MarkerType},
-	pdf_engine::{ObjectKind, PdfPage},
+	pdf_engine::{ObjectKind, PageImage, PdfPage},
 	t,
 };
 
@@ -31,6 +31,26 @@ pub(super) fn append_image(
 	// Kept in step with the buffer because `place_links` measures its offsets against this, and a line written to one and not the other moves every link on the page.
 	page_display_text.push_str(&line);
 	page_display_text.push('\n');
+}
+
+/// A scanned book with an OCR text layer draws each sheet as one image under its invisible text, and announcing that put an "[Image]" with nothing behind it on every page (#1046).
+pub(super) const PAGE_IMAGE_COVERAGE: f64 = 0.9;
+
+/// A page laid out from HTML draws its spacers and hairline rules as images a fraction of a point across.
+const MIN_IMAGE_SIDE: f64 = 4.0;
+
+fn is_announced_image(image: &PageImage, page_area: f64) -> bool {
+	let (width, height) = (image.bounds.width(), image.bounds.height());
+	let covers_page = page_area > 0.0 && width * height / page_area >= PAGE_IMAGE_COVERAGE;
+	width >= MIN_IMAGE_SIDE && height >= MIN_IMAGE_SIDE && !covers_page
+}
+
+/// The images a reader is told about, top of the page first.
+pub(super) fn announced_images(page: &PdfPage) -> Vec<PageImage> {
+	let page_area = page.width() * page.height();
+	let mut images: Vec<PageImage> = page.images().filter(|image| is_announced_image(image, page_area)).collect();
+	images.sort_by(|a, b| b.bounds.top.total_cmp(&a.bounds.top));
+	images
 }
 
 /// The largest single image, not the images added together: a page tiled with small decorations is not a scan.
