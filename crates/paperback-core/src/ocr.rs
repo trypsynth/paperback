@@ -126,10 +126,11 @@ pub fn decode_image(bytes: &[u8], max_dimension: u32) -> Result<RenderedPage> {
 }
 
 #[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss, clippy::cast_sign_loss)]
-fn pixel_width(width_pt: f32, height_pt: f32, max_dimension: u32) -> i32 {
+fn pixel_width(width_pt: f64, height_pt: f64, max_dimension: u32) -> i32 {
 	if width_pt <= 0.0 || height_pt <= 0.0 {
 		return FALLBACK_WIDTH;
 	}
+	let (width_pt, height_pt) = (width_pt as f32, height_pt as f32);
 	let scale = TARGET_DPI / POINTS_PER_INCH;
 	let longest = width_pt.max(height_pt) * scale;
 	let capped = if longest > max_dimension as f32 { max_dimension as f32 / longest } else { 1.0 };

@@ -73,7 +73,8 @@ pub fn dump_pdf_page_chars(path: &str, password: Option<&str>, page: i32) -> Res
 	for (i, page_char) in text.chars().enumerate() {
 		let ch = char::from_u32(page_char.unicode())
 			.map_or_else(|| format!("U+{:04X}", page_char.unicode()), |ch| format!("{ch:?}"));
-		let (x, y) = page_char.origin();
+		let origin = page_char.origin();
+		let (x, y) = (origin.x, origin.y);
 		let b = page_char.bounds();
 		let boxed = format!("{:.2} {:.2} {:.2} {:.2}", b.left, b.bottom, b.right, b.top);
 		let font = page_char.font().map(|font| format!("{} {}", font.name, font.flags)).unwrap_or_default();

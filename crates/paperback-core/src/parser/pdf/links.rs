@@ -53,13 +53,7 @@ pub(super) fn collect_web_links(text_page: &PdfTextPage) -> Vec<PendingLink> {
 pub(super) fn collect_annotation_links(page: &PdfPage, text_page: &PdfTextPage) -> Vec<PendingLink> {
 	let mut pending = Vec::new();
 	for link in page.annotation_links() {
-		let rect = link.rect;
-		let text = sanitize_pdf_text(&text_page.bounded_text(
-			f64::from(rect.left),
-			f64::from(rect.top),
-			f64::from(rect.right),
-			f64::from(rect.bottom),
-		));
+		let text = sanitize_pdf_text(&text_page.text_in(link.rect));
 		let trimmed_link = trim_string(&collapse_whitespace(&text));
 		if trimmed_link.is_empty() {
 			continue;

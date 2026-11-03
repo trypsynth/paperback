@@ -35,7 +35,7 @@ pub(super) fn append_image(
 
 /// The largest single image, not the images added together: a page tiled with small decorations is not a scan.
 pub(super) fn page_largest_image_coverage(page: &PdfPage) -> f64 {
-	let page_area = f64::from(page.width()) * f64::from(page.height());
+	let page_area = page.width() * page.height();
 	if page_area <= 0.0 {
 		return 0.0;
 	}
@@ -43,7 +43,7 @@ pub(super) fn page_largest_image_coverage(page: &PdfPage) -> f64 {
 		.objects()
 		.filter(|object| object.kind() == ObjectKind::Image)
 		.filter_map(|object| object.bounds())
-		.map(|bounds| f64::from((bounds.right - bounds.left).abs()) * f64::from((bounds.top - bounds.bottom).abs()))
+		.map(|bounds| bounds.width() * bounds.height())
 		.fold(0.0_f64, f64::max);
 	(largest / page_area).min(1.0)
 }

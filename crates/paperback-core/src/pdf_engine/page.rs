@@ -62,12 +62,12 @@ impl<'doc> PdfPage<'doc> {
 		Ok(Self { document, index, width, height, objects: collector.objects, text })
 	}
 
-	pub const fn width(&self) -> f32 {
-		self.width
+	pub fn width(&self) -> f64 {
+		f64::from(self.width)
 	}
 
-	pub const fn height(&self) -> f32 {
-		self.height
+	pub fn height(&self) -> f64 {
+		f64::from(self.height)
 	}
 
 	pub const fn text(&self) -> &PdfTextPage {
@@ -168,11 +168,11 @@ impl<'doc> PdfPage<'doc> {
 			Some(uri) => LinkTarget::Url(uri),
 			None => LinkTarget::Page(self.document.destination_page(annotation)?),
 		};
-		let rect = Bounds {
-			left: rect.x0.min(rect.x1) as f32,
-			bottom: rect.y0.min(rect.y1) as f32,
-			right: rect.x0.max(rect.x1) as f32,
-			top: rect.y0.max(rect.y1) as f32,
+		let rect = super::Rect {
+			left: rect.x0.min(rect.x1),
+			bottom: rect.y0.min(rect.y1),
+			right: rect.x0.max(rect.x1),
+			top: rect.y0.max(rect.y1),
 		};
 		Some(AnnotationLink { rect, target })
 	}
@@ -202,7 +202,7 @@ pub enum LinkTarget {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct AnnotationLink {
-	pub rect: Bounds,
+	pub rect: super::Rect,
 	pub target: LinkTarget,
 }
 
@@ -237,11 +237,11 @@ pub enum ObjectKind {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Bounds {
-	pub left: f32,
-	pub bottom: f32,
-	pub right: f32,
-	pub top: f32,
+pub(super) struct Bounds {
+	pub(super) left: f32,
+	pub(super) bottom: f32,
+	pub(super) right: f32,
+	pub(super) top: f32,
 }
 
 #[derive(Debug, Clone)]
@@ -288,8 +288,14 @@ impl<'page> PageObject<'page> {
 		self.data.kind
 	}
 
-	pub const fn bounds(&self) -> Option<Bounds> {
-		self.data.bounds
+	/// The area the object covers, if it has one.
+	pub fn bounds(&self) -> Option<super::Rect> {
+		self.data.bounds.map(|bounds| super::Rect {
+			left: f64::from(bounds.left),
+			bottom: f64::from(bounds.bottom),
+			right: f64::from(bounds.right),
+			top: f64::from(bounds.top),
+		})
 	}
 
 	/// The outermost id, which is the one pdfium reports.

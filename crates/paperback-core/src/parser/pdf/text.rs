@@ -6,7 +6,7 @@ use std::{
 
 use crate::{
 	parser::util::bidi,
-	pdf_engine::{CharBox, PageChar, PdfTextPage},
+	pdf_engine::{PageChar, PdfTextPage, Rect},
 };
 
 pub(super) fn sanitize_pdf_text(input: &str) -> String {
@@ -235,9 +235,9 @@ const COVER_SAMPLE: usize = 64;
 /// A neighbour on another line fails both checks, as it should for a space at either end of a line.
 pub(super) fn space_is_invisible(
 	space_origin: (f64, f64),
-	space_box: CharBox,
+	space_box: Rect,
 	next_origin: Option<(f64, f64)>,
-	prev_box: Option<CharBox>,
+	prev_box: Option<Rect>,
 ) -> bool {
 	let width = space_box.right - space_box.left;
 	if width <= 0.0 {
@@ -253,7 +253,7 @@ pub(super) fn space_is_invisible(
 	prev_box.is_some_and(|prev| covers(prev, space_box))
 }
 
-fn covers(prev: CharBox, space_box: CharBox) -> bool {
+fn covers(prev: Rect, space_box: Rect) -> bool {
 	let width = space_box.right - space_box.left;
 	let on_the_same_line =
 		prev.bottom <= space_box.bottom + COORDINATE_EPSILON && prev.top >= space_box.top - COORDINATE_EPSILON;
@@ -285,8 +285,9 @@ impl SpaceFilter {
 
 	pub(super) fn hides(&self, text_page: &PdfTextPage, index: usize) -> bool {
 		let Some(space) = text_page.char(index) else { return false };
-		let (origin, space_box) = (space.origin(), space.bounds());
-		let next_origin = text_page.char(index + 1).map(PageChar::origin);
+		let origin = space.origin();
+		let (origin, space_box) = ((origin.x, origin.y), space.bounds());
+		let next_origin = text_page.char(index + 1).map(PageChar::origin).map(|next| (next.x, next.y));
 		if space_is_invisible(origin, space_box, next_origin, None) {
 			return true;
 		}
@@ -335,7 +336,7 @@ pub(super) fn is_cjk(c: char) -> bool {
 
 #[allow(clippy::cast_possible_truncation, reason = "a page coordinate fits an f32")]
 fn char_x_origin(text_page: &PdfTextPage, i: usize) -> f32 {
-	text_page.char(i).map_or(0.0, |ch| ch.origin().0 as f32)
+	text_page.char(i).map_or(0.0, |ch| ch.origin().x as f32)
 }
 
 /// Fetches x origins (a lookup per char) only for runs containing an RTL character, so LTR runs pay a single classification scan.
@@ -543,7 +544,7 @@ fn restore_reading_order(lines: Vec<Line>) -> Vec<Line> {
 #[cfg(test)]
 mod tests {
 	use super::{
-		CharBox, Line, PageEvidence, WordPages, confirms, covering_hides, ends_line, keeps_hyphen, looks_monospaced,
+		Line, PageEvidence, Rect, WordPages, confirms, covering_hides, ends_line, keeps_hyphen, looks_monospaced,
 		restore_reading_order, sanitize_pdf_text, space_is_invisible,
 	};
 
@@ -728,8 +729,8 @@ mod tests {
 	}
 
 	/// The coordinates in these tests are what pdfium reports for the PDF attached to #808.
-	fn char_box(left: f64, right: f64, bottom: f64, top: f64) -> CharBox {
-		CharBox { left, right, bottom, top }
+	fn char_box(left: f64, right: f64, bottom: f64, top: f64) -> Rect {
+		Rect { left, bottom, right, top }
 	}
 
 	#[test]

@@ -19,14 +19,15 @@ mod tags;
 mod text;
 
 #[allow(unused_imports)]
+pub use hayro_interpret::kurbo::Point;
+#[allow(unused_imports)]
 pub use page::{
-	AnnotationLink, Bounds, LinkTarget, ObjectKind, PAGE_IMAGE_COVERAGE, PageBitmap, PageCache, PageImage, PageObject,
-	PdfPage,
+	AnnotationLink, LinkTarget, ObjectKind, PAGE_IMAGE_COVERAGE, PageBitmap, PageCache, PageImage, PageObject, PdfPage,
 };
 #[allow(unused_imports)]
 pub use tags::{Tag, TagChild, TagTree};
 #[allow(unused_imports)]
-pub use text::{CharBox, CharFont, PageChar, PdfTextPage, TextMatrix, WebLink};
+pub use text::{CharFont, PageChar, PdfTextPage, Rect, TextMatrix, WebLink};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]

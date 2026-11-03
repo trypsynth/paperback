@@ -43,12 +43,23 @@ const FONT_FLAG_SYMBOLIC: i32 = 1 << 2;
 const FONT_FLAG_NONSYMBOLIC: i32 = 1 << 5;
 const FONT_FLAG_ITALIC: i32 = 1 << 6;
 
+/// An area of a page, in page space, where y grows upward.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct CharBox {
+pub struct Rect {
 	pub left: f64,
-	pub right: f64,
 	pub bottom: f64,
+	pub right: f64,
 	pub top: f64,
+}
+
+impl Rect {
+	pub const fn width(self) -> f64 {
+		(self.right - self.left).abs()
+	}
+
+	pub const fn height(self) -> f64 {
+		(self.top - self.bottom).abs()
+	}
 }
 
 /// A web address written out in the page's text.
@@ -1506,18 +1517,13 @@ impl<'page> PageChar<'page> {
 	}
 
 	/// Where the glyph starts on the baseline, in page space.
-	pub fn origin(self) -> (f64, f64) {
-		(f64::from(self.info.origin.0), f64::from(self.info.origin.1))
+	pub fn origin(self) -> Point {
+		Point::new(f64::from(self.info.origin.0), f64::from(self.info.origin.1))
 	}
 
-	pub fn bounds(self) -> CharBox {
+	pub fn bounds(self) -> Rect {
 		let r = self.info.char_box;
-		CharBox {
-			left: f64::from(r.left),
-			right: f64::from(r.right),
-			bottom: f64::from(r.bottom),
-			top: f64::from(r.top),
-		}
+		Rect { left: f64::from(r.left), right: f64::from(r.right), bottom: f64::from(r.bottom), top: f64::from(r.top) }
 	}
 
 	/// The size the content stream set, before the text matrix scales it, so a PDF that scales through the matrix reports 1.
@@ -1668,9 +1674,9 @@ impl PdfTextPage {
 		self.page_text(start, count).into_iter().filter_map(char::from_u32).collect()
 	}
 
-	/// pdfium's `GetTextByRect`.
-	pub fn bounded_text(&self, left: f64, top: f64, right: f64, bottom: f64) -> String {
-		let rect = FRect::new(left as f32, bottom as f32, right as f32, top as f32);
+	/// The text inside an area of the page. pdfium's `GetTextByRect`.
+	pub fn text_in(&self, rect: Rect) -> String {
+		let rect = FRect::new(rect.left as f32, rect.bottom as f32, rect.right as f32, rect.top as f32);
 		let mut posy = 0.0_f32;
 		let mut contains_pre_char = false;
 		let mut add_line_feed = false;
