@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: paperback 1.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-31 21:30+0000\n"
-"PO-Revision-Date: 2026-11-02 21:09+0200\n"
+"PO-Revision-Date: 2026-11-02 23:57+0200\n"
 "Last-Translator: Ivan Shtefuriak <ip0877@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -1194,7 +1194,7 @@ msgstr "Видаляти повторювані верхні та нижні &к
 
 #. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
 msgid "Read text between dollar signs as &math in Markdown"
-msgstr "У Markdown Текст між знаками долара слід читати як математичний вираз"
+msgstr "У Markdown Текст між знаками долара слід читати як математичний &вираз"
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -1812,7 +1812,7 @@ msgstr "Не вдалося завантажити джерело докумен
 
 #. TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
 msgid "Couldn't extract the document from the archive: {}"
-msgstr "Не вдалося видобути документ з архіву."
+msgstr "Не вдалося видобути документ з архіву: {}"
 
 #. TRANSLATORS: Error shown when the user picks a file format from the "Open As" dialog that this parser build doesn't support
 msgid "Unsupported format selected."
@@ -2396,7 +2396,7 @@ msgstr "Перегляд таблиці"
 
 #. TRANSLATORS: Right-click context menu item and status text to save the picture under the caret to a file
 msgid "Save &image as..."
-msgstr "Зберегти зображення як..."
+msgstr "Зберегти зображення &як..."
 
 msgid "Save image as"
 msgstr "Зберегти зображення як"
