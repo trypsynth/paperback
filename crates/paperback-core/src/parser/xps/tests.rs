@@ -14,7 +14,7 @@ fn context() -> ParserContext {
 }
 
 fn read_parts(parts: &[(&str, &str)], context: &ParserContext) -> anyhow::Result<Document> {
-	read_document(Package::from_parts(parts), context)
+	read_document(|| Ok(Package::from_parts(parts)), context)
 }
 
 /// A package whose one document is `document`, with `rest` beside it.
@@ -419,6 +419,16 @@ fn a_line_repeated_at_the_top_of_every_page_is_running_text() {
 	assert!(!unstructured(&pages).buffer.content.contains("Running header"));
 	let kept = context().with_strip_running_text(false);
 	assert!(unstructured_with(&pages, &kept).buffer.content.contains("Running header"));
+}
+
+#[test]
+fn pages_read_side_by_side_keep_their_order() {
+	let text = |number: usize| format!("The text of page {number}.");
+	let pages: Vec<String> =
+		(1..=64).map(|number| format!("<FixedPage Height=\"1000\">{}</FixedPage>", at(&text(number), 100.0))).collect();
+	let doc = unstructured_with(&pages, &context().with_strip_running_text(false));
+	let expected: String = (1..=64).map(|number| text(number) + "\n").collect();
+	assert_eq!(doc.buffer.content, expected);
 }
 
 #[test]

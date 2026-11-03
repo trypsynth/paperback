@@ -2,9 +2,11 @@ use std::{
 	collections::HashMap,
 	fs::File,
 	io::{BufReader, Read, Seek},
+	mem,
 };
 
 use anyhow::{Context, Result};
+use rayon::prelude::*;
 use zip::ZipArchive;
 
 use self::{
@@ -41,11 +43,14 @@ pub struct XpsParser;
 impl Parser for XpsParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		tracing::debug!(path = %context.file_path, "parsing xps file");
-		let file = File::open(&context.file_path)
-			.with_context(|| format!("Failed to open XPS file '{}'", context.file_path))?;
-		let archive = ZipArchive::new(BufReader::new(file))
-			.with_context(|| format!("Failed to read XPS as zip '{}'", context.file_path))?;
-		read_document(Package::new(archive), context)
+		let open = || {
+			let file = File::open(&context.file_path)
+				.with_context(|| format!("Failed to open XPS file '{}'", context.file_path))?;
+			let archive = ZipArchive::new(BufReader::new(file))
+				.with_context(|| format!("Failed to read XPS as zip '{}'", context.file_path))?;
+			Ok(Package::new(archive))
+		};
+		read_document(open, context)
 	}
 }
 
@@ -99,7 +104,7 @@ impl ReadPage {
 			Ok(page) => page,
 			Err(error) => {
 				tracing::warn!(part, %error, "failed to read xps page, skipping its text");
-				return Self { content: Content::Drawn(Vec::new()), links: Vec::new() };
+				return Self::unread();
 			}
 		};
 		let fragments = page_fragments(package, part);
@@ -119,21 +124,27 @@ impl ReadPage {
 		Self { content, links }
 	}
 
+	const fn unread() -> Self {
+		Self { content: Content::Drawn(Vec::new()), links: Vec::new() }
+	}
+
 	fn drawn_lines(&self) -> Option<&[Line]> {
 		match &self.content {
 			Content::Drawn(lines) => Some(lines.as_slice()),
 			Content::Declared(..) => None,
 		}
 	}
+
+	/// Takes the lines, since only their paragraphs are written.
+	fn lay_out(&mut self, running: &RunningText, join: bool) -> Vec<(String, bool, usize)> {
+		match &mut self.content {
+			Content::Drawn(lines) => page_paragraphs(mem::take(lines), running, join).1,
+			Content::Declared(..) => Vec::new(),
+		}
+	}
 }
 
-fn write_lines(
-	buffer: &mut DocumentBuffer,
-	lines: Vec<Line>,
-	running: &RunningText,
-	join: bool,
-) -> Vec<(DocPos, String)> {
-	let (_, paragraphs) = page_paragraphs(lines, running, join);
+fn write_paragraphs(buffer: &mut DocumentBuffer, paragraphs: Vec<(String, bool, usize)>) -> Vec<(DocPos, String)> {
 	let mut headings = Vec::new();
 	for (text, is_heading, _) in paragraphs {
 		if is_heading {
@@ -249,7 +260,12 @@ fn detected_headings(written: Vec<WrittenPage>) -> Vec<(DocPos, String)> {
 	headings
 }
 
-fn read_document<R: Read + Seek>(mut package: Package<R>, context: &ParserContext) -> Result<Document> {
+/// Reading a part takes the whole package, so `open` is called again for each worker that reads pages.
+fn read_document<R: Read + Seek>(
+	open: impl Fn() -> Result<Package<R>> + Sync,
+	context: &ParserContext,
+) -> Result<Document> {
+	let mut package = open()?;
 	let documents = package.documents();
 	let pages: Vec<PagePart> = documents.iter().flat_map(|document| package.pages(document)).collect();
 	if pages.is_empty() {
@@ -258,21 +274,28 @@ fn read_document<R: Read + Seek>(mut package: Package<R>, context: &ParserContex
 		anyhow::bail!(t("XPS file contains no pages"));
 	}
 	let target_pages = link_target_pages(&pages);
-	let mut fonts = Fonts::default();
-	let read: Vec<ReadPage> =
-		pages.iter().map(|part| ReadPage::of(&mut package, &part.name, &mut fonts, &target_pages)).collect();
+	// Each worker keeps its own fonts as well, so a font is read once per worker.
+	let mut read: Vec<ReadPage> = pages
+		.par_iter()
+		.map_init(
+			|| (open().inspect_err(|error| tracing::warn!(%error, "failed to reopen xps file")).ok(), Fonts::default()),
+			|(package, fonts), part| match package {
+				Some(package) => ReadPage::of(package, &part.name, fonts, &target_pages),
+				None => ReadPage::unread(),
+			},
+		)
+		.collect();
 	let running = survey_running_text(read.iter().filter_map(ReadPage::drawn_lines), context.strip_running_text);
+	let drawn: Vec<_> = read.par_iter_mut().map(|page| page.lay_out(&running, context.join_pdf_paragraphs)).collect();
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
 	let mut written: Vec<WrittenPage> = Vec::new();
-	for (index, page) in read.into_iter().enumerate() {
+	for (index, (page, drawn)) in read.into_iter().zip(drawn).enumerate() {
 		let start = buffer.end();
 		id_positions.insert(format!("page_{index}"), start);
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, start).with_text(format!("Page {}", index + 1)));
 		let (paragraphs, headings) = match page.content {
-			Content::Drawn(lines) => {
-				(Vec::new(), write_lines(&mut buffer, lines, &running, context.join_pdf_paragraphs))
-			}
+			Content::Drawn(_) => (Vec::new(), write_paragraphs(&mut buffer, drawn)),
 			Content::Declared(declared, fragments) => {
 				let writer = PageWriter::new(&mut buffer, &declared, context.render_tables_inline);
 				(writer.write(&fragments, context.strip_running_text), Vec::new())
