@@ -1496,7 +1496,7 @@ struct ObjectSummary {
 /// One character of a page, cheap enough to ask for every character it holds.
 #[derive(Clone, Copy)]
 pub struct PageChar<'page> {
-	page: &'page PdfTextPage,
+	page: &'page TextPage,
 	info: &'page CharInfo,
 }
 
@@ -1554,15 +1554,15 @@ impl<'page> PageChar<'page> {
 }
 
 /// Owns everything it answers from, the fonts reduced to what the parser asks of them, so a page read on one thread can be handed to another.
-pub struct PdfTextPage {
+pub struct TextPage {
 	chars: Vec<CharInfo>,
 	text: Vec<u32>,
-	/// pdfium's `char_indices_`: runs of characters that have a place in [`PdfTextPage::text`], as (first index, count).
+	/// pdfium's `char_indices_`: runs of characters that have a place in [`TextPage::text`], as (first index, count).
 	segments: Vec<(i32, i32)>,
 	objects: Vec<ObjectSummary>,
 }
 
-impl PdfTextPage {
+impl TextPage {
 	pub(super) fn build(
 		text_objects: &[TextObject],
 		objects: &[ObjectData],

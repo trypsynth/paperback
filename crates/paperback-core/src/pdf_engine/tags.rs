@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use hayro_syntax::object::{Dict, Name, Object, ObjectIdentifier};
 
-use super::{PdfDocument, decode_text_string};
+use super::{Document, decode_text_string};
 
 /// A tree this deep is a malformed file rather than a document's structure.
 const MAX_DEPTH: u32 = 64;
@@ -36,7 +36,7 @@ enum Kid {
 
 impl Structure {
 	/// `None` unless `/MarkInfo` says the document is tagged, which is pdfium's test too.
-	pub(super) fn read(document: &PdfDocument, catalog: &Dict<'_>) -> Option<Self> {
+	pub(super) fn read(document: &Document, catalog: &Dict<'_>) -> Option<Self> {
 		let marked = catalog.get::<Dict<'_>>(b"MarkInfo").is_some_and(|info| {
 			info.get::<bool>(b"Marked").unwrap_or(false) || info.get::<i32>(b"Marked").is_some_and(|value| value != 0)
 		});
@@ -95,7 +95,7 @@ fn gather_pages(index: usize, nodes: &mut [Node], direct: &[Vec<usize>], state: 
 }
 
 struct Reader<'d, 'a> {
-	document: &'d PdfDocument,
+	document: &'d Document,
 	role_map: Option<Dict<'a>>,
 	nodes: Vec<Node>,
 	by_id: HashMap<ObjectIdentifier, usize>,

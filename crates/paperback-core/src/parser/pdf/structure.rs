@@ -12,7 +12,7 @@ use super::{
 };
 use crate::{
 	document::{DocLen, DocPos, DocumentBuffer, Marker, MarkerType, TocItem},
-	pdf_engine::{PdfPage, PdfTextPage, Tag, TagChild},
+	pdf_engine::{Page, Tag, TagChild, TextPage},
 	util::text::{collapse_leaders, collapse_whitespace, trim_string},
 };
 
@@ -21,8 +21,8 @@ mod tables;
 
 #[allow(clippy::too_many_arguments)]
 pub(super) fn extract_tagged_page_text(
-	page: &PdfPage,
-	text_page: &PdfTextPage,
+	page: &Page,
+	text_page: &TextPage,
 	page_index: usize,
 	buffer: &mut DocumentBuffer,
 	page_display_text: &mut String,

@@ -6,7 +6,7 @@ use std::{
 
 use crate::{
 	parser::util::bidi,
-	pdf_engine::{FontFlags, PageChar, PdfTextPage, Rect},
+	pdf_engine::{FontFlags, PageChar, Rect, TextPage},
 };
 
 pub(super) fn sanitize_pdf_text(input: &str) -> String {
@@ -26,7 +26,7 @@ pub(super) fn sanitize_pdf_text(input: &str) -> String {
 	out
 }
 
-pub(super) fn page_chars(text_page: &PdfTextPage) -> Vec<Option<char>> {
+pub(super) fn page_chars(text_page: &TextPage) -> Vec<Option<char>> {
 	text_page.chars().map(|ch| char::from_u32(ch.unicode())).collect()
 }
 
@@ -267,7 +267,7 @@ fn covering_hides(covered: usize, measured: usize) -> bool {
 }
 
 /// The structure tree never records a block's height, so its first character's top stands in.
-pub(super) fn char_top(text_page: &PdfTextPage, index: usize) -> Option<f64> {
+pub(super) fn char_top(text_page: &TextPage, index: usize) -> Option<f64> {
 	text_page.char(index).map(|ch| ch.bounds().top)
 }
 
@@ -283,7 +283,7 @@ impl SpaceFilter {
 		Self { char_count, covering_hides: Cell::new(None) }
 	}
 
-	pub(super) fn hides(&self, text_page: &PdfTextPage, index: usize) -> bool {
+	pub(super) fn hides(&self, text_page: &TextPage, index: usize) -> bool {
 		let Some(space) = text_page.char(index) else { return false };
 		let origin = space.origin();
 		let (origin, space_box) = ((origin.x, origin.y), space.bounds());
@@ -295,7 +295,7 @@ impl SpaceFilter {
 		space_is_invisible(origin, space_box, None, prev_box) && self.covering_hides(text_page)
 	}
 
-	fn covering_hides(&self, text_page: &PdfTextPage) -> bool {
+	fn covering_hides(&self, text_page: &TextPage) -> bool {
 		if let Some(hides) = self.covering_hides.get() {
 			return hides;
 		}
@@ -335,12 +335,12 @@ pub(super) fn is_cjk(c: char) -> bool {
 }
 
 #[allow(clippy::cast_possible_truncation, reason = "a page coordinate fits an f32")]
-fn char_x_origin(text_page: &PdfTextPage, i: usize) -> f32 {
+fn char_x_origin(text_page: &TextPage, i: usize) -> f32 {
 	text_page.char(i).map_or(0.0, |ch| ch.origin().x as f32)
 }
 
 /// Fetches x origins (a lookup per char) only for runs containing an RTL character, so LTR runs pay a single classification scan.
-pub(super) fn reorder_run(text_page: &PdfTextPage, chars: &[(char, usize)]) -> String {
+pub(super) fn reorder_run(text_page: &TextPage, chars: &[(char, usize)]) -> String {
 	if !bidi::contains_rtl(chars.iter().map(|&(c, _)| c)) {
 		return chars.iter().map(|&(c, _)| c).collect();
 	}
@@ -348,7 +348,7 @@ pub(super) fn reorder_run(text_page: &PdfTextPage, chars: &[(char, usize)]) -> S
 	bidi::reorder_line(&with_origin)
 }
 
-fn measure_line(text_page: &PdfTextPage, chars: &[(char, usize)]) -> Line {
+fn measure_line(text_page: &TextPage, chars: &[(char, usize)]) -> Line {
 	let (top, bottom) = line_edges(text_page, chars);
 	Line {
 		size: line_font_size(text_page, chars),
@@ -360,7 +360,7 @@ fn measure_line(text_page: &PdfTextPage, chars: &[(char, usize)]) -> Line {
 	}
 }
 
-pub(super) fn extract_text_lines(text_page: &PdfTextPage, evidence: &mut PageEvidence) -> Vec<Line> {
+pub(super) fn extract_text_lines(text_page: &TextPage, evidence: &mut PageEvidence) -> Vec<Line> {
 	let char_count = text_page.char_count();
 	let mut result: Vec<Line> = Vec::new();
 	// Kept with their pdfium index so each line can be reordered visual to logical before paragraph joining.
@@ -394,7 +394,7 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, evidence: &mut PageEvi
 }
 
 /// The top is the first character's, since a few points decide nothing about where an image falls; the bottom must be the lowest, since the next line's gap is measured from it and pdfium's doubled lines reach a whole line lower.
-fn line_edges(text_page: &PdfTextPage, chars: &[(char, usize)]) -> (f64, f64) {
+fn line_edges(text_page: &TextPage, chars: &[(char, usize)]) -> (f64, f64) {
 	let top =
 		chars.first().and_then(|(_, index)| text_page.char(*index)).map_or(f64::NEG_INFINITY, |ch| ch.bounds().top);
 	let mut bottom = f64::INFINITY;
@@ -407,7 +407,7 @@ fn line_edges(text_page: &PdfTextPage, chars: &[(char, usize)]) -> (f64, f64) {
 }
 
 /// The `Tf` size alone is 1.0 in PDFs that scale text through the matrix instead (#808 and #813 both do), so no line was ever tall enough to be a heading.
-fn effective_font_size(text_page: &PdfTextPage, index: usize) -> f64 {
+fn effective_font_size(text_page: &TextPage, index: usize) -> f64 {
 	text_page.char(index).map_or(0.0, |ch| {
 		let matrix = ch.text_matrix();
 		ch.font_size() * f64::from(matrix.b.hypot(matrix.d))
@@ -418,7 +418,7 @@ fn effective_font_size(text_page: &PdfTextPage, index: usize) -> f64 {
 const LINE_FONT_SIZE_SAMPLES: usize = 5;
 
 /// Whitespace is skipped because a font may set it in a size of its own.
-fn line_font_size(text_page: &PdfTextPage, chars: &[(char, usize)]) -> f64 {
+fn line_font_size(text_page: &TextPage, chars: &[(char, usize)]) -> f64 {
 	let indices: Vec<usize> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
 	if indices.is_empty() {
 		return 0.0;
@@ -439,7 +439,7 @@ fn looks_monospaced(font_name: &str) -> bool {
 		|| (name.starts_with("cm") && name.contains("tt"))
 }
 
-fn char_is_monospaced(text_page: &PdfTextPage, index: usize) -> bool {
+fn char_is_monospaced(text_page: &TextPage, index: usize) -> bool {
 	let Some(font) = text_page.char(index).and_then(PageChar::font) else { return false };
 	// Reliable when set and worth nothing when not: the Computer Modern typewriter faces LaTeX sets code in leave it clear.
 	font.flags.contains(FontFlags::FIXED_PITCH) || looks_monospaced(font.name)
@@ -453,7 +453,7 @@ fn looks_bold(font_name: &str) -> bool {
 	HINTS.iter().any(|hint| name.contains(hint))
 }
 
-fn char_is_bold(text_page: &PdfTextPage, index: usize) -> bool {
+fn char_is_bold(text_page: &TextPage, index: usize) -> bool {
 	let Some(ch) = text_page.char(index) else { return false };
 	if let Some(weight) = ch.font_weight() {
 		return weight >= BOLD_WEIGHT;
@@ -462,7 +462,7 @@ fn char_is_bold(text_page: &PdfTextPage, index: usize) -> bool {
 }
 
 /// Every sampled character has to be bold: a paragraph that opens with a bold word is not a heading.
-fn line_is_bold(text_page: &PdfTextPage, chars: &[(char, usize)]) -> bool {
+fn line_is_bold(text_page: &TextPage, chars: &[(char, usize)]) -> bool {
 	let indices: Vec<usize> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
 	if indices.is_empty() {
 		return false;
@@ -472,7 +472,7 @@ fn line_is_bold(text_page: &PdfTextPage, chars: &[(char, usize)]) -> bool {
 }
 
 /// Most sampled characters have to agree: one word of code quoted in prose does not make the sentence a listing.
-fn line_is_monospaced(text_page: &PdfTextPage, chars: &[(char, usize)]) -> bool {
+fn line_is_monospaced(text_page: &TextPage, chars: &[(char, usize)]) -> bool {
 	let indices: Vec<usize> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
 	if indices.is_empty() {
 		return false;

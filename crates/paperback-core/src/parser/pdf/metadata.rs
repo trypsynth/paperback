@@ -3,7 +3,7 @@ use anyhow::anyhow;
 use super::text::sanitize_pdf_text;
 use crate::{
 	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
-	pdf_engine::{PdfDocument, PdfError},
+	pdf_engine::{Document, Error as PdfError},
 	t,
 	util::text::trim_string,
 };
@@ -36,7 +36,7 @@ const FUNCTION_WORDS: [&str; 18] = [
 ];
 
 /// Returning nothing lets the caller fall back to the file name on disk, which beats a source filename like `i-xx_Phobias-fm.indd`.
-pub(super) fn metadata_title(document: &PdfDocument) -> Option<String> {
+pub(super) fn metadata_title(document: &Document) -> Option<String> {
 	cleaned_metadata(document.metadata().title).filter(|title| !is_not_really_a_title(title))
 }
 

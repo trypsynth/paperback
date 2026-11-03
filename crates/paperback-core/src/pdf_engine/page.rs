@@ -14,18 +14,18 @@ use hayro_interpret::{
 use hayro_syntax::object::{Array, Dict, Name};
 
 use super::{
-	PdfDocument, PdfError, PdfTextPage, TagTree, decode_text_string, fonts,
+	Document, Error, TagTree, TextPage, decode_text_string, fonts,
 	text::{FontCache, TextObject},
 };
 
 /// Owns what was read, the text layer included, so pages can be read on several threads at once and handed back to one.
-pub struct PdfPage<'doc> {
-	document: &'doc PdfDocument,
+pub struct Page<'doc> {
+	document: &'doc Document,
 	index: usize,
 	width: f32,
 	height: f32,
 	objects: Vec<ObjectData>,
-	text: PdfTextPage,
+	text: TextPage,
 }
 
 /// A book sets every page in the same few fonts, and reading them again for each page was half of what loading a page cost.
@@ -37,9 +37,9 @@ impl PageCache<'_> {
 	}
 }
 
-impl<'doc> PdfPage<'doc> {
-	pub(super) fn load(document: &'doc PdfDocument, index: usize, cache: &PageCache<'doc>) -> Result<Self, PdfError> {
-		let page = document.pdf().pages().get(index).ok_or(PdfError::PageOutOfRange)?;
+impl<'doc> Page<'doc> {
+	pub(super) fn load(document: &'doc Document, index: usize, cache: &PageCache<'doc>) -> Result<Self, Error> {
+		let page = document.pdf().pages().get(index).ok_or(Error::PageOutOfRange)?;
 		let (width, height) = page.render_dimensions();
 		// The bounds only decide what gets drawn, so they are made too large to leave anything out; the collector leaves out what's off the page.
 		let mut context = Context::new(
@@ -52,7 +52,7 @@ impl<'doc> PdfPage<'doc> {
 		let crop = page.intersected_crop_box();
 		let mut collector = Collector { page: Rect::new(crop.x0, crop.y0, crop.x1, crop.y1), ..Collector::default() };
 		interpret_page(page, &mut context, &mut collector);
-		let text = PdfTextPage::build(&collector.text_objects, &collector.objects, width, height, display_matrix(page));
+		let text = TextPage::build(&collector.text_objects, &collector.objects, width, height, display_matrix(page));
 		Ok(Self { document, index, width, height, objects: collector.objects, text })
 	}
 
@@ -64,7 +64,7 @@ impl<'doc> PdfPage<'doc> {
 		f64::from(self.height)
 	}
 
-	pub const fn text(&self) -> &PdfTextPage {
+	pub const fn text(&self) -> &TextPage {
 		&self.text
 	}
 

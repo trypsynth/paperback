@@ -84,7 +84,7 @@ impl DocumentSession {
 		if source.starts_with("pdf:") {
 			let (page_index, path) = parse_pdf_image_reference(source)?;
 			let password = (!self.password.is_empty()).then_some(self.password.as_str());
-			let document = crate::pdf_engine::PdfDocument::open(&self.file_path, password)?;
+			let document = crate::pdf_engine::Document::open(&self.file_path, password)?;
 			let page = document.page(page_index)?;
 			return path
 				.parse()

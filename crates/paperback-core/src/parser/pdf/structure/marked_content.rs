@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use super::super::text::{
 	LINE_END_HYPHEN, PageEvidence, SpaceFilter, char_top, context_chars, page_chars, reorder_run,
 };
-use crate::pdf_engine::{PageChar, PageObject, PdfTextPage, Tag, TagChild, TagTree};
+use crate::pdf_engine::{PageChar, PageObject, Tag, TagChild, TagTree, TextPage};
 
 /// Some PDFs advertise a structure tree while leaving their text essentially untagged (no ids, or only `/Artifact` marks).
 pub(super) const MIN_MCID_COVERAGE: f64 = 0.5;
@@ -71,7 +71,7 @@ impl<'a> PageText<'a> {
 
 /// `want_tops` costs one more lookup per id, so only a page placing images by height asks for it.
 pub(super) fn read(
-	text_page: &PdfTextPage,
+	text_page: &TextPage,
 	facts: &TreeFacts,
 	want_tops: bool,
 	evidence: &mut PageEvidence,

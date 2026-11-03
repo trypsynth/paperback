@@ -3,7 +3,7 @@
 use super::text::sanitize_pdf_text;
 use crate::{
 	document::{DocLen, DocPos, DocumentBuffer, Marker, MarkerType},
-	pdf_engine::{LinkTarget, PdfPage, PdfTextPage},
+	pdf_engine::{LinkTarget, Page, TextPage},
 	util::text::{collapse_whitespace, trim_string},
 };
 
@@ -37,7 +37,7 @@ pub(super) fn place_links(
 	}
 }
 
-pub(super) fn collect_web_links(text_page: &PdfTextPage) -> Vec<PendingLink> {
+pub(super) fn collect_web_links(text_page: &TextPage) -> Vec<PendingLink> {
 	let mut pending = Vec::new();
 	for link in text_page.web_links() {
 		let link_text = sanitize_pdf_text(&text_page.text(link.start..link.start + link.char_count));
@@ -50,7 +50,7 @@ pub(super) fn collect_web_links(text_page: &PdfTextPage) -> Vec<PendingLink> {
 	pending
 }
 
-pub(super) fn collect_annotation_links(page: &PdfPage, text_page: &PdfTextPage) -> Vec<PendingLink> {
+pub(super) fn collect_annotation_links(page: &Page, text_page: &TextPage) -> Vec<PendingLink> {
 	let mut pending = Vec::new();
 	for link in page.annotation_links() {
 		let text = sanitize_pdf_text(&text_page.text_in(link.rect));

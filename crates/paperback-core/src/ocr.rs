@@ -5,7 +5,7 @@ use zip::ZipArchive;
 
 use crate::{
 	parser::{cbr, cbz},
-	pdf_engine::PdfDocument,
+	pdf_engine::Document,
 	t,
 };
 
@@ -52,7 +52,7 @@ pub struct PageRenderer {
 }
 
 enum Source {
-	Pdf(PdfDocument),
+	Pdf(Document),
 	Comic { archive: ZipArchive<BufReader<File>>, pages: Vec<String> },
 }
 
@@ -65,7 +65,7 @@ impl PageRenderer {
 		if extension.is_some_and(|e| e.eq_ignore_ascii_case("cbr")) {
 			return Self::open_comic_rar(file_path);
 		}
-		Ok(Self { source: Source::Pdf(PdfDocument::open(file_path, password)?) })
+		Ok(Self { source: Source::Pdf(Document::open(file_path, password)?) })
 	}
 
 	fn open_comic(file_path: &str) -> Result<Self> {

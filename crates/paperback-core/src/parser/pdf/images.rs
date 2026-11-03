@@ -2,7 +2,7 @@
 
 use crate::{
 	document::{DocLen, DocPos, DocumentBuffer, Marker, MarkerType},
-	pdf_engine::{ObjectKind, PageImage, PdfPage},
+	pdf_engine::{ObjectKind, Page, PageImage},
 	t,
 };
 
@@ -46,7 +46,7 @@ fn is_announced_image(image: &PageImage, page_area: f64) -> bool {
 }
 
 /// The images a reader is told about, top of the page first.
-pub(super) fn announced_images(page: &PdfPage) -> Vec<PageImage> {
+pub(super) fn announced_images(page: &Page) -> Vec<PageImage> {
 	let page_area = page.width() * page.height();
 	let mut images: Vec<PageImage> = page.images().filter(|image| is_announced_image(image, page_area)).collect();
 	images.sort_by(|a, b| b.bounds.top.total_cmp(&a.bounds.top));
@@ -54,7 +54,7 @@ pub(super) fn announced_images(page: &PdfPage) -> Vec<PageImage> {
 }
 
 /// The largest single image, not the images added together: a page tiled with small decorations is not a scan.
-pub(super) fn page_largest_image_coverage(page: &PdfPage) -> f64 {
+pub(super) fn page_largest_image_coverage(page: &Page) -> f64 {
 	let page_area = page.width() * page.height();
 	if page_area <= 0.0 {
 		return 0.0;

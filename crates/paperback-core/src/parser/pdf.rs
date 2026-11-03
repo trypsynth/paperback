@@ -7,7 +7,7 @@ use crate::{
 	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	ocr::image_only_placeholder,
 	parser::{Parser, add_heading_markers, util::path::extract_title_from_path},
-	pdf_engine::{PdfDocument, PdfError, PdfPage},
+	pdf_engine::{Document as PdfDocument, Error as PdfError, Page},
 };
 
 mod images;
@@ -48,7 +48,7 @@ struct PageContent {
 }
 
 fn read_page(
-	page: Result<PdfPage<'_>, PdfError>,
+	page: Result<Page<'_>, PdfError>,
 	page_index: usize,
 	render_tables_inline: bool,
 	evidence: &mut PageEvidence,

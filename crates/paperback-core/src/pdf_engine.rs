@@ -22,17 +22,15 @@ mod text;
 #[allow(unused_imports)]
 pub use hayro_interpret::{font::FontFlags, kurbo::Point};
 #[allow(unused_imports)]
-pub use page::{
-	AnnotationLink, ImageId, LinkTarget, ObjectKind, PageBitmap, PageCache, PageImage, PageObject, PdfPage,
-};
+pub use page::{AnnotationLink, ImageId, LinkTarget, ObjectKind, Page, PageBitmap, PageCache, PageImage, PageObject};
 #[allow(unused_imports)]
 pub use tags::{Tag, TagChild, TagTree};
 #[allow(unused_imports)]
-pub use text::{CharFont, PageChar, PdfTextPage, Rect, TextMatrix, WebLink};
+pub use text::{CharFont, PageChar, Rect, TextMatrix, TextPage, WebLink};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
-pub enum PdfError {
+pub enum Error {
 	/// Kept separate because it is the one failure the reader can do something about.
 	PasswordRequired,
 	CouldNotOpen,
@@ -40,7 +38,7 @@ pub enum PdfError {
 	PageOutOfRange,
 }
 
-impl std::fmt::Display for PdfError {
+impl std::fmt::Display for Error {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		match self {
 			Self::PasswordRequired => write!(f, "the document is password protected"),
@@ -50,7 +48,7 @@ impl std::fmt::Display for PdfError {
 	}
 }
 
-impl std::error::Error for PdfError {}
+impl std::error::Error for Error {}
 
 /// A document's title and the like, as its info dictionary gives them.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -64,7 +62,7 @@ pub struct Metadata {
 	pub producer: Option<String>,
 }
 
-pub struct PdfDocument {
+pub struct Document {
 	pdf: Pdf,
 	page_numbers: HashMap<ObjectIdentifier, usize>,
 	structure: OnceLock<Option<tags::Structure>>,
@@ -72,22 +70,22 @@ pub struct PdfDocument {
 	named_destinations: OnceLock<HashMap<Vec<u8>, usize>>,
 }
 
-impl PdfDocument {
+impl Document {
 	/// # Errors
 	///
-	/// [`PdfError::PasswordRequired`] when the file is encrypted and the password does not fit, and [`PdfError::CouldNotOpen`] for a file that cannot be read or is not readable as a PDF.
-	pub fn open(path: impl AsRef<Path>, password: Option<&str>) -> Result<Self, PdfError> {
-		let bytes = std::fs::read(path).map_err(|_| PdfError::CouldNotOpen)?;
+	/// [`Error::PasswordRequired`] when the file is encrypted and the password does not fit, and [`Error::CouldNotOpen`] for a file that cannot be read or is not readable as a PDF.
+	pub fn open(path: impl AsRef<Path>, password: Option<&str>) -> Result<Self, Error> {
+		let bytes = std::fs::read(path).map_err(|_| Error::CouldNotOpen)?;
 		Self::from_bytes(bytes, password)
 	}
 
 	/// # Errors
 	///
-	/// The same failures as [`PdfDocument::open`].
-	pub fn from_bytes(bytes: Vec<u8>, password: Option<&str>) -> Result<Self, PdfError> {
+	/// The same failures as [`Document::open`].
+	pub fn from_bytes(bytes: Vec<u8>, password: Option<&str>) -> Result<Self, Error> {
 		let pdf = Pdf::new_with_password(bytes, password.unwrap_or("")).map_err(|error| match error {
-			LoadPdfError::Decryption(DecryptionError::PasswordProtected) => PdfError::PasswordRequired,
-			_ => PdfError::CouldNotOpen,
+			LoadPdfError::Decryption(DecryptionError::PasswordProtected) => Error::PasswordRequired,
+			_ => Error::CouldNotOpen,
 		})?;
 		let page_numbers =
 			pdf.pages().iter().enumerate().filter_map(|(index, page)| Some((page.raw().obj_id()?, index))).collect();
@@ -100,9 +98,9 @@ impl PdfDocument {
 
 	/// # Errors
 	///
-	/// [`PdfError::PageOutOfRange`] when there is no such page.
-	pub fn page(&self, index: usize) -> Result<PdfPage<'_>, PdfError> {
-		PdfPage::load(self, index, &PageCache::new())
+	/// [`Error::PageOutOfRange`] when there is no such page.
+	pub fn page(&self, index: usize) -> Result<Page<'_>, Error> {
+		Page::load(self, index, &PageCache::new())
 	}
 
 	/// Lets the pages one thread loads share the fonts they read.
@@ -113,9 +111,9 @@ impl PdfDocument {
 
 	/// # Errors
 	///
-	/// [`PdfError::PageOutOfRange`] when there is no such page.
-	pub fn page_with<'doc>(&'doc self, index: usize, cache: &PageCache<'doc>) -> Result<PdfPage<'doc>, PdfError> {
-		PdfPage::load(self, index, cache)
+	/// [`Error::PageOutOfRange`] when there is no such page.
+	pub fn page_with<'doc>(&'doc self, index: usize, cache: &PageCache<'doc>) -> Result<Page<'doc>, Error> {
+		Page::load(self, index, cache)
 	}
 
 	/// What the document's info dictionary says about it. A value left empty in the file comes back as `None`.
@@ -315,7 +313,7 @@ fn pdf_doc_char(byte: u8) -> char {
 mod tests {
 	use std::fmt::Write as _;
 
-	use super::{PdfDocument, decode_text_string};
+	use super::{Document, decode_text_string};
 
 	fn pdf_with_content(content: &str) -> Vec<u8> {
 		pdf_with_font(content, &["<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman >>".to_string()])
@@ -350,7 +348,7 @@ mod tests {
 	#[test]
 	fn horizontal_scaling_keeps_doubled_letters_and_spaces() {
 		let content = "BT /F1 100 Tf 10 Tz 1 0 0 1 72 700 Tm (Green 4332) Tj ET";
-		let document = PdfDocument::from_bytes(pdf_with_content(content), None).unwrap();
+		let document = Document::from_bytes(pdf_with_content(content), None).unwrap();
 		let page = document.page(0).unwrap();
 		let text = page.text();
 		assert_eq!(text.text(0..text.char_count()).trim(), "Green 4332");
@@ -360,7 +358,7 @@ mod tests {
 	#[test]
 	fn text_off_the_page_is_not_read() {
 		let content = "BT /F1 12 Tf 1 0 0 1 72 700 Tm (kept) Tj 1 0 0 1 72 -500 Tm (below) Tj 1 0 0 1 72 900 Tm (above) Tj 1 0 0 1 -400 700 Tm (left) Tj 1 0 0 1 700 700 Tm (right) Tj 1 0 0 1 600 650 Tm (edge) Tj ET";
-		let document = PdfDocument::from_bytes(pdf_with_content(content), None).unwrap();
+		let document = Document::from_bytes(pdf_with_content(content), None).unwrap();
 		let page = document.page(0).unwrap();
 		let text = page.text();
 		let read = text.text(0..text.char_count());
@@ -377,7 +375,7 @@ mod tests {
 			format!("<< /Length {} >>\nstream\n{map}\nendstream", map.len()),
 		];
 		let document =
-			PdfDocument::from_bytes(pdf_with_font("BT /F1 12 Tf 72 700 Td <00030004> Tj ET", &font), None).unwrap();
+			Document::from_bytes(pdf_with_font("BT /F1 12 Tf 72 700 Td <00030004> Tj ET", &font), None).unwrap();
 		let page = document.page(0).unwrap();
 		let text = page.text();
 		assert_eq!(text.text(0..text.char_count()).trim(), "HI");
@@ -387,7 +385,7 @@ mod tests {
 	#[test]
 	fn a_negative_font_size_does_not_space_out_kerned_letters() {
 		let content = "BT /F1 -12 Tf -1 0 0 -1 72 700 Tm [(f) -20 (o) -20 (n) -20 (t)] TJ ET";
-		let document = PdfDocument::from_bytes(pdf_with_content(content), None).unwrap();
+		let document = Document::from_bytes(pdf_with_content(content), None).unwrap();
 		let page = document.page(0).unwrap();
 		let text = page.text();
 		assert_eq!(text.text(0..text.char_count()).trim(), "font");
@@ -397,7 +395,7 @@ mod tests {
 	#[test]
 	fn a_lone_glyph_at_a_negative_font_size_is_read() {
 		let content = "BT /F1 -12 Tf -1 0 0 -1 72 700 Tm (ne) Tj (z) Tj (a) Tj ET";
-		let document = PdfDocument::from_bytes(pdf_with_content(content), None).unwrap();
+		let document = Document::from_bytes(pdf_with_content(content), None).unwrap();
 		let page = document.page(0).unwrap();
 		let text = page.text();
 		assert_eq!(text.text(0..text.char_count()).trim(), "neza");
@@ -415,7 +413,7 @@ mod tests {
 			);
 		}
 		content.push_str("ET");
-		let document = PdfDocument::from_bytes(pdf_with_content(&content), None).unwrap();
+		let document = Document::from_bytes(pdf_with_content(&content), None).unwrap();
 		let page = document.page(0).unwrap();
 		let text = page.text();
 		let read = text.text(0..text.char_count());
