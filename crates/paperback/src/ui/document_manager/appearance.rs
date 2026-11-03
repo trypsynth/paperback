@@ -78,7 +78,7 @@ impl DocumentManager {
 			let sizer = BoxSizer::builder(Orientation::Vertical).build();
 			sizer.add(&text_ctrl.widget(), 1, SizerFlag::Expand | SizerFlag::All, 0);
 			tab.panel.set_sizer(sizer, true);
-			tab.window = TextWindow::of(&slice, tab.window.target());
+			tab.window = TextWindow::of(&slice, tab.window.target(), tab.window.plain());
 			style_and_fill(text_ctrl, &slice, &tab.window, &style);
 			let max_pos = text_ctrl.get_last_position();
 			let pos = tab.window.to_local(current_doc_pos).min(max_pos);

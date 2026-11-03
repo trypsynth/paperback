@@ -118,6 +118,7 @@ pub(super) fn handle_options(
 		old_letter_spacing,
 		old_paragraph_spacing,
 		old_text_window_len,
+		old_plain_text,
 	) = {
 		let cfg = config.lock().unwrap();
 		(
@@ -134,6 +135,7 @@ pub(super) fn handle_options(
 			cfg.get_letter_spacing(),
 			cfg.get_paragraph_spacing(),
 			get_text_window_len(&cfg),
+			cfg.get_app_bool("plain_text", false),
 		)
 	};
 	let cfg = config.lock().unwrap();
@@ -171,6 +173,7 @@ pub(super) fn handle_options(
 	cfg.set_letter_spacing(options.letter_spacing);
 	cfg.set_paragraph_spacing(options.paragraph_spacing);
 	set_text_window_len(&cfg, options.text_window_len);
+	cfg.set_app_bool("plain_text", options.plain_text);
 	cfg.flush();
 	tracing::info!("settings saved");
 	#[cfg(target_os = "windows")]
@@ -180,6 +183,9 @@ pub(super) fn handle_options(
 	drop(cfg);
 	if old_text_window_len != options.text_window_len {
 		dm.lock().unwrap().apply_text_window_len(options.text_window_len);
+	}
+	if old_plain_text != options.plain_text {
+		dm.lock().unwrap().apply_plain_text(options.plain_text);
 	}
 	let options_word_wrap = options.word_wrap;
 	let options_render_tables_inline = options.render_tables_inline;

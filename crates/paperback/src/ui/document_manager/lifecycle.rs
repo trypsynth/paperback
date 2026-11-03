@@ -181,6 +181,7 @@ impl DocumentManager {
 			initial_pos,
 			doc_len,
 			crate::text_window::target_from_char_count(crate::config_ext::get_text_window_len(&config)),
+			config.get_app_bool("plain_text", false),
 		);
 		apply_readability_format_to_ctrl(
 			text_ctrl.widget(),

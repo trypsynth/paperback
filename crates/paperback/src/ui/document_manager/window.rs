@@ -16,6 +16,13 @@ impl DocumentManager {
 		}
 	}
 
+	/// Takes effect at each tab's next reload, for the same reason as the window size.
+	pub fn apply_plain_text(&mut self, plain: bool) {
+		for tab in &mut self.tabs {
+			tab.window.set_plain(plain);
+		}
+	}
+
 	/// Extends the loaded window ahead of a caret moving forward, on a timer because NVDA's Say-All reads through UI Automation and never reaches our key handlers.
 	///
 	/// It only ever appends. Say-All keeps its own offsets into the control, and recentring or compacting here once walked a Say-All back to the top of a large file. Compaction happens where the user moves instead (see [`Self::compact_window_after_user_move`]).

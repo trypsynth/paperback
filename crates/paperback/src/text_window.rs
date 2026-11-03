@@ -51,28 +51,30 @@ pub struct TextWindow {
 	wide: Vec<(DocLen, i64)>,
 	/// How much text the window is sized around, as Settings asks; zero means the whole document.
 	target: DocLen,
+	/// Fill the control with characters alone: no bold, italic or underline runs and no heading or list paragraph styles, which skips the RTF stream and its cost.
+	plain: bool,
 }
 
 impl TextWindow {
 	#[cfg(test)]
 	pub const fn new(start: DocPos, end: DocPos) -> Self {
-		Self { start, end, wide: Vec::new(), target: DEFAULT_TARGET }
+		Self { start, end, wide: Vec::new(), target: DEFAULT_TARGET, plain: false }
 	}
 
 	#[cfg(test)]
 	pub const fn with_target(start: DocPos, end: DocPos, target: DocLen) -> Self {
-		Self { start, end, wide: Vec::new(), target }
+		Self { start, end, wide: Vec::new(), target, plain: false }
 	}
 
-	pub fn of(slice: &WindowSlice, target: DocLen) -> Self {
-		let mut window = Self { start: slice.start, end: slice.start, wide: Vec::new(), target };
+	pub fn of(slice: &WindowSlice, target: DocLen, plain: bool) -> Self {
+		let mut window = Self { start: slice.start, end: slice.start, wide: Vec::new(), target, plain };
 		window.extend_with(slice);
 		window
 	}
 
 	#[cfg(test)]
 	pub const fn whole(doc_len: DocLen) -> Self {
-		Self { start: DocPos::ZERO, end: doc_len.as_pos(), wide: Vec::new(), target: UNLIMITED }
+		Self { start: DocPos::ZERO, end: doc_len.as_pos(), wide: Vec::new(), target: UNLIMITED, plain: false }
 	}
 
 	pub const fn start(&self) -> DocPos {
@@ -90,6 +92,15 @@ impl TextWindow {
 	/// Takes effect on the next reload; the text already loaded is left where it is so applying a setting never moves a reader.
 	pub fn set_target(&mut self, target: DocLen) {
 		self.target = target;
+	}
+
+	pub const fn plain(&self) -> bool {
+		self.plain
+	}
+
+	/// Also takes effect on the next reload, for the same reason.
+	pub fn set_plain(&mut self, plain: bool) {
+		self.plain = plain;
 	}
 
 	/// A quarter of the window, so a caret step at the boundary doesn't reload on every keystroke.
@@ -242,7 +253,7 @@ mod tests {
 	#[test]
 	fn a_char_outside_the_bmp_is_one_position_and_as_many_units_as_the_control_counts() {
 		// "a😀b😀c" from position 100: a=100, 😀=101, b=102, 😀=103, c=104.
-		let window = TextWindow::of(&slice(100, "a\u{1F600}b\u{1F600}c"), DEFAULT_TARGET);
+		let window = TextWindow::of(&slice(100, "a\u{1F600}b\u{1F600}c"), DEFAULT_TARGET, false);
 		let expected = units([0, 1, 3, 4, 6], [0, 1, 2, 3, 4]);
 		for (position, units) in (100..105).map(p).zip(expected) {
 			assert_eq!(window.to_local(position), CtrlPos(units), "position {position}");
@@ -257,14 +268,14 @@ mod tests {
 
 	#[test]
 	fn an_extended_window_counts_what_was_loaded_before() {
-		let mut window = TextWindow::of(&slice(0, "a\u{1F600}"), DEFAULT_TARGET);
+		let mut window = TextWindow::of(&slice(0, "a\u{1F600}"), DEFAULT_TARGET, false);
 		window.extend_with(&slice(2, "b\u{1F600}c"));
 		let expected = units([0, 1, 3, 4, 6], [0, 1, 2, 3, 4]);
 		for (position, units) in (0..5).map(p).zip(expected) {
 			assert_eq!(window.to_local(position), CtrlPos(units), "position {position}");
 			assert_eq!(window.to_doc(CtrlPos(units)), position, "units {units}");
 		}
-		assert_eq!(window, TextWindow::of(&slice(0, "a\u{1F600}b\u{1F600}c"), DEFAULT_TARGET));
+		assert_eq!(window, TextWindow::of(&slice(0, "a\u{1F600}b\u{1F600}c"), DEFAULT_TARGET, false));
 	}
 
 	#[test]
@@ -479,5 +490,12 @@ mod tests {
 		let window = TextWindow::with_target(start, end, target);
 		assert!(!window.needs_reload_for(p(5_000_000), l(20_000_000)));
 		assert!(window.needs_reload_for(p(4_100_000), l(20_000_000)));
+	}
+
+	#[test]
+	fn a_plain_window_keeps_its_flag_through_a_slice() {
+		let window = TextWindow::of(&slice(0, "plain"), DEFAULT_TARGET, true);
+		assert!(window.plain());
+		assert!(!TextWindow::of(&slice(0, "plain"), DEFAULT_TARGET, false).plain());
 	}
 }

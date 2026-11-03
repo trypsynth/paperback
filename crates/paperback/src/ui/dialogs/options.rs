@@ -48,6 +48,7 @@ pub struct OptionsDialogResult {
 	pub recent_documents_to_show: i32,
 	pub reading_speed_wpm: i32,
 	pub text_window_len: i32,
+	pub plain_text: bool,
 	pub language: String,
 	pub update_channel: UpdateChannel,
 	pub log_level: LogLevel,
@@ -85,6 +86,7 @@ struct OptionsDialogUi {
 	recent_docs_ctrl: SpinCtrl,
 	reading_speed_ctrl: SpinCtrl,
 	text_window_len_ctrl: Choice,
+	plain_text_check: CheckBox,
 	language_combo: Choice,
 	update_channel_combo: Choice,
 	log_level_combo: Choice,
@@ -153,6 +155,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		recent_documents_to_show: ui.recent_docs_ctrl.value(),
 		reading_speed_wpm: ui.reading_speed_ctrl.value(),
 		text_window_len,
+		plain_text: ui.plain_text_check.is_checked(),
 		language,
 		update_channel,
 		log_level,
@@ -476,6 +479,11 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	);
 	text_window_len_sizer.add(&text_window_len_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	advanced_sizer.add_sizer(&text_window_len_sizer, 0, SizerFlag::All, option_padding);
+	let plain_text_check = CheckBox::builder(&advanced_panel)
+		// TRANSLATORS: Option to load text as plain characters, without bold, italic, underline, heading or list formatting. It is faster on very large windows, but a screen reader no longer announces headings and lists.
+		.with_label(&t("Load text &without formatting (faster, but headings and lists are not announced)"))
+		.build();
+	advanced_sizer.add(&plain_text_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&word_wrap_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&render_tables_inline_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&join_pdf_paragraphs_check, 0, SizerFlag::All, option_padding);
@@ -542,6 +550,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let stored_window_len = get_text_window_len(config);
 	let window_len_index = TEXT_WINDOW_LENGTHS.iter().position(|&len| len == stored_window_len).unwrap_or(0);
 	text_window_len_ctrl.set_selection(u32::try_from(window_len_index).unwrap_or(0));
+	plain_text_check.set_value(config.get_app_bool("plain_text", false));
 	let stored_language = config.get_app_string("language", "");
 	let current_language = if stored_language.is_empty() {
 		TranslationManager::instance().lock().unwrap().current_language()
@@ -652,6 +661,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		recent_docs_ctrl,
 		reading_speed_ctrl,
 		text_window_len_ctrl,
+		plain_text_check,
 		language_combo,
 		update_channel_combo,
 		log_level_combo,
