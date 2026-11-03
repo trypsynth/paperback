@@ -87,13 +87,13 @@ pub fn dump_pdf_page_chars(path: &str, password: Option<&str>, page: i32) -> Res
 		let marks = text
 			.text_object(i)
 			.map(|object| {
-				let ids: Vec<String> = (0..object.mark_count())
-					.filter_map(|m| object.mark(m))
+				let ids: Vec<String> = object
+					.marks()
 					.map(|mark| {
 						format!(
 							"{}:{}",
 							mark.name().unwrap_or_default(),
-							mark.param_int("MCID").map_or_else(String::new, |id| id.to_string())
+							mark.mcid().map_or_else(String::new, |id| id.to_string())
 						)
 					})
 					.collect();

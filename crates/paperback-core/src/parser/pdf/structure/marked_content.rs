@@ -5,8 +5,6 @@ use super::super::text::{
 };
 use crate::pdf_engine::{PageObject, PdfTextPage, Tag, TagTree};
 
-const MCID_KEY: &str = "MCID";
-
 /// Some PDFs advertise a structure tree while leaving their text essentially untagged (no ids, or only `/Artifact` marks).
 pub(super) const MIN_MCID_COVERAGE: f64 = 0.5;
 
@@ -179,14 +177,13 @@ pub(super) fn fold_repeated_references(
 /// Apple Pages nests marks (the list's wraps the item's wraps the label's), so the outermost id pdfium reports leaves the ids the tree points at empty; the innermost referenced one is taken.
 fn object_mcid(obj: &PageObject, referenced: &HashSet<i32>) -> i32 {
 	let outermost = obj.marked_content_id().unwrap_or(-1);
-	let count = obj.mark_count();
-	if count <= 1 {
+	let marks = obj.marks();
+	if marks.len() <= 1 {
 		return outermost;
 	}
 	let mut deepest = outermost;
-	for index in 0..count {
-		let Some(mark) = obj.mark(index) else { continue };
-		if let Some(mcid) = mark.param_int(MCID_KEY)
+	for mark in marks {
+		if let Some(mcid) = mark.mcid()
 			&& referenced.contains(&mcid)
 		{
 			deepest = mcid;
@@ -196,7 +193,7 @@ fn object_mcid(obj: &PageObject, referenced: &HashSet<i32>) -> i32 {
 }
 
 fn is_artifact(obj: &PageObject) -> bool {
-	(0..obj.mark_count()).filter_map(|index| obj.mark(index)).any(|mark| mark.name().as_deref() == Some("Artifact"))
+	obj.marks().any(|mark| mark.name() == Some("Artifact"))
 }
 
 pub(super) fn first_marked_content_id(elem: &Tag) -> Option<i32> {

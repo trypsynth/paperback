@@ -302,13 +302,9 @@ impl<'page> PageObject<'page> {
 		self.data.marked_content_id()
 	}
 
-	pub fn mark_count(&self) -> i32 {
-		i32::try_from(self.data.marks.len()).unwrap_or(i32::MAX)
-	}
-
-	pub fn mark(&self, index: i32) -> Option<ObjectMark<'page>> {
-		let mark = self.data.marks.get(usize::try_from(index).ok()?)?;
-		Some(ObjectMark { mark })
+	/// The marked content sequences the object sits in, outermost first.
+	pub fn marks(&self) -> impl ExactSizeIterator<Item = ObjectMark<'page>> + use<'page> {
+		self.data.marks.iter().map(|mark| ObjectMark { mark })
 	}
 }
 
@@ -316,14 +312,15 @@ pub struct ObjectMark<'object> {
 	mark: &'object Mark,
 }
 
-impl ObjectMark<'_> {
-	pub fn name(&self) -> Option<String> {
-		Some(self.mark.name.clone()).filter(|name| !name.is_empty())
+impl<'object> ObjectMark<'object> {
+	/// The mark's tag, such as `Artifact` or `P`.
+	pub fn name(&self) -> Option<&'object str> {
+		Some(self.mark.name.as_str()).filter(|name| !name.is_empty())
 	}
 
-	/// Only `MCID` is ever asked for, so it is the only parameter kept.
-	pub fn param_int(&self, key: &str) -> Option<i32> {
-		if key == "MCID" { self.mark.mcid } else { None }
+	/// The id the structure tree refers to the sequence by.
+	pub const fn mcid(&self) -> Option<i32> {
+		self.mark.mcid
 	}
 }
 
