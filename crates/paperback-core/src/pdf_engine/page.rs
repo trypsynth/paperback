@@ -79,13 +79,9 @@ impl<'doc> PdfPage<'doc> {
 		Some(TagTree::of(self.document.structure()?, i32::try_from(self.index).ok()?))
 	}
 
-	pub fn object_count(&self) -> i32 {
-		i32::try_from(self.objects.len()).unwrap_or(i32::MAX)
-	}
-
-	pub fn object(&self, index: i32) -> Option<PageObject<'_>> {
-		let data = self.objects.get(usize::try_from(index).ok()?)?;
-		Some(PageObject { data })
+	/// The page's text runs and images, in the order they are drawn.
+	pub fn objects(&self) -> impl ExactSizeIterator<Item = PageObject<'_>> {
+		self.objects.iter().map(|data| PageObject { data })
 	}
 
 	pub fn announced_images(&self) -> Vec<PageImage<'_>> {

@@ -39,8 +39,8 @@ pub(super) fn page_largest_image_coverage(page: &PdfPage) -> f64 {
 	if page_area <= 0.0 {
 		return 0.0;
 	}
-	let largest = (0..page.object_count())
-		.filter_map(|i| page.object(i))
+	let largest = page
+		.objects()
 		.filter(|object| object.kind() == ObjectKind::Image)
 		.filter_map(|object| object.bounds())
 		.map(|bounds| f64::from((bounds.right - bounds.left).abs()) * f64::from((bounds.top - bounds.bottom).abs()))

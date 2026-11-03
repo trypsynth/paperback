@@ -38,10 +38,8 @@ pub fn dump_pdf_page_chars(path: &str, password: Option<&str>, page: i32) -> Res
 	let document = pdf_engine::PdfDocument::open(path, password).map_err(|error| error.to_string())?;
 	let page = document.page(page).map_err(|error| error.to_string())?;
 	let mut out = String::new();
-	for i in 0..page.object_count() {
-		if let Some(object) = page.object(i)
-			&& object.kind() != pdf_engine::ObjectKind::Other
-		{
+	for (i, object) in page.objects().enumerate() {
+		if object.kind() != pdf_engine::ObjectKind::Other {
 			let _ = writeln!(out, "object {i} {:?} {:?}", object.kind(), object.bounds());
 		}
 	}
