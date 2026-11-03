@@ -52,6 +52,18 @@ impl std::fmt::Display for PdfError {
 
 impl std::error::Error for PdfError {}
 
+/// A document's title and the like, as its info dictionary gives them.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[allow(dead_code, reason = "Paperback reads only the title and author so far")]
+pub struct Metadata {
+	pub title: Option<String>,
+	pub author: Option<String>,
+	pub subject: Option<String>,
+	pub keywords: Option<String>,
+	pub creator: Option<String>,
+	pub producer: Option<String>,
+}
+
 pub struct PdfDocument {
 	pdf: Pdf,
 	page_numbers: HashMap<ObjectIdentifier, usize>,
@@ -106,18 +118,18 @@ impl PdfDocument {
 		PdfPage::load(self, index, cache)
 	}
 
-	pub fn metadata(&self, key: &str) -> Option<String> {
+	/// What the document's info dictionary says about it. A value left empty in the file comes back as `None`.
+	pub fn metadata(&self) -> Metadata {
 		let metadata = self.pdf.metadata();
-		let value = match key {
-			"Title" => metadata.title.as_deref(),
-			"Author" => metadata.author.as_deref(),
-			"Subject" => metadata.subject.as_deref(),
-			"Keywords" => metadata.keywords.as_deref(),
-			"Creator" => metadata.creator.as_deref(),
-			"Producer" => metadata.producer.as_deref(),
-			_ => None,
-		}?;
-		Some(decode_text_string(value)).filter(|text| !text.is_empty())
+		let text = |value: &Option<Box<[u8]>>| value.as_deref().map(decode_text_string).filter(|text| !text.is_empty());
+		Metadata {
+			title: text(&metadata.title),
+			author: text(&metadata.author),
+			subject: text(&metadata.subject),
+			keywords: text(&metadata.keywords),
+			creator: text(&metadata.creator),
+			producer: text(&metadata.producer),
+		}
 	}
 
 	/// A damaged outline can point back at itself; the looping branch is cut but what was read is kept, since a partial contents list beats none.

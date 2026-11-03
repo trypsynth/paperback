@@ -24,7 +24,7 @@ use images::{
 	PAGE_IMAGE_COVERAGE, announced_images, append_image, images_before_each_paragraph, page_largest_image_coverage,
 };
 use links::{PendingLink, collect_annotation_links, collect_web_links, place_links};
-use metadata::{map_load_error, metadata_title, metadata_value};
+use metadata::{cleaned_metadata, map_load_error, metadata_title};
 use paragraphs::{join_paragraphs, split_lines};
 pub use paragraphs::{join_wrapped_lines, join_wrapped_runs};
 use running::{EDGE_LINES, PageEdges, RunningText};
@@ -459,7 +459,7 @@ impl Parser for PdfParser {
 			page_lines_info.push(current_lines_info);
 		}
 		let title = metadata_title(&document).unwrap_or_else(|| extract_title_from_path(&context.file_path));
-		let author = metadata_value(&document, "Author").unwrap_or_default();
+		let author = cleaned_metadata(document.metadata().author).unwrap_or_default();
 		let mut toc_items = extract_toc(&document, &page_offsets, &page_lines_info);
 		let toc_source = if !toc_items.is_empty() {
 			"bookmarks"
