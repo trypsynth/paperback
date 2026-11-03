@@ -3,6 +3,7 @@
 
 use std::{
 	collections::{HashMap, HashSet},
+	path::Path,
 	sync::OnceLock,
 };
 
@@ -63,7 +64,7 @@ impl PdfDocument {
 	/// # Errors
 	///
 	/// [`PdfError::PasswordRequired`] when the file is encrypted and the password does not fit, and [`PdfError::CouldNotOpen`] for a file that cannot be read or is not readable as a PDF.
-	pub fn open(path: &str, password: Option<&str>) -> Result<Self, PdfError> {
+	pub fn open(path: impl AsRef<Path>, password: Option<&str>) -> Result<Self, PdfError> {
 		let bytes = std::fs::read(path).map_err(|_| PdfError::CouldNotOpen)?;
 		Self::from_bytes(bytes, password)
 	}
