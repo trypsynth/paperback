@@ -32,7 +32,7 @@ tracing = { workspace = true }
 tracing-appender = "0.2.5"
 tracing-subscriber = { workspace = true }
 wx-utils = { version = "0.4.4", features = ["global-hotkeys", "shortcuts"] }
-wxdragon = { version = "0.9.24", default-features = false, features = ["webview"] }
+wxdragon = { version = "0.9.24", default-features = false, features = ["webview", "stc"] }
 zip = { workspace = true }
 
 [target.'cfg(target_os = "macos")'.dependencies]
@@ -40,7 +40,7 @@ block = "0.1.6"
 objc = "0.2.7"
 
 [target.'cfg(windows)'.dependencies]
-windows = { workspace = true, features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Ole", "Win32_System_Pipes", "Win32_System_Threading", "Win32_System_Variant", "Win32_UI_Accessibility", "Win32_UI_Controls_RichEdit", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
+windows = { workspace = true, features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Ole", "Win32_System_Pipes", "Win32_System_Threading", "Win32_System_Variant", "Win32_UI_Accessibility", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
 
 [build-dependencies]
 paperback-formats = { workspace = true }
@@ -64,12 +64,4 @@ harness = false
 
 [[test]]
 name = "macos_menu_shortcuts"
-harness = false
-
-[[test]]
-name = "windows_rtf_window_append"
-harness = false
-
-[[test]]
-name = "windows_paragraph_styles"
 harness = false

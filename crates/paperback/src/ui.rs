@@ -14,13 +14,9 @@ mod main_window;
 mod menu;
 mod menu_ids;
 mod navigation;
-#[cfg(target_os = "windows")]
-mod paragraph_format;
 mod readability;
 mod reader_ctrl;
 mod reader_input;
-#[cfg(target_os = "windows")]
-mod rtf_stream;
 mod selection;
 mod sleep_timer;
 mod sounds;

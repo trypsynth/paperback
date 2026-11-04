@@ -23,7 +23,7 @@ use crate::{
 	ocr::{self, OcrError},
 	ui::{
 		navigation::{announce, announce_for_command, announce_waiting_for_command},
-		text_render::reload_window_around,
+		text_render::reload_document,
 	},
 };
 
@@ -342,7 +342,7 @@ fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[DocPos], loaded_end: DocPo
 		return;
 	}
 	let caret = caret.min(tab.session.document_len().as_pos());
-	reload_window_around(tab, caret, "ocr");
+	reload_document(tab, caret);
 	if is_active {
 		let local = tab.window.to_local(caret);
 		tab.text_ctrl.set_insertion_point(local);

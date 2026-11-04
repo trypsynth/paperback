@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 21:30+0000\n"
+"POT-Creation-Date: 2026-11-03 19:15-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1269,46 +1269,6 @@ msgstr ""
 
 #. TRANSLATORS: Double line spacing option
 msgid "Double"
-msgstr ""
-
-#. TRANSLATORS: Label for the paragraph spacing dropdown
-msgid "&Paragraph spacing:"
-msgstr ""
-
-#. TRANSLATORS: Relaxed paragraph spacing option
-msgid "Relaxed"
-msgstr ""
-
-#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-msgid "Wide"
-msgstr ""
-
-#. TRANSLATORS: Label for the letter spacing dropdown
-msgid "L&etter spacing:"
-msgstr ""
-
-#. TRANSLATORS: Very Wide letter spacing option
-msgid "Very Wide"
-msgstr ""
-
-#. TRANSLATORS: Label for the text alignment dropdown
-msgid "Text &alignment:"
-msgstr ""
-
-#. TRANSLATORS: Left text alignment option
-msgid "Left"
-msgstr ""
-
-#. TRANSLATORS: Center text alignment option
-msgid "Center"
-msgstr ""
-
-#. TRANSLATORS: Right text alignment option
-msgid "Right"
-msgstr ""
-
-#. TRANSLATORS: Justified text alignment option
-msgid "Justify"
 msgstr ""
 
 #. TRANSLATORS: Tab label for the General options panel
@@ -4907,4 +4867,39 @@ msgstr ""
 #. TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
 #: kt
 msgid "Select audio speed"
+msgstr ""
+
+#. TRANSLATORS: Relaxed paragraph spacing option
+#: kt
+#: swift
+msgid "Relaxed"
+msgstr ""
+
+#. TRANSLATORS: Wide paragraph spacing option
+#: kt
+#: swift
+msgid "Wide"
+msgstr ""
+
+#. TRANSLATORS: Left text alignment option
+#: kt
+#: swift
+msgid "Left"
+msgstr ""
+
+#. TRANSLATORS: Center text alignment option
+#: kt
+#: swift
+msgid "Center"
+msgstr ""
+
+#. TRANSLATORS: Right text alignment option
+#: kt
+#: swift
+msgid "Right"
+msgstr ""
+
+#. TRANSLATORS: Justified text alignment option
+#: kt
+msgid "Justify"
 msgstr ""

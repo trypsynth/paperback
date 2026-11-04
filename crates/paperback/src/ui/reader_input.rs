@@ -3,13 +3,11 @@
 use std::{cell::Cell, rc::Rc, sync::Mutex};
 
 use paperback_core::config::ActionId;
-#[cfg(any(target_os = "windows", target_os = "macos"))]
-use paperback_core::document::DocPos;
 use patois::t;
 use wxdragon::{event::KeyboardEvent, prelude::*};
 
 #[cfg(any(target_os = "windows", target_os = "macos"))]
-use super::{document_manager::DocumentTab, text_render::reload_window_around};
+use super::document_manager::DocumentTab;
 use super::{
 	document_manager::{DocumentManager, tab_index_for_key},
 	menu, menu_ids,
@@ -18,7 +16,7 @@ use super::{
 #[cfg(any(target_os = "windows", target_os = "macos"))]
 use crate::text_window::CtrlPos;
 
-mod activation;
+pub(super) mod activation;
 #[cfg(target_os = "macos")]
 mod macos;
 #[cfg(target_os = "windows")]
@@ -27,6 +25,10 @@ mod windows;
 #[cfg(target_os = "windows")]
 use windows::try_navigate_line_by_column;
 
+fn bind_reader_activation(text_ctrl: ReaderCtrl, activate: impl Fn(bool) + 'static) {
+	activation::bind_activation(text_ctrl.control(), activate);
+}
+
 pub(super) fn build_text_ctrl(
 	panel: Panel,
 	word_wrap: bool,
@@ -34,14 +36,11 @@ pub(super) fn build_text_ctrl(
 	frame: Frame,
 	from_keyboard: Rc<Cell<bool>>,
 ) -> ReaderCtrl {
-	let style = TextCtrlStyle::MultiLine
-		| TextCtrlStyle::ReadOnly
-		| TextCtrlStyle::Rich2
-		| if word_wrap { TextCtrlStyle::WordWrap } else { TextCtrlStyle::DontWrap };
-	let text_ctrl = ReaderCtrl::new(TextCtrl::builder(&panel).with_style(style).build());
+	let text_ctrl = ReaderCtrl::new(StyledTextCtrl::builder(&panel).build());
+	text_ctrl.configure(word_wrap);
 	let dm_for_enter = Rc::clone(self_rc);
 	let frame_for_char = frame;
-	activation::bind_activation(text_ctrl.widget(), move |enter| {
+	bind_reader_activation(text_ctrl, move |enter| {
 		// A picture that is also a link follows the link, as Enter always has; its text is read from the context menu instead.
 		if enter {
 			let handled = {
@@ -95,9 +94,7 @@ pub(super) fn build_text_ctrl(
 	text_ctrl.bind_internal(EventType::KEY_UP, move |event| {
 		event.skip(true);
 		let moved_over_text = event.get_key_code().is_some_and(moves_through_text);
-		if let Ok(mut dm) = dm_for_key_up.try_lock() {
-			// Before the status bar reads the position, so it reports the compacted window.
-			dm.compact_window_after_user_move();
+		if let Ok(dm) = dm_for_key_up.try_lock() {
 			dm.update_status_bar();
 			dm.save_position_throttled();
 			if moved_over_text {
@@ -110,9 +107,8 @@ pub(super) fn build_text_ctrl(
 	let dm_for_mouse = Rc::clone(self_rc);
 	text_ctrl.bind_internal(wxdragon::event::EventType::LEFT_UP, move |event| {
 		event.skip(true);
-		if let Ok(mut dm) = dm_for_mouse.try_lock() {
+		if let Ok(dm) = dm_for_mouse.try_lock() {
 			dm.set_preferred_column(None);
-			dm.compact_window_after_user_move();
 			dm.update_status_bar();
 			dm.save_position_throttled();
 			// A click onto a bookmark is deliberate enough for the sound; this compares against the last arrow-key position, which is why jumps keep it current.
@@ -312,26 +308,13 @@ const fn document_edge_for_key(key: i32, control: bool, shift: bool, alt: bool) 
 	}
 }
 
-// Retries once after a reload at a loaded-window edge that isn't the document's, which would otherwise strand the caret.
 #[cfg(any(target_os = "windows", target_os = "macos"))]
 fn navigate_line_by_column(
-	tab: &mut DocumentTab,
+	tab: &DocumentTab,
 	going_down: bool,
 	pref_col: Option<i64>,
 	start_of_line: bool,
 ) -> Option<(CtrlPos, i64)> {
-	if let Some(result) = try_navigate_line_by_column(tab, going_down, pref_col, start_of_line)? {
-		return Some(result);
-	}
-	let doc_len = tab.session.document_len();
-	let has_more = if going_down { tab.window.end() < doc_len.as_pos() } else { tab.window.start() > DocPos::ZERO };
-	if !has_more {
-		return None;
-	}
-	let doc_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point().max(CtrlPos::ZERO));
-	reload_window_around(tab, doc_pos, "line navigation");
-	let local = tab.window.to_local(doc_pos);
-	tab.text_ctrl.set_insertion_point(local);
 	try_navigate_line_by_column(tab, going_down, pref_col, start_of_line)?
 }
 

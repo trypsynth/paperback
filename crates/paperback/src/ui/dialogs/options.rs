@@ -53,9 +53,6 @@ pub struct OptionsDialogResult {
 	pub readability_font: ReadabilityFont,
 	pub line_spacing: i32,
 	pub bg_color: i32,
-	pub text_alignment: i32,
-	pub letter_spacing: i32,
-	pub paragraph_spacing: i32,
 }
 
 struct OptionsDialogUi {
@@ -93,9 +90,6 @@ struct OptionsDialogUi {
 	readability_font: Rc<RefCell<ReadabilityFont>>,
 	line_spacing_ctrl: Choice,
 	bg_color: Rc<Cell<i32>>,
-	text_alignment_ctrl: Choice,
-	letter_spacing_ctrl: Choice,
-	paragraph_spacing_ctrl: Choice,
 }
 
 pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<OptionsDialogResult> {
@@ -114,9 +108,6 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	let readability_font = ui.readability_font.borrow().clone();
 	let line_spacing = ui.line_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
 	let bg_color = ui.bg_color.get();
-	let text_alignment = ui.text_alignment_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
-	let letter_spacing = ui.letter_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
-	let paragraph_spacing = ui.paragraph_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
 	let audio_seek_amount_seconds = ui
 		.audio_seek_amount_ctrl
 		.get_selection()
@@ -151,9 +142,6 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		readability_font,
 		line_spacing,
 		bg_color,
-		text_alignment,
-		letter_spacing,
-		paragraph_spacing,
 	})
 }
 
@@ -366,81 +354,12 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let line_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	line_spacing_sizer.add(&line_spacing_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	line_spacing_sizer.add(&line_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	// TRANSLATORS: Label for the paragraph spacing dropdown
-	let paragraph_spacing_label_text = t("&Paragraph spacing:");
-	let paragraph_spacing_label =
-		StaticText::builder(&readability_panel).with_label(&paragraph_spacing_label_text).build();
-	let paragraph_spacing_ctrl = Choice::builder(&readability_panel).build();
-	// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
-	paragraph_spacing_ctrl.append(&t("Normal"));
-	// TRANSLATORS: Relaxed paragraph spacing option
-	paragraph_spacing_ctrl.append(&t("Relaxed"));
-	// TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-	paragraph_spacing_ctrl.append(&t("Wide"));
-	#[cfg(target_os = "macos")]
-	paragraph_spacing_ctrl
-		.set_accessibility_label(paragraph_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
-	let paragraph_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	paragraph_spacing_sizer.add(
-		&paragraph_spacing_label,
-		0,
-		SizerFlag::AlignCenterVertical | SizerFlag::Right,
-		DIALOG_PADDING,
-	);
-	paragraph_spacing_sizer.add(&paragraph_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	// TRANSLATORS: Label for the letter spacing dropdown
-	let letter_spacing_label_text = t("L&etter spacing:");
-	let letter_spacing_label = StaticText::builder(&readability_panel).with_label(&letter_spacing_label_text).build();
-	let letter_spacing_ctrl = Choice::builder(&readability_panel).build();
-	// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
-	letter_spacing_ctrl.append(&t("Normal"));
-	// TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-	letter_spacing_ctrl.append(&t("Wide"));
-	// TRANSLATORS: Very Wide letter spacing option
-	letter_spacing_ctrl.append(&t("Very Wide"));
-	#[cfg(target_os = "macos")]
-	letter_spacing_ctrl
-		.set_accessibility_label(letter_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
-	let letter_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	letter_spacing_sizer.add(
-		&letter_spacing_label,
-		0,
-		SizerFlag::AlignCenterVertical | SizerFlag::Right,
-		DIALOG_PADDING,
-	);
-	letter_spacing_sizer.add(&letter_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	// TRANSLATORS: Label for the text alignment dropdown
-	let text_alignment_label_text = t("Text &alignment:");
-	let text_alignment_label = StaticText::builder(&readability_panel).with_label(&text_alignment_label_text).build();
-	let text_alignment_ctrl = Choice::builder(&readability_panel).build();
-	// TRANSLATORS: Left text alignment option
-	text_alignment_ctrl.append(&t("Left"));
-	// TRANSLATORS: Center text alignment option
-	text_alignment_ctrl.append(&t("Center"));
-	// TRANSLATORS: Right text alignment option
-	text_alignment_ctrl.append(&t("Right"));
-	// TRANSLATORS: Justified text alignment option
-	text_alignment_ctrl.append(&t("Justify"));
-	#[cfg(target_os = "macos")]
-	text_alignment_ctrl
-		.set_accessibility_label(text_alignment_label_text.replace('&', "").trim_end_matches(':').trim());
-	let text_alignment_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	text_alignment_sizer.add(
-		&text_alignment_label,
-		0,
-		SizerFlag::AlignCenterVertical | SizerFlag::Right,
-		DIALOG_PADDING,
-	);
-	text_alignment_sizer.add(&text_alignment_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	readability_sizer.add(&word_wrap_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&render_tables_inline_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&join_pdf_paragraphs_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&strip_running_text_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&markdown_dollar_math_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&line_spacing_sizer, 0, SizerFlag::All, option_padding);
-	readability_sizer.add_sizer(&paragraph_spacing_sizer, 0, SizerFlag::All, option_padding);
-	readability_sizer.add_sizer(&letter_spacing_sizer, 0, SizerFlag::All, option_padding);
-	readability_sizer.add_sizer(&text_alignment_sizer, 0, SizerFlag::All, option_padding);
 	readability_panel.set_sizer(readability_sizer, true);
 	general_panel.set_sizer(general_sizer, true);
 	reading_panel.set_sizer(reading_sizer, true);
@@ -524,9 +443,6 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let readability_font = Rc::new(RefCell::new(initial_font));
 	let stored_line_spacing = config.get_line_spacing().clamp(0, 2).unsigned_abs();
 	line_spacing_ctrl.set_selection(stored_line_spacing);
-	paragraph_spacing_ctrl.set_selection(config.get_paragraph_spacing().clamp(0, 2).unsigned_abs());
-	letter_spacing_ctrl.set_selection(config.get_letter_spacing().clamp(0, 2).unsigned_abs());
-	text_alignment_ctrl.set_selection(config.get_text_alignment().clamp(0, 3).unsigned_abs());
 	let stored_bg = config.get_bg_color();
 	bg_color_label.set_label(&color_description(stored_bg));
 	let bg_color = Rc::new(Cell::new(stored_bg));
@@ -610,9 +526,6 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		readability_font,
 		line_spacing_ctrl,
 		bg_color,
-		text_alignment_ctrl,
-		letter_spacing_ctrl,
-		paragraph_spacing_ctrl,
 	}
 }
 

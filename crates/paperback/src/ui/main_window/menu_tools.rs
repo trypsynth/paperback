@@ -114,9 +114,6 @@ pub(super) fn handle_options(
 		old_readability_font,
 		old_line_spacing,
 		old_bg_color,
-		old_text_alignment,
-		old_letter_spacing,
-		old_paragraph_spacing,
 	) = {
 		let cfg = config.lock().unwrap();
 		(
@@ -129,9 +126,6 @@ pub(super) fn handle_options(
 			cfg.get_readability_font(),
 			cfg.get_line_spacing(),
 			cfg.get_bg_color(),
-			cfg.get_text_alignment(),
-			cfg.get_letter_spacing(),
-			cfg.get_paragraph_spacing(),
 		)
 	};
 	let cfg = config.lock().unwrap();
@@ -165,9 +159,6 @@ pub(super) fn handle_options(
 	cfg.set_readability_font(&options.readability_font);
 	cfg.set_line_spacing(options.line_spacing);
 	cfg.set_bg_color(options.bg_color);
-	cfg.set_text_alignment(options.text_alignment);
-	cfg.set_letter_spacing(options.letter_spacing);
-	cfg.set_paragraph_spacing(options.paragraph_spacing);
 	cfg.flush();
 	tracing::info!("settings saved");
 	#[cfg(target_os = "windows")]
@@ -184,9 +175,6 @@ pub(super) fn handle_options(
 	let font_changed = old_readability_font != options.readability_font;
 	let line_spacing_changed = old_line_spacing != options.line_spacing;
 	let bg_color_changed = old_bg_color != options.bg_color;
-	let text_alignment_changed = old_text_alignment != options.text_alignment;
-	let letter_spacing_changed = old_letter_spacing != options.letter_spacing;
-	let paragraph_spacing_changed = old_paragraph_spacing != options.paragraph_spacing;
 	let needs_rebuild = old_word_wrap != options_word_wrap
 		|| (font_changed && build_font_from_readability(&options.readability_font).is_none())
 		|| (bg_color_changed && options.bg_color < 0)
@@ -209,15 +197,6 @@ pub(super) fn handle_options(
 		}
 		if line_spacing_changed {
 			dm_ref.apply_line_spacing(options.line_spacing);
-		}
-		if text_alignment_changed {
-			dm_ref.apply_text_alignment(options.text_alignment);
-		}
-		if letter_spacing_changed {
-			dm_ref.apply_letter_spacing(options.letter_spacing);
-		}
-		if paragraph_spacing_changed {
-			dm_ref.apply_paragraph_spacing(options.paragraph_spacing);
 		}
 	}
 	if parse_settings_changed {

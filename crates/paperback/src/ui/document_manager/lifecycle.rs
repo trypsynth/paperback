@@ -13,12 +13,9 @@ use crate::{
 	audio_player::AudioPlayer,
 	shell,
 	ui::{
-		readability::{
-			apply_bg_color_to_ctrl, apply_foreground_color_to_ctrl, apply_readability_format_to_ctrl,
-			build_font_from_readability,
-		},
+		readability::{build_font_from_readability, readability_style},
 		reader_input,
-		text_render::load_window_into_ctrl,
+		text_render::load_document_into_ctrl,
 	},
 	working_copy::WorkingCopy,
 };
@@ -167,22 +164,16 @@ impl DocumentManager {
 		if let Some(font) = build_font_from_readability(&rf) {
 			text_ctrl.set_font(&font);
 		}
-		apply_foreground_color_to_ctrl(text_ctrl.widget(), rf.color);
-		apply_bg_color_to_ctrl(text_ctrl.widget(), config.get_bg_color());
+		text_ctrl.apply_foreground_color(rf.color);
+		text_ctrl.apply_background_color(config.get_bg_color());
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
-		sizer.add(&text_ctrl.widget(), 1, SizerFlag::Expand | SizerFlag::All, 0);
+		text_ctrl.add_to_sizer(sizer);
 		panel.set_sizer(sizer, true);
 		let path_str = path.to_string_lossy();
 		let doc_len = session.document_len();
 		let initial_pos = config.get_validated_document_position(&path_str, doc_len.as_pos()).unwrap_or_default();
-		let window = load_window_into_ctrl(text_ctrl, &session, initial_pos, doc_len);
-		apply_readability_format_to_ctrl(
-			text_ctrl.widget(),
-			config.get_line_spacing(),
-			config.get_paragraph_spacing(),
-			config.get_letter_spacing(),
-			config.get_text_alignment(),
-		);
+		let window = load_document_into_ctrl(text_ctrl, &session);
+		text_ctrl.apply_readability_format(&readability_style(&config));
 		// `add_page(select: true)` can synchronously fire page-changed, whose handler locks `self.config` again; `Mutex` isn't reentrant, so holding it here deadlocked the app.
 		drop(config);
 		self.notebook.add_page(&panel, &title, true, None);
