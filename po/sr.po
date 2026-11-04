@@ -642,7 +642,7 @@ msgstr "Premotaj zvučnu naraciju nazad"
 
 #. TRANSLATORS: Menu item in the Audio menu to increase the amount of time each audio seek skips.
 msgid "Increase Audio Seek &Amount"
-msgstr "Povećaj & količinu premotavanja zvuka"
+msgstr "Povećaj &količinu premotavanja zvuka"
 
 #. TRANSLATORS: Status-bar help text for the Increase Audio Seek Amount menu item.
 msgid "Increase how far seeking the audio narration moves"
@@ -1217,7 +1217,7 @@ msgstr "&Pridruži spojene redove pasusima u PDF datotekama"
 #. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
 msgid "Remove repeated page &headers and footers in PDFs"
 msgstr ""
-"Ukloni & podnožja i zaglavlja stranica u PDF datotekama kada se ponavljaju"
+"Ukloni &podnožja i zaglavlja stranica u PDF datotekama kada se ponavljaju"
 
 #. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
 msgid "Read text between dollar signs as &math in Markdown"
