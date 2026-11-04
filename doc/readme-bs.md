@@ -101,7 +101,7 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 
 * `F5`: Ponovo učitava trenutni dokument s diska ili ga ponovo preuzima ako je otvoren s poveznice. Radi bez obzira na to da li je u postavkama uključena opcija "Automatski ponovo učitaj izmijenjene dokumente".
 * `Ctrl+Alt+W`: Uključuje i isključuje prelamanje riječi.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, tj. Ctrl+Command+F): Uključuje i isključuje prikaz preko cijelog zaslona.
+* `F11` (macOS: `Control+Cmd+F`, tj. Ctrl+Command+F): Uključuje i isključuje prikaz preko cijelog zaslona.
 * `Ctrl+Shift+V`: Otvara trenutni sadržaj u web prikazu.
 * `Ctrl+U`: Prikazuje izvorni sadržaj dokumenta u novoj kartici.
 
@@ -150,7 +150,7 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 * `B`: Sljedeća oznaka.
 * `Shift+N`: Prethodna bilješka.
 * `N`: Sljedeća bilješka.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, tj. fizički taster Ctrl umjesto tastera Cmd): Prikazuje tekst bilješke na trenutnom položaju.
+* `Ctrl+Shift+W` (macOS: `Control+Shift+W`, tj. fizički taster Ctrl umjesto tastera Cmd): Prikazuje tekst bilješke na trenutnom položaju.
 * `Ctrl+B`: Prelazi na sve oznake i bilješke.
 * `Ctrl+Alt+B`: Prelazi samo na oznake.
 * `Ctrl+Alt+M`: Prelazi samo na bilješke.
@@ -159,7 +159,7 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 
 ### Izbornik `Zvuk`
 
-* `Ctrl+Razmak` (macOS: `RawCtrl+Razmak`, tj. fizički taster Ctrl, jer `Cmd+Razmak` otvara Spotlight): Pokreće ili pauzira zvučnu naraciju.
+* `Ctrl+Razmak` (macOS: `Control+Razmak`, tj. fizički taster Ctrl, jer `Cmd+Razmak` otvara Spotlight): Pokreće ili pauzira zvučnu naraciju.
 * `'`: Premotava zvučnu naraciju naprijed.
 * `;`: Premotava zvučnu naraciju natrag.
 * `Shift+'`: Povećava korak premotavanja.
@@ -171,7 +171,7 @@ Prečice navedene u nastavku odnose se na Windows. Tamo gdje se na macOS-u razli
 
 ### Izbornik `Alati`
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, tj. fizički taster Ctrl umjesto tastera Cmd): Prikazuje broj riječi u trenutnom dokumentu.
+* `Ctrl+W` (macOS: `Control+W`, tj. fizički taster Ctrl umjesto tastera Cmd): Prikazuje broj riječi u trenutnom dokumentu.
 * `Ctrl+I`: Prikazuje informacije o dokumentu.
 * `Ctrl+Shift+O`: Prepoznaje raspon skeniranih PDF stranica pomoću OCR-a.
 * `Ctrl+Shift+S`: Uključuje i isključuje odbrojavanje za spavanje.

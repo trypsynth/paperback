@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4976e03120c0eb49; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versie 1.1
 
@@ -104,7 +104,7 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 
 * `F5`: Het huidige document opnieuw van schijf inlezen, of het opnieuw downloaden als het via een link is geopend. Werkt ongeacht of "Gewijzigde documenten automatisch opnieuw laden" in Instellingen is ingeschakeld.
 * `Ctrl+Alt+W`: Automatische terugloop in-/uitschakelen.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, oftewel Control+Command+F): Volledig scherm in-/uitschakelen.
+* `F11` (macOS: `Control+Cmd+F`, oftewel Control+Command+F): Volledig scherm in-/uitschakelen.
 * `Ctrl+Shift+V`: De huidige inhoud openen in webweergave.
 * `Ctrl+U`: De documentbron in een nieuw tabblad weergeven.
 
@@ -153,7 +153,7 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 * `B`: Volgende bladwijzer.
 * `Shift+N`: Vorige notitie.
 * `N`: Volgende notitie.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, oftewel de fysieke Control-toets in plaats van Cmd): De notitietekst op de huidige positie bekijken.
+* `Ctrl+Shift+W` (macOS: `Control+Shift+W`, oftewel de fysieke Control-toets in plaats van Cmd): De notitietekst op de huidige positie bekijken.
 * `Ctrl+B`: Naar alle bladwijzers en notities springen.
 * `Ctrl+Alt+B`: Alleen naar bladwijzers springen.
 * `Ctrl+Alt+M`: Alleen naar notities springen.
@@ -162,7 +162,7 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 
 ### Menu Audio
 
-* `Ctrl+Spatie` (macOS: `RawCtrl+Spatie`, oftewel de fysieke Control-toets, omdat Cmd+Spatie Spotlight opent): Audio afspelen/pauzeren.
+* `Ctrl+Spatie` (macOS: `Control+Spatie`, oftewel de fysieke Control-toets, omdat Cmd+Spatie Spotlight opent): Audio afspelen/pauzeren.
 * `'`: Audio vooruitspoelen.
 * `;`: Audio terugspoelen.
 * `Shift+'`: De audiospoelstap vergroten.
@@ -174,7 +174,7 @@ De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equi
 
 ### Menu Extra
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, oftewel de fysieke Control-toets in plaats van Cmd): Woordenaantal van het huidige document tonen.
+* `Ctrl+W` (macOS: `Control+W`, oftewel de fysieke Control-toets in plaats van Cmd): Woordenaantal van het huidige document tonen.
 * `Ctrl+I`: Documentinformatie tonen.
 * `Ctrl+Shift+O`: Een reeks gescande PDF-pagina's herkennen met OCR.
 * `Ctrl+Shift+R`: De PDF- of comicpagina waarop de cursor staat herkennen met OCR, waarbij eventuele bestaande tekst wordt vervangen.

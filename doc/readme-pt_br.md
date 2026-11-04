@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4976e03120c0eb49; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versão 1.1
 
@@ -104,7 +104,7 @@ Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é ano
 
 * `F5`: Reler o documento atual do disco ou baixá-lo novamente se foi aberto a partir de um link. Funciona independentemente de "Recarregar automaticamente documentos alterados" estar ativado em Configurações.
 * `Ctrl+Alt+W`: Alternar quebra de linha.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, ou seja, Control+Command+F): Alternar para tela cheia.
+* `F11` (macOS: `Control+Cmd+F`, ou seja, Control+Command+F): Alternar para tela cheia.
 * `Ctrl+Shift+V`: Abrir conteúdo atual na Visualização da Web.
 * `Ctrl+U`: Ver a fonte do documento em uma nova aba.
 
@@ -153,7 +153,7 @@ Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é ano
 * `B`: Próximo marcador.
 * `Shift+N`: Nota anterior.
 * `N`: Próxima nota.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, ou seja, a tecla Control física em vez de Cmd): Ver texto da nota na posição atual.
+* `Ctrl+Shift+W` (macOS: `Control+Shift+W`, ou seja, a tecla Control física em vez de Cmd): Ver texto da nota na posição atual.
 * `Ctrl+B`: Ir para todos os marcadores e notas.
 * `Ctrl+Alt+B`: Ir para marcadores apenas.
 * `Ctrl+Alt+M`: Ir para notas apenas.
@@ -162,7 +162,7 @@ Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é ano
 
 ### Menu Áudio
 
-* `Ctrl+Space` (macOS: `RawCtrl+Space`, ou seja, a tecla Control física, pois Cmd+Space abre o Spotlight): Reproduzir/pausar narração de áudio.
+* `Ctrl+Space` (macOS: `Control+Space`, ou seja, a tecla Control física, pois Cmd+Space abre o Spotlight): Reproduzir/pausar narração de áudio.
 * `'`: Avançar narração de áudio.
 * `;`: Retroceder narração de áudio.
 * `Shift+'`: Aumentar o valor de busca de áudio.
@@ -174,7 +174,7 @@ Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é ano
 
 ### Menu Ferramentas
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, ou seja, a tecla Control física em vez de Cmd): Mostrar contagem de palavras do documento atual.
+* `Ctrl+W` (macOS: `Control+W`, ou seja, a tecla Control física em vez de Cmd): Mostrar contagem de palavras do documento atual.
 * `Ctrl+I`: Mostrar informações do documento.
 * `Ctrl+Shift+O`: Reconhecer um intervalo de páginas de PDF digitalizadas com OCR.
 * `Ctrl+Shift+R`: Reconhecer a página de PDF ou histórias em quadrinhos em que o cursor está com OCR, substituindo qualquer texto que já possui.

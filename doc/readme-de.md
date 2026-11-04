@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4976e03120c0eb49; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - Version 1.1
 
@@ -104,7 +104,7 @@ Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet
 
 * `F5`: Liest das aktuelle Dokument von der Festplatte neu ein, oder lädt es erneut herunter, wenn es von einem Link aus geöffnet wurde. Funktioniert unabhängig davon, ob „Geänderte Dokumente automatisch neu laden" in den Einstellungen aktiviert ist.
 * `Ctrl+Alt+W`: Wortumbruch umschalten.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, d. h. Strg+Cmd+F): Vollbild umschalten.
+* `F11` (macOS: `Control+Cmd+F`, d. h. Strg+Cmd+F): Vollbild umschalten.
 * `Ctrl+Shift+V`: Aktuellen Inhalt in der Webansicht öffnen.
 * `Ctrl+U`: Dokumentquelle in einem neuen Tab anzeigen.
 
@@ -153,7 +153,7 @@ Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet
 * `B`: Nächstes Lesezeichen.
 * `Shift+N`: Vorherige Notiz.
 * `N`: Nächste Notiz.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, d. h. die physische Strg-Taste statt Cmd): Notiztext an der aktuellen Position anzeigen.
+* `Ctrl+Shift+W` (macOS: `Control+Shift+W`, d. h. die physische Strg-Taste statt Cmd): Notiztext an der aktuellen Position anzeigen.
 * `Ctrl+B`: Zu allen Lesezeichen und Notizen springen.
 * `Ctrl+Alt+B`: Nur zu Lesezeichen springen.
 * `Ctrl+Alt+M`: Nur zu Notizen springen.
@@ -162,7 +162,7 @@ Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet
 
 ### Menü „Audio"
 
-* `Ctrl+Space` (macOS: `RawCtrl+Space`, d. h. die physische Strg-Taste, da Cmd+Space Spotlight öffnet): Audioerzählung abspielen/pausieren.
+* `Ctrl+Space` (macOS: `Control+Space`, d. h. die physische Strg-Taste, da Cmd+Space Spotlight öffnet): Audioerzählung abspielen/pausieren.
 * `'`: Audioerzählung vorwärts spulen.
 * `;`: Audioerzählung rückwärts spulen.
 * `Shift+'`: Spulmenge der Audioerzählung erhöhen.
@@ -174,7 +174,7 @@ Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet
 
 ### Menü „Werkzeuge"
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, d. h. die physische Strg-Taste statt Cmd): Wortanzahl für das aktuelle Dokument anzeigen.
+* `Ctrl+W` (macOS: `Control+W`, d. h. die physische Strg-Taste statt Cmd): Wortanzahl für das aktuelle Dokument anzeigen.
 * `Ctrl+I`: Dokumentinfo anzeigen.
 * `Ctrl+Shift+O`: Einen Bereich gescannter PDF-Seiten mit Texterkennung erkennen.
 * `Ctrl+Shift+R`: Erkennt die PDF- oder Comic-Buchseite, auf der sich der Cursor befindet, mit Texterkennung und ersetzt vorhandenen Text.

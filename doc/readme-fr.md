@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4976e03120c0eb49; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - version 1.1
 
@@ -104,7 +104,7 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 
 * `F5` : Relire le document actif depuis le disque, ou le télécharger à nouveau s'il a été ouvert à partir d'un lien. Fonctionne que « Recharger automatiquement les documents modifiés » soit activé ou non dans Paramètres.
 * `Ctrl+Alt+W` : Basculer le retour à la ligne automatique.
-* `F11` (macOS : `RawCtrl+Ctrl+F`, c'est-à-dire Control+Command+F) : Basculer le mode plein écran.
+* `F11` (macOS : `Control+Cmd+F`, c'est-à-dire Control+Command+F) : Basculer le mode plein écran.
 * `Ctrl+Shift+V` : Ouvrir le contenu actuel dans Vue Web.
 * `Ctrl+U` : Afficher la source du document dans un nouvel onglet.
 
@@ -153,7 +153,7 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 * `B` : Signet suivant.
 * `Shift+N` : Note précédente.
 * `N` : Note suivante.
-* `Ctrl+Shift+W` (macOS : `RawCtrl+Shift+W`, c'est-à-dire la touche Control physique plutôt que Cmd) : Afficher le texte de la note à la position actuelle.
+* `Ctrl+Shift+W` (macOS : `Control+Shift+W`, c'est-à-dire la touche Control physique plutôt que Cmd) : Afficher le texte de la note à la position actuelle.
 * `Ctrl+B` : Aller à tous les signets et notes.
 * `Ctrl+Alt+B` : Aller aux signets uniquement.
 * `Ctrl+Alt+M` : Aller aux notes uniquement.
@@ -162,7 +162,7 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 
 ### Menu Audio
 
-* `Ctrl+Space` (macOS : `RawCtrl+Space`, c'est-à-dire la touche Control physique, car Cmd+Space ouvre Spotlight) : Lecture/pause de la narration audio.
+* `Ctrl+Space` (macOS : `Control+Space`, c'est-à-dire la touche Control physique, car Cmd+Space ouvre Spotlight) : Lecture/pause de la narration audio.
 * `'` : Avancer rapidement dans la narration audio.
 * `;` : Reculer rapidement dans la narration audio.
 * `Shift+'` : Augmenter le montant de l'avance rapide audio.
@@ -174,7 +174,7 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 
 ### Menu Outils
 
-* `Ctrl+W` (macOS : `RawCtrl+W`, c'est-à-dire la touche Control physique plutôt que Cmd) : Afficher le nombre de mots du document actif.
+* `Ctrl+W` (macOS : `Control+W`, c'est-à-dire la touche Control physique plutôt que Cmd) : Afficher le nombre de mots du document actif.
 * `Ctrl+I` : Afficher les informations du document.
 * `Ctrl+Shift+O` : Reconnaître une plage de pages PDF numérisées avec OCR.
 * `Ctrl+Shift+R` : Reconnaître la page PDF ou bande dessinée sur laquelle se trouve le curseur avec OCR, en remplaçant tout texte qu'elle contient déjà.
