@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4976e03120c0eb49; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - phiên bản 1.1
 
@@ -104,7 +104,7 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 
 * `F5`: Đọc lại tài liệu hiện tại từ đĩa, hoặc tải lại nếu nó được mở từ một liên kết. Hoạt động cho dù "Tự động tải lại các tài liệu đã thay đổi" có được bật trong Cài đặt hay không.
 * `Ctrl+Alt+W`: Bật/tắt tự động ngắt dòng.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, tức là Control+Command+F): Bật/tắt toàn màn hình.
+* `F11` (macOS: `Control+Cmd+F`, tức là Control+Command+F): Bật/tắt toàn màn hình.
 * `Ctrl+Shift+V`: Mở nội dung hiện tại trong Chế độ xem web.
 * `Ctrl+U`: Xem nguồn tài liệu trong một tab mới.
 
@@ -153,7 +153,7 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 * `B`: Dấu trang tiếp theo.
 * `Shift+N`: Ghi chú trước.
 * `N`: Ghi chú tiếp theo.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, tức là phím Control vật lý chứ không phải Cmd): Xem văn bản ghi chú ở vị trí hiện tại.
+* `Ctrl+Shift+W` (macOS: `Control+Shift+W`, tức là phím Control vật lý chứ không phải Cmd): Xem văn bản ghi chú ở vị trí hiện tại.
 * `Ctrl+B`: Nhảy đến tất cả dấu trang và ghi chú.
 * `Ctrl+Alt+B`: Nhảy đến dấu trang chỉ.
 * `Ctrl+Alt+M`: Nhảy đến ghi chú chỉ.
@@ -162,7 +162,7 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 
 ### Menu Âm Thanh
 
-* `Ctrl+Space` (macOS: `RawCtrl+Space`, tức là phím Control vật lý, vì Cmd+Space mở Spotlight): Phát/tạm dừng kể chuyện âm thanh.
+* `Ctrl+Space` (macOS: `Control+Space`, tức là phím Control vật lý, vì Cmd+Space mở Spotlight): Phát/tạm dừng kể chuyện âm thanh.
 * `'`: Tìm kiếm kể chuyện âm thanh về phía trước.
 * `;`: Tìm kiếm kể chuyện âm thanh về phía sau.
 * `Shift+'`: Tăng lượng tìm kiếm âm thanh.
@@ -174,7 +174,7 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 
 ### Menu Công Cụ
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, tức là phím Control vật lý chứ không phải Cmd): Hiển thị số từ cho tài liệu hiện tại.
+* `Ctrl+W` (macOS: `Control+W`, tức là phím Control vật lý chứ không phải Cmd): Hiển thị số từ cho tài liệu hiện tại.
 * `Ctrl+I`: Hiển thị thông tin tài liệu.
 * `Ctrl+Shift+O`: Nhận diện một loạt các trang PDF được quét bằng OCR.
 * `Ctrl+Shift+R`: Nhận diện trang PDF hoặc truyện tranh mà con trỏ đang ở bằng OCR, thay thế bất kỳ văn bản nào nó đã có.

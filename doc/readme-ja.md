@@ -102,7 +102,7 @@ Paperbackはキーボード操作を第一に考えて設計されています�
 
 * `F5`: 現在の文書をディスクから読み直します。リンクから開いた文書の場合は再ダウンロードします。設定の「変更された文書を自動的に再読み込み」がオンかオフかに関係なく動作します。
 * `Ctrl+Alt+W`: ワードラップを切り替えます。
-* `F11`（macOS: `RawCtrl+Ctrl+F`。つまりControl+Command+F）：全画面表示を切り替えます。
+* `F11`（macOS: `Control+Cmd+F`。つまりControl+Command+F）：全画面表示を切り替えます。
 * `Ctrl+Shift+V`: 現在の内容をWebビューで開きます。
 * `Ctrl+U`: 文書のソースを新しいタブで表示します。
 
@@ -151,7 +151,7 @@ Paperbackはキーボード操作を第一に考えて設計されています�
 * `B`: 次のしおりへ移動します。
 * `Shift+N`: 前のメモへ移動します。
 * `N`: 次のメモへ移動します。
-* `Ctrl+Shift+W`（macOS: `RawCtrl+Shift+W`。CmdではなくControlキー自体）：現在の位置にあるメモの内容を表示します。
+* `Ctrl+Shift+W`（macOS: `Control+Shift+W`。CmdではなくControlキー自体）：現在の位置にあるメモの内容を表示します。
 * `Ctrl+B`: すべてのしおりとメモの一覧へ移動します。
 * `Ctrl+Alt+B`: しおりだけの一覧へ移動します。
 * `Ctrl+Alt+M`: メモだけの一覧へ移動します。
@@ -160,7 +160,7 @@ Paperbackはキーボード操作を第一に考えて設計されています�
 
 ### 音声メニュー
 
-* `Ctrl+Space`（macOS: `RawCtrl+Space`。Cmd+SpaceはSpotlightを開くため、Controlキー自体）：音声ナレーションを再生または一時停止します。
+* `Ctrl+Space`（macOS: `Control+Space`。Cmd+SpaceはSpotlightを開くため、Controlキー自体）：音声ナレーションを再生または一時停止します。
 * `'`: 音声ナレーションを進めます。
 * `;`: 音声ナレーションを戻します。
 * `Shift+'`: 音声の移動量を増やします。
@@ -172,7 +172,7 @@ Paperbackはキーボード操作を第一に考えて設計されています�
 
 ### ツールメニュー
 
-* `Ctrl+W`（macOS: `RawCtrl+W`。CmdではなくControlキー自体）：現在の文書の単語数を表示します。
+* `Ctrl+W`（macOS: `Control+W`。CmdではなくControlキー自体）：現在の文書の単語数を表示します。
 * `Ctrl+I`: 文書情報を表示します。
 * `Ctrl+Shift+O`: スキャンしたPDFのページを範囲指定してOCRで認識します。
 * `Ctrl+Shift+R`: カーソルのあるPDFまたはコミックのページをOCRで認識し、既存のテキストを置き換えます。

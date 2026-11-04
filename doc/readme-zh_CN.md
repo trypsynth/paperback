@@ -102,7 +102,7 @@ Paperback 专为键盘优先使用而设计。以下是当前的快捷键。
 
 * `F5`：从磁盘重新读取当前文档，如果文档是从链接打开的则重新下载。无论设置中是否开启“自动重新加载已更改的文档”都有效。
 * `Ctrl+Alt+W`：切换自动换行。
-* `F11`（macOS：`RawCtrl+Ctrl+F`，即 Control+Command+F）：切换全屏。
+* `F11`（macOS：`Control+Cmd+F`，即 Control+Command+F）：切换全屏。
 * `Ctrl+Shift+V`：在 Web 视图中打开当前内容。
 * `Ctrl+U`：在新标签页中查看文档源。
 
@@ -151,7 +151,7 @@ Paperback 专为键盘优先使用而设计。以下是当前的快捷键。
 * `B`：下一个书签。
 * `Shift+N`：上一个笔记。
 * `N`：下一个笔记。
-* `Ctrl+Shift+W`（macOS：`RawCtrl+Shift+W`，即物理 Control 键而非 Cmd）：查看当前位置的笔记文本。
+* `Ctrl+Shift+W`（macOS：`Control+Shift+W`，即物理 Control 键而非 Cmd）：查看当前位置的笔记文本。
 * `Ctrl+B`：跳转到所有书签和笔记。
 * `Ctrl+Alt+B`：仅跳转到书签。
 * `Ctrl+Alt+M`：仅跳转到笔记。
@@ -160,7 +160,7 @@ Paperback 专为键盘优先使用而设计。以下是当前的快捷键。
 
 ### 音频菜单
 
-* `Ctrl+Space`（macOS：`RawCtrl+Space`，即物理 Control 键，因为 Cmd+Space 会打开 Spotlight）：播放/暂停音频朗读。
+* `Ctrl+Space`（macOS：`Control+Space`，即物理 Control 键，因为 Cmd+Space 会打开 Spotlight）：播放/暂停音频朗读。
 * `'`：音频朗读向前跳转。
 * `;`：音频朗读向后跳转。
 * `Shift+'`：增大音频跳转步长。
@@ -172,7 +172,7 @@ Paperback 专为键盘优先使用而设计。以下是当前的快捷键。
 
 ### 工具菜单
 
-* `Ctrl+W`（macOS：`RawCtrl+W`，即物理 Control 键而非 Cmd）：显示当前文档的字数统计。
+* `Ctrl+W`（macOS：`Control+W`，即物理 Control 键而非 Cmd）：显示当前文档的字数统计。
 * `Ctrl+I`：显示文档信息。
 * `Ctrl+Shift+O`：使用 OCR 识别扫描版 PDF 的页面范围。
 * `Ctrl+Shift+R`：使用 OCR 识别光标所在的 PDF 或漫画页面，替换其已有的任何文本。
