@@ -141,7 +141,10 @@ pub(super) struct Page {
 /// Link rectangles are drawn with straight lines alone, so anything else is not one and gives `None`.
 fn outline_points(data: &str) -> Option<Vec<(f64, f64)>> {
 	let data = data.trim_start();
-	let data = data.strip_prefix(['F', 'f']).map_or(data, |rest| rest.get(1..).unwrap_or_default());
+	let data = data.strip_prefix(['F', 'f']).map_or(data, |rest| {
+		let rest = rest.trim_start();
+		rest.strip_prefix(['0', '1']).unwrap_or(rest)
+	});
 	let tokens = data.split(|c: char| c.is_whitespace() || matches!(c, ',' | 'M' | 'L' | 'Z' | 'z'));
 	let numbers: Vec<f64> =
 		tokens.filter(|token| !token.is_empty()).map(|token| token.parse().ok()).collect::<Option<_>>()?;
@@ -441,6 +444,12 @@ mod tests {
 	fn a_link_path_can_open_with_a_fill_rule_and_drop_its_commands() {
 		let page = page(&link_path("F1M111.43,183.73L188.09,183.73 188.09,202.35 111.43,202.35Z"));
 		assert_eq!(area_of(&page), &Area { left: 111.43, top: 183.73, right: 188.09, bottom: 202.35 });
+	}
+
+	#[test]
+	fn a_fill_rule_can_stand_apart_from_its_digit() {
+		let page = page(&link_path("F 1 M 10,20 L 110,20 L 110,50 L 10,50 Z"));
+		assert_eq!(area_of(&page), &Area { left: 10.0, top: 20.0, right: 110.0, bottom: 50.0 });
 	}
 
 	#[test]
