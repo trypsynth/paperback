@@ -325,6 +325,22 @@ fn beep_at_document_edge() {
 	}
 }
 
+#[cfg(target_os = "windows")]
+std::thread_local! {
+	/// Whether a movement key that cannot move the caret plays the system beep. Off unless the reader enables it in Settings.
+	static EDGE_BEEP_ENABLED: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// Enables or disables the edge-of-document beep for every reader control on this thread.
+pub fn set_edge_beep(enabled: bool) {
+	#[cfg(target_os = "windows")]
+	EDGE_BEEP_ENABLED.set(enabled);
+	#[cfg(not(target_os = "windows"))]
+	{
+		let _ = enabled;
+	}
+}
+
 /// Scintilla answers `WM_GETDLGCODE` with `DLGC_WANTALLKEYS`, which tells wx's dialog-key handling to hand it every key: Tab stops
 /// traversing the window. Arrows and characters are kept, since Scintilla needs both.
 ///
@@ -400,7 +416,7 @@ fn install_dialog_navigation(ctrl: ReaderCtrl) {
 				let answer = DefSubclassProc(hwnd, msg, wparam, lparam).0;
 				return LRESULT((answer & !(DLGC_WANTALLKEYS | DLGC_WANTTAB)) | DLGC_WANTARROWS | DLGC_WANTCHARS);
 			}
-			if msg == WM_KEYDOWN && is_caret_move(wparam.0) && alt_is_up() {
+			if msg == WM_KEYDOWN && EDGE_BEEP_ENABLED.get() && is_caret_move(wparam.0) && alt_is_up() {
 				// A native text control beeps when a movement key cannot move the caret; Scintilla does not. Let the key run and
 				// beep only if neither end of the selection moved, so collapsing a selection at an edge stays silent. Shift and
 				// Ctrl are included: Shift+Left at the document start and Ctrl+Left there cannot move either. Alt is not, since

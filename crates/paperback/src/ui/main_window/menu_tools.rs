@@ -137,6 +137,7 @@ pub(super) fn handle_options(
 	cfg.set_app_bool("markdown_dollar_math", options.markdown_dollar_math);
 	cfg.set_app_bool("minimize_to_tray", options.minimize_to_tray);
 	cfg.set_app_bool("start_maximized", options.start_maximized);
+	cfg.set_app_bool("edge_beep", options.edge_beep);
 	cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
 	cfg.set_app_bool("navigation_wrap", options.navigation_wrap);
 	cfg.set_app_bool("line_start_navigation", options.line_start_navigation);
@@ -166,6 +167,8 @@ pub(super) fn handle_options(
 		re_register_hotkey(hotkey_handle, options.hotkey.as_ref());
 	}
 	drop(cfg);
+	// Applies to the controls already open; new ones read the setting when they are built.
+	crate::ui::reader_ctrl::set_edge_beep(options.edge_beep);
 	let options_word_wrap = options.word_wrap;
 	let options_render_tables_inline = options.render_tables_inline;
 	let parse_settings_changed = old_render_tables_inline != options_render_tables_inline

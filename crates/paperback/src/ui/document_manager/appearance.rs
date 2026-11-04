@@ -38,15 +38,24 @@ impl DocumentManager {
 	}
 
 	pub fn apply_word_wrap(&mut self, self_rc: &Rc<Mutex<Self>>, word_wrap: bool) {
-		let style = readability_style(&self.config.lock().unwrap());
+		let (style, edge_beep) = {
+			let cfg = self.config.lock().unwrap();
+			(readability_style(&cfg), cfg.get_app_bool("edge_beep", false))
+		};
 		for tab in &mut self.tabs {
 			let old_ctrl = tab.text_ctrl;
 			let current_doc_pos = tab.window.to_doc(old_ctrl.get_insertion_point());
 			// A wrap toggle changes layout, not the document, so the same whole text is loaded again.
 			let doc_len = tab.session.document_len();
 			let slice = tab.session.get_window(paperback_core::document::DocPos::ZERO, doc_len.as_pos());
-			let text_ctrl =
-				reader_input::build_text_ctrl(tab.panel, word_wrap, self_rc, self.frame, self.from_keyboard.clone());
+			let text_ctrl = reader_input::build_text_ctrl(
+				tab.panel,
+				word_wrap,
+				edge_beep,
+				self_rc,
+				self.frame,
+				self.from_keyboard.clone(),
+			);
 			let sizer = BoxSizer::builder(Orientation::Vertical).build();
 			text_ctrl.add_to_sizer(sizer);
 			tab.panel.set_sizer(sizer, true);

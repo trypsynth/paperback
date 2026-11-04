@@ -11,7 +11,7 @@ use super::document_manager::DocumentTab;
 use super::{
 	document_manager::{DocumentManager, tab_index_for_key},
 	menu, menu_ids,
-	reader_ctrl::ReaderCtrl,
+	reader_ctrl::{self, ReaderCtrl},
 };
 #[cfg(any(target_os = "windows", target_os = "macos"))]
 use crate::text_window::CtrlPos;
@@ -32,11 +32,13 @@ fn bind_reader_activation(text_ctrl: ReaderCtrl, activate: impl Fn(bool) + 'stat
 pub(super) fn build_text_ctrl(
 	panel: Panel,
 	word_wrap: bool,
+	edge_beep: bool,
 	self_rc: &Rc<Mutex<DocumentManager>>,
 	frame: Frame,
 	from_keyboard: Rc<Cell<bool>>,
 ) -> ReaderCtrl {
 	let text_ctrl = ReaderCtrl::new(StyledTextCtrl::builder(&panel).build());
+	reader_ctrl::set_edge_beep(edge_beep);
 	text_ctrl.configure(word_wrap);
 	let dm_for_enter = Rc::clone(self_rc);
 	let frame_for_char = frame;

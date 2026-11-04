@@ -158,8 +158,9 @@ impl DocumentManager {
 		// Before the position is read, since it was saved against the text OCR put in.
 		restore_saved_pages(&mut session, &saved_pages_of(&local_path), joins_recognized_text(&local_path, &config));
 		let word_wrap = config.get_app_bool("word_wrap", false);
+		let edge_beep = config.get_app_bool("edge_beep", false);
 		let text_ctrl =
-			reader_input::build_text_ctrl(panel, word_wrap, self_rc, self.frame, self.from_keyboard.clone());
+			reader_input::build_text_ctrl(panel, word_wrap, edge_beep, self_rc, self.frame, self.from_keyboard.clone());
 		let rf = config.get_readability_font();
 		if let Some(font) = build_font_from_readability(&rf) {
 			text_ctrl.set_font(&font);

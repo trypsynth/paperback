@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-03 19:15-0500\n"
+"POT-Creation-Date: 2026-11-04 16:57-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1163,6 +1163,10 @@ msgstr ""
 msgid "Read text between dollar signs as &math in Markdown"
 msgstr ""
 
+#. TRANSLATORS: Option to play the system default beep when a movement key cannot move the caret at the very start or end of the document
+msgid "&Beep when the caret cannot move at the document edges"
+msgstr ""
+
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
 msgstr ""
@@ -1281,6 +1285,10 @@ msgstr ""
 
 #. TRANSLATORS: Tab label for the Readability options panel
 msgid "Readability"
+msgstr ""
+
+#. TRANSLATORS: Tab label for the Advanced options panel
+msgid "Advanced"
 msgstr ""
 
 #. TRANSLATORS: Title of the system dialog for picking a background colour

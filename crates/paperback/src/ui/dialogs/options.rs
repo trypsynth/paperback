@@ -33,6 +33,7 @@ pub struct OptionsDialogResult {
 	pub markdown_dollar_math: bool,
 	pub minimize_to_tray: bool,
 	pub start_maximized: bool,
+	pub edge_beep: bool,
 	pub compact_go_menu: bool,
 	pub navigation_wrap: bool,
 	pub line_start_navigation: bool,
@@ -66,6 +67,7 @@ struct OptionsDialogUi {
 	markdown_dollar_math_check: CheckBox,
 	minimize_to_tray_check: CheckBox,
 	start_maximized_check: CheckBox,
+	edge_beep_check: CheckBox,
 	compact_go_menu_check: CheckBox,
 	navigation_wrap_check: CheckBox,
 	line_start_nav_check: CheckBox,
@@ -122,6 +124,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		markdown_dollar_math: ui.markdown_dollar_math_check.is_checked(),
 		minimize_to_tray: ui.minimize_to_tray_check.is_checked(),
 		start_maximized: ui.start_maximized_check.is_checked(),
+		edge_beep: ui.edge_beep_check.is_checked(),
 		compact_go_menu: ui.compact_go_menu_check.is_checked(),
 		navigation_wrap: ui.navigation_wrap_check.is_checked(),
 		line_start_navigation: ui.line_start_nav_check.is_checked(),
@@ -152,9 +155,11 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let general_panel = Panel::builder(&notebook).build();
 	let reading_panel = Panel::builder(&notebook).build();
 	let readability_panel = Panel::builder(&notebook).build();
+	let advanced_panel = Panel::builder(&notebook).build();
 	let general_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let reading_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let readability_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	let advanced_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let restore_docs_check =
 		// TRANSLATORS: Option to restore documents that were open when the app was last closed
 		CheckBox::builder(&general_panel).with_label(&t("&Restore previously opened documents on startup")).build();
@@ -181,6 +186,10 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let markdown_dollar_math_check = CheckBox::builder(&readability_panel)
 		// TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
 		.with_label(&t("Read text between dollar signs as &math in Markdown"))
+		.build();
+	let edge_beep_check = CheckBox::builder(&advanced_panel)
+		// TRANSLATORS: Option to play the system default beep when a movement key cannot move the caret at the very start or end of the document
+		.with_label(&t("&Beep when the caret cannot move at the document edges"))
 		.build();
 	// TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
@@ -360,6 +369,11 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	readability_sizer.add(&strip_running_text_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&markdown_dollar_math_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&line_spacing_sizer, 0, SizerFlag::All, option_padding);
+	#[cfg(target_os = "windows")]
+	advanced_sizer.add(&edge_beep_check, 0, SizerFlag::All, option_padding);
+	#[cfg(not(target_os = "windows"))]
+	edge_beep_check.show(false);
+	advanced_panel.set_sizer(advanced_sizer, true);
 	readability_panel.set_sizer(readability_sizer, true);
 	general_panel.set_sizer(general_sizer, true);
 	reading_panel.set_sizer(reading_sizer, true);
@@ -369,18 +383,26 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let reading_label = t("Reading");
 	// TRANSLATORS: Tab label for the Readability options panel
 	let readability_label = t("Readability");
+	// TRANSLATORS: Tab label for the Advanced options panel
+	let advanced_label = t("Advanced");
 	general_panel.set_accessibility_label(&general_label);
 	reading_panel.set_accessibility_label(&reading_label);
 	readability_panel.set_accessibility_label(&readability_label);
+	advanced_panel.set_accessibility_label(&advanced_label);
 	#[cfg(target_os = "windows")]
 	{
 		general_panel.set_accessibility_role(AccRole::PropertyPage);
 		reading_panel.set_accessibility_role(AccRole::PropertyPage);
 		readability_panel.set_accessibility_role(AccRole::PropertyPage);
+		advanced_panel.set_accessibility_role(AccRole::PropertyPage);
 	}
 	notebook.add_page(&general_panel, &general_label, true, None);
 	notebook.add_page(&reading_panel, &reading_label, false, None);
 	notebook.add_page(&readability_panel, &readability_label, false, None);
+	#[cfg(target_os = "windows")]
+	notebook.add_page(&advanced_panel, &advanced_label, false, None);
+	#[cfg(not(target_os = "windows"))]
+	advanced_panel.show(false);
 	restore_docs_check.set_value(config.get_app_bool("restore_previous_documents", true));
 	word_wrap_check.set_value(config.get_app_bool("word_wrap", false));
 	render_tables_inline_check.set_value(config.get_app_bool("render_tables_inline", true));
@@ -389,6 +411,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	markdown_dollar_math_check.set_value(config.get_app_bool("markdown_dollar_math", true));
 	minimize_to_tray_check.set_value(config.get_app_bool("minimize_to_tray", false));
 	start_maximized_check.set_value(config.get_app_bool("start_maximized", false));
+	edge_beep_check.set_value(config.get_app_bool("edge_beep", false));
 	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
 	navigation_wrap_check.set_value(config.get_app_bool("navigation_wrap", false));
 	line_start_nav_check.set_value(config.get_app_bool("line_start_navigation", false));
@@ -502,6 +525,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		markdown_dollar_math_check,
 		minimize_to_tray_check,
 		start_maximized_check,
+		edge_beep_check,
 		compact_go_menu_check,
 		navigation_wrap_check,
 		line_start_nav_check,
