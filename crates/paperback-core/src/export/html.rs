@@ -1,4 +1,5 @@
 use std::{
+	cmp::Ordering,
 	collections::{HashMap, HashSet},
 	fmt::Write as _,
 	ops::Range,
@@ -84,13 +85,16 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 	}
 	struct Ev {
 		pos: DocPos,
+		/// Where the span began and its marker's index, so spans ending together can close in reverse.
+		opened: (DocPos, usize),
 		kind: Ek,
 	}
 	let mut events: Vec<Ev> = Vec::new();
 	let mut target_offsets = HashSet::new();
 	target_offsets.extend(anchor);
-	for marker in &document.buffer.markers {
+	for (span, marker) in document.buffer.markers.iter().enumerate() {
 		let pos = marker.position;
+		let opened = (pos, span);
 		// Skipped so a window of a huge book costs the window; a zero length runs to its line's end, which can't reach a range starting on a line boundary.
 		if pos >= range_end || pos + marker.length.max(DocLen::ONE) <= range_start {
 			continue;
@@ -101,33 +105,33 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 		match marker.mtype {
 			MarkerType::Heading1 => {
 				let end = effective_end(marker.length);
-				events.push(Ev { pos, kind: Ek::BlockOpen("<h1>") });
-				events.push(Ev { pos: end, kind: Ek::BlockClose("</h1>") });
+				events.push(Ev { pos, opened, kind: Ek::BlockOpen("<h1>") });
+				events.push(Ev { pos: end, opened, kind: Ek::BlockClose("</h1>") });
 			}
 			MarkerType::Heading2 => {
 				let end = effective_end(marker.length);
-				events.push(Ev { pos, kind: Ek::BlockOpen("<h2>") });
-				events.push(Ev { pos: end, kind: Ek::BlockClose("</h2>") });
+				events.push(Ev { pos, opened, kind: Ek::BlockOpen("<h2>") });
+				events.push(Ev { pos: end, opened, kind: Ek::BlockClose("</h2>") });
 			}
 			MarkerType::Heading3 => {
 				let end = effective_end(marker.length);
-				events.push(Ev { pos, kind: Ek::BlockOpen("<h3>") });
-				events.push(Ev { pos: end, kind: Ek::BlockClose("</h3>") });
+				events.push(Ev { pos, opened, kind: Ek::BlockOpen("<h3>") });
+				events.push(Ev { pos: end, opened, kind: Ek::BlockClose("</h3>") });
 			}
 			MarkerType::Heading4 => {
 				let end = effective_end(marker.length);
-				events.push(Ev { pos, kind: Ek::BlockOpen("<h4>") });
-				events.push(Ev { pos: end, kind: Ek::BlockClose("</h4>") });
+				events.push(Ev { pos, opened, kind: Ek::BlockOpen("<h4>") });
+				events.push(Ev { pos: end, opened, kind: Ek::BlockClose("</h4>") });
 			}
 			MarkerType::Heading5 => {
 				let end = effective_end(marker.length);
-				events.push(Ev { pos, kind: Ek::BlockOpen("<h5>") });
-				events.push(Ev { pos: end, kind: Ek::BlockClose("</h5>") });
+				events.push(Ev { pos, opened, kind: Ek::BlockOpen("<h5>") });
+				events.push(Ev { pos: end, opened, kind: Ek::BlockClose("</h5>") });
 			}
 			MarkerType::Heading6 => {
 				let end = effective_end(marker.length);
-				events.push(Ev { pos, kind: Ek::BlockOpen("<h6>") });
-				events.push(Ev { pos: end, kind: Ek::BlockClose("</h6>") });
+				events.push(Ev { pos, opened, kind: Ek::BlockOpen("<h6>") });
+				events.push(Ev { pos: end, opened, kind: Ek::BlockClose("</h6>") });
 			}
 			MarkerType::Link => {
 				let Some(end) = super::link_span_end(marker) else { continue };
@@ -180,61 +184,64 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 						}
 					}
 				};
-				events.push(Ev { pos, kind: Ek::InlineOpen(open) });
-				events.push(Ev { pos: end, kind: Ek::InlineClose("</a>") });
+				events.push(Ev { pos, opened, kind: Ek::InlineOpen(open) });
+				events.push(Ev { pos: end, opened, kind: Ek::InlineClose("</a>") });
 			}
 			MarkerType::Bold => {
 				let end = pos + marker.length;
-				events.push(Ev { pos, kind: Ek::InlineOpen("<b>".to_string()) });
-				events.push(Ev { pos: end, kind: Ek::InlineClose("</b>") });
+				events.push(Ev { pos, opened, kind: Ek::InlineOpen("<b>".to_string()) });
+				events.push(Ev { pos: end, opened, kind: Ek::InlineClose("</b>") });
 			}
 			MarkerType::Italic => {
 				let end = pos + marker.length;
-				events.push(Ev { pos, kind: Ek::InlineOpen("<i>".to_string()) });
-				events.push(Ev { pos: end, kind: Ek::InlineClose("</i>") });
+				events.push(Ev { pos, opened, kind: Ek::InlineOpen("<i>".to_string()) });
+				events.push(Ev { pos: end, opened, kind: Ek::InlineClose("</i>") });
 			}
 			MarkerType::Underline => {
 				let end = pos + marker.length;
-				events.push(Ev { pos, kind: Ek::InlineOpen("<u>".to_string()) });
-				events.push(Ev { pos: end, kind: Ek::InlineClose("</u>") });
+				events.push(Ev { pos, opened, kind: Ek::InlineOpen("<u>".to_string()) });
+				events.push(Ev { pos: end, opened, kind: Ek::InlineClose("</u>") });
 			}
 			MarkerType::List if !marker.length.is_zero() => {
 				// Without a length the list's end is unknown, and bare <li> items beat a guessed <ul>.
 				let end = pos + marker.length;
-				events.push(Ev { pos, kind: Ek::BlockOpen("<ul>") });
-				events.push(Ev { pos: end, kind: Ek::BlockClose("</ul>") });
+				events.push(Ev { pos, opened, kind: Ek::BlockOpen("<ul>") });
+				events.push(Ev { pos: end, opened, kind: Ek::BlockClose("</ul>") });
 			}
 			MarkerType::ListItem => {
 				let end = effective_end(marker.length);
-				events.push(Ev { pos, kind: Ek::BlockOpen("<li>") });
-				events.push(Ev { pos: end, kind: Ek::BlockClose("</li>") });
+				events.push(Ev { pos, opened, kind: Ek::BlockOpen("<li>") });
+				events.push(Ev { pos: end, opened, kind: Ek::BlockClose("</li>") });
 			}
 			MarkerType::Table if !marker.reference.is_empty() => {
 				let end = pos + marker.length;
-				events.push(Ev { pos, kind: Ek::Replace { until: end, content: marker.reference.clone() } });
+				events.push(Ev { pos, opened, kind: Ek::Replace { until: end, content: marker.reference.clone() } });
 			}
 			MarkerType::PageBreak | MarkerType::Separator => {
-				events.push(Ev { pos, kind: Ek::Hr });
+				events.push(Ev { pos, opened, kind: Ek::Hr });
 			}
 			_ => {}
 		}
 	}
 	// Otherwise the tail flush below piles every anchor outside the range up at the end of the page.
 	for offset in target_offsets.into_iter().filter(|&off| off >= range_start && off <= range_end) {
-		events.push(Ev { pos: offset, kind: Ek::Anchor(offset) });
+		events.push(Ev { pos: offset, opened: (offset, 0), kind: Ek::Anchor(offset) });
 	}
-	// Closes before opens at the same position to avoid empty elements
+	// Closes before opens at the same position to avoid empty elements, and innermost first so a heading ending in a link is `</a></h1>`, not `</h1></a>`.
 	events.sort_by(|a, b| {
-		a.pos.cmp(&b.pos).then_with(|| {
-			let p = |k: &Ek| match k {
-				Ek::BlockClose(_) | Ek::InlineClose(_) => 0u8,
-				Ek::Hr | Ek::Replace { .. } => 1,
-				Ek::BlockOpen(_) => 2,
-				Ek::InlineOpen(_) => 3,
-				Ek::Anchor(_) => 4,
-			};
-			p(&a.kind).cmp(&p(&b.kind))
-		})
+		let class = |k: &Ek| match k {
+			Ek::InlineClose(_) => 0u8,
+			Ek::BlockClose(_) => 1,
+			Ek::Hr | Ek::Replace { .. } => 2,
+			Ek::BlockOpen(_) => 3,
+			Ek::InlineOpen(_) => 4,
+			Ek::Anchor(_) => 5,
+		};
+		let (ca, cb) = (class(&a.kind), class(&b.kind));
+		a.pos
+			.cmp(&b.pos)
+			.then_with(|| ca.cmp(&cb))
+			.then_with(|| if ca <= 1 { b.opened.cmp(&a.opened) } else { Ordering::Equal })
 	});
 	let mut event_idx = 0usize;
 	let mut block_depth: usize = 0;
@@ -406,6 +413,47 @@ mod tests {
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
 		DocumentHandle::new(doc)
+	}
+
+	#[test]
+	fn a_heading_ending_in_a_link_closes_the_link_first() {
+		let doc = simple_doc(
+			"By Jane\nbody",
+			vec![
+				Marker::new(MarkerType::Heading1, 0.into()).with_length(7.into()),
+				Marker::new(MarkerType::Link, 3.into())
+					.with_text("Jane".to_string())
+					.with_reference("https://a.org".to_string()),
+			],
+		);
+		let html = render(&doc);
+		assert!(html.contains("Jane</a></h1>"), "{html}");
+	}
+
+	#[test]
+	fn spans_over_the_same_text_close_in_reverse() {
+		let doc = simple_doc(
+			"text",
+			vec![
+				Marker::new(MarkerType::Bold, 0.into()).with_length(4.into()),
+				Marker::new(MarkerType::Italic, 0.into()).with_length(4.into()),
+			],
+		);
+		let html = render(&doc);
+		assert!(html.contains("<b><i>text</i></b>"), "{html}");
+	}
+
+	#[test]
+	fn a_list_ending_with_its_item_closes_the_item_first() {
+		let doc = simple_doc(
+			"one\nafter",
+			vec![
+				Marker::new(MarkerType::List, 0.into()).with_length(3.into()),
+				Marker::new(MarkerType::ListItem, 0.into()),
+			],
+		);
+		let html = render(&doc);
+		assert!(html.contains("</li>\n</ul>"), "{html}");
 	}
 
 	// A whole-document range is what `render` itself asks for, so the two must not drift apart.
