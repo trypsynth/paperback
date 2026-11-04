@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4976e03120c0eb49; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,808d00fb,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback – 1.1-es verzió
 
@@ -104,7 +104,7 @@ Az alábbi billentyűparancsok a Windowsra vonatkoznak. Ahol a macOS eltér, a m
 
 * `F5`: Az aktuális dokumentum ismételt beolvasása a lemezről, illetve újbóli letöltése, ha hivatkozásról nyitotta meg. Attól függetlenül működik, hogy a Beállításokban be van-e kapcsolva a „Módosult dokumentumok automatikus újratöltése” beállítás.
 * `Ctrl+Alt+W`: Sortörés be- és kikapcsolása.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, azaz Control+Command+F): Teljes képernyő be- és kikapcsolása.
+* `F11` (macOS: `Control+Cmd+F`, azaz Control+Command+F): Teljes képernyő be- és kikapcsolása.
 * `Ctrl+Shift+V`: Az aktuális tartalom megnyitása webes nézetben.
 * `Ctrl+U`: A dokumentum forrásának megtekintése új lapon.
 
@@ -153,7 +153,7 @@ Az alábbi billentyűparancsok a Windowsra vonatkoznak. Ahol a macOS eltér, a m
 * `B`: Következő könyvjelző.
 * `Shift+N`: Előző jegyzet.
 * `N`: Következő jegyzet.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, azaz a fizikai Control billentyű, nem a Cmd): Az aktuális pozíción lévő jegyzet szövegének megtekintése.
+* `Ctrl+Shift+W` (macOS: `Control+Shift+W`, azaz a fizikai Control billentyű, nem a Cmd): Az aktuális pozíción lévő jegyzet szövegének megtekintése.
 * `Ctrl+B`: Ugrás könyvjelzőre vagy jegyzetre (az összes közül).
 * `Ctrl+Alt+B`: Ugrás könyvjelzőre (csak a könyvjelzők közül).
 * `Ctrl+Alt+M`: Ugrás jegyzetre (csak a jegyzetek közül).
@@ -162,7 +162,7 @@ Az alábbi billentyűparancsok a Windowsra vonatkoznak. Ahol a macOS eltér, a m
 
 ### Hang menü
 
-* `Ctrl+Space` (macOS: `RawCtrl+Space`, azaz a fizikai Control billentyű, mivel a Cmd+Space a Spotlightot nyitja meg): Az audionarráció lejátszása vagy szüneteltetése.
+* `Ctrl+Space` (macOS: `Control+Space`, azaz a fizikai Control billentyű, mivel a Cmd+Space a Spotlightot nyitja meg): Az audionarráció lejátszása vagy szüneteltetése.
 * `'`: Az audionarráció előretekerése.
 * `;`: Az audionarráció visszatekerése.
 * `Shift+'`: A léptetési időegység növelése.
@@ -174,7 +174,7 @@ Az alábbi billentyűparancsok a Windowsra vonatkoznak. Ahol a macOS eltér, a m
 
 ### Eszközök menü
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, azaz a fizikai Control billentyű, nem a Cmd): Az aktuális dokumentum szavainak száma.
+* `Ctrl+W` (macOS: `Control+W`, azaz a fizikai Control billentyű, nem a Cmd): Az aktuális dokumentum szavainak száma.
 * `Ctrl+I`: A dokumentuminformációk megjelenítése.
 * `Ctrl+Shift+O`: Szkennelt PDF-oldalak egy tartományának szövegfelismerése.
 * `Ctrl+Shift+R`: A kurzornál lévő PDF- vagy képregénylap szövegfelismerése, az esetleges meglévő szöveg helyettesítésével.

@@ -102,7 +102,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 
 * `F5`: Re-read the current document from disk, or download it again if it was opened from a link. Works whether or not "Automatically reload changed documents" is switched on in Settings.
 * `Ctrl+Alt+W`: Toggle word wrap.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, i.e. Control+Command+F): Toggle full screen.
+* `F11` (macOS: `Control+Cmd+F`, i.e. Control+Command+F): Toggle full screen.
 * `Ctrl+Shift+V`: Open current content in Web View.
 * `Ctrl+U`: View the document source in a new tab.
 
@@ -151,7 +151,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `B`: Next bookmark.
 * `Shift+N`: Previous note.
 * `N`: Next note.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, i.e. the physical Control key rather than Cmd): View note text at the current position.
+* `Ctrl+Shift+W` (macOS: `Control+Shift+W`, i.e. the physical Control key rather than Cmd): View note text at the current position.
 * `Ctrl+B`: Jump to all bookmarks and notes.
 * `Ctrl+Alt+B`: Jump to bookmarks only.
 * `Ctrl+Alt+M`: Jump to notes only.
@@ -160,7 +160,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 
 ### Audio menu
 
-* `Ctrl+Space` (macOS: `RawCtrl+Space`, i.e. the physical Control key, since Cmd+Space opens Spotlight): Play/pause audio narration.
+* `Ctrl+Space` (macOS: `Control+Space`, i.e. the physical Control key, since Cmd+Space opens Spotlight): Play/pause audio narration.
 * `'`: Seek audio narration forward.
 * `;`: Seek audio narration backward.
 * `Shift+'`: Increase the audio seek amount.
@@ -172,7 +172,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 
 ### Tools menu
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, i.e. the physical Control key rather than Cmd): Show word count for the current document.
+* `Ctrl+W` (macOS: `Control+W`, i.e. the physical Control key rather than Cmd): Show word count for the current document.
 * `Ctrl+I`: Show document info.
 * `Ctrl+Shift+O`: Recognize a range of scanned PDF pages with OCR.
 * `Ctrl+Shift+R`: Recognize the PDF or comic book page the cursor is on with OCR, replacing any text it already has.

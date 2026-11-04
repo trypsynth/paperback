@@ -111,7 +111,7 @@ Níže uvedené zkratky platí pro Windows. Tam, kde se macOS liší, je ekvival
 * `Ctrl+B`: Zobrazení všech záložek a poznámek.
 * `Ctrl+Alt+B`: Zobrazení pouze záložek.
 * `Ctrl+Alt+M`: Zobrazení pouze poznámek.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, tedy fyzická klávesa Control místo Cmd): Zobrazení textu poznámky na aktuální pozici.
+* `Ctrl+Shift+W` (macOS: `Control+Shift+W`, tedy fyzická klávesa Control místo Cmd): Zobrazení textu poznámky na aktuální pozici.
 * `Shift+K`: Předchozí odkaz.
 * `K`: Následující odkaz.
 * `Shift+G`: Předchozí obrázek.
@@ -133,7 +133,7 @@ Níže uvedené zkratky platí pro Windows. Tam, kde se macOS liší, je ekvival
 
 ### Nabídka Nástroje
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, tedy fyzická klávesa Control místo Cmd): Zobrazení počtu slov v aktuálním dokumentu.
+* `Ctrl+W` (macOS: `Control+W`, tedy fyzická klávesa Control místo Cmd): Zobrazení počtu slov v aktuálním dokumentu.
 * `Ctrl+I`: Zobrazení informací o dokumentu.
 * `Ctrl+T`: Zobrazení obsahu (osnovy) dokumentu.
 * `F7`: Zobrazení seznamu prvků.
@@ -146,14 +146,14 @@ Níže uvedené zkratky platí pro Windows. Tam, kde se macOS liší, je ekvival
 * `Ctrl+Shift+B`: Přepnutí záložky v aktuálním výběru / na aktuální pozici.
 * `Ctrl+Shift+N`: Přidání nebo úprava poznámky k záložce v aktuálním výběru / na aktuální pozici.
 * `Ctrl+Alt+W`: Přepnutí zalamování řádků.
-* `Ctrl+Space` (macOS: `RawCtrl+Space`, tedy fyzická klávesa Control, protože Cmd+Space otevírá Spotlight): Přehrání/pozastavení zvukové stopy.
+* `Ctrl+Space` (macOS: `Control+Space`, tedy fyzická klávesa Control, protože Cmd+Space otevírá Spotlight): Přehrání/pozastavení zvukové stopy.
 * `'`: Přetočení zvukové stopy dopředu.
 * `;`: Přetočení zvukové stopy dozadu.
 * `Shift+'`: Prodloužení intervalu přetáčení.
 * `Shift+;`: Zkrácení intervalu přetáčení.
 * `Ctrl+Shift+.`: Zrychlení přehrávání zvukové stopy.
 * `Ctrl+Shift+,`: Zpomalení přehrávání zvukové stopy.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, tedy Control+Command+F): Přepnutí režimu na celou obrazovku.
+* `F11` (macOS: `Control+Cmd+F`, tedy Control+Command+F): Přepnutí režimu na celou obrazovku.
 * `Ctrl+,`: Otevření dialogu Nastavení (na macOS v nabídce aplikace).
 * `Ctrl+Shift+S`: Přepnutí časovače spánku.
 * `Ctrl+Shift+O`: Rozpoznání rozsahu naskenovaných (obrázkových) stránek PDF pomocí OCR.

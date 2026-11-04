@@ -102,7 +102,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 
 * `F5`: Päivitä levyllä olevan asiakirjan sisältö tai lataa se uudelleen URL-osoitteesta. Tämä toimii riippumatta siitä, onko "Päivitä muuttuneet asiakirjat automaattisesti" -asetus käytössä.
 * `Ctrl+Alt+W`: Ota automaattinen rivitys käyttöön tai poista se käytöstä.
-* `F11` (macOSissa `RawCtrl+Ctrl+F` eli Ctrl+Cmd+F): Ota koko näytön tila käyttöön tai poista se käytöstä.
+* `F11` (macOSissa `Control+Cmd+F` eli Ctrl+Cmd+F): Ota koko näytön tila käyttöön tai poista se käytöstä.
 * `Ctrl+Vaihto+V`: Avaa nykyinen sisältö selainnäkymässä.
 * `Ctrl+U`: Näytä asiakirjan lähdekoodi uudessa välilehdessä.
 
@@ -151,7 +151,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 * `B`: Seuraava kirjanmerkki.
 * `Vaihto+N`: Edellinen muistiinpano.
 * `N`: Seuraava muistiinpano.
-* `Ctrl+Vaihto+W` (macOSissa `RawCtrl+Vaihto+W` eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä muistiinpanon teksti nykyisessä sijainnissa.
+* `Ctrl+Vaihto+W` (macOSissa `Control+Vaihto+W` eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä muistiinpanon teksti nykyisessä sijainnissa.
 * `Ctrl+B`: Siirry kaikkiin kirjanmerkkeihin ja muistiinpanoihin.
 * `Ctrl+Alt+B`: Siirry vain kirjanmerkkeihin.
 * `Ctrl+Alt+M`: Siirry vain muistiinpanoihin.
@@ -160,7 +160,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 
 ### Ääni-valikko
 
-* `Ctrl+Välilyönti` (macOSissa `RawCtrl+Välilyönti` eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.
+* `Ctrl+Välilyönti` (macOSissa `Control+Välilyönti` eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.
 * `'`: Kelaa äänitettä eteenpäin.
 * `;`: Kelaa äänitettä taaksepäin.
 * `Vaihto+'`: Pidennä kelauksen aikasiirtymää.
@@ -172,7 +172,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 
 ### Työkalut-valikko
 
-* `Ctrl+W` (macOSissa `RawCtrl+W` eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä nykyisen asiakirjan sanamäärä.
+* `Ctrl+W` (macOSissa `Control+W` eli fyysinen Ctrl-näppäin Cmd-näppäimen sijaan): Näytä nykyisen asiakirjan sanamäärä.
 * `Ctrl+I`: Näytä asiakirjan tiedot.
 * `Ctrl+Vaihto+O`: Suorita tekstintunnistus skannatun PDF-asiakirjan valituille sivuille.
 * `Ctrl+Vaihto+R`: Tunnista kohdistimen kohdalla olevan PDF-asiakirjan tai sarjakuvakirjan sivun teksti ja korvaa sivun mahdollinen aiempi teksti tunnistetulla tekstillä.
