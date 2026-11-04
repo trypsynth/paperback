@@ -102,7 +102,7 @@ Prečice ispod su za Windows. Kada se macOS razlikuje, ekvivalentne prečice su 
 
 * `F5`: ponovo čita izabrani dokument sa diska, ili ga ponovo preuzima ako je otvoren sa linka. Radi bez obzira na to da li je opcija "Automatski ponovo učitaj promenjene dokumente" uključena u podešavanjima.
 * `Ctrl+Alt+W`: uključuje ili isključuje prelamanje reči.
-* `F11` (macOS: `FizičkiCtrl+Ctrl+F`, to jest Control+Command+F): uključuje ili isključuje režim celog ekrana.
+* `F11` (macOS: `Control+Cmd+F`, to jest Control+Command+F): uključuje ili isključuje režim celog ekrana.
 * `Ctrl+Shift+V`: otvori trenutni sadržaj u web prikazu.
 * `Ctrl+U`: Prikaži izvor dokumenta u novoj kartici.
 
@@ -151,7 +151,7 @@ Prečice ispod su za Windows. Kada se macOS razlikuje, ekvivalentne prečice su 
 * `B`: Naredna knjižna oznaka.
 * `Shift+N`: Prethodna napomena.
 * `N`: Naredna napomena.
-* `Ctrl+Shift+W` (macOS: `fizičkiCtrl+Shift+W`, to jest stvarni taster CTRL a ne Cmd): prikaži tekst napomene na trenutnoj poziciji.
+* `Ctrl+Shift+W` (macOS: `Control+Shift+W`, to jest stvarni taster CTRL a ne Cmd): prikaži tekst napomene na trenutnoj poziciji.
 * `Ctrl+B`: skoči na sve knjižne oznake i napomene.
 * `Ctrl+Alt+B`: skoči samo na knjižne oznake.
 * `Ctrl+Alt+M`: Skoči samo na napomene.
@@ -160,7 +160,7 @@ Prečice ispod su za Windows. Kada se macOS razlikuje, ekvivalentne prečice su 
 
 ### Meni zvuka
 
-* `Ctrl+razmak` (macOS: `FizičkiCtrl+Space`,  taster CTRL, budući da Cmd+razmak otvara Spotlight): reprodukuj ili pauziraj zvučnu naraciju.
+* `Ctrl+razmak` (macOS: `Control+Space`,  taster CTRL, budući da Cmd+razmak otvara Spotlight): reprodukuj ili pauziraj zvučnu naraciju.
 * `'`: premotaj zvučnu naraciju napred.
 * `;`: premotaj zvučnu naraciju nazad.
 * `Shift+'`: povećaj količinu premotavanja zvuka.
@@ -172,7 +172,7 @@ Prečice ispod su za Windows. Kada se macOS razlikuje, ekvivalentne prečice su 
 
 ### Meni alata
 
-* `Ctrl+W` (macOS: `FizičkiCtrl+W`, to jest stvarni taster CTRL a ne Cmd): Prikaži broj reči u trenutnom dokumentu.
+* `Ctrl+W` (macOS: `Control+W`, to jest stvarni taster CTRL a ne Cmd): Prikaži broj reči u trenutnom dokumentu.
 * `Ctrl+I`: Prikaži informacije o dokumentu.
 * `Ctrl+Shift+O`: prepoznaj opseg skeniranih PDF stranica uz optičko prepoznavanje znakova.
 * `Ctrl+Shift+R`: Prepoznaj stranicu PDF-a ili stripa na kojoj je kursor uz optičko prepoznavanje znakova, menjajući bilo koji tekst koji već postoji.
@@ -230,7 +230,7 @@ Meni još opcija je gde se sve ostalo nalazi. Neke stavke se blago razlikuju u j
 * **Pređi u režim čitanja na glas ili tekstualni režim:** prebacuje se između režima čitanja na glas i tekstualnog režima, opisanih iznad. U tekstualnom režimu, stavka čitanja na glas pokreće i zaustavlja čitanje na glas bez napuštanja tekstualnog režima.
 * **Sadržaj:** poglavlja knjige, otvaraju se na poglavlju koje čitate. Izaberite neko kako biste odmah prešli na njega. Stavke koje imaju podnaslove se mogu proširiti i skupiti radnjama čitača ekrana.
 * **Elementi:** lista naslova ili linkova dokumenta. Prebacujte se između vrste biračom vrste na iOS-u, ili karticama na Androidu, a zatim izaberite element kako biste se prebacili na njega.
-* **Pretraga:** upišite tekst pretrage, ili izaberite raniju pretragu iz istorije pretrage, i izaberite da li želite da pretraga bude osetljiva na veličinu slova, obuhvata samo cele reči, ili koristi regularni izraz. Tasteri za pronalazak narednog ili prethodnog termina se premeštaju na rezultat i izgovaraju gde ste se prebacili, a pretraga ostaje otvorena kako biste mogli da nastavite. U režimu čitanja na glas, pretraga se takođe prikazuje kao jedinica navigacije na traci čitanja, kako biste takođe mogli da se krećete kroz rezultate na ovaj način. **Zaustavi čitanje nakon rezultata pretrage**u podešavanjima, u odeljku tekst u govor je podrazumevano omogućeno i zaustavlja čitanje nakon čitanja pasusa koji sadrži rezultat. Možete ovo isključiti kako biste nastavili čitanje od rezultata pretrage dok kontrole na traci čitanja za prethodno i naredno nastavljaju da se kreću po rezultatima pretrage.
+* **Pretraga:** upišite tekst pretrage, ili izaberite raniju pretragu iz istorije pretrage, i izaberite da li želite da pretraga bude osetljiva na veličinu slova, obuhvata samo cele reči, ili koristi regularni izraz. Tasteri za pronalazak narednog ili prethodnog termina se premeštaju na rezultat i izgovaraju gde ste se prebacili, a pretraga ostaje otvorena kako biste mogli da nastavite. U režimu čitanja na glas, pretraga se takođe prikazuje kao jedinica navigacije na traci čitanja, kako biste takođe mogli da se krećete kroz rezultate na ovaj način. **Zaustavi čitanje nakon rezultata pretrage** u podešavanjima, u odeljku tekst u govor je podrazumevano omogućeno i zaustavlja čitanje nakon čitanja pasusa koji sadrži rezultat. Možete ovo isključiti kako biste nastavili čitanje od rezultata pretrage dok kontrole na traci čitanja za prethodno i naredno nastavljaju da se kreću po rezultatima pretrage.
 * **Pređi na:** pređi u red, na stranicu, ili na procenat dokumenta. Izaberite koji od ovih načina želite biračom režima.
 * **Nedavni dokumenti:** svaki dokument koji ste otvorili, označeni kao trenutno otvoren, zatvoren, ili datoteka nedostaje. Svaki od njih ima dve radnje čitača ekrana: uklanjanje ga briše iz liste, a pronalazak vam dozvoljava da pronađete dokument čija datoteka je premeštena. Čišćenje nedavnih dokumenata prazni listu bez brisanja bilo kog dokumenta.
 * **Broj reči:** broj reči u dokumentu.
@@ -403,7 +403,7 @@ Napomena: smatram javno GitHub sponzorisanje osnovu za automatsko dodavanje u ov
 
 ##### Dokumenti
 * Windows Write datoteke koje su se otvarale kao binarne.
-* PDF: Tekst koji se ponavljao nakon prelaska sa jedne stranice na drugu u označenim PDF-ovima, druge kolone pročitane kao prve, izgubljeni razmaci icrtice za prekid reda, tekst u Type 3 fontovima i sadržaj predvođen tačkama.
+* PDF: Tekst koji se ponavljao nakon prelaska sa jedne stranice na drugu u označenim PDF-ovima, druge kolone pročitane kao prve, izgubljeni razmaci i crtice za prekid reda, tekst u Type 3 fontovima i sadržaj predvođen tačkama.
 * RTF: Čisti CR krajevi redova, liste nabrajanja crticama, tekst pre prvog pasusa, akcentovan tekst i tekst uz CJK, tekst koji se izgubio nakon ignorisane obrnute kose crte i RTF sačuvan kao `.doc`.
 * Word i PowerPoint datoteke sa oštećenim sadrživačima koje Word nastavlja da otvara.
 * Word tekst u praćenim promenama, poljima i ćelijama tabela.
