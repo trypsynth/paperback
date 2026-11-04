@@ -149,7 +149,7 @@ That check also runs against hand-written manuals when we go looking, which is h
 ## Notes
 
 1. **Keyboard shortcuts.** Six strings carry their shortcut inside the translation, after a `\t`: Undo, Redo, Cut, Copy, Paste and Select All. In those the text after the tab is what the toolkit turns into the actual key, so keep `Ctrl+Z` and the rest exactly as the English has them. Translating them stops the shortcut working.
-2. **Key names elsewhere.** Every other menu shortcut is generated from the user's configuration rather than from the catalogue, in English (`Ctrl`, `Shift`, `Alt`). Nothing you write in the `.po` changes that, so the manual should use the same English key names as the program shows. Localized key names are planned; if you want them for your language, say so in [the translation discussion](https://github.com/trypsynth/paperback/discussions/910).
+2. **Key names elsewhere.** Every other menu shortcut is generated from the user's configuration rather than from the catalogue, in English (`Ctrl`, `Shift`, `Alt`). Nothing you write in the `.po` changes that, so the manual should use the same English key names as the program shows. Localized key names are planned; if you want them for your language, say so in [the translation discussion](https://github.com/trypsynth/paperback/discussions/1216).
 3. **Format strings.** Keep `%s`, `%d` and `{}` exactly as they appear, and in an order that makes sense in your language.
 4. **Ampersands.** `&` marks the accelerator letter in a menu item or a button. Keep one, and choose a different letter if the English letter would collide with another item in the same menu.
 5. **Punctuation and spacing.** Match the source for ellipses, colons and trailing spaces, so the interface lines up.
@@ -175,4 +175,4 @@ git push origin danish-translation
 
 If you prefer not to use Git, attach your `.po` file to an issue and we will merge it for you.
 
-Questions, or anything that does not make sense here, go in [the translation discussion](https://github.com/trypsynth/paperback/discussions/910).
+Questions, or anything that does not make sense here, go in [the translation discussion](https://github.com/trypsynth/paperback/discussions/1216).
