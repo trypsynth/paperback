@@ -324,6 +324,12 @@ fn sized(name: &str, text: &str, size: f64) -> String {
 	glyphs(name, text, 10.0, size)
 }
 
+fn structure(outline: &str) -> String {
+	format!(
+		"<DocumentStructure><DocumentStructure.Outline><DocumentOutline>{outline}</DocumentOutline></DocumentStructure.Outline></DocumentStructure>"
+	)
+}
+
 fn outlined(outline: &str) -> Document {
 	let first = format!("<FixedPage>{}{}</FixedPage>", sized("a", "Chapter", 20.0), sized("b", BODY, 12.0));
 	let second = format!(
@@ -336,16 +342,19 @@ fn outlined(outline: &str) -> Document {
 		let body: String = names.iter().map(|name| paragraph(name)).collect();
 		format!("<StoryFragments>{}</StoryFragments>", in_fragment(&body))
 	};
-	read(LINKED_PAGES, &[
-		("_rels/Doc.fdoc.rels", STRUCTURE_RELS),
-		("Doc.struct", &format!("<DocumentStructure><DocumentStructure.Outline><DocumentOutline>{outline}</DocumentOutline></DocumentStructure.Outline></DocumentStructure>")),
-		("1.fpage", &first),
-		("_rels/1.fpage.rels", FRAGMENT_RELS),
-		("1.frag", &frag(&["a", "b"])),
-		("2.fpage", &second),
-		("_rels/2.fpage.rels", SECOND_FRAGMENT_RELS),
-		("2.frag", &frag(&["c", "d", "e"])),
-	])
+	read(
+		LINKED_PAGES,
+		&[
+			("_rels/Doc.fdoc.rels", STRUCTURE_RELS),
+			("Doc.struct", &structure(outline)),
+			("1.fpage", &first),
+			("_rels/1.fpage.rels", FRAGMENT_RELS),
+			("1.frag", &frag(&["a", "b"])),
+			("2.fpage", &second),
+			("_rels/2.fpage.rels", SECOND_FRAGMENT_RELS),
+			("2.frag", &frag(&["c", "d", "e"])),
+		],
+	)
 	.expect("read")
 }
 
@@ -374,6 +383,34 @@ fn the_outline_becomes_the_table_of_contents() {
 fn an_outline_entry_whose_text_is_not_on_its_page_leads_to_the_page() {
 	let doc = outlined(r#"<OutlineEntry OutlineLevel="1" Description="Renamed" OutlineTarget="Doc.fdoc#two"/>"#);
 	assert_eq!(doc.toc_items[0].offset, doc.id_positions["page_1"]);
+}
+
+#[test]
+fn an_outline_entry_finds_its_heading_on_a_page_with_no_structure() {
+	let line = |text: &str, y: f64, size: f64| {
+		format!(r#"<Glyphs OriginX="72" OriginY="{y}" FontRenderingEmSize="{size}" UnicodeString="{text}"/>"#)
+	};
+	let second = format!(
+		"<FixedPage Height=\"1000\">{}{}{}{}</FixedPage>",
+		line("Second chapter", 60.0, 27.0),
+		at("A paragraph of its own.", 200.0),
+		line("A section", 400.0, 22.0),
+		at("A paragraph of its own.", 500.0)
+	);
+	let outline = r#"<OutlineEntry OutlineLevel="1" Description="Second chapter" OutlineTarget="Doc.fdoc#two"/>
+		<OutlineEntry OutlineLevel="2" Description="A section" OutlineTarget="Doc.fdoc#three"/>"#;
+	let doc = read(
+		LINKED_PAGES,
+		&[
+			("_rels/Doc.fdoc.rels", STRUCTURE_RELS),
+			("Doc.struct", &structure(outline)),
+			("1.fpage", "<FixedPage/>"),
+			("2.fpage", &second),
+		],
+	)
+	.expect("read");
+	let section = doc.buffer.content.find("A section").expect("section");
+	assert_eq!(doc.toc_items[0].children[0].offset, doc.buffer.pos_at_byte(section.into()));
 }
 
 #[test]

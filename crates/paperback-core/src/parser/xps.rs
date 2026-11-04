@@ -144,22 +144,34 @@ impl ReadPage {
 	}
 }
 
-fn write_paragraphs(buffer: &mut DocumentBuffer, paragraphs: Vec<(String, bool, usize)>) -> Vec<(DocPos, String)> {
-	let mut headings = Vec::new();
+fn write_paragraphs(
+	buffer: &mut DocumentBuffer,
+	paragraphs: Vec<(String, bool, usize)>,
+) -> Vec<(DocPos, String, bool)> {
+	let mut written = Vec::new();
 	for (text, is_heading, _) in paragraphs {
-		if is_heading {
-			headings.push((buffer.end(), text.clone()));
-		}
+		let position = buffer.end();
 		buffer.append(&text);
 		buffer.append("\n");
+		written.push((position, text, is_heading));
 	}
-	headings
+	written
 }
 
 struct WrittenPage {
 	start: DocPos,
+	/// What a page that declares its structure wrote outside lists and tables.
 	paragraphs: Vec<WrittenParagraph>,
-	headings: Vec<(DocPos, String)>,
+	/// What a page that declares nothing was laid out into, and whether each is set large enough to be a heading.
+	drawn: Vec<(DocPos, String, bool)>,
+}
+
+impl WrittenPage {
+	/// Where an outline entry can lead, in the order it was written.
+	fn targets(&self) -> impl Iterator<Item = (DocPos, &str)> {
+		let declared = self.paragraphs.iter().map(|paragraph| (paragraph.position, paragraph.text.as_str()));
+		declared.chain(self.drawn.iter().map(|(position, text, _)| (*position, text.as_str())))
+	}
 }
 
 fn link_target_pages(pages: &[PagePart]) -> HashMap<&str, usize> {
@@ -180,10 +192,10 @@ fn outline_items(
 			continue;
 		};
 		let title = trim_string(&collapse_whitespace(&entry.title));
-		let paragraphs = &written[page].paragraphs[next_paragraph[page]..];
-		let found = paragraphs.iter().position(|paragraph| paragraph.text == title);
-		let offset = found.map_or(written[page].start, |found| paragraphs[found].position);
-		next_paragraph[page] += found.map_or(0, |found| found + 1);
+		let mut targets = written[page].targets().enumerate().skip(next_paragraph[page]);
+		let found = targets.find(|(_, (_, text))| *text == title);
+		let offset = found.map_or(written[page].start, |(_, (position, _))| position);
+		next_paragraph[page] = found.map_or(next_paragraph[page], |(index, _)| index + 1);
 		items.push((entry.level, TocItem::new(title, String::new(), offset)));
 	}
 	items
@@ -238,7 +250,8 @@ fn detected_headings(written: Vec<WrittenPage>) -> Vec<(DocPos, String)> {
 	let body = body_size(&written);
 	let mut headings = Vec::new();
 	for page in written {
-		headings.extend(page.headings);
+		let drawn = page.drawn.into_iter().filter(|(_, _, is_heading)| *is_heading);
+		headings.extend(drawn.map(|(position, text, _)| (position, text)));
 		let (positions, lines): (Vec<DocPos>, Vec<Line>) = page
 			.paragraphs
 			.into_iter()
@@ -286,16 +299,17 @@ fn read_document<R: Read + Seek>(
 		)
 		.collect();
 	let running = survey_running_text(read.iter().filter_map(ReadPage::drawn_lines), context.strip_running_text);
-	let drawn: Vec<_> = read.par_iter_mut().map(|page| page.lay_out(&running, context.join_pdf_paragraphs)).collect();
+	let laid_out: Vec<_> =
+		read.par_iter_mut().map(|page| page.lay_out(&running, context.join_pdf_paragraphs)).collect();
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
 	let mut written: Vec<WrittenPage> = Vec::new();
-	for (index, (page, drawn)) in read.into_iter().zip(drawn).enumerate() {
+	for (index, (page, laid_out)) in read.into_iter().zip(laid_out).enumerate() {
 		let start = buffer.end();
 		id_positions.insert(format!("page_{index}"), start);
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, start).with_text(format!("Page {}", index + 1)));
-		let (paragraphs, headings) = match page.content {
-			Content::Drawn(_) => (Vec::new(), write_paragraphs(&mut buffer, drawn)),
+		let (paragraphs, drawn) = match page.content {
+			Content::Drawn(_) => (Vec::new(), write_paragraphs(&mut buffer, laid_out)),
 			Content::Declared(declared, fragments) => {
 				let writer = PageWriter::new(&mut buffer, &declared, context.render_tables_inline);
 				(writer.write(&fragments, context.strip_running_text), Vec::new())
@@ -311,7 +325,7 @@ fn read_document<R: Read + Seek>(
 		let mut links = page.links;
 		links.sort_by_cached_key(|link| page_text.find(&link.text));
 		place_links(&links, start, &page_text, &mut buffer);
-		written.push(WrittenPage { start, paragraphs, headings });
+		written.push(WrittenPage { start, paragraphs, drawn });
 	}
 	let entries: Vec<OutlineEntry> = documents
 		.iter()
