@@ -178,7 +178,20 @@ impl ReaderCtrl {
 
 	pub fn set_value(self, text: &str) {
 		self.prepare_realized();
-		self.writable(|| self.0.set_text(text));
+		self.writable(|| {
+			#[cfg(target_os = "windows")]
+			{
+				const SCI_SETTEXT: u32 = 2181;
+				// `wxStyledTextCtrl::SetText` converts the UTF-8 text to a UTF-16 `wxString` and back again; call Scintilla
+				// with the UTF-8 bytes directly instead, adding only the terminator `SCI_SETTEXT` requires.
+				let mut terminated = Vec::with_capacity(text.len() + 1);
+				terminated.extend_from_slice(text.as_bytes());
+				terminated.push(0);
+				sci_message(self.0, SCI_SETTEXT, 0, terminated.as_ptr() as isize);
+			}
+			#[cfg(not(target_os = "windows"))]
+			self.0.set_text(text);
+		});
 	}
 
 	/// Runs a text or style change while the control is editable, then makes it read-only again. Scintilla's read-only mode makes
