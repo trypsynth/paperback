@@ -313,6 +313,18 @@ fn sci_message(ctrl: StyledTextCtrl, message: u32, wparam: i32, lparam: isize) {
 	}
 }
 
+/// The system default beep a native text control plays when the caret cannot move, so `MB_OK` keeps the user's sound scheme.
+#[cfg(target_os = "windows")]
+fn beep_at_document_edge() {
+	#[link(name = "user32")]
+	unsafe extern "system" {
+		fn MessageBeep(utype: u32) -> i32;
+	}
+	unsafe {
+		MessageBeep(0);
+	}
+}
+
 /// Scintilla answers `WM_GETDLGCODE` with `DLGC_WANTALLKEYS`, which tells wx's dialog-key handling to hand it every key: Tab stops
 /// traversing the window. Arrows and characters are kept, since Scintilla needs both.
 ///
@@ -326,6 +338,7 @@ fn install_dialog_navigation(ctrl: ReaderCtrl) {
 	use windows::Win32::{
 		Foundation::{HWND, LPARAM, LRESULT, WPARAM},
 		UI::{
+			Input::KeyboardAndMouse::GetKeyState,
 			Shell::{DefSubclassProc, RemoveWindowSubclass, SetWindowSubclass},
 			WindowsAndMessaging::{DefWindowProcW, GA_ROOT, GetAncestor, PostMessageW, SendMessageW},
 		},
@@ -343,11 +356,31 @@ fn install_dialog_navigation(ctrl: ReaderCtrl) {
 	const SC_KEYMENU: usize = 0xf100;
 	const SC_CLOSE: usize = 0xf060;
 	const VK_MENU: usize = 0x12;
+	const VK_PRIOR: usize = 0x21;
+	const VK_NEXT: usize = 0x22;
+	const VK_LEFT: usize = 0x25;
+	const VK_UP: usize = 0x26;
+	const VK_RIGHT: usize = 0x27;
+	const VK_DOWN: usize = 0x28;
 	const VK_F4: usize = 0x73;
+	const SCI_GETCURRENTPOS: u32 = 2008;
+	const SCI_GETANCHOR: u32 = 2009;
 	const DLGC_WANTARROWS: isize = 0x0001;
 	const DLGC_WANTTAB: isize = 0x0002;
 	const DLGC_WANTALLKEYS: isize = 0x0004;
 	const DLGC_WANTCHARS: isize = 0x0080;
+
+	const fn is_caret_move(key: usize) -> bool {
+		matches!(key, VK_LEFT | VK_UP | VK_RIGHT | VK_DOWN | VK_PRIOR | VK_NEXT)
+	}
+
+	fn alt_is_up() -> bool {
+		unsafe { GetKeyState(i32::try_from(VK_MENU).unwrap_or(0)) >= 0 }
+	}
+
+	unsafe fn sci_position(hwnd: HWND, message: u32) -> isize {
+		unsafe { SendMessageW(hwnd, message, None, None).0 }
+	}
 
 	std::thread_local! {
 		/// Still a bare Alt press: set on Alt down, cleared by any other key before the release.
@@ -366,6 +399,20 @@ fn install_dialog_navigation(ctrl: ReaderCtrl) {
 			if msg == WM_GETDLGCODE {
 				let answer = DefSubclassProc(hwnd, msg, wparam, lparam).0;
 				return LRESULT((answer & !(DLGC_WANTALLKEYS | DLGC_WANTTAB)) | DLGC_WANTARROWS | DLGC_WANTCHARS);
+			}
+			if msg == WM_KEYDOWN && is_caret_move(wparam.0) && alt_is_up() {
+				// A native text control beeps when a movement key cannot move the caret; Scintilla does not. Let the key run and
+				// beep only if neither end of the selection moved, so collapsing a selection at an edge stays silent. Shift and
+				// Ctrl are included: Shift+Left at the document start and Ctrl+Left there cannot move either. Alt is not, since
+				// those chords belong to the menu and to navigation shortcuts.
+				BARE_ALT.set(false);
+				let before = (sci_position(hwnd, SCI_GETCURRENTPOS), sci_position(hwnd, SCI_GETANCHOR));
+				let result = DefSubclassProc(hwnd, msg, wparam, lparam);
+				let after = (sci_position(hwnd, SCI_GETCURRENTPOS), sci_position(hwnd, SCI_GETANCHOR));
+				if before == after {
+					beep_at_document_edge();
+				}
+				return result;
 			}
 			if msg == WM_SYSKEYDOWN || msg == WM_KEYDOWN {
 				// Alt+F4 closes the window, but Scintilla's own default-procedure path loses it. Posted so the window is not
