@@ -187,17 +187,17 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 				events.push(Ev { pos, opened, kind: Ek::InlineOpen(open) });
 				events.push(Ev { pos: end, opened, kind: Ek::InlineClose("</a>") });
 			}
-			MarkerType::Bold => {
+			MarkerType::Bold if !marker.length.is_zero() => {
 				let end = pos + marker.length;
 				events.push(Ev { pos, opened, kind: Ek::InlineOpen("<b>".to_string()) });
 				events.push(Ev { pos: end, opened, kind: Ek::InlineClose("</b>") });
 			}
-			MarkerType::Italic => {
+			MarkerType::Italic if !marker.length.is_zero() => {
 				let end = pos + marker.length;
 				events.push(Ev { pos, opened, kind: Ek::InlineOpen("<i>".to_string()) });
 				events.push(Ev { pos: end, opened, kind: Ek::InlineClose("</i>") });
 			}
-			MarkerType::Underline => {
+			MarkerType::Underline if !marker.length.is_zero() => {
 				let end = pos + marker.length;
 				events.push(Ev { pos, opened, kind: Ek::InlineOpen("<u>".to_string()) });
 				events.push(Ev { pos: end, opened, kind: Ek::InlineClose("</u>") });
@@ -227,21 +227,28 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 	for offset in target_offsets.into_iter().filter(|&off| off >= range_start && off <= range_end) {
 		events.push(Ev { pos: offset, opened: (offset, 0), kind: Ek::Anchor(offset) });
 	}
-	// Closes before opens at the same position to avoid empty elements, and innermost first so a heading ending in a link is `</a></h1>`, not `</h1></a>`.
+	// Closes before opens at the same position to avoid empty elements. Whatever opened last closes first, so a heading ending in a link is `</a></h1>`, while a link around a heading is `</h1></a>`.
 	events.sort_by(|a, b| {
 		let class = |k: &Ek| match k {
-			Ek::InlineClose(_) => 0u8,
-			Ek::BlockClose(_) => 1,
-			Ek::Hr | Ek::Replace { .. } => 2,
-			Ek::BlockOpen(_) => 3,
-			Ek::InlineOpen(_) => 4,
-			Ek::Anchor(_) => 5,
+			Ek::InlineClose(_) | Ek::BlockClose(_) => 0u8,
+			Ek::Hr | Ek::Replace { .. } => 1,
+			Ek::BlockOpen(_) => 2,
+			Ek::InlineOpen(_) => 3,
+			Ek::Anchor(_) => 4,
 		};
+		let inner = |k: &Ek| u8::from(matches!(k, Ek::BlockClose(_)));
 		let (ca, cb) = (class(&a.kind), class(&b.kind));
-		a.pos
-			.cmp(&b.pos)
-			.then_with(|| ca.cmp(&cb))
-			.then_with(|| if ca <= 1 { b.opened.cmp(&a.opened) } else { Ordering::Equal })
+		a.pos.cmp(&b.pos).then_with(|| ca.cmp(&cb)).then_with(|| {
+			if ca == 0 {
+				b.opened
+					.0
+					.cmp(&a.opened.0)
+					.then_with(|| inner(&a.kind).cmp(&inner(&b.kind)))
+					.then_with(|| b.opened.1.cmp(&a.opened.1))
+			} else {
+				Ordering::Equal
+			}
+		})
 	});
 	let mut event_idx = 0usize;
 	let mut block_depth: usize = 0;
@@ -428,6 +435,35 @@ mod tests {
 		);
 		let html = render(&doc);
 		assert!(html.contains("Jane</a></h1>"), "{html}");
+	}
+
+	#[test]
+	fn a_link_opening_before_a_heading_closes_after_it() {
+		let doc = simple_doc(
+			"see Title\nbody",
+			vec![
+				Marker::new(MarkerType::Heading1, 4.into()).with_length(5.into()),
+				Marker::new(MarkerType::Link, 0.into())
+					.with_text("see Title".to_string())
+					.with_reference("https://a.org".to_string()),
+			],
+		);
+		let html = render(&doc);
+		assert!(html.contains("</h1>\n</a>"), "{html}");
+	}
+
+	#[test]
+	fn an_empty_span_writes_no_tags() {
+		let doc = simple_doc(
+			"text",
+			vec![
+				Marker::new(MarkerType::Bold, 2.into()).with_length(0.into()),
+				Marker::new(MarkerType::Italic, 2.into()).with_length(0.into()),
+				Marker::new(MarkerType::Underline, 2.into()).with_length(0.into()),
+			],
+		);
+		let html = render(&doc);
+		assert!(html.contains("<p>text</p>"), "{html}");
 	}
 
 	#[test]
