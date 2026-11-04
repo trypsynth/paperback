@@ -99,17 +99,23 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 </li>
 <li><a href="#dnevnik-promjena">Dnevnik promjena</a><ul>
-<li><a href="#verzija-10">Verzija 1.0</a><ul>
+<li><a href="#verzija-11">Verzija 1.1</a><ul>
 <li><a href="#dodano">Dodano</a></li>
+<li><a href="#promijenjeno">Promijenjeno</a></li>
 <li><a href="#ispravljeno">Ispravljeno</a></li>
-<li><a href="#ios-i-android-1">iOS i Android</a></li>
+</ul>
+</li>
+<li><a href="#verzija-10">Verzija 1.0</a><ul>
+<li><a href="#dodano-1">Dodano</a></li>
+<li><a href="#ispravljeno-1">Ispravljeno</a></li>
+<li><a href="#ios-i-android-3">iOS i Android</a></li>
 </ul>
 </li>
 <li><a href="#verzija-092">Verzija 0.9.2</a></li>
 <li><a href="#verzija-091">Verzija 0.9.1</a></li>
 <li><a href="#verzija-090">Verzija 0.9.0</a><ul>
-<li><a href="#dodano-1">Dodano</a></li>
-<li><a href="#ispravljeno-1">Ispravljeno</a></li>
+<li><a href="#dodano-2">Dodano</a></li>
+<li><a href="#ispravljeno-2">Ispravljeno</a></li>
 </ul>
 </li>
 <li><a href="#verzija-085">Verzija 0.8.5</a></li>
@@ -146,7 +152,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Može se koristiti kao prenosivi program ili instalirati uz automatsko postavljanje pridruživanja datoteka.</li>
 <li>Podržava veliki broj uobičajenih formata datoteka.</li>
 <li>Reprodukuje zvučne knjige, uz podesivu brzinu i oznake koje pamte tačno vrijeme.</li>
-<li>Čita skenirane PDF stranice pomoću OCR-a ugrađenog u Windows i macOS.</li>
+<li>Čita skenirane PDF stranice pomoću OCR-a ugrađenog u Windows i macOS ili pomoću Tesseracta na Linuxu.</li>
 <li>Podržava oznake i bilješke, pa možete obilježiti mjesto do kojeg ste stigli i kasnije mu se vratiti.</li>
 <li>Svaka prečica na tastaturi može se promijeniti.</li>
 <li>Otvara dokumente direktno s http i https poveznica i ponovo ih preuzima kada ih ponovo otvorite ili pritisnete <code>F5</code>, uz zadržavanje položaja čitanja i oznaka. Pri vraćanju dokumenata koje ste imali otvorene ponovo preuzima one s poveznica koji nisu veći od 2 MB.</li>
@@ -198,6 +204,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+R</code>: Otvara dijalog “Svi dokumenti” (iz nedavnih dokumenata).</li>
 <li><code>Ctrl+Shift+C</code>: Otvara mapu u kojoj se nalazi trenutna datoteka.</li>
 <li><code>Ctrl+Shift+E</code>: Izvozi podatke dokumenta (<code>.paperback</code>).</li>
+<li><code>Ctrl+Alt+E</code>: Izvozi oznake i bilješke u čitljivu tekstualnu ili HTML datoteku.</li>
 <li><code>Ctrl+Shift+I</code>: Uvozi podatke dokumenta (<code>.paperback</code>).</li>
 <li><code>Ctrl+E</code>: Izvozi trenutni dokument kao običan tekst.</li>
 <li><code>Ctrl+Q</code>: Izlazi iz programa (samo na Windowsu; na macOS-u se ova stavka nalazi u izborniku aplikacije).</li>
@@ -288,6 +295,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+W</code> (macOS: <code>Control+W</code>, tj. fizički taster Ctrl umjesto tastera Cmd): Prikazuje broj riječi u trenutnom dokumentu.</li>
 <li><code>Ctrl+I</code>: Prikazuje informacije o dokumentu.</li>
 <li><code>Ctrl+Shift+O</code>: Prepoznaje raspon skeniranih PDF stranica pomoću OCR-a.</li>
+<li><code>Ctrl+Shift+R</code>: Pomoću OCR-a prepoznaje PDF stranicu ili stranicu stripa na kojoj je kursor i zamjenjuje tekst koji ona već ima.</li>
 <li><code>Ctrl+Shift+S</code>: Uključuje i isključuje odbrojavanje za spavanje.</li>
 <li><code>Ctrl+,</code>: Otvara postavke (na macOS-u se nalaze u izborniku aplikacije).</li>
 </ul>
@@ -306,7 +314,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+Tab</code> i <code>Ctrl+Shift+Tab</code>: Prelaze na sljedeći ili prethodni otvoreni dokument; nakon posljednjeg dokumenta prelazi se na prvi i obrnuto.</li>
 <li><code>Enter</code> ili <code>Razmak</code> u dokumentu: Otvara poveznicu na položaju kursora ili otvara prikaz tabele ili formule.</li>
 <li><code>Enter</code> na skeniranoj PDF stranici: Prepoznaje stranicu pomoću OCR-a.</li>
-<li><code>Shift+F10</code> ili taster <code>Aplikacije</code> u dokumentu: Otvara kontekstni izbornik. Kada je kursor na slici u EPUB, HTML, Markdown, CHM ili FB2 dokumentu ili u stripu, nudi i spremanje slike u datoteku.</li>
+<li><code>Enter</code> na slici koja nije poveznica: Prikazuje tekst prepoznat na slici, u prikazu koji se zatvara tasterom <code>Escape</code>. Sama slika se ne mijenja, a ni tekst dokumenta.</li>
+<li><code>Shift+F10</code> ili taster <code>Aplikacije</code> u dokumentu: Otvara kontekstni izbornik. Kada je kursor na slici u PDF, EPUB, HTML, Markdown, CHM ili FB2 dokumentu ili u stripu, nudi i spremanje slike u datoteku, a na Windowsu i macOS-u i čitanje teksta sa slike. Tako se čita i slika koja je ujedno poveznica.</li>
 </ul>
 <h2 id="ios-i-android">iOS i Android</h2>
 <p>Aplikacije za iOS i Android koriste isti mehanizam za čitanje kao i verzija za računare, pa otvaraju iste formate i na isti način pamte gdje ste stali. Napravljene su za korištenje s VoiceOverom na iOS-u i TalkBackom na Androidu.</p>
@@ -337,7 +346,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>Idi na:</strong> prelazi na red, stranicu ili postotak dokumenta. Šta od toga želite, birate biračem “Način”.</li>
 <li><strong>Nedavni dokumenti:</strong> svi dokumenti koje ste otvorili, pri čemu svaki ima status “Trenutno otvoreno”, “Zatvoreno” ili “Datoteka nedostaje”. Svaki od njih ima dvije radnje čitača zaslona: “Ukloni” ga uklanja s popisa, a “Pronađi” vam omogućava da pronađete dokument čija je datoteka premještena. “Očisti nedavne dokumente” prazni popis bez brisanja ijednog dokumenta.</li>
 <li><strong>Broj riječi:</strong> broj riječi u dokumentu.</li>
-<li><strong>Informacije o dokumentu:</strong> naslov, autor, naziv datoteke, a na iOS-u i broj redova i znakova.</li>
+<li><strong>Informacije o dokumentu:</strong> naslov, autor, naziv datoteke, koliko ste odmakli kroz dokument te broj riječi, redova i znakova. Za zvučnu knjigu prikazuje i broj datoteka te, kada Paperback to može utvrditi, njihovo ukupno i prosječno trajanje.</li>
 <li><strong>Izvoz:</strong> sprema dokument kao običan tekst, HTML ili Markdown.</li>
 <li><strong>Odbrojavanje za spavanje:</strong> zaustavlja čitanje nakon 5, 10, 15, 30, 45 ili 60 minuta ili nakon vremena koje sami odredite. Ako ga ponovo otvorite dok radi, možete vidjeti koliko je vremena preostalo ili ga otkazati.</li>
 <li><strong>Pomoć:</strong> otvara ovaj dokument s uputama.</li>
@@ -403,10 +412,146 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Tyler Rodick</li>
 </ul>
 <h2 id="dnevnik-promjena">Dnevnik promjena</h2>
-<h3 id="verzija-10">Verzija 1.0</h3>
-<p>Verzija 1.0 je prvo izdanje dostupno na svih pet platformi: Windowsu, macOS-u, Linuxu, iOS-u i Androidu, a aplikacije za iOS i Android nalaze se na App Storeu i Google Playu.</p>
+<h3 id="verzija-11">Verzija 1.1</h3>
+<p>Verzija 1.1 donosi novi mehanizam za PDF, iznova izgrađen tekstualni način na iOS-u, OCR na Linuxu, otvaranje dokumenata s poveznica, podršku za decenijama stare Word, Write i PowerPoint datoteke i još mnogo toga.</p>
 <h4 id="dodano">Dodano</h4>
 <h5 id="općenito">Općenito</h5>
+<ul>
+<li>Prijevod na mađarski jezik i korisnički vodič na mađarskom.</li>
+<li>Otvaranje dokumenta s poveznice, na svim platformama. <code>F5</code> ga ponovo preuzima.</li>
+<li><code>F5</code> ponovo učitava dokument.</li>
+<li>Pomoću <code>Ctrl+1</code> do <code>Ctrl+9</code> prelazite na prvih devet otvorenih dokumenata.</li>
+<li><code>Ctrl+Tab</code> i <code>Ctrl+Shift+Tab</code> prebacuju između dokumenata i na macOS-u i Linuxu.</li>
+<li>Dijalog za otvaranje i dijalog “Svi dokumenti” otvaraju svaki dokument koji odaberete, svaki u vlastitoj kartici.</li>
+<li>Spremanje slike iz kontekstnog izbornika.</li>
+<li>Izvoz oznaka i bilješki kao tekst ili HTML.</li>
+<li>Postavke za nivo dnevnika i za to da li traženje označava pronađeni tekst.</li>
+<li>Prečica za prozor može biti bilo koji taster, a postavlja se na novoj kartici “Na nivou sistema” u dijalogu za prečice na tastaturi.</li>
+<li>Kopiranje izgovara koliko je teksta kopirano, a tekst ostaje u međuspremniku i nakon zatvaranja Paperbacka.</li>
+<li>Svaka stavka izbornika ima vlastiti taster za brzi pristup na svakom jeziku.</li>
+<li>ZIP arhiva koju Paperback ne može pročitati kao dokument otvara se kao popis dokumenata koje sadrži.</li>
+</ul>
+<h5 id="novi-formati">Novi formati</h5>
+<ul>
+<li>Word za Windows 1 i 2, Word za DOS, Word za Mac 4 i 5 te Unicode izdanja Worda 6 i 95.</li>
+<li>PowerPoint 95.</li>
+<li>Komprimovane FictionBook knjige (<code>.fb2.zip</code>).</li>
+<li>DAISY 3 knjige koje se sastoje samo od DTBook datoteke u ZIP arhivi ili samo od zvuka.</li>
+</ul>
+<h5 id="ocr">OCR</h5>
+<ul>
+<li>OCR na Linuxu, pomoću Tesseracta.</li>
+<li>“Prepoznaj trenutnu stranicu” (<code>Ctrl+Shift+R</code>) ponovo prepoznaje stranicu na kojoj se nalazite, čak i ako ona već ima tekst.</li>
+<li><code>Enter</code> na slici čita tekst s nje.</li>
+<li>Prepoznati tekst prati raspored stranice i pamti se, pa se skenirani dokument otvara sa svojim tekstom.</li>
+<li>Skupni OCR može ponovo prepoznati stranice koje već imaju tekst, prepoznaje više stranica istovremeno i zaustavlja se kada zatvorite dokument.</li>
+</ul>
+<h5 id="zvučne-knjige">Zvučne knjige</h5>
+<ul>
+<li>Brzine do 4x na svim platformama, koje se pamte između sesija.</li>
+<li>Kontrole jačine zvuka.</li>
+</ul>
+<h5 id="pdf-dokumenti">PDF dokumenti</h5>
+<ul>
+<li>Novi mehanizam za PDF: brži je, koristi sva jezgra procesora i ne treba mu biblioteka pdfium.</li>
+<li>Naslovi se pronalaze i na neoznačenim stranicama, a naslovi dokumenata su tačniji.</li>
+<li>Postavka za zadržavanje zaglavlja i podnožja koja se ponavljaju na stranicama.</li>
+</ul>
+<h5 id="ostali-dokumenti">Ostali dokumenti</h5>
+<ul>
+<li>Word: numerisani i nenumerisani popisi, fusnote, endnote, komentari, alternativni tekst slika, kretanje po popisima i Wordove vlastite stranice.</li>
+<li>OpenDocument: fusnote i komentari nakon teksta.</li>
+<li>Naslovi i autori iz metapodataka dokumenta u Word, PowerPoint, OpenDocument, RTF, Markdown i reStructuredText dokumentima.</li>
+<li>Stripovi: naslov, scenarista, vrste stranica i oznake iz datoteke ComicInfo.xml.</li>
+<li>FB2: naslovi, sadržaj i stihovi u zasebnim redovima.</li>
+<li>Slike u MOBI, KF8 i komprimovanim DAISY knjigama mogu se spremiti i pročitati pomoću OCR-a.</li>
+<li>Matematičke formule između znakova dolara u Markdown dokumentima.</li>
+<li>Sphinx direktive u reStructuredText dokumentima.</li>
+<li>Slike bez opisa prikazuju se kao [Slika].</li>
+</ul>
+<h5 id="ios-i-android-1">iOS i Android</h5>
+<ul>
+<li>Red “Jezik” u postavkama.</li>
+<li>“Informacije o dokumentu” prikazuju koliko ste odmakli, a za zvučnu knjigu i broj datoteka i trajanje.</li>
+<li>Tekstualni način se pamti.</li>
+<li>Nakon traženja možete nastaviti neprekidno čitanje.</li>
+<li>iOS: tekstualni način je iznova izgrađen za VoiceOver. VoiceOverova komanda “Read All” prolazi kroz cijelu knjigu, rotori dosežu sve njene dijelove, popisi i tabele su pravi popisi i tabele, klizanje s tri prsta okreće stranice, a dodir s tri prsta izgovara stranicu i postotak.</li>
+<li>iOS: glas, brzina govora i visina glasa za svaku knjigu posebno, u stavci “Govor za ovu knjigu”.</li>
+<li>iOS: dokumenti zaštićeni lozinkom.</li>
+<li>iOS: komprimovane DAISY knjige i MP3 zvučne knjige mogu se podijeliti u Paperback.</li>
+<li>iOS: odbrojavanje za spavanje zaustavlja i zvučne knjige.</li>
+<li>iOS: slovački i ukrajinski jezik.</li>
+<li>Android: promjene brzine govora i visine glasa primjenjuju se na odlomak koji se upravo čita i rade sa sistemski zadanim govornim mehanizmom.</li>
+<li>Android: aplikacija radi na x86_64 uređajima.</li>
+</ul>
+<h5 id="macos">macOS</h5>
+<ul>
+<li>Univerzalna aplikacija koja izvorno radi i na Intelovim procesorima i na Apple siliconu.</li>
+<li>pb je uključen u aplikaciju.</li>
+</ul>
+<h5 id="pb">pb</h5>
+<ul>
+<li>Pretvaranje po stranicama, cijele mape, popisa datoteka (<code>--files-from</code>) ili dokumenta s poveznice.</li>
+</ul>
+<h4 id="promijenjeno">Promijenjeno</h4>
+<ul>
+<li>Traka izbornika je reorganizovana u osam izbornika.</li>
+<li>Statusna traka prikazuje “Napredak” umjesto “Čitanje”.</li>
+<li>Komande iz izbornika izgovaraju šta su uradile, umjesto da ih nadjača zatvaranje izbornika.</li>
+<li>Ažuriranja normalno zatvaraju Paperback i vraćaju ga u prvi plan.</li>
+<li>Ogromne tekstualne datoteke otvaraju se uz djelić memorije, a ograničenje od 4 GB više ne postoji.</li>
+<li>Pretvaranje MOBI, Word i HTML dokumenata, “Traži sve” i pretraga u dijalogu “Svi dokumenti” su brži.</li>
+<li>Izvršna datoteka za Windows manja je za 3 MB.</li>
+</ul>
+<h4 id="ispravljeno">Ispravljeno</h4>
+<h5 id="općenito-1">Općenito</h5>
+<ul>
+<li>Prečice s interpunkcijom na rasporedima tastature na kojima je za njih potreban <code>Shift</code>; dijalog za prečice na tastaturi označava svaku prečicu koju vaš raspored ne može otkucati.</li>
+<li>Fokus se vraća na dokument nakon <code>Win+D</code>.</li>
+<li>Rušenja pri otvaranju oznaka za novi dokument, u “Traži sve” i kod nekih oštećenih MOBI datoteka.</li>
+<li>Traženje pomoću regularnog izraza označava cijeli rezultat.</li>
+<li>Statusna traka zvučne knjige više ne prelazi naizmjenično s napretka zvuka na napredak teksta.</li>
+<li>Broj riječi uključuje i tekst pročitan pomoću OCR-a.</li>
+<li>Skenirane stranice više ne izgovaraju vlastitu sliku.</li>
+<li>Opcija PATH u instalacijskom programu.</li>
+<li>Ažuriranja na Linuxu pronalaze svoja preuzimanja, a AppImage se ažurira kao AppImage.</li>
+<li>Red s komentarom u Word i OpenDocument datotekama je preveden.</li>
+</ul>
+<h5 id="dokumenti">Dokumenti</h5>
+<ul>
+<li>Windows Write datoteke koje su se otvarale kao binarne.</li>
+<li>PDF: tekst koji se ponavljao na prijelomima stranica u označenim PDF dokumentima, druge kolone koje su se čitale prije prvih, izgubljeni razmaci i crtice na kraju redova, tekst u Type 3 fontovima i tačkice u sadržaju.</li>
+<li>RTF: završeci redova sa samim CR znakom, popisi s crticama kao oznakama, tekst prije prvog odlomka, tekst s dijakriticima i CJK tekst, tekst izgubljen nakon escapeovane obrnute kose crte i RTF spremljen kao <code>.doc</code>.</li>
+<li>Word i PowerPoint datoteke s oštećenom unutrašnjom strukturom koje Word ipak otvara.</li>
+<li>Tekst u Word dokumentima unutar praćenih promjena, polja i ćelija tabela.</li>
+<li>PowerPoint: poveznice, slajdovi bez teksta i emoji znakovi.</li>
+<li><code>&lt;</code> i <code>&amp;</code> u ćelijama tabela u Word, PowerPoint i OpenDocument datotekama.</li>
+<li>OpenDocument datoteke zaštićene lozinkom iz aktuelnog LibreOfficea.</li>
+<li>CHM datoteke u njihovoj kodnoj stranici te HTML i DAISY datoteke u kodiranju koje navode.</li>
+<li>Komprimovane DAISY knjige čije reference koriste pogrešna velika i mala slova i DAISY 2.02 knjige koje su čitale samo prvu frazu odjeljka.</li>
+<li>Stranice priručnika koje se preusmjeravaju pomoću <code>.so</code>.</li>
+<li>Uvodni metapodaci (front matter) u Markdown dokumentima koji su se čitali kao tekst.</li>
+</ul>
+<h5 id="macos-1">macOS</h5>
+<ul>
+<li>Kretanje na početak reda, aktiviranje tastaturom i obavještenja o kopiranju.</li>
+<li>VoiceOverova komanda za kontekstni izbornik otvara Paperbackov kontekstni izbornik.</li>
+<li>Prečice iz izbornika više se ne izgovaraju preko onoga što rade.</li>
+</ul>
+<h5 id="ios-i-android-2">iOS i Android</h5>
+<ul>
+<li>iOS: pokretanje aplikacije više se ne prekida dok se vraćaju velike knjige.</li>
+<li>iOS: aplikacija se ponovo otvara na kartici koju ste čitali, zatvaranje kartice više ne čita prethodnu knjigu, a nedavni dokumenti zadržavaju svoj redoslijed.</li>
+<li>iOS: zvučne knjige se više ne raspakuju iznova pri svakom pokretanju.</li>
+<li>iOS: pravila govornog rječnika s regularnim izrazima prihvataju <code>\1</code>.</li>
+<li>Android: čitanje naglas iz dokumenata zaštićenih lozinkom.</li>
+<li>Android: “Prethodno” na početku više ne čita ponovo prvi odlomak, a tekstualni način više ne skače pri pomicanju.</li>
+<li>Android: manja potrošnja baterije tokom čitanja i pauze.</li>
+</ul>
+<h3 id="verzija-10">Verzija 1.0</h3>
+<p>Verzija 1.0 je prvo izdanje dostupno na svih pet platformi: Windowsu, macOS-u, Linuxu, iOS-u i Androidu, a aplikacije za iOS i Android nalaze se na App Storeu i Google Playu.</p>
+<h4 id="dodano-1">Dodano</h4>
+<h5 id="općenito-2">Općenito</h5>
 <ul>
 <li>Podrška za Linux, u obliku AppImage ili tar.gz paketa, uz integraciju s radnim okruženjem, tako da se dokumenti otvaraju iz upravitelja datoteka.</li>
 <li>Početak odabira možete označiti pomoću <code>Alt+F9</code>, sve od tog mjesta do mjesta do kojeg ste stigli kopirati pomoću <code>Alt+F10</code>, a na označeni početak vratiti se pomoću <code>Alt+Shift+F9</code>. Tako dug dio teksta možete kopirati bez označavanja strelicama uz <code>Shift</code>. Sve tri komande nalaze se u izborniku “Alati” &gt; “Odabir i kopiranje”.</li>
@@ -414,7 +559,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Dijalog “O Paperbacku” sada prikazuje licencu Paperbacka i sve prevoditelje.</li>
 <li>Prijevod na ukrajinski jezik.</li>
 </ul>
-<h5 id="novi-formati">Novi formati</h5>
+<h5 id="novi-formati-1">Novi formati</h5>
 <ul>
 <li>Arhive stripova (<code>.cbz</code>).</li>
 <li>M4B zvučne knjige, podijeljene na poglavlja.</li>
@@ -425,7 +570,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>WinHelp (<code>.hlp</code>) datoteke.</li>
 <li>Word 6 i Word 95 dokumenti.</li>
 </ul>
-<h5 id="ocr">OCR</h5>
+<h5 id="ocr-1">OCR</h5>
 <ul>
 <li>Skenirane PDF stranice sada se mogu prepoznati pomoću OCR-a ugrađenog u Windows i macOS. Pritisnite <code>Enter</code> na skeniranoj stranici da biste je prepoznali ili za raspon stranica koristite skupni OCR (<code>Ctrl+Shift+O</code>).</li>
 </ul>
@@ -439,7 +584,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>KF8 (AZW3) knjige sada podržavaju kretanje po odjeljcima.</li>
 <li>EPUB stranice koje sadrže samo sliku sada za nju prikazuju jedan red, tako da se možete zaustaviti na njima umjesto da ih odmah preskočite.</li>
 </ul>
-<h5 id="zvučne-knjige">Zvučne knjige</h5>
+<h5 id="zvučne-knjige-1">Zvučne knjige</h5>
 <ul>
 <li>Kontrole brzine reprodukcije, od upola sporije do tri puta brže. Koristite <code>Ctrl+Shift+.</code> i <code>Ctrl+Shift+,</code> ili izbornik “Alati”.</li>
 <li>Oznake i bilješke u knjigama koje sadrže samo zvuk sada pamte tačno vrijeme u kojem ste ih postavili.</li>
@@ -450,7 +595,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Stavka “Očisti nedavne dokumente” u podizborniku “Nedavni dokumenti”.</li>
 </ul>
-<h5 id="pdf-dokumenti">PDF dokumenti</h5>
+<h5 id="pdf-dokumenti-1">PDF dokumenti</h5>
 <ul>
 <li>Postavka koja svaki red PDF dokumenta zadržava kao zaseban red, umjesto da redove spaja u odlomke.</li>
 <li>Slike i figure u PDF dokumentima sada se izgovaraju.</li>
@@ -464,13 +609,13 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Naslovi se sada prikazuju veličinom koja odgovara njihovom nivou, a slike i tabele su odvojene od okolnog teksta.</li>
 </ul>
-<h5 id="pb">pb</h5>
+<h5 id="pb-1">pb</h5>
 <ul>
 <li><code>pb --list-formats</code> prikazuje sve formate koje pb može pročitati.</li>
 <li>pb sada navodi koju datoteku nije mogao pročitati i zašto.</li>
 </ul>
-<h4 id="ispravljeno">Ispravljeno</h4>
-<h5 id="općenito-1">Općenito</h5>
+<h4 id="ispravljeno-1">Ispravljeno</h4>
+<h5 id="općenito-3">Općenito</h5>
 <ul>
 <li>Knjiga koja se ponovo otvori pri pokretanju sada se odmah čita, umjesto da ostane prazna dok je ne zatvorite i ponovo otvorite.</li>
 <li>Dokument čija datoteka nedostaje sada se može ukloniti iz dijaloga “Svi dokumenti”, umjesto da ostaje na popisu koliko god puta potvrdili uklanjanje.</li>
@@ -496,11 +641,11 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Sadržaj, popis elemenata i popis oznaka više ne usporavaju niti se zamrzavaju u knjigama s hiljadama stavki.</li>
 <li>Strelice gore i dolje sada pamte kolonu kursora za svaki dokument posebno, umjesto da je prenose kada promijenite karticu.</li>
 </ul>
-<h5 id="zvučne-knjige-1">Zvučne knjige</h5>
+<h5 id="zvučne-knjige-2">Zvučne knjige</h5>
 <ul>
 <li>Reprodukcija zvuka na macOS-u sada koristi <code>Ctrl+Razmak</code>, jer <code>Command+Razmak</code> pripada Spotlightu.</li>
 </ul>
-<h5 id="pdf-dokumenti-1">PDF dokumenti</h5>
+<h5 id="pdf-dokumenti-2">PDF dokumenti</h5>
 <ul>
 <li>Ispravljena je greška zbog koje su se PDF dokumenti izvezeni iz Apple Pagesa čitali kao običan tekst, bez naslova i popisa s kojima su napisani.</li>
 <li>Ispravljena je greška zbog koje su se odlomci i naslovi u PDF dokumentima dijelili na svakom redu, a riječi razdvajale na razmacima.</li>
@@ -534,7 +679,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Tekstualne datoteke spremljene s ekstenzijom <code>.rtf</code> sada se otvaraju kao tekst, umjesto da otvaranje ne uspije uz grešku.</li>
 <li>RTF kontrolne riječi više se ne prikazuju kao tekst.</li>
 </ul>
-<h4 id="ios-i-android-1">iOS i Android</h4>
+<h4 id="ios-i-android-3">iOS i Android</h4>
 <p>Aplikacije za iOS i Android otvaraju sve formate koje otvara i verzija za računare, a uključuju:</p>
 <ul>
 <li>Čitanje naglas, s odabirom glasa, brzine i visine glasa, kontrolom brzine govora direktno na traci za čitanje i opcionalnom pauzom između odlomaka.</li>
@@ -579,8 +724,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Dijalog za ažuriranje sada je preveden.</li>
 </ul>
 <h3 id="verzija-090">Verzija 0.9.0</h3>
-<h4 id="dodano-1">Dodano</h4>
-<h5 id="općenito-2">Općenito</h5>
+<h4 id="dodano-2">Dodano</h4>
+<h5 id="općenito-4">Općenito</h5>
 <ul>
 <li>CLI alat pod nazivom pb, čiji je cilj jednostavno pretvaranje svih formata datoteka koje Paperback podržava u HTML, Markdown ili običan tekst.</li>
 <li>Opcija za ponovno učitavanje dokumenata koje su na disku izmijenili drugi programi.</li>
@@ -658,7 +803,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Podrška za DAISY 2.0 knjige.</li>
 <li>Podrška za reprodukciju zvuka u DAISY 2.02 knjigama.</li>
 </ul>
-<h5 id="zvučne-knjige-2">Zvučne knjige</h5>
+<h5 id="zvučne-knjige-3">Zvučne knjige</h5>
 <ul>
 <li>Mogućnost reprodukcije zvučnih knjiga, trenutno uz podršku za DAISY knjige sa zvukom (uključujući DAISY knjige sa zvukom i tekstom) i ZIP arhive sa zvučnim datotekama.</li>
 <li>Prečice na tastaturi i stavke izbornika za pokretanje i pauziranje zvučne naracije, premotavanje unaprijed i unatrag te podešavanje koraka premotavanja.</li>
@@ -672,8 +817,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>PowerPoint dokumenti sada podržavaju tabele.</li>
 </ul>
-<h4 id="ispravljeno-1">Ispravljeno</h4>
-<h5 id="općenito-3">Općenito</h5>
+<h4 id="ispravljeno-2">Ispravljeno</h4>
+<h5 id="općenito-5">Općenito</h5>
 <ul>
 <li>Dokumenti kodirani u starijim CJK kodiranjima, poput GBK, Big5 i Shift_JIS, sada se ispravno prikazuju, umjesto kao niz nečitljivih znakova.</li>
 <li>Ispravljena je greška zbog koje je stavka “Ponovo otvori posljednji zatvoreni” pokušavala ponovo otvoriti priloženu datoteku s uputama.</li>
@@ -743,7 +888,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>Ispravljena je greška zbog koje elementi <code>dl</code>, <code>dt</code> i <code>dd</code> nisu stvarali prijelome redova u XHTML dokumentima.</li>
 </ul>
-<h5 id="pdf-dokumenti-2">PDF dokumenti</h5>
+<h5 id="pdf-dokumenti-3">PDF dokumenti</h5>
 <ul>
 <li>Paperback će sada za PDF dokumente koji su pogrešno označeni kao strukturisani koristiti izdvajanje običnog teksta.</li>
 <li>PDF dokumenti koji u naslovu i/ili oznakama sadrže kontrolne znakove više neće rušiti Paperback prilikom otvaranja.</li>
