@@ -534,6 +534,40 @@ fn links_go_in_reading_order_whatever_order_the_page_lists_them() {
 	assert_eq!(references, ["https://example.com/first", "https://example.com/second"]);
 }
 
+fn linked(name: &str, uri: &str, text: &str, y: f64) -> String {
+	format!(
+		r#"<Glyphs Name="{name}" FixedPage.NavigateUri="{uri}" OriginX="72" OriginY="{y}" FontRenderingEmSize="16" UnicodeString="{text}"/>"#
+	)
+}
+
+fn link_references(doc: &Document) -> Vec<&str> {
+	markers(doc, MarkerType::Link).iter().map(|link| link.reference.as_str()).collect()
+}
+
+#[test]
+fn links_on_a_page_drawn_lower_half_first_are_all_kept() {
+	let page = format!(
+		"<FixedPage Height=\"1000\">{}{}{}{}</FixedPage>",
+		linked("l", "https://example.com/lower", "Lower link", 700.0),
+		at("Lower still", 720.0),
+		linked("u", "https://example.com/upper", "Upper link", 100.0),
+		at("Upper still", 120.0)
+	);
+	assert_eq!(link_references(&unstructured(&[page])), ["https://example.com/upper", "https://example.com/lower"]);
+}
+
+#[test]
+fn a_linked_run_no_fragment_names_does_not_hide_the_links_before_it() {
+	let page = format!(
+		"{}{}",
+		linked("unnamed", "https://example.com/last", "Written last", 20.0),
+		linked("a", "https://example.com/first", "Written first", 40.0)
+	);
+	let doc = structured(&page, &in_fragment(&paragraph("a"))).expect("read");
+	assert_eq!(doc.buffer.content, "Written first\nWritten last\n");
+	assert_eq!(link_references(&doc), ["https://example.com/first", "https://example.com/last"]);
+}
+
 fn with_internal_link(uri: &str) -> Document {
 	let first = format!(
 		r#"<FixedPage Height="1000"><Glyphs FixedPage.NavigateUri="{uri}" OriginX="10" OriginY="20" FontRenderingEmSize="12" UnicodeString="Go on"/></FixedPage>"#

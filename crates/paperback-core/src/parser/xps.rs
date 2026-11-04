@@ -197,7 +197,7 @@ fn link_reference(uri: &str, target_pages: &HashMap<&str, usize>) -> Option<Stri
 	}
 }
 
-/// In page order, which `place_links` searches in.
+/// In markup order, which links with the same text keep once the page is written.
 fn page_links(page: &Page, styles: &[RunStyle], target_pages: &HashMap<&str, usize>) -> Vec<PendingLink> {
 	let mut links = Vec::new();
 	for link in &page.links {
@@ -307,7 +307,10 @@ fn read_document<R: Read + Seek>(
 			buffer.append("\n");
 		}
 		let page_text = buffer.text(start..buffer.end()).to_string();
-		place_links(&page.links, start, &page_text, &mut buffer);
+		// `place_links` searches on from the link it placed last, and text is not always written in the order it is drawn.
+		let mut links = page.links;
+		links.sort_by_cached_key(|link| page_text.find(&link.text));
+		place_links(&links, start, &page_text, &mut buffer);
 		written.push(WrittenPage { start, paragraphs, headings });
 	}
 	let entries: Vec<OutlineEntry> = documents
