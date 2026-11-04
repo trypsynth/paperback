@@ -73,18 +73,21 @@ impl<'a> PageWriter<'a> {
 
 	fn write_list(&mut self, items: &[Vec<Block>], level: i32) {
 		let start = self.buffer.end();
+		let mut count = 0i32;
 		for item in items {
 			let item_start = self.buffer.end();
 			let text = self.item_text(item);
 			if !text.is_empty() {
+				count = count.saturating_add(1);
 				self.write_line(&text);
 				self.buffer.add_marker(Marker::new(MarkerType::ListItem, item_start).with_text(text).with_level(level));
 			}
 			self.write_nested(item, level);
 		}
-		let count = i32::try_from(items.len()).unwrap_or(i32::MAX);
 		let length = self.buffer.end() - start;
-		self.buffer.add_marker(Marker::new(MarkerType::List, start).with_level(count).with_length(length));
+		if !length.is_zero() {
+			self.buffer.add_marker(Marker::new(MarkerType::List, start).with_level(count).with_length(length));
+		}
 	}
 
 	fn write_nested(&mut self, blocks: &[Block], level: i32) {

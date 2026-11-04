@@ -208,6 +208,19 @@ fn a_nested_list_item_goes_one_level_deeper() {
 	assert_eq!(markers(&doc, MarkerType::List).len(), 2);
 }
 
+#[test]
+fn a_list_that_writes_no_text_gets_no_marker() {
+	let list = format!("<ListStructure>{}</ListStructure>{}", item(&paragraph("gone")), paragraph("a"));
+	assert!(markers(&structured(&run("a", "Words"), &in_fragment(&list)).expect("read"), MarkerType::List).is_empty());
+}
+
+#[test]
+fn a_list_counts_only_the_items_it_wrote() {
+	let list = format!("<ListStructure>{}{}</ListStructure>", item(&paragraph("gone")), item(&paragraph("a")));
+	let doc = structured(&run("a", "Kept"), &in_fragment(&list)).expect("read");
+	assert_eq!(markers(&doc, MarkerType::List)[0].level, 1);
+}
+
 fn two_by_two() -> String {
 	let cell = |name: &str| format!("<TableCellStructure>{}</TableCellStructure>", paragraph(name));
 	let row = |left: &str, right: &str| format!("<TableRowStructure>{}{}</TableRowStructure>", cell(left), cell(right));
