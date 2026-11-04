@@ -8,6 +8,10 @@ use crate::{
 	util::text::{collapse_whitespace, trim_string},
 };
 
+fn joined(parts: impl IntoIterator<Item = String>) -> String {
+	parts.into_iter().filter(|part| !part.is_empty()).collect::<Vec<_>>().join(" ")
+}
+
 /// A paragraph outside any list or table, the only place a heading can be.
 #[derive(Debug)]
 pub(super) struct WrittenParagraph {
@@ -100,9 +104,30 @@ impl<'a> PageWriter<'a> {
 		}
 	}
 
+	/// A grid cell is one line of text, so a list or table inside it is read into that line.
+	fn cell_text(&mut self, blocks: &[Block]) -> String {
+		let mut parts = Vec::new();
+		for block in blocks {
+			parts.push(match block {
+				Block::Paragraph(names) => self.text_of(names),
+				Block::List(items) => joined(items.iter().map(|item| self.item_in_cell(item))),
+				Block::Table(rows) => joined(rows.iter().flatten().map(|cell| self.cell_text(cell))),
+			});
+		}
+		joined(parts)
+	}
+
+	fn item_in_cell(&mut self, item: &[Block]) -> String {
+		let mut parts = vec![self.item_text(item)];
+		for block in item.iter().filter(|block| !matches!(block, Block::Paragraph(_))) {
+			parts.push(self.cell_text(std::slice::from_ref(block)));
+		}
+		joined(parts)
+	}
+
 	fn write_table(&mut self, rows: &[Vec<Vec<Block>>]) {
 		let grid: Vec<Vec<String>> =
-			rows.iter().map(|row| row.iter().map(|cell| self.paragraphs(cell).join(" ")).collect()).collect();
+			rows.iter().map(|row| row.iter().map(|cell| self.cell_text(cell)).collect()).collect();
 		let html = build_html_table_from_grid(&grid);
 		let table = table_render_bundle(&html, self.render_tables_inline);
 		let offset = self.buffer.end();

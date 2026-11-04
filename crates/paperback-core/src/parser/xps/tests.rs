@@ -254,6 +254,35 @@ fn a_table_follows_the_setting_for_showing_tables_inline() {
 	assert!(!doc.buffer.content.contains("Three"));
 }
 
+fn one_cell_table(cell: &str) -> String {
+	in_fragment(&format!(
+		"<TableStructure><TableRowGroupStructure><TableRowStructure><TableCellStructure>{cell}</TableCellStructure></TableRowStructure></TableRowGroupStructure></TableStructure>"
+	))
+}
+
+#[test]
+fn a_list_inside_a_table_cell_stays_in_the_cell() {
+	let page = format!("{}{}{}", run("p", "Intro"), run("b", "·"), run("t", "First item"));
+	let list = format!("<ListStructure>{}</ListStructure>", item(&format!("{}{}", paragraph("b"), paragraph("t"))));
+	let doc = structured(&page, &one_cell_table(&format!("{}{list}", paragraph("p")))).expect("read");
+	let table = &markers(&doc, MarkerType::Table)[0].reference;
+	assert!(table.contains("<td>Intro First item</td>"), "{table}");
+	assert_eq!(doc.buffer.content.matches("First item").count(), 1, "{}", doc.buffer.content);
+	assert!(!doc.buffer.content.contains('·'), "{}", doc.buffer.content);
+}
+
+#[test]
+fn a_table_inside_a_table_cell_stays_in_the_cell() {
+	let page = format!("{}{}{}", run("p", "Intro"), run("x", "Inner one"), run("y", "Inner two"));
+	let cell = |name: &str| format!("<TableCellStructure>{}</TableCellStructure>", paragraph(name));
+	let inner =
+		format!("<TableStructure><TableRowStructure>{}{}</TableRowStructure></TableStructure>", cell("x"), cell("y"));
+	let doc = structured(&page, &one_cell_table(&format!("{}{inner}", paragraph("p")))).expect("read");
+	let table = &markers(&doc, MarkerType::Table)[0].reference;
+	assert!(table.contains("<td>Intro Inner one Inner two</td>"), "{table}");
+	assert_eq!(doc.buffer.content.matches("Inner two").count(), 1, "{}", doc.buffer.content);
+}
+
 fn with_running_text() -> (String, String) {
 	let page = format!("{}{}{}", run("f", "Footer"), run("h", "Header"), run("b", "Body"));
 	let fragments = format!(
