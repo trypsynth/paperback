@@ -273,7 +273,7 @@ fn detected_headings(written: Vec<WrittenPage>) -> Vec<(DocPos, String)> {
 	headings
 }
 
-/// Reading a part takes the whole package, so `open` is called again for each worker that reads pages.
+/// Reading a part takes the whole package, so `open` is called again for each group of pages read side by side.
 fn read_document<R: Read + Seek>(
 	open: impl Fn() -> Result<Package<R>> + Sync,
 	context: &ParserContext,
@@ -287,7 +287,7 @@ fn read_document<R: Read + Seek>(
 		anyhow::bail!(t("XPS file contains no pages"));
 	}
 	let target_pages = link_target_pages(&pages);
-	// Each worker keeps its own fonts as well, so a font is read once per worker.
+	// Each group keeps its own fonts as well, so a font is read once per group of pages that uses it. Rayon splits the pages into more groups than it has threads as work moves between them.
 	let mut read: Vec<ReadPage> = pages
 		.par_iter()
 		.map_init(
