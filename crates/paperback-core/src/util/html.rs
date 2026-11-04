@@ -10,12 +10,24 @@ pub fn push_escaped(ch: char, out: &mut String) {
 	}
 }
 
+pub fn push_escaped_str(text: &str, out: &mut String) {
+	let mut start = 0;
+	for at in memchr::memchr3_iter(b'&', b'<', b'>', text.as_bytes()) {
+		out.push_str(&text[start..at]);
+		out.push_str(match text.as_bytes()[at] {
+			b'&' => "&amp;",
+			b'<' => "&lt;",
+			_ => "&gt;",
+		});
+		start = at + 1;
+	}
+	out.push_str(&text[start..]);
+}
+
 #[must_use]
 pub fn escape(s: &str) -> String {
 	let mut out = String::with_capacity(s.len());
-	for ch in s.chars() {
-		push_escaped(ch, &mut out);
-	}
+	push_escaped_str(s, &mut out);
 	out
 }
 
@@ -42,6 +54,15 @@ mod tests {
 	#[test]
 	fn escape_attr_escapes_ampersand_before_quote() {
 		assert_eq!(escape_attr(r#"a & "b""#), "a &amp; &quot;b&quot;");
+	}
+
+	#[test]
+	fn push_escaped_str_escapes_every_special_character_and_keeps_the_rest() {
+		let mut out = String::from("start ");
+		push_escaped_str("é & <b> ü", &mut out);
+		push_escaped_str("&", &mut out);
+		push_escaped_str("", &mut out);
+		assert_eq!(out, "start é &amp; &lt;b&gt; ü&amp;");
 	}
 
 	#[test]

@@ -8,7 +8,7 @@ use crate::{
 	document::{DocLen, DocPos, DocumentHandle, MarkerType},
 	parser::is_external_url,
 	t,
-	util::html::{escape, escape_attr, push_escaped},
+	util::html::{escape, escape_attr, push_escaped_str},
 };
 
 #[must_use]
@@ -39,21 +39,11 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 	let content = document.buffer.slice(document.buffer.byte_at(range_start)..document.buffer.byte_at(range_end));
 	let section_break_positions: Vec<DocPos> =
 		document.buffer.markers.iter().filter(|m| m.mtype == MarkerType::SectionBreak).map(|m| m.position).collect();
-	let newline_positions: Vec<DocPos> = {
-		let mut positions = Vec::new();
-		let mut pos = range_start;
-		for ch in content.chars() {
-			if ch == '\n' {
-				positions.push(pos);
-			}
-			pos += DocLen::ONE;
-		}
-		positions
-	};
+	let newline_positions = document.buffer.newline_positions();
 	// The range end is a line boundary of the rendered slice even when it is not one of the document.
 	let newline_from = |start: DocPos| -> DocPos {
 		let idx = newline_positions.partition_point(|&p| p < start);
-		newline_positions.get(idx).copied().unwrap_or(range_end)
+		newline_positions.get(idx).copied().filter(|&p| p < range_end).unwrap_or(range_end)
 	};
 	let path_to_bounds: HashMap<&str, (DocPos, DocPos)> = document
 		.spine_items
@@ -78,6 +68,7 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 		"<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<title>{}</title>\n</head>\n<body>\n",
 		escape(&document.title)
 	);
+	html.reserve(content.len() + content.len() / 8);
 	if is_partial {
 		// TRANSLATORS: Note at the top of a web view showing only the part of a very long document around the reading position
 		let _ = writeln!(html, "<p>{}</p>", escape(&t("This view shows the part of the document you are reading.")));
@@ -251,7 +242,8 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 	let mut pending_newlines: usize = 0;
 	let mut position = range_start;
 	let mut skip_until: Option<DocPos> = None;
-	for ch in content.chars() {
+	let mut rest = content;
+	while !rest.is_empty() {
 		while event_idx < events.len() && events[event_idx].pos <= position {
 			if skip_until.is_some_and(|u| events[event_idx].pos < u) && !matches!(events[event_idx].kind, Ek::Anchor(_))
 			{
@@ -321,17 +313,25 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 			}
 			event_idx += 1;
 		}
-		if let Some(until) = skip_until {
-			if position < until {
-				position += DocLen::ONE;
-				continue;
-			}
+		if skip_until.is_some_and(|until| position >= until) {
 			skip_until = None;
 		}
-		if block_depth == 0 {
-			if ch == '\n' {
+		let next_event = events.get(event_idx).map(|event| event.pos);
+		let stop = skip_until.into_iter().chain(next_event).min();
+		let (run, tail) = stop.map_or((rest, ""), |stop| super::split_after_chars(rest, stop.get() - position.get()));
+		rest = tail;
+		position = stop.unwrap_or(position);
+		if skip_until.is_some() {
+			continue;
+		}
+		for (index, line) in run.split('\n').enumerate() {
+			if index > 0 && block_depth == 0 {
 				pending_newlines += 1;
-			} else {
+			}
+			if line.is_empty() {
+				continue;
+			}
+			if block_depth == 0 {
 				if pending_newlines >= 1 && in_para {
 					html.push_str("</p>\n");
 					in_para = false;
@@ -341,12 +341,9 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 					html.push_str("<p>");
 					in_para = true;
 				}
-				push_escaped(ch, &mut html);
 			}
-		} else if ch != '\n' {
-			push_escaped(ch, &mut html);
+			push_escaped_str(line, &mut html);
 		}
-		position += DocLen::ONE;
 	}
 	while event_idx < events.len() {
 		match &events[event_idx].kind {
