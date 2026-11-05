@@ -52,6 +52,13 @@ pub struct ImageInfo {
 }
 
 #[derive(Debug, Clone)]
+pub struct BlockInfo {
+	pub offset: DocPos,
+	pub length: DocLen,
+	pub tag: &'static str,
+}
+
+#[derive(Debug, Clone)]
 pub struct ListInfo {
 	pub offset: DocPos,
 	pub item_count: i32,

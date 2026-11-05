@@ -6,8 +6,8 @@ use std::{
 };
 
 use crate::{
-	document::{DocLen, DocPos, DocumentHandle, MarkerType},
-	parser::is_external_url,
+	document::{DocLen, DocPos, DocumentHandle, MarkerType, is_heading_marker},
+	parser::{convert::block_spans::LINE_BREAK, is_external_url},
 	t,
 	util::html::{escape, escape_attr, push_escaped_str},
 };
@@ -83,6 +83,10 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 		ItemOpen(&'a str),
 		SkipPrefix(DocPos),
 		BlockClose(&'static str),
+		/// Unlike a block these hold paragraphs of their own.
+		WrapperOpen(&'static str),
+		WrapperClose(&'static str),
+		LineBreak,
 		InlineOpen(String, &'static str),
 		InlineClose(&'static str),
 		Hr,
@@ -98,6 +102,30 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 		opened: (DocPos, usize),
 		kind: Ek<'a>,
 	}
+	let mut line_breaks: Vec<DocPos> = document
+		.buffer
+		.markers
+		.iter()
+		.filter(|m| m.mtype == MarkerType::Block && m.reference == LINE_BREAK)
+		.map(|m| m.position)
+		.collect();
+	line_breaks.sort_unstable();
+	let mut one_line_blocks: Vec<DocPos> = document
+		.buffer
+		.markers
+		.iter()
+		.filter(|m| m.mtype == MarkerType::ListItem || is_heading_marker(m.mtype))
+		.map(|m| m.position)
+		.collect();
+	one_line_blocks.sort_unstable();
+	// Where a block that closes with its line began, so a wrapper opening later on that line can be left out rather than cross it.
+	let crosses_line_block = |pos: DocPos| -> bool {
+		let line_start = match newline_positions.partition_point(|&p| p < pos) {
+			0 => DocPos::ZERO,
+			index => newline_positions[index - 1] + DocLen::ONE,
+		};
+		line_start < pos && one_line_blocks.binary_search(&line_start).is_ok()
+	};
 	let mut events: Vec<Ev> = Vec::new();
 	let mut target_offsets = HashSet::new();
 	target_offsets.extend(anchor);
@@ -108,9 +136,17 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 		if pos >= range_end || pos + marker.length.max(DocLen::ONE) <= range_start {
 			continue;
 		}
-		// html_to_text leaves headings and list items at length 0, so their span runs to the next newline.
-		let effective_end =
-			|explicit: DocLen| -> DocPos { if explicit.is_zero() { newline_from(pos) } else { pos + explicit } };
+		// html_to_text leaves headings and list items at length 0, so their span runs to the next newline that isn't only a line break inside them.
+		let effective_end = |explicit: DocLen| -> DocPos {
+			if !explicit.is_zero() {
+				return pos + explicit;
+			}
+			let mut end = newline_from(pos);
+			while line_breaks.binary_search(&(end + DocLen::ONE)).is_ok() {
+				end = newline_from(end + DocLen::ONE);
+			}
+			end
+		};
 		match marker.mtype {
 			MarkerType::Heading1 => {
 				let end = effective_end(marker.length);
@@ -214,6 +250,9 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 			MarkerType::List if !marker.length.is_zero() => {
 				// Without a length the list's end is unknown, and bare <li> items beat a guessed <ul>.
 				let end = pos + marker.length;
+				// A list's length counts its last newline and a wrapper's doesn't, so without this a list ending a block quote would close outside it.
+				let last = end - DocLen::ONE;
+				let end = if newline_from(last) == last { last } else { end };
 				let ordered = marker.reference.starts_with("<ol");
 				let open = if marker.reference.is_empty() { "<ul>" } else { marker.reference.as_str() };
 				events.push(Ev { pos, opened, kind: Ek::BlockOpen(open) });
@@ -227,6 +266,15 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 					// An empty item's bullet loses its trailing space to the line trim, so its prefix can reach past the line.
 					let until = (pos + marker.prefix_length).min(end);
 					events.push(Ev { pos, opened, kind: Ek::SkipPrefix(until) });
+				}
+			}
+			MarkerType::Block if marker.reference == LINE_BREAK => {
+				events.push(Ev { pos, opened, kind: Ek::LineBreak });
+			}
+			MarkerType::Block if !marker.length.is_zero() && !crosses_line_block(pos) => {
+				if let Some((open, close)) = wrapper_tags(&marker.reference) {
+					events.push(Ev { pos, opened, kind: Ek::WrapperOpen(open) });
+					events.push(Ev { pos: pos + marker.length, opened, kind: Ek::WrapperClose(close) });
 				}
 			}
 			MarkerType::Superscript if !marker.length.is_zero() => {
@@ -267,15 +315,23 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 	// Closes before opens at the same position to avoid empty elements. Whatever opened last closes first, so a heading ending in a link is `</a></h1>`, while a link around a heading is `</h1></a>`.
 	events.sort_by(|a, b| {
 		let class = |k: &Ek| match k {
-			Ek::InlineClose(_) | Ek::BlockClose(_) => 0u8,
-			Ek::Hr | Ek::Replace { .. } => 1,
-			Ek::BlockOpen(_) | Ek::ItemOpen(_) => 2,
-			Ek::InlineOpen(..) => 3,
-			Ek::Anchor(_) => 4,
+			Ek::InlineClose(_) | Ek::BlockClose(_) | Ek::WrapperClose(_) => 0u8,
+			// Ahead of opening tags, which would end the paragraph it continues.
+			Ek::LineBreak => 1,
+			// Ahead of a table, whose skip would drop it, and of a list it may hold.
+			Ek::WrapperOpen(_) => 2,
+			Ek::Hr | Ek::Replace { .. } => 3,
+			Ek::BlockOpen(_) | Ek::ItemOpen(_) => 4,
+			Ek::InlineOpen(..) => 5,
+			Ek::Anchor(_) => 6,
 			// Last, since a skip drops whatever follows it inside the skipped span.
-			Ek::SkipPrefix(_) => 5,
+			Ek::SkipPrefix(_) => 7,
 		};
-		let inner = |k: &Ek| u8::from(matches!(k, Ek::BlockClose(_)));
+		let inner = |k: &Ek| match k {
+			Ek::BlockClose(_) => 1u8,
+			Ek::WrapperClose(_) => 2,
+			_ => 0,
+		};
 		let (ca, cb) = (class(&a.kind), class(&b.kind));
 		a.pos.cmp(&b.pos).then_with(|| ca.cmp(&cb)).then_with(|| {
 			if ca == 0 {
@@ -304,7 +360,8 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 	let mut rest = content;
 	while !rest.is_empty() {
 		while event_idx < events.len() && events[event_idx].pos <= position {
-			if skip_until.is_some_and(|u| events[event_idx].pos < u) && !matches!(events[event_idx].kind, Ek::Anchor(_))
+			if skip_until.is_some_and(|u| events[event_idx].pos < u)
+				&& !matches!(events[event_idx].kind, Ek::Anchor(_) | Ek::WrapperClose(_))
 			{
 				event_idx += 1;
 				continue;
@@ -350,22 +407,36 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 				}
 				Ek::BlockClose(tag) => {
 					block_depth = block_depth.saturating_sub(1);
-					// A span around a whole block ends a newline after it, so it has to step outside the block to stay nested.
-					let base = inline_bases.pop().unwrap_or(open_inline.len()).min(open_inline.len());
-					let held = &open_inline[base..];
 					pre_depth = pre_depth.saturating_sub(usize::from(*tag == PRE_CLOSE));
 					ol_depth = ol_depth.saturating_sub(usize::from(*tag == "</ol>"));
-					for &(_, close) in held.iter().rev() {
-						html.push_str(close);
-					}
-					html.push_str(tag);
-					html.push('\n');
-					for &(open, _) in held {
-						html.push_str(open);
-					}
+					close_block(&mut html, &open_inline, &mut inline_bases, tag);
 					if block_depth == 0 {
 						pending_newlines = 0;
 						in_para = false;
+					}
+				}
+				Ek::WrapperOpen(tag) => {
+					if in_para {
+						html.push_str("</p>\n");
+						in_para = false;
+					}
+					pending_newlines = 0;
+					html.push_str(tag);
+					html.push('\n');
+					inline_bases.push(open_inline.len());
+				}
+				Ek::WrapperClose(tag) => {
+					if in_para {
+						html.push_str("</p>\n");
+						in_para = false;
+					}
+					pending_newlines = 0;
+					close_block(&mut html, &open_inline, &mut inline_bases, tag);
+				}
+				Ek::LineBreak => {
+					if pre_depth == 0 && (block_depth > 0 || (in_para && pending_newlines > 0)) {
+						html.push_str("<br>\n");
+						pending_newlines = 0;
 					}
 				}
 				Ek::InlineOpen(tag, close) => {
@@ -451,6 +522,14 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 				html.push_str(tag);
 				html.push('\n');
 			}
+			Ek::WrapperClose(tag) => {
+				if in_para {
+					html.push_str("</p>\n");
+					in_para = false;
+				}
+				html.push_str(tag);
+				html.push('\n');
+			}
 			Ek::InlineClose(tag) => close_inline(&mut html, &mut open_inline, tag),
 			Ek::Hr => {
 				if in_para {
@@ -471,6 +550,33 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 	}
 	html.push_str("</body>\n</html>\n");
 	html
+}
+
+fn wrapper_tags(name: &str) -> Option<(&'static str, &'static str)> {
+	match name {
+		"blockquote" => Some(("<blockquote>", "</blockquote>")),
+		"dl" => Some(("<dl>", "</dl>")),
+		"dt" => Some(("<dt>", "</dt>")),
+		"dd" => Some(("<dd>", "</dd>")),
+		"figure" => Some(("<figure>", "</figure>")),
+		"figcaption" => Some(("<figcaption>", "</figcaption>")),
+		"aside" => Some(("<aside>", "</aside>")),
+		_ => None,
+	}
+}
+
+/// A span around a whole block ends a newline after it, so it has to step outside the block to stay nested.
+fn close_block(html: &mut String, open_inline: &[(&str, &'static str)], inline_bases: &mut Vec<usize>, tag: &str) {
+	let base = inline_bases.pop().unwrap_or(open_inline.len()).min(open_inline.len());
+	let held = &open_inline[base..];
+	for &(_, close) in held.iter().rev() {
+		html.push_str(close);
+	}
+	html.push_str(tag);
+	html.push('\n');
+	for &(open, _) in held {
+		html.push_str(open);
+	}
 }
 
 /// A parser can place spans so that they cross, so closing one closes whatever opened inside it and reopens those afterward.
@@ -750,6 +856,130 @@ def",
 			),
 			"{html}"
 		);
+	}
+
+	fn block(tag: &str, position: usize, length: usize) -> Marker {
+		Marker::new(MarkerType::Block, position.into()).with_reference(tag.to_string()).with_length(length.into())
+	}
+
+	#[test]
+	fn a_block_quote_keeps_its_own_paragraphs() {
+		let doc = simple_doc("before\none\ntwo\nafter", vec![block("blockquote", 7, 7)]);
+		let html = render(&doc);
+		assert!(
+			html.contains("<p>before</p>\n<blockquote>\n<p>one</p>\n<p>two</p>\n</blockquote>\n<p>after</p>"),
+			"{html}"
+		);
+	}
+
+	#[test]
+	fn a_wrapper_ending_the_document_closes_its_paragraph_first() {
+		let doc = simple_doc("one", vec![block("aside", 0, 3)]);
+		assert!(render(&doc).contains("<aside>\n<p>one</p>\n</aside>"));
+	}
+
+	#[test]
+	fn definition_lists_nest_in_the_order_they_opened() {
+		let doc = simple_doc("term\nmeaning", vec![block("dl", 0, 12), block("dt", 0, 4), block("dd", 5, 7)]);
+		let html = render(&doc);
+		assert!(html.contains("<dl>\n<dt>\n<p>term</p>\n</dt>\n<dd>\n<p>meaning</p>\n</dd>\n</dl>"), "{html}");
+	}
+
+	#[test]
+	fn a_list_starting_a_block_quote_nests_inside_it() {
+		let mut markers =
+			vec![Marker::new(MarkerType::List, 0.into()).with_reference("<ul>".to_string()).with_length(3.into())];
+		markers.push(Marker::new(MarkerType::ListItem, 0.into()));
+		markers.push(block("blockquote", 0, 3));
+		let html = render(&simple_doc("one", markers));
+		assert!(html.contains("<blockquote>\n<ul>\n<li>\none</li>\n</ul>\n</blockquote>"), "{html}");
+	}
+
+	#[test]
+	fn a_list_ending_a_block_quote_closes_inside_it() {
+		let markers = vec![
+			Marker::new(MarkerType::List, 0.into()).with_reference("<ul>".to_string()).with_length(4.into()),
+			Marker::new(MarkerType::ListItem, 0.into()),
+			block("blockquote", 0, 3),
+		];
+		let html = render(&simple_doc("one\nafter", markers));
+		assert!(html.contains("</li>\n</ul>\n</blockquote>\n<p>after</p>"), "{html}");
+	}
+
+	#[test]
+	fn a_wrapper_ending_with_a_table_still_closes() {
+		let markers = vec![
+			block("dd", 0, 3),
+			Marker::new(MarkerType::Table, 0.into())
+				.with_reference("<table></table>".to_string())
+				.with_length(4.into()),
+		];
+		let html = render(&simple_doc("one\nafter", markers));
+		assert!(html.contains("<dd>\n<table></table>\n</dd>\n<p>after</p>"), "{html}");
+	}
+
+	#[test]
+	fn a_tag_the_export_does_not_know_writes_nothing() {
+		let html = render(&simple_doc("one", vec![block("script", 0, 3)]));
+		assert!(!html.contains("script"), "{html}");
+	}
+
+	#[test]
+	fn a_line_break_stays_inside_its_paragraph() {
+		let doc = simple_doc("one\ntwo\nthree", vec![block(LINE_BREAK, 4, 0)]);
+		let html = render(&doc);
+		assert!(html.contains("<p>one<br>\ntwo</p>\n<p>three</p>"), "{html}");
+	}
+
+	#[test]
+	fn a_heading_with_a_line_break_keeps_both_lines() {
+		let doc =
+			simple_doc("one\ntwo\nthree", vec![Marker::new(MarkerType::Heading1, 0.into()), block(LINE_BREAK, 4, 0)]);
+		let html = render(&doc);
+		assert!(html.contains("<h1>\none\n<br>\ntwo</h1>\n<p>three</p>"), "{html}");
+	}
+
+	#[test]
+	fn a_list_item_with_a_line_break_keeps_both_lines() {
+		let doc = list_doc("• one\ntwo\n• three\n", "<ul>", &[(0, "", 2), (10, "", 2)]);
+		let mut buffer_markers = doc.document().buffer.markers.clone();
+		buffer_markers.push(block(LINE_BREAK, 6, 0));
+		let html = render(&simple_doc("• one\ntwo\n• three\n", buffer_markers));
+		assert!(html.contains("<li>\none\n<br>\ntwo</li>\n<li>\nthree</li>"), "{html}");
+	}
+
+	#[test]
+	fn a_line_break_in_a_preformatted_block_is_only_the_newline() {
+		let doc = simple_doc(
+			"one\ntwo",
+			vec![Marker::new(MarkerType::Preformatted, 0.into()).with_length(7.into()), block(LINE_BREAK, 4, 0)],
+		);
+		let html = render(&doc);
+		assert!(html.contains("<pre>\none\ntwo</pre>"), "{html}");
+	}
+
+	#[test]
+	fn a_wrapper_opening_later_on_a_list_items_line_writes_no_tags() {
+		let doc = simple_doc("one two\nthree", vec![Marker::new(MarkerType::ListItem, 0.into()), block("dl", 4, 9)]);
+		let html = render(&doc);
+		assert!(!html.contains("dl>"), "{html}");
+		assert!(html.contains("<li>\none two</li>"), "{html}");
+	}
+
+	#[test]
+	fn a_wrapper_opening_later_on_a_paragraphs_line_is_kept() {
+		let html = render(&simple_doc("one two", vec![block("figcaption", 4, 3)]));
+		assert!(html.contains("<p>one </p>\n<figcaption>\n<p>two</p>\n</figcaption>"), "{html}");
+	}
+
+	#[test]
+	fn a_line_break_before_a_formatted_span_stays_inside_its_paragraph() {
+		let doc = simple_doc(
+			"one\ntwo",
+			vec![block(LINE_BREAK, 4, 0), Marker::new(MarkerType::Bold, 4.into()).with_length(3.into())],
+		);
+		let html = render(&doc);
+		assert!(html.contains("<p>one<br>\n<b>two</b></p>"), "{html}");
 	}
 
 	#[test]

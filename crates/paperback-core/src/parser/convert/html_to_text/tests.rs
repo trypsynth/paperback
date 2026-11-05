@@ -386,3 +386,72 @@ fn superscripts_and_subscripts_are_marked() {
 	assert_eq!((converter.get_superscripts()[0].offset.get(), converter.get_superscripts()[0].length.get()), (1, 1));
 	assert_eq!((converter.get_subscripts()[0].offset.get(), converter.get_subscripts()[0].length.get()), (8, 1));
 }
+
+fn block_tags(converter: &HtmlToText) -> Vec<&'static str> {
+	converter.get_blocks().iter().map(|block| block.tag).collect()
+}
+
+#[test]
+fn wrappers_cover_their_text_and_stay_inside_it() {
+	let converter = converted_body("<p>before</p><blockquote><p>one</p><p>two</p></blockquote>");
+	assert_eq!(block_tags(&converter), ["blockquote"]);
+	assert_eq!(
+		span_text(
+			converter.get_text(),
+			&crate::types::FormatInfo {
+				offset: converter.get_blocks()[0].offset,
+				length: converter.get_blocks()[0].length
+			}
+		),
+		"one\ntwo"
+	);
+}
+
+#[test]
+fn a_break_between_lines_is_recorded_where_the_next_line_starts() {
+	let converter = converted_body("<p>one  <br/>two</p>");
+	assert_eq!(converter.get_text(), "one\ntwo");
+	assert_eq!(block_tags(&converter), ["br"]);
+	assert_eq!(converter.get_blocks()[0].offset.get(), 4);
+}
+
+#[test]
+fn a_break_with_nothing_to_separate_is_not_recorded() {
+	for body in [
+		"<p>one<br/></p><p>two</p>",
+		"<p><br/>one</p>",
+		"<p>one<br/><br/></p>",
+		"<p>one<br/><br/>two</p>",
+		"one<br/><div>two</div>",
+		"one<br/>",
+	] {
+		assert!(converted_body(body).get_blocks().is_empty(), "{body}");
+	}
+}
+
+#[test]
+fn a_break_inside_a_link_keeps_the_words_apart() {
+	let converter = converted_body("<p><a href=\"x\">1<br/>two</a> now</p>");
+	assert_eq!(converter.get_text(), "1 two now");
+	assert_eq!(converter.get_links()[0].text, "1 two");
+	assert!(converter.get_blocks().is_empty());
+}
+
+#[test]
+fn a_break_opening_a_link_still_breaks_the_line() {
+	let converter = converted_body("<p>one<a href=\"x\"><br/>two</a></p>");
+	assert_eq!(converter.get_text(), "one\ntwo");
+}
+
+#[test]
+fn a_break_inside_a_link_still_ends_the_line_before_it() {
+	let converter = converted_body("<p>see <a href=\"x\">1<br/>two</a></p>");
+	assert_eq!(converter.get_text(), "see\n1 two");
+	assert_eq!(converter.get_links()[0].offset.get(), 4);
+}
+
+#[test]
+fn a_break_right_before_a_table_is_not_recorded() {
+	let converter = converted_body("<p>one<br/><table><tr><td>a</td></tr></table></p>");
+	assert!(converter.get_blocks().is_empty());
+}

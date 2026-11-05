@@ -3,12 +3,13 @@ use std::collections::HashMap;
 use bitflags::bitflags;
 use scraper::Html;
 
-use super::{format_spans::FormatSpans, line_builder::LineBuilder, list_style::ListStyle};
+use super::{block_spans::BlockSpans, format_spans::FormatSpans, line_builder::LineBuilder, list_style::ListStyle};
 use crate::{
 	document::DocPos,
 	parser::ConverterOutput,
 	types::{
-		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
+		BlockInfo, FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo,
+		TableInfo,
 	},
 };
 
@@ -52,6 +53,7 @@ pub struct HtmlToText {
 	open_lists: Vec<Option<usize>>,
 	link_start_pos: DocPos,
 	format_spans: FormatSpans,
+	blocks: BlockSpans,
 	source_mode_markdown: bool,
 	/// A config flag, not parse state, so it survives `clear()`.
 	render_tables_inline: bool,
@@ -167,6 +169,11 @@ impl HtmlToText {
 		self.format_spans.subscripts()
 	}
 
+	#[must_use]
+	pub fn get_blocks(&self) -> &[BlockInfo] {
+		self.blocks.spans()
+	}
+
 	pub fn clear(&mut self) {
 		self.text.clear();
 		self.id_positions.clear();
@@ -189,6 +196,7 @@ impl HtmlToText {
 		self.open_lists.clear();
 		self.link_start_pos = DocPos::ZERO;
 		self.format_spans.clear();
+		self.blocks.clear();
 	}
 }
 
@@ -242,6 +250,9 @@ impl ConverterOutput for HtmlToText {
 	}
 	fn get_subscripts(&self) -> &[FormatInfo] {
 		self.format_spans.subscripts()
+	}
+	fn get_blocks(&self) -> &[BlockInfo] {
+		self.blocks.spans()
 	}
 }
 

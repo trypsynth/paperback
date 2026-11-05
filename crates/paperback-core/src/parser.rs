@@ -14,7 +14,8 @@ use crate::{
 	},
 	t,
 	types::{
-		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
+		BlockInfo, FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo,
+		TableInfo,
 	},
 };
 
@@ -320,6 +321,7 @@ pub trait ConverterOutput {
 	fn get_code(&self) -> &[FormatInfo];
 	fn get_superscripts(&self) -> &[FormatInfo];
 	fn get_subscripts(&self) -> &[FormatInfo];
+	fn get_blocks(&self) -> &[BlockInfo];
 }
 
 fn add_headings(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: DocPos) {
@@ -446,6 +448,13 @@ fn add_formatting(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, 
 	for span in converter.get_superscripts() {
 		buffer.add_marker(
 			Marker::new(MarkerType::Superscript, offset + span.offset.from_start()).with_length(span.length),
+		);
+	}
+	for block in converter.get_blocks() {
+		buffer.add_marker(
+			Marker::new(MarkerType::Block, offset + block.offset.from_start())
+				.with_reference(block.tag.to_string())
+				.with_length(block.length),
 		);
 	}
 	for span in converter.get_subscripts() {

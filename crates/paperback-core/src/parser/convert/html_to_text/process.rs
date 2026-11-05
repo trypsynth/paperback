@@ -105,6 +105,7 @@ impl HtmlToText {
 
 	fn handle_table(&mut self, node: NodeRef<'_, Node>, document: &Html) {
 		self.text.finalize_current_line();
+		self.blocks.drop_break_at(self.text.get_current_text_position());
 		let table_html = Self::serialize_node(node, document);
 		let start_offset = self.text.get_current_text_position();
 		// Lines are pushed verbatim so tab separators and empty cells survive whitespace collapsing.
@@ -118,6 +119,12 @@ impl HtmlToText {
 	}
 
 	fn handle_element_opening(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {
+		if is_block_element(tag_name) {
+			self.blocks.drop_break_at(self.text.get_current_text_position());
+		}
+		if self.flags.contains(ProcessingFlags::IN_BODY) {
+			self.blocks.open(tag_name, self.text.get_current_text_position());
+		}
 		if let Node::Element(element) = node.value() {
 			if self.flags.contains(ProcessingFlags::IN_BODY) {
 				if let Some(id) = element.attr("id").or_else(|| element.attr("name")) {
@@ -178,7 +185,22 @@ impl HtmlToText {
 			}
 			self.text.start_preserve_whitespace();
 		} else if tag_name == "br" {
+			let in_link = self.flags.contains(ProcessingFlags::IN_LINK) && !self.text.is_preserving_whitespace();
+			let ends_text = !self.text.current_line().trim().is_empty();
 			self.text.finalize_current_line();
+			if in_link {
+				// A link's text is held back until it closes, so the line this ended is the one before the link, and the words either side of the break would otherwise join.
+				self.link_start_pos = self.text.get_current_text_position();
+				if !self.current_link_text.trim().is_empty() {
+					self.current_link_text.push(' ');
+				}
+			}
+			if !ends_text && !in_link {
+				// Two in a row leave a gap, which reads as a new paragraph.
+				self.blocks.drop_break_at(self.text.get_current_text_position());
+			} else if ends_text && self.flags.contains(ProcessingFlags::IN_BODY) {
+				self.blocks.line_break(self.text.get_current_text_position());
+			}
 		}
 	}
 
@@ -347,6 +369,10 @@ impl HtmlToText {
 		} else if tag_name == "sub" {
 			self.format_spans.close(&FormatKind::Subscript, self.text.get_current_text_position());
 		}
+		if is_block_element(tag_name) || tag_name == "body" {
+			self.blocks.drop_break_at(self.text.get_current_text_position());
+		}
+		self.blocks.close(tag_name, self.text.get_current_text_position());
 	}
 
 	fn handle_text_node(&mut self, text: &node::Text) {

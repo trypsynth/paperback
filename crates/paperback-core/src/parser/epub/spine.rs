@@ -21,7 +21,8 @@ use crate::{
 	},
 	t,
 	types::{
-		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
+		BlockInfo, FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo,
+		TableInfo,
 	},
 	util::zip::read_zip_entry_by_name,
 };
@@ -44,6 +45,7 @@ struct SectionContent {
 	code: Vec<FormatInfo>,
 	superscripts: Vec<FormatInfo>,
 	subscripts: Vec<FormatInfo>,
+	blocks: Vec<BlockInfo>,
 	id_positions: HashMap<String, DocPos>,
 	/// The converters only record described images, so this is the only sign that a page whose whole body is one undescribed picture isn't simply empty.
 	has_image_markup: bool,
@@ -101,6 +103,9 @@ impl ConverterOutput for SectionContent {
 	}
 	fn get_subscripts(&self) -> &[FormatInfo] {
 		&self.subscripts
+	}
+	fn get_blocks(&self) -> &[BlockInfo] {
+		&self.blocks
 	}
 }
 
@@ -288,6 +293,7 @@ fn convert_section(content: &str, render_tables_inline: bool) -> SectionContent 
 			code: xml_converter.get_code().to_vec(),
 			superscripts: xml_converter.get_superscripts().to_vec(),
 			subscripts: xml_converter.get_subscripts().to_vec(),
+			blocks: xml_converter.get_blocks().to_vec(),
 			id_positions: xml_converter.get_id_positions().clone(),
 			has_image_markup: content_has_image_markup(content),
 			xml_error: None,
@@ -315,6 +321,7 @@ fn convert_section(content: &str, render_tables_inline: bool) -> SectionContent 
 		code: html_converter.get_code().to_vec(),
 		superscripts: html_converter.get_superscripts().to_vec(),
 		subscripts: html_converter.get_subscripts().to_vec(),
+		blocks: html_converter.get_blocks().to_vec(),
 		id_positions: html_converter.get_id_positions().clone(),
 		has_image_markup: content_has_image_markup(content),
 		xml_error,

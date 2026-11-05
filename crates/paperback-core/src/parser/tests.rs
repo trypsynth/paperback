@@ -5,7 +5,7 @@ use rstest::rstest;
 use super::*;
 use crate::{
 	document::DocPos,
-	types::{FormatInfo, HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+	types::{BlockInfo, FormatInfo, HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 };
 
 struct MockConverter {
@@ -25,6 +25,7 @@ struct MockConverter {
 	code: Vec<FormatInfo>,
 	superscripts: Vec<FormatInfo>,
 	subscripts: Vec<FormatInfo>,
+	blocks: Vec<BlockInfo>,
 }
 
 impl ConverterOutput for MockConverter {
@@ -91,6 +92,10 @@ impl ConverterOutput for MockConverter {
 	fn get_subscripts(&self) -> &[FormatInfo] {
 		&self.subscripts
 	}
+
+	fn get_blocks(&self) -> &[BlockInfo] {
+		&self.blocks
+	}
 }
 fn sample_converter() -> MockConverter {
 	MockConverter {
@@ -126,6 +131,7 @@ fn sample_converter() -> MockConverter {
 		code: vec![],
 		superscripts: vec![],
 		subscripts: vec![],
+		blocks: vec![],
 	}
 }
 
@@ -275,6 +281,7 @@ fn add_converter_markers_handles_empty_converter_output() {
 		code: vec![],
 		superscripts: vec![],
 		subscripts: vec![],
+		blocks: vec![],
 	};
 	let mut buffer = DocumentBuffer::new();
 	add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
@@ -388,6 +395,7 @@ fn add_tables_separators_lists_sets_table_marker_length() {
 		code: vec![],
 		superscripts: vec![],
 		subscripts: vec![],
+		blocks: vec![],
 	};
 	let mut buffer = DocumentBuffer::new();
 	let base_offset = DocPos::from_raw(100);
