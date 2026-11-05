@@ -170,6 +170,13 @@ impl HtmlToText {
 			self.text.start_preserve_whitespace();
 		} else if tag_name == "br" {
 			self.text.finalize_current_line();
+			if self.flags.contains(ProcessingFlags::IN_LINK) && !self.text.is_preserving_whitespace() {
+				// A link's text is held back until it closes, so the line this ended is the one before the link, and the words either side of the break would otherwise join.
+				self.link_start_pos = self.text.get_current_text_position();
+				if !self.current_link_text.trim().is_empty() {
+					self.current_link_text.push(' ');
+				}
+			}
 		}
 	}
 

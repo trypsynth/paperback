@@ -367,3 +367,11 @@ fn an_undescribed_picture_is_shown_and_decoration_is_not() {
 	assert_eq!(images.len(), 1);
 	assert_eq!((images[0].offset, images[0].source.as_str()), (2.into(), "chart.png"));
 }
+
+#[test]
+fn a_break_inside_a_link_keeps_the_words_apart() {
+	let mut converter = XmlToText::new();
+	assert!(converter.convert("<root><body><p><a href=\"x\">1<br/>two</a> now</p></body></root>"));
+	assert_eq!(converter.get_text(), "1 two now");
+	assert_eq!(converter.get_links()[0].text, "1 two");
+}

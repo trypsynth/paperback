@@ -328,3 +328,26 @@ fn html_converter_makes_a_link_of_an_undescribed_picture() {
 	assert_eq!(converter.get_text(), "[Image]");
 	assert_eq!(converter.get_links()[0].text, "[Image]");
 }
+
+#[test]
+fn a_break_inside_a_link_keeps_the_words_apart() {
+	let mut converter = HtmlToText::new();
+	converter.convert("<html><body><p><a href=\"x\">1<br>two</a> now</p></body></html>", HtmlSourceMode::NativeHtml);
+	assert_eq!(converter.get_text(), "1 two now");
+	assert_eq!(converter.get_links()[0].text, "1 two");
+}
+
+#[test]
+fn a_break_inside_a_link_still_ends_the_line_before_it() {
+	let mut converter = HtmlToText::new();
+	converter.convert("<html><body><p>see <a href=\"x\">1<br>two</a></p></body></html>", HtmlSourceMode::NativeHtml);
+	assert_eq!(converter.get_text(), "see\n1 two");
+	assert_eq!(converter.get_links()[0].offset.get(), 4);
+}
+
+#[test]
+fn a_break_opening_a_link_still_breaks_the_line() {
+	let mut converter = HtmlToText::new();
+	converter.convert("<html><body><p>one<a href=\"x\"><br>two</a></p></body></html>", HtmlSourceMode::NativeHtml);
+	assert_eq!(converter.get_text(), "one\ntwo");
+}

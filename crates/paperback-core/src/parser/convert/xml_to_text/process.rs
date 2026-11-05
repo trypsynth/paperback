@@ -181,6 +181,9 @@ impl XmlToText {
 			} else if let Some((image_text, info, is_figure)) = Self::described_image(child) {
 				text.push_str(&image_text);
 				images.push((image_text, info, is_figure));
+			} else if child.is_element() && Self::tag_is(child.tag_name().name(), "br") {
+				// A link is one run of text, so without this the words either side of the break would join.
+				text.push(' ');
 			} else {
 				Self::collect_link_content(child, text, images);
 			}
