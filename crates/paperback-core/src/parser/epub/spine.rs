@@ -1,9 +1,9 @@
-use std::{collections::HashMap, fs::File, io::BufReader, mem};
+use std::{collections::HashMap, fs::File, io::BufReader, mem, sync::Arc};
 
 use anyhow::Result;
 use rayon::prelude::*;
 use scraper::Html;
-use zip::ZipArchive;
+use zip::{ZipArchive, read::ZipArchiveMetadata};
 
 use super::{
 	href::{resolve_href, split_href},
@@ -101,9 +101,10 @@ pub(super) struct SpineConversionResult {
 	pub(super) conversion_errors: Vec<String>,
 }
 
-/// Each rayon worker opens its own `ZipArchive` so zip reads run across cores instead of serializing through one shared handle.
+/// Each rayon worker opens its own file so zip reads run across cores instead of serializing through one shared handle. They share `metadata` because rayon runs `map_init` per split rather than per thread, and parsing the directory there took 19 seconds on a book with 165,000 entries.
 pub(super) fn convert_spine_items(
 	file_path: &str,
+	metadata: &Arc<ZipArchiveMetadata>,
 	manifest: &HashMap<String, ManifestItem>,
 	spine: &[String],
 	render_tables_inline: bool,
@@ -112,9 +113,10 @@ pub(super) fn convert_spine_items(
 		.par_iter()
 		.map_init(
 			|| {
-				File::open(file_path)
-					.map_err(|err| err.to_string())
-					.and_then(|file| ZipArchive::new(BufReader::new(file)).map_err(|err| err.to_string()))
+				File::open(file_path).map_err(|err| err.to_string()).map(|file| {
+					// SAFETY: the contract is only that reader and metadata describe the same archive, and `metadata` was read from this same path when this parse began. A file swapped in between gives read errors or wrong text for that book, not undefined behavior.
+					unsafe { ZipArchive::unsafe_new_with_metadata(BufReader::new(file), Arc::clone(metadata)) }
+				})
 			},
 			|archive_result, idref| {
 				let item = manifest.get(idref).ok_or_else(|| format!("missing manifest item for {idref}"))?;

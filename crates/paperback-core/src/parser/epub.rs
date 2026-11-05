@@ -45,7 +45,13 @@ impl Parser for EpubParser {
 			// TRANSLATORS: Error shown when an EPUB's OPF document has no <package> element
 			.ok_or_else(|| anyhow::anyhow!(t("OPF package element missing")))?;
 		let (manifest, spine, nav_path, ncx_path, metadata) = parse_package(package_node, &opf_dir);
-		let mut conversion = convert_spine_items(&context.file_path, &manifest, &spine, context.render_tables_inline);
+		let mut conversion = convert_spine_items(
+			&context.file_path,
+			&archive.metadata(),
+			&manifest,
+			&spine,
+			context.render_tables_inline,
+		);
 		if conversion.sections.is_empty() {
 			let reason = if conversion.conversion_errors.is_empty() {
 				// TRANSLATORS: Reason given when an EPUB has no spine items that could be read
