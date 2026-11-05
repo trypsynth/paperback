@@ -1,6 +1,6 @@
 //! Instances that share an abstract list continue one count, unless an instance overrides a level's start, which is what Word's "Restart numbering" writes.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 use roxmltree::{Document as XmlDocument, Node, NodeType};
 
@@ -21,7 +21,8 @@ pub(super) struct Level {
 #[derive(Debug, Default)]
 pub(super) struct Instance {
 	pub(super) abstract_id: String,
-	pub(super) start_overrides: HashMap<usize, i32>,
+	/// Ordered, because restarting a level clears the ones inside it: applied in hash order, restarts of two levels came out differently from run to run (#1254).
+	pub(super) start_overrides: BTreeMap<usize, i32>,
 	pub(super) level_overrides: HashMap<usize, Level>,
 }
 

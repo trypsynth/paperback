@@ -67,6 +67,30 @@ fn a_restarting_instance_begins_the_shared_count_again() {
 }
 
 #[test]
+fn restarting_two_levels_at_once_numbers_the_same_every_time() {
+	let xml = format!(
+		r#"<w:numbering {W}>
+			<w:abstractNum w:abstractNumId="0">
+				<w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/></w:lvl>
+				<w:lvl w:ilvl="1"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1.%2."/></w:lvl>
+			</w:abstractNum>
+			<w:num w:numId="1"><w:abstractNumId w:val="0"/>
+				<w:lvlOverride w:ilvl="1"><w:startOverride w:val="5"/></w:lvlOverride>
+				<w:lvlOverride w:ilvl="0"><w:startOverride w:val="3"/></w:lvlOverride>
+			</w:num>
+		</w:numbering>"#
+	);
+	// Each load hashes differently, so a hash-ordered restart disagreed with itself within a few tries.
+	let labels: std::collections::HashSet<Option<String>> = (0..32)
+		.map(|_| {
+			let mut numbering = Numbering::load(Some(&xml), None);
+			label(&mut numbering, &item(1, 1))
+		})
+		.collect();
+	assert_eq!(labels.len(), 1, "{labels:?}");
+}
+
+#[test]
 fn symbol_font_bullets_become_a_plain_bullet() {
 	let mut numbering = Numbering::load(Some(&numbering_xml()), None);
 	assert_eq!(label(&mut numbering, &item(2, 0)).as_deref(), Some("\u{2022}"));
