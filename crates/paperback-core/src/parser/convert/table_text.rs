@@ -309,24 +309,27 @@ fn cell_text(cell: ego_tree::NodeRef<'_, Node>) -> String {
 
 /// `br_as_space` keeps text either side of a `<br>` from gluing together in table cells.
 /// A formula contributes the text the reading buffer shows for it, since its descendant text would concatenate every token and repeat any TeX annotation.
+/// A stack rather than recursion, for the same reason as the converter's own walk: some pages nest thousands deep.
 pub(crate) fn collect_dom_text(node: ego_tree::NodeRef<'_, Node>, buffer: &mut String, br_as_space: bool) {
-	match node.value() {
-		Node::Text(text) => buffer.push_str(&text.text),
-		Node::Element(element) if is_dom_formula(element) => {
-			let formula = ElementRef::wrap(node).expect("an element node wraps as an element");
-			if let Some(text) = formula_text(&formula.html(), element.attr("alttext"), || formula.text().collect()) {
-				buffer.push_str(&text);
+	let mut pending = vec![node];
+	while let Some(node) = pending.pop() {
+		match node.value() {
+			Node::Text(text) => buffer.push_str(&text.text),
+			Node::Element(element) if is_dom_formula(element) => {
+				let formula = ElementRef::wrap(node).expect("an element node wraps as an element");
+				if let Some(text) = formula_text(&formula.html(), element.attr("alttext"), || formula.text().collect())
+				{
+					buffer.push_str(&text);
+				}
 			}
+			Node::Element(element) => {
+				if br_as_space && element.name() == "br" {
+					buffer.push(' ');
+				}
+				pending.extend(node.children().rev());
+			}
+			_ => {}
 		}
-		Node::Element(element) => {
-			if br_as_space && element.name() == "br" {
-				buffer.push(' ');
-			}
-			for child in node.children() {
-				collect_dom_text(child, buffer, br_as_space);
-			}
-		}
-		_ => {}
 	}
 }
 

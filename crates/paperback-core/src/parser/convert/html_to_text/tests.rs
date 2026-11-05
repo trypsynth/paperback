@@ -455,3 +455,12 @@ fn a_break_right_before_a_table_is_not_recorded() {
 	let converter = converted_body("<p>one<br/><table><tr><td>a</td></tr></table></p>");
 	assert!(converter.get_blocks().is_empty());
 }
+
+/// The real pages that did this nested a few thousand unclosed tags; this is far past what the stack ever allowed.
+#[test]
+fn a_document_nested_far_deeper_than_the_stack_still_converts() {
+	let depth = 50_000;
+	let body = format!("{}deep text{}", "<span>".repeat(depth), "</span>".repeat(depth));
+	let converter = converted_body(&body);
+	assert_eq!(converter.get_text(), "deep text");
+}
