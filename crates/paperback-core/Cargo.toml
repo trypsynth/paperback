@@ -34,7 +34,8 @@ chardetng = "1.0.0"
 ego-tree = "0.11.1"
 encoding_rs = "0.8.44"
 flate2 = "1.1.10"
-fontdb = { version = "0.24.0", default-features = false, features = ["fs"] }
+# Without memmap, the first PDF needing an unembedded font read every installed font whole, which is 334 MB on one Windows machine.
+fontdb = { version = "0.24.0", default-features = false, features = ["fs", "memmap"] }
 hayro = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
 hayro-interpret = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
 hayro-syntax = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
