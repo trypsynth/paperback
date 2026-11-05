@@ -273,6 +273,7 @@ pub fn apply(selection: &PageSelection, doc: &Document) -> Result<Document> {
 			reference: marker.reference.clone(),
 			level: marker.level,
 			length,
+			prefix_length: marker.prefix_length,
 		});
 	}
 	let mut out = Document::new().with_title(doc.title.clone()).with_author(doc.author.clone());
