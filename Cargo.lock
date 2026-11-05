@@ -3157,6 +3157,7 @@ dependencies = [
  "glob",
  "native-ocr",
  "paperback-core",
+ "rayon",
  "rpassword",
  "tempfile",
  "tracing-subscriber",
