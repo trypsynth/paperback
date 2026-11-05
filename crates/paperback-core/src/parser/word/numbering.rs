@@ -26,13 +26,22 @@ pub(super) struct Instance {
 	pub(super) level_overrides: HashMap<usize, Level>,
 }
 
+/// A level restarted but not yet used still shows its start value in a nested label such as `%1.%2.`, so a restart is kept apart from a count rather than stored as one below it.
+#[derive(Clone, Copy, Debug)]
+enum Count {
+	/// The next paragraph at this level takes this value.
+	Restart(i32),
+	/// The value this level's last paragraph took.
+	At(i32),
+}
+
 #[derive(Debug, Default)]
 pub(super) struct Numbering {
 	abstracts: HashMap<String, Vec<Option<Level>>>,
 	instances: HashMap<String, Instance>,
 	/// Style id to (`numId`, `ilvl`).
 	styles: HashMap<String, (String, usize)>,
-	counters: HashMap<String, [Option<i32>; LEVELS]>,
+	counters: HashMap<String, [Option<Count>; LEVELS]>,
 	started: HashSet<String>,
 }
 
@@ -123,13 +132,17 @@ impl Numbering {
 		if self.started.insert(num_id) {
 			for (index, start) in start_overrides {
 				if index < LEVELS {
-					counters[index] = Some(start - 1);
+					counters[index] = Some(Count::Restart(start));
 					counters[index + 1..].fill(None);
 				}
 			}
 		}
-		let value = counters[ilvl].map_or(level.start, |current| current + 1);
-		counters[ilvl] = Some(value);
+		let value = match counters[ilvl] {
+			Some(Count::Restart(start)) => start,
+			Some(Count::At(current)) => current + 1,
+			None => level.start,
+		};
+		counters[ilvl] = Some(Count::At(value));
 		counters[ilvl + 1..].fill(None);
 		let text = render_label(&level, &levels, counters);
 		(!text.is_empty()).then(|| ListLabel { text, level: i32::try_from(ilvl).unwrap_or(0) + 1 })
@@ -217,7 +230,7 @@ fn read_numbered_styles(xml: &XmlDocument) -> HashMap<String, (String, usize)> {
 	resolved
 }
 
-fn render_label(level: &Level, levels: &[Option<Level>], counters: &[Option<i32>; LEVELS]) -> String {
+fn render_label(level: &Level, levels: &[Option<Level>], counters: &[Option<Count>; LEVELS]) -> String {
 	if level.format == "bullet" {
 		return bullet(&level.text);
 	}
@@ -234,7 +247,10 @@ fn render_label(level: &Level, levels: &[Option<Level>], counters: &[Option<i32>
 			chars.next();
 			let index = digit as usize - 1;
 			let referenced = levels.get(index).cloned().flatten().unwrap_or_default();
-			let value = counters[index].unwrap_or(referenced.start);
+			let value = match counters[index] {
+				Some(Count::Restart(value) | Count::At(value)) => value,
+				None => referenced.start,
+			};
 			let format = if level.legal { "decimal" } else { referenced.format.as_str() };
 			out.push_str(&format_number(value, format));
 		} else {
