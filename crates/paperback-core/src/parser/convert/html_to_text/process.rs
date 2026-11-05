@@ -157,6 +157,7 @@ impl HtmlToText {
 			self.flags.insert(ProcessingFlags::IN_BODY);
 		} else if tag_name == "pre" {
 			self.text.finalize_current_line();
+			self.format_spans.open(&FormatKind::Preformatted, self.text.get_current_text_position());
 			self.text.start_preserve_whitespace();
 		} else if tag_name == "hr" && self.flags.contains(ProcessingFlags::IN_BODY) {
 			self.text.finalize_current_line();
@@ -167,6 +168,10 @@ impl HtmlToText {
 			self.separators.push(SeparatorInfo { offset, length: DocLen::of(line) });
 		} else if tag_name == "code" {
 			self.flags.insert(ProcessingFlags::IN_CODE);
+			// Code inside a <pre> is already marked by it.
+			if !self.text.is_preserving_whitespace() {
+				self.format_spans.open(&FormatKind::Code, self.text.get_current_text_position());
+			}
 			self.text.start_preserve_whitespace();
 		} else if tag_name == "br" {
 			self.text.finalize_current_line();
@@ -177,11 +182,8 @@ impl HtmlToText {
 		if tag_name == "li" {
 			self.text.finalize_current_line();
 			let li_text = Self::get_element_text(node, document);
-			self.list_items.push(ListItemInfo {
-				offset: self.text.get_current_text_position(),
-				level: self.list_level,
-				text: li_text,
-			});
+			let offset = self.text.get_current_text_position();
+			let mut number = None;
 			for _ in 0..self.list_level {
 				self.text.push_str("  ");
 			}
@@ -189,6 +191,7 @@ impl HtmlToText {
 				if style.ordered {
 					let item_text = format_list_item(style.item_number, &style.list_type);
 					let _ = write!(&mut self.text, "{item_text}. ");
+					number = Some(style.item_number);
 					style.item_number += 1;
 				} else {
 					self.text.push_str(Self::get_bullet_for_level(self.list_level));
@@ -198,6 +201,8 @@ impl HtmlToText {
 				self.text.push_str(Self::get_bullet_for_level(self.list_level));
 				self.text.push(' ');
 			}
+			let prefix_length = self.text.get_current_text_position().since(offset);
+			self.list_items.push(ListItemInfo { offset, level: self.list_level, text: li_text, prefix_length, number });
 		}
 	}
 
@@ -208,6 +213,7 @@ impl HtmlToText {
 			let start_attr = element.and_then(|e| e.attr("start"));
 			let type_attr = element.and_then(|e| e.attr("type"));
 			let style = ListStyle::new(tag_name == "ol", start_attr, type_attr);
+			let opening_tag = style.opening_tag();
 			self.list_style_stack.push(style);
 			let mut item_count = 0;
 			for child in node.children() {
@@ -224,6 +230,7 @@ impl HtmlToText {
 					offset: self.text.get_current_text_position(),
 					item_count,
 					length: DocLen::ZERO,
+					opening_tag,
 				});
 			} else {
 				self.open_lists.push(None);
@@ -298,6 +305,10 @@ impl HtmlToText {
 		if tag_name == "code" {
 			self.flags.remove(ProcessingFlags::IN_CODE);
 			self.text.stop_preserve_whitespace();
+			// After stopping, since the line will be collapsed and the position has to count it that way.
+			if !self.text.is_preserving_whitespace() {
+				self.format_spans.close(&FormatKind::Code, self.text.get_current_text_position());
+			}
 		}
 		if tag_name == "ul" || tag_name == "ol" {
 			self.list_level -= 1;
@@ -317,6 +328,7 @@ impl HtmlToText {
 				self.text.finalize_current_line();
 			}
 			self.text.stop_preserve_whitespace();
+			self.format_spans.close(&FormatKind::Preformatted, self.text.get_current_text_position());
 		} else if is_block_element(tag_name) {
 			self.text.finalize_current_line();
 		}

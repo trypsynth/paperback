@@ -1,4 +1,4 @@
-use crate::document::{DocLen, DocPos, Document, MarkerType};
+use crate::document::{DocPos, Document, MarkerType};
 
 #[must_use]
 pub fn render(doc: &Document) -> String {
@@ -69,7 +69,8 @@ pub fn render(doc: &Document) -> String {
 	let mut event_idx = 0usize;
 	let mut position = DocPos::ZERO;
 	let mut skip_until: Option<DocPos> = None;
-	for ch in content.chars() {
+	let mut rest = content.as_str();
+	while !rest.is_empty() {
 		while event_idx < events.len() && events[event_idx].pos <= position {
 			if skip_until.is_some_and(|u| events[event_idx].pos < u) {
 				event_idx += 1;
@@ -96,15 +97,17 @@ pub fn render(doc: &Document) -> String {
 			}
 			event_idx += 1;
 		}
-		if let Some(until) = skip_until {
-			if position < until {
-				position += DocLen::ONE;
-				continue;
-			}
+		if skip_until.is_some_and(|until| position >= until) {
 			skip_until = None;
 		}
-		md.push(ch);
-		position += DocLen::ONE;
+		let next_event = events.get(event_idx).map(|event| event.pos);
+		let stop = skip_until.into_iter().chain(next_event).min();
+		let (run, tail) = stop.map_or((rest, ""), |stop| super::split_after_chars(rest, stop.get() - position.get()));
+		rest = tail;
+		position = stop.unwrap_or(position);
+		if skip_until.is_none() {
+			md.push_str(run);
+		}
 	}
 	while event_idx < events.len() {
 		match &events[event_idx].kind {
@@ -129,16 +132,18 @@ pub fn render(doc: &Document) -> String {
 fn normalize_newlines(s: &str) -> String {
 	let mut out = String::with_capacity(s.len() + s.len() / 4);
 	let mut nl_run = 0usize;
-	for ch in s.chars() {
-		if ch == '\n' {
+	for (index, line) in s.split('\n').enumerate() {
+		if index > 0 {
 			nl_run += 1;
-		} else {
-			if nl_run > 0 {
-				out.push_str("\n\n");
-			}
-			nl_run = 0;
-			out.push(ch);
 		}
+		if line.is_empty() {
+			continue;
+		}
+		if nl_run > 0 {
+			out.push_str("\n\n");
+		}
+		nl_run = 0;
+		out.push_str(line);
 	}
 	if nl_run > 0 {
 		out.push('\n');

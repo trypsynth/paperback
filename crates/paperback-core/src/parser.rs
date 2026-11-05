@@ -316,6 +316,8 @@ pub trait ConverterOutput {
 	fn get_bolds(&self) -> &[FormatInfo];
 	fn get_italics(&self) -> &[FormatInfo];
 	fn get_underlines(&self) -> &[FormatInfo];
+	fn get_preformatted(&self) -> &[FormatInfo];
+	fn get_code(&self) -> &[FormatInfo];
 }
 
 fn add_headings(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: DocPos) {
@@ -390,6 +392,7 @@ fn add_tables_separators_lists(buffer: &mut DocumentBuffer, converter: &dyn Conv
 	for list in converter.get_lists() {
 		buffer.add_marker(
 			Marker::new(MarkerType::List, offset + list.offset.from_start())
+				.with_reference(list.opening_tag.clone())
 				.with_level(list.item_count)
 				.with_length(list.length),
 		);
@@ -398,7 +401,9 @@ fn add_tables_separators_lists(buffer: &mut DocumentBuffer, converter: &dyn Conv
 		buffer.add_marker(
 			Marker::new(MarkerType::ListItem, offset + list_item.offset.from_start())
 				.with_text(list_item.text.clone())
-				.with_level(list_item.level),
+				.with_reference(list_item.number.map_or_else(String::new, |number| number.to_string()))
+				.with_level(list_item.level)
+				.with_prefix_length(list_item.prefix_length),
 		);
 	}
 }
@@ -427,6 +432,14 @@ fn add_formatting(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, 
 		buffer.add_marker(
 			Marker::new(MarkerType::Underline, offset + underline.offset.from_start()).with_length(underline.length),
 		);
+	}
+	for block in converter.get_preformatted() {
+		buffer.add_marker(
+			Marker::new(MarkerType::Preformatted, offset + block.offset.from_start()).with_length(block.length),
+		);
+	}
+	for code in converter.get_code() {
+		buffer.add_marker(Marker::new(MarkerType::Code, offset + code.offset.from_start()).with_length(code.length));
 	}
 }
 

@@ -147,6 +147,16 @@ impl HtmlToText {
 		self.format_spans.underlines()
 	}
 
+	#[must_use]
+	pub fn get_preformatted(&self) -> &[FormatInfo] {
+		self.format_spans.preformatted()
+	}
+
+	#[must_use]
+	pub fn get_code(&self) -> &[FormatInfo] {
+		self.format_spans.code()
+	}
+
 	pub fn clear(&mut self) {
 		self.text.clear();
 		self.id_positions.clear();
@@ -210,6 +220,12 @@ impl ConverterOutput for HtmlToText {
 	}
 	fn get_underlines(&self) -> &[FormatInfo] {
 		self.format_spans.underlines()
+	}
+	fn get_preformatted(&self) -> &[FormatInfo] {
+		self.format_spans.preformatted()
+	}
+	fn get_code(&self) -> &[FormatInfo] {
+		self.format_spans.code()
 	}
 }
 

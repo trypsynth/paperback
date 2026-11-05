@@ -367,3 +367,52 @@ fn an_undescribed_picture_is_shown_and_decoration_is_not() {
 	assert_eq!(images.len(), 1);
 	assert_eq!((images[0].offset, images[0].source.as_str()), (2.into(), "chart.png"));
 }
+
+fn converted_body(body: &str) -> XmlToText {
+	let mut converter = XmlToText::new();
+	assert!(converter.convert(&format!("<root><body>{body}</body></root>")));
+	converter
+}
+
+fn span_text(text: &str, span: &crate::types::FormatInfo) -> String {
+	text.chars().skip(span.offset.get()).take(span.length.get()).collect()
+}
+
+#[test]
+fn a_pre_is_one_block_and_its_code_is_not_marked_again() {
+	let converter = converted_body("<pre><code>a  b\n  c</code></pre>");
+	assert_eq!(converter.get_preformatted().len(), 1);
+	assert_eq!(span_text(converter.get_text(), &converter.get_preformatted()[0]), "a  b\n  c");
+	assert!(converter.get_code().is_empty());
+}
+
+#[test]
+fn a_pre_ending_the_text_stays_inside_it() {
+	let converter = converted_body("<p>one</p><pre>two\n\n</pre>");
+	let text = converter.get_text().to_string();
+	let block = &converter.get_preformatted()[0];
+	assert!((block.offset + block.length).get() <= text.chars().count(), "{text:?}");
+}
+
+#[test]
+fn inline_code_is_marked_where_the_collapsed_line_has_it() {
+	let converter = converted_body("<p>one  two <code>foo</code> three</p>");
+	let text = converter.get_text().to_string();
+	assert_eq!(text, "one two foo three");
+	assert_eq!(span_text(&text, &converter.get_code()[0]), "foo");
+}
+
+#[test]
+fn list_items_know_their_prefix_and_number() {
+	let converter = converted_body("<ol start=\"3\" type=\"a\"><li>one</li><li>two</li></ol><ul><li>three</li></ul>");
+	let text = converter.get_text().to_string();
+	assert_eq!(text, "c. one\nd. two\n\u{2022} three");
+	assert_eq!(converter.get_lists()[0].opening_tag, "<ol type=\"a\">");
+	assert_eq!(converter.get_lists()[1].opening_tag, "<ul>");
+	let items = converter.get_list_items();
+	assert_eq!(items.iter().map(|item| item.number).collect::<Vec<_>>(), [Some(3), Some(4), None]);
+	for item in items {
+		let body: String = text.chars().skip(item.offset.get() + item.prefix_length.get()).take(3).collect();
+		assert!(["one", "two", "thr"].contains(&body.as_str()), "{body}");
+	}
+}

@@ -31,6 +31,8 @@ pub(super) struct SectionContent {
 	bolds: Vec<FormatInfo>,
 	italics: Vec<FormatInfo>,
 	underlines: Vec<FormatInfo>,
+	preformatted: Vec<FormatInfo>,
+	code: Vec<FormatInfo>,
 	pub id_positions: HashMap<String, DocPos>,
 }
 
@@ -70,6 +72,12 @@ impl ConverterOutput for SectionContent {
 	}
 	fn get_underlines(&self) -> &[FormatInfo] {
 		&self.underlines
+	}
+	fn get_preformatted(&self) -> &[FormatInfo] {
+		&self.preformatted
+	}
+	fn get_code(&self) -> &[FormatInfo] {
+		&self.code
 	}
 }
 
@@ -123,6 +131,8 @@ fn convert_section(
 		bolds: converter.get_bolds().to_vec(),
 		italics: converter.get_italics().to_vec(),
 		underlines: converter.get_underlines().to_vec(),
+		preformatted: converter.get_preformatted().to_vec(),
+		code: converter.get_code().to_vec(),
 		id_positions: converter.get_id_positions().clone(),
 	}
 }
