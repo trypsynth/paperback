@@ -900,7 +900,8 @@ mod tests {
 		let parse = |args: &[&str]| cli::Cli::try_parse_from(args).expect("parse");
 		assert!(at_once(&parse(&["pb", "x", "-j", "4"]), 2));
 		assert!(at_once(&parse(&["pb", "x", "-j", "0"]), 2));
-		assert!(!at_once(&parse(&["pb", "x"]), 2), "one at a time is the default");
+		assert!(at_once(&parse(&["pb", "x"]), 2), "at once is the default");
+		assert!(!at_once(&parse(&["pb", "x", "-j", "1"]), 2));
 		assert!(!at_once(&parse(&["pb", "x", "-j", "4"]), 1));
 		assert!(!at_once(&parse(&["pb", "x", "-j", "4", "--ocr-image-pages"]), 2));
 	}

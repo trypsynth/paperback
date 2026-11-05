@@ -56,8 +56,8 @@ pub struct Cli {
 	/// Print paperback-core's parser log output to stderr (set `RUST_LOG` for finer control)
 	#[arg(short, long)]
 	pub verbose: bool,
-	/// Convert this many documents at once when there are several; 0 means one per processor. Downloads, password prompts and OCR still take one document at a time
-	#[arg(short, long, value_name = "N", default_value_t = 1)]
+	/// How many documents to convert at once when there are several; 0, the default, means one per processor and 1 converts them in turn, reporting in the order given. Downloads, password prompts and OCR still take one document at a time
+	#[arg(short, long, value_name = "N", default_value_t = 0)]
 	pub jobs: usize,
 }
 
@@ -123,7 +123,7 @@ mod tests {
 		assert!(!cli.no_prompt);
 		assert!(!cli.no_join_paragraphs);
 		assert!(!cli.verbose);
-		assert_eq!(cli.jobs, 1, "one document at a time unless asked, so a script's output stays in order");
+		assert_eq!(cli.jobs, 0, "as many at once as there are processors unless asked");
 	}
 
 	#[test]

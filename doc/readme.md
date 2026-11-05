@@ -24,7 +24,7 @@ Paperback runs on Windows 10/11, all the modern versions of ARM macOS, Linux, iO
 * Bookmarks and notes, so you can mark your place and come back to it.
 * Every keyboard shortcut can be changed.
 * Opens documents straight from http and https links, and downloads them again when you reopen them or press `F5`, keeping your reading position and bookmarks. When restoring the documents you had open, it downloads again the ones from links that were 2 MB or smaller.
-* Comes with `pb`, a command line tool that converts any supported document to HTML, Markdown, or plain text. It takes as many documents as you give it, expands `*.pdf` and the like itself so the same command line works on Windows, and can write one file per document into a folder, converting several at once with `--jobs`. It can also read a list of documents from a file or from stdin with `--files-from`, and convert documents straight from http and https links.
+* Comes with `pb`, a command line tool that converts any supported document to HTML, Markdown, or plain text. It takes as many documents as you give it, expands `*.pdf` and the like itself so the same command line works on Windows, and can write one file per document into a folder, converting several at once (`--jobs` sets how many). It can also read a list of documents from a file or from stdin with `--files-from`, and convert documents straight from http and https links.
 
 ## Screen Reader Compatibility
 
