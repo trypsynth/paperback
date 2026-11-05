@@ -14,10 +14,12 @@ use crate::{
 	parser::{
 		Parser, add_converter_markers, add_toc_heading_markers,
 		convert::html_to_text::{HtmlSourceMode, HtmlToText},
+		text::text_document,
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
 	},
 	t,
 	types::HeadingInfo,
+	util::encoding::decode_guessing_code_page,
 };
 
 mod chunk;
@@ -56,14 +58,26 @@ impl Parser for MobiParser {
 		let title_bytes = data[0..32].to_vec();
 		let mut header = parse_header(&data, &title_bytes)?;
 		let (exth_map, exth_author, exth_title) = parse_exth(&header);
-		let document_author = exth_author.unwrap_or_default();
+		let mut document_author = exth_author.unwrap_or_default();
 		if let Some(title) = exth_title {
 			header.document_title = title;
 		}
 		// Each book-sized stage is freed as soon as the next is made, since the function's end is too late: by then every copy has sat through the conversion.
+		let content = decode_content(&data, &header)?;
+		// Early Mobipocket books are PalmDOC files holding HTML, and go on to be read as any other; the rest of PalmDOC is plain text.
+		if header.is_palmdoc && !looks_like_html(&content) {
+			let mut document = text_document(&context.file_path, decode_guessing_code_page(content));
+			if !header.document_title.is_empty() {
+				document.title = header.document_title;
+			}
+			tracing::debug!(path = %context.file_path, compression = header.compression, "parsed plain palmdoc file");
+			return Ok(document);
+		}
 		let raw = {
-			let content = decode_content(&data, &header)?;
-			if header.text_encoding == 65001 {
+			// PalmDOC names no encoding, and Russian books in Windows-1251 came out garbled when every one was taken as Western.
+			if header.is_palmdoc {
+				decode_guessing_code_page(content)
+			} else if header.text_encoding == 65001 {
 				tracing::debug!("decoding mobi content as utf-8");
 				String::from_utf8(content)
 					.unwrap_or_else(|error| String::from_utf8_lossy(error.as_bytes()).into_owned())
@@ -102,6 +116,14 @@ impl Parser for MobiParser {
 		// Anchoring section starts as link targets is the only way to learn where a raw-text position ends up after rewriting and cleaning move everything.
 		extra_targets.extend(section_starts.iter().copied());
 		let mut text = rewrite_internal_links(&raw, &frag_offsets, &extra_targets);
+		if header.is_palmdoc {
+			// These books describe themselves in a Dublin Core block before the text, which would otherwise be read out as the book's first line.
+			let (stripped, creator) = take_palmdoc_metadata(&text);
+			text = stripped;
+			if document_author.is_empty() {
+				document_author = creator.unwrap_or_default();
+			}
+		}
 		drop(raw);
 		// One pass rather than five, since each was a full copy of a string reaching a hundred megabytes; a title or style element beats an `aid`/`cid` inside it as the leftmost match.
 		// KF8 / AZW3 files often leave `</body></html>` inside unclosed tags at fragment insertion points, which `scraper` cannot parse around.
@@ -186,5 +208,98 @@ impl Parser for MobiParser {
 			"parsed mobi file"
 		);
 		Ok(document)
+	}
+}
+
+/// The `<metadata>` block and its `dc:Creator`, which stands in for the EXTH author these books lack.
+fn take_palmdoc_metadata(html: &str) -> (String, Option<String>) {
+	static METADATA: LazyLock<regex::Regex> =
+		LazyLock::new(|| regex::Regex::new(r"(?is)<metadata\b.*?</metadata\s*>").expect("metadata pattern is valid"));
+	static CREATOR: LazyLock<regex::Regex> = LazyLock::new(|| {
+		regex::Regex::new(r"(?is)<dc:creator\b[^>]*>(.*?)</dc:creator\s*>").expect("creator pattern is valid")
+	});
+	let Some(block) = METADATA.find(html) else { return (html.to_string(), None) };
+	let creator = CREATOR
+		.captures(block.as_str())
+		.map(|captures| captures[1].trim().to_string())
+		.filter(|creator| !creator.is_empty());
+	(format!("{}{}", &html[..block.start()], &html[block.end()..]), creator)
+}
+
+/// Only the start is checked: a Mobipocket book opens with its `<html>`, and plain text that happens to hold a tag further in stays text.
+fn looks_like_html(content: &[u8]) -> bool {
+	let start = String::from_utf8_lossy(&content[..content.len().min(2048)]).to_ascii_lowercase();
+	start.trim_start().starts_with('<') && (start.contains("<html") || start.contains("<body"))
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::util::test_support::TempDir;
+
+	/// A Palm database holding `texts` as uncompressed PalmDOC records.
+	fn palmdoc(name: &str, texts: &[&str]) -> Vec<u8> {
+		let records = texts.len() + 1;
+		let mut header = vec![0u8; 78];
+		header[..name.len()].copy_from_slice(name.as_bytes());
+		header[60..68].copy_from_slice(b"TEXtREAd");
+		header[76..78].copy_from_slice(&u16::try_from(records).unwrap().to_be_bytes());
+		let mut record0 = Vec::new();
+		record0.extend_from_slice(&1u16.to_be_bytes());
+		record0.extend_from_slice(&[0, 0]);
+		record0.extend_from_slice(&u32::try_from(texts.iter().map(|t| t.len()).sum::<usize>()).unwrap().to_be_bytes());
+		record0.extend_from_slice(&u16::try_from(texts.len()).unwrap().to_be_bytes());
+		record0.extend_from_slice(&4096u16.to_be_bytes());
+		record0.extend_from_slice(&[0; 4]);
+		let bodies: Vec<&[u8]> =
+			std::iter::once(record0.as_slice()).chain(texts.iter().map(|t| t.as_bytes())).collect();
+		let mut offset = 78 + records * 8;
+		let mut list = Vec::new();
+		for body in &bodies {
+			list.extend_from_slice(&u32::try_from(offset).unwrap().to_be_bytes());
+			list.extend_from_slice(&[0; 4]);
+			offset += body.len();
+		}
+		let mut out = header;
+		out.extend_from_slice(&list);
+		for body in bodies {
+			out.extend_from_slice(body);
+		}
+		out
+	}
+
+	#[test]
+	fn a_palmdoc_book_holding_html_is_read_as_html() {
+		let dir = TempDir::new("palmdoc-html");
+		let path = dir.write_str(
+			"book.mobi",
+			palmdoc(
+				"Html_Book",
+				&["<HTML><HEAD><metadata><dc-metadata><dc:Title>Html Book</dc:Title><dc:Creator>Jane Writer</dc:Creator></dc-metadata></metadata></HEAD><BODY><h1>Chapter</h1><p>One &amp; two</p></BODY></HTML>"],
+			),
+		);
+		let document = MobiParser.parse(&ParserContext::new(path)).expect("a PalmDOC book holding HTML");
+		assert!(document.buffer.content.contains("One & two"), "{}", document.buffer.content);
+		assert!(!document.buffer.content.contains("<p>"), "{}", document.buffer.content);
+		assert_eq!(document.toc_items.first().map(|item| item.name.as_str()), Some("Chapter"));
+		assert!(
+			document.buffer.content.trim_start().starts_with("Chapter"),
+			"metadata read as text: {}",
+			document.buffer.content
+		);
+		assert_eq!(document.author, "Jane Writer");
+	}
+
+	#[test]
+	fn a_palmdoc_book_reads_as_its_plain_text() {
+		let dir = TempDir::new("palmdoc");
+		let path = dir
+			.write_str("book.mobi", palmdoc("My_Palm_Book", &["First line\r\nstill ", "the first <b>paragraph</b>\n"]));
+		let document = MobiParser.parse(&ParserContext::new(path)).expect("a PalmDOC book");
+		assert_eq!(
+			document.buffer.content, "First line\nstill the first <b>paragraph</b>\n",
+			"kept as text, not read as HTML"
+		);
+		assert_eq!(document.title, "My Palm Book");
 	}
 }

@@ -60,6 +60,18 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 	String::from_utf8_lossy(input).to_string()
 }
 
+/// For a format that names no encoding and was usually written in its reader's own code page, such as PalmDOC: the detector's guess is taken even when it's a single-byte encoding, which `convert_to_utf8` doesn't trust because a text file is more often UTF-8 or Western.
+#[must_use]
+pub fn decode_guessing_code_page(input: Vec<u8>) -> String {
+	let input = match String::from_utf8(input) {
+		Ok(text) => return text,
+		Err(error) => error.into_bytes(),
+	};
+	let mut detector = EncodingDetector::new(Iso2022JpDetection::Deny);
+	detector.feed(&input, true);
+	detector.guess(None, Utf8Detection::Allow).decode(&input).0.into_owned()
+}
+
 /// Text from an ANSI-era format. A few symbol-font bytes (checkboxes, bullets) in Western text read to the detector as a CJK encoding, which then swallows the letter after each, so text that is almost all ASCII is taken as Windows-1252.
 #[must_use]
 pub fn decode_ansi(input: &[u8]) -> String {
@@ -402,5 +414,18 @@ mod tests {
 	fn test_convert_to_utf8_falls_back_to_lossy_when_no_viable_decode() {
 		let input = b"\x81\x8D";
 		assert_eq!(convert_to_utf8(input), "\u{FFFD}\u{FFFD}");
+	}
+
+	#[test]
+	fn a_book_in_a_national_code_page_is_read_in_it() {
+		let (russian, _, _) =
+			encoding_rs::WINDOWS_1251.encode("Индийская философия. Глава третья, переход к упанишадам.");
+		assert_eq!(
+			decode_guessing_code_page(russian.into_owned()),
+			"Индийская философия. Глава третья, переход к упанишадам."
+		);
+		let (western, _, _) = WINDOWS_1252.encode("Índice na Obra, e a História das Lendas.");
+		assert_eq!(decode_guessing_code_page(western.into_owned()), "Índice na Obra, e a História das Lendas.");
+		assert_eq!(decode_guessing_code_page("already UTF-8: ü".as_bytes().to_vec()), "already UTF-8: ü");
 	}
 }
