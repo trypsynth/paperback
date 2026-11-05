@@ -14,7 +14,6 @@
 
 use std::{
 	cell::{Cell, RefCell},
-	collections::HashMap,
 	rc::Rc,
 	sync::Arc,
 };
@@ -28,6 +27,7 @@ use hayro_syntax::{
 	content::{TypedIter, ops::TypedInstruction},
 	object::{Array, Dict, Name, Object, Stream},
 };
+use rustc_hash::FxHashMap;
 
 use super::{
 	bidi::{self, Direction},
@@ -241,7 +241,8 @@ pub(super) struct FontData {
 	widths: Vec<f32>,
 	missing_width: f32,
 	/// Codes drawn so far, which is all a composite or standard font can say without its font program; a Type 3 font's glyphs are all measured up front.
-	observed: RefCell<HashMap<u32, (f32, GlyphBox)>>,
+	/// Looked up for every glyph drawn, where std's `SipHash` showed in profiles.
+	observed: RefCell<FxHashMap<u32, (f32, GlyphBox)>>,
 	space_code: Cell<Option<u32>>,
 	/// For a glyph whose outline is missing.
 	ascent: i32,
@@ -257,7 +258,7 @@ impl FontData {
 				first_char: 0,
 				widths: Vec::new(),
 				missing_width: 0.0,
-				observed: RefCell::new(HashMap::new()),
+				observed: RefCell::new(FxHashMap::default()),
 				space_code: Cell::new(None),
 				ascent: 800,
 				descent: -200,
@@ -347,7 +348,7 @@ const fn weight_from_stem(stem_v: i32) -> i32 {
 }
 
 /// pdfium's `CPDF_Type3Char`: each glyph's width and box come from its procedure's `d0` or `d1`, in the font's glyph space; hayro draws Type 3 glyphs but doesn't measure them.
-fn type3_glyphs(dict: &Dict<'_>, matrix: &Matrix) -> HashMap<u32, (f32, GlyphBox)> {
+fn type3_glyphs(dict: &Dict<'_>, matrix: &Matrix) -> FxHashMap<u32, (f32, GlyphBox)> {
 	let font_box = dict
 		.get::<Array<'_>>(b"FontBBox")
 		.map(|bbox| bbox.iter::<f32>().collect::<Vec<_>>())
@@ -357,9 +358,9 @@ fn type3_glyphs(dict: &Dict<'_>, matrix: &Matrix) -> HashMap<u32, (f32, GlyphBox
 		dict.get::<Dict<'_>>(b"CharProcs"),
 		dict.get::<Dict<'_>>(b"Encoding").and_then(|encoding| encoding.get::<Array<'_>>(b"Differences")),
 	) else {
-		return HashMap::new();
+		return FxHashMap::default();
 	};
-	let mut glyphs = HashMap::new();
+	let mut glyphs = FxHashMap::default();
 	let mut code = 0u32;
 	for entry in differences.iter::<Object<'_>>() {
 		match entry {
@@ -431,7 +432,8 @@ fn char_width_or_box(code: u32, font: &FontData) -> i32 {
 
 #[derive(Default)]
 pub(super) struct FontCache {
-	fonts: HashMap<usize, Rc<FontData>>,
+	/// Looked up for every glyph run, where std's `SipHash` showed in profiles.
+	fonts: FxHashMap<usize, Rc<FontData>>,
 	fallback: Option<Rc<FontData>>,
 }
 

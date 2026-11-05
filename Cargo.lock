@@ -3039,6 +3039,7 @@ dependencies = [
  "roxmltree",
  "rstest",
  "rtf-parser",
+ "rustc-hash",
  "scraper",
  "serde",
  "serde_json",
