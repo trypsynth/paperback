@@ -167,6 +167,10 @@ impl XmlToText {
 			self.format_spans.open(&FormatKind::Italic, self.text.get_current_text_position());
 		} else if Self::tag_is(tag_name, "u") {
 			self.format_spans.open(&FormatKind::Underline, self.text.get_current_text_position());
+		} else if Self::tag_is(tag_name, "sup") {
+			self.format_spans.open(&FormatKind::Superscript, self.text.get_current_text_position());
+		} else if Self::tag_is(tag_name, "sub") {
+			self.format_spans.open(&FormatKind::Subscript, self.text.get_current_text_position());
 		}
 		if self.in_body
 			&& let Some((image_text, mut info, is_figure)) = Self::described_image(node)
@@ -366,6 +370,10 @@ impl XmlToText {
 				self.format_spans.close(&FormatKind::Italic, self.text.get_current_text_position());
 			} else if Self::tag_is(tag_name, "u") {
 				self.format_spans.close(&FormatKind::Underline, self.text.get_current_text_position());
+			} else if Self::tag_is(tag_name, "sup") {
+				self.format_spans.close(&FormatKind::Superscript, self.text.get_current_text_position());
+			} else if Self::tag_is(tag_name, "sub") {
+				self.format_spans.close(&FormatKind::Subscript, self.text.get_current_text_position());
 			}
 		}
 		if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") {

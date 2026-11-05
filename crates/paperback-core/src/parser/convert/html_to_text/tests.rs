@@ -377,3 +377,12 @@ fn list_items_know_their_prefix_and_number() {
 		assert!(["one", "two", "thr"].contains(&body.as_str()), "{body}");
 	}
 }
+
+#[test]
+fn superscripts_and_subscripts_are_marked() {
+	let converter = converted_body("<p>x<sup>2</sup> and H<sub>2</sub>O</p>");
+	let text = converter.get_text().to_string();
+	assert_eq!(text, "x2 and H2O");
+	assert_eq!((converter.get_superscripts()[0].offset.get(), converter.get_superscripts()[0].length.get()), (1, 1));
+	assert_eq!((converter.get_subscripts()[0].offset.get(), converter.get_subscripts()[0].length.get()), (8, 1));
+}

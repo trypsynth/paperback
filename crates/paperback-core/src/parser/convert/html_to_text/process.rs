@@ -148,6 +148,10 @@ impl HtmlToText {
 				self.format_spans.open(&FormatKind::Italic, self.text.get_current_text_position());
 			} else if tag_name == "u" {
 				self.format_spans.open(&FormatKind::Underline, self.text.get_current_text_position());
+			} else if tag_name == "sup" {
+				self.format_spans.open(&FormatKind::Superscript, self.text.get_current_text_position());
+			} else if tag_name == "sub" {
+				self.format_spans.open(&FormatKind::Subscript, self.text.get_current_text_position());
 			}
 		}
 		if tag_name == "title" && self.title.is_empty() {
@@ -338,6 +342,10 @@ impl HtmlToText {
 			self.format_spans.close(&FormatKind::Italic, self.text.get_current_text_position());
 		} else if tag_name == "u" {
 			self.format_spans.close(&FormatKind::Underline, self.text.get_current_text_position());
+		} else if tag_name == "sup" {
+			self.format_spans.close(&FormatKind::Superscript, self.text.get_current_text_position());
+		} else if tag_name == "sub" {
+			self.format_spans.close(&FormatKind::Subscript, self.text.get_current_text_position());
 		}
 	}
 

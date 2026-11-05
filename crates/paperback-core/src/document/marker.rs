@@ -29,6 +29,8 @@ pub enum MarkerType {
 	/// Line breaks and indentation mean something here, as in a code listing, which only an export can show: the text keeps them either way.
 	Preformatted = 21,
 	Code = 22,
+	Superscript = 23,
+	Subscript = 24,
 }
 
 impl From<MarkerType> for i32 {
@@ -71,6 +73,8 @@ impl TryFrom<i32> for MarkerType {
 			20 => Ok(Self::Formula),
 			21 => Ok(Self::Preformatted),
 			22 => Ok(Self::Code),
+			23 => Ok(Self::Superscript),
+			24 => Ok(Self::Subscript),
 			_ => Err(()),
 		}
 	}
@@ -164,11 +168,11 @@ mod tests {
 
 	#[test]
 	fn marker_type_round_trip_for_all_known_values() {
-		for raw in 0..=22 {
+		for raw in 0..=24 {
 			let marker = MarkerType::try_from(raw).unwrap();
 			assert_eq!(i32::from(marker), raw);
 		}
-		assert!(MarkerType::try_from(23).is_err());
+		assert!(MarkerType::try_from(25).is_err());
 		assert!(MarkerType::try_from(-1).is_err());
 	}
 

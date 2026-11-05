@@ -23,6 +23,8 @@ struct MockConverter {
 	underlines: Vec<FormatInfo>,
 	preformatted: Vec<FormatInfo>,
 	code: Vec<FormatInfo>,
+	superscripts: Vec<FormatInfo>,
+	subscripts: Vec<FormatInfo>,
 }
 
 impl ConverterOutput for MockConverter {
@@ -81,6 +83,14 @@ impl ConverterOutput for MockConverter {
 	fn get_code(&self) -> &[FormatInfo] {
 		&self.code
 	}
+
+	fn get_superscripts(&self) -> &[FormatInfo] {
+		&self.superscripts
+	}
+
+	fn get_subscripts(&self) -> &[FormatInfo] {
+		&self.subscripts
+	}
 }
 fn sample_converter() -> MockConverter {
 	MockConverter {
@@ -114,6 +124,8 @@ fn sample_converter() -> MockConverter {
 		underlines: vec![],
 		preformatted: vec![],
 		code: vec![],
+		superscripts: vec![],
+		subscripts: vec![],
 	}
 }
 
@@ -261,6 +273,8 @@ fn add_converter_markers_handles_empty_converter_output() {
 		underlines: vec![],
 		preformatted: vec![],
 		code: vec![],
+		superscripts: vec![],
+		subscripts: vec![],
 	};
 	let mut buffer = DocumentBuffer::new();
 	add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
@@ -372,6 +386,8 @@ fn add_tables_separators_lists_sets_table_marker_length() {
 		underlines: vec![],
 		preformatted: vec![],
 		code: vec![],
+		superscripts: vec![],
+		subscripts: vec![],
 	};
 	let mut buffer = DocumentBuffer::new();
 	let base_offset = DocPos::from_raw(100);

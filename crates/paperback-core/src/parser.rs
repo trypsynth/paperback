@@ -318,6 +318,8 @@ pub trait ConverterOutput {
 	fn get_underlines(&self) -> &[FormatInfo];
 	fn get_preformatted(&self) -> &[FormatInfo];
 	fn get_code(&self) -> &[FormatInfo];
+	fn get_superscripts(&self) -> &[FormatInfo];
+	fn get_subscripts(&self) -> &[FormatInfo];
 }
 
 fn add_headings(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, offset: DocPos) {
@@ -440,6 +442,15 @@ fn add_formatting(buffer: &mut DocumentBuffer, converter: &dyn ConverterOutput, 
 	}
 	for code in converter.get_code() {
 		buffer.add_marker(Marker::new(MarkerType::Code, offset + code.offset.from_start()).with_length(code.length));
+	}
+	for span in converter.get_superscripts() {
+		buffer.add_marker(
+			Marker::new(MarkerType::Superscript, offset + span.offset.from_start()).with_length(span.length),
+		);
+	}
+	for span in converter.get_subscripts() {
+		buffer
+			.add_marker(Marker::new(MarkerType::Subscript, offset + span.offset.from_start()).with_length(span.length));
 	}
 }
 

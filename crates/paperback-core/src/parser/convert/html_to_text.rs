@@ -157,6 +157,16 @@ impl HtmlToText {
 		self.format_spans.code()
 	}
 
+	#[must_use]
+	pub fn get_superscripts(&self) -> &[FormatInfo] {
+		self.format_spans.superscripts()
+	}
+
+	#[must_use]
+	pub fn get_subscripts(&self) -> &[FormatInfo] {
+		self.format_spans.subscripts()
+	}
+
 	pub fn clear(&mut self) {
 		self.text.clear();
 		self.id_positions.clear();
@@ -226,6 +236,12 @@ impl ConverterOutput for HtmlToText {
 	}
 	fn get_code(&self) -> &[FormatInfo] {
 		self.format_spans.code()
+	}
+	fn get_superscripts(&self) -> &[FormatInfo] {
+		self.format_spans.superscripts()
+	}
+	fn get_subscripts(&self) -> &[FormatInfo] {
+		self.format_spans.subscripts()
 	}
 }
 

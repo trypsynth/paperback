@@ -229,6 +229,16 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 					events.push(Ev { pos, opened, kind: Ek::SkipPrefix(until) });
 				}
 			}
+			MarkerType::Superscript if !marker.length.is_zero() => {
+				let end = pos + marker.length;
+				events.push(Ev { pos, opened, kind: Ek::InlineOpen("<sup>".to_string(), "</sup>") });
+				events.push(Ev { pos: end, opened, kind: Ek::InlineClose("</sup>") });
+			}
+			MarkerType::Subscript if !marker.length.is_zero() => {
+				let end = pos + marker.length;
+				events.push(Ev { pos, opened, kind: Ek::InlineOpen("<sub>".to_string(), "</sub>") });
+				events.push(Ev { pos: end, opened, kind: Ek::InlineClose("</sub>") });
+			}
 			MarkerType::Preformatted if !marker.length.is_zero() => {
 				let end = pos + marker.length;
 				events.push(Ev { pos, opened, kind: Ek::BlockOpen(PRE_OPEN) });
@@ -710,6 +720,18 @@ mod tests {
 		);
 		let html = render(&doc);
 		assert!(html.contains("<pre>\n<i>abc</i></pre>\n<p>def</p>"), "{html}");
+	}
+
+	#[test]
+	fn superscripts_and_subscripts_get_their_tags() {
+		let doc = simple_doc(
+			"x2 and H2O",
+			vec![
+				Marker::new(MarkerType::Superscript, 1.into()).with_length(1.into()),
+				Marker::new(MarkerType::Subscript, 8.into()).with_length(1.into()),
+			],
+		);
+		assert!(render(&doc).contains("<p>x<sup>2</sup> and H<sub>2</sub>O</p>"));
 	}
 
 	#[test]
