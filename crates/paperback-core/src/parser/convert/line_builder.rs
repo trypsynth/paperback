@@ -4,7 +4,7 @@ use std::{fmt, mem};
 
 use crate::{
 	document::{DocLen, DocPos},
-	util::text::{collapse_whitespace, is_space_like},
+	util::text::{collapse_whitespace, next_space_like},
 };
 
 #[derive(Default)]
@@ -18,27 +18,44 @@ pub(super) struct LineBuilder {
 }
 
 /// Counted as the line grows, since collapsing the whole line again for every marker made a paragraph full of links quadratic.
-#[derive(Default)]
 struct CurrentLength {
 	raw: DocLen,
 	/// What `collapse_whitespace(line).trim_start()` would count: each character that isn't a space, and one for each run of spaces after the first of them.
 	collapsed: DocLen,
 	seen_text: bool,
 	in_spaces: bool,
+	/// Whether collapsing would change nothing but a trailing space, so finishing the line can skip it: no leading space, no run of two, and no space but a plain one.
+	collapsed_already: bool,
+}
+
+impl Default for CurrentLength {
+	fn default() -> Self {
+		Self { raw: DocLen::ZERO, collapsed: DocLen::ZERO, seen_text: false, in_spaces: false, collapsed_already: true }
+	}
 }
 
 impl CurrentLength {
 	fn push(&mut self, text: &str) {
-		for ch in text.chars() {
-			self.raw += DocLen::ONE;
-			if !is_space_like(ch) {
-				self.collapsed += DocLen::ONE;
+		let mut from = 0;
+		loop {
+			let space = next_space_like(text, from);
+			let run = DocLen::from_raw(text[from..space.map_or(text.len(), |(index, _)| index)].chars().count());
+			if !run.is_zero() {
+				self.raw += run;
+				self.collapsed += run;
 				self.seen_text = true;
 				self.in_spaces = false;
-			} else if self.seen_text && !self.in_spaces {
+			}
+			let Some((index, len)) = space else { break };
+			self.raw += DocLen::ONE;
+			if self.in_spaces || !self.seen_text || text.as_bytes()[index] != b' ' {
+				self.collapsed_already = false;
+			}
+			if self.seen_text && !self.in_spaces {
 				self.collapsed += DocLen::ONE;
 				self.in_spaces = true;
 			}
+			from = index + len;
 		}
 	}
 }
@@ -100,10 +117,15 @@ impl LineBuilder {
 		}
 	}
 
-	fn add_line(&mut self, line: &str) {
+	fn add_line(&mut self, line: &str, collapsed_already: bool) {
 		if self.is_preserving_whitespace() {
 			let line = line.trim_end_matches(['\n', '\r']);
 			self.push_finalized_line(line);
+		} else if collapsed_already {
+			let line = line.strip_suffix(' ').unwrap_or(line);
+			if !line.is_empty() {
+				self.push_finalized_line(line);
+			}
 		} else {
 			let collapsed = collapse_whitespace(line);
 			let collapsed = collapsed.trim();
@@ -122,8 +144,8 @@ impl LineBuilder {
 
 	pub(super) fn finalize_current_line(&mut self) {
 		let line = mem::take(&mut self.current_line);
-		self.current_len = CurrentLength::default();
-		self.add_line(&line);
+		let collapsed_already = mem::take(&mut self.current_len).collapsed_already;
+		self.add_line(&line, collapsed_already);
 		// Handed back so the next line reuses its allocation.
 		self.current_line = line;
 		self.current_line.clear();
