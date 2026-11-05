@@ -12,7 +12,7 @@ use super::{
 };
 use crate::{
 	document::{DocLen, DocPos, DocumentBuffer, Marker, MarkerType, TocItem},
-	pdf_engine::{PdfPage, PdfTextPage, Tag},
+	pdf_engine::{Page, Tag, TagChild, TextPage},
 	util::text::{collapse_leaders, collapse_whitespace, trim_string},
 };
 
@@ -21,9 +21,9 @@ mod tables;
 
 #[allow(clippy::too_many_arguments)]
 pub(super) fn extract_tagged_page_text(
-	page: &PdfPage,
-	text_page: &PdfTextPage,
-	page_index: i32,
+	page: &Page,
+	text_page: &TextPage,
+	page_index: usize,
 	buffer: &mut DocumentBuffer,
 	page_display_text: &mut String,
 	current_lines_info: &mut Vec<(DocPos, String)>,
@@ -34,8 +34,7 @@ pub(super) fn extract_tagged_page_text(
 	evidence: &mut PageEvidence,
 ) -> bool {
 	let Some(struct_tree) = page.tags() else { return false };
-	let child_count = struct_tree.child_count();
-	if child_count == 0 {
+	if struct_tree.is_empty() {
 		return false;
 	}
 	let facts = TreeFacts::of(&struct_tree);
@@ -58,7 +57,7 @@ pub(super) fn extract_tagged_page_text(
 		return false;
 	}
 	// A top-level element with nothing on this page comes back as no child, and reporting such a page as tagged would stop plain extraction from reading text that is there.
-	if content.text.is_empty() || (0..child_count).all(|i| struct_tree.child(i).is_none()) {
+	if content.text.is_empty() || struct_tree.roots().next().is_none() {
 		tracing::warn!(page_index, "page structure tree leads to no text, falling back to plain extraction");
 		return false;
 	}
@@ -66,7 +65,11 @@ pub(super) fn extract_tagged_page_text(
 	let mut pending_label = String::new();
 	let mut page_text = PageText::new(&content.text);
 	// Only a tree that names figures can ask for one's picture, so the walk over the page's objects that answers where each image sits is skipped for the rest.
-	let figure_images = if facts.claims_figures { page.image_paths_by_mcid() } else { HashMap::new() };
+	let figure_images: HashMap<i32, String> = if facts.claims_figures {
+		page.images_by_mcid().into_iter().map(|(mcid, id)| (mcid, id.to_string())).collect()
+	} else {
+		HashMap::new()
+	};
 	let mut images = ImagePlacement {
 		mcid_tops: &content.tops,
 		unclaimed,
@@ -74,21 +77,19 @@ pub(super) fn extract_tagged_page_text(
 		figure_images: &figure_images,
 		block_top: None,
 	};
-	for i in 0..child_count {
-		if let Some(child) = struct_tree.child(i) {
-			process_struct_element(
-				&child,
-				&mut page_text,
-				buffer,
-				page_display_text,
-				&mut current_block,
-				&mut pending_label,
-				current_lines_info,
-				flat_toc_items,
-				render_tables_inline,
-				&mut images,
-			);
-		}
+	for child in struct_tree.roots() {
+		process_struct_element(
+			&child,
+			&mut page_text,
+			buffer,
+			page_display_text,
+			&mut current_block,
+			&mut pending_label,
+			current_lines_info,
+			flat_toc_items,
+			render_tables_inline,
+			&mut images,
+		);
 	}
 	flush_block(&mut pending_label, &mut current_block, buffer, page_display_text, current_lines_info, &mut images);
 	images.after_page(buffer, page_display_text, current_lines_info);
@@ -98,7 +99,7 @@ pub(super) fn extract_tagged_page_text(
 struct ImagePlacement<'a> {
 	mcid_tops: &'a HashMap<i32, f64>,
 	unclaimed: UnclaimedImages,
-	page_index: i32,
+	page_index: usize,
 	figure_images: &'a HashMap<i32, String>,
 	block_top: Option<f64>,
 }
@@ -150,13 +151,12 @@ impl ImagePlacement<'_> {
 
 /// The whole subtree is searched because some makers nest a figure's picture a level or two down, in a `Div` or beside a `Caption`.
 fn find_image_path(elem: &Tag, image_paths: &HashMap<i32, String>) -> Option<String> {
-	let count = elem.child_count();
-	for i in 0..count {
-		if let Some(child) = elem.child(i) {
+	for child in elem.children() {
+		if let TagChild::Tag(child) = child {
 			if let Some(path) = find_image_path(&child, image_paths) {
 				return Some(path);
 			}
-		} else if let Some(mcid) = elem.child_mcid(i)
+		} else if let TagChild::Content(mcid) = child
 			&& let Some(path) = image_paths.get(&mcid)
 		{
 			return Some(path.clone());
@@ -278,7 +278,7 @@ fn process_struct_element(
 		let description = elem
 			.alt_text()
 			.or_else(|| elem.actual_text())
-			.map(|text| trim_string(&collapse_whitespace(&text)))
+			.map(|text| trim_string(&collapse_whitespace(text)))
 			.unwrap_or_default();
 		images.note_element(elem);
 		images.before_line(buffer, page_display_text, current_lines_info);
@@ -287,7 +287,7 @@ fn process_struct_element(
 		// No return, so the figure's content is read too: a travel guide wraps page numbers, offers and addresses in figures whose /Alt describes the artwork, and letting /Alt stand in dropped 39 pieces of its text, links included.
 	}
 	let is_block = matches!(
-		elem_type.as_str(),
+		elem_type,
 		"P" | "H"
 			| "H1"
 			| "H2"
@@ -313,9 +313,8 @@ fn process_struct_element(
 		images.before_line(buffer, page_display_text, current_lines_info);
 	}
 	let block_start_pos = buffer.end() + DocLen::of(current_block);
-	let count = elem.child_count();
-	for i in 0..count {
-		if let Some(child) = elem.child(i) {
+	for child in elem.children() {
+		if let TagChild::Tag(child) = child {
 			process_struct_element(
 				&child,
 				page_text,
@@ -328,7 +327,7 @@ fn process_struct_element(
 				render_tables_inline,
 				images,
 			);
-		} else if let Some(mcid) = elem.child_mcid(i)
+		} else if let TagChild::Content(mcid) = child
 			&& let Some(text) = page_text.take(mcid)
 		{
 			images.note(mcid);
@@ -351,7 +350,7 @@ fn process_struct_element(
 			pending_label.clear();
 			flush_block(pending_label, current_block, buffer, page_display_text, current_lines_info, images);
 		}
-		let heading_level = match elem_type.as_str() {
+		let heading_level = match elem_type {
 			"H1" | "H" => Some(1),
 			"H2" => Some(2),
 			"H3" => Some(3),
@@ -379,7 +378,7 @@ fn process_struct_element(
 			}
 		}
 		if elem_type == "L" || elem_type == "TOC" {
-			let child_count = elem.child_count();
+			let child_count = i32::try_from(elem.child_count()).unwrap_or(i32::MAX);
 			buffer.add_marker(Marker::new(MarkerType::List, block_start_pos).with_level(child_count));
 		}
 		if elem_type == "LI" || elem_type == "TOCI" {

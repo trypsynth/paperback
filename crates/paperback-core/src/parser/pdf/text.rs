@@ -6,7 +6,7 @@ use std::{
 
 use crate::{
 	parser::util::bidi,
-	pdf_engine::{CharBox, PdfTextPage},
+	pdf_engine::{FontFlags, PageChar, Rect, TextPage},
 };
 
 pub(super) fn sanitize_pdf_text(input: &str) -> String {
@@ -26,8 +26,8 @@ pub(super) fn sanitize_pdf_text(input: &str) -> String {
 	out
 }
 
-pub(super) fn page_chars(text_page: &PdfTextPage, char_count: i32) -> Vec<Option<char>> {
-	(0..char_count).map(|i| char::from_u32(text_page.unicode_at(i))).collect()
+pub(super) fn page_chars(text_page: &TextPage) -> Vec<Option<char>> {
+	text_page.chars().map(|ch| char::from_u32(ch.unicode())).collect()
 }
 
 pub(super) fn context_chars(page: &[Option<char>]) -> Vec<char> {
@@ -97,13 +97,13 @@ impl Written {
 
 #[derive(Default)]
 pub(super) struct WordPages {
-	hyphenated: HashMap<String, i32>,
-	words: HashMap<String, i32>,
+	hyphenated: HashMap<String, usize>,
+	words: HashMap<String, usize>,
 }
 
 impl WordPages {
 	/// A thread reads its pages in order, so the first page a word is added for is the first of them it is written on.
-	pub(super) fn add(&mut self, page: i32, evidence: HyphenEvidence) {
+	pub(super) fn add(&mut self, page: usize, evidence: HyphenEvidence) {
 		for word in evidence.hyphenated {
 			self.hyphenated.entry(word).or_insert(page);
 		}
@@ -113,8 +113,8 @@ impl WordPages {
 	}
 }
 
-fn written_before(pages: &[WordPages], page: i32, hyphenated: &str, whole: &str) -> Written {
-	let before = |words: &HashMap<String, i32>, word: &str| words.get(word).is_some_and(|&first| first < page);
+fn written_before(pages: &[WordPages], page: usize, hyphenated: &str, whole: &str) -> Written {
+	let before = |words: &HashMap<String, usize>, word: &str| words.get(word).is_some_and(|&first| first < page);
 	Written {
 		hyphenated: pages.iter().any(|words| before(&words.hyphenated, hyphenated)),
 		whole: pages.iter().any(|words| before(&words.words, whole)),
@@ -131,14 +131,14 @@ pub(super) struct Judgement {
 }
 
 pub(super) struct PageEvidence<'a> {
-	page: i32,
+	page: usize,
 	earlier: &'a [WordPages],
 	own: HyphenEvidence,
 	judgements: Vec<Judgement>,
 }
 
 impl<'a> PageEvidence<'a> {
-	pub(super) fn new(page: i32, earlier: &'a [WordPages]) -> Self {
+	pub(super) fn new(page: usize, earlier: &'a [WordPages]) -> Self {
 		Self { page, earlier, own: HyphenEvidence::default(), judgements: Vec::new() }
 	}
 
@@ -165,7 +165,7 @@ impl<'a> PageEvidence<'a> {
 }
 
 /// Once every page is read, `pages` judge a hyphen as reading the pages in order would have.
-pub(super) fn confirms(judgements: &[Judgement], page: i32, pages: &[WordPages]) -> bool {
+pub(super) fn confirms(judgements: &[Judgement], page: usize, pages: &[WordPages]) -> bool {
 	judgements.iter().all(|judgement| {
 		let (hyphenated, whole) = written_forms(&judgement.left, &judgement.right);
 		let written = judgement.own.or(written_before(pages, page, &hyphenated, &whole));
@@ -235,9 +235,9 @@ const COVER_SAMPLE: usize = 64;
 /// A neighbour on another line fails both checks, as it should for a space at either end of a line.
 pub(super) fn space_is_invisible(
 	space_origin: (f64, f64),
-	space_box: CharBox,
+	space_box: Rect,
 	next_origin: Option<(f64, f64)>,
-	prev_box: Option<CharBox>,
+	prev_box: Option<Rect>,
 ) -> bool {
 	let width = space_box.right - space_box.left;
 	if width <= 0.0 {
@@ -253,7 +253,7 @@ pub(super) fn space_is_invisible(
 	prev_box.is_some_and(|prev| covers(prev, space_box))
 }
 
-fn covers(prev: CharBox, space_box: CharBox) -> bool {
+fn covers(prev: Rect, space_box: Rect) -> bool {
 	let width = space_box.right - space_box.left;
 	let on_the_same_line =
 		prev.bottom <= space_box.bottom + COORDINATE_EPSILON && prev.top >= space_box.top - COORDINATE_EPSILON;
@@ -267,35 +267,35 @@ fn covering_hides(covered: usize, measured: usize) -> bool {
 }
 
 /// The structure tree never records a block's height, so its first character's top stands in.
-pub(super) fn char_top(text_page: &PdfTextPage, index: i32) -> Option<f64> {
-	text_page.char_box(index).map(|boxed| boxed.top)
+pub(super) fn char_top(text_page: &TextPage, index: usize) -> Option<f64> {
+	text_page.char(index).map(|ch| ch.bounds().top)
 }
 
 /// Fetches geometry only for space characters, so a page pays in proportion to its spaces rather than its length, the per-character cost #747 had to undo.
 pub(super) struct SpaceFilter {
-	char_count: i32,
+	char_count: usize,
 	/// Measured the first time a covered space turns up, so a page without one never pays for it.
 	covering_hides: Cell<Option<bool>>,
 }
 
 impl SpaceFilter {
-	pub(super) const fn new(char_count: i32) -> Self {
+	pub(super) const fn new(char_count: usize) -> Self {
 		Self { char_count, covering_hides: Cell::new(None) }
 	}
 
-	pub(super) fn hides(&self, text_page: &PdfTextPage, index: i32) -> bool {
-		let (Some(origin), Some(space_box)) = (text_page.char_origin(index), text_page.char_box(index)) else {
-			return false;
-		};
-		let next_origin = if index + 1 < self.char_count { text_page.char_origin(index + 1) } else { None };
+	pub(super) fn hides(&self, text_page: &TextPage, index: usize) -> bool {
+		let Some(space) = text_page.char(index) else { return false };
+		let origin = space.origin();
+		let (origin, space_box) = ((origin.x, origin.y), space.bounds());
+		let next_origin = text_page.char(index + 1).map(PageChar::origin).map(|next| (next.x, next.y));
 		if space_is_invisible(origin, space_box, next_origin, None) {
 			return true;
 		}
-		let prev_box = if index > 0 { text_page.char_box(index - 1) } else { None };
+		let prev_box = index.checked_sub(1).and_then(|prev| text_page.char(prev)).map(PageChar::bounds);
 		space_is_invisible(origin, space_box, None, prev_box) && self.covering_hides(text_page)
 	}
 
-	fn covering_hides(&self, text_page: &PdfTextPage) -> bool {
+	fn covering_hides(&self, text_page: &TextPage) -> bool {
 		if let Some(hides) = self.covering_hides.get() {
 			return hides;
 		}
@@ -304,14 +304,12 @@ impl SpaceFilter {
 			if measured == COVER_SAMPLE {
 				break;
 			}
-			if text_page.unicode_at(index) != u32::from(' ') {
+			let (Some(space), Some(prev)) = (text_page.char(index), text_page.char(index - 1)) else { continue };
+			if space.unicode() != u32::from(' ') {
 				continue;
 			}
-			let (Some(space_box), Some(prev)) = (text_page.char_box(index), text_page.char_box(index - 1)) else {
-				continue;
-			};
 			measured += 1;
-			if covers(prev, space_box) {
+			if covers(prev.bounds(), space.bounds()) {
 				covered += 1;
 			}
 		}
@@ -337,12 +335,12 @@ pub(super) fn is_cjk(c: char) -> bool {
 }
 
 #[allow(clippy::cast_possible_truncation, reason = "a page coordinate fits an f32")]
-fn char_x_origin(text_page: &PdfTextPage, i: i32) -> f32 {
-	text_page.char_origin(i).map_or(0.0, |(x, _)| x as f32)
+fn char_x_origin(text_page: &TextPage, i: usize) -> f32 {
+	text_page.char(i).map_or(0.0, |ch| ch.origin().x as f32)
 }
 
 /// Fetches x origins (a lookup per char) only for runs containing an RTL character, so LTR runs pay a single classification scan.
-pub(super) fn reorder_run(text_page: &PdfTextPage, chars: &[(char, i32)]) -> String {
+pub(super) fn reorder_run(text_page: &TextPage, chars: &[(char, usize)]) -> String {
 	if !bidi::contains_rtl(chars.iter().map(|&(c, _)| c)) {
 		return chars.iter().map(|&(c, _)| c).collect();
 	}
@@ -350,7 +348,7 @@ pub(super) fn reorder_run(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Str
 	bidi::reorder_line(&with_origin)
 }
 
-fn measure_line(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Line {
+fn measure_line(text_page: &TextPage, chars: &[(char, usize)]) -> Line {
 	let (top, bottom) = line_edges(text_page, chars);
 	Line {
 		size: line_font_size(text_page, chars),
@@ -362,14 +360,14 @@ fn measure_line(text_page: &PdfTextPage, chars: &[(char, i32)]) -> Line {
 	}
 }
 
-pub(super) fn extract_text_lines(text_page: &PdfTextPage, evidence: &mut PageEvidence) -> Vec<Line> {
+pub(super) fn extract_text_lines(text_page: &TextPage, evidence: &mut PageEvidence) -> Vec<Line> {
 	let char_count = text_page.char_count();
 	let mut result: Vec<Line> = Vec::new();
 	// Kept with their pdfium index so each line can be reordered visual to logical before paragraph joining.
-	let mut current_chars: Vec<(char, i32)> = Vec::new();
+	let mut current_chars: Vec<(char, usize)> = Vec::new();
 	let mut previous_char = None;
 	let spaces = SpaceFilter::new(char_count);
-	let page = page_chars(text_page, char_count);
+	let page = page_chars(text_page);
 	let context = context_chars(&page);
 	evidence.add_chars(&context);
 	for (at, (i, &ch)) in (0..char_count).zip(page.iter()).enumerate() {
@@ -396,29 +394,32 @@ pub(super) fn extract_text_lines(text_page: &PdfTextPage, evidence: &mut PageEvi
 }
 
 /// The top is the first character's, since a few points decide nothing about where an image falls; the bottom must be the lowest, since the next line's gap is measured from it and pdfium's doubled lines reach a whole line lower.
-fn line_edges(text_page: &PdfTextPage, chars: &[(char, i32)]) -> (f64, f64) {
-	let top = chars.first().and_then(|(_, index)| text_page.char_box(*index)).map_or(f64::NEG_INFINITY, |b| b.top);
+fn line_edges(text_page: &TextPage, chars: &[(char, usize)]) -> (f64, f64) {
+	let top =
+		chars.first().and_then(|(_, index)| text_page.char(*index)).map_or(f64::NEG_INFINITY, |ch| ch.bounds().top);
 	let mut bottom = f64::INFINITY;
 	for (_, index) in chars {
-		if let Some(boxed) = text_page.char_box(*index) {
-			bottom = bottom.min(boxed.bottom);
+		if let Some(ch) = text_page.char(*index) {
+			bottom = bottom.min(ch.bounds().bottom);
 		}
 	}
 	(top, bottom)
 }
 
 /// The `Tf` size alone is 1.0 in PDFs that scale text through the matrix instead (#808 and #813 both do), so no line was ever tall enough to be a heading.
-fn effective_font_size(text_page: &PdfTextPage, index: i32) -> f64 {
-	let size = text_page.font_size(index);
-	text_page.text_matrix(index).map_or(size, |matrix| size * f64::from(matrix.b.hypot(matrix.d)))
+fn effective_font_size(text_page: &TextPage, index: usize) -> f64 {
+	text_page.char(index).map_or(0.0, |ch| {
+		let matrix = ch.text_matrix();
+		ch.font_size() * f64::from(matrix.b.hypot(matrix.d))
+	})
 }
 
 /// The first character alone believes a drop cap three times the line's size; a median of a few does not, and stays a per-line cost rather than the per-character one #747 had to undo.
 const LINE_FONT_SIZE_SAMPLES: usize = 5;
 
 /// Whitespace is skipped because a font may set it in a size of its own.
-fn line_font_size(text_page: &PdfTextPage, chars: &[(char, i32)]) -> f64 {
-	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
+fn line_font_size(text_page: &TextPage, chars: &[(char, usize)]) -> f64 {
+	let indices: Vec<usize> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
 	if indices.is_empty() {
 		return 0.0;
 	}
@@ -427,9 +428,6 @@ fn line_font_size(text_page: &PdfTextPage, chars: &[(char, i32)]) -> f64 {
 		indices.iter().step_by(step).map(|&i| effective_font_size(text_page, i)).filter(|size| *size > 0.0).collect();
 	sorted_median(&mut sizes)
 }
-
-/// Reliable when set and worth nothing when not: the Computer Modern typewriter faces LaTeX sets code in leave it clear.
-const FIXED_PITCH_FLAG: i32 = 1;
 
 /// `monotype` comes out before looking for `mono` because it is a foundry, not a width: Monotype Corsiva is a script face.
 fn looks_monospaced(font_name: &str) -> bool {
@@ -441,12 +439,10 @@ fn looks_monospaced(font_name: &str) -> bool {
 		|| (name.starts_with("cm") && name.contains("tt"))
 }
 
-fn char_is_monospaced(text_page: &PdfTextPage, index: i32) -> bool {
-	let Some(font) = text_page.font(index) else { return false };
-	if font.flags & FIXED_PITCH_FLAG != 0 {
-		return true;
-	}
-	looks_monospaced(&font.name)
+fn char_is_monospaced(text_page: &TextPage, index: usize) -> bool {
+	let Some(font) = text_page.char(index).and_then(PageChar::font) else { return false };
+	// Reliable when set and worth nothing when not: the Computer Modern typewriter faces LaTeX sets code in leave it clear.
+	font.flags.contains(FontFlags::FIXED_PITCH) || looks_monospaced(font.name)
 }
 
 const BOLD_WEIGHT: i32 = 600;
@@ -457,16 +453,17 @@ fn looks_bold(font_name: &str) -> bool {
 	HINTS.iter().any(|hint| name.contains(hint))
 }
 
-fn char_is_bold(text_page: &PdfTextPage, index: i32) -> bool {
-	if let Some(weight) = text_page.font_weight(index) {
+fn char_is_bold(text_page: &TextPage, index: usize) -> bool {
+	let Some(ch) = text_page.char(index) else { return false };
+	if let Some(weight) = ch.font_weight() {
 		return weight >= BOLD_WEIGHT;
 	}
-	text_page.font(index).is_some_and(|font| looks_bold(&font.name))
+	ch.font().is_some_and(|font| looks_bold(font.name))
 }
 
 /// Every sampled character has to be bold: a paragraph that opens with a bold word is not a heading.
-fn line_is_bold(text_page: &PdfTextPage, chars: &[(char, i32)]) -> bool {
-	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
+fn line_is_bold(text_page: &TextPage, chars: &[(char, usize)]) -> bool {
+	let indices: Vec<usize> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
 	if indices.is_empty() {
 		return false;
 	}
@@ -475,13 +472,13 @@ fn line_is_bold(text_page: &PdfTextPage, chars: &[(char, i32)]) -> bool {
 }
 
 /// Most sampled characters have to agree: one word of code quoted in prose does not make the sentence a listing.
-fn line_is_monospaced(text_page: &PdfTextPage, chars: &[(char, i32)]) -> bool {
-	let indices: Vec<i32> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
+fn line_is_monospaced(text_page: &TextPage, chars: &[(char, usize)]) -> bool {
+	let indices: Vec<usize> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
 	if indices.is_empty() {
 		return false;
 	}
 	let step = indices.len().div_ceil(LINE_FONT_SIZE_SAMPLES).max(1);
-	let sampled: Vec<i32> = indices.iter().step_by(step).copied().collect();
+	let sampled: Vec<usize> = indices.iter().step_by(step).copied().collect();
 	let monospaced = sampled.iter().filter(|&&i| char_is_monospaced(text_page, i)).count();
 	monospaced * 2 > sampled.len()
 }
@@ -542,7 +539,7 @@ fn restore_reading_order(lines: Vec<Line>) -> Vec<Line> {
 #[cfg(test)]
 mod tests {
 	use super::{
-		CharBox, Line, PageEvidence, WordPages, confirms, covering_hides, ends_line, keeps_hyphen, looks_monospaced,
+		Line, PageEvidence, Rect, WordPages, confirms, covering_hides, ends_line, keeps_hyphen, looks_monospaced,
 		restore_reading_order, sanitize_pdf_text, space_is_invisible,
 	};
 
@@ -727,8 +724,8 @@ mod tests {
 	}
 
 	/// The coordinates in these tests are what pdfium reports for the PDF attached to #808.
-	fn char_box(left: f64, right: f64, bottom: f64, top: f64) -> CharBox {
-		CharBox { left, right, bottom, top }
+	fn char_box(left: f64, right: f64, bottom: f64, top: f64) -> Rect {
+		Rect { left, bottom, right, top }
 	}
 
 	#[test]

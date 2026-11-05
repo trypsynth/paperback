@@ -3,7 +3,7 @@
 use super::text::sanitize_pdf_text;
 use crate::{
 	document::{DocLen, DocPos, DocumentBuffer, Marker, MarkerType},
-	pdf_engine::{LinkTarget, PdfPage, PdfTextPage},
+	pdf_engine::{LinkTarget, Page, TextPage},
 	util::text::{collapse_whitespace, trim_string},
 };
 
@@ -37,29 +37,23 @@ pub(super) fn place_links(
 	}
 }
 
-pub(super) fn collect_web_links(text_page: &PdfTextPage) -> Vec<PendingLink> {
+pub(super) fn collect_web_links(text_page: &TextPage) -> Vec<PendingLink> {
 	let mut pending = Vec::new();
-	for (start, char_count, url) in text_page.web_links() {
-		let link_text = sanitize_pdf_text(&text_page.extract(start, char_count));
+	for link in text_page.web_links() {
+		let link_text = sanitize_pdf_text(&text_page.text(link.start..link.start + link.char_count));
 		let trimmed_link = trim_string(&collapse_whitespace(&link_text));
 		if trimmed_link.is_empty() {
 			continue;
 		}
-		pending.push(PendingLink { text: trimmed_link, reference: url });
+		pending.push(PendingLink { text: trimmed_link, reference: link.url });
 	}
 	pending
 }
 
-pub(super) fn collect_annotation_links(page: &PdfPage, text_page: &PdfTextPage) -> Vec<PendingLink> {
+pub(super) fn collect_annotation_links(page: &Page, text_page: &TextPage) -> Vec<PendingLink> {
 	let mut pending = Vec::new();
 	for link in page.annotation_links() {
-		let rect = link.rect;
-		let text = sanitize_pdf_text(&text_page.bounded_text(
-			f64::from(rect.left),
-			f64::from(rect.top),
-			f64::from(rect.right),
-			f64::from(rect.bottom),
-		));
+		let text = sanitize_pdf_text(&text_page.text_in(link.rect));
 		let trimmed_link = trim_string(&collapse_whitespace(&text));
 		if trimmed_link.is_empty() {
 			continue;

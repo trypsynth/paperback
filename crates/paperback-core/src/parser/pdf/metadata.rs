@@ -3,7 +3,7 @@ use anyhow::anyhow;
 use super::text::sanitize_pdf_text;
 use crate::{
 	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
-	pdf_engine::{PdfDocument, PdfError},
+	pdf_engine::{Document, Error as PdfError},
 	t,
 	util::text::trim_string,
 };
@@ -19,8 +19,8 @@ pub(super) fn map_load_error(err: PdfError) -> anyhow::Error {
 	}
 }
 
-pub(super) fn metadata_value(document: &PdfDocument, key: &str) -> Option<String> {
-	document.metadata(key).map(|value| trim_string(&sanitize_pdf_text(&value))).filter(|value| !value.is_empty())
+pub(super) fn cleaned_metadata(value: Option<String>) -> Option<String> {
+	value.map(|value| trim_string(&sanitize_pdf_text(&value))).filter(|value| !value.is_empty())
 }
 
 /// Layout and word processors write their own source file's name into `/Title`, and a title of `book.pdf` is the export's own name.
@@ -36,8 +36,8 @@ const FUNCTION_WORDS: [&str; 18] = [
 ];
 
 /// Returning nothing lets the caller fall back to the file name on disk, which beats a source filename like `i-xx_Phobias-fm.indd`.
-pub(super) fn metadata_title(document: &PdfDocument) -> Option<String> {
-	metadata_value(document, "Title").filter(|title| !is_not_really_a_title(title))
+pub(super) fn metadata_title(document: &Document) -> Option<String> {
+	cleaned_metadata(document.metadata().title).filter(|title| !is_not_really_a_title(title))
 }
 
 fn is_not_really_a_title(title: &str) -> bool {

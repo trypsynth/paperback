@@ -84,9 +84,13 @@ impl DocumentSession {
 		if source.starts_with("pdf:") {
 			let (page_index, path) = parse_pdf_image_reference(source)?;
 			let password = (!self.password.is_empty()).then_some(self.password.as_str());
-			let document = crate::pdf_engine::PdfDocument::open(&self.file_path, password)?;
+			let document = crate::pdf_engine::Document::open(&self.file_path, password)?;
 			let page = document.page(page_index)?;
-			return page.image_png(&path).context("the picture could not be read from the pdf");
+			return path
+				.parse()
+				.ok()
+				.and_then(|id| page.image_png(id))
+				.context("the picture could not be read from the pdf");
 		}
 		let extension = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
 		match extension.as_deref() {
@@ -127,7 +131,7 @@ fn local_image_path(document_path: &str, source: &str) -> std::path::PathBuf {
 }
 
 /// The parser writes these as `pdf:<page>:<path>`.
-fn parse_pdf_image_reference(source: &str) -> Result<(i32, String)> {
+fn parse_pdf_image_reference(source: &str) -> Result<(usize, String)> {
 	let mut parts = source.splitn(3, ':');
 	let bad = || anyhow::anyhow!("malformed pdf image reference");
 	let page = parts.nth(1).and_then(|text| text.parse().ok()).ok_or_else(bad)?;
