@@ -15,8 +15,8 @@ android {
 		applicationId = "dev.paperback.android"
 		minSdk = 24
 		targetSdk = 36
-		versionCode = 7
-		versionName = "1.0"
+		versionCode = 8
+		versionName = "1.1"
 		if (isBundleBuild) {
 			ndk {
 				// A bundle packages every ABI present in jniLibs and in dependency AARs. JNA and
