@@ -209,7 +209,8 @@ jobs:
         retention-days: 30
 
   build-linux:
-    runs-on: ubuntu-latest
+    # Pinned: the image's glibc is the oldest one the binaries run on, and `ubuntu-latest` moving to 26.04 stopped them starting on Ubuntu 24.04 and Debian 13 (#1252).
+    runs-on: ubuntu-24.04
     steps:
     - name: Checkout repository
       uses: actions/checkout@v7
@@ -246,6 +247,16 @@ jobs:
         chmod +x /usr/local/bin/appimagetool
     - name: Build
       run: cargo release
+    # A newer image or toolchain raises this without any error of its own, and the people it locks out can't start the app to say so.
+    - name: Check the oldest glibc the binaries run on
+      shell: bash
+      run: |
+        needed=$(objdump -T target/release/paperback target/release/pb | grep -oE 'GLIBC_[0-9]+\.[0-9]+' | sed 's/GLIBC_//' | sort -Vu | tail -1)
+        echo "The binaries need glibc $needed"
+        if [ "$(printf '%s\n' "$needed" 2.39 | sort -V | tail -1)" != "2.39" ]; then
+          echo "::error::The binaries need glibc $needed, newer than Ubuntu 24.04's 2.39 (#1252)"
+          exit 1
+        fi
     # The app embeds wxWidgets' catalogs deflated, so the binary has no plain text to look for.
     # It embeds whatever this tree holds, and an empty tree is how they went missing (#958).
     - name: Check wxWidgets translations were built
@@ -287,7 +298,8 @@ jobs:
         retention-days: 30
 
   build-linux-arm64:
-    runs-on: ubuntu-26.04-arm
+    # Pinned: the image's glibc is the oldest one the binaries run on, and `ubuntu-latest` moving to 26.04 stopped them starting on Ubuntu 24.04 and Debian 13 (#1252).
+    runs-on: ubuntu-24.04-arm
     steps:
     - name: Checkout repository
       uses: actions/checkout@v7
@@ -324,6 +336,16 @@ jobs:
         chmod +x /usr/local/bin/appimagetool
     - name: Build
       run: cargo release
+    # A newer image or toolchain raises this without any error of its own, and the people it locks out can't start the app to say so.
+    - name: Check the oldest glibc the binaries run on
+      shell: bash
+      run: |
+        needed=$(objdump -T target/release/paperback target/release/pb | grep -oE 'GLIBC_[0-9]+\.[0-9]+' | sed 's/GLIBC_//' | sort -Vu | tail -1)
+        echo "The binaries need glibc $needed"
+        if [ "$(printf '%s\n' "$needed" 2.39 | sort -V | tail -1)" != "2.39" ]; then
+          echo "::error::The binaries need glibc $needed, newer than Ubuntu 24.04's 2.39 (#1252)"
+          exit 1
+        fi
     # The app embeds wxWidgets' catalogs deflated, so the binary has no plain text to look for.
     # It embeds whatever this tree holds, and an empty tree is how they went missing (#958).
     - name: Check wxWidgets translations were built

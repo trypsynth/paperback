@@ -330,7 +330,8 @@ jobs:
     name: Tests (Linux)
     needs: changes
     if: needs.changes.outputs.code == 'true'
-    runs-on: ubuntu-latest
+    # The image the release builds on, so these test what ships.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
         with:
