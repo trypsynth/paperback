@@ -3,9 +3,12 @@ on:
   push:
     branches:
       - master
+      # The release branch, so what ships from it is built and tested there.
+      - "1.1"
   pull_request:
     branches:
       - master
+      - "1.1"
     # A pull request that only moves translations or documentation does not change any of these
     # packages, and building all eight of them is the most expensive thing this repository does.
     paths-ignore:
@@ -613,7 +616,8 @@ jobs:
   release:
     needs: [build-windows, build-windows-arm64, build-linux, build-linux-arm64, build-macos]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.repository == 'trypsynth/paperback'
+    # master only: `latest` is the dev build, and a push to the release branch must not replace it. Release branch builds stay as this run's artifacts.
+    if: github.event_name == 'push' && github.repository == 'trypsynth/paperback' && github.ref == 'refs/heads/master'
     # Every run publishes to the same `latest` release, so two of them uploading at once
     # interleave their assets: the release ends up with one run's installer next to another
     # run's signature for it, and the updater rejects the download it verifies. Queue them

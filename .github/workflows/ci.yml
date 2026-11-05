@@ -3,9 +3,12 @@ on:
   push:
     branches:
       - master
+      # The release branch, so what ships from it is built and tested there.
+      - "1.1"
   pull_request:
     branches:
       - master
+      - "1.1"
 # One run per branch at a time: pushing again while a run is going makes that run pointless, and
 # the queued macOS jobs it holds are what everything else is waiting behind.
 concurrency:
