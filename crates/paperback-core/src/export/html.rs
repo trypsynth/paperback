@@ -296,7 +296,8 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 	let mut position = range_start;
 	let mut skip_until: Option<DocPos> = None;
 	let mut pre_depth: usize = 0;
-	let mut pre_inline_base: usize = 0;
+	// How many inline spans were open as each open block began.
+	let mut inline_bases: Vec<usize> = Vec::new();
 	let mut ol_depth: usize = 0;
 	let mut keep_prefix = false;
 	let mut open_inline: Vec<(&str, &'static str)> = Vec::new();
@@ -320,9 +321,7 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 					html.push_str(tag);
 					html.push('\n');
 					block_depth += 1;
-					if *tag == PRE_OPEN && pre_depth == 0 {
-						pre_inline_base = open_inline.len();
-					}
+					inline_bases.push(open_inline.len());
 					pre_depth += usize::from(*tag == PRE_OPEN);
 					ol_depth += usize::from(tag.starts_with("<ol"));
 				}
@@ -342,6 +341,7 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 						let _ = writeln!(html, "<li value=\"{number}\">");
 					}
 					block_depth += 1;
+					inline_bases.push(open_inline.len());
 				}
 				Ek::SkipPrefix(until) => {
 					if !keep_prefix {
@@ -351,11 +351,8 @@ pub fn render_range(doc: &DocumentHandle, range: Range<DocPos>, anchor: Option<D
 				Ek::BlockClose(tag) => {
 					block_depth = block_depth.saturating_sub(1);
 					// A span around a whole block ends a newline after it, so it has to step outside the block to stay nested.
-					let held: &[(&str, &str)] = if *tag == PRE_CLOSE && pre_depth == 1 {
-						&open_inline[pre_inline_base.min(open_inline.len())..]
-					} else {
-						&[]
-					};
+					let base = inline_bases.pop().unwrap_or(open_inline.len()).min(open_inline.len());
+					let held = &open_inline[base..];
 					pre_depth = pre_depth.saturating_sub(usize::from(*tag == PRE_CLOSE));
 					ol_depth = ol_depth.saturating_sub(usize::from(*tag == "</ol>"));
 					for &(_, close) in held.iter().rev() {
@@ -732,6 +729,27 @@ mod tests {
 			],
 		);
 		assert!(render(&doc).contains("<p>x<sup>2</sup> and H<sub>2</sub>O</p>"));
+	}
+
+	#[test]
+	fn a_span_around_a_whole_heading_stays_nested_in_it() {
+		let doc = simple_doc(
+			"abc
+def",
+			vec![
+				Marker::new(MarkerType::Heading1, 0.into()).with_length(3.into()),
+				Marker::new(MarkerType::Subscript, 0.into()).with_length(4.into()),
+			],
+		);
+		let html = render(&doc);
+		assert!(
+			html.contains(
+				"<h1>
+<sub>abc</sub></h1>
+<p>def</p>"
+			),
+			"{html}"
+		);
 	}
 
 	#[test]
