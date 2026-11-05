@@ -11,7 +11,8 @@ use crate::{
 		convert::html_to_text::{HtmlSourceMode, HtmlToText},
 	},
 	types::{
-		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
+		BlockInfo, FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo,
+		TableInfo,
 	},
 	util::encoding::decode_html,
 };
@@ -31,6 +32,11 @@ pub(super) struct SectionContent {
 	bolds: Vec<FormatInfo>,
 	italics: Vec<FormatInfo>,
 	underlines: Vec<FormatInfo>,
+	preformatted: Vec<FormatInfo>,
+	code: Vec<FormatInfo>,
+	superscripts: Vec<FormatInfo>,
+	subscripts: Vec<FormatInfo>,
+	blocks: Vec<BlockInfo>,
 	pub id_positions: HashMap<String, DocPos>,
 }
 
@@ -70,6 +76,21 @@ impl ConverterOutput for SectionContent {
 	}
 	fn get_underlines(&self) -> &[FormatInfo] {
 		&self.underlines
+	}
+	fn get_preformatted(&self) -> &[FormatInfo] {
+		&self.preformatted
+	}
+	fn get_code(&self) -> &[FormatInfo] {
+		&self.code
+	}
+	fn get_superscripts(&self) -> &[FormatInfo] {
+		&self.superscripts
+	}
+	fn get_subscripts(&self) -> &[FormatInfo] {
+		&self.subscripts
+	}
+	fn get_blocks(&self) -> &[BlockInfo] {
+		&self.blocks
 	}
 }
 
@@ -123,6 +144,11 @@ fn convert_section(
 		bolds: converter.get_bolds().to_vec(),
 		italics: converter.get_italics().to_vec(),
 		underlines: converter.get_underlines().to_vec(),
+		preformatted: converter.get_preformatted().to_vec(),
+		code: converter.get_code().to_vec(),
+		superscripts: converter.get_superscripts().to_vec(),
+		subscripts: converter.get_subscripts().to_vec(),
+		blocks: converter.get_blocks().to_vec(),
 		id_positions: converter.get_id_positions().clone(),
 	}
 }

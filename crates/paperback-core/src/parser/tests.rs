@@ -5,7 +5,7 @@ use rstest::rstest;
 use super::*;
 use crate::{
 	document::DocPos,
-	types::{FormatInfo, HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
+	types::{BlockInfo, FormatInfo, HeadingInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo},
 };
 
 struct MockConverter {
@@ -21,6 +21,11 @@ struct MockConverter {
 	bolds: Vec<FormatInfo>,
 	italics: Vec<FormatInfo>,
 	underlines: Vec<FormatInfo>,
+	preformatted: Vec<FormatInfo>,
+	code: Vec<FormatInfo>,
+	superscripts: Vec<FormatInfo>,
+	subscripts: Vec<FormatInfo>,
+	blocks: Vec<BlockInfo>,
 }
 
 impl ConverterOutput for MockConverter {
@@ -71,6 +76,26 @@ impl ConverterOutput for MockConverter {
 	fn get_underlines(&self) -> &[FormatInfo] {
 		&self.underlines
 	}
+
+	fn get_preformatted(&self) -> &[FormatInfo] {
+		&self.preformatted
+	}
+
+	fn get_code(&self) -> &[FormatInfo] {
+		&self.code
+	}
+
+	fn get_superscripts(&self) -> &[FormatInfo] {
+		&self.superscripts
+	}
+
+	fn get_subscripts(&self) -> &[FormatInfo] {
+		&self.subscripts
+	}
+
+	fn get_blocks(&self) -> &[BlockInfo] {
+		&self.blocks
+	}
 }
 fn sample_converter() -> MockConverter {
 	MockConverter {
@@ -91,11 +116,22 @@ fn sample_converter() -> MockConverter {
 			length: 1.into(),
 		}],
 		separators: vec![SeparatorInfo { offset: 4.into(), length: 7.into() }],
-		lists: vec![ListInfo { offset: 5.into(), item_count: 3, length: 4.into() }],
-		list_items: vec![ListItemInfo { offset: 6.into(), level: 1, text: "Item".to_string() }],
+		lists: vec![ListInfo { offset: 5.into(), item_count: 3, length: 4.into(), opening_tag: "<ul>".to_string() }],
+		list_items: vec![ListItemInfo {
+			offset: 6.into(),
+			level: 1,
+			text: "Item".to_string(),
+			prefix_length: 0.into(),
+			number: None,
+		}],
 		bolds: vec![],
 		italics: vec![],
 		underlines: vec![],
+		preformatted: vec![],
+		code: vec![],
+		superscripts: vec![],
+		subscripts: vec![],
+		blocks: vec![],
 	}
 }
 
@@ -241,6 +277,11 @@ fn add_converter_markers_handles_empty_converter_output() {
 		bolds: vec![],
 		italics: vec![],
 		underlines: vec![],
+		preformatted: vec![],
+		code: vec![],
+		superscripts: vec![],
+		subscripts: vec![],
+		blocks: vec![],
 	};
 	let mut buffer = DocumentBuffer::new();
 	add_converter_markers(&mut buffer, &converter, DocPos::ZERO);
@@ -350,6 +391,11 @@ fn add_tables_separators_lists_sets_table_marker_length() {
 		bolds: vec![],
 		italics: vec![],
 		underlines: vec![],
+		preformatted: vec![],
+		code: vec![],
+		superscripts: vec![],
+		subscripts: vec![],
+		blocks: vec![],
 	};
 	let mut buffer = DocumentBuffer::new();
 	let base_offset = DocPos::from_raw(100);

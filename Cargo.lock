@@ -2955,7 +2955,7 @@ dependencies = [
 
 [[package]]
 name = "paperback"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "base64 0.23.1",
@@ -2992,7 +2992,7 @@ dependencies = [
 
 [[package]]
 name = "paperback-core"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "base64 0.23.1",
@@ -3047,7 +3047,7 @@ dependencies = [
 
 [[package]]
 name = "paperback-formats"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "bitflags 2.13.2",
 ]
@@ -3139,7 +3139,7 @@ dependencies = [
 
 [[package]]
 name = "pb"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "clap",

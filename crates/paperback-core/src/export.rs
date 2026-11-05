@@ -1,5 +1,4 @@
 pub mod annotations;
-pub mod epub_direct;
 pub mod html;
 pub mod markdown;
 
@@ -22,6 +21,15 @@ pub fn render(doc: &DocumentHandle, format: ExportFormat) -> String {
 	}
 }
 
+// `Chars` skips in chunks, so reaching the next tag this way costs far less than visiting every char on the way.
+fn split_after_chars(text: &str, count: usize) -> (&str, &str) {
+	let mut chars = text.chars();
+	if count > 0 {
+		chars.nth(count - 1);
+	}
+	text.split_at(text.len() - chars.as_str().len())
+}
+
 // Link markers store no length, so it is inferred from the text with whitespace runs collapsed, as the parser wrote it into the content.
 fn link_span_end(marker: &Marker) -> Option<DocPos> {
 	let text: String = marker.text.split_whitespace().collect::<Vec<_>>().join(" ");
@@ -41,6 +49,14 @@ mod tests {
 		let mut doc = Document::new().with_title("Sample".to_string());
 		doc.set_buffer(buffer);
 		DocumentHandle::new(doc)
+	}
+
+	#[test]
+	fn split_after_chars_counts_chars_and_stops_at_the_end() {
+		assert_eq!(split_after_chars("éa€b", 3), ("éa€", "b"));
+		assert_eq!(split_after_chars("éa", 2), ("éa", ""));
+		assert_eq!(split_after_chars("éa", 9), ("éa", ""));
+		assert_eq!(split_after_chars("éa", 0), ("", "éa"));
 	}
 
 	#[test]

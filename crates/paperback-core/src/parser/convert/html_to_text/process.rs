@@ -105,6 +105,7 @@ impl HtmlToText {
 
 	fn handle_table(&mut self, node: NodeRef<'_, Node>, document: &Html) {
 		self.text.finalize_current_line();
+		self.blocks.drop_break_at(self.text.get_current_text_position());
 		let table_html = Self::serialize_node(node, document);
 		let start_offset = self.text.get_current_text_position();
 		// Lines are pushed verbatim so tab separators and empty cells survive whitespace collapsing.
@@ -118,6 +119,12 @@ impl HtmlToText {
 	}
 
 	fn handle_element_opening(&mut self, tag_name: &str, node: NodeRef<'_, Node>, document: &Html) {
+		if is_block_element(tag_name) {
+			self.blocks.drop_break_at(self.text.get_current_text_position());
+		}
+		if self.flags.contains(ProcessingFlags::IN_BODY) {
+			self.blocks.open(tag_name, self.text.get_current_text_position());
+		}
 		if let Node::Element(element) = node.value() {
 			if self.flags.contains(ProcessingFlags::IN_BODY) {
 				if let Some(id) = element.attr("id").or_else(|| element.attr("name")) {
@@ -148,6 +155,10 @@ impl HtmlToText {
 				self.format_spans.open(&FormatKind::Italic, self.text.get_current_text_position());
 			} else if tag_name == "u" {
 				self.format_spans.open(&FormatKind::Underline, self.text.get_current_text_position());
+			} else if tag_name == "sup" {
+				self.format_spans.open(&FormatKind::Superscript, self.text.get_current_text_position());
+			} else if tag_name == "sub" {
+				self.format_spans.open(&FormatKind::Subscript, self.text.get_current_text_position());
 			}
 		}
 		if tag_name == "title" && self.title.is_empty() {
@@ -157,6 +168,7 @@ impl HtmlToText {
 			self.flags.insert(ProcessingFlags::IN_BODY);
 		} else if tag_name == "pre" {
 			self.text.finalize_current_line();
+			self.format_spans.open(&FormatKind::Preformatted, self.text.get_current_text_position());
 			self.text.start_preserve_whitespace();
 		} else if tag_name == "hr" && self.flags.contains(ProcessingFlags::IN_BODY) {
 			self.text.finalize_current_line();
@@ -167,9 +179,28 @@ impl HtmlToText {
 			self.separators.push(SeparatorInfo { offset, length: DocLen::of(line) });
 		} else if tag_name == "code" {
 			self.flags.insert(ProcessingFlags::IN_CODE);
+			// Code inside a <pre> is already marked by it.
+			if !self.text.is_preserving_whitespace() {
+				self.format_spans.open(&FormatKind::Code, self.text.get_current_text_position());
+			}
 			self.text.start_preserve_whitespace();
 		} else if tag_name == "br" {
+			let in_link = self.flags.contains(ProcessingFlags::IN_LINK) && !self.text.is_preserving_whitespace();
+			let ends_text = !self.text.current_line().trim().is_empty();
 			self.text.finalize_current_line();
+			if in_link {
+				// A link's text is held back until it closes, so the line this ended is the one before the link, and the words either side of the break would otherwise join.
+				self.link_start_pos = self.text.get_current_text_position();
+				if !self.current_link_text.trim().is_empty() {
+					self.current_link_text.push(' ');
+				}
+			}
+			if !ends_text && !in_link {
+				// Two in a row leave a gap, which reads as a new paragraph.
+				self.blocks.drop_break_at(self.text.get_current_text_position());
+			} else if ends_text && self.flags.contains(ProcessingFlags::IN_BODY) {
+				self.blocks.line_break(self.text.get_current_text_position());
+			}
 		}
 	}
 
@@ -177,11 +208,8 @@ impl HtmlToText {
 		if tag_name == "li" {
 			self.text.finalize_current_line();
 			let li_text = Self::get_element_text(node, document);
-			self.list_items.push(ListItemInfo {
-				offset: self.text.get_current_text_position(),
-				level: self.list_level,
-				text: li_text,
-			});
+			let offset = self.text.get_current_text_position();
+			let mut number = None;
 			for _ in 0..self.list_level {
 				self.text.push_str("  ");
 			}
@@ -189,6 +217,7 @@ impl HtmlToText {
 				if style.ordered {
 					let item_text = format_list_item(style.item_number, &style.list_type);
 					let _ = write!(&mut self.text, "{item_text}. ");
+					number = Some(style.item_number);
 					style.item_number += 1;
 				} else {
 					self.text.push_str(Self::get_bullet_for_level(self.list_level));
@@ -198,6 +227,8 @@ impl HtmlToText {
 				self.text.push_str(Self::get_bullet_for_level(self.list_level));
 				self.text.push(' ');
 			}
+			let prefix_length = self.text.get_current_text_position().since(offset);
+			self.list_items.push(ListItemInfo { offset, level: self.list_level, text: li_text, prefix_length, number });
 		}
 	}
 
@@ -208,6 +239,7 @@ impl HtmlToText {
 			let start_attr = element.and_then(|e| e.attr("start"));
 			let type_attr = element.and_then(|e| e.attr("type"));
 			let style = ListStyle::new(tag_name == "ol", start_attr, type_attr);
+			let opening_tag = style.opening_tag();
 			self.list_style_stack.push(style);
 			let mut item_count = 0;
 			for child in node.children() {
@@ -224,6 +256,7 @@ impl HtmlToText {
 					offset: self.text.get_current_text_position(),
 					item_count,
 					length: DocLen::ZERO,
+					opening_tag,
 				});
 			} else {
 				self.open_lists.push(None);
@@ -298,6 +331,10 @@ impl HtmlToText {
 		if tag_name == "code" {
 			self.flags.remove(ProcessingFlags::IN_CODE);
 			self.text.stop_preserve_whitespace();
+			// After stopping, since the line will be collapsed and the position has to count it that way.
+			if !self.text.is_preserving_whitespace() {
+				self.format_spans.close(&FormatKind::Code, self.text.get_current_text_position());
+			}
 		}
 		if tag_name == "ul" || tag_name == "ol" {
 			self.list_level -= 1;
@@ -317,6 +354,7 @@ impl HtmlToText {
 				self.text.finalize_current_line();
 			}
 			self.text.stop_preserve_whitespace();
+			self.format_spans.close(&FormatKind::Preformatted, self.text.get_current_text_position());
 		} else if is_block_element(tag_name) {
 			self.text.finalize_current_line();
 		}
@@ -326,7 +364,15 @@ impl HtmlToText {
 			self.format_spans.close(&FormatKind::Italic, self.text.get_current_text_position());
 		} else if tag_name == "u" {
 			self.format_spans.close(&FormatKind::Underline, self.text.get_current_text_position());
+		} else if tag_name == "sup" {
+			self.format_spans.close(&FormatKind::Superscript, self.text.get_current_text_position());
+		} else if tag_name == "sub" {
+			self.format_spans.close(&FormatKind::Subscript, self.text.get_current_text_position());
 		}
+		if is_block_element(tag_name) || tag_name == "body" {
+			self.blocks.drop_break_at(self.text.get_current_text_position());
+		}
+		self.blocks.close(tag_name, self.text.get_current_text_position());
 	}
 
 	fn handle_text_node(&mut self, text: &node::Text) {

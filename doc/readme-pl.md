@@ -104,7 +104,7 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 
 * `F5`: Przeładuj bieżący dokument z dysku lub pobierz go ponownie, jeśli otwarto go z odnośnika. Działa niezależnie od tego, czy opcja „Automatycznie przeładowuj zmienione dokumenty” jest włączona w Ustawieniach.
 * `Ctrl+Alt+W`: Przełącz zawijanie wierszy.
-* `F11` (macOS: `RawCtrl+Ctrl+F`, czyli Control+Command+F): Przełącz tryb pełnoekranowy.
+* `F11` (macOS: `Control+Cmd+F`, czyli Control+Command+F): Przełącz tryb pełnoekranowy.
 * `Ctrl+Shift+V`: Otwórz bieżącą treść w Widoku WWW.
 * `Ctrl+U`: Wyświetl źródło dokumentu w nowej karcie.
 
@@ -153,7 +153,7 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 * `B`: Następna zakładka.
 * `Shift+N`: Poprzednia notatka.
 * `N`: Następna notatka.
-* `Ctrl+Shift+W` (macOS: `RawCtrl+Shift+W`, czyli fizyczny klawisz Control, a nie Cmd): Wyświetl tekst notatki w bieżącej pozycji.
+* `Ctrl+Shift+W` (macOS: `Control+Shift+W`, czyli fizyczny klawisz Control, a nie Cmd): Wyświetl tekst notatki w bieżącej pozycji.
 * `Ctrl+B`: Przejdź do wszystkich zakładek i notatek.
 * `Ctrl+Alt+B`: Przejdź tylko do zakładek.
 * `Ctrl+Alt+M`: Przejdź tylko do notatek.
@@ -162,7 +162,7 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 
 ### Menu Dźwięk
 
-* `Ctrl+Spacja` (macOS: `RawCtrl+Spacja`, czyli fizyczny klawisz Control, ponieważ Cmd+Spacja otwiera Spotlight): Odtwórz lub wstrzymaj narrację dźwiękową.
+* `Ctrl+Spacja` (macOS: `Control+Spacja`, czyli fizyczny klawisz Control, ponieważ Cmd+Spacja otwiera Spotlight): Odtwórz lub wstrzymaj narrację dźwiękową.
 * `'`: Przewiń narrację dźwiękową w przód.
 * `;`: Przewiń narrację dźwiękową w tył.
 * `Shift+'`: Zwiększ skok przewijania dźwięku.
@@ -174,7 +174,7 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 
 ### Menu Narzędzia
 
-* `Ctrl+W` (macOS: `RawCtrl+W`, czyli fizyczny klawisz Control, a nie Cmd): Pokaż liczbę słów w bieżącym dokumencie.
+* `Ctrl+W` (macOS: `Control+W`, czyli fizyczny klawisz Control, a nie Cmd): Pokaż liczbę słów w bieżącym dokumencie.
 * `Ctrl+I`: Pokaż informacje o dokumencie.
 * `Ctrl+Shift+O`: Rozpoznaj tekst na wybranym zakresie zeskanowanych stron PDF za pomocą OCR.
 * `Ctrl+Shift+R`: Rozpoznaj za pomocą OCR stronę PDF lub stronę komiksu, na której znajduje się kursor. Dotychczasowy tekst tej strony zostanie zastąpiony.

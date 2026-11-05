@@ -6,14 +6,14 @@ use super::marked_content::collect_text;
 use crate::{
 	document::{DocPos, DocumentBuffer, Marker, MarkerType},
 	parser::convert::table_text::{display_lines_and_length, html_table_to_display},
-	pdf_engine::Tag,
+	pdf_engine::{Tag, TagChild},
 	util::text::{collapse_whitespace, trim_string},
 };
 
 /// Anything between the table and its rows (a `THead`, a `Div` some producer put in) is walked through rather than written, so a table keeps its shape whatever wraps it.
 pub(super) fn build_html_table(elem: &Tag, mcid_to_text: &HashMap<i32, String>) -> String {
 	let elem_type = elem.kind().unwrap_or_default();
-	match elem_type.as_str() {
+	match elem_type {
 		"Table" => wrap("table border=\"1\"", "table", elem, mcid_to_text),
 		"TR" => wrap("tr", "tr", elem, mcid_to_text),
 		"TH" | "TD" => {
@@ -38,8 +38,8 @@ fn wrap(open: &str, close: &str, elem: &Tag, mcid_to_text: &HashMap<i32, String>
 
 fn children(elem: &Tag, mcid_to_text: &HashMap<i32, String>) -> String {
 	let mut html = String::new();
-	for i in 0..elem.child_count() {
-		if let Some(child) = elem.child(i) {
+	for child in elem.children() {
+		if let TagChild::Tag(child) = child {
 			html.push_str(&build_html_table(&child, mcid_to_text));
 		}
 	}

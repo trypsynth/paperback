@@ -264,13 +264,8 @@ impl<'a> Converter<'a> {
 
 	fn convert(&mut self, input: &Path, shown: &str, selection: Option<&PageSelection>) -> Result<String> {
 		let cli = self.cli;
-		let ext = input.extension().and_then(|e| e.to_str()).unwrap_or("");
 		input::check(input)?;
 		let file_path = input.to_string_lossy().into_owned();
-		// This path bypasses the text buffer and its page-break markers, so --pages would be silently dropped.
-		if !cli.metadata && matches!(cli.format, Format::Html) && ext == "epub" && selection.is_none() {
-			return export::epub_direct::render(&file_path).with_context(|| format!("failed to convert {shown}"));
-		}
 		let mut context = ParserContext::new(file_path)
 			.with_render_tables_inline(true)
 			.with_join_pdf_paragraphs(!cli.no_join_paragraphs);

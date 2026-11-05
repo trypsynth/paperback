@@ -15,7 +15,7 @@ use super::{
 	ocr::{is_pdf, restore_saved_pages, saved_pages_of},
 };
 use crate::{
-	text_window::TextWindow,
+	text_window::{TextWindow, should_use_whole_document, target_window_bounds},
 	ui::{
 		readability::{ReadabilityStyle, readability_style},
 		text_render::style_and_fill,
@@ -224,14 +224,9 @@ fn reparse_tab_in_place(
 		&saved_pages_of(&local_path),
 		is_pdf(&local_path) && settings.join_pdf_paragraphs,
 	);
-	// TODO(windowing): still whole-document on every reparse; should load a window centred on `restored_pos` instead.
-	let doc_len = tab.session.document_len();
-	let slice = tab.session.get_window(DocPos::ZERO, doc_len.as_pos());
-	tab.window = TextWindow::of(&slice);
-	style_and_fill(tab.text_ctrl, &slice, &tab.window, style);
-	tab.panel.layout();
 	// Scaled by length rather than through the whole-number percentage, which in a book of millions of characters is tens of thousands off.
-	let proportional = || DocPos::from_raw(pos.get().saturating_mul(tab.session.document_len().get()) / old_len);
+	let doc_len = tab.session.document_len();
+	let proportional = || DocPos::from_raw(pos.get().saturating_mul(doc_len.get()) / old_len);
 	let restored_pos = if unchanged {
 		pos
 	} else if let Some((ref key, within)) = stable_anchor {
@@ -244,6 +239,16 @@ fn reparse_tab_in_place(
 	} else {
 		proportional()
 	};
+	// A whole-document load through RTF takes minutes on a book of tens of millions of characters, which is what a reload used to do; load the same window navigation would, around the restored position.
+	let slice = if should_use_whole_document(doc_len) {
+		tab.session.get_window(DocPos::ZERO, doc_len.as_pos())
+	} else {
+		let (start, end) = target_window_bounds(restored_pos, doc_len);
+		tab.session.get_window(start, end)
+	};
+	tab.window = TextWindow::of(&slice);
+	style_and_fill(tab.text_ctrl, &slice, &tab.window, style);
+	tab.panel.layout();
 	let restored = tab.window.to_local(restored_pos);
 	tab.text_ctrl.set_insertion_point(restored);
 	tab.text_ctrl.show_position(restored);

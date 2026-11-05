@@ -81,6 +81,12 @@ impl XmlToText {
 
 	fn handle_element_opening_xml(&mut self, tag_name: &str, node: Node<'_, '_>) -> bool {
 		let mut skip_children = false;
+		if is_block_element(tag_name) {
+			self.blocks.drop_break_at(self.text.get_current_text_position());
+		}
+		if self.in_body {
+			self.blocks.open(tag_name, self.text.get_current_text_position());
+		}
 		// Before the tag handling below, which (notably for `<a>`) can push this element's text and shift the position past its start.
 		if self.in_body
 			&& let Some(id) = node.attribute("id").or_else(|| node.attribute("name"))
@@ -147,11 +153,23 @@ impl XmlToText {
 			self.in_body = true;
 		} else if Self::tag_is(tag_name, "pre") {
 			self.text.finalize_current_line();
+			self.format_spans.open(&FormatKind::Preformatted, self.text.get_current_text_position());
 			self.text.start_preserve_whitespace();
 		} else if Self::tag_is(tag_name, "code") {
+			// Code inside a <pre> is already marked by it.
+			if !self.text.is_preserving_whitespace() {
+				self.format_spans.open(&FormatKind::Code, self.text.get_current_text_position());
+			}
 			self.text.start_preserve_whitespace();
 		} else if Self::tag_is(tag_name, "br") {
+			let ends_text = !self.text.current_line().trim().is_empty();
 			self.text.finalize_current_line();
+			if !ends_text {
+				// Two in a row leave a gap, which reads as a new paragraph.
+				self.blocks.drop_break_at(self.text.get_current_text_position());
+			} else if self.in_body {
+				self.blocks.line_break(self.text.get_current_text_position());
+			}
 		} else if Self::tag_is(tag_name, "li") {
 			self.handle_list_item_xml(node);
 		} else if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") || Self::tag_is(tag_name, "list") {
@@ -162,6 +180,10 @@ impl XmlToText {
 			self.format_spans.open(&FormatKind::Italic, self.text.get_current_text_position());
 		} else if Self::tag_is(tag_name, "u") {
 			self.format_spans.open(&FormatKind::Underline, self.text.get_current_text_position());
+		} else if Self::tag_is(tag_name, "sup") {
+			self.format_spans.open(&FormatKind::Superscript, self.text.get_current_text_position());
+		} else if Self::tag_is(tag_name, "sub") {
+			self.format_spans.open(&FormatKind::Subscript, self.text.get_current_text_position());
 		}
 		if self.in_body
 			&& let Some((image_text, mut info, is_figure)) = Self::described_image(node)
@@ -181,6 +203,9 @@ impl XmlToText {
 			} else if let Some((image_text, info, is_figure)) = Self::described_image(child) {
 				text.push_str(&image_text);
 				images.push((image_text, info, is_figure));
+			} else if child.is_element() && Self::tag_is(child.tag_name().name(), "br") {
+				// A link is one run of text, so without this the words either side of the break would join.
+				text.push(' ');
 			} else {
 				Self::collect_link_content(child, text, images);
 			}
@@ -268,16 +293,14 @@ impl XmlToText {
 		self.text.finalize_current_line();
 		self.resync_id_position(node, self.text.get_current_text_position());
 		let li_text = collect_element_text(node);
-		self.list_items.push(ListItemInfo {
-			offset: self.text.get_current_text_position(),
-			level: self.list_level,
-			text: li_text,
-		});
+		let offset = self.text.get_current_text_position();
+		let mut number = None;
 		let indent = usize::try_from(self.list_level).unwrap_or(0) * 2;
 		self.text.push_str(&" ".repeat(indent));
 		let bullet = if let Some(style) = self.list_style_stack.last_mut() {
 			if style.ordered {
 				let item_text = format_list_item(style.item_number, &style.list_type);
+				number = Some(style.item_number);
 				style.item_number += 1;
 				format!("{item_text}. ")
 			} else {
@@ -287,11 +310,14 @@ impl XmlToText {
 			format!("{} ", Self::get_bullet_for_level(self.list_level))
 		};
 		self.text.push_str(&bullet);
+		let prefix_length = self.text.get_current_text_position().since(offset);
+		self.list_items.push(ListItemInfo { offset, level: self.list_level, text: li_text, prefix_length, number });
 	}
 
 	fn handle_list_start_xml(&mut self, tag_name: &str, node: Node<'_, '_>) {
 		self.list_level += 1;
 		let style = ListStyle::new(Self::tag_is(tag_name, "ol"), node.attribute("start"), node.attribute("type"));
+		let opening_tag = style.opening_tag();
 		self.list_style_stack.push(style);
 		let mut item_count = 0;
 		for child in node.children() {
@@ -304,7 +330,7 @@ impl XmlToText {
 			let offset = self.text.get_current_text_position();
 			self.resync_id_position(node, offset);
 			self.open_lists.push(Some(self.lists.len()));
-			self.lists.push(ListInfo { offset, item_count, length: DocLen::ZERO });
+			self.lists.push(ListInfo { offset, item_count, length: DocLen::ZERO, opening_tag });
 		} else {
 			self.open_lists.push(None);
 		}
@@ -343,18 +369,27 @@ impl XmlToText {
 		if is_pre {
 			self.text.finalize_current_line();
 			self.text.stop_preserve_whitespace();
+			self.format_spans.close(&FormatKind::Preformatted, self.text.get_current_text_position());
 		} else {
 			if is_block_element(tag_name) {
 				self.text.finalize_current_line();
 			}
 			if Self::tag_is(tag_name, "code") {
 				self.text.stop_preserve_whitespace();
+				// After stopping, since the line will be collapsed and the position has to count it that way.
+				if !self.text.is_preserving_whitespace() {
+					self.format_spans.close(&FormatKind::Code, self.text.get_current_text_position());
+				}
 			} else if Self::tag_is(tag_name, "b") || Self::tag_is(tag_name, "strong") {
 				self.format_spans.close(&FormatKind::Bold, self.text.get_current_text_position());
 			} else if Self::tag_is(tag_name, "i") || Self::tag_is(tag_name, "em") {
 				self.format_spans.close(&FormatKind::Italic, self.text.get_current_text_position());
 			} else if Self::tag_is(tag_name, "u") {
 				self.format_spans.close(&FormatKind::Underline, self.text.get_current_text_position());
+			} else if Self::tag_is(tag_name, "sup") {
+				self.format_spans.close(&FormatKind::Superscript, self.text.get_current_text_position());
+			} else if Self::tag_is(tag_name, "sub") {
+				self.format_spans.close(&FormatKind::Subscript, self.text.get_current_text_position());
 			}
 		}
 		if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") {
@@ -366,6 +401,10 @@ impl XmlToText {
 				self.lists[open].length = self.text.get_current_text_position().since(offset);
 			}
 		}
+		if is_block_element(tag_name) || Self::tag_is(tag_name, "body") {
+			self.blocks.drop_break_at(self.text.get_current_text_position());
+		}
+		self.blocks.close(tag_name, self.text.get_current_text_position());
 	}
 
 	fn process_text_node(&mut self, node: Node<'_, '_>) {

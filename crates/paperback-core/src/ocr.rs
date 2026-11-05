@@ -5,7 +5,7 @@ use zip::ZipArchive;
 
 use crate::{
 	parser::{cbr, cbz},
-	pdf_engine::PdfDocument,
+	pdf_engine::Document,
 	t,
 };
 
@@ -52,7 +52,7 @@ pub struct PageRenderer {
 }
 
 enum Source {
-	Pdf(PdfDocument),
+	Pdf(Document),
 	Comic { archive: ZipArchive<BufReader<File>>, pages: Vec<String> },
 }
 
@@ -65,7 +65,7 @@ impl PageRenderer {
 		if extension.is_some_and(|e| e.eq_ignore_ascii_case("cbr")) {
 			return Self::open_comic_rar(file_path);
 		}
-		Ok(Self { source: Source::Pdf(PdfDocument::open(file_path, password)?) })
+		Ok(Self { source: Source::Pdf(Document::open(file_path, password)?) })
 	}
 
 	fn open_comic(file_path: &str) -> Result<Self> {
@@ -90,7 +90,7 @@ impl PageRenderer {
 	pub fn render(&mut self, page_index: i32, max_dimension: u32) -> Result<RenderedPage> {
 		match &mut self.source {
 			Source::Pdf(document) => {
-				let page = document.page(page_index)?;
+				let page = document.page(usize::try_from(page_index).unwrap_or(usize::MAX))?;
 				let width = u32::try_from(pixel_width(page.width(), page.height(), max_dimension)).unwrap_or(1);
 				let bitmap =
 					page.render(width).ok_or_else(|| anyhow::anyhow!("page {page_index} could not be rasterized"))?;
@@ -126,10 +126,11 @@ pub fn decode_image(bytes: &[u8], max_dimension: u32) -> Result<RenderedPage> {
 }
 
 #[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss, clippy::cast_sign_loss)]
-fn pixel_width(width_pt: f32, height_pt: f32, max_dimension: u32) -> i32 {
+fn pixel_width(width_pt: f64, height_pt: f64, max_dimension: u32) -> i32 {
 	if width_pt <= 0.0 || height_pt <= 0.0 {
 		return FALLBACK_WIDTH;
 	}
+	let (width_pt, height_pt) = (width_pt as f32, height_pt as f32);
 	let scale = TARGET_DPI / POINTS_PER_INCH;
 	let longest = width_pt.max(height_pt) * scale;
 	let capped = if longest > max_dimension as f32 { max_dimension as f32 / longest } else { 1.0 };
