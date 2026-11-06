@@ -114,9 +114,6 @@ pub(super) fn handle_options(
 		old_readability_font,
 		old_line_spacing,
 		old_bg_color,
-		old_text_alignment,
-		old_letter_spacing,
-		old_paragraph_spacing,
 	) = {
 		let cfg = config.lock().unwrap();
 		(
@@ -129,9 +126,6 @@ pub(super) fn handle_options(
 			cfg.get_readability_font(),
 			cfg.get_line_spacing(),
 			cfg.get_bg_color(),
-			cfg.get_text_alignment(),
-			cfg.get_letter_spacing(),
-			cfg.get_paragraph_spacing(),
 		)
 	};
 	let cfg = config.lock().unwrap();
@@ -143,6 +137,9 @@ pub(super) fn handle_options(
 	cfg.set_app_bool("markdown_dollar_math", options.markdown_dollar_math);
 	cfg.set_app_bool("minimize_to_tray", options.minimize_to_tray);
 	cfg.set_app_bool("start_maximized", options.start_maximized);
+	cfg.set_app_bool("edge_beep", options.edge_beep);
+	// Read at each document's next load, so changing it never reloads and moves an open reader.
+	cfg.set_app_bool("plain_text", options.plain_text);
 	cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
 	cfg.set_app_bool("navigation_wrap", options.navigation_wrap);
 	cfg.set_app_bool("line_start_navigation", options.line_start_navigation);
@@ -165,9 +162,6 @@ pub(super) fn handle_options(
 	cfg.set_readability_font(&options.readability_font);
 	cfg.set_line_spacing(options.line_spacing);
 	cfg.set_bg_color(options.bg_color);
-	cfg.set_text_alignment(options.text_alignment);
-	cfg.set_letter_spacing(options.letter_spacing);
-	cfg.set_paragraph_spacing(options.paragraph_spacing);
 	cfg.flush();
 	tracing::info!("settings saved");
 	#[cfg(target_os = "windows")]
@@ -175,6 +169,8 @@ pub(super) fn handle_options(
 		re_register_hotkey(hotkey_handle, options.hotkey.as_ref());
 	}
 	drop(cfg);
+	// Applies to the controls already open; new ones read the setting when they are built.
+	crate::ui::reader_ctrl::set_edge_beep(options.edge_beep);
 	let options_word_wrap = options.word_wrap;
 	let options_render_tables_inline = options.render_tables_inline;
 	let parse_settings_changed = old_render_tables_inline != options_render_tables_inline
@@ -184,9 +180,6 @@ pub(super) fn handle_options(
 	let font_changed = old_readability_font != options.readability_font;
 	let line_spacing_changed = old_line_spacing != options.line_spacing;
 	let bg_color_changed = old_bg_color != options.bg_color;
-	let text_alignment_changed = old_text_alignment != options.text_alignment;
-	let letter_spacing_changed = old_letter_spacing != options.letter_spacing;
-	let paragraph_spacing_changed = old_paragraph_spacing != options.paragraph_spacing;
 	let needs_rebuild = old_word_wrap != options_word_wrap
 		|| (font_changed && build_font_from_readability(&options.readability_font).is_none())
 		|| (bg_color_changed && options.bg_color < 0)
@@ -209,15 +202,6 @@ pub(super) fn handle_options(
 		}
 		if line_spacing_changed {
 			dm_ref.apply_line_spacing(options.line_spacing);
-		}
-		if text_alignment_changed {
-			dm_ref.apply_text_alignment(options.text_alignment);
-		}
-		if letter_spacing_changed {
-			dm_ref.apply_letter_spacing(options.letter_spacing);
-		}
-		if paragraph_spacing_changed {
-			dm_ref.apply_paragraph_spacing(options.paragraph_spacing);
 		}
 	}
 	if parse_settings_changed {

@@ -346,7 +346,7 @@ pub(super) fn handle_save_image(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>) 
 	let Some(tab) = dm_ref.active_tab() else {
 		return;
 	};
-	let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+	let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 	let Some(file_name) = tab.session.image_file_name_at(position) else {
 		return;
 	};

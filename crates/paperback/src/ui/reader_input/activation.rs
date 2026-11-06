@@ -1,12 +1,10 @@
-use wxdragon::prelude::*;
+use wxdragon::{event::WxEvtHandler, prelude::*};
 
-pub(super) fn bind_activation(text_ctrl: TextCtrl, activate: impl Fn(bool) + 'static) {
-	// Cocoa's read-only text view can swallow Return/Space without a character event, so the hook runs before native handling.
-	#[cfg(target_os = "macos")]
-	let event_type = EventType::CHAR_HOOK;
-	#[cfg(not(target_os = "macos"))]
-	let event_type = EventType::CHAR;
-	text_ctrl.bind_internal(event_type, move |event| {
+pub(crate) fn bind_activation<C>(text_ctrl: C, activate: impl Fn(bool) + 'static)
+where
+	C: WxEvtHandler + Copy,
+{
+	text_ctrl.bind_internal(EventType::KEY_DOWN, move |event| {
 		// Command and Option chords, including VoiceOver's Control+Option, belong to the system.
 		#[cfg(target_os = "macos")]
 		if event.control_down() || event.alt_down() {

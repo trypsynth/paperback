@@ -15,7 +15,7 @@ use wxdragon::prelude::*;
 use super::navigation::{move_to_offset_and_record_history, persist_navigation_history};
 use crate::{
 	audio_player::AudioPlayer,
-	text_window::TextWindow,
+	text_window::{CtrlPos, TextWindow},
 	ui::{navigation::announce, reader_ctrl::ReaderCtrl},
 	working_copy::WorkingCopy,
 };
@@ -63,6 +63,16 @@ pub fn title_or_filename(title: String, path: &Path) -> String {
 impl DocumentTab {
 	pub fn local_path(&self) -> &Path {
 		reading_path(&self.file_path, self.working_copy.as_ref())
+	}
+
+	/// The control byte position for a document position. The document buffer already keeps that map.
+	pub fn to_local(&self, pos: DocPos) -> CtrlPos {
+		crate::text_window::control_pos(&self.session, pos)
+	}
+
+	/// The document position for a control byte. A byte inside a character rounds forward, as the document does.
+	pub fn to_doc(&self, pos: CtrlPos) -> DocPos {
+		crate::text_window::document_pos(&self.session, pos)
 	}
 }
 
@@ -217,7 +227,7 @@ impl DocumentManager {
 			let Some(tab) = self.active_tab_mut() else {
 				return;
 			};
-			let pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+			let pos = tab.to_doc(tab.text_ctrl.get_insertion_point());
 			let result = tab.session.activate_link(pos);
 			if !result.found {
 				return;
@@ -240,14 +250,14 @@ impl DocumentManager {
 	}
 	pub fn activate_current_table(&self) -> Option<String> {
 		self.active_tab().and_then(|tab| {
-			let pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+			let pos = tab.to_doc(tab.text_ctrl.get_insertion_point());
 			tab.session.get_table_at_position(pos)
 		})
 	}
 
 	pub fn activate_current_formula(&self) -> Option<String> {
 		self.active_tab().and_then(|tab| {
-			let pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+			let pos = tab.to_doc(tab.text_ctrl.get_insertion_point());
 			tab.session.get_formula_at_position(pos).map(|mathml| {
 				format!(
 					"<style>{MATHML_STYLES}\nmath {{ font-size: 2.5em; }} body {{ display: flex; justify-content: center; margin-top: 2em; }}</style>{mathml}"

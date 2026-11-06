@@ -199,10 +199,11 @@ pub fn announce(live_region_label: StaticText, message: impl AsRef<str>) {
 	announce_after(live_region_label, message, FOCUS_CHAIN_INTERRUPT_DELAY_MS);
 }
 
-/// A shortcut never moves focus off the book, so only a menu click needs the wait; both raise the same event, hence `from_keyboard`.
+/// A menu click waits for its focus chain, but a shortcut never moves focus off the book, so it speaks at once. Immediate is
+/// deliberate: NVDA also echoes the key as a typed character for a shortcut like `=`, and raising this first cuts that echo off.
 pub fn announce_for_command(live_region_label: StaticText, from_keyboard: bool, message: impl AsRef<str>) {
 	if from_keyboard {
-		live_region::announce(live_region_label, message.as_ref());
+		deliver(live_region_label, message.as_ref());
 	} else {
 		announce_after(live_region_label, message, MENU_FOCUS_CHAIN_INTERRUPT_DELAY_MS);
 	}
@@ -214,7 +215,7 @@ pub fn announce_for_selection_command(live_region_label: StaticText, from_keyboa
 	announce_waiting_for_command(live_region_label, from_keyboard, message);
 }
 
-/// For a result that can come back while the menu that asked for it is still closing, as a fast OCR does; after a shortcut it waits only as `announce` does.
+/// For a result that can come back while the menu that asked for it is still closing, as a fast OCR does.
 pub fn announce_waiting_for_command(live_region_label: StaticText, from_keyboard: bool, message: impl AsRef<str>) {
 	let delay_ms = if from_keyboard { FOCUS_CHAIN_INTERRUPT_DELAY_MS } else { MENU_FOCUS_CHAIN_INTERRUPT_DELAY_MS };
 	announce_after(live_region_label, message, delay_ms);
@@ -228,12 +229,21 @@ fn announce_after(live_region_label: StaticText, message: impl AsRef<str>, delay
 	let timer = Timer::new(&live_region_label);
 	let announce = message.to_string();
 	timer.on_tick(move |_event| {
-		live_region::announce(live_region_label, &announce);
+		deliver(live_region_label, &announce);
 		*holder.borrow_mut() = None;
 	});
 	if !timer.start(delay_ms, true) {
-		live_region::announce(live_region_label, message);
+		deliver(live_region_label, message);
 		return;
 	}
 	*timer_holder.borrow_mut() = Some(timer);
+}
+
+/// Delivers a message to the screen reader through the live-region crate, which on Windows installs a server-side UI Automation
+/// provider on the label before raising the notification.
+///
+/// The host provider from `UiaHostProviderFromHwnd` is not a valid event source: raising on it (on the label or its root window)
+/// returns `S_OK` and reaches no UIA client, so announcements made that way are silently lost.
+fn deliver(live_region_label: StaticText, message: &str) {
+	live_region::announce(live_region_label, message);
 }

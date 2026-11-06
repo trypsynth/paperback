@@ -5,7 +5,7 @@ mod common;
 use std::time::Duration;
 
 #[test]
-#[ignore = "drives the real GUI via UI Automation; needs an interactive desktop"]
+#[ignore = "needs the wxStyledTextCtrl UIA text provider (see #1246); also needs an interactive desktop"]
 fn ctrl_comma_opens_settings() {
 	let app = common::launch("ctrl-comma-settings");
 	common::wait_for_reader_focus(app.pid);

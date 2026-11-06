@@ -6,7 +6,7 @@ use common::{Notifications, fixture};
 use windows::Win32::UI::Accessibility::NotificationProcessing_ImportantMostRecent as IMPORTANT;
 
 #[test]
-#[ignore = "drives the real GUI via UI Automation; needs an interactive desktop"]
+#[ignore = "needs the wxStyledTextCtrl UIA text provider (see #1246); also needs an interactive desktop"]
 fn heading_keys_announce_each_heading_and_the_end_of_the_list() {
 	let app = common::launch("heading-announcements");
 	common::wait_for_reader_focus(app.pid);

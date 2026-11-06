@@ -53,7 +53,7 @@ pub(super) fn bind_document_events(
 		event.skip(true);
 		if let WindowEventData::Activate(activate) = &event {
 			if activate.is_active() {
-				// The read-only RichEdit emits no focus event on reactivation, so screen readers would say "pane"; fire the MSAA focus event ourselves.
+				// The read-only reading control emits no focus event on reactivation, so screen readers would say "pane"; fire the MSAA focus event ourselves.
 				#[cfg(target_os = "windows")]
 				if let Ok(dm) = dm_for_activate.try_lock() {
 					dm.restore_focus();

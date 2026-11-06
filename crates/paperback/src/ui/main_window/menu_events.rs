@@ -243,7 +243,8 @@ impl MainWindow {
 
 /// Accelerators turn a shortcut into a menu command before the text control sees it, so the mark is set on `CHAR_HOOK`, the last point the key is still a key.
 /// On macOS `mac_shortcuts` sets the mark itself for menu shortcuts; this hook covers keys left to wxWidgets.
-/// On Windows Ctrl/Alt punctuation chords have no accelerator (see `menu::is_punctuation_chord`), so this hook runs them; plain punctuation stays with the book so typing elsewhere is never a shortcut.
+/// On Windows Ctrl/Alt punctuation chords have no accelerator (see `menu::is_punctuation_chord`), so this hook runs them, as it does
+/// keyboard-only actions such as `=`: swallowing the key here keeps it from reaching the reader as typed text.
 pub(super) fn bind_key_source(frame: &Frame, config: &Rc<Mutex<ConfigManager>>, from_keyboard: Rc<Cell<bool>>) {
 	let config = Rc::clone(config);
 	#[cfg(target_os = "windows")]
@@ -266,6 +267,17 @@ pub(super) fn bind_key_source(frame: &Frame, config: &Rc<Mutex<ConfigManager>>, 
 			&& (event.control_down() || event.alt_down())
 			&& !menu::is_keyboard_only(action)
 			&& punctuation
+		{
+			event.skip(false);
+			if !frame_for_hook.process_menu_command(menu_ids::action_to_menu_id(action)) {
+				from_keyboard.set(false);
+			}
+		}
+		// A keyboard-only shortcut has no accelerator to consume its key. Swallow it here and run it, or Scintilla passes the plain
+		// character on and NVDA reports it as typed text (a sliver of "equals" ahead of the percentage).
+		#[cfg(target_os = "windows")]
+		if let Some(action) = action
+			&& menu::is_keyboard_only(action)
 		{
 			event.skip(false);
 			if !frame_for_hook.process_menu_command(menu_ids::action_to_menu_id(action)) {

@@ -13,12 +13,9 @@ use crate::{
 	audio_player::AudioPlayer,
 	shell,
 	ui::{
-		readability::{
-			apply_bg_color_to_ctrl, apply_foreground_color_to_ctrl, apply_readability_format_to_ctrl,
-			build_font_from_readability,
-		},
+		readability::{build_font_from_readability, readability_style},
 		reader_input,
-		text_render::load_window_into_ctrl,
+		text_render::load_document_into_ctrl,
 	},
 	working_copy::WorkingCopy,
 };
@@ -161,28 +158,24 @@ impl DocumentManager {
 		// Before the position is read, since it was saved against the text OCR put in.
 		restore_saved_pages(&mut session, &saved_pages_of(&local_path), joins_recognized_text(&local_path, &config));
 		let word_wrap = config.get_app_bool("word_wrap", false);
+		let edge_beep = config.get_app_bool("edge_beep", false);
+		let plain_text = config.get_app_bool("plain_text", false);
 		let text_ctrl =
-			reader_input::build_text_ctrl(panel, word_wrap, self_rc, self.frame, self.from_keyboard.clone());
+			reader_input::build_text_ctrl(panel, word_wrap, edge_beep, self_rc, self.frame, self.from_keyboard.clone());
 		let rf = config.get_readability_font();
 		if let Some(font) = build_font_from_readability(&rf) {
 			text_ctrl.set_font(&font);
 		}
-		apply_foreground_color_to_ctrl(text_ctrl.widget(), rf.color);
-		apply_bg_color_to_ctrl(text_ctrl.widget(), config.get_bg_color());
+		text_ctrl.apply_foreground_color(rf.color);
+		text_ctrl.apply_background_color(config.get_bg_color());
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
-		sizer.add(&text_ctrl.widget(), 1, SizerFlag::Expand | SizerFlag::All, 0);
+		text_ctrl.add_to_sizer(sizer);
 		panel.set_sizer(sizer, true);
 		let path_str = path.to_string_lossy();
 		let doc_len = session.document_len();
 		let initial_pos = config.get_validated_document_position(&path_str, doc_len.as_pos()).unwrap_or_default();
-		let window = load_window_into_ctrl(text_ctrl, &session, initial_pos, doc_len);
-		apply_readability_format_to_ctrl(
-			text_ctrl.widget(),
-			config.get_line_spacing(),
-			config.get_paragraph_spacing(),
-			config.get_letter_spacing(),
-			config.get_text_alignment(),
-		);
+		let window = load_document_into_ctrl(text_ctrl, &session, plain_text);
+		text_ctrl.apply_readability_format(&readability_style(&config));
 		// `add_page(select: true)` can synchronously fire page-changed, whose handler locks `self.config` again; `Mutex` isn't reentrant, so holding it here deadlocked the app.
 		drop(config);
 		self.notebook.add_page(&panel, &title, true, None);
@@ -219,7 +212,7 @@ impl DocumentManager {
 		let tab_index = self.tabs.len() - 1;
 		{
 			let tab = &self.tabs[tab_index];
-			let local = tab.window.to_local(initial_pos);
+			let local = tab.to_local(initial_pos);
 			tab.text_ctrl.set_insertion_point(local);
 			tab.text_ctrl.show_position(local);
 		}
@@ -265,7 +258,7 @@ impl DocumentManager {
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();
 			if save_state && tab.track {
-				let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+				let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 				config.set_document_position(&path_str, position);
 				config.set_document_audio_time(
 					&path_str,
@@ -320,7 +313,7 @@ impl DocumentManager {
 			if !tab.track {
 				continue;
 			}
-			let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+			let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 			let path_str = tab.file_path.to_string_lossy();
 			config.set_document_position(&path_str, position);
 			config.set_document_audio_time(&path_str, tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms));
@@ -347,7 +340,7 @@ impl DocumentManager {
 		if let Some(tab) = self.active_tab()
 			&& tab.track
 		{
-			let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+			let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();
 			config.set_document_position(&path_str, position);

@@ -40,7 +40,7 @@ impl DocumentManager {
 		}
 	}
 
-	/// The read-only `RichEdit` emits no focus event on re-activation and `SetFocus` on an already focused window emits nothing; the notebook is skipped because its native control announces its tab and a whole-control event would swallow that.
+	/// The read-only reading control emits no focus event on re-activation and `SetFocus` on an already focused window emits nothing; the notebook is skipped because its native control announces its tab and a whole-control event would swallow that.
 	#[cfg(target_os = "windows")]
 	pub fn announce_focus(&self) {
 		if !self.last_focus_in_text.get() {

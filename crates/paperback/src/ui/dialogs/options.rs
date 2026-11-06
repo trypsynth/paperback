@@ -33,6 +33,8 @@ pub struct OptionsDialogResult {
 	pub markdown_dollar_math: bool,
 	pub minimize_to_tray: bool,
 	pub start_maximized: bool,
+	pub edge_beep: bool,
+	pub plain_text: bool,
 	pub compact_go_menu: bool,
 	pub navigation_wrap: bool,
 	pub line_start_navigation: bool,
@@ -53,9 +55,6 @@ pub struct OptionsDialogResult {
 	pub readability_font: ReadabilityFont,
 	pub line_spacing: i32,
 	pub bg_color: i32,
-	pub text_alignment: i32,
-	pub letter_spacing: i32,
-	pub paragraph_spacing: i32,
 }
 
 struct OptionsDialogUi {
@@ -69,6 +68,8 @@ struct OptionsDialogUi {
 	markdown_dollar_math_check: CheckBox,
 	minimize_to_tray_check: CheckBox,
 	start_maximized_check: CheckBox,
+	edge_beep_check: CheckBox,
+	plain_text_check: CheckBox,
 	compact_go_menu_check: CheckBox,
 	navigation_wrap_check: CheckBox,
 	line_start_nav_check: CheckBox,
@@ -93,9 +94,6 @@ struct OptionsDialogUi {
 	readability_font: Rc<RefCell<ReadabilityFont>>,
 	line_spacing_ctrl: Choice,
 	bg_color: Rc<Cell<i32>>,
-	text_alignment_ctrl: Choice,
-	letter_spacing_ctrl: Choice,
-	paragraph_spacing_ctrl: Choice,
 }
 
 pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<OptionsDialogResult> {
@@ -114,9 +112,6 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	let readability_font = ui.readability_font.borrow().clone();
 	let line_spacing = ui.line_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
 	let bg_color = ui.bg_color.get();
-	let text_alignment = ui.text_alignment_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
-	let letter_spacing = ui.letter_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
-	let paragraph_spacing = ui.paragraph_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
 	let audio_seek_amount_seconds = ui
 		.audio_seek_amount_ctrl
 		.get_selection()
@@ -131,6 +126,8 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		markdown_dollar_math: ui.markdown_dollar_math_check.is_checked(),
 		minimize_to_tray: ui.minimize_to_tray_check.is_checked(),
 		start_maximized: ui.start_maximized_check.is_checked(),
+		edge_beep: ui.edge_beep_check.is_checked(),
+		plain_text: ui.plain_text_check.is_checked(),
 		compact_go_menu: ui.compact_go_menu_check.is_checked(),
 		navigation_wrap: ui.navigation_wrap_check.is_checked(),
 		line_start_navigation: ui.line_start_nav_check.is_checked(),
@@ -151,9 +148,6 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		readability_font,
 		line_spacing,
 		bg_color,
-		text_alignment,
-		letter_spacing,
-		paragraph_spacing,
 	})
 }
 
@@ -164,9 +158,11 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let general_panel = Panel::builder(&notebook).build();
 	let reading_panel = Panel::builder(&notebook).build();
 	let readability_panel = Panel::builder(&notebook).build();
+	let advanced_panel = Panel::builder(&notebook).build();
 	let general_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let reading_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let readability_sizer = BoxSizer::builder(Orientation::Vertical).build();
+	let advanced_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let restore_docs_check =
 		// TRANSLATORS: Option to restore documents that were open when the app was last closed
 		CheckBox::builder(&general_panel).with_label(&t("&Restore previously opened documents on startup")).build();
@@ -193,6 +189,14 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let markdown_dollar_math_check = CheckBox::builder(&readability_panel)
 		// TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
 		.with_label(&t("Read text between dollar signs as &math in Markdown"))
+		.build();
+	let plain_text_check = CheckBox::builder(&advanced_panel)
+		// TRANSLATORS: Option to load the reading view without bold, italic and underline styling, which can make a long document load faster. The reading font, colours and spacing still apply.
+		.with_label(&t("Load text &without formatting"))
+		.build();
+	let edge_beep_check = CheckBox::builder(&advanced_panel)
+		// TRANSLATORS: Option to play the system default beep when a movement key cannot move the caret at the very start or end of the document
+		.with_label(&t("&Beep at the start and end of the document"))
 		.build();
 	// TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
@@ -366,81 +370,18 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let line_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	line_spacing_sizer.add(&line_spacing_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
 	line_spacing_sizer.add(&line_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	// TRANSLATORS: Label for the paragraph spacing dropdown
-	let paragraph_spacing_label_text = t("&Paragraph spacing:");
-	let paragraph_spacing_label =
-		StaticText::builder(&readability_panel).with_label(&paragraph_spacing_label_text).build();
-	let paragraph_spacing_ctrl = Choice::builder(&readability_panel).build();
-	// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
-	paragraph_spacing_ctrl.append(&t("Normal"));
-	// TRANSLATORS: Relaxed paragraph spacing option
-	paragraph_spacing_ctrl.append(&t("Relaxed"));
-	// TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-	paragraph_spacing_ctrl.append(&t("Wide"));
-	#[cfg(target_os = "macos")]
-	paragraph_spacing_ctrl
-		.set_accessibility_label(paragraph_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
-	let paragraph_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	paragraph_spacing_sizer.add(
-		&paragraph_spacing_label,
-		0,
-		SizerFlag::AlignCenterVertical | SizerFlag::Right,
-		DIALOG_PADDING,
-	);
-	paragraph_spacing_sizer.add(&paragraph_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	// TRANSLATORS: Label for the letter spacing dropdown
-	let letter_spacing_label_text = t("L&etter spacing:");
-	let letter_spacing_label = StaticText::builder(&readability_panel).with_label(&letter_spacing_label_text).build();
-	let letter_spacing_ctrl = Choice::builder(&readability_panel).build();
-	// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
-	letter_spacing_ctrl.append(&t("Normal"));
-	// TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-	letter_spacing_ctrl.append(&t("Wide"));
-	// TRANSLATORS: Very Wide letter spacing option
-	letter_spacing_ctrl.append(&t("Very Wide"));
-	#[cfg(target_os = "macos")]
-	letter_spacing_ctrl
-		.set_accessibility_label(letter_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
-	let letter_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	letter_spacing_sizer.add(
-		&letter_spacing_label,
-		0,
-		SizerFlag::AlignCenterVertical | SizerFlag::Right,
-		DIALOG_PADDING,
-	);
-	letter_spacing_sizer.add(&letter_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	// TRANSLATORS: Label for the text alignment dropdown
-	let text_alignment_label_text = t("Text &alignment:");
-	let text_alignment_label = StaticText::builder(&readability_panel).with_label(&text_alignment_label_text).build();
-	let text_alignment_ctrl = Choice::builder(&readability_panel).build();
-	// TRANSLATORS: Left text alignment option
-	text_alignment_ctrl.append(&t("Left"));
-	// TRANSLATORS: Center text alignment option
-	text_alignment_ctrl.append(&t("Center"));
-	// TRANSLATORS: Right text alignment option
-	text_alignment_ctrl.append(&t("Right"));
-	// TRANSLATORS: Justified text alignment option
-	text_alignment_ctrl.append(&t("Justify"));
-	#[cfg(target_os = "macos")]
-	text_alignment_ctrl
-		.set_accessibility_label(text_alignment_label_text.replace('&', "").trim_end_matches(':').trim());
-	let text_alignment_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	text_alignment_sizer.add(
-		&text_alignment_label,
-		0,
-		SizerFlag::AlignCenterVertical | SizerFlag::Right,
-		DIALOG_PADDING,
-	);
-	text_alignment_sizer.add(&text_alignment_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	readability_sizer.add(&word_wrap_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&render_tables_inline_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&join_pdf_paragraphs_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&strip_running_text_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&markdown_dollar_math_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&line_spacing_sizer, 0, SizerFlag::All, option_padding);
-	readability_sizer.add_sizer(&paragraph_spacing_sizer, 0, SizerFlag::All, option_padding);
-	readability_sizer.add_sizer(&letter_spacing_sizer, 0, SizerFlag::All, option_padding);
-	readability_sizer.add_sizer(&text_alignment_sizer, 0, SizerFlag::All, option_padding);
+	advanced_sizer.add(&plain_text_check, 0, SizerFlag::All, option_padding);
+	#[cfg(target_os = "windows")]
+	advanced_sizer.add(&edge_beep_check, 0, SizerFlag::All, option_padding);
+	#[cfg(not(target_os = "windows"))]
+	edge_beep_check.show(false);
+	advanced_panel.set_sizer(advanced_sizer, true);
 	readability_panel.set_sizer(readability_sizer, true);
 	general_panel.set_sizer(general_sizer, true);
 	reading_panel.set_sizer(reading_sizer, true);
@@ -450,18 +391,23 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let reading_label = t("Reading");
 	// TRANSLATORS: Tab label for the Readability options panel
 	let readability_label = t("Readability");
+	// TRANSLATORS: Tab label for the Advanced options panel
+	let advanced_label = t("Advanced");
 	general_panel.set_accessibility_label(&general_label);
 	reading_panel.set_accessibility_label(&reading_label);
 	readability_panel.set_accessibility_label(&readability_label);
+	advanced_panel.set_accessibility_label(&advanced_label);
 	#[cfg(target_os = "windows")]
 	{
 		general_panel.set_accessibility_role(AccRole::PropertyPage);
 		reading_panel.set_accessibility_role(AccRole::PropertyPage);
 		readability_panel.set_accessibility_role(AccRole::PropertyPage);
+		advanced_panel.set_accessibility_role(AccRole::PropertyPage);
 	}
 	notebook.add_page(&general_panel, &general_label, true, None);
 	notebook.add_page(&reading_panel, &reading_label, false, None);
 	notebook.add_page(&readability_panel, &readability_label, false, None);
+	notebook.add_page(&advanced_panel, &advanced_label, false, None);
 	restore_docs_check.set_value(config.get_app_bool("restore_previous_documents", true));
 	word_wrap_check.set_value(config.get_app_bool("word_wrap", false));
 	render_tables_inline_check.set_value(config.get_app_bool("render_tables_inline", true));
@@ -470,6 +416,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	markdown_dollar_math_check.set_value(config.get_app_bool("markdown_dollar_math", true));
 	minimize_to_tray_check.set_value(config.get_app_bool("minimize_to_tray", false));
 	start_maximized_check.set_value(config.get_app_bool("start_maximized", false));
+	edge_beep_check.set_value(config.get_app_bool("edge_beep", false));
+	plain_text_check.set_value(config.get_app_bool("plain_text", false));
 	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
 	navigation_wrap_check.set_value(config.get_app_bool("navigation_wrap", false));
 	line_start_nav_check.set_value(config.get_app_bool("line_start_navigation", false));
@@ -524,9 +472,6 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let readability_font = Rc::new(RefCell::new(initial_font));
 	let stored_line_spacing = config.get_line_spacing().clamp(0, 2).unsigned_abs();
 	line_spacing_ctrl.set_selection(stored_line_spacing);
-	paragraph_spacing_ctrl.set_selection(config.get_paragraph_spacing().clamp(0, 2).unsigned_abs());
-	letter_spacing_ctrl.set_selection(config.get_letter_spacing().clamp(0, 2).unsigned_abs());
-	text_alignment_ctrl.set_selection(config.get_text_alignment().clamp(0, 3).unsigned_abs());
 	let stored_bg = config.get_bg_color();
 	bg_color_label.set_label(&color_description(stored_bg));
 	let bg_color = Rc::new(Cell::new(stored_bg));
@@ -586,6 +531,8 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		markdown_dollar_math_check,
 		minimize_to_tray_check,
 		start_maximized_check,
+		edge_beep_check,
+		plain_text_check,
 		compact_go_menu_check,
 		navigation_wrap_check,
 		line_start_nav_check,
@@ -610,9 +557,6 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		readability_font,
 		line_spacing_ctrl,
 		bg_color,
-		text_alignment_ctrl,
-		letter_spacing_ctrl,
-		paragraph_spacing_ctrl,
 	}
 }
 

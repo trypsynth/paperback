@@ -23,7 +23,7 @@ use crate::{
 	ocr::{self, OcrError},
 	ui::{
 		navigation::{announce, announce_for_command, announce_waiting_for_command},
-		text_render::reload_window_around,
+		text_render::reload_document,
 	},
 };
 
@@ -86,7 +86,7 @@ fn index_running_job(job_ids: &[Option<u64>], id: u64) -> Option<usize> {
 impl DocumentManager {
 	pub fn image_only_page_at_caret(&self) -> Option<DocPos> {
 		let tab = self.active_tab()?;
-		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 		tab.session.image_only_page_at(position)
 	}
 
@@ -144,7 +144,7 @@ impl DocumentManager {
 			announce_for_command(label, from_keyboard, t("Only PDF and comic book pages can be recognized."));
 			return;
 		}
-		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 		// Text before the first page break still belongs to the first page.
 		let page = tab.session.current_page(position).max(1);
 		self.spawn_ocr(vec![page], false, from_keyboard);
@@ -235,7 +235,10 @@ impl DocumentManager {
 		}
 		let is_active = self.active_tab_index() == Some(index);
 		let from_keyboard = self.tabs[index].ocr_job.as_ref().is_none_or(|job| job.from_keyboard);
-		let join = joins_recognized_text(self.tabs[index].local_path(), &self.config.lock().unwrap());
+		let (join, plain_text) = {
+			let cfg = self.config.lock().unwrap();
+			(joins_recognized_text(self.tabs[index].local_path(), &cfg), cfg.get_app_bool("plain_text", false))
+		};
 		let tab = &mut self.tabs[index];
 		let mut pages = Vec::with_capacity(results.len());
 		let mut read = Vec::with_capacity(results.len());
@@ -267,7 +270,7 @@ impl DocumentManager {
 		if pages.is_empty() {
 			return;
 		}
-		let caret = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let caret = tab.to_doc(tab.text_ctrl.get_insertion_point());
 		let loaded_end = tab.window.end();
 		let outcome = tab.session.replace_ocr_pages(&pages);
 		if let Some(job) = tab.ocr_job.as_mut() {
@@ -282,7 +285,7 @@ impl DocumentManager {
 		if let Some(mark) = tab.selection_mark.get() {
 			tab.selection_mark.set(Some(outcome.shift(mark.min(buffer.end()))));
 		}
-		refresh_after_ocr(tab, &starts, loaded_end, caret, is_active);
+		refresh_after_ocr(tab, &starts, loaded_end, caret, is_active, plain_text);
 		// The config's reading position, history and bookmarks are document-absolute, so the edits above moved them too.
 		self.config.lock().unwrap().shift_document_positions(&file_path.to_string_lossy(), &outcome);
 	}
@@ -337,14 +340,21 @@ impl DocumentManager {
 }
 
 /// `loaded_end` is where the window ended before the replacement; any page at or before it shifted local offsets, so the window must reload.
-fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[DocPos], loaded_end: DocPos, caret: DocPos, is_active: bool) {
+fn refresh_after_ocr(
+	tab: &mut DocumentTab,
+	starts: &[DocPos],
+	loaded_end: DocPos,
+	caret: DocPos,
+	is_active: bool,
+	plain_text: bool,
+) {
 	if !starts.iter().any(|start| *start < loaded_end) {
 		return;
 	}
 	let caret = caret.min(tab.session.document_len().as_pos());
-	reload_window_around(tab, caret, "ocr");
+	reload_document(tab, caret, plain_text);
 	if is_active {
-		let local = tab.window.to_local(caret);
+		let local = tab.to_local(caret);
 		tab.text_ctrl.set_insertion_point(local);
 		tab.text_ctrl.show_position(local);
 	}
