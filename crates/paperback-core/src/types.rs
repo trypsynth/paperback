@@ -52,10 +52,19 @@ pub struct ImageInfo {
 }
 
 #[derive(Debug, Clone)]
+pub struct BlockInfo {
+	pub offset: DocPos,
+	pub length: DocLen,
+	pub tag: &'static str,
+}
+
+#[derive(Debug, Clone)]
 pub struct ListInfo {
 	pub offset: DocPos,
 	pub item_count: i32,
 	pub length: DocLen,
+	/// The tag HTML export opens the list with.
+	pub opening_tag: String,
 }
 
 #[derive(Debug, Clone)]
@@ -63,6 +72,10 @@ pub struct ListItemInfo {
 	pub offset: DocPos,
 	pub level: i32,
 	pub text: String,
+	/// How much of the text is the bullet or number the converter wrote in front of it.
+	pub prefix_length: DocLen,
+	/// `None` for a bulleted item.
+	pub number: Option<i32>,
 }
 
 #[derive(Debug, Clone)]

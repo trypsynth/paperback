@@ -27,11 +27,31 @@ impl ListStyle {
 		}
 		style
 	}
+
+	/// Each item carries its own number, so only the numbering style goes on the list.
+	pub(super) fn opening_tag(&self) -> String {
+		if !self.ordered {
+			return "<ul>".to_string();
+		}
+		match self.list_type.as_str() {
+			kind @ ("a" | "i") => format!("<ol type=\"{kind}\">"),
+			_ => "<ol>".to_string(),
+		}
+	}
 }
 
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	#[test]
+	fn opening_tag_matches_the_numbering_in_the_text() {
+		assert_eq!(ListStyle::new(false, None, Some("a")).opening_tag(), "<ul>");
+		assert_eq!(ListStyle::new(true, Some("3"), None).opening_tag(), "<ol>");
+		assert_eq!(ListStyle::new(true, None, Some("A")).opening_tag(), "<ol type=\"a\">");
+		assert_eq!(ListStyle::new(true, None, Some("I")).opening_tag(), "<ol type=\"i\">");
+		assert_eq!(ListStyle::new(true, None, Some("\"><script>")).opening_tag(), "<ol>");
+	}
 
 	#[test]
 	fn unordered_list_ignores_start_and_type() {

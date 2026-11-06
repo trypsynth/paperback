@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use hayro_syntax::object::{Dict, Name, Object, ObjectIdentifier};
 
-use super::{PdfDocument, decode_text_string};
+use super::{Document, decode_text_string};
 
 /// A tree this deep is a malformed file rather than a document's structure.
 const MAX_DEPTH: u32 = 64;
@@ -21,7 +21,7 @@ struct Node {
 	alt_text: Option<String>,
 	kids: Vec<Kid>,
 	/// Sorted, since pages are looked up by binary search.
-	pages: Vec<i32>,
+	pages: Vec<usize>,
 }
 
 enum Kid {
@@ -29,14 +29,14 @@ enum Kid {
 	/// pdfium reports it only on the page it names: the reference's own `/Pg`, else the element's own, never an ancestor's.
 	Content {
 		mcid: i32,
-		page: Option<i32>,
+		page: Option<usize>,
 	},
 	Other,
 }
 
 impl Structure {
 	/// `None` unless `/MarkInfo` says the document is tagged, which is pdfium's test too.
-	pub(super) fn read(document: &PdfDocument, catalog: &Dict<'_>) -> Option<Self> {
+	pub(super) fn read(document: &Document, catalog: &Dict<'_>) -> Option<Self> {
 		let marked = catalog.get::<Dict<'_>>(b"MarkInfo").is_some_and(|info| {
 			info.get::<bool>(b"Marked").unwrap_or(false) || info.get::<i32>(b"Marked").is_some_and(|value| value != 0)
 		});
@@ -73,7 +73,7 @@ enum Visit {
 	Done,
 }
 
-fn gather_pages(index: usize, nodes: &mut [Node], direct: &[Vec<i32>], state: &mut [Visit]) {
+fn gather_pages(index: usize, nodes: &mut [Node], direct: &[Vec<usize>], state: &mut [Visit]) {
 	if state[index] != Visit::Unvisited {
 		return;
 	}
@@ -95,16 +95,22 @@ fn gather_pages(index: usize, nodes: &mut [Node], direct: &[Vec<i32>], state: &m
 }
 
 struct Reader<'d, 'a> {
-	document: &'d PdfDocument,
+	document: &'d Document,
 	role_map: Option<Dict<'a>>,
 	nodes: Vec<Node>,
 	by_id: HashMap<ObjectIdentifier, usize>,
-	direct_content: Vec<Vec<i32>>,
+	direct_content: Vec<Vec<usize>>,
 }
 
 impl<'a> Reader<'_, 'a> {
 	/// The reported page (`own_page`) follows pdfium; the nearest one (`page`) only decides which pages an element is on.
-	fn kid(&mut self, kid: Object<'a>, own_page: Option<i32>, page: Option<i32>, depth: u32) -> (Kid, Option<i32>) {
+	fn kid(
+		&mut self,
+		kid: Object<'a>,
+		own_page: Option<usize>,
+		page: Option<usize>,
+		depth: u32,
+	) -> (Kid, Option<usize>) {
 		match kid {
 			Object::Number(number) => {
 				(Kid::Content { mcid: number.as_i64().try_into().unwrap_or(-1), page: own_page }, page)
@@ -117,10 +123,10 @@ impl<'a> Reader<'_, 'a> {
 	fn dict_kid(
 		&mut self,
 		dict: &Dict<'a>,
-		own_page: Option<i32>,
-		page: Option<i32>,
+		own_page: Option<usize>,
+		page: Option<usize>,
 		depth: u32,
-	) -> (Kid, Option<i32>) {
+	) -> (Kid, Option<usize>) {
 		let named = self.page_of(dict);
 		match dict.get::<Name<'_>>(b"Type").as_deref() {
 			Some(b"MCR") => {
@@ -132,7 +138,7 @@ impl<'a> Reader<'_, 'a> {
 		}
 	}
 
-	fn element(&mut self, dict: &Dict<'a>, inherited_page: Option<i32>, depth: u32) -> Option<usize> {
+	fn element(&mut self, dict: &Dict<'a>, inherited_page: Option<usize>, depth: u32) -> Option<usize> {
 		if depth >= MAX_DEPTH {
 			return None;
 		}
@@ -155,14 +161,14 @@ impl<'a> Reader<'_, 'a> {
 		self.direct_content.push(Vec::new());
 		let own_page = self.page_of(dict);
 		let page = own_page.or(inherited_page);
-		let read: Vec<(Kid, Option<i32>)> = match dict.get::<Object<'a>>(b"K") {
+		let read: Vec<(Kid, Option<usize>)> = match dict.get::<Object<'a>>(b"K") {
 			Some(Object::Array(kids)) => {
 				kids.iter::<Object<'a>>().map(|kid| self.kid(kid, own_page, page, depth + 1)).collect()
 			}
 			Some(kid) => vec![self.kid(kid, own_page, page, depth + 1)],
 			None => Vec::new(),
 		};
-		let (kids, pages): (Vec<Kid>, Vec<Option<i32>>) = read.into_iter().unzip();
+		let (kids, pages): (Vec<Kid>, Vec<Option<usize>>) = read.into_iter().unzip();
 		self.direct_content[index] = pages.into_iter().flatten().collect();
 		self.nodes[index].kids = kids;
 		Some(index)
@@ -175,7 +181,7 @@ impl<'a> Reader<'_, 'a> {
 		Some(mapped.unwrap_or(name).as_str().to_string())
 	}
 
-	fn page_of(&self, dict: &Dict<'a>) -> Option<i32> {
+	fn page_of(&self, dict: &Dict<'a>) -> Option<usize> {
 		self.document.page_number(dict.get_ref(b"Pg")?.into())
 	}
 }
@@ -186,61 +192,78 @@ fn text_field(dict: &Dict<'_>, key: &[u8]) -> Option<String> {
 		.filter(|text| !text.is_empty())
 }
 
+/// A page's view of the document's structure tree.
 pub struct TagTree<'page> {
 	structure: &'page Structure,
-	page: i32,
+	page: usize,
 }
 
 impl<'page> TagTree<'page> {
-	pub(super) const fn of(structure: &'page Structure, page: i32) -> Self {
+	pub(super) const fn of(structure: &'page Structure, page: usize) -> Self {
 		Self { structure, page }
 	}
 
-	pub fn child_count(&self) -> i32 {
-		i32::try_from(self.structure.roots.len()).unwrap_or(i32::MAX)
+	/// Whether the document's tree has no top-level elements at all, on any page.
+	pub const fn is_empty(&self) -> bool {
+		self.structure.roots.is_empty()
 	}
 
-	pub fn child(&self, index: i32) -> Option<Tag<'page>> {
-		element_on_page(self.structure, self.structure.roots.get(usize::try_from(index).ok()?)?, self.page)
+	/// The top-level elements with something on this page.
+	pub fn roots(&self) -> impl Iterator<Item = Tag<'page>> + use<'page> {
+		let (structure, page) = (self.structure, self.page);
+		structure.roots.iter().filter_map(move |kid| element_on_page(structure, kid, page))
 	}
 }
 
-fn element_on_page<'page>(structure: &'page Structure, kid: &Kid, page: i32) -> Option<Tag<'page>> {
+fn element_on_page<'page>(structure: &'page Structure, kid: &Kid, page: usize) -> Option<Tag<'page>> {
 	let Kid::Element(index) = kid else { return None };
 	let node = &structure.nodes[*index];
 	node.pages.binary_search(&page).is_ok().then_some(Tag { structure, node, page })
 }
 
+/// One element of the structure tree, as seen from a page.
 pub struct Tag<'tree> {
 	structure: &'tree Structure,
 	node: &'tree Node,
-	page: i32,
+	page: usize,
 }
 
-impl Tag<'_> {
-	pub fn kind(&self) -> Option<String> {
-		self.node.kind.clone()
+/// What a structure element holds on the page being read.
+pub enum TagChild<'tree> {
+	/// A nested element.
+	Tag(Tag<'tree>),
+	/// The id of a marked content sequence, which the page's objects carry in their marks.
+	Content(i32),
+}
+
+impl<'tree> Tag<'tree> {
+	/// The element's structure type, such as `P`, `H1`, or `Figure`.
+	pub fn kind(&self) -> Option<&'tree str> {
+		self.node.kind.as_deref()
 	}
 
-	pub fn actual_text(&self) -> Option<String> {
-		self.node.actual_text.clone()
+	/// The text the element stands for, when that differs from what is drawn.
+	pub fn actual_text(&self) -> Option<&'tree str> {
+		self.node.actual_text.as_deref()
 	}
 
-	pub fn alt_text(&self) -> Option<String> {
-		self.node.alt_text.clone()
+	/// A description of the element for someone who cannot see it.
+	pub fn alt_text(&self) -> Option<&'tree str> {
+		self.node.alt_text.as_deref()
 	}
 
-	pub fn child_count(&self) -> i32 {
-		i32::try_from(self.node.kids.len()).unwrap_or(i32::MAX)
+	/// How many children the element has across the whole document, which a list's size needs even when it runs over several pages.
+	pub const fn child_count(&self) -> usize {
+		self.node.kids.len()
 	}
 
-	pub fn child(&self, index: i32) -> Option<Tag<'_>> {
-		element_on_page(self.structure, self.node.kids.get(usize::try_from(index).ok()?)?, self.page)
-	}
-
-	pub fn child_mcid(&self, index: i32) -> Option<i32> {
-		let Kid::Content { mcid, page } = self.node.kids.get(usize::try_from(index).ok()?)? else { return None };
-		let id = if *page == Some(self.page) { *mcid } else { return None };
-		(id >= 0).then_some(id)
+	/// The children on this page, in order.
+	pub fn children(&self) -> impl Iterator<Item = TagChild<'tree>> + use<'tree> {
+		let (structure, kids, page) = (self.structure, &self.node.kids, self.page);
+		kids.iter().filter_map(move |kid| match kid {
+			Kid::Element(_) => element_on_page(structure, kid, page).map(TagChild::Tag),
+			Kid::Content { mcid, page: on } => (*on == Some(page) && *mcid >= 0).then_some(TagChild::Content(*mcid)),
+			Kid::Other => None,
+		})
 	}
 }

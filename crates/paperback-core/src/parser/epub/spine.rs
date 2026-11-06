@@ -1,9 +1,9 @@
-use std::{collections::HashMap, fs::File, io::BufReader, mem};
+use std::{collections::HashMap, fs::File, io::BufReader, mem, sync::Arc};
 
 use anyhow::Result;
 use rayon::prelude::*;
 use scraper::Html;
-use zip::ZipArchive;
+use zip::{ZipArchive, read::ZipArchiveMetadata};
 
 use super::{
 	href::{resolve_href, split_href},
@@ -21,7 +21,8 @@ use crate::{
 	},
 	t,
 	types::{
-		FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo, TableInfo,
+		BlockInfo, FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo,
+		TableInfo,
 	},
 	util::zip::read_zip_entry_by_name,
 };
@@ -40,6 +41,11 @@ struct SectionContent {
 	bolds: Vec<FormatInfo>,
 	italics: Vec<FormatInfo>,
 	underlines: Vec<FormatInfo>,
+	preformatted: Vec<FormatInfo>,
+	code: Vec<FormatInfo>,
+	superscripts: Vec<FormatInfo>,
+	subscripts: Vec<FormatInfo>,
+	blocks: Vec<BlockInfo>,
 	id_positions: HashMap<String, DocPos>,
 	/// The converters only record described images, so this is the only sign that a page whose whole body is one undescribed picture isn't simply empty.
 	has_image_markup: bool,
@@ -86,6 +92,21 @@ impl ConverterOutput for SectionContent {
 	fn get_underlines(&self) -> &[FormatInfo] {
 		&self.underlines
 	}
+	fn get_preformatted(&self) -> &[FormatInfo] {
+		&self.preformatted
+	}
+	fn get_code(&self) -> &[FormatInfo] {
+		&self.code
+	}
+	fn get_superscripts(&self) -> &[FormatInfo] {
+		&self.superscripts
+	}
+	fn get_subscripts(&self) -> &[FormatInfo] {
+		&self.subscripts
+	}
+	fn get_blocks(&self) -> &[BlockInfo] {
+		&self.blocks
+	}
 }
 
 pub(super) struct SectionMeta {
@@ -101,9 +122,10 @@ pub(super) struct SpineConversionResult {
 	pub(super) conversion_errors: Vec<String>,
 }
 
-/// Each rayon worker opens its own `ZipArchive` so zip reads run across cores instead of serializing through one shared handle.
+/// Each rayon worker opens its own file so zip reads run across cores instead of serializing through one shared handle. They share `metadata` because rayon runs `map_init` per split rather than per thread, and parsing the directory there took 19 seconds on a book with 165,000 entries.
 pub(super) fn convert_spine_items(
 	file_path: &str,
+	metadata: &Arc<ZipArchiveMetadata>,
 	manifest: &HashMap<String, ManifestItem>,
 	spine: &[String],
 	render_tables_inline: bool,
@@ -112,9 +134,10 @@ pub(super) fn convert_spine_items(
 		.par_iter()
 		.map_init(
 			|| {
-				File::open(file_path)
-					.map_err(|err| err.to_string())
-					.and_then(|file| ZipArchive::new(BufReader::new(file)).map_err(|err| err.to_string()))
+				File::open(file_path).map_err(|err| err.to_string()).map(|file| {
+					// SAFETY: the contract is only that reader and metadata describe the same archive, and `metadata` was read from this same path when this parse began. A file swapped in between gives read errors or wrong text for that book, not undefined behavior.
+					unsafe { ZipArchive::unsafe_new_with_metadata(BufReader::new(file), Arc::clone(metadata)) }
+				})
 			},
 			|archive_result, idref| {
 				let item = manifest.get(idref).ok_or_else(|| format!("missing manifest item for {idref}"))?;
@@ -268,6 +291,11 @@ fn convert_section(content: &str, render_tables_inline: bool) -> SectionContent 
 			bolds: xml_converter.get_bolds().to_vec(),
 			italics: xml_converter.get_italics().to_vec(),
 			underlines: xml_converter.get_underlines().to_vec(),
+			preformatted: xml_converter.get_preformatted().to_vec(),
+			code: xml_converter.get_code().to_vec(),
+			superscripts: xml_converter.get_superscripts().to_vec(),
+			subscripts: xml_converter.get_subscripts().to_vec(),
+			blocks: xml_converter.get_blocks().to_vec(),
 			id_positions: xml_converter.get_id_positions().clone(),
 			has_image_markup: content_has_image_markup(content),
 			xml_error: None,
@@ -291,6 +319,11 @@ fn convert_section(content: &str, render_tables_inline: bool) -> SectionContent 
 		bolds: html_converter.get_bolds().to_vec(),
 		italics: html_converter.get_italics().to_vec(),
 		underlines: html_converter.get_underlines().to_vec(),
+		preformatted: html_converter.get_preformatted().to_vec(),
+		code: html_converter.get_code().to_vec(),
+		superscripts: html_converter.get_superscripts().to_vec(),
+		subscripts: html_converter.get_subscripts().to_vec(),
+		blocks: html_converter.get_blocks().to_vec(),
 		id_positions: html_converter.get_id_positions().clone(),
 		has_image_markup: content_has_image_markup(content),
 		xml_error,

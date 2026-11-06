@@ -26,6 +26,13 @@ pub enum MarkerType {
 	/// OCR matches on this rather than the placeholder line, so it never compares against a translated string.
 	ImageOnlyPage = 19,
 	Formula = 20,
+	/// Line breaks and indentation mean something here, as in a code listing, which only an export can show: the text keeps them either way.
+	Preformatted = 21,
+	Code = 22,
+	Superscript = 23,
+	Subscript = 24,
+	/// Structure only an export shows, with its tag name in `reference`.
+	Block = 25,
 }
 
 impl From<MarkerType> for i32 {
@@ -66,6 +73,11 @@ impl TryFrom<i32> for MarkerType {
 			18 => Ok(Self::Underline),
 			19 => Ok(Self::ImageOnlyPage),
 			20 => Ok(Self::Formula),
+			21 => Ok(Self::Preformatted),
+			22 => Ok(Self::Code),
+			23 => Ok(Self::Superscript),
+			24 => Ok(Self::Subscript),
+			25 => Ok(Self::Block),
 			_ => Err(()),
 		}
 	}
@@ -79,12 +91,22 @@ pub struct Marker {
 	pub reference: String,
 	pub level: i32,
 	pub length: DocLen,
+	/// The bullet or number a list item's text starts with, which HTML leaves out because `<li>` draws its own.
+	pub prefix_length: DocLen,
 }
 
 impl Marker {
 	#[must_use]
 	pub const fn new(mtype: MarkerType, position: DocPos) -> Self {
-		Self { mtype, position, text: String::new(), reference: String::new(), level: 0, length: DocLen::ZERO }
+		Self {
+			mtype,
+			position,
+			text: String::new(),
+			reference: String::new(),
+			level: 0,
+			length: DocLen::ZERO,
+			prefix_length: DocLen::ZERO,
+		}
 	}
 
 	#[must_use]
@@ -108,6 +130,12 @@ impl Marker {
 	#[must_use]
 	pub const fn with_length(mut self, length: DocLen) -> Self {
 		self.length = length;
+		self
+	}
+
+	#[must_use]
+	pub const fn with_prefix_length(mut self, prefix_length: DocLen) -> Self {
+		self.prefix_length = prefix_length;
 		self
 	}
 }
@@ -143,11 +171,11 @@ mod tests {
 
 	#[test]
 	fn marker_type_round_trip_for_all_known_values() {
-		for raw in 0..=20 {
+		for raw in 0..=25 {
 			let marker = MarkerType::try_from(raw).unwrap();
 			assert_eq!(i32::from(marker), raw);
 		}
-		assert!(MarkerType::try_from(21).is_err());
+		assert!(MarkerType::try_from(26).is_err());
 		assert!(MarkerType::try_from(-1).is_err());
 	}
 

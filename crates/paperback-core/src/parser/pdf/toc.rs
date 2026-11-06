@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use super::text::sanitize_pdf_text;
 use crate::{
 	document::{DocLen, DocPos, TocItem},
-	pdf_engine::PdfDocument,
+	pdf_engine::Document,
 	util::text::{collapse_whitespace, trim_string},
 };
 
@@ -13,7 +13,7 @@ use crate::{
 const MAX_OUTLINE_DEPTH: u32 = 16;
 
 pub(super) fn extract_toc(
-	document: &PdfDocument,
+	document: &Document,
 	page_offsets: &[DocPos],
 	page_lines_info: &[Vec<(DocPos, String)>],
 ) -> Vec<TocItem> {
@@ -32,10 +32,7 @@ pub(super) fn extract_toc(
 			skipped_count += 1;
 			continue;
 		}
-		let Ok(page_index) = usize::try_from(bookmark.page) else {
-			skipped_count += 1;
-			continue;
-		};
+		let page_index = bookmark.page;
 		let Some(&page_start_offset) = page_offsets.get(page_index) else {
 			skipped_count += 1;
 			continue;

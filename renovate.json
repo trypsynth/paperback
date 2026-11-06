@@ -10,6 +10,11 @@
   },
   "packageRules": [
     {
+      "description": "A runner image sets the oldest glibc the Linux builds run on, so moving to a newer one is a decision about who can run Paperback (#1252), not a routine bump.",
+      "matchDatasources": ["github-runners"],
+      "enabled": false
+    },
+    {
       "matchManagers": ["cargo"],
       "groupName": "cargo dependencies",
       "rangeStrategy": "bump"

@@ -128,7 +128,8 @@ fn load(id: ID) -> Option<(FontData, u32)> {
 	let (source, index) = database().face_source(id)?;
 	let data: FontData = match source {
 		Source::Binary(data) => data,
-		Source::File(path) => Arc::new(std::fs::read(path).ok()?),
+		// Read rather than kept mapped, so a font file changing underneath can't take the process down.
+		Source::File(path) | Source::SharedFile(path, _) => Arc::new(std::fs::read(path).ok()?),
 	};
 	loaded.lock().ok()?.insert(id, (data.clone(), index));
 	Some((data, index))

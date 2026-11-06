@@ -56,6 +56,9 @@ pub struct Cli {
 	/// Print paperback-core's parser log output to stderr (set `RUST_LOG` for finer control)
 	#[arg(short, long)]
 	pub verbose: bool,
+	/// How many documents to convert at once when there are several; 0, the default, means one per processor and 1 converts them in turn, reporting in the order given. Downloads, password prompts and OCR still take one document at a time
+	#[arg(short, long, value_name = "N", default_value_t = 0)]
+	pub jobs: usize,
 }
 
 #[derive(Clone, Copy, ValueEnum)]
@@ -120,6 +123,14 @@ mod tests {
 		assert!(!cli.no_prompt);
 		assert!(!cli.no_join_paragraphs);
 		assert!(!cli.verbose);
+		assert_eq!(cli.jobs, 0, "as many at once as there are processors unless asked");
+	}
+
+	#[test]
+	fn reads_how_many_documents_to_convert_at_once() {
+		assert_eq!(parse(&["pb", "a.epub", "-j", "4"]).jobs, 4);
+		assert_eq!(parse(&["pb", "a.epub", "--jobs", "0"]).jobs, 0);
+		assert!(Cli::try_parse_from(["pb", "a.epub", "--jobs", "-1"]).is_err());
 	}
 
 	#[test]

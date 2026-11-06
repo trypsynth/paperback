@@ -1333,6 +1333,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2660c5e9157bf76d2db1294e4a9feba604ef610819a3b591088d0d8392a3290f"
 dependencies = [
  "log",
+ "memmap2",
  "slotmap",
  "tinyvec",
 ]
@@ -1568,7 +1569,7 @@ dependencies = [
 [[package]]
 name = "hayro"
 version = "0.8.0"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4723327433598866337194a0d7c5d89f304e5f1e"
 dependencies = [
  "bytemuck",
  "fearless_simd 1.2.0",
@@ -1583,12 +1584,12 @@ dependencies = [
 [[package]]
 name = "hayro-ccitt"
 version = "0.4.0"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4723327433598866337194a0d7c5d89f304e5f1e"
 
 [[package]]
 name = "hayro-cmap"
 version = "0.1.0"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4723327433598866337194a0d7c5d89f304e5f1e"
 dependencies = [
  "brotli",
  "hayro-postscript",
@@ -1597,7 +1598,7 @@ dependencies = [
 [[package]]
 name = "hayro-interpret"
 version = "0.8.0"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4723327433598866337194a0d7c5d89f304e5f1e"
 dependencies = [
  "bitflags 2.13.2",
  "hayro-cmap",
@@ -1615,7 +1616,7 @@ dependencies = [
 [[package]]
 name = "hayro-jbig2"
 version = "0.3.1"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4723327433598866337194a0d7c5d89f304e5f1e"
 dependencies = [
  "fearless_simd 1.2.0",
  "hayro-ccitt",
@@ -1624,7 +1625,7 @@ dependencies = [
 [[package]]
 name = "hayro-jpeg2000"
 version = "0.4.1"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4723327433598866337194a0d7c5d89f304e5f1e"
 dependencies = [
  "fearless_simd 1.2.0",
 ]
@@ -1632,12 +1633,12 @@ dependencies = [
 [[package]]
 name = "hayro-postscript"
 version = "0.1.0"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4723327433598866337194a0d7c5d89f304e5f1e"
 
 [[package]]
 name = "hayro-syntax"
 version = "0.8.0"
-source = "git+https://github.com/trypsynth/hayro?branch=paperback#4463b6897f7c115bb0f818827a99bc3d489e2393"
+source = "git+https://github.com/trypsynth/hayro?branch=paperback#4723327433598866337194a0d7c5d89f304e5f1e"
 dependencies = [
  "flate2",
  "hayro-ccitt",
@@ -2417,6 +2418,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
+name = "memmap2"
+version = "0.9.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b0ca1155a9ecc25aa12e8313a119f32edf0255fea2f44839c4ac0a12b2ac157"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "minimal-lexical"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2955,7 +2965,7 @@ dependencies = [
 
 [[package]]
 name = "paperback"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "base64 0.23.1",
@@ -2992,7 +3002,7 @@ dependencies = [
 
 [[package]]
 name = "paperback-core"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "base64 0.23.1",
@@ -3029,12 +3039,14 @@ dependencies = [
  "roxmltree",
  "rstest",
  "rtf-parser",
+ "rustc-hash",
  "scraper",
  "serde",
  "serde_json",
  "sha1 0.11.0",
  "shipfitter",
  "skrifa 0.46.2",
+ "smallvec",
  "thiserror 2.0.21",
  "toml 1.1.8+spec-1.1.0",
  "tracing",
@@ -3048,7 +3060,7 @@ dependencies = [
 
 [[package]]
 name = "paperback-formats"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "bitflags 2.13.2",
 ]
@@ -3140,13 +3152,15 @@ dependencies = [
 
 [[package]]
 name = "pb"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "clap",
+ "embed-manifest",
  "glob",
  "native-ocr",
  "paperback-core",
+ "rayon",
  "rpassword",
  "tempfile",
  "tracing-subscriber",

@@ -3,7 +3,7 @@ members = ["crates/paperback", "crates/paperback-core", "crates/paperback-format
 resolver = "2"
 
 [workspace.package]
-version = "1.0.0"
+version = "1.1.0"
 edition = "2024"
 rust-version = "1.91.1"
 license = "MIT"
@@ -59,3 +59,97 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
+
+# These are where reading and converting a document spends its time; size stays the goal for the GUI toolkit and everything else.
+[profile.release.package.paperback-core]
+opt-level = 3
+
+[profile.release.package.paperback-formats]
+opt-level = 3
+
+[profile.release.package.memchr]
+opt-level = 3
+
+[profile.release.package.aho-corasick]
+opt-level = 3
+
+[profile.release.package.regex]
+opt-level = 3
+
+[profile.release.package.regex-automata]
+opt-level = 3
+
+[profile.release.package.regex-syntax]
+opt-level = 3
+
+[profile.release.package.roxmltree]
+opt-level = 3
+
+[profile.release.package.quick-xml]
+opt-level = 3
+
+[profile.release.package.html5ever]
+opt-level = 3
+
+[profile.release.package.markup5ever]
+opt-level = 3
+
+[profile.release.package.scraper]
+opt-level = 3
+
+[profile.release.package.ego-tree]
+opt-level = 3
+
+[profile.release.package.pulldown-cmark]
+opt-level = 3
+
+[profile.release.package.encoding_rs]
+opt-level = 3
+
+[profile.release.package.chardetng]
+opt-level = 3
+
+[profile.release.package.miniz_oxide]
+opt-level = 3
+
+[profile.release.package.flate2]
+opt-level = 3
+
+[profile.release.package.zip]
+opt-level = 3
+
+[profile.release.package.hayro]
+opt-level = 3
+
+[profile.release.package.hayro-interpret]
+opt-level = 3
+
+[profile.release.package.hayro-syntax]
+opt-level = 3
+
+[profile.release.package.hayro-cmap]
+opt-level = 3
+
+[profile.release.package.kurbo]
+opt-level = 3
+
+[profile.release.package.rtf-parser]
+opt-level = 3
+
+[profile.release.package.unicode-bidi]
+opt-level = 3
+
+[profile.release.package.icu_normalizer]
+opt-level = 3
+
+[profile.release.package.icu_properties]
+opt-level = 3
+
+[profile.release.package.libchm]
+opt-level = 3
+
+[profile.release.package.libhlp]
+opt-level = 3
+
+[profile.release.package.cfb]
+opt-level = 3

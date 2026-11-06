@@ -35,65 +35,60 @@ pub(crate) use patois::t;
 #[doc(hidden)]
 pub fn dump_pdf_page_chars(path: &str, password: Option<&str>, page: i32) -> Result<String, String> {
 	use std::fmt::Write as _;
-	let document = pdf_engine::PdfDocument::open(path, password).map_err(|error| error.to_string())?;
-	let page = document.page(page).map_err(|error| error.to_string())?;
+	let document = pdf_engine::Document::open(path, password).map_err(|error| error.to_string())?;
+	let page = document.page(usize::try_from(page).unwrap_or(usize::MAX)).map_err(|error| error.to_string())?;
 	let mut out = String::new();
-	for i in 0..page.object_count() {
-		if let Some(object) = page.object(i)
-			&& object.kind() != pdf_engine::ObjectKind::Other
-		{
+	for (i, object) in page.objects().enumerate() {
+		if object.kind() != pdf_engine::ObjectKind::Other {
 			let _ = writeln!(out, "object {i} {:?} {:?}", object.kind(), object.bounds());
 		}
 	}
-	for image in page.announced_images() {
-		let _ = writeln!(out, "announced image {} top {:.2}", image.path, image.top);
+	for image in page.images() {
+		let _ = writeln!(out, "image {} top {:.2}", image.id, image.bounds.top);
 	}
 	fn walk(tag: &pdf_engine::Tag<'_>, depth: usize, out: &mut String) {
 		let mut line = format!("{}{}", "  ".repeat(depth), tag.kind().unwrap_or_default());
-		for i in 0..tag.child_count() {
-			if let Some(child) = tag.child(i) {
-				out.push_str(&line);
-				out.push('\n');
-				line = "  ".repeat(depth) + "  ...";
-				walk(&child, depth + 1, out);
-			} else if let Some(mcid) = tag.child_mcid(i) {
-				let _ = write!(line, " {mcid}");
-			} else {
-				line.push_str(" -");
+		for child in tag.children() {
+			match child {
+				pdf_engine::TagChild::Tag(child) => {
+					out.push_str(&line);
+					out.push('\n');
+					line = "  ".repeat(depth) + "  ...";
+					walk(&child, depth + 1, out);
+				}
+				pdf_engine::TagChild::Content(mcid) => {
+					let _ = write!(line, " {mcid}");
+				}
 			}
 		}
 		out.push_str(&line);
 		out.push('\n');
 	}
 	if let Some(tree) = page.tags() {
-		for i in 0..tree.child_count() {
-			match tree.child(i) {
-				Some(tag) => walk(&tag, 0, &mut out),
-				None => out.push_str("(root child not on page)\n"),
-			}
+		for tag in tree.roots() {
+			walk(&tag, 0, &mut out);
 		}
 	}
 	let text = page.text();
-	for i in 0..text.char_count() {
-		let ch = char::from_u32(text.unicode_at(i))
-			.map_or_else(|| format!("U+{:04X}", text.unicode_at(i)), |ch| format!("{ch:?}"));
-		let (x, y) = text.char_origin(i).unwrap_or_default();
-		let boxed = text
-			.char_box(i)
-			.map(|b| format!("{:.2} {:.2} {:.2} {:.2}", b.left, b.bottom, b.right, b.top))
-			.unwrap_or_default();
-		let font = text.font(i).map(|font| format!("{} {}", font.name, font.flags)).unwrap_or_default();
-		let generated = if text.is_generated(i) { "gen" } else { "   " };
-		let marks = text
-			.text_object(i)
+	for (i, page_char) in text.chars().enumerate() {
+		let ch = char::from_u32(page_char.unicode())
+			.map_or_else(|| format!("U+{:04X}", page_char.unicode()), |ch| format!("{ch:?}"));
+		let origin = page_char.origin();
+		let (x, y) = (origin.x, origin.y);
+		let b = page_char.bounds();
+		let boxed = format!("{:.2} {:.2} {:.2} {:.2}", b.left, b.bottom, b.right, b.top);
+		let font = page_char.font().map(|font| format!("{} {}", font.name, font.flags.bits())).unwrap_or_default();
+		let generated = if page_char.is_generated() { "gen" } else { "   " };
+		let marks = page_char
+			.text_object()
 			.map(|object| {
-				let ids: Vec<String> = (0..object.mark_count())
-					.filter_map(|m| object.mark(m))
+				let ids: Vec<String> = object
+					.marks()
 					.map(|mark| {
 						format!(
 							"{}:{}",
 							mark.name().unwrap_or_default(),
-							mark.param_int("MCID").map_or_else(String::new, |id| id.to_string())
+							mark.mcid().map_or_else(String::new, |id| id.to_string())
 						)
 					})
 					.collect();
@@ -103,7 +98,7 @@ pub fn dump_pdf_page_chars(path: &str, password: Option<&str>, page: i32) -> Res
 		let _ = writeln!(
 			out,
 			"{i:>6} {ch:<10} {generated} ({x:.2}, {y:.2}) [{boxed}] size {:.2} {font} {marks}",
-			text.font_size(i)
+			page_char.font_size()
 		);
 	}
 	Ok(out)

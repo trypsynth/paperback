@@ -57,32 +57,62 @@ pub fn url_decode(input: &str) -> String {
 
 #[must_use]
 pub fn collapse_whitespace(input: &str) -> String {
-	if input.is_empty() {
-		return String::new();
-	}
 	let mut result = String::with_capacity(input.len());
 	let mut in_leading = true;
 	let mut pending_space = false;
-	for ch in input.chars() {
-		if is_space_like(ch) {
-			if in_leading {
-				result.push(' ');
-			} else {
+	// Text between spaces is copied a run at a time, which is where a book's conversion spent most of its time.
+	let mut run_start = 0;
+	let mut from = 0;
+	while let Some((index, len)) = next_space_like(input, from) {
+		if in_leading {
+			if index > run_start {
+				in_leading = false;
+				result.push_str(&input[run_start..index]);
 				pending_space = true;
+			} else {
+				result.push(' ');
 			}
-		} else {
-			in_leading = false;
+		} else if index > run_start {
 			if pending_space {
 				result.push(' ');
-				pending_space = false;
 			}
-			result.push(ch);
+			result.push_str(&input[run_start..index]);
+			pending_space = true;
+		} else {
+			pending_space = true;
 		}
+		from = index + len;
+		run_start = from;
 	}
-	if pending_space {
+	if run_start < input.len() {
+		if pending_space {
+			result.push(' ');
+		}
+		result.push_str(&input[run_start..]);
+	} else if pending_space {
 		result.push(' ');
 	}
 	result
+}
+
+/// Where the next space-like char at or after `from` starts, and its length in bytes. Only the bytes that can begin one are decoded, which every space-like char outside ASCII begins with.
+pub(crate) fn next_space_like(input: &str, from: usize) -> Option<(usize, usize)> {
+	let bytes = input.as_bytes();
+	let mut index = from;
+	while let Some(&byte) = bytes.get(index) {
+		match byte {
+			b' ' | b'\t' | b'\n' | 0x0B | 0x0C | b'\r' => return Some((index, 1)),
+			0xC2 | 0xE1 | 0xE2 | 0xE3 => {
+				let ch = input[index..].chars().next()?;
+				if is_space_like(ch) {
+					return Some((index, ch.len_utf8()));
+				}
+				index += ch.len_utf8();
+			}
+			_ => index += 1,
+		}
+	}
+	None
 }
 
 #[must_use]
@@ -231,6 +261,73 @@ mod tests {
 	#[case('x', false)]
 	fn test_is_space_like_variants(#[case] ch: char, #[case] expected: bool) {
 		assert_eq!(is_space_like(ch), expected);
+	}
+
+	#[test]
+	fn next_space_like_agrees_with_is_space_like_for_every_char() {
+		for ch in (0..=0x10_FFFF).filter_map(char::from_u32) {
+			let text = format!("a{ch}b");
+			let found = next_space_like(&text, 0);
+			if is_space_like(ch) {
+				assert_eq!(found, Some((1, ch.len_utf8())), "{:04X}", u32::from(ch));
+			} else {
+				assert_eq!(found, None, "{:04X}", u32::from(ch));
+			}
+		}
+	}
+
+	/// The run-at-a-time version must give exactly what the char-at-a-time one did.
+	#[test]
+	fn collapse_whitespace_matches_a_char_at_a_time() {
+		fn reference(input: &str) -> String {
+			let mut result = String::new();
+			let (mut in_leading, mut pending_space) = (true, false);
+			for ch in input.chars() {
+				if is_space_like(ch) {
+					if in_leading {
+						result.push(' ');
+					} else {
+						pending_space = true;
+					}
+				} else {
+					in_leading = false;
+					if pending_space {
+						result.push(' ');
+						pending_space = false;
+					}
+					result.push(ch);
+				}
+			}
+			if pending_space {
+				result.push(' ');
+			}
+			result
+		}
+		let pieces = [
+			"a",
+			"bc",
+			" ",
+			"  ",
+			"\t",
+			"\n",
+			"\u{a0}",
+			"\u{200b}",
+			"\u{3000}",
+			"\u{3001}",
+			"é",
+			"\u{2028}",
+			"x\u{2000}y",
+		];
+		let mut seed = 7_u32;
+		for _ in 0..20_000 {
+			let mut input = String::new();
+			for _ in 0..(seed % 9) {
+				seed = seed.wrapping_mul(1_103_515_245).wrapping_add(12_345);
+				input.push_str(pieces[(seed >> 16) as usize % pieces.len()]);
+			}
+			seed = seed.wrapping_mul(1_103_515_245).wrapping_add(12_345);
+			assert_eq!(collapse_whitespace(&input), reference(&input), "{input:?}");
+		}
 	}
 
 	#[test]

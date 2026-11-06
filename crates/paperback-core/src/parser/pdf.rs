@@ -7,7 +7,7 @@ use crate::{
 	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	ocr::image_only_placeholder,
 	parser::{Parser, add_heading_markers, util::path::extract_title_from_path},
-	pdf_engine::{PAGE_IMAGE_COVERAGE, PdfDocument, PdfError, PdfPage},
+	pdf_engine::{Document as PdfDocument, Error as PdfError, Page},
 };
 
 mod images;
@@ -20,10 +20,12 @@ mod tagged;
 mod text;
 mod toc;
 
-use images::{append_image, images_before_each_paragraph, page_largest_image_coverage};
+use images::{
+	PAGE_IMAGE_COVERAGE, announced_images, append_image, images_before_each_paragraph, page_largest_image_coverage,
+};
 pub(super) use links::{PendingLink, place_links};
 use links::{collect_annotation_links, collect_web_links};
-use metadata::{map_load_error, metadata_title, metadata_value};
+use metadata::{cleaned_metadata, map_load_error, metadata_title};
 use paragraphs::join_paragraphs;
 pub(super) use paragraphs::split_lines;
 pub use paragraphs::{join_wrapped_lines, join_wrapped_runs};
@@ -51,8 +53,8 @@ struct PageContent {
 }
 
 fn read_page(
-	page: Result<PdfPage<'_>, PdfError>,
-	page_index: i32,
+	page: Result<Page<'_>, PdfError>,
+	page_index: usize,
 	render_tables_inline: bool,
 	evidence: &mut PageEvidence,
 ) -> PageContent {
@@ -62,10 +64,10 @@ fn read_page(
 	};
 	let text_page = page.text();
 	// Taken before the text so a tagged page whose tree names no figure can place its images among its blocks as it writes them.
-	let announced = page.announced_images();
+	let announced = announced_images(&page);
 	let mut content = PageContent {
-		image_tops: announced.iter().map(|image| image.top).collect(),
-		image_paths: announced.into_iter().map(|image| image.path).collect(),
+		image_tops: announced.iter().map(|image| image.bounds.top).collect(),
+		image_paths: announced.iter().map(|image| image.id.to_string()).collect(),
 		largest_image_coverage: page_largest_image_coverage(&page),
 		..Default::default()
 	};
@@ -295,11 +297,11 @@ pub(super) fn resolve_headings(
 }
 
 /// Runs of neighbouring pages, so the pages a thread judges hyphens by lie close to the ones it reads.
-const RUN_LENGTH: i32 = 16;
+const RUN_LENGTH: usize = 16;
 
 /// Each thread keeps one page cache so a book's fonts are read once per thread, and reads runs in order so [`PageEvidence`] judges almost every hyphen from its own pages; the few it misjudges are read again against every page.
-fn read_pages(document: &PdfDocument, page_count: i32, render_tables_inline: bool) -> Vec<PageContent> {
-	let runs = usize::try_from((page_count + RUN_LENGTH - 1) / RUN_LENGTH).unwrap_or(0);
+fn read_pages(document: &PdfDocument, page_count: usize, render_tables_inline: bool) -> Vec<PageContent> {
+	let runs = page_count.div_ceil(RUN_LENGTH);
 	let threads = std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get).clamp(1, runs.max(1));
 	let (read, words): (Vec<_>, Vec<_>) = std::thread::scope(|scope| {
 		#[allow(clippy::needless_collect, reason = "every thread has to be started before the first one is waited on")]
@@ -310,7 +312,7 @@ fn read_pages(document: &PdfDocument, page_count: i32, render_tables_inline: boo
 					let mut words = WordPages::default();
 					let mut pages = Vec::new();
 					for run in (thread..runs).step_by(threads) {
-						let start = i32::try_from(run).unwrap_or(i32::MAX).saturating_mul(RUN_LENGTH);
+						let start = run * RUN_LENGTH;
 						for index in start..(start + RUN_LENGTH).min(page_count) {
 							let mut evidence = PageEvidence::new(index, std::slice::from_ref(&words));
 							let content = read_page(
@@ -332,7 +334,7 @@ fn read_pages(document: &PdfDocument, page_count: i32, render_tables_inline: boo
 	});
 	let mut read: Vec<_> = read.into_iter().flatten().collect();
 	read.sort_unstable_by_key(|(index, ..)| *index);
-	let misjudged: Vec<i32> = read
+	let misjudged: Vec<usize> = read
 		.iter()
 		.filter(|(index, _, judgements)| !confirms(judgements, *index, &words))
 		.map(|(index, ..)| *index)
@@ -354,7 +356,7 @@ fn read_pages(document: &PdfDocument, page_count: i32, render_tables_inline: boo
 		.collect();
 	let mut pages: Vec<PageContent> = read.into_iter().map(|(_, content, _)| content).collect();
 	for (index, content) in misjudged.into_iter().zip(reread) {
-		pages[usize::try_from(index).unwrap_or(usize::MAX)] = content;
+		pages[index] = content;
 	}
 	pages
 }
@@ -475,7 +477,7 @@ impl Parser for PdfParser {
 			page_lines_info.push(current_lines_info);
 		}
 		let title = metadata_title(&document).unwrap_or_else(|| extract_title_from_path(&context.file_path));
-		let author = metadata_value(&document, "Author").unwrap_or_default();
+		let author = cleaned_metadata(document.metadata().author).unwrap_or_default();
 		let mut toc_items = extract_toc(&document, &page_offsets, &page_lines_info);
 		let toc_source = if !toc_items.is_empty() {
 			"bookmarks"

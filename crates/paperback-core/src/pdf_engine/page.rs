@@ -1,4 +1,4 @@
-// The surface hands coordinates out as `f32`, as pdfium's does, while hayro works in `f64`.
+// What a page keeps is in `f32`, as pdfium's is, while hayro works in `f64`.
 #![allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
 
 use std::sync::Arc;
@@ -14,24 +14,18 @@ use hayro_interpret::{
 use hayro_syntax::object::{Array, Dict, Name};
 
 use super::{
-	PdfDocument, PdfError, PdfTextPage, TagTree, decode_text_string, fonts,
+	Document, Error, TagTree, TextPage, decode_text_string, fonts,
 	text::{FontCache, TextObject},
 };
 
-/// A scanned book with an OCR text layer draws each sheet as one image under its invisible text, and announcing that put an "[Image]" with nothing behind it on every page (#1046).
-pub const PAGE_IMAGE_COVERAGE: f64 = 0.9;
-
-/// A page laid out from HTML draws its spacers and hairline rules as images a fraction of a point across.
-const MIN_IMAGE_SIDE: f32 = 4.0;
-
-/// Owns what was read, the text layer included, so pages can be read on several threads at once and handed back to one.
-pub struct PdfPage<'doc> {
-	document: &'doc PdfDocument,
+/// One page of a document. It owns what was read, the text layer included, so pages can be read on several threads at once and handed back to one.
+pub struct Page<'doc> {
+	document: &'doc Document,
 	index: usize,
 	width: f32,
 	height: f32,
 	objects: Vec<ObjectData>,
-	text: PdfTextPage,
+	text: TextPage,
 }
 
 /// A book sets every page in the same few fonts, and reading them again for each page was half of what loading a page cost.
@@ -43,10 +37,9 @@ impl PageCache<'_> {
 	}
 }
 
-impl<'doc> PdfPage<'doc> {
-	pub(super) fn load(document: &'doc PdfDocument, index: i32, cache: &PageCache<'doc>) -> Result<Self, PdfError> {
-		let index = usize::try_from(index).map_err(|_| PdfError::Failed)?;
-		let page = document.pdf().pages().get(index).ok_or(PdfError::Failed)?;
+impl<'doc> Page<'doc> {
+	pub(super) fn load(document: &'doc Document, index: usize, cache: &PageCache<'doc>) -> Result<Self, Error> {
+		let page = document.pdf().pages().get(index).ok_or(Error::PageOutOfRange)?;
 		let (width, height) = page.render_dimensions();
 		// The bounds only decide what gets drawn, so they are made too large to leave anything out; the collector leaves out what's off the page.
 		let mut context = Context::new(
@@ -59,58 +52,46 @@ impl<'doc> PdfPage<'doc> {
 		let crop = page.intersected_crop_box();
 		let mut collector = Collector { page: Rect::new(crop.x0, crop.y0, crop.x1, crop.y1), ..Collector::default() };
 		interpret_page(page, &mut context, &mut collector);
-		let text = PdfTextPage::build(&collector.text_objects, &collector.objects, width, height, display_matrix(page));
+		let text = TextPage::build(&collector.text_objects, &collector.objects, width, height, display_matrix(page));
 		Ok(Self { document, index, width, height, objects: collector.objects, text })
 	}
 
-	pub const fn width(&self) -> f32 {
-		self.width
+	/// In points, after the page's rotation.
+	pub fn width(&self) -> f64 {
+		f64::from(self.width)
 	}
 
-	pub const fn height(&self) -> f32 {
-		self.height
+	/// In points, after the page's rotation.
+	pub fn height(&self) -> f64 {
+		f64::from(self.height)
 	}
 
-	pub const fn text(&self) -> &PdfTextPage {
+	/// The page's characters.
+	pub const fn text(&self) -> &TextPage {
 		&self.text
 	}
 
+	/// The document's structure tree as this page sees it, or `None` for a document without one.
 	pub fn tags(&self) -> Option<TagTree<'_>> {
-		Some(TagTree::of(self.document.structure()?, i32::try_from(self.index).ok()?))
+		Some(TagTree::of(self.document.structure()?, self.index))
 	}
 
-	pub fn object_count(&self) -> i32 {
-		i32::try_from(self.objects.len()).unwrap_or(i32::MAX)
+	/// The page's text runs and images, in the order they are drawn.
+	pub fn objects(&self) -> impl ExactSizeIterator<Item = PageObject<'_>> {
+		self.objects.iter().map(|data| PageObject { data })
 	}
 
-	pub fn object(&self, index: i32) -> Option<PageObject<'_>> {
-		let data = self.objects.get(usize::try_from(index).ok()?)?;
-		Some(PageObject { data })
-	}
-
-	pub fn announced_images(&self) -> Vec<PageImage<'_>> {
-		let page_area = f64::from(self.width) * f64::from(self.height);
-		let mut images: Vec<PageImage<'_>> = self
-			.images()
-			.filter(|(_, data)| {
-				data.bounds.is_some_and(|bounds| {
-					is_announced_image(
-						(bounds.right - bounds.left).abs(),
-						(bounds.top - bounds.bottom).abs(),
-						page_area,
-					)
-				})
-			})
-			.map(|(index, data)| PageImage::new(index, data))
-			.collect();
-		images.sort_by(|a, b| b.top.total_cmp(&a.top));
-		images
+	/// Every image the page draws, in drawing order.
+	pub fn images(&self) -> impl Iterator<Item = PageImage> {
+		self.image_objects().filter_map(|(index, data)| {
+			let bounds = data.bounds?;
+			Some(PageImage { id: ImageId(index), bounds: rect_of(bounds) })
+		})
 	}
 
 	/// Taken at the resolution the file stores rather than as drawn, so a photo placed small still saves at full size.
-	pub fn image_png(&self, path: &str) -> Option<Vec<u8>> {
-		let index: usize = path.parse().ok()?;
-		let ordinal = self.objects.get(index)?.image?;
+	pub fn image_png(&self, id: ImageId) -> Option<Vec<u8>> {
+		let ordinal = self.objects.get(id.0)?.image?;
 		let page = self.document.pdf().pages().get(self.index)?;
 		let cache = InterpreterCache::new();
 		let mut context = Context::new(
@@ -125,16 +106,18 @@ impl<'doc> PdfPage<'doc> {
 		extractor.png
 	}
 
-	pub fn image_paths_by_mcid(&self) -> std::collections::HashMap<i32, String> {
-		let mut paths = std::collections::HashMap::new();
-		for (index, data) in self.images() {
+	/// Which image each marked content id draws, for a structure tree that tags its figures.
+	pub fn images_by_mcid(&self) -> std::collections::HashMap<i32, ImageId> {
+		let mut images = std::collections::HashMap::new();
+		for (index, data) in self.image_objects() {
 			for mcid in data.marked_content_ids() {
-				paths.entry(mcid).or_insert_with(|| index.to_string());
+				images.entry(mcid).or_insert(ImageId(index));
 			}
 		}
-		paths
+		images
 	}
 
+	/// Draws the page on white at the given width in pixels, keeping its proportions. `None` when the page or the width is empty.
 	pub fn render(&self, width: u32) -> Option<PageBitmap> {
 		if self.width <= 0.0 || self.height <= 0.0 || width == 0 {
 			return None;
@@ -152,6 +135,7 @@ impl<'doc> PdfPage<'doc> {
 		Some(PageBitmap { width, height, rgba: pixmap.data_as_u8_slice().to_vec() })
 	}
 
+	/// The page's link annotations that lead somewhere. A web address that is only written out in the text is in [`TextPage::web_links`] instead.
 	pub fn annotation_links(&self) -> Vec<AnnotationLink> {
 		let Some(page) = self.document.pdf().pages().get(self.index) else { return Vec::new() };
 		let Some(annotations) = page.raw().get::<Array<'_>>(b"Annots") else { return Vec::new() };
@@ -173,16 +157,16 @@ impl<'doc> PdfPage<'doc> {
 			Some(uri) => LinkTarget::Url(uri),
 			None => LinkTarget::Page(self.document.destination_page(annotation)?),
 		};
-		let rect = Bounds {
-			left: rect.x0.min(rect.x1) as f32,
-			bottom: rect.y0.min(rect.y1) as f32,
-			right: rect.x0.max(rect.x1) as f32,
-			top: rect.y0.max(rect.y1) as f32,
+		let rect = super::Rect {
+			left: rect.x0.min(rect.x1),
+			bottom: rect.y0.min(rect.y1),
+			right: rect.x0.max(rect.x1),
+			top: rect.y0.max(rect.y1),
 		};
 		Some(AnnotationLink { rect, target })
 	}
 
-	fn images(&self) -> impl Iterator<Item = (usize, &ObjectData)> {
+	fn image_objects(&self) -> impl Iterator<Item = (usize, &ObjectData)> {
 		self.objects.iter().enumerate().filter(|(_, data)| data.kind == ObjectKind::Image)
 	}
 }
@@ -199,54 +183,76 @@ fn display_matrix(page: &hayro_syntax::page::Page<'_>) -> [f32; 6] {
 	}
 }
 
+/// Where a link goes.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LinkTarget {
 	Url(String),
-	Page(i32),
+	/// The index of a page in the same document.
+	Page(usize),
 }
 
+/// A link annotation on a page.
 #[derive(Debug, Clone, PartialEq)]
 pub struct AnnotationLink {
-	pub rect: Bounds,
+	pub rect: super::Rect,
 	pub target: LinkTarget,
 }
 
-pub struct PageImage<'page> {
-	pub top: f64,
-	pub path: String,
-	_page: std::marker::PhantomData<&'page ()>,
-}
+/// Names an image on its page. It stays valid as long as the document is unchanged, and its text form can be stored and parsed back.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ImageId(usize);
 
-impl PageImage<'_> {
-	fn new(index: usize, data: &ObjectData) -> Self {
-		let top = data.bounds.map_or(0.0, |bounds| f64::from(bounds.top));
-		Self { top, path: index.to_string(), _page: std::marker::PhantomData }
+impl std::fmt::Display for ImageId {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		self.0.fmt(f)
 	}
 }
 
-fn is_announced_image(width: f32, height: f32, page_area: f64) -> bool {
-	let covers_page = page_area > 0.0 && f64::from(width) * f64::from(height) / page_area >= PAGE_IMAGE_COVERAGE;
-	width >= MIN_IMAGE_SIDE && height >= MIN_IMAGE_SIDE && !covers_page
+impl std::str::FromStr for ImageId {
+	type Err = std::num::ParseIntError;
+
+	fn from_str(text: &str) -> Result<Self, Self::Err> {
+		text.parse().map(Self)
+	}
 }
 
+/// An image the page draws.
+pub struct PageImage {
+	pub id: ImageId,
+	pub bounds: super::Rect,
+}
+
+fn rect_of(bounds: Bounds) -> super::Rect {
+	super::Rect {
+		left: f64::from(bounds.left),
+		bottom: f64::from(bounds.bottom),
+		right: f64::from(bounds.right),
+		top: f64::from(bounds.top),
+	}
+}
+
+/// A page drawn to pixels.
 pub struct PageBitmap {
 	pub width: u32,
 	pub height: u32,
+	/// Four bytes a pixel, row by row from the top.
 	pub rgba: Vec<u8>,
 }
 
+/// What a [`PageObject`] is.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ObjectKind {
 	Image,
+	/// A run of text, the only other thing a page keeps.
 	Other,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Bounds {
-	pub left: f32,
-	pub bottom: f32,
-	pub right: f32,
-	pub top: f32,
+pub(super) struct Bounds {
+	pub(super) left: f32,
+	pub(super) bottom: f32,
+	pub(super) right: f32,
+	pub(super) top: f32,
 }
 
 #[derive(Debug, Clone)]
@@ -280,6 +286,7 @@ impl ObjectData {
 	}
 }
 
+/// A run of text or an image drawn on a page.
 pub struct PageObject<'page> {
 	data: &'page ObjectData,
 }
@@ -293,8 +300,9 @@ impl<'page> PageObject<'page> {
 		self.data.kind
 	}
 
-	pub const fn bounds(&self) -> Option<Bounds> {
-		self.data.bounds
+	/// The area the object covers, if it has one.
+	pub fn bounds(&self) -> Option<super::Rect> {
+		self.data.bounds.map(rect_of)
 	}
 
 	/// The outermost id, which is the one pdfium reports.
@@ -302,28 +310,26 @@ impl<'page> PageObject<'page> {
 		self.data.marked_content_id()
 	}
 
-	pub fn mark_count(&self) -> i32 {
-		i32::try_from(self.data.marks.len()).unwrap_or(i32::MAX)
-	}
-
-	pub fn mark(&self, index: i32) -> Option<ObjectMark<'page>> {
-		let mark = self.data.marks.get(usize::try_from(index).ok()?)?;
-		Some(ObjectMark { mark })
+	/// The marked content sequences the object sits in, outermost first.
+	pub fn marks(&self) -> impl ExactSizeIterator<Item = ObjectMark<'page>> + use<'page> {
+		self.data.marks.iter().map(|mark| ObjectMark { mark })
 	}
 }
 
+/// A marked content sequence an object sits in.
 pub struct ObjectMark<'object> {
 	mark: &'object Mark,
 }
 
-impl ObjectMark<'_> {
-	pub fn name(&self) -> Option<String> {
-		Some(self.mark.name.clone()).filter(|name| !name.is_empty())
+impl<'object> ObjectMark<'object> {
+	/// The mark's tag, such as `Artifact` or `P`.
+	pub fn name(&self) -> Option<&'object str> {
+		Some(self.mark.name.as_str()).filter(|name| !name.is_empty())
 	}
 
-	/// Only `MCID` is ever asked for, so it is the only parameter kept.
-	pub fn param_int(&self, key: &str) -> Option<i32> {
-		if key == "MCID" { self.mark.mcid } else { None }
+	/// The id the structure tree refers to the sequence by.
+	pub const fn mcid(&self) -> Option<i32> {
+		self.mark.mcid
 	}
 }
 

@@ -367,3 +367,126 @@ fn an_undescribed_picture_is_shown_and_decoration_is_not() {
 	assert_eq!(images.len(), 1);
 	assert_eq!((images[0].offset, images[0].source.as_str()), (2.into(), "chart.png"));
 }
+
+fn converted_body(body: &str) -> XmlToText {
+	let mut converter = XmlToText::new();
+	assert!(converter.convert(&format!("<root><body>{body}</body></root>")));
+	converter
+}
+
+fn span_text(text: &str, span: &crate::types::FormatInfo) -> String {
+	text.chars().skip(span.offset.get()).take(span.length.get()).collect()
+}
+
+#[test]
+fn a_pre_is_one_block_and_its_code_is_not_marked_again() {
+	let converter = converted_body("<pre><code>a  b\n  c</code></pre>");
+	assert_eq!(converter.get_preformatted().len(), 1);
+	assert_eq!(span_text(converter.get_text(), &converter.get_preformatted()[0]), "a  b\n  c");
+	assert!(converter.get_code().is_empty());
+}
+
+#[test]
+fn a_pre_ending_the_text_stays_inside_it() {
+	let converter = converted_body("<p>one</p><pre>two\n\n</pre>");
+	let text = converter.get_text().to_string();
+	let block = &converter.get_preformatted()[0];
+	assert!((block.offset + block.length).get() <= text.chars().count(), "{text:?}");
+}
+
+#[test]
+fn inline_code_is_marked_where_the_collapsed_line_has_it() {
+	let converter = converted_body("<p>one  two <code>foo</code> three</p>");
+	let text = converter.get_text().to_string();
+	assert_eq!(text, "one two foo three");
+	assert_eq!(span_text(&text, &converter.get_code()[0]), "foo");
+}
+
+#[test]
+fn list_items_know_their_prefix_and_number() {
+	let converter = converted_body("<ol start=\"3\" type=\"a\"><li>one</li><li>two</li></ol><ul><li>three</li></ul>");
+	let text = converter.get_text().to_string();
+	assert_eq!(text, "c. one\nd. two\n\u{2022} three");
+	assert_eq!(converter.get_lists()[0].opening_tag, "<ol type=\"a\">");
+	assert_eq!(converter.get_lists()[1].opening_tag, "<ul>");
+	let items = converter.get_list_items();
+	assert_eq!(items.iter().map(|item| item.number).collect::<Vec<_>>(), [Some(3), Some(4), None]);
+	for item in items {
+		let body: String = text.chars().skip(item.offset.get() + item.prefix_length.get()).take(3).collect();
+		assert!(["one", "two", "thr"].contains(&body.as_str()), "{body}");
+	}
+}
+
+#[test]
+fn superscripts_and_subscripts_are_marked() {
+	let converter = converted_body("<p>x<sup>2</sup> and H<sub>2</sub>O</p>");
+	let text = converter.get_text().to_string();
+	assert_eq!(text, "x2 and H2O");
+	assert_eq!((converter.get_superscripts()[0].offset.get(), converter.get_superscripts()[0].length.get()), (1, 1));
+	assert_eq!((converter.get_subscripts()[0].offset.get(), converter.get_subscripts()[0].length.get()), (8, 1));
+}
+
+fn block_tags(converter: &XmlToText) -> Vec<&'static str> {
+	converter.get_blocks().iter().map(|block| block.tag).collect()
+}
+
+#[test]
+fn wrappers_cover_their_text_and_stay_inside_it() {
+	let converter = converted_body("<p>before</p><blockquote><p>one</p><p>two</p></blockquote>");
+	assert_eq!(block_tags(&converter), ["blockquote"]);
+	assert_eq!(
+		span_text(
+			converter.get_text(),
+			&crate::types::FormatInfo {
+				offset: converter.get_blocks()[0].offset,
+				length: converter.get_blocks()[0].length
+			}
+		),
+		"one\ntwo"
+	);
+}
+
+#[test]
+fn a_break_between_lines_is_recorded_where_the_next_line_starts() {
+	let converter = converted_body("<p>one  <br/>two</p>");
+	assert_eq!(converter.get_text(), "one\ntwo");
+	assert_eq!(block_tags(&converter), ["br"]);
+	assert_eq!(converter.get_blocks()[0].offset.get(), 4);
+}
+
+#[test]
+fn a_break_with_nothing_to_separate_is_not_recorded() {
+	for body in [
+		"<p>one<br/></p><p>two</p>",
+		"<p><br/>one</p>",
+		"<p>one<br/><br/></p>",
+		"<p>one<br/><br/>two</p>",
+		"one<br/><div>two</div>",
+		"one<br/>",
+	] {
+		assert!(converted_body(body).get_blocks().is_empty(), "{body}");
+	}
+}
+
+#[test]
+fn a_break_inside_a_link_keeps_the_words_apart() {
+	let converter = converted_body("<p><a href=\"x\">1<br/>two</a> now</p>");
+	assert_eq!(converter.get_text(), "1 two now");
+	assert_eq!(converter.get_links()[0].text, "1 two");
+	assert!(converter.get_blocks().is_empty());
+}
+
+#[test]
+fn a_break_right_before_a_table_is_not_recorded() {
+	let converter = converted_body("<p>one<br/><table><tr><td>a</td></tr></table></p>");
+	assert!(converter.get_blocks().is_empty());
+}
+
+/// The real pages that did this nested a few thousand unclosed tags; this is far past what the stack ever allowed.
+#[test]
+fn a_document_nested_far_deeper_than_the_stack_still_converts() {
+	let depth = 50_000;
+	let body = format!("{}deep text{}", "<span>".repeat(depth), "</span>".repeat(depth));
+	let converter = converted_body(&body);
+	assert_eq!(converter.get_text(), "deep text");
+}

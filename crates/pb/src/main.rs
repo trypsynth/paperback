@@ -127,17 +127,6 @@ fn run(
 	}
 	let sources = &inputs.sources;
 	let reporting = sources.len() > 1 || matches!(destination, Destination::Directory(_));
-	let mut job = Job {
-		cli,
-		destination,
-		selection,
-		converter: Converter::new(cli),
-		downloads: {
-			let downloads = remote::Downloads::default().with_max_size(megabytes(cli.max_download_size));
-			if cli.no_prompt { downloads } else { downloads.with_prompt(remote::ask_console) }
-		},
-		written: HashMap::new(),
-	};
 	let mut tally = Tally::default();
 	// Before anything is read, so a mistyped pattern isn't learned of only after a long run.
 	for pattern in &inputs.unmatched {
@@ -148,33 +137,142 @@ fn run(
 		eprintln!("pb: {problem}");
 		tally.failed += 1;
 	}
-	for source in sources {
+	let mut written = HashMap::new();
+	let one_at_a_time: Vec<&Source> = if at_once(cli, sources.len()) {
+		let files: Vec<&Source> = sources.iter().filter(|source| matches!(source, Source::File(_))).collect();
+		let mut later = Vec::new();
+		for (source, result) in convert_at_once(cli, destination, selection, &files, &mut written)? {
+			// Asked for after the batch, one at a time, since a prompt can't be shared between documents converting together.
+			if !cli.no_prompt && result.as_ref().is_err_and(|err| err.chain().any(is_needs_password)) {
+				written.retain(|_, claimant| *claimant != source.shown());
+				later.push(source);
+			} else {
+				count(&mut tally, &result);
+			}
+		}
+		later.extend(sources.iter().filter(|source| matches!(source, Source::Link(_))));
+		later
+	} else {
+		sources.iter().collect()
+	};
+	let mut job = Job {
+		cli,
+		destination,
+		selection,
+		converter: Converter::new(cli),
+		downloads: {
+			let downloads = remote::Downloads::default().with_max_size(megabytes(cli.max_download_size));
+			if cli.no_prompt { downloads } else { downloads.with_prompt(remote::ask_console) }
+		},
+		written,
+	};
+	for source in one_at_a_time {
 		let shown = source.shown();
 		// Before converting, so a password prompt says which document it belongs to.
 		if reporting {
 			eprintln!("pb: converting {shown}...");
 		}
-		match job.convert(source, &shown) {
-			Ok(target) => {
-				tally.converted += 1;
-				if reporting && matches!(destination, Destination::Directory(_)) {
-					eprintln!("pb: {shown} -> {}", target.display());
-				}
-			}
-			// Only `--no-prompt`'s refusal counts here; a password given and refused is an ordinary failure, or one problem gets reported twice.
-			Err(err) if err.chain().any(is_needs_password) => {
-				eprintln!("pb: {err:#}");
-				tally.locked += 1;
-			}
-			Err(err) => {
-				eprintln!("pb: {err:#}");
-				tally.failed += 1;
-			}
+		let result = job.convert(source, &shown);
+		if let Some(line) = outcome(&shown, &result, reporting, destination) {
+			eprintln!("{line}");
 		}
+		count(&mut tally, &result);
 	}
 	job.downloads.remove();
 	report(&tally, reporting);
 	Ok(())
+}
+
+/// OCR is left out because it drives the system's own engine, which hasn't been tried from several threads at once.
+fn at_once(cli: &Cli, count: usize) -> bool {
+	cli.jobs != 1 && count > 1 && !cli.ocr_image_pages && !cli.ocr_text_pages
+}
+
+/// Converted on a pool of `--jobs` threads, which the parsers' own parallel work shares, so a batch doesn't start a second set of threads for every document. Names are claimed in input order first, so which of two documents wanting one name gets it doesn't depend on which finishes first.
+fn convert_at_once<'s>(
+	cli: &Cli,
+	destination: &Destination<'_>,
+	selection: Option<&PageSelection>,
+	files: &[&'s Source],
+	written: &mut HashMap<PathBuf, String>,
+) -> Result<Vec<(&'s Source, Result<PathBuf>)>> {
+	let mut results = Vec::new();
+	let mut claimed = Vec::new();
+	for &source in files {
+		let Source::File(input) = source else { continue };
+		let shown = source.shown();
+		let path = match destination {
+			Destination::Directory(dir) => dir.join(target_for(cli, input, selection)),
+			_ => target_for(cli, input, selection),
+		};
+		let target = resolved(&path);
+		if let Some(earlier) = written.get(&target) {
+			results.push((source, Err(anyhow::anyhow!("{earlier} and {shown} are both writing {}", path.display()))));
+		} else {
+			written.insert(target, shown);
+			claimed.push(source);
+		}
+	}
+	for (source, result) in &results {
+		if let Some(line) = outcome(&source.shown(), result, true, destination) {
+			eprintln!("{line}");
+		}
+	}
+	let pool = rayon::ThreadPoolBuilder::new()
+		.num_threads(cli.jobs)
+		.build()
+		.context("failed to start the threads to convert on")?;
+	let converted: Vec<(&Source, Result<PathBuf>)> = pool.install(|| {
+		use rayon::prelude::*;
+		claimed
+			.par_iter()
+			.with_max_len(1)
+			.map(|&source| {
+				let shown = source.shown();
+				let result = match source {
+					Source::File(input) => convert_file(cli, destination, selection, input, &shown),
+					Source::Link(_) => unreachable!("only files are converted at once"),
+				};
+				let deferred = !cli.no_prompt && result.as_ref().is_err_and(|err| err.chain().any(is_needs_password));
+				if !deferred && let Some(line) = outcome(&shown, &result, true, destination) {
+					eprintln!("{line}");
+				}
+				(source, result)
+			})
+			.collect()
+	});
+	results.extend(converted);
+	Ok(results)
+}
+
+/// Its name was claimed before the batch began, so the write is checked against nothing else in the run.
+fn convert_file(
+	cli: &Cli,
+	destination: &Destination<'_>,
+	selection: Option<&PageSelection>,
+	input: &Path,
+	shown: &str,
+) -> Result<PathBuf> {
+	let converted = Converter { cli, remembered: None, prompt: false }.convert(input, shown, selection)?;
+	write_converted(cli, destination, input, shown, selection, &converted, &mut HashMap::new())?;
+	Ok(target_for(cli, input, selection))
+}
+
+/// Only `--no-prompt`'s refusal counts as needing a password; a password given and refused is an ordinary failure, or one problem gets reported twice.
+fn count(tally: &mut Tally, result: &Result<PathBuf>) {
+	match result {
+		Ok(_) => tally.converted += 1,
+		Err(err) if err.chain().any(is_needs_password) => tally.locked += 1,
+		Err(_) => tally.failed += 1,
+	}
+}
+
+fn outcome(shown: &str, result: &Result<PathBuf>, reporting: bool, destination: &Destination<'_>) -> Option<String> {
+	match result {
+		Ok(target) => (reporting && matches!(destination, Destination::Directory(_)))
+			.then(|| format!("pb: {shown} -> {}", target.display())),
+		Err(err) => Some(format!("pb: {err:#}")),
+	}
 }
 
 struct Job<'a> {
@@ -251,11 +349,13 @@ fn report(tally: &Tally, reporting: bool) {
 struct Converter<'a> {
 	cli: &'a Cli,
 	remembered: Option<String>,
+	/// Off for documents converted at once: one that would be asked for a password comes back to be asked one at a time.
+	prompt: bool,
 }
 
 impl<'a> Converter<'a> {
 	const fn new(cli: &'a Cli) -> Self {
-		Self { cli, remembered: None }
+		Self { cli, remembered: None, prompt: true }
 	}
 
 	fn password(&self) -> Option<&String> {
@@ -264,13 +364,8 @@ impl<'a> Converter<'a> {
 
 	fn convert(&mut self, input: &Path, shown: &str, selection: Option<&PageSelection>) -> Result<String> {
 		let cli = self.cli;
-		let ext = input.extension().and_then(|e| e.to_str()).unwrap_or("");
 		input::check(input)?;
 		let file_path = input.to_string_lossy().into_owned();
-		// This path bypasses the text buffer and its page-break markers, so --pages would be silently dropped.
-		if !cli.metadata && matches!(cli.format, Format::Html) && ext == "epub" && selection.is_none() {
-			return export::epub_direct::render(&file_path).with_context(|| format!("failed to convert {shown}"));
-		}
 		let mut context = ParserContext::new(file_path)
 			.with_render_tables_inline(true)
 			.with_join_pdf_paragraphs(!cli.no_join_paragraphs);
@@ -288,6 +383,9 @@ impl<'a> Converter<'a> {
 				// The parser can't tell a wrong password from a missing one, and without a terminal asking again would wait forever.
 				if self.password().is_some() {
 					return Err(parse_failed(shown, &e));
+				}
+				if !self.prompt {
+					return Err(anyhow::Error::new(NeedsPassword).context(shown.to_string()));
 				}
 				let password = rpassword::prompt_password("Password: ").context("failed to read password")?;
 				context.password = Some(password.clone());
@@ -742,6 +840,70 @@ mod tests {
 				.expect_err("two links, one name")
 				.to_string();
 		assert!(error.contains("download?id=1") && error.contains("download?id=2"), "{error}");
+	}
+
+	fn text_files(dir: &TempDir, names: &[&str]) -> Vec<Source> {
+		names
+			.iter()
+			.map(|name| {
+				let path = dir.join(name);
+				fs::create_dir_all(path.parent().expect("a folder")).expect("mkdir");
+				fs::write(&path, format!("the text of {name}\n")).expect("write");
+				Source::File(path)
+			})
+			.collect()
+	}
+
+	#[test]
+	fn documents_converted_at_once_each_get_their_own_output() {
+		let dir = TempDir::new("at-once");
+		let names: Vec<String> = (0..12).map(|i| format!("book{i}.txt")).collect();
+		let sources = text_files(&dir, &names.iter().map(String::as_str).collect::<Vec<_>>());
+		let out = dir.join("out");
+		fs::create_dir_all(&out).expect("mkdir");
+		let cli =
+			cli::Cli::try_parse_from(["pb", "x", "--output-dir", out.to_str().unwrap(), "-j", "4"]).expect("parse");
+		let destination = destination(&cli, sources.len()).expect("destination");
+		let files: Vec<&Source> = sources.iter().collect();
+		let results = convert_at_once(&cli, &destination, None, &files, &mut HashMap::new()).expect("a pool");
+		assert!(
+			results.iter().all(|(_, result)| result.is_ok()),
+			"{:?}",
+			results.iter().map(|(_, r)| r.as_ref().err().map(ToString::to_string)).collect::<Vec<_>>()
+		);
+		for name in &names {
+			let written = fs::read_to_string(out.join(name)).expect("an output for every document");
+			assert!(written.contains(&format!("the text of {name}")), "{written}");
+		}
+	}
+
+	#[test]
+	fn the_first_listed_of_two_documents_wanting_one_name_gets_it_whichever_finishes_first() {
+		let dir = TempDir::new("at-once-collision");
+		let sources = text_files(&dir, &["a/book.txt", "b/book.txt"]);
+		let out = dir.join("out");
+		fs::create_dir_all(&out).expect("mkdir");
+		let cli =
+			cli::Cli::try_parse_from(["pb", "x", "--output-dir", out.to_str().unwrap(), "-j", "2"]).expect("parse");
+		let destination = destination(&cli, 2).expect("destination");
+		let files: Vec<&Source> = sources.iter().collect();
+		let results = convert_at_once(&cli, &destination, None, &files, &mut HashMap::new()).expect("a pool");
+		let failed: Vec<String> =
+			results.iter().filter(|(_, result)| result.is_err()).map(|(source, _)| source.shown()).collect();
+		assert_eq!(failed.len(), 1, "{failed:?}");
+		assert!(failed[0].contains('b'), "the second listed should be the one refused: {failed:?}");
+		assert!(fs::read_to_string(out.join("book.txt")).expect("read").contains("a/book.txt"));
+	}
+
+	#[test]
+	fn ocr_and_a_single_document_are_converted_one_at_a_time() {
+		let parse = |args: &[&str]| cli::Cli::try_parse_from(args).expect("parse");
+		assert!(at_once(&parse(&["pb", "x", "-j", "4"]), 2));
+		assert!(at_once(&parse(&["pb", "x", "-j", "0"]), 2));
+		assert!(at_once(&parse(&["pb", "x"]), 2), "at once is the default");
+		assert!(!at_once(&parse(&["pb", "x", "-j", "1"]), 2));
+		assert!(!at_once(&parse(&["pb", "x", "-j", "4"]), 1));
+		assert!(!at_once(&parse(&["pb", "x", "-j", "4", "--ocr-image-pages"]), 2));
 	}
 
 	#[test]

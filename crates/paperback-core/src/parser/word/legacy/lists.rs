@@ -103,7 +103,8 @@ fn read_plf_lfo(table: &[u8], (fc, lcb): (usize, usize)) -> Option<HashMap<Strin
 			let flags = u32::from_le_bytes(lfolvl[4..8].try_into().ok()?);
 			let ilvl = usize::try_from(flags & 0xF).ok()?;
 			data_at += 8;
-			if flags & 0x10 != 0 {
+			// The format caps a start at 0x7FFF; larger ones have come from tables this reader misaligned, and a count of millions spells out as a line of one repeated letter.
+			if flags & 0x10 != 0 && (0..=0x7FFF).contains(&start) {
 				instance.start_overrides.insert(ilvl, start);
 			}
 			if flags & 0x20 != 0 {

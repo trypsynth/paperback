@@ -3,9 +3,7 @@ use std::collections::{HashMap, HashSet};
 use super::super::text::{
 	LINE_END_HYPHEN, PageEvidence, SpaceFilter, char_top, context_chars, page_chars, reorder_run,
 };
-use crate::pdf_engine::{PageObject, PdfTextPage, Tag, TagTree};
-
-const MCID_KEY: &str = "MCID";
+use crate::pdf_engine::{PageChar, PageObject, Tag, TagChild, TagTree, TextPage};
 
 /// Some PDFs advertise a structure tree while leaving their text essentially untagged (no ids, or only `/Artifact` marks).
 pub(super) const MIN_MCID_COVERAGE: f64 = 0.5;
@@ -21,10 +19,8 @@ pub(super) struct TreeFacts {
 impl TreeFacts {
 	pub(super) fn of(struct_tree: &TagTree) -> Self {
 		let mut facts = Self::default();
-		for i in 0..struct_tree.child_count() {
-			if let Some(child) = struct_tree.child(i) {
-				facts.gather(&child);
-			}
+		for child in struct_tree.roots() {
+			facts.gather(&child);
 		}
 		facts
 	}
@@ -39,11 +35,10 @@ impl TreeFacts {
 		if elem.kind().unwrap_or_default() == "Figure" {
 			self.claims_figures = true;
 		}
-		let count = elem.child_count();
-		for i in 0..count {
-			if let Some(child) = elem.child(i) {
+		for child in elem.children() {
+			if let TagChild::Tag(child) = child {
 				self.gather(&child);
-			} else if let Some(mcid) = elem.child_mcid(i) {
+			} else if let TagChild::Content(mcid) = child {
 				self.note_reference(mcid);
 			}
 		}
@@ -76,7 +71,7 @@ impl<'a> PageText<'a> {
 
 /// `want_tops` costs one more lookup per id, so only a page placing images by height asks for it.
 pub(super) fn read(
-	text_page: &PdfTextPage,
+	text_page: &TextPage,
 	facts: &TreeFacts,
 	want_tops: bool,
 	evidence: &mut PageEvidence,
@@ -91,9 +86,9 @@ pub(super) fn read(
 	let char_count = text_page.char_count();
 	let mut current_mcid = -1;
 	// Kept with their pdfium index so RTL runs can be reordered visual to logical per run.
-	let mut current_chars: Vec<(char, i32)> = Vec::new();
+	let mut current_chars: Vec<(char, usize)> = Vec::new();
 	let spaces = SpaceFilter::new(char_count);
-	let page = page_chars(text_page, char_count);
+	let page = page_chars(text_page);
 	let context = context_chars(&page);
 	evidence.add_chars(&context);
 	for (at, (i, &ch)) in (0..char_count).zip(page.iter()).enumerate() {
@@ -109,9 +104,10 @@ pub(super) fn read(
 			if ch == ' ' && spaces.hides(text_page, i) {
 				continue;
 			}
-			let is_generated = text_page.is_generated(i);
+			let page_char = text_page.char(i);
+			let is_generated = page_char.is_some_and(PageChar::is_generated);
 			let mut char_mcid = -1;
-			if !is_generated && let Some(obj) = text_page.text_object(i) {
+			if !is_generated && let Some(obj) = page_char.and_then(PageChar::text_object) {
 				char_mcid = object_mcid(&obj, &facts.referenced);
 				if want_order && char_mcid >= 0 && char_mcid != current_mcid && seen.insert(char_mcid) {
 					order.push(char_mcid);
@@ -179,14 +175,13 @@ pub(super) fn fold_repeated_references(
 /// Apple Pages nests marks (the list's wraps the item's wraps the label's), so the outermost id pdfium reports leaves the ids the tree points at empty; the innermost referenced one is taken.
 fn object_mcid(obj: &PageObject, referenced: &HashSet<i32>) -> i32 {
 	let outermost = obj.marked_content_id().unwrap_or(-1);
-	let count = obj.mark_count();
-	if count <= 1 {
+	let marks = obj.marks();
+	if marks.len() <= 1 {
 		return outermost;
 	}
 	let mut deepest = outermost;
-	for index in 0..count {
-		let Some(mark) = obj.mark(index) else { continue };
-		if let Some(mcid) = mark.param_int(MCID_KEY)
+	for mark in marks {
+		if let Some(mcid) = mark.mcid()
 			&& referenced.contains(&mcid)
 		{
 			deepest = mcid;
@@ -196,17 +191,16 @@ fn object_mcid(obj: &PageObject, referenced: &HashSet<i32>) -> i32 {
 }
 
 fn is_artifact(obj: &PageObject) -> bool {
-	(0..obj.mark_count()).filter_map(|index| obj.mark(index)).any(|mark| mark.name().as_deref() == Some("Artifact"))
+	obj.marks().any(|mark| mark.name() == Some("Artifact"))
 }
 
 pub(super) fn first_marked_content_id(elem: &Tag) -> Option<i32> {
-	let count = elem.child_count();
-	for i in 0..count {
-		if let Some(child) = elem.child(i) {
+	for child in elem.children() {
+		if let TagChild::Tag(child) = child {
 			if let Some(mcid) = first_marked_content_id(&child) {
 				return Some(mcid);
 			}
-		} else if let Some(mcid) = elem.child_mcid(i) {
+		} else if let TagChild::Content(mcid) = child {
 			return Some(mcid);
 		}
 	}
@@ -218,11 +212,10 @@ pub(super) fn collect_text(elem: &Tag, mcid_to_text: &HashMap<i32, String>, out:
 }
 
 fn collect_unread_text(elem: &Tag, page_text: &mut PageText, out: &mut String) {
-	let count = elem.child_count();
-	for i in 0..count {
-		if let Some(child) = elem.child(i) {
+	for child in elem.children() {
+		if let TagChild::Tag(child) = child {
 			collect_unread_text(&child, page_text, out);
-		} else if let Some(mcid) = elem.child_mcid(i)
+		} else if let TagChild::Content(mcid) = child
 			&& let Some(text) = page_text.take(mcid)
 		{
 			out.push_str(text);

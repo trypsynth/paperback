@@ -7,14 +7,14 @@ pub fn collect_element_text(node: Node) -> String {
 	text.trim().to_string()
 }
 
+/// In document order, which is what `descendants` walks, without recursing through a deeply nested document.
 fn collect_text_recursive(node: Node, text: &mut String) {
-	if node.node_type() == NodeType::Text
-		&& let Some(t) = node.text()
-	{
-		text.push_str(t);
-	}
-	for child in node.children() {
-		collect_text_recursive(child, text);
+	for descendant in node.descendants() {
+		if descendant.node_type() == NodeType::Text
+			&& let Some(t) = descendant.text()
+		{
+			text.push_str(t);
+		}
 	}
 }
 
@@ -26,14 +26,13 @@ pub fn collect_text_from_tagged_elements(node: Node, tag_name: &str) -> String {
 }
 
 fn collect_tagged_text_recursive(node: Node, tag_name: &str, text: &mut String) {
-	if node.node_type() == NodeType::Element
-		&& node.tag_name().name() == tag_name
-		&& let Some(t) = node.text()
-	{
-		text.push_str(t);
-	}
-	for child in node.children() {
-		collect_tagged_text_recursive(child, tag_name, text);
+	for descendant in node.descendants() {
+		if descendant.node_type() == NodeType::Element
+			&& descendant.tag_name().name() == tag_name
+			&& let Some(t) = descendant.text()
+		{
+			text.push_str(t);
+		}
 	}
 }
 
