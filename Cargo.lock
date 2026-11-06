@@ -3155,6 +3155,7 @@ version = "1.1.0"
 dependencies = [
  "anyhow",
  "clap",
+ "embed-manifest",
  "glob",
  "native-ocr",
  "paperback-core",
