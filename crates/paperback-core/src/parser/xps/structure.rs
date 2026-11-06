@@ -25,28 +25,19 @@ pub(super) struct Fragment {
 	pub blocks: Vec<Block>,
 }
 
-fn blocks_in(parent: Node) -> Vec<Block> {
+/// Lists and tables nested deeper than this are read as the paragraphs in them. No document nests them anywhere near as deep, and what is read from them is written by recursion.
+const MAX_NESTING: usize = 64;
+
+/// The elements still to read, first one last.
+fn pending_children<'a, 'input>(parent: Node<'a, 'input>) -> Vec<Node<'a, 'input>> {
+	parent.children().filter(Node::is_element).rev().collect()
+}
+
+/// A container only groups what is in it, so its children are read in its place, from a list rather than by a call for each container.
+fn blocks_in(parent: Node, nesting: usize) -> Vec<Block> {
 	let mut blocks = Vec::new();
-	read_blocks(parent, &mut blocks);
-	blocks
-}
-
-fn blocks_of_each(parent: Node, element: &str) -> Vec<Vec<Block>> {
-	parent.children().filter(|child| is_element(*child, element)).map(blocks_in).collect()
-}
-
-fn read_rows(parent: Node, rows: &mut Vec<Vec<Vec<Block>>>) {
-	for element in parent.children().filter(Node::is_element) {
-		match element.tag_name().name() {
-			"TableRowStructure" => rows.push(blocks_of_each(element, "TableCellStructure")),
-			"TableRowGroupStructure" => read_rows(element, rows),
-			_ => {}
-		}
-	}
-}
-
-fn read_blocks(parent: Node, blocks: &mut Vec<Block>) {
-	for element in parent.children().filter(Node::is_element) {
+	let mut pending = pending_children(parent);
+	while let Some(element) = pending.pop() {
 		match element.tag_name().name() {
 			"ParagraphStructure" => {
 				let elements = element.descendants().filter(|node| is_element(*node, "NamedElement"));
@@ -56,15 +47,31 @@ fn read_blocks(parent: Node, blocks: &mut Vec<Block>) {
 			"NamedElement" => {
 				blocks.extend(element.attribute("NameReference").map(|name| Block::Paragraph(vec![name.to_string()])));
 			}
-			"ListStructure" => blocks.push(Block::List(blocks_of_each(element, "ListItemStructure"))),
-			"TableStructure" => {
-				let mut rows = Vec::new();
-				read_rows(element, &mut rows);
-				blocks.push(Block::Table(rows));
+			"ListStructure" if nesting < MAX_NESTING => {
+				blocks.push(Block::List(blocks_of_each(element, "ListItemStructure", nesting + 1)));
 			}
-			_ => read_blocks(element, blocks),
+			"TableStructure" if nesting < MAX_NESTING => blocks.push(Block::Table(rows_in(element, nesting + 1))),
+			_ => pending.extend(pending_children(element)),
 		}
 	}
+	blocks
+}
+
+fn blocks_of_each(parent: Node, element: &str, nesting: usize) -> Vec<Vec<Block>> {
+	parent.children().filter(|child| is_element(*child, element)).map(|child| blocks_in(child, nesting)).collect()
+}
+
+fn rows_in(table: Node, nesting: usize) -> Vec<Vec<Vec<Block>>> {
+	let mut rows = Vec::new();
+	let mut pending = pending_children(table);
+	while let Some(element) = pending.pop() {
+		match element.tag_name().name() {
+			"TableRowStructure" => rows.push(blocks_of_each(element, "TableCellStructure", nesting)),
+			"TableRowGroupStructure" => pending.extend(pending_children(element)),
+			_ => {}
+		}
+	}
+	rows
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -97,7 +104,7 @@ pub(super) fn read_fragments(xml: &str) -> Result<Vec<Fragment>> {
 				Some("Footer") => FragmentKind::Footer,
 				_ => FragmentKind::Content,
 			};
-			Fragment { kind, blocks: blocks_in(fragment) }
+			Fragment { kind, blocks: blocks_in(fragment, 0) }
 		})
 		.collect())
 }
@@ -248,6 +255,31 @@ mod tests {
 		let fragments = read_fragments(xml).expect("fragments");
 		assert_eq!(names(&fragments[0].blocks[0]), ["a"]);
 		assert_eq!(names(&fragments[0].blocks[1]), ["b"]);
+	}
+
+	#[test]
+	fn containers_nested_far_deeper_than_the_stack_are_still_walked() {
+		let depth = 50_000;
+		let xml = format!(
+			"<StoryFragments><StoryFragment>{}{}{}</StoryFragment></StoryFragments>",
+			"<SectionStructure>".repeat(depth),
+			r#"<ParagraphStructure><NamedElement NameReference="a"/></ParagraphStructure>"#,
+			"</SectionStructure>".repeat(depth)
+		);
+		assert_eq!(names(&read_fragments(&xml).expect("fragments")[0].blocks[0]), ["a"]);
+	}
+
+	#[test]
+	fn row_groups_nested_far_deeper_than_the_stack_still_give_their_rows() {
+		let depth = 50_000;
+		let block = only_block(&format!(
+			"<TableStructure>{}{}{}</TableStructure>",
+			"<TableRowGroupStructure>".repeat(depth),
+			r#"<TableRowStructure><TableCellStructure><NamedElement NameReference="a"/></TableCellStructure></TableRowStructure>"#,
+			"</TableRowGroupStructure>".repeat(depth)
+		));
+		let Block::Table(rows) = block else { panic!("expected a table") };
+		assert_eq!(names(&rows[0][0][0]), ["a"]);
 	}
 
 	#[test]

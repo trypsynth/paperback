@@ -231,6 +231,31 @@ fn a_list_counts_only_the_items_it_wrote() {
 	assert_eq!(markers(&doc, MarkerType::List)[0].level, 1);
 }
 
+#[test]
+fn a_list_nested_far_deeper_than_the_stack_still_reads() {
+	let depth = 50_000;
+	let list = format!(
+		"{}{}{}",
+		"<ListStructure><ListItemStructure>".repeat(depth),
+		paragraph("a"),
+		"</ListItemStructure></ListStructure>".repeat(depth)
+	);
+	assert_eq!(structured(&run("a", "Deep"), &in_fragment(&list)).expect("read").buffer.content, "Deep\n");
+}
+
+#[test]
+fn a_table_nested_far_deeper_than_the_stack_still_reads() {
+	let depth = 50_000;
+	let table = format!(
+		"{}{}{}",
+		"<TableStructure><TableRowStructure><TableCellStructure>".repeat(depth),
+		paragraph("a"),
+		"</TableCellStructure></TableRowStructure></TableStructure>".repeat(depth)
+	);
+	let doc = structured(&run("a", "Deep"), &in_fragment(&table)).expect("read");
+	assert!(doc.buffer.content.contains("Deep"), "{}", doc.buffer.content);
+}
+
 fn two_by_two() -> String {
 	let cell = |name: &str| format!("<TableCellStructure>{}</TableCellStructure>", paragraph(name));
 	let row = |left: &str, right: &str| format!("<TableRowStructure>{}{}</TableRowStructure>", cell(left), cell(right));

@@ -212,31 +212,50 @@ fn alternate_branch<'a, 'input>(content: Node<'a, 'input>) -> Option<Node<'a, 'i
 	branch("Fallback").or_else(|| branch("Choice"))
 }
 
-fn walk(parent: Node, transform: Affine, page: &mut Page) {
-	for element in parent.children().filter(Node::is_element) {
-		let first_run = page.runs.len();
-		let uri = element.attribute("FixedPage.NavigateUri").map(String::from);
-		match element.tag_name().name() {
-			"Glyphs" => page.runs.extend(read_run(element, transform)),
-			"Canvas" => walk(element, transform * transform_of(element), page),
-			"Path" => {
-				if let (Some(uri), Some(area)) = (uri.clone(), link_area(element, transform)) {
-					page.links.push(PageLink { uri, place: LinkPlace::Area(area) });
+enum Step<'a, 'input> {
+	Enter(Node<'a, 'input>, Affine),
+	/// Once everything under the element is read, so its link and its name cover all the runs it holds.
+	Leave(Node<'a, 'input>, usize),
+}
+
+fn enter_children<'a, 'input>(steps: &mut Vec<Step<'a, 'input>>, parent: Node<'a, 'input>, transform: Affine) {
+	steps.extend(parent.children().filter(Node::is_element).rev().map(|child| Step::Enter(child, transform)));
+}
+
+/// With a list of steps rather than a call for each canvas, so a page nested however deep can't overflow the stack.
+fn walk(root: Node, page: &mut Page) {
+	let mut steps = Vec::new();
+	enter_children(&mut steps, root, Affine::IDENTITY);
+	while let Some(step) = steps.pop() {
+		match step {
+			Step::Enter(element, transform) => {
+				steps.push(Step::Leave(element, page.runs.len()));
+				match element.tag_name().name() {
+					"Glyphs" => page.runs.extend(read_run(element, transform)),
+					"Canvas" => enter_children(&mut steps, element, transform * transform_of(element)),
+					"Path" => {
+						let uri = element.attribute("FixedPage.NavigateUri").map(String::from);
+						if let (Some(uri), Some(area)) = (uri, link_area(element, transform)) {
+							page.links.push(PageLink { uri, place: LinkPlace::Area(area) });
+						}
+					}
+					"AlternateContent" => {
+						if let Some(branch) = alternate_branch(element) {
+							enter_children(&mut steps, branch, transform);
+						}
+					}
+					_ => {}
 				}
 			}
-			"AlternateContent" => {
-				if let Some(branch) = alternate_branch(element) {
-					walk(branch, transform, page);
+			Step::Leave(element, first_run) => {
+				let runs = first_run..page.runs.len();
+				if let Some(uri) = element.attribute("FixedPage.NavigateUri").filter(|_| !runs.is_empty()) {
+					page.links.push(PageLink { uri: uri.to_string(), place: LinkPlace::Runs(runs.clone()) });
+				}
+				if let Some(name) = element.attribute("Name") {
+					page.groups.insert(name.to_string(), runs);
 				}
 			}
-			_ => {}
-		}
-		let runs = first_run..page.runs.len();
-		if let Some(uri) = uri.filter(|_| !runs.is_empty()) {
-			page.links.push(PageLink { uri, place: LinkPlace::Runs(runs.clone()) });
-		}
-		if let Some(name) = element.attribute("Name") {
-			page.groups.insert(name.to_string(), runs);
 		}
 	}
 }
@@ -248,7 +267,7 @@ pub(super) fn read_page(xml: &str) -> Result<Page> {
 		height: root.attribute("Height").and_then(|value| value.parse().ok()).unwrap_or(0.0),
 		..Page::default()
 	};
-	walk(root, Affine::IDENTITY, &mut page);
+	walk(root, &mut page);
 	Ok(page)
 }
 
@@ -407,6 +426,14 @@ mod tests {
 			glyphs("Choice")
 		);
 		assert_eq!(texts(&page(&body)), ["Choice"]);
+	}
+
+	/// Far past what the stack allowed when each canvas was walked by a call of its own.
+	#[test]
+	fn a_page_nested_far_deeper_than_the_stack_still_reads() {
+		let depth = 50_000;
+		let body = format!("{}{}{}", "<Canvas>".repeat(depth), glyphs("deep text"), "</Canvas>".repeat(depth));
+		assert_eq!(texts(&page(&body)), ["deep text"]);
 	}
 
 	#[test]
