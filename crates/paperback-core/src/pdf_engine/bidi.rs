@@ -77,8 +77,21 @@ impl BidiString {
 	}
 }
 
-pub(super) fn overall_direction(text: &[u32]) -> Direction {
-	BidiString::new(text).overall_direction()
+/// `BidiString::new(text).overall_direction()` without building the string: each run of one direction counts once, as its segments do.
+pub(super) fn overall_direction(text: impl IntoIterator<Item = u32>) -> Direction {
+	let (mut right, mut left, mut previous) = (0usize, 0usize, None);
+	for c in text {
+		let direction = direction_of(c);
+		if previous != Some(direction) {
+			match direction {
+				Direction::Right => right += 1,
+				Direction::Left => left += 1,
+				_ => {}
+			}
+			previous = Some(direction);
+		}
+	}
+	if right > left { Direction::Right } else { Direction::Left }
 }
 
 pub(super) fn mirror(c: u32) -> u32 {
@@ -93,6 +106,19 @@ mod tests {
 
 	fn text(s: &str) -> Vec<u32> {
 		s.chars().map(u32::from).collect()
+	}
+
+	/// The counting shortcut must agree with the string it stands in for.
+	#[test]
+	fn overall_direction_matches_the_bidi_string() {
+		for line in ["", "abc", "שלום a עולם", "a ש b ש c", "1 2 ש", "ש ש a a a", "!!! ש", "مرحبا hello مرحبا", "  "]
+		{
+			assert_eq!(
+				super::overall_direction(text(line)),
+				BidiString::new(&text(line)).overall_direction(),
+				"{line:?}"
+			);
+		}
 	}
 
 	#[test]

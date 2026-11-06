@@ -28,6 +28,7 @@ use hayro_syntax::{
 	object::{Array, Dict, Name, Object, Stream},
 };
 use rustc_hash::FxHashMap;
+use smallvec::{SmallVec, smallvec};
 
 use super::{
 	bidi::{self, Direction},
@@ -448,9 +449,12 @@ impl FontCache {
 }
 
 /// One character of a text object: pdfium's `CPDF_TextObject::Item`.
+/// Nearly every glyph maps to one character, so a glyph's text stays inline rather than taking an allocation each.
+type GlyphText = SmallVec<[u32; 2]>;
+
 struct Item {
 	code: u32,
-	unicode: Vec<u32>,
+	unicode: GlyphText,
 	origin: (f32, f32),
 }
 
@@ -516,12 +520,12 @@ impl TextObject {
 		let mut kernings = Vec::with_capacity(glyphs.len());
 		for (index, glyph) in glyphs.iter().enumerate() {
 			let code = glyph.char_code();
-			let unicode: Vec<u32> = match glyph.as_unicode() {
-				Some(BfString::Char(ch)) => vec![u32::from(ch)],
+			let unicode: GlyphText = match glyph.as_unicode() {
+				Some(BfString::Char(ch)) => smallvec![u32::from(ch)],
 				Some(BfString::String(text)) => text.chars().map(u32::from).collect(),
-				None => Vec::new(),
+				None => GlyphText::new(),
 			};
-			if unicode == [32] && font.space_code.get().is_none() {
+			if unicode.as_slice() == [32] && font.space_code.get().is_none() {
 				font.space_code.set(Some(code));
 			}
 			if !font.observed.borrow().contains_key(&code) {
@@ -984,7 +988,8 @@ impl<'p> Builder<'p> {
 	}
 
 	fn process_transformed_text_objects(&mut self) {
-		for index in self.text_objects.clone() {
+		for position in 0..self.text_objects.len() {
+			let index = self.text_objects[position];
 			let object = &self.objects[index];
 			if object.rect.width().abs() < SIZE_EPSILON {
 				continue;
@@ -1070,7 +1075,7 @@ impl<'p> Builder<'p> {
 		let chars: Vec<u32> = actual_text.chars().map(u32::from).collect();
 		let is_rtl = self.is_right_to_left(object)
 			|| (self.prev_text_obj.is_some_and(|prev| self.is_right_to_left(&self.objects[prev]))
-				&& bidi::overall_direction(&chars) == Direction::Right);
+				&& bidi::overall_direction(chars.iter().copied()) == Direction::Right);
 		let mut rect = object.rect;
 		let length = chars.len() as f32;
 		let step = if is_rtl {
@@ -1104,15 +1109,11 @@ impl<'p> Builder<'p> {
 
 	fn is_right_to_left(&self, object: &TextObject) -> bool {
 		let _ = self;
-		let text: Vec<u32> = object
-			.items
-			.iter()
-			.filter_map(|item| {
-				let wc = item.unicode.first().copied().filter(|&c| c != 0).unwrap_or(item.code);
-				(wc != 0).then_some(wc)
-			})
-			.collect();
-		bidi::overall_direction(&text) == Direction::Right
+		let text = object.items.iter().filter_map(|item| {
+			let wc = item.unicode.first().copied().filter(|&c| c != 0).unwrap_or(item.code);
+			(wc != 0).then_some(wc)
+		});
+		bidi::overall_direction(text) == Direction::Right
 	}
 
 	fn reverse_temp_text_bufs(&mut self, char_index: usize, buf_index: usize) {
@@ -1367,7 +1368,7 @@ impl<'p> Builder<'p> {
 			}
 			spacing = 0.0;
 			let (unicode, char_type) = if item.unicode.is_empty() && item.code != 0 {
-				(vec![item.code], CharType::NotUnicode)
+				(smallvec![item.code], CharType::NotUnicode)
 			} else {
 				(item.unicode.clone(), CharType::Normal)
 			};
@@ -1443,8 +1444,8 @@ impl<'p> Builder<'p> {
 		}
 		self.temp_char_list.truncate(write);
 		self.temp_text_buf.truncate(write);
-		let text = std::mem::take(&mut self.temp_text_buf);
-		let chars = std::mem::take(&mut self.temp_char_list);
+		let mut text = std::mem::take(&mut self.temp_text_buf);
+		let mut chars = std::mem::take(&mut self.temp_char_list);
 		let order = bidi::BidiString::new(&text);
 		let mut current = order.overall_direction();
 		for segment in order.segments() {
@@ -1471,6 +1472,11 @@ impl<'p> Builder<'p> {
 				}
 			}
 		}
+		// Handed back empty, so the next line fills the room this one grew instead of growing its own from nothing.
+		text.clear();
+		chars.clear();
+		self.temp_text_buf = text;
+		self.temp_char_list = chars;
 	}
 
 	fn add_char_info(&mut self, wc: u32, mut info: CharInfo, is_rtl: bool) {
