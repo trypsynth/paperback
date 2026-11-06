@@ -134,7 +134,8 @@ pub enum LinkAction {
 }
 
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum SegmentTypeFfi {
 	Paragraph,
 	Line,
