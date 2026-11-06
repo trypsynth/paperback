@@ -18,6 +18,8 @@ pub(super) struct MobiHeader {
 	pub fdst_html_end: Option<usize>,
 	pub document_title: String,
 	pub is_kf8: bool,
+	/// Plain text rather than HTML.
+	pub is_palmdoc: bool,
 }
 
 impl MobiHeader {
@@ -59,6 +61,10 @@ pub(super) fn parse_header(data: &[u8], title_bytes: &[u8]) -> Result<MobiHeader
 	}
 	let compression = u16::from_be_bytes([rec0[0], rec0[1]]);
 	tracing::debug!(compression, "detected mobi compression mode");
+	// PalmDOC, which Mobipocket grew out of, stops after record 0's first 16 bytes: no MOBI header follows, and its text is plain rather than HTML.
+	if data.get(60..68) == Some(b"TEXtREAd".as_slice()) && rec0.get(16..20) != Some(b"MOBI".as_slice()) {
+		return palmdoc_header(rec0, record_offsets, compression, title_bytes);
+	}
 	let mobi_header_offset = 16;
 	if mobi_header_offset + 8 > rec0.len() {
 		tracing::warn!("mobi record 0 is missing the mobi header");
@@ -176,6 +182,38 @@ pub(super) fn parse_header(data: &[u8], title_bytes: &[u8]) -> Result<MobiHeader
 		fdst_html_end,
 		document_title,
 		is_kf8,
+		is_palmdoc: false,
+	})
+}
+
+fn palmdoc_header(
+	rec0: Vec<u8>,
+	record_offsets: Vec<usize>,
+	compression: u16,
+	title_bytes: &[u8],
+) -> Result<MobiHeader> {
+	let text_record_count = usize::from(u16::from_be_bytes([rec0[8], rec0[9]]));
+	if text_record_count == 0 || text_record_count >= record_offsets.len() {
+		tracing::warn!(text_record_count, records = record_offsets.len(), "palmdoc text record count is invalid");
+		anyhow::bail!(t("Invalid content record range"));
+	}
+	let document_title = String::from_utf8_lossy(title_bytes).replace('\0', "").trim().replace('_', " ");
+	// Whatever follows the 16 bytes in some of these files isn't a MOBI header, so none is offered to the readers that look in one.
+	let header_offset = rec0.len();
+	Ok(MobiHeader {
+		rec0,
+		record_offsets,
+		header_offset,
+		header_length: 0,
+		text_encoding: 1252,
+		compression,
+		first_content_record: 1,
+		last_content_record: text_record_count,
+		extra_data_flags: 0,
+		fdst_html_end: None,
+		document_title,
+		is_kf8: false,
+		is_palmdoc: true,
 	})
 }
 

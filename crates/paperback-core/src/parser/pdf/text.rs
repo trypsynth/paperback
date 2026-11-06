@@ -4,6 +4,8 @@ use std::{
 	collections::{HashMap, HashSet},
 };
 
+use smallvec::SmallVec;
+
 use crate::{
 	parser::util::bidi,
 	pdf_engine::{FontFlags, PageChar, Rect, TextPage},
@@ -350,10 +352,11 @@ pub(super) fn reorder_run(text_page: &TextPage, chars: &[(char, usize)]) -> Stri
 
 fn measure_line(text_page: &TextPage, chars: &[(char, usize)]) -> Line {
 	let (top, bottom) = line_edges(text_page, chars);
+	let sampled = sampled_chars(chars);
 	Line {
-		size: line_font_size(text_page, chars),
-		monospaced: line_is_monospaced(text_page, chars),
-		bold: line_is_bold(text_page, chars),
+		size: line_font_size(text_page, &sampled),
+		monospaced: line_is_monospaced(text_page, &sampled),
+		bold: line_is_bold(text_page, &sampled),
 		text: reorder_run(text_page, chars),
 		top,
 		bottom,
@@ -418,14 +421,19 @@ fn effective_font_size(text_page: &TextPage, index: usize) -> f64 {
 const LINE_FONT_SIZE_SAMPLES: usize = 5;
 
 /// Whitespace is skipped because a font may set it in a size of its own.
-fn line_font_size(text_page: &TextPage, chars: &[(char, usize)]) -> f64 {
-	let indices: Vec<usize> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
-	if indices.is_empty() {
+/// The line's non-space characters at an even step, the same few for its size, its boldness and its spacing; each used to collect the whole line again.
+fn sampled_chars(chars: &[(char, usize)]) -> SmallVec<[usize; LINE_FONT_SIZE_SAMPLES + 1]> {
+	let printing = || chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i);
+	let step = printing().count().div_ceil(LINE_FONT_SIZE_SAMPLES).max(1);
+	printing().step_by(step).collect()
+}
+
+fn line_font_size(text_page: &TextPage, sampled: &[usize]) -> f64 {
+	if sampled.is_empty() {
 		return 0.0;
 	}
-	let step = indices.len().div_ceil(LINE_FONT_SIZE_SAMPLES).max(1);
-	let mut sizes: Vec<f64> =
-		indices.iter().step_by(step).map(|&i| effective_font_size(text_page, i)).filter(|size| *size > 0.0).collect();
+	let mut sizes: SmallVec<[f64; LINE_FONT_SIZE_SAMPLES + 1]> =
+		sampled.iter().map(|&i| effective_font_size(text_page, i)).filter(|size| *size > 0.0).collect();
 	sorted_median(&mut sizes)
 }
 
@@ -462,25 +470,14 @@ fn char_is_bold(text_page: &TextPage, index: usize) -> bool {
 }
 
 /// Every sampled character has to be bold: a paragraph that opens with a bold word is not a heading.
-fn line_is_bold(text_page: &TextPage, chars: &[(char, usize)]) -> bool {
-	let indices: Vec<usize> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
-	if indices.is_empty() {
-		return false;
-	}
-	let step = indices.len().div_ceil(LINE_FONT_SIZE_SAMPLES).max(1);
-	indices.iter().step_by(step).all(|&i| char_is_bold(text_page, i))
+fn line_is_bold(text_page: &TextPage, sampled: &[usize]) -> bool {
+	!sampled.is_empty() && sampled.iter().all(|&i| char_is_bold(text_page, i))
 }
 
 /// Most sampled characters have to agree: one word of code quoted in prose does not make the sentence a listing.
-fn line_is_monospaced(text_page: &TextPage, chars: &[(char, usize)]) -> bool {
-	let indices: Vec<usize> = chars.iter().filter(|(c, _)| !c.is_whitespace()).map(|&(_, i)| i).collect();
-	if indices.is_empty() {
-		return false;
-	}
-	let step = indices.len().div_ceil(LINE_FONT_SIZE_SAMPLES).max(1);
-	let sampled: Vec<usize> = indices.iter().step_by(step).copied().collect();
+fn line_is_monospaced(text_page: &TextPage, sampled: &[usize]) -> bool {
 	let monospaced = sampled.iter().filter(|&&i| char_is_monospaced(text_page, i)).count();
-	monospaced * 2 > sampled.len()
+	!sampled.is_empty() && monospaced * 2 > sampled.len()
 }
 
 fn sorted_median(values: &mut [f64]) -> f64 {

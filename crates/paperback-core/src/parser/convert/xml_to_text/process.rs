@@ -21,37 +21,45 @@ use crate::{
 	util::text::{collapse_whitespace, format_list_item, remove_soft_hyphens, trim_string},
 };
 
+enum Step<'a, 'input> {
+	Visit(Node<'a, 'input>),
+	Close(&'a str),
+}
+
 impl XmlToText {
-	pub(super) fn process_node(&mut self, node: Node<'_, '_>) {
-		let (tag_name, skip_children) = match node.node_type() {
-			NodeType::Element => {
-				let tag_name = node.tag_name().name();
-				if Self::is_ignored_element(tag_name) {
-					return;
+	/// Walked with a stack of what's left rather than by recursion, since a deeply nested document overflowed the main thread's stack on Windows.
+	pub(super) fn process_node(&mut self, root: Node<'_, '_>) {
+		let mut pending = vec![Step::Visit(root)];
+		while let Some(step) = pending.pop() {
+			let node = match step {
+				Step::Visit(node) => node,
+				Step::Close(tag_name) => {
+					self.handle_element_closing_xml(tag_name);
+					continue;
 				}
-				if let Some(target) = self.position_watch
-					&& self.in_body
-					&& self.text.get_current_text_position() <= target
-				{
-					self.watched_byte_offset = Some(node.range().start);
+			};
+			match node.node_type() {
+				NodeType::Element => {
+					let tag_name = node.tag_name().name();
+					if Self::is_ignored_element(tag_name) {
+						continue;
+					}
+					if let Some(target) = self.position_watch
+						&& self.in_body
+						&& self.text.get_current_text_position() <= target
+					{
+						self.watched_byte_offset = Some(node.range().start);
+					}
+					let skip_children = self.handle_element_opening_xml(tag_name, node);
+					self.handle_heading_xml(tag_name, node);
+					pending.push(Step::Close(tag_name));
+					if !skip_children {
+						pending.extend(node.children().rev().map(Step::Visit));
+					}
 				}
-				let skip_children = self.handle_element_opening_xml(tag_name, node);
-				self.handle_heading_xml(tag_name, node);
-				(Some(tag_name), skip_children)
+				NodeType::Text => self.process_text_node(node),
+				_ => pending.extend(node.children().rev().map(Step::Visit)),
 			}
-			NodeType::Text => {
-				self.process_text_node(node);
-				(None, false)
-			}
-			_ => (None, false),
-		};
-		if !skip_children {
-			for child in node.children() {
-				self.process_node(child);
-			}
-		}
-		if let Some(tag_name) = tag_name {
-			self.handle_element_closing_xml(tag_name);
 		}
 	}
 
@@ -197,7 +205,8 @@ impl XmlToText {
 
 	/// Described images contribute their placeholders, so a link made of a picture is still a link.
 	fn collect_link_content(node: Node<'_, '_>, text: &mut String, images: &mut Vec<(String, ImageInfo, bool)>) {
-		for child in node.children() {
+		let mut pending: Vec<Node<'_, '_>> = node.children().rev().collect();
+		while let Some(child) = pending.pop() {
 			if let Some(child_text) = child.text().filter(|_| child.is_text()) {
 				text.push_str(child_text);
 			} else if let Some((image_text, info, is_figure)) = Self::described_image(child) {
@@ -207,7 +216,7 @@ impl XmlToText {
 				// A link is one run of text, so without this the words either side of the break would join.
 				text.push(' ');
 			} else {
-				Self::collect_link_content(child, text, images);
+				pending.extend(child.children().rev());
 			}
 		}
 	}

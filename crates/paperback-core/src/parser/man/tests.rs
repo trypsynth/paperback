@@ -239,7 +239,8 @@ fn a_redirect_loop_is_refused_rather_than_followed_forever() {
 	let dir = TempDir::new("man-redirect-loop");
 	dir.write("man1/a.1", ".so man1/b.1\n");
 	let path = dir.write_str("man1/b.1", ".so man1/a.1\n");
-	assert!(ManParser.parse(&ParserContext::new(path)).is_err());
+	let error = ManParser.parse(&ParserContext::new(path)).expect_err("a loop").to_string();
+	assert!(error.contains("loop"), "{error}");
 }
 
 /// `gz` is claimed so an installed page can be offered in an open dialog at all, so any other gzipped file reaches this parser too.
@@ -379,4 +380,12 @@ fn an_ignored_block_ends_at_its_own_marker() {
 fn a_comment_after_a_definition_name_is_not_its_end_marker() {
 	let text = text_of(&page(".de Vb \\\" Begin verbatim text\n.ft CW\n..\n.SH DESCRIPTION\nStill read.\n"));
 	assert!(text.contains("Still read."), "{text}");
+}
+
+#[test]
+fn a_page_pointing_at_one_that_is_not_there_says_which() {
+	let dir = TempDir::new("man-redirect-missing");
+	let path = dir.write_str("man3/disnan.3", ".so man3/isnan.3\n");
+	let error = ManParser.parse(&ParserContext::new(path)).expect_err("nothing to read").to_string();
+	assert!(error.contains("man3/isnan.3"), "{error}");
 }

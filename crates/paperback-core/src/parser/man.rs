@@ -44,6 +44,16 @@ impl Parser for ManParser {
 			source = read_source(&next)?;
 			path = next;
 		}
+		// Packages often install only some of a suite's pages, and "holds no text" left the reader guessing why one was empty.
+		if let Some(target) = redirect_of(&source) {
+			if resolve_redirect(&path, target).is_some() {
+				anyhow::bail!("'{}' points to other manual pages in a loop", context.file_path);
+			}
+			anyhow::bail!(
+				"'{}' only points to the manual page {target}, which isn't installed beside it",
+				context.file_path
+			);
+		}
 		if !looks_like_roff(&source) {
 			anyhow::bail!("'{}' is not a manual page", context.file_path);
 		}

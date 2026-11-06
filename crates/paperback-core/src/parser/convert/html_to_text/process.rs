@@ -19,6 +19,13 @@ use crate::{
 	util::text::{collapse_whitespace, format_list_item, remove_soft_hyphens, trim_string},
 };
 
+enum Step<'a> {
+	Visit(NodeRef<'a, Node>),
+	Close(&'a str),
+	/// Written out as markup rather than read.
+	Verbatim(NodeRef<'a, Node>),
+}
+
 impl HtmlToText {
 	const fn get_bullet_for_level(level: i32) -> &'static str {
 		match level {
@@ -29,44 +36,62 @@ impl HtmlToText {
 		}
 	}
 
-	pub(super) fn process_node(&mut self, node: NodeRef<'_, Node>, document: &Html) {
-		match node.value() {
-			Node::Element(element) => {
-				let tag_name = element.name();
-				if is_dom_formula(element) {
-					if self.flags.contains(ProcessingFlags::IN_BODY) {
-						self.handle_formula(node);
+	/// Walked with a stack of what's left rather than by recursion: unclosed tags nest some real pages thousands deep, which overflowed the main thread's stack on Windows.
+	pub(super) fn process_node(&mut self, root: NodeRef<'_, Node>, document: &Html) {
+		let mut pending = vec![Step::Visit(root)];
+		while let Some(step) = pending.pop() {
+			let node = match step {
+				Step::Visit(node) => node,
+				Step::Close(tag_name) => {
+					self.handle_element_closing(tag_name);
+					continue;
+				}
+				Step::Verbatim(node) => {
+					let html = Self::serialize_node(node, document);
+					self.text.push_str(&html);
+					continue;
+				}
+			};
+			match node.value() {
+				Node::Element(element) => {
+					let tag_name = element.name();
+					if is_dom_formula(element) {
+						if self.flags.contains(ProcessingFlags::IN_BODY) {
+							self.handle_formula(node);
+						}
+						continue;
 					}
-					return;
-				}
-				if tag_name == "table" {
-					if self.flags.contains(ProcessingFlags::IN_BODY)
-						&& let Some(id) = element.attr("id").or_else(|| element.attr("name"))
-					{
-						self.id_positions.insert(id.to_string(), self.text.get_current_text_position());
+					if tag_name == "table" {
+						if self.flags.contains(ProcessingFlags::IN_BODY)
+							&& let Some(id) = element.attr("id").or_else(|| element.attr("name"))
+						{
+							self.id_positions.insert(id.to_string(), self.text.get_current_text_position());
+						}
+						self.handle_table(node, document);
+						continue;
 					}
-					self.handle_table(node, document);
-					return;
+					self.handle_element_opening(tag_name, node, document);
+					self.handle_list_item(tag_name, node, document);
+					self.handle_list_start(tag_name, node);
+					self.handle_heading(tag_name, node, document);
+					// An <object> stays in: its content is the fallback a reader wants, and a page that forgets </object> has the rest of its body inside one.
+					if matches!(tag_name, "script" | "style" | "noscript" | "iframe" | "embed") {
+						continue;
+					}
+					pending.push(Step::Close(tag_name));
+					// Markdown's code keeps its inline markup as text, which is what the reader of a code sample expects to see.
+					let verbatim = self.source_mode_markdown
+						&& self.flags.contains(ProcessingFlags::IN_CODE)
+						&& self.text.is_preserving_whitespace()
+						&& tag_name == "code";
+					for child in node.children().rev() {
+						let as_markup = verbatim && matches!(child.value(), Node::Element(_));
+						pending.push(if as_markup { Step::Verbatim(child) } else { Step::Visit(child) });
+					}
 				}
-				self.handle_element_opening(tag_name, node, document);
-				self.handle_list_item(tag_name, node, document);
-				self.handle_list_start(tag_name, node);
-				self.handle_heading(tag_name, node, document);
-				// An <object> stays in: its content is the fallback a reader wants, and a page that forgets </object> has the rest of its body inside one.
-				if matches!(tag_name, "script" | "style" | "noscript" | "iframe" | "embed") {
-					return;
-				}
-				self.process_element_children(node, document, tag_name);
-				self.handle_element_closing(tag_name);
-			}
-			Node::Text(text) => {
-				self.handle_text_node(text);
-			}
-			Node::Comment(_) => {}
-			_ => {
-				for child in node.children() {
-					self.process_node(child, document);
-				}
+				Node::Text(text) => self.handle_text_node(text),
+				Node::Comment(_) => {}
+				_ => pending.extend(node.children().rev().map(Step::Visit)),
 			}
 		}
 	}
@@ -279,27 +304,6 @@ impl HtmlToText {
 			if !heading_text.is_empty() {
 				#[allow(clippy::cast_possible_wrap)]
 				self.headings.push(HeadingInfo { offset: heading_offset, level: level as i32, text: heading_text });
-			}
-		}
-	}
-
-	fn process_element_children(&mut self, node: NodeRef<'_, Node>, document: &Html, tag_name: &str) {
-		let is_markdown_code = self.source_mode_markdown
-			&& self.flags.contains(ProcessingFlags::IN_CODE)
-			&& self.text.is_preserving_whitespace()
-			&& tag_name == "code";
-		if is_markdown_code {
-			for child in node.children() {
-				if let Node::Element(_) = child.value() {
-					let html_str = Self::serialize_node(child, document);
-					self.text.push_str(&html_str);
-				} else {
-					self.process_node(child, document);
-				}
-			}
-		} else {
-			for child in node.children() {
-				self.process_node(child, document);
 			}
 		}
 	}

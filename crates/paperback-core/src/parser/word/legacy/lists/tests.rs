@@ -62,6 +62,23 @@ fn list_instances_are_numbered_from_one_and_carry_their_restarts() {
 }
 
 #[test]
+fn a_restart_past_what_the_format_allows_is_ignored() {
+	let mut b = Vec::new();
+	b.extend_from_slice(&1i32.to_le_bytes());
+	b.extend_from_slice(&111i32.to_le_bytes());
+	b.extend_from_slice(&[0; 8]);
+	b.extend_from_slice(&[2, 0, 0, 0]);
+	b.extend_from_slice(&0u32.to_le_bytes());
+	b.extend_from_slice(&17_858_736i32.to_le_bytes());
+	b.extend_from_slice(&0x10u32.to_le_bytes());
+	b.extend_from_slice(&0x7FFFi32.to_le_bytes());
+	b.extend_from_slice(&0x11u32.to_le_bytes());
+	let instances = read_plf_lfo(&b, (0, b.len())).expect("instances read");
+	assert_eq!(instances["1"].start_overrides.get(&0), None);
+	assert_eq!(instances["1"].start_overrides.get(&1), Some(&0x7FFF));
+}
+
+#[test]
 fn number_format_codes_map_to_numbering_xml_names() {
 	assert_eq!(number_format(0), "decimal");
 	assert_eq!(number_format(2), "lowerRoman");

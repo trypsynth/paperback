@@ -14,7 +14,6 @@
 
 use std::{
 	cell::{Cell, RefCell},
-	collections::HashMap,
 	rc::Rc,
 	sync::Arc,
 };
@@ -28,6 +27,8 @@ use hayro_syntax::{
 	content::{TypedIter, ops::TypedInstruction},
 	object::{Array, Dict, Name, Object, Stream},
 };
+use rustc_hash::FxHashMap;
+use smallvec::{SmallVec, smallvec};
 
 use super::{
 	bidi::{self, Direction},
@@ -241,7 +242,8 @@ pub(super) struct FontData {
 	widths: Vec<f32>,
 	missing_width: f32,
 	/// Codes drawn so far, which is all a composite or standard font can say without its font program; a Type 3 font's glyphs are all measured up front.
-	observed: RefCell<HashMap<u32, (f32, GlyphBox)>>,
+	/// Looked up for every glyph drawn, where std's `SipHash` showed in profiles.
+	observed: RefCell<FxHashMap<u32, (f32, GlyphBox)>>,
 	space_code: Cell<Option<u32>>,
 	/// For a glyph whose outline is missing.
 	ascent: i32,
@@ -257,7 +259,7 @@ impl FontData {
 				first_char: 0,
 				widths: Vec::new(),
 				missing_width: 0.0,
-				observed: RefCell::new(HashMap::new()),
+				observed: RefCell::new(FxHashMap::default()),
 				space_code: Cell::new(None),
 				ascent: 800,
 				descent: -200,
@@ -347,7 +349,7 @@ const fn weight_from_stem(stem_v: i32) -> i32 {
 }
 
 /// pdfium's `CPDF_Type3Char`: each glyph's width and box come from its procedure's `d0` or `d1`, in the font's glyph space; hayro draws Type 3 glyphs but doesn't measure them.
-fn type3_glyphs(dict: &Dict<'_>, matrix: &Matrix) -> HashMap<u32, (f32, GlyphBox)> {
+fn type3_glyphs(dict: &Dict<'_>, matrix: &Matrix) -> FxHashMap<u32, (f32, GlyphBox)> {
 	let font_box = dict
 		.get::<Array<'_>>(b"FontBBox")
 		.map(|bbox| bbox.iter::<f32>().collect::<Vec<_>>())
@@ -357,9 +359,9 @@ fn type3_glyphs(dict: &Dict<'_>, matrix: &Matrix) -> HashMap<u32, (f32, GlyphBox
 		dict.get::<Dict<'_>>(b"CharProcs"),
 		dict.get::<Dict<'_>>(b"Encoding").and_then(|encoding| encoding.get::<Array<'_>>(b"Differences")),
 	) else {
-		return HashMap::new();
+		return FxHashMap::default();
 	};
-	let mut glyphs = HashMap::new();
+	let mut glyphs = FxHashMap::default();
 	let mut code = 0u32;
 	for entry in differences.iter::<Object<'_>>() {
 		match entry {
@@ -431,7 +433,8 @@ fn char_width_or_box(code: u32, font: &FontData) -> i32 {
 
 #[derive(Default)]
 pub(super) struct FontCache {
-	fonts: HashMap<usize, Rc<FontData>>,
+	/// Looked up for every glyph run, where std's `SipHash` showed in profiles.
+	fonts: FxHashMap<usize, Rc<FontData>>,
 	fallback: Option<Rc<FontData>>,
 }
 
@@ -446,9 +449,12 @@ impl FontCache {
 }
 
 /// One character of a text object: pdfium's `CPDF_TextObject::Item`.
+/// Nearly every glyph maps to one character, so a glyph's text stays inline rather than taking an allocation each.
+type GlyphText = SmallVec<[u32; 2]>;
+
 struct Item {
 	code: u32,
-	unicode: Vec<u32>,
+	unicode: GlyphText,
 	origin: (f32, f32),
 }
 
@@ -514,12 +520,12 @@ impl TextObject {
 		let mut kernings = Vec::with_capacity(glyphs.len());
 		for (index, glyph) in glyphs.iter().enumerate() {
 			let code = glyph.char_code();
-			let unicode: Vec<u32> = match glyph.as_unicode() {
-				Some(BfString::Char(ch)) => vec![u32::from(ch)],
+			let unicode: GlyphText = match glyph.as_unicode() {
+				Some(BfString::Char(ch)) => smallvec![u32::from(ch)],
 				Some(BfString::String(text)) => text.chars().map(u32::from).collect(),
-				None => Vec::new(),
+				None => GlyphText::new(),
 			};
-			if unicode == [32] && font.space_code.get().is_none() {
+			if unicode.as_slice() == [32] && font.space_code.get().is_none() {
 				font.space_code.set(Some(code));
 			}
 			if !font.observed.borrow().contains_key(&code) {
@@ -982,7 +988,8 @@ impl<'p> Builder<'p> {
 	}
 
 	fn process_transformed_text_objects(&mut self) {
-		for index in self.text_objects.clone() {
+		for position in 0..self.text_objects.len() {
+			let index = self.text_objects[position];
 			let object = &self.objects[index];
 			if object.rect.width().abs() < SIZE_EPSILON {
 				continue;
@@ -1068,7 +1075,7 @@ impl<'p> Builder<'p> {
 		let chars: Vec<u32> = actual_text.chars().map(u32::from).collect();
 		let is_rtl = self.is_right_to_left(object)
 			|| (self.prev_text_obj.is_some_and(|prev| self.is_right_to_left(&self.objects[prev]))
-				&& bidi::overall_direction(&chars) == Direction::Right);
+				&& bidi::overall_direction(chars.iter().copied()) == Direction::Right);
 		let mut rect = object.rect;
 		let length = chars.len() as f32;
 		let step = if is_rtl {
@@ -1102,15 +1109,11 @@ impl<'p> Builder<'p> {
 
 	fn is_right_to_left(&self, object: &TextObject) -> bool {
 		let _ = self;
-		let text: Vec<u32> = object
-			.items
-			.iter()
-			.filter_map(|item| {
-				let wc = item.unicode.first().copied().filter(|&c| c != 0).unwrap_or(item.code);
-				(wc != 0).then_some(wc)
-			})
-			.collect();
-		bidi::overall_direction(&text) == Direction::Right
+		let text = object.items.iter().filter_map(|item| {
+			let wc = item.unicode.first().copied().filter(|&c| c != 0).unwrap_or(item.code);
+			(wc != 0).then_some(wc)
+		});
+		bidi::overall_direction(text) == Direction::Right
 	}
 
 	fn reverse_temp_text_bufs(&mut self, char_index: usize, buf_index: usize) {
@@ -1365,7 +1368,7 @@ impl<'p> Builder<'p> {
 			}
 			spacing = 0.0;
 			let (unicode, char_type) = if item.unicode.is_empty() && item.code != 0 {
-				(vec![item.code], CharType::NotUnicode)
+				(smallvec![item.code], CharType::NotUnicode)
 			} else {
 				(item.unicode.clone(), CharType::Normal)
 			};
@@ -1441,8 +1444,8 @@ impl<'p> Builder<'p> {
 		}
 		self.temp_char_list.truncate(write);
 		self.temp_text_buf.truncate(write);
-		let text = std::mem::take(&mut self.temp_text_buf);
-		let chars = std::mem::take(&mut self.temp_char_list);
+		let mut text = std::mem::take(&mut self.temp_text_buf);
+		let mut chars = std::mem::take(&mut self.temp_char_list);
 		let order = bidi::BidiString::new(&text);
 		let mut current = order.overall_direction();
 		for segment in order.segments() {
@@ -1469,6 +1472,11 @@ impl<'p> Builder<'p> {
 				}
 			}
 		}
+		// Handed back empty, so the next line fills the room this one grew instead of growing its own from nothing.
+		text.clear();
+		chars.clear();
+		self.temp_text_buf = text;
+		self.temp_char_list = chars;
 	}
 
 	fn add_char_info(&mut self, wc: u32, mut info: CharInfo, is_rtl: bool) {
