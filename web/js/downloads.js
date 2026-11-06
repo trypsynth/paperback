@@ -13,7 +13,7 @@
 
   const getReleases = () => fetchJSON(`https://api.github.com/repos/${owner}/${repo}/releases?per_page=50`);
 
-  const fmtCount = n => `downloaded ${n} ${n === 1 ? "time" : "times"}`;
+  const fmtCount = n => `downloaded ${n.toLocaleString("en")} ${n === 1 ? "time" : "times"}`;
 
   // "paperback.zip"/"paperback_setup.exe" are unsuffixed duplicates of the x64 build, kept
   // in the release only so pre-ship-shape (0.8.5 and earlier) clients' exact-name update
@@ -35,6 +35,8 @@
     const version = release.tag_name.replace(/^v/, "");
     const archLabel = name => name.toLowerCase().includes("arm64") ? " (ARM64)" : name.toLowerCase().includes("x64") ? " (x64)" : "";
     const count = a => showCounts ? a.download_count : null;
+    // Signatures are left out because the updater fetches one with every download, which would count each download twice. The legacy duplicates stay in, since old clients really downloaded them.
+    const total = (release.assets ?? []).filter(a => !a.name.toLowerCase().endsWith(".minisig")).reduce((sum, a) => sum + a.download_count, 0);
     const archOrder = name => name.toLowerCase().includes("arm64") ? 1 : 0;
     const byArch = list => list.sort((a, b) => archOrder(a.name) - archOrder(b.name));
     const rows = [
@@ -49,6 +51,7 @@
     return `
       <h3>${heading}</h3>
       ${subtitle ? `<p class="subtitle">${subtitle}</p>` : ""}
+      ${showCounts ? `<p class="total">${total.toLocaleString("en")} ${total === 1 ? "download" : "downloads"}</p>` : ""}
       <ul>
         ${rows.join("\n        ")}
         <li><a href="${release.html_url}">Release notes on GitHub</a></li>
