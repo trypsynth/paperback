@@ -44,7 +44,7 @@ impl DocumentManager {
 		};
 		for tab in &mut self.tabs {
 			let old_ctrl = tab.text_ctrl;
-			let current_doc_pos = tab.window.to_doc(old_ctrl.get_insertion_point());
+			let current_doc_pos = tab.to_doc(old_ctrl.get_insertion_point());
 			// A wrap toggle changes layout, not the document, so the same whole text is loaded again.
 			let doc_len = tab.session.document_len();
 			let slice = tab.session.get_window(paperback_core::document::DocPos::ZERO, doc_len.as_pos());
@@ -62,9 +62,9 @@ impl DocumentManager {
 			// The native control only keeps text once it has been laid out in the shown panel.
 			tab.panel.layout();
 			tab.window = TextWindow::of(&slice);
-			style_and_fill(text_ctrl, &slice, &tab.window, &style);
+			style_and_fill(text_ctrl, &slice, &tab.session, &style);
 			let max_pos = text_ctrl.get_last_position();
-			let pos = tab.window.to_local(current_doc_pos).min(max_pos);
+			let pos = tab.to_local(current_doc_pos).min(max_pos);
 			text_ctrl.set_insertion_point(pos);
 			text_ctrl.show_position(pos);
 			old_ctrl.destroy();

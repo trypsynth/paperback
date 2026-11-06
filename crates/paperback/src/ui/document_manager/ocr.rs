@@ -86,7 +86,7 @@ fn index_running_job(job_ids: &[Option<u64>], id: u64) -> Option<usize> {
 impl DocumentManager {
 	pub fn image_only_page_at_caret(&self) -> Option<DocPos> {
 		let tab = self.active_tab()?;
-		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 		tab.session.image_only_page_at(position)
 	}
 
@@ -144,7 +144,7 @@ impl DocumentManager {
 			announce_for_command(label, from_keyboard, t("Only PDF and comic book pages can be recognized."));
 			return;
 		}
-		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 		// Text before the first page break still belongs to the first page.
 		let page = tab.session.current_page(position).max(1);
 		self.spawn_ocr(vec![page], false, from_keyboard);
@@ -267,7 +267,7 @@ impl DocumentManager {
 		if pages.is_empty() {
 			return;
 		}
-		let caret = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let caret = tab.to_doc(tab.text_ctrl.get_insertion_point());
 		let loaded_end = tab.window.end();
 		let outcome = tab.session.replace_ocr_pages(&pages);
 		if let Some(job) = tab.ocr_job.as_mut() {
@@ -344,7 +344,7 @@ fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[DocPos], loaded_end: DocPo
 	let caret = caret.min(tab.session.document_len().as_pos());
 	reload_document(tab, caret);
 	if is_active {
-		let local = tab.window.to_local(caret);
+		let local = tab.to_local(caret);
 		tab.text_ctrl.set_insertion_point(local);
 		tab.text_ctrl.show_position(local);
 	}

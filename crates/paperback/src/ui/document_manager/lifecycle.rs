@@ -211,7 +211,7 @@ impl DocumentManager {
 		let tab_index = self.tabs.len() - 1;
 		{
 			let tab = &self.tabs[tab_index];
-			let local = tab.window.to_local(initial_pos);
+			let local = tab.to_local(initial_pos);
 			tab.text_ctrl.set_insertion_point(local);
 			tab.text_ctrl.show_position(local);
 		}
@@ -257,7 +257,7 @@ impl DocumentManager {
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();
 			if save_state && tab.track {
-				let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+				let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 				config.set_document_position(&path_str, position);
 				config.set_document_audio_time(
 					&path_str,
@@ -312,7 +312,7 @@ impl DocumentManager {
 			if !tab.track {
 				continue;
 			}
-			let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+			let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 			let path_str = tab.file_path.to_string_lossy();
 			config.set_document_position(&path_str, position);
 			config.set_document_audio_time(&path_str, tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms));
@@ -339,7 +339,7 @@ impl DocumentManager {
 		if let Some(tab) = self.active_tab()
 			&& tab.track
 		{
-			let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+			let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 			let path_str = tab.file_path.to_string_lossy();
 			let config = self.config.lock().unwrap();
 			config.set_document_position(&path_str, position);

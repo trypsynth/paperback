@@ -37,7 +37,7 @@ fn record_history(tab: &mut DocumentTab, from: DocPos, to: DocPos) -> HistoryUpd
 
 /// The control's own insertion point is relative to the loaded window, not the document.
 pub fn doc_caret(tab: &DocumentTab) -> DocPos {
-	tab.window.to_doc(tab.text_ctrl.get_insertion_point())
+	tab.to_doc(tab.text_ctrl.get_insertion_point())
 }
 
 /// By time, not text: whole-file recordings have one blank line of text per file, so a text percentage picks a file by count rather than duration.
@@ -61,12 +61,12 @@ pub fn audio_percent(tab: &DocumentTab) -> Option<i32> {
 
 pub fn doc_selected_range(tab: &DocumentTab) -> (DocPos, DocPos) {
 	let (start, end) = selected_range(tab.text_ctrl);
-	(tab.window.to_doc(start), tab.window.to_doc(end))
+	(tab.to_doc(start), tab.to_doc(end))
 }
 
 /// Leaves audio alone, for audio driving the caret (`handle_seek_audio`), where re-seeking would lose a mid-clip or spilled-over position.
 pub(super) fn set_caret_to_doc_offset(tab: &DocumentTab, offset: DocPos) {
-	let local = tab.window.to_local(offset);
+	let local = tab.to_local(offset);
 	tab.text_ctrl.set_focus();
 	tab.text_ctrl.set_insertion_point(local);
 	tab.text_ctrl.show_position(local);
@@ -80,8 +80,8 @@ fn jump_to_doc_offset(tab: &mut DocumentTab, offset: DocPos) {
 
 /// Without `highlight` nothing is selected, so a screen reader reads the line rather than announcing a selected string; the caret goes to `start` because screen readers speak the character after it.
 pub fn reveal_doc_range(tab: &mut DocumentTab, start: DocPos, end: DocPos, highlight: bool) {
-	let local_start = tab.window.to_local(start);
-	let local_end = tab.window.to_local(end);
+	let local_start = tab.to_local(start);
+	let local_end = tab.to_local(end);
 	tab.text_ctrl.set_focus();
 	if highlight {
 		tab.text_ctrl.set_selection(local_start, local_end);

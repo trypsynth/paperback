@@ -15,7 +15,7 @@ use super::{
 	ocr::{is_pdf, restore_saved_pages, saved_pages_of},
 };
 use crate::{
-	text_window::{TextWindow, should_use_whole_document, target_window_bounds},
+	text_window::TextWindow,
 	ui::{
 		readability::{ReadabilityStyle, readability_style},
 		text_render::style_and_fill,
@@ -196,7 +196,7 @@ fn reparse_tab_in_place(
 	style: &ReadabilityStyle,
 ) -> Result<(), String> {
 	let new_fingerprint = read_fingerprint(tab.local_path());
-	let current_pos = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+	let current_pos = tab.to_doc(tab.text_ctrl.get_insertion_point());
 	let pos = current_pos.min(tab.session.handle().document().buffer.end());
 	// Uses the full `id_positions` key, not `nearest_fragment_before`, which strips EPUB's "path#" prefix and so fails the lookup after reparsing.
 	let stable_anchor = {
@@ -239,17 +239,12 @@ fn reparse_tab_in_place(
 	} else {
 		proportional()
 	};
-	// A whole-document load through RTF takes minutes on a book of tens of millions of characters, which is what a reload used to do; load the same window navigation would, around the restored position.
-	let slice = if should_use_whole_document(doc_len) {
-		tab.session.get_window(DocPos::ZERO, doc_len.as_pos())
-	} else {
-		let (start, end) = target_window_bounds(restored_pos, doc_len);
-		tab.session.get_window(start, end)
-	};
+	// The reading control now holds the whole document, so a reload replaces all of it rather than a window around the restored position.
+	let slice = tab.session.get_window(DocPos::ZERO, doc_len.as_pos());
 	tab.window = TextWindow::of(&slice);
-	style_and_fill(tab.text_ctrl, &slice, &tab.window, style);
+	style_and_fill(tab.text_ctrl, &slice, &tab.session, style);
 	tab.panel.layout();
-	let restored = tab.window.to_local(restored_pos);
+	let restored = tab.to_local(restored_pos);
 	tab.text_ctrl.set_insertion_point(restored);
 	tab.text_ctrl.show_position(restored);
 	tab.disk_fingerprint = new_fingerprint;

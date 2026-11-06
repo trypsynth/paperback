@@ -66,45 +66,71 @@ impl ReaderCtrl {
 	}
 
 	pub fn get_insertion_point(self) -> CtrlPos {
-		CtrlPos::from_raw(i64::from(self.0.get_current_pos()))
+		#[cfg(target_os = "windows")]
+		let raw = sci_query(self.0, 2008);
+		#[cfg(not(target_os = "windows"))]
+		let raw = i64::from(self.0.get_current_pos());
+		CtrlPos::from_raw(raw)
 	}
 
 	pub fn set_insertion_point(self, pos: CtrlPos) {
-		let pos = to_i32(pos);
 		// The caret move raises the event a screen reader follows; setting the anchor to the same place afterwards collapses any
 		// selection left from the previous position, without a selection change to cancel the announcement the command makes.
-		self.0.set_current_pos(pos);
+		#[cfg(target_os = "windows")]
+		sci_message_position(self.0, 2141, pos);
+		#[cfg(not(target_os = "windows"))]
+		self.0.set_current_pos(to_i32(pos));
 		self.clear_anchor(pos);
 	}
 
 	pub fn show_position(self, pos: CtrlPos) {
-		let pos = to_i32(pos);
-		self.0.set_current_pos(pos);
+		#[cfg(target_os = "windows")]
+		sci_message_position(self.0, 2141, pos);
+		#[cfg(not(target_os = "windows"))]
+		self.0.set_current_pos(to_i32(pos));
 		self.clear_anchor(pos);
 		self.0.ensure_caret_visible();
 	}
 
 	#[cfg(target_os = "windows")]
-	fn clear_anchor(self, pos: i32) {
+	fn clear_anchor(self, pos: CtrlPos) {
 		// SCI_SETANCHOR only moves the selection's other end, so the selection stays empty and no selection event is raised.
-		sci_message(self.0, 2026, pos, 0);
+		sci_message_position(self.0, 2026, pos);
 	}
 
 	#[cfg(not(target_os = "windows"))]
-	fn clear_anchor(self, pos: i32) {
-		self.0.set_selection(pos, pos);
+	fn clear_anchor(self, pos: CtrlPos) {
+		self.0.set_selection(to_i32(pos), to_i32(pos));
 	}
 
 	pub fn get_last_position(self) -> CtrlPos {
-		CtrlPos::from_raw(i64::from(self.0.get_length()))
+		#[cfg(target_os = "windows")]
+		let raw = sci_query(self.0, 2006);
+		#[cfg(not(target_os = "windows"))]
+		let raw = i64::from(self.0.get_length());
+		CtrlPos::from_raw(raw)
 	}
 
 	pub fn get_selection(self) -> (CtrlPos, CtrlPos) {
-		let (from, to) = self.0.get_selection();
-		(CtrlPos::from_raw(i64::from(from)), CtrlPos::from_raw(i64::from(to)))
+		#[cfg(target_os = "windows")]
+		let (from, to) = (sci_query(self.0, 2143), sci_query(self.0, 2145));
+		#[cfg(not(target_os = "windows"))]
+		let (from, to) = {
+			let (from, to) = self.0.get_selection();
+			(i64::from(from), i64::from(to))
+		};
+		(CtrlPos::from_raw(from), CtrlPos::from_raw(to))
 	}
 
 	pub fn set_selection(self, from: CtrlPos, to: CtrlPos) {
+		#[cfg(target_os = "windows")]
+		sci_message_pair(
+			self.0,
+			2160,
+			usize::try_from(from.get().max(0)).unwrap_or(0),
+			isize::try_from(to.get().max(0)).unwrap_or(isize::MAX),
+		);
+		#[cfg(not(target_os = "windows"))]
 		self.0.set_selection(to_i32(from), to_i32(to));
 	}
 
@@ -181,13 +207,20 @@ impl ReaderCtrl {
 		self.writable(|| {
 			#[cfg(target_os = "windows")]
 			{
-				const SCI_SETTEXT: u32 = 2181;
-				// `wxStyledTextCtrl::SetText` converts the UTF-8 text to a UTF-16 `wxString` and back again; call Scintilla
-				// with the UTF-8 bytes directly instead, adding only the terminator `SCI_SETTEXT` requires.
-				let mut terminated = Vec::with_capacity(text.len() + 1);
-				terminated.extend_from_slice(text.as_bytes());
-				terminated.push(0);
-				sci_message(self.0, SCI_SETTEXT, 0, terminated.as_ptr() as isize);
+				const SCI_SETUNDOCOLLECTION: u32 = 2012;
+				const SCI_EMPTYUNDOBUFFER: u32 = 2175;
+				const SCI_CLEARALL: u32 = 2004;
+				const SCI_APPENDTEXT: u32 = 2282;
+				// `wxStyledTextCtrl::SetText` converts the UTF-8 text to UTF-16 and back, and `SCI_SETTEXT` stops at the first
+				// NUL. Append the UTF-8 bytes with their length instead, so embedded NULs survive and there is no second copy.
+				// Undo is off for the load, since the reader is read-only and the insert would otherwise copy the book again.
+				sci_message(self.0, SCI_SETUNDOCOLLECTION, 0, 0);
+				sci_message(self.0, SCI_CLEARALL, 0, 0);
+				if !text.is_empty() {
+					sci_message_ptr(self.0, SCI_APPENDTEXT, text.len(), text.as_ptr());
+				}
+				sci_message(self.0, SCI_EMPTYUNDOBUFFER, 0, 0);
+				sci_message(self.0, SCI_SETUNDOCOLLECTION, 1, 0);
 			}
 			#[cfg(not(target_os = "windows"))]
 			self.0.set_text(text);
@@ -261,19 +294,37 @@ impl ReaderCtrl {
 				self.0.style_set_italic(style, style & 2 != 0);
 				self.0.style_set_underline(style, style & 4 != 0);
 			}
-			let len = self.0.get_length();
-			self.0.start_styling(0);
-			self.0.set_styling(len, 0);
+			let len = self.get_last_position();
+			#[cfg(target_os = "windows")]
+			{
+				sci_message_pair(self.0, 2032, 0, 0);
+				sci_message_pair(self.0, 2033, usize::try_from(len.get().max(0)).unwrap_or(0), 0);
+			}
+			#[cfg(not(target_os = "windows"))]
+			{
+				self.0.start_styling(0);
+				self.0.set_styling(to_i32(len), 0);
+			}
 			for seg in segments {
 				let style = i32::from(seg.bold) | (i32::from(seg.italic) << 1) | (i32::from(seg.underline) << 2);
 				if style == 0 {
 					continue;
 				}
-				let start = to_i32(place(seg.start));
-				let end = to_i32(place(seg.end));
-				if end > start {
-					self.0.start_styling(start);
-					self.0.set_styling(end - start, style);
+				let start = place(seg.start);
+				let end = place(seg.end);
+				#[cfg(target_os = "windows")]
+				if end.get() > start.get() {
+					sci_message_position(self.0, 2032, start);
+					let length = usize::try_from(end.get() - start.get()).unwrap_or(0);
+					sci_message_pair(self.0, 2033, length, style as isize);
+				}
+				#[cfg(not(target_os = "windows"))]
+				{
+					let (start, end) = (to_i32(start), to_i32(end));
+					if end > start {
+						self.0.start_styling(start);
+						self.0.set_styling(end - start, style);
+					}
 				}
 			}
 		});
@@ -281,23 +332,23 @@ impl ReaderCtrl {
 
 	#[cfg(target_os = "windows")]
 	pub fn position_to_xy(self, pos: CtrlPos) -> Option<(i64, i64)> {
-		let pos = to_i32(pos);
-		let line = self.0.line_from_position(pos);
-		let start = self.0.position_from_line(line);
-		(start >= 0).then(|| (i64::from(pos - start), i64::from(line)))
+		let line = sci_query_position(self.0, 2166, pos);
+		let start = sci_query_position(self.0, 2167, CtrlPos::from_raw(line));
+		(line >= 0).then(|| (pos.get() - start, line))
 	}
 
 	#[cfg(target_os = "windows")]
 	pub fn xy_to_position(self, _x: i64, y: i64) -> CtrlPos {
-		CtrlPos::from_raw(i64::from(self.0.position_from_line(i32::try_from(y).unwrap_or(i32::MAX))))
+		CtrlPos::from_raw(sci_query_position(self.0, 2167, CtrlPos::from_raw(y)))
 	}
 
 	#[cfg(target_os = "windows")]
 	pub fn get_line_length(self, line: i64) -> i32 {
-		self.0.get_line_length(i32::try_from(line).unwrap_or(i32::MAX))
+		i32::try_from(sci_query_position(self.0, 2350, CtrlPos::from_raw(line))).unwrap_or(i32::MAX)
 	}
 }
 
+#[cfg(not(target_os = "windows"))]
 fn to_i32(pos: CtrlPos) -> i32 {
 	i32::try_from(pos.get()).unwrap_or(i32::MAX)
 }
@@ -311,6 +362,53 @@ fn sci_message(ctrl: StyledTextCtrl, message: u32, wparam: i32, lparam: isize) {
 	unsafe {
 		SendMessageW(ctrl.get_handle(), message, usize::try_from(wparam).unwrap_or(0), lparam);
 	}
+}
+
+/// For messages whose `wParam` is a length rather than a small option, such as `SCI_APPENDTEXT`.
+#[cfg(target_os = "windows")]
+fn sci_message_ptr(ctrl: StyledTextCtrl, message: u32, length: usize, ptr: *const u8) {
+	#[link(name = "user32")]
+	unsafe extern "system" {
+		fn SendMessageW(hwnd: *mut core::ffi::c_void, msg: u32, wparam: usize, lparam: isize) -> isize;
+	}
+	unsafe {
+		SendMessageW(ctrl.get_handle(), message, length, ptr as isize);
+	}
+}
+
+/// Sends a 64-bit Scintilla position in `wParam`; wx's wrapper would clamp it to `i32`.
+#[cfg(target_os = "windows")]
+fn sci_message_position(ctrl: StyledTextCtrl, message: u32, pos: CtrlPos) {
+	sci_message_pair(ctrl, message, usize::try_from(pos.get().max(0)).unwrap_or(0), 0);
+}
+
+#[cfg(target_os = "windows")]
+fn sci_message_pair(ctrl: StyledTextCtrl, message: u32, wparam: usize, lparam: isize) {
+	#[link(name = "user32")]
+	unsafe extern "system" {
+		fn SendMessageW(hwnd: *mut core::ffi::c_void, msg: u32, wparam: usize, lparam: isize) -> isize;
+	}
+	unsafe {
+		SendMessageW(ctrl.get_handle(), message, wparam, lparam);
+	}
+}
+
+#[cfg(target_os = "windows")]
+fn sci_query(ctrl: StyledTextCtrl, message: u32) -> i64 {
+	#[link(name = "user32")]
+	unsafe extern "system" {
+		fn SendMessageW(hwnd: *mut core::ffi::c_void, msg: u32, wparam: usize, lparam: isize) -> isize;
+	}
+	unsafe { SendMessageW(ctrl.get_handle(), message, 0, 0) as i64 }
+}
+
+#[cfg(target_os = "windows")]
+fn sci_query_position(ctrl: StyledTextCtrl, message: u32, pos: CtrlPos) -> i64 {
+	#[link(name = "user32")]
+	unsafe extern "system" {
+		fn SendMessageW(hwnd: *mut core::ffi::c_void, msg: u32, wparam: usize, lparam: isize) -> isize;
+	}
+	unsafe { SendMessageW(ctrl.get_handle(), message, usize::try_from(pos.get().max(0)).unwrap_or(0), 0) as i64 }
 }
 
 /// The system default beep a native text control plays when the caret cannot move, so `MB_OK` keeps the user's sound scheme.

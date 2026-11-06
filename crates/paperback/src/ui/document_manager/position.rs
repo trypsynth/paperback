@@ -10,12 +10,11 @@ use crate::ui::{
 impl DocumentManager {
 	pub fn image_file_name_at_caret(&self) -> Option<String> {
 		let tab = self.active_tab()?;
-		tab.session.image_file_name_at(tab.window.to_doc(tab.text_ctrl.get_insertion_point()))
+		tab.session.image_file_name_at(tab.to_doc(tab.text_ctrl.get_insertion_point()))
 	}
 
 	pub fn link_at_caret(&self) -> bool {
-		self.active_tab()
-			.is_some_and(|tab| tab.session.is_on_link(tab.window.to_doc(tab.text_ctrl.get_insertion_point())))
+		self.active_tab().is_some_and(|tab| tab.session.is_on_link(tab.to_doc(tab.text_ctrl.get_insertion_point())))
 	}
 
 	pub fn update_status_bar(&self) {
@@ -38,7 +37,7 @@ impl DocumentManager {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
-		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 		let percent = navigation::reading_percent(tab, position);
 		let page = page_at(tab, position);
 		announce_for_command(self.live_region_label, from_keyboard, position_announcement(percent, page));
@@ -48,7 +47,7 @@ impl DocumentManager {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
-		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 		let path_str = tab.file_path.to_string_lossy().to_string();
 		let config = self.config.lock().unwrap();
 		config.set_temporary_bookmark(&path_str, Some(position));
