@@ -1,13 +1,15 @@
 use std::{
 	cell::Cell,
-	cmp::Ordering,
 	collections::{HashMap, HashSet},
 };
 
 use smallvec::SmallVec;
 
 use crate::{
-	parser::util::bidi,
+	parser::{
+		layout::{COORDINATE_EPSILON, Line, keeps_line_end_hyphen, restore_reading_order, sorted_median},
+		util::bidi,
+	},
 	pdf_engine::{FontFlags, PageChar, Rect, TextPage},
 };
 
@@ -18,7 +20,7 @@ pub(super) fn sanitize_pdf_text(input: &str) -> String {
 	for (i, &ch) in chars.iter().enumerate() {
 		if ch == LINE_END_HYPHEN {
 			let (left, right) = line_end_halves(&chars, i);
-			if keeps_hyphen(&left, &right, Some(&evidence)) {
+			if keeps_hyphen(&left, &right, &evidence) {
 				out.push('-');
 			}
 		} else if (!ch.is_control() || matches!(ch, '\n' | '\r' | '\t')) && ch != '\u{00AD}' {
@@ -189,16 +191,13 @@ fn written_forms(left: &str, right: &str) -> (String, String) {
 	(format!("{l}-{r}"), format!("{l}{r}"))
 }
 
-/// What the document writes elsewhere decides first; failing that, a hyphen beside an abbreviation, a capital or a number belongs to a compound (`NFB-NEWSLINE`, `COVID-19`).
-pub(super) fn keeps_hyphen(left: &str, right: &str, evidence: Option<&HyphenEvidence>) -> bool {
+/// What the document writes elsewhere decides first; failing that, the word's shape does.
+fn keeps_hyphen(left: &str, right: &str, evidence: &HyphenEvidence) -> bool {
 	if left.is_empty() || right.is_empty() {
 		return false;
 	}
-	let written = evidence.map_or_else(Written::default, |evidence| {
-		let (hyphenated, whole) = written_forms(left, right);
-		Written::of(evidence, &hyphenated, &whole)
-	});
-	keeps_written_hyphen(left, right, written)
+	let (hyphenated, whole) = written_forms(left, right);
+	keeps_written_hyphen(left, right, Written::of(evidence, &hyphenated, &whole))
 }
 
 fn keeps_written_hyphen(left: &str, right: &str, written: Written) -> bool {
@@ -208,24 +207,9 @@ fn keeps_written_hyphen(left: &str, right: &str, written: Written) -> bool {
 	if written.whole {
 		return false;
 	}
-	let left_is_abbreviation =
-		left.chars().count() >= 2 && left.chars().all(|c| c.is_uppercase() || c.is_ascii_digit());
-	let right_opens_a_name = right.chars().next().is_some_and(|c| c.is_uppercase() || c.is_ascii_digit());
-	left_is_abbreviation || right_opens_a_name || left.chars().any(|c| c.is_ascii_digit())
+	keeps_line_end_hyphen(left, right)
 }
 
-#[derive(Clone, Debug)]
-pub(in crate::parser) struct Line {
-	pub text: String,
-	pub size: f64,
-	pub top: f64,
-	pub bottom: f64,
-	pub monospaced: bool,
-	pub bold: bool,
-}
-
-/// pdfium reports characters on one line with identical coordinates, so this only has to absorb rounding.
-const COORDINATE_EPSILON: f64 = 0.05;
 /// Real spaces on a page measured for #808 all advance by at least 70% of their width; the spurious ones by 0-5%.
 const NO_ADVANCE_RATIO: f64 = 0.25;
 /// The same page measured 58% at most for real spaces (an `f` overhangs the space after it) and 92% at least for the spurious ones.
@@ -324,16 +308,6 @@ impl SpaceFilter {
 /// pdfium writes a line break as `"\r\n"`, and counting both ended every line twice, splitting every wrapped paragraph into one per line (#808).
 fn ends_line(ch: char, prev: Option<char>) -> bool {
 	ch == '\r' || (ch == '\n' && prev != Some('\r'))
-}
-
-pub(super) fn is_cjk(c: char) -> bool {
-	let u = c as u32;
-	(0x4E00..=0x9FFF).contains(&u) || // CJK Unified Ideographs
-	(0x3400..=0x4DBF).contains(&u) || // CJK Extension A
-	(0x20000..=0x2A6DF).contains(&u) || // CJK Extension B
-	(0x3040..=0x309F).contains(&u) || // Hiragana
-	(0x30A0..=0x30FF).contains(&u) || // Katakana
-	(0xAC00..=0xD7AF).contains(&u) // Hangul
 }
 
 #[allow(clippy::cast_possible_truncation, reason = "a page coordinate fits an f32")]
@@ -480,64 +454,11 @@ fn line_is_monospaced(text_page: &TextPage, sampled: &[usize]) -> bool {
 	!sampled.is_empty() && monospaced * 2 > sampled.len()
 }
 
-fn sorted_median(values: &mut [f64]) -> f64 {
-	if values.is_empty() {
-		return 0.0;
-	}
-	values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
-	values[values.len() / 2]
-}
-
-pub(super) fn median_line_font_size<'a>(line_infos: impl IntoIterator<Item = &'a Line>) -> f64 {
-	let mut sizes: Vec<f64> = line_infos
-		.into_iter()
-		.filter(|line| !line.text.trim().is_empty() && line.size > 0.0)
-		.map(|line| line.size)
-		.collect();
-	sorted_median(&mut sizes)
-}
-
-/// A running header drawn after the body sits well inside this, and a second column starts about where the first did.
-const OUT_OF_ORDER_SHARE: f64 = 0.25;
-
-/// Some form generators draw a page's lower half first, so the form read from its middle; whole regions are moved, so a page drawn in order, columns and a footer drawn first included, comes back unchanged.
-pub(in crate::parser) fn restore_reading_order(lines: Vec<Line>) -> Vec<Line> {
-	// A line with no position, such as an empty one, says nothing about the order and travels with the run it is drawn in.
-	let placed = |line: &&Line| line.top.is_finite() && line.bottom.is_finite();
-	let mut lowest_after = f64::INFINITY;
-	let mut first = None;
-	for line in lines.iter().rev().filter(placed) {
-		if line.top > lowest_after + COORDINATE_EPSILON {
-			first = Some(line);
-		}
-		lowest_after = lowest_after.min(line.top);
-	}
-	let Some(first) = first else { return lines };
-	let highest = lines.iter().filter(placed).map(|line| line.top).fold(f64::MIN, f64::max);
-	let lowest = lines.iter().filter(placed).map(|line| line.bottom).fold(f64::MAX, f64::min);
-	let far = (highest - lowest) * OUT_OF_ORDER_SHARE;
-	if far <= 0.0 || highest - first.top < far {
-		return lines;
-	}
-	let mut runs: Vec<(f64, Vec<Line>)> = Vec::new();
-	for line in lines {
-		// Only a jump across a good part of the page, up or down, leaves one region of it for another. A form steps back up a line or two all the time within a row, and the footer is drawn straight after whatever comes before it.
-		let previous = runs.last().and_then(|(_, run)| run.iter().rev().find(placed));
-		let jumps = placed(&&line) && previous.is_none_or(|prev| (line.top - prev.top).abs() > far);
-		match runs.last_mut() {
-			Some((_, run)) if !jumps => run.push(line),
-			_ => runs.push((if placed(&&line) { line.top } else { f64::MAX }, vec![line])),
-		}
-	}
-	runs.sort_by(|a, b| b.0.total_cmp(&a.0));
-	runs.into_iter().flat_map(|(_, run)| run).collect()
-}
-
 #[cfg(test)]
 mod tests {
 	use super::{
-		Line, PageEvidence, Rect, WordPages, confirms, covering_hides, ends_line, keeps_hyphen, looks_monospaced,
-		restore_reading_order, sanitize_pdf_text, space_is_invisible,
+		PageEvidence, Rect, WordPages, confirms, covering_hides, ends_line, looks_monospaced, sanitize_pdf_text,
+		space_is_invisible,
 	};
 
 	/// The SELVAS NFB-NEWSLINE guide and the Mantis Q40 conformance report both lost real hyphens here.
@@ -577,147 +498,6 @@ mod tests {
 		in_order.add_chars(&wrapped);
 		assert!(!in_order.keeps_line_end_hyphen(&wrapped, 4));
 		assert!(confirms(&in_order.finish().1, 1, every_page));
-	}
-
-	#[test]
-	fn hyphens_without_evidence_follow_the_shape_of_the_word() {
-		assert!(!keeps_hyphen("infor", "mation", None));
-		assert!(keeps_hyphen("NFB", "NEWSLINE", None));
-		assert!(keeps_hyphen("Victor", "Reader", None));
-		assert!(keeps_hyphen("MP3", "player", None));
-		assert!(!keeps_hyphen("", "word", None), "nothing before the hyphen: not a compound");
-	}
-
-	fn line(text: &str, top: f64) -> Line {
-		Line { text: text.to_string(), size: 10.0, top, bottom: top - 10.0, monospaced: false, bold: false }
-	}
-
-	fn texts(lines: &[Line]) -> Vec<&str> {
-		lines.iter().map(|line| line.text.as_str()).collect()
-	}
-
-	#[test]
-	fn a_page_drawn_top_down_keeps_its_order() {
-		let lines = vec![line("title", 700.0), line("one", 680.0), line("two", 660.0), line("three", 100.0)];
-		assert_eq!(texts(&restore_reading_order(lines)), ["title", "one", "two", "three"]);
-	}
-
-	#[test]
-	fn a_second_column_is_not_moved_ahead_of_the_first() {
-		let lines = vec![
-			line("left 1", 700.0),
-			line("left 2", 400.0),
-			line("left 3", 100.0),
-			line("right 1", 702.0),
-			line("right 2", 400.0),
-		];
-		assert_eq!(texts(&restore_reading_order(lines)), ["left 1", "left 2", "left 3", "right 1", "right 2"]);
-	}
-
-	#[test]
-	fn a_running_header_drawn_last_stays_where_the_stream_put_it() {
-		let lines = vec![line("body 1", 690.0), line("body 2", 400.0), line("body 3", 100.0), line("header", 740.0)];
-		assert_eq!(texts(&restore_reading_order(lines)), ["body 1", "body 2", "body 3", "header"]);
-	}
-
-	/// The shape of the ADA dental claim form: the stream starts at the table halfway down, reaches the bottom, then goes back for the top half, a column at a time, and draws the title last.
-	#[test]
-	fn a_form_drawn_from_its_middle_is_read_from_the_top() {
-		let lines = vec![
-			line("24. Procedure Date", 460.0),
-			line("35. Remarks", 330.0),
-			line("37. Authorize", 240.0),
-			line("48. Name", 130.0),
-			line("1. Type of Transaction", 720.0),
-			line("7. Gender", 610.0),
-			line("M F", 600.0),
-			line("8. Subscriber ID", 612.0),
-			line("11. Other Insurance", 520.0),
-			line("12. Policyholder Name", 690.0),
-			line("23. Patient ID", 500.0),
-			line("© American Dental Association", 40.0),
-			line("Dental Claim Form", 760.0),
-		];
-		assert_eq!(
-			texts(&restore_reading_order(lines)),
-			[
-				"Dental Claim Form",
-				"1. Type of Transaction",
-				"7. Gender",
-				"M F",
-				"8. Subscriber ID",
-				"11. Other Insurance",
-				"12. Policyholder Name",
-				"23. Patient ID",
-				"24. Procedure Date",
-				"35. Remarks",
-				"37. Authorize",
-				"48. Name",
-				"© American Dental Association",
-			]
-		);
-	}
-
-	/// The real form has an empty line with no position in it, which must not stop the page being put in order.
-	#[test]
-	fn a_line_with_no_position_does_not_keep_a_form_out_of_order() {
-		let empty = Line {
-			text: String::new(),
-			size: 0.0,
-			top: f64::NEG_INFINITY,
-			bottom: f64::NEG_INFINITY,
-			monospaced: false,
-			bold: false,
-		};
-		let lines = vec![
-			line("24. Procedure Date", 450.0),
-			empty,
-			line("35. Remarks", 330.0),
-			line("1. Type of Transaction", 720.0),
-		];
-		assert_eq!(
-			texts(&restore_reading_order(lines)),
-			["1. Type of Transaction", "24. Procedure Date", "", "35. Remarks"]
-		);
-	}
-
-	/// The shape of a magazine page: the master page's footer lines come first, then the header, both columns top-down, and the title, intro and pull quote last. The intro sits above the first column, so the second column starts higher than the first.
-	#[test]
-	fn a_footer_drawn_first_does_not_reorder_the_columns() {
-		let stream = [
-			("folio", 38.0),
-			("footer", 38.0),
-			("header", 811.0),
-			("left 1", 395.0),
-			("left 2", 250.0),
-			("left 3", 83.0),
-			("right 1", 573.0),
-			("right 2", 400.0),
-			("right 3", 250.0),
-			("right 4", 83.0),
-			("title", 710.0),
-			("lead", 585.0),
-			("pull quote", 415.0),
-		];
-		let lines = stream.iter().map(|&(text, top)| line(text, top)).collect();
-		let expected: Vec<&str> = stream.iter().map(|&(text, _)| text).collect();
-		assert_eq!(texts(&restore_reading_order(lines)), expected);
-	}
-
-	#[test]
-	fn a_form_with_its_footer_drawn_first_is_still_read_from_the_top() {
-		let lines = vec![
-			line("footer", 40.0),
-			line("middle 1", 460.0),
-			line("middle 2", 330.0),
-			line("middle 3", 200.0),
-			line("top 1", 720.0),
-			line("top 2", 600.0),
-		];
-		assert_eq!(
-			texts(&restore_reading_order(lines)),
-			["top 1", "top 2", "middle 1", "middle 2", "middle 3", "footer"]
-		);
 	}
 
 	/// The coordinates in these tests are what pdfium reports for the PDF attached to #808.

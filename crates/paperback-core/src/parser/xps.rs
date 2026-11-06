@@ -21,7 +21,7 @@ use crate::{
 	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
 		Parser,
-		pdf::{
+		layout::{
 			Line, PendingLink, RunningText, build_toc_tree, page_paragraphs, place_links, resolve_headings,
 			split_lines, survey_running_text,
 		},

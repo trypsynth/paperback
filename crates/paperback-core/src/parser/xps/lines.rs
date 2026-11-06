@@ -2,7 +2,7 @@ use std::mem;
 
 use super::page::{Page, Run};
 use crate::parser::{
-	pdf::{Line, restore_reading_order},
+	layout::{Line, restore_reading_order},
 	util::bidi::{contains_rtl, reorder_line},
 };
 

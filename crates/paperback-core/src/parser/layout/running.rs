@@ -2,21 +2,21 @@
 
 use std::collections::{HashMap, HashSet};
 
-use super::text::Line;
+use super::line::Line;
 
 /// Two covers a page number on its own line above or below the running head itself.
-pub(super) const EDGE_LINES: usize = 2;
+pub(in crate::parser) const EDGE_LINES: usize = 2;
 
 /// A count rather than a share of the document, because a running head that changes with the chapter appears only on that chapter's pages.
 const MIN_PAGES: usize = 4;
 
-pub(super) struct PageEdges {
+pub(in crate::parser) struct PageEdges {
 	pub first: Vec<String>,
 	pub last: Vec<String>,
 }
 
 impl PageEdges {
-	pub(super) fn of(lines: &[Line]) -> Self {
+	pub(in crate::parser) fn of(lines: &[Line]) -> Self {
 		let text = |line: &Line| line.text.clone();
 		Self {
 			first: lines.iter().take(EDGE_LINES).map(text).collect(),
@@ -24,7 +24,7 @@ impl PageEdges {
 		}
 	}
 
-	pub(super) fn of_texts(lines: &[String]) -> Self {
+	pub(in crate::parser) fn of_texts(lines: &[String]) -> Self {
 		Self {
 			first: lines.iter().take(EDGE_LINES).cloned().collect(),
 			last: lines.iter().rev().take(EDGE_LINES).cloned().collect(),
@@ -60,12 +60,12 @@ pub(in crate::parser) struct RunningText {
 
 impl RunningText {
 	/// Keeps the body font size, since that still tells a heading from body text.
-	pub(super) fn recognizing_nothing(mut self) -> Self {
+	pub(in crate::parser) fn recognizing_nothing(mut self) -> Self {
 		self.signatures.clear();
 		self
 	}
 
-	pub(super) fn contains(&self, line: &str, font_size: f64) -> bool {
+	pub(in crate::parser) fn contains(&self, line: &str, font_size: f64) -> bool {
 		let trimmed = line.trim();
 		if trimmed.is_empty() {
 			return false;
@@ -76,12 +76,12 @@ impl RunningText {
 		self.signatures.contains(&signature(trimmed))
 	}
 
-	pub(super) fn len(&self) -> usize {
+	pub(in crate::parser) fn len(&self) -> usize {
 		self.signatures.len()
 	}
 }
 
-pub(super) fn detect(pages: &[PageEdges], body_font_size: f64) -> RunningText {
+pub(in crate::parser) fn detect(pages: &[PageEdges], body_font_size: f64) -> RunningText {
 	let signatures =
 		edge_counts(pages).into_iter().filter(|(_, count)| *count >= MIN_PAGES).map(|(sig, _)| sig).collect();
 	RunningText { signatures, body_font_size }
@@ -90,7 +90,7 @@ pub(super) fn detect(pages: &[PageEdges], body_font_size: f64) -> RunningText {
 /// A tagged page's edge is a whole block, so at [`MIN_PAGES`] a manual lost the sentence opening seven of its sections and a book the figure placeholder ending a dozen pages; real tagged furniture is on nearly every page.
 const MIN_TAGGED_SHARE: f64 = 0.6;
 
-pub(super) fn detect_tagged(pages: &[PageEdges]) -> RunningText {
+pub(in crate::parser) fn detect_tagged(pages: &[PageEdges]) -> RunningText {
 	#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss, reason = "a share of the page count")]
 	let needed = (pages.len() as f64 * MIN_TAGGED_SHARE).ceil() as usize;
 	let signatures = edge_counts(pages)

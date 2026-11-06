@@ -4,17 +4,23 @@ use anyhow::Result;
 use rayon::prelude::*;
 
 use crate::{
-	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
+	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	ocr::image_only_placeholder,
-	parser::{Parser, add_heading_markers, util::path::extract_title_from_path},
+	parser::{
+		Parser,
+		layout::{
+			Line, PendingLink, RunningText, page_paragraphs, place_links, resolve_headings,
+			running::{self, PageEdges},
+			survey_running_text,
+		},
+		util::path::extract_title_from_path,
+	},
 	pdf_engine::{Document as PdfDocument, Error as PdfError, Page},
 };
 
 mod images;
 mod links;
 mod metadata;
-mod paragraphs;
-mod running;
 mod structure;
 mod tagged;
 mod text;
@@ -23,19 +29,11 @@ mod toc;
 use images::{
 	PAGE_IMAGE_COVERAGE, announced_images, append_image, images_before_each_paragraph, page_largest_image_coverage,
 };
-pub(super) use links::{PendingLink, place_links};
 use links::{collect_annotation_links, collect_web_links};
 use metadata::{cleaned_metadata, map_load_error, metadata_title};
-use paragraphs::join_paragraphs;
-pub(super) use paragraphs::split_lines;
-pub use paragraphs::{join_wrapped_lines, join_wrapped_runs};
-pub(super) use running::RunningText;
-use running::{EDGE_LINES, PageEdges};
 use structure::extract_tagged_page_text;
 use tagged::{TaggedPage, append_tagged_page, tagged_running_lines, without_lines};
-pub(super) use text::{Line, restore_reading_order};
-use text::{PageEvidence, WordPages, confirms, extract_text_lines, median_line_font_size};
-pub(super) use toc::build_toc_tree;
+use text::{PageEvidence, WordPages, confirms, extract_text_lines};
 use toc::extract_toc;
 
 /// Every page is read before any is assembled, because running headers are only known once every page's edges have been seen.
@@ -160,19 +158,6 @@ enum UntaggedLine {
 	Image(String),
 }
 
-/// Gives back the lines left once the running text is out, which the paragraphs' line indexes point into.
-pub(super) fn page_paragraphs(
-	mut lines: Vec<Line>,
-	running_text: &RunningText,
-	join: bool,
-) -> (Vec<Line>, Vec<(String, bool, usize)>) {
-	// Measured before the running headers come out: they sit at or below body size, so dropping them would pull the median up past a heading only just above it.
-	let body_size = median_line_font_size(&lines);
-	strip_running_text(&mut lines, running_text);
-	let paragraphs = if join { join_paragraphs(&lines, body_size) } else { split_lines(&lines, body_size) };
-	(lines, paragraphs)
-}
-
 fn untagged_page_lines(page: &PageContent, running_text: &RunningText, join: bool) -> Vec<UntaggedLine> {
 	let (line_infos, paragraphs) = page_paragraphs(page.lines.clone(), running_text, join);
 	let line_tops: Vec<f64> = line_infos.iter().map(|line| line.top).collect();
@@ -205,20 +190,6 @@ fn untagged_page_lines(page: &PageContent, running_text: &RunningText, join: boo
 	lines
 }
 
-/// The survey always runs because it also measures body text size; `strip` only decides whether its answer is used.
-pub(super) fn survey_running_text<'a>(pages: impl Iterator<Item = &'a [Line]> + Clone, strip: bool) -> RunningText {
-	let edges: Vec<PageEdges> = pages.clone().map(PageEdges::of).collect();
-	// Taken over the whole document because a chapter opening is mostly heading.
-	let body_font_size = median_line_font_size(pages.flatten());
-	let running_text = running::detect(&edges, body_font_size);
-	tracing::debug!(
-		running_text_count = running_text.len(),
-		body_font_size,
-		"surveyed pages for running headers and footers"
-	);
-	if strip { running_text } else { running_text.recognizing_nothing() }
-}
-
 /// Tagged lines are only taken out here, so `strip` has to be honoured here rather than by ignoring the returned survey.
 fn strip_tagged_running_text(pages: &mut [PageContent], strip: bool) -> RunningText {
 	let untagged = pages.iter().filter(|page| page.tagged.is_none()).map(|page| page.lines.as_slice());
@@ -249,51 +220,12 @@ fn strip_tagged_running_text(pages: &mut [PageContent], strip: bool) -> RunningT
 	running_text
 }
 
-/// Only edge lines are considered, so a body line reading like a running head stays, and a page whose every line matches (a part title repeating the book's name) is never emptied.
-fn strip_running_text(lines: &mut Vec<Line>, running_text: &RunningText) {
-	let is_running = |index: usize, lines: &Vec<Line>| {
-		let at_an_edge = index < EDGE_LINES || index + EDGE_LINES >= lines.len();
-		at_an_edge && running_text.contains(&lines[index].text, lines[index].size)
-	};
-	let doomed: Vec<usize> = (0..lines.len()).filter(|index| is_running(*index, lines)).collect();
-	if doomed.len() == lines.iter().filter(|line| !line.text.trim().is_empty()).count() {
-		return;
-	}
-	for index in doomed.into_iter().rev() {
-		lines.remove(index);
-	}
-}
-
 fn load_document(context: &ParserContext) -> Result<PdfDocument> {
 	PdfDocument::open(&context.file_path, context.password.as_deref()).map_err(|err| {
 		let mapped = map_load_error(err);
 		tracing::warn!(path = %context.file_path, error = %mapped, "failed to load pdf document");
 		mapped
 	})
-}
-
-/// Bookmarks win over structure-tree and font-size headings where they exist, because a person wrote them.
-pub(super) fn resolve_headings(
-	buffer: &mut DocumentBuffer,
-	toc_items: &mut Vec<TocItem>,
-	flat_toc_items: Vec<(u32, TocItem)>,
-	detected: Vec<(DocPos, String)>,
-	any_tags_processed: bool,
-) {
-	if any_tags_processed {
-		if toc_items.is_empty() {
-			*toc_items = build_toc_tree(flat_toc_items);
-		} else if flat_toc_items.is_empty() {
-			add_heading_markers(buffer, toc_items, 1);
-		}
-	} else if toc_items.is_empty() && !detected.is_empty() {
-		for (pos, text) in &detected {
-			buffer.add_marker(Marker::new(MarkerType::Heading1, *pos).with_text(text.clone()).with_level(1));
-		}
-		*toc_items = detected.into_iter().map(|(pos, text)| TocItem::new(text, String::new(), pos)).collect();
-	} else {
-		add_heading_markers(buffer, toc_items, 1);
-	}
 }
 
 /// Runs of neighbouring pages, so the pages a thread judges hyphens by lie close to the ones it reads.
@@ -359,11 +291,6 @@ fn read_pages(document: &PdfDocument, page_count: usize, render_tables_inline: b
 		pages[index] = content;
 	}
 	pages
-}
-
-/// Judged by the word's shape alone, with no evidence from the rest of the document.
-pub(crate) fn keeps_line_end_hyphen(left: &str, right: &str) -> bool {
-	text::keeps_hyphen(left, right, None)
 }
 
 pub struct PdfParser;

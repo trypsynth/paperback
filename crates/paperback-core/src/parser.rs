@@ -28,6 +28,7 @@ pub mod epub;
 pub mod fb2;
 pub mod hlp;
 pub mod html;
+pub(crate) mod layout;
 pub mod m4b;
 pub mod man;
 pub mod markdown;
