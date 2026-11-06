@@ -139,6 +139,14 @@ class ReadingController(
 
 	fun setNavUnit(unit: NavUnit) {
 		_currentNavUnit.value = unit
+		val stored = unit.toStored()
+		val documentUri = activeTab()?.documentUri
+		if (stored != null && documentUri != null) {
+			scope.launch(Dispatchers.IO) {
+				config.setDocumentNavigationUnit(documentUri, stored)
+				config.saveSoon()
+			}
+		}
 		// Global rather than per-document, and shared with desktop so the two agree about what "forward" means.
 		if (unit is NavUnit.Time) {
 			scope.launch(Dispatchers.IO) {
@@ -159,7 +167,18 @@ class ReadingController(
 		return times + segments
 	}
 
-	fun ensureNavUnitSupported(units: List<NavUnit>) {
+	// Only on a change of document, so that Find joining the list mid-search doesn't undo what the reader picked.
+	private var navUnitRestoredFor: String? = null
+
+	fun ensureNavUnitSupported(tab: DocumentTabState, units: List<NavUnit>) {
+		if (navUnitRestoredFor != tab.documentUri) {
+			navUnitRestoredFor = tab.documentUri
+			val saved = config.getDocumentNavigationUnit(tab.documentUri)?.toNavUnit()
+			if (saved != null && units.contains(saved)) {
+				_currentNavUnit.value = saved
+				return
+			}
+		}
 		if (units.isEmpty() || units.contains(_currentNavUnit.value)) return
 		val savedSeconds = config.getAppInt(AUDIO_SEEK_AMOUNT_KEY, DEFAULT_AUDIO_SEEK_SECONDS)
 		_currentNavUnit.value = units.firstOrNull { it == NavUnit.Time(savedSeconds) } ?: units.first()
