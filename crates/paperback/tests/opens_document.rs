@@ -7,7 +7,7 @@ use std::time::Duration;
 use common::fixture;
 
 #[test]
-#[ignore = "drives the real GUI via UI Automation; needs an interactive desktop"]
+#[ignore = "needs the wxStyledTextCtrl UIA text provider (see #1246); also needs an interactive desktop"]
 fn opening_a_document_focuses_its_text_and_names_it_in_the_title() {
 	let app = common::launch("opens-document");
 	let log = app.config_dir().join("paperback.log");

@@ -7,7 +7,7 @@ use std::time::Duration;
 use common::fixture;
 
 #[test]
-#[ignore = "drives the real GUI via UI Automation; needs an interactive desktop"]
+#[ignore = "needs the wxStyledTextCtrl UIA text provider (see #1246); also needs an interactive desktop"]
 fn relaunching_restores_the_document_focused_where_reading_stopped() {
 	let mut app = common::launch_with("restores-last-document", |config| config.app.restore_previous_documents = true);
 	common::wait_for_reader_focus(app.pid);

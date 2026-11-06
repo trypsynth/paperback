@@ -189,7 +189,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		.build();
 	let edge_beep_check = CheckBox::builder(&advanced_panel)
 		// TRANSLATORS: Option to play the system default beep when a movement key cannot move the caret at the very start or end of the document
-		.with_label(&t("&Beep when the caret cannot move at the document edges"))
+		.with_label(&t("&Beep at the start and end of the document"))
 		.build();
 	// TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();

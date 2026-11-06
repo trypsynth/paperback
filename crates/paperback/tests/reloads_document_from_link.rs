@@ -7,7 +7,7 @@ use std::time::Duration;
 use common::fixture;
 
 #[test]
-#[ignore = "drives the real GUI via UI Automation; needs an interactive desktop"]
+#[ignore = "needs the wxStyledTextCtrl UIA text provider (see #1246); also needs an interactive desktop"]
 fn f5_downloads_a_link_document_again_where_reading_stopped() {
 	let (app, server) = common::launch_with_link("link-f5", |_| {});
 	common::wait_for_reader_focus(app.pid);
@@ -27,7 +27,7 @@ fn f5_downloads_a_link_document_again_where_reading_stopped() {
 }
 
 #[test]
-#[ignore = "drives the real GUI via UI Automation; needs an interactive desktop"]
+#[ignore = "needs the wxStyledTextCtrl UIA text provider (see #1246); also needs an interactive desktop"]
 fn relaunching_downloads_a_small_link_document_again() {
 	let (mut app, server) =
 		common::launch_with_link("link-restore", |config| config.app.restore_previous_documents = true);
