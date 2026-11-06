@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4f2dd8c5898a0324; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versão 1.1
 
@@ -26,7 +26,7 @@ Paperback funciona no Windows 10/11, em todas as versões modernas de ARM macOS,
 * Marcadores e notas, para que você possa marcar seu lugar e voltar a ele.
 * Todos os atalhos de teclado podem ser alterados.
 * Abre documentos diretamente de links http e https, e os baixa novamente quando você os reabre ou pressiona `F5`, mantendo sua posição de leitura e Favoritos. Ao restaurar os documentos que você tinha abertos, ele baixa novamente os dos links que eram 2 MB ou menores.
-* Vem com `pb`, uma ferramenta de linha de comando que converte qualquer documento suportado para HTML, Markdown ou texto simples. Ele aceita quantos documentos você fornecer, expande `*.pdf` e similares por conta própria para que o mesmo comando funcione no Windows, e pode escrever um arquivo por documento em uma pasta. Também pode ler uma lista de documentos de um arquivo ou de stdin com `--files-from`, e converter documentos diretamente de links http e https.
+* Vem com `pb`, uma ferramenta de linha de comando que converte qualquer documento suportado para HTML, Markdown ou texto simples. Ele aceita quantos documentos você fornecer, expande `*.pdf` e similares por conta própria para que o mesmo comando funcione no Windows, e pode escrever um arquivo por documento em uma pasta, convertendo vários de uma vez (`--jobs` define quantos). Ele também pode ler uma lista de documentos de um arquivo ou de stdin com `--files-from`, e converter documentos diretamente de links http e https.
 
 ## Compatibilidade com Leitores de Tela
 
