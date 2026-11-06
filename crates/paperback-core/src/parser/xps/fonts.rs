@@ -8,9 +8,7 @@ use std::{
 use skrifa::{
 	FontRef, GlyphId, MetadataProvider,
 	attribute::Weight,
-	charmap::Charmap,
 	instance::{LocationRef, Size},
-	metrics::GlyphMetrics,
 };
 
 use super::{
@@ -33,10 +31,13 @@ fn unscrambled(mut data: Vec<u8>, part: &str) -> Option<Vec<u8>> {
 	Some(data)
 }
 
+/// Measured whole when it is read, so a run is measured without reading the font again.
 struct Face {
-	data: Vec<u8>,
-	index: u32,
+	/// Each glyph's advance, in the font's units.
+	advances: Vec<Option<f32>>,
 	units_per_em: f64,
+	/// From character to glyph.
+	glyphs: HashMap<u32, u32>,
 	bold: bool,
 	monospaced: bool,
 }
@@ -47,40 +48,30 @@ impl Face {
 		let data = if FontRef::from_index(&data, index).is_ok() { data } else { unscrambled(data, part)? };
 		let font = FontRef::from_index(&data, index).ok()?;
 		let metrics = font.metrics(Size::unscaled(), LocationRef::default());
-		let units_per_em = f64::from(metrics.units_per_em).max(1.0);
-		let bold = font.attributes().weight >= Weight::BOLD;
-		Some(Self { data, index, units_per_em, bold, monospaced: metrics.is_monospace })
-	}
-}
-
-/// Advances in hundredths of the size, the unit `Indices` uses.
-struct Metrics<'a> {
-	charmap: Charmap<'a>,
-	glyphs: GlyphMetrics<'a>,
-	units_per_em: f64,
-}
-
-impl<'a> Metrics<'a> {
-	fn of(face: &'a Face) -> Option<Self> {
-		let font = FontRef::from_index(&face.data, face.index).ok()?;
+		let glyph_metrics = font.glyph_metrics(Size::unscaled(), LocationRef::default());
+		let advances =
+			(0..glyph_metrics.glyph_count()).map(|glyph| glyph_metrics.advance_width(GlyphId::new(glyph))).collect();
 		Some(Self {
-			charmap: font.charmap(),
-			glyphs: font.glyph_metrics(Size::unscaled(), LocationRef::default()),
-			units_per_em: face.units_per_em,
+			advances,
+			units_per_em: f64::from(metrics.units_per_em).max(1.0),
+			glyphs: font.charmap().mappings().map(|(character, glyph)| (character, glyph.to_u32())).collect(),
+			bold: font.attributes().weight >= Weight::BOLD,
+			monospaced: metrics.is_monospace,
 		})
 	}
 
-	fn of_glyph(&self, glyph: GlyphId) -> Option<f64> {
-		Some(f64::from(self.glyphs.advance_width(glyph)?) / self.units_per_em * 100.0)
+	/// In hundredths of the size, the unit `Indices` uses.
+	fn of_glyph(&self, glyph: u32) -> Option<f64> {
+		let advance = (*self.advances.get(usize::try_from(glyph).ok()?)?)?;
+		Some(f64::from(advance) / self.units_per_em * 100.0)
 	}
 
 	fn of_character(&self, character: char) -> Option<f64> {
-		self.of_glyph(self.charmap.map(character)?)
+		self.of_glyph(*self.glyphs.get(&u32::from(character))?)
 	}
 }
 
 fn run_width(face: Option<&Face>, run: &Run) -> Option<f64> {
-	let metrics = face.and_then(Metrics::of);
 	let mut characters = run.source.chars();
 	let mut hundredths = 0.0;
 	for cluster in clusters(&run.indices) {
@@ -95,41 +86,52 @@ fn run_width(face: Option<&Face>, run: &Run) -> Option<f64> {
 			continue;
 		}
 		let natural = || {
-			let metrics = metrics.as_ref()?;
-			cluster
-				.glyph
-				.and_then(|glyph| metrics.of_glyph(GlyphId::new(glyph)))
-				.or_else(|| metrics.of_character(first?))
+			let face = face?;
+			cluster.glyph.and_then(|glyph| face.of_glyph(glyph)).or_else(|| face.of_character(first?))
 		};
 		hundredths += cluster.advance.or_else(natural)?;
 	}
 	for character in characters {
-		hundredths += metrics.as_ref()?.of_character(character)?;
+		hundredths += face?.of_character(character)?;
 	}
 	Some(hundredths / 100.0 * run.size)
 }
 
+type Slot = Arc<OnceLock<Option<Face>>>;
+
 /// Each font is read once and shared by every worker, because the same few are named by every run of the file.
 #[derive(Default)]
 pub(super) struct Fonts {
-	faces: Mutex<HashMap<String, Arc<OnceLock<Option<Face>>>>>,
+	faces: Mutex<HashMap<String, Slot>>,
 }
 
 impl Fonts {
-	pub fn style_of<R: Read + Seek>(&self, package: &mut Package<R>, page_part: &str, run: &Run) -> RunStyle {
-		let (uri, fragment) = run.font.split_once('#').unwrap_or((&run.font, ""));
+	fn face<R: Read + Seek>(&self, package: &mut Package<R>, page_part: &str, font: &str) -> Slot {
+		let (uri, fragment) = font.split_once('#').unwrap_or((font, ""));
 		let part = resolve_part(page_part, uri);
 		let index = fragment.parse().unwrap_or(0);
 		let mut faces = self.faces.lock().unwrap_or_else(PoisonError::into_inner);
 		let slot = Arc::clone(faces.entry(format!("{part}#{index}")).or_default());
 		drop(faces);
 		// Loaded outside the lock, so workers that need different fonts don't wait on each other.
-		let face = slot.get_or_init(|| Face::load(package, &part, index)).as_ref();
-		RunStyle {
-			width: run_width(face, run),
-			bold: run.simulated_bold || face.is_some_and(|face| face.bold),
-			monospaced: face.is_some_and(|face| face.monospaced),
+		slot.get_or_init(|| Face::load(package, &part, index));
+		slot
+	}
+
+	/// Each font is found once for the page, by the name its runs give it.
+	pub fn styles_of<R: Read + Seek>(&self, package: &mut Package<R>, page_part: &str, runs: &[Run]) -> Vec<RunStyle> {
+		let mut faces: HashMap<&str, Slot> = HashMap::new();
+		let mut styles = Vec::with_capacity(runs.len());
+		for run in runs {
+			let slot = faces.entry(run.font.as_str()).or_insert_with(|| self.face(package, page_part, &run.font));
+			let face = slot.get().and_then(Option::as_ref);
+			styles.push(RunStyle {
+				width: run_width(face, run),
+				bold: run.simulated_bold || face.is_some_and(|face| face.bold),
+				monospaced: face.is_some_and(|face| face.monospaced),
+			});
 		}
+		styles
 	}
 }
 
@@ -220,9 +222,13 @@ mod tests {
 		}
 	}
 
+	fn style_in(fonts: &Fonts, package: &mut Package<std::io::Cursor<Vec<u8>>>, page: &str, run: &Run) -> RunStyle {
+		fonts.styles_of(package, page, std::slice::from_ref(run)).remove(0)
+	}
+
 	fn style_of(font: &[u8], part: &str, run: &Run) -> RunStyle {
 		let mut package = Package::from_bytes(&[(part, font)]);
-		Fonts::default().style_of(&mut package, "page.fpage", run)
+		style_in(&Fonts::default(), &mut package, "page.fpage", run)
 	}
 
 	fn width_of(run: &Run) -> Option<f64> {
@@ -261,7 +267,7 @@ mod tests {
 	fn a_font_is_found_relative_to_its_page() {
 		let run = Run { font: "../Resources/F.ttf".to_string(), ..run("ab", "") };
 		let mut package = Package::from_bytes(&[("Resources/F.ttf", &test_font(400, false))]);
-		assert_eq!(Fonts::default().style_of(&mut package, "Pages/1.fpage", &run).width, Some(15.0));
+		assert_eq!(style_in(&Fonts::default(), &mut package, "Pages/1.fpage", &run).width, Some(15.0));
 	}
 
 	#[test]
@@ -298,6 +304,20 @@ mod tests {
 	}
 
 	#[test]
+	fn each_run_on_a_page_is_measured_with_its_own_font() {
+		let (regular, bold) = (test_font(400, false), test_font(700, true));
+		let mut package = Package::from_bytes(&[("R.ttf", &regular), ("B.ttf", &bold)]);
+		let runs = [
+			Run { font: "R.ttf".to_string(), ..run("a", "") },
+			Run { font: "B.ttf".to_string(), ..run("ab", "") },
+			Run { font: "R.ttf".to_string(), ..run("b", "") },
+		];
+		let styles = Fonts::default().styles_of(&mut package, "page.fpage", &runs);
+		let found: Vec<_> = styles.iter().map(|style| (style.width, style.bold, style.monospaced)).collect();
+		assert_eq!(found, [(Some(5.0), false, false), (Some(15.0), true, true), (Some(10.0), false, false)]);
+	}
+
+	#[test]
 	fn workers_with_their_own_package_share_each_font_they_load() {
 		let font = test_font(400, false);
 		let fonts = Fonts::default();
@@ -305,7 +325,7 @@ mod tests {
 			for _ in 0..2 {
 				scope.spawn(|| {
 					let mut package = Package::from_bytes(&[("F.ttf", &font)]);
-					assert_eq!(fonts.style_of(&mut package, "page.fpage", &run("ab", "")).width, Some(15.0));
+					assert_eq!(style_in(&fonts, &mut package, "page.fpage", &run("ab", "")).width, Some(15.0));
 				});
 			}
 		});
@@ -316,9 +336,9 @@ mod tests {
 	fn a_font_is_read_once() {
 		let mut package = Package::from_bytes(&[("F.ttf", &test_font(400, false))]);
 		let fonts = Fonts::default();
-		fonts.style_of(&mut package, "page.fpage", &run("a", ""));
+		style_in(&fonts, &mut package, "page.fpage", &run("a", ""));
 		assert_eq!(fonts.faces.lock().expect("lock").len(), 1);
-		fonts.style_of(&mut package, "page.fpage", &run("b", ""));
+		style_in(&fonts, &mut package, "page.fpage", &run("b", ""));
 		assert_eq!(fonts.faces.lock().expect("lock").len(), 1);
 	}
 }

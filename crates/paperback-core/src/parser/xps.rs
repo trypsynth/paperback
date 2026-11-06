@@ -110,11 +110,8 @@ impl ReadPage {
 		let fragments = page_fragments(package, part);
 		let has_area = page.links.iter().any(|link| matches!(link.place, LinkPlace::Area(_)));
 		// Only laying out lines and testing a run against a link rectangle need to know how wide it is.
-		let styles: Vec<RunStyle> = if fragments.is_empty() || has_area {
-			page.runs.iter().map(|run| fonts.style_of(package, part, run)).collect()
-		} else {
-			Vec::new()
-		};
+		let styles: Vec<RunStyle> =
+			if fragments.is_empty() || has_area { fonts.styles_of(package, part, &page.runs) } else { Vec::new() };
 		let links = page_links(&page, &styles, target_pages);
 		let content = if fragments.is_empty() {
 			Content::Drawn(page_lines(&page, &styles))
