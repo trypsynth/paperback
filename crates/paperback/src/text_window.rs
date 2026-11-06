@@ -56,7 +56,7 @@ impl TextWindow {
 		Self { start, end }
 	}
 
-	pub const fn of(slice: &WindowSlice) -> Self {
+	pub const fn of(slice: &WindowSlice<'_>) -> Self {
 		Self { start: slice.start, end: slice.end }
 	}
 

@@ -38,7 +38,7 @@ pub(super) fn reload_document(tab: &mut DocumentTab, doc_pos: DocPos, plain_text
 
 pub(super) fn style_and_fill(
 	text_ctrl: ReaderCtrl,
-	slice: &WindowSlice,
+	slice: &WindowSlice<'_>,
 	session: &DocumentSession,
 	style: &ReadabilityStyle,
 	plain_text: bool,
@@ -54,11 +54,11 @@ pub(super) fn style_and_fill(
 
 pub(super) fn fill_text_ctrl_with_formatting(
 	text_ctrl: ReaderCtrl,
-	slice: &WindowSlice,
+	slice: &WindowSlice<'_>,
 	session: &DocumentSession,
 	plain_text: bool,
 ) {
-	let content = slice.text.as_str();
+	let content = slice.text.as_ref();
 	let started = Instant::now();
 	text_ctrl.set_value(content);
 	let fill = started.elapsed();
