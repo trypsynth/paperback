@@ -44,7 +44,7 @@ pub(super) fn read_fingerprint(path: &Path) -> Option<FileFingerprint> {
 impl DocumentManager {
 	/// Re-parses rather than transforming in place so every format's table rendering stays identical via the shared parse-time helper.
 	pub fn apply_parse_settings(&mut self, settings: ParseSettings) {
-		let (style, parse_inputs) = {
+		let (style, plain_text, parse_inputs) = {
 			let cfg = self.config.lock().unwrap();
 			let parse_inputs: Vec<(String, String)> = self
 				.tabs
@@ -54,10 +54,10 @@ impl DocumentManager {
 					(cfg.get_document_password(&path_str), cfg.get_document_format(&path_str))
 				})
 				.collect();
-			(readability_style(&cfg), parse_inputs)
+			(readability_style(&cfg), cfg.get_app_bool("plain_text", false), parse_inputs)
 		};
 		for (tab, (password, forced_extension)) in self.tabs.iter_mut().zip(parse_inputs) {
-			let _ = reparse_tab_in_place(tab, &password, &forced_extension, settings, &style);
+			let _ = reparse_tab_in_place(tab, &password, &forced_extension, settings, &style, plain_text);
 		}
 	}
 
@@ -121,16 +121,17 @@ impl DocumentManager {
 		let forced_extension = cfg.get_document_format(&path_str);
 		let settings = parse_settings(&cfg);
 		let style = readability_style(&cfg);
+		let plain_text = cfg.get_app_bool("plain_text", false);
 		drop(cfg);
 		let tab = &mut self.tabs[index];
 		let (positions, history_index) = tab.session.get_history();
 		let positions = positions.to_vec();
-		let reloaded = match reparse_tab_in_place(tab, &password, &forced_extension, settings, &style) {
+		let reloaded = match reparse_tab_in_place(tab, &password, &forced_extension, settings, &style, plain_text) {
 			Ok(()) => true,
 			Err(err) if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
 				// Recorded before the prompt so a re-entrant call during its modal loop sees the file as unchanged and skips a second prompt.
 				tab.disk_fingerprint = Some(current);
-				self.reprompt_password_and_reparse(index, &path_str, &forced_extension, settings, &style)
+				self.reprompt_password_and_reparse(index, &path_str, &forced_extension, settings, &style, plain_text)
 			}
 			Err(_) => false,
 		};
@@ -151,6 +152,7 @@ impl DocumentManager {
 		forced_extension: &str,
 		settings: ParseSettings,
 		style: &ReadabilityStyle,
+		plain_text: bool,
 	) -> bool {
 		if let Ok(cfg) = self.config.try_lock() {
 			cfg.set_document_password(path_str, "");
@@ -160,7 +162,7 @@ impl DocumentManager {
 			return false;
 		};
 		let tab = &mut self.tabs[index];
-		match reparse_tab_in_place(tab, &password, forced_extension, settings, style) {
+		match reparse_tab_in_place(tab, &password, forced_extension, settings, style, plain_text) {
 			Ok(()) => {
 				if !password.is_empty()
 					&& let Ok(cfg) = self.config.try_lock()
@@ -194,6 +196,7 @@ fn reparse_tab_in_place(
 	forced_extension: &str,
 	settings: ParseSettings,
 	style: &ReadabilityStyle,
+	plain_text: bool,
 ) -> Result<(), String> {
 	let new_fingerprint = read_fingerprint(tab.local_path());
 	let current_pos = tab.to_doc(tab.text_ctrl.get_insertion_point());
@@ -242,7 +245,7 @@ fn reparse_tab_in_place(
 	// The reading control now holds the whole document, so a reload replaces all of it rather than a window around the restored position.
 	let slice = tab.session.get_window(DocPos::ZERO, doc_len.as_pos());
 	tab.window = TextWindow::of(&slice);
-	style_and_fill(tab.text_ctrl, &slice, &tab.session, style);
+	style_and_fill(tab.text_ctrl, &slice, &tab.session, style, plain_text);
 	tab.panel.layout();
 	let restored = tab.to_local(restored_pos);
 	tab.text_ctrl.set_insertion_point(restored);

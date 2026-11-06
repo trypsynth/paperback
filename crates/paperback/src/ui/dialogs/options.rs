@@ -34,6 +34,7 @@ pub struct OptionsDialogResult {
 	pub minimize_to_tray: bool,
 	pub start_maximized: bool,
 	pub edge_beep: bool,
+	pub plain_text: bool,
 	pub compact_go_menu: bool,
 	pub navigation_wrap: bool,
 	pub line_start_navigation: bool,
@@ -68,6 +69,7 @@ struct OptionsDialogUi {
 	minimize_to_tray_check: CheckBox,
 	start_maximized_check: CheckBox,
 	edge_beep_check: CheckBox,
+	plain_text_check: CheckBox,
 	compact_go_menu_check: CheckBox,
 	navigation_wrap_check: CheckBox,
 	line_start_nav_check: CheckBox,
@@ -125,6 +127,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		minimize_to_tray: ui.minimize_to_tray_check.is_checked(),
 		start_maximized: ui.start_maximized_check.is_checked(),
 		edge_beep: ui.edge_beep_check.is_checked(),
+		plain_text: ui.plain_text_check.is_checked(),
 		compact_go_menu: ui.compact_go_menu_check.is_checked(),
 		navigation_wrap: ui.navigation_wrap_check.is_checked(),
 		line_start_navigation: ui.line_start_nav_check.is_checked(),
@@ -186,6 +189,10 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let markdown_dollar_math_check = CheckBox::builder(&readability_panel)
 		// TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
 		.with_label(&t("Read text between dollar signs as &math in Markdown"))
+		.build();
+	let plain_text_check = CheckBox::builder(&advanced_panel)
+		// TRANSLATORS: Option to load the reading view without bold, italic and underline styling, which can make a long document load faster. The reading font, colours and spacing still apply.
+		.with_label(&t("Load text &without formatting"))
 		.build();
 	let edge_beep_check = CheckBox::builder(&advanced_panel)
 		// TRANSLATORS: Option to play the system default beep when a movement key cannot move the caret at the very start or end of the document
@@ -369,6 +376,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	readability_sizer.add(&strip_running_text_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&markdown_dollar_math_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add_sizer(&line_spacing_sizer, 0, SizerFlag::All, option_padding);
+	advanced_sizer.add(&plain_text_check, 0, SizerFlag::All, option_padding);
 	#[cfg(target_os = "windows")]
 	advanced_sizer.add(&edge_beep_check, 0, SizerFlag::All, option_padding);
 	#[cfg(not(target_os = "windows"))]
@@ -399,10 +407,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	notebook.add_page(&general_panel, &general_label, true, None);
 	notebook.add_page(&reading_panel, &reading_label, false, None);
 	notebook.add_page(&readability_panel, &readability_label, false, None);
-	#[cfg(target_os = "windows")]
 	notebook.add_page(&advanced_panel, &advanced_label, false, None);
-	#[cfg(not(target_os = "windows"))]
-	advanced_panel.show(false);
 	restore_docs_check.set_value(config.get_app_bool("restore_previous_documents", true));
 	word_wrap_check.set_value(config.get_app_bool("word_wrap", false));
 	render_tables_inline_check.set_value(config.get_app_bool("render_tables_inline", true));
@@ -412,6 +417,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	minimize_to_tray_check.set_value(config.get_app_bool("minimize_to_tray", false));
 	start_maximized_check.set_value(config.get_app_bool("start_maximized", false));
 	edge_beep_check.set_value(config.get_app_bool("edge_beep", false));
+	plain_text_check.set_value(config.get_app_bool("plain_text", false));
 	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
 	navigation_wrap_check.set_value(config.get_app_bool("navigation_wrap", false));
 	line_start_nav_check.set_value(config.get_app_bool("line_start_navigation", false));
@@ -526,6 +532,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		minimize_to_tray_check,
 		start_maximized_check,
 		edge_beep_check,
+		plain_text_check,
 		compact_go_menu_check,
 		navigation_wrap_check,
 		line_start_nav_check,

@@ -159,6 +159,7 @@ impl DocumentManager {
 		restore_saved_pages(&mut session, &saved_pages_of(&local_path), joins_recognized_text(&local_path, &config));
 		let word_wrap = config.get_app_bool("word_wrap", false);
 		let edge_beep = config.get_app_bool("edge_beep", false);
+		let plain_text = config.get_app_bool("plain_text", false);
 		let text_ctrl =
 			reader_input::build_text_ctrl(panel, word_wrap, edge_beep, self_rc, self.frame, self.from_keyboard.clone());
 		let rf = config.get_readability_font();
@@ -173,7 +174,7 @@ impl DocumentManager {
 		let path_str = path.to_string_lossy();
 		let doc_len = session.document_len();
 		let initial_pos = config.get_validated_document_position(&path_str, doc_len.as_pos()).unwrap_or_default();
-		let window = load_document_into_ctrl(text_ctrl, &session);
+		let window = load_document_into_ctrl(text_ctrl, &session, plain_text);
 		text_ctrl.apply_readability_format(&readability_style(&config));
 		// `add_page(select: true)` can synchronously fire page-changed, whose handler locks `self.config` again; `Mutex` isn't reentrant, so holding it here deadlocked the app.
 		drop(config);

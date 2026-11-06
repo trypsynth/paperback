@@ -235,7 +235,10 @@ impl DocumentManager {
 		}
 		let is_active = self.active_tab_index() == Some(index);
 		let from_keyboard = self.tabs[index].ocr_job.as_ref().is_none_or(|job| job.from_keyboard);
-		let join = joins_recognized_text(self.tabs[index].local_path(), &self.config.lock().unwrap());
+		let (join, plain_text) = {
+			let cfg = self.config.lock().unwrap();
+			(joins_recognized_text(self.tabs[index].local_path(), &cfg), cfg.get_app_bool("plain_text", false))
+		};
 		let tab = &mut self.tabs[index];
 		let mut pages = Vec::with_capacity(results.len());
 		let mut read = Vec::with_capacity(results.len());
@@ -282,7 +285,7 @@ impl DocumentManager {
 		if let Some(mark) = tab.selection_mark.get() {
 			tab.selection_mark.set(Some(outcome.shift(mark.min(buffer.end()))));
 		}
-		refresh_after_ocr(tab, &starts, loaded_end, caret, is_active);
+		refresh_after_ocr(tab, &starts, loaded_end, caret, is_active, plain_text);
 		// The config's reading position, history and bookmarks are document-absolute, so the edits above moved them too.
 		self.config.lock().unwrap().shift_document_positions(&file_path.to_string_lossy(), &outcome);
 	}
@@ -337,12 +340,19 @@ impl DocumentManager {
 }
 
 /// `loaded_end` is where the window ended before the replacement; any page at or before it shifted local offsets, so the window must reload.
-fn refresh_after_ocr(tab: &mut DocumentTab, starts: &[DocPos], loaded_end: DocPos, caret: DocPos, is_active: bool) {
+fn refresh_after_ocr(
+	tab: &mut DocumentTab,
+	starts: &[DocPos],
+	loaded_end: DocPos,
+	caret: DocPos,
+	is_active: bool,
+	plain_text: bool,
+) {
 	if !starts.iter().any(|start| *start < loaded_end) {
 		return;
 	}
 	let caret = caret.min(tab.session.document_len().as_pos());
-	reload_document(tab, caret);
+	reload_document(tab, caret, plain_text);
 	if is_active {
 		let local = tab.to_local(caret);
 		tab.text_ctrl.set_insertion_point(local);

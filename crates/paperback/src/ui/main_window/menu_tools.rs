@@ -138,6 +138,8 @@ pub(super) fn handle_options(
 	cfg.set_app_bool("minimize_to_tray", options.minimize_to_tray);
 	cfg.set_app_bool("start_maximized", options.start_maximized);
 	cfg.set_app_bool("edge_beep", options.edge_beep);
+	// Read at each document's next load, so changing it never reloads and moves an open reader.
+	cfg.set_app_bool("plain_text", options.plain_text);
 	cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
 	cfg.set_app_bool("navigation_wrap", options.navigation_wrap);
 	cfg.set_app_bool("line_start_navigation", options.line_start_navigation);

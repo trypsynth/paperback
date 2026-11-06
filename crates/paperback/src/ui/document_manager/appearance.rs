@@ -38,9 +38,9 @@ impl DocumentManager {
 	}
 
 	pub fn apply_word_wrap(&mut self, self_rc: &Rc<Mutex<Self>>, word_wrap: bool) {
-		let (style, edge_beep) = {
+		let (style, edge_beep, plain_text) = {
 			let cfg = self.config.lock().unwrap();
-			(readability_style(&cfg), cfg.get_app_bool("edge_beep", false))
+			(readability_style(&cfg), cfg.get_app_bool("edge_beep", false), cfg.get_app_bool("plain_text", false))
 		};
 		for tab in &mut self.tabs {
 			let old_ctrl = tab.text_ctrl;
@@ -62,7 +62,7 @@ impl DocumentManager {
 			// The native control only keeps text once it has been laid out in the shown panel.
 			tab.panel.layout();
 			tab.window = TextWindow::of(&slice);
-			style_and_fill(text_ctrl, &slice, &tab.session, &style);
+			style_and_fill(text_ctrl, &slice, &tab.session, &style, plain_text);
 			let max_pos = text_ctrl.get_last_position();
 			let pos = tab.to_local(current_doc_pos).min(max_pos);
 			text_ctrl.set_insertion_point(pos);
