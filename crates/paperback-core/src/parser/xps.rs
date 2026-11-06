@@ -44,13 +44,13 @@ impl Parser for XpsParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		tracing::debug!(path = %context.file_path, "parsing xps file");
 		let open = || {
-			let file = File::open(&context.file_path)
-				.with_context(|| format!("Failed to open XPS file '{}'", context.file_path))?;
-			let archive = ZipArchive::new(BufReader::new(file))
-				.with_context(|| format!("Failed to read XPS as zip '{}'", context.file_path))?;
-			Ok(Package::new(archive))
+			File::open(&context.file_path)
+				.map(BufReader::new)
+				.with_context(|| format!("Failed to open XPS file '{}'", context.file_path))
 		};
-		read_document(open, context)
+		let archive =
+			ZipArchive::new(open()?).with_context(|| format!("Failed to read XPS as zip '{}'", context.file_path))?;
+		read_document(Package::new(archive), open, context)
 	}
 }
 
@@ -97,7 +97,7 @@ impl ReadPage {
 	fn of<R: Read + Seek>(
 		package: &mut Package<R>,
 		part: &str,
-		fonts: &mut Fonts,
+		fonts: &Fonts,
 		target_pages: &HashMap<&str, usize>,
 	) -> Self {
 		let page = match package.read_text(part).and_then(|xml| read_page(&xml)) {
@@ -273,12 +273,12 @@ fn detected_headings(written: Vec<WrittenPage>) -> Vec<(DocPos, String)> {
 	headings
 }
 
-/// Reading a part takes the whole package, so `open` is called again for each group of pages read side by side.
+/// Reading a part takes a reader of its own, so `reopen` opens the file `package` was read from again for each group of pages read side by side.
 fn read_document<R: Read + Seek>(
-	open: impl Fn() -> Result<Package<R>> + Sync,
+	mut package: Package<R>,
+	reopen: impl Fn() -> Result<R> + Sync,
 	context: &ParserContext,
 ) -> Result<Document> {
-	let mut package = open()?;
 	let documents = package.documents();
 	let pages: Vec<PagePart> = documents.iter().flat_map(|document| package.pages(document)).collect();
 	if pages.is_empty() {
@@ -287,13 +287,19 @@ fn read_document<R: Read + Seek>(
 		anyhow::bail!(t("XPS file contains no pages"));
 	}
 	let target_pages = link_target_pages(&pages);
-	// Each group keeps its own fonts as well, so a font is read once per group of pages that uses it. Rayon splits the pages into more groups than it has threads as work moves between them.
+	// Rayon splits the pages into many more groups than it has threads, so the groups share what is costly to read: the zip's directory and the fonts.
+	let directory = package.directory();
+	let fonts = Fonts::default();
 	let mut read: Vec<ReadPage> = pages
 		.par_iter()
 		.map_init(
-			|| (open().inspect_err(|error| tracing::warn!(%error, "failed to reopen xps file")).ok(), Fonts::default()),
-			|(package, fonts), part| match package {
-				Some(package) => ReadPage::of(package, &part.name, fonts, &target_pages),
+			|| {
+				let reader = reopen().inspect_err(|error| tracing::warn!(%error, "failed to reopen xps file")).ok()?;
+				// SAFETY: the contract is only that reader and directory describe the same archive, and `reopen` opens the file the directory was read from when this parse began. A file swapped in between gives read errors or wrong text for that document, not undefined behavior.
+				Some(unsafe { Package::with_directory(reader, &directory) })
+			},
+			|package, part| match package {
+				Some(package) => ReadPage::of(package, &part.name, &fonts, &target_pages),
 				None => ReadPage::unread(),
 			},
 		)

@@ -2,6 +2,7 @@ use std::{
 	collections::HashMap,
 	io::{Read, Seek},
 	path::Path,
+	sync::{Arc, Mutex, OnceLock, PoisonError},
 };
 
 use skrifa::{
@@ -108,19 +109,22 @@ fn run_width(face: Option<&Face>, run: &Run) -> Option<f64> {
 	Some(hundredths / 100.0 * run.size)
 }
 
-/// Each font is read once, because the same few are named by every run of the file.
+/// Each font is read once and shared by every worker, because the same few are named by every run of the file.
 #[derive(Default)]
 pub(super) struct Fonts {
-	faces: HashMap<String, Option<Face>>,
+	faces: Mutex<HashMap<String, Arc<OnceLock<Option<Face>>>>>,
 }
 
 impl Fonts {
-	pub fn style_of<R: Read + Seek>(&mut self, package: &mut Package<R>, page_part: &str, run: &Run) -> RunStyle {
+	pub fn style_of<R: Read + Seek>(&self, package: &mut Package<R>, page_part: &str, run: &Run) -> RunStyle {
 		let (uri, fragment) = run.font.split_once('#').unwrap_or((&run.font, ""));
 		let part = resolve_part(page_part, uri);
 		let index = fragment.parse().unwrap_or(0);
-		let face = self.faces.entry(format!("{part}#{index}")).or_insert_with(|| Face::load(package, &part, index));
-		let face = face.as_ref();
+		let mut faces = self.faces.lock().unwrap_or_else(PoisonError::into_inner);
+		let slot = Arc::clone(faces.entry(format!("{part}#{index}")).or_default());
+		drop(faces);
+		// Loaded outside the lock, so workers that need different fonts don't wait on each other.
+		let face = slot.get_or_init(|| Face::load(package, &part, index)).as_ref();
 		RunStyle {
 			width: run_width(face, run),
 			bold: run.simulated_bold || face.is_some_and(|face| face.bold),
@@ -294,12 +298,27 @@ mod tests {
 	}
 
 	#[test]
+	fn workers_with_their_own_package_share_each_font_they_load() {
+		let font = test_font(400, false);
+		let fonts = Fonts::default();
+		std::thread::scope(|scope| {
+			for _ in 0..2 {
+				scope.spawn(|| {
+					let mut package = Package::from_bytes(&[("F.ttf", &font)]);
+					assert_eq!(fonts.style_of(&mut package, "page.fpage", &run("ab", "")).width, Some(15.0));
+				});
+			}
+		});
+		assert_eq!(fonts.faces.lock().expect("lock").len(), 1);
+	}
+
+	#[test]
 	fn a_font_is_read_once() {
 		let mut package = Package::from_bytes(&[("F.ttf", &test_font(400, false))]);
-		let mut fonts = Fonts::default();
+		let fonts = Fonts::default();
 		fonts.style_of(&mut package, "page.fpage", &run("a", ""));
-		assert_eq!(fonts.faces.len(), 1);
+		assert_eq!(fonts.faces.lock().expect("lock").len(), 1);
 		fonts.style_of(&mut package, "page.fpage", &run("b", ""));
-		assert_eq!(fonts.faces.len(), 1);
+		assert_eq!(fonts.faces.lock().expect("lock").len(), 1);
 	}
 }

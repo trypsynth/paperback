@@ -1,7 +1,14 @@
+use std::io::Cursor;
+
+use zip::ZipArchive;
+
 use super::{XpsParser, read_document};
 use crate::{
 	document::{DocLen, DocPos, Document, Marker, MarkerType, ParserContext, is_heading_marker},
-	parser::{Parser, ParserRegistry, xps::package::Package},
+	parser::{
+		Parser, ParserRegistry,
+		xps::package::{Package, zip_bytes},
+	},
 };
 
 const ROOT_RELS: &str = r#"<Relationships>
@@ -14,7 +21,10 @@ fn context() -> ParserContext {
 }
 
 fn read_parts(parts: &[(&str, &str)], context: &ParserContext) -> anyhow::Result<Document> {
-	read_document(|| Ok(Package::from_parts(parts)), context)
+	let parts: Vec<(&str, &[u8])> = parts.iter().map(|(name, text)| (*name, text.as_bytes())).collect();
+	let bytes = zip_bytes(&parts);
+	let package = Package::new(ZipArchive::new(Cursor::new(bytes.clone()))?);
+	read_document(package, || Ok(Cursor::new(bytes.clone())), context)
 }
 
 /// A package whose one document is `document`, with `rest` beside it.

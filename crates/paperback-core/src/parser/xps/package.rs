@@ -1,11 +1,12 @@
 use std::{
 	collections::{BTreeMap, HashMap},
 	io::{Read, Seek},
+	sync::Arc,
 };
 
 use anyhow::{Result, bail};
 use roxmltree::Document as XmlDocument;
-use zip::ZipArchive;
+use zip::{ZipArchive, read::ZipArchiveMetadata};
 
 use crate::{
 	parser::util::{path::resolve_relative_path, xml::is_element},
@@ -26,7 +27,14 @@ pub(super) struct PagePart {
 pub(super) struct Package<R> {
 	archive: ZipArchive<R>,
 	/// Keyed in lower case, since part names ignore case and a reference need not match how the entry is stored.
-	parts: HashMap<String, Vec<String>>,
+	parts: Arc<HashMap<String, Vec<String>>>,
+}
+
+/// What reading the zip's directory found, so that another reader of the same file need not read it again.
+#[derive(Clone)]
+pub(super) struct Directory {
+	metadata: Arc<ZipArchiveMetadata>,
+	parts: Arc<HashMap<String, Vec<String>>>,
 }
 
 /// A printer driver streams a part as pieces while it is still being written, each an entry named for its place in the sequence.
@@ -68,8 +76,21 @@ fn relationships_part(source: &str) -> String {
 
 impl<R: Read + Seek> Package<R> {
 	pub fn new(archive: ZipArchive<R>) -> Self {
-		let parts = part_entries(archive.file_names().flatten().map(String::from));
+		let parts = Arc::new(part_entries(archive.file_names().flatten().map(String::from)));
 		Self { archive, parts }
+	}
+
+	pub fn directory(&self) -> Directory {
+		Directory { metadata: self.archive.metadata(), parts: Arc::clone(&self.parts) }
+	}
+
+	/// # Safety
+	///
+	/// `reader` has to read the file `directory` was read from.
+	pub unsafe fn with_directory(reader: R, directory: &Directory) -> Self {
+		// SAFETY: the caller promises that reader and metadata describe the same archive.
+		let archive = unsafe { ZipArchive::unsafe_new_with_metadata(reader, Arc::clone(&directory.metadata)) };
+		Self { archive, parts: Arc::clone(&directory.parts) }
 	}
 
 	pub fn read_bytes(&mut self, part: &str) -> Result<Vec<u8>> {
@@ -146,19 +167,23 @@ impl Package<std::io::Cursor<Vec<u8>>> {
 	}
 
 	pub fn from_bytes(parts: &[(&str, &[u8])]) -> Self {
-		use std::io::{Cursor, Write};
-
-		use zip::{ZipWriter, write::FileOptions};
-		let mut cursor = Cursor::new(Vec::new());
-		let mut writer = ZipWriter::new(&mut cursor);
-		for (name, bytes) in parts {
-			writer.start_file(*name, FileOptions::<()>::default()).expect("start file");
-			writer.write_all(bytes).expect("write file");
-		}
-		writer.finish().expect("finish zip");
-		cursor.set_position(0);
-		Self::new(ZipArchive::new(cursor).expect("open zip"))
+		Self::new(ZipArchive::new(std::io::Cursor::new(zip_bytes(parts))).expect("open zip"))
 	}
+}
+
+#[cfg(test)]
+pub(super) fn zip_bytes(parts: &[(&str, &[u8])]) -> Vec<u8> {
+	use std::io::{Cursor, Write};
+
+	use zip::{ZipWriter, write::FileOptions};
+	let mut cursor = Cursor::new(Vec::new());
+	let mut writer = ZipWriter::new(&mut cursor);
+	for (name, bytes) in parts {
+		writer.start_file(*name, FileOptions::<()>::default()).expect("start file");
+		writer.write_all(bytes).expect("write file");
+	}
+	writer.finish().expect("finish zip");
+	cursor.into_inner()
 }
 
 #[cfg(test)]
@@ -266,6 +291,17 @@ mod tests {
 	fn a_package_without_a_fixed_representation_has_no_documents() {
 		let mut package = Package::from_parts(&[("readme.txt", "not an xps file")]);
 		assert!(package.documents().is_empty());
+	}
+
+	#[test]
+	fn a_package_opened_again_from_its_directory_shares_it() {
+		let bytes = zip_bytes(&[("Doc.fdoc/[0].piece", b"one "), ("Doc.fdoc/[1].last.piece", b"two")]);
+		let package = Package::new(ZipArchive::new(std::io::Cursor::new(bytes.clone())).expect("open zip"));
+		let directory = package.directory();
+		// SAFETY: both readers read the same bytes.
+		let mut again = unsafe { Package::with_directory(std::io::Cursor::new(bytes), &directory) };
+		assert_eq!(again.read_text("doc.fdoc").expect("read"), "one two");
+		assert!(Arc::ptr_eq(&again.directory().parts, &directory.parts));
 	}
 
 	#[test]
