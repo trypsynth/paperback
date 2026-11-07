@@ -70,10 +70,7 @@ impl DocumentManager {
 			let message = t("A .paperback file was found for this document. Would you like to import it?");
 			// TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
 			let title = t("Import document data");
-			let dialog = MessageDialog::builder(&self.notebook, &message, &title)
-				.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconQuestion | MessageDialogStyle::Centre)
-				.build();
-			if dialog.show_modal() == ID_YES {
+			if wx_utils::confirm(&self.notebook, &message, &title) {
 				let config = self.config.lock().unwrap();
 				config.import_settings_from_file(&path.to_string_lossy(), import_path.to_str().unwrap());
 			}
