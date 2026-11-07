@@ -1,6 +1,6 @@
 use std::mem;
 
-use super::page::{Page, Run};
+use super::page::{Page, Run, Span};
 use crate::parser::{
 	layout::{Line, restore_reading_order},
 	util::bidi::{contains_rtl, reorder_line},
@@ -16,7 +16,7 @@ const MIN_CHARACTER_STEP: f64 = 0.6;
 #[derive(Debug, Clone, Copy)]
 pub(super) struct RunStyle {
 	/// Unknown when the file gives no advances and its font can't be read.
-	pub width: Option<f64>,
+	pub span: Option<Span>,
 	pub bold: bool,
 	pub monospaced: bool,
 }
@@ -30,7 +30,7 @@ fn positioned_characters(runs: &[(&Run, RunStyle)]) -> Vec<(char, f32)> {
 	let mut characters = Vec::new();
 	for (run, style) in runs {
 		let count = run.text.chars().count() as f64;
-		let step = style.width.map_or(MIN_CHARACTER_STEP, |width| (width / count).max(MIN_CHARACTER_STEP));
+		let step = style.span.map_or(MIN_CHARACTER_STEP, |span| (span.width() / count).max(MIN_CHARACTER_STEP));
 		let step = if run.bidi_level % 2 == 1 { -step } else { step };
 		characters.extend(run.text.chars().enumerate().map(|(index, c)| (c, step.mul_add(index as f64, run.x) as f32)));
 	}
@@ -50,7 +50,7 @@ fn line_text(runs: &[(&Run, RunStyle)]) -> String {
 		}
 		text.push_str(&run.text);
 		// Without a width only a gap no run could fill is sure to be one.
-		end = Some(run.x + style.width.unwrap_or_else(|| run.text.chars().count() as f64 * run.size));
+		end = Some(run.x + style.span.map_or_else(|| run.text.chars().count() as f64 * run.size, |span| span.right));
 	}
 	text
 }
@@ -99,11 +99,12 @@ mod tests {
 
 	/// Every character six units wide.
 	fn measured(run: &Run) -> RunStyle {
-		RunStyle { width: Some(run.text.chars().count() as f64 * 6.0), bold: false, monospaced: false }
+		let width = run.text.chars().count() as f64 * 6.0;
+		RunStyle { span: Some(Span { left: 0.0, right: width, leftward: false }), bold: false, monospaced: false }
 	}
 
 	fn unknown(_: &Run) -> RunStyle {
-		RunStyle { width: None, bold: false, monospaced: false }
+		RunStyle { span: None, bold: false, monospaced: false }
 	}
 
 	fn lines_with(runs: Vec<Run>, style_of: impl Fn(&Run) -> RunStyle) -> Vec<Line> {

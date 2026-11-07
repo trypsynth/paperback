@@ -39,12 +39,29 @@ pub(super) struct Run {
 	pub simulated_bold: bool,
 }
 
+/// Where a run's glyphs are drawn, measured from its origin.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(super) struct Span {
+	pub left: f64,
+	pub right: f64,
+	/// Each glyph is drawn to the left of the one before it, as right-to-left text is.
+	pub leftward: bool,
+}
+
+impl Span {
+	pub fn width(self) -> f64 {
+		self.right - self.left
+	}
+}
+
 /// One entry of `Indices` and the UTF-16 code units of the text it draws.
 #[derive(Debug, PartialEq)]
 pub(super) struct Cluster {
 	pub code_units: usize,
 	pub glyph: Option<u32>,
 	pub advance: Option<f64>,
+	/// How far the glyph is drawn from where the advances put it, along the direction of advance.
+	pub offset: f64,
 }
 
 pub(super) fn clusters(indices: &str) -> Vec<Cluster> {
@@ -59,6 +76,7 @@ pub(super) fn clusters(indices: &str) -> Vec<Cluster> {
 		let mut metrics = metrics.unwrap_or(entry).split(',');
 		let glyph = metrics.next().and_then(|glyph| glyph.trim().parse().ok());
 		let advance = metrics.next().and_then(|advance| advance.trim().parse::<f64>().ok());
+		let offset = metrics.next().and_then(|offset| offset.trim().parse().ok()).unwrap_or(0.0);
 		match clusters.last_mut() {
 			Some(cluster) if glyphs_left > 0 => {
 				glyphs_left -= 1;
@@ -66,7 +84,7 @@ pub(super) fn clusters(indices: &str) -> Vec<Cluster> {
 			}
 			_ => {
 				glyphs_left = glyphs.max(1) - 1;
-				clusters.push(Cluster { code_units, glyph, advance });
+				clusters.push(Cluster { code_units, glyph, advance, offset });
 			}
 		}
 	}
@@ -109,10 +127,11 @@ pub(super) struct Area {
 
 impl Area {
 	/// Word pads a link's rectangle, so the full stop after a link can start inside it and only a run that also ends there belongs to the link.
-	pub fn covers(&self, run: &Run, width: Option<f64>) -> bool {
-		(self.left - LINK_TOLERANCE..=self.right + LINK_TOLERANCE).contains(&run.x)
+	pub fn covers(&self, run: &Run, span: Option<Span>) -> bool {
+		let start = run.x + span.map_or(0.0, |span| span.left);
+		(self.left - LINK_TOLERANCE..=self.right + LINK_TOLERANCE).contains(&start)
 			&& (self.top - LINK_TOLERANCE..=self.bottom + LINK_TOLERANCE).contains(&run.y)
-			&& width.is_none_or(|width| run.x + width <= self.right + LINK_TOLERANCE)
+			&& span.is_none_or(|span| run.x + span.right <= self.right + LINK_TOLERANCE)
 	}
 }
 
@@ -380,6 +399,13 @@ mod tests {
 	}
 
 	#[test]
+	fn a_glyph_keeps_the_offset_that_moves_it_off_its_advance() {
+		let found: Vec<(Option<f64>, f64)> =
+			clusters("623,0;610,0,-54;611,,-150").iter().map(|cluster| (cluster.advance, cluster.offset)).collect();
+		assert_eq!(found, [(Some(0.0), 0.0), (Some(0.0), -54.0), (None, -150.0)]);
+	}
+
+	#[test]
 	fn a_cluster_of_several_glyphs_adds_their_advances_up() {
 		assert_eq!(texts(&page(&with_indices("ab", "(1:2)10,100;11,100;12"))), ["a b"]);
 	}
@@ -490,10 +516,19 @@ mod tests {
 	fn a_link_covers_a_run_that_fits_inside_it_and_not_one_that_only_starts_there() {
 		let area = Area { left: 272.94, top: 172.0, right: 338.97, bottom: 197.0 };
 		let at = |x: f64| Run { x, y: 183.38, ..Run::default() };
-		assert!(area.covers(&at(275.09), Some(61.58)));
-		assert!(!area.covers(&at(336.67), Some(3.4)));
+		let wide = |width: f64| Some(Span { left: 0.0, right: width, leftward: false });
+		assert!(area.covers(&at(275.09), wide(61.58)));
+		assert!(!area.covers(&at(336.67), wide(3.4)));
 		assert!(area.covers(&at(336.67), None));
 		assert!(!area.covers(&at(100.0), None));
+	}
+
+	#[test]
+	fn a_link_covers_a_run_drawn_leftward_from_its_origin() {
+		let area = Area { left: 100.0, top: 10.0, right: 200.0, bottom: 30.0 };
+		let run = Run { x: 195.0, y: 20.0, ..Run::default() };
+		assert!(area.covers(&run, Some(Span { left: -90.0, right: 4.0, leftward: true })));
+		assert!(!area.covers(&run, Some(Span { left: -100.0, right: 4.0, leftward: true })));
 	}
 
 	#[test]

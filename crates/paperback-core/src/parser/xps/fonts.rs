@@ -14,7 +14,7 @@ use skrifa::{
 use super::{
 	lines::RunStyle,
 	package::{Package, resolve_part},
-	page::{Run, clusters},
+	page::{Run, Span, clusters},
 };
 
 /// The first 32 bytes of an embedded font are often scrambled, so that it can't be picked out of the file and installed, with a key spelled out in the part's name.
@@ -71,9 +71,42 @@ impl Face {
 	}
 }
 
-fn run_width(face: Option<&Face>, run: &Run) -> Option<f64> {
+/// Places glyphs in hundredths of the size. A right-to-left run draws each glyph leftward from its origin and advances leftward, and there a positive offset moves a glyph further left (ECMA-388, 12.1.6.2).
+struct Pen {
+	right_to_left: bool,
+	at: f64,
+	/// The left edge of each glyph placed so far: the first, and the extremes.
+	first: Option<f64>,
+	last: f64,
+	left: f64,
+	right: f64,
+}
+
+impl Pen {
+	const fn new(right_to_left: bool) -> Self {
+		Self { right_to_left, at: 0.0, first: None, last: 0.0, left: f64::INFINITY, right: f64::NEG_INFINITY }
+	}
+
+	/// `drawn` is how wide the glyph is, which a file can set its advance apart from to place the next glyph.
+	fn place(&mut self, advance: f64, drawn: f64, offset: f64) {
+		let left = if self.right_to_left { self.at - drawn - offset } else { self.at + offset };
+		self.at += if self.right_to_left { -advance } else { advance };
+		self.first.get_or_insert(left);
+		self.last = left;
+		self.left = self.left.min(left);
+		self.right = self.right.max(left + drawn);
+	}
+
+	fn span(&self, size: f64) -> Span {
+		let Some(first) = self.first else { return Span { left: 0.0, right: 0.0, leftward: self.right_to_left } };
+		let leftward = self.right_to_left || self.last < first;
+		Span { left: self.left / 100.0 * size, right: self.right / 100.0 * size, leftward }
+	}
+}
+
+fn run_span(face: Option<&Face>, run: &Run) -> Option<Span> {
 	let mut characters = run.source.chars();
-	let mut hundredths = 0.0;
+	let mut pen = Pen::new(run.bidi_level % 2 == 1);
 	for cluster in clusters(&run.indices) {
 		let mut first = None;
 		let mut code_units = 0;
@@ -85,16 +118,17 @@ fn run_width(face: Option<&Face>, run: &Run) -> Option<f64> {
 		if first.is_none() && cluster.advance.is_none() {
 			continue;
 		}
-		let natural = || {
-			let face = face?;
+		let natural = face.and_then(|face| {
 			cluster.glyph.and_then(|glyph| face.of_glyph(glyph)).or_else(|| face.of_character(first?))
-		};
-		hundredths += cluster.advance.or_else(natural)?;
+		});
+		let advance = cluster.advance.or(natural)?;
+		pen.place(advance, natural.unwrap_or(advance), cluster.offset);
 	}
 	for character in characters {
-		hundredths += face?.of_character(character)?;
+		let natural = face?.of_character(character)?;
+		pen.place(natural, natural, 0.0);
 	}
-	Some(hundredths / 100.0 * run.size)
+	Some(pen.span(run.size))
 }
 
 type Slot = Arc<OnceLock<Option<Face>>>;
@@ -126,7 +160,7 @@ impl Fonts {
 			let slot = faces.entry(run.font.as_str()).or_insert_with(|| self.face(package, page_part, &run.font));
 			let face = slot.get().and_then(Option::as_ref);
 			styles.push(RunStyle {
-				width: run_width(face, run),
+				span: run_span(face, run),
 				bold: run.simulated_bold || face.is_some_and(|face| face.bold),
 				monospaced: face.is_some_and(|face| face.monospaced),
 			});
@@ -232,7 +266,7 @@ mod tests {
 	}
 
 	fn width_of(run: &Run) -> Option<f64> {
-		style_of(&test_font(400, false), "F.ttf", run).width
+		style_of(&test_font(400, false), "F.ttf", run).span.map(Span::width)
 	}
 
 	#[test]
@@ -260,14 +294,14 @@ mod tests {
 		let part = format!("Resources/{GUID}.odttf");
 		let font = obfuscated(test_font(400, false));
 		let run = Run { font: part.clone(), ..run("ab", "") };
-		assert_eq!(style_of(&font, &part, &run).width, Some(15.0));
+		assert_eq!(style_of(&font, &part, &run).span.map(Span::width), Some(15.0));
 	}
 
 	#[test]
 	fn a_font_is_found_relative_to_its_page() {
 		let run = Run { font: "../Resources/F.ttf".to_string(), ..run("ab", "") };
 		let mut package = Package::from_bytes(&[("Resources/F.ttf", &test_font(400, false))]);
-		assert_eq!(style_in(&Fonts::default(), &mut package, "Pages/1.fpage", &run).width, Some(15.0));
+		assert_eq!(style_in(&Fonts::default(), &mut package, "Pages/1.fpage", &run).span.map(Span::width), Some(15.0));
 	}
 
 	#[test]
@@ -280,7 +314,7 @@ mod tests {
 	fn a_missing_or_unreadable_font_leaves_the_width_unknown() {
 		let run = Run { font: "Gone.ttf".to_string(), ..run("ab", "") };
 		assert_eq!(width_of(&run), None);
-		assert_eq!(style_of(b"not a font", "F.ttf", &run).width, None);
+		assert_eq!(style_of(b"not a font", "F.ttf", &run).span, None);
 	}
 
 	#[test]
@@ -304,6 +338,24 @@ mod tests {
 	}
 
 	#[test]
+	fn glyphs_moved_left_by_their_offsets_are_measured_where_they_are_drawn() {
+		let style = style_of(&test_font(400, false), "F.ttf", &run("ab", "1,0;2,,-100"));
+		assert_eq!(style.span, Some(Span { left: -10.0, right: 5.0, leftward: true }));
+	}
+
+	#[test]
+	fn a_right_to_left_run_is_drawn_leftward_from_its_origin() {
+		let style = style_of(&test_font(400, false), "F.ttf", &Run { bidi_level: 1, ..run("ab", "") });
+		assert_eq!(style.span, Some(Span { left: -15.0, right: 0.0, leftward: true }));
+	}
+
+	#[test]
+	fn an_offset_on_a_right_to_left_run_moves_its_glyph_further_left() {
+		let style = style_of(&test_font(400, false), "F.ttf", &Run { bidi_level: 1, ..run("a", ",,10") });
+		assert_eq!(style.span, Some(Span { left: -6.0, right: -1.0, leftward: true }));
+	}
+
+	#[test]
 	fn each_run_on_a_page_is_measured_with_its_own_font() {
 		let (regular, bold) = (test_font(400, false), test_font(700, true));
 		let mut package = Package::from_bytes(&[("R.ttf", &regular), ("B.ttf", &bold)]);
@@ -313,7 +365,8 @@ mod tests {
 			Run { font: "R.ttf".to_string(), ..run("b", "") },
 		];
 		let styles = Fonts::default().styles_of(&mut package, "page.fpage", &runs);
-		let found: Vec<_> = styles.iter().map(|style| (style.width, style.bold, style.monospaced)).collect();
+		let found: Vec<_> =
+			styles.iter().map(|style| (style.span.map(Span::width), style.bold, style.monospaced)).collect();
 		assert_eq!(found, [(Some(5.0), false, false), (Some(15.0), true, true), (Some(10.0), false, false)]);
 	}
 
@@ -325,7 +378,10 @@ mod tests {
 			for _ in 0..2 {
 				scope.spawn(|| {
 					let mut package = Package::from_bytes(&[("F.ttf", &font)]);
-					assert_eq!(style_in(&fonts, &mut package, "page.fpage", &run("ab", "")).width, Some(15.0));
+					assert_eq!(
+						style_in(&fonts, &mut package, "page.fpage", &run("ab", "")).span.map(Span::width),
+						Some(15.0)
+					);
 				});
 			}
 		});

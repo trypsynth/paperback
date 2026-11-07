@@ -215,7 +215,7 @@ fn page_links(page: &Page, styles: &[RunStyle], target_pages: &HashMap<&str, usi
 			LinkPlace::Runs(runs) => runs.clone().collect(),
 			LinkPlace::Area(area) => {
 				let runs = page.runs.iter().zip(styles).enumerate();
-				runs.filter(|(_, (run, style))| area.covers(run, style.width)).map(|(index, _)| index).collect()
+				runs.filter(|(_, (run, style))| area.covers(run, style.span)).map(|(index, _)| index).collect()
 			}
 		};
 		let text: String = runs.iter().map(|index| page.runs[*index].text.as_str()).collect();
