@@ -283,12 +283,11 @@ fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 			tracing::info!(pipe = %name, "IPC server started");
 			pipe::serve_loop(handle, move |data| {
 				if let Some(cmd) = decode_execute_payload(&data) {
-					call_after(Box::new(move || {
+					wx_utils::post_to_ui(move || {
 						if let Some(window) = main_window_from_ptr() {
 							window.handle_ipc_command(cmd);
 						}
-					}));
-					wake_up_idle();
+					});
 				}
 			});
 		} else {
@@ -309,11 +308,11 @@ fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
 			}
 			pipe_unix::serve_loop(listener, move |data| {
 				if let Some(cmd) = decode_execute_payload(&data) {
-					wxdragon::call_after(Box::new(move || {
+					wx_utils::post_to_ui(move || {
 						if let Some(window) = main_window_from_ptr() {
 							window.handle_ipc_command(cmd);
 						}
-					}));
+					});
 				}
 			});
 		} else {
@@ -354,8 +353,7 @@ pub fn quit_for_update() {
 	// macOS posts live-region announcements on the next run-loop iteration, so the window stays alive briefly without blocking the UI thread.
 	std::thread::spawn(|| {
 		std::thread::sleep(std::time::Duration::from_secs(2));
-		wxdragon::call_after(Box::new(finish_quit_for_update));
-		wxdragon::wake_up_idle();
+		wx_utils::post_to_ui(finish_quit_for_update);
 	});
 }
 
