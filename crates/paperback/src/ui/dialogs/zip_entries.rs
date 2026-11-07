@@ -3,7 +3,7 @@ use std::{cell::Cell, rc::Rc};
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
+use super::{add_ok_cancel_footer, build_ok_cancel_buttons, dialog_padding};
 
 pub enum ZipChoice {
 	Entry(usize),
@@ -16,6 +16,7 @@ pub fn show_zip_entries_dialog(parent: &Frame, names: &[String]) -> ZipChoice {
 	// TRANSLATORS: Title of the dialog listing the documents inside a zip archive
 	let title = t("Open from Archive");
 	let dialog = Dialog::builder(parent, &title).build();
+	let padding = dialog_padding(&dialog);
 	// TRANSLATORS: Label for the list of documents inside a zip archive
 	let list_label_text = t("&Documents in this archive:");
 	let list_label = StaticText::builder(&dialog).with_label(&list_label_text).build();
@@ -28,8 +29,8 @@ pub fn show_zip_entries_dialog(parent: &Frame, names: &[String]) -> ZipChoice {
 	list.set_selection(0, true);
 	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("&Open"));
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add(&list_label, 0, SizerFlag::All, DIALOG_PADDING / 2);
-	content_sizer.add(&list, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING / 2);
+	content_sizer.add(&list_label, 0, SizerFlag::All, padding / 2);
+	content_sizer.add(&list, 1, SizerFlag::Expand | SizerFlag::All, padding / 2);
 	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);
 	list.on_item_double_clicked(move |_| dialog.end_modal(ID_OK));
 	// Only the window close (X, Alt+F4) reaches `on_close`; Cancel and Escape end the modal on their own.

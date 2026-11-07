@@ -2456,9 +2456,9 @@ dependencies = [
 
 [[package]]
 name = "minisign-verify"
-version = "0.2.5"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22f9645cb765ea72b8111f36c522475d2daa0d22c957a9826437e97534bc4e9e"
+checksum = "871285dc19d8d0ebe0eef3d0e99a205f2a71363b122632cbbfa4a6c370a960ce"
 
 [[package]]
 name = "miniz_oxide"
@@ -2991,7 +2991,7 @@ dependencies = [
  "objc",
  "paperback-core",
  "paperback-formats",
- "patois 0.2.4",
+ "patois",
  "patois-build",
  "rodio",
  "rodio-wsola",
@@ -3039,7 +3039,7 @@ dependencies = [
  "odf-crypto",
  "office-crypto",
  "paperback-formats",
- "patois 0.2.4",
+ "patois",
  "percent-encoding",
  "pulldown-cmark",
  "rayon",
@@ -3113,27 +3113,15 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "patois"
-version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a04888353dc28fa9dc61f52c0f937b00c8c132c1df9c55001faa30f7ed56a779"
-dependencies = [
- "inventory",
- "miniz_oxide 0.9.1",
- "patois-macros 0.2.1",
- "sys-locale",
- "wxdragon",
-]
-
-[[package]]
-name = "patois"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a7b55abfc2fe4d2670c25cd9b6dc5186949c0d042c4e25c21f7e6666e452df2"
 dependencies = [
  "inventory",
  "miniz_oxide 0.9.1",
- "patois-macros 0.3.0",
+ "patois-macros",
  "sys-locale",
+ "wxdragon",
 ]
 
 [[package]]
@@ -3143,18 +3131,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef4cd306ecd26c771cd5b83cc459ee1e29f916b1359fa0e26693030253e7ea91"
 dependencies = [
  "serde_json",
-]
-
-[[package]]
-name = "patois-macros"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68df9747a4a037862dfffcb646d2faebfa237b4a0d8a9f6b7f612188aacf138b"
-dependencies = [
- "miniz_oxide 0.9.1",
- "proc-macro2 1.0.107",
- "quote 1.0.47",
- "syn 3.0.9",
 ]
 
 [[package]]
@@ -3174,7 +3150,7 @@ version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "83a03889ab4a6038f714c0b6dc65f4062b87d9f3e50ada80a9f5af4a52831e81"
 dependencies = [
- "patois 0.3.0",
+ "patois",
  "patois-build",
  "serde",
  "serde_json",
@@ -4175,13 +4151,13 @@ dependencies = [
 
 [[package]]
 name = "ship-shape"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ce8fbe060ee50d27fa6ecbe67a266e79a547257c5452ac87dbb6382d5d98e51"
+checksum = "7845b55386c79fc751844054ef6125129aed3c70394f2642ba28275918c8a93f"
 dependencies = [
  "homeport",
  "minisign-verify",
- "patois 0.2.4",
+ "patois",
  "pulldown-cmark",
  "serde",
  "tempfile",
@@ -5840,13 +5816,13 @@ checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
 name = "wx-utils"
-version = "0.4.5"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "145bd06b862b7245d3489195d989a55aef61bb72dadf753d303d450ba7409d0b"
+checksum = "9f8035f89a4f38a6bc610fad28d161818992ee5d67fb8f1905e150a780546005"
 dependencies = [
  "key-chord",
  "live-region",
- "patois 0.2.4",
+ "patois",
  "windows",
  "wxdragon",
 ]
@@ -5915,7 +5891,7 @@ dependencies = [
 name = "xtask"
 version = "0.1.0"
 dependencies = [
- "patois 0.2.4",
+ "patois",
  "patois-build",
  "patois-translate",
  "serde_json",

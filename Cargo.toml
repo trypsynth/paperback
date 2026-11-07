@@ -17,8 +17,8 @@ image = { version = "0.25.10", default-features = false }
 native-ocr = "0.2.1"
 paperback-core = { path = "crates/paperback-core" }
 paperback-formats = { path = "crates/paperback-formats" }
-patois = "0.2.4"
-patois-build = "0.1.17"
+patois = "0.3.0"
+patois-build = "0.1.18"
 rstest = "0.28.0"
 serde_json = "1.0.154"
 shipfitter = "0.2.4"

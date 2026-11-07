@@ -1,5 +1,5 @@
 pub(super) use wx_utils::{
-	DIALOG_PADDING, add_ok_cancel_footer, add_single_button_footer, bind_enter_confirms, build_ok_cancel_buttons,
+	add_ok_cancel_footer, add_single_button_footer, bind_enter_confirms, build_ok_cancel_buttons, dialog_padding,
 };
 
 #[cfg(target_os = "macos")]

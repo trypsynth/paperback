@@ -74,7 +74,7 @@ pub(super) fn handle_batch_ocr(
 		if wx_utils::confirm(
 			frame,
 			// TRANSLATORS: Confirmation asked when Batch OCR is chosen while a batch is already running
-			&t("Batch OCR is running. Stop it?"),
+			t("Batch OCR is running. Stop it?"),
 			// TRANSLATORS: Title of the Batch OCR dialog
 			&t("Batch OCR"),
 		) {

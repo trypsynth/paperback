@@ -14,7 +14,7 @@ use patois::{nt, t};
 use wx_utils::confirm;
 use wxdragon::{ffi, prelude::*, timer::Timer, window::FromWindowWithClassName};
 
-use super::DIALOG_PADDING;
+use super::dialog_padding;
 
 mod list;
 
@@ -399,7 +399,7 @@ fn bind_all_documents_clear(
 		if !confirm(
 			&dialog,
 			// TRANSLATORS: Confirmation prompt when clearing all documents from the list.
-			&t("Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."),
+			t("Are you sure you want to remove all documents from the list? This will also remove all reading positions and bookmarks."),
 			// TRANSLATORS: Title of the confirmation dialog
 			&t("Confirm"),
 		) {
@@ -525,6 +525,7 @@ struct AllDocumentsLayout {
 }
 
 fn bind_all_documents_layout(dialog: Dialog, layout: AllDocumentsLayout) {
+	let padding = dialog_padding(&dialog);
 	let AllDocumentsLayout { search_label, search_ctrl, status_label, widgets, ok_button } = layout;
 	let AllDocumentsWidgets {
 		list,
@@ -541,33 +542,33 @@ fn bind_all_documents_layout(dialog: Dialog, layout: AllDocumentsLayout) {
 	});
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let search_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	search_sizer.add(&search_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
-	search_sizer.add(&search_ctrl, 1, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING / 2);
-	search_sizer.add(&status_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	search_sizer.add(&search_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
+	search_sizer.add(&search_ctrl, 1, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding / 2);
+	search_sizer.add(&status_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
 	search_sizer.add(&status_choice, 0, SizerFlag::AlignCenterVertical, 0);
-	content_sizer.add_sizer(&search_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add(&list, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add_sizer(&search_sizer, 0, SizerFlag::Expand | SizerFlag::All, padding);
+	content_sizer.add(&list, 1, SizerFlag::Expand | SizerFlag::All, padding);
 	list.set_focus();
 	let action_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	action_sizer.add(&open_button, 0, SizerFlag::Right, DIALOG_PADDING);
-	action_sizer.add(&locate_button, 0, SizerFlag::Right, DIALOG_PADDING);
-	action_sizer.add(&remove_button, 0, SizerFlag::Right, DIALOG_PADDING);
-	action_sizer.add(&clear_all_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	action_sizer.add(&open_button, 0, SizerFlag::Right, padding);
+	action_sizer.add(&locate_button, 0, SizerFlag::Right, padding);
+	action_sizer.add(&remove_button, 0, SizerFlag::Right, padding);
+	action_sizer.add(&clear_all_button, 0, SizerFlag::Right, padding);
 	content_sizer.add_sizer(
 		&action_sizer,
 		0,
 		SizerFlag::AlignLeft | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
-		DIALOG_PADDING,
+		padding,
 	);
 	let ok_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	ok_sizer.add_stretch_spacer(1);
-	ok_sizer.add(&ok_button, 0, SizerFlag::All, DIALOG_PADDING);
+	ok_sizer.add(&ok_button, 0, SizerFlag::All, padding);
 	content_sizer.add_sizer(&ok_sizer, 0, SizerFlag::Expand, 0);
 	content_sizer.add(
 		&status_bar,
 		0,
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
-		DIALOG_PADDING,
+		padding,
 	);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();

@@ -23,14 +23,14 @@ miniz_oxide = "0.9.1"
 native-ocr = { workspace = true }
 paperback-core = { workspace = true, features = ["fetch"] }
 paperback-formats = { workspace = true }
-patois = { workspace = true, features = ["ui"] }
+patois = { workspace = true, features = ["wx"] }
 rodio = { version = "0.22.2", default-features = false, features = ["playback", "tracing", "flac", "mp3", "mp4", "vorbis", "wav", "symphonia-adpcm", "symphonia-aiff", "symphonia-alac", "symphonia-mp2"] }
 rodio-wsola = "0.2.0"
-ship-shape = "0.5.0"
+ship-shape = "0.6.0"
 tempfile = { workspace = true }
 toml = { workspace = true }
 tracing = { workspace = true }
-wx-utils = { version = "0.4.5", features = ["global-hotkeys", "shortcuts"] }
+wx-utils = { version = "0.5.0", features = ["global-hotkeys", "shortcuts"] }
 wxdragon = { version = "0.9.24", default-features = false, features = ["webview"] }
 zip = { workspace = true }
 

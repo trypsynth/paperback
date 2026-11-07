@@ -16,7 +16,7 @@ use patois::t;
 use wx_utils::format_duration_ms;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, show_note_entry_dialog};
+use super::{dialog_padding, show_note_entry_dialog};
 
 pub struct BookmarkDialogResult {
 	pub start: DocPos,
@@ -547,29 +547,30 @@ fn finalize_bookmark_dialog_layout(
 	jump_button: Button,
 	cancel_button: Button,
 ) {
+	let padding = dialog_padding(&dialog);
 	let action_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	action_sizer.add(&edit_button, 0, SizerFlag::Right, DIALOG_PADDING);
-	action_sizer.add(&delete_button, 0, SizerFlag::Right, DIALOG_PADDING);
+	action_sizer.add(&edit_button, 0, SizerFlag::Right, padding);
+	action_sizer.add(&delete_button, 0, SizerFlag::Right, padding);
 	// macOS HIG puts the default action rightmost; Windows puts it leftmost.
 	#[cfg(target_os = "macos")]
 	{
-		action_sizer.add(&cancel_button, 0, SizerFlag::Right, DIALOG_PADDING);
-		action_sizer.add(&jump_button, 0, SizerFlag::Right, DIALOG_PADDING);
+		action_sizer.add(&cancel_button, 0, SizerFlag::Right, padding);
+		action_sizer.add(&jump_button, 0, SizerFlag::Right, padding);
 	}
 	#[cfg(not(target_os = "macos"))]
 	{
-		action_sizer.add(&jump_button, 0, SizerFlag::Right, DIALOG_PADDING);
-		action_sizer.add(&cancel_button, 0, SizerFlag::Right, DIALOG_PADDING);
+		action_sizer.add(&jump_button, 0, SizerFlag::Right, padding);
+		action_sizer.add(&cancel_button, 0, SizerFlag::Right, padding);
 	}
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add_sizer(&filter_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add_sizer(&filter_sizer, 0, SizerFlag::Expand | SizerFlag::All, padding);
 	content_sizer.add(
 		&bookmark_list,
 		1,
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
-		DIALOG_PADDING,
+		padding,
 	);
-	content_sizer.add_sizer(&action_sizer, 0, SizerFlag::AlignRight | SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add_sizer(&action_sizer, 0, SizerFlag::AlignRight | SizerFlag::All, padding);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 	bookmark_list.set_focus();

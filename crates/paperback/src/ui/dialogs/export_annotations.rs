@@ -4,7 +4,7 @@ use paperback_core::{config::ConfigManager, export::annotations::AnnotationOptio
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
+use super::{add_ok_cancel_footer, build_ok_cancel_buttons, dialog_padding};
 
 pub struct AnnotationsExportChoice {
 	pub filter: BookmarkFilterType,
@@ -25,6 +25,7 @@ pub fn show_export_annotations_dialog(
 	};
 	// TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
 	let dialog = Dialog::builder(parent, &t("Export notes and bookmarks")).build();
+	let padding = dialog_padding(&dialog);
 	// TRANSLATORS: Label for the dropdown choosing which entries to export
 	let what_label = StaticText::builder(&dialog).with_label(&t("&Export:")).build();
 	let what_choice = Choice::builder(&dialog).build();
@@ -48,9 +49,9 @@ pub fn show_export_annotations_dialog(
 	what_sizer.add(&what_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
 	what_sizer.add(&what_choice, 1, SizerFlag::Expand, 0);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add_sizer(&what_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add(&passage_check, 0, SizerFlag::All, DIALOG_PADDING);
-	content_sizer.add(&number_check, 0, SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add_sizer(&what_sizer, 0, SizerFlag::Expand | SizerFlag::All, padding);
+	content_sizer.add(&passage_check, 0, SizerFlag::All, padding);
+	content_sizer.add(&number_check, 0, SizerFlag::All, padding);
 	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
