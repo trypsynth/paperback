@@ -30,7 +30,7 @@ ship-shape = "0.5.0"
 tempfile = { workspace = true }
 toml = { workspace = true }
 tracing = { workspace = true }
-wx-utils = { version = "0.4.4", features = ["global-hotkeys", "shortcuts"] }
+wx-utils = { version = "0.4.5", features = ["global-hotkeys", "shortcuts"] }
 wxdragon = { version = "0.9.24", default-features = false, features = ["webview"] }
 zip = { workspace = true }
 
