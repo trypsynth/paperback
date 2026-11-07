@@ -10,7 +10,6 @@ mod legacy_config;
 mod links;
 #[cfg(target_os = "linux")]
 mod linux_integration;
-mod logging;
 mod ocr;
 #[cfg(any(target_os = "windows", test))]
 mod rtf;
@@ -26,12 +25,15 @@ mod working_copy;
 
 use std::{env, fs, io};
 
+use logkeeper::Logkeeper;
 use paperback_core::version;
 use ui::PaperbackApp;
 use wxdragon::prelude::{Appearance, set_appearance};
 
 fn main() {
-	let _log_guard = logging::init(&config_ext::config_dir(), config_ext::log_level_from_disk());
+	let _log_guard = Logkeeper::new(config_ext::config_dir(), "paperback")
+		.with_crates(["paperback", "paperback_core"])
+		.init(config_ext::log_level_from_disk());
 	tracing::info!(version = env!("CARGO_PKG_VERSION"), commit = version::COMMIT_HASH, "starting");
 	cleanup_legacy_files();
 	// Under `cargo run` macOS treats the unbundled binary as a Terminal background process with no menu bar; must run before wx initializes.

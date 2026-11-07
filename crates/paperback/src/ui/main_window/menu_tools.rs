@@ -159,7 +159,7 @@ pub(super) fn handle_options(
 	cfg.set_app_string("language", &options.language);
 	set_update_channel(&cfg, options.update_channel);
 	set_log_level(&cfg, options.log_level);
-	crate::logging::set_level(options.log_level);
+	logkeeper::set_level(options.log_level);
 	cfg.set_hotkey(options.hotkey.as_ref());
 	cfg.set_shortcuts(&options.shortcuts);
 	cfg.set_readability_font(&options.readability_font);

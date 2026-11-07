@@ -2300,6 +2300,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d15f86d12da44cd8d4ec3c73984537eb7f4cadcb9776a575a0a8a05ca11005c"
 
 [[package]]
+name = "logkeeper"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4b620e2f2f6477e7871a841827375fd3239df509d1c932e9ce09b4d14466ec87"
+dependencies = [
+ "tracing-appender",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "mach2"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2975,6 +2985,7 @@ dependencies = [
  "homeport",
  "image",
  "live-region",
+ "logkeeper",
  "miniz_oxide 0.9.1",
  "native-ocr",
  "objc",
@@ -2990,8 +3001,6 @@ dependencies = [
  "tempfile",
  "toml 1.1.8+spec-1.1.0",
  "tracing",
- "tracing-appender",
- "tracing-subscriber",
  "uiautomation",
  "windows",
  "windows-core",

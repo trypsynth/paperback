@@ -3,6 +3,7 @@ use std::{
 	rc::Rc,
 };
 
+use logkeeper::Level;
 use paperback_core::config::{ConfigManager, KeyChord, ReadabilityFont, ShortcutsConfig};
 use patois::{t, ui::populate_language_choice};
 #[cfg(target_os = "windows")]
@@ -11,7 +12,7 @@ use wxdragon::prelude::*;
 
 use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
 use crate::{
-	config_ext::{LogLevel, UpdateChannel, get_log_level, get_update_channel},
+	config_ext::{DEFAULT_LOG_LEVEL, UpdateChannel, get_log_level, get_update_channel},
 	translation_manager::TranslationManager,
 	ui::readability::stored_colour,
 };
@@ -47,7 +48,7 @@ pub struct OptionsDialogResult {
 	pub reading_speed_wpm: i32,
 	pub language: String,
 	pub update_channel: UpdateChannel,
-	pub log_level: LogLevel,
+	pub log_level: Level,
 	pub hotkey: Option<KeyChord>,
 	pub shortcuts: ShortcutsConfig,
 	pub readability_font: ReadabilityFont,
@@ -109,8 +110,8 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		Some(1) => UpdateChannel::Dev,
 		_ => UpdateChannel::Stable,
 	};
-	let chosen_level = ui.log_level_combo.get_selection().and_then(|index| LogLevel::ALL.get(index as usize).copied());
-	let log_level = chosen_level.unwrap_or_default();
+	let chosen_level = ui.log_level_combo.get_selection().and_then(|index| Level::ALL.get(index as usize).copied());
+	let log_level = chosen_level.unwrap_or(DEFAULT_LOG_LEVEL);
 	let readability_font = ui.readability_font.borrow().clone();
 	let line_spacing = ui.line_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
 	let bg_color = ui.bg_color.get();
@@ -267,7 +268,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	let log_level_label_text = t("Log Level:");
 	let log_level_label = StaticText::builder(&general_panel).with_label(&log_level_label_text).build();
 	let log_level_combo = Choice::builder(&general_panel).build();
-	for level in LogLevel::ALL {
+	for level in Level::ALL {
 		log_level_combo.append(&log_level_name(level));
 	}
 	#[cfg(target_os = "macos")]
@@ -504,7 +505,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		UpdateChannel::Dev => 1,
 	};
 	update_channel_combo.set_selection(channel_index);
-	let log_level_index = LogLevel::ALL.iter().position(|level| *level == get_log_level(config)).unwrap_or(0);
+	let log_level_index = Level::ALL.iter().position(|level| *level == get_log_level(config)).unwrap_or(0);
 	log_level_combo.set_selection(u32::try_from(log_level_index).unwrap_or(0));
 	let current_hotkey = Rc::new(RefCell::new(config.get_hotkey()));
 	let current_shortcuts = Rc::new(RefCell::new(config.get_shortcuts()));
@@ -629,19 +630,19 @@ fn resolve_options_language(ui: &OptionsDialogUi) -> String {
 		.unwrap_or_else(|| ui.current_language.clone())
 }
 
-fn log_level_name(level: LogLevel) -> String {
+fn log_level_name(level: Level) -> String {
 	match level {
 		// TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
-		LogLevel::Off => t("Off"),
+		Level::Off => t("Off"),
 		// TRANSLATORS: Log level choice that records only errors
-		LogLevel::Error => t("Errors"),
+		Level::Error => t("Errors"),
 		// TRANSLATORS: Log level choice that records warnings and errors
-		LogLevel::Warn => t("Warnings"),
+		Level::Warn => t("Warnings"),
 		// TRANSLATORS: Log level choice that records general activity, warnings and errors
-		LogLevel::Info => t("Information"),
+		Level::Info => t("Information"),
 		// TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
-		LogLevel::Debug => t("Debug"),
+		Level::Debug => t("Debug"),
 		// TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
-		LogLevel::Trace => t("Trace"),
+		Level::Trace => t("Trace"),
 	}
 }
