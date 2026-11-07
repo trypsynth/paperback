@@ -356,8 +356,8 @@ fun MainScreen(
 					val audioSpeed by viewModel.reading.audioSpeed.collectAsStateWithLifecycle()
 					val baseNavUnits = remember(activeTab.session) { viewModel.reading.navUnitsFor(activeTab) }
 					val navUnits = if (activeSearchQuery != null) baseNavUnits + NavUnit.Find else baseNavUnits
-					LaunchedEffect(navUnits) {
-						viewModel.reading.ensureNavUnitSupported(navUnits)
+					LaunchedEffect(activeTab.documentUri, navUnits) {
+						viewModel.reading.ensureNavUnitSupported(activeTab, navUnits)
 					}
 					TtsBottomBar(
 						isSpeaking = isSpeaking,

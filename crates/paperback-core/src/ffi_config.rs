@@ -1,7 +1,7 @@
 use std::{collections::HashSet, sync::Mutex};
 
 use crate::{
-	config::{ConfigManager, DocumentSpeech},
+	config::{ConfigManager, DocumentSpeech, NavigationUnit},
 	document::DocPos,
 	parser::ParserRegistry,
 };
@@ -93,6 +93,14 @@ impl ConfigManagerFfi {
 
 	pub fn get_document_speech(&self, path: String) -> DocumentSpeech {
 		self.inner.lock().unwrap().get_document_speech(&path)
+	}
+
+	pub fn set_document_navigation_unit(&self, path: String, unit: Option<NavigationUnit>) {
+		self.inner.lock().unwrap().set_document_navigation_unit(&path, unit);
+	}
+
+	pub fn get_document_navigation_unit(&self, path: String) -> Option<NavigationUnit> {
+		self.inner.lock().unwrap().get_document_navigation_unit(&path)
 	}
 
 	pub fn set_document_password(&self, path: String, password: String) {

@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4f2dd8c5898a0324; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - phiên bản 1.1
 
@@ -26,7 +26,7 @@ Paperback chạy trên Windows 10/11, tất cả các phiên bản ARM macOS hi�
 * Dấu trang và ghi chú, để bạn có thể đánh dấu vị trí của mình và quay lại nó.
 * Mọi phím tắt bàn phím có thể được thay đổi.
 * Mở tài liệu trực tiếp từ các liên kết http và https, và tải xuống lại chúng khi bạn mở lại hoặc nhấn `F5`, giữ lại vị trí đọc và dấu trang của bạn. Khi khôi phục các tài liệu bạn đã mở, nó tải xuống lại những tài liệu từ các liên kết có kích thước 2 MB trở xuống.
-* Đi kèm với `pb`, một công cụ dòng lệnh chuyển đổi bất kỳ tài liệu được hỗ trợ nào thành HTML, Markdown hoặc văn bản thuần túy. Nó có thể nhận bao nhiêu tài liệu bạn cung cấp, tự động mở rộng `*.pdf` và các tệp tương tự để lệnh dòng lệnh tương tự hoạt động trên Windows, và có thể ghi một tệp trên mỗi tài liệu vào một thư mục. Nó cũng có thể đọc danh sách các tài liệu từ một tệp hoặc từ stdin với `--files-from`, và chuyển đổi các tài liệu trực tiếp từ các liên kết http và https.
+* Đi kèm với `pb`, một công cụ dòng lệnh chuyển đổi bất kỳ tài liệu được hỗ trợ nào thành HTML, Markdown hoặc văn bản thuần túy. Nó có thể nhận bao nhiêu tài liệu bạn cung cấp, tự động mở rộng `*.pdf` và các tệp tương tự để lệnh dòng lệnh tương tự hoạt động trên Windows, và có thể ghi một tệp trên mỗi tài liệu vào một thư mục, chuyển đổi nhiều tài liệu cùng một lúc (`--jobs` xác định số lượng). Nó cũng có thể đọc danh sách các tài liệu từ một tệp hoặc từ stdin với `--files-from`, và chuyển đổi các tài liệu trực tiếp từ các liên kết http và https.
 
 ## Khả năng Tương thích với Trình Đọc Màn hình
 

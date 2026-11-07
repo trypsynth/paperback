@@ -7,6 +7,8 @@ protocol ReadingContext: AnyObject {
 	var activeSession: DocumentSession? { get }
 	var activeTitle: String? { get }
 	func persistPosition(_ position: Int64)
+	func persistNavUnit(_ unit: NavigationUnit)
+	func savedNavUnit(for tab: DocumentTab) -> NavigationUnit?
 }
 
 @MainActor
@@ -210,6 +212,7 @@ final class ReadingController {
 
 	func changeNavUnit(_ unit: NavUnit) {
 		currentNavUnit = unit
+		if let stored = unit.stored { context?.persistNavUnit(stored) }
 	}
 
 	func navigateByType(_ type: SegmentTypeFfi, direction: SegmentDirectionFfi) {
@@ -393,6 +396,9 @@ final class ReadingController {
 	func loadSegment(for tab: DocumentTab) {
 		guard let session = tab.session else { return }
 		narration?.attach(to: tab)
+		if let saved = context?.savedNavUnit(for: tab).map(NavUnit.init), availableNavUnits.contains(saved) {
+			currentNavUnit = saved
+		}
 		ensureNavUnitSupported()
 		ttsPosition = tab.currentPosition
 		currentSegmentText = session.readingStep(position: ttsPosition, unit: .segment(segmentType: currentSegmentType), direction: .current).text

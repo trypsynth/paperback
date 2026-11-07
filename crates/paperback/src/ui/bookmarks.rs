@@ -304,10 +304,7 @@ pub fn handle_view_note_text(
 	};
 	if note.is_empty() {
 		// TRANSLATORS: Message shown when trying to view a bookmark note but the current position has none
-		let dialog = MessageDialog::builder(frame, &t("No note at the current position."), &t("View Note"))
-			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
-			.build();
-		dialog.show_modal();
+		wx_utils::show_info(frame, t("No note at the current position."), &t("View Note"));
 		return;
 	}
 	dialogs::show_view_note_dialog(frame, &note);

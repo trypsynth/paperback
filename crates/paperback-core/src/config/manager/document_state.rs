@@ -1,6 +1,6 @@
 use super::ConfigManager;
 use crate::{
-	config::settings::{DocumentSpeech, NavigationHistory},
+	config::settings::{DocumentSpeech, NavigationHistory, NavigationUnit},
 	document::{DocPos, ReplaceOutcome},
 };
 
@@ -169,6 +169,27 @@ impl ConfigManager {
 		self.data.borrow().documents.get(&key).map(|d| d.speech.clone()).unwrap_or_default()
 	}
 
+	pub fn set_document_navigation_unit(&self, path: &str, unit: Option<NavigationUnit>) {
+		if !self.initialized {
+			return;
+		}
+		{
+			let key = self.get_doc_key(path);
+			let mut data = self.data.borrow_mut();
+			Self::doc_entry_mut(&mut data, key, path).navigation_unit = unit;
+		}
+		self.dirty.set(true);
+	}
+
+	#[must_use]
+	pub fn get_document_navigation_unit(&self, path: &str) -> Option<NavigationUnit> {
+		if !self.initialized {
+			return None;
+		}
+		let key = self.get_doc_key(path);
+		self.data.borrow().documents.get(&key).and_then(|d| d.navigation_unit)
+	}
+
 	pub fn set_document_password(&self, path: &str, password: &str) {
 		if !self.initialized {
 			return;
@@ -223,6 +244,7 @@ impl ConfigManager {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::session::SegmentTypeFfi;
 
 	#[test]
 	fn the_download_size_is_kept_for_each_link() {
@@ -245,6 +267,29 @@ mod tests {
 			Some("Moby Dick.epub")
 		);
 		assert_eq!(config.get_document_download_name("https://example.org/get?id=2"), None);
+	}
+
+	#[test]
+	fn each_document_keeps_its_own_navigation_unit() {
+		let config = ConfigManager::in_memory();
+		let heading = NavigationUnit::Segment { segment_type: SegmentTypeFfi::Heading };
+		assert_eq!(config.get_document_navigation_unit("a.epub"), None);
+		config.set_document_navigation_unit("a.epub", Some(heading));
+		config.set_document_navigation_unit("b.mp3", Some(NavigationUnit::Seconds { seconds: 30 }));
+		assert_eq!(config.get_document_navigation_unit("a.epub"), Some(heading));
+		assert_eq!(config.get_document_navigation_unit("b.mp3"), Some(NavigationUnit::Seconds { seconds: 30 }));
+		config.set_document_navigation_unit("a.epub", None);
+		assert_eq!(config.get_document_navigation_unit("a.epub"), None);
+	}
+
+	#[test]
+	fn a_navigation_unit_survives_a_save() {
+		let unit = NavigationUnit::Segment { segment_type: SegmentTypeFfi::ListItem };
+		let document = crate::config::settings::DocumentConfig { navigation_unit: Some(unit), ..Default::default() };
+		let json = serde_json::to_string(&document).expect("serialize");
+		assert!(json.contains(r#""navigation_unit":{"segment":{"segment_type":"list_item"}}"#), "{json}");
+		let back: crate::config::settings::DocumentConfig = serde_json::from_str(&json).expect("deserialize");
+		assert_eq!(back.navigation_unit, Some(unit));
 	}
 
 	#[test]

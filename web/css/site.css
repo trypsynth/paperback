@@ -397,6 +397,10 @@ img {
 	margin-top: 0;
 }
 
+.release .total {
+	color: var(--muted);
+}
+
 .release .count {
 	color: var(--muted);
 	font-size: 0.9rem;

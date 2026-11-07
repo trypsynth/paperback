@@ -20,16 +20,13 @@ impl MainWindow {
 			web_view_dialog = v.get();
 		});
 		if let Some(parent_dialog) = web_view_dialog {
-			let dialog = MessageDialog::builder(
+			wx_utils::show_warning(
 				&parent_dialog,
 				// TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
-				&t("Paperback cannot perform any actions while Web View is open."),
+				t("Paperback cannot perform any actions while Web View is open."),
 				// TRANSLATORS: Title of a warning dialog
 				&t("Warning"),
-			)
-			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconWarning | MessageDialogStyle::Centre)
-			.build();
-			dialog.show_modal();
+			);
 			return;
 		}
 		match command {

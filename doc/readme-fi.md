@@ -24,7 +24,7 @@ Paperback toimii Windows 10:ssä ja 11:ssä, kaikissa uusissa ARM-pohjaisissa ma
 * Kirjanmerkit ja muistiinpanot lukukohdan merkitsemistä ja siihen palaamista varten.
 * Kaikkia pikanäppäimiä on mahdollista muokata.
 * Avaa asiakirjoja suoraan HTTP- ja HTTPS-osoitteista. Ne ladataan uudelleen jokaisella avauskerralla tai `F5`-näppäimen painalluksella, mutta lukukohta ja kirjanmerkit säilyvät. Kun aiemmin avoinna olleet asiakirjat palautetaan, URL-osoitteista avatut asiakirjat ladataan uudelleen, jos niiden koko on enintään 2 Mt.
-* Mukana tulee `pb`-komentorivityökalu, joka muuntaa minkä tahansa tuetun asiakirjan HTML-, Markdown- tai tekstimuotoon. Se käsittelee kerralla useita asiakirjoja, tulkitsee `*.pdf`-tyyppiset jokerimerkit myös Windowsissa ja tallentaa muunnetut asiakirjat määritettyyn kansioon omiksi tiedostoikseen. Lisäksi se pystyy lukemaan `--files-from`-valitsimella käsiteltävien asiakirjojen luettelon tiedostosta tai vakiosyötteestä. Asiakirjoja voi muuntaa myös suoraan HTTP- ja HTTPS-osoitteista.
+* Mukana tulee `pb`-komentorivityökalu, joka muuntaa minkä tahansa tuetun asiakirjan HTML-, Markdown- tai tekstimuotoon. Se käsittelee kerralla useita asiakirjoja, tulkitsee `*.pdf`-tyyppiset jokerimerkit myös Windowsissa ja tallentaa muunnetut asiakirjat määritettyyn kansioon omiksi tiedostoikseen. Useiden asiakirjojen samanaikainen muuntaminen on myös mahdollista (muunnosten määrä valitaan `--jobs`-valitsimella). Lisäksi se pystyy lukemaan käsiteltävien asiakirjojen luettelon `--files-from`-valitsimella määritetystä tiedostosta tai vakiosyötteestä. Asiakirjoja voi muuntaa myös suoraan HTTP- ja HTTPS-osoitteista.
 
 ## Ruudunlukijoiden yhteensopivuus
 

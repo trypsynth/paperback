@@ -349,16 +349,13 @@ fn bind_toc_ok(
 			selected_offset.set(offset);
 			dialog_for_ok.end_modal(ID_OK);
 		} else {
-			MessageDialog::builder(
+			wx_utils::show_info(
 				&dialog_for_ok,
 				// TRANSLATORS: Error message shown when the user attempts to confirm the Table of Contents dialog without having selected any section
-				&t("Please select a section from the table of contents."),
+				t("Please select a section from the table of contents."),
 				// TRANSLATORS: Title of the error dialog shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 				&t("No Selection"),
-			)
-			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
-			.build()
-			.show_modal();
+			);
 		}
 	});
 }

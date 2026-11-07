@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use super::shortcuts::{KeyChord, ShortcutsConfig, default_window_hotkey};
-use crate::document::DocPos;
+use crate::{document::DocPos, session::SegmentTypeFfi};
 
 const CONFIG_VERSION: u32 = 4;
 const DEFAULT_RECENT_DOCUMENTS_TO_SHOW: i64 = 25;
@@ -217,6 +217,15 @@ impl DocumentSpeech {
 	}
 }
 
+/// What the mobile reading bar's previous and next last moved by in one document. Find isn't kept, because the search it steps through is gone once the document closes.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum NavigationUnit {
+	Segment { segment_type: SegmentTypeFfi },
+	Seconds { seconds: u32 },
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct DocumentConfig {
 	pub path: String,
@@ -247,6 +256,8 @@ pub struct DocumentConfig {
 	pub download_name: Option<String>,
 	#[serde(default, skip_serializing_if = "DocumentSpeech::is_empty")]
 	pub speech: DocumentSpeech,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub navigation_unit: Option<NavigationUnit>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

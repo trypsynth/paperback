@@ -84,7 +84,7 @@ fn run_image_ocr(bytes: &[u8], max_dimension: u32, id: u64) {
 }
 
 fn post_image_ocr_result(id: u64, outcome: ImageOcrOutcome) {
-	wxdragon::call_after(Box::new(move || {
+	wx_utils::post_to_ui(move || {
 		let Some(window) = crate::ui::app::main_window_from_ptr() else { return };
 		// The lock is released before the dialog opens, since its handlers lock the manager again and would deadlock.
 		let (frame, label, from_keyboard) = {
@@ -107,6 +107,5 @@ fn post_image_ocr_result(id: u64, outcome: ImageOcrOutcome) {
 			}
 			ImageOcrOutcome::Failed(error) => announce_waiting_for_command(label, from_keyboard, ocr::message(&error)),
 		}
-	}));
-	wxdragon::wake_up_idle();
+	});
 }

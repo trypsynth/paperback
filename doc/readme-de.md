@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4f2dd8c5898a0324; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - Version 1.1
 
@@ -26,7 +26,7 @@ Paperback läuft auf Windows 10/11, allen modernen ARM-Versionen von macOS, Linu
 * Lesezeichen und Notizen, damit du deine Position markieren und später dorthin zurückkehren kannst.
 * Jede Tastenkombination kann geändert werden.
 * Öffnet Dokumente direkt aus http- und https-Links, und lädt sie erneut herunter, wenn du sie erneut öffnest oder `F5` drückst, wobei die Leseposition und Lesezeichen erhalten bleiben. Beim Wiederherstellen der Dokumente, die du geöffnet hattest, lädt es erneut die Dokumente aus Links herunter, die 2 MB oder kleiner waren.
-* Kommt mit `pb`, einem Befehlszeilentool, das beliebige unterstützte Dokumente in HTML, Markdown oder einfachen Text konvertiert. Es verarbeitet beliebig viele Dokumente, expandiert `*.pdf` und ähnliches selbst, sodass dieselbe Befehlszeile auf Windows funktioniert, und kann eine Datei pro Dokument in einen Ordner schreiben. Es kann auch eine Liste von Dokumenten aus einer Datei oder von stdin mit `--files-from` lesen und Dokumente direkt von http- und https-Links konvertieren.
+* Kommt mit `pb`, einem Befehlszeilentool, das beliebige unterstützte Dokumente in HTML, Markdown oder einfachen Text konvertiert. Es verarbeitet beliebig viele Dokumente, expandiert `*.pdf` und ähnliches selbst, sodass dieselbe Befehlszeile auf Windows funktioniert, und kann eine Datei pro Dokument in einen Ordner schreiben, wobei mehrere gleichzeitig konvertiert werden (`--jobs` legt fest, wie viele). Es kann auch eine Liste von Dokumenten aus einer Datei oder von stdin mit `--files-from` lesen und Dokumente direkt von http- und https-Links konvertieren.
 
 ## Bildschirmleser-Kompatibilität
 
