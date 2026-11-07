@@ -159,6 +159,11 @@ fn is_word_file(name: &str) -> bool {
 	extension_is(name, &["docx", "docm", "doc"])
 }
 
+/// A zip of these is one audiobook split into parts, which the DAISY parser opens as a book with a section per file.
+fn is_audio_file(name: &str) -> bool {
+	extension_is(name, &["mp3", "m4b"])
+}
+
 /// Files that routinely sit beside a book (a readme) or get merged into one (several .docx), so they don't make a zip a collection.
 fn is_companion_file(name: &str) -> bool {
 	is_word_file(name) || extension_is(name, &["txt", "html", "htm", "xhtml"])
@@ -197,7 +202,11 @@ pub fn zip_books(entries: &[ZipEntryInfo]) -> Vec<String> {
 pub fn zip_books_to_browse<R: Read + Seek>(archive: &ZipArchive<R>) -> Option<Vec<String>> {
 	let entries = list_zip_entries(archive);
 	let books = zip_books(&entries);
-	let is_collection = books.iter().filter(|name| !is_companion_file(name)).count() >= 2;
+	let main_books: Vec<&String> = books.iter().filter(|name| !is_companion_file(name)).collect();
+	if !main_books.is_empty() && main_books.iter().all(|name| is_audio_file(name)) {
+		return None;
+	}
+	let is_collection = main_books.len() >= 2;
 	let claimed = entries.iter().any(|e| is_daisy_book_file(&e.name) || is_word_file(&e.name));
 	((is_collection || !claimed) && !books.is_empty()).then_some(books)
 }
@@ -545,6 +554,8 @@ mod tests {
 		let dir = TempDir::new("zip");
 		assert_eq!(browse(&dir, &["d1/ncc.html", "d1/book.opf", "readme.txt", "readme.html"]), None);
 		assert_eq!(browse(&dir, &["a.docx", "b.docx"]), None);
+		assert_eq!(browse(&dir, &["/", "001_part01.mp3", "002_part02.mp3", "readme.txt"]), None);
+		assert_eq!(browse(&dir, &["only.m4b"]), None);
 	}
 
 	#[test]
@@ -553,6 +564,7 @@ mod tests {
 		assert_eq!(browse(&dir, &["a.epub", "b.epub"]).map(|b| b.len()), Some(2));
 		assert_eq!(browse(&dir, &["d1/a.opf", "d2/b.opf"]).map(|b| b.len()), Some(2));
 		assert_eq!(browse(&dir, &["only.epub"]), Some(vec!["only.epub".to_string()]));
+		assert_eq!(browse(&dir, &["talk.mp3", "slides.pdf"]).map(|b| b.len()), Some(2));
 		assert_eq!(browse(&dir, &["pic.xyz"]), None);
 	}
 }
