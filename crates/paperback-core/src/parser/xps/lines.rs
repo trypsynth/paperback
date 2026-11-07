@@ -25,14 +25,41 @@ fn is_drawn_mark(run: &Run) -> bool {
 	run.text.chars().all(|c| c.is_control() || matches!(c, '\u{E000}'..='\u{F8FF}' | '\u{F0000}'..='\u{10FFFD}'))
 }
 
+fn extent(run: &Run, style: RunStyle) -> Option<(f64, f64)> {
+	style.span.map(|span| (run.x + span.left, run.x + span.right))
+}
+
+/// Right-to-left words can be drawn as runs of their own with no space between them, so only the gap shows it. A run next to another only in the markup, such as a full stop drawn at the far end of the line, gets none.
+fn gap_space(runs: &[(&Run, RunStyle)], index: usize) -> Option<f64> {
+	let (&(before, before_style), &(after, after_style)) = (runs.get(index)?, runs.get(index + 1)?);
+	if before.text.ends_with(char::is_whitespace) || after.text.starts_with(char::is_whitespace) {
+		return None;
+	}
+	let (before_left, before_right) = extent(before, before_style)?;
+	let (after_left, after_right) = extent(after, after_style)?;
+	let (from, to) = if after_left >= before_right { (before_right, after_left) } else { (after_right, before_left) };
+	let others = runs.iter().enumerate().filter(|(other, _)| *other != index && *other != index + 1);
+	let in_between =
+		others.filter_map(|(_, (run, style))| extent(run, *style)).any(|(left, right)| left < to && right > from);
+	(to - from > after.size * MIN_WORD_GAP && !in_between).then_some(f64::midpoint(from, to))
+}
+
 #[allow(clippy::cast_possible_truncation, reason = "a page coordinate fits an f32")]
 fn positioned_characters(runs: &[(&Run, RunStyle)]) -> Vec<(char, f32)> {
 	let mut characters = Vec::new();
-	for (run, style) in runs {
+	for (index, (run, style)) in runs.iter().enumerate() {
 		let count = run.text.chars().count() as f64;
 		let step = style.span.map_or(MIN_CHARACTER_STEP, |span| (span.width() / count).max(MIN_CHARACTER_STEP));
-		let step = if run.bidi_level % 2 == 1 { -step } else { step };
-		characters.extend(run.text.chars().enumerate().map(|(index, c)| (c, step.mul_add(index as f64, run.x) as f32)));
+		let leftward = run.bidi_level % 2 == 1 || style.span.is_some_and(|span| span.leftward);
+		// Each character stands at the near edge of its share of the run, in the order the run draws them.
+		let start = match style.span {
+			Some(span) if leftward => run.x + span.right - step,
+			Some(span) => run.x + span.left,
+			None => run.x,
+		};
+		let step = if leftward { -step } else { step };
+		characters.extend(run.text.chars().enumerate().map(|(index, c)| (c, step.mul_add(index as f64, start) as f32)));
+		characters.extend(gap_space(runs, index).map(|x| (' ', x as f32)));
 	}
 	characters
 }
@@ -191,6 +218,49 @@ mod tests {
 		let text = "\u{05E9}\u{05DC}\u{05D5}\u{05DD} \u{05E2}\u{05D5}\u{05DC}\u{05DD}";
 		let runs = vec![Run { bidi_level: 1, ..run(text, 672.0, 100.0) }];
 		assert_eq!(texts(runs), [text]);
+	}
+
+	fn drawn_texts(runs: Vec<(Run, Span)>) -> Vec<String> {
+		let (runs, spans): (Vec<Run>, Vec<Span>) = runs.into_iter().unzip();
+		let styles: Vec<RunStyle> =
+			spans.into_iter().map(|span| RunStyle { span: Some(span), bold: false, monospaced: false }).collect();
+		page_lines(&Page { height: HEIGHT, runs, ..Page::default() }, &styles)
+			.into_iter()
+			.map(|line| line.text)
+			.collect()
+	}
+
+	const fn leftward(left: f64, right: f64) -> Span {
+		Span { left, right, leftward: true }
+	}
+
+	/// As printing from .NET draws them: each word in reading order, from an origin near its right edge leftward.
+	#[test]
+	fn right_to_left_words_drawn_leftward_keep_their_letters_in_order() {
+		let runs = vec![
+			(run("\u{05E9}\u{05DC}\u{05D5}\u{05DD}", 221.44, 100.0), leftward(-22.0, 10.4)),
+			(run(" ", 196.0, 100.0), Span { left: 0.0, right: 3.5, leftward: false }),
+			(run("\u{05E2}\u{05D5}\u{05DC}\u{05DD}", 186.88, 100.0), leftward(-22.0, 9.1)),
+		];
+		assert_eq!(drawn_texts(runs), ["\u{05E9}\u{05DC}\u{05D5}\u{05DD} \u{05E2}\u{05D5}\u{05DC}\u{05DD}"]);
+	}
+
+	/// The line `שלום עולם, זו שורה בעברית.` as printing from .NET draws it, spans measured from its offsets at 11 points. Each word is a run with no space beside it, and the full stop is drawn at the far right.
+	#[test]
+	fn right_to_left_words_drawn_apart_get_the_spaces_between_them() {
+		let printed = |text: &str, x: f64, left: f64, right: f64| {
+			(Run { size: 14.67, ..run(text, x, 100.0) }, Span { left, right, leftward: left < 0.0 })
+		};
+		let runs = vec![
+			printed("\u{05E9}\u{05DC}\u{05D5}\u{05DD}", 221.44, -22.0, 10.42),
+			printed("\u{05E2}\u{05D5}\u{05DC}\u{05DD}", 186.88, -22.0, 9.1),
+			printed(", ", 160.8, -3.52, 3.67),
+			printed("\u{05D6}\u{05D5}", 151.84, -4.99, 5.87),
+			printed("\u{05E9}\u{05D5}\u{05E8}\u{05D4}", 133.44, -21.71, 10.42),
+			printed("\u{05D1}\u{05E2}\u{05D1}\u{05E8}\u{05D9}\u{05EA}", 99.68, -39.46, 8.66),
+			printed(".", 231.2, 0.0, 3.67),
+		];
+		assert_eq!(drawn_texts(runs), ["שלום עולם, זו שורה בעברית."]);
 	}
 
 	#[test]
