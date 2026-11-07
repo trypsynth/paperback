@@ -1,6 +1,6 @@
 use std::mem;
 
-use super::text::{Line, is_cjk, keeps_hyphen};
+use super::line::{Line, is_cjk, keeps_line_end_hyphen};
 use crate::util::text::{collapse_leaders, collapse_whitespace, trim_string};
 
 /// pdfium runs two visual lines into one often enough (a third of the lines on some pages of #813) that the longest line is a doubled one and every real line looked short; the 75th percentile is past them but still fills the measure.
@@ -112,7 +112,7 @@ fn heading_threshold(body_font_size: f64) -> f64 {
 }
 
 /// Headings are still marked with joining off, since that is a question of size, not of where a paragraph ends.
-pub(super) fn split_lines(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
+pub(in crate::parser) fn split_lines(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
 	let trimmed = trimmed_lines(raw_lines);
 	let marked = HeadingRule::for_page(raw_lines, body_font_size).mark(raw_lines, &trimmed);
 	trimmed
@@ -292,7 +292,7 @@ fn join_paragraphs_measured(
 						.next()
 						.unwrap_or("");
 					let right: String = line.chars().take_while(|c| c.is_alphanumeric()).collect();
-					if !keeps_hyphen(left, &right, None) {
+					if !keeps_line_end_hyphen(left, &right) {
 						current_paragraph.pop();
 					}
 				} else if !(is_cjk(last_char) && line.chars().next().is_some_and(is_cjk)) {

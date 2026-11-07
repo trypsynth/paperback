@@ -225,6 +225,12 @@ formats! {
 		mime_types: ["application/x-mswrite"],
 		flags: NONE,
 	},
+	XPS {
+		name: "XPS Documents",
+		extensions: ["xps", "oxps"],
+		mime_types: ["application/vnd.ms-xpsdocument", "application/oxps"],
+		flags: SUPPORTS_PAGES | SUPPORTS_TOC | SUPPORTS_LISTS,
+	},
 }
 
 #[cfg(test)]
@@ -263,6 +269,13 @@ mod tests {
 				);
 			}
 		}
+	}
+
+	#[test]
+	fn xps_covers_both_generations_of_the_format() {
+		assert_eq!(XPS.extensions, ["xps", "oxps"]);
+		assert_eq!(XPS.mime_types, ["application/vnd.ms-xpsdocument", "application/oxps"]);
+		assert_eq!(XPS.flags, ParserFlags::SUPPORTS_PAGES | ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS);
 	}
 
 	#[test]
