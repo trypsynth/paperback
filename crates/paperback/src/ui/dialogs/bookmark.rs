@@ -345,16 +345,13 @@ fn bind_bookmark_jump(dialog: Dialog, jump_button: Button, selected_start: &Rc<C
 		if selected_start_for_jump.get().is_some() {
 			dialog_for_jump.end_modal(ID_OK);
 		} else {
-			MessageDialog::builder(
+			wx_utils::show_error(
 				&dialog_for_jump,
 				// TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
-				&t("Please select a bookmark to jump to."),
+				t("Please select a bookmark to jump to."),
 				// TRANSLATORS: Generic error dialog title
 				&t("Error"),
-			)
-			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
-			.build()
-			.show_modal();
+			);
 		}
 	});
 }

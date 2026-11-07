@@ -368,10 +368,7 @@ pub(super) fn prompt_for_password(parent: &dyn WxWidget) -> Option<String> {
 }
 
 pub(super) fn show_error_dialog(parent: &dyn WxWidget, message: &str, title: &str) {
-	let dialog = MessageDialog::builder(parent, message, title)
-		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
-		.build();
-	dialog.show_modal();
+	wx_utils::show_error(parent, message, title);
 }
 
 pub(super) fn build_document_load_error_message(path: &Path, error: &str) -> String {
