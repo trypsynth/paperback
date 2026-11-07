@@ -8,7 +8,7 @@ publish = false
 [dependencies]
 patois = { workspace = true }
 patois-build = { workspace = true }
-patois-translate = "0.1.4"
+patois-translate = "0.1.5"
 serde_json = { workspace = true }
 shipfitter = { workspace = true, features = ["docs", "package"] }
 
