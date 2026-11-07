@@ -81,7 +81,9 @@ class SeekAmountsTest {
 class StoredNavUnitTest {
 	@Test
 	fun `a segment and a seek amount come back as they were saved`() {
-		for (unit in listOf(NavUnit.Segment(SegmentTypeFfi.HEADING), NavUnit.Segment(SegmentTypeFfi.LIST_ITEM), NavUnit.Time(30))) {
+		val heading = NavUnit.Segment(SegmentTypeFfi.HEADING)
+		val units = listOf(heading, NavUnit.Segment(SegmentTypeFfi.LIST_ITEM), NavUnit.Time(30))
+		for (unit in units) {
 			assertEquals(unit, unit.toStored()?.toNavUnit())
 		}
 		assertEquals(NavigationUnit.Seconds(30u), NavUnit.Time(30).toStored())
