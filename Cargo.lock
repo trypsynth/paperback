@@ -3191,9 +3191,9 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "patois"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8625dac2eb0669ca129bff0416176e5fe2b47bea5f69dae0f2feb69d8a5b662b"
+checksum = "65bc7431eaf0d46219e3142a741439181c9fb97c85e15e52ff99d66728b50c05"
 dependencies = [
  "inventory",
  "patois-macros",
@@ -3212,9 +3212,9 @@ dependencies = [
 
 [[package]]
 name = "patois-macros"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c88baf686c234352cc8a401551793c37b25d6cf0227f1223d7f3212ecb8e520"
+checksum = "a0908224da8a29773f5d9f668a7fd1f8c8476f208ad845db0aac002e8ba3412e"
 dependencies = [
  "proc-macro2 1.0.107",
  "quote 1.0.47",
