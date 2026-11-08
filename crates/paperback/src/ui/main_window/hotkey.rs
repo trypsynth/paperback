@@ -2,7 +2,6 @@ use std::{cell::RefCell, rc::Rc};
 
 use paperback_core::config::KeyChord;
 use wx_utils::global_hotkeys::GlobalHotkeys;
-use wxdragon::call_after;
 
 use crate::ipc::IpcCommand;
 
@@ -12,12 +11,11 @@ pub(super) type HotkeyHandle = GlobalHotkeys;
 pub(super) fn start_hotkey_listener(hotkey: Option<&KeyChord>) -> Option<HotkeyHandle> {
 	let (handle, unregistered) = GlobalHotkeys::register(vec![(hotkey?.clone(), ())], |()| {
 		// The hotkey thread mustn't touch the window, so the toggle is handed to the UI thread.
-		call_after(Box::new(|| {
+		wx_utils::post_to_ui(|| {
 			if let Some(window) = super::super::app::main_window_from_ptr() {
 				window.handle_ipc_command(IpcCommand::ToggleVisibility);
 			}
-		}));
-		wxdragon::wake_up_idle();
+		});
 	});
 	for chord in unregistered {
 		tracing::warn!(hotkey = %chord.to_shortcut_string(), "the window hotkey could not be registered");

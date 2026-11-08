@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4f2dd8c5898a0324; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versión 1.1
 
@@ -26,7 +26,7 @@ Paperback funciona en Windows 10/11, todas las versiones modernas de ARM macOS, 
 * Marcadores y notas, para que puedas marcar tu lugar y volver a él.
 * Cada atajo de teclado puede ser personalizado.
 * Abre documentos directamente desde enlaces http y https, y los descarga nuevamente cuando los reabre o presiona `F5`, manteniendo tu posición de lectura y marcadores. Al restaurar los documentos que tenías abiertos, descarga nuevamente los de enlaces que eran de 2 MB o menores.
-* Viene con `pb`, una herramienta de línea de comandos que convierte cualquier documento compatible a HTML, Markdown o texto plano. Acepta tantos documentos como le proporciones, expande `*.pdf` y similares por sí sola para que el mismo comando funcione en Windows, y puede escribir un archivo por documento en una carpeta. También puede leer una lista de documentos de un archivo o desde stdin con `--files-from`, y convertir documentos directamente desde enlaces http y https.
+* Viene con `pb`, una herramienta de línea de comandos que convierte cualquier documento compatible a HTML, Markdown o texto plano. Acepta tantos documentos como le proporciones, expande `*.pdf` y similares por sí sola para que el mismo comando funcione en Windows, y puede escribir un archivo por documento en una carpeta, convirtiendo varios a la vez (`--jobs` establece cuántos). También puede leer una lista de documentos de un archivo o desde stdin con `--files-from`, y convertir documentos directamente desde enlaces http y https.
 
 ## Compatibilidad con lectores de pantalla
 

@@ -57,13 +57,14 @@ pub(super) struct NumberPrompt<'a> {
 
 pub(super) fn show_number_dialog(parent: &Frame, prompt: &NumberPrompt, live_region_label: StaticText) -> Option<i32> {
 	let dialog = Dialog::builder(parent, prompt.title).build();
+	let padding = super::dialog_padding(&dialog);
 	let label = StaticText::builder(&dialog).with_label(prompt.label).build();
 	let entry = Rc::new(NumberEntry::new(dialog, prompt.current, prompt.min, prompt.max));
 	let entry_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	entry_sizer.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, 5);
 	entry_sizer.add(&entry.ctrl, 1, SizerFlag::Expand, 0);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add_sizer(&entry_sizer, 0, SizerFlag::Expand | SizerFlag::All, super::DIALOG_PADDING);
+	content_sizer.add_sizer(&entry_sizer, 0, SizerFlag::Expand | SizerFlag::All, padding);
 	let out_of_range = prompt.out_of_range.to_string();
 	let entry_for_submit = Rc::clone(&entry);
 	add_go_cancel_footer(dialog, content_sizer, entry.ctrl, move || {
@@ -82,6 +83,7 @@ pub(super) fn add_go_cancel_footer(
 	entry: TextCtrl,
 	submit: impl Fn() + 'static,
 ) {
+	let padding = super::dialog_padding(&dialog);
 	let submit = Rc::new(submit);
 	// TRANSLATORS: Label for the button that jumps to the entered position (a line, page, or percentage, depending on the dialog)
 	let go_button = Button::builder(&dialog).with_label(&t("Go")).build();
@@ -99,7 +101,7 @@ pub(super) fn add_go_cancel_footer(
 	button_sizer.set_affirmative_button(&go_button);
 	button_sizer.set_cancel_button(&cancel_button);
 	button_sizer.realize();
-	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::All, super::DIALOG_PADDING);
+	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::All, padding);
 }
 
 pub(super) fn resolve_number(text: &str, current: i32, min: i32, max: i32) -> Option<i32> {

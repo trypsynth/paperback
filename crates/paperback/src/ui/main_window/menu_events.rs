@@ -218,6 +218,7 @@ impl MainWindow {
 				menu_ids::DONATE => {
 					help::handle_donate(&frame_copy);
 				}
+				menu_ids::REPORT_PROBLEM => crate::problem_report::show(&frame_copy),
 				menu_ids::COPY => {
 					// Other macOS controls keep Cocoa's responder-chain copy; only the reader needs our handling and announcement.
 					#[cfg(target_os = "macos")]

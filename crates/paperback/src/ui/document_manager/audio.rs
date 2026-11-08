@@ -2,6 +2,7 @@ use super::DocumentManager;
 
 impl DocumentManager {
 	pub fn stop_all_audio(&mut self) {
+		self.stop_read_aloud();
 		for tab in &mut self.tabs {
 			if let Some(player) = tab.audio_player.as_mut() {
 				player.stop();
@@ -55,6 +56,7 @@ impl DocumentManager {
 	}
 
 	pub fn pump_audio(&mut self) {
+		self.pump_read_aloud();
 		// `try_lock` because a modal dialog like Options holds the config lock across `show_modal` while pumping messages, so a blocking lock on this tick would deadlock the UI thread.
 		let sync_enabled = self.config.try_lock().ok().map(|config| config.get_app_bool("sync_caret_to_audio", true));
 		let Some(tab) = self.active_tab_mut() else {
@@ -91,6 +93,9 @@ impl DocumentManager {
 
 	pub fn pause_inactive_audio(&mut self) {
 		let active = self.active_tab_index();
+		if self.speaker_tab.is_some() && active.map(|index| &self.tabs[index].file_path) != self.speaker_tab.as_ref() {
+			self.stop_read_aloud();
+		}
 		for (index, tab) in self.tabs.iter_mut().enumerate() {
 			if Some(index) != active
 				&& let Some(player) = tab.audio_player.as_mut()

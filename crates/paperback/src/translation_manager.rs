@@ -1,7 +1,7 @@
 use std::sync::{Mutex, OnceLock};
 
 pub use patois::LanguageInfo;
-use patois::ui::WxTranslationManager;
+use patois::wx::WxTranslationManager;
 
 use crate::WxStdCatalogLoader;
 
@@ -24,7 +24,7 @@ impl TranslationManager {
 		self.inner.initialize(WxStdCatalogLoader);
 		self.initialized = true;
 		// A system language with a region can be served by another region's catalogue, so ask patois rather than guess from the code.
-		if patois::ui::best_available_language(&raw_sys_lang, &self.available_languages()).is_none() {
+		if patois::best_available_language(&raw_sys_lang, &self.available_languages()).is_none() {
 			tracing::warn!(system_lang = %raw_sys_lang, "system language not available, falling back to English");
 		}
 		tracing::info!(system_lang = %raw_sys_lang, selected = %self.inner.current_language(), "translations initialized");

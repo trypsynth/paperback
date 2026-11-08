@@ -1,7 +1,7 @@
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
+use super::{add_ok_cancel_footer, build_ok_cancel_buttons, dialog_padding};
 
 pub fn show_note_entry_dialog(
 	parent: &dyn WxWidget,
@@ -10,6 +10,7 @@ pub fn show_note_entry_dialog(
 	existing_note: &str,
 ) -> Option<String> {
 	let dialog = Dialog::builder(parent, title).build();
+	let padding = dialog_padding(&dialog);
 	let message_label = StaticText::builder(&dialog).with_label(message).build();
 	let note_ctrl = TextCtrl::builder(&dialog)
 		.with_value(existing_note)
@@ -34,12 +35,12 @@ pub fn show_note_entry_dialog(
 		event.skip(true);
 	});
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add(&message_label, 0, SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add(&message_label, 0, SizerFlag::All, padding);
 	content_sizer.add(
 		&note_ctrl,
 		1,
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
-		DIALOG_PADDING,
+		padding,
 	);
 	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);
 	dialog.set_sizer_and_fit(content_sizer, true);

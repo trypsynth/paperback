@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4f2dd8c5898a0324; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback – 1.1-es verzió
 
@@ -26,7 +26,7 @@ A Paperback a következő rendszereken fut: Windows 10/11, az ARM-alapú macOS �
 * Könyvjelzők és jegyzetek, hogy megjelölhesse, hol tart, és később visszatérhessen oda.
 * Minden billentyűparancs módosítható.
 * Dokumentumokat közvetlenül http- és https-hivatkozásokról is megnyit, és újra letölti őket, amikor ismét megnyitja őket, vagy megnyomja az `F5` billentyűt; az olvasási pozíció és a könyvjelzők ilyenkor is megmaradnak. A korábban megnyitott dokumentumok visszaállításakor a hivatkozásról megnyitottak közül a legfeljebb 2 MB méretűeket tölti le újra.
-* Része a `pb` parancssori eszköz, amely bármely támogatott dokumentumot HTML-, Markdown- vagy egyszerű szöveges formátumba alakít. Egyszerre tetszőleges számú dokumentumot feldolgoz, a `*.pdf` és a hasonló mintákat maga bontja ki, így ugyanaz a parancssor Windowson is működik, és dokumentumonként külön fájlt is írhat egy mappába. A `--files-from` kapcsolóval a dokumentumok listáját fájlból vagy a szabványos bemenetről (stdin) is beolvashatja, és közvetlenül http- és https-hivatkozásokról is át tud alakítani dokumentumokat.
+* Része a `pb` parancssori eszköz, amely bármely támogatott dokumentumot HTML-ként, Markdownként vagy egyszerű szöveges formátumba alakít. Egyszerre tetszőleges számú dokumentumot feldolgoz, a `*.pdf` és a hasonló mintákat maga bontja ki, így ugyanaz a parancssor Windowson is működik, és dokumentumonként egy fájlt írhat egy mappába, így több dokumentumot egy időben konvertálhat (`--jobs` beállítja, hány fájlt). A `--files-from` kapcsolóval a dokumentumok listáját fájlból vagy a szabványos bemenetről (stdin) is beolvashatja, és közvetlenül http- és https-hivatkozásokról is konvertálhat dokumentumokat.
 
 ## Képernyőolvasó-kompatibilitás
 

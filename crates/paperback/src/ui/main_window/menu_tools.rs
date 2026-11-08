@@ -71,16 +71,13 @@ pub(super) fn handle_batch_ocr(
 		(i32::try_from(tab.session.page_count()).unwrap_or(i32::MAX), dm_ref.batch_ocr_running())
 	};
 	if running {
-		let confirm = MessageDialog::builder(
+		if wx_utils::confirm(
 			frame,
 			// TRANSLATORS: Confirmation asked when Batch OCR is chosen while a batch is already running
-			&t("Batch OCR is running. Stop it?"),
+			t("Batch OCR is running. Stop it?"),
 			// TRANSLATORS: Title of the Batch OCR dialog
 			&t("Batch OCR"),
-		)
-		.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconQuestion)
-		.build();
-		if confirm.show_modal() == ID_YES {
+		) {
 			dm.lock().unwrap().cancel_ocr(false);
 		}
 		return;
@@ -159,7 +156,7 @@ pub(super) fn handle_options(
 	cfg.set_app_string("language", &options.language);
 	set_update_channel(&cfg, options.update_channel);
 	set_log_level(&cfg, options.log_level);
-	crate::logging::set_level(options.log_level);
+	logkeeper::set_level(options.log_level);
 	cfg.set_hotkey(options.hotkey.as_ref());
 	cfg.set_shortcuts(&options.shortcuts);
 	cfg.set_readability_font(&options.readability_font);

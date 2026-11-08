@@ -344,6 +344,7 @@ mod tests {
 				ActionId::DecreaseAudioSpeed,
 				ActionId::IncreaseAudioVolume,
 				ActionId::DecreaseAudioVolume,
+				ActionId::SpeechSettings,
 			]
 		);
 	}

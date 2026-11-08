@@ -87,7 +87,7 @@ seq_ids!(BASE + 440 => TOGGLE_WORD_WRAP, TOGGLE_FULL_SCREEN);
 seq_ids!(BASE + 450 =>
 	PLAY_PAUSE_AUDIO, SEEK_AUDIO_FORWARD, SEEK_AUDIO_BACKWARD,
 	INCREASE_AUDIO_SEEK_AMOUNT, DECREASE_AUDIO_SEEK_AMOUNT,
-	INCREASE_AUDIO_SPEED, DECREASE_AUDIO_SPEED, INCREASE_AUDIO_VOLUME, DECREASE_AUDIO_VOLUME,
+	INCREASE_AUDIO_SPEED, DECREASE_AUDIO_SPEED, INCREASE_AUDIO_VOLUME, DECREASE_AUDIO_VOLUME, SPEECH_SETTINGS,
 );
 
 seq_ids!(BASE + 460 => BATCH_OCR, RECOGNIZE_CURRENT_PAGE);
@@ -96,7 +96,7 @@ seq_ids!(BASE + 470 => SET_SELECTION_START, COPY_FROM_SELECTION_START, JUMP_TO_S
 
 seq_ids!(BASE + 480 => SAVE_IMAGE, READ_IMAGE_TEXT);
 
-seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE);
+seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE, REPORT_PROBLEM);
 
 seq_ids!(BASE + 900 => RESTORE);
 
@@ -189,6 +189,7 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::DecreaseAudioSpeed => DECREASE_AUDIO_SPEED,
 		ActionId::IncreaseAudioVolume => INCREASE_AUDIO_VOLUME,
 		ActionId::DecreaseAudioVolume => DECREASE_AUDIO_VOLUME,
+		ActionId::SpeechSettings => SPEECH_SETTINGS,
 		ActionId::ToggleFullScreen => TOGGLE_FULL_SCREEN,
 		ActionId::Options => OPTIONS,
 		ActionId::SleepTimer => SLEEP_TIMER,
@@ -206,6 +207,7 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::ViewHelpPaperback => VIEW_HELP_PAPERBACK,
 		ActionId::CheckForUpdates => CHECK_FOR_UPDATES,
 		ActionId::Donate => DONATE,
+		ActionId::ReportProblem => REPORT_PROBLEM,
 	}
 }
 

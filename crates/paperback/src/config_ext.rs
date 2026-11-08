@@ -7,6 +7,7 @@ use std::{
 };
 
 use homeport::Homeport;
+use logkeeper::Level;
 use paperback_core::config::ConfigManager;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
@@ -45,69 +46,27 @@ pub fn set_update_channel(config: &ConfigManager, channel: UpdateChannel) {
 	config.set_app_string("update_channel", &channel.to_string());
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
-pub enum LogLevel {
-	Off,
-	Error,
-	Warn,
-	Info,
-	#[default]
-	Debug,
-	Trace,
+/// Debug is what every log was written at before the level could be chosen, so an existing config with no level keeps it.
+pub const DEFAULT_LOG_LEVEL: Level = Level::Debug;
+
+fn parse_log_level(name: &str) -> Level {
+	name.parse().unwrap_or(DEFAULT_LOG_LEVEL)
 }
 
-impl LogLevel {
-	/// In the order the Options dialog lists them.
-	pub const ALL: [Self; 6] = [Self::Off, Self::Error, Self::Warn, Self::Info, Self::Debug, Self::Trace];
-
-	/// Dependencies stay at info from Debug up, since below that they bury Paperback's own lines.
-	pub const fn filter(self) -> &'static str {
-		match self {
-			Self::Off => "off",
-			Self::Error => "error",
-			Self::Warn => "warn",
-			Self::Info => "info",
-			Self::Debug => "info,paperback=debug,paperback_core=debug",
-			Self::Trace => "info,paperback=trace,paperback_core=trace",
-		}
-	}
+pub fn get_log_level(config: &ConfigManager) -> Level {
+	parse_log_level(&config.get_app_string("log_level", DEFAULT_LOG_LEVEL.as_str()))
 }
 
-impl Display for LogLevel {
-	fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-		f.write_str(match self {
-			Self::Off => "off",
-			Self::Error => "error",
-			Self::Warn => "warn",
-			Self::Info => "info",
-			Self::Debug => "debug",
-			Self::Trace => "trace",
-		})
-	}
-}
-
-impl FromStr for LogLevel {
-	type Err = ();
-
-	fn from_str(s: &str) -> Result<Self, Self::Err> {
-		Self::ALL.into_iter().find(|level| level.to_string().eq_ignore_ascii_case(s)).ok_or(())
-	}
-}
-
-pub fn get_log_level(config: &ConfigManager) -> LogLevel {
-	config.get_app_string("log_level", "debug").parse().unwrap_or_default()
-}
-
-pub fn set_log_level(config: &ConfigManager, level: LogLevel) {
+pub fn set_log_level(config: &ConfigManager, level: Level) {
 	config.set_app_string("log_level", &level.to_string());
 }
 
 /// Read without a [`ConfigManager`], since initializing one writes a fresh config when the file is missing or unreadable, too early at startup.
-pub fn log_level_from_disk() -> LogLevel {
+pub fn log_level_from_disk() -> Level {
 	let text = fs::read_to_string(config_toml_path()).unwrap_or_default();
 	let table = text.parse::<toml::Table>().unwrap_or_default();
 	let level = table.get("app").and_then(|app| app.get("log_level")).and_then(toml::Value::as_str);
-	level.and_then(|level| level.parse().ok()).unwrap_or_default()
+	level.map_or(DEFAULT_LOG_LEVEL, parse_log_level)
 }
 
 /// How Paperback was installed, which decides where its settings live: beside a portable copy, or in the user's config folder for an install, an app bundle or an `AppImage`.
@@ -126,19 +85,13 @@ pub fn config_toml_path() -> PathBuf {
 
 #[cfg(test)]
 mod tests {
-	use super::LogLevel;
+	use logkeeper::Level;
 
-	#[test]
-	fn every_log_level_reads_back_as_itself() {
-		for level in LogLevel::ALL {
-			assert_eq!(level.to_string().parse::<LogLevel>(), Ok(level));
-		}
-	}
+	use super::parse_log_level;
 
-	/// Debug is what every log was written at before the level could be chosen, so an existing config with no level keeps it.
 	#[test]
 	fn a_missing_or_unknown_log_level_is_debug() {
-		assert_eq!(LogLevel::default(), LogLevel::Debug);
-		assert_eq!("loud".parse::<LogLevel>().unwrap_or_default(), LogLevel::Debug);
+		assert_eq!(parse_log_level("loud"), Level::Debug);
+		assert_eq!(parse_log_level("Warn"), Level::Warn);
 	}
 }

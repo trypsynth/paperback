@@ -415,12 +415,37 @@ extension AppViewModel: ReadingContext {
 	func persistPosition(_ position: Int64) {
 		updateTabPosition(position)
 	}
+
+	func persistNavUnit(_ unit: NavigationUnit) {
+		guard let path = activeTab?.url.path(percentEncoded: false) else { return }
+		configManager.setDocumentNavigationUnit(path: path, unit: unit)
+	}
+
+	func savedNavUnit(for tab: DocumentTab) -> NavigationUnit? {
+		configManager.getDocumentNavigationUnit(path: tab.url.path(percentEncoded: false))
+	}
 }
 
 enum NavUnit: Hashable {
 	case segment(SegmentTypeFfi)
 	case time(seconds: Int)
 	case find
+
+	init(_ stored: NavigationUnit) {
+		switch stored {
+		case .segment(segmentType: let type): self = .segment(type)
+		case .seconds(seconds: let seconds): self = .time(seconds: Int(seconds))
+		}
+	}
+
+	/// Find has no stored form, since the search it steps through ends with the document.
+	var stored: NavigationUnit? {
+		switch self {
+		case .segment(let type): return .segment(segmentType: type)
+		case .time(let seconds): return .seconds(seconds: UInt32(seconds))
+		case .find: return nil
+		}
+	}
 
 	var name: String {
 		switch self {

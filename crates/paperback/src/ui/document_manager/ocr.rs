@@ -419,13 +419,12 @@ fn post_finish(id: u64, file_path: &Path, canceled: bool) {
 
 /// Calls land in order, which lets a flush rely on the previous flush having already moved the offsets it resolves.
 fn run_on_ui_thread(action: impl FnOnce(&mut DocumentManager) + Send + 'static) {
-	wxdragon::call_after(Box::new(move || {
+	wx_utils::post_to_ui(move || {
 		if let Some(window) = crate::ui::app::main_window_from_ptr() {
 			let mut manager = window.document_manager().lock().unwrap();
 			action(&mut manager);
 		}
-	}));
-	wxdragon::wake_up_idle();
+	});
 }
 
 #[cfg(test)]

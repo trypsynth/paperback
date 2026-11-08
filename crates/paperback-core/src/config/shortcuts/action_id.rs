@@ -266,6 +266,8 @@ actions! {
 	IncreaseAudioVolume, Audio, t("Increase Audio Volume"), ctrl("'");
 	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 	DecreaseAudioVolume, Audio, t("Decrease Audio Volume"), ctrl(";");
+	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+	SpeechSettings, Audio, t("Speech Settings"), None;
 	// The conventional Control+Command+F on macOS.
 	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 	ToggleFullScreen, View, t("Full Screen"), key("F11"), mac: ctrl_physical_ctrl("F");
@@ -301,4 +303,6 @@ actions! {
 	CheckForUpdates, Help, t("Check for Updates"), ctrl_shift("U");
 	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 	Donate, Help, t("Donate"), ctrl("D");
+	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+	ReportProblem, Help, t("Report a Problem"), None;
 }

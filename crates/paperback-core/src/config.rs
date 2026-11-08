@@ -7,7 +7,7 @@ pub use manager::{
 	get_sorted_document_list,
 };
 pub use settings::{
-	AppSettings, Bookmark, ConfigData, DocumentConfig, DocumentSpeech, FindSettings, NavigationHistory,
+	AppSettings, Bookmark, ConfigData, DocumentConfig, DocumentSpeech, FindSettings, NavigationHistory, NavigationUnit,
 	ReadabilityFont, StoredBookmark,
 };
 pub use shortcuts::{ActionId, KeyChord, ShortcutCategory, ShortcutsConfig, default_window_hotkey};

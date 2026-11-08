@@ -3,15 +3,16 @@ use std::{
 	rc::Rc,
 };
 
+use logkeeper::Level;
 use paperback_core::config::{ConfigManager, KeyChord, ReadabilityFont, ShortcutsConfig};
-use patois::{t, ui::populate_language_choice};
+use patois::{t, wx::populate_language_choice};
 #[cfg(target_os = "windows")]
 use wxdragon::accessible::AccRole;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
+use super::{add_ok_cancel_footer, build_ok_cancel_buttons, dialog_padding};
 use crate::{
-	config_ext::{LogLevel, UpdateChannel, get_log_level, get_update_channel},
+	config_ext::{DEFAULT_LOG_LEVEL, UpdateChannel, get_log_level, get_update_channel},
 	translation_manager::TranslationManager,
 	ui::readability::stored_colour,
 };
@@ -47,7 +48,7 @@ pub struct OptionsDialogResult {
 	pub reading_speed_wpm: i32,
 	pub language: String,
 	pub update_channel: UpdateChannel,
-	pub log_level: LogLevel,
+	pub log_level: Level,
 	pub hotkey: Option<KeyChord>,
 	pub shortcuts: ShortcutsConfig,
 	pub readability_font: ReadabilityFont,
@@ -109,8 +110,8 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 		Some(1) => UpdateChannel::Dev,
 		_ => UpdateChannel::Stable,
 	};
-	let chosen_level = ui.log_level_combo.get_selection().and_then(|index| LogLevel::ALL.get(index as usize).copied());
-	let log_level = chosen_level.unwrap_or_default();
+	let chosen_level = ui.log_level_combo.get_selection().and_then(|index| Level::ALL.get(index as usize).copied());
+	let log_level = chosen_level.unwrap_or(DEFAULT_LOG_LEVEL);
 	let readability_font = ui.readability_font.borrow().clone();
 	let line_spacing = ui.line_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
 	let bg_color = ui.bg_color.get();
@@ -160,6 +161,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDialogUi {
 	// TRANSLATORS: Title of the Settings dialog
 	let dialog = Dialog::builder(parent, &t("Settings")).build();
+	let padding = dialog_padding(&dialog);
 	let notebook = Notebook::builder(&dialog).with_style(NotebookStyle::Top).build();
 	let general_panel = Panel::builder(&notebook).build();
 	let reading_panel = Panel::builder(&notebook).build();
@@ -244,7 +246,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		&audio_seek_amount_label,
 		0,
 		SizerFlag::AlignCenterVertical | SizerFlag::Right,
-		DIALOG_PADDING,
+		padding,
 	);
 	audio_seek_amount_sizer.add(&audio_seek_amount_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	let check_for_updates_check =
@@ -261,19 +263,19 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	#[cfg(target_os = "macos")]
 	update_channel_combo.set_accessibility_label(channel_label_text.replace('&', "").trim_end_matches(':').trim());
 	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
 	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	// TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
 	let log_level_label_text = t("Log Level:");
 	let log_level_label = StaticText::builder(&general_panel).with_label(&log_level_label_text).build();
 	let log_level_combo = Choice::builder(&general_panel).build();
-	for level in LogLevel::ALL {
+	for level in Level::ALL {
 		log_level_combo.append(&log_level_name(level));
 	}
 	#[cfg(target_os = "macos")]
 	log_level_combo.set_accessibility_label(log_level_label_text.replace('&', "").trim_end_matches(':').trim());
 	let log_level_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	log_level_sizer.add(&log_level_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	log_level_sizer.add(&log_level_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
 	log_level_sizer.add(&log_level_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	// TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 	let shortcuts_button = Button::builder(&general_panel).with_label(&t("Customize &Keyboard Shortcuts...")).build();
@@ -303,7 +305,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		StaticText::builder(&reading_panel).with_label(&t("&Reading speed (words per minute):")).build();
 	let reading_speed_ctrl = SpinCtrl::builder(&reading_panel).with_range(1, 2000).build();
 	let reading_speed_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	reading_speed_sizer.add(&reading_speed_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	reading_speed_sizer.add(&reading_speed_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
 	reading_speed_sizer.add(&reading_speed_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	reading_sizer.add_sizer(&reading_speed_sizer, 0, SizerFlag::All, option_padding);
 	let max_recent_docs = 100;
@@ -312,7 +314,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		StaticText::builder(&general_panel).with_label(&t("Number of &recent documents to show:")).build();
 	let recent_docs_ctrl = SpinCtrl::builder(&general_panel).with_range(0, max_recent_docs).build();
 	let recent_docs_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	recent_docs_sizer.add(&recent_docs_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	recent_docs_sizer.add(&recent_docs_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
 	recent_docs_sizer.add(&recent_docs_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	general_sizer.add_sizer(&recent_docs_sizer, 0, SizerFlag::All, option_padding);
 	// TRANSLATORS: Label for the language selection dropdown
@@ -324,7 +326,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	#[cfg(target_os = "macos")]
 	language_combo.set_accessibility_label(language_label_text.replace('&', "").trim_end_matches(':').trim());
 	let language_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	language_sizer.add(&language_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	language_sizer.add(&language_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
 	language_sizer.add(&language_combo, 0, SizerFlag::AlignCenterVertical, 0);
 	general_sizer.add_sizer(&language_sizer, 0, SizerFlag::All, option_padding);
 	// TRANSLATORS: Label/header for the Font options section
@@ -364,7 +366,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	#[cfg(target_os = "macos")]
 	line_spacing_ctrl.set_accessibility_label(line_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
 	let line_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	line_spacing_sizer.add(&line_spacing_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, DIALOG_PADDING);
+	line_spacing_sizer.add(&line_spacing_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
 	line_spacing_sizer.add(&line_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	// TRANSLATORS: Label for the paragraph spacing dropdown
 	let paragraph_spacing_label_text = t("&Paragraph spacing:");
@@ -385,7 +387,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		&paragraph_spacing_label,
 		0,
 		SizerFlag::AlignCenterVertical | SizerFlag::Right,
-		DIALOG_PADDING,
+		padding,
 	);
 	paragraph_spacing_sizer.add(&paragraph_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	// TRANSLATORS: Label for the letter spacing dropdown
@@ -402,12 +404,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	letter_spacing_ctrl
 		.set_accessibility_label(letter_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
 	let letter_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	letter_spacing_sizer.add(
-		&letter_spacing_label,
-		0,
-		SizerFlag::AlignCenterVertical | SizerFlag::Right,
-		DIALOG_PADDING,
-	);
+	letter_spacing_sizer.add(&letter_spacing_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
 	letter_spacing_sizer.add(&letter_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	// TRANSLATORS: Label for the text alignment dropdown
 	let text_alignment_label_text = t("Text &alignment:");
@@ -425,12 +422,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 	text_alignment_ctrl
 		.set_accessibility_label(text_alignment_label_text.replace('&', "").trim_end_matches(':').trim());
 	let text_alignment_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	text_alignment_sizer.add(
-		&text_alignment_label,
-		0,
-		SizerFlag::AlignCenterVertical | SizerFlag::Right,
-		DIALOG_PADDING,
-	);
+	text_alignment_sizer.add(&text_alignment_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
 	text_alignment_sizer.add(&text_alignment_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
 	readability_sizer.add(&word_wrap_check, 0, SizerFlag::All, option_padding);
 	readability_sizer.add(&render_tables_inline_check, 0, SizerFlag::All, option_padding);
@@ -504,7 +496,7 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		UpdateChannel::Dev => 1,
 	};
 	update_channel_combo.set_selection(channel_index);
-	let log_level_index = LogLevel::ALL.iter().position(|level| *level == get_log_level(config)).unwrap_or(0);
+	let log_level_index = Level::ALL.iter().position(|level| *level == get_log_level(config)).unwrap_or(0);
 	log_level_combo.set_selection(u32::try_from(log_level_index).unwrap_or(0));
 	let current_hotkey = Rc::new(RefCell::new(config.get_hotkey()));
 	let current_shortcuts = Rc::new(RefCell::new(config.get_shortcuts()));
@@ -617,31 +609,32 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 }
 
 fn finalize_options_dialog_layout(ui: &OptionsDialogUi) {
+	let padding = dialog_padding(&ui.dialog);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add(&ui.notebook, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add(&ui.notebook, 1, SizerFlag::Expand | SizerFlag::All, padding);
 	add_ok_cancel_footer(content_sizer, ui.ok_button, ui.cancel_button);
 	ui.dialog.set_sizer_and_fit(content_sizer, true);
 	ui.dialog.centre();
 }
 
 fn resolve_options_language(ui: &OptionsDialogUi) -> String {
-	patois::ui::resolve_language_choice(&ui.language_combo, &ui.language_codes)
+	patois::wx::resolve_language_choice(&ui.language_combo, &ui.language_codes)
 		.unwrap_or_else(|| ui.current_language.clone())
 }
 
-fn log_level_name(level: LogLevel) -> String {
+fn log_level_name(level: Level) -> String {
 	match level {
 		// TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
-		LogLevel::Off => t("Off"),
+		Level::Off => t("Off"),
 		// TRANSLATORS: Log level choice that records only errors
-		LogLevel::Error => t("Errors"),
+		Level::Error => t("Errors"),
 		// TRANSLATORS: Log level choice that records warnings and errors
-		LogLevel::Warn => t("Warnings"),
+		Level::Warn => t("Warnings"),
 		// TRANSLATORS: Log level choice that records general activity, warnings and errors
-		LogLevel::Info => t("Information"),
+		Level::Info => t("Information"),
 		// TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
-		LogLevel::Debug => t("Debug"),
+		Level::Debug => t("Debug"),
 		// TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
-		LogLevel::Trace => t("Trace"),
+		Level::Trace => t("Trace"),
 	}
 }

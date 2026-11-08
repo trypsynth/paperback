@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4f2dd8c5898a0324; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versie 1.1
 
@@ -26,7 +26,7 @@ Paperback draait op Windows 10/11, alle moderne versies van macOS op ARM, Linux,
 * Bladwijzers en notities, zodat je kunt markeren waar je gebleven bent en er later naar terug kunt gaan.
 * Elke toetsenbordsneltoets kan worden aangepast.
 * Opent documenten rechtstreeks via http- en https-links en downloadt ze opnieuw wanneer je ze heropent of op `F5` drukt, met behoud van je leespositie en bladwijzers. Bij het heropenen van de documenten die je open had, downloadt Paperback de documenten van links die 2 MB of kleiner waren opnieuw.
-* Wordt geleverd met `pb`, een terminalprogramma dat elk ondersteund document omzet naar HTML, Markdown of platte tekst. Het accepteert zoveel documenten als je opgeeft, verwerkt jokertekens zoals `*.pdf` zelf zodat dezelfde opdracht ook op Windows werkt, en kan per document één bestand in een map schrijven. Het kan ook een lijst met documenten uit een bestand of van stdin lezen met `--files-from` en documenten rechtstreeks via http- en https-links omzetten.
+* Wordt geleverd met `pb`, een terminalprogramma dat elk ondersteund document omzet naar HTML, Markdown of platte tekst. Het accepteert zoveel documenten als je opgeeft, verwerkt jokertekens zoals `*.pdf` zelf zodat dezelfde opdracht ook op Windows werkt, en kan per document één bestand in een map schrijven, waarbij meerdere tegelijk worden omgezet (`--jobs` bepaalt hoeveel). Het kan ook een lijst met documenten uit een bestand of van stdin lezen met `--files-from` en documenten rechtstreeks via http- en https-links omzetten.
 
 ## Schermlezercompatibiliteit
 

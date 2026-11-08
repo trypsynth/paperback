@@ -134,7 +134,8 @@ pub enum LinkAction {
 }
 
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum SegmentTypeFfi {
 	Paragraph,
 	Line,
@@ -519,3 +520,11 @@ impl DocumentSession {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+impl DocumentSession {
+	/// A session over plain `text`, for tests outside this module.
+	pub(crate) fn from_text(text: &str) -> Self {
+		tests::session_from_buffer(document::DocumentBuffer::with_content(text.to_string()))
+	}
+}

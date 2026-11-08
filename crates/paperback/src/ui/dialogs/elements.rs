@@ -107,6 +107,7 @@ fn show_elements_dialog_dv(
 
 #[cfg(not(target_os = "windows"))]
 fn build_elements_dialog_ui_dv(dialog: Dialog, flat_labels: Rc<RefCell<Vec<String>>>) -> ElementsDialogUiDv {
+	let padding = super::dialog_padding(&dialog);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let choice_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	// TRANSLATORS: Label for the view selection dropdown in the Elements dialog
@@ -126,22 +127,22 @@ fn build_elements_dialog_ui_dv(dialog: Dialog, flat_labels: Rc<RefCell<Vec<Strin
 	view_choice.set_selection(VIEW_HEADINGS);
 	#[cfg(target_os = "macos")]
 	view_choice.set_accessibility_label(choice_label_text.replace('&', "").trim_end_matches(':').trim());
-	choice_sizer.add(&choice_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, super::DIALOG_PADDING);
+	choice_sizer.add(&choice_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
 	choice_sizer.add(&view_choice, 1, SizerFlag::Expand, 0);
-	content_sizer.add_sizer(&choice_sizer, 0, SizerFlag::Expand | SizerFlag::All, super::DIALOG_PADDING);
+	content_sizer.add_sizer(&choice_sizer, 0, SizerFlag::Expand | SizerFlag::All, padding);
 	let headings_tree = DataViewTreeCtrl::builder(&dialog).with_size(dialog.from_dip(Size::new(400, 500))).build();
 	content_sizer.add(
 		&headings_tree,
 		1,
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
-		super::DIALOG_PADDING,
+		padding,
 	);
 	let content_list = build_flat_list(dialog, flat_labels);
 	content_sizer.add(
 		&content_list,
 		1,
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
-		super::DIALOG_PADDING,
+		padding,
 	);
 	content_list.show(false);
 	ElementsDialogUiDv { content_sizer, view_choice, headings_tree, content_list }
@@ -356,6 +357,7 @@ fn show_elements_dialog_wx(
 
 #[cfg(target_os = "windows")]
 fn build_elements_dialog_ui(dialog: Dialog, flat_labels: Rc<RefCell<Vec<String>>>) -> ElementsDialogUi {
+	let padding = super::dialog_padding(&dialog);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let choice_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	// TRANSLATORS: Label for the view selection dropdown in the Elements dialog
@@ -375,9 +377,9 @@ fn build_elements_dialog_ui(dialog: Dialog, flat_labels: Rc<RefCell<Vec<String>>
 	view_choice.set_selection(VIEW_HEADINGS);
 	#[cfg(target_os = "macos")]
 	view_choice.set_accessibility_label(choice_label_text.replace('&', "").trim_end_matches(':').trim());
-	choice_sizer.add(&choice_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, super::DIALOG_PADDING);
+	choice_sizer.add(&choice_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
 	choice_sizer.add(&view_choice, 1, SizerFlag::Expand, 0);
-	content_sizer.add_sizer(&choice_sizer, 0, SizerFlag::Expand | SizerFlag::All, super::DIALOG_PADDING);
+	content_sizer.add_sizer(&choice_sizer, 0, SizerFlag::Expand | SizerFlag::All, padding);
 	let headings_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let headings_tree = TreeCtrl::builder(&dialog)
 		.with_style(TreeCtrlStyle::Default | TreeCtrlStyle::HideRoot)
@@ -388,7 +390,7 @@ fn build_elements_dialog_ui(dialog: Dialog, flat_labels: Rc<RefCell<Vec<String>>
 		&headings_sizer,
 		1,
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
-		super::DIALOG_PADDING,
+		padding,
 	);
 	let list_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	let content_list = build_flat_list(dialog, flat_labels);
@@ -397,7 +399,7 @@ fn build_elements_dialog_ui(dialog: Dialog, flat_labels: Rc<RefCell<Vec<String>>
 		&list_sizer,
 		1,
 		SizerFlag::Expand | SizerFlag::Left | SizerFlag::Right | SizerFlag::Bottom,
-		super::DIALOG_PADDING,
+		padding,
 	);
 	content_list.show(false);
 	ElementsDialogUi { content_sizer, view_choice, headings_tree, content_list }

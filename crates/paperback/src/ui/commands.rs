@@ -673,6 +673,16 @@ pub static COMMANDS: &[Command] = &[
 		enable: Enable::HasDocument,
 		behavior: Behavior::Run(audio::decrease_volume),
 	},
+	Command {
+		action: ActionId::SpeechSettings,
+		// TRANSLATORS: Menu item in the Audio menu that opens the voice, rate and pause settings for reading aloud.
+		label: || t("&Speech Settings..."),
+		// TRANSLATORS: Status-bar help text for the Speech Settings menu item.
+		help: Some(|| t("Choose the voice, rate and pauses used to read aloud")),
+		// Usable with nothing open, to set the voice every book reads in.
+		enable: Enable::Always,
+		behavior: Behavior::Run(audio::speech_settings),
+	},
 ];
 
 pub fn for_action(action: ActionId) -> Option<&'static Command> {

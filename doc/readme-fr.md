@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 4f2dd8c5898a0324; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - version 1.1
 
@@ -26,7 +26,7 @@ Paperback fonctionne sur Windows 10/11, toutes les versions modernes d'ARM macOS
 * Signets et notes, pour que vous puissiez marquer votre place et y revenir.
 * Chaque raccourci clavier peut être modifié.
 * Ouvre les documents directement à partir de liens http et https, et les télécharge à nouveau quand vous les rouvrez ou appuyez sur `F5`, en conservant votre position de lecture et vos signets. Lors de la restauration des documents que vous aviez ouverts, il télécharge à nouveau ceux des liens qui faisaient 2 Mo ou moins.
-* Livré avec `pb`, un outil en ligne de commande qui convertit tout document pris en charge en HTML, Markdown ou texte brut. Il accepte autant de documents que vous lui en fournissez, développe `*.pdf` et les fichiers similaires de lui-même pour que la même ligne de commande fonctionne sur Windows, et peut écrire un fichier par document dans un dossier. Il peut également lire une liste de documents à partir d'un fichier ou de stdin avec `--files-from`, et convertir des documents directement à partir de liens http et https.
+* Livré avec `pb`, un outil en ligne de commande qui convertit tout document pris en charge en HTML, Markdown ou texte brut. Il accepte autant de documents que vous lui en fournissez, développe `*.pdf` et les fichiers similaires de lui-même pour que la même ligne de commande fonctionne sur Windows, et peut écrire un fichier par document dans un dossier, en convertissant plusieurs à la fois (`--jobs` définit le nombre). Il peut également lire une liste de documents à partir d'un fichier ou de stdin avec `--files-from`, et convertir des documents directement à partir de liens http et https.
 
 ## Compatibilité avec les lecteurs d'écran
 
