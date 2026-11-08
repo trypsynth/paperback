@@ -76,10 +76,8 @@ mod tests {
 	use super::*;
 
 	fn opened(command: &IpcCommand) -> &Target {
-		match command {
-			IpcCommand::Open(target) => target,
-			other => panic!("expected something to open, got {other:?}"),
-		}
+		let IpcCommand::Open(target) = command else { panic!("expected something to open, got {command:?}") };
+		target
 	}
 
 	#[test]
