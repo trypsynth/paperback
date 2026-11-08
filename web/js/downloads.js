@@ -22,14 +22,15 @@
 
   // One row per download: the link, then the count as quiet text beside it.
   const row = (url, label, count) =>
-    count === null ? `<li><a href="${url}">${label}</a></li>` : `<li><a href="${url}">${label}</a> <span class="count">${fmtCount(count)}</span></li>`;
+    count === null ? `<li><a href="${url}">${label}</a></li>` : `<li><a href="${url}">${label}</a>, <span class="count">${fmtCount(count)}</span></li>`;
 
   // Signatures are left out because the updater fetches one with every download, which would count each download twice. The legacy duplicates stay in, since old clients really downloaded them.
   const releaseTotal = release =>
     (release.assets ?? []).filter(a => !a.name.toLowerCase().endsWith(".minisig")).reduce((sum, a) => sum + a.download_count, 0);
 
   // Each development build replaces the last, so its counts start again from nothing every time and say nothing about it.
-  const render = (release, label, subtitle = "", showMac = false, showCounts = true) => {
+  // `showHeading` is off where a heading in the summary that opens the section already names it.
+  const render = (release, label, subtitle = "", showMac = false, showCounts = true, showHeading = true) => {
     const assets = (release.assets ?? []).filter(a => !legacyAssetNames.has(a.name.toLowerCase()));
     const exes = assets.filter(a => a.name.toLowerCase().endsWith(".exe"));
     const winZips = assets.filter(a => a.name.toLowerCase().endsWith(".zip"));
@@ -52,7 +53,7 @@
     // The development build's tag is "latest", which says nothing a reader needs after its name.
     const heading = release.tag_name === "latest" ? label : `${label} ${version}`;
     return `
-      <h3>${heading}</h3>
+      ${showHeading ? `<h3>${heading}</h3>` : ""}
       ${subtitle ? `<p class="subtitle">${subtitle}</p>` : ""}
       ${showCounts ? `<p class="total">${total.toLocaleString("en")} ${total === 1 ? "download" : "downloads"}</p>` : ""}
       <ul>
@@ -70,13 +71,13 @@
     const dev = releases.find(r => r.tag_name === "latest");
     const previousStable = releases.filter(isStable).slice(1);
     stableEl.innerHTML = stable ? render(stable, "Stable Version", "Recommended for most users", true) : "No stable release found.";
-    devEl.innerHTML = dev ? render(dev, "Development Build", "Includes experimental features, may be unstable", true, false) : "No development builds found.";
+    devEl.innerHTML = dev ? render(dev, "Development Build", "Includes experimental features, may be unstable", true, false, false) : "No development builds found.";
     if (previousStable.length > 0) {
       // One line per release, linking to its page on GitHub, which lists every file it had.
       const items = previousStable.map(r => row(r.html_url, `Version ${r.tag_name.replace(/^v/, "")}`, releaseTotal(r)));
       historyEl.innerHTML = `
         <details>
-          <summary>Previous stable releases</summary>
+          <summary><h3>Previous stable releases</h3></summary>
           <ul>
             ${items.join("\n            ")}
           </ul>

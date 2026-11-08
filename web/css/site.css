@@ -433,6 +433,12 @@ details > summary {
 	padding: 0.3rem 0;
 }
 
+/* A heading in a summary is there to be navigated to, and stays on the line of the arrow that opens it. */
+details > summary h3 {
+	display: inline;
+	margin: 0;
+}
+
 .site-footer {
 	border-top: 1px solid var(--border);
 	background: var(--surface);
