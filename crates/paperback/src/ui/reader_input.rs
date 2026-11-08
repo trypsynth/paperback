@@ -203,7 +203,14 @@ pub(super) fn build_text_ctrl(
 				if let Ok(dm) = dm_for_keys.try_lock()
 					&& let Ok(config) = dm.config.try_lock()
 				{
-					config.find_shortcut_action(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down())
+					menu::shortcut_for_key(
+						&config,
+						key,
+						kbd.control_down(),
+						kbd.alt_down(),
+						kbd.shift_down(),
+						kbd.get_raw_key_flags(),
+					)
 				} else {
 					None
 				}
