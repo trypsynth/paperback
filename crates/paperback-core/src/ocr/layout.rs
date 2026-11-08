@@ -2,7 +2,7 @@
 
 use std::cmp::{Ordering, Reverse};
 
-use crate::parser::pdf::{join_wrapped_lines, join_wrapped_runs, keeps_line_end_hyphen};
+use crate::parser::layout::{join_wrapped_lines, join_wrapped_runs, keeps_line_end_hyphen};
 
 /// Pixels from the top left of the image.
 #[derive(Debug, Clone, PartialEq)]

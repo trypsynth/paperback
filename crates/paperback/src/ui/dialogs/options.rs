@@ -185,12 +185,12 @@ fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDia
 		// TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 		CheckBox::builder(&readability_panel).with_label(&t("Render tables &inline")).build();
 	let join_pdf_paragraphs_check = CheckBox::builder(&readability_panel)
-		// TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
-		.with_label(&t("&Join wrapped lines into paragraphs in PDFs"))
+		// TRANSLATORS: Option to join the wrapped lines of a page back into paragraphs, in documents laid out as pages, such as PDFs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
+		.with_label(&t("&Join wrapped lines into paragraphs"))
 		.build();
 	let strip_running_text_check = CheckBox::builder(&readability_panel)
-		// TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
-		.with_label(&t("Remove repeated page &headers and footers in PDFs"))
+		// TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
+		.with_label(&t("Remove repeated page &headers and footers"))
 		.build();
 	let markdown_dollar_math_check = CheckBox::builder(&readability_panel)
 		// TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.

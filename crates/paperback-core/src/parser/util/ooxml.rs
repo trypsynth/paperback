@@ -47,7 +47,12 @@ pub fn read_relationships<R: Read + Seek>(archive: &mut ZipArchive<R>, rels_path
 
 pub fn read_core_properties<R: Read + Seek>(archive: &mut ZipArchive<R>) -> (Option<String>, Option<String>) {
 	let Ok(content) = read_zip_entry_by_name(archive, "docProps/core.xml") else { return (None, None) };
-	let Ok(document) = roxmltree::Document::parse(&content) else { return (None, None) };
+	parse_core_properties(&content)
+}
+
+/// Apart from [`read_core_properties`] because an XPS package can keep the part anywhere.
+pub fn parse_core_properties(content: &str) -> (Option<String>, Option<String>) {
+	let Ok(document) = roxmltree::Document::parse(content) else { return (None, None) };
 	let field = |name: &str| {
 		document
 			.descendants()
