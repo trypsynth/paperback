@@ -12,7 +12,7 @@ use crate::{
 	links,
 	ui::{
 		dialogs,
-		document_manager::DocumentManager,
+		document_manager::{DocumentManager, display_title},
 		main_window::{
 			close_active_document_announced, download_again, ensure_parser_ready_for_path, open_links,
 			rebuild_menu_bar, resolve_zip_path, update_title_from_manager,
@@ -116,6 +116,14 @@ pub fn reopen_last_closed(ctx: &Ctx) {
 		} else if ctx.dm.lock().unwrap().open_file(ctx.dm, &path) {
 			let dm_ref = ctx.dm.lock().unwrap();
 			update_title_from_manager(ctx.frame, &dm_ref);
+			// The read-only text takes focus unnamed; announce the document first, without interrupting, so the focus report follows it.
+			if let Some(tab) = dm_ref.active_tab() {
+				live_region::announce_with_priority(
+					ctx.live_region_label,
+					&display_title(tab),
+					live_region::Priority::Medium,
+				);
+			}
 			dm_ref.focus_document_text();
 			drop(dm_ref);
 			let menu_bar = menu::create_menu_bar(&ctx.config.lock().unwrap());
