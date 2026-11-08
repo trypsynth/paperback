@@ -42,7 +42,7 @@
     const rows = [
       ...byArch(exes).map(a => row(a.browser_download_url, `Windows Installer${archLabel(a.name)} (.exe)`, count(a))),
       ...byArch(winZips).map(a => row(a.browser_download_url, `Windows Portable${archLabel(a.name)} (.zip)`, count(a))),
-      ...(showMac && macDmg ? [row(macDmg.browser_download_url, "macOS (.dmg)", count(macDmg))] : []),
+      ...(showMac && macDmg ? [row(macDmg.browser_download_url, "macOS (Universal) (.dmg)", count(macDmg))] : []),
       ...byArch(linuxAppImages).map(a => row(a.browser_download_url, `Linux Installer${archLabel(a.name)} (.AppImage)`, count(a))),
       ...byArch(linuxTarballs).map(a => row(a.browser_download_url, `Linux Portable${archLabel(a.name)} (.tar.gz)`, count(a))),
     ];
