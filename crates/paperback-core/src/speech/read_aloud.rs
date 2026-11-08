@@ -156,6 +156,14 @@ impl ReadAloud {
 		}
 	}
 
+	/// The start of the paragraph before or after the one playing, to skip to. `None` at either end of the document, or when nothing has played yet.
+	#[must_use]
+	pub fn neighbour(&self, session: &DocumentSession, forward: bool) -> Option<DocPos> {
+		let current = self.progress().paragraph?;
+		let direction = if forward { SegmentDirectionFfi::Next } else { SegmentDirectionFfi::Previous };
+		session.speech_paragraph(current, direction).map(|paragraph| paragraph.start).filter(|&start| start != current)
+	}
+
 	/// Stops reading and throws away everything prepared.
 	pub fn stop(&mut self) {
 		self.reset();
@@ -486,6 +494,26 @@ mod tests {
 		let (samples, _) = play(&mut reader, &session, &mut feed);
 		assert_eq!(spoken(&samples), "One.Three.");
 		assert_eq!(reader.take_errors().len(), 1);
+	}
+
+	#[test]
+	fn the_neighbours_of_the_paragraph_playing_are_found_for_skipping() {
+		let text = "One.
+
+Two.
+Three.";
+		let session = DocumentSession::from_text(text);
+		let mut reader = read_aloud();
+		assert_eq!(reader.neighbour(&session, true), None, "nothing has played yet");
+		let mut feed =
+			reader.start(&session, DocPos::from_raw(text.find("Two").unwrap()), ReadAloudSettings::default());
+		while reader.progress().paragraph.is_none() {
+			if feed.next_sample() == FeedSample::Waiting {
+				thread::sleep(Duration::from_millis(1));
+			}
+		}
+		assert_eq!(reader.neighbour(&session, true), Some(DocPos::from_raw(text.find("Three").unwrap())));
+		assert_eq!(reader.neighbour(&session, false), Some(DocPos::from_raw(0)));
 	}
 
 	#[test]

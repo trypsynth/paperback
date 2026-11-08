@@ -253,6 +253,9 @@ impl DocumentManager {
 		if index >= self.tabs.len() {
 			return false;
 		}
+		if self.tabs.get(index).map(|tab| &tab.file_path) == self.speaker_tab.as_ref() {
+			self.stop_read_aloud();
+		}
 		if let Some(tab) = self.tabs.get(index) {
 			tracing::info!(path = %tab.file_path.display(), "closing document");
 			// Reopening an untracked document would give it the wrong title and make it tracked.

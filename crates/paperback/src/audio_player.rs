@@ -358,7 +358,7 @@ impl AudioPlayer {
 }
 
 /// Held weakly so the device closes once the last document with narration is gone.
-fn shared_device() -> Result<Rc<MixerDeviceSink>> {
+pub(crate) fn shared_device() -> Result<Rc<MixerDeviceSink>> {
 	AUDIO_DEVICE.with_borrow_mut(|slot| {
 		if let Some(device) = slot.upgrade() {
 			return Ok(device);

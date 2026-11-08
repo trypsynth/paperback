@@ -26,6 +26,7 @@ mod image_ocr;
 mod lifecycle;
 mod ocr;
 mod position;
+mod read_aloud;
 mod reload;
 mod tabs;
 mod window;
@@ -108,6 +109,10 @@ pub struct DocumentManager {
 	/// So a worker whose tab has been closed is recognisable as stale rather than mistaken for one on a reopened tab.
 	next_job_id: Cell<u64>,
 	image_ocr_job: Option<(u64, PathBuf, bool)>,
+	/// Made the first time read aloud is asked for, and kept, since starting the speech engine takes a moment.
+	speaker: Option<crate::read_aloud::Speaker>,
+	/// The document being read aloud, so reading stops when another becomes active.
+	speaker_tab: Option<PathBuf>,
 }
 
 impl DocumentManager {
@@ -132,6 +137,8 @@ impl DocumentManager {
 			from_keyboard,
 			next_job_id: Cell::new(0),
 			image_ocr_job: None,
+			speaker: None,
+			speaker_tab: None,
 		}
 	}
 

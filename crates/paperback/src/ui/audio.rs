@@ -25,10 +25,14 @@ pub fn handle_toggle_play_pause_audio(
 			false
 		}
 	};
+	if has_audio {
+		return;
+	}
+	// A document without recorded audio is read aloud instead.
+	let result = dm.toggle_read_aloud();
 	drop(dm);
-	if !has_audio {
-		// TRANSLATORS: Announced when trying to play/pause audio on a document that has none
-		announce_for_command(live_region_label, from_keyboard, t("This document has no audio."));
+	if let Err(message) = result {
+		announce_for_command(live_region_label, from_keyboard, message);
 	}
 }
 
@@ -73,9 +77,19 @@ pub fn handle_seek_audio(
 	let mut dm = doc_manager.lock().unwrap();
 	let Some(tab) = dm.active_tab_mut() else { return };
 	let Some(player) = tab.audio_player.as_mut() else {
+		// Without recorded audio, the seek keys move read aloud by a paragraph.
+		let skipped = dm.skip_read_aloud(forward);
 		drop(dm);
-		// TRANSLATORS: Announced when trying to seek audio on a document that has none
-		announce_for_command(live_region_label, from_keyboard, t("This document has no audio."));
+		let message = match skipped {
+			Some(true) => return,
+			// TRANSLATORS: Announced when skipping forward while read aloud is on the last paragraph
+			Some(false) if forward => t("No next paragraph."),
+			// TRANSLATORS: Announced when skipping back while read aloud is on the first paragraph
+			Some(false) => t("No previous paragraph."),
+			// TRANSLATORS: Announced when trying to seek audio on a document that has none
+			None => t("This document has no audio."),
+		};
+		announce_for_command(live_region_label, from_keyboard, message);
 		return;
 	};
 	let Some(current_ms) = player.resume_point_ms() else {
@@ -123,12 +137,22 @@ pub fn handle_change_audio_speed(
 		dm.set_audio_speed(speed);
 		config.lock().unwrap().set_app_string(audio_player::SPEED_KEY, &speed.to_string());
 	}
-	drop(dm);
 	let Some((speed, at_limit)) = result else {
-		// TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
-		announce_for_command(live_region_label, from_keyboard, t("This document has no audio."));
+		// Without recorded audio, the speed keys change the speech rate.
+		let changed = dm.change_read_aloud_rate(increase);
+		drop(dm);
+		let message = match changed {
+			Ok((rate, at_limit)) => {
+				// TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
+				limit_message(&t("Rate {}").replace("{}", &rate.to_string()), at_limit, increase)
+			}
+			Err(message) if message.is_empty() => return,
+			Err(message) => message,
+		};
+		announce_for_command(live_region_label, from_keyboard, message);
 		return;
 	};
+	drop(dm);
 	let label = speed_label(speed);
 	let message = if at_limit && increase {
 		// TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
@@ -155,6 +179,8 @@ pub fn handle_change_audio_volume(
 		let after = if increase { player.increase_volume() } else { player.decrease_volume() };
 		(after, (after - before).abs() < f32::EPSILON)
 	});
+	// Without recorded audio, the volume keys change the volume of read aloud.
+	let result = result.or_else(|| dm.change_read_aloud_volume(increase));
 	drop(dm);
 	let Some((volume, at_limit)) = result else {
 		// TRANSLATORS: Announced when trying to change audio volume on a document that has none
@@ -172,6 +198,17 @@ pub fn handle_change_audio_volume(
 		label
 	};
 	announce_for_command(live_region_label, from_keyboard, message);
+}
+
+/// `label`, marked as the limit when a step couldn't go any further.
+fn limit_message(label: &str, at_limit: bool, increase: bool) -> String {
+	match (at_limit, increase) {
+		// TRANSLATORS: Announced when a setting is already at its highest; {} is its value
+		(true, true) => t("{} (maximum)").replace("{}", label),
+		// TRANSLATORS: Announced when a setting is already at its lowest; {} is its value
+		(true, false) => t("{} (minimum)").replace("{}", label),
+		_ => label.to_owned(),
+	}
 }
 
 fn volume_label(volume: f32) -> String {

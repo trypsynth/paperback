@@ -1,0 +1,119 @@
+use paperback_core::config::DocumentSpeech;
+use patois::t;
+
+use super::DocumentManager;
+use crate::read_aloud::{RATE_STEP, Speaker};
+
+impl DocumentManager {
+	/// Starts reading the active document aloud from the caret, or pauses or resumes it.
+	///
+	/// # Errors
+	///
+	/// Returns a message to announce when read aloud can't run on this system.
+	pub fn toggle_read_aloud(&mut self) -> Result<(), String> {
+		let Some(index) = self.active_tab_index() else { return Ok(()) };
+		let path = self.tabs[index].file_path.clone();
+		if self.speaker_tab.as_ref() == Some(&path)
+			&& let Some(speaker) = self.speaker.as_mut()
+			&& speaker.is_reading()
+		{
+			if speaker.is_paused() {
+				speaker.resume();
+			} else {
+				speaker.pause();
+			}
+			return Ok(());
+		}
+		self.speaker()?;
+		let tab = &self.tabs[index];
+		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		if let Some(speaker) = self.speaker.as_mut() {
+			speaker.start(&tab.session, position, &self.config.lock().unwrap(), &path.to_string_lossy());
+		}
+		self.speaker_tab = Some(path);
+		Ok(())
+	}
+
+	/// Moves reading to the paragraph before or after the one playing. `None` when the active document isn't being read; `Some(false)` at either end of it.
+	pub fn skip_read_aloud(&mut self, forward: bool) -> Option<bool> {
+		let index = self.reading_tab_index()?;
+		let tab = &self.tabs[index];
+		let speaker = self.speaker.as_mut()?;
+		Some(speaker.skip(&tab.session, forward, &self.config.lock().unwrap(), &tab.file_path.to_string_lossy()))
+	}
+
+	/// Changes the speech rate: the book's own, if it has one, else the app's. Returns the new rate, and whether it was already at its limit, or a message when read aloud can't run here.
+	pub fn change_read_aloud_rate(&mut self, increase: bool) -> Result<(i32, bool), String> {
+		let Some(index) = self.active_tab_index() else { return Err(String::new()) };
+		let rate_key = self.speaker()?.rate_key();
+		let path = self.tabs[index].file_path.to_string_lossy().to_string();
+		let step = if increase { RATE_STEP } else { -RATE_STEP };
+		let (before, after) = {
+			let config = self.config.lock().unwrap();
+			let book = config.get_document_speech(&path);
+			let before = book.rate_percent.unwrap_or_else(|| config.get_app_int(&rate_key, 50));
+			let after = (before + step).clamp(0, 100);
+			if book.rate_percent.is_some() {
+				config.set_document_speech(&path, &DocumentSpeech { rate_percent: Some(after), ..book });
+			} else {
+				config.set_app_int(&rate_key, after);
+			}
+			(before, after)
+		};
+		if let Some(reading) = self.reading_tab_index() {
+			let tab = &self.tabs[reading];
+			if let Some(speaker) = self.speaker.as_mut() {
+				speaker.restart(&tab.session, &self.config.lock().unwrap(), &tab.file_path.to_string_lossy());
+			}
+		}
+		Ok((after, before == after))
+	}
+
+	/// Returns the new volume and whether it was already at its limit, or `None` when nothing is being read.
+	pub fn change_read_aloud_volume(&mut self, increase: bool) -> Option<(f32, bool)> {
+		self.reading_tab_index()?;
+		self.speaker.as_mut().map(|speaker| speaker.change_volume(increase))
+	}
+
+	/// Moves the caret to each paragraph as it starts. Called on the audio tick.
+	pub(super) fn pump_read_aloud(&mut self) {
+		let Some(index) = self.reading_tab_index() else { return };
+		let tab = &mut self.tabs[index];
+		let Some(speaker) = self.speaker.as_mut() else { return };
+		let Some(position) = speaker.pump(&tab.session) else { return };
+		let current = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		if position != current {
+			let local = tab.window.to_local(position);
+			tab.text_ctrl.set_insertion_point(local);
+			tab.text_ctrl.show_position(local);
+		}
+	}
+
+	/// Stops reading, such as when its document is closed or another becomes active.
+	pub(super) fn stop_read_aloud(&mut self) {
+		if let Some(speaker) = self.speaker.as_mut() {
+			speaker.stop();
+		}
+		self.speaker_tab = None;
+	}
+
+	/// The active tab, if it's the one being read.
+	fn reading_tab_index(&self) -> Option<usize> {
+		let index = self.active_tab_index()?;
+		(self.speaker_tab.as_ref() == Some(&self.tabs[index].file_path)
+			&& self.speaker.as_ref().is_some_and(Speaker::is_reading))
+		.then_some(index)
+	}
+
+	fn speaker(&mut self) -> Result<&mut Speaker, String> {
+		if self.speaker.is_none() {
+			let speaker = Speaker::new().map_err(|error| {
+				tracing::warn!(%error, "read aloud isn't available");
+				// TRANSLATORS: Announced when read aloud is asked for on a system Paperback has no speech engine for yet
+				t("Read aloud isn't available on this system yet.")
+			})?;
+			self.speaker = Some(speaker);
+		}
+		Ok(self.speaker.as_mut().expect("set above"))
+	}
+}

@@ -12,6 +12,7 @@ mod links;
 mod linux_integration;
 mod ocr;
 mod problem_report;
+mod read_aloud;
 #[cfg(any(target_os = "windows", test))]
 mod rtf;
 mod shell;
