@@ -23,11 +23,11 @@ rstest = "0.28.0"
 serde_json = "1.0.154"
 shipfitter = "0.2.4"
 tempfile = "3.27.0"
-toml = "1.1.8"
+toml = "1.2.1"
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 windows = "0.62.2"
-zip = { version = "9.2.2", default-features = false, features = ["deflate"] }
+zip = { version = "9.4.2", default-features = false, features = ["deflate"] }
 
 [workspace.lints.rust]
 # objc's msg_send! checks a cargo-clippy feature no crate defines.
