@@ -66,6 +66,7 @@ Paperback tukee seuraavia tiedostomuotoja:
 * RTF-asiakirjat (`.rtf`)
 * Windows Write -asiakirjat (`.wri`)
 * WinHelp-ohjetiedostot (`.hlp`)
+* XPS- ja OpenXPS-asiakirjat (`.xps`, `.oxps`)
 * Teksti- ja lokitiedostot (`.txt`, `.log`)
 
 ## Pikanäppäimet
