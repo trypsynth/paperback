@@ -182,5 +182,6 @@ pub fn exit(ctx: &Ctx) {
 		dm.save_all_positions();
 		dm.remove_working_copies();
 	}
+	crate::problem_report::end_session();
 	process::exit(0);
 }

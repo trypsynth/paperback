@@ -11,6 +11,7 @@ mod links;
 #[cfg(target_os = "linux")]
 mod linux_integration;
 mod ocr;
+mod problem_report;
 #[cfg(any(target_os = "windows", test))]
 mod rtf;
 mod shell;
@@ -35,6 +36,7 @@ fn main() {
 		.with_crates(["paperback", "paperback_core"])
 		.init(config_ext::log_level_from_disk());
 	tracing::info!(version = env!("CARGO_PKG_VERSION"), commit = version::COMMIT_HASH, "starting");
+	problem_report::begin_session();
 	cleanup_legacy_files();
 	// Under `cargo run` macOS treats the unbundled binary as a Terminal background process with no menu bar; must run before wx initializes.
 	#[cfg(target_os = "macos")]
@@ -46,6 +48,7 @@ fn main() {
 		let app_state = PaperbackApp::new(app);
 		let _ = Box::leak(Box::new(app_state));
 	});
+	problem_report::end_session();
 }
 
 /// wx frees the rich edit library before COM shuts down, so a screen reader's accessibility objects in it crashed the process at exit.

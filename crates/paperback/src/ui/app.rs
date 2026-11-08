@@ -95,6 +95,12 @@ impl PaperbackApp {
 			}
 		});
 		open_from_command_line(&main_window);
+		// Queued so the main window is up and focused before the question takes the focus.
+		wx_utils::post_to_ui(|| {
+			if let Some(window) = main_window_from_ptr() {
+				crate::problem_report::offer_after_crash(window.frame());
+			}
+		});
 		let (check_updates, channel) = {
 			let cfg = config.lock().unwrap();
 			(cfg.get_app_bool("check_for_updates_on_startup", true), get_update_channel(&cfg))

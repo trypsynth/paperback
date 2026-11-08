@@ -190,6 +190,8 @@ pub(super) fn bind_teardown(
 		}
 		// Only once really quitting: on macOS the window is only hidden above, and its documents stay open.
 		dm.remove_working_copies();
+		// Here rather than only after the event loop, since Windows may end the process once it has closed the window at shutdown.
+		crate::problem_report::end_session();
 		#[cfg(target_os = "windows")]
 		if let Some(state) = tray_for_close.lock().unwrap().as_ref() {
 			state.icon.remove_icon();

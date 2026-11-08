@@ -21,6 +21,10 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	let updates_label = format_menu_label(&t("Check for &Updates"), ActionId::CheckForUpdates, config);
 	// TRANSLATORS: Status-bar help text for the Help > Check for Updates menu item.
 	let updates_help = t("Check for updates");
+	// TRANSLATORS: Menu item in the Help menu that opens a dialog for sending a problem report to the developer.
+	let report_label = format_menu_label(&t("&Report a Problem..."), ActionId::ReportProblem, config);
+	// TRANSLATORS: Status-bar help text for the Help > Report a Problem menu item.
+	let report_help = t("Send a problem report to the developer");
 	// TRANSLATORS: Menu item in the Help menu to open the donation page for the application.
 	let donate_label = format_menu_label(&t("&Donate"), ActionId::Donate, config);
 	// TRANSLATORS: Status-bar help text for the Help > Donate menu item.
@@ -31,6 +35,7 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 		item_with_help(menu_ids::VIEW_HELP_PAPERBACK, help_paperback_label, help_paperback_help),
 		MenuEntry::Separator,
 		item_with_help(menu_ids::CHECK_FOR_UPDATES, updates_label, updates_help),
+		item_with_help(menu_ids::REPORT_PROBLEM, report_label, report_help),
 		MenuEntry::Separator,
 		item_with_help(menu_ids::DONATE, donate_label, donate_help),
 	]

@@ -96,7 +96,7 @@ seq_ids!(BASE + 470 => SET_SELECTION_START, COPY_FROM_SELECTION_START, JUMP_TO_S
 
 seq_ids!(BASE + 480 => SAVE_IMAGE, READ_IMAGE_TEXT);
 
-seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE);
+seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE, REPORT_PROBLEM);
 
 seq_ids!(BASE + 900 => RESTORE);
 
@@ -206,6 +206,7 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::ViewHelpPaperback => VIEW_HELP_PAPERBACK,
 		ActionId::CheckForUpdates => CHECK_FOR_UPDATES,
 		ActionId::Donate => DONATE,
+		ActionId::ReportProblem => REPORT_PROBLEM,
 	}
 }
 

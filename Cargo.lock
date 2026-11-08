@@ -2319,6 +2319,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "mailbag"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80fa55afaa464d1adf97748f3348f2a75721b015061b84311780d68ca6fc23a2"
+dependencies = [
+ "flate2",
+ "serde",
+ "serde_json",
+ "ureq",
+]
+
+[[package]]
+name = "mailbag-wx"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2528056d4722b91a79720977e81587fc7bae8165ef387551604cc9e5297c04f0"
+dependencies = [
+ "mailbag",
+ "patois",
+ "wx-utils",
+ "wxdragon",
+]
+
+[[package]]
 name = "malloc_buf"
 version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2986,6 +3010,7 @@ dependencies = [
  "image",
  "live-region",
  "logkeeper",
+ "mailbag-wx",
  "miniz_oxide 0.9.1",
  "native-ocr",
  "objc",
@@ -5816,9 +5841,9 @@ checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
 name = "wx-utils"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f8035f89a4f38a6bc610fad28d161818992ee5d67fb8f1905e150a780546005"
+checksum = "a7d51e4c928c45bd2ad36f334cd0677d5b06a95ff0099a1f4d4358f2a11859c5"
 dependencies = [
  "key-chord",
  "live-region",

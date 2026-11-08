@@ -26,6 +26,7 @@ paperback-formats = { workspace = true }
 patois = { workspace = true, features = ["wx"] }
 rodio = { version = "0.22.2", default-features = false, features = ["playback", "tracing", "flac", "mp3", "mp4", "vorbis", "wav", "symphonia-adpcm", "symphonia-aiff", "symphonia-alac", "symphonia-mp2"] }
 rodio-wsola = "0.2.0"
+mailbag-wx = "0.1.0"
 ship-shape = "0.6.0"
 tempfile = { workspace = true }
 toml = { workspace = true }

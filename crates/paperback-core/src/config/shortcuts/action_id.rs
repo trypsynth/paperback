@@ -301,4 +301,6 @@ actions! {
 	CheckForUpdates, Help, t("Check for Updates"), ctrl_shift("U");
 	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 	Donate, Help, t("Donate"), ctrl("D");
+	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+	ReportProblem, Help, t("Report a Problem"), None;
 }
