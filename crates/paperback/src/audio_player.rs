@@ -97,6 +97,7 @@ impl AudioPlayer {
 		&self.timeline
 	}
 
+	#[cfg(target_os = "windows")]
 	/// Carries on from the same place on `device`, because a sink stays on the output it was opened on when Windows changes the default, and goes silent when that output goes away.
 	pub fn move_to_device(&mut self, device: Rc<MixerDeviceSink>) {
 		let position = self.resume_point_ms();
@@ -383,6 +384,7 @@ pub(crate) fn shared_device() -> Result<Rc<MixerDeviceSink>> {
 	})
 }
 
+#[cfg(target_os = "windows")]
 /// Opens the system's current default output even though one is already open, for everything playing to move onto with `move_to_device`. Whatever is opened afterwards shares it.
 pub(crate) fn reopen_shared_device() -> Result<Rc<MixerDeviceSink>> {
 	AUDIO_DEVICE.with_borrow_mut(open_shared_device)
@@ -603,6 +605,7 @@ mod tests {
 		);
 	}
 
+	#[cfg(target_os = "windows")]
 	/// What happens when the user switches from Bluetooth headphones to the speakers and back (#1266): playback has to carry on from the same place on the new output.
 	#[test]
 	fn moving_to_a_reopened_device_keeps_playing_from_the_same_place() {
@@ -638,6 +641,7 @@ mod tests {
 		);
 	}
 
+	#[cfg(target_os = "windows")]
 	#[test]
 	fn moving_a_paused_player_to_a_reopened_device_keeps_it_paused_at_the_same_place() {
 		if !has_audio_device() {

@@ -149,6 +149,7 @@ impl Speaker {
 		self.sample = None;
 	}
 
+	#[cfg(target_os = "windows")]
 	/// Carries on speaking on `device` after the system's output changed, from the start of the paragraph being read, and still paused if it was. `book` is the open document being read, which is needed to carry on.
 	///
 	/// # Errors

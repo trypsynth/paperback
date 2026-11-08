@@ -41,6 +41,7 @@ impl DocumentManager {
 		Ok(())
 	}
 
+	#[cfg(target_os = "windows")]
 	/// Plays or pauses the active document's audio or reading as asked, for a headset button, which says which it means. A toggle would start a book that something else had already paused, or pause one the button meant to start.
 	///
 	/// # Errors

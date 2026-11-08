@@ -1,5 +1,7 @@
+#[cfg(target_os = "windows")]
 use std::rc::Rc;
 
+#[cfg(target_os = "windows")]
 use wxdragon::prelude::*;
 
 use super::DocumentManager;
@@ -14,6 +16,7 @@ impl DocumentManager {
 		}
 	}
 
+	#[cfg(target_os = "windows")]
 	/// Moves everything playing, recorded or spoken, onto the system's current default output after Windows switched it, such as to or from Bluetooth headphones. Each stream stays on the output it was opened on, and goes silent if that goes away.
 	pub fn follow_default_audio_device(&mut self) {
 		let device = match crate::audio_player::reopen_shared_device() {
