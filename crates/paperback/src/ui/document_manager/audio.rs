@@ -2,6 +2,8 @@
 use std::rc::Rc;
 
 #[cfg(target_os = "windows")]
+use paperback_core::config::ConfigManager;
+#[cfg(target_os = "windows")]
 use wxdragon::prelude::*;
 
 use super::DocumentManager;
@@ -18,7 +20,7 @@ impl DocumentManager {
 
 	#[cfg(target_os = "windows")]
 	/// Moves everything playing, recorded or spoken, onto the system's current default output after Windows switched it, such as to or from Bluetooth headphones. Each stream stays on the output it was opened on, and goes silent if that goes away.
-	pub fn follow_default_audio_device(&mut self) {
+	pub fn follow_default_audio_device(&mut self, config: &ConfigManager) {
 		let device = match crate::audio_player::reopen_shared_device() {
 			Ok(device) => device,
 			Err(error) => {
@@ -34,13 +36,26 @@ impl DocumentManager {
 		let Some(speaker) = self.speaker.as_mut() else { return };
 		let reading_tab =
 			self.speaker_tab.as_ref().and_then(|path| self.tabs.iter().find(|tab| &tab.file_path == path));
-		let config = self.config.lock().unwrap();
-		let book = reading_tab.map(|tab| (&tab.session, &*config, tab.file_path.to_string_lossy().into_owned()));
+		let book = reading_tab.map(|tab| (&tab.session, config, tab.file_path.to_string_lossy().into_owned()));
 		let moved = speaker
 			.move_to_device(device, book.as_ref().map(|(session, config, path)| (*session, *config, path.as_str())));
 		if let Err(error) = moved {
 			tracing::warn!(%error, "read aloud: couldn't move to the new default output device");
 		}
+	}
+
+	/// Moves what is playing to the new output once Windows has switched it. An Options dialog open holds the config for as long as it is, and locking it from here would freeze the window, so the move waits until the config is free.
+	#[cfg(target_os = "windows")]
+	fn follow_output_change(&mut self) {
+		if !crate::windows_audio::take_output_change() {
+			return;
+		}
+		let config = Rc::clone(&self.config);
+		let Ok(config) = config.try_lock() else {
+			crate::windows_audio::note_output_change();
+			return;
+		};
+		self.follow_default_audio_device(&config);
 	}
 
 	/// Called after a jump, so the next step isn't measured from the old position and sounded as crossing a bookmark it never crossed.
@@ -91,7 +106,10 @@ impl DocumentManager {
 	pub fn pump_audio(&mut self) {
 		self.pump_read_aloud();
 		#[cfg(target_os = "windows")]
-		crate::windows_audio::publish_playback_state(self.frame.get_handle(), self.media_playback_state());
+		{
+			crate::windows_audio::publish_playback_state(self.frame.get_handle(), self.media_playback_state());
+			self.follow_output_change();
+		}
 		// `try_lock` because a modal dialog like Options holds the config lock across `show_modal` while pumping messages, so a blocking lock on this tick would deadlock the UI thread.
 		let sync_enabled = self.config.try_lock().ok().map(|config| config.get_app_bool("sync_caret_to_audio", true));
 		let Some(tab) = self.active_tab_mut() else {

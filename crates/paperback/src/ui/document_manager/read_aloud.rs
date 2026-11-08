@@ -64,7 +64,11 @@ impl DocumentManager {
 			}
 			return Ok(());
 		}
-		if playing { self.toggle_read_aloud() } else { Ok(()) }
+		// Starting to read locks the config, which a dialog open may be holding.
+		if !playing || self.config.try_lock().is_err() {
+			return Ok(());
+		}
+		self.toggle_read_aloud()
 	}
 
 	/// What Windows is told is playing. Idle until the active document has played something, so that merely having a recording open doesn't take the headset buttons from the music player.

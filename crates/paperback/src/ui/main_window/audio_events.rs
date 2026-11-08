@@ -5,17 +5,12 @@ use crate::{
 };
 
 impl MainWindow {
-	/// Windows switched its default output, such as when Bluetooth headphones connected or went away.
-	pub(crate) fn handle_audio_device_changed(&self) {
-		tracing::info!("the default audio output changed");
-		// Skipped when busy with something else, since the next switch or the next play finds the new output anyway.
-		if let Ok(mut dm) = self.doc_manager.try_lock() {
-			dm.follow_default_audio_device();
-		}
-	}
-
-	/// A play, pause or skip button of headphones or a keyboard.
+	/// A play, pause or skip button of headphones or a keyboard. Does nothing while a dialog such as Options holds the config, since the handlers lock it and would freeze the window.
 	pub(crate) fn handle_media_button(&self, button: MediaButton) {
+		let free = self.config.try_lock().is_ok() && self.doc_manager.try_lock().is_ok();
+		if !free {
+			return;
+		}
 		match button {
 			MediaButton::Play | MediaButton::Pause => {
 				let Ok(mut dm) = self.doc_manager.try_lock() else { return };

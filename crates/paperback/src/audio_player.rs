@@ -621,14 +621,12 @@ mod tests {
 		let source = builder.add_source(AudioLocation::File(path.to_string_lossy().to_string()), Some(8000));
 		builder.add_clip(source, 0, 8000, DocPos::from_raw(0), DocPos::from_raw(1));
 		let mut player = AudioPlayer::new(builder.build()).unwrap();
-
 		player.play();
 		assert!(
 			wait_for(&mut player, 2000, |player| player.elapsed_ms().is_some_and(|ms| ms >= 500)),
 			"position advances before the switch"
 		);
 		let before = player.elapsed_ms().unwrap();
-
 		let fresh = reopen_shared_device().unwrap();
 		player.move_to_device(Rc::clone(&fresh));
 		assert!(Rc::ptr_eq(&fresh, &shared_device().unwrap()), "later players share the reopened device");
@@ -656,12 +654,10 @@ mod tests {
 		let source = builder.add_source(AudioLocation::File(path.to_string_lossy().to_string()), Some(8000));
 		builder.add_clip(source, 0, 8000, DocPos::from_raw(0), DocPos::from_raw(1));
 		let mut player = AudioPlayer::new(builder.build()).unwrap();
-
 		player.play();
 		assert!(wait_for(&mut player, 2000, |player| player.elapsed_ms().is_some_and(|ms| ms >= 500)));
 		player.pause();
 		let before = player.resume_point_ms().unwrap();
-
 		player.move_to_device(reopen_shared_device().unwrap());
 		assert!(!player.is_playing(), "a device switch doesn't start paused audio");
 		let held = player.resume_point_ms().unwrap();
