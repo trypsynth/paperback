@@ -2,7 +2,10 @@ use super::{
 	DocumentSession, ReadingAheadFfi, ReadingStepFfi, SearchOptionsFfi, SegmentDirectionFfi, SegmentTypeFfi,
 	StepUnitFfi,
 };
-use crate::document::{DocLen, DocPos, TocItem};
+use crate::{
+	document::{DocLen, DocPos, TocItem},
+	speech::SpeechParagraph,
+};
 
 #[cfg_attr(feature = "uniffi", uniffi::export)]
 impl DocumentSession {
@@ -61,6 +64,35 @@ impl DocumentSession {
 }
 
 impl DocumentSession {
+	/// The paragraph to read aloud at `position`, or the next or previous one, passing over blank paragraphs in the same direction (forward for `Current`).
+	pub(crate) fn speech_paragraph(&self, position: DocPos, direction: SegmentDirectionFfi) -> Option<SpeechParagraph> {
+		let onward = if matches!(direction, SegmentDirectionFfi::Previous) {
+			SegmentDirectionFfi::Previous
+		} else {
+			SegmentDirectionFfi::Next
+		};
+		let mut segment = self.get_text_segment(position, SegmentTypeFfi::Paragraph, direction);
+		while segment.found && segment.text.trim().is_empty() {
+			let next = self.get_text_segment(segment.start_pos, SegmentTypeFfi::Paragraph, onward);
+			if next.start_pos == segment.start_pos {
+				return None;
+			}
+			segment = next;
+		}
+		if !segment.found {
+			return None;
+		}
+		// The text is trimmed, so a word's place in it is counted from past the paragraph's leading whitespace.
+		let buffer = &self.handle.document().buffer;
+		let raw = buffer.slice(buffer.byte_at(segment.start_pos)..buffer.byte_at(segment.end_pos));
+		let leading = &raw[..raw.len() - raw.trim_start().len()];
+		Some(SpeechParagraph {
+			start: segment.start_pos,
+			text_start: segment.start_pos + DocLen::of(leading),
+			text: segment.text,
+		})
+	}
+
 	/// Lands on the match itself rather than its paragraph's start, so the next search starts past it.
 	fn find_step(
 		&self,

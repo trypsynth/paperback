@@ -4,10 +4,13 @@
 
 mod dictionary;
 mod engine;
+mod narrator;
 mod text_map;
 mod voice;
 
 pub use dictionary::{MatchType, RuleScope, SpeechRule, VoiceFilter, apply_rules};
 pub use engine::{AudioChunk, SpeechEngine, SpeechRequest, Synthesis, Voice, WordBoundary, utf16_to_char_offset};
+pub(crate) use narrator::SpeechParagraph;
+pub use narrator::{AudioFeed, FeedSample, Narrator, NarratorProgress, NarratorSettings};
 pub use text_map::TextMap;
 pub use voice::choose_voice;

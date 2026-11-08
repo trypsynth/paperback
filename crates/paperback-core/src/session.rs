@@ -520,3 +520,11 @@ impl DocumentSession {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+impl DocumentSession {
+	/// A session over plain `text`, for tests outside this module.
+	pub(crate) fn from_text(text: &str) -> Self {
+		tests::session_from_buffer(document::DocumentBuffer::with_content(text.to_string()))
+	}
+}
