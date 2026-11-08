@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 21:30+0000\n"
+"POT-Creation-Date: 2026-11-08 02:02+0000\n"
 "PO-Revision-Date: 2026-11-04 14:11+0100\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
@@ -26,6 +26,149 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-1: vcpkg\n"
 "X-Poedit-SearchPathExcluded-2: web\n"
 "X-Poedit-SearchPathExcluded-3: po\n"
+
+#. TRANSLATORS: Title of the question asked after the app closed unexpectedly
+#. TRANSLATORS: Title of the dialog for sending a problem report to the developer
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Report a Problem"
+msgstr "Problem melden"
+
+#. TRANSLATORS: Asked at startup after the app crashed or was closed unexpectedly. %s is the app's name.
+#, fuzzy
+msgid "%s closed unexpectedly the last time it ran. Would you like to report the problem?"
+msgstr "%s wurde beim letzten Ausführen unerwartet beendet. Möchtest du das Problem melden?"
+
+#. TRANSLATORS: Check box in the question asked after a crash, which stops the question being asked again
+#, fuzzy
+msgid "&Don't ask again"
+msgstr "&Nicht mehr fragen"
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog after a crash. %s is the app's name.
+#, fuzzy
+msgid "%s closed unexpectedly the last time it ran. Describe what you were doing when it happened."
+msgstr "%s wurde beim letzten Ausführen unerwartet beendet. Beschreibe, was du getan hast, als es passierte."
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog
+#, fuzzy
+msgid "Describe the problem, and what you were doing when it happened."
+msgstr "Beschreibe das Problem und was du getan hast, als es passierte."
+
+#. TRANSLATORS: Label of the field for describing the problem in the Report a Problem dialog
+#, fuzzy
+msgid "&What happened:"
+msgstr "&Was ist passiert:"
+
+#, fuzzy
+msgid "&Your email address, if you'd like a reply:"
+msgstr "&Deine E-Mail-Adresse, wenn du eine Antwort möchtest:"
+
+#. TRANSLATORS: Check box in the Report a Problem dialog that attaches the app's log to the report
+#, fuzzy
+msgid "&Include the log"
+msgstr "&Protokoll einbinden"
+
+#. TRANSLATORS: Explains what a problem report contains, in the Report a Problem dialog. %s is the app's name.
+#, fuzzy
+msgid "The report also includes %s's version and your operating system. Select Preview to see everything that will be sent."
+msgstr "Der Bericht enthält auch die Version von %s und dein Betriebssystem. Wähle Vorschau, um zu sehen, was gesendet wird."
+
+#. TRANSLATORS: Button in the Report a Problem dialog that shows the report before it is sent
+#, fuzzy
+msgid "&Preview"
+msgstr "&Vorschau"
+
+#. TRANSLATORS: Button in the Report a Problem dialog that sends the report
+#, fuzzy
+msgid "&Send"
+msgstr "&Senden"
+
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button that closes the Find dialog
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#. TRANSLATORS: Title of the window that shows a problem report before it is sent
+#, fuzzy
+msgid "Report Preview"
+msgstr "Berichtvorschau"
+
+#. TRANSLATORS: Title of an error message
+#. TRANSLATORS: Generic error dialog title
+msgid "Error"
+msgstr "Fehler"
+
+#. TRANSLATORS: Shown when Send is pressed in the Report a Problem dialog with the description empty
+#, fuzzy
+msgid "Describe the problem before sending the report."
+msgstr "Beschreibe das Problem, bevor du den Bericht sendest."
+
+#. TRANSLATORS: Shown when a problem report breaks a limit, such as being too long. %s is the reason, in English.
+#, fuzzy
+msgid "The report can't be sent: %s"
+msgstr "Der Bericht kann nicht gesendet werden: %s"
+
+#. TRANSLATORS: Message in the progress window shown while a problem report is sent
+#, fuzzy
+msgid "Sending the report..."
+msgstr "Bericht wird gesendet..."
+
+#. TRANSLATORS: Shown after a problem report was sent
+#. TRANSLATORS: Title of a message saying something worked
+#, fuzzy
+msgid "Thank you. Your report was sent."
+msgstr "Danke. Dein Bericht wurde gesendet."
+
+#, fuzzy
+msgid "Success"
+msgstr "Erfolg"
+
+#, fuzzy
+msgid "Email can't be delivered to that address. Check it for typing mistakes, or leave it blank."
+msgstr "Die E-Mail kann nicht an diese Adresse zugestellt werden. Überprüfe sie auf Tippfehler, oder lasse sie leer."
+
+#. TRANSLATORS: Shown when the report server has taken as many reports as it will for the day
+#, fuzzy
+msgid "Too many reports have been sent today."
+msgstr "Heute wurden zu viele Berichte gesendet."
+
+#. TRANSLATORS: Shown when sending a problem report failed. %s is the reason, in English.
+#, fuzzy
+msgid "The report couldn't be sent: %s"
+msgstr "Der Bericht konnte nicht gesendet werden: %s"
+
+#. TRANSLATORS: Asked after a problem report couldn't be sent. %s explains what went wrong.
+#, fuzzy
+msgid ""
+"%s\n"
+"\n"
+"Would you like to save the report to a file, so you can send it another way?"
+msgstr "%s\n\nMöchtest du den Bericht in einer Datei speichern, um ihn auf andere Weise zu senden?"
+
+#. TRANSLATORS: Title of the dialog for saving a problem report to a file
+#, fuzzy
+msgid "Save Report"
+msgstr "Bericht speichern"
+
+#. TRANSLATORS: Default file name for a saved problem report
+#, fuzzy
+msgid "Problem report"
+msgstr "Problembericht"
+
+#. TRANSLATORS: File type filter in the dialog for saving a problem report
+#, fuzzy
+msgid "Text files (*.txt)|*.txt"
+msgstr "Textdateien (*.txt)|*.txt"
+
+#. TRANSLATORS: Shown after a problem report was saved to a file
+#, fuzzy
+msgid "The report was saved."
+msgstr "Der Bericht wurde gespeichert."
+
+#, fuzzy
+msgid "The report couldn't be saved: %s"
+msgstr "Der Bericht konnte nicht gespeichert werden: %s"
 
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 msgid "Checking %s"
@@ -74,14 +217,6 @@ msgstr "Es ist keine Texterkennungssprache installiert. Füge eine in den Sprach
 #. TRANSLATORS: Announced on Linux when Tesseract is installed but has no language data for OCR
 msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
 msgstr "Keine Sprache für Texterkennung installiert. Installiere ein Tesseract-Sprachpaket von deinem Paketmanager."
-
-#. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
-msgid "Failed to create IPC server"
-msgstr "IPC-Server konnte nicht erstellt werden"
-
-#. TRANSLATORS: Title of a warning dialog
-msgid "Warning"
-msgstr "Warnung"
 
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
@@ -736,6 +871,7 @@ msgstr "Alle &löschen"
 #. TRANSLATORS: Label for a button that closes the View Note dialog
 #. TRANSLATORS: Label for a button that closes the Web View dialog
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#. TRANSLATORS: Button that closes a window showing text
 msgid "Close"
 msgstr "Schließen"
 
@@ -849,10 +985,6 @@ msgstr "leer"
 #. TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
 msgid "Please select a bookmark to jump to."
 msgstr "Bitte ein Lesezeichen zum Anspringen auswählen."
-
-#. TRANSLATORS: Generic error dialog title
-msgid "Error"
-msgstr "Fehler"
 
 #. TRANSLATORS: Label/prompt in the Note editor dialog
 msgid "Edit bookmark note:"
@@ -995,12 +1127,6 @@ msgstr "Exportieren"
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Go"
 msgstr "Los"
-
-#. TRANSLATORS: Label for the cancellation button
-#. TRANSLATORS: Cancel button that closes the Find dialog
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr "Abbrechen"
 
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
@@ -1625,6 +1751,10 @@ msgstr "Die Spendenseite konnte nicht im Browser geöffnet werden."
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback kann keine Aktionen ausführen, während Web-View geöffnet ist."
 
+#. TRANSLATORS: Title of a warning dialog
+msgid "Warning"
+msgstr "Warnung"
+
 #. TRANSLATORS: First message in the window that downloads documents from links, before the first server answers
 msgid "Connecting..."
 msgstr "Verbinde..."
@@ -2073,6 +2203,16 @@ msgstr "Auf &Updates prüfen"
 #. TRANSLATORS: Status-bar help text for the Help > Check for Updates menu item.
 msgid "Check for updates"
 msgstr "Auf Updates prüfen"
+
+#. TRANSLATORS: Menu item in the Help menu that opens a dialog for sending a problem report to the developer.
+#, fuzzy
+msgid "&Report a Problem..."
+msgstr "&Problem melden..."
+
+#. TRANSLATORS: Status-bar help text for the Help > Report a Problem menu item.
+#, fuzzy
+msgid "Send a problem report to the developer"
+msgstr "Einen Problembericht an den Entwickler senden"
 
 #. TRANSLATORS: Menu item in the Help menu to open the donation page for the application.
 msgid "&Donate"
@@ -3279,6 +3419,10 @@ msgstr "bild"
 
 msgid "Current version is not a valid semver."
 msgstr "Aktuelle Version ist keine gültige Semver."
+
+#, fuzzy
+msgid "No release has a valid semver tag."
+msgstr "Kein Release hat ein gültiges Semver-Tag."
 
 msgid "Latest release tag is not a valid semver."
 msgstr "Neuestes Release-Tag ist keine gültige Semver."
@@ -4833,6 +4977,9 @@ msgstr "Durchschnittliche Dauer"
 #: kt
 msgid "Select audio speed"
 msgstr "Audiowiedergabegeschwindigkeit wählen"
+
+#~ msgid "Failed to create IPC server"
+#~ msgstr "IPC-Server konnte nicht erstellt werden"
 
 #~ msgid "Window Hotkey"
 #~ msgstr "Fenster-Hotkey"
