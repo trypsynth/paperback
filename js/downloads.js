@@ -24,6 +24,10 @@
   const row = (url, label, count) =>
     count === null ? `<li><a href="${url}">${label}</a></li>` : `<li><a href="${url}">${label}</a> <span class="count">${fmtCount(count)}</span></li>`;
 
+  // Signatures are left out because the updater fetches one with every download, which would count each download twice. The legacy duplicates stay in, since old clients really downloaded them.
+  const releaseTotal = release =>
+    (release.assets ?? []).filter(a => !a.name.toLowerCase().endsWith(".minisig")).reduce((sum, a) => sum + a.download_count, 0);
+
   // Each development build replaces the last, so its counts start again from nothing every time and say nothing about it.
   const render = (release, label, subtitle = "", showMac = false, showCounts = true) => {
     const assets = (release.assets ?? []).filter(a => !legacyAssetNames.has(a.name.toLowerCase()));
@@ -35,8 +39,7 @@
     const version = release.tag_name.replace(/^v/, "");
     const archLabel = name => name.toLowerCase().includes("arm64") ? " (ARM64)" : name.toLowerCase().includes("x64") ? " (x64)" : "";
     const count = a => showCounts ? a.download_count : null;
-    // Signatures are left out because the updater fetches one with every download, which would count each download twice. The legacy duplicates stay in, since old clients really downloaded them.
-    const total = (release.assets ?? []).filter(a => !a.name.toLowerCase().endsWith(".minisig")).reduce((sum, a) => sum + a.download_count, 0);
+    const total = releaseTotal(release);
     const archOrder = name => name.toLowerCase().includes("arm64") ? 1 : 0;
     const byArch = list => list.sort((a, b) => archOrder(a.name) - archOrder(b.name));
     const rows = [
@@ -69,11 +72,14 @@
     stableEl.innerHTML = stable ? render(stable, "Stable Version", "Recommended for most users", true) : "No stable release found.";
     devEl.innerHTML = dev ? render(dev, "Development Build", "Includes experimental features, may be unstable", true, false) : "No development builds found.";
     if (previousStable.length > 0) {
-      const blocks = previousStable.map(r => `<div class="release">${render(r, "Stable Version", "", true)}</div>`).join("");
+      // One line per release, linking to its page on GitHub, which lists every file it had.
+      const items = previousStable.map(r => row(r.html_url, `Version ${r.tag_name.replace(/^v/, "")}`, releaseTotal(r)));
       historyEl.innerHTML = `
         <details>
           <summary>Previous stable releases</summary>
-          ${blocks}
+          <ul>
+            ${items.join("\n            ")}
+          </ul>
         </details>
       `;
     } else {
