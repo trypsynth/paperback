@@ -19,7 +19,6 @@ homeport = "0.1.0"
 image = { workspace = true, features = ["png"] }
 live-region = "0.3.3"
 logkeeper = "0.1.0"
-miniz_oxide = "0.9.1"
 native-ocr = { workspace = true }
 paperback-core = { workspace = true, features = ["fetch"] }
 paperback-formats = { workspace = true }

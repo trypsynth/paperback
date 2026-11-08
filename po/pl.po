@@ -41,8 +41,8 @@ msgid "OCR is not available on this system."
 msgstr "OCR nie jest dostępne w tym systemie."
 
 #. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
-msgid "Failed to create IPC server"
-msgstr "Nie udało się utworzyć serwera IPC"
+#~ msgid "Failed to create IPC server"
+#~ msgstr "Nie udało się utworzyć serwera IPC"
 
 #. TRANSLATORS: Title of a warning dialog
 msgid "Warning"
@@ -5236,3 +5236,120 @@ msgstr "Średni czas"
 #: kt
 msgid "Select audio speed"
 msgstr "wybrać szybkość odtwarzania dźwięku"
+
+#. TRANSLATORS: Title of the question asked after the app closed unexpectedly
+#. TRANSLATORS: Title of the dialog for sending a problem report to the developer
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Report a Problem"
+msgstr "Zgłoś problem"
+
+#. TRANSLATORS: Asked at startup after the app crashed or was closed unexpectedly. %s is the app's name.
+msgid "%s closed unexpectedly the last time it ran. Would you like to report the problem?"
+msgstr "Podczas poprzedniego uruchomienia program %s nieoczekiwanie się zamknął. Czy chcesz zgłosić problem?"
+
+#. TRANSLATORS: Check box in the question asked after a crash, which stops the question being asked again
+msgid "&Don't ask again"
+msgstr "Nie pytaj &ponownie"
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog after a crash. %s is the app's name.
+msgid "%s closed unexpectedly the last time it ran. Describe what you were doing when it happened."
+msgstr "Podczas poprzedniego uruchomienia program %s nieoczekiwanie się zamknął. Opisz, w jakich okolicznościach do tego doszło."
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog
+msgid "Describe the problem, and what you were doing when it happened."
+msgstr "Opisz problem i okoliczności jego wystąpienia."
+
+#. TRANSLATORS: Label of the field for describing the problem in the Report a Problem dialog
+msgid "&What happened:"
+msgstr "&Co się stało:"
+
+msgid "&Your email address, if you'd like a reply:"
+msgstr "Twój &adres e-mail, jeśli chcesz otrzymać odpowiedź:"
+
+#. TRANSLATORS: Check box in the Report a Problem dialog that attaches the app's log to the report
+msgid "&Include the log"
+msgstr "&Dołącz dziennik"
+
+#. TRANSLATORS: Explains what a problem report contains, in the Report a Problem dialog. %s is the app's name.
+msgid "The report also includes %s's version and your operating system. Select Preview to see everything that will be sent."
+msgstr "Zgłoszenie zawiera też numer wersji programu %s i informacje o systemie operacyjnym. Wybierz Podgląd, aby zobaczyć całą wysyłaną zawartość."
+
+#. TRANSLATORS: Button in the Report a Problem dialog that shows the report before it is sent
+msgid "&Preview"
+msgstr "&Podgląd"
+
+#. TRANSLATORS: Button in the Report a Problem dialog that sends the report
+msgid "&Send"
+msgstr "&Wyślij"
+
+#. TRANSLATORS: Title of the window that shows a problem report before it is sent
+msgid "Report Preview"
+msgstr "Podgląd zgłoszenia"
+
+#. TRANSLATORS: Shown when Send is pressed in the Report a Problem dialog with the description empty
+msgid "Describe the problem before sending the report."
+msgstr "Opisz problem przed wysłaniem zgłoszenia."
+
+#. TRANSLATORS: Shown when a problem report breaks a limit, such as being too long. %s is the reason, in English.
+msgid "The report can't be sent: %s"
+msgstr "Nie można wysłać zgłoszenia: %s"
+
+#. TRANSLATORS: Message in the progress window shown while a problem report is sent
+msgid "Sending the report..."
+msgstr "Wysyłanie zgłoszenia..."
+
+#. TRANSLATORS: Shown after a problem report was sent
+#. TRANSLATORS: Title of a message saying something worked
+msgid "Thank you. Your report was sent."
+msgstr "Dziękujemy. Zgłoszenie zostało wysłane."
+
+msgid "Success"
+msgstr "Sukces"
+
+msgid "Email can't be delivered to that address. Check it for typing mistakes, or leave it blank."
+msgstr "Nie można dostarczyć wiadomości na ten adres e-mail. Sprawdź, czy nie ma w nim literówek, lub pozostaw pole puste."
+
+#. TRANSLATORS: Shown when the report server has taken as many reports as it will for the day
+msgid "Too many reports have been sent today."
+msgstr "Osiągnięto dzienny limit zgłoszeń."
+
+#. TRANSLATORS: Shown when sending a problem report failed. %s is the reason, in English.
+msgid "The report couldn't be sent: %s"
+msgstr "Nie udało się wysłać zgłoszenia: %s"
+
+#. TRANSLATORS: Asked after a problem report couldn't be sent. %s explains what went wrong.
+msgid ""
+"%s\n"
+"\n"
+"Would you like to save the report to a file, so you can send it another way?"
+msgstr "%s\n\nCzy chcesz zapisać zgłoszenie do pliku, aby wysłać je w inny sposób?"
+
+#. TRANSLATORS: Title of the dialog for saving a problem report to a file
+msgid "Save Report"
+msgstr "Zapisz zgłoszenie"
+
+#. TRANSLATORS: Default file name for a saved problem report
+msgid "Problem report"
+msgstr "Zgłoszenie problemu"
+
+#. TRANSLATORS: File type filter in the dialog for saving a problem report
+msgid "Text files (*.txt)|*.txt"
+msgstr "Pliki tekstowe (*.txt)|*.txt"
+
+#. TRANSLATORS: Shown after a problem report was saved to a file
+msgid "The report was saved."
+msgstr "Zgłoszenie zostało zapisane."
+
+msgid "The report couldn't be saved: %s"
+msgstr "Nie udało się zapisać zgłoszenia: %s"
+
+#. TRANSLATORS: Menu item in the Help menu that opens a dialog for sending a problem report to the developer.
+msgid "&Report a Problem..."
+msgstr "&Zgłoś problem..."
+
+#. TRANSLATORS: Status-bar help text for the Help > Report a Problem menu item.
+msgid "Send a problem report to the developer"
+msgstr "Wyślij zgłoszenie problemu do autora programu"
+
+msgid "No release has a valid semver tag."
+msgstr "Żadne wydanie nie ma znacznika zgodnego ze schematem semver."

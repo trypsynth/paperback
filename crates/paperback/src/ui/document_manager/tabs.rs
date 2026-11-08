@@ -15,6 +15,14 @@ impl DocumentManager {
 		}
 	}
 
+	/// For opening a document with no dialog closing first, where nothing makes the screen reader say which document the unnamed read-only text belongs to; announced like a tab switch, after the focus change.
+	pub fn focus_document_text_announced(&self) {
+		self.focus_document_text();
+		if let Some(tab) = self.active_tab() {
+			announce(self.live_region_label, display_title(tab));
+		}
+	}
+
 	pub fn restore_focus(&self) {
 		if self.last_focus_in_text.get() {
 			if let Some(tab) = self.active_tab() {

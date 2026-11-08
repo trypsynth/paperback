@@ -24,7 +24,7 @@ Paperback działa w systemach Windows 10/11, we wszystkich nowoczesnych wersjach
 * Pozwala dodawać zakładki i notatki, aby zaznaczać miejsca i do nich wracać.
 * Umożliwia zmianę każdego skrótu klawiszowego.
 * Otwiera dokumenty bezpośrednio z odnośników HTTP i HTTPS. Pobiera je ponownie przy ponownym otwarciu lub po naciśnięciu `F5`, zachowując pozycję czytania i zakładki. Przy przywracaniu wcześniej otwartych dokumentów ponownie pobiera z odnośników te dokumenty, które przy ostatnim pobraniu miały nie więcej niż 2 MB.
-* Zawiera `pb`, narzędzie wiersza poleceń, które przekształca dowolny obsługiwany dokument na HTML, Markdown lub zwykły tekst. Przyjmuje wiele dokumentów naraz i samodzielnie rozwija wzorce nazw plików, takie jak `*.pdf`, dzięki czemu to samo polecenie działa także w systemie Windows. Może zapisać w folderze osobny plik dla każdego dokumentu. Opcja `--files-from` pozwala też wczytać listę dokumentów z pliku lub ze standardowego wejścia. Można również przekształcać dokumenty bezpośrednio z odnośników HTTP i HTTPS.
+* Zawiera `pb`, narzędzie wiersza poleceń, które przekształca dowolny obsługiwany dokument na HTML, Markdown lub zwykły tekst. Przyjmuje wiele dokumentów naraz i samodzielnie rozwija wzorce nazw plików, takie jak `*.pdf`, dzięki czemu to samo polecenie działa także w systemie Windows. Może zapisać w folderze osobny plik dla każdego dokumentu, przekształcając kilka dokumentów równolegle (opcja `--jobs` określa ich liczbę). Opcja `--files-from` pozwala też wczytać listę dokumentów z pliku lub ze standardowego wejścia. Można również przekształcać dokumenty bezpośrednio z odnośników HTTP i HTTPS.
 
 ## Zgodność z czytnikami ekranu
 
@@ -68,6 +68,7 @@ Paperback obsługuje następujące formaty i rozszerzenia:
 * Dokumenty RTF (`.rtf`)
 * Dokumenty Windows Write (`.wri`)
 * Pliki WinHelp (`.hlp`)
+* Dokumenty XPS i OpenXPS (`.xps`, `.oxps`)
 * Pliki zwykłego tekstu i dzienników (`.txt`, `.log`)
 
 ## Skróty klawiszowe
