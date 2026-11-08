@@ -1,3 +1,7 @@
+use std::rc::Rc;
+
+use wxdragon::prelude::*;
+
 use super::DocumentManager;
 
 impl DocumentManager {
@@ -7,6 +11,32 @@ impl DocumentManager {
 			if let Some(player) = tab.audio_player.as_mut() {
 				player.stop();
 			}
+		}
+	}
+
+	/// Moves everything playing, recorded or spoken, onto the system's current default output after Windows switched it, such as to or from Bluetooth headphones. Each stream stays on the output it was opened on, and goes silent if that goes away.
+	pub fn follow_default_audio_device(&mut self) {
+		let device = match crate::audio_player::reopen_shared_device() {
+			Ok(device) => device,
+			Err(error) => {
+				tracing::warn!(%error, "audio: couldn't open the new default output device");
+				return;
+			}
+		};
+		for tab in &mut self.tabs {
+			if let Some(player) = tab.audio_player.as_mut() {
+				player.move_to_device(Rc::clone(&device));
+			}
+		}
+		let Some(speaker) = self.speaker.as_mut() else { return };
+		let reading_tab =
+			self.speaker_tab.as_ref().and_then(|path| self.tabs.iter().find(|tab| &tab.file_path == path));
+		let config = self.config.lock().unwrap();
+		let book = reading_tab.map(|tab| (&tab.session, &*config, tab.file_path.to_string_lossy().into_owned()));
+		let moved = speaker
+			.move_to_device(device, book.as_ref().map(|(session, config, path)| (*session, *config, path.as_str())));
+		if let Err(error) = moved {
+			tracing::warn!(%error, "read aloud: couldn't move to the new default output device");
 		}
 	}
 
@@ -57,6 +87,8 @@ impl DocumentManager {
 
 	pub fn pump_audio(&mut self) {
 		self.pump_read_aloud();
+		#[cfg(target_os = "windows")]
+		crate::windows_audio::publish_playback_state(self.frame.get_handle(), self.media_playback_state());
 		// `try_lock` because a modal dialog like Options holds the config lock across `show_modal` while pumping messages, so a blocking lock on this tick would deadlock the UI thread.
 		let sync_enabled = self.config.try_lock().ok().map(|config| config.get_app_bool("sync_caret_to_audio", true));
 		let Some(tab) = self.active_tab_mut() else {

@@ -1,0 +1,208 @@
+//! What Windows tells Paperback about audio: when the default output changes, and the play, pause and skip buttons of headphones and keyboards.
+
+use std::{cell::RefCell, ffi::c_void};
+
+use windows::{
+	Foundation::TypedEventHandler,
+	Media::{
+		MediaPlaybackStatus, MediaPlaybackType, SystemMediaTransportControls, SystemMediaTransportControlsButton,
+		SystemMediaTransportControlsButtonPressedEventArgs,
+	},
+	Win32::{
+		Foundation::{HWND, PROPERTYKEY},
+		Media::Audio::{
+			DEVICE_STATE, EDataFlow, ERole, IMMDeviceEnumerator, IMMNotificationClient, IMMNotificationClient_Impl,
+			MMDeviceEnumerator, eConsole, eRender,
+		},
+		System::{
+			Com::{CLSCTX_ALL, COINIT_MULTITHREADED, CoCreateInstance, CoInitializeEx},
+			WinRT::ISystemMediaTransportControlsInterop,
+		},
+	},
+	core::{HSTRING, PCWSTR, Result as WinResult},
+};
+
+/// A button on headphones or a keyboard, as far as Paperback is concerned.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MediaButton {
+	Play,
+	Pause,
+	Next,
+	Previous,
+}
+
+/// What Windows is told is playing, which decides which program the buttons go to.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PlaybackState {
+	/// Nothing has played, so the buttons are left to whatever else is playing.
+	Idle,
+	Paused,
+	Playing,
+}
+
+#[windows::core::implement(IMMNotificationClient)]
+struct DeviceWatcher;
+
+impl IMMNotificationClient_Impl for DeviceWatcher_Impl {
+	fn OnDeviceStateChanged(&self, _device_id: &PCWSTR, _new_state: DEVICE_STATE) -> WinResult<()> {
+		Ok(())
+	}
+
+	fn OnDeviceAdded(&self, _device_id: &PCWSTR) -> WinResult<()> {
+		Ok(())
+	}
+
+	fn OnDeviceRemoved(&self, _device_id: &PCWSTR) -> WinResult<()> {
+		Ok(())
+	}
+
+	fn OnDefaultDeviceChanged(&self, flow: EDataFlow, role: ERole, _default_device_id: &PCWSTR) -> WinResult<()> {
+		// Windows reports a switch once for each role, and playback follows the console one.
+		if flow == eRender && role == eConsole {
+			// The notification arrives on a COM thread, which mustn't touch the player.
+			wx_utils::post_to_ui(|| {
+				if let Some(window) = crate::ui::main_window_from_ptr() {
+					window.handle_audio_device_changed();
+				}
+			});
+		}
+		Ok(())
+	}
+
+	fn OnPropertyValueChanged(&self, _device_id: &PCWSTR, _key: &PROPERTYKEY) -> WinResult<()> {
+		Ok(())
+	}
+}
+
+/// Starts telling the main window when Windows changes the default output, for as long as the program runs.
+///
+/// The registration and the objects keeping it alive must outlive the thread that made them, so that thread parks instead of returning.
+pub fn watch_default_output() {
+	std::thread::spawn(|| {
+		let registered = unsafe {
+			if CoInitializeEx(None, COINIT_MULTITHREADED).is_err() {
+				return;
+			}
+			let Ok(enumerator) = CoCreateInstance::<_, IMMDeviceEnumerator>(&MMDeviceEnumerator, None, CLSCTX_ALL)
+			else {
+				tracing::warn!("audio: couldn't watch for output device changes");
+				return;
+			};
+			let client: IMMNotificationClient = DeviceWatcher.into();
+			if let Err(error) = enumerator.RegisterEndpointNotificationCallback(&client) {
+				tracing::warn!(%error, "audio: couldn't watch for output device changes");
+				return;
+			}
+			(enumerator, client)
+		};
+		let _alive = registered;
+		loop {
+			std::thread::park();
+		}
+	});
+}
+
+/// The system's media controls for the main window, which is where Windows sends the buttons of Bluetooth headphones.
+struct MediaSession {
+	controls: SystemMediaTransportControls,
+	state: PlaybackState,
+}
+
+thread_local! {
+	static SESSION: RefCell<Option<MediaSession>> = const { RefCell::new(None) };
+}
+
+/// Tells Windows what is playing, so the buttons are sent here while Paperback is the one playing. Cheap to call on every tick, since it only does anything when the state changes. `window` is the main window's handle.
+pub fn publish_playback_state(window: *mut c_void, state: PlaybackState) {
+	SESSION.with_borrow_mut(|session| {
+		if session.is_none() {
+			if state == PlaybackState::Idle || window.is_null() {
+				return;
+			}
+			match create_session(HWND(window)) {
+				Ok(created) => *session = Some(created),
+				Err(error) => {
+					tracing::warn!(%error, "audio: couldn't take the media buttons");
+					return;
+				}
+			}
+		}
+		let Some(session) = session.as_mut() else { return };
+		if session.state == state {
+			return;
+		}
+		let status = match state {
+			PlaybackState::Idle => MediaPlaybackStatus::Closed,
+			PlaybackState::Paused => MediaPlaybackStatus::Paused,
+			PlaybackState::Playing => MediaPlaybackStatus::Playing,
+		};
+		match session.controls.SetPlaybackStatus(status) {
+			Ok(()) => session.state = state,
+			Err(error) => tracing::warn!(%error, "audio: couldn't update the media controls"),
+		}
+	});
+}
+
+fn create_session(window: HWND) -> WinResult<MediaSession> {
+	let interop = windows::core::factory::<SystemMediaTransportControls, ISystemMediaTransportControlsInterop>()?;
+	let controls: SystemMediaTransportControls = unsafe { interop.GetForWindow(window)? };
+	controls.SetIsEnabled(true)?;
+	controls.SetIsPlayEnabled(true)?;
+	controls.SetIsPauseEnabled(true)?;
+	controls.SetIsNextEnabled(true)?;
+	controls.SetIsPreviousEnabled(true)?;
+	let display = controls.DisplayUpdater()?;
+	display.SetType(MediaPlaybackType::Music)?;
+	display.MusicProperties()?.SetTitle(&HSTRING::from("Paperback"))?;
+	display.Update()?;
+	controls.ButtonPressed(&TypedEventHandler::<
+		SystemMediaTransportControls,
+		SystemMediaTransportControlsButtonPressedEventArgs,
+	>::new(|_, args| {
+		let Some(button) = args.as_ref().and_then(|args| args.Button().ok()).and_then(button_for) else {
+			return Ok(());
+		};
+		// Raised on a thread of Windows' own, which mustn't touch the player.
+		wx_utils::post_to_ui(move || {
+			if let Some(window) = crate::ui::main_window_from_ptr() {
+				window.handle_media_button(button);
+			}
+		});
+		Ok(())
+	}))?;
+	Ok(MediaSession { controls, state: PlaybackState::Idle })
+}
+
+fn button_for(button: SystemMediaTransportControlsButton) -> Option<MediaButton> {
+	match button {
+		SystemMediaTransportControlsButton::Play => Some(MediaButton::Play),
+		// Stopping a book is pausing it, so it can be carried on.
+		SystemMediaTransportControlsButton::Pause | SystemMediaTransportControlsButton::Stop => {
+			Some(MediaButton::Pause)
+		}
+		SystemMediaTransportControlsButton::Next | SystemMediaTransportControlsButton::FastForward => {
+			Some(MediaButton::Next)
+		}
+		SystemMediaTransportControlsButton::Previous | SystemMediaTransportControlsButton::Rewind => {
+			Some(MediaButton::Previous)
+		}
+		_ => None,
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn headset_buttons_map_to_what_they_mean_for_a_book() {
+		assert_eq!(button_for(SystemMediaTransportControlsButton::Play), Some(MediaButton::Play));
+		assert_eq!(button_for(SystemMediaTransportControlsButton::Pause), Some(MediaButton::Pause));
+		assert_eq!(button_for(SystemMediaTransportControlsButton::Stop), Some(MediaButton::Pause));
+		assert_eq!(button_for(SystemMediaTransportControlsButton::Next), Some(MediaButton::Next));
+		assert_eq!(button_for(SystemMediaTransportControlsButton::FastForward), Some(MediaButton::Next));
+		assert_eq!(button_for(SystemMediaTransportControlsButton::Previous), Some(MediaButton::Previous));
+		assert_eq!(button_for(SystemMediaTransportControlsButton::Rewind), Some(MediaButton::Previous));
+		assert_eq!(button_for(SystemMediaTransportControlsButton::ChannelUp), None);
+	}
+}
