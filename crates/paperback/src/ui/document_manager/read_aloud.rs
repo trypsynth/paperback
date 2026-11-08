@@ -82,19 +82,31 @@ impl DocumentManager {
 		self.speaker.as_mut().map(|speaker| speaker.change_volume(increase))
 	}
 
-	/// The speech engine's id, which the app's speech settings are kept under, and its voices, for the settings dialog.
+	/// The engine in use, which the app's speech settings are kept under.
 	///
 	/// # Errors
 	///
-	/// Returns a message to announce when read aloud can't run here or the voices can't be listed.
-	pub fn speech_voices(&mut self) -> Result<(String, Vec<Voice>), String> {
-		let speaker = self.speaker()?;
-		let voices = speaker.voices().map_err(|error| {
-			tracing::warn!(%error, "read aloud: couldn't list voices");
-			// TRANSLATORS: Announced when the Speech Settings dialog can't list the installed voices
-			t("The voices couldn't be listed.")
-		})?;
-		Ok((speaker.engine_id().to_owned(), voices))
+	/// Returns a message to announce when read aloud can't run here.
+	pub fn speech_engine(&mut self) -> Result<String, String> {
+		Ok(self.speaker()?.engine_id().to_owned())
+	}
+
+	/// The voices of the engine called `id`, for the settings dialog. Empty if they can't be listed.
+	pub fn speech_voices(&mut self, id: &str) -> Vec<Voice> {
+		let Ok(speaker) = self.speaker() else { return Vec::new() };
+		speaker.voices_for(id).unwrap_or_else(|error| {
+			tracing::warn!(%error, engine = id, "read aloud: couldn't list voices");
+			Vec::new()
+		})
+	}
+
+	/// Switches read aloud to the engine called `id`, stopping any reading.
+	pub fn set_speech_engine(&mut self, id: &str) {
+		if let Ok(speaker) = self.speaker()
+			&& let Err(error) = speaker.set_engine(id)
+		{
+			tracing::warn!(%error, engine = id, "read aloud: couldn't switch engine");
+		}
 	}
 
 	/// Pauses reading if it's playing, and returns whether it was, so it can be resumed after.
@@ -116,12 +128,12 @@ impl DocumentManager {
 	}
 
 	/// Speaks the settings dialog's sample with the voice, rate and pitch it shows.
-	pub fn play_speech_sample(&mut self, voice: Option<String>, rate: i32, pitch: i32) {
+	pub fn play_speech_sample(&mut self, engine: &str, voice: Option<String>, rate: i32, pitch: i32) {
 		let percent = |value: i32| u8::try_from(value.clamp(0, 100)).unwrap_or(50);
 		let Some(speaker) = self.speaker.as_mut() else { return };
 		// TRANSLATORS: Spoken by the Play Sample button in the Speech Settings dialog
 		let text = t("This is a sample of the current voice and speed settings.");
-		if let Err(error) = speaker.play_sample(&text, voice, percent(rate), percent(pitch)) {
+		if let Err(error) = speaker.play_sample(engine, &text, voice, percent(rate), percent(pitch)) {
 			tracing::warn!(%error, "read aloud: couldn't play the sample");
 		}
 	}
@@ -183,7 +195,8 @@ impl DocumentManager {
 
 	fn speaker(&mut self) -> Result<&mut Speaker, String> {
 		if self.speaker.is_none() {
-			let speaker = Speaker::new().map_err(|error| {
+			let engine = self.config.lock().unwrap().get_app_string("tts_engine", "");
+			let speaker = Speaker::new(&engine).map_err(|error| {
 				tracing::warn!(%error, "read aloud isn't available");
 				// TRANSLATORS: Announced when read aloud is asked for on a system Paperback has no speech engine for yet
 				t("Read aloud isn't available on this system yet.")

@@ -3,6 +3,8 @@
 #[cfg(windows)]
 pub mod onecore;
 #[cfg(windows)]
+pub mod sapi5;
+#[cfg(windows)]
 mod wav;
 
 use std::{num::NonZero, rc::Rc, sync::Arc};
@@ -55,13 +57,14 @@ pub struct Speaker {
 }
 
 impl Speaker {
+	/// A speaker using the engine called `engine_id`, or the system's first if there's none by that name.
+	///
 	/// # Errors
 	///
 	/// Returns why read aloud can't run here, such as no speech engine on this system yet.
-	pub fn new() -> Result<Self> {
+	pub fn new(engine_id: &str) -> Result<Self> {
 		let device = audio_player::shared_device()?;
-		let engine: Arc<dyn SpeechEngine> =
-			Arc::new(Resampled { engine: engine()?, rate: device.config().sample_rate().get() });
+		let engine = resampled(engine_id, &device)?;
 		Ok(Self {
 			read_aloud: ReadAloud::new(Arc::clone(&engine)),
 			engine,
@@ -113,20 +116,23 @@ impl Speaker {
 		}
 	}
 
-	/// Speaks `text` with this voice, rate and pitch, replacing any sample still playing.
+	/// Speaks `text` with the engine called `engine_id` and this voice, rate and pitch, replacing any sample still playing. The engine reading uses stays as it is.
 	///
 	/// # Errors
 	///
 	/// Returns why the engine couldn't speak it.
 	pub fn play_sample(
 		&mut self,
+		engine_id: &str,
 		text: &str,
 		voice: Option<String>,
 		rate_percent: u8,
 		pitch_percent: u8,
 	) -> Result<()> {
 		let request = SpeechRequest { text: text.to_owned(), voice, rate_percent, pitch_percent };
-		let mut synthesis = self.engine.synthesize(&request)?;
+		let engine =
+			if engine_id == self.engine.id() { Arc::clone(&self.engine) } else { resampled(engine_id, &self.device)? };
+		let mut synthesis = engine.synthesize(&request)?;
 		let rate = NonZero::new(synthesis.sample_rate()).unwrap_or(NonZero::<u32>::MIN);
 		let mut samples = Vec::new();
 		while let Some(chunk) = synthesis.next_chunk() {
@@ -216,11 +222,29 @@ impl Speaker {
 		self.engine.id()
 	}
 
+	/// Switches to the engine called `id`, stopping any reading.
+	///
+	/// # Errors
+	///
+	/// Returns why that engine couldn't be started.
+	pub fn set_engine(&mut self, id: &str) -> Result<()> {
+		if self.engine.id() == id {
+			return Ok(());
+		}
+		let engine = resampled(id, &self.device)?;
+		self.stop();
+		self.read_aloud = ReadAloud::new(Arc::clone(&engine));
+		self.engine = engine;
+		Ok(())
+	}
+
+	/// The voices of the engine called `id`, which needn't be the one in use.
+	///
 	/// # Errors
 	///
 	/// Returns why the engine couldn't list its voices.
-	pub fn voices(&self) -> Result<Vec<paperback_core::speech::Voice>> {
-		self.engine.voices()
+	pub fn voices_for(&self, id: &str) -> Result<Vec<Voice>> {
+		if id == self.engine.id() { self.engine.voices() } else { engine(id)?.voices() }
 	}
 
 	/// The key the app's rate is kept under, one per engine, since each engine's range differs.
@@ -255,15 +279,29 @@ impl Speaker {
 	}
 }
 
+/// The speech engines this system has, as `(id, name)`, the first being the default.
+#[must_use]
+pub const fn engines() -> &'static [(&'static str, &'static str)] {
+	#[cfg(windows)]
+	return &[("onecore", "OneCore"), ("sapi5", "SAPI 5")];
+	#[cfg(not(windows))]
+	return &[];
+}
+
+/// The engine called `id`, or the system's first if there's none by that name.
 #[cfg(windows)]
 #[allow(clippy::unnecessary_wraps, reason = "other systems have no engine yet, so callers handle failure")]
-fn engine() -> Result<Arc<dyn SpeechEngine>> {
-	Ok(Arc::new(onecore::OneCore))
+fn engine(id: &str) -> Result<Arc<dyn SpeechEngine>> {
+	Ok(if id == "sapi5" { Arc::new(sapi5::Sapi5) } else { Arc::new(onecore::OneCore) })
 }
 
 #[cfg(not(windows))]
-fn engine() -> Result<Arc<dyn SpeechEngine>> {
+fn engine(_id: &str) -> Result<Arc<dyn SpeechEngine>> {
 	anyhow::bail!("there's no speech engine for this system yet")
+}
+
+fn resampled(id: &str, device: &MixerDeviceSink) -> Result<Arc<dyn SpeechEngine>> {
+	Ok(Arc::new(Resampled { engine: engine(id)?, rate: device.config().sample_rate().get() }))
 }
 
 /// rodio would bring an engine's rate, often 16 or 24 kHz, up to the device's by straight-line interpolation, which gives speech a harsh edge, so each paragraph is resampled properly here, on read aloud's worker thread, to the device's own rate.
