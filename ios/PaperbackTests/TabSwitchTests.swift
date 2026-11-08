@@ -89,4 +89,31 @@ final class TabSwitchTests: XCTestCase {
 		for tab in relaunched.tabs where paths.contains(tab.url.path(percentEncoded: false)) { relaunched.closeTab(tab) }
 		relaunched.configManager.flush()
 	}
+
+	/// A book downloaded into the app's own folder is found by its bookmark at a new path after an update moves the app's container (#1269).
+	func testClosingABookRestoredFromAMovedPathKeepsItClosed() async throws {
+		let book = try book("downloaded.txt", "Delta paragraph.")
+		let newPath = book.path(percentEncoded: false)
+		let oldPath = dir.deletingLastPathComponent().appending(path: "old-container/downloaded.txt").path(percentEncoded: false)
+		UserDefaults.standard.set(try book.bookmarkData(options: .minimalBookmark), forKey: "pb_bm_\(oldPath)")
+		let config = AppViewModel().configManager
+		config.addOpenedDocument(path: oldPath)
+		config.addRecentDocument(path: oldPath)
+		config.setDocumentPosition(path: oldPath, position: 3)
+		config.flush()
+		let relaunched = AppViewModel()
+		await relaunched.restoreTask?.value
+		let tab = try XCTUnwrap(relaunched.tabs.first { $0.url.path(percentEncoded: false) == newPath })
+		XCTAssertEqual(tab.currentPosition, 3, "the place in the book moves with it")
+		relaunched.closeTab(tab)
+		relaunched.configManager.flush()
+		let opened = AppViewModel().configManager.getOpenedDocuments()
+		XCTAssertFalse(opened.contains(oldPath) || opened.contains(newPath), "still opened at launch: \(opened)")
+		XCTAssertTrue(relaunched.configManager.getRecentDocuments().contains(newPath))
+		relaunched.configManager.removeDocumentHistory(path: newPath)
+		relaunched.configManager.removeDocumentHistory(path: oldPath)
+		relaunched.configManager.flush()
+		UserDefaults.standard.removeObject(forKey: "pb_bm_\(oldPath)")
+		UserDefaults.standard.removeObject(forKey: "pb_bm_\(newPath)")
+	}
 }

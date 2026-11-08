@@ -209,7 +209,7 @@ final class AppViewModel {
 
 	/// Parsed off the main thread, since a few large books opened here held up launch until iOS could kill the app.
 	private func restoreDocuments() {
-		let activePath = configManager.getAppString(key: "active_document", defaultValue: "")
+		var activePath = configManager.getAppString(key: "active_document", defaultValue: "")
 		let requests: [RestoreRequest] = configManager.getOpenedDocuments().compactMap { path in
 			guard let url = resolvedURL(forPath: path) else { return nil }
 			let password = configManager.getDocumentPassword(path: url.path(percentEncoded: false))
@@ -225,11 +225,16 @@ final class AppViewModel {
 			let openedMeanwhile = !tabs.isEmpty
 			var restored: [UUID] = []
 			for (request, result) in zip(requests, results) {
+				let path = request.url.path(percentEncoded: false)
+				if path != request.path {
+					movePathSettings(from: request.path, to: path)
+					if activePath == request.path { activePath = path }
+				}
 				switch result {
 				case .success(let session) where !tabs.contains(where: { $0.url == request.url }):
 					restored.append(addTab(url: request.url, session: session, scopeStarted: request.scopeStarted))
 					// Refreshed in case it went stale.
-					saveBookmark(for: request.url, path: request.path)
+					saveBookmark(for: request.url, path: path)
 				case .success:
 					if request.scopeStarted { request.url.stopAccessingSecurityScopedResource() }
 				case .failure(let error):
@@ -389,6 +394,14 @@ final class AppViewModel {
 			}
 		}
 		return FileManager.default.fileExists(atPath: path) ? URL(fileURLWithPath: path) : nil
+	}
+
+	/// A file in the app's own folder, such as one downloaded from a link, is found by its bookmark at a new path once an update moves the app's container, so what was kept under the old path moves to the new one. Otherwise closing it wouldn't clear it from the documents restored at launch.
+	private func movePathSettings(from oldPath: String, to newPath: String) {
+		configManager.renameDocumentPath(oldPath: oldPath, newPath: newPath)
+		let defaults = UserDefaults.standard
+		if let bookmark = defaults.data(forKey: bookmarkKey(oldPath)) { defaults.set(bookmark, forKey: bookmarkKey(newPath)) }
+		defaults.removeObject(forKey: bookmarkKey(oldPath))
 	}
 
 	private func saveBookmark(for url: URL, path: String) {
