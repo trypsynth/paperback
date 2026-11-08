@@ -33,6 +33,7 @@ impl MainWindow {
 			IpcCommand::Activate => {
 				self.activate_from_ipc();
 			}
+			#[cfg(target_os = "windows")]
 			IpcCommand::ToggleVisibility => {
 				self.toggle_visibility();
 			}
@@ -45,6 +46,7 @@ impl MainWindow {
 		}
 	}
 
+	#[cfg(target_os = "windows")]
 	fn toggle_visibility(&self) {
 		let is_shown = self.frame.is_shown();
 		if is_shown && self.is_window_active() {
@@ -115,25 +117,19 @@ impl MainWindow {
 		}
 	}
 
+	#[cfg(target_os = "windows")]
 	fn is_window_active(&self) -> bool {
-		#[cfg(target_os = "windows")]
-		{
-			use windows::Win32::{
-				Foundation::HWND,
-				UI::WindowsAndMessaging::{GetForegroundWindow, GetLastActivePopup},
-			};
-			let handle = self.frame.get_handle();
-			if handle.is_null() {
-				return self.frame.has_focus();
-			}
-			let frame_hwnd = HWND(handle);
-			let foreground = unsafe { GetForegroundWindow() };
-			let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
-			foreground == frame_hwnd || foreground == active_popup
+		use windows::Win32::{
+			Foundation::HWND,
+			UI::WindowsAndMessaging::{GetForegroundWindow, GetLastActivePopup},
+		};
+		let handle = self.frame.get_handle();
+		if handle.is_null() {
+			return self.frame.has_focus();
 		}
-		#[cfg(not(target_os = "windows"))]
-		{
-			self.frame.has_focus()
-		}
+		let frame_hwnd = HWND(handle);
+		let foreground = unsafe { GetForegroundWindow() };
+		let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
+		foreground == frame_hwnd || foreground == active_popup
 	}
 }

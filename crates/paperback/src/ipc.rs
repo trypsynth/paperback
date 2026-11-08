@@ -13,6 +13,8 @@ pub const APP_NAME: &str = "paperback";
 #[derive(Debug, Clone)]
 pub enum IpcCommand {
 	Activate,
+	/// From the global hotkey, which only Windows has.
+	#[cfg(target_os = "windows")]
 	ToggleVisibility,
 	Open(Target),
 }
