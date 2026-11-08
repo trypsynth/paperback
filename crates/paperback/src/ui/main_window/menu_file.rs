@@ -50,7 +50,7 @@ pub(super) fn handle_fallback(
 				{
 					let dm_ref = dm.lock().unwrap();
 					update_title_from_manager(frame, &dm_ref);
-					dm_ref.focus_document_text();
+					dm_ref.focus_document_text_announced();
 				}
 				let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 				frame.set_menu_bar(menu_bar);
