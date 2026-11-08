@@ -1130,6 +1130,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "doorbell"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "022ffd4ee672eb58f1fc45106ca06b2c0b24a711d616736a8d5a6d5ee8b78db7"
+dependencies = [
+ "windows",
+]
+
+[[package]]
 name = "dtoa"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3005,6 +3014,7 @@ dependencies = [
  "base64 0.23.1",
  "bitflags 2.13.2",
  "block",
+ "doorbell",
  "dunce",
  "homeport",
  "image",

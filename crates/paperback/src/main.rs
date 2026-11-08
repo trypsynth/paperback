@@ -32,10 +32,24 @@ use ui::PaperbackApp;
 use wxdragon::prelude::{Appearance, set_appearance};
 
 fn main() {
+	// Before logging or wxWidgets start, so a second copy hands over its files and exits without touching the running copy's log.
+	#[cfg(any(target_os = "linux", target_os = "windows"))]
+	let door = match doorbell::ring(ipc::APP_NAME, &ipc::message_from_args(env::args().skip(1))) {
+		Ok(doorbell::Ring::Delivered) => return,
+		Ok(doorbell::Ring::First(door)) => Ok(door),
+		Err(e) => Err(e),
+	};
 	let _log_guard = Logkeeper::new(config_ext::config_dir(), "paperback")
 		.with_crates(["paperback", "paperback_core"])
 		.init(config_ext::log_level_from_disk());
 	tracing::info!(version = env!("CARGO_PKG_VERSION"), commit = version::COMMIT_HASH, "starting");
+	#[cfg(any(target_os = "linux", target_os = "windows"))]
+	match door {
+		Ok(door) => ui::keep_door(door),
+		Err(e) => {
+			tracing::warn!(error = %e, "couldn't check for a running copy, so files opened from now on start another");
+		}
+	}
 	problem_report::begin_session();
 	cleanup_legacy_files();
 	// Under `cargo run` macOS treats the unbundled binary as a Terminal background process with no menu bar; must run before wx initializes.

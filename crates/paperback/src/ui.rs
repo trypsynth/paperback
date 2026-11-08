@@ -30,6 +30,8 @@ mod text_render;
 mod tray;
 mod window_geometry;
 
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+pub use app::keep_door;
 pub use app::{PaperbackApp, quit_for_update};
 #[cfg(target_os = "linux")]
 pub use dialogs::{AssociationChoice, ChoiceAction, show_linux_setup_dialog};
