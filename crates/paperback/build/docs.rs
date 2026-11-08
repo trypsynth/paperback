@@ -1,6 +1,6 @@
 use std::{env, fmt::Write as _, fs, path::PathBuf};
 
-use shipfitter::docs::{Page, bcp47, convert_deflated, readmes};
+use shipfitter::docs::{Page, bcp47, convert, readmes};
 
 use crate::paths;
 
@@ -16,8 +16,9 @@ pub fn build() {
 		// So a screen reader reads a translated manual in that language's voice.
 		let lang = bcp47(&readme.code);
 		let page = Page { lang: &lang, title: "Paperback Documentation", ..Page::default() };
-		let html = format!("{}.deflate", readme.html_name());
-		convert_deflated(&readme.path, &out_dir.join(&html), &page).unwrap_or_else(|e| panic!("{e}"));
+		// Stored as it is, since the installer and the portable archive compress the whole binary, and do it better than one page at a time.
+		let html = readme.html_name();
+		convert(&readme.path, &out_dir.join(&html), &page).unwrap_or_else(|e| panic!("{e}"));
 		let _ = writeln!(
 			code,
 			"        {:?} => Some(include_bytes!(concat!(env!(\"OUT_DIR\"), {:?}))),",

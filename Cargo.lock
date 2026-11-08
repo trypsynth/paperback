@@ -3063,7 +3063,6 @@ dependencies = [
  "live-region",
  "logkeeper",
  "mailbag-wx",
- "miniz_oxide 0.9.1",
  "native-ocr",
  "objc",
  "paperback-core",
@@ -3192,12 +3191,11 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "patois"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a7b55abfc2fe4d2670c25cd9b6dc5186949c0d042c4e25c21f7e6666e452df2"
+checksum = "8625dac2eb0669ca129bff0416176e5fe2b47bea5f69dae0f2feb69d8a5b662b"
 dependencies = [
  "inventory",
- "miniz_oxide 0.9.1",
  "patois-macros",
  "sys-locale",
  "wxdragon",
@@ -3205,20 +3203,19 @@ dependencies = [
 
 [[package]]
 name = "patois-build"
-version = "0.1.18"
+version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef4cd306ecd26c771cd5b83cc459ee1e29f916b1359fa0e26693030253e7ea91"
+checksum = "08afd662958a14ddd86ba210e6a00ec4e5649c2a365a6b0abaaf6b87d2465345"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
 name = "patois-macros"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03fa50d507131487ed3864428a0b5f5b8724443c9b32a8502e6e4bbb49249b07"
+checksum = "0c88baf686c234352cc8a401551793c37b25d6cf0227f1223d7f3212ecb8e520"
 dependencies = [
- "miniz_oxide 0.9.1",
  "proc-macro2 1.0.107",
  "quote 1.0.47",
 ]
