@@ -149,6 +149,35 @@ impl Speaker {
 		self.sample = None;
 	}
 
+	#[cfg(target_os = "windows")]
+	/// Carries on speaking on `device` after the system's output changed, from the start of the paragraph being read, and still paused if it was. `book` is the open document being read, which is needed to carry on.
+	///
+	/// # Errors
+	///
+	/// Returns why the engine couldn't be set up for the new device, in which case nothing has changed.
+	pub fn move_to_device(
+		&mut self,
+		device: Rc<MixerDeviceSink>,
+		book: Option<(&DocumentSession, &ConfigManager, &str)>,
+	) -> Result<()> {
+		// Resampled to the device's own rate, which a different output can differ in.
+		let engine = resampled(self.engine.id(), &device)?;
+		let resume = if self.is_reading() {
+			self.read_aloud.progress().paragraph.map(|paragraph| (paragraph, self.paused))
+		} else {
+			None
+		};
+		self.stop();
+		self.sample = None;
+		self.device = device;
+		self.read_aloud = ReadAloud::new(Arc::clone(&engine));
+		self.engine = engine;
+		if let (Some((paragraph, paused)), Some((session, config, path))) = (resume, book) {
+			self.start_paused_or_not(session, paragraph, config, path, paused);
+		}
+		Ok(())
+	}
+
 	/// Moves to the paragraph before or after the one playing. Returns `false` at either end of the document.
 	pub fn skip(&mut self, session: &DocumentSession, forward: bool, config: &ConfigManager, path: &str) -> bool {
 		let Some(target) = self.read_aloud.neighbour(session, forward) else { return false };

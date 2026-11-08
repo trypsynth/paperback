@@ -97,6 +97,23 @@ impl AudioPlayer {
 		&self.timeline
 	}
 
+	#[cfg(target_os = "windows")]
+	/// Carries on from the same place on `device`, because a sink stays on the output it was opened on when Windows changes the default, and goes silent when that output goes away.
+	pub fn move_to_device(&mut self, device: Rc<MixerDeviceSink>) {
+		let position = self.resume_point_ms();
+		self.device = device;
+		// The old player feeds the old sink.
+		self.player = None;
+		self.current_source = None;
+		self.current_length_ms = None;
+		self.position_base_ms = 0;
+		self.last_seek_target = None;
+		if let Some(position) = position {
+			// Paused, this only remembers the place for when playing resumes.
+			self.seek_to_ms(position);
+		}
+	}
+
 	pub fn stop(&mut self) {
 		self.playing = false;
 		self.player = None;
@@ -363,12 +380,21 @@ pub(crate) fn shared_device() -> Result<Rc<MixerDeviceSink>> {
 		if let Some(device) = slot.upgrade() {
 			return Ok(device);
 		}
-		let device =
-			DeviceSinkBuilder::open_default_sink().context("failed to open the default audio output device")?;
-		let device = Rc::new(device);
-		*slot = Rc::downgrade(&device);
-		Ok(device)
+		open_shared_device(slot)
 	})
+}
+
+#[cfg(target_os = "windows")]
+/// Opens the system's current default output even though one is already open, for everything playing to move onto with `move_to_device`. Whatever is opened afterwards shares it.
+pub(crate) fn reopen_shared_device() -> Result<Rc<MixerDeviceSink>> {
+	AUDIO_DEVICE.with_borrow_mut(open_shared_device)
+}
+
+fn open_shared_device(slot: &mut Weak<MixerDeviceSink>) -> Result<Rc<MixerDeviceSink>> {
+	let device = DeviceSinkBuilder::open_default_sink().context("failed to open the default audio output device")?;
+	let device = Rc::new(device);
+	*slot = Rc::downgrade(&device);
+	Ok(device)
 }
 
 fn open_decoder(path: &Path) -> Result<FileDecoder> {
@@ -577,6 +603,65 @@ mod tests {
 			wait_for(&mut player, 3000, |player| player.elapsed_ms().is_some_and(|ms| ms >= after + 500)),
 			"position keeps advancing after the speed change"
 		);
+	}
+
+	#[cfg(target_os = "windows")]
+	/// What happens when the user switches from Bluetooth headphones to the speakers and back (#1266): playback has to carry on from the same place on the new output.
+	#[test]
+	fn moving_to_a_reopened_device_keeps_playing_from_the_same_place() {
+		if !has_audio_device() {
+			eprintln!("no audio output device: skipping");
+			return;
+		}
+		let dir = env::temp_dir().join("paperback-audio-device-test");
+		fs::create_dir_all(&dir).unwrap();
+		let path = dir.join("long.wav");
+		write_wav(&path, 8000);
+		let mut builder = AudioTimelineBuilder::new();
+		let source = builder.add_source(AudioLocation::File(path.to_string_lossy().to_string()), Some(8000));
+		builder.add_clip(source, 0, 8000, DocPos::from_raw(0), DocPos::from_raw(1));
+		let mut player = AudioPlayer::new(builder.build()).unwrap();
+		player.play();
+		assert!(
+			wait_for(&mut player, 2000, |player| player.elapsed_ms().is_some_and(|ms| ms >= 500)),
+			"position advances before the switch"
+		);
+		let before = player.elapsed_ms().unwrap();
+		let fresh = reopen_shared_device().unwrap();
+		player.move_to_device(Rc::clone(&fresh));
+		assert!(Rc::ptr_eq(&fresh, &shared_device().unwrap()), "later players share the reopened device");
+		assert!(player.is_playing(), "a device switch doesn't pause");
+		let after = player.elapsed_ms().unwrap();
+		assert!(after.abs_diff(before) < 300, "playback resumes where it was, went from {before}ms to {after}ms");
+		assert!(
+			wait_for(&mut player, 3000, |player| player.elapsed_ms().is_some_and(|ms| ms >= after + 500)),
+			"position keeps advancing on the new device"
+		);
+	}
+
+	#[cfg(target_os = "windows")]
+	#[test]
+	fn moving_a_paused_player_to_a_reopened_device_keeps_it_paused_at_the_same_place() {
+		if !has_audio_device() {
+			eprintln!("no audio output device: skipping");
+			return;
+		}
+		let dir = env::temp_dir().join("paperback-audio-device-paused-test");
+		fs::create_dir_all(&dir).unwrap();
+		let path = dir.join("long.wav");
+		write_wav(&path, 8000);
+		let mut builder = AudioTimelineBuilder::new();
+		let source = builder.add_source(AudioLocation::File(path.to_string_lossy().to_string()), Some(8000));
+		builder.add_clip(source, 0, 8000, DocPos::from_raw(0), DocPos::from_raw(1));
+		let mut player = AudioPlayer::new(builder.build()).unwrap();
+		player.play();
+		assert!(wait_for(&mut player, 2000, |player| player.elapsed_ms().is_some_and(|ms| ms >= 500)));
+		player.pause();
+		let before = player.resume_point_ms().unwrap();
+		player.move_to_device(reopen_shared_device().unwrap());
+		assert!(!player.is_playing(), "a device switch doesn't start paused audio");
+		let held = player.resume_point_ms().unwrap();
+		assert!(held.abs_diff(before) < 300, "the place is kept, went from {before}ms to {held}ms");
 	}
 
 	#[test]
