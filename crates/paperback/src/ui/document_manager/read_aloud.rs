@@ -1,4 +1,4 @@
-use paperback_core::config::DocumentSpeech;
+use paperback_core::{config::DocumentSpeech, speech::Voice};
 use patois::t;
 
 use super::DocumentManager;
@@ -73,6 +73,65 @@ impl DocumentManager {
 	pub fn change_read_aloud_volume(&mut self, increase: bool) -> Option<(f32, bool)> {
 		self.reading_tab_index()?;
 		self.speaker.as_mut().map(|speaker| speaker.change_volume(increase))
+	}
+
+	/// The speech engine's id, which the app's speech settings are kept under, and its voices, for the settings dialog.
+	///
+	/// # Errors
+	///
+	/// Returns a message to announce when read aloud can't run here or the voices can't be listed.
+	pub fn speech_voices(&mut self) -> Result<(String, Vec<Voice>), String> {
+		let speaker = self.speaker()?;
+		let voices = speaker.voices().map_err(|error| {
+			tracing::warn!(%error, "read aloud: couldn't list voices");
+			// TRANSLATORS: Announced when the Speech Settings dialog can't list the installed voices
+			t("The voices couldn't be listed.")
+		})?;
+		Ok((speaker.engine_id().to_owned(), voices))
+	}
+
+	/// Pauses reading if it's playing, and returns whether it was, so it can be resumed after.
+	pub fn pause_read_aloud(&mut self) -> bool {
+		if self.reading_tab_index().is_none() {
+			return false;
+		}
+		let Some(speaker) = self.speaker.as_mut().filter(|speaker| !speaker.is_paused()) else { return false };
+		speaker.pause();
+		true
+	}
+
+	pub fn resume_read_aloud(&mut self) {
+		if self.reading_tab_index().is_some()
+			&& let Some(speaker) = self.speaker.as_mut()
+		{
+			speaker.resume();
+		}
+	}
+
+	/// Speaks the settings dialog's sample with the voice, rate and pitch it shows.
+	pub fn play_speech_sample(&mut self, voice: Option<String>, rate: i32, pitch: i32) {
+		let percent = |value: i32| u8::try_from(value.clamp(0, 100)).unwrap_or(50);
+		let Some(speaker) = self.speaker.as_mut() else { return };
+		// TRANSLATORS: Spoken by the Play Sample button in the Speech Settings dialog
+		let text = t("This is a sample of the current voice and speed settings.");
+		if let Err(error) = speaker.play_sample(&text, voice, percent(rate), percent(pitch)) {
+			tracing::warn!(%error, "read aloud: couldn't play the sample");
+		}
+	}
+
+	pub fn stop_speech_sample(&mut self) {
+		if let Some(speaker) = self.speaker.as_mut() {
+			speaker.stop_sample();
+		}
+	}
+
+	/// Starts the paragraph being read again, so changed settings are heard from there. Paused reading stays paused.
+	pub fn restart_read_aloud(&mut self) {
+		let Some(index) = self.reading_tab_index() else { return };
+		let tab = &self.tabs[index];
+		if let Some(speaker) = self.speaker.as_mut() {
+			speaker.restart(&tab.session, &self.config.lock().unwrap(), &tab.file_path.to_string_lossy());
+		}
 	}
 
 	/// Moves the caret to each paragraph as it starts. Called on the audio tick.

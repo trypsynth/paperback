@@ -57,6 +57,8 @@ mod shortcuts;
 pub use shortcuts::{Keymap, prompt_for_shortcuts};
 mod sleep_timer;
 pub use sleep_timer::show_sleep_timer_dialog;
+mod speech_settings;
+pub use speech_settings::{SpeechValues, show_speech_settings_dialog};
 mod toc;
 pub use toc::show_toc_dialog;
 mod view_note;

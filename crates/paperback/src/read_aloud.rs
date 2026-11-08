@@ -37,6 +37,8 @@ pub struct Speaker {
 	device: Rc<MixerDeviceSink>,
 	/// A new one for each start, since clearing a player blocks the UI thread.
 	player: Option<Player>,
+	/// The settings dialog's sample, apart from reading so it never disturbs where reading is.
+	sample: Option<Player>,
 	paused: bool,
 	volume: f32,
 	/// The paragraph the caret was last moved to, so it only moves when a new one starts.
@@ -56,6 +58,7 @@ impl Speaker {
 			engine,
 			device,
 			player: None,
+			sample: None,
 			paused: false,
 			volume: 1.0,
 			followed: None,
@@ -64,22 +67,67 @@ impl Speaker {
 
 	/// Starts reading at the paragraph holding `position`, with the book's voice and rate, or the app's.
 	pub fn start(&mut self, session: &DocumentSession, position: DocPos, config: &ConfigManager, path: &str) {
+		self.start_paused_or_not(session, position, config, path, false);
+	}
+
+	fn start_paused_or_not(
+		&mut self,
+		session: &DocumentSession,
+		position: DocPos,
+		config: &ConfigManager,
+		path: &str,
+		paused: bool,
+	) {
 		let settings = self.settings(config, path);
 		let feed = self.read_aloud.start(session, position, settings);
 		let player = Player::connect_new(self.device.mixer());
 		player.set_volume(self.volume);
 		player.append(FeedSource(feed));
-		player.play();
+		if paused {
+			player.pause();
+		} else {
+			player.play();
+		}
 		self.player = Some(player);
-		self.paused = false;
+		self.paused = paused;
 		self.followed = None;
 	}
 
-	/// Starts the paragraph playing again, so a changed rate or voice is heard straight away.
+	/// Starts the paragraph being read again, so a changed rate or voice is heard from there. Paused reading stays paused.
 	pub fn restart(&mut self, session: &DocumentSession, config: &ConfigManager, path: &str) {
 		if let Some(paragraph) = self.read_aloud.progress().paragraph {
-			self.start(session, paragraph, config, path);
+			self.start_paused_or_not(session, paragraph, config, path, self.paused);
 		}
+	}
+
+	/// Speaks `text` with this voice, rate and pitch, replacing any sample still playing.
+	///
+	/// # Errors
+	///
+	/// Returns why the engine couldn't speak it.
+	pub fn play_sample(
+		&mut self,
+		text: &str,
+		voice: Option<String>,
+		rate_percent: u8,
+		pitch_percent: u8,
+	) -> Result<()> {
+		let request = SpeechRequest { text: text.to_owned(), voice, rate_percent, pitch_percent };
+		let mut synthesis = self.engine.synthesize(&request)?;
+		let rate = NonZero::new(synthesis.sample_rate()).unwrap_or(NonZero::<u32>::MIN);
+		let mut samples = Vec::new();
+		while let Some(chunk) = synthesis.next_chunk() {
+			samples.extend(chunk?.samples.iter().map(|&sample| f32::from(sample) / 32_768.0));
+		}
+		let player = Player::connect_new(self.device.mixer());
+		player.set_volume(self.volume);
+		player.append(rodio::buffer::SamplesBuffer::new(NonZero::<u16>::MIN, rate, samples));
+		self.sample = Some(player);
+		Ok(())
+	}
+
+	pub fn stop_sample(&mut self) {
+		self.sample = None;
 	}
 
 	/// Moves to the paragraph before or after the one playing. Returns `false` at either end of the document.
@@ -149,6 +197,18 @@ impl Speaker {
 			player.set_volume(self.volume);
 		}
 		(self.volume, (self.volume - before).abs() < f32::EPSILON)
+	}
+
+	#[must_use]
+	pub fn engine_id(&self) -> &str {
+		self.engine.id()
+	}
+
+	/// # Errors
+	///
+	/// Returns why the engine couldn't list its voices.
+	pub fn voices(&self) -> Result<Vec<paperback_core::speech::Voice>> {
+		self.engine.voices()
 	}
 
 	/// The key the app's rate is kept under, one per engine, since each engine's range differs.
