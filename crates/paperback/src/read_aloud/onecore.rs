@@ -11,7 +11,7 @@ use windows::{
 	core::{HSTRING, Interface},
 };
 
-use super::wav;
+use super::{WholeSynthesis, wav};
 
 /// Ticks of a `TimeSpan`, which counts in 100 nanoseconds.
 const TICKS_PER_SECOND: i64 = 10_000_000;
@@ -74,23 +74,7 @@ impl SpeechEngine for OneCore {
 			}
 		}
 		words.sort_by_key(|word| word.sample);
-		Ok(Box::new(Synthesized { sample_rate, chunk: Some(AudioChunk { samples, words }) }))
-	}
-}
-
-/// `OneCore` gives the whole paragraph at once, so it's handed over as one chunk.
-struct Synthesized {
-	sample_rate: u32,
-	chunk: Option<AudioChunk>,
-}
-
-impl Synthesis for Synthesized {
-	fn sample_rate(&self) -> u32 {
-		self.sample_rate
-	}
-
-	fn next_chunk(&mut self) -> Option<Result<AudioChunk>> {
-		self.chunk.take().map(Ok)
+		Ok(Box::new(WholeSynthesis::new(sample_rate, AudioChunk { samples, words })))
 	}
 }
 

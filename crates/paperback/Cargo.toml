@@ -34,6 +34,7 @@ tracing = { workspace = true }
 wx-utils = { version = "0.5.1", features = ["global-hotkeys", "shortcuts"] }
 wxdragon = { version = "0.9.24", default-features = false, features = ["webview"] }
 zip = { workspace = true }
+rubato = "5.0.1"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 block = "0.1.6"

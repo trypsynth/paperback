@@ -12,9 +12,13 @@ use paperback_core::{
 	config::ConfigManager,
 	document::DocPos,
 	session::DocumentSession,
-	speech::{AudioFeed, FeedSample, ReadAloud, ReadAloudSettings, SpeechEngine, choose_voice},
+	speech::{
+		AudioChunk, AudioFeed, FeedSample, ReadAloud, ReadAloudSettings, SpeechEngine, SpeechRequest, Synthesis, Voice,
+		WordBoundary, choose_voice,
+	},
 };
 use rodio::{ChannelCount, MixerDeviceSink, Player, SampleRate, Source};
+use rubato::{Fft, FixedSync, Resampler, audioadapter_buffers::direct::InterleavedSlice};
 
 use crate::audio_player;
 
@@ -44,11 +48,13 @@ impl Speaker {
 	///
 	/// Returns why read aloud can't run here, such as no speech engine on this system yet.
 	pub fn new() -> Result<Self> {
-		let engine = engine()?;
+		let device = audio_player::shared_device()?;
+		let engine: Arc<dyn SpeechEngine> =
+			Arc::new(Resampled { engine: engine()?, rate: device.config().sample_rate().get() });
 		Ok(Self {
 			read_aloud: ReadAloud::new(Arc::clone(&engine)),
 			engine,
-			device: audio_player::shared_device()?,
+			device,
 			player: None,
 			paused: false,
 			volume: 1.0,
@@ -188,6 +194,83 @@ fn engine() -> Result<Arc<dyn SpeechEngine>> {
 	anyhow::bail!("there's no speech engine for this system yet")
 }
 
+/// rodio would bring an engine's rate, often 16 or 24 kHz, up to the device's by straight-line interpolation, which gives speech a harsh edge, so each paragraph is resampled properly here, on read aloud's worker thread, to the device's own rate.
+struct Resampled {
+	engine: Arc<dyn SpeechEngine>,
+	rate: u32,
+}
+
+impl SpeechEngine for Resampled {
+	fn id(&self) -> &str {
+		self.engine.id()
+	}
+
+	fn voices(&self) -> Result<Vec<Voice>> {
+		self.engine.voices()
+	}
+
+	fn synthesize(&self, request: &SpeechRequest) -> Result<Box<dyn Synthesis>> {
+		let mut synthesis = self.engine.synthesize(request)?;
+		let from = synthesis.sample_rate();
+		if from == self.rate {
+			return Ok(synthesis);
+		}
+		let (mut samples, mut words) = (Vec::new(), Vec::new());
+		while let Some(chunk) = synthesis.next_chunk() {
+			let chunk = chunk?;
+			words.extend(chunk.words.iter().map(|word| WordBoundary { sample: samples.len() + word.sample, ..*word }));
+			samples.extend_from_slice(&chunk.samples);
+		}
+		for word in &mut words {
+			word.sample = rescale(word.sample, from, self.rate);
+		}
+		let samples = resample(&samples, from, self.rate)?;
+		Ok(Box::new(WholeSynthesis::new(self.rate, AudioChunk { samples, words })))
+	}
+}
+
+fn rescale(sample: usize, from: u32, to: u32) -> usize {
+	let scaled = u128::try_from(sample).unwrap_or(u128::MAX) * u128::from(to) / u128::from(from.max(1));
+	usize::try_from(scaled).unwrap_or(usize::MAX)
+}
+
+#[allow(clippy::cast_possible_truncation, reason = "clamped to i16's range first")]
+fn resample(samples: &[i16], from: u32, to: u32) -> Result<Vec<i16>> {
+	if samples.is_empty() {
+		return Ok(Vec::new());
+	}
+	let input: Vec<f32> = samples.iter().map(|&sample| f32::from(sample) / 32_768.0).collect();
+	let mut resampler = Fft::<f32>::new(usize::try_from(from)?, usize::try_from(to)?, 1024, 1, FixedSync::Input)?;
+	let output = resampler.process_all(&InterleavedSlice::new(&input, 1, input.len())?, input.len(), None)?;
+	Ok(output
+		.take_data()
+		.into_iter()
+		.map(|sample| (sample * 32_768.0).round().clamp(-32_768.0, 32_767.0) as i16)
+		.collect())
+}
+
+/// An engine's whole paragraph, handed over as one chunk.
+pub(crate) struct WholeSynthesis {
+	sample_rate: u32,
+	chunk: Option<AudioChunk>,
+}
+
+impl WholeSynthesis {
+	pub(crate) const fn new(sample_rate: u32, chunk: AudioChunk) -> Self {
+		Self { sample_rate, chunk: Some(chunk) }
+	}
+}
+
+impl Synthesis for WholeSynthesis {
+	fn sample_rate(&self) -> u32 {
+		self.sample_rate
+	}
+
+	fn next_chunk(&mut self) -> Option<Result<AudioChunk>> {
+		self.chunk.take().map(Ok)
+	}
+}
+
 /// Core's read-aloud audio as a rodio source.
 struct FeedSource(AudioFeed);
 
@@ -220,5 +303,33 @@ impl Source for FeedSource {
 
 	fn total_duration(&self) -> Option<std::time::Duration> {
 		None
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	#[allow(
+		clippy::cast_possible_truncation,
+		clippy::cast_precision_loss,
+		reason = "a test tone well inside i16's range"
+	)]
+	fn speech_is_resampled_to_the_devices_rate() {
+		// A tenth of a second of a 440 Hz tone at 16 kHz.
+		let tone: Vec<i16> = (0..1600)
+			.map(|n| (f32::sin(n as f32 * 440.0 * std::f32::consts::TAU / 16_000.0) * 10_000.0) as i16)
+			.collect();
+		let resampled = resample(&tone, 16_000, 48_000).unwrap();
+		assert!((4790..=4810).contains(&resampled.len()), "{} samples", resampled.len());
+		let peak = resampled.iter().map(|sample| sample.unsigned_abs()).max().unwrap();
+		assert!((9_000..=11_000).contains(&peak), "peak {peak}");
+	}
+
+	#[test]
+	fn word_positions_are_rescaled_with_the_audio() {
+		assert_eq!(rescale(16_000, 16_000, 48_000), 48_000);
+		assert_eq!(rescale(100, 24_000, 44_100), 183);
 	}
 }
