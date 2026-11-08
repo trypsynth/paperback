@@ -275,16 +275,22 @@ mod tests {
 		assert_eq!(language_tag(""), "");
 	}
 
-	/// Needs at least one 64-bit SAPI voice, which a build server may not have.
+	/// Uses a Microsoft voice, since some others never send word boundaries and the default can be one of them. Needs a 64-bit Microsoft SAPI voice, which a build server may not have.
 	#[test]
 	fn a_paragraph_is_spoken_with_its_words_in_place() {
 		let engine = Sapi5;
-		if engine.voices().expect("listing voices").is_empty() {
+		let voices = engine.voices().expect("listing voices");
+		let Some(voice) = voices.iter().find(|voice| voice.name.starts_with("Microsoft")) else {
 			return;
-		}
+		};
 		let text = "Hello there, wide world.";
 		for pitch in [50, 80] {
-			let request = SpeechRequest { text: text.into(), voice: None, rate_percent: 50, pitch_percent: pitch };
+			let request = SpeechRequest {
+				text: text.into(),
+				voice: Some(voice.id.clone()),
+				rate_percent: 50,
+				pitch_percent: pitch,
+			};
 			let mut synthesis = engine.synthesize(&request).unwrap();
 			let chunk = synthesis.next_chunk().unwrap().unwrap();
 			assert!(
@@ -292,7 +298,7 @@ mod tests {
 				"under half a second at pitch {pitch}"
 			);
 			let offsets: Vec<usize> = chunk.words.iter().map(|word| word.text_offset).collect();
-			assert_eq!(offsets, [0, 6, 13, 18], "pitch {pitch}: {:?}", chunk.words);
+			assert_eq!(offsets, [0, 6, 13, 18], "{} at pitch {pitch}: {:?}", voice.name, chunk.words);
 		}
 	}
 }

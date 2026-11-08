@@ -41,6 +41,60 @@ impl DocumentManager {
 		Ok(())
 	}
 
+	#[cfg(target_os = "windows")]
+	/// Plays or pauses the active document's audio or reading as asked, for a headset button, which says which it means. A toggle would start a book that something else had already paused, or pause one the button meant to start.
+	///
+	/// # Errors
+	///
+	/// Returns a message to announce when read aloud can't run on this system.
+	pub fn set_media_playing(&mut self, playing: bool) -> Result<(), String> {
+		if let Some(player) = self.active_tab_mut().and_then(|tab| tab.audio_player.as_mut()) {
+			if playing {
+				player.play();
+			} else {
+				player.pause();
+			}
+			return Ok(());
+		}
+		if self.reading_tab_index().is_some() {
+			if playing {
+				self.resume_read_aloud();
+			} else {
+				self.pause_read_aloud();
+			}
+			return Ok(());
+		}
+		// Starting to read locks the config, which a dialog open may be holding.
+		if !playing || self.config.try_lock().is_err() {
+			return Ok(());
+		}
+		self.toggle_read_aloud()
+	}
+
+	/// What Windows is told is playing. Idle until the active document has played something, so that merely having a recording open doesn't take the headset buttons from the music player.
+	#[cfg(target_os = "windows")]
+	pub(super) fn media_playback_state(&self) -> crate::windows_audio::PlaybackState {
+		use crate::windows_audio::PlaybackState;
+		let Some(index) = self.active_tab_index() else { return PlaybackState::Idle };
+		if let Some(player) = self.tabs[index].audio_player.as_ref() {
+			return match (player.is_playing(), player.resume_point_ms()) {
+				(true, _) => PlaybackState::Playing,
+				(false, Some(_)) => PlaybackState::Paused,
+				(false, None) => PlaybackState::Idle,
+			};
+		}
+		match self.speaker.as_ref() {
+			Some(speaker) if self.reading_tab_index().is_some() => {
+				if speaker.is_paused() {
+					PlaybackState::Paused
+				} else {
+					PlaybackState::Playing
+				}
+			}
+			_ => PlaybackState::Idle,
+		}
+	}
+
 	/// Moves reading to the paragraph before or after the one playing. `None` when the active document isn't being read; `Some(false)` at either end of it.
 	pub fn skip_read_aloud(&mut self, forward: bool) -> Option<bool> {
 		let index = self.reading_tab_index()?;

@@ -18,11 +18,13 @@ private val EXTRA_MIME_TYPES = mapOf(
 	"odp" to setOf("application/vnd.oasis.opendocument.presentation"),
 	"odt" to setOf("application/vnd.oasis.opendocument.text"),
 	"opf" to setOf("application/oebps-package+xml"),
+	"oxps" to setOf("application/oxps"),
 	"pdf" to setOf("application/pdf"),
 	"pptx" to setOf("application/vnd.openxmlformats-officedocument.presentationml.presentation"),
 	"rtf" to setOf("application/rtf"),
 	"txt" to setOf("text/plain"),
 	"xml" to setOf("application/xml", "text/xml"),
+	"xps" to setOf("application/vnd.ms-xpsdocument"),
 	"zip" to setOf("application/zip")
 )
 

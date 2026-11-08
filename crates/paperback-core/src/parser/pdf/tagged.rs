@@ -1,7 +1,9 @@
 use std::collections::HashSet;
 
-use super::running::{EDGE_LINES, RunningText};
-use crate::document::{DocLen, DocPos, DocumentBuffer, TocItem};
+use crate::{
+	document::{DocLen, DocPos, DocumentBuffer, TocItem},
+	parser::layout::running::{EDGE_LINES, RunningText},
+};
 
 pub(super) struct TaggedPage {
 	pub buffer: DocumentBuffer,
@@ -91,7 +93,7 @@ mod tests {
 	use super::{TaggedPage, tagged_running_lines, without_lines};
 	use crate::{
 		document::{DocumentBuffer, Marker, MarkerType, TocItem},
-		parser::pdf::running,
+		parser::layout::running,
 	};
 
 	fn tagged_page(lines: &[&str], marked: &[usize]) -> TaggedPage {

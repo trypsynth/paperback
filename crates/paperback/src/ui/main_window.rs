@@ -22,6 +22,8 @@ use crate::{
 	updater,
 };
 
+#[cfg(target_os = "windows")]
+mod audio_events;
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 mod ipc;
 mod links;
@@ -100,6 +102,8 @@ impl MainWindow {
 			Rc::clone(&from_keyboard),
 		)));
 		let find_dialog = Rc::new(Mutex::new(None));
+		#[cfg(target_os = "windows")]
+		crate::windows_audio::watch_default_output();
 		#[cfg(target_os = "windows")]
 		let hotkey_handle = Rc::new(RefCell::new(start_hotkey_listener(config.lock().unwrap().get_hotkey().as_ref())));
 		let timers = Self::bind_menu_events(

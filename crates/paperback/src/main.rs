@@ -23,6 +23,8 @@ mod text_window;
 mod translation_manager;
 mod ui;
 mod updater;
+#[cfg(target_os = "windows")]
+mod windows_audio;
 mod working_copy;
 
 use std::{env, fs, io};

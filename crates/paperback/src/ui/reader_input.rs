@@ -200,8 +200,9 @@ pub(super) fn build_text_ctrl(
 				dm.set_preferred_column(None);
 			}
 			let action = {
-				if let Ok(dm) = dm_for_keys.try_lock() {
-					let config = dm.config.lock().unwrap();
+				if let Ok(dm) = dm_for_keys.try_lock()
+					&& let Ok(config) = dm.config.try_lock()
+				{
 					config.find_shortcut_action(key, kbd.control_down(), kbd.alt_down(), kbd.shift_down())
 				} else {
 					None
@@ -287,7 +288,8 @@ fn shortcut_for_shifted_character(kbd: &KeyboardEvent, dm: &Rc<Mutex<DocumentMan
 	let code = kbd.get_unicode_key().and_then(|code| u32::try_from(code).ok())?;
 	let typed = char::from_u32(code).filter(char::is_ascii_punctuation)?;
 	let dm = dm.try_lock().ok()?;
-	let config = dm.config.lock().unwrap();
+	// `try_lock` because Settings holds the config while its modal loop delivers this key's character, so waiting would hang.
+	let config = dm.config.try_lock().ok()?;
 	config.find_shortcut_action(i32::from(typed as u8), false, false, false)
 }
 
