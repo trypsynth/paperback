@@ -1,6 +1,6 @@
 //! Continuous reading: paragraphs from the document, synthesized ahead on a worker thread, played through a feed the platform's audio output pulls from.
 //!
-//! The session stays on the UI thread, since OCR and navigation change it there, so [`Narrator`] reads paragraphs from it there and hands only their text to the worker. Each [`Narrator::start`] gives an [`AudioFeed`] for the audio thread, which records which paragraph and word is playing, for the UI to follow.
+//! The session stays on the UI thread, since OCR and navigation change it there, so [`ReadAloud`] reads paragraphs from it there and hands only their text to the worker. Each [`ReadAloud::start`] gives an [`AudioFeed`] for the audio thread, which records which paragraph and word is playing, for the UI to follow.
 
 use std::{
 	collections::VecDeque,
@@ -23,9 +23,9 @@ const AHEAD: usize = 2;
 /// Used until the first paragraph's audio arrives, so the feed has a rate to report.
 const FALLBACK_SAMPLE_RATE: u32 = 22_050;
 
-/// How the narrator speaks, fixed for one run of reading. Changing any of it means starting again from the current paragraph.
+/// How read aloud speaks, fixed for one run of reading. Changing any of it means starting again from the current paragraph.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct NarratorSettings {
+pub struct ReadAloudSettings {
 	/// The chosen voice, or `None` for the engine's default. Its language decides which voice-specific rules apply.
 	pub voice: Option<Voice>,
 	pub rate_percent: u8,
@@ -57,10 +57,10 @@ struct SpokenParagraph {
 struct Job {
 	generation: u64,
 	paragraph: SpeechParagraph,
-	settings: Arc<NarratorSettings>,
+	settings: Arc<ReadAloudSettings>,
 }
 
-/// What the narrator, the worker and the feed share.
+/// What read aloud, the worker and the feed share.
 #[derive(Default)]
 struct Shared {
 	/// Bumped to throw away everything prepared or playing, when reading starts over or stops.
@@ -68,7 +68,7 @@ struct Shared {
 	ready: Mutex<VecDeque<(u64, SpokenParagraph)>>,
 	/// Paragraphs handed to the worker in this generation.
 	queued: AtomicUsize,
-	/// Paragraphs played, or skipped because the engine failed, in this generation, so the narrator knows how far ahead it is.
+	/// Paragraphs played, or skipped because the engine failed, in this generation, so read aloud knows how far ahead it is.
 	played: AtomicUsize,
 	/// No more paragraphs will come in this generation.
 	last_queued: AtomicBool,
@@ -88,7 +88,7 @@ impl Shared {
 
 /// Where reading has got to.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct NarratorProgress {
+pub struct ReadAloudProgress {
 	/// The start of the paragraph being spoken, which the caret follows.
 	pub paragraph: Option<DocPos>,
 	/// The word being spoken, for resuming at it and saving the place exactly.
@@ -98,16 +98,16 @@ pub struct NarratorProgress {
 }
 
 /// Reads a document aloud, paragraph by paragraph, from the UI thread.
-pub struct Narrator {
+pub struct ReadAloud {
 	shared: Arc<Shared>,
 	jobs: Sender<Job>,
-	settings: Arc<NarratorSettings>,
+	settings: Arc<ReadAloudSettings>,
 	/// The paragraph after which the next one to prepare comes, or `None` when there's nothing more to prepare.
 	queued_up_to: Option<DocPos>,
 }
 
-impl Narrator {
-	/// A narrator speaking through `engine`.
+impl ReadAloud {
+	/// Read aloud speaking through `engine`.
 	#[must_use]
 	pub fn new(engine: Arc<dyn SpeechEngine>) -> Self {
 		let shared = Arc::new(Shared::default());
@@ -119,7 +119,7 @@ impl Narrator {
 	}
 
 	/// Starts reading at the paragraph holding `position`, throwing away anything prepared or playing, and returns the feed this reading's audio comes out of. A feed from an earlier start is done from now on.
-	pub fn start(&mut self, session: &DocumentSession, position: DocPos, settings: NarratorSettings) -> AudioFeed {
+	pub fn start(&mut self, session: &DocumentSession, position: DocPos, settings: ReadAloudSettings) -> AudioFeed {
 		self.reset();
 		self.settings = Arc::new(settings);
 		self.shared.finished.store(false, Ordering::SeqCst);
@@ -163,10 +163,10 @@ impl Narrator {
 	}
 
 	#[must_use]
-	pub fn progress(&self) -> NarratorProgress {
+	pub fn progress(&self) -> ReadAloudProgress {
 		let has_position = self.shared.has_position.load(Ordering::SeqCst);
 		let at = |value: &AtomicUsize| has_position.then(|| DocPos::from_raw(value.load(Ordering::SeqCst)));
-		NarratorProgress {
+		ReadAloudProgress {
 			paragraph: at(&self.shared.playing_paragraph),
 			word: at(&self.shared.playing_word),
 			finished: self.shared.finished.load(Ordering::SeqCst),
@@ -197,7 +197,7 @@ impl Narrator {
 	}
 }
 
-impl Drop for Narrator {
+impl Drop for ReadAloud {
 	fn drop(&mut self) {
 		self.stop();
 	}
@@ -206,7 +206,7 @@ impl Drop for Narrator {
 /// One reading's audio, for the audio thread: mono 16-bit samples at [`AudioFeed::sample_rate`].
 pub struct AudioFeed {
 	shared: Arc<Shared>,
-	/// The reading this feed belongs to. Once the narrator starts again or stops, the feed is done.
+	/// The reading this feed belongs to. Once read aloud starts again or stops, the feed is done.
 	generation: u64,
 	playing: Option<Playing>,
 }
@@ -308,7 +308,7 @@ fn synthesize_jobs(engine: &dyn SpeechEngine, jobs: &Receiver<Job>, shared: &Sha
 fn speak(
 	engine: &dyn SpeechEngine,
 	paragraph: &SpeechParagraph,
-	settings: &NarratorSettings,
+	settings: &ReadAloudSettings,
 ) -> anyhow::Result<SpokenParagraph> {
 	let (text, map) = apply_rules(&settings.rules, &paragraph.text, settings.voice.as_ref());
 	let request = SpeechRequest {
@@ -380,12 +380,12 @@ mod tests {
 		}
 	}
 
-	fn narrator() -> Narrator {
-		Narrator::new(Arc::new(FakeEngine))
+	fn read_aloud() -> ReadAloud {
+		ReadAloud::new(Arc::new(FakeEngine))
 	}
 
 	/// Plays `feed` to the end, as the platform would, refilling as it goes, and returns the samples and each paragraph start heard.
-	fn play(narrator: &mut Narrator, session: &DocumentSession, feed: &mut AudioFeed) -> (Vec<i16>, Vec<DocPos>) {
+	fn play(reader: &mut ReadAloud, session: &DocumentSession, feed: &mut AudioFeed) -> (Vec<i16>, Vec<DocPos>) {
 		let deadline = Instant::now() + Duration::from_secs(10);
 		let (mut samples, mut paragraphs) = (Vec::new(), Vec::new());
 		loop {
@@ -393,12 +393,12 @@ mod tests {
 			match feed.next_sample() {
 				FeedSample::Sample(sample) => samples.push(sample),
 				FeedSample::Waiting => {
-					narrator.refill(session);
+					reader.refill(session);
 					thread::sleep(Duration::from_millis(1));
 				}
 				FeedSample::Done => return (samples, paragraphs),
 			}
-			if let Some(paragraph) = narrator.progress().paragraph
+			if let Some(paragraph) = reader.progress().paragraph
 				&& paragraphs.last() != Some(&paragraph)
 			{
 				paragraphs.push(paragraph);
@@ -418,23 +418,23 @@ mod tests {
 	fn every_paragraph_with_text_is_read_in_order_from_the_one_holding_the_position() {
 		let text = "One two.\n\nThree four.\n   \nFive.";
 		let session = DocumentSession::from_text(text);
-		let mut narrator = narrator();
+		let mut reader = read_aloud();
 		let mut feed =
-			narrator.start(&session, DocPos::from_raw(text.find("four").unwrap()), NarratorSettings::default());
-		let (samples, paragraphs) = play(&mut narrator, &session, &mut feed);
+			reader.start(&session, DocPos::from_raw(text.find("four").unwrap()), ReadAloudSettings::default());
+		let (samples, paragraphs) = play(&mut reader, &session, &mut feed);
 		assert_eq!(spoken(&samples), "Three four.Five.");
 		let starts: Vec<usize> = paragraphs.iter().map(|p| p.get()).collect();
 		assert_eq!(starts, [text.find("Three").unwrap(), text.find("Five").unwrap()]);
-		assert!(narrator.progress().finished);
+		assert!(reader.progress().finished);
 	}
 
 	#[test]
 	fn the_paragraph_pause_is_silence_after_each_paragraph() {
 		let session = DocumentSession::from_text("Ab\nCd");
-		let mut narrator = narrator();
-		let settings = NarratorSettings { paragraph_pause_ms: 20, ..NarratorSettings::default() };
-		let mut feed = narrator.start(&session, DocPos::from_raw(0), settings);
-		let (samples, _) = play(&mut narrator, &session, &mut feed);
+		let mut reader = read_aloud();
+		let settings = ReadAloudSettings { paragraph_pause_ms: 20, ..ReadAloudSettings::default() };
+		let mut feed = reader.start(&session, DocPos::from_raw(0), settings);
+		let (samples, _) = play(&mut reader, &session, &mut feed);
 		assert_eq!(spoken(&samples), "Ab||Cd||");
 	}
 
@@ -442,7 +442,7 @@ mod tests {
 	fn the_word_playing_is_its_place_in_the_document_even_after_a_rule_rewrote_it() {
 		let text = "  Ask Dr Smith.";
 		let session = DocumentSession::from_text(text);
-		let mut narrator = narrator();
+		let mut reader = read_aloud();
 		let rule = SpeechRule {
 			scope: RuleScope::Word,
 			match_type: MatchType::Literal,
@@ -450,8 +450,8 @@ mod tests {
 			replacement: "Doctor".into(),
 			..SpeechRule::default()
 		};
-		let settings = NarratorSettings { rules: vec![rule], ..NarratorSettings::default() };
-		let mut feed = narrator.start(&session, DocPos::from_raw(0), settings);
+		let settings = ReadAloudSettings { rules: vec![rule], ..ReadAloudSettings::default() };
+		let mut feed = reader.start(&session, DocPos::from_raw(0), settings);
 		// "Ask Doctor Smith." has "Smith" at char 11.
 		let mut heard = 0;
 		while heard <= 11 * SAMPLES_PER_CHAR {
@@ -461,43 +461,43 @@ mod tests {
 				thread::sleep(Duration::from_millis(1));
 			}
 		}
-		assert_eq!(narrator.progress().word, Some(DocPos::from_raw(text.find("Smith").unwrap())));
-		assert_eq!(narrator.progress().paragraph, Some(DocPos::from_raw(0)));
+		assert_eq!(reader.progress().word, Some(DocPos::from_raw(text.find("Smith").unwrap())));
+		assert_eq!(reader.progress().paragraph, Some(DocPos::from_raw(0)));
 	}
 
 	#[test]
 	fn starting_again_ends_the_old_feed_and_reads_from_the_new_place() {
 		let text = "First.\nSecond.\nThird.";
 		let session = DocumentSession::from_text(text);
-		let mut narrator = narrator();
-		let mut old = narrator.start(&session, DocPos::from_raw(0), NarratorSettings::default());
+		let mut reader = read_aloud();
+		let mut old = reader.start(&session, DocPos::from_raw(0), ReadAloudSettings::default());
 		let mut new =
-			narrator.start(&session, DocPos::from_raw(text.find("Third").unwrap()), NarratorSettings::default());
+			reader.start(&session, DocPos::from_raw(text.find("Third").unwrap()), ReadAloudSettings::default());
 		assert_eq!(old.next_sample(), FeedSample::Done);
-		let (samples, _) = play(&mut narrator, &session, &mut new);
+		let (samples, _) = play(&mut reader, &session, &mut new);
 		assert_eq!(spoken(&samples), "Third.");
 	}
 
 	#[test]
 	fn a_paragraph_the_engine_fails_on_is_skipped_and_reported() {
 		let session = DocumentSession::from_text("One.\nFAIL here.\nThree.");
-		let mut narrator = narrator();
-		let mut feed = narrator.start(&session, DocPos::from_raw(0), NarratorSettings::default());
-		let (samples, _) = play(&mut narrator, &session, &mut feed);
+		let mut reader = read_aloud();
+		let mut feed = reader.start(&session, DocPos::from_raw(0), ReadAloudSettings::default());
+		let (samples, _) = play(&mut reader, &session, &mut feed);
 		assert_eq!(spoken(&samples), "One.Three.");
-		assert_eq!(narrator.take_errors().len(), 1);
+		assert_eq!(reader.take_errors().len(), 1);
 	}
 
 	#[test]
 	fn stopping_or_an_empty_document_ends_the_feed() {
 		let empty = DocumentSession::from_text("");
-		let mut narrator = narrator();
-		let mut feed = narrator.start(&empty, DocPos::from_raw(0), NarratorSettings::default());
-		assert_eq!(play(&mut narrator, &empty, &mut feed).0, Vec::<i16>::new());
+		let mut reader = read_aloud();
+		let mut feed = reader.start(&empty, DocPos::from_raw(0), ReadAloudSettings::default());
+		assert_eq!(play(&mut reader, &empty, &mut feed).0, Vec::<i16>::new());
 		let session = DocumentSession::from_text("Some text.");
-		let mut feed = narrator.start(&session, DocPos::from_raw(0), NarratorSettings::default());
-		narrator.stop();
+		let mut feed = reader.start(&session, DocPos::from_raw(0), ReadAloudSettings::default());
+		reader.stop();
 		assert_eq!(feed.next_sample(), FeedSample::Done);
-		assert!(narrator.progress().finished);
+		assert!(reader.progress().finished);
 	}
 }
