@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 21:30+0000\n"
-"PO-Revision-Date: 2026-11-03 14:49+0200\n"
+"POT-Creation-Date: 2026-11-08 02:02+0000\n"
+"PO-Revision-Date: 2026-11-08 18:07+0200\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -18,6 +18,149 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.10\n"
+
+#. TRANSLATORS: Title of the question asked after the app closed unexpectedly
+#. TRANSLATORS: Title of the dialog for sending a problem report to the developer
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Report a Problem"
+msgstr "Ongelmasta ilmoittaminen"
+
+#. TRANSLATORS: Asked at startup after the app crashed or was closed unexpectedly. %s is the app's name.
+msgid ""
+"%s closed unexpectedly the last time it ran. Would you like to report the "
+"problem?"
+msgstr ""
+"%s ei sulkeutunut edellisellä käyttökerralla normaalisti. Haluatko ilmoittaa "
+"ongelmasta?"
+
+#. TRANSLATORS: Check box in the question asked after a crash, which stops the question being asked again
+msgid "&Don't ask again"
+msgstr "&Älä kysy uudelleen"
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog after a crash. %s is the app's name.
+msgid ""
+"%s closed unexpectedly the last time it ran. Describe what you were doing "
+"when it happened."
+msgstr ""
+"%s ei sulkeutunut edellisellä käyttökerralla normaalisti. Kuvaile, mitä olit "
+"tekemässä, kun näin tapahtui."
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog
+msgid "Describe the problem, and what you were doing when it happened."
+msgstr "Kuvaile ongelmaa ja kerro, mitä olit tekemässä sen ilmetessä."
+
+#. TRANSLATORS: Label of the field for describing the problem in the Report a Problem dialog
+msgid "&What happened:"
+msgstr "&Ongelman kuvaus:"
+
+msgid "&Your email address, if you'd like a reply:"
+msgstr "&Sähköpostiosoitteesi, jos haluat vastauksen:"
+
+#. TRANSLATORS: Check box in the Report a Problem dialog that attaches the app's log to the report
+#| msgid "&Include text pages too"
+msgid "&Include the log"
+msgstr "&Liitä lokitiedoston sisältö mukaan"
+
+#. TRANSLATORS: Explains what a problem report contains, in the Report a Problem dialog. %s is the app's name.
+msgid ""
+"The report also includes %s's version and your operating system. Select "
+"Preview to see everything that will be sent."
+msgstr ""
+"Raporttiin lisätään myös %sin versio ja käyttöjärjestelmäsi tiedot. Jos "
+"haluat nähdä raportin koko sisällön ennen sen lähettämistä, paina Näytä "
+"raportti -painiketta."
+
+#. TRANSLATORS: Button in the Report a Problem dialog that shows the report before it is sent
+#| msgid "Preview"
+msgid "&Preview"
+msgstr "&Näytä raportti"
+
+#. TRANSLATORS: Button in the Report a Problem dialog that sends the report
+msgid "&Send"
+msgstr "&Lähetä"
+
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button that closes the Find dialog
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Peruuta"
+
+#. TRANSLATORS: Title of the window that shows a problem report before it is sent
+#| msgid "Preview"
+msgid "Report Preview"
+msgstr "Raportin sisältö"
+
+#. TRANSLATORS: Title of an error message
+#. TRANSLATORS: Generic error dialog title
+msgid "Error"
+msgstr "Virhe"
+
+#. TRANSLATORS: Shown when Send is pressed in the Report a Problem dialog with the description empty
+msgid "Describe the problem before sending the report."
+msgstr "Kuvaile ongelmaa ennen raportin lähettämistä."
+
+#. TRANSLATORS: Shown when a problem report breaks a limit, such as being too long. %s is the reason, in English.
+msgid "The report can't be sent: %s"
+msgstr "Raporttia ei voida lähettää: %s"
+
+#. TRANSLATORS: Message in the progress window shown while a problem report is sent
+msgid "Sending the report..."
+msgstr "Raporttia lähetetään..."
+
+#. TRANSLATORS: Shown after a problem report was sent
+#. TRANSLATORS: Title of a message saying something worked
+msgid "Thank you. Your report was sent."
+msgstr "Kiitos. Raporttisi on lähetetty."
+
+msgid "Success"
+msgstr "Onnistui"
+
+msgid ""
+"Email can't be delivered to that address. Check it for typing mistakes, or "
+"leave it blank."
+msgstr ""
+"Sähköpostia ei voida lähettää annettuun osoitteeseen. Tarkista, ettei "
+"osoitteessa ole kirjoitusvirheitä, tai jätä kenttä tyhjäksi."
+
+#. TRANSLATORS: Shown when the report server has taken as many reports as it will for the day
+msgid "Too many reports have been sent today."
+msgstr "Tänään on lähetetty liian monta raporttia."
+
+#. TRANSLATORS: Shown when sending a problem report failed. %s is the reason, in English.
+#| msgid "the server could not be reached: {}"
+msgid "The report couldn't be sent: %s"
+msgstr "Raporttia ei voitu lähettää: %s"
+
+#. TRANSLATORS: Asked after a problem report couldn't be sent. %s explains what went wrong.
+msgid ""
+"%s\n"
+"\n"
+"Would you like to save the report to a file, so you can send it another way?"
+msgstr ""
+"%s\n"
+"\n"
+"Haluatko tallentaa raportin tiedostoon ja lähettää sen muulla tavalla?"
+
+#. TRANSLATORS: Title of the dialog for saving a problem report to a file
+msgid "Save Report"
+msgstr "Raportin tallennus"
+
+#. TRANSLATORS: Default file name for a saved problem report
+msgid "Problem report"
+msgstr "Ongelmaraportti"
+
+#. TRANSLATORS: File type filter in the dialog for saving a problem report
+#| msgid "All files (*.*)|*.*"
+msgid "Text files (*.txt)|*.txt"
+msgstr "Tekstitiedostot (*.txt)|*.txt"
+
+#. TRANSLATORS: Shown after a problem report was saved to a file
+msgid "The report was saved."
+msgstr "Raportti on tallennettu."
+
+#| msgid "the download could not be saved: {}"
+msgid "The report couldn't be saved: %s"
+msgstr "Raporttia ei voitu tallentaa: %s"
 
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 msgid "Checking %s"
@@ -74,14 +217,6 @@ msgid ""
 msgstr ""
 "Tekstintunnistuksen kieltä ei ole asennettuna. Asenna Tesseractin "
 "kielipaketti pakettienhallinnasta."
-
-#. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
-msgid "Failed to create IPC server"
-msgstr "IPC-palvelimen luonti epäonnistui"
-
-#. TRANSLATORS: Title of a warning dialog
-msgid "Warning"
-msgstr "Varoitus"
 
 #. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
@@ -740,6 +875,7 @@ msgstr "P&oista kaikki"
 #. TRANSLATORS: Label for a button that closes the View Note dialog
 #. TRANSLATORS: Label for a button that closes the Web View dialog
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#. TRANSLATORS: Button that closes a window showing text
 msgid "Close"
 msgstr "Sulje"
 
@@ -865,10 +1001,6 @@ msgstr "tyhjä"
 #. TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
 msgid "Please select a bookmark to jump to."
 msgstr "Valitse kirjanmerkki, johon siirrytään."
-
-#. TRANSLATORS: Generic error dialog title
-msgid "Error"
-msgstr "Virhe"
 
 #. TRANSLATORS: Label/prompt in the Note editor dialog
 msgid "Edit bookmark note:"
@@ -1011,12 +1143,6 @@ msgstr "Vie"
 #. TRANSLATORS: Name of the "Go" (navigation) category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Go"
 msgstr "Siirry"
-
-#. TRANSLATORS: Label for the cancellation button
-#. TRANSLATORS: Cancel button that closes the Find dialog
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr "Peruuta"
 
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
@@ -1382,11 +1508,9 @@ msgstr "Vianmääritys"
 msgid "Trace"
 msgstr "Yksityiskohtainen"
 
-#| msgid "System"
 msgid "System-Wide"
 msgstr "Järjestelmänlaajuiset"
 
-#| msgid "Restore Paperback"
 msgid "Show or Hide Paperback"
 msgstr "Näytä tai piilota Paperback"
 
@@ -1652,6 +1776,10 @@ msgstr "Lahjoitussivun avaaminen selaimessa epäonnistui."
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback ei voi suorittaa toimintoja selainnäkymän ollessa avoinna."
+
+#. TRANSLATORS: Title of a warning dialog
+msgid "Warning"
+msgstr "Varoitus"
 
 #. TRANSLATORS: First message in the window that downloads documents from links, before the first server answers
 msgid "Connecting..."
@@ -2101,6 +2229,14 @@ msgstr "Tarkista pä&ivitykset"
 #. TRANSLATORS: Status-bar help text for the Help > Check for Updates menu item.
 msgid "Check for updates"
 msgstr "Tarkista päivitykset"
+
+#. TRANSLATORS: Menu item in the Help menu that opens a dialog for sending a problem report to the developer.
+msgid "&Report a Problem..."
+msgstr "&Ilmoita ongelmasta..."
+
+#. TRANSLATORS: Status-bar help text for the Help > Report a Problem menu item.
+msgid "Send a problem report to the developer"
+msgstr "Lähetä kehittäjälle ongelmaraportti"
 
 #. TRANSLATORS: Menu item in the Help menu to open the donation page for the application.
 msgid "&Donate"
@@ -3324,6 +3460,9 @@ msgstr "kuva"
 
 msgid "Current version is not a valid semver."
 msgstr "Sovelluksen versionumero ei ole semanttisen versioinnin mukainen."
+
+msgid "No release has a valid semver tag."
+msgstr "Julkaisulla ei ole semanttisen versioinnin tunnistetta."
 
 msgid "Latest release tag is not a valid semver."
 msgstr "Uusin julkaisutunniste ei ole semanttisen versioinnin mukainen."
@@ -4878,7 +5017,6 @@ msgstr ""
 
 #. TRANSLATORS: VoiceOver label for the read-aloud bar's control that speeds up or slows down a book's recorded audio
 #: kt swift
-#| msgid "Increase Audio Speed"
 msgid "Audio Speed"
 msgstr "Toistonopeus"
 
@@ -4903,31 +5041,26 @@ msgstr "{} kohdetta⁣"
 
 #. TRANSLATORS: Spoken for an empty table cell in text mode
 #: swift
-#| msgid "blank"
 msgid "Blank"
 msgstr "Tyhjä"
 
 #. TRANSLATORS: Name of the VoiceOver rotor setting that moves between the entries of a document's table of contents in text mode
 #: swift
-#| msgid "&Sections"
 msgid "Sections"
 msgstr "Luvut"
 
 #. TRANSLATORS: Switch in Speech for This Book giving the open book a voice of its own instead of the one in Settings
 #: swift
-#| msgid "Voice"
 msgid "Own Voice"
 msgstr "Kirjakohtainen puheääni"
 
 #. TRANSLATORS: Switch in Speech for This Book giving the open book a speech rate of its own instead of the one in Settings
 #: swift
-#| msgid "Rate"
 msgid "Own Rate"
 msgstr "Kirjakohtainen puhenopeus"
 
 #. TRANSLATORS: Switch in Speech for This Book giving the open book a pitch of its own instead of the one in Settings
 #: swift
-#| msgid "Pitch"
 msgid "Own Pitch"
 msgstr "Kirjakohtainen äänenkorkeus"
 
@@ -4944,24 +5077,20 @@ msgstr "Tyhjennä"
 
 #. TRANSLATORS: Row label for the number of audio files in the document
 #: kt swift
-#| msgid "Number of files:"
 msgid "Number of files"
 msgstr "Tiedostojen määrä"
 
 #. TRANSLATORS: Row label for the total playback duration across all of the document's audio files
 #: kt swift
-#| msgid "Total duration:"
 msgid "Total duration"
 msgstr "Kesto yhteensä"
 
 #. TRANSLATORS: Row label for the average playback duration per audio file in the document
 #: kt swift
-#| msgid "Average duration:"
 msgid "Average duration"
 msgstr "Kesto keskimäärin"
 
 #. TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
 #: kt
-#| msgid "Increase Audio Speed"
 msgid "Select audio speed"
 msgstr "Äänitteen toistonopeus"
