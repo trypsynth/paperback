@@ -2,7 +2,10 @@ use paperback_core::{config::DocumentSpeech, speech::Voice};
 use patois::t;
 
 use super::DocumentManager;
-use crate::read_aloud::{RATE_STEP, Speaker};
+use crate::{
+	read_aloud::{Followed, RATE_STEP, Speaker},
+	ui::navigation::set_caret_to_doc_offset,
+};
 
 impl DocumentManager {
 	/// Starts reading the active document aloud from the caret, or pauses or resumes it.
@@ -27,8 +30,12 @@ impl DocumentManager {
 		self.speaker()?;
 		let tab = &self.tabs[index];
 		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-		if let Some(speaker) = self.speaker.as_mut() {
-			speaker.start(&tab.session, position, &self.config.lock().unwrap(), &path.to_string_lossy());
+		let started = self.speaker.as_mut().is_some_and(|speaker| {
+			speaker.start(&tab.session, position, &self.config.lock().unwrap(), &path.to_string_lossy())
+		});
+		if !started {
+			// TRANSLATORS: Announced when read aloud is started with nothing left to read after the caret
+			return Err(t("End of document"));
 		}
 		self.speaker_tab = Some(path);
 		Ok(())
@@ -134,17 +141,27 @@ impl DocumentManager {
 		}
 	}
 
-	/// Moves the caret to each paragraph as it starts. Called on the audio tick.
+	/// Moves the caret to each paragraph as it starts, and past the last one once it's read, so starting again doesn't repeat it. Called on the audio tick.
 	pub(super) fn pump_read_aloud(&mut self) {
-		let Some(index) = self.reading_tab_index() else { return };
+		// Not `reading_tab_index`, since that stops counting the document once reading has finished, and finishing is what this has to notice.
+		let Some(index) =
+			self.active_tab_index().filter(|&index| self.speaker_tab.as_ref() == Some(&self.tabs[index].file_path))
+		else {
+			return;
+		};
 		let tab = &mut self.tabs[index];
 		let Some(speaker) = self.speaker.as_mut() else { return };
-		let Some(position) = speaker.pump(&tab.session) else { return };
-		let current = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-		if position != current {
-			let local = tab.window.to_local(position);
-			tab.text_ctrl.set_insertion_point(local);
-			tab.text_ctrl.show_position(local);
+		match speaker.pump(&tab.session) {
+			Some(Followed::Paragraph(position)) => {
+				let current = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+				if position != current {
+					let local = tab.window.to_local(position);
+					tab.text_ctrl.set_insertion_point(local);
+					tab.text_ctrl.show_position(local);
+				}
+			}
+			Some(Followed::End) => set_caret_to_doc_offset(tab, tab.session.document_len().as_pos()),
+			None => {}
 		}
 	}
 

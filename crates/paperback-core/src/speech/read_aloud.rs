@@ -119,8 +119,19 @@ impl ReadAloud {
 	}
 
 	/// Starts reading at the paragraph holding `position`, throwing away anything prepared or playing, and returns the feed this reading's audio comes out of. A feed from an earlier start is done from now on.
-	pub fn start(&mut self, session: &DocumentSession, position: DocPos, settings: ReadAloudSettings) -> AudioFeed {
+	///
+	/// Returns `None`, and reads nothing, when there's no text at or after `position`, such as at the end of the document.
+	pub fn start(
+		&mut self,
+		session: &DocumentSession,
+		position: DocPos,
+		settings: ReadAloudSettings,
+	) -> Option<AudioFeed> {
 		self.reset();
+		let Some(first) = session.speech_paragraph(position, SegmentDirectionFfi::Current) else {
+			self.shared.finished.store(true, Ordering::SeqCst);
+			return None;
+		};
 		self.settings = Arc::new(settings);
 		self.shared.finished.store(false, Ordering::SeqCst);
 		let feed = AudioFeed {
@@ -128,14 +139,10 @@ impl ReadAloud {
 			generation: self.shared.generation.load(Ordering::SeqCst),
 			playing: None,
 		};
-		if let Some(first) = session.speech_paragraph(position, SegmentDirectionFfi::Current) {
-			self.queued_up_to = Some(first.start);
-			self.queue(first);
-			self.refill(session);
-		} else {
-			self.shared.last_queued.store(true, Ordering::SeqCst);
-		}
-		feed
+		self.queued_up_to = Some(first.start);
+		self.queue(first);
+		self.refill(session);
+		Some(feed)
 	}
 
 	/// Prepares paragraphs until [`AHEAD`] are waiting beyond the one playing. Call it often, such as on the timer that moves the caret.
@@ -427,8 +434,9 @@ mod tests {
 		let text = "One two.\n\nThree four.\n   \nFive.";
 		let session = DocumentSession::from_text(text);
 		let mut reader = read_aloud();
-		let mut feed =
-			reader.start(&session, DocPos::from_raw(text.find("four").unwrap()), ReadAloudSettings::default());
+		let mut feed = reader
+			.start(&session, DocPos::from_raw(text.find("four").unwrap()), ReadAloudSettings::default())
+			.expect("there is text to read");
 		let (samples, paragraphs) = play(&mut reader, &session, &mut feed);
 		assert_eq!(spoken(&samples), "Three four.Five.");
 		let starts: Vec<usize> = paragraphs.iter().map(|p| p.get()).collect();
@@ -441,7 +449,7 @@ mod tests {
 		let session = DocumentSession::from_text("Ab\nCd");
 		let mut reader = read_aloud();
 		let settings = ReadAloudSettings { paragraph_pause_ms: 20, ..ReadAloudSettings::default() };
-		let mut feed = reader.start(&session, DocPos::from_raw(0), settings);
+		let mut feed = reader.start(&session, DocPos::from_raw(0), settings).expect("there is text to read");
 		let (samples, _) = play(&mut reader, &session, &mut feed);
 		assert_eq!(spoken(&samples), "Ab||Cd||");
 	}
@@ -459,7 +467,7 @@ mod tests {
 			..SpeechRule::default()
 		};
 		let settings = ReadAloudSettings { rules: vec![rule], ..ReadAloudSettings::default() };
-		let mut feed = reader.start(&session, DocPos::from_raw(0), settings);
+		let mut feed = reader.start(&session, DocPos::from_raw(0), settings).expect("there is text to read");
 		// "Ask Doctor Smith." has "Smith" at char 11.
 		let mut heard = 0;
 		while heard <= 11 * SAMPLES_PER_CHAR {
@@ -478,9 +486,11 @@ mod tests {
 		let text = "First.\nSecond.\nThird.";
 		let session = DocumentSession::from_text(text);
 		let mut reader = read_aloud();
-		let mut old = reader.start(&session, DocPos::from_raw(0), ReadAloudSettings::default());
-		let mut new =
-			reader.start(&session, DocPos::from_raw(text.find("Third").unwrap()), ReadAloudSettings::default());
+		let mut old =
+			reader.start(&session, DocPos::from_raw(0), ReadAloudSettings::default()).expect("there is text to read");
+		let mut new = reader
+			.start(&session, DocPos::from_raw(text.find("Third").unwrap()), ReadAloudSettings::default())
+			.expect("there is text to read");
 		assert_eq!(old.next_sample(), FeedSample::Done);
 		let (samples, _) = play(&mut reader, &session, &mut new);
 		assert_eq!(spoken(&samples), "Third.");
@@ -490,7 +500,8 @@ mod tests {
 	fn a_paragraph_the_engine_fails_on_is_skipped_and_reported() {
 		let session = DocumentSession::from_text("One.\nFAIL here.\nThree.");
 		let mut reader = read_aloud();
-		let mut feed = reader.start(&session, DocPos::from_raw(0), ReadAloudSettings::default());
+		let mut feed =
+			reader.start(&session, DocPos::from_raw(0), ReadAloudSettings::default()).expect("there is text to read");
 		let (samples, _) = play(&mut reader, &session, &mut feed);
 		assert_eq!(spoken(&samples), "One.Three.");
 		assert_eq!(reader.take_errors().len(), 1);
@@ -505,8 +516,9 @@ Three.";
 		let session = DocumentSession::from_text(text);
 		let mut reader = read_aloud();
 		assert_eq!(reader.neighbour(&session, true), None, "nothing has played yet");
-		let mut feed =
-			reader.start(&session, DocPos::from_raw(text.find("Two").unwrap()), ReadAloudSettings::default());
+		let mut feed = reader
+			.start(&session, DocPos::from_raw(text.find("Two").unwrap()), ReadAloudSettings::default())
+			.expect("there is text to read");
 		while reader.progress().paragraph.is_none() {
 			if feed.next_sample() == FeedSample::Waiting {
 				thread::sleep(Duration::from_millis(1));
@@ -517,13 +529,23 @@ Three.";
 	}
 
 	#[test]
-	fn stopping_or_an_empty_document_ends_the_feed() {
-		let empty = DocumentSession::from_text("");
+	fn nothing_is_read_past_the_last_paragraph() {
+		let text = "Some text.\n\n";
+		let session = DocumentSession::from_text(text);
 		let mut reader = read_aloud();
-		let mut feed = reader.start(&empty, DocPos::from_raw(0), ReadAloudSettings::default());
-		assert_eq!(play(&mut reader, &empty, &mut feed).0, Vec::<i16>::new());
+		assert!(reader.start(&session, DocPos::from_raw(text.len()), ReadAloudSettings::default()).is_none());
+		assert!(reader.progress().finished);
+		assert!(
+			reader.start(&DocumentSession::from_text(""), DocPos::from_raw(0), ReadAloudSettings::default()).is_none()
+		);
+	}
+
+	#[test]
+	fn stopping_ends_the_feed() {
+		let mut reader = read_aloud();
 		let session = DocumentSession::from_text("Some text.");
-		let mut feed = reader.start(&session, DocPos::from_raw(0), ReadAloudSettings::default());
+		let mut feed =
+			reader.start(&session, DocPos::from_raw(0), ReadAloudSettings::default()).expect("there is text to read");
 		reader.stop();
 		assert_eq!(feed.next_sample(), FeedSample::Done);
 		assert!(reader.progress().finished);

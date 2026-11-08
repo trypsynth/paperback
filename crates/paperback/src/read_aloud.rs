@@ -29,6 +29,15 @@ const MAX_PAUSE_MS: i32 = 1000;
 const VOLUME_STEP: f32 = 0.1;
 const MAX_VOLUME: f32 = 2.0;
 
+/// What happened in reading since the last tick.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Followed {
+	/// A paragraph started, for the caret to move to.
+	Paragraph(DocPos),
+	/// The last paragraph has been read.
+	End,
+}
+
 /// Reads the active document aloud through the system's speech engine.
 pub struct Speaker {
 	engine: Arc<dyn SpeechEngine>,
@@ -65,9 +74,9 @@ impl Speaker {
 		})
 	}
 
-	/// Starts reading at the paragraph holding `position`, with the book's voice and rate, or the app's.
-	pub fn start(&mut self, session: &DocumentSession, position: DocPos, config: &ConfigManager, path: &str) {
-		self.start_paused_or_not(session, position, config, path, false);
+	/// Starts reading at the paragraph holding `position`, with the book's voice and rate, or the app's. Returns `false` when there's nothing at or after it to read.
+	pub fn start(&mut self, session: &DocumentSession, position: DocPos, config: &ConfigManager, path: &str) -> bool {
+		self.start_paused_or_not(session, position, config, path, false)
 	}
 
 	fn start_paused_or_not(
@@ -77,9 +86,12 @@ impl Speaker {
 		config: &ConfigManager,
 		path: &str,
 		paused: bool,
-	) {
+	) -> bool {
 		let settings = self.settings(config, path);
-		let feed = self.read_aloud.start(session, position, settings);
+		let Some(feed) = self.read_aloud.start(session, position, settings) else {
+			self.player = None;
+			return false;
+		};
 		let player = Player::connect_new(self.device.mixer());
 		player.set_volume(self.volume);
 		player.append(FeedSource(feed));
@@ -91,6 +103,7 @@ impl Speaker {
 		self.player = Some(player);
 		self.paused = paused;
 		self.followed = None;
+		true
 	}
 
 	/// Starts the paragraph being read again, so a changed rate or voice is heard from there. Paused reading stays paused.
@@ -133,8 +146,7 @@ impl Speaker {
 	/// Moves to the paragraph before or after the one playing. Returns `false` at either end of the document.
 	pub fn skip(&mut self, session: &DocumentSession, forward: bool, config: &ConfigManager, path: &str) -> bool {
 		let Some(target) = self.read_aloud.neighbour(session, forward) else { return false };
-		self.start(session, target, config, path);
-		true
+		self.start(session, target, config, path)
 	}
 
 	/// Whether reading has started and not stopped or reached the end, paused or not.
@@ -169,8 +181,8 @@ impl Speaker {
 		self.followed = None;
 	}
 
-	/// Prepares the paragraphs ahead, and returns a paragraph that has just started, for the caret to move to. Call it on every tick while reading.
-	pub fn pump(&mut self, session: &DocumentSession) -> Option<DocPos> {
+	/// Prepares the paragraphs ahead, and returns what the caret should follow: a paragraph that has just started, or the end, once. Call it on every tick for the document being read.
+	pub fn pump(&mut self, session: &DocumentSession) -> Option<Followed> {
 		self.player.as_ref()?;
 		self.read_aloud.refill(session);
 		for error in self.read_aloud.take_errors() {
@@ -179,13 +191,13 @@ impl Speaker {
 		let progress = self.read_aloud.progress();
 		if progress.finished {
 			self.player = None;
-			return None;
+			return Some(Followed::End);
 		}
 		if progress.paragraph == self.followed {
 			return None;
 		}
 		self.followed = progress.paragraph;
-		progress.paragraph
+		progress.paragraph.map(Followed::Paragraph)
 	}
 
 	/// Returns the new volume, and whether it was already at its limit.
