@@ -116,7 +116,7 @@ pub fn reopen_last_closed(ctx: &Ctx) {
 		} else if ctx.dm.lock().unwrap().open_file(ctx.dm, &path) {
 			let dm_ref = ctx.dm.lock().unwrap();
 			update_title_from_manager(ctx.frame, &dm_ref);
-			dm_ref.focus_document_text();
+			dm_ref.focus_document_text_announced();
 			drop(dm_ref);
 			let menu_bar = menu::create_menu_bar(&ctx.config.lock().unwrap());
 			ctx.frame.set_menu_bar(menu_bar);
