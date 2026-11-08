@@ -6,7 +6,7 @@ description: Download Paperback for Windows, macOS and Linux, or get the iOS and
 ---
 # Downloads
 
-Pick the stable version unless you want to try what is coming next. Nothing here asks you to sign in.
+Pick the stable version unless you want to try what is coming next.
 
 ## Desktop apps
 
