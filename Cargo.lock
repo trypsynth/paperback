@@ -2474,7 +2474,7 @@ dependencies = [
  "sxd-xpath-no-unsafe",
  "unicode-script",
  "yaml-rust",
- "zip 9.4.2",
+ "zip 9.5.0",
 ]
 
 [[package]]
@@ -2932,7 +2932,7 @@ dependencies = [
  "sha1 0.11.0",
  "sha2 0.11.1",
  "thiserror 2.0.21",
- "zip 9.4.2",
+ "zip 9.5.0",
 ]
 
 [[package]]
@@ -3083,7 +3083,7 @@ dependencies = [
  "windows-core",
  "wx-utils",
  "wxdragon",
- "zip 9.4.2",
+ "zip 9.5.0",
 ]
 
 [[package]]
@@ -3141,7 +3141,7 @@ dependencies = [
  "ureq",
  "web_atoms",
  "windows",
- "zip 9.4.2",
+ "zip 9.5.0",
 ]
 
 [[package]]
@@ -6180,9 +6180,9 @@ dependencies = [
 
 [[package]]
 name = "zip"
-version = "9.4.2"
+version = "9.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df3845f734baabdd02de353a20580e30ceccd03897def44a4eb8e9654992e294"
+checksum = "0700e6c427aff64acdbf02e85fbfd946c2ee12319d1af013092f3a2178914ff8"
 dependencies = [
  "aes 0.9.4",
  "bzip2",
