@@ -291,8 +291,14 @@ impl SpeechSection {
 	}
 }
 
+/// Up and Page Up raise the value, which a native Windows slider would lower (#1273).
 fn slider(panel: Panel, value: i32) -> Slider {
-	Slider::builder(&panel).with_value(value.clamp(0, 100)).with_min_value(0).with_max_value(100).build()
+	Slider::builder(&panel)
+		.with_value(value.clamp(0, 100))
+		.with_min_value(0)
+		.with_max_value(100)
+		.with_natural_keys(true)
+		.build()
 }
 
 fn chosen_engine(engine: Choice) -> String {

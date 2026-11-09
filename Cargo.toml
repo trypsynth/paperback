@@ -154,3 +154,7 @@ opt-level = 3
 
 [profile.release.package.cfb]
 opt-level = 3
+
+# Until a release has Slider natural keys (AllenDang/wxDragon#267).
+[patch.crates-io]
+wxdragon = { git = "https://github.com/AllenDang/wxDragon", rev = "1d56121" }
