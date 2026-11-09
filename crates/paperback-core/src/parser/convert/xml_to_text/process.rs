@@ -7,7 +7,7 @@ use crate::{
 		convert::{
 			block_elements::is_block_element,
 			format_spans::FormatKind,
-			formula::{formula_text, is_xml_formula, xml_formula_fragment},
+			formula::{LinkFormula, formula_text, is_xml_formula, place_in_collapsed, xml_formula_fragment},
 			image_text,
 			line_builder::LineBuilder,
 			list_style::ListStyle,
@@ -130,10 +130,12 @@ impl XmlToText {
 			self.section_offsets.push(self.text.get_current_text_position());
 		}
 		if Self::tag_is(tag_name, "a") {
-			let mut link_text = String::new();
+			let mut raw_link_text = String::new();
 			let mut link_images = Vec::new();
-			Self::collect_link_content(node, &mut link_text, &mut link_images);
-			let link_text = link_text.trim();
+			let mut link_formulas = Vec::new();
+			Self::collect_link_content(node, &mut raw_link_text, &mut link_images, &mut link_formulas);
+			let link_text = raw_link_text.trim();
+			let trimmed_lead = raw_link_text.len() - raw_link_text.trim_start().len();
 			if !link_text.is_empty() {
 				let href = node.attribute("href").unwrap_or("").to_string();
 				let processed_link_text = collapse_whitespace(link_text);
@@ -146,6 +148,20 @@ impl XmlToText {
 					info.offset = link_offset + DocLen::of(&processed_link_text[..start]);
 					searched = start + image_text.len();
 					self.push_image(info, is_figure);
+				}
+				for formula in link_formulas {
+					let raw_start = formula.raw_start.saturating_sub(trimmed_lead);
+					let Some(start) = place_in_collapsed(link_text, raw_start, &processed_link_text, &formula.text)
+					else {
+						continue;
+					};
+					let offset = link_offset + DocLen::of(&processed_link_text[..start]);
+					// Recorded before the link's own ids, which only fill ids not yet placed.
+					for id in formula.ids {
+						self.id_positions.insert(id, offset);
+					}
+					let length = DocLen::of(&formula.text);
+					self.formulas.push(FormulaInfo { offset, text: formula.text, mathml: formula.mathml, length });
 				}
 				self.text.push_str(&processed_link_text);
 				self.links.push(LinkInfo { offset: link_offset, text: processed_link_text, reference: href });
@@ -204,11 +220,30 @@ impl XmlToText {
 	}
 
 	/// Described images contribute their placeholders, so a link made of a picture is still a link.
-	fn collect_link_content(node: Node<'_, '_>, text: &mut String, images: &mut Vec<(String, ImageInfo, bool)>) {
+	fn collect_link_content(
+		node: Node<'_, '_>,
+		text: &mut String,
+		images: &mut Vec<(String, ImageInfo, bool)>,
+		formulas: &mut Vec<LinkFormula>,
+	) {
 		let mut pending: Vec<Node<'_, '_>> = node.children().rev().collect();
 		while let Some(child) = pending.pop() {
 			if let Some(child_text) = child.text().filter(|_| child.is_text()) {
 				text.push_str(child_text);
+			} else if is_xml_formula(child) {
+				// Read as the formula it is, rather than as the bare text of its MathML elements.
+				let mathml = xml_formula_fragment(child);
+				if let Some(rendered) =
+					formula_text(&mathml, child.attribute("alttext"), || collect_element_text(child))
+				{
+					let ids = child
+						.descendants()
+						.filter(Node::is_element)
+						.filter_map(|node| node.attribute("id").or_else(|| node.attribute("name")).map(str::to_string))
+						.collect();
+					formulas.push(LinkFormula { raw_start: text.len(), text: rendered.clone(), mathml, ids });
+					text.push_str(&rendered);
+				}
 			} else if let Some((image_text, info, is_figure)) = Self::described_image(child) {
 				text.push_str(&image_text);
 				images.push((image_text, info, is_figure));
@@ -292,6 +327,15 @@ impl XmlToText {
 		let render = table_render_bundle(&table_xml, self.render_tables_inline);
 		for line in render.lines {
 			self.text.push_finalized_line(&line);
+		}
+		for formula in render.formulas {
+			let offset = start_offset + formula.offset;
+			// Over the table's start, which every id inside it was given above.
+			for id in formula.ids {
+				self.id_positions.insert(id, offset);
+			}
+			let length = DocLen::of(&formula.text);
+			self.formulas.push(FormulaInfo { offset, text: formula.text, mathml: formula.mathml, length });
 		}
 		let table_caption = render.caption;
 		let length = render.length;

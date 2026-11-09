@@ -96,6 +96,18 @@ pub struct TableRenderBundle {
 	pub caption: String,
 	pub lines: Vec<String>,
 	pub length: DocLen,
+	/// The formulas the table's text shows, so each can be navigated to there: every one in an inline table, and those in the summary line of a table shown as a link.
+	pub formulas: Vec<TableFormula>,
+}
+
+/// A formula shown in a table's text.
+pub struct TableFormula {
+	/// From the start of the table's text.
+	pub offset: DocLen,
+	pub text: String,
+	pub mathml: String,
+	/// The ids inside it, which should lead to the formula rather than to the table.
+	pub ids: Vec<String>,
 }
 
 #[must_use]
@@ -111,7 +123,8 @@ pub fn display_lines_and_length(display_text: &str) -> (Vec<String>, DocLen) {
 #[must_use]
 pub fn table_render_bundle(html: &str, inline: bool) -> TableRenderBundle {
 	let fragment = Html::parse_fragment(html);
-	let (tsv, caption) = find_first_table(fragment.tree.root()).map_or_else(
+	let table = find_first_table(fragment.tree.root());
+	let (tsv, caption) = table.map_or_else(
 		|| (String::new(), table_caption_from_tsv("")),
 		|table| {
 			let mut rows: Vec<String> = Vec::new();
@@ -121,8 +134,37 @@ pub fn table_render_bundle(html: &str, inline: bool) -> TableRenderBundle {
 			(tsv, caption)
 		},
 	);
-	let (lines, length) = display_lines_and_length(&tsv_to_display(&tsv, inline));
-	TableRenderBundle { caption, lines, length }
+	let display = tsv_to_display(&tsv, inline);
+	let formulas = table.map(|table| place_formulas(table, &display)).unwrap_or_default();
+	let (lines, length) = display_lines_and_length(&display);
+	TableRenderBundle { caption, lines, length, formulas }
+}
+
+/// The table's formulas in document order, each found in `display` after the one before, which is the order the cells are read in. One `display` doesn't show, as in a row past a summary line, is left out.
+fn place_formulas(table: ego_tree::NodeRef<'_, Node>, display: &str) -> Vec<TableFormula> {
+	let mut placed = Vec::new();
+	let mut searched = 0;
+	for node in table.descendants() {
+		let Node::Element(element) = node.value() else { continue };
+		if !is_dom_formula(element) {
+			continue;
+		}
+		let formula = ElementRef::wrap(node).expect("an element node wraps as an element");
+		let mathml = formula.html();
+		let Some(text) = formula_text(&mathml, element.attr("alttext"), || formula.text().collect()) else { continue };
+		let Some(found) = display[searched..].find(&text) else { continue };
+		let start = searched + found;
+		searched = start + text.len();
+		let ids = node
+			.descendants()
+			.filter_map(|descendant| match descendant.value() {
+				Node::Element(element) => element.attr("id").or_else(|| element.attr("name")).map(str::to_string),
+				_ => None,
+			})
+			.collect();
+		placed.push(TableFormula { offset: DocLen::of(&display[..start]), text, mathml, ids });
+	}
+	placed
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
