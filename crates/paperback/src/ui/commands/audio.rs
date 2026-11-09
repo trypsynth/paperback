@@ -36,7 +36,3 @@ pub fn increase_volume(ctx: &Ctx) {
 pub fn decrease_volume(ctx: &Ctx) {
 	audio::handle_change_audio_volume(ctx.dm, ctx.live_region_label, false, ctx.from_keyboard);
 }
-
-pub fn speech_settings(ctx: &Ctx) {
-	audio::handle_speech_settings(ctx.frame, ctx.dm, ctx.config, ctx.live_region_label, ctx.from_keyboard);
-}

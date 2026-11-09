@@ -246,11 +246,6 @@ impl Speaker {
 		(self.volume, (self.volume - before).abs() < f32::EPSILON)
 	}
 
-	#[must_use]
-	pub fn engine_id(&self) -> &str {
-		self.engine.id()
-	}
-
 	/// Switches to the engine called `id`, stopping any reading.
 	///
 	/// # Errors
@@ -265,15 +260,6 @@ impl Speaker {
 		self.read_aloud = ReadAloud::new(Arc::clone(&engine));
 		self.engine = engine;
 		Ok(())
-	}
-
-	/// The voices of the engine called `id`, which needn't be the one in use.
-	///
-	/// # Errors
-	///
-	/// Returns why the engine couldn't list its voices.
-	pub fn voices_for(&self, id: &str) -> Result<Vec<Voice>> {
-		if id == self.engine.id() { self.engine.voices() } else { engine(id)?.voices() }
 	}
 
 	/// The key the app's rate is kept under, one per engine, since each engine's range differs.
@@ -315,6 +301,15 @@ pub const fn engines() -> &'static [(&'static str, &'static str)] {
 	return &[("onecore", "OneCore"), ("sapi5", "SAPI 5")];
 	#[cfg(not(windows))]
 	return &[];
+}
+
+/// The voices of the engine called `id`, without opening an output device for it, so Settings can list them before anything speaks.
+///
+/// # Errors
+///
+/// Returns why the engine couldn't list its voices.
+pub fn voices(id: &str) -> Result<Vec<Voice>> {
+	engine(id)?.voices()
 }
 
 /// The engine called `id`, or the system's first if there's none by that name.

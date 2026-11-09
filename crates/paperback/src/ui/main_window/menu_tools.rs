@@ -1,6 +1,6 @@
 #[cfg(target_os = "windows")]
 use std::cell::RefCell;
-use std::{rc::Rc, sync::Mutex};
+use std::{cell::Cell, rc::Rc, sync::Mutex};
 
 use paperback_core::{config::ConfigManager, document::DocumentStats};
 use patois::t;
@@ -87,16 +87,34 @@ pub(super) fn handle_options(
 	#[cfg(target_os = "windows")] hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
 ) {
 	let current_language = TranslationManager::instance().lock().unwrap().current_language();
+	let book = dm.lock().unwrap().active_tab().map(|tab| tab.file_path.to_string_lossy().into_owned());
+	let configured_engine = config.lock().unwrap().get_app_string("tts_engine", "");
+	// Reading pauses the first time the sample plays, so the sample isn't spoken over the book, and carries on once Settings closes.
+	let paused_reading = Rc::new(Cell::new(false));
+	let (sample_dm, sample_paused) = (Rc::clone(dm), Rc::clone(&paused_reading));
+	let play_sample: dialogs::PlaySample =
+		Rc::new(move |engine: &str, voice: Option<String>, rate: i32, pitch: i32| {
+			let mut dm = sample_dm.lock().unwrap();
+			if !sample_paused.get() {
+				sample_paused.set(dm.pause_read_aloud());
+			}
+			dm.play_speech_sample(&configured_engine, engine, voice, rate, pitch);
+		});
+	let context = dialogs::OptionsContext { book: book.clone(), play_sample };
 	let options = {
 		let cfg = config.lock().unwrap();
-		dialogs::show_options_dialog(frame, &cfg)
+		dialogs::show_options_dialog(frame, &cfg, context)
 	};
+	dm.lock().unwrap().stop_speech_sample();
 	let Some(options) = options else {
+		if paused_reading.get() {
+			dm.lock().unwrap().resume_read_aloud();
+		}
 		return;
 	};
-	let old = dialogs::OptionsDialogResult::load(&config.lock().unwrap());
+	let old = dialogs::OptionsDialogResult::load(&config.lock().unwrap(), book.as_deref());
 	let cfg = config.lock().unwrap();
-	options.save(&cfg);
+	options.save(&cfg, book.as_deref());
 	logkeeper::set_level(options.advanced.log_level);
 	cfg.flush();
 	tracing::info!("settings saved");
@@ -151,6 +169,22 @@ pub(super) fn handle_options(
 		}
 		let dm_ref = dm.lock().unwrap();
 		update_title_from_manager(frame, &dm_ref);
+	}
+	match (&old.audio.speech, &options.audio.speech) {
+		(Some(was), Some(now)) if was != now => {
+			let mut dm_ref = dm.lock().unwrap();
+			// A different engine stops reading, so there's nothing left to carry on.
+			if was.engine == now.engine {
+				dm_ref.restart_read_aloud();
+				if paused_reading.get() {
+					dm_ref.resume_read_aloud();
+				}
+			} else {
+				dm_ref.set_speech_engine(&now.engine);
+			}
+		}
+		_ if paused_reading.get() => dm.lock().unwrap().resume_read_aloud(),
+		_ => {}
 	}
 	let menu_bar = menu::create_menu_bar(&config.lock().unwrap());
 	frame.set_menu_bar(menu_bar);

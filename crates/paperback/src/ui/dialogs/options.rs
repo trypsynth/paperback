@@ -19,7 +19,7 @@ mod reading;
 pub use advanced::AdvancedSettings;
 pub use appearance::AppearanceSettings;
 pub(crate) use audio::AUDIO_SEEK_AMOUNTS_SECONDS;
-pub use audio::AudioSettings;
+pub use audio::{AudioSettings, PlaySample};
 pub use documents::DocumentSettings;
 pub use general::GeneralSettings;
 pub use reading::ReadingSettings;
@@ -39,29 +39,41 @@ pub struct OptionsDialogResult {
 }
 
 impl OptionsDialogResult {
-	pub fn load(config: &ConfigManager) -> Self {
+	/// `book` is the open document, which can keep a voice of its own.
+	pub fn load(config: &ConfigManager, book: Option<&str>) -> Self {
 		Self {
 			general: GeneralSettings::load(config),
 			reading: ReadingSettings::load(config),
-			audio: AudioSettings::load(config),
+			audio: AudioSettings::load(config, book),
 			appearance: AppearanceSettings::load(config),
 			documents: DocumentSettings::load(config),
 			advanced: AdvancedSettings::load(config),
 		}
 	}
 
-	pub fn save(&self, config: &ConfigManager) {
+	pub fn save(&self, config: &ConfigManager, book: Option<&str>) {
 		self.general.save(config);
 		self.reading.save(config);
-		self.audio.save(config);
+		self.audio.save(config, book);
 		self.appearance.save(config);
 		self.documents.save(config);
 		self.advanced.save(config);
 	}
 }
 
-pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<OptionsDialogResult> {
-	let initial = OptionsDialogResult::load(config);
+/// What Settings needs from the app besides the config.
+pub struct OptionsContext {
+	/// The open document, whose own voice the Audio tab can set.
+	pub book: Option<String>,
+	pub play_sample: PlaySample,
+}
+
+pub fn show_options_dialog(
+	parent: &Frame,
+	config: &ConfigManager,
+	context: OptionsContext,
+) -> Option<OptionsDialogResult> {
+	let initial = OptionsDialogResult::load(config, context.book.as_deref());
 	// TRANSLATORS: Title of the Settings dialog
 	let dialog = Dialog::builder(parent, &t("Settings")).build();
 	let padding = dialog_padding(&dialog);
@@ -71,7 +83,7 @@ pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<Opt
 	let (appearance_panel, documents_panel, advanced_panel) = (page(), page(), page());
 	let general = general::GeneralTab::new(general_panel, dialog, &initial.general, padding);
 	let reading = reading::ReadingTab::new(reading_panel, &initial.reading, padding);
-	let audio = audio::AudioTab::new(audio_panel, &initial.audio, padding);
+	let audio = audio::AudioTab::new(audio_panel, &initial.audio, padding, context.book.is_some(), context.play_sample);
 	let appearance = appearance::AppearanceTab::new(appearance_panel, dialog, &initial.appearance, padding);
 	let documents = documents::DocumentsTab::new(documents_panel, &initial.documents);
 	let advanced = advanced::AdvancedTab::new(advanced_panel, initial.advanced, padding);

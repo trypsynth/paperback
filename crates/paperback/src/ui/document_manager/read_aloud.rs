@@ -1,4 +1,4 @@
-use paperback_core::{config::DocumentSpeech, speech::Voice};
+use paperback_core::config::DocumentSpeech;
 use patois::t;
 
 use super::DocumentManager;
@@ -136,24 +136,6 @@ impl DocumentManager {
 		self.speaker.as_mut().map(|speaker| speaker.change_volume(increase))
 	}
 
-	/// The engine in use, which the app's speech settings are kept under.
-	///
-	/// # Errors
-	///
-	/// Returns a message to announce when read aloud can't run here.
-	pub fn speech_engine(&mut self) -> Result<String, String> {
-		Ok(self.speaker()?.engine_id().to_owned())
-	}
-
-	/// The voices of the engine called `id`, for the settings dialog. Empty if they can't be listed.
-	pub fn speech_voices(&mut self, id: &str) -> Vec<Voice> {
-		let Ok(speaker) = self.speaker() else { return Vec::new() };
-		speaker.voices_for(id).unwrap_or_else(|error| {
-			tracing::warn!(%error, engine = id, "read aloud: couldn't list voices");
-			Vec::new()
-		})
-	}
-
 	/// Switches read aloud to the engine called `id`, stopping any reading.
 	pub fn set_speech_engine(&mut self, id: &str) {
 		if let Ok(speaker) = self.speaker()
@@ -181,11 +163,27 @@ impl DocumentManager {
 		}
 	}
 
-	/// Speaks the settings dialog's sample with the voice, rate and pitch it shows.
-	pub fn play_speech_sample(&mut self, engine: &str, voice: Option<String>, rate: i32, pitch: i32) {
+	/// Speaks Settings' sample with the engine, voice, rate and pitch it shows. `configured_engine` is the one in the config, which a speaker made here starts with: Settings holds the config while it's open, so this can't read it.
+	pub fn play_speech_sample(
+		&mut self,
+		configured_engine: &str,
+		engine: &str,
+		voice: Option<String>,
+		rate: i32,
+		pitch: i32,
+	) {
 		let percent = |value: i32| u8::try_from(value.clamp(0, 100)).unwrap_or(50);
+		if self.speaker.is_none() {
+			match Speaker::new(configured_engine) {
+				Ok(speaker) => self.speaker = Some(speaker),
+				Err(error) => {
+					tracing::warn!(%error, "read aloud isn't available");
+					return;
+				}
+			}
+		}
 		let Some(speaker) = self.speaker.as_mut() else { return };
-		// TRANSLATORS: Spoken by the Play Sample button in the Speech Settings dialog
+		// TRANSLATORS: Spoken by the Play Sample button on the Audio tab of Settings
 		let text = t("This is a sample of the current voice and speed settings.");
 		if let Err(error) = speaker.play_sample(engine, &text, voice, percent(rate), percent(pitch)) {
 			tracing::warn!(%error, "read aloud: couldn't play the sample");
