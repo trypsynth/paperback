@@ -7,7 +7,12 @@ pub mod sapi5;
 #[cfg(windows)]
 mod wav;
 
-use std::{num::NonZero, rc::Rc, sync::Arc};
+use std::{
+	num::NonZero,
+	rc::Rc,
+	sync::Arc,
+	time::{Duration, Instant},
+};
 
 use anyhow::Result;
 use paperback_core::{
@@ -30,6 +35,8 @@ const DEFAULT_PERCENT: i32 = 50;
 const MAX_PAUSE_MS: i32 = 1000;
 const VOLUME_STEP: f32 = 0.1;
 const MAX_VOLUME: f32 = 2.0;
+/// How long the caret has to stay where the user moved it before reading starts there, so a screen reader speaks the move first and a held arrow key doesn't start reading at every step.
+const CARET_SETTLE: Duration = Duration::from_millis(150);
 
 /// What happened in reading since the last tick.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -54,6 +61,10 @@ pub struct Speaker {
 	volume: f32,
 	/// The paragraph the caret was last moved to, so it only moves when a new one starts.
 	followed: Option<DocPos>,
+	/// Where the caret was left, by reading or by the user, so a move of the user's own can be told apart.
+	caret: Option<DocPos>,
+	/// Where the user moved the caret while reading, and when, to read from once it has settled there.
+	moved: Option<(DocPos, Instant)>,
 }
 
 impl Speaker {
@@ -74,14 +85,19 @@ impl Speaker {
 			paused: false,
 			volume: 1.0,
 			followed: None,
+			caret: None,
+			moved: None,
 		})
 	}
 
-	/// Starts reading at the paragraph holding `position`, with the book's voice and rate, or the app's. Returns `false` when there's nothing at or after it to read.
-	pub fn start(&mut self, session: &DocumentSession, position: DocPos, config: &ConfigManager, path: &str) -> bool {
-		self.start_paused_or_not(session, position, config, path, false)
+	/// Starts reading at the word holding `caret`, which is where the caret is, with the book's voice and rate, or the app's. Returns `false` when there's nothing at or after it to read.
+	pub fn start(&mut self, session: &DocumentSession, caret: DocPos, config: &ConfigManager, path: &str) -> bool {
+		let started = self.start_paused_or_not(session, caret, config, path, false, false);
+		self.caret = Some(caret);
+		started
 	}
 
+	/// Starts reading at `position`. `move_caret` is whether the caret goes to where the first paragraph starts, as it does when skipping, or stays where it is, since reading starts at it.
 	fn start_paused_or_not(
 		&mut self,
 		session: &DocumentSession,
@@ -89,12 +105,15 @@ impl Speaker {
 		config: &ConfigManager,
 		path: &str,
 		paused: bool,
+		move_caret: bool,
 	) -> bool {
+		self.moved = None;
 		let settings = self.settings(config, path);
 		let Some(feed) = self.read_aloud.start(session, position, settings) else {
 			self.player = None;
 			return false;
 		};
+		self.followed = (!move_caret).then(|| feed.starts_at());
 		let player = Player::connect_new(self.device.mixer());
 		player.set_volume(self.volume);
 		player.append(FeedSource(feed));
@@ -105,15 +124,58 @@ impl Speaker {
 		}
 		self.player = Some(player);
 		self.paused = paused;
-		self.followed = None;
 		true
 	}
 
-	/// Starts the paragraph being read again, so a changed rate or voice is heard from there. Paused reading stays paused.
+	/// Starts again at the word being read, so a changed rate or voice is heard from there. Paused reading stays paused.
 	pub fn restart(&mut self, session: &DocumentSession, config: &ConfigManager, path: &str) {
-		if let Some(paragraph) = self.read_aloud.progress().paragraph {
-			self.start_paused_or_not(session, paragraph, config, path, self.paused);
+		let progress = self.read_aloud.progress();
+		if let Some(position) = progress.word.or(progress.paragraph) {
+			self.start_paused_or_not(session, position, config, path, self.paused, false);
 		}
+	}
+
+	/// Notices the caret at `caret` somewhere reading didn't leave it, and returns it once it has stayed there long enough to read from, which [`Self::read_from_caret`] then does.
+	pub fn caret_moved_to(&mut self, caret: DocPos) -> Option<DocPos> {
+		if !self.is_reading() && self.moved.is_none() {
+			return None;
+		}
+		if self.caret != Some(caret) {
+			self.caret = Some(caret);
+			self.moved = Some((caret, Instant::now()));
+			// Quiet until reading starts again there, so it doesn't talk over the screen reader saying where the caret went. `paused` stays as it was, for the new start.
+			if let Some(player) = &self.player {
+				player.pause();
+			}
+			return None;
+		}
+		self.moved.filter(|&(_, since)| since.elapsed() >= CARET_SETTLE).map(|(at, _)| at)
+	}
+
+	/// Reads on from where the user moved the caret to, paused or not.
+	pub fn read_from_caret(
+		&mut self,
+		session: &DocumentSession,
+		caret: DocPos,
+		config: &ConfigManager,
+		path: &str,
+		paused: bool,
+	) {
+		if !self.start_paused_or_not(session, caret, config, path, paused, false) {
+			self.stop();
+		}
+		self.caret = Some(caret);
+	}
+
+	/// Where the user moved the caret while reading, if reading hasn't started there yet.
+	#[must_use]
+	pub fn pending_move(&self) -> Option<DocPos> {
+		self.moved.map(|(at, _)| at)
+	}
+
+	/// Records that reading moved the caret to `caret`.
+	pub const fn caret_followed(&mut self, caret: DocPos) {
+		self.caret = Some(caret);
 	}
 
 	/// Speaks `text` with the engine called `engine_id` and this voice, rate and pitch, replacing any sample still playing. The engine reading uses stays as it is.
@@ -150,7 +212,7 @@ impl Speaker {
 	}
 
 	#[cfg(target_os = "windows")]
-	/// Carries on speaking on `device` after the system's output changed, from the start of the paragraph being read, and still paused if it was. `book` is the open document being read, which is needed to carry on.
+	/// Carries on speaking on `device` after the system's output changed, from the word being read, and still paused if it was. `book` is the open document being read, which is needed to carry on.
 	///
 	/// # Errors
 	///
@@ -163,17 +225,20 @@ impl Speaker {
 		// Resampled to the device's own rate, which a different output can differ in.
 		let engine = resampled(self.engine.id(), &device)?;
 		let resume = if self.is_reading() {
-			self.read_aloud.progress().paragraph.map(|paragraph| (paragraph, self.paused))
+			let progress = self.read_aloud.progress();
+			progress.word.or(progress.paragraph).map(|position| (position, self.paused))
 		} else {
 			None
 		};
+		let caret = self.caret;
 		self.stop();
 		self.sample = None;
 		self.device = device;
 		self.read_aloud = ReadAloud::new(Arc::clone(&engine));
 		self.engine = engine;
-		if let (Some((paragraph, paused)), Some((session, config, path))) = (resume, book) {
-			self.start_paused_or_not(session, paragraph, config, path, paused);
+		if let (Some((position, paused)), Some((session, config, path))) = (resume, book) {
+			self.start_paused_or_not(session, position, config, path, paused, false);
+			self.caret = caret;
 		}
 		Ok(())
 	}
@@ -181,7 +246,7 @@ impl Speaker {
 	/// Moves to the paragraph before or after the one playing. Returns `false` at either end of the document.
 	pub fn skip(&mut self, session: &DocumentSession, forward: bool, config: &ConfigManager, path: &str) -> bool {
 		let Some(target) = self.read_aloud.neighbour(session, forward) else { return false };
-		self.start(session, target, config, path)
+		self.start_paused_or_not(session, target, config, path, false, true)
 	}
 
 	/// Whether reading has started and not stopped or reached the end, paused or not.
@@ -214,9 +279,11 @@ impl Speaker {
 		self.player = None;
 		self.paused = false;
 		self.followed = None;
+		self.caret = None;
+		self.moved = None;
 	}
 
-	/// Prepares the paragraphs ahead, and returns what the caret should follow: a paragraph that has just started, or the end, once. Call it on every tick for the document being read.
+	/// Prepares the paragraphs ahead, and returns what the caret should follow: a paragraph that has just started, or the end, once. Call it on every tick for the document being read. Nothing is followed while the user is moving the caret.
 	pub fn pump(&mut self, session: &DocumentSession) -> Option<Followed> {
 		self.player.as_ref()?;
 		self.read_aloud.refill(session);
@@ -224,6 +291,9 @@ impl Speaker {
 			tracing::warn!(%error, "read aloud: a paragraph couldn't be spoken, so it was skipped");
 		}
 		let progress = self.read_aloud.progress();
+		if self.moved.is_some() {
+			return None;
+		}
 		if progress.finished {
 			self.player = None;
 			return Some(Followed::End);

@@ -20,7 +20,19 @@ impl DocumentManager {
 			&& let Some(speaker) = self.speaker.as_mut()
 			&& speaker.is_reading()
 		{
-			if speaker.is_paused() {
+			// Resuming after a move goes on from the caret now, rather than from where reading was until the move settles.
+			if let Some(moved_to) = speaker.pending_move()
+				&& speaker.is_paused()
+			{
+				let tab = &self.tabs[index];
+				speaker.read_from_caret(
+					&tab.session,
+					moved_to,
+					&self.config.lock().unwrap(),
+					&path.to_string_lossy(),
+					false,
+				);
+			} else if speaker.is_paused() {
 				speaker.resume();
 			} else {
 				speaker.pause();
@@ -205,8 +217,8 @@ impl DocumentManager {
 		}
 	}
 
-	/// Moves the caret to each paragraph as it starts, and past the last one once it's read, so starting again doesn't repeat it. Called on the audio tick.
-	pub(super) fn pump_read_aloud(&mut self) {
+	/// Moves the caret to each paragraph as it starts, and past the last one once it's read, so starting again doesn't repeat it. When the user moves the caret while reading, reading goes on from there once it settles. Called on its own short timer.
+	pub fn pump_read_aloud(&mut self) {
 		// Not `reading_tab_index`, since that stops counting the document once reading has finished, and finishing is what this has to notice.
 		let Some(index) =
 			self.active_tab_index().filter(|&index| self.speaker_tab.as_ref() == Some(&self.tabs[index].file_path))
@@ -215,13 +227,21 @@ impl DocumentManager {
 		};
 		let tab = &mut self.tabs[index];
 		let Some(speaker) = self.speaker.as_mut() else { return };
+		let caret = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		// `try_lock` because Settings holds the config while it's open; the move is still there to read from on a later tick.
+		if let Some(moved_to) = speaker.caret_moved_to(caret)
+			&& let Ok(config) = self.config.try_lock()
+		{
+			let paused = speaker.is_paused();
+			speaker.read_from_caret(&tab.session, moved_to, &config, &tab.file_path.to_string_lossy(), paused);
+		}
 		match speaker.pump(&tab.session) {
 			Some(Followed::Paragraph(position)) => {
-				let current = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-				if position != current {
+				if position != caret {
 					let local = tab.window.to_local(position);
 					tab.text_ctrl.set_insertion_point(local);
 					tab.text_ctrl.show_position(local);
+					speaker.caret_followed(tab.window.to_doc(tab.text_ctrl.get_insertion_point()));
 				}
 			}
 			Some(Followed::End) => set_caret_to_doc_offset(tab, tab.session.document_len().as_pos()),

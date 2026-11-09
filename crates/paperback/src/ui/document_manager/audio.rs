@@ -104,7 +104,6 @@ impl DocumentManager {
 	}
 
 	pub fn pump_audio(&mut self) {
-		self.pump_read_aloud();
 		#[cfg(target_os = "windows")]
 		{
 			crate::windows_audio::publish_playback_state(self.frame.get_handle(), self.media_playback_state());
