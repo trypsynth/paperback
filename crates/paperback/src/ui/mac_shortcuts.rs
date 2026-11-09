@@ -123,8 +123,8 @@ pub fn install(
 	};
 	let frame_handle = frame.handle_ptr();
 	frame.bind_internal(EventType::DESTROY, move |event| {
-		// Destroy events bubble from children too: closing a tab must not remove this monitor.
-		if event.get_event_object().is_some_and(|object| object.as_ptr() == frame_handle) {
+		// Destroy events bubble from children too: closing a tab must not remove this monitor. The raw pointer, since `get_event_object` gives a window being deleted a null one.
+		if event.event_object_ptr() == frame_handle {
 			unsafe {
 				let _: () = msg_send![class!(NSEvent), removeMonitor: token];
 				let _: () = msg_send![token, release];

@@ -158,3 +158,5 @@ opt-level = 3
 # Until a release has Slider natural keys (AllenDang/wxDragon#267).
 [patch.crates-io]
 wxdragon = { git = "https://github.com/AllenDang/wxDragon", rev = "1d56121" }
+# Until a release has a269029, without which run_with_progress never finishes on wxDragon master, so updates never install.
+wx-utils = { git = "https://github.com/accessware/wx-utils", rev = "a269029" }
