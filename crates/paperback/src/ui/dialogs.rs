@@ -52,7 +52,7 @@ mod open_url;
 pub use open_url::{confirm_download, show_open_url_dialog};
 mod options;
 pub(crate) use options::AUDIO_SEEK_AMOUNTS_SECONDS;
-pub use options::show_options_dialog;
+pub use options::{OptionsDialogResult, show_options_dialog};
 mod shortcuts;
 pub use shortcuts::{Keymap, prompt_for_shortcuts};
 mod sleep_timer;

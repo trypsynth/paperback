@@ -2,21 +2,14 @@
 use std::cell::RefCell;
 use std::{rc::Rc, sync::Mutex};
 
-use paperback_core::{
-	config::ConfigManager,
-	document::{DocumentStats, ParseSettings},
-};
+use paperback_core::{config::ConfigManager, document::DocumentStats};
 use patois::t;
 use wxdragon::prelude::*;
 
 use super::{DocumentManager, build_font_from_readability, dialogs, menu, update_title_from_manager};
 #[cfg(target_os = "windows")]
 use super::{HotkeyHandle, re_register_hotkey};
-use crate::{
-	config_ext::{set_log_level, set_update_channel},
-	translation_manager::TranslationManager,
-	ui::navigation::announce_for_command,
-};
+use crate::{translation_manager::TranslationManager, ui::navigation::announce_for_command};
 
 pub(super) fn handle_word_count(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
 	let Ok(dm_ref) = dm.try_lock() else {
@@ -101,136 +94,60 @@ pub(super) fn handle_options(
 	let Some(options) = options else {
 		return;
 	};
-	let (
-		old_word_wrap,
-		old_render_tables_inline,
-		old_join_pdf_paragraphs,
-		old_strip_running_text,
-		old_markdown_dollar_math,
-		old_compact_menu,
-		old_readability_font,
-		old_line_spacing,
-		old_bg_color,
-		old_text_alignment,
-		old_letter_spacing,
-		old_paragraph_spacing,
-	) = {
-		let cfg = config.lock().unwrap();
-		(
-			cfg.get_app_bool("word_wrap", false),
-			cfg.get_app_bool("render_tables_inline", true),
-			cfg.get_app_bool("join_pdf_paragraphs", true),
-			cfg.get_app_bool("strip_running_text", true),
-			cfg.get_app_bool("markdown_dollar_math", true),
-			cfg.get_app_bool("compact_go_menu", true),
-			cfg.get_readability_font(),
-			cfg.get_line_spacing(),
-			cfg.get_bg_color(),
-			cfg.get_text_alignment(),
-			cfg.get_letter_spacing(),
-			cfg.get_paragraph_spacing(),
-		)
-	};
+	let old = dialogs::OptionsDialogResult::load(&config.lock().unwrap());
 	let cfg = config.lock().unwrap();
-	cfg.set_app_bool("restore_previous_documents", options.restore_previous_documents);
-	cfg.set_app_bool("word_wrap", options.word_wrap);
-	cfg.set_app_bool("render_tables_inline", options.render_tables_inline);
-	cfg.set_app_bool("join_pdf_paragraphs", options.join_pdf_paragraphs);
-	cfg.set_app_bool("strip_running_text", options.strip_running_text);
-	cfg.set_app_bool("markdown_dollar_math", options.markdown_dollar_math);
-	cfg.set_app_bool("minimize_to_tray", options.minimize_to_tray);
-	cfg.set_app_bool("start_maximized", options.start_maximized);
-	cfg.set_app_bool("compact_go_menu", options.compact_go_menu);
-	cfg.set_app_bool("navigation_wrap", options.navigation_wrap);
-	cfg.set_app_bool("line_start_navigation", options.line_start_navigation);
-	// Read at the next Find, so a match already selected isn't cleared out from under the reader as the dialog closes.
-	cfg.set_app_bool("highlight_found_text", options.highlight_found_text);
-	cfg.set_app_bool("check_for_updates_on_startup", options.check_for_updates_on_startup);
-	cfg.set_app_bool("bookmark_sounds", options.bookmark_sounds);
-	cfg.set_app_bool("sync_caret_to_audio", options.sync_caret_to_audio);
-	cfg.set_app_int("audio_seek_amount_seconds", options.audio_seek_amount_seconds);
-	cfg.set_app_bool("audio_seek_continues_into_next_file", options.audio_seek_continues_into_next_file);
-	cfg.set_app_bool("auto_reload_documents", options.auto_reload_documents);
-	cfg.set_app_int("recent_documents_to_show", options.recent_documents_to_show);
-	cfg.set_app_int("reading_speed_wpm", options.reading_speed_wpm);
-	cfg.set_app_string("language", &options.language);
-	set_update_channel(&cfg, options.update_channel);
-	set_log_level(&cfg, options.log_level);
-	logkeeper::set_level(options.log_level);
-	cfg.set_hotkey(options.hotkey.as_ref());
-	cfg.set_shortcuts(&options.shortcuts);
-	cfg.set_readability_font(&options.readability_font);
-	cfg.set_line_spacing(options.line_spacing);
-	cfg.set_bg_color(options.bg_color);
-	cfg.set_text_alignment(options.text_alignment);
-	cfg.set_letter_spacing(options.letter_spacing);
-	cfg.set_paragraph_spacing(options.paragraph_spacing);
+	options.save(&cfg);
+	logkeeper::set_level(options.advanced.log_level);
 	cfg.flush();
 	tracing::info!("settings saved");
 	#[cfg(target_os = "windows")]
 	{
-		re_register_hotkey(hotkey_handle, options.hotkey.as_ref());
+		re_register_hotkey(hotkey_handle, options.general.hotkey.as_ref());
 	}
 	drop(cfg);
-	let options_word_wrap = options.word_wrap;
-	let options_render_tables_inline = options.render_tables_inline;
-	let parse_settings_changed = old_render_tables_inline != options_render_tables_inline
-		|| old_join_pdf_paragraphs != options.join_pdf_paragraphs
-		|| old_strip_running_text != options.strip_running_text
-		|| old_markdown_dollar_math != options.markdown_dollar_math;
-	let font_changed = old_readability_font != options.readability_font;
-	let line_spacing_changed = old_line_spacing != options.line_spacing;
-	let bg_color_changed = old_bg_color != options.bg_color;
-	let text_alignment_changed = old_text_alignment != options.text_alignment;
-	let letter_spacing_changed = old_letter_spacing != options.letter_spacing;
-	let paragraph_spacing_changed = old_paragraph_spacing != options.paragraph_spacing;
-	let needs_rebuild = old_word_wrap != options_word_wrap
-		|| (font_changed && build_font_from_readability(&options.readability_font).is_none())
-		|| (bg_color_changed && options.bg_color < 0)
-		|| (font_changed && options.readability_font.color < 0);
+	let (was, look) = (&old.appearance, &options.appearance);
+	let font_changed = was.readability_font != look.readability_font;
+	let bg_color_changed = was.bg_color != look.bg_color;
+	let needs_rebuild = was.word_wrap != look.word_wrap
+		|| (font_changed && build_font_from_readability(&look.readability_font).is_none())
+		|| (bg_color_changed && look.bg_color < 0)
+		|| (font_changed && look.readability_font.color < 0);
 	if needs_rebuild {
 		let dm_for_wrap = Rc::clone(dm);
 		let mut dm_ref = dm.lock().unwrap();
-		dm_ref.apply_word_wrap(&dm_for_wrap, options_word_wrap);
+		dm_ref.apply_word_wrap(&dm_for_wrap, look.word_wrap);
 		dm_ref.restore_focus();
 	} else {
 		let dm_ref = dm.lock().unwrap();
 		if font_changed {
-			if let Some(font) = build_font_from_readability(&options.readability_font) {
+			if let Some(font) = build_font_from_readability(&look.readability_font) {
 				dm_ref.apply_font(&font);
 			}
-			dm_ref.apply_color(options.readability_font.color);
+			dm_ref.apply_color(look.readability_font.color);
 		}
 		if bg_color_changed {
-			dm_ref.apply_bg_color(options.bg_color);
+			dm_ref.apply_bg_color(look.bg_color);
 		}
-		if line_spacing_changed {
-			dm_ref.apply_line_spacing(options.line_spacing);
+		if was.line_spacing != look.line_spacing {
+			dm_ref.apply_line_spacing(look.line_spacing);
 		}
-		if text_alignment_changed {
-			dm_ref.apply_text_alignment(options.text_alignment);
+		if was.text_alignment != look.text_alignment {
+			dm_ref.apply_text_alignment(look.text_alignment);
 		}
-		if letter_spacing_changed {
-			dm_ref.apply_letter_spacing(options.letter_spacing);
+		if was.letter_spacing != look.letter_spacing {
+			dm_ref.apply_letter_spacing(look.letter_spacing);
 		}
-		if paragraph_spacing_changed {
-			dm_ref.apply_paragraph_spacing(options.paragraph_spacing);
+		if was.paragraph_spacing != look.paragraph_spacing {
+			dm_ref.apply_paragraph_spacing(look.paragraph_spacing);
 		}
 	}
-	if parse_settings_changed {
-		let settings = ParseSettings {
-			render_tables_inline: options_render_tables_inline,
-			join_pdf_paragraphs: options.join_pdf_paragraphs,
-			strip_running_text: options.strip_running_text,
-			markdown_dollar_math: options.markdown_dollar_math,
-		};
-		let mut dm_ref = dm.lock().unwrap();
-		dm_ref.apply_parse_settings(settings);
+	if old.documents != options.documents {
+		dm.lock().unwrap().apply_parse_settings(options.documents.parse_settings());
 	}
-	let options_compact_menu = options.compact_go_menu;
-	if current_language != options.language || old_compact_menu != options_compact_menu {
-		if current_language != options.language {
-			let _ = TranslationManager::instance().lock().unwrap().set_language(&options.language);
+	let language_changed = current_language != options.general.language;
+	if language_changed || old.reading.compact_go_menu != options.reading.compact_go_menu {
+		if language_changed {
+			let _ = TranslationManager::instance().lock().unwrap().set_language(&options.general.language);
 		}
 		let dm_ref = dm.lock().unwrap();
 		update_title_from_manager(frame, &dm_ref);
