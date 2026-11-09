@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, de::value::StrDeserializer};
 
 mod action_id;
 
@@ -59,8 +59,20 @@ impl ShortcutCategory {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub struct ShortcutsConfig {
-	#[serde(default)]
+	#[serde(default, deserialize_with = "known_actions")]
 	pub bindings: HashMap<ActionId, Option<String>>,
+}
+
+/// Drops the binding of an action that no longer exists. Failing on it would fail the whole config, which is then replaced with the defaults, losing every setting and bookmark.
+fn known_actions<'de, D: Deserializer<'de>>(deserializer: D) -> Result<HashMap<ActionId, Option<String>>, D::Error> {
+	let stored = HashMap::<String, Option<String>>::deserialize(deserializer)?;
+	Ok(stored
+		.into_iter()
+		.filter_map(|(name, chord)| {
+			let action = ActionId::deserialize(StrDeserializer::<serde::de::value::Error>::new(&name)).ok()?;
+			Some((action, chord))
+		})
+		.collect())
 }
 
 impl ShortcutsConfig {
@@ -117,6 +129,14 @@ impl ShortcutsConfig {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	#[test]
+	fn a_binding_for_an_action_that_no_longer_exists_is_dropped() {
+		let config: ShortcutsConfig =
+			toml::from_str("[bindings]\nan_action_since_removed = \"Ctrl+Q\"\noptions = \"Ctrl+Shift+O\"\n").unwrap();
+		assert_eq!(config.bindings.len(), 1);
+		assert_eq!(config.bindings.get(&ActionId::Options), Some(&Some("Ctrl+Shift+O".to_string())));
+	}
 
 	/// #982: on a Japanese keyboard `=` and `'` take Shift, so the reader looks them up by the character typed, with no modifiers.
 	#[test]
