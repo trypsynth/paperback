@@ -40,6 +40,11 @@
       "description": "rodio-wsola, which time-stretches audiobook speed changes, is built against rodio 0.22 (axel10/rodio-wsola). Lift this together with a rodio-wsola release for 0.23.",
       "matchPackageNames": ["rodio"],
       "allowedVersions": "<0.23.0"
+    },
+    {
+      "description": "hayro's PDF interpreter is built on skrifa 0.46, and the XPS parser shares that copy. A newer skrifa here alone adds another copy of skrifa and read-fonts to the binary, so lift this together with hayro.",
+      "matchPackageNames": ["skrifa"],
+      "allowedVersions": "<0.47.0"
     }
   ],
   "customManagers": [
