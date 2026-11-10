@@ -307,6 +307,24 @@ impl<'a, 'input> Walk<'_, 'a, 'input> {
 	}
 }
 
+/// Header rows, body rows and row groups wrap rows, and groups nest.
+fn table_rows<'a, 'input>(table: Node<'a, 'input>) -> Vec<Node<'a, 'input>> {
+	let mut rows = Vec::new();
+	let mut stack = vec![table.children()];
+	while let Some(children) = stack.last_mut() {
+		let Some(child) = children.next() else {
+			stack.pop();
+			continue;
+		};
+		match child.tag_name().name() {
+			"table-row" => rows.push(child),
+			"table-header-rows" | "table-rows" | "table-row-group" => stack.push(child.children()),
+			_ => {}
+		}
+	}
+	rows
+}
+
 fn process_table(
 	node: Node,
 	buffer: &mut DocumentBuffer,
@@ -325,20 +343,18 @@ fn process_table(
 	let mut rows: Vec<Vec<String>> = Vec::new();
 	let mut has_content = false;
 	// Cell text comes from the XML tree, not the display buffer: slicing that with char offsets as byte indices mis-sliced (and could panic) on non-ASCII cells.
-	for child in node.children() {
-		if child.is_element() && child.tag_name().name() == "table-row" {
-			let mut cells: Vec<String> = Vec::new();
-			for cell in child.children() {
-				if cell.is_element() && cell.tag_name().name() == "table-cell" {
-					let cell_text = odf::plain_text(cell);
-					if !cell_text.trim().is_empty() {
-						has_content = true;
-					}
-					cells.push(cell_text.trim().to_string());
+	for row in table_rows(node) {
+		let mut cells: Vec<String> = Vec::new();
+		for cell in row.children() {
+			if cell.is_element() && cell.tag_name().name() == "table-cell" {
+				let cell_text = odf::plain_text(cell);
+				if !cell_text.trim().is_empty() {
+					has_content = true;
 				}
+				cells.push(cell_text.trim().to_string());
 			}
-			rows.push(cells);
 		}
+		rows.push(cells);
 	}
 	if !has_content {
 		tracing::debug!("dropped table with no non-blank cell content");
