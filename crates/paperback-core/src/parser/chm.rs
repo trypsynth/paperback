@@ -123,7 +123,9 @@ impl Parser for ChmParser {
 		let mut starts: Vec<DocPos> = file_positions.values().copied().collect();
 		starts.sort_unstable();
 		let headed = sections_with_headings(&buffer, &starts);
-		add_heading_markers_where(&mut buffer, &toc_items, 1, &|offset| !headed.contains(&section_start(&starts, offset)));
+		add_heading_markers_where(&mut buffer, &toc_items, 1, &|offset| {
+			!headed.contains(&section_start(&starts, offset))
+		});
 		let mut document = Document::new().with_title(title);
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
