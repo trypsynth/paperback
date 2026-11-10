@@ -151,6 +151,19 @@ formats! {
 		mime_types: ["application/x-info"],
 		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
 	},
+	/// Back-translated to print with the reader's braille table.
+	BRF {
+		name: "Braille Ready Files",
+		extensions: ["brf"],
+		mime_types: ["application/x-brf"],
+		flags: SUPPORTS_PAGES,
+	},
+	PEF {
+		name: "Portable Embosser Format",
+		extensions: ["pef"],
+		mime_types: ["application/x-pef+xml"],
+		flags: SUPPORTS_PAGES | SUPPORTS_TOC,
+	},
 	MARKDOWN {
 		name: "Markdown Files",
 		extensions: ["md", "markdown", "mdx", "mdown", "mdwn", "mkd", "mkdn", "mkdown", "ronn"],

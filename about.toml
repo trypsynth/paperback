@@ -22,6 +22,7 @@ accepted = [
 	"CC0-1.0",
 	"CDLA-Permissive-2.0",
 	"ISC",
+	"LGPL-2.1-or-later",
 	"MIT",
 	"MIT-0",
 	"MPL-2.0",

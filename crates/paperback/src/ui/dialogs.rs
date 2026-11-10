@@ -1,11 +1,21 @@
 pub(super) use wx_utils::{
 	add_ok_cancel_footer, add_single_button_footer, bind_enter_confirms, build_ok_cancel_buttons, dialog_padding,
 };
+use wxdragon::prelude::{Dialog, WxWidget};
 
 #[cfg(target_os = "macos")]
 mod activation;
 #[cfg(target_os = "macos")]
 use activation::bind_enter_button;
+
+/// wxDragon's `Dialog` is `Copy` with no `Drop`, so one never destroyed stayed alive, hidden, with all its controls and handlers until exit.
+struct DestroyOnDrop(Dialog);
+
+impl Drop for DestroyOnDrop {
+	fn drop(&mut self) {
+		self.0.destroy();
+	}
+}
 
 /// NVDA counts the focused item's siblings with one cross-process message each on every tree move, so more than this under one parent are split into groups to keep arrow keys from lagging.
 #[cfg(target_os = "windows")]

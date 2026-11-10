@@ -1,6 +1,6 @@
 //! Recent-document ids and the All Documents dialog stay in `main_window/menu_file.rs`: they are a generated id range, not a fixed `ActionId`.
 
-use std::{path::Path, process};
+use std::path::Path;
 
 use paperback_core::parser::{build_file_filter_string, is_remote_url};
 use patois::t;
@@ -176,12 +176,10 @@ pub fn clear_recent_documents(ctx: &Ctx) {
 	announce_for_command(ctx.live_region_label, ctx.from_keyboard, t("Recent documents cleared."));
 }
 
+// Forced, so macOS quits rather than hiding the window, and the close handler saves geometry, the active tab and positions.
 pub fn exit(ctx: &Ctx) {
-	{
-		let mut dm = ctx.dm.lock().unwrap();
-		dm.save_all_positions();
-		dm.remove_working_copies();
+	ctx.frame.close(true);
+	if let Some(app) = wxdragon::app::get_app_instance() {
+		app.exit_main_loop();
 	}
-	crate::problem_report::end_session();
-	process::exit(0);
 }

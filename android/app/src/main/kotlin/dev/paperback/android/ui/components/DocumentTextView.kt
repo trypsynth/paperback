@@ -114,7 +114,7 @@ fun DocumentTextView(
 						}
 						when (marker.mtype) {
 							MarkerType.LINK -> {
-								val markerStartInLine = (marker.position - pos).toInt().coerceAtLeast(0)
+								val markerStartInLine = lineText.utf16Index((marker.position - pos).toInt())
 								val markerTextLength = marker.text.length
 								if (markerStartInLine > currentIdx) {
 									append(lineText.substring(currentIdx, markerStartInLine.coerceAtMost(lineText.length)))
@@ -151,14 +151,14 @@ fun DocumentTextView(
 								}
 							}
 							MarkerType.IMAGE, MarkerType.FIGURE, MarkerType.TABLE -> {
-								val markerStartInLine = (marker.position - pos).toInt().coerceAtLeast(0)
+								val markerStartInLine = lineText.utf16Index((marker.position - pos).toInt())
 								if (markerStartInLine > currentIdx) {
 									append(lineText.substring(currentIdx, markerStartInLine.coerceAtMost(lineText.length)))
 									currentIdx = markerStartInLine
 								}
 								if (currentIdx < lineText.length) {
 									// A table's span counts the newline that ends its line, so it can reach past this line's text.
-									val markerEnd = (currentIdx + marker.length.toInt()).coerceAtMost(lineText.length)
+									val markerEnd = lineText.utf16Index((marker.position - pos + marker.length).toInt())
 									if (markerEnd > currentIdx) {
 										withStyle(asideStyle) { append(lineText.substring(currentIdx, markerEnd)) }
 										currentIdx = markerEnd
@@ -243,4 +243,15 @@ fun DocumentTextView(
 			}
 		}
 	}
+}
+
+// Core positions count Unicode scalars, Kotlin strings UTF-16 units, so anything astral earlier in the line shifted a span left.
+private fun String.utf16Index(scalars: Int): Int {
+	var index = 0
+	var counted = 0
+	while (counted < scalars && index < length) {
+		index += Character.charCount(codePointAt(index))
+		counted++
+	}
+	return index
 }

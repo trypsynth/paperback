@@ -193,7 +193,7 @@ pub(super) fn handle_table_of_contents(
 
 /// Never read as a page jump: a section at the top of a page shares the page marker's offset, where a "Page N:" prefix would be redundant.
 fn toc_announcement(session: &DocumentSession, offset: DocPos) -> String {
-	let content = session.first_content_line_after(offset);
+	let content = session.heading_line_after(offset);
 	if content.trim().is_empty() {
 		// TRANSLATORS: Announced when landing on a blank line; %d is the line number
 		t("Line %d").replacen("%d", &session.line_from_position(offset).to_string(), 1)

@@ -2,6 +2,8 @@ pub mod annotations;
 pub mod html;
 pub mod markdown;
 
+use std::borrow::Cow;
+
 use crate::document::{DocLen, DocPos, DocumentHandle, Marker};
 
 #[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
@@ -13,11 +15,11 @@ pub enum ExportFormat {
 }
 
 #[must_use]
-pub fn render(doc: &DocumentHandle, format: ExportFormat) -> String {
+pub fn render(doc: &DocumentHandle, format: ExportFormat) -> Cow<'_, str> {
 	match format {
-		ExportFormat::Text => doc.document().buffer.content.clone(),
-		ExportFormat::Html => html::render(doc),
-		ExportFormat::Markdown => markdown::render(doc.document()),
+		ExportFormat::Text => Cow::Borrowed(&doc.document().buffer.content),
+		ExportFormat::Html => Cow::Owned(html::render(doc)),
+		ExportFormat::Markdown => Cow::Owned(markdown::render(doc.document())),
 	}
 }
 
@@ -67,14 +69,16 @@ mod tests {
 
 	#[test]
 	fn html_export_emits_markup() {
-		let rendered = render(&sample_handle(), ExportFormat::Html);
+		let handle = sample_handle();
+		let rendered = render(&handle, ExportFormat::Html);
 		assert!(rendered.contains('<'), "expected html markup: {rendered:?}");
 		assert!(rendered.contains("Chapter One"));
 	}
 
 	#[test]
 	fn markdown_export_marks_up_the_heading() {
-		let rendered = render(&sample_handle(), ExportFormat::Markdown);
+		let handle = sample_handle();
+		let rendered = render(&handle, ExportFormat::Markdown);
 		assert!(rendered.contains("# Chapter One"), "expected a markdown heading: {rendered:?}");
 	}
 

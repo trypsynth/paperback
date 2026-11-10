@@ -11,9 +11,9 @@ use std::{
 use anyhow::{Context, Result, bail};
 use clap::Parser;
 use paperback_core::{
-	document::{Document, ParserContext},
+	document::{Document, DocumentHandle, ParserContext},
 	export::{self, ExportFormat},
-	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, parse_document},
+	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, braille, parse_document},
 };
 
 mod cli;
@@ -49,6 +49,21 @@ fn main() -> Result<()> {
 	init_logging(cli.verbose);
 	if cli.list_formats {
 		return write_stdout(&formats::listing());
+	}
+	if cli.list_braille_tables {
+		let mut listing = String::new();
+		for table in braille::braille_tables() {
+			listing.push_str(table.file_name);
+			listing.push('\t');
+			listing.push_str(table.display_name);
+			listing.push('\n');
+		}
+		return write_stdout(&listing);
+	}
+	if let Some(name) = cli.braille_table.as_deref()
+		&& braille::table_name(name).is_none()
+	{
+		bail!("There is no braille table named '{name}'; --list-braille-tables lists them");
 	}
 	// Parsed up front so a bad specification is refused before a long parse rather than after it.
 	let selection = cli.pages.as_deref().map(PageSelection::parse).transpose()?;
@@ -368,7 +383,8 @@ impl<'a> Converter<'a> {
 		let file_path = input.to_string_lossy().into_owned();
 		let mut context = ParserContext::new(file_path)
 			.with_render_tables_inline(true)
-			.with_join_pdf_paragraphs(!cli.no_join_paragraphs);
+			.with_join_pdf_paragraphs(!cli.no_join_paragraphs)
+			.with_braille_table(cli.braille_table.as_deref().map_or(braille::DEFAULT_TABLE, braille::chosen_table));
 		// Stripping repeated page-edge lines can cost real sentences (see `ParserContext::strip_running_text`), hence `--keep-repeated`.
 		context = context.with_strip_running_text(!cli.keep_repeated);
 		if let Some(password) = self.password() {
@@ -407,16 +423,11 @@ impl<'a> Converter<'a> {
 			ocr::pages(&mut doc, &context.file_path, context.password.as_deref(), ocr, !cli.no_join_paragraphs)?;
 		}
 		ocr::reword_placeholders(&mut doc, ocr.image_pages);
-		let handle = paperback_core::document::DocumentHandle::new(doc);
-		Ok(if cli.metadata {
-			metadata(handle.document())
-		} else {
-			let format = match cli.format {
-				Format::Text => ExportFormat::Text,
-				Format::Html => ExportFormat::Html,
-				Format::Markdown => ExportFormat::Markdown,
-			};
-			export::render(&handle, format)
+		Ok(match (cli.metadata, cli.format) {
+			(true, _) => metadata(&doc),
+			(false, Format::Text) => doc.buffer.content,
+			(false, Format::Html) => export::render(&DocumentHandle::new(doc), ExportFormat::Html).into_owned(),
+			(false, Format::Markdown) => export::render(&DocumentHandle::new(doc), ExportFormat::Markdown).into_owned(),
 		})
 	}
 }

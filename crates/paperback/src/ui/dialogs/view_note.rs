@@ -6,6 +6,7 @@ use super::{add_single_button_footer, dialog_padding};
 pub fn show_view_note_dialog(parent: &dyn WxWidget, note_text: &str) {
 	// TRANSLATORS: Title of the View Note dialog
 	let dialog = Dialog::builder(parent, &t("View Note")).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let padding = dialog_padding(&dialog);
 	let note_ctrl = TextCtrl::builder(&dialog)
 		.with_value(note_text)

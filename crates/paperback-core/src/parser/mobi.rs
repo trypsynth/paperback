@@ -1,4 +1,5 @@
 use std::{
+	borrow::Cow,
 	collections::{BTreeSet, HashMap},
 	fs::File,
 	io::Read,
@@ -118,7 +119,7 @@ impl Parser for MobiParser {
 		let mut text = rewrite_internal_links(&raw, &frag_offsets, &extra_targets);
 		if header.is_palmdoc {
 			// These books describe themselves in a Dublin Core block before the text, which would otherwise be read out as the book's first line.
-			let (stripped, creator) = take_palmdoc_metadata(&text);
+			let (stripped, creator) = take_palmdoc_metadata(text);
 			text = stripped;
 			if document_author.is_empty() {
 				document_author = creator.unwrap_or_default();
@@ -133,10 +134,12 @@ impl Parser for MobiParser {
 			)
 			.unwrap()
 		});
-		text = RE_STRIP.replace_all(&text, "").into_owned();
+		if let Cow::Owned(stripped) = RE_STRIP.replace_all(&text, "") {
+			text = stripped;
+		}
 		// Old-style Mobipocket files use <font size="N"> instead of <h1>-<h6>.
-		text = rewrite_font_size_headings(&text);
-		text = pictures::point_pictures_at_records(&text, &data, &header.record_offsets, header.mobi_header());
+		text = rewrite_font_size_headings(text);
+		text = pictures::point_pictures_at_records(text, &data, &header.record_offsets, header.mobi_header());
 		drop(data);
 		let mut document_title = header.document_title;
 		if document_title.trim().is_empty() {
@@ -212,18 +215,19 @@ impl Parser for MobiParser {
 }
 
 /// The `<metadata>` block and its `dc:Creator`, which stands in for the EXTH author these books lack.
-fn take_palmdoc_metadata(html: &str) -> (String, Option<String>) {
+fn take_palmdoc_metadata(mut html: String) -> (String, Option<String>) {
 	static METADATA: LazyLock<regex::Regex> =
 		LazyLock::new(|| regex::Regex::new(r"(?is)<metadata\b.*?</metadata\s*>").expect("metadata pattern is valid"));
 	static CREATOR: LazyLock<regex::Regex> = LazyLock::new(|| {
 		regex::Regex::new(r"(?is)<dc:creator\b[^>]*>(.*?)</dc:creator\s*>").expect("creator pattern is valid")
 	});
-	let Some(block) = METADATA.find(html) else { return (html.to_string(), None) };
+	let Some(block) = METADATA.find(&html) else { return (html, None) };
 	let creator = CREATOR
 		.captures(block.as_str())
 		.map(|captures| captures[1].trim().to_string())
 		.filter(|creator| !creator.is_empty());
-	(format!("{}{}", &html[..block.start()], &html[block.end()..]), creator)
+	html.replace_range(block.range(), "");
+	(html, creator)
 }
 
 /// Only the start is checked: a Mobipocket book opens with its `<html>`, and plain text that happens to hold a tag further in stays text.

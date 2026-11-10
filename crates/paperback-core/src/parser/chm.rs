@@ -120,9 +120,11 @@ impl Parser for ChmParser {
 		}
 		calculate_toc_offsets(&mut toc_items, &file_positions, &id_positions);
 		// Asked per topic, not per book: a reference that marks up two of its six hundred pages needs the other 598, without those two announced twice.
-		let headed = sections_with_headings(&buffer, &file_positions);
+		let mut starts: Vec<DocPos> = file_positions.values().copied().collect();
+		starts.sort_unstable();
+		let headed = sections_with_headings(&buffer, &starts);
 		add_heading_markers_where(&mut buffer, &toc_items, 1, &|offset| {
-			!headed.contains(&section_start(&file_positions, offset))
+			!headed.contains(&section_start(&starts, offset))
 		});
 		let mut document = Document::new().with_title(title);
 		document.set_buffer(buffer);
@@ -133,16 +135,16 @@ impl Parser for ChmParser {
 	}
 }
 
-fn section_start(file_positions: &HashMap<String, DocPos>, offset: DocPos) -> DocPos {
-	file_positions.values().copied().filter(|start| *start <= offset).max().unwrap_or_default()
+fn section_start(starts: &[DocPos], offset: DocPos) -> DocPos {
+	starts[..starts.partition_point(|start| *start <= offset)].last().copied().unwrap_or_default()
 }
 
-fn sections_with_headings(buffer: &DocumentBuffer, file_positions: &HashMap<String, DocPos>) -> HashSet<DocPos> {
+fn sections_with_headings(buffer: &DocumentBuffer, starts: &[DocPos]) -> HashSet<DocPos> {
 	buffer
 		.markers
 		.iter()
 		.filter(|marker| is_heading_marker(marker.mtype))
-		.map(|marker| section_start(file_positions, marker.position))
+		.map(|marker| section_start(starts, marker.position))
 		.collect()
 }
 

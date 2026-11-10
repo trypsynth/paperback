@@ -10,6 +10,7 @@ pub fn show_note_entry_dialog(
 	existing_note: &str,
 ) -> Option<String> {
 	let dialog = Dialog::builder(parent, title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let padding = dialog_padding(&dialog);
 	let message_label = StaticText::builder(&dialog).with_label(message).build();
 	let note_ctrl = TextCtrl::builder(&dialog)

@@ -21,6 +21,7 @@ fn show_toc_dialog_dv(parent: &Frame, toc_items: &[TocItem], current_offset: i32
 	// TRANSLATORS: Title of the Table of Contents dialog
 	let dialog_title = t("Table of Contents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let selected_offset = Rc::new(Cell::new(-1i32));
 	let tree = DataViewTreeCtrl::builder(&dialog).with_size(dialog.from_dip(Size::new(400, 500))).build();
 	let mut item_offsets: HashMap<usize, i32> = HashMap::new();
@@ -168,6 +169,7 @@ fn show_toc_dialog_wx(parent: &Frame, toc_items: &[TocItem], current_offset: i32
 	// TRANSLATORS: Title of the Table of Contents dialog
 	let dialog_title = t("Table of Contents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let selected_offset = Rc::new(Cell::new(-1));
 	let (tree, _root) = build_toc_tree(dialog, toc_items, current_offset);
 	bind_toc_selection(tree, Rc::clone(&selected_offset));

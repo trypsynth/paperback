@@ -18,6 +18,7 @@ pub fn show_linux_setup_dialog(parent: &Frame, choices: &[AssociationChoice]) ->
 	// TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
 	let title = t("Set Up Paperback");
 	let dialog = Dialog::builder(parent, &title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let padding = dialog_padding(&dialog);
 	// TRANSLATORS: Explains the checkbox list below in the Linux file-association setup dialog
 	let intro_text = t("Choose which file types should open in Paperback:");

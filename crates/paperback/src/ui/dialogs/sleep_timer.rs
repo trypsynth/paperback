@@ -6,6 +6,7 @@ use super::{add_ok_cancel_footer, bind_enter_confirms, build_ok_cancel_buttons, 
 pub fn show_sleep_timer_dialog(parent: &Frame, initial_duration: i32) -> Option<i32> {
 	// TRANSLATORS: Title of the Sleep Timer dialog
 	let dialog = Dialog::builder(parent, &t("Sleep Timer")).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let padding = dialog_padding(&dialog);
 	// TRANSLATORS: Label for the input field where users enter the number of minutes for the sleep timer.
 	let label = StaticText::builder(&dialog).with_label(&t("&Minutes:")).build();

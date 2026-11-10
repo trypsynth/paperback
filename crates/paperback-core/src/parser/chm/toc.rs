@@ -179,7 +179,7 @@ pub(super) fn build_ordered_file_list(html_files: &[String], toc_items: &[TocIte
 	let mut toc_files = Vec::new();
 	collect_toc_files(toc_items, &mut toc_files);
 	for toc_file in toc_files {
-		let normalized = normalize_path(&toc_file);
+		let normalized = normalize_path(toc_file);
 		if let Some(actual_path) = path_map.get(&normalized)
 			&& seen.insert(normalized)
 		{
@@ -195,13 +195,12 @@ pub(super) fn build_ordered_file_list(html_files: &[String], toc_items: &[TocIte
 	ordered
 }
 
-fn collect_toc_files(items: &[TocItem], files: &mut Vec<String>) {
+/// Duplicates are left in; the caller drops them as it normalizes.
+fn collect_toc_files<'a>(items: &'a [TocItem], files: &mut Vec<&'a str>) {
 	for item in items {
-		if !item.reference.is_empty() {
-			let file_path = item.reference.split_once('#').map_or(item.reference.as_str(), |(path, _)| path);
-			if !file_path.is_empty() && !files.contains(&file_path.to_string()) {
-				files.push(file_path.to_string());
-			}
+		let file_path = item.reference.split_once('#').map_or(item.reference.as_str(), |(path, _)| path);
+		if !file_path.is_empty() {
+			files.push(file_path);
 		}
 		collect_toc_files(&item.children, files);
 	}

@@ -70,6 +70,7 @@ pub fn show_all_documents_dialog(
 	// TRANSLATORS: Title of the All Documents dialog
 	let dialog_title = t("All Documents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let selected_paths: Rc<Mutex<Vec<String>>> = Rc::new(Mutex::new(Vec::new()));
 	let paths_to_close: Rc<Mutex<Vec<String>>> = Rc::new(Mutex::new(Vec::new()));
 	// TRANSLATORS: Label for the search input field in the All Documents dialog

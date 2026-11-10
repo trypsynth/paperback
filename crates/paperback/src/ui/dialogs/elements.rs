@@ -66,6 +66,7 @@ fn show_elements_dialog_dv(
 ) -> Option<(DocPos, ElementsKind)> {
 	// TRANSLATORS: Title of the Elements dialog
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let flat_labels = Rc::new(RefCell::new(Vec::new()));
 	let ElementsDialogUiDv { content_sizer, view_choice, headings_tree, content_list } =
 		build_elements_dialog_ui_dv(dialog, Rc::clone(&flat_labels));
@@ -336,6 +337,7 @@ fn show_elements_dialog_wx(
 ) -> Option<(DocPos, ElementsKind)> {
 	// TRANSLATORS: Title of the Elements dialog
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let flat_labels = Rc::new(RefCell::new(Vec::new()));
 	let ElementsDialogUi { content_sizer, view_choice, headings_tree, content_list } =
 		build_elements_dialog_ui(dialog, Rc::clone(&flat_labels));

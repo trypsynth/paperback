@@ -85,7 +85,7 @@ pub fn show_options_dialog(
 	let reading = reading::ReadingTab::new(reading_panel, &initial.reading, padding);
 	let audio = audio::AudioTab::new(audio_panel, &initial.audio, padding, context.book.is_some(), context.play_sample);
 	let appearance = appearance::AppearanceTab::new(appearance_panel, dialog, &initial.appearance, padding);
-	let documents = documents::DocumentsTab::new(documents_panel, &initial.documents);
+	let documents = documents::DocumentsTab::new(documents_panel, &initial.documents, padding);
 	let advanced = advanced::AdvancedTab::new(advanced_panel, initial.advanced, padding);
 	let tabs = [
 		// TRANSLATORS: Tab label for the General options panel

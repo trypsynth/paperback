@@ -10,6 +10,7 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32, live_regi
 	// TRANSLATORS: Title of the Go to Percent dialog
 	let dialog_title = t("Go to Percent");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	// TRANSLATORS: Label/prompt template for the percentage selection dialog. The %d placeholders represent current_percent and 100 respectively.
 	let label_template = t("Go to percent (%d/%d):");
 	let label_text = label_template.replacen("%d", &current_percent.to_string(), 1).replacen("%d", "100", 1);

@@ -37,6 +37,10 @@ pub(super) fn schedule_restore_documents(
 		if state.restored || state.closing {
 			return;
 		}
+		// The first idle event can come inside a modal dialog's loop, such as Open As for a file given on the command line, while it holds the config or the document manager; a later one comes once it closes.
+		if config.try_lock().is_err() || doc_manager.try_lock().is_err() {
+			return;
+		}
 		state.restored = true;
 		drop(state);
 		let pre_restore_active = doc_manager.lock().unwrap().active_tab_index();

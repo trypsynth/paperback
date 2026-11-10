@@ -1,6 +1,6 @@
 use std::{
 	fs::{self, File},
-	io::{self, BufReader, Write},
+	io::{self, BufReader},
 	ops::Range,
 	path::{Path, PathBuf},
 };
@@ -36,7 +36,7 @@ impl DocumentSession {
 
 	#[must_use]
 	pub fn render_export_ffi(&self, format: ExportFormat) -> String {
-		render(&self.handle, format)
+		render(&self.handle, format).into_owned()
 	}
 }
 
@@ -235,10 +235,6 @@ impl DocumentSession {
 	}
 
 	pub fn export_as(&self, output_path: &str, format: ExportFormat) -> io::Result<()> {
-		let content = render(&self.handle, format);
-		let mut file = File::create(output_path)?;
-		file.write_all(content.as_bytes())?;
-		file.flush()?;
-		Ok(())
+		fs::write(output_path, render(&self.handle, format).as_bytes())
 	}
 }

@@ -57,6 +57,7 @@ pub(super) struct NumberPrompt<'a> {
 
 pub(super) fn show_number_dialog(parent: &Frame, prompt: &NumberPrompt, live_region_label: StaticText) -> Option<i32> {
 	let dialog = Dialog::builder(parent, prompt.title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let padding = super::dialog_padding(&dialog);
 	let label = StaticText::builder(&dialog).with_label(prompt.label).build();
 	let entry = Rc::new(NumberEntry::new(dialog, prompt.current, prompt.min, prompt.max));

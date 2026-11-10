@@ -13,7 +13,7 @@ use paperback_core::config::ConfigManager;
 use patois::{nt, t};
 use wxdragon::prelude::*;
 
-use super::{dialogs, document_manager::DocumentManager, main_window::update_title_from_manager, navigation};
+use super::{dialogs, document_manager::DocumentManager, main_window::update_title_from_manager};
 use crate::ui::navigation::{announce, announce_for_command};
 
 static START_MS: AtomicI64 = AtomicI64::new(0);
@@ -58,21 +58,14 @@ impl SleepTimer {
 			if now_ms() < deadline_ms {
 				return;
 			}
+			// A modal dialog holding either lock would block the close handler forever, so wait for it to go.
+			if dm_for_tick.try_lock().is_err() || config_for_tick.try_lock().is_err() {
+				timer_for_tick.start(1000, true);
+				return;
+			}
 			tracing::info!("sleep timer fired, closing application");
 			timer_for_tick.stop();
 			clear();
-			{
-				let dm = dm_for_tick.lock().unwrap();
-				let cfg = config_for_tick.lock().unwrap();
-				for i in 0..dm.tab_count() {
-					if let Some(tab) = dm.get_tab(i) {
-						let current_pos = navigation::doc_caret(tab);
-						let path_str = tab.file_path.to_string_lossy();
-						cfg.set_document_position(&path_str, current_pos);
-					}
-				}
-				cfg.flush();
-			}
 			frame_for_tick.close(true);
 		});
 		Self { timer }

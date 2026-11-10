@@ -16,6 +16,7 @@ pub fn show_batch_ocr_dialog(parent: &Frame, max_page: i32) -> Option<BatchOcrRa
 	// TRANSLATORS: Title of the Batch OCR dialog
 	let dialog_title = t("Batch OCR");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let padding = dialog_padding(&dialog);
 	// TRANSLATORS: Label for the starting page field of the Batch OCR range
 	let start_label = StaticText::builder(&dialog).with_label(&t("&Start page:")).build();

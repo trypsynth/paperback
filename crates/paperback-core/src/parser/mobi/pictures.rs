@@ -1,25 +1,25 @@
 //! A MOBI picture is named by its place among the picture records (`recindex`, or KF8's `kindle:embed`), which nothing reaches once the book is text, so each is rewritten to its absolute record, `mobi-record:57.jpg`, which saving a picture reads straight out of the file.
 
-use std::sync::LazyLock;
+use std::{borrow::Cow, sync::LazyLock};
 
 use regex::{Captures, Regex};
 
 /// `mobi_header` offset of the record number the book's pictures, or for KF8 its resources, start at.
 const FIRST_IMAGE_OFFSET: usize = 92;
 
-pub(super) fn point_pictures_at_records(html: &str, data: &[u8], records: &[usize], mobi_header: &[u8]) -> String {
+pub(super) fn point_pictures_at_records(html: String, data: &[u8], records: &[usize], mobi_header: &[u8]) -> String {
 	static IMG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(?i)<img\b[^>]*>").unwrap());
 	static RECINDEX: LazyLock<Regex> =
 		LazyLock::new(|| Regex::new(r#"(?i)\srecindex\s*=\s*["']?0*(\d+)["']?"#).unwrap());
 	static EMBED: LazyLock<Regex> =
 		LazyLock::new(|| Regex::new(r#"(?i)\ssrc\s*=\s*["']kindle:embed:([0-9a-v]+)[^"']*["']"#).unwrap());
-	let Some(first) = first_image_record(mobi_header) else { return html.to_string() };
+	let Some(first) = first_image_record(mobi_header) else { return html };
 	let source = |ordinal: usize| {
 		let record = first + ordinal.checked_sub(1)?;
 		let bytes = record_bytes(data, records, record)?;
 		Some(format!(" src=\"mobi-record:{record}{}\"", extension(bytes)))
 	};
-	IMG.replace_all(html, |tag: &Captures| {
+	let rewritten = IMG.replace_all(&html, |tag: &Captures| {
 		let tag = &tag[0];
 		if let Some(embed) = EMBED.captures(tag) {
 			let Some(attribute) = usize::from_str_radix(&embed[1], 32).ok().and_then(source) else {
@@ -37,8 +37,11 @@ pub(super) fn point_pictures_at_records(html: &str, data: &[u8], records: &[usiz
 			);
 		}
 		tag.to_string()
-	})
-	.into_owned()
+	});
+	match rewritten {
+		Cow::Owned(rewritten) => rewritten,
+		Cow::Borrowed(_) => html,
+	}
 }
 
 fn first_image_record(mobi_header: &[u8]) -> Option<usize> {
@@ -113,7 +116,7 @@ mod tests {
 		assert_eq!(record_offsets(&data), offsets);
 		let html = r#"<p><img recindex="00002" alt="Map"></p><p><img src="kindle:embed:0001?mime=image/jpeg"/></p>"#;
 		assert_eq!(
-			point_pictures_at_records(html, &data, &offsets, &header),
+			point_pictures_at_records(html.to_string(), &data, &offsets, &header),
 			r#"<p><img src="mobi-record:3.gif" recindex="00002" alt="Map"></p><p><img src="mobi-record:2.jpg"/></p>"#
 		);
 		assert_eq!(record_bytes(&data, &offsets, 3), Some(b"GIF89a".as_slice()));
@@ -123,6 +126,6 @@ mod tests {
 	fn a_picture_past_the_last_record_is_left_alone() {
 		let (data, offsets, header) = book(&[b"rec0", b"\xFF\xD8"], 1);
 		let html = r#"<img recindex="9">"#;
-		assert_eq!(point_pictures_at_records(html, &data, &offsets, &header), html);
+		assert_eq!(point_pictures_at_records(html.to_string(), &data, &offsets, &header), html);
 	}
 }

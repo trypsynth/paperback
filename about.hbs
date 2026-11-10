@@ -8,7 +8,7 @@ permalink: /licenses
 
 Paperback is built on a great deal of work that other people gave away for free. This page credits all of it.
 
-Paperback itself is under the [MIT license](https://github.com/trypsynth/paperback/blob/master/LICENSE.md), and everything it ships alongside is permissively licensed too, so nothing here restricts what you can do with the program.
+Paperback itself is under the [MIT license](https://github.com/trypsynth/paperback/blob/master/LICENSE.md). Nearly everything it ships alongside is permissively licensed too. The exception is the braille translator and its tables, under the GNU Lesser General Public License, which asks only that their source stays available to you, as all of Paperback's is.
 
 ## PDFium and wxWidgets
 
@@ -43,6 +43,10 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</pre>
 
 The desktop interface is [wxWidgets](https://www.wxwidgets.org/), under the wxWindows Library Licence.
+
+## liblouis
+
+Paperback turns Braille Ready Files and PEF books back into print with [louis-rs](https://github.com/liblouis/louis-rs), listed with the other Rust libraries below, and the braille tables of [liblouis](https://liblouis.io/), which are packed into Paperback. The tables are under the GNU Lesser General Public License, version 2.1 or later, except `Es-Es-G0.utb`, `et-g0.utb`, `is-chardefs6.cti`, `is-chardefs8.cti`, `pt-pt-g2.ctb` and the Serbian tables, which are under version 3 or later. Each table names its authors in its header, and Paperback's copy of them, with the license, is in [its source](https://github.com/trypsynth/paperback/tree/master/crates/paperback-core/liblouis).
 
 ## Rust libraries
 

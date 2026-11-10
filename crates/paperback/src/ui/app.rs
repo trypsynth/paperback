@@ -1,12 +1,15 @@
 #[cfg(target_os = "macos")]
 use std::path::Path;
 use std::{
+	collections::VecDeque,
 	env,
 	rc::Rc,
 	sync::{
 		Mutex,
-		atomic::{AtomicUsize, Ordering},
+		atomic::{AtomicBool, AtomicUsize, Ordering},
 	},
+	thread,
+	time::Duration,
 };
 
 use paperback_core::config::ConfigManager;
@@ -109,6 +112,35 @@ pub fn main_window_from_ptr() -> Option<&'static MainWindow> {
 	unsafe { (ptr as *const MainWindow).as_ref() }
 }
 
+type Waiting = Box<dyn FnOnce(&'static MainWindow) + Send>;
+
+static WAITING: Mutex<VecDeque<Waiting>> = Mutex::new(VecDeque::new());
+static RETRY_PENDING: AtomicBool = AtomicBool::new(false);
+
+/// In order, once no modal dialog holds the manager or config: blocking on them from inside its event loop hung the app for good.
+pub fn when_unlocked(action: impl FnOnce(&'static MainWindow) + Send + 'static) {
+	WAITING.lock().unwrap().push_back(Box::new(action));
+	wx_utils::post_to_ui(run_waiting);
+}
+
+fn run_waiting() {
+	let Some(window) = main_window_from_ptr() else { return };
+	loop {
+		if window.locks_held() {
+			if !RETRY_PENDING.swap(true, Ordering::SeqCst) {
+				thread::spawn(|| {
+					thread::sleep(Duration::from_millis(250));
+					RETRY_PENDING.store(false, Ordering::SeqCst);
+					wx_utils::post_to_ui(run_waiting);
+				});
+			}
+			return;
+		}
+		let Some(action) = WAITING.lock().unwrap().pop_front() else { return };
+		action(window);
+	}
+}
+
 /// The first copy's door, kept from `main`, where the check for a running copy happens before wxWidgets starts, until the main window can take messages.
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 static DOOR: Mutex<Option<doorbell::Door>> = Mutex::new(None);
@@ -123,11 +155,9 @@ pub fn keep_door(door: doorbell::Door) {
 fn listen_for_other_copies() {
 	let Some(door) = DOOR.lock().unwrap().take() else { return };
 	door.listen(|message| {
-		wx_utils::post_to_ui(move || {
-			if let Some(window) = main_window_from_ptr() {
-				for command in commands_from_message(&message) {
-					window.handle_ipc_command(command);
-				}
+		when_unlocked(move |window| {
+			for command in commands_from_message(&message) {
+				window.handle_ipc_command(command);
 			}
 		});
 	});
