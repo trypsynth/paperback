@@ -4,9 +4,10 @@
 
 mod tables;
 
-use std::{collections::HashMap, fs};
+use std::{borrow::Cow, collections::HashMap, fs};
 
 use anyhow::{Context, Result};
+use encoding_rs::WINDOWS_1252;
 use louis::{TranslationOptions, Translator};
 use rayon::prelude::*;
 use roxmltree::{Document as XmlDocument, Node};
@@ -54,8 +55,9 @@ impl Parser for BrfParser {
 		tracing::debug!(path = %context.file_path, table = context.braille_table, "parsing BRF file");
 		let bytes =
 			fs::read(&context.file_path).with_context(|| format!("Failed to open BRF file '{}'", context.file_path))?;
-		let pages = brf_pages(&bytes);
-		let buffer = back_translate(&pages, context)?;
+		let (translator, braille_ascii) = tables::back_translator(context.braille_table)?;
+		let pages = brf_pages(&bytes, &braille_ascii);
+		let buffer = back_translate(&pages, &translator, context)?;
 		tracing::debug!(path = %context.file_path, pages = pages.len(), "parsed BRF file");
 		let mut document = Document::new().with_title(extract_title_from_path(&context.file_path));
 		document.set_buffer(buffer);
@@ -63,19 +65,26 @@ impl Parser for BrfParser {
 	}
 }
 
-/// A BRF page ends with a form feed, and an embosser's last one often leaves an empty page after it. Lines end with a line feed, a carriage return and a line feed, or, in older files, a carriage return alone. Some files named `.brf` hold Unicode braille instead of braille ASCII, as the Internet Archive's braille music does, and those cells are read as they are.
-fn brf_pages(bytes: &[u8]) -> Vec<Page> {
-	let characters: Vec<char> = match std::str::from_utf8(bytes) {
-		Ok(text) if text.chars().any(is_cell) => text.chars().collect(),
-		_ => bytes.iter().map(|&byte| char::from(byte)).collect(),
-	};
+/// A BRF page ends with a form feed, and an embosser's last one often leaves an empty page after it. Lines end with a line feed, a carriage return and a line feed, or, in older files, a carriage return alone.
+///
+/// `braille_ascii` is the table's own braille ASCII, which beyond the North American one uses letters outside ASCII, so a file is read as UTF-8 when it is valid UTF-8, and as Windows-1252 otherwise. A character the table has no cell for is read as North American Braille ASCII. Some files named `.brf` hold Unicode braille instead, as the Internet Archive's braille music does, and those cells are read as they are.
+fn brf_pages(bytes: &[u8], braille_ascii: &HashMap<char, char>) -> Vec<Page> {
+	let text =
+		std::str::from_utf8(bytes).map_or_else(|_| WINDOWS_1252.decode_without_bom_handling(bytes).0, Cow::Borrowed);
+	let characters: Vec<char> = text.chars().collect();
 	let mut text = String::with_capacity(characters.len());
 	for (index, &character) in characters.iter().enumerate() {
 		match character {
 			'\r' if characters.get(index + 1) == Some(&'\n') => {}
 			'\r' => text.push('\n'),
+			'\n' | '\x0c' => text.push(character),
 			_ if is_cell(character) => text.push(character),
-			_ => text.push(u8::try_from(character).map_or(character, ascii_to_cell)),
+			_ => text.push(
+				braille_ascii
+					.get(&character)
+					.copied()
+					.unwrap_or_else(|| u8::try_from(character).map_or(character, ascii_to_cell)),
+			),
 		}
 	}
 	let mut pages: Vec<Page> = text.split('\x0c').map(|page| page.lines().map(str::to_string).collect()).collect();
@@ -112,7 +121,8 @@ impl Parser for PefParser {
 		}
 		let volumes: Vec<Vec<Page>> = pef_elements(root, "volume").map(volume_pages).collect();
 		let pages: Vec<Page> = volumes.iter().flatten().cloned().collect();
-		let buffer = back_translate(&pages, context)?;
+		let (translator, _) = tables::back_translator(context.braille_table)?;
+		let buffer = back_translate(&pages, &translator, context)?;
 		tracing::debug!(path = %context.file_path, volumes = volumes.len(), pages = pages.len(), "parsed PEF file");
 		let toc = if volumes.len() > 1 { volume_toc(&volumes, &buffer) } else { Vec::new() };
 		let title = dublin_core(root, "title").unwrap_or_else(|| extract_title_from_path(&context.file_path));
@@ -181,13 +191,12 @@ fn is_blank(line: &str) -> bool {
 }
 
 /// The pages as print, a paragraph to a line, with a marker where each page begins.
-fn back_translate(pages: &[Page], context: &ParserContext) -> Result<DocumentBuffer> {
-	let translator = tables::back_translator(context.braille_table)?;
+fn back_translate(pages: &[Page], translator: &Translator, context: &ParserContext) -> Result<DocumentBuffer> {
 	let layout = Layout::of(pages, context.strip_running_text);
 	let translated: Vec<(String, Vec<usize>)> = layout
 		.paragraphs
 		.par_iter()
-		.map(|paragraph| translate_paragraph(&translator, paragraph))
+		.map(|paragraph| translate_paragraph(translator, paragraph))
 		.collect::<Result<_>>()?;
 	let mut buffer = DocumentBuffer::new();
 	let mut paragraph_starts = Vec::with_capacity(translated.len());

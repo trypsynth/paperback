@@ -92,6 +92,22 @@ fn reads_lines_ended_by_a_carriage_return_alone() {
 	assert_eq!(document.buffer.content, "hello world\nThe Orbit\n");
 }
 
+/// French braille ASCII writes the capital sign as ¨ and é as itself, as `fr-bfu-comp6.utb` defines them.
+#[test]
+fn reads_the_braille_ascii_of_the_tables_country() {
+	let french = |context: ParserContext| ParserContext { braille_table: "fr-bfu-comp6.utb", ..context };
+	let utf8 = parse_with(&BrfParser, "fr.brf", "¨le ¨président\n", french).unwrap();
+	assert_eq!(utf8.buffer.content, "Le Président\n");
+	let windows_1252 = parse_with(&BrfParser, "fr.brf", b"\xa8le \xa8pr\xe9sident\n", french).unwrap();
+	assert_eq!(windows_1252.buffer.content, "Le Président\n");
+}
+
+/// UEB's tables display a capital A as the computer braille cell with dot 7, which is no six-dot braille file's.
+#[test]
+fn reads_capitals_as_north_american_braille_ascii_for_english() {
+	assert_eq!(parse(&BrfParser, "upper.brf", "HELLO\n").buffer.content, "hello\n");
+}
+
 #[test]
 fn reads_a_brf_written_in_unicode_braille() {
 	let document = parse(&BrfParser, "unicode.brf", "  ⠓⠑⠇⠇⠕\r\n⠸⠺\r\n");

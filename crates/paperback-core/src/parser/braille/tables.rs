@@ -112,13 +112,68 @@ fn inline(name: &str, included: &mut Vec<&'static str>, source: &mut String) -> 
 	Ok(())
 }
 
-/// A back-translator for the packed table `name`.
+/// A back-translator for the packed table `name`, and the cell each character of its braille ASCII stands for.
 ///
 /// # Errors
 ///
 /// Returns an error if there is no such table, or louis-rs cannot compile it.
-pub fn back_translator(name: &str) -> Result<Translator> {
+pub fn back_translator(name: &str) -> Result<(Translator, HashMap<char, char>)> {
 	let source = inlined_source(name)?;
-	Translator::from_table_source(&source, Direction::Backward)
-		.map_err(|error| anyhow::anyhow!("Braille table '{name}' could not be read: {error}"))
+	let translator = Translator::from_table_source(&source, Direction::Backward)
+		.map_err(|error| anyhow::anyhow!("Braille table '{name}' could not be read: {error}"))?;
+	Ok((translator, braille_ascii(&source)))
+}
+
+/// Braille ASCII differs by country, and a table gives the characters its country writes cells as, which is what liblouis writes a braille file with: German writes "hello world" as `heqo w?ld`, and Norwegian marks a capital with `´`. As in liblouis, they come from the `display` rules and the character definitions of one cell, such as French `lowercase é 123456`, and the first rule for a character wins. A braille file is six-dot, so a rule for a cell with dot 7 or 8 says nothing about one, such as the computer braille capital A, dots 1 and 7, that `en-ueb-g2.ctb` displays.
+fn braille_ascii(source: &str) -> HashMap<char, char> {
+	const OPCODES: [&str; 10] =
+		["display", "space", "digit", "litdigit", "punctuation", "math", "sign", "letter", "uppercase", "lowercase"];
+	let mut cells = HashMap::new();
+	for line in source.lines() {
+		let fields: Vec<&str> =
+			line.split_whitespace().skip_while(|field| matches!(*field, "noback" | "nofor")).collect();
+		let (character, dots) = match fields.as_slice() {
+			[opcode, character, dots, ..] if OPCODES.contains(opcode) => (character, dots),
+			_ => continue,
+		};
+		if let (Some(character), Some(cell)) = (unescape(character), cell(dots))
+			&& u32::from(cell) < 0x2840
+		{
+			cells.entry(character).or_insert(cell);
+		}
+	}
+	cells
+}
+
+/// A table's character operand: the character itself, or an escape such as `\s` or `\x00a8`.
+fn unescape(operand: &str) -> Option<char> {
+	let mut characters = operand.chars();
+	let first = characters.next()?;
+	if first != '\\' {
+		return (characters.next().is_none()).then_some(first);
+	}
+	let rest = characters.as_str();
+	match rest {
+		"s" => Some(' '),
+		"t" => Some('\t'),
+		"\\" => Some('\\'),
+		_ => {
+			let (kind, hex) = rest.split_at_checked(1)?;
+			matches!(kind, "x" | "y" | "z").then_some(())?;
+			char::from_u32(u32::from_str_radix(hex, 16).ok()?)
+		}
+	}
+}
+
+/// A dots operand of one cell, such as `1279`, or `0` for the blank cell.
+fn cell(dots: &str) -> Option<char> {
+	if dots == "0" {
+		return Some('\u{2800}');
+	}
+	let mut bits = 0;
+	for digit in dots.chars() {
+		let dot = digit.to_digit(10).filter(|dot| (1..=8).contains(dot))?;
+		bits |= 1 << (dot - 1);
+	}
+	char::from_u32(0x2800 + bits)
 }
