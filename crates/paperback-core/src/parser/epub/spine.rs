@@ -246,7 +246,12 @@ fn section_is_image(item: &ManifestItem, section: &SectionContent) -> bool {
 	if item.media_type.starts_with("image/") {
 		return true;
 	}
-	section.has_image_markup && section.text.trim().is_empty()
+	section.has_image_markup
+}
+
+/// The text first, since looking for markup lowercases a copy of the whole section.
+fn is_image_only(content: &str, text: &str) -> bool {
+	text.trim().is_empty() && content_has_image_markup(content)
 }
 
 /// A substring test is enough: a false positive costs one image line on an already empty page.
@@ -261,8 +266,8 @@ fn is_binary_image(media_type: &str) -> bool {
 }
 
 /// Only asked of a page with no text, which is rare enough that parsing it a second time costs nothing.
-fn first_image_source(content: &str, text: &str) -> String {
-	if !text.trim().is_empty() || !content_has_image_markup(content) {
+fn first_image_source(content: &str, has_image_markup: bool) -> String {
+	if !has_image_markup {
 		return String::new();
 	}
 	HtmlToText::image_source(Html::parse_document(content).tree.root())
@@ -276,8 +281,9 @@ fn convert_section(content: &str, render_tables_inline: bool) -> SectionContent 
 	};
 	if xml_error.is_none() {
 		let text = xml_converter.take_text();
+		let has_image_markup = is_image_only(content, &text);
 		return SectionContent {
-			image_source: first_image_source(content, &text),
+			image_source: first_image_source(content, has_image_markup),
 			text,
 			headings: xml_converter.get_headings().to_vec(),
 			links: xml_converter.get_links().to_vec(),
@@ -297,15 +303,16 @@ fn convert_section(content: &str, render_tables_inline: bool) -> SectionContent 
 			subscripts: xml_converter.get_subscripts().to_vec(),
 			blocks: xml_converter.get_blocks().to_vec(),
 			id_positions: xml_converter.get_id_positions().clone(),
-			has_image_markup: content_has_image_markup(content),
+			has_image_markup,
 			xml_error: None,
 		};
 	}
 	let mut html_converter = HtmlToText::with_render_tables_inline(render_tables_inline);
 	html_converter.convert(content, HtmlSourceMode::NativeHtml);
 	let text = html_converter.take_text();
+	let has_image_markup = is_image_only(content, &text);
 	SectionContent {
-		image_source: first_image_source(content, &text),
+		image_source: first_image_source(content, has_image_markup),
 		text,
 		headings: html_converter.get_headings().to_vec(),
 		links: html_converter.get_links().to_vec(),
@@ -325,7 +332,7 @@ fn convert_section(content: &str, render_tables_inline: bool) -> SectionContent 
 		subscripts: html_converter.get_subscripts().to_vec(),
 		blocks: html_converter.get_blocks().to_vec(),
 		id_positions: html_converter.get_id_positions().clone(),
-		has_image_markup: content_has_image_markup(content),
+		has_image_markup,
 		xml_error,
 	}
 }
