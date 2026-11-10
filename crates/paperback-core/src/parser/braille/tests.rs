@@ -85,6 +85,19 @@ fn joins_a_paragraph_across_a_page_and_marks_where_the_page_begins() {
 	assert_eq!(page_markers(&document), [(0, "Page 1".to_string()), (6, "Page 2".to_string())]);
 }
 
+/// Older BRF files, such as the Internet Archive's, end their lines with a carriage return alone.
+#[test]
+fn reads_lines_ended_by_a_carriage_return_alone() {
+	let document = parse(&BrfParser, "cr.brf", "  HELLO\r_W\r\r  ,! ,ORBIT\r");
+	assert_eq!(document.buffer.content, "hello world\nThe Orbit\n");
+}
+
+#[test]
+fn reads_a_brf_written_in_unicode_braille() {
+	let document = parse(&BrfParser, "unicode.brf", "  ⠓⠑⠇⠇⠕\r\n⠸⠺\r\n");
+	assert_eq!(document.buffer.content, "hello world\n");
+}
+
 #[test]
 fn joins_wrapped_lines_and_words_broken_at_a_hyphen() {
 	let layout = layout(&[&["  SELF-", "3TA9$ BOOK", "R1D]"]], true);

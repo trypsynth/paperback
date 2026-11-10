@@ -63,14 +63,30 @@ impl Parser for BrfParser {
 	}
 }
 
-/// A BRF page ends with a form feed, and an embosser's last one often leaves an empty page after it.
+/// A BRF page ends with a form feed, and an embosser's last one often leaves an empty page after it. Lines end with a line feed, a carriage return and a line feed, or, in older files, a carriage return alone. Some files named `.brf` hold Unicode braille instead of braille ASCII, as the Internet Archive's braille music does, and those cells are read as they are.
 fn brf_pages(bytes: &[u8]) -> Vec<Page> {
-	let text: String = bytes.iter().filter(|&&byte| byte != b'\r').map(|&byte| ascii_to_cell(byte)).collect();
+	let characters: Vec<char> = match std::str::from_utf8(bytes) {
+		Ok(text) if text.chars().any(is_cell) => text.chars().collect(),
+		_ => bytes.iter().map(|&byte| char::from(byte)).collect(),
+	};
+	let mut text = String::with_capacity(characters.len());
+	for (index, &character) in characters.iter().enumerate() {
+		match character {
+			'\r' if characters.get(index + 1) == Some(&'\n') => {}
+			'\r' => text.push('\n'),
+			_ if is_cell(character) => text.push(character),
+			_ => text.push(u8::try_from(character).map_or(character, ascii_to_cell)),
+		}
+	}
 	let mut pages: Vec<Page> = text.split('\x0c').map(|page| page.lines().map(str::to_string).collect()).collect();
 	while pages.len() > 1 && pages.last().is_some_and(|page| page.iter().all(|line| is_blank(line))) {
 		pages.pop();
 	}
 	pages
+}
+
+const fn is_cell(character: char) -> bool {
+	matches!(character, '\u{2800}'..='\u{28ff}')
 }
 
 /// Lowercase letters stand for the same cells as capitals, as many BRF files are written in either.
