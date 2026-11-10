@@ -163,7 +163,7 @@ impl ConfigManager {
 	}
 
 	pub fn flush(&self) {
-		if !self.initialized || !self.dirty.get() {
+		if !self.initialized || !self.dirty.get() || self.config_path.as_os_str().is_empty() {
 			return;
 		}
 		let data = self.data.borrow();
