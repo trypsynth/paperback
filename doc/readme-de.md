@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4f2dd8c5898a0324; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 71b9a82d8c3eb624; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,90db1255,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - Version 1.1
 
@@ -48,11 +48,13 @@ Wenn JAWS nichts sagt, wenn du eine Taste drückst, die etwas melden sollte, öf
 
 Paperback unterstützt die folgenden Formate und Dateitypen:
 
+* Braille-Ready-Dateien und Portable-Embosser-Format-Bücher, zurückgewandelt in Druck mit der von dir gewählten Braille-Tabelle (`.brf`, `.pef`)
 * Comic-Book-Archive (`.cbz`)
 * CHM-Hilfedateien (`.chm`)
 * DAISY-Bücher (`.opf`, `.zip`)
 * EPUB-Bücher (`.epub`)
 * FB2-eBooks (`.fb2`)
+* GNU-Info-Handbücher (`.info`, komprimiert oder nicht, und geteilte Handbücher, die von einem ihrer Teile aus geöffnet werden)
 * HTML-Dokumente (`.htm`, `.html`, `.xhtml`)
 * Manualseiten, sowohl `man` als auch BSD `mdoc` (`.1` bis `.9`, `.man`, `.roff` und die komprimierten Versionen von jedem)
 * Markdown-Dokumente (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -68,6 +70,7 @@ Paperback unterstützt die folgenden Formate und Dateitypen:
 * RTF-Dokumente (`.rtf`)
 * Windows-Write-Dokumente (`.wri`)
 * WinHelp-Dateien (`.hlp`)
+* XPS- und OpenXPS-Dokumente (`.xps`, `.oxps`)
 * Reine Textdateien und Logdateien (`.txt`, `.log`)
 
 ## Tastenkombinationen
@@ -75,6 +78,8 @@ Paperback unterstützt die folgenden Formate und Dateitypen:
 Paperback ist für die Verwendung mit der Tastatur ausgerichtet. Hier sind die aktuellen Tastenkombinationen.
 
 Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet, ist das Äquivalent in Klammern vermerkt — hauptsächlich, weil `Ctrl+G`, `Ctrl+W` und `Alt+Left`/`Alt+Right` auf dieser Plattform bereits von anderen System- oder App-Konventionen belegt sind.
+
+Sonderzeichentastenkombinationen sind nach den Tasten einer US-Tastatur benannt. Bei einer anderen Belegung drücke die Taste an derselben Stelle, unabhängig davon, wie sie beschriftet ist: Bei einer ungarischen Tastatur funktioniert die Taste mit der Beschriftung `é` als `;` und die mit `á` beschriftete als `'`, daher bedeutet `Ctrl+'` Strg und die `á`-Taste. Menüs zeigen weiterhin die US-Namen. Auf macOS zeigen Menüs stattdessen die Tasten deiner eigenen Belegung an.
 
 ### Menü „Datei"
 

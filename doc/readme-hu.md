@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4f2dd8c5898a0324; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 71b9a82d8c3eb624; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,90db1255,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback – 1.1-es verzió
 
@@ -48,11 +48,13 @@ Ha a JAWS semmit sem mond, amikor olyan billentyűt nyom meg, amelynek valamit b
 
 A Paperback a következő formátumokat és kiterjesztéseket támogatja:
 
+* Braille Ready Files és Portable Embosser Format könyvek, a kiválasztott braille-táblázattal visszafordítva nyomtatásra (`.brf`, `.pef`)
 * Képregényarchívumok (`.cbz`)
 * CHM-súgófájlok (`.chm`)
 * DAISY-könyvek (`.opf`, `.zip`)
 * EPUB-könyvek (`.epub`)
 * FB2 formátumú e-könyvek (`.fb2`)
+* GNU Info-kézikönyvek (`.info`, tömörítve vagy sem, valamint felosztott kézikönyvek megnyitva bármelyik részükből)
 * HTML-dokumentumok (`.htm`, `.html`, `.xhtml`)
 * Unix-kézikönyvoldalak, `man` és BSD `mdoc` formátumban is (`.1`–`.9`, `.man`, `.roff`, valamint mindegyik gzippel tömörített változata)
 * Markdown-dokumentumok (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -68,6 +70,7 @@ A Paperback a következő formátumokat és kiterjesztéseket támogatja:
 * RTF-dokumentumok (`.rtf`)
 * Windows Write-dokumentumok (`.wri`)
 * WinHelp-fájlok (`.hlp`)
+* XPS és OpenXPS dokumentumok (`.xps`, `.oxps`)
 * Egyszerű szöveges és naplófájlok (`.txt`, `.log`)
 
 ## Billentyűparancsok
@@ -75,6 +78,8 @@ A Paperback a következő formátumokat és kiterjesztéseket támogatja:
 A Paperback elsősorban billentyűzetes használatra készült. Az alábbiakban a jelenlegi billentyűparancsok olvashatók.
 
 Az alábbi billentyűparancsok a Windowsra vonatkoznak. Ahol a macOS eltér, a megfelelő billentyűparancs zárójelben szerepel – főleg azért, mert ezen a platformon a Ctrl+G, a Ctrl+W és az Alt+Balra/Jobbra nyíl már más rendszer- vagy alkalmazáskonvenciókhoz tartozik. macOS-en a Ctrl helyett a Cmd billentyűt kell használni ott is, ahol nincs külön macOS-billentyűparancs feltüntetve: a `Ctrl+R` például `Cmd+R`.
+
+Az írásjelekre vonatkozó billentyűparancsok az amerikai billentyűzet billentyűiről kapták a nevüket. Más billentyűzetkiosztás esetén nyomja meg az ugyanazon helyen lévő billentyűt, függetlenül annak feliratától: magyar billentyűzeten az `é` feliratú billentyű `;` szerepét tölti be, az `á` feliratú pedig `'` szerepét, így a `Ctrl+'` a Ctrl billentyűt és az `á` billentyűt jelenti. A menükben továbbra is az amerikai nevek láthatók. macOS-en a menükben a saját kiosztásának megfelelő billentyűk jelennek meg helyette.
 
 ### Fájl menü
 
