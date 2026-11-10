@@ -89,7 +89,6 @@ impl DocumentManager {
 		let (password, forced_extension, settings) = {
 			let config = self.config.lock().unwrap();
 			let path_str = path.to_string_lossy();
-			config.refresh_document_hash(&path_str);
 			let forced_extension = config.get_document_format(&path_str);
 			let password = config.get_document_password(&path_str);
 			let settings = parse_settings(&config);

@@ -89,45 +89,6 @@ impl ConfigManager {
 		true
 	}
 
-	pub fn refresh_document_hash(&self, path: &str) {
-		if !self.initialized {
-			return;
-		}
-		{
-			let data = self.data.borrow();
-			if data.path_hashes.contains_key(path) {
-				return;
-			}
-		}
-		let digest = compute_document_hash(path);
-		let encoded = URL_SAFE_NO_PAD.encode(digest);
-		let new_key = format!("doc_{encoded}");
-		let mut data = self.data.borrow_mut();
-		if let Some(old_key) = data.path_hashes.get(path).cloned() {
-			if old_key != new_key {
-				if let Some(mut doc) = data.documents.remove(&old_key) {
-					doc.path = path.to_string();
-					data.documents.insert(new_key.clone(), doc);
-				}
-				data.path_hashes.insert(path.to_string(), new_key);
-				self.dirty.set(true);
-			}
-		} else {
-			if !data.documents.contains_key(&new_key) {
-				let mut old_hasher = Sha1::new();
-				old_hasher.update(path.as_bytes());
-				let old_encoded = URL_SAFE_NO_PAD.encode(old_hasher.finalize());
-				let old_key = format!("doc_{old_encoded}");
-				if let Some(mut doc) = data.documents.remove(&old_key) {
-					doc.path = path.to_string();
-					data.documents.insert(new_key.clone(), doc);
-				}
-			}
-			data.path_hashes.insert(path.to_string(), new_key);
-			self.dirty.set(true);
-		}
-	}
-
 	pub fn associate_uri_with_local_file(&self, uri: &str, local_path: &str) {
 		let digest = compute_document_hash(local_path);
 		let encoded = URL_SAFE_NO_PAD.encode(digest);
