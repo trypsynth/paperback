@@ -175,6 +175,12 @@ impl ParserContext {
 	}
 
 	#[must_use]
+	pub const fn with_braille_table(mut self, table: &'static str) -> Self {
+		self.braille_table = table;
+		self
+	}
+
+	#[must_use]
 	pub const fn with_parse_settings(mut self, settings: ParseSettings) -> Self {
 		self.render_tables_inline = settings.render_tables_inline;
 		self.join_pdf_paragraphs = settings.join_pdf_paragraphs;
