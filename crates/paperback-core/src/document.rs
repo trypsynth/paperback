@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::OnceLock};
 
 pub use paperback_formats::ParserFlags;
 
-use crate::audio::AudioTimeline;
+use crate::{audio::AudioTimeline, parser::braille};
 
 mod buffer;
 mod handle;
@@ -98,6 +98,8 @@ pub struct ParseSettings {
 	pub join_pdf_paragraphs: bool,
 	pub strip_running_text: bool,
 	pub markdown_dollar_math: bool,
+	/// The liblouis table Braille Ready Files and PEF books are back-translated with, one of [`crate::parser::braille::braille_tables`].
+	pub braille_table: &'static str,
 }
 
 impl Default for ParseSettings {
@@ -107,6 +109,7 @@ impl Default for ParseSettings {
 			join_pdf_paragraphs: true,
 			strip_running_text: true,
 			markdown_dollar_math: true,
+			braille_table: braille::DEFAULT_TABLE,
 		}
 	}
 }
@@ -123,6 +126,7 @@ pub struct ParserContext {
 	pub strip_running_text: bool,
 	/// Off is for dollars that are not math, such as `$HOME/bin:$PATH` in a README, since Markdown can't say which the writer meant.
 	pub markdown_dollar_math: bool,
+	pub braille_table: &'static str,
 }
 
 impl ParserContext {
@@ -136,6 +140,7 @@ impl ParserContext {
 			join_pdf_paragraphs: true,
 			strip_running_text: true,
 			markdown_dollar_math: true,
+			braille_table: braille::DEFAULT_TABLE,
 		}
 	}
 
@@ -175,6 +180,7 @@ impl ParserContext {
 		self.join_pdf_paragraphs = settings.join_pdf_paragraphs;
 		self.strip_running_text = settings.strip_running_text;
 		self.markdown_dollar_math = settings.markdown_dollar_math;
+		self.braille_table = settings.braille_table;
 		self
 	}
 }

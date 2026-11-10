@@ -19,6 +19,7 @@ use crate::{
 	},
 };
 
+pub mod braille;
 pub mod cbr;
 pub mod cbz;
 pub mod chm;
@@ -149,6 +150,8 @@ impl ParserRegistry {
 				PDF => pdf::PdfParser,
 				MAN => man::ManParser,
 				INFO => info::InfoParser,
+				BRF => braille::BrfParser,
+				PEF => braille::PefParser,
 				MARKDOWN => markdown::MarkdownParser,
 				M4B => m4b::M4bParser,
 				MP3 => mp3::Mp3Parser,
