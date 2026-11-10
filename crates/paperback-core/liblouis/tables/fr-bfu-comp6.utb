@@ -1,0 +1,238 @@
+#+language:fr
+#+type:literary
+#+contraction:no
+#+dots:6
+#+system:bfu
+# Marked as "direction:both" by Bue Vester-Andersen
+# as it is a computer Braille table.
+#+direction:both
+
+#-index-name: French, uncontracted
+#-display-name: French uncontracted braille
+#-author: Michel Such <michel.such@free.fr>
+#-author: André-Abush CLAUSE <dev@andreabc.net>
+#-author: Ludovic Oger <oger.ludovic@gmail.com>
+#-author: Nicolas Pitre <nico@cam.org>
+#-author: The BRLTTY Team <http://brltty.com/>
+#-license: LGPLv2.1
+#-updated: 2021-02-21
+
+# liblouis: French 6 dots Braille table
+
+# Copyright (C) 2017, 2018, 2021 André-Abush CLAUSE <dev@andreabc.net>
+# Copyright (C) 2017 Michel Such <michel.such@free.fr>
+# Copyright (C) 2017 Nicolas Pitre <nico@cam.org>
+# Copyright (C) 2016, 2019 Ludovic Oger <oger.ludovic@gmail.com>
+# Copyright (C) 2008 The BRLTTY Team <http://brltty.com/>
+
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+
+#	Référence :
+#		Code braille français uniformisé | association Valentin Haüy - Révision 2008
+#		http://www.avh.asso.fr/fr/tout-savoir-sur-le-braille/lecriture-braille/code-braille-francais-uniformise
+#	Association Valentin Haüy
+#		5, rue Duroc 75343 Paris Cedex 07
+
+# Uncontracted French Table
+# ---------------------------------
+
+space \t 9 tab    # 9
+space \x001B 1b   # escape
+space \x00A0 a    # no-break space
+include spaces.uti
+space \x007f 0
+
+undefined 0
+
+display ¨ 46
+display : 25
+display " 2356
+display ! 235
+display - 36
+display . 256
+display / 34
+display * 35
+display | 456
+display ¸ 456
+display ¤ 45
+display „ 56
+display ^ 4
+display \s 0
+display @ 345
+display ó 346
+
+include latinLetterDef6Dots.uti
+
+
+lowercase \x00e7  12346 # c cédille (ç)
+noback lowercase \x00E6 345 # a e-dans-l’a (æ)
+lowercase \x0153    246 # oe liés (Œœ)
+lowercase \x00E3 5-26-1		a tilde
+noback lowercase \x00f1 12456 # n tilde (ñ)
+
+lowercase \x00e0  12356 # a accent grave (à)
+lowercase \x00e8   2346 # e accent grave (è)
+lowercase \x00f9  23456 # u accent grave (ù)
+noback lowercase \x00ec  34 # i accent grave (ì)
+noback lowercase \x00f2 346 # o accent grave (ò)
+
+lowercase \x00e2     16 # a accent circonflexe (â)
+lowercase \x00ea    126 # e accent circonflexe (ê)
+lowercase \x00ee    146 # i accent circonflexe (î)
+lowercase \x00f4   1456 # o accent circonflexe (ô)
+lowercase \x00fb    156 # u accent circonflexe (û)
+
+lowercase \x00e1  12356 # a accent aigu (á)
+lowercase \x00e9 123456 # e accent aigu (é)
+lowercase \x00f3    346 # o accent aigu (ó)
+lowercase \x00fa  23456 # u accent aigu (ú)
+noback lowercase \x00ed 34 # i accent aigu (í)
+
+noback lowercase \x00e4   345 # a tréma (ä)
+lowercase \x00eb   1246 # e tréma (ë)
+lowercase \x00ef  12456 # i tréma (ï)
+lowercase \x00f6    246 # o tréma (ö)
+lowercase \x00fc   1256 # u tréma (ü)
+lowercase \x00e5 5-1       #*latin capital letter a with ring above (unofficial)
+lowercase \x00f8 56-246 # o barré (non officiel)
+
+digit 0 3456
+litdigit        0      3456
+comp6 0 3456
+
+include digits6DotsPlusDot6.uti
+include litdigits6DotsPlusDot6.uti
+
+# unicode braille
+include braille-patterns.cti
+
+# other signs
+include fr-bfu-comp68.cti
+
+# punctuation and mathematics, with a few exceptions to above fr-bfu-comp68.cti table
+include fr-bfu-comp6-puncs-math.uti
+
+# Capitalization
+capsletter 46
+begcapsword 46-46
+endcapsword 6-3 # The first method is not compatible with liblouis, so use of the alternative method (official but less common)
+capsmodechars -'./
+
+# Capital 'phrase' possible but lot of issues with single letters: https://github.com/liblouis/liblouis/issues/706
+# begcapsphrase 25-46
+# endcapsphrase before 46
+# lencapsphrase 4
+
+# Emphasis
+emphclass italic
+emphclass underline
+emphclass bold
+begemphword italic 456
+begemphword underline 456
+begemphword bold 456
+endemphword italic 6-3
+endemphword underline 6-3
+endemphword bold 6-3
+begemphphrase italic 25-456
+endemphphrase italic before 456
+lenemphphrase italic 4
+begemphphrase underline 25-456
+endemphphrase underline before 456
+lenemphphrase underline 4
+begemphphrase bold 25-456
+endemphphrase bold before 456
+lenemphphrase bold 4
+noemphchars italic ,\s
+noemphchars underline ,\s
+noemphchars bold ,\s
+
+# WIP
+# Remove space from punctuation
+# noback correct "\x00A0»" "»"
+# noback correct "«\x00A0" "«"
+# noback correct "\s;" ";"
+# noback correct "\s:" ":"
+# noback correct "\s?" "?"
+# noback correct "\s!" "!"
+
+
+prepunc « 2356	    # guillemet français ouvrant
+postpunc » 2356	   # guillemet français fermant
+
+
+word æchmea 345-14-125-134-15-1
+word ægithale 345-1245-24-2345-125-1-123-15
+word ægocère 345-1245-135-14-2346-1235-15
+word ægopodium 345-1245-135-1234-135-145-24-136-134
+word ægosome 345-1245-135-234-135-134-15
+word ælie 345-123-24-15
+word ænigmatite 345-1345-24-1245-134-1-2345-24-2345-15
+word æolidia 345-135-123-24-145-24-1
+word æolis 345-135-123-24-234
+word æschne 345-234-14-125-1345-15
+word æthuse 345-2345-125-136-234-15
+word althæa 1-123-2345-125-345-1
+word anabæna 1-1345-1-12-345-1345-1
+word angræcum 1-1345-1245-1235-345-14-136-134
+word archæocète 1-1235-14-125-345-135-14-2346-2345-15
+word balæniceps 12-1-123-345-1345-24-14-15-1234-234
+word cæcal 14-345-14-1-123
+word cæcale 14-345-14-1-123-15
+word cæcaux 14-345-14-1-136-1346
+word cæcilius 14-345-14-24-123-24-136-234
+word cæcotrophie 14-345-14-135-2345-1235-135-1234-125-24-15
+word cæcum 14-345-14-136-134
+word cælostat 14-345-123-135-234-2345-1-2345
+word cæsine 14-345-234-24-1345-15
+word chænichthys 14-125-345-1345-24-14-125-2345-125-13456-234
+word chamæcyparis 14-125-1-134-345-14-13456-1234-1-1235-24-234
+word chamædorea 14-125-1-134-345-145-135-1235-15-1
+word cratægus 14-1235-1-2345-345-1245-136-234
+word cuphæa 14-136-1234-125-345-1
+word vitæ 1236-24-2345-345
+word dracæna 145-1235-1-14-345-1345-1
+word élæagnacées 123456-123-345-1-1245-1345-1-14-123456-15-234
+word elæagnus 15-123-345-1-1245-1345-136-234
+word elæis 15-123-345-24-234
+word enterobacteriaceæ 15-1345-2345-15-1235-135-12-1-14-2345-15-1235-24-1-14-15-345
+word cætera 14-345-2345-15-1235-1
+word æquo 345-12345-136-135
+word furcræa 124-136-1235-14-1235-345-1
+word grællsia 1245-1235-345-123-123-234-24-1
+word lælia 123-345-123-24-1
+word læliocattleya 123-345-123-24-135-14-1-2345-2345-123-15-13456-1
+word lætilia 123-345-2345-24-123-24-1
+word linnæa 123-24-1345-1345-345-1
+word lonchæa 123-135-1345-14-125-345-1
+word microsphæra 134-24-14-1235-135-234-1234-125-345-1235-1
+word nævo 1345-345-1236-135
+word nævus 1345-345-1236-136-234
+word penæus 1234-15-1345-345-136-234
+word pygære 1234-13456-1245-345-1235-15
+word sphærotheca 234-1234-125-345-1235-135-2345-125-15-14-1
+word suæda 234-136-345-145-1
+word tæniasis 2345-345-1345-24-1-234-24-234
+word tropæloacées 2345-1235-135-1234-345-123-135-1-14-123456-15-234
+word Lætitia 46-123-345-2345-24-2345-24-1
+
+word län 123-345-1345
+word Länder 46-123-345-1345-145-15-1235
+word ländler 123-345-1345-145-123-15-1235
+word minnesänger 134-24-1345-1345-15-234-345-1345-1245-15-1235
+word skärgård 234-13-345-1235-1245-5-1-1235-145
+word tjäle 2345-245-345-123-15
+

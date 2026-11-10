@@ -1,0 +1,61 @@
+#-index-name: Belarusian
+#-display-name: Belarusian braille
+
+#+language: be
+#+type: literary
+#+dots: 6
+#+contraction: no
+#+direction: both
+
+#  Copyright (C) 2021, 2024 Andrey Yakuboy <braille@yakuboy.ru>
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+#
+# Based on the Russian braille.
+
+#-maintainer: Andrey Yakuboy
+
+# The Belarusian alphabet has 2 letters that are not in the Russian
+# alphabet, namely І and Ў.
+
+lowercase \x0456 13456  SMALL CYRILLIC LETTER I    і  # conflicts with definition in ru-litbrl.ctb
+lowercase \x045e 346    CYRILLIC LETTER SHORT U    ў
+
+# base rule for Ў (the base rule for І is already in ru-litbrl.ctb)
+base uppercase \x040e \x045e  CYRILLIC LETTER SHORT U    Ўў
+
+# Add dot 9 to additional Cyrillic characters, as in ru-litbrl.ctb
+
+noback always \x0456 134569
+noback always \x045e 3469
+
+noback always \x0406 134569
+noback always \x040e 3469
+
+include ru-litbrl.ctb
+
+# Extend classes defined in ru-litbrl.ctb
+attribute uppercyrillic \x040e
+attribute lowercyrillic \x045e
+
+# Back translation of additional letters
+
+nofor context #4=1@13456 "\x0406"#4=0
+nofor context #4=1@346 "\x040e"#4=0
+
+nofor context #4=2@13456 "\x0406"
+nofor context #4=2@346 "\x040e"

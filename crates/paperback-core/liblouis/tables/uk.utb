@@ -1,0 +1,101 @@
+#-index-name: Ukrainian
+#-display-name: Ukrainian braille
+
+#+language: uk
+#+type: literary
+#+direction: both
+
+# -----------------
+# TODO: Please add a reference to official documentation about
+# the implemented braille code. Preferably submit the documents
+# to https://github.com/liblouis/braille-specs.
+# -----------------
+
+#-copyright: Bert Frees
+#-copyright: EAC "Lemur"
+#-copyright: Andrey Yakuboy
+#-license: LGPLv2.1
+
+#  Copyright (C) 2017 EAC "Lemur" <www.trosti.com.ua>
+#  Copyright (C) 2018 Bert Frees <bertfrees@gmail.com>
+#  Copyright (C) 2024 Andrey Yakuboy <braille@yakuboy.ru>
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+
+# Maintained by Sergiy Moskalets.
+
+#-maintainer: Sergiy Moskalets <www.trosti.com.ua>
+
+# -----------------
+
+# The Ukrainian alphabet has 4 letters that are not in the Russian
+# alphabet, namely Є, І, Ї and Ґ.
+
+lowercase \x0454 345    CYRILLIC LETTER IE   є  # conflicts with definition in# ru-litbrl.ctb
+lowercase \x0456 13456  CYRILLIC LETTER I    і  # conflicts with definition in# ru-litbrl.ctb
+lowercase \x0457 1456   CYRILLIC LETTER II   ї  # conflicts with definition in# ru-litbrl.ctb
+lowercase \x0491 12456  CYRILLIC LETTER GE   ґ
+
+# base rule for Ґ (the base rules for Є, І and Ї are already in ru-litbrl.ctb)
+base uppercase \x0490 \x0491  CYRILLIC LETTER GE   Ґґ
+
+# Add dot 9 to additional Cyrillic characters, as in ru-litbrl.ctb
+
+noback always \x0454 3459
+noback always \x0456 134569
+noback always \x0457 14569
+noback always \x0491 124569
+
+noback always \x0404 3459
+noback always \x0406 134569
+noback always \x0407 14569
+noback always \x0490 124569
+
+# As the definition of the Ukrainian letter 'є' conflicts with parentheses, the definitions of parentheses should be changed
+prepunc ( 2356
+postpunc ) 2356
+
+# Ukrainian braille is largely the same as Russian braille
+include ru-litbrl.ctb
+
+# Extend classes defined in ru-litbrl.ctb
+attribute uppercyrillic \x0490
+attribute lowercyrillic \x0491
+
+# In spite of conflicts of letters and parentheses, in math text parentheses should be marked like in the Russian braille
+# The correct opcode is used to avoid conflicts with rules in ru-litbrl.ctb
+noback correct $m["("] "\x2823"#4=1		# \x2823 is the dots 126
+noback correct ["("]$m "\x2823"#4=1
+noback correct $d["("] "\x2823"#4=1
+noback correct ["("]$d "\x2823"#4=1
+noback correct #4=1[")"] "\x281c"#4=0		# \x281c is the dots 345
+noback correct $m[")"] "\x281c"#4=0
+noback correct [")"]$m "\x281c"#4=0
+noback correct $d[")"] "\x281c"#4=0
+noback correct [")"]$d "\x281c"#4=0
+
+# Back translation of additional letters
+
+nofor context #4=1@345 "\x0404"#4=0
+nofor context #4=1@13456 "\x0406"#4=0
+nofor context #4=1@1456 "\x0407"#4=0
+nofor context #4=1@12456 "\x0490"#4=0
+
+nofor context #4=2@345 "\x0404"
+nofor context #4=2@13456 "\x0406"
+nofor context #4=2@1456 "\x0407"
+nofor context #4=2@12456 "\x0490"
