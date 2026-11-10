@@ -445,7 +445,7 @@ impl XmlToText {
 				self.format_spans.close(&FormatKind::Subscript, self.text.get_current_text_position());
 			}
 		}
-		if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") {
+		if Self::tag_is(tag_name, "ul") || Self::tag_is(tag_name, "ol") || Self::tag_is(tag_name, "list") {
 			self.list_level = (self.list_level - 1).max(0);
 			self.list_style_stack.pop();
 			if let Some(open) = self.open_lists.pop().flatten() {

@@ -1,7 +1,7 @@
 use rstest::rstest;
 
 use super::*;
-use crate::document::MarkerType;
+use crate::document::{DocLen, MarkerType};
 
 #[test]
 fn test_link_collection() {
@@ -148,6 +148,16 @@ fn nested_list_increments_level() {
 	let level_a = items.iter().find(|i| i.text == "A").map_or(0, |i| i.level);
 	let level_b = items.iter().find(|i| i.text == "B").map_or(0, |i| i.level);
 	assert!(level_b > level_a, "nested item should have a higher level");
+}
+
+#[test]
+fn dtbook_list_closes_like_ul() {
+	let xml = "<dtbook><book><list><li>A</li></list><list><li>B</li></list></book></dtbook>";
+	let mut converter = XmlToText::new();
+	assert!(converter.convert(xml));
+	let items = converter.get_list_items();
+	assert_eq!(items.iter().map(|i| i.level).collect::<Vec<_>>(), [1, 1]);
+	assert!(converter.get_lists().iter().all(|l| l.length > DocLen::ZERO));
 }
 
 #[test]
