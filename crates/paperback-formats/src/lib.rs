@@ -144,6 +144,13 @@ formats! {
 		mime_types: ["application/x-troff-man", "text/troff"],
 		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
 	},
+	/// Installed manuals are gzipped and split, `find.info.gz` and `find.info-1.gz`, which the parser recognizes by name rather than by extension.
+	INFO {
+		name: "GNU Info Manuals",
+		extensions: ["info"],
+		mime_types: ["application/x-info"],
+		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
+	},
 	MARKDOWN {
 		name: "Markdown Files",
 		extensions: ["md", "markdown", "mdx", "mdown", "mdwn", "mkd", "mkdn", "mkdown", "ronn"],

@@ -51,6 +51,7 @@ Paperback supports the following formats and extensions:
 * DAISY books (`.opf`, `.zip`)
 * EPUB books (`.epub`)
 * FB2 ebooks (`.fb2`)
+* GNU Info manuals (`.info`, gzipped or not, and split manuals opened from any of their parts)
 * HTML documents (`.htm`, `.html`, `.xhtml`)
 * Manual pages, both `man` and BSD `mdoc` (`.1` to `.9`, `.man`, `.roff`, and the gzipped forms of each)
 * Markdown documents (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
