@@ -609,7 +609,8 @@ mod tests {
 		let html = paperback_core::export::render(
 			&paperback_core::document::DocumentHandle::new(out),
 			paperback_core::export::ExportFormat::Html,
-		);
+		)
+		.into_owned();
 		assert!(html.contains("kept text"), "the extract lost its text: {html}");
 	}
 

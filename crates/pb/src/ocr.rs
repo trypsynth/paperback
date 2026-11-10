@@ -432,7 +432,8 @@ mod tests {
 		let html = paperback_core::export::render(
 			&paperback_core::document::DocumentHandle::new(doc),
 			paperback_core::export::ExportFormat::Html,
-		);
+		)
+		.into_owned();
 		let text_at = html.find("balloon one").unwrap_or(0);
 		let rule_at = html.find("<hr").unwrap_or(0);
 		assert!(rule_at < text_at, "the page's rule came after its text in the HTML: {html}");

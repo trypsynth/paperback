@@ -11,7 +11,7 @@ use std::{
 use anyhow::{Context, Result, bail};
 use clap::Parser;
 use paperback_core::{
-	document::{Document, ParserContext},
+	document::{Document, DocumentHandle, ParserContext},
 	export::{self, ExportFormat},
 	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, parse_document},
 };
@@ -407,16 +407,11 @@ impl<'a> Converter<'a> {
 			ocr::pages(&mut doc, &context.file_path, context.password.as_deref(), ocr, !cli.no_join_paragraphs)?;
 		}
 		ocr::reword_placeholders(&mut doc, ocr.image_pages);
-		let handle = paperback_core::document::DocumentHandle::new(doc);
-		Ok(if cli.metadata {
-			metadata(handle.document())
-		} else {
-			let format = match cli.format {
-				Format::Text => ExportFormat::Text,
-				Format::Html => ExportFormat::Html,
-				Format::Markdown => ExportFormat::Markdown,
-			};
-			export::render(&handle, format)
+		Ok(match (cli.metadata, cli.format) {
+			(true, _) => metadata(&doc),
+			(false, Format::Text) => doc.buffer.content,
+			(false, Format::Html) => export::render(&DocumentHandle::new(doc), ExportFormat::Html).into_owned(),
+			(false, Format::Markdown) => export::render(&DocumentHandle::new(doc), ExportFormat::Markdown).into_owned(),
 		})
 	}
 }
