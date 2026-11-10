@@ -47,7 +47,8 @@ fn handle_minimize_to_tray(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	tray_state: &Rc<Mutex<Option<TrayState>>>,
 ) {
-	if !frame.is_iconized() {
+	// A frame hidden in the tray still reports itself iconized; without the shown check every idle event rebuilt the icon and spun a core.
+	if !frame.is_iconized() || !frame.is_shown() {
 		return;
 	}
 	if !config.lock().unwrap().get_app_bool("minimize_to_tray", false) {
