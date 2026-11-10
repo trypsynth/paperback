@@ -1305,7 +1305,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2400,7 +2400,7 @@ dependencies = [
 [[package]]
 name = "louis-rs"
 version = "0.3.0"
-source = "git+https://github.com/liblouis/louis-rs?rev=52b9546694bd743e655d4e44b9f0d0ec8b0c9ab1#52b9546694bd743e655d4e44b9f0d0ec8b0c9ab1"
+source = "git+https://github.com/trypsynth/louis-rs?branch=paperback#7885aac0efa785b15a5bad300909e552c97cb471"
 dependencies = [
  "clap",
  "enumset",
@@ -4061,7 +4061,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -4928,7 +4928,7 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -5811,7 +5811,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
