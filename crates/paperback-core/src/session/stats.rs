@@ -365,6 +365,32 @@ impl DocumentSession {
 		self.text_range(start, end)
 	}
 
+	/// A heading as announced on reaching it: its first content line, with the line of a number set above it kept in front, as a book's chapter number often is, so a chapter reads "21 Whistleblowing" rather than "Whistleblowing". [`Self::first_content_line_after`] skips that number as a page header would be, which suits page navigation; a "Page N" label is still skipped here.
+	#[must_use]
+	pub fn heading_line_after(&self, position: DocPos) -> String {
+		/// A chapter number and a title are two lines; more than that before a title is no heading's.
+		const NUMBER_LINES: usize = 2;
+		let buf = &self.handle.document().buffer;
+		let mut pos = position.min(buf.end());
+		let mut lines: Vec<String> = Vec::new();
+		loop {
+			let (line_start, line_end) = line_around(buf, pos);
+			let line = buf.text(line_start..line_end);
+			let line = line.trim();
+			if is_content_line(line) {
+				lines.push(line.to_string());
+				return lines.join(" ");
+			}
+			if !line.is_empty() && !line.to_ascii_lowercase().starts_with("page ") && lines.len() < NUMBER_LINES {
+				lines.push(line.to_string());
+			}
+			if line_end >= buf.end() {
+				return lines.join(" ");
+			}
+			pos = line_end + DocLen::ONE;
+		}
+	}
+
 	/// Skips bare page-number headers so page navigation doesn't announce the number twice, the marker's own text being a "Page N" label.
 	#[must_use]
 	pub fn first_content_line_after(&self, position: DocPos) -> String {
