@@ -25,6 +25,7 @@ pub fn show_export_annotations_dialog(
 	};
 	// TRANSLATORS: Title of the dialog asking what to include when exporting notes and bookmarks as text or HTML
 	let dialog = Dialog::builder(parent, &t("Export notes and bookmarks")).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let padding = dialog_padding(&dialog);
 	// TRANSLATORS: Label for the dropdown choosing which entries to export
 	let what_label = StaticText::builder(&dialog).with_label(&t("&Export:")).build();

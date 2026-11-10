@@ -14,6 +14,7 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	// TRANSLATORS: Title of the Document Info dialog
 	let dialog_title = t("Document Info");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let padding = dialog_padding(&dialog);
 	dialog.set_escape_id(ID_CANCEL);
 	let info_ctrl = TextCtrl::builder(&dialog)

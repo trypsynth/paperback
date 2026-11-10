@@ -36,6 +36,7 @@ pub fn show_bookmark_dialog(
 	let snippets = Rc::new(text_snippets(session, &config.lock().unwrap().get_bookmarks(&file_path)));
 	// TRANSLATORS: Title of the Jump to Bookmark dialog
 	let dialog = Dialog::builder(parent, &t("Jump to Bookmark")).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let BookmarkDialogUi {
 		filter_choice,
 		filter_sizer,

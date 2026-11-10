@@ -9,6 +9,7 @@ pub fn show_open_as_dialog(parent: &Frame, path: &Path) -> Option<String> {
 	// TRANSLATORS: Title of the Open As dialog
 	let title = t("Open As");
 	let dialog = Dialog::builder(parent, &title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let padding = dialog_padding(&dialog);
 	// TRANSLATORS: Prompt template informing the user that no parser was found for their file. The {} placeholder is replaced with the file path.
 	let message_template = t("No suitable parser was found for {}.\nHow would you like to open this file?");

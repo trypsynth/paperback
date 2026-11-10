@@ -16,6 +16,7 @@ pub fn show_zip_entries_dialog(parent: &Frame, names: &[String]) -> ZipChoice {
 	// TRANSLATORS: Title of the dialog listing the documents inside a zip archive
 	let title = t("Open from Archive");
 	let dialog = Dialog::builder(parent, &title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let padding = dialog_padding(&dialog);
 	// TRANSLATORS: Label for the list of documents inside a zip archive
 	let list_label_text = t("&Documents in this archive:");
