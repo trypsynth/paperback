@@ -46,6 +46,7 @@ Jos JAWS ei puhu mit채채n painaessasi jotain ilmoituksen aiheuttavaa n채pp채int�
 
 Paperback tukee seuraavia tiedostomuotoja:
 
+* Braille Ready File- ja Portable Embosser Format -muodossa olevat pistekirjat (`.brf`, `.pef`), joiden pistekirjoitus muunnetaan tavalliseksi tekstiksi k채ytt채j채n valitseman pistetaulukon avulla
 * Sarjakuvapaketit (`.cbz`)
 * CHM-ohjetiedostot (`.chm`)
 * DAISY-kirjat (`.opf`, `.zip`)
