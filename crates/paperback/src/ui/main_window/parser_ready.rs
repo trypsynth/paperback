@@ -19,8 +19,7 @@ use super::dialogs;
 use crate::ui::dialogs::ZipChoice;
 
 pub fn choose_format(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
-	let cfg = config.lock().unwrap();
-	ensure_parser_for_unknown_file(frame, path, &cfg)
+	ensure_parser_for_unknown_file(frame, path, config)
 }
 
 pub(crate) fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
@@ -28,8 +27,7 @@ pub(crate) fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &
 	if extension.is_empty() || parser_supports_path(path) {
 		return true;
 	}
-	let cfg = config.lock().unwrap();
-	ensure_parser_for_unknown_file(frame, path, &cfg)
+	ensure_parser_for_unknown_file(frame, path, config)
 }
 
 /// Runs before the document manager is locked, since the picker is modal.
@@ -116,9 +114,10 @@ fn clean_extension_token(raw: &str) -> String {
 	trimmed.chars().take_while(char::is_ascii_alphanumeric).collect()
 }
 
-fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigManager) -> bool {
+/// The config is locked only around reading and saving the format, not while the dialog is up: a handler in the dialog's event loop that locks it would otherwise wait on this frame forever, which is what opening an unknown file from the command line did.
+fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
 	let path_str = path.to_string_lossy();
-	let saved_format = config.get_document_format(&path_str);
+	let saved_format = config.lock().unwrap().get_document_format(&path_str);
 	if !saved_format.is_empty() && parser_supports_extension(&saved_format) {
 		return true;
 	}
@@ -136,7 +135,7 @@ fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigMa
 		dialog.show_modal();
 		return false;
 	}
-	config.set_document_format(&path_str, &format);
+	config.lock().unwrap().set_document_format(&path_str, &format);
 	true
 }
 
