@@ -1,7 +1,8 @@
 use std::{
 	cell::{Cell, RefCell},
-	fs,
-	path::PathBuf,
+	ffi::OsString,
+	fs, io,
+	path::{Path, PathBuf},
 };
 
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
@@ -61,13 +62,21 @@ impl ConfigManager {
 	}
 
 	pub fn initialize(&mut self, config_path: PathBuf) -> bool {
-		let (data, needs_save) = if config_path.exists() {
-			fs::read_to_string(&config_path)
-				.ok()
-				.and_then(|s| toml::from_str::<ConfigData>(&s).ok())
-				.map_or_else(|| (ConfigData::default(), true), |d| (d, false))
-		} else {
-			(ConfigData::default(), true)
+		let parsed = match fs::read_to_string(&config_path) {
+			Ok(s) => Some(toml::from_str::<ConfigData>(&s).map_err(|e| e.to_string())),
+			Err(e) if e.kind() == io::ErrorKind::NotFound => None,
+			Err(e) => Some(Err(e.to_string())),
+		};
+		let (data, needs_save) = match parsed {
+			None => (ConfigData::default(), true),
+			Some(Ok(d)) => (d, false),
+			Some(Err(e)) => {
+				// Bookmarks and positions for every book live in this file, so it is kept for recovery rather than written over.
+				let aside = sibling(&config_path, ".bad");
+				tracing::warn!(error = %e, aside = %aside.display(), "config could not be read; starting from defaults");
+				let moved = fs::rename(&config_path, &aside).is_ok();
+				(ConfigData::default(), moved)
+			}
 		};
 		self.config_path = config_path;
 		self.initialized = true;
@@ -158,9 +167,14 @@ impl ConfigManager {
 			return;
 		}
 		let data = self.data.borrow();
-		if let Ok(s) = toml::to_string_pretty(&*data) {
-			let _ = fs::write(&self.config_path, s);
-			self.dirty.set(false);
+		let Ok(s) = toml::to_string_pretty(&*data) else {
+			return;
+		};
+		// A crash mid-write would otherwise leave a truncated file, which the next launch can't parse.
+		let tmp = sibling(&self.config_path, ".tmp");
+		match fs::write(&tmp, s).and_then(|()| fs::rename(&tmp, &self.config_path)) {
+			Ok(()) => self.dirty.set(false),
+			Err(e) => tracing::warn!(error = %e, "could not save config"),
 		}
 	}
 
@@ -182,9 +196,31 @@ impl Drop for ConfigManager {
 	}
 }
 
+fn sibling(path: &Path, suffix: &str) -> PathBuf {
+	let mut name = OsString::from(path.as_os_str());
+	name.push(suffix);
+	PathBuf::from(name)
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	#[test]
+	fn an_unparseable_config_is_kept_aside_not_overwritten() {
+		let dir = std::env::temp_dir().join(format!("paperback-config-aside-{}", std::process::id()));
+		let _ = fs::remove_dir_all(&dir);
+		fs::create_dir_all(&dir).unwrap();
+		let path = dir.join("paperback.toml");
+		fs::write(&path, "not = [valid").unwrap();
+		let mut config = ConfigManager::new();
+		config.initialize(path.clone());
+		assert_eq!(fs::read_to_string(sibling(&path, ".bad")).unwrap(), "not = [valid");
+		assert!(toml::from_str::<ConfigData>(&fs::read_to_string(&path).unwrap()).is_ok());
+		assert!(!sibling(&path, ".tmp").exists());
+		drop(config);
+		let _ = fs::remove_dir_all(&dir);
+	}
 
 	#[test]
 	fn doc_key_is_stable_and_prefixed() {

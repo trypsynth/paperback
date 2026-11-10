@@ -6,6 +6,8 @@ use super::{document_manager::DocumentManager, sleep_timer};
 
 const STATUS_INTERVAL_MS: i32 = 1000;
 const AUDIO_SYNC_INTERVAL_MS: i32 = 250;
+/// Short, so reading notices the user moving the caret quickly. Each tick does nothing unless a document is being read.
+const READ_ALOUD_INTERVAL_MS: i32 = 50;
 const WINDOW_EXTEND_INTERVAL_MS: i32 = 250;
 
 /// Hold the returned timers for the window's lifetime: `Timer`'s `Drop` destroys the wx timer.
@@ -13,6 +15,7 @@ pub fn start_timers(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) -> 
 	vec![
 		status_timer(frame, doc_manager),
 		pump_timer(frame, doc_manager, AUDIO_SYNC_INTERVAL_MS, DocumentManager::pump_audio),
+		pump_timer(frame, doc_manager, READ_ALOUD_INTERVAL_MS, DocumentManager::pump_read_aloud),
 		pump_timer(frame, doc_manager, WINDOW_EXTEND_INTERVAL_MS, DocumentManager::pump_window_extend),
 	]
 }

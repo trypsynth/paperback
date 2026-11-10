@@ -1,4 +1,4 @@
-use paperback_core::{config::DocumentSpeech, speech::Voice};
+use paperback_core::config::DocumentSpeech;
 use patois::t;
 
 use super::DocumentManager;
@@ -20,7 +20,19 @@ impl DocumentManager {
 			&& let Some(speaker) = self.speaker.as_mut()
 			&& speaker.is_reading()
 		{
-			if speaker.is_paused() {
+			// Resuming after a move goes on from the caret now, rather than from where reading was until the move settles.
+			if let Some(moved_to) = speaker.pending_move()
+				&& speaker.is_paused()
+			{
+				let tab = &self.tabs[index];
+				speaker.read_from_caret(
+					&tab.session,
+					moved_to,
+					&self.config.lock().unwrap(),
+					&path.to_string_lossy(),
+					false,
+				);
+			} else if speaker.is_paused() {
 				speaker.resume();
 			} else {
 				speaker.pause();
@@ -136,24 +148,6 @@ impl DocumentManager {
 		self.speaker.as_mut().map(|speaker| speaker.change_volume(increase))
 	}
 
-	/// The engine in use, which the app's speech settings are kept under.
-	///
-	/// # Errors
-	///
-	/// Returns a message to announce when read aloud can't run here.
-	pub fn speech_engine(&mut self) -> Result<String, String> {
-		Ok(self.speaker()?.engine_id().to_owned())
-	}
-
-	/// The voices of the engine called `id`, for the settings dialog. Empty if they can't be listed.
-	pub fn speech_voices(&mut self, id: &str) -> Vec<Voice> {
-		let Ok(speaker) = self.speaker() else { return Vec::new() };
-		speaker.voices_for(id).unwrap_or_else(|error| {
-			tracing::warn!(%error, engine = id, "read aloud: couldn't list voices");
-			Vec::new()
-		})
-	}
-
 	/// Switches read aloud to the engine called `id`, stopping any reading.
 	pub fn set_speech_engine(&mut self, id: &str) {
 		if let Ok(speaker) = self.speaker()
@@ -181,11 +175,27 @@ impl DocumentManager {
 		}
 	}
 
-	/// Speaks the settings dialog's sample with the voice, rate and pitch it shows.
-	pub fn play_speech_sample(&mut self, engine: &str, voice: Option<String>, rate: i32, pitch: i32) {
+	/// Speaks Settings' sample with the engine, voice, rate and pitch it shows. `configured_engine` is the one in the config, which a speaker made here starts with: Settings holds the config while it's open, so this can't read it.
+	pub fn play_speech_sample(
+		&mut self,
+		configured_engine: &str,
+		engine: &str,
+		voice: Option<String>,
+		rate: i32,
+		pitch: i32,
+	) {
 		let percent = |value: i32| u8::try_from(value.clamp(0, 100)).unwrap_or(50);
+		if self.speaker.is_none() {
+			match Speaker::new(configured_engine) {
+				Ok(speaker) => self.speaker = Some(speaker),
+				Err(error) => {
+					tracing::warn!(%error, "read aloud isn't available");
+					return;
+				}
+			}
+		}
 		let Some(speaker) = self.speaker.as_mut() else { return };
-		// TRANSLATORS: Spoken by the Play Sample button in the Speech Settings dialog
+		// TRANSLATORS: Spoken by the Play Sample button on the Audio tab of Settings
 		let text = t("This is a sample of the current voice and speed settings.");
 		if let Err(error) = speaker.play_sample(engine, &text, voice, percent(rate), percent(pitch)) {
 			tracing::warn!(%error, "read aloud: couldn't play the sample");
@@ -207,8 +217,8 @@ impl DocumentManager {
 		}
 	}
 
-	/// Moves the caret to each paragraph as it starts, and past the last one once it's read, so starting again doesn't repeat it. Called on the audio tick.
-	pub(super) fn pump_read_aloud(&mut self) {
+	/// Moves the caret to each paragraph as it starts, and past the last one once it's read, so starting again doesn't repeat it. When the user moves the caret while reading, reading goes on from there once it settles. Called on its own short timer.
+	pub fn pump_read_aloud(&mut self) {
 		// Not `reading_tab_index`, since that stops counting the document once reading has finished, and finishing is what this has to notice.
 		let Some(index) =
 			self.active_tab_index().filter(|&index| self.speaker_tab.as_ref() == Some(&self.tabs[index].file_path))
@@ -217,13 +227,21 @@ impl DocumentManager {
 		};
 		let tab = &mut self.tabs[index];
 		let Some(speaker) = self.speaker.as_mut() else { return };
+		let caret = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		// `try_lock` because Settings holds the config while it's open; the move is still there to read from on a later tick.
+		if let Some(moved_to) = speaker.caret_moved_to(caret)
+			&& let Ok(config) = self.config.try_lock()
+		{
+			let paused = speaker.is_paused();
+			speaker.read_from_caret(&tab.session, moved_to, &config, &tab.file_path.to_string_lossy(), paused);
+		}
 		match speaker.pump(&tab.session) {
 			Some(Followed::Paragraph(position)) => {
-				let current = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-				if position != current {
+				if position != caret {
 					let local = tab.window.to_local(position);
 					tab.text_ctrl.set_insertion_point(local);
 					tab.text_ctrl.show_position(local);
+					speaker.caret_followed(tab.window.to_doc(tab.text_ctrl.get_insertion_point()));
 				}
 			}
 			Some(Followed::End) => set_caret_to_doc_offset(tab, tab.session.document_len().as_pos()),

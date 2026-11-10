@@ -1,640 +1,135 @@
-use std::{
-	cell::{Cell, RefCell},
-	rc::Rc,
-};
+//! The Settings dialog. Each tab lives in its own module, with the settings it edits and how they load and save.
 
-use logkeeper::Level;
-use paperback_core::config::{ConfigManager, KeyChord, ReadabilityFont, ShortcutsConfig};
-use patois::{t, wx::populate_language_choice};
+use paperback_core::config::ConfigManager;
+use patois::t;
 #[cfg(target_os = "windows")]
 use wxdragon::accessible::AccRole;
 use wxdragon::prelude::*;
 
 use super::{add_ok_cancel_footer, build_ok_cancel_buttons, dialog_padding};
-use crate::{
-	config_ext::{DEFAULT_LOG_LEVEL, UpdateChannel, get_log_level, get_update_channel},
-	translation_manager::TranslationManager,
-	ui::readability::stored_colour,
-};
 
+mod advanced;
+mod appearance;
+mod audio;
+mod documents;
 mod font;
+mod general;
+mod reading;
 
-use font::{color_description, font_description, show_font_picker};
+pub use advanced::AdvancedSettings;
+pub use appearance::AppearanceSettings;
+pub(crate) use audio::AUDIO_SEEK_AMOUNTS_SECONDS;
+pub use audio::{AudioSettings, PlaySample};
+pub use documents::DocumentSettings;
+pub use general::GeneralSettings;
+pub use reading::ReadingSettings;
 
-/// Indexed by `audio_seek_amount_ctrl`'s selection and also stepped through by `audio::handle_change_seek_amount`, so it must match the choices in the dialog.
-pub(crate) const AUDIO_SEEK_AMOUNTS_SECONDS: [i32; 9] = [5, 10, 30, 60, 120, 300, 600, 1800, 3600];
+/// Space around each option, inside its tab.
+const OPTION_PADDING: i32 = 5;
 
+/// Everything the Settings dialog edits, by tab.
 #[derive(Clone, Debug)]
 pub struct OptionsDialogResult {
-	pub restore_previous_documents: bool,
-	pub word_wrap: bool,
-	pub render_tables_inline: bool,
-	pub join_pdf_paragraphs: bool,
-	pub strip_running_text: bool,
-	pub markdown_dollar_math: bool,
-	pub minimize_to_tray: bool,
-	pub start_maximized: bool,
-	pub compact_go_menu: bool,
-	pub navigation_wrap: bool,
-	pub line_start_navigation: bool,
-	pub highlight_found_text: bool,
-	pub check_for_updates_on_startup: bool,
-	pub bookmark_sounds: bool,
-	pub sync_caret_to_audio: bool,
-	pub audio_seek_amount_seconds: i32,
-	pub audio_seek_continues_into_next_file: bool,
-	pub auto_reload_documents: bool,
-	pub recent_documents_to_show: i32,
-	pub reading_speed_wpm: i32,
-	pub language: String,
-	pub update_channel: UpdateChannel,
-	pub log_level: Level,
-	pub hotkey: Option<KeyChord>,
-	pub shortcuts: ShortcutsConfig,
-	pub readability_font: ReadabilityFont,
-	pub line_spacing: i32,
-	pub bg_color: i32,
-	pub text_alignment: i32,
-	pub letter_spacing: i32,
-	pub paragraph_spacing: i32,
+	pub general: GeneralSettings,
+	pub reading: ReadingSettings,
+	pub audio: AudioSettings,
+	pub appearance: AppearanceSettings,
+	pub documents: DocumentSettings,
+	pub advanced: AdvancedSettings,
 }
 
-struct OptionsDialogUi {
-	dialog: Dialog,
-	notebook: Notebook,
-	restore_docs_check: CheckBox,
-	word_wrap_check: CheckBox,
-	render_tables_inline_check: CheckBox,
-	join_pdf_paragraphs_check: CheckBox,
-	strip_running_text_check: CheckBox,
-	markdown_dollar_math_check: CheckBox,
-	minimize_to_tray_check: CheckBox,
-	start_maximized_check: CheckBox,
-	compact_go_menu_check: CheckBox,
-	navigation_wrap_check: CheckBox,
-	line_start_nav_check: CheckBox,
-	highlight_found_text_check: CheckBox,
-	check_for_updates_check: CheckBox,
-	bookmark_sounds_check: CheckBox,
-	sync_caret_to_audio_check: CheckBox,
-	audio_seek_amount_ctrl: Choice,
-	audio_seek_continues_into_next_file_check: CheckBox,
-	auto_reload_check: CheckBox,
-	recent_docs_ctrl: SpinCtrl,
-	reading_speed_ctrl: SpinCtrl,
-	language_combo: Choice,
-	update_channel_combo: Choice,
-	log_level_combo: Choice,
-	language_codes: Vec<String>,
-	current_language: String,
-	ok_button: Button,
-	cancel_button: Button,
-	hotkey: Rc<RefCell<Option<KeyChord>>>,
-	shortcuts: Rc<RefCell<ShortcutsConfig>>,
-	readability_font: Rc<RefCell<ReadabilityFont>>,
-	line_spacing_ctrl: Choice,
-	bg_color: Rc<Cell<i32>>,
-	text_alignment_ctrl: Choice,
-	letter_spacing_ctrl: Choice,
-	paragraph_spacing_ctrl: Choice,
-}
-
-pub fn show_options_dialog(parent: &Frame, config: &ConfigManager) -> Option<OptionsDialogResult> {
-	let ui = build_options_dialog_ui(parent, config);
-	finalize_options_dialog_layout(&ui);
-	if ui.dialog.show_modal() != ID_OK {
-		return None;
+impl OptionsDialogResult {
+	/// `book` is the open document, which can keep a voice of its own.
+	pub fn load(config: &ConfigManager, book: Option<&str>) -> Self {
+		Self {
+			general: GeneralSettings::load(config),
+			reading: ReadingSettings::load(config),
+			audio: AudioSettings::load(config, book),
+			appearance: AppearanceSettings::load(config),
+			documents: DocumentSettings::load(config),
+			advanced: AdvancedSettings::load(config),
+		}
 	}
-	let language = resolve_options_language(&ui);
-	let update_channel = match ui.update_channel_combo.get_selection() {
-		Some(1) => UpdateChannel::Dev,
-		_ => UpdateChannel::Stable,
-	};
-	let chosen_level = ui.log_level_combo.get_selection().and_then(|index| Level::ALL.get(index as usize).copied());
-	let log_level = chosen_level.unwrap_or(DEFAULT_LOG_LEVEL);
-	let readability_font = ui.readability_font.borrow().clone();
-	let line_spacing = ui.line_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
-	let bg_color = ui.bg_color.get();
-	let text_alignment = ui.text_alignment_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
-	let letter_spacing = ui.letter_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
-	let paragraph_spacing = ui.paragraph_spacing_ctrl.get_selection().and_then(|i| i32::try_from(i).ok()).unwrap_or(0);
-	let audio_seek_amount_seconds = ui
-		.audio_seek_amount_ctrl
-		.get_selection()
-		.and_then(|idx| AUDIO_SEEK_AMOUNTS_SECONDS.get(idx as usize).copied())
-		.unwrap_or(10);
-	Some(OptionsDialogResult {
-		restore_previous_documents: ui.restore_docs_check.is_checked(),
-		word_wrap: ui.word_wrap_check.is_checked(),
-		render_tables_inline: ui.render_tables_inline_check.is_checked(),
-		join_pdf_paragraphs: ui.join_pdf_paragraphs_check.is_checked(),
-		strip_running_text: ui.strip_running_text_check.is_checked(),
-		markdown_dollar_math: ui.markdown_dollar_math_check.is_checked(),
-		minimize_to_tray: ui.minimize_to_tray_check.is_checked(),
-		start_maximized: ui.start_maximized_check.is_checked(),
-		compact_go_menu: ui.compact_go_menu_check.is_checked(),
-		navigation_wrap: ui.navigation_wrap_check.is_checked(),
-		line_start_navigation: ui.line_start_nav_check.is_checked(),
-		highlight_found_text: ui.highlight_found_text_check.is_checked(),
-		check_for_updates_on_startup: ui.check_for_updates_check.is_checked(),
-		bookmark_sounds: ui.bookmark_sounds_check.is_checked(),
-		sync_caret_to_audio: ui.sync_caret_to_audio_check.is_checked(),
-		audio_seek_amount_seconds,
-		audio_seek_continues_into_next_file: ui.audio_seek_continues_into_next_file_check.is_checked(),
-		auto_reload_documents: ui.auto_reload_check.is_checked(),
-		recent_documents_to_show: ui.recent_docs_ctrl.value(),
-		reading_speed_wpm: ui.reading_speed_ctrl.value(),
-		language,
-		update_channel,
-		log_level,
-		hotkey: ui.hotkey.borrow().clone(),
-		shortcuts: ui.shortcuts.borrow().clone(),
-		readability_font,
-		line_spacing,
-		bg_color,
-		text_alignment,
-		letter_spacing,
-		paragraph_spacing,
-	})
+
+	pub fn save(&self, config: &ConfigManager, book: Option<&str>) {
+		self.general.save(config);
+		self.reading.save(config);
+		self.audio.save(config, book);
+		self.appearance.save(config);
+		self.documents.save(config);
+		self.advanced.save(config);
+	}
 }
 
-fn build_options_dialog_ui(parent: &Frame, config: &ConfigManager) -> OptionsDialogUi {
+/// What Settings needs from the app besides the config.
+pub struct OptionsContext {
+	/// The open document, whose own voice the Audio tab can set.
+	pub book: Option<String>,
+	pub play_sample: PlaySample,
+}
+
+pub fn show_options_dialog(
+	parent: &Frame,
+	config: &ConfigManager,
+	context: OptionsContext,
+) -> Option<OptionsDialogResult> {
+	let initial = OptionsDialogResult::load(config, context.book.as_deref());
 	// TRANSLATORS: Title of the Settings dialog
 	let dialog = Dialog::builder(parent, &t("Settings")).build();
 	let padding = dialog_padding(&dialog);
 	let notebook = Notebook::builder(&dialog).with_style(NotebookStyle::Top).build();
-	let general_panel = Panel::builder(&notebook).build();
-	let reading_panel = Panel::builder(&notebook).build();
-	let readability_panel = Panel::builder(&notebook).build();
-	let general_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	let reading_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	let readability_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	let restore_docs_check =
-		// TRANSLATORS: Option to restore documents that were open when the app was last closed
-		CheckBox::builder(&general_panel).with_label(&t("&Restore previously opened documents on startup")).build();
-	let auto_reload_check =
-		// TRANSLATORS: Option to automatically reload an open document when its file changes on disk
-		CheckBox::builder(&general_panel).with_label(&t("&Automatically reload changed documents")).build();
-	// TRANSLATORS: Option to start the app maximized
-	let start_maximized_check = CheckBox::builder(&general_panel).with_label(&t("&Start maximized")).build();
-	// TRANSLATORS: Option to minimize the app window to the system tray instead of the taskbar
-	let minimize_to_tray_check = CheckBox::builder(&general_panel).with_label(&t("&Minimize to system tray")).build();
-	// TRANSLATORS: Option to toggle word wrapping of text
-	let word_wrap_check = CheckBox::builder(&readability_panel).with_label(&t("&Word wrap")).build();
-	let render_tables_inline_check =
-		// TRANSLATORS: Option to render tables inline rather than showing a placeholder link
-		CheckBox::builder(&readability_panel).with_label(&t("Render tables &inline")).build();
-	let join_pdf_paragraphs_check = CheckBox::builder(&readability_panel)
-		// TRANSLATORS: Option to join the wrapped lines of a page back into paragraphs, in documents laid out as pages, such as PDFs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
-		.with_label(&t("&Join wrapped lines into paragraphs"))
-		.build();
-	let strip_running_text_check = CheckBox::builder(&readability_panel)
-		// TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
-		.with_label(&t("Remove repeated page &headers and footers"))
-		.build();
-	let markdown_dollar_math_check = CheckBox::builder(&readability_panel)
-		// TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
-		.with_label(&t("Read text between dollar signs as &math in Markdown"))
-		.build();
-	// TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
-	let compact_go_menu_check = CheckBox::builder(&reading_panel).with_label(&t("Show compact &go menu")).build();
-	// TRANSLATORS: Option to wrap navigation around to the beginning/end when navigating elements
-	let navigation_wrap_check = CheckBox::builder(&reading_panel).with_label(&t("&Wrap navigation")).build();
-	let line_start_nav_check =
-		// TRANSLATORS: Option to move the caret to the start of the line when navigating up or down
-		CheckBox::builder(&reading_panel).with_label(&t("Move to &start of line")).build();
-	let highlight_found_text_check = CheckBox::builder(&reading_panel)
-		// TRANSLATORS: Option to select the text Find matches; turned off, Find only moves the caret to the match
-		.with_label(&t("&Highlight found text"))
-		.build();
-	let bookmark_sounds_check =
-		// TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
-		CheckBox::builder(&reading_panel).with_label(&t("Play &sounds on bookmarks and notes")).build();
-	let sync_caret_to_audio_check =
-		// TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
-		CheckBox::builder(&reading_panel).with_label(&t("&Sync caret to audio playback")).build();
-	// TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
-	let audio_seek_amount_label_text = t("&Audio seek amount:");
-	let audio_seek_amount_label = StaticText::builder(&reading_panel).with_label(&audio_seek_amount_label_text).build();
-	let audio_seek_amount_ctrl = Choice::builder(&reading_panel).build();
-	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-	audio_seek_amount_ctrl.append(&t("5 seconds"));
-	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-	audio_seek_amount_ctrl.append(&t("10 seconds"));
-	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-	audio_seek_amount_ctrl.append(&t("30 seconds"));
-	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-	audio_seek_amount_ctrl.append(&t("1 minute"));
-	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-	audio_seek_amount_ctrl.append(&t("2 minutes"));
-	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-	audio_seek_amount_ctrl.append(&t("5 minutes"));
-	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-	audio_seek_amount_ctrl.append(&t("10 minutes"));
-	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-	audio_seek_amount_ctrl.append(&t("30 minutes"));
-	// TRANSLATORS: Audio seek amount option, shown in the audio seek amount dropdown
-	audio_seek_amount_ctrl.append(&t("1 hour"));
-	#[cfg(target_os = "macos")]
-	audio_seek_amount_ctrl
-		.set_accessibility_label(audio_seek_amount_label_text.replace('&', "").trim_end_matches(':').trim());
-	let audio_seek_continues_into_next_file_check =
-		// TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
-		CheckBox::builder(&reading_panel).with_label(&t("Seeking &past the end of a chapter continues into the next")).build();
-	let audio_seek_amount_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	audio_seek_amount_sizer.add(
-		&audio_seek_amount_label,
-		0,
-		SizerFlag::AlignCenterVertical | SizerFlag::Right,
-		padding,
-	);
-	audio_seek_amount_sizer.add(&audio_seek_amount_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	let check_for_updates_check =
-		// TRANSLATORS: Option to check for app updates automatically on startup
-		CheckBox::builder(&general_panel).with_label(&t("Check for &updates on startup")).build();
-	// TRANSLATORS: Label for the update channel selection dropdown
-	let channel_label_text = t("Update Channel:");
-	let channel_label = StaticText::builder(&general_panel).with_label(&channel_label_text).build();
-	let update_channel_combo = Choice::builder(&general_panel).build();
-	// TRANSLATORS: Stable update channel option
-	update_channel_combo.append(&t("Stable"));
-	// TRANSLATORS: Developer/development update channel option
-	update_channel_combo.append(&t("Dev"));
-	#[cfg(target_os = "macos")]
-	update_channel_combo.set_accessibility_label(channel_label_text.replace('&', "").trim_end_matches(':').trim());
-	let channel_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	channel_sizer.add(&channel_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
-	channel_sizer.add(&update_channel_combo, 0, SizerFlag::AlignCenterVertical, 0);
-	// TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
-	let log_level_label_text = t("Log Level:");
-	let log_level_label = StaticText::builder(&general_panel).with_label(&log_level_label_text).build();
-	let log_level_combo = Choice::builder(&general_panel).build();
-	for level in Level::ALL {
-		log_level_combo.append(&log_level_name(level));
+	let page = || Panel::builder(&notebook).build();
+	let (general_panel, reading_panel, audio_panel) = (page(), page(), page());
+	let (appearance_panel, documents_panel, advanced_panel) = (page(), page(), page());
+	let general = general::GeneralTab::new(general_panel, dialog, &initial.general, padding);
+	let reading = reading::ReadingTab::new(reading_panel, &initial.reading, padding);
+	let audio = audio::AudioTab::new(audio_panel, &initial.audio, padding, context.book.is_some(), context.play_sample);
+	let appearance = appearance::AppearanceTab::new(appearance_panel, dialog, &initial.appearance, padding);
+	let documents = documents::DocumentsTab::new(documents_panel, &initial.documents);
+	let advanced = advanced::AdvancedTab::new(advanced_panel, initial.advanced, padding);
+	let tabs = [
+		// TRANSLATORS: Tab label for the General options panel
+		(general_panel, t("General")),
+		// TRANSLATORS: Tab label for the Reading options panel, about moving through and searching a document
+		(reading_panel, t("Reading")),
+		// TRANSLATORS: Tab label for the Settings panel about playing audio books and narration
+		(audio_panel, t("Audio")),
+		// TRANSLATORS: Tab label for the Settings panel about how text looks: font, colour, spacing and alignment
+		(appearance_panel, t("Appearance")),
+		// TRANSLATORS: Tab label for the Settings panel about how a file is read, such as whether tables are shown inline
+		(documents_panel, t("Documents")),
+		// TRANSLATORS: Tab label for the Settings panel with options most people never need, such as the update channel and log level
+		(advanced_panel, t("Advanced")),
+	];
+	for (index, (panel, label)) in tabs.iter().enumerate() {
+		panel.set_accessibility_label(label);
+		#[cfg(target_os = "windows")]
+		panel.set_accessibility_role(AccRole::PropertyPage);
+		notebook.add_page(panel, label, index == 0, None);
 	}
-	#[cfg(target_os = "macos")]
-	log_level_combo.set_accessibility_label(log_level_label_text.replace('&', "").trim_end_matches(':').trim());
-	let log_level_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	log_level_sizer.add(&log_level_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
-	log_level_sizer.add(&log_level_combo, 0, SizerFlag::AlignCenterVertical, 0);
-	// TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
-	let shortcuts_button = Button::builder(&general_panel).with_label(&t("Customize &Keyboard Shortcuts...")).build();
-	let option_padding = 5;
-	general_sizer.add(&restore_docs_check, 0, SizerFlag::All, option_padding);
-	general_sizer.add(&auto_reload_check, 0, SizerFlag::All, option_padding);
-	general_sizer.add(&start_maximized_check, 0, SizerFlag::All, option_padding);
-	#[cfg(target_os = "windows")]
-	general_sizer.add(&minimize_to_tray_check, 0, SizerFlag::All, option_padding);
-	#[cfg(not(target_os = "windows"))]
-	minimize_to_tray_check.show(false);
-	general_sizer.add(&check_for_updates_check, 0, SizerFlag::All, option_padding);
-	general_sizer.add_sizer(&channel_sizer, 0, SizerFlag::All, option_padding);
-	general_sizer.add_sizer(&log_level_sizer, 0, SizerFlag::All, option_padding);
-	general_sizer.add(&shortcuts_button, 0, SizerFlag::All, option_padding);
-	reading_sizer.add(&navigation_wrap_check, 0, SizerFlag::All, option_padding);
-	#[cfg(target_os = "windows")]
-	reading_sizer.add(&line_start_nav_check, 0, SizerFlag::All, option_padding);
-	reading_sizer.add(&highlight_found_text_check, 0, SizerFlag::All, option_padding);
-	for check in [&compact_go_menu_check, &bookmark_sounds_check, &sync_caret_to_audio_check] {
-		reading_sizer.add(check, 0, SizerFlag::All, option_padding);
-	}
-	reading_sizer.add_sizer(&audio_seek_amount_sizer, 0, SizerFlag::All, option_padding);
-	reading_sizer.add(&audio_seek_continues_into_next_file_check, 0, SizerFlag::All, option_padding);
-	let reading_speed_label =
-		// TRANSLATORS: Label for the reading speed input field (Words Per Minute)
-		StaticText::builder(&reading_panel).with_label(&t("&Reading speed (words per minute):")).build();
-	let reading_speed_ctrl = SpinCtrl::builder(&reading_panel).with_range(1, 2000).build();
-	let reading_speed_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	reading_speed_sizer.add(&reading_speed_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
-	reading_speed_sizer.add(&reading_speed_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	reading_sizer.add_sizer(&reading_speed_sizer, 0, SizerFlag::All, option_padding);
-	let max_recent_docs = 100;
-	let recent_docs_label =
-		// TRANSLATORS: Label for the number of recently opened documents to keep in history
-		StaticText::builder(&general_panel).with_label(&t("Number of &recent documents to show:")).build();
-	let recent_docs_ctrl = SpinCtrl::builder(&general_panel).with_range(0, max_recent_docs).build();
-	let recent_docs_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	recent_docs_sizer.add(&recent_docs_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
-	recent_docs_sizer.add(&recent_docs_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	general_sizer.add_sizer(&recent_docs_sizer, 0, SizerFlag::All, option_padding);
-	// TRANSLATORS: Label for the language selection dropdown
-	let language_label_text = t("&Language:");
-	let language_label = StaticText::builder(&general_panel).with_label(&language_label_text).build();
-	let language_combo = Choice::builder(&general_panel).build();
-	let languages = TranslationManager::instance().lock().unwrap().available_languages();
-	let language_codes = populate_language_choice(&language_combo, &languages);
-	#[cfg(target_os = "macos")]
-	language_combo.set_accessibility_label(language_label_text.replace('&', "").trim_end_matches(':').trim());
-	let language_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	language_sizer.add(&language_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
-	language_sizer.add(&language_combo, 0, SizerFlag::AlignCenterVertical, 0);
-	general_sizer.add_sizer(&language_sizer, 0, SizerFlag::All, option_padding);
-	// TRANSLATORS: Label/header for the Font options section
-	let font_group_box = StaticBox::builder(&readability_panel).with_label(&t("Font")).build();
-	let font_group_sizer = StaticBoxSizerBuilder::new_with_box(&font_group_box, Orientation::Vertical).build();
-	let font_preview_label = StaticText::builder(&readability_panel).with_label("").build();
-	// TRANSLATORS: Button label to pick a font
-	let choose_font_button = Button::builder(&readability_panel).with_label(&t("Choose &Font...")).build();
-	// TRANSLATORS: Button label to restore font settings to default values
-	let reset_font_button = Button::builder(&readability_panel).with_label(&t("&Reset to Default Font")).build();
-	font_group_sizer.add(&font_preview_label, 0, SizerFlag::All, option_padding);
-	font_group_sizer.add(&choose_font_button, 0, SizerFlag::All, option_padding);
-	font_group_sizer.add(&reset_font_button, 0, SizerFlag::All, option_padding);
-	readability_sizer.add_sizer(&font_group_sizer, 0, SizerFlag::Expand | SizerFlag::All, option_padding);
-	// TRANSLATORS: Label/header for the Background Color options section
-	let bg_group_box = StaticBox::builder(&readability_panel).with_label(&t("Background Color")).build();
-	let bg_group_sizer = StaticBoxSizerBuilder::new_with_box(&bg_group_box, Orientation::Vertical).build();
-	let bg_color_label = StaticText::builder(&readability_panel).with_label("").build();
-	// TRANSLATORS: Button label to pick a background color
-	let choose_bg_button = Button::builder(&readability_panel).with_label(&t("Choose &Background Color...")).build();
-	// TRANSLATORS: Button label to restore background color to default values
-	let reset_bg_button = Button::builder(&readability_panel).with_label(&t("Reset to &Default Background")).build();
-	bg_group_sizer.add(&bg_color_label, 0, SizerFlag::All, option_padding);
-	bg_group_sizer.add(&choose_bg_button, 0, SizerFlag::All, option_padding);
-	bg_group_sizer.add(&reset_bg_button, 0, SizerFlag::All, option_padding);
-	readability_sizer.add_sizer(&bg_group_sizer, 0, SizerFlag::Expand | SizerFlag::All, option_padding);
-	// TRANSLATORS: Label for the line spacing dropdown
-	let line_spacing_label_text = t("&Line spacing:");
-	let line_spacing_label = StaticText::builder(&readability_panel).with_label(&line_spacing_label_text).build();
-	let line_spacing_ctrl = Choice::builder(&readability_panel).build();
-	// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
-	line_spacing_ctrl.append(&t("Normal"));
-	// TRANSLATORS: 1.5x line spacing option
-	line_spacing_ctrl.append(&t("1.5×"));
-	// TRANSLATORS: Double line spacing option
-	line_spacing_ctrl.append(&t("Double"));
-	#[cfg(target_os = "macos")]
-	line_spacing_ctrl.set_accessibility_label(line_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
-	let line_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	line_spacing_sizer.add(&line_spacing_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
-	line_spacing_sizer.add(&line_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	// TRANSLATORS: Label for the paragraph spacing dropdown
-	let paragraph_spacing_label_text = t("&Paragraph spacing:");
-	let paragraph_spacing_label =
-		StaticText::builder(&readability_panel).with_label(&paragraph_spacing_label_text).build();
-	let paragraph_spacing_ctrl = Choice::builder(&readability_panel).build();
-	// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
-	paragraph_spacing_ctrl.append(&t("Normal"));
-	// TRANSLATORS: Relaxed paragraph spacing option
-	paragraph_spacing_ctrl.append(&t("Relaxed"));
-	// TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-	paragraph_spacing_ctrl.append(&t("Wide"));
-	#[cfg(target_os = "macos")]
-	paragraph_spacing_ctrl
-		.set_accessibility_label(paragraph_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
-	let paragraph_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	paragraph_spacing_sizer.add(
-		&paragraph_spacing_label,
-		0,
-		SizerFlag::AlignCenterVertical | SizerFlag::Right,
-		padding,
-	);
-	paragraph_spacing_sizer.add(&paragraph_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	// TRANSLATORS: Label for the letter spacing dropdown
-	let letter_spacing_label_text = t("L&etter spacing:");
-	let letter_spacing_label = StaticText::builder(&readability_panel).with_label(&letter_spacing_label_text).build();
-	let letter_spacing_ctrl = Choice::builder(&readability_panel).build();
-	// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
-	letter_spacing_ctrl.append(&t("Normal"));
-	// TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-	letter_spacing_ctrl.append(&t("Wide"));
-	// TRANSLATORS: Very Wide letter spacing option
-	letter_spacing_ctrl.append(&t("Very Wide"));
-	#[cfg(target_os = "macos")]
-	letter_spacing_ctrl
-		.set_accessibility_label(letter_spacing_label_text.replace('&', "").trim_end_matches(':').trim());
-	let letter_spacing_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	letter_spacing_sizer.add(&letter_spacing_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
-	letter_spacing_sizer.add(&letter_spacing_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	// TRANSLATORS: Label for the text alignment dropdown
-	let text_alignment_label_text = t("Text &alignment:");
-	let text_alignment_label = StaticText::builder(&readability_panel).with_label(&text_alignment_label_text).build();
-	let text_alignment_ctrl = Choice::builder(&readability_panel).build();
-	// TRANSLATORS: Left text alignment option
-	text_alignment_ctrl.append(&t("Left"));
-	// TRANSLATORS: Center text alignment option
-	text_alignment_ctrl.append(&t("Center"));
-	// TRANSLATORS: Right text alignment option
-	text_alignment_ctrl.append(&t("Right"));
-	// TRANSLATORS: Justified text alignment option
-	text_alignment_ctrl.append(&t("Justify"));
-	#[cfg(target_os = "macos")]
-	text_alignment_ctrl
-		.set_accessibility_label(text_alignment_label_text.replace('&', "").trim_end_matches(':').trim());
-	let text_alignment_sizer = BoxSizer::builder(Orientation::Horizontal).build();
-	text_alignment_sizer.add(&text_alignment_label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
-	text_alignment_sizer.add(&text_alignment_ctrl, 0, SizerFlag::AlignCenterVertical, 0);
-	readability_sizer.add(&word_wrap_check, 0, SizerFlag::All, option_padding);
-	readability_sizer.add(&render_tables_inline_check, 0, SizerFlag::All, option_padding);
-	readability_sizer.add(&join_pdf_paragraphs_check, 0, SizerFlag::All, option_padding);
-	readability_sizer.add(&strip_running_text_check, 0, SizerFlag::All, option_padding);
-	readability_sizer.add(&markdown_dollar_math_check, 0, SizerFlag::All, option_padding);
-	readability_sizer.add_sizer(&line_spacing_sizer, 0, SizerFlag::All, option_padding);
-	readability_sizer.add_sizer(&paragraph_spacing_sizer, 0, SizerFlag::All, option_padding);
-	readability_sizer.add_sizer(&letter_spacing_sizer, 0, SizerFlag::All, option_padding);
-	readability_sizer.add_sizer(&text_alignment_sizer, 0, SizerFlag::All, option_padding);
-	readability_panel.set_sizer(readability_sizer, true);
-	general_panel.set_sizer(general_sizer, true);
-	reading_panel.set_sizer(reading_sizer, true);
-	// TRANSLATORS: Tab label for the General options panel
-	let general_label = t("General");
-	// TRANSLATORS: Tab label for the Reading options panel
-	let reading_label = t("Reading");
-	// TRANSLATORS: Tab label for the Readability options panel
-	let readability_label = t("Readability");
-	general_panel.set_accessibility_label(&general_label);
-	reading_panel.set_accessibility_label(&reading_label);
-	readability_panel.set_accessibility_label(&readability_label);
-	#[cfg(target_os = "windows")]
-	{
-		general_panel.set_accessibility_role(AccRole::PropertyPage);
-		reading_panel.set_accessibility_role(AccRole::PropertyPage);
-		readability_panel.set_accessibility_role(AccRole::PropertyPage);
-	}
-	notebook.add_page(&general_panel, &general_label, true, None);
-	notebook.add_page(&reading_panel, &reading_label, false, None);
-	notebook.add_page(&readability_panel, &readability_label, false, None);
-	restore_docs_check.set_value(config.get_app_bool("restore_previous_documents", true));
-	word_wrap_check.set_value(config.get_app_bool("word_wrap", false));
-	render_tables_inline_check.set_value(config.get_app_bool("render_tables_inline", true));
-	join_pdf_paragraphs_check.set_value(config.get_app_bool("join_pdf_paragraphs", true));
-	strip_running_text_check.set_value(config.get_app_bool("strip_running_text", true));
-	markdown_dollar_math_check.set_value(config.get_app_bool("markdown_dollar_math", true));
-	minimize_to_tray_check.set_value(config.get_app_bool("minimize_to_tray", false));
-	start_maximized_check.set_value(config.get_app_bool("start_maximized", false));
-	compact_go_menu_check.set_value(config.get_app_bool("compact_go_menu", true));
-	navigation_wrap_check.set_value(config.get_app_bool("navigation_wrap", false));
-	line_start_nav_check.set_value(config.get_app_bool("line_start_navigation", false));
-	highlight_found_text_check.set_value(config.get_app_bool("highlight_found_text", true));
-	bookmark_sounds_check.set_value(config.get_app_bool("bookmark_sounds", true));
-	sync_caret_to_audio_check.set_value(config.get_app_bool("sync_caret_to_audio", true));
-	let stored_seek_amount = config.get_app_int("audio_seek_amount_seconds", 10);
-	let seek_amount_index = AUDIO_SEEK_AMOUNTS_SECONDS
-		.iter()
-		.position(|&secs| secs == stored_seek_amount)
-		.or_else(|| AUDIO_SEEK_AMOUNTS_SECONDS.iter().position(|&secs| secs == 10))
-		.unwrap_or(1);
-	audio_seek_amount_ctrl.set_selection(u32::try_from(seek_amount_index).unwrap_or(1));
-	audio_seek_continues_into_next_file_check
-		.set_value(config.get_app_bool("audio_seek_continues_into_next_file", false));
-	auto_reload_check.set_value(config.get_app_bool("auto_reload_documents", true));
-	check_for_updates_check.set_value(config.get_app_bool("check_for_updates_on_startup", true));
-	recent_docs_ctrl.set_value(config.get_app_int("recent_documents_to_show", 25).clamp(0, max_recent_docs));
-	reading_speed_ctrl.set_value(config.get_app_int("reading_speed_wpm", 150).clamp(1, 2000));
-	let stored_language = config.get_app_string("language", "");
-	let current_language = if stored_language.is_empty() {
-		TranslationManager::instance().lock().unwrap().current_language()
-	} else {
-		stored_language
-	};
-	if let Some(index) = language_codes.iter().position(|code| code == &current_language) {
-		language_combo.set_selection(u32::try_from(index).unwrap_or(0));
-	}
-	let current_channel = get_update_channel(config);
-	let channel_index = match current_channel {
-		UpdateChannel::Stable => 0,
-		UpdateChannel::Dev => 1,
-	};
-	update_channel_combo.set_selection(channel_index);
-	let log_level_index = Level::ALL.iter().position(|level| *level == get_log_level(config)).unwrap_or(0);
-	log_level_combo.set_selection(u32::try_from(log_level_index).unwrap_or(0));
-	let current_hotkey = Rc::new(RefCell::new(config.get_hotkey()));
-	let current_shortcuts = Rc::new(RefCell::new(config.get_shortcuts()));
-	let shortcuts_state = Rc::clone(&current_shortcuts);
-	let hotkey_state = Rc::clone(&current_hotkey);
-	let shortcuts_dialog_parent = dialog;
-	shortcuts_button.on_click(move |_| {
-		let initial =
-			super::Keymap { shortcuts: shortcuts_state.borrow().clone(), window_hotkey: hotkey_state.borrow().clone() };
-		if let Some(updated) = super::prompt_for_shortcuts(&shortcuts_dialog_parent, &initial) {
-			*shortcuts_state.borrow_mut() = updated.shortcuts;
-			*hotkey_state.borrow_mut() = updated.window_hotkey;
-		}
-	});
-	let initial_font = config.get_readability_font();
-	font_preview_label.set_label(&font_description(&initial_font));
-	let readability_font = Rc::new(RefCell::new(initial_font));
-	let stored_line_spacing = config.get_line_spacing().clamp(0, 2).unsigned_abs();
-	line_spacing_ctrl.set_selection(stored_line_spacing);
-	paragraph_spacing_ctrl.set_selection(config.get_paragraph_spacing().clamp(0, 2).unsigned_abs());
-	letter_spacing_ctrl.set_selection(config.get_letter_spacing().clamp(0, 2).unsigned_abs());
-	text_alignment_ctrl.set_selection(config.get_text_alignment().clamp(0, 3).unsigned_abs());
-	let stored_bg = config.get_bg_color();
-	bg_color_label.set_label(&color_description(stored_bg));
-	let bg_color = Rc::new(Cell::new(stored_bg));
-	let font_state = Rc::clone(&readability_font);
-	let preview_label = font_preview_label;
-	let dialog_ref = dialog;
-	choose_font_button.on_click(move |_| {
-		let current = font_state.borrow().clone();
-		if let Some(selected) = show_font_picker(dialog_ref, &current) {
-			preview_label.set_label(&font_description(&selected));
-			*font_state.borrow_mut() = selected;
-		}
-	});
-	let font_state_reset = Rc::clone(&readability_font);
-	let preview_label_reset = preview_label;
-	reset_font_button.on_click(move |_| {
-		let default_font = ReadabilityFont::default();
-		preview_label_reset.set_label(&font_description(&default_font));
-		*font_state_reset.borrow_mut() = default_font;
-	});
-	let bg_state = Rc::clone(&bg_color);
-	let bg_label = bg_color_label;
-	let dialog_for_bg = dialog_ref;
-	choose_bg_button.on_click(move |_| {
-		let current = bg_state.get();
-		let initial = stored_colour(current);
-		// TRANSLATORS: Title of the system dialog for picking a background colour
-		let mut dlg = ColourDialog::builder(&dialog_for_bg).with_title(&t("Choose a colour"));
-		if let Some(c) = initial {
-			dlg = dlg.with_initial_colour(c);
-		}
-		let dlg = dlg.build();
-		if dlg.show_modal() == ID_OK
-			&& let Some(c) = dlg.get_colour()
-		{
-			let packed = (i32::from(c.r) << 16) | (i32::from(c.g) << 8) | i32::from(c.b);
-			bg_state.set(packed);
-			bg_label.set_label(&color_description(packed));
-		}
-	});
-	let bg_state_reset = Rc::clone(&bg_color);
-	let bg_label_reset = bg_label;
-	reset_bg_button.on_click(move |_| {
-		bg_state_reset.set(-1);
-		bg_label_reset.set_label(&color_description(-1));
-	});
 	// TRANSLATORS: Label for the confirmation button
-	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog_ref, &t("OK"));
-	OptionsDialogUi {
-		dialog: dialog_ref,
-		notebook,
-		restore_docs_check,
-		word_wrap_check,
-		render_tables_inline_check,
-		join_pdf_paragraphs_check,
-		strip_running_text_check,
-		markdown_dollar_math_check,
-		minimize_to_tray_check,
-		start_maximized_check,
-		compact_go_menu_check,
-		navigation_wrap_check,
-		line_start_nav_check,
-		highlight_found_text_check,
-		check_for_updates_check,
-		bookmark_sounds_check,
-		sync_caret_to_audio_check,
-		audio_seek_amount_ctrl,
-		audio_seek_continues_into_next_file_check,
-		auto_reload_check,
-		recent_docs_ctrl,
-		reading_speed_ctrl,
-		language_combo,
-		update_channel_combo,
-		log_level_combo,
-		language_codes,
-		current_language,
-		ok_button,
-		cancel_button,
-		hotkey: current_hotkey,
-		shortcuts: current_shortcuts,
-		readability_font,
-		line_spacing_ctrl,
-		bg_color,
-		text_alignment_ctrl,
-		letter_spacing_ctrl,
-		paragraph_spacing_ctrl,
-	}
-}
-
-fn finalize_options_dialog_layout(ui: &OptionsDialogUi) {
-	let padding = dialog_padding(&ui.dialog);
+	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("OK"));
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add(&ui.notebook, 1, SizerFlag::Expand | SizerFlag::All, padding);
-	add_ok_cancel_footer(content_sizer, ui.ok_button, ui.cancel_button);
-	ui.dialog.set_sizer_and_fit(content_sizer, true);
-	ui.dialog.centre();
+	content_sizer.add(&notebook, 1, SizerFlag::Expand | SizerFlag::All, padding);
+	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);
+	dialog.set_sizer_and_fit(content_sizer, true);
+	dialog.centre();
+	let result = (dialog.show_modal() == ID_OK).then(|| OptionsDialogResult {
+		general: general.values(),
+		reading: reading.values(),
+		audio: audio.values(),
+		appearance: appearance.values(),
+		documents: documents.values(),
+		advanced: advanced.values(),
+	});
+	dialog.destroy();
+	result
 }
 
-fn resolve_options_language(ui: &OptionsDialogUi) -> String {
-	patois::wx::resolve_language_choice(&ui.language_combo, &ui.language_codes)
-		.unwrap_or_else(|| ui.current_language.clone())
-}
-
-fn log_level_name(level: Level) -> String {
-	match level {
-		// TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
-		Level::Off => t("Off"),
-		// TRANSLATORS: Log level choice that records only errors
-		Level::Error => t("Errors"),
-		// TRANSLATORS: Log level choice that records warnings and errors
-		Level::Warn => t("Warnings"),
-		// TRANSLATORS: Log level choice that records general activity, warnings and errors
-		Level::Info => t("Information"),
-		// TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
-		Level::Debug => t("Debug"),
-		// TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
-		Level::Trace => t("Trace"),
-	}
+/// A label and the control it names, side by side.
+fn labeled_row(label: StaticText, control: &impl WxWidget, padding: i32) -> BoxSizer {
+	let row = BoxSizer::builder(Orientation::Horizontal).build();
+	row.add(&label, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
+	row.add(control, 0, SizerFlag::AlignCenterVertical, 0);
+	row
 }

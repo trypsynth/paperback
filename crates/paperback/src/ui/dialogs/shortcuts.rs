@@ -107,6 +107,11 @@ impl ShortcutModel for CategorizedShortcuts {
 		let _ = tab;
 		self.0.shortcuts.reset_all();
 	}
+
+	/// `menu::shortcut_for_key` falls back to the key's place on a US keyboard.
+	fn matches_by_place(&self) -> bool {
+		true
+	}
 }
 
 pub fn prompt_for_shortcuts(parent: &dyn WxWidget, initial: &Keymap) -> Option<Keymap> {

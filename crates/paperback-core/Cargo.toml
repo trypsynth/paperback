@@ -56,18 +56,18 @@ paperback-formats = { workspace = true }
 patois = { workspace = true }
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.6", default-features = false, features = ["html"] }
-rayon = "1.12.0"
+rayon = { workspace = true }
 regex = "1.13.1"
-rustc-hash = "2.1.3"
-smallvec = "1.16.5"
 roman = "0.2.2"
 roxmltree = "0.21.2"
 rtf-parser = "0.4.3"
+rustc-hash = "2.1.3"
 scraper = "0.29.0"
 serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
 serde_json = { workspace = true }
 sha1 = "0.11.0"
 skrifa = "0.46.2"
+smallvec = "1.16.5"
 thiserror = "2.0.21"
 toml = { workspace = true }
 tracing = { workspace = true }

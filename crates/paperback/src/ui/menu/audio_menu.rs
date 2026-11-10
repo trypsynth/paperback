@@ -19,7 +19,5 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	entries.extend(commands::menu_entries(&[ActionId::IncreaseAudioSpeed, ActionId::DecreaseAudioSpeed], config));
 	entries.push(MenuEntry::Separator);
 	entries.extend(commands::menu_entries(&[ActionId::IncreaseAudioVolume, ActionId::DecreaseAudioVolume], config));
-	entries.push(MenuEntry::Separator);
-	entries.extend(commands::menu_entries(&[ActionId::SpeechSettings], config));
 	entries
 }

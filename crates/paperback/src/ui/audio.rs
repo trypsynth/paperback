@@ -1,9 +1,6 @@
 use std::{rc::Rc, sync::Mutex};
 
-use paperback_core::{
-	audio::AudioTimeline,
-	config::{ConfigManager, DocumentSpeech},
-};
+use paperback_core::{audio::AudioTimeline, config::ConfigManager};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -201,94 +198,6 @@ pub fn handle_change_audio_volume(
 		label
 	};
 	announce_for_command(live_region_label, from_keyboard, message);
-}
-
-pub fn handle_speech_settings(
-	frame: &Frame,
-	doc_manager: &Rc<Mutex<DocumentManager>>,
-	config: &Rc<Mutex<ConfigManager>>,
-	live_region_label: StaticText,
-	from_keyboard: bool,
-) {
-	let (engine, path) = {
-		let mut dm = doc_manager.lock().unwrap();
-		let path = dm.active_tab().map(|tab| tab.file_path.to_string_lossy().to_string());
-		(dm.speech_engine(), path)
-	};
-	let engine = match engine {
-		Ok(engine) => engine,
-		Err(message) => {
-			announce_for_command(live_region_label, from_keyboard, message);
-			return;
-		}
-	};
-	let keys =
-		|engine: &str| (format!("tts_voice_{engine}"), format!("tts_rate_{engine}"), format!("tts_pitch_{engine}"));
-	let initial = {
-		let cfg = config.lock().unwrap();
-		let (voice_key, rate_key, pitch_key) = keys(&engine);
-		let book = path.as_deref().map(|path| cfg.get_document_speech(path)).unwrap_or_default();
-		let app_voice = cfg.get_app_string(&voice_key, "");
-		dialogs::SpeechValues {
-			engine: engine.clone(),
-			this_book_only: book.voice.is_some() || book.rate_percent.is_some() || book.pitch_percent.is_some(),
-			voice: book.voice.clone().or_else(|| Some(app_voice).filter(|voice| !voice.is_empty())),
-			rate: book.rate_percent.unwrap_or_else(|| cfg.get_app_int(&rate_key, 50)),
-			pitch: book.pitch_percent.unwrap_or_else(|| cfg.get_app_int(&pitch_key, 50)),
-			paragraph_pause_ms: cfg.get_app_int("tts_paragraph_pause_ms", 0),
-		}
-	};
-	// Paused so the sample isn't spoken over the book.
-	let was_playing = doc_manager.lock().unwrap().pause_read_aloud();
-	let sample_dm = Rc::clone(doc_manager);
-	let play_sample = move |engine: &str, voice: Option<String>, rate: i32, pitch: i32| {
-		sample_dm.lock().unwrap().play_speech_sample(engine, voice, rate, pitch);
-	};
-	let voices_dm = Rc::clone(doc_manager);
-	let voices_for = move |engine: &str| voices_dm.lock().unwrap().speech_voices(engine);
-	let chosen = dialogs::show_speech_settings_dialog(frame, &initial, path.is_some(), voices_for, play_sample);
-	doc_manager.lock().unwrap().stop_speech_sample();
-	let Some(chosen) = chosen else {
-		if was_playing {
-			doc_manager.lock().unwrap().resume_read_aloud();
-		}
-		return;
-	};
-	{
-		let cfg = config.lock().unwrap();
-		let (voice_key, rate_key, pitch_key) = keys(&chosen.engine);
-		cfg.set_app_string("tts_engine", &chosen.engine);
-		cfg.set_app_int("tts_paragraph_pause_ms", chosen.paragraph_pause_ms);
-		if let Some(path) = path.as_deref()
-			&& chosen.this_book_only
-		{
-			let speech = DocumentSpeech {
-				voice: chosen.voice,
-				rate_percent: Some(chosen.rate),
-				pitch_percent: Some(chosen.pitch),
-			};
-			cfg.set_document_speech(path, &speech);
-		} else {
-			cfg.set_app_string(&voice_key, chosen.voice.as_deref().unwrap_or_default());
-			cfg.set_app_int(&rate_key, chosen.rate);
-			cfg.set_app_int(&pitch_key, chosen.pitch);
-			// Unchecking the box hands the book back to the app's settings.
-			if let Some(path) = path.as_deref() {
-				cfg.set_document_speech(path, &DocumentSpeech::default());
-			}
-		}
-		cfg.flush();
-	}
-	let mut dm = doc_manager.lock().unwrap();
-	// A different engine stops reading, so there's nothing left to carry on.
-	if chosen.engine == engine {
-		dm.restart_read_aloud();
-		if was_playing {
-			dm.resume_read_aloud();
-		}
-	} else {
-		dm.set_speech_engine(&chosen.engine);
-	}
 }
 
 /// `label`, marked as the limit when a step couldn't go any further.

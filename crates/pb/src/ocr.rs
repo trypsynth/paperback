@@ -5,7 +5,7 @@ use std::{collections::HashMap, sync::atomic::AtomicBool};
 use anyhow::{Context, Result};
 use native_ocr::{Error as OcrError, Line, max_image_dimension, recognize_lines};
 use paperback_core::{
-	document::{ContentBytePos, DocPos, Document, Edit, Marker, MarkerType},
+	document::{ContentBytePos, DocLen, DocPos, Document, Edit, Marker, MarkerType},
 	ocr::{
 		PageRenderer, RecognizedLine, RecognizedWord, default_workers, image_only_placeholder, page_text,
 		recognize_pages,
@@ -26,6 +26,39 @@ pub struct Selection {
 impl Selection {
 	pub const fn any(self) -> bool {
 		self.image_pages || self.text_pages
+	}
+}
+
+/// What a page with only a picture says in pb's output, which can't take the Enter the app's placeholder asks for: how to read it, or that reading it found nothing.
+pub fn reword_placeholders(doc: &mut Document, image_pages_read: bool) {
+	let placeholder = image_only_placeholder();
+	let wording = if image_pages_read {
+		"[Image only. No text was recognized on this page.]"
+	} else {
+		"[Image only. Run pb with --ocr-image-pages to read its text.]"
+	};
+	let buffer = &doc.buffer;
+	let mut starts: Vec<DocPos> = buffer
+		.markers
+		.iter()
+		.filter(|marker| marker.mtype == MarkerType::ImageOnlyPage)
+		.map(|marker| marker.position)
+		.collect();
+	starts.sort_unstable();
+	starts.dedup();
+	let edits: Vec<Edit> = starts
+		.into_iter()
+		.filter_map(|start| {
+			let end = start + DocLen::of(&placeholder);
+			(end <= buffer.end() && buffer.text(start..end) == placeholder).then(|| Edit {
+				start,
+				end,
+				text: wording.to_owned(),
+			})
+		})
+		.collect();
+	if !edits.is_empty() {
+		doc.buffer.replace_ranges(edits);
 	}
 }
 
@@ -473,5 +506,32 @@ mod tests {
 		let mut doc = Document::new();
 		doc.set_buffer(buffer);
 		assert_eq!(read(&mut doc, images_only()), format!("{}\n", image_only_placeholder()));
+	}
+
+	#[test]
+	fn a_scanned_page_says_how_to_read_it_rather_than_to_press_enter() {
+		let mut doc = scanned_extract_of_pages(1, 2);
+		reword_placeholders(&mut doc, false);
+		let line = "[Image only. Run pb with --ocr-image-pages to read its text.]";
+		assert_eq!(doc.buffer.content, format!("{line}\n{line}\n"));
+	}
+
+	#[test]
+	fn a_scanned_page_ocr_found_nothing_on_says_so() {
+		let mut doc = scanned_extract_of_pages(1, 1);
+		reword_placeholders(&mut doc, true);
+		assert_eq!(doc.buffer.content, "[Image only. No text was recognized on this page.]\n");
+	}
+
+	#[test]
+	fn text_after_a_scanned_page_is_left_alone() {
+		let mut doc = scanned_extract_of_pages(1, 1);
+		let end = doc.buffer.end();
+		doc.buffer.add_marker(Marker::new(MarkerType::PageBreak, end).with_text("Page 2".into()));
+		doc.buffer.append("A page with words.\n");
+		reword_placeholders(&mut doc, false);
+		assert!(doc.buffer.content.ends_with("]\nA page with words.\n"), "{}", doc.buffer.content);
+		let breaks = doc.buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::PageBreak).count();
+		assert_eq!(breaks, 2, "page breaks stay where they were");
 	}
 }

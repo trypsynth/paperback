@@ -28,6 +28,7 @@ pub mod epub;
 pub mod fb2;
 pub mod hlp;
 pub mod html;
+pub mod info;
 pub(crate) mod layout;
 pub mod m4b;
 pub mod man;
@@ -147,6 +148,7 @@ impl ParserRegistry {
 				HTML => html::HtmlParser,
 				PDF => pdf::PdfParser,
 				MAN => man::ManParser,
+				INFO => info::InfoParser,
 				MARKDOWN => markdown::MarkdownParser,
 				M4B => m4b::M4bParser,
 				MP3 => mp3::Mp3Parser,
@@ -172,6 +174,10 @@ fn resolve_extension(path: &Path) -> Option<&str> {
 		return Some("opf");
 	}
 	// Manual pages are named for their section (`ls.1`, `Tcl_Init.3tcl`, `printf.3.gz`), which names the format as surely as an extension.
+	// Info manuals are gzipped and split by name (`find.info.gz`, `find.info-1.gz`), so `.gz` and `.info-1` say nothing on their own.
+	if info::is_info_name(path) {
+		return Some("info");
+	}
 	if man::is_manual_page_name(path) {
 		return Some("man");
 	}

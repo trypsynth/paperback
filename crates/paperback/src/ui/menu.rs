@@ -88,6 +88,24 @@ pub fn is_punctuation_chord(chord: &KeyChord) -> bool {
 	matches!((chars.next(), chars.next()), (Some(ch), None) if !ch.is_ascii_alphanumeric())
 }
 
+/// The action a key runs: the one bound to what the key reports, or else the one bound to the punctuation the same key types on a US keyboard. On a Hungarian keyboard the `;` shortcuts are on the key labelled `é` (#1251), and GTK reports Shift+, as `<` on any layout (#1250). A key that reports a letter or digit keeps it, so a layout's own letters never become punctuation shortcuts.
+pub fn shortcut_for_key(
+	config: &ConfigManager,
+	key: i32,
+	ctrl: bool,
+	alt: bool,
+	shift: bool,
+	raw_key_flags: Option<u32>,
+) -> Option<ActionId> {
+	config.find_shortcut_action(key, ctrl, alt, shift).or_else(|| {
+		if u8::try_from(key).is_ok_and(|key| key.is_ascii_alphanumeric()) {
+			return None;
+		}
+		let us = wx_utils::shortcuts::us_punctuation_at(raw_key_flags?)?;
+		config.find_shortcut_action(i32::from(us as u8), ctrl, alt, shift)
+	})
+}
+
 pub fn create_menu_bar(config: &ConfigManager) -> MenuBar {
 	let compact_go = config.get_app_bool("compact_go_menu", true);
 	let menus = menus(config, compact_go);
@@ -106,6 +124,66 @@ mod tests {
 
 	use super::*;
 	use crate::ui::menu_ids;
+
+	/// Raw flags as Windows gives them for a key press: a repeat count of 1 and the scan code in bits 16 to 23.
+	#[cfg(target_os = "windows")]
+	const fn scan_code(code: u32) -> u32 {
+		1 | (code << 16)
+	}
+
+	#[cfg(target_os = "windows")]
+	#[test]
+	fn the_hungarian_keys_at_us_punctuation_run_its_shortcuts() {
+		let config = ConfigManager::new();
+		// wxMSW reports the key by the Latin-1 letter it types, uppercased.
+		let e_acute = i32::from(b'\xC9');
+		let a_acute = i32::from(b'\xC1');
+		assert_eq!(
+			shortcut_for_key(&config, e_acute, false, false, false, Some(scan_code(0x27))),
+			Some(ActionId::SeekAudioBackward)
+		);
+		assert_eq!(
+			shortcut_for_key(&config, a_acute, true, false, false, Some(scan_code(0x28))),
+			Some(ActionId::IncreaseAudioVolume)
+		);
+	}
+
+	#[cfg(target_os = "windows")]
+	#[test]
+	fn what_a_key_reports_wins_over_its_place() {
+		let config = ConfigManager::new();
+		// Shift+1 types ' on Hungarian, and stays Previous Heading rather than becoming Shift+'.
+		let by_report = shortcut_for_key(&config, i32::from(b'1'), false, false, true, Some(scan_code(0x02)));
+		assert_eq!(by_report, config.find_shortcut_action(i32::from(b'1'), false, false, true));
+		assert_ne!(by_report, Some(ActionId::IncreaseAudioSeekAmount));
+		// A letter at a US punctuation place, as `M` is on a French keyboard, is never taken for `;`.
+		let unbound = (b'A'..=b'Z')
+			.map(i32::from)
+			.find(|&letter| config.find_shortcut_action(letter, false, false, false).is_none());
+		let unbound = unbound.expect("a letter with no shortcut");
+		assert_eq!(shortcut_for_key(&config, unbound, false, false, false, Some(scan_code(0x27))), None);
+	}
+
+	#[cfg(target_os = "linux")]
+	#[test]
+	fn gtk_shift_comma_runs_the_shift_comma_shortcut() {
+		let config = ConfigManager::new();
+		// GTK reports Shift+, as <; the comma key's hardware code is its evdev code, 51, plus 8.
+		assert_eq!(
+			shortcut_for_key(&config, i32::from(b'<'), false, false, true, Some(59)),
+			Some(ActionId::ContainerStart)
+		);
+	}
+
+	#[test]
+	fn without_raw_flags_only_what_the_key_reports_counts() {
+		let config = ConfigManager::new();
+		assert_eq!(
+			shortcut_for_key(&config, i32::from(b';'), false, false, false, None),
+			Some(ActionId::SeekAudioBackward)
+		);
+		assert_eq!(shortcut_for_key(&config, i32::from(b'\xC9'), false, false, false, None), None);
+	}
 
 	fn ids(entries: &[MenuEntry], out: &mut Vec<i32>) {
 		for entry in entries {

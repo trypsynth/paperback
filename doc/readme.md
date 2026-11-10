@@ -51,6 +51,7 @@ Paperback supports the following formats and extensions:
 * DAISY books (`.opf`, `.zip`)
 * EPUB books (`.epub`)
 * FB2 ebooks (`.fb2`)
+* GNU Info manuals (`.info`, gzipped or not, and split manuals opened from any of their parts)
 * HTML documents (`.htm`, `.html`, `.xhtml`)
 * Manual pages, both `man` and BSD `mdoc` (`.1` to `.9`, `.man`, `.roff`, and the gzipped forms of each)
 * Markdown documents (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -74,6 +75,8 @@ Paperback supports the following formats and extensions:
 Paperback is designed for keyboard-first use. Here are the current shortcuts.
 
 Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in parentheses — mainly because Ctrl+G, Ctrl+W, and Alt+Left/Right are already claimed by other system or app conventions on that platform.
+
+Punctuation shortcuts are named after the keys of a US keyboard. On another layout, press the key in the same place, whatever it's labelled: on a Hungarian keyboard, the key labelled `é` works as `;` and the one labelled `á` as `'`, so `Ctrl+'` means Ctrl and the `á` key. Menus still show the US names. On macOS, menus show the keys your own layout uses instead.
 
 ### File menu
 

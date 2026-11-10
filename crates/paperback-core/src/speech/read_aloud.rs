@@ -118,7 +118,7 @@ impl ReadAloud {
 		Self { shared, jobs, settings: Arc::default(), queued_up_to: None }
 	}
 
-	/// Starts reading at the paragraph holding `position`, throwing away anything prepared or playing, and returns the feed this reading's audio comes out of. A feed from an earlier start is done from now on.
+	/// Starts reading at `position`, or past the whitespace there, throwing away anything prepared or playing, and returns the feed this reading's audio comes out of. A feed from an earlier start is done from now on.
 	///
 	/// Returns `None`, and reads nothing, when there's no text at or after `position`, such as at the end of the document.
 	pub fn start(
@@ -128,7 +128,7 @@ impl ReadAloud {
 		settings: ReadAloudSettings,
 	) -> Option<AudioFeed> {
 		self.reset();
-		let Some(first) = session.speech_paragraph(position, SegmentDirectionFfi::Current) else {
+		let Some(first) = Self::first_paragraph(session, position) else {
 			self.shared.finished.store(true, Ordering::SeqCst);
 			return None;
 		};
@@ -138,11 +138,21 @@ impl ReadAloud {
 			shared: Arc::clone(&self.shared),
 			generation: self.shared.generation.load(Ordering::SeqCst),
 			playing: None,
+			starts_at: first.start,
 		};
 		self.queued_up_to = Some(first.start);
 		self.queue(first);
 		self.refill(session);
 		Some(feed)
+	}
+
+	/// The paragraph holding `position`, from `position` on, or the next paragraph when only whitespace follows it in its own.
+	fn first_paragraph(session: &DocumentSession, position: DocPos) -> Option<SpeechParagraph> {
+		let paragraph = session.speech_paragraph(position, SegmentDirectionFfi::Current)?;
+		if let Some(rest) = from_caret(&paragraph, position) {
+			return Some(rest);
+		}
+		session.speech_paragraph(paragraph.start, SegmentDirectionFfi::Next).filter(|next| next.start > paragraph.start)
 	}
 
 	/// Prepares paragraphs until [`AHEAD`] are waiting beyond the one playing. Call it often, such as on the timer that moves the caret.
@@ -224,6 +234,7 @@ pub struct AudioFeed {
 	/// The reading this feed belongs to. Once read aloud starts again or stops, the feed is done.
 	generation: u64,
 	playing: Option<Playing>,
+	starts_at: DocPos,
 }
 
 struct Playing {
@@ -243,6 +254,12 @@ pub enum FeedSample {
 }
 
 impl AudioFeed {
+	/// Where this reading starts, which [`ReadAloudProgress::paragraph`] is while its first paragraph plays.
+	#[must_use]
+	pub const fn starts_at(&self) -> DocPos {
+		self.starts_at
+	}
+
 	/// The rate of the paragraph playing, or of the next one once this one ends.
 	#[must_use]
 	pub fn sample_rate(&self) -> u32 {
@@ -298,6 +315,23 @@ impl AudioFeed {
 			}
 		}
 	}
+}
+
+/// `paragraph` from `position` on, past any whitespace there. `None` when only whitespace follows it in the paragraph.
+fn from_caret(paragraph: &SpeechParagraph, position: DocPos) -> Option<SpeechParagraph> {
+	if position <= paragraph.text_start {
+		return Some(paragraph.clone());
+	}
+	let chars: Vec<char> = paragraph.text.chars().collect();
+	let mut at = (position.get() - paragraph.text_start.get()).min(chars.len());
+	while chars.get(at).is_some_and(|c| c.is_whitespace()) {
+		at += 1;
+	}
+	if at == chars.len() {
+		return None;
+	}
+	let text_start = paragraph.text_start + DocLen::from_raw(at);
+	Some(SpeechParagraph { start: text_start, text_start, text: chars[at..].iter().collect() })
 }
 
 fn synthesize_jobs(engine: &dyn SpeechEngine, jobs: &Receiver<Job>, shared: &Shared) {
@@ -430,7 +464,7 @@ mod tests {
 	}
 
 	#[test]
-	fn every_paragraph_with_text_is_read_in_order_from_the_one_holding_the_position() {
+	fn every_paragraph_with_text_is_read_in_order_from_the_position() {
 		let text = "One two.\n\nThree four.\n   \nFive.";
 		let session = DocumentSession::from_text(text);
 		let mut reader = read_aloud();
@@ -438,10 +472,67 @@ mod tests {
 			.start(&session, DocPos::from_raw(text.find("four").unwrap()), ReadAloudSettings::default())
 			.expect("there is text to read");
 		let (samples, paragraphs) = play(&mut reader, &session, &mut feed);
-		assert_eq!(spoken(&samples), "Three four.Five.");
+		assert_eq!(spoken(&samples), "four.Five.");
 		let starts: Vec<usize> = paragraphs.iter().map(|p| p.get()).collect();
-		assert_eq!(starts, [text.find("Three").unwrap(), text.find("Five").unwrap()]);
+		assert_eq!(starts, [text.find("four").unwrap(), text.find("Five").unwrap()]);
 		assert!(reader.progress().finished);
+	}
+
+	#[test]
+	fn a_start_inside_a_word_reads_from_there_without_going_back() {
+		let text = "One word. Two.";
+		let session = DocumentSession::from_text(text);
+		let mut reader = read_aloud();
+		let mut feed = reader
+			.start(&session, DocPos::from_raw(text.find('.').unwrap()), ReadAloudSettings::default())
+			.expect("there is text to read");
+		let (samples, _) = play(&mut reader, &session, &mut feed);
+		assert_eq!(spoken(&samples), ". Two.");
+	}
+
+	#[test]
+	fn a_start_between_words_reads_from_the_next_word() {
+		let text = "One two  three.\nFour.";
+		let session = DocumentSession::from_text(text);
+		let mut reader = read_aloud();
+		let mut feed = reader
+			.start(&session, DocPos::from_raw(text.find("  three").unwrap() + 1), ReadAloudSettings::default())
+			.expect("there is text to read");
+		let (samples, _) = play(&mut reader, &session, &mut feed);
+		assert_eq!(spoken(&samples), "three.Four.");
+	}
+
+	#[test]
+	fn a_start_past_a_paragraphs_last_word_reads_from_the_next_paragraph() {
+		let text = "One two.   \nThree.";
+		let session = DocumentSession::from_text(text);
+		let mut reader = read_aloud();
+		let mut feed = reader
+			.start(&session, DocPos::from_raw(text.find('\n').unwrap() - 1), ReadAloudSettings::default())
+			.expect("there is text to read");
+		let (samples, _) = play(&mut reader, &session, &mut feed);
+		assert_eq!(spoken(&samples), "Three.");
+	}
+
+	#[test]
+	fn a_start_partway_through_still_places_each_word_in_the_document() {
+		let text = "Ask Dr Smith now.";
+		let session = DocumentSession::from_text(text);
+		let mut reader = read_aloud();
+		let mut feed = reader
+			.start(&session, DocPos::from_raw(text.find("Smith").unwrap()), ReadAloudSettings::default())
+			.expect("there is text to read");
+		// "Smith now." has "now" at char 6.
+		let mut heard = 0;
+		while heard <= 6 * SAMPLES_PER_CHAR {
+			if matches!(feed.next_sample(), FeedSample::Sample(_)) {
+				heard += 1;
+			} else {
+				thread::sleep(Duration::from_millis(1));
+			}
+		}
+		assert_eq!(reader.progress().word, Some(DocPos::from_raw(text.find("now").unwrap())));
+		assert_eq!(reader.progress().paragraph, Some(DocPos::from_raw(text.find("Smith").unwrap())));
 	}
 
 	#[test]

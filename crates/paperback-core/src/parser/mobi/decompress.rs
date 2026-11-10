@@ -28,7 +28,11 @@ fn build_huffman_decoder(header: &MobiHeader, data: &[u8]) -> Result<HuffmanDeco
 	for i in huff_record_index..huff_record_index + huff_record_count {
 		let start = header.record_offsets[i];
 		let end = if i + 1 < num_records { header.record_offsets[i + 1] } else { data.len() };
-		huffs.push(&data[start..end]);
+		let Some(record) = data.get(start..end) else {
+			tracing::warn!("mobi huff/cdic record lies outside the file");
+			anyhow::bail!(t("Invalid HUFF/CDIC records"));
+		};
+		huffs.push(record);
 	}
 	HuffmanDecoder::init(&huffs)
 }
@@ -109,4 +113,32 @@ pub(super) fn decode_content(data: &[u8], header: &MobiHeader) -> Result<Vec<u8>
 		content.truncate(html_end);
 	}
 	Ok(content)
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn a_huff_record_past_the_end_of_the_file_is_an_error() {
+		let mut rec0 = vec![0u8; 16 + 104];
+		rec0[16 + 99] = 1;
+		rec0[16 + 103] = 1;
+		let header = MobiHeader {
+			rec0,
+			record_offsets: vec![0, 500],
+			header_offset: 16,
+			header_length: 104,
+			text_encoding: 65001,
+			compression: 17480,
+			first_content_record: 1,
+			last_content_record: 1,
+			extra_data_flags: 0,
+			fdst_html_end: None,
+			document_title: String::new(),
+			is_kf8: false,
+			is_palmdoc: false,
+		};
+		assert!(decode_content(&[0u8; 200], &header).is_err());
+	}
 }

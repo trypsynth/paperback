@@ -66,7 +66,7 @@ pub(super) fn parse_header(data: &[u8], title_bytes: &[u8]) -> Result<MobiHeader
 		return palmdoc_header(rec0, record_offsets, compression, title_bytes);
 	}
 	let mobi_header_offset = 16;
-	if mobi_header_offset + 8 > rec0.len() {
+	if mobi_header_offset + 16 > rec0.len() {
 		tracing::warn!("mobi record 0 is missing the mobi header");
 		// TRANSLATORS: Error shown when a MOBI file is missing its MOBI header
 		anyhow::bail!(t("No MOBI header"));
