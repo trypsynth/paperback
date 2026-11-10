@@ -3212,6 +3212,7 @@ dependencies = [
  "paperback-core",
  "rayon",
  "rpassword",
+ "shipfitter",
  "tempfile",
  "tracing-subscriber",
  "windows-sys 0.61.2",

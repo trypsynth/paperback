@@ -26,3 +26,4 @@ workspace = true
 
 [build-dependencies]
 embed-manifest = "1.5.1"
+shipfitter = { workspace = true, features = ["windows-resources"] }

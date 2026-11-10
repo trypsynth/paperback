@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::{Parser, ValueEnum};
 
 #[derive(Parser)]
-#[command(name = "pb", about = "Convert any document to text, HTML, or Markdown")]
+#[command(name = "pb", version = env!("PB_DISPLAY_VERSION"), about = "Convert any document to text, HTML, or Markdown")]
 pub struct Cli {
 	/// Input document files, patterns or http(s) links. `*` and `?` are expanded, so the same command line works on Windows. Quote a link that holds ? or &
 	#[arg(required_unless_present_any = ["list_formats", "files_from"], num_args = 1..)]
