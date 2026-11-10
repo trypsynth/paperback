@@ -19,6 +19,7 @@ paperback-core = { path = "crates/paperback-core" }
 paperback-formats = { path = "crates/paperback-formats" }
 patois = "0.3.2"
 patois-build = "0.1.19"
+rayon = "1.12.0"
 rstest = "0.28.0"
 serde_json = "1.0.154"
 shipfitter = "0.2.4"

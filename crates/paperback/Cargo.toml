@@ -19,13 +19,14 @@ homeport = "0.1.0"
 image = { workspace = true, features = ["png"] }
 live-region = "0.3.3"
 logkeeper = "0.1.0"
+mailbag-wx = "0.1.0"
 native-ocr = { workspace = true }
 paperback-core = { workspace = true, features = ["fetch"] }
 paperback-formats = { workspace = true }
 patois = { workspace = true, features = ["wx"] }
 rodio = { version = "0.22.2", default-features = false, features = ["playback", "tracing", "flac", "mp3", "mp4", "vorbis", "wav", "symphonia-adpcm", "symphonia-aiff", "symphonia-alac", "symphonia-mp2"] }
 rodio-wsola = "0.2.0"
-mailbag-wx = "0.1.0"
+rubato = "5.0.1"
 ship-shape = "0.6.0"
 tempfile = { workspace = true }
 toml = { workspace = true }
@@ -33,15 +34,14 @@ tracing = { workspace = true }
 wx-utils = { version = "0.5.2", features = ["global-hotkeys", "shortcuts"] }
 wxdragon = { version = "0.9.24", default-features = false, features = ["webview"] }
 zip = { workspace = true }
-rubato = "5.0.1"
-
-[target.'cfg(target_os = "macos")'.dependencies]
-block = "0.1.6"
-objc = "0.2.7"
 
 # macOS keeps a bundled app to one copy by itself.
 [target.'cfg(not(target_os = "macos"))'.dependencies]
 doorbell = "0.1.0"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+block = "0.1.6"
+objc = "0.2.7"
 
 [target.'cfg(windows)'.dependencies]
 windows = { workspace = true, features = ["Foundation", "Foundation_Collections", "Media", "Media_Core", "Media_SpeechSynthesis", "Storage_Streams", "Win32_Foundation", "Win32_Globalization", "Win32_Graphics_Gdi", "Win32_Media_Audio", "Win32_Media_Speech", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Com_StructuredStorage", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Ole", "Win32_System_Threading", "Win32_System_Variant", "Win32_System_WinRT", "Win32_UI_Accessibility", "Win32_UI_Controls_RichEdit", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
