@@ -79,9 +79,12 @@ impl DocumentsTab {
 		let braille_table_label_text = t("&Braille code of BRF and PEF books:");
 		let braille_table_label = StaticText::builder(&panel).with_label(&braille_table_label_text).build();
 		let braille_table = Choice::builder(&panel).build();
+		// Frozen because on Windows each append resizes the drop-down, which made Settings take two seconds to open with 322 tables; thawing resizes it once.
+		braille_table.freeze();
 		for table in braille::braille_tables() {
 			braille_table.append(table.display_name);
 		}
+		braille_table.thaw();
 		#[cfg(target_os = "macos")]
 		braille_table.set_accessibility_label(braille_table_label_text.replace('&', "").trim_end_matches(':').trim());
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
