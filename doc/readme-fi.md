@@ -62,6 +62,7 @@ Paperback tukee seuraavia tiedostomuotoja:
 * MP3-äänikirjat (`.mp3`)
 * OpenDocument-esitykset (`.odp`, `.fodp`)
 * OpenDocument-tekstiasiakirjat (`.odt`, `.fodt`)
+* OS/2:n ohjetiedostot ja -kirjat kuvineen (`.inf`, `.hlp`)
 * PDF-asiakirjat (`.pdf`)
 * PowerPoint-esitykset (`.pptx`, `.pptm`, `.ppt`)
 * reStructuredText-asiakirjat (`.rst`, `.rest`)
