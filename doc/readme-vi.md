@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4f2dd8c5898a0324; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 71b9a82d8c3eb624; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,90db1255,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - phiên bản 1.1
 
@@ -48,11 +48,13 @@ Nếu JAWS không nói gì khi bạn nhấn một phím mà nó sẽ báo cáo �
 
 Paperback hỗ trợ các định dạng và phần mở rộng sau:
 
+* Tệp Braille Sẵn sàng và sách Portable Embosser Format, được dịch ngược lại thành bản in với bảng braille bạn chọn (`.brf`, `.pef`)
 * Lưu trữ sách truyện tranh (`.cbz`)
 * Tệp trợ giúp CHM (`.chm`)
 * Sách DAISY (`.opf`, `.zip`)
 * Sách EPUB (`.epub`)
 * Sách điện tử FB2 (`.fb2`)
+* Hướng dẫn GNU Info (`.info`, có nén gzip hoặc không, và các hướng dẫn tách được mở từ bất kỳ phần nào của chúng)
 * Tài liệu HTML (`.htm`, `.html`, `.xhtml`)
 * Các trang hướng dẫn, cả `man` và BSD `mdoc` (`.1` đến `.9`, `.man`, `.roff` và các dạng nén gzip của mỗi trang)
 * Tài liệu Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -68,6 +70,7 @@ Paperback hỗ trợ các định dạng và phần mở rộng sau:
 * Tài liệu RTF (`.rtf`)
 * Tài liệu Windows Write (`.wri`)
 * Tệp WinHelp (`.hlp`)
+* Tài liệu XPS và OpenXPS (`.xps`, `.oxps`)
 * Tệp văn bản thuần túy và tệp nhật ký (`.txt`, `.log`)
 
 ## Phím tắt bàn phím
@@ -75,6 +78,8 @@ Paperback hỗ trợ các định dạng và phần mở rộng sau:
 Paperback được thiết kế để sử dụng với bàn phím trước tiên. Dưới đây là các phím tắt hiện tại.
 
 Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương đương được ghi chú trong dấu ngoặc — chủ yếu vì Ctrl+G, Ctrl+W, và Alt+Left/Right đã bị chiếm bởi các quy ước hệ thống hoặc ứng dụng khác trên nền tảng đó.
+
+Các phím tắt dấu câu được đặt tên theo các phím của bàn phím US. Trên bàn phím khác, nhấn phím ở cùng một vị trí, bất kể nó được ghi nhãn là gì: trên bàn phím Hungary, phím được ghi nhãn `é` hoạt động như `;` và phím được ghi nhãn `á` như `'`, vì vậy `Ctrl+'` có nghĩa là Ctrl và phím `á`. Các menu vẫn hiển thị tên US. Trên macOS, các menu sẽ hiển thị các phím mà bàn phím của bạn sử dụng thay vào đó.
 
 ### Menu Tệp
 

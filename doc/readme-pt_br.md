@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4f2dd8c5898a0324; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 71b9a82d8c3eb624; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,90db1255,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versão 1.1
 
@@ -48,11 +48,13 @@ Se o JAWS não disser nada quando você pressionar uma tecla que deveria relatar
 
 O Paperback oferece suporte aos seguintes formatos e extensões:
 
+* Arquivos Braille Ready e livros Portable Embosser Format, retrotraduzidos para impressão com a tabela braille que você escolher (`.brf`, `.pef`)
 * Arquivos de histórias em quadrinhos (`.cbz`)
 * Arquivos de ajuda CHM (`.chm`)
 * Livros DAISY (`.opf`, `.zip`)
 * Livros EPUB (`.epub`)
 * E-books FB2 (`.fb2`)
+* Manuais GNU Info (`.info`, compactados ou não, e manuais divididos abertos de qualquer uma de suas partes)
 * Documentos HTML (`.htm`, `.html`, `.xhtml`)
 * Páginas de manual, tanto `man` quanto BSD `mdoc` (`.1` a `.9`, `.man`, `.roff` e as formas compactadas de cada um)
 * Documentos Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -68,6 +70,7 @@ O Paperback oferece suporte aos seguintes formatos e extensões:
 * Documentos RTF (`.rtf`)
 * Documentos Windows Write (`.wri`)
 * Arquivos WinHelp (`.hlp`)
+* Documentos XPS e OpenXPS (`.xps`, `.oxps`)
 * Arquivos de texto simples e arquivos de log (`.txt`, `.log`)
 
 ## Atalhos de teclado
@@ -75,6 +78,8 @@ O Paperback oferece suporte aos seguintes formatos e extensões:
 O Paperback foi projetado para uso com teclado em primeiro lugar. Aqui estão os atalhos atuais.
 
 Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é anotado entre parênteses — principalmente porque Ctrl+G, Ctrl+W e Alt+Left/Right já são utilizados por outras convenções de sistema ou aplicativos nessa plataforma.
+
+Os atalhos de pontuação são nomeados conforme as teclas de um teclado dos EUA. Em outro layout, pressione a tecla no mesmo lugar, seja qual for o rótulo: em um teclado húngaro, a tecla rotulada `é` funciona como `;` e a rotulada `á` como `'`, portanto `Ctrl+'` significa Ctrl e a tecla `á`. Os menus ainda mostram os nomes dos EUA. No macOS, os menus mostram as teclas do seu próprio layout.
 
 ### Menu Arquivo
 

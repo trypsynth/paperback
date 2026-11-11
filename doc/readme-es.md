@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4f2dd8c5898a0324; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 71b9a82d8c3eb624; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,90db1255,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versión 1.1
 
@@ -48,11 +48,13 @@ Si JAWS no dice nada cuando presiona una tecla que debería reportar algo, abra 
 
 Paperback admite los siguientes formatos y extensiones:
 
+* Archivos Braille Listo y libros Portable Embosser Format, retrotranducidos a impresión con la tabla braille que elijas (`.brf`, `.pef`)
 * Archivos de cómics (`.cbz`)
 * Archivos de ayuda CHM (`.chm`)
 * Libros DAISY (`.opf`, `.zip`)
 * Libros EPUB (`.epub`)
 * Libros electrónicos FB2 (`.fb2`)
+* Manuales GNU Información (`.info`, comprimidos o no, y manuales divididos abiertos desde cualquiera de sus partes)
 * Documentos HTML (`.htm`, `.html`, `.xhtml`)
 * Páginas de manual, tanto `man` como BSD `mdoc` (`.1` a `.9`, `.man`, `.roff` y sus formas comprimidas)
 * Documentos Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -68,6 +70,7 @@ Paperback admite los siguientes formatos y extensiones:
 * Documentos RTF (`.rtf`)
 * Documentos Windows Write (`.wri`)
 * Archivos WinHelp (`.hlp`)
+* Documentos XPS y OpenXPS (`.xps`, `.oxps`)
 * Archivos de texto sin formato y registros (`.txt`, `.log`)
 
 ## Atajos de teclado
@@ -75,6 +78,8 @@ Paperback admite los siguientes formatos y extensiones:
 Paperback está diseñado para usar el teclado como elemento principal. Aquí están los atajos actuales.
 
 Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, el equivalente se indica entre paréntesis — principalmente porque `Ctrl+G`, `Ctrl+W` y `Alt+Left`/`Alt+Right` ya están reservados por otras convenciones del sistema o de la aplicación en esa plataforma.
+
+Los atajos de puntuación se nombran según las teclas de un teclado estadounidense. En otra distribución, presiona la tecla en el mismo lugar, sea cual sea su etiqueta: en un teclado húngaro, la tecla etiquetada como `é` funciona como `;` y la etiquetada como `á` como `'`, así que `Ctrl+'` significa Ctrl y la tecla `á`. Los menús aún muestran los nombres estadounidenses. En macOS, los menús muestran las teclas que usa tu propia distribución en su lugar.
 
 ### Menú Archivo
 

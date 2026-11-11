@@ -9,7 +9,7 @@ use crate::{
 	document::{
 		DocLen, DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem, format_marker_types,
 	},
-	parser::{Parser, text::text_document, util::path::extract_title_from_path, word::looks_like_text_content},
+	parser::{Parser, ipf, text::text_document, util::path::extract_title_from_path, word::looks_like_text_content},
 	t,
 	util::encoding::{convert_to_utf8, decode_cp437, looks_like_cp437},
 };
@@ -27,6 +27,9 @@ impl Parser for HlpParser {
 		tracing::debug!(path = %context.file_path, "parsing hlp file");
 		let bytes = fs::read(&context.file_path)
 			.with_context(|| format!("Failed to open WinHelp file '{}'", context.file_path))?;
+		if libinf::is_ipf(&bytes) {
+			return ipf::parse_ipf(&context.file_path, bytes);
+		}
 		let hlp = match HlpFile::from_bytes(bytes) {
 			Ok(hlp) => hlp,
 			Err(error @ libhlp::HlpError::BadMagic) => {

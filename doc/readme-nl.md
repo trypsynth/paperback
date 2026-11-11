@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4f2dd8c5898a0324; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 71b9a82d8c3eb624; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,90db1255,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versie 1.1
 
@@ -48,11 +48,13 @@ Als JAWS niets zegt wanneer je op een toets drukt die iets zou moeten melden, op
 
 Paperback ondersteunt de volgende indelingen en extensies:
 
+* Braille Ready Files en Portable Embosser Format-boeken, teruggezet naar druk met de brailletabel van jouw keuze (`.brf`, `.pef`)
 * Comicarchieven (`.cbz`)
 * CHM-helpbestanden (`.chm`)
 * DAISY-boeken (`.opf`, `.zip`)
 * EPUB-boeken (`.epub`)
 * FB2-e-books (`.fb2`)
+* GNU Info-handleidingen (`.info`, met of zonder gzip, en gesplitste handleidingen geopend vanaf een van hun onderdelen)
 * HTML-documenten (`.htm`, `.html`, `.xhtml`)
 * Manual pages, zowel `man` als BSD `mdoc` (`.1` t/m `.9`, `.man`, `.roff` en de met gzip gecomprimeerde vormen daarvan)
 * Markdown-documenten (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -68,6 +70,7 @@ Paperback ondersteunt de volgende indelingen en extensies:
 * RTF-documenten (`.rtf`)
 * Windows Write-documenten (`.wri`)
 * WinHelp-bestanden (`.hlp`)
+* XPS en OpenXPS-documenten (`.xps`, `.oxps`)
 * Plattetekst- en logbestanden (`.txt`, `.log`)
 
 ## Sneltoetsen
@@ -75,6 +78,8 @@ Paperback ondersteunt de volgende indelingen en extensies:
 Paperback is ontworpen voor toetsenbordgericht gebruik. Hieronder staan de huidige sneltoetsen.
 
 De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equivalent tussen haakjes — vooral omdat Ctrl+G, Ctrl+W en Alt+Links/Rechts op dat platform al bezet zijn door andere systeem- of appconventies.
+
+Leestekenssneltoetsen krijgen hun naam van de toetsen van een amerikaans toetsenbord. Op een ander toetsenbordindeling druk je op de toets op dezelfde plaats, ongeacht het label: op een Hongaars toetsenbord werkt de toets met label `é` als `;` en die met label `á` als `'`, dus `Ctrl+'` betekent Ctrl en de `á`-toets. Menu's tonen nog steeds de amerikaanse namen. Op macOS tonen menu's in plaats daarvan de toetsen die jouw indeling gebruikt.
 
 ### Menu Bestand
 
