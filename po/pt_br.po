@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-11 06:49+0000\n"
+"POT-Creation-Date: 2026-11-11 17:53+0000\n"
 "PO-Revision-Date: 2026-04-19 15:24-0300\n"
 "Last-Translator: Marco Paulinelli <mpaulinelli@gmail.com>\n"
 "Language-Team: \n"
@@ -244,6 +244,10 @@ msgstr "Este documento não possui áudio."
 #, fuzzy
 msgid "Audio hasn't started playing yet."
 msgstr "O áudio ainda não começou a tocar."
+
+#, fuzzy
+msgid "This book doesn't say how long its audio runs, so Paperback can't go to a time in it."
+msgstr "Este livro não especifica a duração do áudio, então o Paperback não pode ir para um tempo nele."
 
 #. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
 #, fuzzy
@@ -843,6 +847,16 @@ msgstr "&Reproduzir/Pausar Áudio"
 msgid "Play or pause this document's audio narration"
 msgstr "Reproduzir ou pausar a narração em áudio deste documento"
 
+#. TRANSLATORS: Menu item in the Audio menu to jump to a time typed in, such as 1:23:45.
+#, fuzzy
+msgid "Go to &Time..."
+msgstr "Ir para &Hora..."
+
+#. TRANSLATORS: Status-bar help text for the Go to Time menu item.
+#, fuzzy
+msgid "Go to a time in the recording"
+msgstr "Ir para uma hora na gravação"
+
 #. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 #, fuzzy
 msgid "Seek Audio &Forward"
@@ -1327,6 +1341,25 @@ msgstr "&Percentagem"
 #, fuzzy
 msgid "Percent out of range."
 msgstr "Percentual fora do intervalo."
+
+#. TRANSLATORS: Title of the Go to Time dialog, which jumps to a time typed in, in an audiobook
+#, fuzzy
+msgid "Go to Time"
+msgstr "Ir para Hora"
+
+#, fuzzy
+msgid "Go to time ({}/{}):"
+msgstr "Ir para hora ({}/{}):"
+
+#. TRANSLATORS: Announced when what was typed in the Go to Time dialog is not a time
+#, fuzzy
+msgid "Type a time like 1:23:45, 23:45 or 45."
+msgstr "Digite uma hora como 1:23:45, 23:45 ou 45."
+
+#. TRANSLATORS: Announced when the time typed in the Go to Time dialog is past the end of the recording, or before its start
+#, fuzzy
+msgid "Time out of range."
+msgstr "Hora fora do intervalo."
 
 #. TRANSLATORS: Title of the view showing the text recognized in a picture
 #, fuzzy
@@ -3406,6 +3439,11 @@ msgstr "Ativar/desativar quebra automática de linha"
 #, fuzzy
 msgid "Play/Pause Audio"
 msgstr "Reproduzir/Pausar Áudio"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Go to Time..."
+msgstr "Ir para Hora..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy

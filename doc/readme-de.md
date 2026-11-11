@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 17241fae03bbada2; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 622feff4c57acdc0; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - Version 1.1
 
@@ -169,6 +169,7 @@ Sonderzeichentastenkombinationen sind nach den Tasten einer US-Tastatur benannt.
 ### Menü „Audio"
 
 * `Ctrl+Space` (macOS: `Control+Space`, d. h. die physische Strg-Taste, da Cmd+Space Spotlight öffnet): Audioerzählung abspielen/pausieren.
+* `Ctrl+J`: Zu einer Zeit in der Aufzeichnung gehen. Gib es ein als `1:23:45`, `23:45` oder `45` Sekunden, oder stell `+` oder `-` voran, um dich von deiner aktuellen Position aus zu bewegen, z. B. `+5:00`. Das Dialogfeld zeigt, wie weit du fortgeschritten bist und wie lange das Buch dauert.
 * `'`: Audioerzählung vorwärts spulen.
 * `;`: Audioerzählung rückwärts spulen.
 * `Shift+'`: Spulmenge der Audioerzählung erhöhen.

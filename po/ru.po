@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-11 06:49+0000\n"
+"POT-Creation-Date: 2026-11-11 17:53+0000\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -243,6 +243,10 @@ msgstr "Этот документ не содержит аудио."
 #, fuzzy
 msgid "Audio hasn't started playing yet."
 msgstr "Воспроизведение аудио ещё не началось."
+
+#, fuzzy
+msgid "This book doesn't say how long its audio runs, so Paperback can't go to a time in it."
+msgstr "В этой книге не указана длительность аудиозаписи, поэтому Paperback не может перейти на определённый момент времени."
 
 #. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
 #, fuzzy
@@ -842,6 +846,16 @@ msgstr "&Воспроизведение/пауза аудио"
 msgid "Play or pause this document's audio narration"
 msgstr "Воспроизвести или приостановить аудиосопровождение этого документа"
 
+#. TRANSLATORS: Menu item in the Audio menu to jump to a time typed in, such as 1:23:45.
+#, fuzzy
+msgid "Go to &Time..."
+msgstr "Перейти на &время..."
+
+#. TRANSLATORS: Status-bar help text for the Go to Time menu item.
+#, fuzzy
+msgid "Go to a time in the recording"
+msgstr "Перейти на определённый момент времени в записи"
+
 #. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 #, fuzzy
 msgid "Seek Audio &Forward"
@@ -1340,6 +1354,25 @@ msgstr "&Процент"
 #, fuzzy
 msgid "Percent out of range."
 msgstr "Процент вне допустимого диапазона."
+
+#. TRANSLATORS: Title of the Go to Time dialog, which jumps to a time typed in, in an audiobook
+#, fuzzy
+msgid "Go to Time"
+msgstr "Переход на время"
+
+#, fuzzy
+msgid "Go to time ({}/{}):"
+msgstr "Перейти на время ({}/{}):"
+
+#. TRANSLATORS: Announced when what was typed in the Go to Time dialog is not a time
+#, fuzzy
+msgid "Type a time like 1:23:45, 23:45 or 45."
+msgstr "Введите время в формате 1:23:45, 23:45 или 45."
+
+#. TRANSLATORS: Announced when the time typed in the Go to Time dialog is past the end of the recording, or before its start
+#, fuzzy
+msgid "Time out of range."
+msgstr "Время выходит за пределы допустимого диапазона."
 
 #. TRANSLATORS: Title of the view showing the text recognized in a picture
 #, fuzzy
@@ -3435,6 +3468,11 @@ msgstr "Включить/выключить перенос слов"
 #, fuzzy
 msgid "Play/Pause Audio"
 msgstr "Воспроизведение/пауза аудио"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Go to Time..."
+msgstr "Перейти на время..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
