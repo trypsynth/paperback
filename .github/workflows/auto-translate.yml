@@ -25,6 +25,8 @@ concurrency:
   group: auto-translate
   cancel-in-progress: true
 permissions:
+  # actions: write starts CI on the translation branch, below.
+  actions: write
   contents: write
   pull-requests: write
 jobs:
@@ -87,6 +89,7 @@ jobs:
             } >> "$GITHUB_OUTPUT"
           fi
       - name: Open or update translation PR
+        id: pr
         uses: peter-evans/create-pull-request@v8
         with:
           add-paths: |
@@ -101,3 +104,9 @@ jobs:
           body: |
             Automated translation update. Runs on every push to master; safe to leave open and merge periodically.
             ${{ steps.trouble.outputs.note }}
+      # A push with the workflow token starts no workflow, so the pull request would wait forever for the checks master requires; a dispatch is the one start that token is allowed.
+      - name: Run CI on the translation branch
+        if: steps.pr.outputs.pull-request-operation == 'created' || steps.pr.outputs.pull-request-operation == 'updated'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref auto-translate-strings
