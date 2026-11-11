@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 17241fae03bbada2; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 622feff4c57acdc0; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - версия 1.1
 
@@ -169,6 +169,7 @@ Paperback разработан для работы в первую очеред�
 ### Меню «Звук»
 
 * `Ctrl+Space` (macOS: `Control+Space`, то есть физическая клавиша Control, так как Cmd+Space открывает Spotlight): воспроизведение/пауза звукового повествования.
+* `Ctrl+J`: перейти на время в записи. Введите его в формате `1:23:45`, `23:45` или `45` секунд, или поставьте `+` или `-` в начале, чтобы переместиться от текущей позиции, например `+5:00`. Диалог показывает, как далеко вы продвинулись, и продолжительность аудиокниги.
 * `'`: перемотать звуковое повествование вперёд.
 * `;`: перемотать звуковое повествование назад.
 * `Shift+'`: увеличить время перемотки звука.

@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 17241fae03bbada2; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 622feff4c57acdc0; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - phiên bản 1.1
 
@@ -169,6 +169,7 @@ Các phím tắt dấu câu được đặt tên theo các phím của bàn phí
 ### Menu Âm Thanh
 
 * `Ctrl+Space` (macOS: `Control+Space`, tức là phím Control vật lý, vì Cmd+Space mở Spotlight): Phát/tạm dừng kể chuyện âm thanh.
+* `Ctrl+J`: Đi tới một thời điểm trong bản ghi âm. Nhập dưới dạng `1:23:45`, `23:45` hoặc `45` giây, hoặc đặt `+` hoặc `-` ở phía trước để di chuyển từ nơi bạn đang ở, ví dụ: `+5:00`. Hộp thoại hiển thị bạn đã tiến bao xa và cuốn sách chạy bao lâu.
 * `'`: Tìm kiếm kể chuyện âm thanh về phía trước.
 * `;`: Tìm kiếm kể chuyện âm thanh về phía sau.
 * `Shift+'`: Tăng lượng tìm kiếm âm thanh.

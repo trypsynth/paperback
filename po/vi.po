@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-11 06:49+0000\n"
+"POT-Creation-Date: 2026-11-11 17:53+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -243,6 +243,10 @@ msgstr "Tài liệu này không có âm thanh."
 #, fuzzy
 msgid "Audio hasn't started playing yet."
 msgstr "Âm thanh vẫn chưa bắt đầu phát."
+
+#, fuzzy
+msgid "This book doesn't say how long its audio runs, so Paperback can't go to a time in it."
+msgstr "Cuốn sách này không cho biết độ dài của file âm thanh, vì vậy Paperback không thể chuyển đến một thời điểm trong đó."
 
 #. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
 #, fuzzy
@@ -868,6 +872,16 @@ msgstr "&Phát/Tạm dừng âm thanh"
 msgid "Play or pause this document's audio narration"
 msgstr "Phát hoặc tạm dừng phần đọc lời bình bằng âm thanh của tài liệu này"
 
+#. TRANSLATORS: Menu item in the Audio menu to jump to a time typed in, such as 1:23:45.
+#, fuzzy
+msgid "Go to &Time..."
+msgstr "Chuyển đến &Thời điểm..."
+
+#. TRANSLATORS: Status-bar help text for the Go to Time menu item.
+#, fuzzy
+msgid "Go to a time in the recording"
+msgstr "Chuyển đến một thời điểm trong bản ghi âm"
+
 #. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 #, fuzzy
 msgid "Seek Audio &Forward"
@@ -1361,6 +1375,25 @@ msgstr "&Phần trăm"
 #, fuzzy
 msgid "Percent out of range."
 msgstr "Phần trăm ngoài phạm vi."
+
+#. TRANSLATORS: Title of the Go to Time dialog, which jumps to a time typed in, in an audiobook
+#, fuzzy
+msgid "Go to Time"
+msgstr "Chuyển đến Thời điểm"
+
+#, fuzzy
+msgid "Go to time ({}/{}):"
+msgstr "Chuyển đến thời điểm ({}/{})"
+
+#. TRANSLATORS: Announced when what was typed in the Go to Time dialog is not a time
+#, fuzzy
+msgid "Type a time like 1:23:45, 23:45 or 45."
+msgstr "Nhập một thời điểm như 1:23:45, 23:45 hoặc 45."
+
+#. TRANSLATORS: Announced when the time typed in the Go to Time dialog is past the end of the recording, or before its start
+#, fuzzy
+msgid "Time out of range."
+msgstr "Thời điểm ngoài phạm vi."
 
 #. TRANSLATORS: Title of the view showing the text recognized in a picture
 #, fuzzy
@@ -3503,6 +3536,11 @@ msgstr "Bật/tắt tính năng tự động xuống dòng"
 #, fuzzy
 msgid "Play/Pause Audio"
 msgstr "Phát/Tạm Dừng Âm Thanh"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Go to Time..."
+msgstr "Chuyển đến Thời điểm..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
