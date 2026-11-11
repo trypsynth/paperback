@@ -135,13 +135,16 @@ pub(super) fn handle_go_to_percent(
 				let Some(tab) = dm_guard.active_tab_mut() else {
 					return;
 				};
-				let target_pos = navigation::seek_audio_to_percent(tab, percent)
-					.unwrap_or_else(|| tab.session.position_from_percent(percent));
+				let (target_pos, update) = if let Some(clip_start) = navigation::seek_audio_to_percent(tab, percent) {
+					(clip_start, navigation::move_caret_and_record_history(tab, clip_start))
+				} else {
+					let target_pos = tab.session.position_from_percent(percent);
+					(target_pos, navigation::move_to_offset_and_record_history(tab, target_pos))
+				};
 				// A percentage alone says nothing about where it points, so the landing line is read, as Go to Line does.
 				let content = tab.session.get_line_text(target_pos);
 				let message =
 					if content.trim().is_empty() { format!("{percent}%") } else { content.trim().to_string() };
-				let update = navigation::move_to_offset_and_record_history(tab, target_pos);
 				(message, update)
 			};
 			drop(dm_guard);

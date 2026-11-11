@@ -108,6 +108,13 @@ pub fn move_to_offset_and_record_history(tab: &mut DocumentTab, offset: DocPos) 
 	record_history(tab, from, offset)
 }
 
+/// For a jump that has already seeked the audio inside the clip at `offset`, which seeking to `offset` would move back to the clip's start.
+pub fn move_caret_and_record_history(tab: &mut DocumentTab, offset: DocPos) -> HistoryUpdate {
+	let from = doc_caret(tab);
+	set_caret_to_doc_offset(tab, offset);
+	record_history(tab, from, offset)
+}
+
 fn seek_audio_to_position(tab: &mut DocumentTab, offset: DocPos) {
 	let offset = offset.min(tab.session.handle().document().buffer.end());
 	if let Some(player) = tab.audio_player.as_mut() {
