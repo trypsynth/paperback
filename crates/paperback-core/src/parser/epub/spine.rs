@@ -1,4 +1,10 @@
-use std::{collections::HashMap, fs::File, io::BufReader, mem, sync::Arc};
+use std::{
+	collections::{HashMap, HashSet},
+	fs::File,
+	io::{BufReader, Read, Seek},
+	mem,
+	sync::Arc,
+};
 
 use anyhow::Result;
 use rayon::prelude::*;
@@ -15,6 +21,7 @@ use crate::{
 		ConverterOutput, add_converter_markers_excluding_links,
 		convert::{
 			html_to_text::{HtmlSourceMode, HtmlToText},
+			image_text,
 			xml_to_text::XmlToText,
 		},
 		is_data_uri,
@@ -24,7 +31,7 @@ use crate::{
 		BlockInfo, FormatInfo, FormulaInfo, HeadingInfo, ImageInfo, LinkInfo, ListInfo, ListItemInfo, SeparatorInfo,
 		TableInfo,
 	},
-	util::zip::read_zip_entry_by_name,
+	util::zip::{read_zip_entry_by_name, read_zip_entry_bytes},
 };
 
 struct SectionContent {
@@ -130,23 +137,32 @@ pub(super) fn convert_spine_items(
 	spine: &[String],
 	render_tables_inline: bool,
 ) -> SpineConversionResult {
-	let converted: Vec<Result<(&ManifestItem, SectionContent), String>> = spine
+	let open_archive = || {
+		File::open(file_path).map_err(|err| err.to_string()).map(|file| {
+			// SAFETY: the contract is only that reader and metadata describe the same archive, and `metadata` was read from this same path when this parse began. A file swapped in between gives read errors or wrong text for that book, not undefined behavior.
+			unsafe { ZipArchive::unsafe_new_with_metadata(BufReader::new(file), Arc::clone(metadata)) }
+		})
+	};
+	let read: Vec<Result<(&ManifestItem, String), String>> = spine
 		.par_iter()
-		.map_init(
-			|| {
-				File::open(file_path).map_err(|err| err.to_string()).map(|file| {
-					// SAFETY: the contract is only that reader and metadata describe the same archive, and `metadata` was read from this same path when this parse began. A file swapped in between gives read errors or wrong text for that book, not undefined behavior.
-					unsafe { ZipArchive::unsafe_new_with_metadata(BufReader::new(file), Arc::clone(metadata)) }
-				})
-			},
-			|archive_result, idref| {
-				let item = manifest.get(idref).ok_or_else(|| format!("missing manifest item for {idref}"))?;
-				let archive = archive_result.as_mut().map_err(|err| format!("{} ({err})", item.path))?;
-				let data =
-					read_zip_entry_by_name(archive, &item.path).map_err(|err| format!("{} ({err})", item.path))?;
-				Ok((item, convert_section(&data, render_tables_inline)))
-			},
-		)
+		.map_init(open_archive, |archive_result, idref| {
+			let item = manifest.get(idref).ok_or_else(|| format!("missing manifest item for {idref}"))?;
+			let archive = archive_result.as_mut().map_err(|err| format!("{} ({err})", item.path))?;
+			let data = read_zip_entry_by_name(archive, &item.path).map_err(|err| format!("{} ({err})", item.path))?;
+			Ok((item, data))
+		})
+		.collect();
+	let repeated = repeated_pictures(&read);
+	let converted: Vec<Result<(&ManifestItem, SectionContent), String>> = read
+		.into_par_iter()
+		.map_init(open_archive, |archive_result, section| {
+			let (item, data) = section?;
+			let content_images = match archive_result.as_mut() {
+				Ok(archive) => content_images(archive, &item.path, &data, &repeated),
+				Err(_) => HashSet::new(),
+			};
+			Ok((item, convert_section(&data, render_tables_inline, content_images)))
+		})
 		.collect();
 	// The original index is kept because the "Section N" label reflects spine position even across skipped items.
 	let mut ok_entries: Vec<(usize, &ManifestItem, SectionContent)> = Vec::with_capacity(converted.len());
@@ -273,8 +289,45 @@ fn first_image_source(content: &str, has_image_markup: bool) -> String {
 	HtmlToText::image_source(Html::parse_document(content).tree.root())
 }
 
-fn convert_section(content: &str, render_tables_inline: bool) -> SectionContent {
-	let mut xml_converter = XmlToText::with_render_tables_inline(render_tables_inline);
+/// Ebooks give every picture an empty `alt`, scanned letters and maps included, so the section's pictures with one are measured from the archive, and those big enough to be content are shown.
+fn content_images<R: Read + Seek>(
+	archive: &mut ZipArchive<R>,
+	section_path: &str,
+	content: &str,
+	repeated: &HashSet<String>,
+) -> HashSet<String> {
+	image_text::empty_alt_sources(content)
+		.into_iter()
+		.filter(|source| !is_data_uri(source))
+		.filter(|source| {
+			let path = picture_path(section_path, source);
+			!repeated.contains(&path)
+				&& read_zip_entry_bytes(archive, &path).is_ok_and(|bytes| image_text::is_content_sized(&bytes))
+		})
+		.collect()
+}
+
+/// A picture placed more than once in the book is an ornament however big it is, such as a scene break drawn at 566 by 377 and set between every scene of a novel; a letter, a figure or an illustration appears once.
+fn repeated_pictures(sections: &[Result<(&ManifestItem, String), String>]) -> HashSet<String> {
+	let mut uses: HashMap<String, usize> = HashMap::new();
+	for (item, content) in sections.iter().flatten() {
+		for source in image_text::empty_alt_sources(content) {
+			if !is_data_uri(&source) {
+				*uses.entry(picture_path(&item.path, &source)).or_default() += 1;
+			}
+		}
+	}
+	uses.into_iter().filter(|&(_, count)| count > 1).map(|(path, _)| path).collect()
+}
+
+/// The archive path of a picture a section names with `source`.
+fn picture_path(section_path: &str, source: &str) -> String {
+	split_href(&resolve_href(section_path, source)).0
+}
+
+fn convert_section(content: &str, render_tables_inline: bool, content_images: HashSet<String>) -> SectionContent {
+	let mut xml_converter =
+		XmlToText::with_render_tables_inline(render_tables_inline).with_content_images(content_images.clone());
 	let xml_error = match xml_converter.try_convert(content) {
 		Ok(()) => None,
 		Err(error) => Some(error.to_string()),
@@ -307,7 +360,8 @@ fn convert_section(content: &str, render_tables_inline: bool) -> SectionContent 
 			xml_error: None,
 		};
 	}
-	let mut html_converter = HtmlToText::with_render_tables_inline(render_tables_inline);
+	let mut html_converter =
+		HtmlToText::with_render_tables_inline(render_tables_inline).with_content_images(content_images);
 	html_converter.convert(content, HtmlSourceMode::NativeHtml);
 	let text = html_converter.take_text();
 	let has_image_markup = is_image_only(content, &text);
@@ -339,19 +393,83 @@ fn convert_section(content: &str, render_tables_inline: bool) -> SectionContent 
 
 #[cfg(test)]
 mod tests {
-	use super::{content_has_image_markup, convert_section, is_binary_image};
+	use std::{
+		collections::HashSet,
+		io::{Cursor, Write},
+	};
+
+	use zip::{ZipArchive, ZipWriter, write::SimpleFileOptions};
+
+	use super::{
+		ManifestItem, content_has_image_markup, content_images, convert_section, is_binary_image, repeated_pictures,
+	};
 
 	#[test]
 	fn a_section_that_is_not_well_formed_xml_is_read_as_html_and_says_why() {
-		let section = convert_section("<html><body><p>Before <img src='a.jpg'> after</p></body></html>", false);
+		let section =
+			convert_section("<html><body><p>Before <img src='a.jpg'> after</p></body></html>", false, HashSet::new());
 		assert!(section.text.contains("Before"), "{:?}", section.text);
 		assert!(section.xml_error.is_some());
 	}
 
 	#[test]
 	fn a_well_formed_section_records_no_xml_error() {
-		let section = convert_section("<html><body><p>Fine</p></body></html>", false);
+		let section = convert_section("<html><body><p>Fine</p></body></html>", false, HashSet::new());
 		assert_eq!(section.xml_error, None);
+	}
+
+	fn png(width: u32, height: u32) -> Vec<u8> {
+		let mut bytes = Vec::new();
+		image::DynamicImage::new_luma8(width, height)
+			.write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Png)
+			.expect("encode a png");
+		bytes
+	}
+
+	/// The back matter of Rex Stout's The Silent Speaker is two scanned letters, each `<img alt="">` like the book's ornaments.
+	#[test]
+	fn pictures_with_an_empty_alt_are_shown_when_big_enough_to_be_content() {
+		let mut zip = ZipWriter::new(Cursor::new(Vec::new()));
+		for (name, bytes) in [("OEBPS/images/letter.png", png(600, 800)), ("OEBPS/images/rule.png", png(400, 12))] {
+			zip.start_file(name, SimpleFileOptions::default()).unwrap();
+			zip.write_all(&bytes).unwrap();
+		}
+		let mut archive = ZipArchive::new(Cursor::new(zip.finish().unwrap().into_inner())).unwrap();
+		let section = r#"<html xmlns="http://www.w3.org/1999/xhtml"><body><p>A letter from the publisher.</p><p><img alt="" src="images/letter.png"/></p><p><img alt="" src="images/rule.png"/></p></body></html>"#;
+		let measured = content_images(&mut archive, "OEBPS/back.xhtml", section, &HashSet::new());
+		assert_eq!(measured, HashSet::from(["images/letter.png".to_string()]));
+		let converted = convert_section(section, false, measured);
+		assert_eq!(converted.text.matches("[Image]").count(), 1, "{:?}", converted.text);
+		assert_eq!(converted.images.len(), 1);
+		assert_eq!(converted.images[0].source, "images/letter.png");
+	}
+
+	/// A romance novel sets the same 566 by 377 flourish between every scene.
+	#[test]
+	fn a_picture_placed_more_than_once_is_an_ornament_however_big() {
+		let mut zip = ZipWriter::new(Cursor::new(Vec::new()));
+		zip.start_file("OEBPS/break.png", SimpleFileOptions::default()).unwrap();
+		zip.write_all(&png(566, 377)).unwrap();
+		let mut archive = ZipArchive::new(Cursor::new(zip.finish().unwrap().into_inner())).unwrap();
+		let chapter =
+			r#"<html><body><p>One.</p><p><img alt="" src="break.png"/></p><p>Two.</p></body></html>"#.to_string();
+		let item = ManifestItem {
+			id: "one".to_string(),
+			path: "OEBPS/one.xhtml".to_string(),
+			media_type: "application/xhtml+xml".to_string(),
+			properties: Vec::new(),
+		};
+		let other = ManifestItem {
+			id: "two".to_string(),
+			path: "OEBPS/two.xhtml".to_string(),
+			media_type: "application/xhtml+xml".to_string(),
+			properties: Vec::new(),
+		};
+		let sections = vec![Ok((&item, chapter.clone())), Ok((&other, chapter.clone()))];
+		let repeated = repeated_pictures(&sections);
+		assert_eq!(repeated, HashSet::from(["OEBPS/break.png".to_string()]));
+		assert!(content_images(&mut archive, "OEBPS/one.xhtml", &chapter, &repeated).is_empty());
+		assert_eq!(content_images(&mut archive, "OEBPS/one.xhtml", &chapter, &HashSet::new()).len(), 1);
 	}
 
 	#[test]

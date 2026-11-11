@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use roxmltree::{Document, ParsingOptions};
 
@@ -38,6 +38,8 @@ pub struct XmlToText {
 	blocks: BlockSpans,
 	/// A config flag, not parse state, so it survives `clear()`.
 	render_tables_inline: bool,
+	/// The sources of the pictures with an empty `alt` that the format measured as content, see [`image_text::is_decorative`]. Given per document, not parse state, so it survives `clear()`.
+	content_images: HashSet<String>,
 }
 
 impl XmlToText {
@@ -49,6 +51,13 @@ impl XmlToText {
 	#[must_use]
 	pub fn with_render_tables_inline(render_tables_inline: bool) -> Self {
 		Self { render_tables_inline, ..Self::default() }
+	}
+
+	/// Shows the pictures with an empty `alt` whose sources are in `sources`, which the format measured as big enough to be content.
+	#[must_use]
+	pub fn with_content_images(mut self, sources: HashSet<String>) -> Self {
+		self.content_images = sources;
+		self
 	}
 
 	pub fn convert(&mut self, xml_content: &str) -> bool {

@@ -1,4 +1,4 @@
-use std::fmt::Write;
+use std::{collections::HashSet, fmt::Write};
 
 use ego_tree::NodeRef;
 use scraper::{ElementRef, Html, Node, node};
@@ -172,7 +172,9 @@ impl HtmlToText {
 				if let Some(id) = element.attr("id").or_else(|| element.attr("name")) {
 					self.id_positions.insert(id.to_string(), self.text.get_current_text_position());
 				}
-				if let Some((image_text, mut info, is_figure)) = Self::described_image(tag_name, node) {
+				if let Some((image_text, mut info, is_figure)) =
+					Self::described_image(tag_name, node, &self.content_images)
+				{
 					if self.flags.contains(ProcessingFlags::IN_LINK) {
 						// Placed once the link's text is known, since collapsing its whitespace can move it.
 						self.current_link_text.push_str(&image_text);
@@ -439,7 +441,11 @@ impl HtmlToText {
 		}
 	}
 
-	fn described_image(tag_name: &str, node: NodeRef<'_, Node>) -> Option<(String, ImageInfo, bool)> {
+	fn described_image(
+		tag_name: &str,
+		node: NodeRef<'_, Node>,
+		content_images: &HashSet<String>,
+	) -> Option<(String, ImageInfo, bool)> {
 		if tag_name != "img" && tag_name != "image" && tag_name != "figure" {
 			return None;
 		}
@@ -458,16 +464,12 @@ impl HtmlToText {
 			}
 		}
 		// A figure with no caption says nothing itself: the picture inside it is announced instead.
-		if description.is_empty() && (is_figure || image_text::is_decorative(&attribute)) {
+		let source = Self::image_source(node);
+		if description.is_empty() && (is_figure || image_text::is_decorative(&attribute, &source, content_images)) {
 			return None;
 		}
 		let image_text = image_text::placeholder(is_figure, &description);
-		let info = ImageInfo {
-			offset: DocPos::ZERO,
-			alt_text: description,
-			length: DocLen::of(&image_text),
-			source: Self::image_source(node),
-		};
+		let info = ImageInfo { offset: DocPos::ZERO, alt_text: description, length: DocLen::of(&image_text), source };
 		Some((image_text, info, is_figure))
 	}
 

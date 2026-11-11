@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use roxmltree::{Node, NodeType};
 
 use super::XmlToText;
@@ -133,7 +135,13 @@ impl XmlToText {
 			let mut raw_link_text = String::new();
 			let mut link_images = Vec::new();
 			let mut link_formulas = Vec::new();
-			Self::collect_link_content(node, &mut raw_link_text, &mut link_images, &mut link_formulas);
+			Self::collect_link_content(
+				node,
+				&mut raw_link_text,
+				&mut link_images,
+				&mut link_formulas,
+				&self.content_images,
+			);
 			let link_text = raw_link_text.trim();
 			let trimmed_lead = raw_link_text.len() - raw_link_text.trim_start().len();
 			if !link_text.is_empty() {
@@ -210,7 +218,7 @@ impl XmlToText {
 			self.format_spans.open(&FormatKind::Subscript, self.text.get_current_text_position());
 		}
 		if self.in_body
-			&& let Some((image_text, mut info, is_figure)) = Self::described_image(node)
+			&& let Some((image_text, mut info, is_figure)) = Self::described_image(node, &self.content_images)
 		{
 			info.offset = self.text.get_current_text_position();
 			self.text.push_str(&image_text);
@@ -225,6 +233,7 @@ impl XmlToText {
 		text: &mut String,
 		images: &mut Vec<(String, ImageInfo, bool)>,
 		formulas: &mut Vec<LinkFormula>,
+		content_images: &HashSet<String>,
 	) {
 		let mut pending: Vec<Node<'_, '_>> = node.children().rev().collect();
 		while let Some(child) = pending.pop() {
@@ -244,7 +253,7 @@ impl XmlToText {
 					formulas.push(LinkFormula { raw_start: text.len(), text: rendered.clone(), mathml, ids });
 					text.push_str(&rendered);
 				}
-			} else if let Some((image_text, info, is_figure)) = Self::described_image(child) {
+			} else if let Some((image_text, info, is_figure)) = Self::described_image(child, content_images) {
 				text.push_str(&image_text);
 				images.push((image_text, info, is_figure));
 			} else if child.is_element() && Self::tag_is(child.tag_name().name(), "br") {
@@ -256,7 +265,7 @@ impl XmlToText {
 		}
 	}
 
-	fn described_image(node: Node<'_, '_>) -> Option<(String, ImageInfo, bool)> {
+	fn described_image(node: Node<'_, '_>, content_images: &HashSet<String>) -> Option<(String, ImageInfo, bool)> {
 		if !node.is_element() {
 			return None;
 		}
@@ -276,16 +285,12 @@ impl XmlToText {
 			}
 		}
 		// A figure with no caption says nothing itself: the picture inside it is announced instead.
-		if description.is_empty() && (is_figure || image_text::is_decorative(&attribute)) {
+		let source = Self::image_source(node);
+		if description.is_empty() && (is_figure || image_text::is_decorative(&attribute, &source, content_images)) {
 			return None;
 		}
 		let image_text = image_text::placeholder(is_figure, &description);
-		let info = ImageInfo {
-			offset: DocPos::ZERO,
-			alt_text: description,
-			length: DocLen::of(&image_text),
-			source: Self::image_source(node),
-		};
+		let info = ImageInfo { offset: DocPos::ZERO, alt_text: description, length: DocLen::of(&image_text), source };
 		Some((image_text, info, is_figure))
 	}
 
