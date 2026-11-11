@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 4f2dd8c5898a0324; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 71b9a82d8c3eb624; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,90db1255,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - version 1.1
 
@@ -48,11 +48,13 @@ Si JAWS ne dit rien lorsque vous appuyez sur une touche qui devrait signaler que
 
 Paperback prend en charge les formats et extensions suivants :
 
+* Fichiers Braille Ready et livres au format Portable Embosser Format, rétro-traduits en imprimé avec la table braille de votre choix (`.brf`, `.pef`)
 * Archives de bandes dessinées (`.cbz`)
 * Fichiers d'aide CHM (`.chm`)
 * Livres DAISY (`.opf`, `.zip`)
 * Livres EPUB (`.epub`)
 * Livres électroniques FB2 (`.fb2`)
+* Manuels GNU Info (`.info`, compressés ou non, et manuels divisés ouverts à partir de n'importe laquelle de leurs parties)
 * Documents HTML (`.htm`, `.html`, `.xhtml`)
 * Pages de manuel, à la fois `man` et BSD `mdoc` (`.1` à `.9`, `.man`, `.roff` et les versions compressées de chacun)
 * Documents Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -68,6 +70,7 @@ Paperback prend en charge les formats et extensions suivants :
 * Documents RTF (`.rtf`)
 * Documents Windows Write (`.wri`)
 * Fichiers WinHelp (`.hlp`)
+* Documents XPS et OpenXPS (`.xps`, `.oxps`)
 * Fichiers texte brut et fichiers journaux (`.txt`, `.log`)
 
 ## Raccourcis clavier
@@ -75,6 +78,8 @@ Paperback prend en charge les formats et extensions suivants :
 Paperback est conçu pour une utilisation en priorité au clavier. Voici les raccourcis actuels.
 
 Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équivalent est indiqué entre parenthèses — principalement parce que Ctrl+G, Ctrl+W et Alt+Left/Right sont déjà utilisés par d'autres conventions système ou d'application sur cette plateforme.
+
+Les raccourcis de ponctuation sont nommés d'après les touches d'un clavier américain. Sur une autre disposition, appuyez sur la touche au même endroit, peu importe son étiquette : sur un clavier hongrois, la touche étiquetée `é` fonctionne comme `;` et celle étiquetée `á` comme `'`, donc `Ctrl+'` signifie Ctrl et la touche `á`. Les menus affichent toujours les noms américains. Sur macOS, les menus affichent à la place les touches que votre disposition utilise.
 
 ### Menu Fichier
 

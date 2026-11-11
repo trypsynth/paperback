@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-08 02:02+0000\n"
+"POT-Creation-Date: 2026-11-10 20:29+0000\n"
 "PO-Revision-Date: 2026-10-21 12:00+0200\n"
 "Last-Translator: Torma Zsolt <torma.zsolt@gmail.com>\n"
 "Language-Team: Torma Zsolt <torma.zsolt@gmail.com>\n"
@@ -134,7 +134,10 @@ msgid ""
 "%s\n"
 "\n"
 "Would you like to save the report to a file, so you can send it another way?"
-msgstr "%s\n\nSzeretné a jelentést egy fájlba menteni, hogy másképp elküldhesse?"
+msgstr ""
+"%s\n"
+"\n"
+"Szeretné a jelentést egy fájlba menteni, hogy másképp elküldhesse?"
 
 #. TRANSLATORS: Title of the dialog for saving a problem report to a file
 #, fuzzy
@@ -208,9 +211,17 @@ msgstr "Nincs telepítve szövegfelismerési nyelv. Adjon hozzá egyet a rendsze
 msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
 msgstr "Nincs telepítve szövegfelismerési nyelv. Telepítsen egy Tesseract-nyelvcsomagot a csomagkezelővel."
 
-#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
+#. TRANSLATORS: Announced when skipping forward while read aloud is on the last paragraph
+#, fuzzy
+msgid "No next paragraph."
+msgstr "Nincs következő bekezdés."
+
+#. TRANSLATORS: Announced when skipping back while read aloud is on the first paragraph
+#, fuzzy
+msgid "No previous paragraph."
+msgstr "Nincs előző bekezdés."
+
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
-#. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
 #. TRANSLATORS: Announced when trying to change audio volume on a document that has none
 msgid "This document has no audio."
 msgstr "Ehhez a dokumentumhoz nem tartozik hang."
@@ -219,14 +230,21 @@ msgstr "Ehhez a dokumentumhoz nem tartozik hang."
 msgid "Audio hasn't started playing yet."
 msgstr "A hang lejátszása még nem indult el."
 
+#. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
+#, fuzzy
+msgid "Rate {}"
+msgstr "Sebesség: {}"
+
 #. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
 #. TRANSLATORS: Announced when the audio volume is already at its loudest; {} is the current volume, e.g. "200%"
+#. TRANSLATORS: Announced when a setting is already at its highest; {} is its value
 #. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
 msgid "{} (maximum)"
 msgstr "{} (maximum)"
 
 #. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
 #. TRANSLATORS: Announced when the audio volume is already at its quietest; {} is the current volume, e.g. "10%"
+#. TRANSLATORS: Announced when a setting is already at its lowest; {} is its value
 #. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
 msgid "{} (minimum)"
 msgstr "{} (minimum)"
@@ -1210,6 +1228,215 @@ msgstr "Hivatkozás:"
 msgid "Security Warning"
 msgstr "Biztonsági figyelmeztetés"
 
+#. TRANSLATORS: Label for the update channel selection dropdown
+msgid "Update Channel:"
+msgstr "Frissítési csatorna:"
+
+#. TRANSLATORS: Stable update channel option
+msgid "Stable"
+msgstr "Stabil"
+
+#. TRANSLATORS: Developer/development update channel option
+msgid "Dev"
+msgstr "Fejlesztői"
+
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+msgid "Log Level:"
+msgstr "Naplózási szint:"
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+msgid "Off"
+msgstr "Ki"
+
+#. TRANSLATORS: Log level choice that records only errors
+msgid "Errors"
+msgstr "Hibák"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+msgid "Warnings"
+msgstr "Figyelmeztetések"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+msgid "Information"
+msgstr "Információk"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+msgid "Debug"
+msgstr "Hibakeresés"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+msgid "Trace"
+msgstr "Nyomkövetés"
+
+#. TRANSLATORS: Option to toggle word wrapping of text
+msgid "&Word wrap"
+msgstr "&Sortörés"
+
+#. TRANSLATORS: Label/header for the Font options section
+msgid "Font"
+msgstr "Betűtípus"
+
+#. TRANSLATORS: Button label to pick a font
+msgid "Choose &Font..."
+msgstr "&Betűtípus kiválasztása..."
+
+#. TRANSLATORS: Button label to restore font settings to default values
+msgid "&Reset to Default Font"
+msgstr "&Alapértelmezett betűtípus visszaállítása"
+
+#. TRANSLATORS: Label/header for the Background Color options section
+msgid "Background Color"
+msgstr "Háttérszín"
+
+#. TRANSLATORS: Button label to pick a background color
+msgid "Choose &Background Color..."
+msgstr "&Háttérszín kiválasztása..."
+
+#. TRANSLATORS: Button label to restore background color to default values
+msgid "Reset to &Default Background"
+msgstr "Alapértelmezett hát&tér visszaállítása"
+
+msgid "&Line spacing:"
+msgstr "S&orköz:"
+
+#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
+msgid "Normal"
+msgstr "Normál"
+
+#. TRANSLATORS: 1.5x line spacing option
+msgid "1.5×"
+msgstr "1,5×"
+
+#. TRANSLATORS: Double line spacing option
+msgid "Double"
+msgstr "Dupla"
+
+msgid "&Paragraph spacing:"
+msgstr "Bekez&désköz:"
+
+#. TRANSLATORS: Relaxed paragraph spacing option
+msgid "Relaxed"
+msgstr "Tágas"
+
+#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
+msgid "Wide"
+msgstr "Széles"
+
+msgid "L&etter spacing:"
+msgstr "Betű&köz:"
+
+#. TRANSLATORS: Very Wide letter spacing option
+msgid "Very Wide"
+msgstr "Nagyon széles"
+
+msgid "Text &alignment:"
+msgstr "Szöveg &igazítása:"
+
+#. TRANSLATORS: Left text alignment option
+msgid "Left"
+msgstr "Balra"
+
+#. TRANSLATORS: Center text alignment option
+msgid "Center"
+msgstr "Középre"
+
+#. TRANSLATORS: Right text alignment option
+msgid "Right"
+msgstr "Jobbra"
+
+#. TRANSLATORS: Justified text alignment option
+msgid "Justify"
+msgstr "Sorkizárt"
+
+#. TRANSLATORS: Title of the system dialog for picking a background colour
+msgid "Choose a colour"
+msgstr "Szín kiválasztása"
+
+#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
+msgid "Play &sounds on bookmarks and notes"
+msgstr "&Hangjelzés könyvjelzőknél és jegyzeteknél"
+
+#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+msgid "&Sync caret to audio playback"
+msgstr "&Kurzor szinkronizálása a hanglejátszással"
+
+#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
+msgid "&Audio seek amount:"
+msgstr "&Léptetési időegység:"
+
+#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
+msgid "Seeking &past the end of a chapter continues into the next"
+msgstr "Fejezet végén túltekerve &folytatás a következő fejezettel"
+
+#. TRANSLATORS: Label of the group of read aloud settings on the Audio tab of Settings: engine, voice, rate, pitch and pauses
+msgid "Read Aloud"
+msgstr "Felolvasás"
+
+#. TRANSLATORS: Label of the list of speech engines, such as OneCore or SAPI 5, on the Audio tab of Settings
+#, fuzzy
+msgid "&Engine:"
+msgstr "&Motor:"
+
+#. TRANSLATORS: Label of the list of voices on the Audio tab of Settings
+#, fuzzy
+msgid "&Voice:"
+msgstr "&Beszédhang:"
+
+#. TRANSLATORS: Label of the speech rate slider on the Audio tab of Settings
+#, fuzzy
+msgid "&Rate:"
+msgstr "&Beszédsebesség:"
+
+#. TRANSLATORS: Label of the speech pitch slider on the Audio tab of Settings
+#, fuzzy
+msgid "Pi&tch:"
+msgstr "Han&gmagasság:"
+
+msgid "Pause after each para&graph (milliseconds):"
+msgstr ""
+
+#, fuzzy
+msgid "Use this voice, rate and pitch for this &book only"
+msgstr "Ezen a &könyven ezt a beszédhanget, sebességet és hangmagasságot használja"
+
+#. TRANSLATORS: Button on the Audio tab of Settings that speaks a sample with the chosen voice, rate and pitch
+#, fuzzy
+msgid "Play Sa&mple"
+msgstr "Minta le&játszása"
+
+#. TRANSLATORS: First choice in the voice list on the Audio tab of Settings, which leaves the choice of voice to the system
+#, fuzzy
+msgid "System default"
+msgstr "Rendszer alapértelmezése"
+
+#. TRANSLATORS: Note at the top of the Documents tab of Settings, whose options change how a file is read
+#, fuzzy
+msgid "Changing these reads your open documents again when you press OK."
+msgstr "Ezen beállítások módosítása az OK gombra kattintáskor újra beolvassa a megnyitott dokumentumokat."
+
+#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
+msgid "Render tables &inline"
+msgstr "Táblázatok megjelenítése a s&zövegben"
+
+#. TRANSLATORS: Option to join the wrapped lines of a page back into paragraphs, in documents laid out as pages, such as PDFs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
+#, fuzzy
+msgid "&Join wrapped lines into paragraphs"
+msgstr "&Zárt sorok bekezdésekké összekapcsolása"
+
+#. TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
+#, fuzzy
+msgid "Remove repeated page &headers and footers"
+msgstr "Ismétlődő lap- és &láblécek eltávolítása"
+
+#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
+msgid "Read text between dollar signs as &math in Markdown"
+msgstr "Dollárjelek közötti szöveg olvasása &matematikai képletként Markdown-dokumentumokban"
+
+#. TRANSLATORS: Label for the dropdown choosing the braille code that Braille Ready Files (BRF) and PEF books are written in, so Paperback can turn their braille back into print
+#, fuzzy
+msgid "&Braille code of BRF and PEF books:"
+msgstr "A BRF- és PEF-könyvek &braille-kódja:"
+
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
 msgstr "Háttér: alapértelmezett"
@@ -1250,10 +1477,6 @@ msgstr "Áthúzott"
 msgid "Choose a font"
 msgstr "Betűtípus kiválasztása"
 
-#. TRANSLATORS: Title of the Settings dialog
-msgid "Settings"
-msgstr "Beállítások"
-
 #. TRANSLATORS: Option to restore documents that were open when the app was last closed
 msgid "&Restore previously opened documents on startup"
 msgstr "&Korábban megnyitott dokumentumok visszaállítása indításkor"
@@ -1261,6 +1484,10 @@ msgstr "&Korábban megnyitott dokumentumok visszaállítása indításkor"
 #. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
 msgid "&Automatically reload changed documents"
 msgstr "Módosult dokumentumok &automatikus újratöltése"
+
+#. TRANSLATORS: Label for the number of recently opened documents to keep in history
+msgid "Number of &recent documents to show:"
+msgstr "Megjelenítendő &legutóbbi dokumentumok száma:"
 
 #. TRANSLATORS: Option to start the app maximized
 msgid "&Start maximized"
@@ -1270,25 +1497,17 @@ msgstr "Indítás &teljes méretű ablakban"
 msgid "&Minimize to system tray"
 msgstr "Kis méret a &rendszertálcára"
 
-#. TRANSLATORS: Option to toggle word wrapping of text
-msgid "&Word wrap"
-msgstr "&Sortörés"
+#. TRANSLATORS: Option to check for app updates automatically on startup
+msgid "Check for &updates on startup"
+msgstr "&Frissítések keresése indításkor"
 
-#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
-msgid "Render tables &inline"
-msgstr "Táblázatok megjelenítése a s&zövegben"
+#. TRANSLATORS: Label for the language selection dropdown
+msgid "&Language:"
+msgstr "&Nyelv:"
 
-#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
-msgid "&Join wrapped lines into paragraphs in PDFs"
-msgstr "Tördelt sorok &egyesítése bekezdésekké PDF-ekben"
-
-#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
-msgid "Remove repeated page &headers and footers in PDFs"
-msgstr "Ismétlődő élő&fejek és élőlábak eltávolítása PDF-ekben"
-
-#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
-msgid "Read text between dollar signs as &math in Markdown"
-msgstr "Dollárjelek közötti szöveg olvasása &matematikai képletként Markdown-dokumentumokban"
+#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
+msgid "Customize &Keyboard Shortcuts..."
+msgstr "Billentyű&parancsok testreszabása..."
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -1306,177 +1525,40 @@ msgstr "Ugrás a sor &elejére"
 msgid "&Highlight found text"
 msgstr "&Talált szöveg kiemelése"
 
-#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
-msgid "Play &sounds on bookmarks and notes"
-msgstr "&Hangjelzés könyvjelzőknél és jegyzeteknél"
-
-#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
-msgid "&Sync caret to audio playback"
-msgstr "&Kurzor szinkronizálása a hanglejátszással"
-
-#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
-msgid "&Audio seek amount:"
-msgstr "&Léptetési időegység:"
-
-#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
-msgid "Seeking &past the end of a chapter continues into the next"
-msgstr "Fejezet végén túltekerve &folytatás a következő fejezettel"
-
-#. TRANSLATORS: Option to check for app updates automatically on startup
-msgid "Check for &updates on startup"
-msgstr "&Frissítések keresése indításkor"
-
-#. TRANSLATORS: Label for the update channel selection dropdown
-msgid "Update Channel:"
-msgstr "Frissítési csatorna:"
-
-#. TRANSLATORS: Stable update channel option
-msgid "Stable"
-msgstr "Stabil"
-
-#. TRANSLATORS: Developer/development update channel option
-msgid "Dev"
-msgstr "Fejlesztői"
-
-#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
-msgid "Log Level:"
-msgstr "Naplózási szint:"
-
-#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
-msgid "Customize &Keyboard Shortcuts..."
-msgstr "Billentyű&parancsok testreszabása..."
-
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
 msgstr "&Olvasási sebesség (szó/perc):"
 
-#. TRANSLATORS: Label for the number of recently opened documents to keep in history
-msgid "Number of &recent documents to show:"
-msgstr "Megjelenítendő &legutóbbi dokumentumok száma:"
-
-#. TRANSLATORS: Label for the language selection dropdown
-msgid "&Language:"
-msgstr "&Nyelv:"
-
-#. TRANSLATORS: Label/header for the Font options section
-msgid "Font"
-msgstr "Betűtípus"
-
-#. TRANSLATORS: Button label to pick a font
-msgid "Choose &Font..."
-msgstr "&Betűtípus kiválasztása..."
-
-#. TRANSLATORS: Button label to restore font settings to default values
-msgid "&Reset to Default Font"
-msgstr "&Alapértelmezett betűtípus visszaállítása"
-
-#. TRANSLATORS: Label/header for the Background Color options section
-msgid "Background Color"
-msgstr "Háttérszín"
-
-#. TRANSLATORS: Button label to pick a background color
-msgid "Choose &Background Color..."
-msgstr "&Háttérszín kiválasztása..."
-
-#. TRANSLATORS: Button label to restore background color to default values
-msgid "Reset to &Default Background"
-msgstr "Alapértelmezett hát&tér visszaállítása"
-
-#. TRANSLATORS: Label for the line spacing dropdown
-msgid "&Line spacing:"
-msgstr "S&orköz:"
-
-#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
-msgid "Normal"
-msgstr "Normál"
-
-#. TRANSLATORS: 1.5x line spacing option
-msgid "1.5×"
-msgstr "1,5×"
-
-#. TRANSLATORS: Double line spacing option
-msgid "Double"
-msgstr "Dupla"
-
-#. TRANSLATORS: Label for the paragraph spacing dropdown
-msgid "&Paragraph spacing:"
-msgstr "Bekez&désköz:"
-
-#. TRANSLATORS: Relaxed paragraph spacing option
-msgid "Relaxed"
-msgstr "Tágas"
-
-#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-msgid "Wide"
-msgstr "Széles"
-
-#. TRANSLATORS: Label for the letter spacing dropdown
-msgid "L&etter spacing:"
-msgstr "Betű&köz:"
-
-#. TRANSLATORS: Very Wide letter spacing option
-msgid "Very Wide"
-msgstr "Nagyon széles"
-
-#. TRANSLATORS: Label for the text alignment dropdown
-msgid "Text &alignment:"
-msgstr "Szöveg &igazítása:"
-
-#. TRANSLATORS: Left text alignment option
-msgid "Left"
-msgstr "Balra"
-
-#. TRANSLATORS: Center text alignment option
-msgid "Center"
-msgstr "Középre"
-
-#. TRANSLATORS: Right text alignment option
-msgid "Right"
-msgstr "Jobbra"
-
-#. TRANSLATORS: Justified text alignment option
-msgid "Justify"
-msgstr "Sorkizárt"
+#. TRANSLATORS: Title of the Settings dialog
+msgid "Settings"
+msgstr "Beállítások"
 
 #. TRANSLATORS: Tab label for the General options panel
 msgid "General"
 msgstr "Általános"
 
-#. TRANSLATORS: Tab label for the Reading options panel
+#. TRANSLATORS: Tab label for the Reading options panel, about moving through and searching a document
 msgid "Reading"
 msgstr "Olvasás"
 
-#. TRANSLATORS: Tab label for the Readability options panel
-msgid "Readability"
-msgstr "Olvashatóság"
+#. TRANSLATORS: Tab label for the Settings panel about playing audio books and narration
+#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Audio"
+msgstr "Hang"
 
-#. TRANSLATORS: Title of the system dialog for picking a background colour
-msgid "Choose a colour"
-msgstr "Szín kiválasztása"
+#. TRANSLATORS: Tab label for the Settings panel about how text looks: font, colour, spacing and alignment
+msgid "Appearance"
+msgstr "Megjelenés"
 
-#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
-msgid "Off"
-msgstr "Ki"
+#. TRANSLATORS: Tab label for the Settings panel about how a file is read, such as whether tables are shown inline
+#, fuzzy
+msgid "Documents"
+msgstr "Dokumentumok"
 
-#. TRANSLATORS: Log level choice that records only errors
-msgid "Errors"
-msgstr "Hibák"
-
-#. TRANSLATORS: Log level choice that records warnings and errors
-msgid "Warnings"
-msgstr "Figyelmeztetések"
-
-#. TRANSLATORS: Log level choice that records general activity, warnings and errors
-msgid "Information"
-msgstr "Információk"
-
-#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
-msgid "Debug"
-msgstr "Hibakeresés"
-
-#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
-msgid "Trace"
-msgstr "Nyomkövetés"
+#. TRANSLATORS: Tab label for the Settings panel with options most people never need, such as the update channel and log level
+#, fuzzy
+msgid "Advanced"
+msgstr "Speciális"
 
 msgid "System-Wide"
 msgstr "Rendszerszintű"
@@ -1656,6 +1738,20 @@ msgstr "Ideiglenes könyvjelző."
 #. TRANSLATORS: Announced by the shortcut that reports the reading position. %s is how far through the document the reader is, e.g. "15%"; %d is the page number.
 msgid "%s, page %d"
 msgstr "%s, %d. oldal"
+
+#. TRANSLATORS: Announced when read aloud is started with nothing left to read after the caret
+msgid "End of document"
+msgstr "A dokumentum vége"
+
+#. TRANSLATORS: Spoken by the Play Sample button on the Audio tab of Settings
+#, fuzzy
+msgid "This is a sample of the current voice and speed settings."
+msgstr "Ez egy minta az aktuális beszédhang- és sebességbeállításokról."
+
+#. TRANSLATORS: Announced when read aloud is asked for on a system Paperback has no speech engine for yet
+#, fuzzy
+msgid "Read aloud isn't available on this system yet."
+msgstr "A felolvasás ezen a rendszeren még nem érhető el."
 
 #. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
@@ -2994,10 +3090,6 @@ msgstr "Szerkesztés"
 msgid "View"
 msgstr "Nézet"
 
-#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
-msgid "Audio"
-msgstr "Hang"
-
 #. TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Tools"
 msgstr "Eszközök"
@@ -3068,6 +3160,11 @@ msgstr "[Csak kép. A szövegfelismeréshez nyomja le az Enter billentyűt.]"
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer, where the system has no OCR engine
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Csak kép. Ezen az oldalon nincs olvasható szöveg.]"
+
+#. TRANSLATORS: A table of contents entry for one volume of a braille book; {} is the volume's number
+#, fuzzy
+msgid "Volume {}"
+msgstr "{}. kötet"
 
 #. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
 msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
@@ -3390,6 +3487,16 @@ msgstr "A fájl tartalma nem tűnik egyszerű szövegnek"
 #. TRANSLATORS: Error shown when both DOC parsing strategies fail; the two {} are the underlying error details
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
 msgstr "A régi DOC formátum feldolgozása nem sikerült: {}. Az OOXML formátummal való próbálkozás sem sikerült: {}"
+
+#. TRANSLATORS: Error shown when an XPS document has no pages
+#, fuzzy
+msgid "XPS file contains no pages"
+msgstr "Az XPS-fájl nem tartalmaz oldalakat"
+
+#. TRANSLATORS: Shown in place of an XPS page that has no text, such as a scanned one
+#, fuzzy
+msgid "This page has no text."
+msgstr "Ezen az oldalon nincs szöveg."
 
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 msgid "No file extension found for: {}"
@@ -4189,11 +4296,6 @@ msgstr "Lejátszás"
 
 #. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
 #: swift
-msgid "End of document"
-msgstr "A dokumentum vége"
-
-#. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
-#: swift
 msgid "Beginning of document"
 msgstr "A dokumentum eleje"
 
@@ -4430,11 +4532,6 @@ msgstr "További lehetőségek"
 #: swift kt
 msgid "Pause Read Aloud"
 msgstr "Felolvasás szüneteltetése"
-
-#. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: swift kt
-msgid "Read Aloud"
-msgstr "Felolvasás"
 
 #. TRANSLATORS: Menu item / accessibility action to open the export document dialog
 #: kt
@@ -4759,11 +4856,6 @@ msgstr "Képlet"
 msgid "No matches."
 msgstr "Nincs találat."
 
-#. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
-#: swift
-msgid "Appearance"
-msgstr "Megjelenés"
-
 #. TRANSLATORS: Appearance option following the phone's own light/dark setting
 #: swift
 msgid "System"
@@ -4967,6 +5059,17 @@ msgstr "Átlagos lejátszási idő"
 #: kt
 msgid "Select audio speed"
 msgstr "Lejátszási sebesség kiválasztása"
+
+#. TRANSLATORS: Section header in Settings grouping controls for how document text is displayed
+#: kt swift
+msgid "Readability"
+msgstr "Olvashatóság"
+
+#~ msgid "&Join wrapped lines into paragraphs in PDFs"
+#~ msgstr "Tördelt sorok &egyesítése bekezdésekké PDF-ekben"
+
+#~ msgid "Remove repeated page &headers and footers in PDFs"
+#~ msgstr "Ismétlődő élő&fejek és élőlábak eltávolítása PDF-ekben"
 
 #~ msgid "Failed to create IPC server"
 #~ msgstr "Nem sikerült létrehozni az IPC-kiszolgálót"
