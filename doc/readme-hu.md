@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 71b9a82d8c3eb624; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,90db1255,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 17241fae03bbada2; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback – 1.1-es verzió
 
@@ -64,6 +64,7 @@ A Paperback a következő formátumokat és kiterjesztéseket támogatja:
 * MP3-hangoskönyvek (`.mp3`)
 * OpenDocument-bemutatók (`.odp`, `.fodp`)
 * OpenDocument-szövegfájlok (`.odt`, `.fodt`)
+* OS/2-súgófájlok és könyvek a képeikkel (`.inf`, `.hlp`)
 * PDF-dokumentumok (`.pdf`)
 * PowerPoint-bemutatók (`.pptx`, `.pptm`, `.ppt`)
 * reStructuredText-dokumentumok (`.rst`, `.rest`)
