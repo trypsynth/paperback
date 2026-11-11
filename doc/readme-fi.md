@@ -167,6 +167,7 @@ Välimerkkejä käyttävien pikanäppäinten nimet perustuvat amerikkalaiseen n�
 ### Ääni-valikko
 
 * `Ctrl+Välilyönti` (macOSissa `Control+Välilyönti` eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.
+* `Ctrl+J`: Siirry tiettyyn äänitteen kohtaan. Anna aika muodossa `1:23:45`, `23:45` tai `45` sekuntia. Voit myös lisätä ajan eteen `+`- tai `-`-merkin, jolloin nykyisestä toistokohdasta siirrytään eteen- tai taaksepäin, esimerkiksi `+5:00`. Valintaikkunassa näytetään nykyinen toistokohta ja kirjan kokonaiskesto.
 * `'`: Kelaa äänitettä eteenpäin.
 * `;`: Kelaa äänitettä taaksepäin.
 * `Vaihto+'`: Pidennä kelauksen aikasiirtymää.

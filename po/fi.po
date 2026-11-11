@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-10 20:29+0000\n"
-"PO-Revision-Date: 2026-11-11 20:01+0200\n"
+"POT-Creation-Date: 2026-11-11 06:49+0000\n"
+"PO-Revision-Date: 2026-11-11 21:55+0200\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -213,12 +213,10 @@ msgstr ""
 "kielipaketti pakettienhallinnasta."
 
 #. TRANSLATORS: Announced when skipping forward while read aloud is on the last paragraph
-#| msgid "Next Paragraph"
 msgid "No next paragraph."
 msgstr "Seuraavaa kappaletta ei ole."
 
 #. TRANSLATORS: Announced when skipping back while read aloud is on the first paragraph
-#| msgid "No previous page."
 msgid "No previous paragraph."
 msgstr "Edellistä kappaletta ei ole."
 
@@ -232,7 +230,6 @@ msgid "Audio hasn't started playing yet."
 msgstr "Äänitteen toisto ei ole käynnissä."
 
 #. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
-#| msgid "Rate"
 msgid "Rate {}"
 msgstr "Puhenopeus {}"
 
@@ -1396,12 +1393,10 @@ msgid "&Engine:"
 msgstr "&Moottori:"
 
 #. TRANSLATORS: Label of the list of voices on the Audio tab of Settings
-#| msgid "Voice"
 msgid "&Voice:"
 msgstr "&Puheääni:"
 
 #. TRANSLATORS: Label of the speech rate slider on the Audio tab of Settings
-#| msgid "Rate"
 msgid "&Rate:"
 msgstr "&Nopeus:"
 
@@ -1416,12 +1411,10 @@ msgid "Use this voice, rate and pitch for this &book only"
 msgstr "Käytä näitä puheasetuksia vain tässä &kirjassa"
 
 #. TRANSLATORS: Button on the Audio tab of Settings that speaks a sample with the chosen voice, rate and pitch
-#| msgid "Play Sample"
 msgid "Play Sa&mple"
 msgstr "Toista &näyte"
 
 #. TRANSLATORS: First choice in the voice list on the Audio tab of Settings, which leaves the choice of voice to the system
-#| msgid "System Default"
 msgid "System default"
 msgstr "Järjestelmän oletus"
 
@@ -1436,12 +1429,10 @@ msgid "Render tables &inline"
 msgstr "Näytä taulukot tekst&in osana"
 
 #. TRANSLATORS: Option to join the wrapped lines of a page back into paragraphs, in documents laid out as pages, such as PDFs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
-#| msgid "&Join wrapped lines into paragraphs in PDFs"
 msgid "&Join wrapped lines into paragraphs"
 msgstr "&Yhdistä rivitetyt tekstit kappaleiksi"
 
 #. TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
-#| msgid "Remove repeated page &headers and footers in PDFs"
 msgid "Remove repeated page &headers and footers"
 msgstr "Poista toistuvat y&lä- ja alatunnisteet"
 
@@ -1569,7 +1560,6 @@ msgid "Appearance"
 msgstr "Ulkoasu"
 
 #. TRANSLATORS: Tab label for the Settings panel about how a file is read, such as whether tables are shown inline
-#| msgid "No Documents"
 msgid "Documents"
 msgstr "Asiakirjat"
 
@@ -3246,6 +3236,7 @@ msgid "Figure"
 msgstr "Kuvitus"
 
 #. TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
+#. TRANSLATORS: Label standing in for a picture in an OS/2 help panel, shown as "[Image]"
 msgid "Image"
 msgstr "Kuva"
 
@@ -3308,6 +3299,10 @@ msgstr "Aihe {}"
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 msgid "HTML file is empty: {}"
 msgstr "HTML-tiedosto on tyhjä: {}"
+
+#. TRANSLATORS: Error shown when an OS/2 help file (.inf or .hlp) cannot be read; {} is the underlying error
+msgid "Failed to parse OS/2 help file: {}"
+msgstr "OS/2-ohjetiedoston jäsennys epäonnistui: {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 msgid "Missing HUFF parameters in header"
@@ -3525,12 +3520,10 @@ msgstr ""
 "käyttö epäonnistui: {}"
 
 #. TRANSLATORS: Error shown when an XPS document has no pages
-#| msgid "PPT file contains no slides"
 msgid "XPS file contains no pages"
 msgstr "XPS-tiedostossa ei ole sivuja"
 
 #. TRANSLATORS: Shown in place of an XPS page that has no text, such as a scanned one
-#| msgid "This slide has no text."
 msgid "This page has no text."
 msgstr "Sivulla ei ole tekstiä."
 
