@@ -266,7 +266,12 @@ fn lists_the_tables_people_choose_by_name() {
 	let us =
 		tables.iter().find(|table| table.file_name == "en-us-g2.ctb").expect("tables without metadata are listed too");
 	assert_eq!(us.display_name, "English, U.S. Grade 2 (ABAE) table");
-	assert!(tables.windows(2).all(|pair| pair[0].display_name <= pair[1].display_name));
+	assert!(tables.windows(2).all(|pair| pair[0].display_name.to_lowercase() <= pair[1].display_name.to_lowercase()));
+	let slovak = tables.iter().position(|table| table.file_name == "sk-g1.ctb").expect("Slovak grade 1 is listed");
+	let unnamed = tables.iter().position(|table| table.file_name == "sk-sk-g1.utb").expect("unnamed tables are listed");
+	assert!(unnamed.abs_diff(slovak) < 5, "a table named by its file sits among the named ones for its language");
+	assert_eq!(tables[slovak].label(), "Slovak braille (sk-g1.ctb)");
+	assert_eq!(tables[unnamed].label(), "sk-sk-g1.utb");
 	assert_eq!(table_name(DEFAULT_TABLE), Some(DEFAULT_TABLE));
 	assert_eq!(table_name("no-such-table.ctb"), None);
 }
