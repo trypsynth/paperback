@@ -167,6 +167,7 @@ Punctuation shortcuts are named after the keys of a US keyboard. On another layo
 ### Audio menu
 
 * `Ctrl+Space` (macOS: `Control+Space`, i.e. the physical Control key, since Cmd+Space opens Spotlight): Play/pause audio narration.
+* `Ctrl+J`: Go to a time in the recording. Type it as `1:23:45`, `23:45` or `45` seconds, or put `+` or `-` in front to move from where you are, e.g. `+5:00`. The dialog shows how far in you are and how long the book runs.
 * `'`: Seek audio narration forward.
 * `;`: Seek audio narration backward.
 * `Shift+'`: Increase the audio seek amount.

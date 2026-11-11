@@ -48,6 +48,8 @@ mod go_to_page;
 pub use go_to_page::show_go_to_page_dialog;
 mod go_to_percent;
 pub use go_to_percent::show_go_to_percent_dialog;
+mod go_to_time;
+pub use go_to_time::show_go_to_time_dialog;
 mod image_text;
 pub use image_text::show_image_text_dialog;
 #[cfg(target_os = "linux")]

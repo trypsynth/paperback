@@ -602,6 +602,15 @@ pub static COMMANDS: &[Command] = &[
 		behavior: Behavior::Run(audio::toggle_play_pause),
 	},
 	Command {
+		action: ActionId::GoToAudioTime,
+		// TRANSLATORS: Menu item in the Audio menu to jump to a time typed in, such as 1:23:45.
+		label: || t("Go to &Time..."),
+		// TRANSLATORS: Status-bar help text for the Go to Time menu item.
+		help: Some(|| t("Go to a time in the recording")),
+		enable: Enable::HasDocument,
+		behavior: Behavior::Run(audio::go_to_time),
+	},
+	Command {
 		action: ActionId::SeekAudioForward,
 		// TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 		label: || t("Seek Audio &Forward"),
@@ -755,6 +764,7 @@ mod tests {
 
 	#[rstest]
 	#[case::play_pause(ActionId::PlayPauseAudio)]
+	#[case::go_to_time(ActionId::GoToAudioTime)]
 	#[case::seek_forward(ActionId::SeekAudioForward)]
 	#[case::seek_backward(ActionId::SeekAudioBackward)]
 	#[case::increase_speed(ActionId::IncreaseAudioSpeed)]

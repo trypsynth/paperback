@@ -8,6 +8,7 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	entries.push(MenuEntry::Separator);
 	entries.extend(commands::menu_entries(
 		&[
+			ActionId::GoToAudioTime,
 			ActionId::SeekAudioForward,
 			ActionId::SeekAudioBackward,
 			ActionId::IncreaseAudioSeekAmount,
