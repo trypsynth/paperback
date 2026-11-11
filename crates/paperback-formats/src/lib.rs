@@ -96,6 +96,13 @@ formats! {
 		mime_types: ["application/winhlp"],
 		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_IMAGES,
 	},
+	/// OS/2 application help shares WinHelp's `.hlp`, and the WinHelp parser hands it over, so only books' `.inf` is claimed here; Windows setup files share that and open as text.
+	OS2_HELP {
+		name: "OS/2 help files",
+		extensions: ["inf"],
+		mime_types: ["application/x-os2-inf"],
+		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_IMAGES,
+	},
 	/// Declared ahead of [`WORD`] so it gets first crack at the `.zip` both claim.
 	/// `application/x-daisy-opf` isn't a registered freedesktop.org type, so the Linux association dialog installs a shared-mime-info entry for it.
 	DAISY {

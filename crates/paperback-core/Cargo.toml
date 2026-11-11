@@ -45,6 +45,7 @@ image = { workspace = true, features = ["jpeg", "png", "gif", "webp", "bmp"] }
 key-chord = { version = "0.2.2", features = ["serde"] }
 libchm = "0.3.1"
 libhlp = "0.3.0"
+libinf = "0.1.0"
 # Upstream main plus the back-translation fixes BRF and PEF books need, until they are merged (liblouis/louis-rs#44 to #51).
 louis-rs = { git = "https://github.com/trypsynth/louis-rs", branch = "paperback" }
 lofty = "0.25.5"

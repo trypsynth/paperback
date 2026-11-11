@@ -30,6 +30,7 @@ pub mod fb2;
 pub mod hlp;
 pub mod html;
 pub mod info;
+pub mod ipf;
 pub(crate) mod layout;
 pub mod m4b;
 pub mod man;
@@ -142,6 +143,7 @@ impl ParserRegistry {
 				CBZ => cbz::CbzParser,
 				CHM => chm::ChmParser,
 				HLP => hlp::HlpParser,
+				OS2_HELP => ipf::IpfParser,
 				DAISY => daisy::DaisyParser,
 				WORD => word::WordParser,
 				EPUB => epub::EpubParser,

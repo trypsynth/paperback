@@ -15,7 +15,7 @@ use zip::ZipArchive;
 use super::DocumentSession;
 use crate::{
 	document::{DocPos, MarkerType},
-	parser::{cbz, fb2, is_data_uri, is_external_url, mobi},
+	parser::{cbz, fb2, ipf, is_data_uri, is_external_url, mobi},
 	t,
 	util::{
 		text::url_decode,
@@ -79,6 +79,9 @@ impl DocumentSession {
 			return mobi::pictures::record_bytes(&data, &offsets, index)
 				.map(<[u8]>::to_vec)
 				.context("the book has no such picture");
+		}
+		if source.starts_with(ipf::PICTURE_PREFIX) {
+			return ipf::picture_bytes(&self.file_path, source);
 		}
 		// A PDF names pictures by where their objects sit, so the reference, not the extension, says which reader they need.
 		if source.starts_with("pdf:") {
@@ -160,6 +163,9 @@ fn image_file_name(source: &str) -> String {
 	}
 	if let Some(record) = source.strip_prefix("mobi-record:") {
 		return format!("{fallback} {record}");
+	}
+	if let Some(offset) = source.strip_prefix(ipf::PICTURE_PREFIX) {
+		return format!("{fallback} {offset}.bmp");
 	}
 	if is_data_uri(source) {
 		let media_type = source[5..].split([';', ',']).next().unwrap_or_default().to_ascii_lowercase();

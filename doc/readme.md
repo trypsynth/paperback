@@ -62,6 +62,7 @@ Paperback supports the following formats and extensions:
 * MP3 audiobooks (`.mp3`)
 * OpenDocument presentations (`.odp`, `.fodp`)
 * OpenDocument text files (`.odt`, `.fodt`)
+* OS/2 help files and books, with their pictures (`.inf`, `.hlp`)
 * PDF documents (`.pdf`)
 * PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
 * reStructuredText documents (`.rst`, `.rest`)
