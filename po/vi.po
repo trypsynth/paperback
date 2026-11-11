@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-10 20:29+0000\n"
+"POT-Creation-Date: 2026-11-11 06:49+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -3800,6 +3800,7 @@ msgid "Figure"
 msgstr "Hình"
 
 #. TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
+#. TRANSLATORS: Label standing in for a picture in an OS/2 help panel, shown as "[Image]"
 #, fuzzy
 msgid "Image"
 msgstr "Hình ảnh"
@@ -3873,6 +3874,11 @@ msgstr "Chủ đề {}"
 #, fuzzy
 msgid "HTML file is empty: {}"
 msgstr "Tệp HTML trống: {}"
+
+#. TRANSLATORS: Error shown when an OS/2 help file (.inf or .hlp) cannot be read; {} is the underlying error
+#, fuzzy
+msgid "Failed to parse OS/2 help file: {}"
+msgstr "Không thể phân tích tệp trợ giúp OS/2: {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 #, fuzzy

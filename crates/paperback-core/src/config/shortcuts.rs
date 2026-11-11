@@ -356,6 +356,7 @@ mod tests {
 			ShortcutCategory::Audio.actions(),
 			[
 				ActionId::PlayPauseAudio,
+				ActionId::GoToAudioTime,
 				ActionId::SeekAudioForward,
 				ActionId::SeekAudioBackward,
 				ActionId::IncreaseAudioSeekAmount,

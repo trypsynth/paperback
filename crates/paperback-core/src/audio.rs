@@ -1,5 +1,7 @@
 //! Each coordinate is authoritative for its own axis: playback always resolves from `time_ms`, text navigation always from `position`.
 
+pub mod clock;
+
 use crate::document::DocPos;
 
 /// Paths are final, not relative: the timeline is rebuilt on every open, so nothing needs to stay portable.

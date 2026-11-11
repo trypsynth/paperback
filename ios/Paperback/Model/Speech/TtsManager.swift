@@ -63,6 +63,8 @@ final class TtsManager: NSObject {
 	private let synthesizer = AVSpeechSynthesizer()
 	private let prefetchSynthesizer = AVSpeechSynthesizer()
 	private let prevPrefetchSynthesizer = AVSpeechSynthesizer()
+	// Held here because a synthesizer's delegate is weak.
+	@ObservationIgnored private let synthesisTracker = SynthesisTracker()
 	private let engine = AVAudioEngine()
 	private let player = AVAudioPlayerNode()
 	private var outputFormat: AVAudioFormat!
@@ -158,6 +160,9 @@ final class TtsManager: NSObject {
 
 	override init() {
 		super.init()
+		synthesizer.delegate = synthesisTracker
+		prefetchSynthesizer.delegate = synthesisTracker
+		prevPrefetchSynthesizer.delegate = synthesisTracker
 		// The audio session is left alone until playback, since configuring it at launch stops whatever else the device is playing.
 		let hwRate = AVAudioSession.sharedInstance().sampleRate
 		outputFormat = AVAudioFormat(
@@ -208,18 +213,9 @@ final class TtsManager: NSObject {
 		isSpeaking = true
 		isPaused = false
 
-		let acc = BufferAccumulator()
-		synthesizer.write(makeUtterance(text)) { [weak self, acc] buffer in
-			guard let pcm = buffer as? AVAudioPCMBuffer else { return }
-			if pcm.frameLength > 0 {
-				acc.buffers.append(pcm)
-			} else {
-				let buffers = acc.buffers
-				DispatchQueue.main.async { [weak self] in
-					guard let self, self.speechGeneration == gen else { return }
-					self.scheduleConverted(buffers, gen: gen, suppress: true)
-				}
-			}
+		synthesisTracker.write(makeUtterance(text), on: synthesizer) { [weak self] buffers in
+			guard let self, self.speechGeneration == gen else { return }
+			self.scheduleConverted(buffers, gen: gen, suppress: true)
 		}
 	}
 
@@ -389,18 +385,9 @@ final class TtsManager: NSObject {
 		isSpeaking = true
 		isPaused = false
 
-		let acc = BufferAccumulator()
-		synthesizer.write(makeUtterance(text)) { [weak self, acc] buffer in
-			guard let pcm = buffer as? AVAudioPCMBuffer else { return }
-			if pcm.frameLength > 0 {
-				acc.buffers.append(pcm)
-			} else {
-				let buffers = acc.buffers
-				DispatchQueue.main.async { [weak self] in
-					guard let self, self.speechGeneration == gen else { return }
-					self.scheduleConverted(buffers, gen: gen, suppress: false)
-				}
-			}
+		synthesisTracker.write(makeUtterance(text), on: synthesizer) { [weak self] buffers in
+			guard let self, self.speechGeneration == gen else { return }
+			self.scheduleConverted(buffers, gen: gen, suppress: false)
 		}
 	}
 
@@ -410,7 +397,7 @@ final class TtsManager: NSObject {
 
 		if texts.first != prefetchQueue.first?.text {
 			prefetchGeneration += 1
-			prefetchSynthesizer.stopSpeaking(at: .immediate)
+			synthesisTracker.stop(prefetchSynthesizer)
 			prefetchQueue = []
 		}
 		let gen = prefetchGeneration
@@ -424,20 +411,11 @@ final class TtsManager: NSObject {
 		tryArmFirstSlotIfReady()
 
 		for text in texts where cachedBuffers[text] == nil {
-			let acc = BufferAccumulator()
-			prefetchSynthesizer.write(makeUtterance(text)) { [weak self, acc] buffer in
-				guard let pcm = buffer as? AVAudioPCMBuffer else { return }
-				if pcm.frameLength > 0 {
-					acc.buffers.append(pcm)
-				} else {
-					let buffers = acc.buffers
-					DispatchQueue.main.async { [weak self] in
-						guard let self, self.prefetchGeneration == gen else { return }
-						guard let idx = self.prefetchQueue.firstIndex(where: { $0.text == text }) else { return }
-						self.prefetchQueue[idx].buffer = self.convertToOutput(buffers)
-						self.tryArmFirstSlotIfReady()
-					}
-				}
+			synthesisTracker.write(makeUtterance(text), on: prefetchSynthesizer) { [weak self] buffers in
+				guard let self, self.prefetchGeneration == gen else { return }
+				guard let idx = self.prefetchQueue.firstIndex(where: { $0.text == text }) else { return }
+				self.prefetchQueue[idx].buffer = self.convertToOutput(buffers)
+				self.tryArmFirstSlotIfReady()
 			}
 		}
 	}
@@ -446,24 +424,15 @@ final class TtsManager: NSObject {
 		let text = preprocessText(text)
 		guard text != prevPrefetchedText else { return }
 		prevPrefetchGeneration += 1
-		prevPrefetchSynthesizer.stopSpeaking(at: .immediate)
+		synthesisTracker.stop(prevPrefetchSynthesizer)
 		prevPrefetchedText = text
 		prevPrefetchedBuffer = nil
 		prevPrefetchGeneration += 1
 		let gen = prevPrefetchGeneration
 
-		let acc = BufferAccumulator()
-		prevPrefetchSynthesizer.write(makeUtterance(text)) { [weak self, acc] buffer in
-			guard let pcm = buffer as? AVAudioPCMBuffer else { return }
-			if pcm.frameLength > 0 {
-				acc.buffers.append(pcm)
-			} else {
-				let buffers = acc.buffers
-				DispatchQueue.main.async { [weak self] in
-					guard let self, self.prevPrefetchGeneration == gen else { return }
-					self.prevPrefetchedBuffer = self.convertToOutput(buffers)
-				}
-			}
+		synthesisTracker.write(makeUtterance(text), on: prevPrefetchSynthesizer) { [weak self] buffers in
+			guard let self, self.prevPrefetchGeneration == gen else { return }
+			self.prevPrefetchedBuffer = self.convertToOutput(buffers)
 		}
 	}
 
@@ -496,7 +465,7 @@ final class TtsManager: NSObject {
 
 	private func internalStop() {
 		wasInterruptedWhilePlaying = false
-		synthesizer.stopSpeaking(at: .immediate)
+		synthesisTracker.stop(synthesizer)
 		player.stop()
 		isSpeaking = false
 		isPaused = false
@@ -555,10 +524,10 @@ final class TtsManager: NSObject {
 		// Leaving the armed buffer alone made a rate change take two paragraphs to be heard rather than one.
 		armedIsStale = armedBox != nil
 		prefetchGeneration += 1
-		prefetchSynthesizer.stopSpeaking(at: .immediate)
+		synthesisTracker.stop(prefetchSynthesizer)
 		prefetchQueue = []
 		prevPrefetchGeneration += 1
-		prevPrefetchSynthesizer.stopSpeaking(at: .immediate)
+		synthesisTracker.stop(prevPrefetchSynthesizer)
 		prevPrefetchedText = nil
 		prevPrefetchedBuffer = nil
 	}
@@ -588,7 +557,7 @@ final class TtsManager: NSObject {
 	}
 
 	private func scheduleConverted(_ buffers: [AVAudioPCMBuffer], gen: Int, suppress: Bool) {
-		// AVSpeechSynthesizer sometimes fires the done signal twice; only schedule once per gen.
+		// Only schedule once per gen, should two syntheses for one gen ever finish.
 		guard lastScheduledGen != gen else { return }
 		guard let pcm = convertToOutput(buffers) else {
 			isSpeaking = false
@@ -690,6 +659,61 @@ final class TtsManager: NSObject {
 	}
 }
 
-private final class BufferAccumulator: @unchecked Sendable {
-	var buffers: [AVAudioPCMBuffer] = []
+/// Ends each written utterance on whichever comes first: the zero-length buffer, which the iOS 27.3 beta stopped sending and which comes twice on 26.5, or didFinish, which some older iOS versions are said to send unreliably for writes.
+private final class SynthesisTracker: NSObject, AVSpeechSynthesizerDelegate, @unchecked Sendable {
+	private final class Pending {
+		let utterance: AVSpeechUtterance
+		let synthesizer: ObjectIdentifier
+		let done: @MainActor ([AVAudioPCMBuffer]) -> Void
+		var buffers: [AVAudioPCMBuffer] = []
+		var ended = false
+		init(utterance: AVSpeechUtterance, synthesizer: AVSpeechSynthesizer, done: @escaping @MainActor ([AVAudioPCMBuffer]) -> Void) {
+			self.utterance = utterance
+			self.synthesizer = ObjectIdentifier(synthesizer)
+			self.done = done
+		}
+	}
+	private let lock = NSLock()
+	// Each entry holds its utterance, so no other utterance can take its address and match a delegate call meant for it.
+	private var pending: [ObjectIdentifier: Pending] = [:]
+	/// `done` runs once on the main queue with the utterance's audio, and never if the synthesizer is stopped first.
+	func write(_ utterance: AVSpeechUtterance, on synthesizer: AVSpeechSynthesizer, done: @escaping @MainActor ([AVAudioPCMBuffer]) -> Void) {
+		let entry = Pending(utterance: utterance, synthesizer: synthesizer, done: done)
+		lock.withLock { pending[ObjectIdentifier(utterance)] = entry }
+		synthesizer.write(utterance) { [self] buffer in
+			guard let pcm = buffer as? AVAudioPCMBuffer else { return }
+			if pcm.frameLength > 0 {
+				lock.withLock {
+					if !entry.ended { entry.buffers.append(pcm) }
+				}
+			} else {
+				end(entry)
+			}
+		}
+	}
+	private func end(_ entry: Pending) {
+		let buffers: [AVAudioPCMBuffer]? = lock.withLock {
+			guard !entry.ended else { return nil }
+			entry.ended = true
+			pending.removeValue(forKey: ObjectIdentifier(entry.utterance))
+			return entry.buffers
+		}
+		guard let buffers else { return }
+		let done = entry.done
+		DispatchQueue.main.async { done(buffers) }
+	}
+	func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+		if let entry = lock.withLock({ pending[ObjectIdentifier(utterance)] }) { end(entry) }
+	}
+	/// Use instead of stopSpeaking: on 26.5 the utterances still queued behind the current one get no end buffer and no delegate call at all, so their audio would be held forever.
+	func stop(_ synthesizer: AVSpeechSynthesizer) {
+		synthesizer.stopSpeaking(at: .immediate)
+		let id = ObjectIdentifier(synthesizer)
+		lock.withLock {
+			for (key, entry) in pending where entry.synthesizer == id {
+				entry.ended = true
+				pending.removeValue(forKey: key)
+			}
+		}
+	}
 }

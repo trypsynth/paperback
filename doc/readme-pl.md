@@ -48,11 +48,13 @@ Jeśli JAWS milczy po naciśnięciu klawisza, który powinien wywołać komunika
 
 Paperback obsługuje następujące formaty i rozszerzenia:
 
+* Pliki BRF (Braille Ready Files) i książki PEF (Portable Embosser Format), przekształcane z brajla na zwykły tekst przy użyciu wybranej tablicy brajlowskiej (`.brf`, `.pef`)
 * Archiwa komiksów (`.cbz`)
 * Pliki pomocy CHM (`.chm`)
 * Książki DAISY (`.opf`, `.zip`)
 * Książki EPUB (`.epub`)
 * E-booki FB2 (`.fb2`)
+* Podręczniki GNU Info (`.info`, niespakowane lub spakowane gzipem; podręczniki podzielone na części można otworzyć z dowolnej z nich)
 * Dokumenty HTML (`.htm`, `.html`, `.xhtml`)
 * Dokumenty Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Dokumenty Microsoft Word (`.docx`, `.docm`, `.doc`)
@@ -62,6 +64,7 @@ Paperback obsługuje następujące formaty i rozszerzenia:
 * Audiobooki MP3 (`.mp3`)
 * Prezentacje OpenDocument (`.odp`, `.fodp`)
 * Pliki tekstowe OpenDocument (`.odt`, `.fodt`)
+* Pliki pomocy i książki systemu OS/2 wraz z ilustracjami (`.inf`, `.hlp`)
 * Dokumenty PDF (`.pdf`)
 * Prezentacje PowerPoint (`.pptx`, `.pptm`, `.ppt`)
 * Dokumenty reStructuredText (`.rst`, `.rest`)
@@ -76,6 +79,8 @@ Paperback obsługuje następujące formaty i rozszerzenia:
 Paperback został zaprojektowany przede wszystkim do pracy z klawiaturą. Poniżej znajdują się aktualne skróty.
 
 Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowiednik podano w nawiasie. Wynika to głównie z tego, że skróty Ctrl+G, Ctrl+W oraz Alt+Strzałka w lewo i w prawo są w tym systemie zajęte przez inne konwencje systemowe lub aplikacyjne.
+
+Skróty ze znakami interpunkcyjnymi nazwano według klawiszy klawiatury amerykańskiej. W innym układzie naciśnij klawisz w tym samym miejscu, niezależnie od jego oznaczenia: na klawiaturze węgierskiej klawisz oznaczony `é` działa jak `;`, a klawisz `á` jak `'`, więc `Ctrl+'` oznacza Ctrl i klawisz `á`. Menu nadal pokazują oznaczenia amerykańskie. W systemie macOS menu pokazują natomiast klawisze z używanego układu.
 
 ### Menu Plik
 

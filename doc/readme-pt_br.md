@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 71b9a82d8c3eb624; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,90db1255,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 17241fae03bbada2; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versão 1.1
 
@@ -64,6 +64,7 @@ O Paperback oferece suporte aos seguintes formatos e extensões:
 * Audiolivros MP3 (`.mp3`)
 * Apresentações OpenDocument (`.odp`, `.fodp`)
 * Arquivos de texto OpenDocument (`.odt`, `.fodt`)
+* Arquivos de ajuda e livros OS/2, com suas imagens (`.inf`, `.hlp`)
 * Documentos PDF (`.pdf`)
 * Apresentações PowerPoint (`.pptx`, `.pptm`, `.ppt`)
 * Documentos reStructuredText (`.rst`, `.rest`)

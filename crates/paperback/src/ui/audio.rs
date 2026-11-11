@@ -1,13 +1,20 @@
 use std::{rc::Rc, sync::Mutex};
 
-use paperback_core::{audio::AudioTimeline, config::ConfigManager};
+use paperback_core::{
+	audio::{AudioTimeline, clock},
+	config::ConfigManager,
+};
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{dialogs, document_manager::DocumentManager, navigation::set_caret_to_doc_offset};
+use super::{
+	dialogs,
+	document_manager::DocumentManager,
+	navigation::{self, set_caret_to_doc_offset},
+};
 use crate::{
 	audio_player::{self, AudioPlayer},
-	ui::navigation::announce_for_command,
+	ui::navigation::{announce, announce_for_command},
 };
 
 pub fn handle_toggle_play_pause_audio(
@@ -117,6 +124,66 @@ pub fn handle_seek_audio(
 	if let Some(position) = sync_position {
 		set_caret_to_doc_offset(tab, position);
 	}
+}
+
+pub fn handle_go_to_time(
+	frame: &Frame,
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+	from_keyboard: bool,
+) {
+	let times = {
+		let dm = doc_manager.lock().unwrap();
+		let Some(tab) = dm.active_tab() else { return };
+		tab.audio_player.as_ref().map(|player| {
+			let timeline = player.timeline();
+			let caret_ms = || timeline.point_for_position(navigation::doc_caret(tab)).map(|point| point.time_ms);
+			(
+				timeline.durations_are_known(),
+				player.resume_point_ms().or_else(caret_ms).unwrap_or(0),
+				timeline.total_duration_ms(),
+			)
+		})
+	};
+	let (current_ms, total_ms) = match times {
+		Some((true, current_ms, total_ms)) => (current_ms, total_ms),
+		// Without every file's length, a time can't be placed: the timeline gives an unprobed file a placeholder length.
+		Some((false, ..)) => {
+			// TRANSLATORS: Announced by Go to Time in an audiobook whose files don't say how long they run, such as many DAISY books
+			announce_for_command(
+				live_region_label,
+				from_keyboard,
+				t("This book doesn't say how long its audio runs, so Paperback can't go to a time in it."),
+			);
+			return;
+		}
+		None => {
+			// TRANSLATORS: Announced when trying to seek audio on a document that has none
+			announce_for_command(live_region_label, from_keyboard, t("This document has no audio."));
+			return;
+		}
+	};
+	let Some(target_ms) = dialogs::show_go_to_time_dialog(frame, current_ms, total_ms, live_region_label) else {
+		return;
+	};
+	let mut dm = doc_manager.lock().unwrap();
+	let Some(tab) = dm.active_tab_mut() else { return };
+	let Some(player) = tab.audio_player.as_mut() else { return };
+	player.seek_to_ms(target_ms);
+	let clip_start = player
+		.timeline()
+		.cursor_at_elapsed(target_ms)
+		.and_then(|cursor| player.timeline().clip(cursor.clip))
+		.map(|clip| clip.start);
+	let Some(clip_start) = clip_start else { return };
+	let update = navigation::move_caret_and_record_history(tab, clip_start);
+	// As Go to Percent does, the landing line says where the time falls, such as a chapter's title.
+	let content = tab.session.get_line_text(clip_start);
+	let message = if content.trim().is_empty() { clock::format_ms(target_ms) } else { content.trim().to_string() };
+	drop(dm);
+	navigation::persist_navigation_history(config, Some(&update));
+	announce(live_region_label, message);
 }
 
 pub fn handle_change_audio_speed(
