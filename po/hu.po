@@ -1392,8 +1392,9 @@ msgstr "&Beszédsebesség:"
 msgid "Pi&tch:"
 msgstr "Han&gmagasság:"
 
+#, fuzzy
 msgid "Pause after each para&graph (milliseconds):"
-msgstr ""
+msgstr "Szünet minden &bekezdés után (milliszekundum):"
 
 #, fuzzy
 msgid "Use this voice, rate and pitch for this &book only"
