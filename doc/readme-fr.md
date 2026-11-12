@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 17241fae03bbada2; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 622feff4c57acdc0; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - version 1.1
 
@@ -169,6 +169,7 @@ Les raccourcis de ponctuation sont nommés d'après les touches d'un clavier am�
 ### Menu Audio
 
 * `Ctrl+Space` (macOS : `Control+Space`, c'est-à-dire la touche Control physique, car Cmd+Space ouvre Spotlight) : Lecture/pause de la narration audio.
+* `Ctrl+J` : Aller à un moment de l'enregistrement. Tapez-le comme `1:23:45`, `23:45` ou `45` secondes, ou mettez `+` ou `-` devant pour vous déplacer à partir de votre position actuelle, par exemple `+5:00`. La boîte de dialogue affiche votre avancement et la durée du livre.
 * `'` : Avancer rapidement dans la narration audio.
 * `;` : Reculer rapidement dans la narration audio.
 * `Shift+'` : Augmenter le montant de l'avance rapide audio.

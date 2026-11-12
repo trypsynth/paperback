@@ -66,6 +66,8 @@
                 <data android:mimeType="application/rtf" />
                 <data android:mimeType="application/vnd.ms-htmlhelp" />
                 <data android:mimeType="application/zip" />
+                <data android:mimeType="application/vnd.rar" />
+                <data android:mimeType="application/x-rar-compressed" />
                 <data android:pathPattern=".*\\.chm" />
                 <data android:pathPattern=".*\\.doc" />
                 <data android:pathPattern=".*\\.docm" />
@@ -93,6 +95,7 @@
                 <data android:pathPattern=".*\\.ppt" />
                 <data android:pathPattern=".*\\.pptm" />
                 <data android:pathPattern=".*\\.pptx" />
+                <data android:pathPattern=".*\\.rar" />
                 <data android:pathPattern=".*\\.ronn" />
                 <data android:pathPattern=".*\\.rtf" />
                 <data android:pathPattern=".*\\.txt" />

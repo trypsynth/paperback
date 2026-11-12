@@ -16,6 +16,18 @@ pub struct BrailleTable {
 	pub display_name: &'static str,
 }
 
+impl BrailleTable {
+	/// The name with its file name after it, since tables with much the same name, such as two called "Slovak braille" and "Slovak Braille Table", can only be told apart by their files.
+	#[must_use]
+	pub fn label(&self) -> String {
+		if self.display_name == self.file_name {
+			self.file_name.to_owned()
+		} else {
+			format!("{} ({})", self.display_name, self.file_name)
+		}
+	}
+}
+
 static PACKED: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/liblouis-tables.bin"));
 
 // The build script writes `PACKED_INDEX`, each table's name and where its gzip member lies in `PACKED`, sorted by name, and `CHOOSABLE`.

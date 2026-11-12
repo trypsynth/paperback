@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 21:30+0000\n"
-"PO-Revision-Date: 2026-11-02 23:57+0200\n"
+"POT-Creation-Date: 2026-11-10 20:29+0000\n"
+"PO-Revision-Date: 2026-11-11 15:27+0200\n"
 "Last-Translator: Ivan Shtefuriak <ip0877@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -19,6 +19,142 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 "X-Generator: Poedit 3.10\n"
+
+#. TRANSLATORS: Title of the question asked after the app closed unexpectedly
+#. TRANSLATORS: Title of the dialog for sending a problem report to the developer
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Report a Problem"
+msgstr "Повідомлення про проблему"
+
+#. TRANSLATORS: Asked at startup after the app crashed or was closed unexpectedly. %s is the app's name.
+msgid ""
+"%s closed unexpectedly the last time it ran. Would you like to report the "
+"problem?"
+msgstr ""
+"Під час останнього запуску програма %s несподівано завершила роботу. Чи "
+"бажаєте повідомити про цю проблему?"
+
+#. TRANSLATORS: Check box in the question asked after a crash, which stops the question being asked again
+msgid "&Don't ask again"
+msgstr "&Не запитувати знову"
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog after a crash. %s is the app's name.
+msgid ""
+"%s closed unexpectedly the last time it ran. Describe what you were doing "
+"when it happened."
+msgstr ""
+"Програма %s несподівано завершила роботу під час останнього запуску. "
+"Опишіть, що ви робили, коли це сталося."
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog
+msgid "Describe the problem, and what you were doing when it happened."
+msgstr "Опишіть проблему та те, що ви робили, коли вона виникла."
+
+#. TRANSLATORS: Label of the field for describing the problem in the Report a Problem dialog
+msgid "&What happened:"
+msgstr "&Що сталося:"
+
+msgid "&Your email address, if you'd like a reply:"
+msgstr "Ваша електронна &адреса, якщо ви бажаєте отримати відповідь:"
+
+#. TRANSLATORS: Check box in the Report a Problem dialog that attaches the app's log to the report
+msgid "&Include the log"
+msgstr "Включити &журнал"
+
+#. TRANSLATORS: Explains what a problem report contains, in the Report a Problem dialog. %s is the app's name.
+msgid ""
+"The report also includes %s's version and your operating system. Select "
+"Preview to see everything that will be sent."
+msgstr ""
+"У звіті також вказано версію %s та вашу операційну систему. Натисніть "
+"«Попередній перегляд», щоб переглянути все, що буде надіслано."
+
+#. TRANSLATORS: Button in the Report a Problem dialog that shows the report before it is sent
+msgid "&Preview"
+msgstr "&Попередній перегляд"
+
+#. TRANSLATORS: Button in the Report a Problem dialog that sends the report
+msgid "&Send"
+msgstr "&Надіслати"
+
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button that closes the Find dialog
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Скасувати"
+
+#. TRANSLATORS: Title of the window that shows a problem report before it is sent
+msgid "Report Preview"
+msgstr "Попередній перегляд звіту"
+
+#. TRANSLATORS: Title of an error message
+#. TRANSLATORS: Generic error dialog title
+msgid "Error"
+msgstr "Помилка"
+
+#. TRANSLATORS: Shown when Send is pressed in the Report a Problem dialog with the description empty
+msgid "Describe the problem before sending the report."
+msgstr "Перед надсиланням звіту опишіть проблему."
+
+#. TRANSLATORS: Shown when a problem report breaks a limit, such as being too long. %s is the reason, in English.
+msgid "The report can't be sent: %s"
+msgstr "Неможливо надіслати звіт: %s"
+
+#. TRANSLATORS: Message in the progress window shown while a problem report is sent
+msgid "Sending the report..."
+msgstr "Надсилання звіту..."
+
+#. TRANSLATORS: Shown after a problem report was sent
+#. TRANSLATORS: Title of a message saying something worked
+msgid "Thank you. Your report was sent."
+msgstr "Дякуємо. Звіт надіслано."
+
+msgid "Success"
+msgstr "Успіх"
+
+msgid ""
+"Email can't be delivered to that address. Check it for typing mistakes, or "
+"leave it blank."
+msgstr ""
+"На цю адресу неможливо надіслати електронний лист. Перевірте, чи немає "
+"помилок у введенні, або залиште поле порожнім."
+
+#. TRANSLATORS: Shown when the report server has taken as many reports as it will for the day
+msgid "Too many reports have been sent today."
+msgstr "Сьогодні надіслано забагато звітів."
+
+#. TRANSLATORS: Shown when sending a problem report failed. %s is the reason, in English.
+msgid "The report couldn't be sent: %s"
+msgstr "Не вдалося надіслати звіт: %s"
+
+#. TRANSLATORS: Asked after a problem report couldn't be sent. %s explains what went wrong.
+msgid ""
+"%s\n"
+"\n"
+"Would you like to save the report to a file, so you can send it another way?"
+msgstr ""
+"%s\n"
+"\n"
+"Зберегти звіт у файлі, щоб надіслати його іншим способом?"
+
+#. TRANSLATORS: Title of the dialog for saving a problem report to a file
+msgid "Save Report"
+msgstr "Збереження звіту"
+
+#. TRANSLATORS: Default file name for a saved problem report
+msgid "Problem report"
+msgstr "Problem report"
+
+#. TRANSLATORS: File type filter in the dialog for saving a problem report
+msgid "Text files (*.txt)|*.txt"
+msgstr "Текстові файли (*.txt)|*.txt"
+
+#. TRANSLATORS: Shown after a problem report was saved to a file
+msgid "The report was saved."
+msgstr "Звіт збережено."
+
+msgid "The report couldn't be saved: %s"
+msgstr "Не вдалося зберегти звіт: %s"
 
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 msgid "Checking %s"
@@ -76,17 +212,15 @@ msgstr ""
 "Не встановлено жодної мови для розпізнавання тексту (OCR). Встановіть мовний "
 "пакет Tesseract за допомогою вашого менеджера пакетів."
 
-#. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
-msgid "Failed to create IPC server"
-msgstr "Не вдалося створити сервер IPC"
+#. TRANSLATORS: Announced when skipping forward while read aloud is on the last paragraph
+msgid "No next paragraph."
+msgstr "Немає наступного абзацу."
 
-#. TRANSLATORS: Title of a warning dialog
-msgid "Warning"
-msgstr "Попередження"
+#. TRANSLATORS: Announced when skipping back while read aloud is on the first paragraph
+msgid "No previous paragraph."
+msgstr "Немає попереднього абзацу."
 
-#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
-#. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
 #. TRANSLATORS: Announced when trying to change audio volume on a document that has none
 msgid "This document has no audio."
 msgstr "У цьому документі немає аудіо."
@@ -95,14 +229,20 @@ msgstr "У цьому документі немає аудіо."
 msgid "Audio hasn't started playing yet."
 msgstr "Відтворення аудіо ще не розпочалося."
 
+#. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
+msgid "Rate {}"
+msgstr "Темп {}"
+
 #. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
 #. TRANSLATORS: Announced when the audio volume is already at its loudest; {} is the current volume, e.g. "200%"
+#. TRANSLATORS: Announced when a setting is already at its highest; {} is its value
 #. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
 msgid "{} (maximum)"
 msgstr "{} (максимум)"
 
 #. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
 #. TRANSLATORS: Announced when the audio volume is already at its quietest; {} is the current volume, e.g. "10%"
+#. TRANSLATORS: Announced when a setting is already at its lowest; {} is its value
 #. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
 msgid "{} (minimum)"
 msgstr "{} (мінімум)"
@@ -743,6 +883,7 @@ msgstr "&Очистити все"
 #. TRANSLATORS: Label for a button that closes the View Note dialog
 #. TRANSLATORS: Label for a button that closes the Web View dialog
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#. TRANSLATORS: Button that closes a window showing text
 msgid "Close"
 msgstr "Закрити"
 
@@ -871,10 +1012,6 @@ msgstr "порожньо"
 #. TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
 msgid "Please select a bookmark to jump to."
 msgstr "Виберіть закладку, щоб перейти до неї."
-
-#. TRANSLATORS: Generic error dialog title
-msgid "Error"
-msgstr "Помилка"
 
 #. TRANSLATORS: Label/prompt in the Note editor dialog
 msgid "Edit bookmark note:"
@@ -1018,12 +1155,6 @@ msgstr "Експортувати"
 msgid "Go"
 msgstr "Перейти"
 
-#. TRANSLATORS: Label for the cancellation button
-#. TRANSLATORS: Cancel button that closes the Find dialog
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr "Скасувати"
-
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
 msgstr "Перехід до рядка"
@@ -1116,6 +1247,206 @@ msgstr "Посилання:"
 msgid "Security Warning"
 msgstr "Попередження щодо безпеки"
 
+#. TRANSLATORS: Label for the update channel selection dropdown
+msgid "Update Channel:"
+msgstr "Канал оновлень:"
+
+#. TRANSLATORS: Stable update channel option
+msgid "Stable"
+msgstr "Стабільний"
+
+#. TRANSLATORS: Developer/development update channel option
+msgid "Dev"
+msgstr "Розробницький"
+
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+msgid "Log Level:"
+msgstr "Рівень журналу:"
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+msgid "Off"
+msgstr "Вимкнено"
+
+#. TRANSLATORS: Log level choice that records only errors
+msgid "Errors"
+msgstr "Помилка"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+msgid "Warnings"
+msgstr "Попередження"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+msgid "Information"
+msgstr "Інформація"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+msgid "Debug"
+msgstr "Налагодження"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+msgid "Trace"
+msgstr "Трасування (найвищий)"
+
+#. TRANSLATORS: Option to toggle word wrapping of text
+msgid "&Word wrap"
+msgstr "&Переносити слова"
+
+#. TRANSLATORS: Label/header for the Font options section
+msgid "Font"
+msgstr "Шрифт"
+
+#. TRANSLATORS: Button label to pick a font
+msgid "Choose &Font..."
+msgstr "Вибрати &шрифт..."
+
+#. TRANSLATORS: Button label to restore font settings to default values
+msgid "&Reset to Default Font"
+msgstr "&Повернути стандартний шрифт"
+
+#. TRANSLATORS: Label/header for the Background Color options section
+msgid "Background Color"
+msgstr "Колір фону"
+
+#. TRANSLATORS: Button label to pick a background color
+msgid "Choose &Background Color..."
+msgstr "Вибрати колір &фону..."
+
+#. TRANSLATORS: Button label to restore background color to default values
+msgid "Reset to &Default Background"
+msgstr "Повернути &стандартний фон"
+
+msgid "&Line spacing:"
+msgstr "&Міжрядковий інтервал:"
+
+#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
+msgid "Normal"
+msgstr "Звичайний"
+
+#. TRANSLATORS: 1.5x line spacing option
+msgid "1.5×"
+msgstr "1.5×"
+
+#. TRANSLATORS: Double line spacing option
+msgid "Double"
+msgstr "Подвійний"
+
+msgid "&Paragraph spacing:"
+msgstr "&Інтервал між абзацами:"
+
+#. TRANSLATORS: Relaxed paragraph spacing option
+msgid "Relaxed"
+msgstr "Збільшений"
+
+#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
+msgid "Wide"
+msgstr "Широкий"
+
+msgid "L&etter spacing:"
+msgstr "Інтервал між &літерами:"
+
+#. TRANSLATORS: Very Wide letter spacing option
+msgid "Very Wide"
+msgstr "Дуже широкий"
+
+msgid "Text &alignment:"
+msgstr "&Вирівнювання тексту:"
+
+#. TRANSLATORS: Left text alignment option
+msgid "Left"
+msgstr "Зліва"
+
+#. TRANSLATORS: Center text alignment option
+msgid "Center"
+msgstr "По центру"
+
+#. TRANSLATORS: Right text alignment option
+msgid "Right"
+msgstr "Зправа"
+
+#. TRANSLATORS: Justified text alignment option
+msgid "Justify"
+msgstr "По ширині"
+
+#. TRANSLATORS: Title of the system dialog for picking a background colour
+msgid "Choose a colour"
+msgstr "Виберіть колір"
+
+#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
+msgid "Play &sounds on bookmarks and notes"
+msgstr "Відтворювати &звуки для закладок і нотаток"
+
+#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+msgid "&Sync caret to audio playback"
+msgstr "&Синхронізувати курсор із відтворенням аудіо"
+
+#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
+msgid "&Audio seek amount:"
+msgstr "&Крок перемотування аудіо:"
+
+#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
+msgid "Seeking &past the end of a chapter continues into the next"
+msgstr "Переходити до &наступного розділу при перемотуванні"
+
+#. TRANSLATORS: Label of the group of read aloud settings on the Audio tab of Settings: engine, voice, rate, pitch and pauses
+msgid "Read Aloud"
+msgstr "Читання вголос"
+
+#. TRANSLATORS: Label of the list of speech engines, such as OneCore or SAPI 5, on the Audio tab of Settings
+msgid "&Engine:"
+msgstr "&Синтезатор:"
+
+#. TRANSLATORS: Label of the list of voices on the Audio tab of Settings
+msgid "&Voice:"
+msgstr "&Голос:"
+
+#. TRANSLATORS: Label of the speech rate slider on the Audio tab of Settings
+msgid "&Rate:"
+msgstr "&Темп:"
+
+#. TRANSLATORS: Label of the speech pitch slider on the Audio tab of Settings
+msgid "Pi&tch:"
+msgstr "Висота &Тону:"
+
+msgid "Pause after each para&graph (milliseconds):"
+msgstr "&Пауза після кожного параграфа (в мілісекундах):"
+
+msgid "Use this voice, rate and pitch for this &book only"
+msgstr "Використовувати цей голос, темп і висоту тону виключно для цієї книги"
+
+#. TRANSLATORS: Button on the Audio tab of Settings that speaks a sample with the chosen voice, rate and pitch
+msgid "Play Sa&mple"
+msgstr "Відтворити &зразок"
+
+#. TRANSLATORS: First choice in the voice list on the Audio tab of Settings, which leaves the choice of voice to the system
+msgid "System default"
+msgstr "Системний за замовчуванням"
+
+#. TRANSLATORS: Note at the top of the Documents tab of Settings, whose options change how a file is read
+msgid "Changing these reads your open documents again when you press OK."
+msgstr ""
+"Якщо змінити ці параметри, відкриті документи будуть зчитані повторно після "
+"натискання кнопки «Гаразд»."
+
+#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
+msgid "Render tables &inline"
+msgstr "Відображати &таблиці у тексті"
+
+#. TRANSLATORS: Option to join the wrapped lines of a page back into paragraphs, in documents laid out as pages, such as PDFs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
+msgid "&Join wrapped lines into paragraphs"
+msgstr "&Об'єднувати перенесені рядки в абзаци"
+
+#. TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
+msgid "Remove repeated page &headers and footers"
+msgstr "Видаляти повторювані &колонтитули сторінок"
+
+#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
+msgid "Read text between dollar signs as &math in Markdown"
+msgstr "У Markdown Текст між знаками долара слід читати як математичний &вираз"
+
+#. TRANSLATORS: Label for the dropdown choosing the braille code that Braille Ready Files (BRF) and PEF books are written in, so Paperback can turn their braille back into print
+msgid "&Braille code of BRF and PEF books:"
+msgstr "&Таблиця Брайля для книг BRF та PEF:"
+
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
 msgstr "Фон: стандартний"
@@ -1156,10 +1487,6 @@ msgstr "Закреслений"
 msgid "Choose a font"
 msgstr "Вибірь шрифта"
 
-#. TRANSLATORS: Title of the Settings dialog
-msgid "Settings"
-msgstr "Налаштування"
-
 #. TRANSLATORS: Option to restore documents that were open when the app was last closed
 msgid "&Restore previously opened documents on startup"
 msgstr "Відновлювати раніше відкриті документи під час &запуску"
@@ -1167,6 +1494,10 @@ msgstr "Відновлювати раніше відкриті документ�
 #. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
 msgid "&Automatically reload changed documents"
 msgstr "&Автоматично перезавантажувати змінені документи"
+
+#. TRANSLATORS: Label for the number of recently opened documents to keep in history
+msgid "Number of &recent documents to show:"
+msgstr "Кількість &останніх документів для відображення:"
 
 #. TRANSLATORS: Option to start the app maximized
 msgid "&Start maximized"
@@ -1176,25 +1507,17 @@ msgstr "&Запускати у повноекранному режимі"
 msgid "&Minimize to system tray"
 msgstr "Згортати в &область сповіщень"
 
-#. TRANSLATORS: Option to toggle word wrapping of text
-msgid "&Word wrap"
-msgstr "&Переносити слова"
+#. TRANSLATORS: Option to check for app updates automatically on startup
+msgid "Check for &updates on startup"
+msgstr "Перевіряти наявність &оновлень під час запуску"
 
-#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
-msgid "Render tables &inline"
-msgstr "Відображати &таблиці у тексті"
+#. TRANSLATORS: Label for the language selection dropdown
+msgid "&Language:"
+msgstr "&Мова:"
 
-#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
-msgid "&Join wrapped lines into paragraphs in PDFs"
-msgstr "&Об'єднувати перенесені рядки в абзаци у PDF-файлах"
-
-#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
-msgid "Remove repeated page &headers and footers in PDFs"
-msgstr "Видаляти повторювані верхні та нижні &колонтитули у файлах PDF"
-
-#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
-msgid "Read text between dollar signs as &math in Markdown"
-msgstr "У Markdown Текст між знаками долара слід читати як математичний &вираз"
+#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
+msgid "Customize &Keyboard Shortcuts..."
+msgstr "Налаштувати &комбінації клавіш..."
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -1212,177 +1535,38 @@ msgstr "Переходити до &початку рядка"
 msgid "&Highlight found text"
 msgstr "&Виділяти знайдений текст"
 
-#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
-msgid "Play &sounds on bookmarks and notes"
-msgstr "Відтворювати &звуки для закладок і нотаток"
-
-#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
-msgid "&Sync caret to audio playback"
-msgstr "&Синхронізувати курсор із відтворенням аудіо"
-
-#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
-msgid "&Audio seek amount:"
-msgstr "&Крок перемотування аудіо:"
-
-#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
-msgid "Seeking &past the end of a chapter continues into the next"
-msgstr "Переходити до &наступного розділу при перемотуванні"
-
-#. TRANSLATORS: Option to check for app updates automatically on startup
-msgid "Check for &updates on startup"
-msgstr "Перевіряти наявність &оновлень під час запуску"
-
-#. TRANSLATORS: Label for the update channel selection dropdown
-msgid "Update Channel:"
-msgstr "Канал оновлень:"
-
-#. TRANSLATORS: Stable update channel option
-msgid "Stable"
-msgstr "Стабільний"
-
-#. TRANSLATORS: Developer/development update channel option
-msgid "Dev"
-msgstr "Розробницький"
-
-#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
-msgid "Log Level:"
-msgstr "Рівень журналу:"
-
-#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
-msgid "Customize &Keyboard Shortcuts..."
-msgstr "Налаштувати &комбінації клавіш..."
-
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
 msgstr "&Швидкість читання (слів за хвилину):"
 
-#. TRANSLATORS: Label for the number of recently opened documents to keep in history
-msgid "Number of &recent documents to show:"
-msgstr "Кількість &останніх документів для відображення:"
-
-#. TRANSLATORS: Label for the language selection dropdown
-msgid "&Language:"
-msgstr "&Мова:"
-
-#. TRANSLATORS: Label/header for the Font options section
-msgid "Font"
-msgstr "Шрифт"
-
-#. TRANSLATORS: Button label to pick a font
-msgid "Choose &Font..."
-msgstr "Вибрати &шрифт..."
-
-#. TRANSLATORS: Button label to restore font settings to default values
-msgid "&Reset to Default Font"
-msgstr "&Повернути стандартний шрифт"
-
-#. TRANSLATORS: Label/header for the Background Color options section
-msgid "Background Color"
-msgstr "Колір фону"
-
-#. TRANSLATORS: Button label to pick a background color
-msgid "Choose &Background Color..."
-msgstr "Вибрати колір &фону..."
-
-#. TRANSLATORS: Button label to restore background color to default values
-msgid "Reset to &Default Background"
-msgstr "Повернути &стандартний фон"
-
-#. TRANSLATORS: Label for the line spacing dropdown
-msgid "&Line spacing:"
-msgstr "&Міжрядковий інтервал:"
-
-#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
-msgid "Normal"
-msgstr "Звичайний"
-
-#. TRANSLATORS: 1.5x line spacing option
-msgid "1.5×"
-msgstr "1.5×"
-
-#. TRANSLATORS: Double line spacing option
-msgid "Double"
-msgstr "Подвійний"
-
-#. TRANSLATORS: Label for the paragraph spacing dropdown
-msgid "&Paragraph spacing:"
-msgstr "&Інтервал між абзацами:"
-
-#. TRANSLATORS: Relaxed paragraph spacing option
-msgid "Relaxed"
-msgstr "Збільшений"
-
-#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-msgid "Wide"
-msgstr "Широкий"
-
-#. TRANSLATORS: Label for the letter spacing dropdown
-msgid "L&etter spacing:"
-msgstr "Інтервал між &літерами:"
-
-#. TRANSLATORS: Very Wide letter spacing option
-msgid "Very Wide"
-msgstr "Дуже широкий"
-
-#. TRANSLATORS: Label for the text alignment dropdown
-msgid "Text &alignment:"
-msgstr "&Вирівнювання тексту:"
-
-#. TRANSLATORS: Left text alignment option
-msgid "Left"
-msgstr "Зліва"
-
-#. TRANSLATORS: Center text alignment option
-msgid "Center"
-msgstr "По центру"
-
-#. TRANSLATORS: Right text alignment option
-msgid "Right"
-msgstr "Зправа"
-
-#. TRANSLATORS: Justified text alignment option
-msgid "Justify"
-msgstr "По ширині"
+#. TRANSLATORS: Title of the Settings dialog
+msgid "Settings"
+msgstr "Налаштування"
 
 #. TRANSLATORS: Tab label for the General options panel
 msgid "General"
 msgstr "Загальні"
 
-#. TRANSLATORS: Tab label for the Reading options panel
+#. TRANSLATORS: Tab label for the Reading options panel, about moving through and searching a document
 msgid "Reading"
 msgstr "Читання"
 
-#. TRANSLATORS: Tab label for the Readability options panel
-msgid "Readability"
-msgstr "Читабельність"
+#. TRANSLATORS: Tab label for the Settings panel about playing audio books and narration
+#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Audio"
+msgstr "Аудіо"
 
-#. TRANSLATORS: Title of the system dialog for picking a background colour
-msgid "Choose a colour"
-msgstr "Виберіть колір"
+#. TRANSLATORS: Tab label for the Settings panel about how text looks: font, colour, spacing and alignment
+msgid "Appearance"
+msgstr "Зовнішній вигляд"
 
-#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
-msgid "Off"
-msgstr "Вимкнено"
+#. TRANSLATORS: Tab label for the Settings panel about how a file is read, such as whether tables are shown inline
+msgid "Documents"
+msgstr "Документи"
 
-#. TRANSLATORS: Log level choice that records only errors
-msgid "Errors"
-msgstr "Помилка"
-
-#. TRANSLATORS: Log level choice that records warnings and errors
-msgid "Warnings"
-msgstr "Попередження"
-
-#. TRANSLATORS: Log level choice that records general activity, warnings and errors
-msgid "Information"
-msgstr "Інформація"
-
-#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
-msgid "Debug"
-msgstr "Налагодження"
-
-#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
-msgid "Trace"
-msgstr "Трасування (найвищий)"
+#. TRANSLATORS: Tab label for the Settings panel with options most people never need, such as the update channel and log level
+msgid "Advanced"
+msgstr "Розширені налаштування"
 
 msgid "System-Wide"
 msgstr "Загальносистемні"
@@ -1570,6 +1754,18 @@ msgstr "Тимчасова закладка."
 msgid "%s, page %d"
 msgstr "%s, сторінка %d"
 
+#. TRANSLATORS: Announced when read aloud is started with nothing left to read after the caret
+msgid "End of document"
+msgstr "Кінець документа"
+
+#. TRANSLATORS: Spoken by the Play Sample button on the Audio tab of Settings
+msgid "This is a sample of the current voice and speed settings."
+msgstr "Це зразок поточних налаштувань голосу та швидкості."
+
+#. TRANSLATORS: Announced when read aloud is asked for on a system Paperback has no speech engine for yet
+msgid "Read aloud isn't available on this system yet."
+msgstr "Читання вголос поки що недоступне в цій системі."
+
 #. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
 msgstr "Перейдено за внутрішнім посиланням."
@@ -1656,6 +1852,10 @@ msgstr "Не вдалося відкрити сторінку Донатів у 
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback не може виконувати жодних дій, поки відкрито Web-перегляд."
+
+#. TRANSLATORS: Title of a warning dialog
+msgid "Warning"
+msgstr "Попередження"
 
 #. TRANSLATORS: First message in the window that downloads documents from links, before the first server answers
 msgid "Connecting..."
@@ -2108,6 +2308,14 @@ msgstr "Перевірити наявність &оновлень"
 #. TRANSLATORS: Status-bar help text for the Help > Check for Updates menu item.
 msgid "Check for updates"
 msgstr "Перевірити наявність оновлень"
+
+#. TRANSLATORS: Menu item in the Help menu that opens a dialog for sending a problem report to the developer.
+msgid "&Report a Problem..."
+msgstr "&Повідомити про проблему..."
+
+#. TRANSLATORS: Status-bar help text for the Help > Report a Problem menu item.
+msgid "Send a problem report to the developer"
+msgstr "Надіслати звіт про проблему розробнику"
 
 #. TRANSLATORS: Menu item in the Help menu to open the donation page for the application.
 msgid "&Donate"
@@ -2901,10 +3109,6 @@ msgstr "Редагувати"
 msgid "View"
 msgstr "Вигляд"
 
-#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
-msgid "Audio"
-msgstr "Аудіо"
-
 #. TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Tools"
 msgstr "Інструменти"
@@ -2983,6 +3187,10 @@ msgstr "[Лише зображення. Натисніть Enter для розп
 #. TRANSLATORS: Line shown in place of a scanned PDF page with no text layer, where the system has no OCR engine
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Тільки зображення. На цій сторінці немає тексту для читання.]"
+
+#. TRANSLATORS: A table of contents entry for one volume of a braille book; {} is the volume's number
+msgid "Volume {}"
+msgstr "Том {}"
 
 #. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
 msgid ""
@@ -3317,6 +3525,14 @@ msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
 msgstr ""
 "Помилка парсингу Legacy DOC: {}. Спроба відкрити як OOXML також невдала: {}"
 
+#. TRANSLATORS: Error shown when an XPS document has no pages
+msgid "XPS file contains no pages"
+msgstr "Файл XPS не містить сторінок"
+
+#. TRANSLATORS: Shown in place of an XPS page that has no text, such as a scanned one
+msgid "This page has no text."
+msgstr "На цій сторінці немає тексту."
+
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 msgid "No file extension found for: {}"
 msgstr "Не знайдено розширення файлу для: {}"
@@ -3335,6 +3551,9 @@ msgstr "зображення"
 
 msgid "Current version is not a valid semver."
 msgstr "Поточна версія не відповідає стандарту SemVer."
+
+msgid "No release has a valid semver tag."
+msgstr "Жоден реліз не має дійсного тегу semver."
 
 msgid "Latest release tag is not a valid semver."
 msgstr "Тег останнього релізу не відповідає стандарту SemVer."
@@ -3828,7 +4047,7 @@ msgstr "Темп"
 #. TRANSLATORS: Label above the speech pitch slider (visual label; the percent control next to it has its own accessibility label)
 #: kt swift
 msgid "Pitch"
-msgstr "Тон"
+msgstr "Висота тону"
 
 #. TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
 #: swift
@@ -4133,11 +4352,6 @@ msgstr "Відтворити"
 
 #. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
 #: swift
-msgid "End of document"
-msgstr "Кінець документа"
-
-#. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
-#: swift
 msgid "Beginning of document"
 msgstr "Початок документа"
 
@@ -4386,11 +4600,6 @@ msgstr "Інші параметри"
 #: swift kt
 msgid "Pause Read Aloud"
 msgstr "Призупинити читання вголос"
-
-#. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: swift kt
-msgid "Read Aloud"
-msgstr "Читати вголос"
 
 #. TRANSLATORS: Menu item / accessibility action to open the export document dialog
 #: kt
@@ -4747,11 +4956,6 @@ msgstr "Математичний вираз"
 msgid "No matches."
 msgstr "Нічого не знайдено."
 
-#. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
-#: swift
-msgid "Appearance"
-msgstr "Зовнішній вигляд"
-
 #. TRANSLATORS: Appearance option following the phone's own light/dark setting
 #: swift
 msgid "System"
@@ -4957,6 +5161,14 @@ msgstr "Середня тривалість"
 #: kt
 msgid "Select audio speed"
 msgstr "Вибрати швидкість відтворення"
+
+#. TRANSLATORS: Section header in Settings grouping controls for how document text is displayed
+#: kt swift
+msgid "Readability"
+msgstr "Читабельність"
+
+#~ msgid "Failed to create IPC server"
+#~ msgstr "Не вдалося створити сервер IPC"
 
 #~ msgid "Window Hotkey"
 #~ msgstr "Комбінація клавіш показу/приховування програми"

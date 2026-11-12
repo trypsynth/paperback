@@ -24,6 +24,7 @@ mod appearance;
 mod audio;
 mod image_ocr;
 mod lifecycle;
+pub(crate) use lifecycle::prompt_for_password;
 mod ocr;
 mod position;
 mod read_aloud;

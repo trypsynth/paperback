@@ -52,7 +52,8 @@ fn pack_braille_tables() {
 		}
 	}
 	index.push_str("];\n\nstatic CHOOSABLE: &[BrailleTable] = &[\n");
-	choosable.sort();
+	// Without regard to case, or the tables named only by a lowercase file name would all come after the named ones.
+	choosable.sort_by_cached_key(|(display_name, file_name)| (display_name.to_lowercase(), file_name.clone()));
 	for (display_name, file_name) in choosable {
 		writeln!(index, "\tBrailleTable {{ file_name: {file_name:?}, display_name: {display_name:?} }},")
 			.expect("write the list");

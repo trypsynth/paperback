@@ -78,6 +78,13 @@ formats! {
 		mime_types: ["application/vnd.comicbook-rar"],
 		flags: SUPPORTS_PAGES | SUPPORTS_IMAGES,
 	},
+	/// Opened as a zip copy of itself, so it holds what a zip can: one book or several, a DAISY book, an audiobook in parts. The flags are those of the formats that claim `.zip`.
+	RAR {
+		name: "RAR archives",
+		extensions: ["rar"],
+		mime_types: ["application/vnd.rar", "application/x-rar-compressed"],
+		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_PAGES | SUPPORTS_IMAGES,
+	},
 	CBZ {
 		name: "Comic book archives",
 		extensions: ["cbz"],

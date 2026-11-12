@@ -3,11 +3,7 @@ use std::{fs::File, io::BufReader, path::Path};
 use anyhow::{Context, Result};
 use zip::ZipArchive;
 
-use crate::{
-	parser::{cbr, cbz},
-	pdf_engine::Document,
-	t,
-};
+use crate::{parser::cbz, pdf_engine::Document, t, util::rar};
 
 mod layout;
 mod pool;
@@ -79,12 +75,12 @@ impl PageRenderer {
 		Ok(Self { source: Source::Comic { archive, pages } })
 	}
 
-	// A .cbr that is really a zip reads as one, as it does in the parser.
+	// A .cbr that is really a zip reads as one, as it does in the parser, and a real RAR from the copy the parser made.
 	fn open_comic_rar(file_path: &str) -> Result<Self> {
 		if cbz::is_zip(file_path) {
 			return Self::open_comic(file_path);
 		}
-		Err(cbr::unsupported())
+		Self::open_comic(&rar::as_zip(Path::new(file_path))?.to_string_lossy())
 	}
 
 	pub fn render(&mut self, page_index: i32, max_dimension: u32) -> Result<RenderedPage> {

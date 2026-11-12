@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-11 06:49+0000\n"
+"POT-Creation-Date: 2026-11-11 17:53+0000\n"
 "PO-Revision-Date: 2026-11-04 14:11+0100\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
@@ -239,6 +239,10 @@ msgstr "Dieses Dokument hat kein Audio."
 #. TRANSLATORS: Announced when trying to seek audio before playback has established a position
 msgid "Audio hasn't started playing yet."
 msgstr "Audiowiedergabe hat noch nicht begonnen."
+
+#, fuzzy
+msgid "This book doesn't say how long its audio runs, so Paperback can't go to a time in it."
+msgstr "Das Buch gibt nicht an, wie lange die Audiodatei läuft, daher kann Paperback nicht zu einer bestimmten Zeit springen."
 
 #. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
 #, fuzzy
@@ -754,6 +758,16 @@ msgstr "Audio &wiedergeben/pausieren"
 msgid "Play or pause this document's audio narration"
 msgstr "Die Audiowiedergabe dieses Dokuments abspielen oder pausieren"
 
+#. TRANSLATORS: Menu item in the Audio menu to jump to a time typed in, such as 1:23:45.
+#, fuzzy
+msgid "Go to &Time..."
+msgstr "Gehe zu &Zeit..."
+
+#. TRANSLATORS: Status-bar help text for the Go to Time menu item.
+#, fuzzy
+msgid "Go to a time in the recording"
+msgstr "Springt zu einer Zeit in der Aufnahme"
+
 #. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 msgid "Seek Audio &Forward"
 msgstr "Audio &vorspulen"
@@ -1185,6 +1199,25 @@ msgstr "&Prozent"
 #. TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
 msgid "Percent out of range."
 msgstr "Prozentangabe außerhalb des Bereichs."
+
+#. TRANSLATORS: Title of the Go to Time dialog, which jumps to a time typed in, in an audiobook
+#, fuzzy
+msgid "Go to Time"
+msgstr "Gehe zu Zeit"
+
+#, fuzzy
+msgid "Go to time ({}/{}):"
+msgstr "Gehe zu Zeit ({}/{})"
+
+#. TRANSLATORS: Announced when what was typed in the Go to Time dialog is not a time
+#, fuzzy
+msgid "Type a time like 1:23:45, 23:45 or 45."
+msgstr "Gib eine Zeit wie 1:23:45, 23:45 oder 45 ein."
+
+#. TRANSLATORS: Announced when the time typed in the Go to Time dialog is past the end of the recording, or before its start
+#, fuzzy
+msgid "Time out of range."
+msgstr "Zeit außerhalb des gültigen Bereichs."
 
 #. TRANSLATORS: Title of the view showing the text recognized in a picture
 msgid "Image Text"
@@ -2988,6 +3021,11 @@ msgstr "Wortumbruch umschalten"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Play/Pause Audio"
 msgstr "Audio abspielen/pausieren"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Go to Time..."
+msgstr "Gehe zu Zeit..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Forward"

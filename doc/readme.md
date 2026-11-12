@@ -47,7 +47,7 @@ If JAWS says nothing when you press a key that should report something, open Set
 Paperback supports the following formats and extensions:
 
 * Braille Ready Files and Portable Embosser Format books, back-translated to print with the braille table you choose (`.brf`, `.pef`)
-* Comic book archives (`.cbz`)
+* Comic book archives (`.cbz`, `.cbr`)
 * CHM help files (`.chm`)
 * DAISY books (`.opf`, `.zip`)
 * EPUB books (`.epub`)
@@ -65,6 +65,7 @@ Paperback supports the following formats and extensions:
 * OS/2 help files and books, with their pictures (`.inf`, `.hlp`)
 * PDF documents (`.pdf`)
 * PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
+* RAR archives of books, which open as a zip does, with a list to pick from when one holds several (`.rar`)
 * reStructuredText documents (`.rst`, `.rest`)
 * RTF documents (`.rtf`)
 * Windows Write documents (`.wri`)

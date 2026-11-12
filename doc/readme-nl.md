@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 17241fae03bbada2; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 622feff4c57acdc0; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versie 1.1
 
@@ -169,6 +169,7 @@ Leestekenssneltoetsen krijgen hun naam van de toetsen van een amerikaans toetsen
 ### Menu Audio
 
 * `Ctrl+Spatie` (macOS: `Control+Spatie`, oftewel de fysieke Control-toets, omdat Cmd+Spatie Spotlight opent): Audio afspelen/pauzeren.
+* `Ctrl+J`: Naar een bepaald moment in de opname gaan. Typ het als `1:23:45`, `23:45` of `45` seconden, of zet `+` of `-` ervoor om vanuit jouw huidige positie te verplaatsen, bijvoorbeeld `+5:00`. Het venster toont hoe ver je bent en hoe lang het boek duurt.
 * `'`: Audio vooruitspoelen.
 * `;`: Audio terugspoelen.
 * `Shift+'`: De audiospoelstap vergroten.

@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 17241fae03bbada2; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,8f7af648,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 622feff4c57acdc0; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versão 1.1
 
@@ -169,6 +169,7 @@ Os atalhos de pontuação são nomeados conforme as teclas de um teclado dos EUA
 ### Menu Áudio
 
 * `Ctrl+Space` (macOS: `Control+Space`, ou seja, a tecla Control física, pois Cmd+Space abre o Spotlight): Reproduzir/pausar narração de áudio.
+* `Ctrl+J`: Ir para um tempo na gravação. Digite como `1:23:45`, `23:45` ou `45` segundos, ou coloque `+` ou `-` na frente para se mover de onde você está, por exemplo, `+5:00`. O diálogo mostra a que ponto você chegou e quanto tempo o livro dura.
 * `'`: Avançar narração de áudio.
 * `;`: Retroceder narração de áudio.
 * `Shift+'`: Aumentar o valor de busca de áudio.

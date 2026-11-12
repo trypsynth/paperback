@@ -42,6 +42,7 @@ pub mod odp;
 pub mod odt;
 pub mod pdf;
 pub mod powerpoint;
+pub mod rar;
 pub mod rst;
 pub mod rtf;
 pub mod text;
@@ -140,6 +141,7 @@ impl ParserRegistry {
 		REGISTRY.get_or_init(|| {
 			parser_registry! {
 				CBR => cbr::CbrParser,
+				RAR => rar::RarParser,
 				CBZ => cbz::CbzParser,
 				CHM => chm::ChmParser,
 				HLP => hlp::HlpParser,

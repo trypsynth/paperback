@@ -117,6 +117,29 @@
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
+			<string>com.rarlab.rar-archive</string>
+			<key>UTTypeDescription</key>
+			<string>RAR Archive</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+				<string>public.archive</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>rar</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/vnd.rar</string>
+					<string>application/x-rar-compressed</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
 			<string>dev.paperback.fb2</string>
 			<key>UTTypeDescription</key>
 			<string>FictionBook</string>
@@ -411,6 +434,7 @@
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>public.zip-archive</string>
+				<string>com.rarlab.rar-archive</string>
 			</array>
 		</dict>
 		<dict>

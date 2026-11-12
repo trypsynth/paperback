@@ -82,7 +82,7 @@ impl DocumentsTab {
 		// Frozen because on Windows each append resizes the drop-down, which made Settings take two seconds to open with 322 tables; thawing resizes it once.
 		braille_table.freeze();
 		for table in braille::braille_tables() {
-			braille_table.append(table.display_name);
+			braille_table.append(&table.label());
 		}
 		braille_table.thaw();
 		#[cfg(target_os = "macos")]
