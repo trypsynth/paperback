@@ -5439,3 +5439,37 @@ msgstr "Plik XPS nie zawiera stron"
 #. TRANSLATORS: Shown in place of an XPS page that has no text, such as a scanned one
 msgid "This page has no text."
 msgstr "Ta strona nie zawiera tekstu."
+
+msgid "This book doesn't say how long its audio runs, so Paperback can't go to a time in it."
+msgstr "Ta książka nie zawiera informacji o długości nagrania, więc Paperback nie może przejść do wskazanego czasu."
+
+#. TRANSLATORS: Menu item in the Audio menu to jump to a time typed in, such as 1:23:45.
+msgid "Go to &Time..."
+msgstr "Przejdź do &czasu..."
+
+#. TRANSLATORS: Status-bar help text for the Go to Time menu item.
+msgid "Go to a time in the recording"
+msgstr "Przejdź do wskazanego czasu w nagraniu"
+
+#. TRANSLATORS: Title of the Go to Time dialog, which jumps to a time typed in, in an audiobook
+msgid "Go to Time"
+msgstr "Przejdź do czasu"
+
+msgid "Go to time ({}/{}):"
+msgstr "Przejdź do czasu ({}/{}):"
+
+#. TRANSLATORS: Announced when what was typed in the Go to Time dialog is not a time
+msgid "Type a time like 1:23:45, 23:45 or 45."
+msgstr "Wpisz czas w postaci 1:23:45, 23:45 lub 45."
+
+#. TRANSLATORS: Announced when the time typed in the Go to Time dialog is past the end of the recording, or before its start
+msgid "Time out of range."
+msgstr "Czas poza zakresem."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Go to Time..."
+msgstr "Przejdź do czasu..."
+
+#. TRANSLATORS: Error shown when an OS/2 help file (.inf or .hlp) cannot be read; {} is the underlying error
+msgid "Failed to parse OS/2 help file: {}"
+msgstr "Nie udało się przetworzyć pliku pomocy OS/2: {}"
