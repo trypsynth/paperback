@@ -8,8 +8,9 @@ use zip::ZipArchive;
 
 use super::{AudioClipFfi, AudioCursorFfi, AudioPointFfi, DocumentSession};
 use crate::{
-	audio::{AudioLocation, TimelinePoint},
+	audio::{AudioLocation, TimelinePoint, clock},
 	document::DocPos,
+	t,
 	util::zip as zip_utils,
 };
 
@@ -139,6 +140,12 @@ impl DocumentSession {
 	pub fn audio_elapsed_for_percent_ffi(&self, percent: i32) -> i64 {
 		self.audio_elapsed_for_percent(percent).and_then(|ms| i64::try_from(ms).ok()).unwrap_or(-1)
 	}
+
+	/// Empty where [`Self::audio_time_announcement`] has no answer.
+	#[must_use]
+	pub fn audio_time_announcement_ffi(&self, elapsed_ms: i64) -> String {
+		u64::try_from(elapsed_ms).ok().and_then(|ms| self.audio_time_announcement(ms)).unwrap_or_default()
+	}
 }
 
 impl DocumentSession {
@@ -172,4 +179,20 @@ impl DocumentSession {
 		let percent = u64::try_from(percent.clamp(0, 100)).unwrap_or(0);
 		Some(timeline.total_duration_ms().saturating_mul(percent) / 100)
 	}
+
+	/// How far into the whole recording `elapsed_ms` is, such as "1:02:03 of 10:30:00", or `None` while any file's length is unknown.
+	#[must_use]
+	pub fn audio_time_announcement(&self, elapsed_ms: u64) -> Option<String> {
+		let timeline = self.audio()?;
+		if !timeline.durations_are_known() {
+			return None;
+		}
+		let total_ms = timeline.total_duration_ms();
+		Some(of_total(elapsed_ms.min(total_ms), total_ms))
+	}
+}
+
+fn of_total(elapsed_ms: u64, total_ms: u64) -> String {
+	// TRANSLATORS: Announced for how far into an audiobook the reader is: the first {} is the time played so far and the second how long it runs, both written like 1:02:03
+	t("{} of {}").replacen("{}", &clock::format_ms(elapsed_ms), 1).replacen("{}", &clock::format_ms(total_ms), 1)
 }

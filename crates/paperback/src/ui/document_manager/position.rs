@@ -41,7 +41,11 @@ impl DocumentManager {
 		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		let percent = navigation::reading_percent(tab, position);
 		let page = page_at(tab, position);
-		announce_for_command(self.live_region_label, from_keyboard, position_announcement(percent, page));
+		let mut message = position_announcement(percent, page);
+		if let Some(time) = navigation::audio_elapsed_ms(tab).and_then(|ms| tab.session.audio_time_announcement(ms)) {
+			message = format!("{message}, {time}");
+		}
+		announce_for_command(self.live_region_label, from_keyboard, message);
 	}
 
 	pub fn set_temporary_bookmark(&self, from_keyboard: bool) {

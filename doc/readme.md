@@ -120,7 +120,7 @@ Punctuation shortcuts are named after the keys of a US keyboard. On another layo
 * `Ctrl+G` (macOS: `Cmd+L`): Go to line.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Go to percent.
 * `Ctrl+P`: Go to page (when supported by the current document).
-* `=`: Announce your current reading percentage and page, e.g. "15%, page 30". The page is left out for documents that have no page numbers.
+* `=`: Announce your current reading percentage and page, e.g. "15%, page 30". The page is left out for documents that have no page numbers. In an audio book, how far in you are and how long it runs come after, e.g. "15%, 1:02:03 of 10:30:00".
 * `Alt+Left` (macOS: `Cmd+[`): Go back in navigation history.
 * `Alt+Right` (macOS: `Cmd+]`): Go forward in navigation history.
 * `[`: Previous section.
