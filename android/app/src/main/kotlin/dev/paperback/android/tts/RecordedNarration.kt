@@ -102,6 +102,8 @@ class RecordedNarration(context: Context, private val config: ConfigManagerFfi, 
 
 	fun seekToMs(elapsedMs: Long): Boolean = player.seekToMs(elapsedMs)
 
+	fun resumePointMs(): Long? = player.resumePointMs()
+
 	fun seekRelativeMs(deltaMs: Long): Boolean = player.seekRelativeMs(deltaMs)
 
 	fun shutdown() = player.shutdown()

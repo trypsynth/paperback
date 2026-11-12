@@ -141,6 +141,29 @@ impl DocumentSession {
 		self.audio_elapsed_for_percent(percent).and_then(|ms| i64::try_from(ms).ok()).unwrap_or(-1)
 	}
 
+	/// Whether a time in the recording can be placed: every file's length is known.
+	#[must_use]
+	pub fn audio_time_known_ffi(&self) -> bool {
+		self.audio().is_some_and(|timeline| timeline.durations_are_known())
+	}
+
+	/// A time in the recording written as Go to Time shows it, such as 1:02:03.
+	#[must_use]
+	pub fn format_audio_time_ffi(&self, ms: i64) -> String {
+		clock::format_ms(u64::try_from(ms).unwrap_or(0))
+	}
+
+	/// What was typed into Go to Time, in milliseconds from the start: `-1` when it isn't a time, `-2` when it falls outside the recording, and `-3` when the recording's length isn't known. A leading `+` or `-` moves from `current_ms`.
+	#[must_use]
+	pub fn audio_time_entry_ffi(&self, text: String, current_ms: i64) -> i64 {
+		let Some(timeline) = self.audio().filter(|timeline| timeline.durations_are_known()) else { return -3 };
+		match clock::resolve_entry_ms(&text, u64::try_from(current_ms).unwrap_or(0), timeline.total_duration_ms()) {
+			Ok(ms) => i64::try_from(ms).unwrap_or(-2),
+			Err(clock::TimeEntryError::NotATime) => -1,
+			Err(clock::TimeEntryError::OutOfRange) => -2,
+		}
+	}
+
 	/// Empty where [`Self::audio_time_announcement`] has no answer.
 	#[must_use]
 	pub fn audio_time_announcement_ffi(&self, elapsed_ms: i64) -> String {

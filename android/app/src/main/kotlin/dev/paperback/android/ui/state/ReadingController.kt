@@ -451,6 +451,16 @@ class ReadingController(
 		narrator.moveTo(pos)
 	}
 
+	/** The player's own time while it is attached to this book, which moves within a clip, else the time of the reading position's clip. */
+	fun audioElapsedMs(): Long? {
+		val tab = activeTab() ?: return null
+		if (narration.isNarrating(tab.documentUri)) narration.resumePointMs()?.let { return it }
+		val point = tab.session.audioPointForPositionFfi(_ttsPosition.value)
+		return if (point.found) point.timeMs else null
+	}
+
+	fun seekAudioToMs(elapsedMs: Long): Boolean = narration.seekToMs(elapsedMs)
+
 	/** False when file lengths aren't all known, so the caller maps through the text instead; the reading position follows from the clip the player reports. */
 	fun seekAudioToPercent(percent: Int): Boolean {
 		val tab = activeTab() ?: return false

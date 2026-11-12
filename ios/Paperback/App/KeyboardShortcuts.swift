@@ -49,6 +49,7 @@ extension MagicTapWindow {
 			cmd("p", .command, #selector(kbOpenGoToPage), t("Go to Page...")),
 			cmd("g", .command, #selector(kbOpenGoToLine), t("Go to Line...")),
 			cmd("g", [.command, .shift], #selector(kbOpenGoToPercent), t("Go to Percent...")),
+			cmd("j", .command, #selector(kbOpenGoToTime), t("Go to Time...")),
 			cmd("w", .command, #selector(kbWordCount), t("Word Count")),
 			cmd("i", .command, #selector(kbDocumentInfo), t("Document Info")),
 			cmd("e", .command, #selector(kbExport), t("Export Document")),
@@ -107,6 +108,7 @@ extension MagicTapWindow {
 	@objc private func kbOpenGoToPage()   { onMain { $0.navigation.goToInitialMode = .page;    $0.navigation.showGoTo = true } }
 	@objc private func kbOpenGoToLine()   { onMain { $0.navigation.goToInitialMode = .line;    $0.navigation.showGoTo = true } }
 	@objc private func kbOpenGoToPercent(){ onMain { $0.navigation.goToInitialMode = .percent; $0.navigation.showGoTo = true } }
+	@objc private func kbOpenGoToTime()   { onMain { $0.navigation.goToInitialMode = .time;    $0.navigation.showGoTo = true } }
 	@objc private func kbWordCount()      { onMain { $0.navigation.showWordCount = true } }
 	@objc private func kbDocumentInfo()   { onMain { $0.navigation.showDocumentInfo = true } }
 	@objc private func kbSleepTimer()     { onMain { $0.navigation.showSleepTimer = true } }

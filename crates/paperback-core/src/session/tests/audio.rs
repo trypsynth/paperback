@@ -317,3 +317,15 @@ fn a_book_without_chapters_is_one() {
 	let session = session_with_chapters(false);
 	assert_eq!(session.audio_chapter_announcement(150_000).as_deref(), Some("2:30 of 4:00, 1:30 left"));
 }
+
+#[test]
+fn go_to_time_entries_resolve_through_the_session() {
+	let session = session_with_chapters(true);
+	assert!(session.audio_time_known_ffi());
+	assert_eq!(session.audio_time_entry_ffi("1:30".to_string(), 0), 90_000);
+	assert_eq!(session.audio_time_entry_ffi("+30".to_string(), 60_000), 90_000);
+	assert_eq!(session.audio_time_entry_ffi("soon".to_string(), 0), -1);
+	assert_eq!(session.audio_time_entry_ffi("5:00".to_string(), 0), -2);
+	assert_eq!(session.format_audio_time_ffi(3_723_000), "1:02:03");
+	assert_eq!(session_with_audio(lopsided_timeline(false)).audio_time_entry_ffi("1:00".to_string(), 0), -3);
+}

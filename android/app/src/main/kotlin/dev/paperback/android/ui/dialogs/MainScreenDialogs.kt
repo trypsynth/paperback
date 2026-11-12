@@ -110,7 +110,9 @@ fun DocumentTextDialogs(
 			onDismiss = { viewModel.navigation.closeGoToDialog() },
 			initialMode = goToInitialMode,
 			onGoTo = onGoToLine,
-			onSeekPercent = { viewModel.reading.seekAudioToPercent(it) }
+			onSeekPercent = { viewModel.reading.seekAudioToPercent(it) },
+			audioElapsedMs = viewModel.reading.audioElapsedMs(),
+			onSeekTime = { viewModel.reading.seekAudioToMs(it) }
 		)
 	}
 	// Focus stays in the Find dialog while it is open, so the last match's line only takes screen reader focus once it closes.
