@@ -50,7 +50,8 @@ Paperback tukee seuraavia tiedostomuotoja:
 * Sarjakuvapaketit (`.cbz`, `.cbr`)
 * CHM-ohjetiedostot (`.chm`)
 * DAISY-kirjat (`.opf`, `.zip`)
-* EPUB-kirjat (`.epub`)
+* eBraille-kirjat, joiden tavallinen teksti luetaan, jos sellainen on saatavilla. Muussa tapauksessa pistekirjoitus muunnetaan tavalliseksi tekstiksi kirjassa määritetyn pistetaulukon avulla (`.ebrl` tai pakkaamattoman kirjan `.opf`-tiedosto)
+* EPUB-kirjat (`.epub` tai pakkaamattoman kirjan `.opf`-tiedosto)
 * FB2-e-kirjat (`.fb2`)
 * GNU Info -ohjeet (`.info`, myös gzip-pakattuina, sekä useaan tiedostoon jaetut ohjeet, jotka voidaan avata mistä tahansa osasta)
 * HTML-asiakirjat (`.htm`, `.html`, `.xhtml`)
@@ -120,7 +121,7 @@ Välimerkkejä käyttävien pikanäppäinten nimet perustuvat amerikkalaiseen n�
 * `Ctrl+G` (macOSissa `Cmd+L`): Siirry riville.
 §* `Ctrl+Vaihto+G` (macOSissa `Cmd+Vaihto+L`): Siirry prosenttiin.
 * `Ctrl+P`: Siirry sivulle (jos asiakirja tukee sitä).
-* `=`: Ilmoittaa asiakirjan lukukohdan prosentteina sekä sivunumeron (esim. ”15 %, sivu 30”). Sivunumeroa ei ilmoiteta, jos asiakirjassa ei niitä ole.
+* `=`: Ilmoita asiakirjan sivunumero ja lukukohta prosentteina (esim. ”15 %, sivu 30”). Sivunumeroita ei ilmoiteta, jos asiakirjassa ei niitä ole. Äänikirjoissa ilmoitetaan lisäksi nykyinen toistokohta ja kirjan kokonaiskesto, esimerkiksi ”15 %, 1:02:03 / 10:30:00”.
 * `Alt+Vasen nuoli` (macOSissa `Cmd+[`): Siirry taaksepäin navigointihistoriassa.
 * `Alt+Oikea nuoli` (macOSissa `Cmd+]`): Siirry eteenpäin navigointihistoriassa.
 * `[`: Edellinen luku.
@@ -169,6 +170,7 @@ Välimerkkejä käyttävien pikanäppäinten nimet perustuvat amerikkalaiseen n�
 
 * `Ctrl+Välilyönti` (macOSissa `Control+Välilyönti` eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.
 * `Ctrl+J`: Siirry tiettyyn äänitteen kohtaan. Anna aika muodossa `1:23:45`, `23:45` tai `45` sekuntia. Voit myös lisätä ajan eteen `+`- tai `-`-merkin, jolloin nykyisestä toistokohdasta siirrytään eteen- tai taaksepäin, esimerkiksi `+5:00`. Valintaikkunassa näytetään nykyinen toistokohta ja kirjan kokonaiskesto.
+* `Vaihto+=`: Ilmoita nykyisen luvun kulunut ja jäljellä oleva toistoaika, esimerkiksi ”Luku 3, 4:10 / 12:00, jäljellä 7:50”.
 * `'`: Kelaa äänitettä eteenpäin.
 * `;`: Kelaa äänitettä taaksepäin.
 * `Vaihto+'`: Pidennä kelauksen aikasiirtymää.
