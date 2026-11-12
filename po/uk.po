@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-10 20:29+0000\n"
-"PO-Revision-Date: 2026-11-11 15:27+0200\n"
+"POT-Creation-Date: 2026-11-12 00:42+0000\n"
+"PO-Revision-Date: 2026-11-12 15:09+0200\n"
 "Last-Translator: Ivan Shtefuriak <ip0877@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -228,6 +228,13 @@ msgstr "У цьому документі немає аудіо."
 #. TRANSLATORS: Announced when trying to seek audio before playback has established a position
 msgid "Audio hasn't started playing yet."
 msgstr "Відтворення аудіо ще не розпочалося."
+
+msgid ""
+"This book doesn't say how long its audio runs, so Paperback can't go to a "
+"time in it."
+msgstr ""
+"У цій книзі не вказано, скільки триває аудіозапис, тому Paperback не може "
+"перейти до певного моменту в ній."
 
 #. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
 msgid "Rate {}"
@@ -742,6 +749,14 @@ msgstr "&Відтворити/Призупинити аудіо"
 msgid "Play or pause this document's audio narration"
 msgstr "Відтворити або призупинити аудіосупровід цього документа"
 
+#. TRANSLATORS: Menu item in the Audio menu to jump to a time typed in, such as 1:23:45.
+msgid "Go to &Time..."
+msgstr "Перейти до &часу..."
+
+#. TRANSLATORS: Status-bar help text for the Go to Time menu item.
+msgid "Go to a time in the recording"
+msgstr "Перейти до певного часу в записі"
+
 #. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 msgid "Seek Audio &Forward"
 msgstr "Перемотати &вперед"
@@ -1194,6 +1209,21 @@ msgstr "&Відсоток"
 #. TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
 msgid "Percent out of range."
 msgstr "Відсоток поза діапазоном."
+
+#. TRANSLATORS: Title of the Go to Time dialog, which jumps to a time typed in, in an audiobook
+msgid "Go to Time"
+msgstr "Перехід до часу"
+
+msgid "Go to time ({}/{}):"
+msgstr "Перейти до часу ({}/{}):"
+
+#. TRANSLATORS: Announced when what was typed in the Go to Time dialog is not a time
+msgid "Type a time like 1:23:45, 23:45 or 45."
+msgstr "Введіть час у форматі 1:23:45, 23:45 або 45."
+
+#. TRANSLATORS: Announced when the time typed in the Go to Time dialog is past the end of the recording, or before its start
+msgid "Time out of range."
+msgstr "Час поза межами діапазону."
 
 #. TRANSLATORS: Title of the view showing the text recognized in a picture
 msgid "Image Text"
@@ -2998,6 +3028,10 @@ msgid "Play/Pause Audio"
 msgstr "Відтворити/Призупинити аудіо"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Go to Time..."
+msgstr "Перейти до часу..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Forward"
 msgstr "Перемотати вперед"
 
@@ -3192,14 +3226,6 @@ msgstr "[Тільки зображення. На цій сторінці нем�
 msgid "Volume {}"
 msgstr "Том {}"
 
-#. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
-msgid ""
-"Paperback cannot read RAR comic archives. Repack it as a .cbz to read it "
-"here."
-msgstr ""
-"Програма Paperback не підтримує читання коміксів у форматі RAR. Щоб "
-"прочитати їх тут, перепакуйте архів у формат .cbz."
-
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 msgid "Failed to parse comic archive: {}"
 msgstr "Не вдалося проаналізувати архів коміксів: {}"
@@ -3246,6 +3272,7 @@ msgid "Figure"
 msgstr "Малюнок"
 
 #. TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
+#. TRANSLATORS: Label standing in for a picture in an OS/2 help panel, shown as "[Image]"
 msgid "Image"
 msgstr "Зображення"
 
@@ -3308,6 +3335,10 @@ msgstr "Тема {}"
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 msgid "HTML file is empty: {}"
 msgstr "HTML-файл порожній: {}"
+
+#. TRANSLATORS: Error shown when an OS/2 help file (.inf or .hlp) cannot be read; {} is the underlying error
+msgid "Failed to parse OS/2 help file: {}"
+msgstr "Не вдалося проаналізувати файл довідки OS/2: {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 msgid "Missing HUFF parameters in header"
@@ -3548,6 +3579,13 @@ msgstr "Усі парсери повернули помилку для розш�
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 msgid "image"
 msgstr "зображення"
+
+msgid ""
+"Paperback can't open a RAR archive split into parts. Join the parts into one "
+"archive to read it here."
+msgstr ""
+"Програма Paperback не може відкрити архів RAR, розділений на частини. "
+"Об’єднайте частини в один архів, щоб прочитати його тут."
 
 msgid "Current version is not a valid semver."
 msgstr "Поточна версія не відповідає стандарту SemVer."
