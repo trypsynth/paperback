@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 622feff4c57acdc0; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 8f86cb6afe2b098d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versie 1.1
 
@@ -49,7 +49,7 @@ Als JAWS niets zegt wanneer je op een toets drukt die iets zou moeten melden, op
 Paperback ondersteunt de volgende indelingen en extensies:
 
 * Braille Ready Files en Portable Embosser Format-boeken, teruggezet naar druk met de brailletabel van jouw keuze (`.brf`, `.pef`)
-* Comicarchieven (`.cbz`)
+* Comicarchieven (`.cbz`, `.cbr`)
 * CHM-helpbestanden (`.chm`)
 * DAISY-boeken (`.opf`, `.zip`)
 * EPUB-boeken (`.epub`)
@@ -67,6 +67,7 @@ Paperback ondersteunt de volgende indelingen en extensies:
 * OS/2-helpbestanden en -boeken, met hun afbeeldingen (`.inf`, `.hlp`)
 * PDF-documenten (`.pdf`)
 * PowerPoint-presentaties (`.pptx`, `.pptm`, `.ppt`)
+* RAR-archieven van boeken, die openen als een ZIP-bestand, met een lijst om uit te kiezen als er meerdere in zitten (`.rar`)
 * reStructuredText-documenten (`.rst`, `.rest`)
 * RTF-documenten (`.rtf`)
 * Windows Write-documenten (`.wri`)

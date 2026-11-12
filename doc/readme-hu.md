@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 622feff4c57acdc0; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 8f86cb6afe2b098d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback – 1.1-es verzió
 
@@ -49,7 +49,7 @@ Ha a JAWS semmit sem mond, amikor olyan billentyűt nyom meg, amelynek valamit b
 A Paperback a következő formátumokat és kiterjesztéseket támogatja:
 
 * Braille Ready Files és Portable Embosser Format könyvek, a kiválasztott braille-táblázattal visszafordítva nyomtatásra (`.brf`, `.pef`)
-* Képregényarchívumok (`.cbz`)
+* Képregényarchívumok (`.cbz`, `.cbr`)
 * CHM-súgófájlok (`.chm`)
 * DAISY-könyvek (`.opf`, `.zip`)
 * EPUB-könyvek (`.epub`)
@@ -67,6 +67,7 @@ A Paperback a következő formátumokat és kiterjesztéseket támogatja:
 * OS/2-súgófájlok és könyvek a képeikkel (`.inf`, `.hlp`)
 * PDF-dokumentumok (`.pdf`)
 * PowerPoint-bemutatók (`.pptx`, `.pptm`, `.ppt`)
+* Könyvarchívumok RAR-formátumban, amelyek úgy nyílnak meg, mint egy zip-fájl, és több könyvet tartalmazva válassza ki a kívántat (`.rar`)
 * reStructuredText-dokumentumok (`.rst`, `.rest`)
 * RTF-dokumentumok (`.rtf`)
 * Windows Write-dokumentumok (`.wri`)

@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 622feff4c57acdc0; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 8f86cb6afe2b098d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - версия 1.1
 
@@ -49,7 +49,7 @@ Paperback выводит такие сообщения как "No pages." или
 Paperback поддерживает следующие форматы и расширения:
 
 * Файлы Braille Готово и книги в формате Portable Embosser Format, обратно преобразованные в печать с помощью выбранной вами таблицы Брайля (`.brf`, `.pef`)
-* Архивы комиксов (`.cbz`)
+* Архивы комиксов (`.cbz`, `.cbr`)
 * Файлы справки CHM (`.chm`)
 * Книги DAISY (`.opf`, `.zip`)
 * Книги EPUB (`.epub`)
@@ -67,6 +67,7 @@ Paperback поддерживает следующие форматы и расш
 * Файлы справки OS/2 и книги с их изображениями (`.inf`, `.hlp`)
 * PDF-документы (`.pdf`)
 * Презентации PowerPoint (`.pptx`, `.pptm`, `.ppt`)
+* Архивы RAR книг, которые открываются как zip, со списком для выбора, если архив содержит несколько (`.rar`)
 * Документы reStructuredText (`.rst`, `.rest`)
 * RTF-документы (`.rtf`)
 * Документы Windows Write (`.wri`)
