@@ -144,6 +144,7 @@ mod tests {
 		let sc = ShortcutsConfig::default();
 		assert_eq!(sc.find_action(i32::from(b'='), false, false, false), Some(ActionId::AnnouncePercent));
 		assert_eq!(sc.find_action(i32::from(b'\''), false, false, false), Some(ActionId::SeekAudioForward));
+		assert_eq!(sc.find_action(i32::from(b'='), false, false, true), Some(ActionId::AnnounceChapterTime));
 	}
 
 	/// 344 is `WXK_F5`, the key code the text control reports.
@@ -357,6 +358,7 @@ mod tests {
 			[
 				ActionId::PlayPauseAudio,
 				ActionId::GoToAudioTime,
+				ActionId::AnnounceChapterTime,
 				ActionId::SeekAudioForward,
 				ActionId::SeekAudioBackward,
 				ActionId::IncreaseAudioSeekAmount,

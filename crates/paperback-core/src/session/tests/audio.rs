@@ -300,5 +300,20 @@ fn audio_time_is_of_the_whole_recording() {
 fn audio_time_waits_for_every_length() {
 	let session = session_with_audio(lopsided_timeline(false));
 	assert_eq!(session.audio_time_announcement(0), None);
+	assert_eq!(session.audio_chapter_announcement(0), None);
 	assert_eq!(session.audio_time_announcement_ffi(0), "");
+}
+
+#[test]
+fn chapter_time_is_of_the_chapter_playing() {
+	let session = session_with_chapters(true);
+	assert_eq!(session.audio_chapter_announcement(30_000).as_deref(), Some("Chapter 1, 0:30 of 1:00, 0:30 left"));
+	assert_eq!(session.audio_chapter_announcement(60_000).as_deref(), Some("Chapter 2, 0:00 of 3:00, 3:00 left"));
+	assert_eq!(session.audio_chapter_announcement(150_000).as_deref(), Some("Chapter 2, 1:30 of 3:00, 1:30 left"));
+}
+
+#[test]
+fn a_book_without_chapters_is_one() {
+	let session = session_with_chapters(false);
+	assert_eq!(session.audio_chapter_announcement(150_000).as_deref(), Some("2:30 of 4:00, 1:30 left"));
 }
