@@ -121,6 +121,12 @@ fn joins_wrapped_lines_and_words_broken_at_a_hyphen() {
 }
 
 #[test]
+fn keeps_the_space_after_a_dash_that_ends_a_line() {
+	let layout = layout(&[&["  HAIR,-", ",CAN'T", "M]E--", "?AN"]], true);
+	assert_eq!(layout.paragraphs, [cells("HAIR,- ,CAN'T M]E-- ?AN")]);
+}
+
+#[test]
 fn starts_a_paragraph_at_an_indent_or_a_blank_line() {
 	let layout = layout(&[&["  ONE", "TWO", "  ?REE", "", "F\\R"]], true);
 	assert_eq!(layout.paragraphs, [cells("ONE TWO"), cells("?REE"), cells("F\\R")]);

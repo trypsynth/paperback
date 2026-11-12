@@ -261,7 +261,7 @@ impl Layout {
 				}
 				let paragraph_index = layout.paragraphs.len();
 				let paragraph = current.get_or_insert_with(String::new);
-				if !paragraph.is_empty() && !paragraph.ends_with(HYPHEN) {
+				if !paragraph.is_empty() && !ends_in_broken_word(paragraph) {
 					paragraph.push(BLANK);
 				}
 				let cell = paragraph.chars().count();
@@ -283,6 +283,12 @@ impl Layout {
 			self.paragraphs.push(paragraph);
 		}
 	}
+}
+
+/// A line ends in a word broken at its hyphen when its last cell is the hyphen and the one before isn't dot 6 or another hyphen, which make it a dash: UEB and German write a dash as ⠠⠤, and some codes as ⠤⠤. The next line goes on that word, so no space joins them.
+fn ends_in_broken_word(line: &str) -> bool {
+	let mut cells = line.chars().rev();
+	cells.next() == Some(HYPHEN) && !matches!(cells.next(), Some(HYPHEN | '\u{2820}'))
 }
 
 /// A page's lines without the blank cells padding them, their page numbers, or the blank lines at the page's end.
