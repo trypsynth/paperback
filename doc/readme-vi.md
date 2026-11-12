@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 8f86cb6afe2b098d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - phiên bản 1.1
 
@@ -122,7 +122,7 @@ Các phím tắt dấu câu được đặt tên theo các phím của bàn phí
 * `Ctrl+G` (macOS: `Cmd+L`): Đi đến dòng.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Đi đến phần trăm.
 * `Ctrl+P`: Đi đến trang (khi được tài liệu hiện tại hỗ trợ).
-* `=`: Thông báo phần trăm đọc hiện tại của bạn và trang, ví dụ: "15%, trang 30". Trang bị bỏ qua đối với các tài liệu không có số trang.
+* `=`: Thông báo phần trăm đọc hiện tại của bạn và trang, ví dụ: "15%, trang 30". Trang bị bỏ qua đối với các tài liệu không có số trang. Trong một cuốn sách âm thanh, bạn đã tiến bao xa và nó chạy bao lâu sẽ đến sau, ví dụ: "15%, 1:02:03 của 10:30:00".
 * `Alt+Left` (macOS: `Cmd+[`): Quay lại trong lịch sử điều hướng.
 * `Alt+Right` (macOS: `Cmd+]`): Tiến lên trong lịch sử điều hướng.
 * `[`: Phần trước.
@@ -171,6 +171,7 @@ Các phím tắt dấu câu được đặt tên theo các phím của bàn phí
 
 * `Ctrl+Space` (macOS: `Control+Space`, tức là phím Control vật lý, vì Cmd+Space mở Spotlight): Phát/tạm dừng kể chuyện âm thanh.
 * `Ctrl+J`: Đi tới một thời điểm trong bản ghi âm. Nhập dưới dạng `1:23:45`, `23:45` hoặc `45` giây, hoặc đặt `+` hoặc `-` ở phía trước để di chuyển từ nơi bạn đang ở, ví dụ: `+5:00`. Hộp thoại hiển thị bạn đã tiến bao xa và cuốn sách chạy bao lâu.
+* `Shift+=`: Nói bạn đã tiến bao xa vào chương này và còn lại bao nhiêu, ví dụ: "Chương 3, 4:10 của 12:00, 7:50 còn lại".
 * `'`: Tìm kiếm kể chuyện âm thanh về phía trước.
 * `;`: Tìm kiếm kể chuyện âm thanh về phía sau.
 * `Shift+'`: Tăng lượng tìm kiếm âm thanh.

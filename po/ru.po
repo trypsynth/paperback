@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 00:42+0000\n"
+"POT-Creation-Date: 2026-11-12 13:50+0000\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -247,6 +247,11 @@ msgstr "Воспроизведение аудио ещё не началось."
 #, fuzzy
 msgid "This book doesn't say how long its audio runs, so Paperback can't go to a time in it."
 msgstr "В этой книге не указана длительность аудиозаписи, поэтому Paperback не может перейти на определённый момент времени."
+
+#. TRANSLATORS: Announced when asking for the time in an audiobook's chapter while the length of its files isn't known, such as in many DAISY books
+#, fuzzy
+msgid "This book doesn't say how long its audio runs."
+msgstr "В этой книге не указана длительность аудио."
 
 #. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
 #, fuzzy
@@ -855,6 +860,16 @@ msgstr "Перейти на &время..."
 #, fuzzy
 msgid "Go to a time in the recording"
 msgstr "Перейти на определённый момент времени в записи"
+
+#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter of an audiobook the reader is, and how much of it is left.
+#, fuzzy
+msgid "Announce &Chapter Time"
+msgstr "Объявить &время в главе"
+
+#. TRANSLATORS: Status-bar help text for the Announce Chapter Time menu item.
+#, fuzzy
+msgid "Say how far into this chapter you are and how much is left"
+msgstr "Сообщить, насколько далеко вы находитесь в этой главе и сколько осталось"
 
 #. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 #, fuzzy
@@ -3476,6 +3491,11 @@ msgstr "Перейти на время..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
+msgid "Announce Chapter Time"
+msgstr "Объявить время в главе"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Seek Audio Forward"
 msgstr "Перемотать аудио вперёд"
 
@@ -4132,6 +4152,16 @@ msgstr "Не найден парсер для расширения: .{}"
 #, fuzzy
 msgid "All parsers failed for extension: .{}"
 msgstr "Все парсеры не смогли обработать расширение: . {}"
+
+#. TRANSLATORS: Announced with how far into an audiobook's chapter the reader is: the time left in it; {} is written like 12:05
+#, fuzzy
+msgid "{} left"
+msgstr "Осталось {}"
+
+#. TRANSLATORS: Announced for how far into an audiobook the reader is: the first {} is the time played so far and the second how long it runs, both written like 1:02:03
+#, fuzzy
+msgid "{} of {}"
+msgstr "{} из {}"
 
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 #, fuzzy
