@@ -49,7 +49,7 @@ Jeśli JAWS milczy po naciśnięciu klawisza, który powinien wywołać komunika
 Paperback obsługuje następujące formaty i rozszerzenia:
 
 * Pliki BRF (Braille Ready Files) i książki PEF (Portable Embosser Format), przekształcane z brajla na zwykły tekst przy użyciu wybranej tablicy brajlowskiej (`.brf`, `.pef`)
-* Archiwa komiksów (`.cbz`)
+* Archiwa komiksów (`.cbz`, `.cbr`)
 * Pliki pomocy CHM (`.chm`)
 * Książki DAISY (`.opf`, `.zip`)
 * Książki EPUB (`.epub`)
@@ -67,6 +67,7 @@ Paperback obsługuje następujące formaty i rozszerzenia:
 * Pliki pomocy i książki systemu OS/2 wraz z ilustracjami (`.inf`, `.hlp`)
 * Dokumenty PDF (`.pdf`)
 * Prezentacje PowerPoint (`.pptx`, `.pptm`, `.ppt`)
+* Archiwa RAR z książkami, otwierane tak samo jak archiwa ZIP; jeśli archiwum zawiera kilka książek, można wybrać jedną z listy (`.rar`)
 * Dokumenty reStructuredText (`.rst`, `.rest`)
 * Dokumenty RTF (`.rtf`)
 * Dokumenty Windows Write (`.wri`)
@@ -169,6 +170,7 @@ Skróty ze znakami interpunkcyjnymi nazwano według klawiszy klawiatury ameryka�
 ### Menu Dźwięk
 
 * `Ctrl+Spacja` (macOS: `Control+Spacja`, czyli fizyczny klawisz Control, ponieważ Cmd+Spacja otwiera Spotlight): Odtwórz lub wstrzymaj narrację dźwiękową.
+* `Ctrl+J`: Przejdź do wskazanego czasu w nagraniu. Wpisz czas w postaci `1:23:45`, `23:45` lub liczbę sekund, na przykład `45`. Aby przesunąć się względem bieżącej pozycji, poprzedź czas znakiem `+` lub `-`, na przykład `+5:00`. Okno dialogowe pokazuje bieżącą pozycję i długość całego nagrania.
 * `'`: Przewiń narrację dźwiękową w przód.
 * `;`: Przewiń narrację dźwiękową w tył.
 * `Shift+'`: Zwiększ skok przewijania dźwięku.
