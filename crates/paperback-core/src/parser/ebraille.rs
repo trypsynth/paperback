@@ -28,7 +28,14 @@ impl Parser for EbrailleParser {
 		let mut archive = ZipArchive::new(BufReader::new(file))
 			.with_context(|| format!("Failed to read eBraille as zip '{}'", context.file_path))?;
 		let renditions = rootfiles(&mut archive)?;
-		if let Some(print) = renditions.iter().find(|rendition| rendition.access_mode.as_deref() == Some("textual")) {
+		// Beside a braille rendition, any other is the print: SBS's books mark it `textual`, but DAISY Pipeline's leave it unmarked.
+		let print =
+			renditions.iter().find(|rendition| rendition.access_mode.as_deref() == Some("textual")).or_else(|| {
+				(renditions.len() > 1)
+					.then(|| renditions.iter().find(|rendition| rendition.access_mode.as_deref() != Some("tactile")))
+					.flatten()
+			});
+		if let Some(print) = print {
 			tracing::debug!(path = %context.file_path, rendition = %print.path, "ebraille has a print rendition, reading it");
 			return parse_epub(context, Some(&print.path));
 		}
@@ -98,14 +105,19 @@ mod book_tests {
 	const NAV: &str = r#"<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>toc</title></head><body><nav epub:type="toc"><ol><li><a href="ebraille/one.html#zoo">⠠⠍⠁⠭ ⠁⠞ ⠮ ⠠⠵⠕⠕</a></li></ol></nav><nav epub:type="page-list"><ol><li><a href="ebraille/one.html#page1">⠼⠁</a></li></ol></nav></body></html>"#;
 	const CHAPTER: &str = r#"<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>one</title></head><body><span role="doc-pagebreak" epub:type="pagebreak" id="page1" aria-label="⠼⠁"></span><h1 id="zoo">⠠⠍⠁⠭ ⠁⠞ ⠮ ⠠⠵⠕⠕</h1><p>⠠⠍⠁⠭ ⠴ ⠁ ⠇⠇ ⠍⠕⠝⠅⠑⠽⠲</p></body></html>"#;
 
-	fn write_book(dir: &TempDir, name: &str, print: Option<(&str, &str)>) -> String {
+	/// `print` is the print rendition's package and chapter, and whether `container.xml` marks it `textual`.
+	fn write_book(dir: &TempDir, name: &str, print: Option<(&str, &str, bool)>) -> String {
 		let path = dir.join_str(name);
 		let mut zip = ZipWriter::new(File::create(&path).expect("create the book"));
 		let options = SimpleFileOptions::default();
-		let rendition = if print.is_some() {
-			r#"<rootfile full-path="original/package.opf" media-type="application/oebps-package+xml" rend:accessMode="textual"/>"#
-		} else {
-			""
+		let rendition = match print {
+			Some((_, _, true)) => {
+				r#"<rootfile full-path="original/package.opf" media-type="application/oebps-package+xml" rend:accessMode="textual"/>"#
+			}
+			Some((_, _, false)) => {
+				r#"<rootfile full-path="original/package.opf" media-type="application/oebps-package+xml"/>"#
+			}
+			None => "",
 		};
 		let container = format!(
 			r#"<?xml version="1.0"?><container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:rend="http://www.idpf.org/2013/rendition" version="1.0"><rootfiles><rootfile full-path="package.opf" media-type="application/oebps-package+xml" rend:accessMode="tactile"/>{rendition}</rootfiles></container>"#
@@ -117,7 +129,7 @@ mod book_tests {
 			("index.html", NAV.to_owned()),
 			("ebraille/one.html", CHAPTER.to_owned()),
 		];
-		if let Some((package, chapter)) = print {
+		if let Some((package, chapter, _)) = print {
 			files.push(("original/package.opf", package.to_owned()));
 			files.push(("original/one.html", chapter.to_owned()));
 		}
@@ -154,9 +166,15 @@ mod book_tests {
 			.replace("ebraille/one.html", "one.html")
 			.replace(r#"<item id="nav" href="index.html" media-type="application/xhtml+xml" properties="nav"/>"#, "");
 		let chapter = r#"<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml"><head><title>one</title></head><body><h1>Max at the Zoo</h1><p>Max was a little monkey, in print.</p></body></html>"#;
-		let document = EbrailleParser
-			.parse(&ParserContext::new(write_book(&dir, "zoo.ebrl", Some((&package, chapter)))))
-			.expect("read the book");
-		assert!(document.buffer.content.contains("Max was a little monkey, in print."), "{}", document.buffer.content);
+		// SBS marks the print rendition `textual`; DAISY Pipeline leaves it unmarked.
+		for marked in [true, false] {
+			let book = write_book(&dir, &format!("zoo-{marked}.ebrl"), Some((&package, chapter, marked)));
+			let document = EbrailleParser.parse(&ParserContext::new(book)).expect("read the book");
+			assert!(
+				document.buffer.content.contains("Max was a little monkey, in print."),
+				"{}",
+				document.buffer.content
+			);
+		}
 	}
 }
