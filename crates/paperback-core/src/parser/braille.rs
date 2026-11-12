@@ -2,6 +2,7 @@
 //!
 //! Both hold braille a translator already produced, wrapped to the embosser's line length and page height. The parser joins the wrapped lines back into paragraphs, back-translates each with the reader's braille table through louis-rs, and keeps a marker at the start of every embossed page.
 
+mod document;
 mod tables;
 
 use std::{borrow::Cow, collections::HashMap, fs};
@@ -12,7 +13,10 @@ use louis::{TranslationOptions, Translator};
 use rayon::prelude::*;
 use roxmltree::{Document as XmlDocument, Node};
 
-pub use self::tables::{BrailleTable, DEFAULT_TABLE, braille_tables, chosen_table, table_name};
+pub(crate) use self::document::back_translate_document;
+pub use self::tables::{
+	BrailleCode, BrailleTable, DEFAULT_TABLE, back_translator, braille_tables, chosen_table, table_for_code, table_name,
+};
 use crate::{
 	document::{DocLen, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{

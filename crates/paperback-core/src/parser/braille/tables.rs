@@ -50,6 +50,93 @@ fn table_source(name: &str) -> Option<String> {
 	Some(String::from_utf8_lossy(&source).into_owned())
 }
 
+/// A braille code as an eBraille book names it: the language of its `xx-Brai` tag, and `a11y:brailleSystem`, such as `UEB grade2` or `German grade1 comp8`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct BrailleCode<'a> {
+	pub language: &'a str,
+	pub system: &'a str,
+	pub cells: Option<u8>,
+}
+
+/// The table for `code`, found as liblouis finds one, by the `#+` metadata tables describe themselves with: the same language and grade, and computer braille only for a computer code. A table that also names the code's system, such as `ueb`, or the language's region, wins, then one that reads both ways, then the shortest name, which is the plain table rather than a variant. `None` when no table matches.
+#[must_use]
+pub fn table_for_code(code: BrailleCode) -> Option<&'static str> {
+	let mut subtags = code.language.split('-');
+	let language = subtags.next().unwrap_or_default().to_ascii_lowercase();
+	let region =
+		subtags.find(|subtag| subtag.len() == 2 && !subtag.eq_ignore_ascii_case("Brai")).map(str::to_ascii_lowercase);
+	let words: Vec<String> = code.system.split_whitespace().map(str::to_ascii_lowercase).collect();
+	let grade = words.iter().find_map(|word| word.strip_prefix("grade")?.parse::<u8>().ok());
+	let computer = words.iter().any(|word| word.starts_with("comp"));
+	let systems: Vec<&str> = words
+		.iter()
+		.map(String::as_str)
+		.filter(|word| !word.starts_with("grade") && *word != "no-grade" && !word.starts_with("comp"))
+		.collect();
+	// A word of the code that some table names as its system, such as `ueb` or `bfu`, rather than a language's name, such as `german`.
+	let is_system = |word: &str| {
+		TABLE_METADATA.iter().any(|(_, metadata)| {
+			metadata.iter().any(|(key, value)| *key == "system" && value.eq_ignore_ascii_case(word))
+		})
+	};
+	let named_system = systems.iter().copied().find(|word| is_system(word));
+	// U.S. grade 2 (EBAE) and grade 1 carry no metadata.
+	if language == "en" && systems.contains(&"ebae") {
+		return table_name(if grade == Some(1) { "en-us-g1.ctb" } else { "en-us-g2.ctb" });
+	}
+	TABLE_METADATA
+		.iter()
+		.filter_map(|(name, metadata)| {
+			let get = |key: &str| metadata.iter().find(|(k, _)| *k == key).map(|(_, value)| value.to_ascii_lowercase());
+			let table_language = get("language")?;
+			let (table_primary, table_region) = table_language
+				.split_once('-')
+				.map_or((table_language.as_str(), None), |(primary, region)| (primary, Some(region)));
+			if table_primary != language {
+				return None;
+			}
+			let is_computer = get("type").is_some_and(|kind| kind == "computer");
+			if is_computer != computer {
+				return None;
+			}
+			let table_grade = get("grade").and_then(|grade| grade.parse::<u8>().ok()).or_else(|| {
+				match get("contraction").as_deref() {
+					Some("full") => Some(2),
+					Some("partial") => Some(1),
+					Some("no") => Some(0),
+					_ => None,
+				}
+			});
+			if grade.is_some() && table_grade != grade {
+				return None;
+			}
+			if let (Some(cells), Some(dots)) = (code.cells, get("dots").and_then(|dots| dots.parse::<u8>().ok()))
+				&& cells != dots
+			{
+				return None;
+			}
+			let system = get("system");
+			if named_system.is_some() && system.is_some() && system.as_deref() != named_system {
+				return None;
+			}
+			let mut score = 0;
+			if system.is_some() && system.as_deref() == named_system {
+				score += 4;
+			}
+			let table_region =
+				table_region.map(str::to_owned).or_else(|| get("region")?.split('-').nth(1).map(str::to_owned));
+			if region.is_some() && region == table_region {
+				score += 2;
+			}
+			if get("direction").is_none_or(|direction| direction != "forward") {
+				score += 1;
+			}
+			Some((score, std::cmp::Reverse(name.len()), *name))
+		})
+		.max()
+		.map(|(_, _, name)| name)
+}
+
 /// The table a reader picked, read from its saved setting, or the default when the setting names no table Paperback has, as after an update drops one.
 #[must_use]
 pub fn chosen_table(setting: &str) -> &'static str {

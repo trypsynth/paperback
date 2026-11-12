@@ -50,6 +50,7 @@ Paperback supports the following formats and extensions:
 * Comic book archives (`.cbz`, `.cbr`)
 * CHM help files (`.chm`)
 * DAISY books (`.opf`, `.zip`)
+* eBraille books, read in print when they include it, and otherwise back-translated with the braille code they name (`.ebrl`)
 * EPUB books (`.epub`)
 * FB2 ebooks (`.fb2`)
 * GNU Info manuals (`.info`, gzipped or not, and split manuals opened from any of their parts)

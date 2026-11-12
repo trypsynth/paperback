@@ -131,6 +131,13 @@ formats! {
 		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_PAGES | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
 		installer: CHECKED_HANDLER,
 	},
+	/// An EPUB 3 in braille, read back into print with the braille table its package names.
+	EBRAILLE {
+		name: "eBraille books",
+		extensions: ["ebrl"],
+		mime_types: ["application/ebrl+zip"],
+		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_PAGES | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
+	},
 	FB2 {
 		name: "FictionBook Documents",
 		extensions: ["fb2", "zip"],

@@ -66,12 +66,14 @@
                 <data android:mimeType="application/rtf" />
                 <data android:mimeType="application/vnd.ms-htmlhelp" />
                 <data android:mimeType="application/zip" />
+                <data android:mimeType="application/ebrl+zip" />
                 <data android:mimeType="application/vnd.rar" />
                 <data android:mimeType="application/x-rar-compressed" />
                 <data android:pathPattern=".*\\.chm" />
                 <data android:pathPattern=".*\\.doc" />
                 <data android:pathPattern=".*\\.docm" />
                 <data android:pathPattern=".*\\.docx" />
+                <data android:pathPattern=".*\\.ebrl" />
                 <data android:pathPattern=".*\\.epub" />
                 <data android:pathPattern=".*\\.fb2" />
                 <data android:pathPattern=".*\\.fodp" />

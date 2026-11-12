@@ -99,7 +99,7 @@ impl DocumentSession {
 		let extension = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
 		match extension.as_deref() {
 			// A real RAR, comic or not, was read from the zip copy of it, which holds no password.
-			Some("epub" | "cbz" | "cbr" | "rar") => {
+			Some("epub" | "ebrl" | "cbz" | "cbr" | "rar") => {
 				let mut archive =
 					ZipArchive::new(BufReader::new(File::open(rar::as_zip(Path::new(&self.file_path))?)?))?;
 				read_zip_entry_bytes(&mut archive, source)

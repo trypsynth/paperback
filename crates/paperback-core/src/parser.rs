@@ -25,6 +25,7 @@ pub mod cbz;
 pub mod chm;
 pub mod convert;
 pub mod daisy;
+pub mod ebraille;
 pub mod epub;
 pub mod fb2;
 pub mod hlp;
@@ -149,6 +150,7 @@ impl ParserRegistry {
 				DAISY => daisy::DaisyParser,
 				WORD => word::WordParser,
 				EPUB => epub::EpubParser,
+				EBRAILLE => ebraille::EbrailleParser,
 				FB2 => fb2::Fb2Parser,
 				HTML => html::HtmlParser,
 				PDF => pdf::PdfParser,
