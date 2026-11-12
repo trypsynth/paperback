@@ -57,7 +57,7 @@ impl Parser for BrfParser {
 			fs::read(&context.file_path).with_context(|| format!("Failed to open BRF file '{}'", context.file_path))?;
 		let (translator, braille_ascii) = tables::back_translator(context.braille_table)?;
 		let pages = brf_pages(&bytes, &braille_ascii);
-		let buffer = back_translate(&pages, &translator, context)?;
+		let buffer = back_translate(&pages, &translator, context);
 		tracing::debug!(path = %context.file_path, pages = pages.len(), "parsed BRF file");
 		let mut document = Document::new().with_title(extract_title_from_path(&context.file_path));
 		document.set_buffer(buffer);
@@ -122,7 +122,7 @@ impl Parser for PefParser {
 		let volumes: Vec<Vec<Page>> = pef_elements(root, "volume").map(volume_pages).collect();
 		let pages: Vec<Page> = volumes.iter().flatten().cloned().collect();
 		let (translator, _) = tables::back_translator(context.braille_table)?;
-		let buffer = back_translate(&pages, &translator, context)?;
+		let buffer = back_translate(&pages, &translator, context);
 		tracing::debug!(path = %context.file_path, volumes = volumes.len(), pages = pages.len(), "parsed PEF file");
 		let toc = if volumes.len() > 1 { volume_toc(&volumes, &buffer) } else { Vec::new() };
 		let title = dublin_core(root, "title").unwrap_or_else(|| extract_title_from_path(&context.file_path));
@@ -191,13 +191,10 @@ fn is_blank(line: &str) -> bool {
 }
 
 /// The pages as print, a paragraph to a line, with a marker where each page begins.
-fn back_translate(pages: &[Page], translator: &Translator, context: &ParserContext) -> Result<DocumentBuffer> {
+fn back_translate(pages: &[Page], translator: &Translator, context: &ParserContext) -> DocumentBuffer {
 	let layout = Layout::of(pages, context.strip_running_text);
-	let translated: Vec<(String, Vec<usize>)> = layout
-		.paragraphs
-		.par_iter()
-		.map(|paragraph| translate_paragraph(translator, paragraph))
-		.collect::<Result<_>>()?;
+	let translated: Vec<(String, Vec<usize>)> =
+		layout.paragraphs.par_iter().map(|paragraph| translate_paragraph(translator, paragraph)).collect();
 	let mut buffer = DocumentBuffer::new();
 	let mut paragraph_starts = Vec::with_capacity(translated.len());
 	for (text, _) in &translated {
@@ -216,15 +213,13 @@ fn back_translate(pages: &[Page], translator: &Translator, context: &ParserConte
 		};
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, position).with_text(format!("Page {}", index + 1)));
 	}
-	Ok(buffer)
+	buffer
 }
 
 /// The paragraph's print, and for each of its cells where that cell's print begins.
-fn translate_paragraph(translator: &Translator, paragraph: &str) -> Result<(String, Vec<usize>)> {
-	let result = translator
-		.translate_with_options(paragraph, TranslationOptions::default())
-		.map_err(|error| anyhow::anyhow!("Could not back-translate braille: {error}"))?;
-	Ok((result.output, result.output_positions.unwrap_or_default()))
+fn translate_paragraph(translator: &Translator, paragraph: &str) -> (String, Vec<usize>) {
+	let result = translator.translate_with_options(paragraph, TranslationOptions::default());
+	(result.output, result.output_positions)
 }
 
 /// The braille rejoined into paragraphs, and where in them each page begins.

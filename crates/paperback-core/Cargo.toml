@@ -46,8 +46,8 @@ key-chord = { version = "0.2.2", features = ["serde"] }
 libchm = "0.3.1"
 libhlp = "0.3.0"
 libinf = "0.1.0"
-# Upstream main plus the back-translation fixes BRF and PEF books need, until they are merged (liblouis/louis-rs#44 to #51).
-louis-rs = { git = "https://github.com/trypsynth/louis-rs", branch = "paperback" }
+# Upstream main plus the back-translation fixes BRF and PEF books still need, until they are merged (liblouis/louis-rs#44, #45 and #51).
+louis-rs = { git = "https://github.com/trypsynth/louis-rs", branch = "paperback-next" }
 lofty = "0.25.5"
 math-core = "0.9.0"
 mathcat = { version = "0.7.7", features = ["include-zip"] }
