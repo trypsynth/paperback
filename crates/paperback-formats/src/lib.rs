@@ -124,19 +124,20 @@ formats! {
 		mime_types: ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"],
 		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_LISTS | SUPPORTS_PAGES | SUPPORTS_IMAGES,
 	},
+	/// An EPUB 3 in braille, read back into print with the braille table its package names. Ahead of [`EPUB`], so an unpacked one's `.opf` is taken as braille before the EPUB parser would show its braille as it is.
+	EBRAILLE {
+		name: "eBraille books",
+		extensions: ["ebrl", "opf"],
+		mime_types: ["application/ebrl+zip"],
+		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_PAGES | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
+	},
+	/// `.opf` is an unpacked EPUB's package document, which DAISY and eBraille, declared ahead, decline.
 	EPUB {
 		name: "EPUB Books",
-		extensions: ["epub"],
+		extensions: ["epub", "opf"],
 		mime_types: ["application/epub+zip"],
 		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_PAGES | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
 		installer: CHECKED_HANDLER,
-	},
-	/// An EPUB 3 in braille, read back into print with the braille table its package names.
-	EBRAILLE {
-		name: "eBraille books",
-		extensions: ["ebrl"],
-		mime_types: ["application/ebrl+zip"],
-		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_PAGES | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
 	},
 	FB2 {
 		name: "FictionBook Documents",
@@ -274,6 +275,19 @@ formats! {
 	},
 }
 
+/// The extensions `format` is associated with: those no format declared before it also claims, so an extension several formats open, such as `.opf` for DAISY, eBraille and EPUB books, is associated once, by the first. `.zip` is the first claimer's too, though installers give it a task of its own.
+#[must_use]
+pub fn associated_extensions(format: &FormatMeta) -> Vec<&'static str> {
+	format
+		.extensions
+		.iter()
+		.copied()
+		.filter(|ext| {
+			ALL.iter().find(|other| other.extensions.contains(ext)).is_some_and(|first| first.name == format.name)
+		})
+		.collect()
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -310,6 +324,15 @@ mod tests {
 				);
 			}
 		}
+	}
+
+	/// An unpacked EPUB or eBraille book opens by its `.opf`, but installing Paperback must not take `.opf` from DAISY, which has always held it, nor make Paperback its default handler through EPUB's checkbox.
+	#[test]
+	fn opf_is_associated_through_daisy_alone() {
+		assert_eq!(associated_extensions(&DAISY), ["opf", "zip"]);
+		assert_eq!(associated_extensions(&EBRAILLE), ["ebrl"]);
+		assert_eq!(associated_extensions(&EPUB), ["epub"]);
+		assert_eq!(associated_extensions(&WORD), ["docx", "docm", "doc"]);
 	}
 
 	#[test]

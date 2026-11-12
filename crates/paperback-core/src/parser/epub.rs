@@ -6,9 +6,9 @@ use zip::ZipArchive;
 
 use crate::{
 	document::{Document, Marker, MarkerType, ParserContext},
-	parser::{Parser, add_toc_heading_markers, util::path::extract_title_from_path},
+	parser::{NotThisFormat, Parser, add_toc_heading_markers, util::path::extract_title_from_path},
 	t,
-	util::zip::read_zip_entry_by_name,
+	util::{package as unpacked, zip::read_zip_entry_by_name},
 };
 
 mod href;
@@ -27,7 +27,20 @@ pub struct EpubParser;
 
 impl Parser for EpubParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
-		parse_epub(context, None)
+		let path = std::path::Path::new(&context.file_path);
+		if !unpacked::is_package_document(path) {
+			return parse_epub(context, None);
+		}
+		// An unpacked EPUB, opened by its package document, is read from a zip of it; a DAISY or eBraille book's package is left to its own parser.
+		let opf = String::from_utf8_lossy(&std::fs::read(path)?).into_owned();
+		if unpacked::is_daisy_package(&opf) || unpacked::is_braille_package(&opf) {
+			return Err(NotThisFormat("A DAISY or eBraille package").into());
+		}
+		let copy = unpacked::zip_copy(path, "epub", &unpacked::cache_root())?;
+		let mut document =
+			parse_epub(&ParserContext { file_path: copy.zip.to_string_lossy().into_owned(), ..context.clone() }, None)?;
+		unpacked::point_images_at(&mut document, &copy.root);
+		Ok(document)
 	}
 }
 

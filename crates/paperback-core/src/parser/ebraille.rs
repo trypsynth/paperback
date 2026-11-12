@@ -2,7 +2,11 @@
 //!
 //! A book that carries its print as a second rendition is read in print, as written. Otherwise its braille is back-translated with the table its code names, such as `en-ueb-g2.ctb` for `UEB grade2` in `en-Brai-US`, or with the reader's own table when none matches.
 
-use std::{fs::File, io::BufReader};
+use std::{
+	fs::{self, File},
+	io::BufReader,
+	path::Path,
+};
 
 use anyhow::{Context, Result};
 use roxmltree::{Document as XmlDocument, ParsingOptions};
@@ -11,17 +15,30 @@ use zip::ZipArchive;
 use crate::{
 	document::{Document, ParserContext},
 	parser::{
-		Parser,
+		NotThisFormat, Parser,
 		braille::{self, BrailleCode, back_translate_document, table_for_code},
 		epub::{parse_epub, rootfiles},
 	},
-	util::zip::read_zip_entry_by_name,
+	util::{package, zip::read_zip_entry_by_name},
 };
 
 pub struct EbrailleParser;
 
 impl Parser for EbrailleParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
+		let path = Path::new(&context.file_path);
+		if package::is_package_document(path) {
+			// An unpacked eBraille book, its folder of files opened by its package document, is read from a zip of it.
+			let opf = String::from_utf8_lossy(&fs::read(path)?).into_owned();
+			if !package::is_braille_package(&opf) {
+				return Err(NotThisFormat("A package without braille").into());
+			}
+			let copy = package::zip_copy(path, "ebrl", &package::cache_root())?;
+			let mut document =
+				self.parse(&ParserContext { file_path: copy.zip.to_string_lossy().into_owned(), ..context.clone() })?;
+			package::point_images_at(&mut document, &copy.root);
+			return Ok(document);
+		}
 		tracing::debug!(path = %context.file_path, "parsing ebraille");
 		let file = File::open(&context.file_path)
 			.with_context(|| format!("Failed to open eBraille file '{}'", context.file_path))?;
