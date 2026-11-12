@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 622feff4c57acdc0; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versión 1.1
 
@@ -49,7 +49,7 @@ Si JAWS no dice nada cuando presiona una tecla que debería reportar algo, abra 
 Paperback admite los siguientes formatos y extensiones:
 
 * Archivos Braille Listo y libros Portable Embosser Format, retrotranducidos a impresión con la tabla braille que elijas (`.brf`, `.pef`)
-* Archivos de cómics (`.cbz`)
+* Archivos de cómics (`.cbz`, `.cbr`)
 * Archivos de ayuda CHM (`.chm`)
 * Libros DAISY (`.opf`, `.zip`)
 * Libros EPUB (`.epub`)
@@ -67,6 +67,7 @@ Paperback admite los siguientes formatos y extensiones:
 * Archivos de ayuda y libros OS/2, con sus imágenes (`.inf`, `.hlp`)
 * Documentos PDF (`.pdf`)
 * Presentaciones PowerPoint (`.pptx`, `.pptm`, `.ppt`)
+* Archivos RAR de libros, que se abren como lo hace un zip, con una lista para elegir cuando contienen varios (`.rar`)
 * Documentos reStructuredText (`.rst`, `.rest`)
 * Documentos RTF (`.rtf`)
 * Documentos Windows Write (`.wri`)
@@ -121,7 +122,7 @@ Los atajos de puntuación se nombran según las teclas de un teclado estadounide
 * `Ctrl+G` (macOS: `Cmd+L`): Ir a la línea.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Ir al porcentaje.
 * `Ctrl+P`: Ir a la página (cuando lo admita el documento actual).
-* `=`: Anuncia tu porcentaje de lectura actual y página, p. ej. "15%, página 30". La página se omite para documentos sin números de página.
+* `=`: Anuncia tu porcentaje de lectura actual y página, p. ej. "15%, página 30". La página se omite para documentos sin números de página. En un audiolibro, tu avance y la duración del libro vienen después, p. ej. "15%, 1:02:03 de 10:30:00".
 * `Alt+Left` (macOS: `Cmd+[`): Retrocede en el historial de navegación.
 * `Alt+Right` (macOS: `Cmd+]`): Avanza en el historial de navegación.
 * `[`: Sección anterior.
@@ -170,6 +171,7 @@ Los atajos de puntuación se nombran según las teclas de un teclado estadounide
 
 * `Ctrl+Space` (macOS: `Control+Space`, es decir, la tecla Control física, ya que `Cmd+Space` abre Spotlight): Reproduce/pausa la narración de audio.
 * `Ctrl+J`: Ir a un momento en la grabación. Escríbelo como `1:23:45`, `23:45` o `45` segundos, o pon `+` o `-` delante para moverte desde donde estés, p. ej. `+5:00`. El diálogo muestra tu avance y la duración del libro.
+* `Shift+=`: Di cuánto llevas de este capítulo y cuánto te queda, p. ej. "Capítulo 3, 4:10 de 12:00, 7:50 restante".
 * `'`: Busca hacia adelante en la narración de audio.
 * `;`: Busca hacia atrás en la narración de audio.
 * `Shift+'`: Aumenta la cantidad de búsqueda de audio.

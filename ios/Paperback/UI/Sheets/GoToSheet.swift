@@ -8,12 +8,17 @@ struct GoToSheet: View {
 	@State private var lineValue = ""
 	@State private var pageValue = ""
 	@State private var percentValue: Double = 50
+	@State private var timeValue = ""
+	@State private var timeError: String?
 	@FocusState private var fieldFocused: Bool
 
 	private var session: DocumentSession? { viewModel.activeSession }
 	private var hasPages: Bool { (session?.pageCountFfi() ?? 0) > 0 }
 	/// An audio-only book's text is one blank line per file, so only a percentage means anything in it.
 	private var isAudioOnly: Bool { viewModel.reading.isAudioOnly }
+	/// A time can only be placed when every file's length is known.
+	private var hasTime: Bool { session?.audioTimeKnownFfi() == true }
+	private var currentMs: Int64 { viewModel.reading.audioElapsedMs() ?? 0 }
 
 	var body: some View {
 		NavigationStack {
@@ -31,6 +36,10 @@ struct GoToSheet: View {
 						}
 						// TRANSLATORS: Go To mode option: navigate to a percentage through the document
 						Text(t("Percent")).tag(GoToMode.percent)
+						if hasTime {
+							// TRANSLATORS: Go To mode option: navigate to a time in an audiobook, such as 1:23:45
+							Text(t("Time")).tag(GoToMode.time)
+						}
 					}
 					.pickerStyle(.wheel)
 					.labelsHidden()
@@ -60,6 +69,23 @@ struct GoToSheet: View {
 								.foregroundStyle(.secondary)
 								.accessibilityHidden(true)
 						}
+					case .time:
+						if let session {
+							// TRANSLATORS: Label of the field in the Go to Time dialog. The first {} is the time played so far and the second is the recording's length, both written like 1:02:03
+							let label = filling(
+								t("Go to time ({}/{}):"),
+								session.formatAudioTimeFfi(ms: currentMs),
+								session.formatAudioTimeFfi(ms: session.audioTotalDurationMsFfi())
+							)
+							TextField(label, text: $timeValue)
+								.keyboardType(.numbersAndPunctuation)
+								.focused($fieldFocused)
+								.onSubmit { go() }
+								.onChange(of: timeValue) { timeError = nil }
+							if let timeError {
+								Text(timeError).foregroundStyle(.red)
+							}
+						}
 					}
 				}
 			}
@@ -83,18 +109,30 @@ struct GoToSheet: View {
 		.sheetAccessibilityFocus(title: t("Go To"))
 	}
 
+	/// Fills the `{}` placeholders in turn, as the desktop's `replacen` does with the same string.
+	private func filling(_ template: String, _ values: String...) -> String {
+		var result = template
+		for value in values {
+			if let range = result.range(of: "{}") { result.replaceSubrange(range, with: value) }
+		}
+		return result
+	}
+
 	private var canGo: Bool {
 		switch mode {
 		case .line:    return Int64(lineValue) != nil
 		case .page:    return Int64(pageValue) != nil
 		case .percent: return true
+		case .time:    return !timeValue.trimmingCharacters(in: .whitespaces).isEmpty
 		}
 	}
 
 	private func populate() {
 		let initialMode = viewModel.navigation.goToInitialMode
 		// A selection the picker doesn't offer would leave it showing nothing.
-		mode = if isAudioOnly {
+		mode = if initialMode == .time {
+			hasTime ? .time : .percent
+		} else if isAudioOnly {
 			.percent
 		} else if initialMode == .page && !hasPages {
 			.line
@@ -107,6 +145,7 @@ struct GoToSheet: View {
 		let status = session.getStatusInfo(position: pos)
 		lineValue = "\(status.lineNumber)"
 		percentValue = Double(status.percentage)
+		if hasTime { timeValue = session.formatAudioTimeFfi(ms: currentMs) }
 		if hasPages {
 			pageValue = "\(session.currentPage(position: pos))"
 		}
@@ -127,6 +166,20 @@ struct GoToSheet: View {
 			if !viewModel.reading.seekAudioToPercent(Int32(percentValue)) {
 				viewModel.reading.goToPercent(Int32(percentValue), announce: true)
 			}
+		case .time:
+			guard let session else { dismiss(); return }
+			let targetMs = session.audioTimeEntryFfi(text: timeValue, currentMs: currentMs)
+			guard targetMs >= 0 else {
+				let error = targetMs == -1
+					// TRANSLATORS: Announced when what was typed in the Go to Time dialog is not a time
+					? t("Type a time like 1:23:45, 23:45 or 45.")
+					// TRANSLATORS: Announced when the time typed in the Go to Time dialog is past the end of the recording, or before its start
+					: t("Time out of range.")
+				timeError = error
+				UIAccessibility.post(notification: .announcement, argument: error)
+				return
+			}
+			viewModel.reading.seekAudioToMs(targetMs)
 		}
 		dismiss()
 	}

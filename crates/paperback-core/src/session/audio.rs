@@ -8,8 +8,9 @@ use zip::ZipArchive;
 
 use super::{AudioClipFfi, AudioCursorFfi, AudioPointFfi, DocumentSession};
 use crate::{
-	audio::{AudioLocation, TimelinePoint},
+	audio::{AudioLocation, AudioTimeline, TimelinePoint, clock},
 	document::DocPos,
+	t,
 	util::zip as zip_utils,
 };
 
@@ -139,6 +140,44 @@ impl DocumentSession {
 	pub fn audio_elapsed_for_percent_ffi(&self, percent: i32) -> i64 {
 		self.audio_elapsed_for_percent(percent).and_then(|ms| i64::try_from(ms).ok()).unwrap_or(-1)
 	}
+
+	/// Whether a time in the recording can be placed: every file's length is known.
+	#[must_use]
+	pub fn audio_time_known_ffi(&self) -> bool {
+		self.audio().is_some_and(AudioTimeline::durations_are_known)
+	}
+
+	/// A time in the recording written as Go to Time shows it, such as 1:02:03.
+	#[must_use]
+	pub fn format_audio_time_ffi(&self, ms: i64) -> String {
+		clock::format_ms(u64::try_from(ms).unwrap_or(0))
+	}
+
+	/// What was typed into Go to Time, in milliseconds from the start: `-1` when it isn't a time, `-2` when it falls outside the recording, and `-3` when the recording's length isn't known. A leading `+` or `-` moves from `current_ms`.
+	#[must_use]
+	#[allow(clippy::needless_pass_by_value, reason = "uniffi hands strings over by value")]
+	pub fn audio_time_entry_ffi(&self, text: String, current_ms: i64) -> i64 {
+		let Some(timeline) = self.audio().filter(|timeline| timeline.durations_are_known()) else {
+			return -3;
+		};
+		match clock::resolve_entry_ms(&text, u64::try_from(current_ms).unwrap_or(0), timeline.total_duration_ms()) {
+			Ok(ms) => i64::try_from(ms).unwrap_or(-2),
+			Err(clock::TimeEntryError::NotATime) => -1,
+			Err(clock::TimeEntryError::OutOfRange) => -2,
+		}
+	}
+
+	/// Empty where [`Self::audio_time_announcement`] has no answer.
+	#[must_use]
+	pub fn audio_time_announcement_ffi(&self, elapsed_ms: i64) -> String {
+		u64::try_from(elapsed_ms).ok().and_then(|ms| self.audio_time_announcement(ms)).unwrap_or_default()
+	}
+
+	/// Empty where [`Self::audio_chapter_announcement`] has no answer.
+	#[must_use]
+	pub fn audio_chapter_announcement_ffi(&self, elapsed_ms: i64) -> String {
+		u64::try_from(elapsed_ms).ok().and_then(|ms| self.audio_chapter_announcement(ms)).unwrap_or_default()
+	}
 }
 
 impl DocumentSession {
@@ -172,4 +211,59 @@ impl DocumentSession {
 		let percent = u64::try_from(percent.clamp(0, 100)).unwrap_or(0);
 		Some(timeline.total_duration_ms().saturating_mul(percent) / 100)
 	}
+
+	/// How far into the whole recording `elapsed_ms` is, such as "1:02:03 of 10:30:00", or `None` while any file's length is unknown.
+	#[must_use]
+	pub fn audio_time_announcement(&self, elapsed_ms: u64) -> Option<String> {
+		let timeline = self.audio()?;
+		if !timeline.durations_are_known() {
+			return None;
+		}
+		let total_ms = timeline.total_duration_ms();
+		Some(of_total(elapsed_ms.min(total_ms), total_ms))
+	}
+
+	/// The chapter `elapsed_ms` is in, how far into it and how much of it is left, such as "Chapter 3, 4:10 of 12:00, 7:50 left". Chapters are the table of contents' entries, placed by when they play, and of entries starting together the deepest, as it names the most. Before the first entry, or in a book without any, the whole recording is the chapter, untitled. `None` while any file's length is unknown.
+	#[must_use]
+	pub fn audio_chapter_announcement(&self, elapsed_ms: u64) -> Option<String> {
+		let timeline = self.audio()?;
+		if !timeline.durations_are_known() {
+			return None;
+		}
+		let total_ms = timeline.total_duration_ms();
+		let elapsed_ms = elapsed_ms.min(total_ms);
+		let toc = self.get_toc();
+		let starts: Vec<(u64, i32, &str)> = toc
+			.iter()
+			.filter_map(|entry| {
+				timeline
+					.point_for_position(entry.position)
+					.map(|point| (point.time_ms, entry.level, entry.title.trim()))
+			})
+			.collect();
+		let current = starts
+			.iter()
+			.filter(|(start_ms, ..)| *start_ms <= elapsed_ms)
+			.max_by_key(|(start_ms, level, _)| (*start_ms, *level));
+		let start_ms = current.map_or(0, |(start_ms, ..)| *start_ms);
+		let end_ms = starts
+			.iter()
+			.map(|(start_ms, ..)| *start_ms)
+			.filter(|next_ms| *next_ms > start_ms)
+			.min()
+			.unwrap_or(total_ms);
+		let mut parts = Vec::with_capacity(3);
+		if let Some((_, _, title)) = current.filter(|(_, _, title)| !title.is_empty()) {
+			parts.push((*title).to_owned());
+		}
+		parts.push(of_total(elapsed_ms - start_ms, end_ms - start_ms));
+		// TRANSLATORS: Announced with how far into an audiobook's chapter the reader is: the time left in it; {} is written like 12:05
+		parts.push(t("{} left").replace("{}", &clock::format_ms(end_ms - elapsed_ms)));
+		Some(parts.join(", "))
+	}
+}
+
+fn of_total(elapsed_ms: u64, total_ms: u64) -> String {
+	// TRANSLATORS: Announced for how far into an audiobook the reader is: the first {} is the time played so far and the second how long it runs, both written like 1:02:03
+	t("{} of {}").replacen("{}", &clock::format_ms(elapsed_ms), 1).replacen("{}", &clock::format_ms(total_ms), 1)
 }

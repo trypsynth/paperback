@@ -75,10 +75,9 @@ fn association_choices() -> Vec<AssociationChoice> {
 }
 
 fn format_label(format: &FormatMeta) -> String {
-	let extensions = format
-		.extensions
-		.iter()
-		.filter(|ext| **ext != "zip")
+	let extensions = paperback_formats::associated_extensions(format)
+		.into_iter()
+		.filter(|ext| *ext != "zip")
 		.map(|ext| format!(".{ext}"))
 		.collect::<Vec<_>>()
 		.join(", ");

@@ -355,6 +355,20 @@ final class ReadingController {
 		return narration.seekToMs(targetMs)
 	}
 
+	/// The player's own time, which moves within a clip, else the time of the reading position's clip.
+	func audioElapsedMs() -> Int64? {
+		guard hasAudio, let session = activeSession else { return nil }
+		if let elapsed = narration?.elapsedMs { return elapsed }
+		let point = session.audioPointForPositionFfi(position: ttsPosition)
+		return point.found ? point.timeMs : nil
+	}
+
+	@discardableResult
+	func seekAudioToMs(_ elapsedMs: Int64) -> Bool {
+		guard hasAudio, let narration else { return false }
+		return narration.seekToMs(elapsedMs)
+	}
+
 	/// Audio-only books are measured by running time, since their text is one placeholder line per file.
 	func progressPercent() -> Int? {
 		guard let session = activeSession else { return nil }

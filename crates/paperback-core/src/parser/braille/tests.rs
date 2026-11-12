@@ -275,3 +275,25 @@ fn lists_the_tables_people_choose_by_name() {
 	assert_eq!(table_name(DEFAULT_TABLE), Some(DEFAULT_TABLE));
 	assert_eq!(table_name("no-such-table.ctb"), None);
 }
+
+#[rstest::rstest]
+#[case("en-Brai-US", "UEB grade2", Some(6), Some("en-ueb-g2.ctb"))]
+#[case("en-Brai-US", "UEB grade1", Some(6), Some("en-ueb-g1.ctb"))]
+#[case("en-Brai-US", "EBAE grade2", None, Some("en-us-g2.ctb"))]
+#[case("de-Brai", "German grade2", Some(6), Some("de-g2.ctb"))]
+// liblouis marks only the detailed German grade 0 and 1 tables as reading both ways.
+#[case("de-Brai", "German grade1", None, Some("de-g1-detailed.ctb"))]
+#[case("de-Brai", "German grade0", None, Some("de-g0-detailed.utb"))]
+#[case("fr-Brai", "French grade2", None, Some("fr-bfu-g2.ctb"))]
+#[case("fr-Brai", "French uncontracted no-grade", None, Some("fr-bfu-comp6.utb"))]
+#[case("nl-Brai-NL", "Dutch grade0", Some(6), Some("nl-NL-g0.utb"))]
+#[case("nl-Brai", "Dutch no-grade", None, Some("nl-NL-g0.utb"))]
+#[case("xx-Brai", "Unknown grade2", None, None)]
+fn finds_the_table_an_ebraille_book_names(
+	#[case] language: &str,
+	#[case] system: &str,
+	#[case] cells: Option<u8>,
+	#[case] table: Option<&str>,
+) {
+	assert_eq!(table_for_code(BrailleCode { language, system, cells }), table);
+}

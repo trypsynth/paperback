@@ -45,6 +45,7 @@ import dev.paperback.android.ui.state.scrollsWorthSaving
 import dev.paperback.android.ui.state.shouldSyncPositionFromList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import uniffi.paperback.ExportFormat
@@ -465,10 +466,18 @@ fun MainScreen(
 								val progressPercent = remember(session, docState.isAudioOnly, ttsPosition) {
 									if (docState.isAudioOnly) null else session.getStatusInfo(ttsPosition).percentage
 								}
+								// A recording moves on between the clip changes the screen hears of, so its time is read again every second, as on iOS.
+								val audioTime by produceState<String?>(null, session) {
+									while (true) {
+										value = viewModel.reading.audioElapsedMs()?.let { session.audioTimeAnnouncementFfi(it) }?.ifEmpty { null }
+										delay(1000)
+									}
+								}
 								ReadAloudPane(
 									segmentText = currentSegmentText,
 									readability = readability,
 									progressPercent = progressPercent,
+									audioTime = audioTime,
 									sleepTimerRemaining = sleepTimerRemaining,
 									onCancelSleepTimer = { viewModel.reading.sleepTimer.cancel() }
 								)

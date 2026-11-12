@@ -29,6 +29,23 @@ pub(super) type PackageParts =
 	(HashMap<String, ManifestItem>, Vec<String>, Option<String>, Option<String>, PackageMetadata);
 
 pub(super) fn find_container_path<R: Read + Seek>(archive: &mut ZipArchive<R>) -> Result<String> {
+	rootfiles(archive)?
+		.into_iter()
+		.next()
+		.map(|rootfile| rootfile.path)
+		// TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
+		.ok_or_else(|| anyhow::anyhow!(t("rootfile not found in container.xml")))
+}
+
+/// A package document `container.xml` names, and how it is read when it names several renditions of one book: `tactile` for braille, `textual` for print.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct Rootfile {
+	pub path: String,
+	pub access_mode: Option<String>,
+}
+
+pub(crate) fn rootfiles<R: Read + Seek>(archive: &mut ZipArchive<R>) -> Result<Vec<Rootfile>> {
+	const RENDITION: &str = "http://www.idpf.org/2013/rendition";
 	let container_xml = read_zip_entry_by_name(archive, "META-INF/container.xml")
 		.context("Failed to read META-INF/container.xml in EPUB")?;
 	let doc = XmlDocument::parse_with_options(
@@ -36,16 +53,15 @@ pub(super) fn find_container_path<R: Read + Seek>(archive: &mut ZipArchive<R>) -
 		ParsingOptions { allow_dtd: true, ..ParsingOptions::default() },
 	)
 	.context("Failed to parse container.xml")?;
-	for node in doc.descendants() {
-		if node.node_type() == NodeType::Element
-			&& node.tag_name().name() == "rootfile"
-			&& let Some(path) = node.attribute("full-path")
-		{
-			return Ok(path.to_string());
-		}
-	}
-	// TRANSLATORS: Error shown when an EPUB's container.xml is missing its rootfile reference
-	anyhow::bail!(t("rootfile not found in container.xml"))
+	Ok(doc
+		.descendants()
+		.filter(|node| node.node_type() == NodeType::Element && node.tag_name().name() == "rootfile")
+		.filter_map(|node| {
+			let path = node.attribute("full-path")?.to_string();
+			let access_mode = node.attribute((RENDITION, "accessMode")).map(str::to_string);
+			Some(Rootfile { path, access_mode })
+		})
+		.collect())
 }
 
 pub(super) fn parse_package(package: Node<'_, '_>, opf_dir: &str) -> PackageParts {

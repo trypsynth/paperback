@@ -268,3 +268,64 @@ fn record_jump_still_ignores_a_short_audio_seek() {
 	let (history, _) = session.get_history();
 	assert!(history.is_empty());
 }
+
+/// Two chapters, of one and three minutes, each a heading in the text and an entry in the table of contents.
+fn session_with_chapters(toc: bool) -> DocumentSession {
+	let mut builder = crate::audio::AudioTimelineBuilder::new();
+	let one = builder.add_source(AudioLocation::File("one.mp3".to_string()), Some(60_000));
+	let two = builder.add_source(AudioLocation::File("two.mp3".to_string()), Some(180_000));
+	builder.add_clip(one, 0, 60_000, 0.into(), 6.into());
+	builder.add_clip(two, 0, 180_000, 6.into(), 12.into());
+	let mut session = session_with_audio(builder.build());
+	if toc {
+		let mut document = session.handle.document().clone();
+		document.toc_items = vec![
+			crate::document::TocItem::new("Chapter 1".to_string(), String::new(), 0.into()),
+			crate::document::TocItem::new("Chapter 2".to_string(), String::new(), 6.into()),
+		];
+		session.handle = DocumentHandle::new(document);
+	}
+	session
+}
+
+#[test]
+fn audio_time_is_of_the_whole_recording() {
+	let session = session_with_chapters(true);
+	assert_eq!(session.audio_time_announcement(0).as_deref(), Some("0:00 of 4:00"));
+	assert_eq!(session.audio_time_announcement(90_500).as_deref(), Some("1:30 of 4:00"));
+	assert_eq!(session.audio_time_announcement(999_000).as_deref(), Some("4:00 of 4:00"));
+}
+
+#[test]
+fn audio_time_waits_for_every_length() {
+	let session = session_with_audio(lopsided_timeline(false));
+	assert_eq!(session.audio_time_announcement(0), None);
+	assert_eq!(session.audio_chapter_announcement(0), None);
+	assert_eq!(session.audio_time_announcement_ffi(0), "");
+}
+
+#[test]
+fn chapter_time_is_of_the_chapter_playing() {
+	let session = session_with_chapters(true);
+	assert_eq!(session.audio_chapter_announcement(30_000).as_deref(), Some("Chapter 1, 0:30 of 1:00, 0:30 left"));
+	assert_eq!(session.audio_chapter_announcement(60_000).as_deref(), Some("Chapter 2, 0:00 of 3:00, 3:00 left"));
+	assert_eq!(session.audio_chapter_announcement(150_000).as_deref(), Some("Chapter 2, 1:30 of 3:00, 1:30 left"));
+}
+
+#[test]
+fn a_book_without_chapters_is_one() {
+	let session = session_with_chapters(false);
+	assert_eq!(session.audio_chapter_announcement(150_000).as_deref(), Some("2:30 of 4:00, 1:30 left"));
+}
+
+#[test]
+fn go_to_time_entries_resolve_through_the_session() {
+	let session = session_with_chapters(true);
+	assert!(session.audio_time_known_ffi());
+	assert_eq!(session.audio_time_entry_ffi("1:30".to_string(), 0), 90_000);
+	assert_eq!(session.audio_time_entry_ffi("+30".to_string(), 60_000), 90_000);
+	assert_eq!(session.audio_time_entry_ffi("soon".to_string(), 0), -1);
+	assert_eq!(session.audio_time_entry_ffi("5:00".to_string(), 0), -2);
+	assert_eq!(session.format_audio_time_ffi(3_723_000), "1:02:03");
+	assert_eq!(session_with_audio(lopsided_timeline(false)).audio_time_entry_ffi("1:00".to_string(), 0), -3);
+}

@@ -50,7 +50,8 @@ Paperback supports the following formats and extensions:
 * Comic book archives (`.cbz`, `.cbr`)
 * CHM help files (`.chm`)
 * DAISY books (`.opf`, `.zip`)
-* EPUB books (`.epub`)
+* eBraille books, read in print when they include it, and otherwise back-translated with the braille code they name (`.ebrl`, or the `.opf` of one that isn't zipped)
+* EPUB books (`.epub`, or the `.opf` of one that isn't zipped)
 * FB2 ebooks (`.fb2`)
 * GNU Info manuals (`.info`, gzipped or not, and split manuals opened from any of their parts)
 * HTML documents (`.htm`, `.html`, `.xhtml`)
@@ -120,7 +121,7 @@ Punctuation shortcuts are named after the keys of a US keyboard. On another layo
 * `Ctrl+G` (macOS: `Cmd+L`): Go to line.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Go to percent.
 * `Ctrl+P`: Go to page (when supported by the current document).
-* `=`: Announce your current reading percentage and page, e.g. "15%, page 30". The page is left out for documents that have no page numbers.
+* `=`: Announce your current reading percentage and page, e.g. "15%, page 30". The page is left out for documents that have no page numbers. In an audio book, how far in you are and how long it runs come after, e.g. "15%, 1:02:03 of 10:30:00".
 * `Alt+Left` (macOS: `Cmd+[`): Go back in navigation history.
 * `Alt+Right` (macOS: `Cmd+]`): Go forward in navigation history.
 * `[`: Previous section.
@@ -169,6 +170,7 @@ Punctuation shortcuts are named after the keys of a US keyboard. On another layo
 
 * `Ctrl+Space` (macOS: `Control+Space`, i.e. the physical Control key, since Cmd+Space opens Spotlight): Play/pause audio narration.
 * `Ctrl+J`: Go to a time in the recording. Type it as `1:23:45`, `23:45` or `45` seconds, or put `+` or `-` in front to move from where you are, e.g. `+5:00`. The dialog shows how far in you are and how long the book runs.
+* `Shift+=`: Say how far into this chapter you are and how much of it is left, e.g. "Chapter 3, 4:10 of 12:00, 7:50 left".
 * `'`: Seek audio narration forward.
 * `;`: Seek audio narration backward.
 * `Shift+'`: Increase the audio seek amount.

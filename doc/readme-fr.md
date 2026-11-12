@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 622feff4c57acdc0; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - version 1.1
 
@@ -49,7 +49,7 @@ Si JAWS ne dit rien lorsque vous appuyez sur une touche qui devrait signaler que
 Paperback prend en charge les formats et extensions suivants :
 
 * Fichiers Braille Ready et livres au format Portable Embosser Format, rétro-traduits en imprimé avec la table braille de votre choix (`.brf`, `.pef`)
-* Archives de bandes dessinées (`.cbz`)
+* Archives de bandes dessinées (`.cbz`, `.cbr`)
 * Fichiers d'aide CHM (`.chm`)
 * Livres DAISY (`.opf`, `.zip`)
 * Livres EPUB (`.epub`)
@@ -67,6 +67,7 @@ Paperback prend en charge les formats et extensions suivants :
 * Fichiers d'aide et livres OS/2, avec leurs images (`.inf`, `.hlp`)
 * Documents PDF (`.pdf`)
 * Présentations PowerPoint (`.pptx`, `.pptm`, `.ppt`)
+* Archives RAR de livres, qui s'ouvrent comme un zip, avec une liste à choisir quand l'une en contient plusieurs (`.rar`)
 * Documents reStructuredText (`.rst`, `.rest`)
 * Documents RTF (`.rtf`)
 * Documents Windows Write (`.wri`)
@@ -121,7 +122,7 @@ Les raccourcis de ponctuation sont nommés d'après les touches d'un clavier am�
 * `Ctrl+G` (macOS : `Cmd+L`) : Aller à la ligne.
 * `Ctrl+Shift+G` (macOS : `Cmd+Shift+L`) : Aller au pourcentage.
 * `Ctrl+P` : Aller à la page (si supporté par le document actif).
-* `=` : Annoncer votre pourcentage de lecture actuel et votre page, par exemple « 15%, page 30 ». La page est omise pour les documents sans numéros de page.
+* `=` : Annoncer votre pourcentage de lecture actuel et votre page, par exemple « 15%, page 30 ». La page est omise pour les documents sans numéros de page. Dans un livre audio, votre progression et la durée totale apparaissent ensuite, par exemple « 15%, 1:02:03 de 10:30:00 ».
 * `Alt+Left` (macOS : `Cmd+[`) : Revenir en arrière dans l'historique de navigation.
 * `Alt+Right` (macOS : `Cmd+]`) : Avancer dans l'historique de navigation.
 * `[` : Section précédente.
@@ -170,6 +171,7 @@ Les raccourcis de ponctuation sont nommés d'après les touches d'un clavier am�
 
 * `Ctrl+Space` (macOS : `Control+Space`, c'est-à-dire la touche Control physique, car Cmd+Space ouvre Spotlight) : Lecture/pause de la narration audio.
 * `Ctrl+J` : Aller à un moment de l'enregistrement. Tapez-le comme `1:23:45`, `23:45` ou `45` secondes, ou mettez `+` ou `-` devant pour vous déplacer à partir de votre position actuelle, par exemple `+5:00`. La boîte de dialogue affiche votre avancement et la durée du livre.
+* `Shift+=` : Indiquer votre avancement dans ce chapitre et ce qui reste, par exemple « Chapitre 3, 4:10 de 12:00, 7:50 restant ».
 * `'` : Avancer rapidement dans la narration audio.
 * `;` : Reculer rapidement dans la narration audio.
 * `Shift+'` : Augmenter le montant de l'avance rapide audio.

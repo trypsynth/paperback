@@ -25,6 +25,7 @@ pub mod cbz;
 pub mod chm;
 pub mod convert;
 pub mod daisy;
+pub mod ebraille;
 pub mod epub;
 pub mod fb2;
 pub mod hlp;
@@ -52,6 +53,11 @@ pub mod wri;
 pub mod xps;
 
 pub const PASSWORD_REQUIRED_ERROR_PREFIX: &str = "[password_required]";
+
+/// A parser's answer for a file of an extension it shares but in a format that isn't its own, such as a DAISY book's `.opf` to the EPUB parser. It is never the error shown, since the file's own parser has a better one.
+#[derive(Debug, thiserror::Error)]
+#[error("{0} isn't this parser's format")]
+pub(crate) struct NotThisFormat(pub &'static str);
 
 pub trait Parser: Send + Sync {
 	/// # Errors
@@ -148,6 +154,7 @@ impl ParserRegistry {
 				OS2_HELP => ipf::IpfParser,
 				DAISY => daisy::DaisyParser,
 				WORD => word::WordParser,
+				EBRAILLE => ebraille::EbrailleParser,
 				EPUB => epub::EpubParser,
 				FB2 => fb2::Fb2Parser,
 				HTML => html::HtmlParser,
@@ -223,7 +230,9 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 					return Err(e);
 				}
 				tracing::warn!(path = %context.file_path, parser = parser.name(), error = %e, "parser failed, trying next");
-				last_error = Some(e);
+				if e.downcast_ref::<NotThisFormat>().is_none() || last_error.is_none() {
+					last_error = Some(e);
+				}
 			}
 		}
 	}

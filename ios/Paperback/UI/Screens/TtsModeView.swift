@@ -39,6 +39,11 @@ struct TtsModeView: View {
 						Text(t("{}% through").replacingOccurrences(of: "{}", with: "\(percent)"))
 							.font(.caption)
 							.foregroundStyle(.secondary)
+						if let time = audioTime {
+							Text(time)
+								.font(.caption)
+								.foregroundStyle(.secondary)
+						}
 					}
 				}
 			}
@@ -49,6 +54,13 @@ struct TtsModeView: View {
 			}
 			Spacer()
 		}
+	}
+
+	/// How far into the recording, such as "1:02:03 of 10:30:00", or nil while a file's length is unknown.
+	private var audioTime: String? {
+		guard let session = viewModel.activeSession, let elapsed = viewModel.reading.audioElapsedMs() else { return nil }
+		let time = session.audioTimeAnnouncementFfi(elapsedMs: elapsed)
+		return time.isEmpty ? nil : time
 	}
 
 	/// Nil when the spoken text already contains it, as in a one-line paragraph, so the same words don't appear twice.

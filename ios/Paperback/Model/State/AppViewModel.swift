@@ -595,7 +595,7 @@ func nextUnitLabel(_ type: SegmentTypeFfi) -> String {
 }
 
 enum GoToMode {
-	case line, page, percent
+	case line, page, percent, time
 }
 
 struct SearchOptions: Equatable {

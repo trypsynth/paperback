@@ -10,10 +10,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
@@ -31,6 +33,7 @@ import dev.paperback.android.ui.state.lineIndexFor
 const val GO_TO_LINE = "Line"
 const val GO_TO_PAGE = "Page"
 const val GO_TO_PERCENTAGE = "Percentage"
+const val GO_TO_TIME = "Time"
 
 /** Literal `t()` calls so the string extractor can find them; `t(mode)` on a variable would leave nothing to extract. */
 private fun goToModeName(mode: String): String = when (mode) {
@@ -38,6 +41,8 @@ private fun goToModeName(mode: String): String = when (mode) {
 	GO_TO_LINE -> t("Line")
 	// TRANSLATORS: Go To mode that jumps to a page number
 	GO_TO_PAGE -> t("Page")
+	// TRANSLATORS: Go To mode that jumps to a time in an audiobook, such as 1:23:45
+	GO_TO_TIME -> t("Time")
 	// TRANSLATORS: Go To mode that jumps to a percentage through the document
 	else -> t("Percentage")
 }
@@ -49,7 +54,9 @@ fun GoToDialog(
 	onDismiss: () -> Unit,
 	onGoTo: (Int) -> Unit,
 	initialMode: String = GO_TO_LINE,
-	onSeekPercent: (Int) -> Boolean = { false }
+	onSeekPercent: (Int) -> Boolean = { false },
+	audioElapsedMs: Long? = null,
+	onSeekTime: (Long) -> Boolean = { false }
 ) {
 	val maxLines = remember(docState.session) { docState.session.lineCount() }
 	val maxPages = remember(docState.session) { docState.session.pageCountFfi() }
@@ -63,13 +70,32 @@ fun GoToDialog(
 				}
 			}
 			add(GO_TO_PERCENTAGE)
+			// Only where every file's length is known, since a time can't be placed otherwise.
+			if (docState.session.audioTimeKnownFfi()) add(GO_TO_TIME)
 		}
 	}
+	val currentMs = audioElapsedMs ?: 0L
+	val currentTime = remember(docState.session, currentMs) { docState.session.formatAudioTimeFfi(currentMs) }
+	val totalTime = remember(docState.session) {
+		docState.session.formatAudioTimeFfi(docState.session.audioTotalDurationMsFfi())
+	}
+	var timeValue by remember { mutableStateOf(currentTime) }
+	var timeError by remember { mutableStateOf<String?>(null) }
 	var selectedMode by remember { mutableStateOf(if (initialMode in modes) initialMode else modes.first()) }
 	var inputValue by remember { mutableStateOf("") }
 	var sliderPercent by remember { mutableIntStateOf(0) }
 	var dropdownExpanded by remember { mutableStateOf(false) }
-	val onSubmit = {
+	val onSubmit = submit@{
+		if (selectedMode == GO_TO_TIME) {
+			when (val targetMs = docState.session.audioTimeEntryFfi(timeValue, currentMs)) {
+				// TRANSLATORS: Announced when what was typed in the Go to Time dialog is not a time
+				-1L -> timeError = t("Type a time like 1:23:45, 23:45 or 45.")
+				// TRANSLATORS: Announced when the time typed in the Go to Time dialog is past the end of the recording, or before its start
+				-2L, -3L -> timeError = t("Time out of range.")
+				else -> if (onSeekTime(targetMs)) onDismiss()
+			}
+			return@submit
+		}
 		// For audio, a percentage means running time rather than a share of the placeholder text.
 		val seeked = selectedMode == GO_TO_PERCENTAGE && onSeekPercent(sliderPercent)
 		val targetPos = if (seeked) {
@@ -171,6 +197,24 @@ fun GoToDialog(
 							modifier = Modifier.fillMaxWidth()
 						)
 					}
+				} else if (selectedMode == GO_TO_TIME) {
+					TextField(
+						value = timeValue,
+						onValueChange = {
+							timeValue = it
+							timeError = null
+						},
+						// TRANSLATORS: Label of the field in the Go to Time dialog. The first {} is the time played so far and the second is the recording's length, both written like 1:02:03
+						label = { Text(t("Go to time ({}/{}):", currentTime, totalTime)) },
+						isError = timeError != null,
+						supportingText = timeError?.let { error ->
+							{ Text(error, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
+						},
+						keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Go),
+						keyboardActions = KeyboardActions(onGo = { onSubmit() }),
+						singleLine = true,
+						modifier = Modifier.fillMaxWidth()
+					)
 				} else {
 					TextField(
 						value = inputValue,

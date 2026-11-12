@@ -8,6 +8,7 @@ private val EXTRA_MIME_TYPES = mapOf(
 	"doc" to setOf("application/msword"),
 	"docm" to setOf("application/vnd.ms-word.document.macroEnabled.12"),
 	"docx" to setOf("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+	"ebrl" to setOf("application/ebrl+zip"),
 	"epub" to setOf("application/epub+zip"),
 	"fb2" to setOf("application/x-fictionbook+xml"),
 	"fodp" to setOf("application/vnd.oasis.opendocument.presentation"),

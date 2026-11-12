@@ -250,6 +250,9 @@ actions! {
 	PlayPauseAudio, Audio, t("Play/Pause Audio"), ctrl("Space"), mac: physical_ctrl("Space");
 	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 	GoToAudioTime, Audio, t("Go to Time..."), ctrl("J");
+	// Beside `=`, which gives the time in the whole book.
+	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+	AnnounceChapterTime, Audio, t("Announce Chapter Time"), shift("=");
 	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 	SeekAudioForward, Audio, t("Seek Audio Forward"), key("'");
 	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).

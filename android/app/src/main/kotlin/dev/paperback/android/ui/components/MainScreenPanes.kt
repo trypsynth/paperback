@@ -82,6 +82,7 @@ fun ReadAloudPane(
 	segmentText: String,
 	readability: ReadabilityStyle,
 	progressPercent: Int?,
+	audioTime: String?,
 	sleepTimerRemaining: Int?,
 	onCancelSleepTimer: () -> Unit
 ) {
@@ -117,6 +118,10 @@ fun ReadAloudPane(
 				style = MaterialTheme.typography.labelMedium,
 				color = MaterialTheme.colorScheme.onSurfaceVariant
 			)
+		}
+		if (audioTime != null) {
+			Spacer(modifier = Modifier.height(8.dp))
+			Text(audioTime, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 		}
 		if (sleepTimerRemaining == null) return@Column
 		Spacer(modifier = Modifier.height(16.dp))

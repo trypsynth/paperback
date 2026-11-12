@@ -117,6 +117,27 @@
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
+			<string>org.daisy.ebraille</string>
+			<key>UTTypeDescription</key>
+			<string>eBraille Book</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.zip-archive</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>ebrl</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/ebrl+zip</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
 			<string>com.rarlab.rar-archive</string>
 			<key>UTTypeDescription</key>
 			<string>RAR Archive</string>
@@ -345,6 +366,7 @@
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>org.idpf.epub-container</string>
+				<string>org.daisy.ebraille</string>
 				<string>dev.paperback.mobi</string>
 				<string>dev.paperback.fb2</string>
 			</array>
