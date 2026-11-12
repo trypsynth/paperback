@@ -8,7 +8,7 @@ use zip::ZipArchive;
 
 use super::{AudioClipFfi, AudioCursorFfi, AudioPointFfi, DocumentSession};
 use crate::{
-	audio::{AudioLocation, TimelinePoint, clock},
+	audio::{AudioLocation, AudioTimeline, TimelinePoint, clock},
 	document::DocPos,
 	t,
 	util::zip as zip_utils,
@@ -144,7 +144,7 @@ impl DocumentSession {
 	/// Whether a time in the recording can be placed: every file's length is known.
 	#[must_use]
 	pub fn audio_time_known_ffi(&self) -> bool {
-		self.audio().is_some_and(|timeline| timeline.durations_are_known())
+		self.audio().is_some_and(AudioTimeline::durations_are_known)
 	}
 
 	/// A time in the recording written as Go to Time shows it, such as 1:02:03.
@@ -155,8 +155,11 @@ impl DocumentSession {
 
 	/// What was typed into Go to Time, in milliseconds from the start: `-1` when it isn't a time, `-2` when it falls outside the recording, and `-3` when the recording's length isn't known. A leading `+` or `-` moves from `current_ms`.
 	#[must_use]
+	#[allow(clippy::needless_pass_by_value, reason = "uniffi hands strings over by value")]
 	pub fn audio_time_entry_ffi(&self, text: String, current_ms: i64) -> i64 {
-		let Some(timeline) = self.audio().filter(|timeline| timeline.durations_are_known()) else { return -3 };
+		let Some(timeline) = self.audio().filter(|timeline| timeline.durations_are_known()) else {
+			return -3;
+		};
 		match clock::resolve_entry_ms(&text, u64::try_from(current_ms).unwrap_or(0), timeline.total_duration_ms()) {
 			Ok(ms) => i64::try_from(ms).unwrap_or(-2),
 			Err(clock::TimeEntryError::NotATime) => -1,
