@@ -70,7 +70,7 @@ impl HuffmanDecoder {
 			// TRANSLATORS: Error shown when a MOBI file's Huffman cache table offset is out of bounds
 			anyhow::bail!(t("Invalid HUFF cache offset"));
 		}
-		for i in 0..256 {
+		for (i, entry) in self.code_dict.iter_mut().enumerate() {
 			let off = cache_offset + i * 4;
 			let v = u32::from_be_bytes([huff[off], huff[off + 1], huff[off + 2], huff[off + 3]]);
 			let code_len = (v & 0x1F) as u8;
@@ -85,7 +85,7 @@ impl HuffmanDecoder {
 				anyhow::bail!(t("Bad term"));
 			}
 			max_code = ((max_code + 1) << (32usize.saturating_sub(code_len as usize))).saturating_sub(1);
-			self.code_dict[i] = (code_len, term, max_code as u32);
+			*entry = (code_len, term, max_code as u32);
 		}
 		// Base table has 64 interleaved entries: [min1, max1, min2, max2, ... min32, max32]
 		if base_offset + 64 * 4 > huff.len() {

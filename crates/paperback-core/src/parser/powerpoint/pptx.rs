@@ -98,7 +98,7 @@ pub(super) fn parse_pptx(context: &ParserContext) -> Result<Document> {
 					.with_length(table.length),
 			);
 		}
-		let toc_name = if slide_title.is_empty() { format!("Slide {}", index + 1) } else { slide_title.clone() };
+		let toc_name = if slide_title.is_empty() { format!("Slide {}", index + 1) } else { slide_title };
 		toc_items.push(TocItem::new(toc_name, String::new(), slide_start));
 	}
 	let (title, author) = read_core_properties(&mut archive);
