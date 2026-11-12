@@ -18,6 +18,7 @@ use crate::{
 	parser::{cbz, fb2, ipf, is_data_uri, is_external_url, mobi},
 	t,
 	util::{
+		rar,
 		text::url_decode,
 		zip::{read_zip_entry_bytes, read_zip_entry_bytes_with_password},
 	},
@@ -97,8 +98,10 @@ impl DocumentSession {
 		}
 		let extension = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
 		match extension.as_deref() {
-			Some("epub" | "cbz" | "cbr") => {
-				let mut archive = ZipArchive::new(BufReader::new(File::open(&self.file_path)?))?;
+			// A real RAR, comic or not, was read from the zip copy of it, which holds no password.
+			Some("epub" | "cbz" | "cbr" | "rar") => {
+				let mut archive =
+					ZipArchive::new(BufReader::new(File::open(rar::as_zip(Path::new(&self.file_path))?)?))?;
 				read_zip_entry_bytes(&mut archive, source)
 			}
 			Some("chm") => {

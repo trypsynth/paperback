@@ -59,6 +59,8 @@ paperback-formats = { workspace = true }
 patois = { workspace = true }
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.6", default-features = false, features = ["html"] }
+# Pinned: it is young and mostly one person's, so each update is read before it lands. Only reading, and only the encryption password-protected archives need.
+rars = { version = "=0.12.4", default-features = false, features = ["encryption"] }
 rayon = { workspace = true }
 regex = "1.13.1"
 roman = "0.2.2"
@@ -86,6 +88,8 @@ shipfitter = { workspace = true }
 uniffi = { version = "0.32.2", features = ["build"], optional = true }
 
 [dev-dependencies]
+# Tests write the archives they read, so no RAR files need checking in.
+rars = { version = "=0.12.4", default-features = false, features = ["encryption", "write"] }
 rstest = { workspace = true }
 zip = { workspace = true, features = ["aes-crypto"] }
 

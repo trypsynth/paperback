@@ -1,5 +1,6 @@
-//! Real RAR isn't read: `unrar_sys` picks its C++ sources by the build host's OS rather than the target's, which breaks every cross build.
-//! Android gets the Unix set and calls `lutimes`, which bionic lacks, and iOS gets host-SDK objects the linker refuses at our deployment target.
+//! A real RAR comic is read from the `.cbz` copy [`crate::util::rar`] makes of it.
+
+use std::path::Path;
 
 use anyhow::Result;
 
@@ -7,7 +8,7 @@ use super::cbz;
 use crate::{
 	document::{Document, ParserContext},
 	parser::Parser,
-	t,
+	util::rar,
 };
 
 pub struct CbrParser;
@@ -20,13 +21,9 @@ impl Parser for CbrParser {
 			tracing::debug!(path = %context.file_path, "cbr file is really a zip, reading it as one");
 			return cbz::CbzParser.parse(context);
 		}
-		Err(unsupported())
+		let copy = rar::zip_copy(Path::new(&context.file_path), context.password.as_deref(), &rar::cache_root())?;
+		cbz::CbzParser.parse(&ParserContext { file_path: copy.to_string_lossy().into_owned(), ..context.clone() })
 	}
-}
-
-pub(crate) fn unsupported() -> anyhow::Error {
-	// TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
-	anyhow::anyhow!(t("Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."))
 }
 
 #[cfg(test)]
@@ -68,11 +65,15 @@ mod tests {
 	}
 
 	#[test]
-	fn a_real_rar_is_refused_with_advice() {
+	fn a_real_rar_reads_from_its_copy() {
 		let dir = TempDir::new("cbr-rar");
-		let path = write_comic(&dir, "book.cbr", &MARKER);
-		let error = CbrParser.parse(&ParserContext::new(path)).expect_err("a RAR is not read");
-		assert!(error.to_string().contains(".cbz"), "{error}");
+		let mut builder = rars::Builder::new(rars::ArchiveVersion::Rar50);
+		for name in ["001.png", "002.png"] {
+			builder.add_bytes(name.as_bytes().to_vec(), PIXEL.to_vec(), None, None).expect("add a page");
+		}
+		let path = write_comic(&dir, "book.cbr", &builder.to_bytes().expect("build the RAR"));
+		let document = CbrParser.parse(&ParserContext::new(path)).expect("a RAR comic is read");
+		assert_eq!(document.buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::PageBreak).count(), 2);
 	}
 
 	#[test]

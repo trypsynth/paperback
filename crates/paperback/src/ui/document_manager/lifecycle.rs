@@ -357,7 +357,7 @@ impl DocumentManager {
 	}
 }
 
-pub(super) fn prompt_for_password(parent: &dyn WxWidget) -> Option<String> {
+pub(crate) fn prompt_for_password(parent: &dyn WxWidget) -> Option<String> {
 	// TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 	let dialog = TextEntryDialog::builder(parent, &t("&Password:"), &t("Document Password")).password().build();
 	if dialog.show_modal() != ID_OK {
