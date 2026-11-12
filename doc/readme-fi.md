@@ -47,7 +47,7 @@ Jos JAWS ei puhu mitään painaessasi jotain ilmoituksen aiheuttavaa näppäint�
 Paperback tukee seuraavia tiedostomuotoja:
 
 * Braille Ready File- ja Portable Embosser Format -muodossa olevat pistekirjat (`.brf`, `.pef`), joiden pistekirjoitus muunnetaan tavalliseksi tekstiksi käyttäjän valitseman pistetaulukon avulla
-* Sarjakuvapaketit (`.cbz`)
+* Sarjakuvapaketit (`.cbz`, `.cbr`)
 * CHM-ohjetiedostot (`.chm`)
 * DAISY-kirjat (`.opf`, `.zip`)
 * EPUB-kirjat (`.epub`)
@@ -65,6 +65,7 @@ Paperback tukee seuraavia tiedostomuotoja:
 * OS/2:n ohjetiedostot ja -kirjat kuvineen (`.inf`, `.hlp`)
 * PDF-asiakirjat (`.pdf`)
 * PowerPoint-esitykset (`.pptx`, `.pptm`, `.ppt`)
+* Kirjoja sisältävät RAR-paketit, jotka avataan ZIP-pakettien tavoin. Jos paketissa on useita kirjoja, avattava kirja valitaan luettelosta (`.rar`)
 * reStructuredText-asiakirjat (`.rst`, `.rest`)
 * RTF-asiakirjat (`.rtf`)
 * Windows Write -asiakirjat (`.wri`)
