@@ -68,6 +68,14 @@ pub fn table_for_code(code: BrailleCode) -> Option<&'static str> {
 	let words: Vec<String> = code.system.split_whitespace().map(str::to_ascii_lowercase).collect();
 	let grade = words.iter().find_map(|word| word.strip_prefix("grade")?.parse::<u8>().ok());
 	let computer = words.iter().any(|word| word.starts_with("comp"));
+	// A code without a grade number may name its contraction in words, as DAISY Pipeline's `French uncontracted no-grade` does.
+	let contraction = if words.iter().any(|word| word == "uncontracted") {
+		Some("no")
+	} else if words.iter().any(|word| word == "contracted") {
+		Some("full")
+	} else {
+		None
+	};
 	let systems: Vec<&str> = words
 		.iter()
 		.map(String::as_str)
@@ -108,6 +116,12 @@ pub fn table_for_code(code: BrailleCode) -> Option<&'static str> {
 				}
 			});
 			if grade.is_some() && table_grade != grade {
+				return None;
+			}
+			if grade.is_none()
+				&& let Some(contraction) = contraction
+				&& get("contraction").as_deref() != Some(contraction)
+			{
 				return None;
 			}
 			if let (Some(cells), Some(dots)) = (code.cells, get("dots").and_then(|dots| dots.parse::<u8>().ok()))

@@ -285,6 +285,7 @@ fn lists_the_tables_people_choose_by_name() {
 #[case("de-Brai", "German grade1", None, Some("de-g1-detailed.ctb"))]
 #[case("de-Brai", "German grade0", None, Some("de-g0-detailed.utb"))]
 #[case("fr-Brai", "French grade2", None, Some("fr-bfu-g2.ctb"))]
+#[case("fr-Brai", "French uncontracted no-grade", None, Some("fr-bfu-comp6.utb"))]
 #[case("xx-Brai", "Unknown grade2", None, None)]
 fn finds_the_table_an_ebraille_book_names(
 	#[case] language: &str,
