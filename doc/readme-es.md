@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versión 1.1
 
@@ -26,7 +26,7 @@ Paperback funciona en Windows 10/11, todas las versiones modernas de ARM macOS, 
 * Marcadores y notas, para que puedas marcar tu lugar y volver a él.
 * Cada atajo de teclado puede ser personalizado.
 * Abre documentos directamente desde enlaces http y https, y los descarga nuevamente cuando los reabre o presiona `F5`, manteniendo tu posición de lectura y marcadores. Al restaurar los documentos que tenías abiertos, descarga nuevamente los de enlaces que eran de 2 MB o menores.
-* Viene con `pb`, una herramienta de línea de comandos que convierte cualquier documento compatible a HTML, Markdown o texto plano. Acepta tantos documentos como le proporciones, expande `*.pdf` y similares por sí sola para que el mismo comando funcione en Windows, y puede escribir un archivo por documento en una carpeta. También puede leer una lista de documentos de un archivo o desde stdin con `--files-from`, y convertir documentos directamente desde enlaces http y https.
+* Viene con `pb`, una herramienta de línea de comandos que convierte cualquier documento compatible a HTML, Markdown o texto plano. Acepta tantos documentos como le proporciones, expande `*.pdf` y similares por sí sola para que el mismo comando funcione en Windows, y puede escribir un archivo por documento en una carpeta, convirtiendo varios a la vez (`--jobs` establece cuántos). También puede leer una lista de documentos de un archivo o desde stdin con `--files-from`, y convertir documentos directamente desde enlaces http y https.
 
 ## Compatibilidad con lectores de pantalla
 
@@ -48,11 +48,13 @@ Si JAWS no dice nada cuando presiona una tecla que debería reportar algo, abra 
 
 Paperback admite los siguientes formatos y extensiones:
 
-* Archivos de cómics (`.cbz`)
+* Archivos Braille Listo y libros Portable Embosser Format, retrotranducidos a impresión con la tabla braille que elijas (`.brf`, `.pef`)
+* Archivos de cómics (`.cbz`, `.cbr`)
 * Archivos de ayuda CHM (`.chm`)
 * Libros DAISY (`.opf`, `.zip`)
 * Libros EPUB (`.epub`)
 * Libros electrónicos FB2 (`.fb2`)
+* Manuales GNU Información (`.info`, comprimidos o no, y manuales divididos abiertos desde cualquiera de sus partes)
 * Documentos HTML (`.htm`, `.html`, `.xhtml`)
 * Páginas de manual, tanto `man` como BSD `mdoc` (`.1` a `.9`, `.man`, `.roff` y sus formas comprimidas)
 * Documentos Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -62,12 +64,15 @@ Paperback admite los siguientes formatos y extensiones:
 * Audiolibros MP3 (`.mp3`)
 * Presentaciones OpenDocument (`.odp`, `.fodp`)
 * Archivos de texto OpenDocument (`.odt`, `.fodt`)
+* Archivos de ayuda y libros OS/2, con sus imágenes (`.inf`, `.hlp`)
 * Documentos PDF (`.pdf`)
 * Presentaciones PowerPoint (`.pptx`, `.pptm`, `.ppt`)
+* Archivos RAR de libros, que se abren como lo hace un zip, con una lista para elegir cuando contienen varios (`.rar`)
 * Documentos reStructuredText (`.rst`, `.rest`)
 * Documentos RTF (`.rtf`)
 * Documentos Windows Write (`.wri`)
 * Archivos WinHelp (`.hlp`)
+* Documentos XPS y OpenXPS (`.xps`, `.oxps`)
 * Archivos de texto sin formato y registros (`.txt`, `.log`)
 
 ## Atajos de teclado
@@ -75,6 +80,8 @@ Paperback admite los siguientes formatos y extensiones:
 Paperback está diseñado para usar el teclado como elemento principal. Aquí están los atajos actuales.
 
 Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, el equivalente se indica entre paréntesis — principalmente porque `Ctrl+G`, `Ctrl+W` y `Alt+Left`/`Alt+Right` ya están reservados por otras convenciones del sistema o de la aplicación en esa plataforma.
+
+Los atajos de puntuación se nombran según las teclas de un teclado estadounidense. En otra distribución, presiona la tecla en el mismo lugar, sea cual sea su etiqueta: en un teclado húngaro, la tecla etiquetada como `é` funciona como `;` y la etiquetada como `á` como `'`, así que `Ctrl+'` significa Ctrl y la tecla `á`. Los menús aún muestran los nombres estadounidenses. En macOS, los menús muestran las teclas que usa tu propia distribución en su lugar.
 
 ### Menú Archivo
 
@@ -115,7 +122,7 @@ Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, e
 * `Ctrl+G` (macOS: `Cmd+L`): Ir a la línea.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Ir al porcentaje.
 * `Ctrl+P`: Ir a la página (cuando lo admita el documento actual).
-* `=`: Anuncia tu porcentaje de lectura actual y página, p. ej. "15%, página 30". La página se omite para documentos sin números de página.
+* `=`: Anuncia tu porcentaje de lectura actual y página, p. ej. "15%, página 30". La página se omite para documentos sin números de página. En un audiolibro, tu avance y la duración del libro vienen después, p. ej. "15%, 1:02:03 de 10:30:00".
 * `Alt+Left` (macOS: `Cmd+[`): Retrocede en el historial de navegación.
 * `Alt+Right` (macOS: `Cmd+]`): Avanza en el historial de navegación.
 * `[`: Sección anterior.
@@ -163,6 +170,8 @@ Los atajos que aparecen a continuación son para Windows. Donde macOS difiere, e
 ### Menú Audio
 
 * `Ctrl+Space` (macOS: `Control+Space`, es decir, la tecla Control física, ya que `Cmd+Space` abre Spotlight): Reproduce/pausa la narración de audio.
+* `Ctrl+J`: Ir a un momento en la grabación. Escríbelo como `1:23:45`, `23:45` o `45` segundos, o pon `+` o `-` delante para moverte desde donde estés, p. ej. `+5:00`. El diálogo muestra tu avance y la duración del libro.
+* `Shift+=`: Di cuánto llevas de este capítulo y cuánto te queda, p. ej. "Capítulo 3, 4:10 de 12:00, 7:50 restante".
 * `'`: Busca hacia adelante en la narración de audio.
 * `;`: Busca hacia atrás en la narración de audio.
 * `Shift+'`: Aumenta la cantidad de búsqueda de audio.

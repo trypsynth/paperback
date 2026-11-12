@@ -5,18 +5,16 @@ use std::{
 
 use paperback_core::parser::is_remote_url;
 
-#[cfg(any(target_os = "linux", target_os = "windows", test))]
-pub const IPC_COMMAND_ACTIVATE: &str = "ACTIVATE";
-#[cfg(any(target_os = "linux", target_os = "windows", test))]
-pub const IPC_COMMAND_TOGGLE_VISIBILITY: &str = "TOGGLE";
+/// The name a second copy finds the running one by. Not on macOS, which keeps a bundled app to one copy by itself and sends it the files the user opens.
 #[cfg(any(target_os = "linux", target_os = "windows"))]
-pub const SINGLE_INSTANCE_NAME: &str = "paperback_running";
+pub const APP_NAME: &str = "paperback";
 
 #[cfg(any(target_os = "linux", target_os = "windows", test))]
 #[derive(Debug, Clone)]
 pub enum IpcCommand {
 	Activate,
-	#[cfg(any(target_os = "linux", target_os = "windows", test))]
+	/// From the global hotkey, which only Windows has.
+	#[cfg(target_os = "windows")]
 	ToggleVisibility,
 	Open(Target),
 }
@@ -35,27 +33,32 @@ pub fn target_for_argument(argument: &str) -> Target {
 	}
 }
 
+/// What a second copy sends the running one: each file by its full path, since the running copy may be in another folder, and each link as written. An empty message brings the window to the front.
 #[cfg(any(target_os = "linux", target_os = "windows", test))]
-pub fn decode_execute_payload(data: &[u8]) -> Option<IpcCommand> {
-	if data.is_empty() {
-		return None;
-	}
-	let payload = String::from_utf8_lossy(data);
-	let payload = payload.replace('\0', "");
-	let payload = payload.trim();
-	if payload.is_empty() {
-		return None;
-	}
-	if payload == IPC_COMMAND_ACTIVATE {
-		return Some(IpcCommand::Activate);
-	}
-	if payload == IPC_COMMAND_TOGGLE_VISIBILITY {
-		return Some(IpcCommand::ToggleVisibility);
-	}
-	// The sending instance already gave a file its full path.
-	let target =
-		if is_remote_url(payload) { Target::Link(payload.to_string()) } else { Target::File(PathBuf::from(payload)) };
-	Some(IpcCommand::Open(target))
+pub fn message_from_args(args: impl IntoIterator<Item = String>) -> Vec<String> {
+	args.into_iter()
+		.map(|argument| match target_for_argument(&argument) {
+			Target::File(path) => path.to_string_lossy().into_owned(),
+			Target::Link(link) => link,
+		})
+		.collect()
+}
+
+/// What the running copy does with a message from a second copy.
+#[cfg(any(target_os = "linux", target_os = "windows", test))]
+pub fn commands_from_message(message: &[String]) -> Vec<IpcCommand> {
+	let commands: Vec<IpcCommand> = message
+		.iter()
+		.map(|part| part.trim())
+		.filter(|part| !part.is_empty())
+		.map(|part| {
+			// The second copy already gave a file its full path.
+			let target =
+				if is_remote_url(part) { Target::Link(part.to_string()) } else { Target::File(PathBuf::from(part)) };
+			IpcCommand::Open(target)
+		})
+		.collect();
+	if commands.is_empty() { vec![IpcCommand::Activate] } else { commands }
 }
 
 pub fn normalize_cli_path(path: &Path) -> PathBuf {
@@ -68,98 +71,42 @@ pub fn normalize_cli_path(path: &Path) -> PathBuf {
 	env::current_dir().map_or_else(|_| path.to_path_buf(), |cwd| cwd.join(path))
 }
 
-/// Scoped to the user so one user's instance never receives another's files.
-#[cfg(windows)]
-pub fn named_pipe_path() -> String {
-	let user = env::var("USERNAME").unwrap_or_else(|_| "user".to_string());
-	format!(r"\\.\pipe\paperback_{user}")
-}
-
 #[cfg(test)]
 mod tests {
 	use super::*;
 
-	#[test]
-	fn decode_execute_payload_handles_empty_and_nulls() {
-		assert!(decode_execute_payload(b"").is_none());
-		assert!(decode_execute_payload(b"\0\0").is_none());
-		assert!(decode_execute_payload(b" \0").is_none());
+	fn opened(command: &IpcCommand) -> &Target {
+		let IpcCommand::Open(target) = command else { panic!("expected something to open, got {command:?}") };
+		target
 	}
 
 	#[test]
-	fn decode_execute_payload_handles_activate() {
-		let cmd = decode_execute_payload(b"ACTIVATE\0").expect("expected command");
-		match cmd {
-			IpcCommand::Activate => {}
-			_ => panic!("expected Activate"),
-		}
+	fn an_empty_message_brings_the_window_to_the_front() {
+		assert!(matches!(commands_from_message(&[]).as_slice(), [IpcCommand::Activate]));
+		assert!(matches!(commands_from_message(&[" ".into(), String::new()]).as_slice(), [IpcCommand::Activate]));
 	}
 
 	#[test]
-	fn decode_execute_payload_handles_open_file() {
-		let cmd = decode_execute_payload(b"C:\\test\\file.txt\0").expect("expected command");
-		match cmd {
-			IpcCommand::Open(Target::File(path)) => {
-				assert_eq!(path, PathBuf::from("C:\\test\\file.txt"));
-			}
-			_ => panic!("expected a file to open"),
-		}
+	fn each_file_and_link_in_a_message_is_opened() {
+		let commands = commands_from_message(&[
+			"C:\\My Docs\\book.txt".into(),
+			"https://example.org/Book%20One.epub".into(),
+			"  C:\\Books\\novel.epub  ".into(),
+		]);
+		assert_eq!(commands.len(), 3);
+		assert_eq!(opened(&commands[0]), &Target::File(PathBuf::from("C:\\My Docs\\book.txt")));
+		assert_eq!(opened(&commands[1]), &Target::Link("https://example.org/Book%20One.epub".to_string()));
+		assert_eq!(opened(&commands[2]), &Target::File(PathBuf::from("C:\\Books\\novel.epub")));
 	}
 
 	#[test]
-	fn normalize_cli_path_handles_absolute_and_relative() {
-		#[cfg(windows)]
-		let abs = Path::new("C:\\nonexistent_abs_path");
-		#[cfg(not(windows))]
-		let abs = Path::new("/nonexistent_abs_path");
-		assert_eq!(normalize_cli_path(abs), abs.to_path_buf());
-		let rel = Path::new("nonexistent_rel_path");
-		let expected = env::current_dir().unwrap().join(rel);
-		assert_eq!(normalize_cli_path(rel), expected);
-	}
-
-	#[test]
-	fn decode_execute_payload_trims_whitespace_for_activate() {
-		let cmd = decode_execute_payload(b"  ACTIVATE  ").expect("expected command");
-		match cmd {
-			IpcCommand::Activate => {}
-			_ => panic!("expected Activate"),
-		}
-	}
-
-	#[test]
-	fn decode_execute_payload_allows_spaced_open_file_paths() {
-		let cmd = decode_execute_payload(b"  C:\\My Docs\\book.txt  ").expect("expected command");
-		match cmd {
-			IpcCommand::Open(Target::File(path)) => assert_eq!(path, PathBuf::from("C:\\My Docs\\book.txt")),
-			_ => panic!("expected a file to open"),
-		}
-	}
-
-	#[test]
-	fn decode_execute_payload_handles_non_utf8_bytes_lossy() {
-		let cmd = decode_execute_payload(&[0xFF, 0xFE, b'a']).expect("expected command");
-		match cmd {
-			IpcCommand::Open(Target::File(path)) => assert!(path.to_string_lossy().contains('a')),
-			_ => panic!("expected a file to open"),
-		}
-	}
-
-	#[test]
-	fn decode_execute_payload_strips_embedded_nulls() {
-		let cmd = decode_execute_payload(b"C:\\Books\\novel.epub\0\0").expect("expected command");
-		match cmd {
-			IpcCommand::Open(Target::File(path)) => assert_eq!(path, PathBuf::from("C:\\Books\\novel.epub")),
-			_ => panic!("expected a file to open"),
-		}
-	}
-
-	#[test]
-	fn decode_execute_payload_hands_a_link_on_as_written() {
-		match decode_execute_payload(b"https://example.org/Book%20One.epub\0").expect("expected command") {
-			IpcCommand::Open(Target::Link(link)) => assert_eq!(link, "https://example.org/Book%20One.epub"),
-			other => panic!("expected a link to open, got {other:?}"),
-		}
+	fn a_second_copy_sends_files_by_their_full_path_and_links_as_written() {
+		let expected = env::current_dir().unwrap().join("nonexistent_book.epub");
+		assert_eq!(
+			message_from_args(["nonexistent_book.epub".to_string(), "https://example.org/Book%20One.epub".to_string()]),
+			vec![expected.to_string_lossy().into_owned(), "https://example.org/Book%20One.epub".to_string()]
+		);
+		assert!(message_from_args(Vec::new()).is_empty());
 	}
 
 	#[test]
@@ -174,6 +121,18 @@ mod tests {
 	fn a_file_argument_is_opened_by_its_full_path() {
 		let expected = env::current_dir().unwrap().join("nonexistent_book.epub");
 		assert_eq!(target_for_argument("nonexistent_book.epub"), Target::File(expected));
+	}
+
+	#[test]
+	fn normalize_cli_path_handles_absolute_and_relative() {
+		#[cfg(windows)]
+		let abs = Path::new("C:\\nonexistent_abs_path");
+		#[cfg(not(windows))]
+		let abs = Path::new("/nonexistent_abs_path");
+		assert_eq!(normalize_cli_path(abs), abs.to_path_buf());
+		let rel = Path::new("nonexistent_rel_path");
+		let expected = env::current_dir().unwrap().join(rel);
+		assert_eq!(normalize_cli_path(rel), expected);
 	}
 
 	#[test]

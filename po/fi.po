@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 21:30+0000\n"
-"PO-Revision-Date: 2026-11-03 14:49+0200\n"
+"POT-Creation-Date: 2026-11-11 17:53+0000\n"
+"PO-Revision-Date: 2026-11-12 05:54+0200\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -18,6 +18,143 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.10\n"
+
+#. TRANSLATORS: Title of the question asked after the app closed unexpectedly
+#. TRANSLATORS: Title of the dialog for sending a problem report to the developer
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Report a Problem"
+msgstr "Ongelmasta ilmoittaminen"
+
+#. TRANSLATORS: Asked at startup after the app crashed or was closed unexpectedly. %s is the app's name.
+msgid ""
+"%s closed unexpectedly the last time it ran. Would you like to report the "
+"problem?"
+msgstr ""
+"%s ei sulkeutunut edellisellä käyttökerralla normaalisti. Haluatko ilmoittaa "
+"ongelmasta?"
+
+#. TRANSLATORS: Check box in the question asked after a crash, which stops the question being asked again
+msgid "&Don't ask again"
+msgstr "&Älä kysy uudelleen"
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog after a crash. %s is the app's name.
+msgid ""
+"%s closed unexpectedly the last time it ran. Describe what you were doing "
+"when it happened."
+msgstr ""
+"%s ei sulkeutunut edellisellä käyttökerralla normaalisti. Kuvaile, mitä olit "
+"tekemässä, kun näin tapahtui."
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog
+msgid "Describe the problem, and what you were doing when it happened."
+msgstr "Kuvaile ongelmaa ja kerro, mitä olit tekemässä sen ilmetessä."
+
+#. TRANSLATORS: Label of the field for describing the problem in the Report a Problem dialog
+msgid "&What happened:"
+msgstr "&Ongelman kuvaus:"
+
+msgid "&Your email address, if you'd like a reply:"
+msgstr "&Sähköpostiosoitteesi, jos haluat vastauksen:"
+
+#. TRANSLATORS: Check box in the Report a Problem dialog that attaches the app's log to the report
+msgid "&Include the log"
+msgstr "&Liitä lokitiedoston sisältö mukaan"
+
+#. TRANSLATORS: Explains what a problem report contains, in the Report a Problem dialog. %s is the app's name.
+msgid ""
+"The report also includes %s's version and your operating system. Select "
+"Preview to see everything that will be sent."
+msgstr ""
+"Raporttiin lisätään myös %sin versio ja käyttöjärjestelmäsi tiedot. Jos "
+"haluat nähdä raportin koko sisällön ennen sen lähettämistä, paina Näytä "
+"raportti -painiketta."
+
+#. TRANSLATORS: Button in the Report a Problem dialog that shows the report before it is sent
+msgid "&Preview"
+msgstr "&Näytä raportti"
+
+#. TRANSLATORS: Button in the Report a Problem dialog that sends the report
+msgid "&Send"
+msgstr "&Lähetä"
+
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button that closes the Find dialog
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Peruuta"
+
+#. TRANSLATORS: Title of the window that shows a problem report before it is sent
+msgid "Report Preview"
+msgstr "Raportin sisältö"
+
+#. TRANSLATORS: Title of an error message
+#. TRANSLATORS: Generic error dialog title
+msgid "Error"
+msgstr "Virhe"
+
+#. TRANSLATORS: Shown when Send is pressed in the Report a Problem dialog with the description empty
+msgid "Describe the problem before sending the report."
+msgstr "Kuvaile ongelmaa ennen raportin lähettämistä."
+
+#. TRANSLATORS: Shown when a problem report breaks a limit, such as being too long. %s is the reason, in English.
+msgid "The report can't be sent: %s"
+msgstr "Raporttia ei voida lähettää: %s"
+
+#. TRANSLATORS: Message in the progress window shown while a problem report is sent
+msgid "Sending the report..."
+msgstr "Raporttia lähetetään..."
+
+#. TRANSLATORS: Shown after a problem report was sent
+#. TRANSLATORS: Title of a message saying something worked
+msgid "Thank you. Your report was sent."
+msgstr "Kiitos. Raporttisi on lähetetty."
+
+msgid "Success"
+msgstr "Onnistui"
+
+msgid ""
+"Email can't be delivered to that address. Check it for typing mistakes, or "
+"leave it blank."
+msgstr ""
+"Sähköpostia ei voida lähettää annettuun osoitteeseen. Tarkista, ettei "
+"osoitteessa ole kirjoitusvirheitä, tai jätä kenttä tyhjäksi."
+
+#. TRANSLATORS: Shown when the report server has taken as many reports as it will for the day
+msgid "Too many reports have been sent today."
+msgstr "Tänään on lähetetty liian monta raporttia."
+
+#. TRANSLATORS: Shown when sending a problem report failed. %s is the reason, in English.
+msgid "The report couldn't be sent: %s"
+msgstr "Raporttia ei voitu lähettää: %s"
+
+#. TRANSLATORS: Asked after a problem report couldn't be sent. %s explains what went wrong.
+msgid ""
+"%s\n"
+"\n"
+"Would you like to save the report to a file, so you can send it another way?"
+msgstr ""
+"%s\n"
+"\n"
+"Haluatko tallentaa raportin tiedostoon ja lähettää sen muulla tavalla?"
+
+#. TRANSLATORS: Title of the dialog for saving a problem report to a file
+msgid "Save Report"
+msgstr "Raportin tallennus"
+
+#. TRANSLATORS: Default file name for a saved problem report
+msgid "Problem report"
+msgstr "Ongelmaraportti"
+
+#. TRANSLATORS: File type filter in the dialog for saving a problem report
+msgid "Text files (*.txt)|*.txt"
+msgstr "Tekstitiedostot (*.txt)|*.txt"
+
+#. TRANSLATORS: Shown after a problem report was saved to a file
+msgid "The report was saved."
+msgstr "Raportti on tallennettu."
+
+msgid "The report couldn't be saved: %s"
+msgstr "Raporttia ei voitu tallentaa: %s"
 
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 msgid "Checking %s"
@@ -75,17 +212,15 @@ msgstr ""
 "Tekstintunnistuksen kieltä ei ole asennettuna. Asenna Tesseractin "
 "kielipaketti pakettienhallinnasta."
 
-#. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
-msgid "Failed to create IPC server"
-msgstr "IPC-palvelimen luonti epäonnistui"
+#. TRANSLATORS: Announced when skipping forward while read aloud is on the last paragraph
+msgid "No next paragraph."
+msgstr "Seuraavaa kappaletta ei ole."
 
-#. TRANSLATORS: Title of a warning dialog
-msgid "Warning"
-msgstr "Varoitus"
+#. TRANSLATORS: Announced when skipping back while read aloud is on the first paragraph
+msgid "No previous paragraph."
+msgstr "Edellistä kappaletta ei ole."
 
-#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
-#. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
 #. TRANSLATORS: Announced when trying to change audio volume on a document that has none
 msgid "This document has no audio."
 msgstr "Asiakirjassa ei ole äänitettä."
@@ -94,14 +229,27 @@ msgstr "Asiakirjassa ei ole äänitettä."
 msgid "Audio hasn't started playing yet."
 msgstr "Äänitteen toisto ei ole käynnissä."
 
+msgid ""
+"This book doesn't say how long its audio runs, so Paperback can't go to a "
+"time in it."
+msgstr ""
+"Tiettyyn kohtaan siirtyminen ei ole mahdollista, koska kirjan äänitteen "
+"kokonaiskesto ei ole tiedossa."
+
+#. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
+msgid "Rate {}"
+msgstr "Puhenopeus {}"
+
 #. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
 #. TRANSLATORS: Announced when the audio volume is already at its loudest; {} is the current volume, e.g. "200%"
+#. TRANSLATORS: Announced when a setting is already at its highest; {} is its value
 #. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
 msgid "{} (maximum)"
 msgstr "{} (enimmäisaika)"
 
 #. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
 #. TRANSLATORS: Announced when the audio volume is already at its quietest; {} is the current volume, e.g. "10%"
+#. TRANSLATORS: Announced when a setting is already at its lowest; {} is its value
 #. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
 msgid "{} (minimum)"
 msgstr "{} (vähimmäisaika)"
@@ -601,6 +749,15 @@ msgstr "&Toista/pysäytä äänite"
 msgid "Play or pause this document's audio narration"
 msgstr "Aloita tai pysäytä asiakirjan äänitteen toisto"
 
+#. TRANSLATORS: Menu item in the Audio menu to jump to a time typed in, such as 1:23:45.
+#| msgid "Go to Line..."
+msgid "Go to &Time..."
+msgstr "Siirry &aikaan..."
+
+#. TRANSLATORS: Status-bar help text for the Go to Time menu item.
+msgid "Go to a time in the recording"
+msgstr "Siirry äänitteessä tiettyyn kohtaan"
+
 #. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 msgid "Seek Audio &Forward"
 msgstr "Kelaa äänitettä etee&npäin"
@@ -740,6 +897,7 @@ msgstr "P&oista kaikki"
 #. TRANSLATORS: Label for a button that closes the View Note dialog
 #. TRANSLATORS: Label for a button that closes the Web View dialog
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#. TRANSLATORS: Button that closes a window showing text
 msgid "Close"
 msgstr "Sulje"
 
@@ -865,10 +1023,6 @@ msgstr "tyhjä"
 #. TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
 msgid "Please select a bookmark to jump to."
 msgstr "Valitse kirjanmerkki, johon siirrytään."
-
-#. TRANSLATORS: Generic error dialog title
-msgid "Error"
-msgstr "Virhe"
 
 #. TRANSLATORS: Label/prompt in the Note editor dialog
 msgid "Edit bookmark note:"
@@ -1012,12 +1166,6 @@ msgstr "Vie"
 msgid "Go"
 msgstr "Siirry"
 
-#. TRANSLATORS: Label for the cancellation button
-#. TRANSLATORS: Cancel button that closes the Find dialog
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr "Peruuta"
-
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
 msgstr "Siirry riville"
@@ -1056,7 +1204,25 @@ msgstr "&Prosentti"
 
 #. TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
 msgid "Percent out of range."
-msgstr "Virheellinen prosenttiarvo."
+msgstr "Annettu prosenttiarvo on virheellinen."
+
+#. TRANSLATORS: Title of the Go to Time dialog, which jumps to a time typed in, in an audiobook
+#| msgid "Go to Line"
+msgid "Go to Time"
+msgstr "Siirry aikaan"
+
+#| msgid "Go to line (%d/%d):"
+msgid "Go to time ({}/{}):"
+msgstr "Siirry aikaan ({}/{}):"
+
+#. TRANSLATORS: Announced when what was typed in the Go to Time dialog is not a time
+msgid "Type a time like 1:23:45, 23:45 or 45."
+msgstr "Kirjoita aika muodossa 1:23:45, 23:45 tai 45."
+
+#. TRANSLATORS: Announced when the time typed in the Go to Time dialog is past the end of the recording, or before its start
+#| msgid "Line out of range."
+msgid "Time out of range."
+msgstr "Annettu aika on virheellinen."
 
 #. TRANSLATORS: Title of the view showing the text recognized in a picture
 msgid "Image Text"
@@ -1110,6 +1276,210 @@ msgstr "Osoite:"
 msgid "Security Warning"
 msgstr "Suojausvaroitus"
 
+#. TRANSLATORS: Label for the update channel selection dropdown
+msgid "Update Channel:"
+msgstr "Päivityskanava:"
+
+#. TRANSLATORS: Stable update channel option
+msgid "Stable"
+msgstr "Vakaa"
+
+#. TRANSLATORS: Developer/development update channel option
+msgid "Dev"
+msgstr "Kehitys"
+
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+msgid "Log Level:"
+msgstr "Lokitaso:"
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+msgid "Off"
+msgstr "Ei käytössä"
+
+#. TRANSLATORS: Log level choice that records only errors
+msgid "Errors"
+msgstr "Virheet"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+msgid "Warnings"
+msgstr "Varoitukset"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+msgid "Information"
+msgstr "Tiedot"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+msgid "Debug"
+msgstr "Vianmääritys"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+msgid "Trace"
+msgstr "Yksityiskohtainen"
+
+#. TRANSLATORS: Option to toggle word wrapping of text
+msgid "&Word wrap"
+msgstr "Automaattinen r&ivitys"
+
+#. TRANSLATORS: Label/header for the Font options section
+msgid "Font"
+msgstr "Fontti"
+
+#. TRANSLATORS: Button label to pick a font
+msgid "Choose &Font..."
+msgstr "Valitse &fontti..."
+
+#. TRANSLATORS: Button label to restore font settings to default values
+msgid "&Reset to Default Font"
+msgstr "&Palauta oletusfontti"
+
+#. TRANSLATORS: Label/header for the Background Color options section
+msgid "Background Color"
+msgstr "Taustaväri"
+
+#. TRANSLATORS: Button label to pick a background color
+msgid "Choose &Background Color..."
+msgstr "Valitse ta&ustaväri..."
+
+#. TRANSLATORS: Button label to restore background color to default values
+msgid "Reset to &Default Background"
+msgstr "Palauta &oletustausta"
+
+msgid "&Line spacing:"
+msgstr "R&iviväli:"
+
+#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
+msgid "Normal"
+msgstr "Normaali"
+
+#. TRANSLATORS: 1.5x line spacing option
+msgid "1.5×"
+msgstr "1,5×"
+
+#. TRANSLATORS: Double line spacing option
+msgid "Double"
+msgstr "Kaksinkertainen"
+
+msgid "&Paragraph spacing:"
+msgstr "&Kappaleväli:"
+
+#. TRANSLATORS: Relaxed paragraph spacing option
+msgid "Relaxed"
+msgstr "Väljä"
+
+#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
+msgid "Wide"
+msgstr "Leveä"
+
+msgid "L&etter spacing:"
+msgstr "K&irjainväli:"
+
+#. TRANSLATORS: Very Wide letter spacing option
+msgid "Very Wide"
+msgstr "Erittäin leveä"
+
+msgid "Text &alignment:"
+msgstr "Tekstin t&asaus:"
+
+#. TRANSLATORS: Left text alignment option
+msgid "Left"
+msgstr "Vasemmalla"
+
+#. TRANSLATORS: Center text alignment option
+msgid "Center"
+msgstr "Keskellä"
+
+#. TRANSLATORS: Right text alignment option
+msgid "Right"
+msgstr "Oikealla"
+
+#. TRANSLATORS: Justified text alignment option
+msgid "Justify"
+msgstr "Molemmissa reunoissa"
+
+#. TRANSLATORS: Title of the system dialog for picking a background colour
+msgid "Choose a colour"
+msgstr "Valitse väri"
+
+#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
+msgid "Play &sounds on bookmarks and notes"
+msgstr "I&lmaise kirjanmerkit ja muistiinpanot merkkiäänellä"
+
+#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+msgid "&Sync caret to audio playback"
+msgstr "&Kohdistin seuraa äänitteen toistokohtaa"
+
+#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
+msgid "&Audio seek amount:"
+msgstr "&Äänitteen kelauksen aikasiirtymä:"
+
+#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
+msgid "Seeking &past the end of a chapter continues into the next"
+msgstr ""
+"Jatka toistoa &seuraavasta luvusta nykyisen luvun loppua pidemmälle "
+"kelattaessa"
+
+#. TRANSLATORS: Label of the group of read aloud settings on the Audio tab of Settings: engine, voice, rate, pitch and pauses
+msgid "Read Aloud"
+msgstr "Lue tekstistä puheeksi -toiminnolla"
+
+#. TRANSLATORS: Label of the list of speech engines, such as OneCore or SAPI 5, on the Audio tab of Settings
+msgid "&Engine:"
+msgstr "&Moottori:"
+
+#. TRANSLATORS: Label of the list of voices on the Audio tab of Settings
+msgid "&Voice:"
+msgstr "&Puheääni:"
+
+#. TRANSLATORS: Label of the speech rate slider on the Audio tab of Settings
+msgid "&Rate:"
+msgstr "&Nopeus:"
+
+#. TRANSLATORS: Label of the speech pitch slider on the Audio tab of Settings
+msgid "Pi&tch:"
+msgstr "&Korkeus:"
+
+msgid "Pause after each para&graph (milliseconds):"
+msgstr "Kappa&leiden välisen tauon pituus (ms):"
+
+msgid "Use this voice, rate and pitch for this &book only"
+msgstr "Käytä näitä puheasetuksia vain tässä &kirjassa"
+
+#. TRANSLATORS: Button on the Audio tab of Settings that speaks a sample with the chosen voice, rate and pitch
+msgid "Play Sa&mple"
+msgstr "Toista &näyte"
+
+#. TRANSLATORS: First choice in the voice list on the Audio tab of Settings, which leaves the choice of voice to the system
+msgid "System default"
+msgstr "Järjestelmän oletus"
+
+#. TRANSLATORS: Note at the top of the Documents tab of Settings, whose options change how a file is read
+msgid "Changing these reads your open documents again when you press OK."
+msgstr ""
+"Näiden asetusten muutokset tulevat voimaan, kun painat OK-painiketta. "
+"Samalla avoinna olevat asiakirjat käsitellään uudelleen."
+
+#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
+msgid "Render tables &inline"
+msgstr "Näytä taulukot tekst&in osana"
+
+#. TRANSLATORS: Option to join the wrapped lines of a page back into paragraphs, in documents laid out as pages, such as PDFs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
+msgid "&Join wrapped lines into paragraphs"
+msgstr "&Yhdistä rivitetyt tekstit kappaleiksi"
+
+#. TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
+msgid "Remove repeated page &headers and footers"
+msgstr "Poista toistuvat y&lä- ja alatunnisteet"
+
+#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
+msgid "Read text between dollar signs as &math in Markdown"
+msgstr ""
+"Käsittele dollarimerkkien välinen teksti Markdown-asiakirjoissa "
+"&matemaattisena kaavana"
+
+#. TRANSLATORS: Label for the dropdown choosing the braille code that Braille Ready Files (BRF) and PEF books are written in, so Paperback can turn their braille back into print
+msgid "&Braille code of BRF and PEF books:"
+msgstr "&BRF- ja PEF-kirjojen pistetaulukko:"
+
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
 msgstr "Tausta: Oletus"
@@ -1150,10 +1520,6 @@ msgstr "Yliviivattu"
 msgid "Choose a font"
 msgstr "Valitse fontti"
 
-#. TRANSLATORS: Title of the Settings dialog
-msgid "Settings"
-msgstr "Asetukset"
-
 #. TRANSLATORS: Option to restore documents that were open when the app was last closed
 msgid "&Restore previously opened documents on startup"
 msgstr "Pala&uta aiemmin avatut asiakirjat käynnistettäessä"
@@ -1161,6 +1527,10 @@ msgstr "Pala&uta aiemmin avatut asiakirjat käynnistettäessä"
 #. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
 msgid "&Automatically reload changed documents"
 msgstr "&Päivitä muuttuneet asiakirjat automaattisesti"
+
+#. TRANSLATORS: Label for the number of recently opened documents to keep in history
+msgid "Number of &recent documents to show:"
+msgstr "V&iimeksi avattujen asiakirjojen määrä:"
 
 #. TRANSLATORS: Option to start the app maximized
 msgid "&Start maximized"
@@ -1170,27 +1540,17 @@ msgstr "&Käynnistä suurennettuna"
 msgid "&Minimize to system tray"
 msgstr "&Pienennä ilmaisinalueelle"
 
-#. TRANSLATORS: Option to toggle word wrapping of text
-msgid "&Word wrap"
-msgstr "Automaattinen r&ivitys"
+#. TRANSLATORS: Option to check for app updates automatically on startup
+msgid "Check for &updates on startup"
+msgstr "Tarkista &päivitykset käynnistettäessä"
 
-#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
-msgid "Render tables &inline"
-msgstr "Näytä taulukot tekst&in osana"
+#. TRANSLATORS: Label for the language selection dropdown
+msgid "&Language:"
+msgstr "&Kieli:"
 
-#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
-msgid "&Join wrapped lines into paragraphs in PDFs"
-msgstr "&Yhdistä PDF-tiedostojen rivitetyt tekstit kappaleiksi"
-
-#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
-msgid "Remove repeated page &headers and footers in PDFs"
-msgstr "Poista PDF-asiakirjoista toistuvat y&lä- ja alatunnisteet"
-
-#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
-msgid "Read text between dollar signs as &math in Markdown"
-msgstr ""
-"Käsittele dollarimerkkien välinen teksti Markdown-asiakirjoissa "
-"&matemaattisena kaavana"
+#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
+msgid "Customize &Keyboard Shortcuts..."
+msgstr "Muokkaa &pikanäppäimiä..."
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -1208,185 +1568,42 @@ msgstr "Siirry rivin &alkuun"
 msgid "&Highlight found text"
 msgstr "&Korosta löydetty teksti"
 
-#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
-msgid "Play &sounds on bookmarks and notes"
-msgstr "I&lmaise kirjanmerkit ja muistiinpanot merkkiäänellä"
-
-#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
-msgid "&Sync caret to audio playback"
-msgstr "&Kohdistin seuraa äänitteen toistokohtaa"
-
-#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
-msgid "&Audio seek amount:"
-msgstr "&Äänitteen kelauksen aikasiirtymä:"
-
-#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
-msgid "Seeking &past the end of a chapter continues into the next"
-msgstr ""
-"Jatka toistoa &seuraavasta luvusta nykyisen luvun loppua pidemmälle "
-"kelattaessa"
-
-#. TRANSLATORS: Option to check for app updates automatically on startup
-msgid "Check for &updates on startup"
-msgstr "Tarkista &päivitykset käynnistettäessä"
-
-#. TRANSLATORS: Label for the update channel selection dropdown
-msgid "Update Channel:"
-msgstr "Päivityskanava:"
-
-#. TRANSLATORS: Stable update channel option
-msgid "Stable"
-msgstr "Vakaa"
-
-#. TRANSLATORS: Developer/development update channel option
-msgid "Dev"
-msgstr "Kehitys"
-
-#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
-msgid "Log Level:"
-msgstr "Lokitaso:"
-
-#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
-msgid "Customize &Keyboard Shortcuts..."
-msgstr "Muokkaa &pikanäppäimiä..."
-
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
 msgstr "&Lukunopeus (sanaa minuutissa):"
 
-#. TRANSLATORS: Label for the number of recently opened documents to keep in history
-msgid "Number of &recent documents to show:"
-msgstr "V&iimeksi avattujen asiakirjojen määrä:"
-
-#. TRANSLATORS: Label for the language selection dropdown
-msgid "&Language:"
-msgstr "&Kieli:"
-
-#. TRANSLATORS: Label/header for the Font options section
-msgid "Font"
-msgstr "Fontti"
-
-#. TRANSLATORS: Button label to pick a font
-msgid "Choose &Font..."
-msgstr "Valitse &fontti..."
-
-#. TRANSLATORS: Button label to restore font settings to default values
-msgid "&Reset to Default Font"
-msgstr "&Palauta oletusfontti"
-
-#. TRANSLATORS: Label/header for the Background Color options section
-msgid "Background Color"
-msgstr "Taustaväri"
-
-#. TRANSLATORS: Button label to pick a background color
-msgid "Choose &Background Color..."
-msgstr "Valitse ta&ustaväri..."
-
-#. TRANSLATORS: Button label to restore background color to default values
-msgid "Reset to &Default Background"
-msgstr "Palauta &oletustausta"
-
-#. TRANSLATORS: Label for the line spacing dropdown
-msgid "&Line spacing:"
-msgstr "R&iviväli:"
-
-#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
-msgid "Normal"
-msgstr "Normaali"
-
-#. TRANSLATORS: 1.5x line spacing option
-msgid "1.5×"
-msgstr "1,5×"
-
-#. TRANSLATORS: Double line spacing option
-msgid "Double"
-msgstr "Kaksinkertainen"
-
-#. TRANSLATORS: Label for the paragraph spacing dropdown
-msgid "&Paragraph spacing:"
-msgstr "&Kappaleväli:"
-
-#. TRANSLATORS: Relaxed paragraph spacing option
-msgid "Relaxed"
-msgstr "Väljä"
-
-#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-msgid "Wide"
-msgstr "Leveä"
-
-#. TRANSLATORS: Label for the letter spacing dropdown
-msgid "L&etter spacing:"
-msgstr "K&irjainväli:"
-
-#. TRANSLATORS: Very Wide letter spacing option
-msgid "Very Wide"
-msgstr "Erittäin leveä"
-
-#. TRANSLATORS: Label for the text alignment dropdown
-msgid "Text &alignment:"
-msgstr "Tekstin t&asaus:"
-
-#. TRANSLATORS: Left text alignment option
-msgid "Left"
-msgstr "Vasemmalla"
-
-#. TRANSLATORS: Center text alignment option
-msgid "Center"
-msgstr "Keskellä"
-
-#. TRANSLATORS: Right text alignment option
-msgid "Right"
-msgstr "Oikealla"
-
-#. TRANSLATORS: Justified text alignment option
-msgid "Justify"
-msgstr "Molemmissa reunoissa"
+#. TRANSLATORS: Title of the Settings dialog
+msgid "Settings"
+msgstr "Asetukset"
 
 #. TRANSLATORS: Tab label for the General options panel
 msgid "General"
 msgstr "Yleiset"
 
-#. TRANSLATORS: Tab label for the Reading options panel
+#. TRANSLATORS: Tab label for the Reading options panel, about moving through and searching a document
 msgid "Reading"
 msgstr "Lukeminen"
 
-#. TRANSLATORS: Tab label for the Readability options panel
-msgid "Readability"
-msgstr "Luettavuus"
+#. TRANSLATORS: Tab label for the Settings panel about playing audio books and narration
+#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Audio"
+msgstr "Ääni"
 
-#. TRANSLATORS: Title of the system dialog for picking a background colour
-msgid "Choose a colour"
-msgstr "Valitse väri"
+#. TRANSLATORS: Tab label for the Settings panel about how text looks: font, colour, spacing and alignment
+msgid "Appearance"
+msgstr "Ulkoasu"
 
-#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
-msgid "Off"
-msgstr "Ei käytössä"
+#. TRANSLATORS: Tab label for the Settings panel about how a file is read, such as whether tables are shown inline
+msgid "Documents"
+msgstr "Asiakirjat"
 
-#. TRANSLATORS: Log level choice that records only errors
-msgid "Errors"
-msgstr "Virheet"
+#. TRANSLATORS: Tab label for the Settings panel with options most people never need, such as the update channel and log level
+msgid "Advanced"
+msgstr "Lisäasetukset"
 
-#. TRANSLATORS: Log level choice that records warnings and errors
-msgid "Warnings"
-msgstr "Varoitukset"
-
-#. TRANSLATORS: Log level choice that records general activity, warnings and errors
-msgid "Information"
-msgstr "Tiedot"
-
-#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
-msgid "Debug"
-msgstr "Vianmääritys"
-
-#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
-msgid "Trace"
-msgstr "Yksityiskohtainen"
-
-#| msgid "System"
 msgid "System-Wide"
 msgstr "Järjestelmänlaajuiset"
 
-#| msgid "Restore Paperback"
 msgid "Show or Hide Paperback"
 msgstr "Näytä tai piilota Paperback"
 
@@ -1565,6 +1782,19 @@ msgstr "Tilapäinen kirjanmerkki."
 msgid "%s, page %d"
 msgstr "%s, sivu %d"
 
+#. TRANSLATORS: Announced when read aloud is started with nothing left to read after the caret
+msgid "End of document"
+msgstr "Asiakirjan loppu"
+
+#. TRANSLATORS: Spoken by the Play Sample button on the Audio tab of Settings
+msgid "This is a sample of the current voice and speed settings."
+msgstr "Tämä on näyte valitusta puheäänestä nykyisillä asetuksilla."
+
+#. TRANSLATORS: Announced when read aloud is asked for on a system Paperback has no speech engine for yet
+msgid "Read aloud isn't available on this system yet."
+msgstr ""
+"Tekstistä puheeksi -ominaisuus ei ole käytettävissä tässä järjestelmässä."
+
 #. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
 msgstr "Siirrytty sisäiseen linkkiin."
@@ -1652,6 +1882,10 @@ msgstr "Lahjoitussivun avaaminen selaimessa epäonnistui."
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback ei voi suorittaa toimintoja selainnäkymän ollessa avoinna."
+
+#. TRANSLATORS: Title of a warning dialog
+msgid "Warning"
+msgstr "Varoitus"
 
 #. TRANSLATORS: First message in the window that downloads documents from links, before the first server answers
 msgid "Connecting..."
@@ -2101,6 +2335,14 @@ msgstr "Tarkista pä&ivitykset"
 #. TRANSLATORS: Status-bar help text for the Help > Check for Updates menu item.
 msgid "Check for updates"
 msgstr "Tarkista päivitykset"
+
+#. TRANSLATORS: Menu item in the Help menu that opens a dialog for sending a problem report to the developer.
+msgid "&Report a Problem..."
+msgstr "&Ilmoita ongelmasta..."
+
+#. TRANSLATORS: Status-bar help text for the Help > Report a Problem menu item.
+msgid "Send a problem report to the developer"
+msgstr "Lähetä kehittäjälle ongelmaraportti"
 
 #. TRANSLATORS: Menu item in the Help menu to open the donation page for the application.
 msgid "&Donate"
@@ -2781,6 +3023,11 @@ msgid "Play/Pause Audio"
 msgstr "Toista/pysäytä äänite"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#| msgid "Go to Line..."
+msgid "Go to Time..."
+msgstr "Siirry aikaan..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Forward"
 msgstr "Kelaa äänitettä eteenpäin"
 
@@ -2892,10 +3139,6 @@ msgstr "Muokkaa"
 msgid "View"
 msgstr "Näytä"
 
-#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
-msgid "Audio"
-msgstr "Ääni"
-
 #. TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Tools"
 msgstr "Työkalut"
@@ -2974,6 +3217,10 @@ msgstr "[Pelkkä kuva. Aloita tekstintunnistus painamalla Enter.]"
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Pelkkä kuva. Luettavaa tekstiä ei ole.]"
 
+#. TRANSLATORS: A table of contents entry for one volume of a braille book; {} is the volume's number
+msgid "Volume {}"
+msgstr "Osa {}"
+
 #. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
 msgid ""
 "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it "
@@ -3028,6 +3275,7 @@ msgid "Figure"
 msgstr "Kuvitus"
 
 #. TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
+#. TRANSLATORS: Label standing in for a picture in an OS/2 help panel, shown as "[Image]"
 msgid "Image"
 msgstr "Kuva"
 
@@ -3090,6 +3338,10 @@ msgstr "Aihe {}"
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 msgid "HTML file is empty: {}"
 msgstr "HTML-tiedosto on tyhjä: {}"
+
+#. TRANSLATORS: Error shown when an OS/2 help file (.inf or .hlp) cannot be read; {} is the underlying error
+msgid "Failed to parse OS/2 help file: {}"
+msgstr "OS/2-ohjetiedoston jäsennys epäonnistui: {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 msgid "Missing HUFF parameters in header"
@@ -3306,6 +3558,14 @@ msgstr ""
 "Perinteisen DOC-tiedoston jäsennys epäonnistui: {}. OOXML-varamenetelmän "
 "käyttö epäonnistui: {}"
 
+#. TRANSLATORS: Error shown when an XPS document has no pages
+msgid "XPS file contains no pages"
+msgstr "XPS-tiedostossa ei ole sivuja"
+
+#. TRANSLATORS: Shown in place of an XPS page that has no text, such as a scanned one
+msgid "This page has no text."
+msgstr "Sivulla ei ole tekstiä."
+
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 msgid "No file extension found for: {}"
 msgstr "Tiedostotunnistetta {} ei löydy"
@@ -3324,6 +3584,9 @@ msgstr "kuva"
 
 msgid "Current version is not a valid semver."
 msgstr "Sovelluksen versionumero ei ole semanttisen versioinnin mukainen."
+
+msgid "No release has a valid semver tag."
+msgstr "Julkaisulla ei ole semanttisen versioinnin tunnistetta."
 
 msgid "Latest release tag is not a valid semver."
 msgstr "Uusin julkaisutunniste ei ole semanttisen versioinnin mukainen."
@@ -4128,11 +4391,6 @@ msgstr "Toista"
 
 #. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
 #: swift
-msgid "End of document"
-msgstr "Asiakirjan loppu"
-
-#. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
-#: swift
 msgid "Beginning of document"
 msgstr "Asiakirjan alku"
 
@@ -4381,11 +4639,6 @@ msgstr "Lisää vaihtoehtoja"
 #: swift kt
 msgid "Pause Read Aloud"
 msgstr "Pysäytä tekstistä puheeksi -toiminto"
-
-#. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: swift kt
-msgid "Read Aloud"
-msgstr "Lue tekstistä puheeksi -toiminnolla"
 
 #. TRANSLATORS: Menu item / accessibility action to open the export document dialog
 #: kt
@@ -4742,11 +4995,6 @@ msgstr "Kaava"
 msgid "No matches."
 msgstr "Hakutuloksia ei löydy."
 
-#. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
-#: swift
-msgid "Appearance"
-msgstr "Ulkoasu"
-
 #. TRANSLATORS: Appearance option following the phone's own light/dark setting
 #: swift
 msgid "System"
@@ -4878,7 +5126,6 @@ msgstr ""
 
 #. TRANSLATORS: VoiceOver label for the read-aloud bar's control that speeds up or slows down a book's recorded audio
 #: kt swift
-#| msgid "Increase Audio Speed"
 msgid "Audio Speed"
 msgstr "Toistonopeus"
 
@@ -4903,31 +5150,26 @@ msgstr "{} kohdetta⁣"
 
 #. TRANSLATORS: Spoken for an empty table cell in text mode
 #: swift
-#| msgid "blank"
 msgid "Blank"
 msgstr "Tyhjä"
 
 #. TRANSLATORS: Name of the VoiceOver rotor setting that moves between the entries of a document's table of contents in text mode
 #: swift
-#| msgid "&Sections"
 msgid "Sections"
 msgstr "Luvut"
 
 #. TRANSLATORS: Switch in Speech for This Book giving the open book a voice of its own instead of the one in Settings
 #: swift
-#| msgid "Voice"
 msgid "Own Voice"
 msgstr "Kirjakohtainen puheääni"
 
 #. TRANSLATORS: Switch in Speech for This Book giving the open book a speech rate of its own instead of the one in Settings
 #: swift
-#| msgid "Rate"
 msgid "Own Rate"
 msgstr "Kirjakohtainen puhenopeus"
 
 #. TRANSLATORS: Switch in Speech for This Book giving the open book a pitch of its own instead of the one in Settings
 #: swift
-#| msgid "Pitch"
 msgid "Own Pitch"
 msgstr "Kirjakohtainen äänenkorkeus"
 
@@ -4944,24 +5186,25 @@ msgstr "Tyhjennä"
 
 #. TRANSLATORS: Row label for the number of audio files in the document
 #: kt swift
-#| msgid "Number of files:"
 msgid "Number of files"
 msgstr "Tiedostojen määrä"
 
 #. TRANSLATORS: Row label for the total playback duration across all of the document's audio files
 #: kt swift
-#| msgid "Total duration:"
 msgid "Total duration"
 msgstr "Kesto yhteensä"
 
 #. TRANSLATORS: Row label for the average playback duration per audio file in the document
 #: kt swift
-#| msgid "Average duration:"
 msgid "Average duration"
 msgstr "Kesto keskimäärin"
 
 #. TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
 #: kt
-#| msgid "Increase Audio Speed"
 msgid "Select audio speed"
 msgstr "Äänitteen toistonopeus"
+
+#. TRANSLATORS: Section header in Settings grouping controls for how document text is displayed
+#: kt swift
+msgid "Readability"
+msgstr "Luettavuus"

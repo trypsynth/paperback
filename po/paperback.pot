@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 21:30+0000\n"
+"POT-Creation-Date: 2026-11-12 13:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,123 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#. TRANSLATORS: Title of the question asked after the app closed unexpectedly
+#. TRANSLATORS: Title of the dialog for sending a problem report to the developer
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Report a Problem"
+msgstr ""
+
+#. TRANSLATORS: Asked at startup after the app crashed or was closed unexpectedly. %s is the app's name.
+msgid "%s closed unexpectedly the last time it ran. Would you like to report the problem?"
+msgstr ""
+
+#. TRANSLATORS: Check box in the question asked after a crash, which stops the question being asked again
+msgid "&Don't ask again"
+msgstr ""
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog after a crash. %s is the app's name.
+msgid "%s closed unexpectedly the last time it ran. Describe what you were doing when it happened."
+msgstr ""
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog
+msgid "Describe the problem, and what you were doing when it happened."
+msgstr ""
+
+#. TRANSLATORS: Label of the field for describing the problem in the Report a Problem dialog
+msgid "&What happened:"
+msgstr ""
+
+msgid "&Your email address, if you'd like a reply:"
+msgstr ""
+
+#. TRANSLATORS: Check box in the Report a Problem dialog that attaches the app's log to the report
+msgid "&Include the log"
+msgstr ""
+
+#. TRANSLATORS: Explains what a problem report contains, in the Report a Problem dialog. %s is the app's name.
+msgid "The report also includes %s's version and your operating system. Select Preview to see everything that will be sent."
+msgstr ""
+
+#. TRANSLATORS: Button in the Report a Problem dialog that shows the report before it is sent
+msgid "&Preview"
+msgstr ""
+
+#. TRANSLATORS: Button in the Report a Problem dialog that sends the report
+msgid "&Send"
+msgstr ""
+
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button that closes the Find dialog
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr ""
+
+#. TRANSLATORS: Title of the window that shows a problem report before it is sent
+msgid "Report Preview"
+msgstr ""
+
+#. TRANSLATORS: Title of an error message
+#. TRANSLATORS: Generic error dialog title
+msgid "Error"
+msgstr ""
+
+#. TRANSLATORS: Shown when Send is pressed in the Report a Problem dialog with the description empty
+msgid "Describe the problem before sending the report."
+msgstr ""
+
+#. TRANSLATORS: Shown when a problem report breaks a limit, such as being too long. %s is the reason, in English.
+msgid "The report can't be sent: %s"
+msgstr ""
+
+#. TRANSLATORS: Message in the progress window shown while a problem report is sent
+msgid "Sending the report..."
+msgstr ""
+
+#. TRANSLATORS: Shown after a problem report was sent
+#. TRANSLATORS: Title of a message saying something worked
+msgid "Thank you. Your report was sent."
+msgstr ""
+
+msgid "Success"
+msgstr ""
+
+msgid "Email can't be delivered to that address. Check it for typing mistakes, or leave it blank."
+msgstr ""
+
+#. TRANSLATORS: Shown when the report server has taken as many reports as it will for the day
+msgid "Too many reports have been sent today."
+msgstr ""
+
+#. TRANSLATORS: Shown when sending a problem report failed. %s is the reason, in English.
+msgid "The report couldn't be sent: %s"
+msgstr ""
+
+#. TRANSLATORS: Asked after a problem report couldn't be sent. %s explains what went wrong.
+msgid ""
+"%s\n"
+"\n"
+"Would you like to save the report to a file, so you can send it another way?"
+msgstr ""
+
+#. TRANSLATORS: Title of the dialog for saving a problem report to a file
+msgid "Save Report"
+msgstr ""
+
+#. TRANSLATORS: Default file name for a saved problem report
+msgid "Problem report"
+msgstr ""
+
+#. TRANSLATORS: File type filter in the dialog for saving a problem report
+msgid "Text files (*.txt)|*.txt"
+msgstr ""
+
+#. TRANSLATORS: Shown after a problem report was saved to a file
+msgid "The report was saved."
+msgstr ""
+
+msgid "The report couldn't be saved: %s"
+msgstr ""
 
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 msgid "Checking %s"
@@ -66,17 +183,15 @@ msgstr ""
 msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
 msgstr ""
 
-#. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
-msgid "Failed to create IPC server"
+#. TRANSLATORS: Announced when skipping forward while read aloud is on the last paragraph
+msgid "No next paragraph."
 msgstr ""
 
-#. TRANSLATORS: Title of a warning dialog
-msgid "Warning"
+#. TRANSLATORS: Announced when skipping back while read aloud is on the first paragraph
+msgid "No previous paragraph."
 msgstr ""
 
-#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
-#. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
 #. TRANSLATORS: Announced when trying to change audio volume on a document that has none
 msgid "This document has no audio."
 msgstr ""
@@ -85,14 +200,27 @@ msgstr ""
 msgid "Audio hasn't started playing yet."
 msgstr ""
 
+msgid "This book doesn't say how long its audio runs, so Paperback can't go to a time in it."
+msgstr ""
+
+#. TRANSLATORS: Announced when asking for the time in an audiobook's chapter while the length of its files isn't known, such as in many DAISY books
+msgid "This book doesn't say how long its audio runs."
+msgstr ""
+
+#. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
+msgid "Rate {}"
+msgstr ""
+
 #. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
 #. TRANSLATORS: Announced when the audio volume is already at its loudest; {} is the current volume, e.g. "200%"
+#. TRANSLATORS: Announced when a setting is already at its highest; {} is its value
 #. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
 msgid "{} (maximum)"
 msgstr ""
 
 #. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
 #. TRANSLATORS: Announced when the audio volume is already at its quietest; {} is the current volume, e.g. "10%"
+#. TRANSLATORS: Announced when a setting is already at its lowest; {} is its value
 #. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
 msgid "{} (minimum)"
 msgstr ""
@@ -592,6 +720,22 @@ msgstr ""
 msgid "Play or pause this document's audio narration"
 msgstr ""
 
+#. TRANSLATORS: Menu item in the Audio menu to jump to a time typed in, such as 1:23:45.
+msgid "Go to &Time..."
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Go to Time menu item.
+msgid "Go to a time in the recording"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter of an audiobook the reader is, and how much of it is left.
+msgid "Announce &Chapter Time"
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Announce Chapter Time menu item.
+msgid "Say how far into this chapter you are and how much is left"
+msgstr ""
+
 #. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 msgid "Seek Audio &Forward"
 msgstr ""
@@ -727,6 +871,7 @@ msgstr ""
 #. TRANSLATORS: Label for a button that closes the View Note dialog
 #. TRANSLATORS: Label for a button that closes the Web View dialog
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#. TRANSLATORS: Button that closes a window showing text
 msgid "Close"
 msgstr ""
 
@@ -839,10 +984,6 @@ msgstr ""
 
 #. TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
 msgid "Please select a bookmark to jump to."
-msgstr ""
-
-#. TRANSLATORS: Generic error dialog title
-msgid "Error"
 msgstr ""
 
 #. TRANSLATORS: Label/prompt in the Note editor dialog
@@ -987,12 +1128,6 @@ msgstr ""
 msgid "Go"
 msgstr ""
 
-#. TRANSLATORS: Label for the cancellation button
-#. TRANSLATORS: Cancel button that closes the Find dialog
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr ""
-
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
 msgstr ""
@@ -1031,6 +1166,21 @@ msgstr ""
 
 #. TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
 msgid "Percent out of range."
+msgstr ""
+
+#. TRANSLATORS: Title of the Go to Time dialog, which jumps to a time typed in, in an audiobook
+msgid "Go to Time"
+msgstr ""
+
+msgid "Go to time ({}/{}):"
+msgstr ""
+
+#. TRANSLATORS: Announced when what was typed in the Go to Time dialog is not a time
+msgid "Type a time like 1:23:45, 23:45 or 45."
+msgstr ""
+
+#. TRANSLATORS: Announced when the time typed in the Go to Time dialog is past the end of the recording, or before its start
+msgid "Time out of range."
 msgstr ""
 
 #. TRANSLATORS: Title of the view showing the text recognized in a picture
@@ -1083,6 +1233,204 @@ msgstr ""
 msgid "Security Warning"
 msgstr ""
 
+#. TRANSLATORS: Label for the update channel selection dropdown
+msgid "Update Channel:"
+msgstr ""
+
+#. TRANSLATORS: Stable update channel option
+msgid "Stable"
+msgstr ""
+
+#. TRANSLATORS: Developer/development update channel option
+msgid "Dev"
+msgstr ""
+
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+msgid "Log Level:"
+msgstr ""
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+msgid "Off"
+msgstr ""
+
+#. TRANSLATORS: Log level choice that records only errors
+msgid "Errors"
+msgstr ""
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+msgid "Warnings"
+msgstr ""
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+msgid "Information"
+msgstr ""
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+msgid "Debug"
+msgstr ""
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+msgid "Trace"
+msgstr ""
+
+#. TRANSLATORS: Option to toggle word wrapping of text
+msgid "&Word wrap"
+msgstr ""
+
+#. TRANSLATORS: Label/header for the Font options section
+msgid "Font"
+msgstr ""
+
+#. TRANSLATORS: Button label to pick a font
+msgid "Choose &Font..."
+msgstr ""
+
+#. TRANSLATORS: Button label to restore font settings to default values
+msgid "&Reset to Default Font"
+msgstr ""
+
+#. TRANSLATORS: Label/header for the Background Color options section
+msgid "Background Color"
+msgstr ""
+
+#. TRANSLATORS: Button label to pick a background color
+msgid "Choose &Background Color..."
+msgstr ""
+
+#. TRANSLATORS: Button label to restore background color to default values
+msgid "Reset to &Default Background"
+msgstr ""
+
+msgid "&Line spacing:"
+msgstr ""
+
+#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
+msgid "Normal"
+msgstr ""
+
+#. TRANSLATORS: 1.5x line spacing option
+msgid "1.5×"
+msgstr ""
+
+#. TRANSLATORS: Double line spacing option
+msgid "Double"
+msgstr ""
+
+msgid "&Paragraph spacing:"
+msgstr ""
+
+#. TRANSLATORS: Relaxed paragraph spacing option
+msgid "Relaxed"
+msgstr ""
+
+#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
+msgid "Wide"
+msgstr ""
+
+msgid "L&etter spacing:"
+msgstr ""
+
+#. TRANSLATORS: Very Wide letter spacing option
+msgid "Very Wide"
+msgstr ""
+
+msgid "Text &alignment:"
+msgstr ""
+
+#. TRANSLATORS: Left text alignment option
+msgid "Left"
+msgstr ""
+
+#. TRANSLATORS: Center text alignment option
+msgid "Center"
+msgstr ""
+
+#. TRANSLATORS: Right text alignment option
+msgid "Right"
+msgstr ""
+
+#. TRANSLATORS: Justified text alignment option
+msgid "Justify"
+msgstr ""
+
+#. TRANSLATORS: Title of the system dialog for picking a background colour
+msgid "Choose a colour"
+msgstr ""
+
+#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
+msgid "Play &sounds on bookmarks and notes"
+msgstr ""
+
+#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+msgid "&Sync caret to audio playback"
+msgstr ""
+
+#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
+msgid "&Audio seek amount:"
+msgstr ""
+
+#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
+msgid "Seeking &past the end of a chapter continues into the next"
+msgstr ""
+
+#. TRANSLATORS: Label of the group of read aloud settings on the Audio tab of Settings: engine, voice, rate, pitch and pauses
+msgid "Read Aloud"
+msgstr ""
+
+#. TRANSLATORS: Label of the list of speech engines, such as OneCore or SAPI 5, on the Audio tab of Settings
+msgid "&Engine:"
+msgstr ""
+
+#. TRANSLATORS: Label of the list of voices on the Audio tab of Settings
+msgid "&Voice:"
+msgstr ""
+
+#. TRANSLATORS: Label of the speech rate slider on the Audio tab of Settings
+msgid "&Rate:"
+msgstr ""
+
+#. TRANSLATORS: Label of the speech pitch slider on the Audio tab of Settings
+msgid "Pi&tch:"
+msgstr ""
+
+msgid "Pause after each para&graph (milliseconds):"
+msgstr ""
+
+msgid "Use this voice, rate and pitch for this &book only"
+msgstr ""
+
+#. TRANSLATORS: Button on the Audio tab of Settings that speaks a sample with the chosen voice, rate and pitch
+msgid "Play Sa&mple"
+msgstr ""
+
+#. TRANSLATORS: First choice in the voice list on the Audio tab of Settings, which leaves the choice of voice to the system
+msgid "System default"
+msgstr ""
+
+#. TRANSLATORS: Note at the top of the Documents tab of Settings, whose options change how a file is read
+msgid "Changing these reads your open documents again when you press OK."
+msgstr ""
+
+#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
+msgid "Render tables &inline"
+msgstr ""
+
+#. TRANSLATORS: Option to join the wrapped lines of a page back into paragraphs, in documents laid out as pages, such as PDFs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
+msgid "&Join wrapped lines into paragraphs"
+msgstr ""
+
+#. TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
+msgid "Remove repeated page &headers and footers"
+msgstr ""
+
+#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
+msgid "Read text between dollar signs as &math in Markdown"
+msgstr ""
+
+#. TRANSLATORS: Label for the dropdown choosing the braille code that Braille Ready Files (BRF) and PEF books are written in, so Paperback can turn their braille back into print
+msgid "&Braille code of BRF and PEF books:"
+msgstr ""
+
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
 msgstr ""
@@ -1123,16 +1471,16 @@ msgstr ""
 msgid "Choose a font"
 msgstr ""
 
-#. TRANSLATORS: Title of the Settings dialog
-msgid "Settings"
-msgstr ""
-
 #. TRANSLATORS: Option to restore documents that were open when the app was last closed
 msgid "&Restore previously opened documents on startup"
 msgstr ""
 
 #. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
 msgid "&Automatically reload changed documents"
+msgstr ""
+
+#. TRANSLATORS: Label for the number of recently opened documents to keep in history
+msgid "Number of &recent documents to show:"
 msgstr ""
 
 #. TRANSLATORS: Option to start the app maximized
@@ -1143,24 +1491,16 @@ msgstr ""
 msgid "&Minimize to system tray"
 msgstr ""
 
-#. TRANSLATORS: Option to toggle word wrapping of text
-msgid "&Word wrap"
+#. TRANSLATORS: Option to check for app updates automatically on startup
+msgid "Check for &updates on startup"
 msgstr ""
 
-#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
-msgid "Render tables &inline"
+#. TRANSLATORS: Label for the language selection dropdown
+msgid "&Language:"
 msgstr ""
 
-#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
-msgid "&Join wrapped lines into paragraphs in PDFs"
-msgstr ""
-
-#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
-msgid "Remove repeated page &headers and footers in PDFs"
-msgstr ""
-
-#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
-msgid "Read text between dollar signs as &math in Markdown"
+#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
+msgid "Customize &Keyboard Shortcuts..."
 msgstr ""
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
@@ -1179,176 +1519,37 @@ msgstr ""
 msgid "&Highlight found text"
 msgstr ""
 
-#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
-msgid "Play &sounds on bookmarks and notes"
-msgstr ""
-
-#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
-msgid "&Sync caret to audio playback"
-msgstr ""
-
-#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
-msgid "&Audio seek amount:"
-msgstr ""
-
-#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
-msgid "Seeking &past the end of a chapter continues into the next"
-msgstr ""
-
-#. TRANSLATORS: Option to check for app updates automatically on startup
-msgid "Check for &updates on startup"
-msgstr ""
-
-#. TRANSLATORS: Label for the update channel selection dropdown
-msgid "Update Channel:"
-msgstr ""
-
-#. TRANSLATORS: Stable update channel option
-msgid "Stable"
-msgstr ""
-
-#. TRANSLATORS: Developer/development update channel option
-msgid "Dev"
-msgstr ""
-
-#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
-msgid "Log Level:"
-msgstr ""
-
-#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
-msgid "Customize &Keyboard Shortcuts..."
-msgstr ""
-
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
 msgstr ""
 
-#. TRANSLATORS: Label for the number of recently opened documents to keep in history
-msgid "Number of &recent documents to show:"
-msgstr ""
-
-#. TRANSLATORS: Label for the language selection dropdown
-msgid "&Language:"
-msgstr ""
-
-#. TRANSLATORS: Label/header for the Font options section
-msgid "Font"
-msgstr ""
-
-#. TRANSLATORS: Button label to pick a font
-msgid "Choose &Font..."
-msgstr ""
-
-#. TRANSLATORS: Button label to restore font settings to default values
-msgid "&Reset to Default Font"
-msgstr ""
-
-#. TRANSLATORS: Label/header for the Background Color options section
-msgid "Background Color"
-msgstr ""
-
-#. TRANSLATORS: Button label to pick a background color
-msgid "Choose &Background Color..."
-msgstr ""
-
-#. TRANSLATORS: Button label to restore background color to default values
-msgid "Reset to &Default Background"
-msgstr ""
-
-#. TRANSLATORS: Label for the line spacing dropdown
-msgid "&Line spacing:"
-msgstr ""
-
-#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
-msgid "Normal"
-msgstr ""
-
-#. TRANSLATORS: 1.5x line spacing option
-msgid "1.5×"
-msgstr ""
-
-#. TRANSLATORS: Double line spacing option
-msgid "Double"
-msgstr ""
-
-#. TRANSLATORS: Label for the paragraph spacing dropdown
-msgid "&Paragraph spacing:"
-msgstr ""
-
-#. TRANSLATORS: Relaxed paragraph spacing option
-msgid "Relaxed"
-msgstr ""
-
-#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-msgid "Wide"
-msgstr ""
-
-#. TRANSLATORS: Label for the letter spacing dropdown
-msgid "L&etter spacing:"
-msgstr ""
-
-#. TRANSLATORS: Very Wide letter spacing option
-msgid "Very Wide"
-msgstr ""
-
-#. TRANSLATORS: Label for the text alignment dropdown
-msgid "Text &alignment:"
-msgstr ""
-
-#. TRANSLATORS: Left text alignment option
-msgid "Left"
-msgstr ""
-
-#. TRANSLATORS: Center text alignment option
-msgid "Center"
-msgstr ""
-
-#. TRANSLATORS: Right text alignment option
-msgid "Right"
-msgstr ""
-
-#. TRANSLATORS: Justified text alignment option
-msgid "Justify"
+#. TRANSLATORS: Title of the Settings dialog
+msgid "Settings"
 msgstr ""
 
 #. TRANSLATORS: Tab label for the General options panel
 msgid "General"
 msgstr ""
 
-#. TRANSLATORS: Tab label for the Reading options panel
+#. TRANSLATORS: Tab label for the Reading options panel, about moving through and searching a document
 msgid "Reading"
 msgstr ""
 
-#. TRANSLATORS: Tab label for the Readability options panel
-msgid "Readability"
+#. TRANSLATORS: Tab label for the Settings panel about playing audio books and narration
+#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Audio"
 msgstr ""
 
-#. TRANSLATORS: Title of the system dialog for picking a background colour
-msgid "Choose a colour"
+#. TRANSLATORS: Tab label for the Settings panel about how text looks: font, colour, spacing and alignment
+msgid "Appearance"
 msgstr ""
 
-#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
-msgid "Off"
+#. TRANSLATORS: Tab label for the Settings panel about how a file is read, such as whether tables are shown inline
+msgid "Documents"
 msgstr ""
 
-#. TRANSLATORS: Log level choice that records only errors
-msgid "Errors"
-msgstr ""
-
-#. TRANSLATORS: Log level choice that records warnings and errors
-msgid "Warnings"
-msgstr ""
-
-#. TRANSLATORS: Log level choice that records general activity, warnings and errors
-msgid "Information"
-msgstr ""
-
-#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
-msgid "Debug"
-msgstr ""
-
-#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
-msgid "Trace"
+#. TRANSLATORS: Tab label for the Settings panel with options most people never need, such as the update channel and log level
+msgid "Advanced"
 msgstr ""
 
 msgid "System-Wide"
@@ -1530,6 +1731,18 @@ msgstr ""
 msgid "%s, page %d"
 msgstr ""
 
+#. TRANSLATORS: Announced when read aloud is started with nothing left to read after the caret
+msgid "End of document"
+msgstr ""
+
+#. TRANSLATORS: Spoken by the Play Sample button on the Audio tab of Settings
+msgid "This is a sample of the current voice and speed settings."
+msgstr ""
+
+#. TRANSLATORS: Announced when read aloud is asked for on a system Paperback has no speech engine for yet
+msgid "Read aloud isn't available on this system yet."
+msgstr ""
+
 #. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
 msgstr ""
@@ -1612,6 +1825,10 @@ msgstr ""
 
 #. TRANSLATORS: Message shown when the user tries to perform an action while a help/documentation Web View window is open
 msgid "Paperback cannot perform any actions while Web View is open."
+msgstr ""
+
+#. TRANSLATORS: Title of a warning dialog
+msgid "Warning"
 msgstr ""
 
 #. TRANSLATORS: First message in the window that downloads documents from links, before the first server answers
@@ -2061,6 +2278,14 @@ msgstr ""
 
 #. TRANSLATORS: Status-bar help text for the Help > Check for Updates menu item.
 msgid "Check for updates"
+msgstr ""
+
+#. TRANSLATORS: Menu item in the Help menu that opens a dialog for sending a problem report to the developer.
+msgid "&Report a Problem..."
+msgstr ""
+
+#. TRANSLATORS: Status-bar help text for the Help > Report a Problem menu item.
+msgid "Send a problem report to the developer"
 msgstr ""
 
 #. TRANSLATORS: Menu item in the Help menu to open the donation page for the application.
@@ -2742,6 +2967,14 @@ msgid "Play/Pause Audio"
 msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Go to Time..."
+msgstr ""
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Announce Chapter Time"
+msgstr ""
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Forward"
 msgstr ""
 
@@ -2853,10 +3086,6 @@ msgstr ""
 msgid "View"
 msgstr ""
 
-#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
-msgid "Audio"
-msgstr ""
-
 #. TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Tools"
 msgstr ""
@@ -2928,8 +3157,8 @@ msgstr ""
 msgid "[Image only. This page has no text to read.]"
 msgstr ""
 
-#. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
-msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
+#. TRANSLATORS: A table of contents entry for one volume of a braille book; {} is the volume's number
+msgid "Volume {}"
 msgstr ""
 
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
@@ -2978,6 +3207,7 @@ msgid "Figure"
 msgstr ""
 
 #. TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
+#. TRANSLATORS: Label standing in for a picture in an OS/2 help panel, shown as "[Image]"
 msgid "Image"
 msgstr ""
 
@@ -3035,6 +3265,10 @@ msgstr ""
 
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 msgid "HTML file is empty: {}"
+msgstr ""
+
+#. TRANSLATORS: Error shown when an OS/2 help file (.inf or .hlp) cannot be read; {} is the underlying error
+msgid "Failed to parse OS/2 help file: {}"
 msgstr ""
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
@@ -3250,6 +3484,14 @@ msgstr ""
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
 msgstr ""
 
+#. TRANSLATORS: Error shown when an XPS document has no pages
+msgid "XPS file contains no pages"
+msgstr ""
+
+#. TRANSLATORS: Shown in place of an XPS page that has no text, such as a scanned one
+msgid "This page has no text."
+msgstr ""
+
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 msgid "No file extension found for: {}"
 msgstr ""
@@ -3262,11 +3504,25 @@ msgstr ""
 msgid "All parsers failed for extension: .{}"
 msgstr ""
 
+#. TRANSLATORS: Announced with how far into an audiobook's chapter the reader is: the time left in it; {} is written like 12:05
+msgid "{} left"
+msgstr ""
+
+#. TRANSLATORS: Announced for how far into an audiobook the reader is: the first {} is the time played so far and the second how long it runs, both written like 1:02:03
+msgid "{} of {}"
+msgstr ""
+
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 msgid "image"
 msgstr ""
 
+msgid "Paperback can't open a RAR archive split into parts. Join the parts into one archive to read it here."
+msgstr ""
+
 msgid "Current version is not a valid semver."
+msgstr ""
+
+msgid "No release has a valid semver tag."
 msgstr ""
 
 msgid "Latest release tag is not a valid semver."
@@ -4082,11 +4338,6 @@ msgstr ""
 
 #. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
 #: swift
-msgid "End of document"
-msgstr ""
-
-#. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
-#: swift
 msgid "Beginning of document"
 msgstr ""
 
@@ -4335,12 +4586,6 @@ msgstr ""
 #: swift
 #: kt
 msgid "Pause Read Aloud"
-msgstr ""
-
-#. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: swift
-#: kt
-msgid "Read Aloud"
 msgstr ""
 
 #. TRANSLATORS: Menu item / accessibility action to open the export document dialog
@@ -4682,11 +4927,6 @@ msgstr ""
 msgid "No matches."
 msgstr ""
 
-#. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
-#: swift
-msgid "Appearance"
-msgstr ""
-
 #. TRANSLATORS: Appearance option following the phone's own light/dark setting
 #: swift
 msgid "System"
@@ -4907,4 +5147,10 @@ msgstr ""
 #. TRANSLATORS: TalkBack action on the read-aloud bar's audio speed control, which opens the list of speeds
 #: kt
 msgid "Select audio speed"
+msgstr ""
+
+#. TRANSLATORS: Section header in Settings grouping controls for how document text is displayed
+#: kt
+#: swift
+msgid "Readability"
 msgstr ""

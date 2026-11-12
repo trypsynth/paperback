@@ -14,6 +14,12 @@ class SupportedMimeTypesTest {
 	}
 
 	@Test
+	fun `XPS and OpenXPS documents have their types`() {
+		assertEquals(setOf("application/vnd.ms-xpsdocument"), extraMimeTypesFor("xps"))
+		assertEquals(setOf("application/oxps"), extraMimeTypesFor("oxps"))
+	}
+
+	@Test
 	fun `an extension can carry more than one type`() {
 		assertEquals(setOf("application/xml", "text/xml"), extraMimeTypesFor("xml"))
 	}

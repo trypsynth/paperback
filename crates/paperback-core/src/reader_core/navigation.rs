@@ -142,7 +142,8 @@ fn line_after(doc: &DocumentHandle, end: DocPos) -> DocPos {
 	let buffer = &doc.document().buffer;
 	let total = buffer.end();
 	let probe = end.min(total).saturating_sub(DocLen::ONE);
-	buffer.newline_positions().iter().find(|&&nl| nl >= probe).map_or(total, |&nl| (nl + DocLen::ONE).min(total))
+	let newlines = buffer.newline_positions();
+	newlines.get(newlines.partition_point(|&nl| nl < probe)).map_or(total, |&nl| (nl + DocLen::ONE).min(total))
 }
 
 #[cfg(test)]

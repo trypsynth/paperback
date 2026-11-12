@@ -15,9 +15,10 @@ use zip::ZipArchive;
 use super::DocumentSession;
 use crate::{
 	document::{DocPos, MarkerType},
-	parser::{cbz, fb2, is_data_uri, is_external_url, mobi},
+	parser::{cbz, fb2, ipf, is_data_uri, is_external_url, mobi},
 	t,
 	util::{
+		rar,
 		text::url_decode,
 		zip::{read_zip_entry_bytes, read_zip_entry_bytes_with_password},
 	},
@@ -80,6 +81,9 @@ impl DocumentSession {
 				.map(<[u8]>::to_vec)
 				.context("the book has no such picture");
 		}
+		if source.starts_with(ipf::PICTURE_PREFIX) {
+			return ipf::picture_bytes(&self.file_path, source);
+		}
 		// A PDF names pictures by where their objects sit, so the reference, not the extension, says which reader they need.
 		if source.starts_with("pdf:") {
 			let (page_index, path) = parse_pdf_image_reference(source)?;
@@ -94,8 +98,10 @@ impl DocumentSession {
 		}
 		let extension = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
 		match extension.as_deref() {
-			Some("epub" | "cbz" | "cbr") => {
-				let mut archive = ZipArchive::new(BufReader::new(File::open(&self.file_path)?))?;
+			// A real RAR, comic or not, was read from the zip copy of it, which holds no password.
+			Some("epub" | "ebrl" | "cbz" | "cbr" | "rar") => {
+				let mut archive =
+					ZipArchive::new(BufReader::new(File::open(rar::as_zip(Path::new(&self.file_path))?)?))?;
 				read_zip_entry_bytes(&mut archive, source)
 			}
 			Some("chm") => {
@@ -160,6 +166,9 @@ fn image_file_name(source: &str) -> String {
 	}
 	if let Some(record) = source.strip_prefix("mobi-record:") {
 		return format!("{fallback} {record}");
+	}
+	if let Some(offset) = source.strip_prefix(ipf::PICTURE_PREFIX) {
+		return format!("{fallback} {offset}.bmp");
 	}
 	if is_data_uri(source) {
 		let media_type = source[5..].split([';', ',']).next().unwrap_or_default().to_ascii_lowercase();

@@ -2,6 +2,7 @@ package dev.paperback.android.ui.state
 
 import dev.paperback.android.nt
 import dev.paperback.android.t
+import uniffi.paperback.NavigationUnit
 import uniffi.paperback.SegmentTypeFfi
 
 /** Mirrors desktop's `dialogs::AUDIO_SEEK_AMOUNTS_SECONDS` so the shared `audio_seek_amount_seconds` setting means the same on both. */
@@ -13,6 +14,18 @@ sealed interface NavUnit {
 	data class Time(val seconds: Int) : NavUnit
 
 	data object Find : NavUnit
+}
+
+/** Find has no stored form, since the search it steps through ends with the document. */
+fun NavUnit.toStored(): NavigationUnit? = when (this) {
+	is NavUnit.Segment -> NavigationUnit.Segment(type)
+	is NavUnit.Time -> NavigationUnit.Seconds(seconds.toUInt())
+	NavUnit.Find -> null
+}
+
+fun NavigationUnit.toNavUnit(): NavUnit = when (this) {
+	is NavigationUnit.Segment -> NavUnit.Segment(segmentType)
+	is NavigationUnit.Seconds -> NavUnit.Time(seconds.toInt())
 }
 
 fun getSegmentTypeName(type: SegmentTypeFfi): String = when (type) {

@@ -1,4 +1,4 @@
-use std::fmt::Write;
+use std::{collections::HashSet, fmt::Write};
 
 use ego_tree::NodeRef;
 use scraper::{ElementRef, Html, Node, node};
@@ -9,7 +9,7 @@ use crate::{
 	parser::convert::{
 		block_elements::is_block_element,
 		format_spans::FormatKind,
-		formula::{formula_text, is_dom_formula},
+		formula::{LinkFormula, formula_text, is_dom_formula, place_in_collapsed},
 		image_text,
 		line_builder::LineBuilder,
 		list_style::ListStyle,
@@ -103,8 +103,17 @@ impl HtmlToText {
 			return;
 		};
 		if self.flags.contains(ProcessingFlags::IN_LINK) {
-			// Link text is buffered separately. Formula markers await shared inline position tracking.
+			// Link text is buffered until the link closes, which is when the formula's place is known.
+			let raw_start = self.current_link_text.len();
+			let ids = node
+				.descendants()
+				.filter_map(|descendant| match descendant.value() {
+					Node::Element(element) => element.attr("id").or_else(|| element.attr("name")).map(str::to_string),
+					_ => None,
+				})
+				.collect();
 			self.current_link_text.push_str(&rendered);
+			self.current_link_formulas.push(LinkFormula { raw_start, text: rendered, mathml, ids });
 			return;
 		}
 		let block = element.attr("display") == Some("block");
@@ -138,6 +147,14 @@ impl HtmlToText {
 		for line in render.lines {
 			self.text.push_finalized_line(&line);
 		}
+		for formula in render.formulas {
+			let offset = start_offset + formula.offset;
+			for id in formula.ids {
+				self.id_positions.insert(id, offset);
+			}
+			let length = DocLen::of(&formula.text);
+			self.formulas.push(FormulaInfo { offset, text: formula.text, mathml: formula.mathml, length });
+		}
 		let table_caption = render.caption;
 		let length = render.length;
 		self.tables.push(TableInfo { offset: start_offset, text: table_caption, html_content: table_html, length });
@@ -155,7 +172,9 @@ impl HtmlToText {
 				if let Some(id) = element.attr("id").or_else(|| element.attr("name")) {
 					self.id_positions.insert(id.to_string(), self.text.get_current_text_position());
 				}
-				if let Some((image_text, mut info, is_figure)) = Self::described_image(tag_name, node) {
+				if let Some((image_text, mut info, is_figure)) =
+					Self::described_image(tag_name, node, &self.content_images)
+				{
 					if self.flags.contains(ProcessingFlags::IN_LINK) {
 						// Placed once the link's text is known, since collapsing its whitespace can move it.
 						self.current_link_text.push_str(&image_text);
@@ -326,11 +345,30 @@ impl HtmlToText {
 					text: collapsed_text.clone(),
 					reference: self.current_link_href.clone(),
 				});
+				let written_from = self.text.get_current_text_position();
 				self.text.push_str(&collapsed_text);
+				// Leading spaces the text before already ends with aren't written again, so a formula is that much earlier than its place in `collapsed_text`.
+				let written = self.text.get_current_text_position().since(written_from);
+				let leading = DocLen::of(&collapsed_text[..collapsed_text.len() - collapsed_text.trim_start().len()]);
+				let dropped = DocLen::of(&collapsed_text).saturating_sub(written).min(leading);
+				for formula in std::mem::take(&mut self.current_link_formulas) {
+					let Some(start) =
+						place_in_collapsed(&self.current_link_text, formula.raw_start, &collapsed_text, &formula.text)
+					else {
+						continue;
+					};
+					let offset = (written_from + DocLen::of(&collapsed_text[..start])).saturating_sub(dropped);
+					for id in formula.ids {
+						self.id_positions.insert(id, offset);
+					}
+					let length = DocLen::of(&formula.text);
+					self.formulas.push(FormulaInfo { offset, text: formula.text, mathml: formula.mathml, length });
+				}
 			}
 			self.current_link_href.clear();
 			self.current_link_text.clear();
 			self.current_link_images.clear();
+			self.current_link_formulas.clear();
 		}
 		if tag_name == "code" {
 			self.flags.remove(ProcessingFlags::IN_CODE);
@@ -403,7 +441,11 @@ impl HtmlToText {
 		}
 	}
 
-	fn described_image(tag_name: &str, node: NodeRef<'_, Node>) -> Option<(String, ImageInfo, bool)> {
+	fn described_image(
+		tag_name: &str,
+		node: NodeRef<'_, Node>,
+		content_images: &HashSet<String>,
+	) -> Option<(String, ImageInfo, bool)> {
 		if tag_name != "img" && tag_name != "image" && tag_name != "figure" {
 			return None;
 		}
@@ -422,16 +464,12 @@ impl HtmlToText {
 			}
 		}
 		// A figure with no caption says nothing itself: the picture inside it is announced instead.
-		if description.is_empty() && (is_figure || image_text::is_decorative(&attribute)) {
+		let source = Self::image_source(node);
+		if description.is_empty() && (is_figure || image_text::is_decorative(&attribute, &source, content_images)) {
 			return None;
 		}
 		let image_text = image_text::placeholder(is_figure, &description);
-		let info = ImageInfo {
-			offset: DocPos::ZERO,
-			alt_text: description,
-			length: DocLen::of(&image_text),
-			source: Self::image_source(node),
-		};
+		let info = ImageInfo { offset: DocPos::ZERO, alt_text: description, length: DocLen::of(&image_text), source };
 		Some((image_text, info, is_figure))
 	}
 

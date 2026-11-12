@@ -22,6 +22,8 @@ use crate::{
 	updater,
 };
 
+#[cfg(target_os = "windows")]
+mod audio_events;
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 mod ipc;
 mod links;
@@ -64,6 +66,11 @@ impl MainWindow {
 		&self.doc_manager
 	}
 
+	/// True while something up the UI thread's stack, usually a modal dialog, holds the document manager or the config.
+	pub(crate) fn locks_held(&self) -> bool {
+		self.doc_manager.try_lock().is_err() || self.config.try_lock().is_err()
+	}
+
 	pub fn new(config: Rc<Mutex<ConfigManager>>) -> Self {
 		// TRANSLATORS: Main window title when no document is open
 		let app_title = t("Paperback");
@@ -100,6 +107,8 @@ impl MainWindow {
 			Rc::clone(&from_keyboard),
 		)));
 		let find_dialog = Rc::new(Mutex::new(None));
+		#[cfg(target_os = "windows")]
+		crate::windows_audio::watch_default_output();
 		#[cfg(target_os = "windows")]
 		let hotkey_handle = Rc::new(RefCell::new(start_hotkey_listener(config.lock().unwrap().get_hotkey().as_ref())));
 		let timers = Self::bind_menu_events(

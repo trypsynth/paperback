@@ -117,6 +117,50 @@
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
+			<string>org.daisy.ebraille</string>
+			<key>UTTypeDescription</key>
+			<string>eBraille Book</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.zip-archive</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>ebrl</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/ebrl+zip</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.rarlab.rar-archive</string>
+			<key>UTTypeDescription</key>
+			<string>RAR Archive</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+				<string>public.archive</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>rar</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/vnd.rar</string>
+					<string>application/x-rar-compressed</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
 			<string>dev.paperback.fb2</string>
 			<key>UTTypeDescription</key>
 			<string>FictionBook</string>
@@ -225,6 +269,29 @@
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
+			<string>dev.paperback.xps</string>
+			<key>UTTypeDescription</key>
+			<string>XPS Document</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.zip-archive</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>xps</string>
+					<string>oxps</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/vnd.ms-xpsdocument</string>
+					<string>application/oxps</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
 			<string>dev.paperback.m4b</string>
 			<key>UTTypeDescription</key>
 			<string>M4B Audiobook</string>
@@ -299,6 +366,7 @@
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>org.idpf.epub-container</string>
+				<string>org.daisy.ebraille</string>
 				<string>dev.paperback.mobi</string>
 				<string>dev.paperback.fb2</string>
 			</array>
@@ -319,6 +387,7 @@
 				<string>org.oasis-open.opendocument.text</string>
 				<string>dev.paperback.fodt</string>
 				<string>dev.paperback.wri</string>
+				<string>dev.paperback.xps</string>
 			</array>
 		</dict>
 		<dict>
@@ -387,6 +456,7 @@
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>public.zip-archive</string>
+				<string>com.rarlab.rar-archive</string>
 			</array>
 		</dict>
 		<dict>

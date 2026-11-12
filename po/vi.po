@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 21:30+0000\n"
+"POT-Creation-Date: 2026-11-12 13:50+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,6 +17,152 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Poedit 3.6\n"
+
+#. TRANSLATORS: Title of the question asked after the app closed unexpectedly
+#. TRANSLATORS: Title of the dialog for sending a problem report to the developer
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Report a Problem"
+msgstr "Báo cáo sự cố"
+
+#. TRANSLATORS: Asked at startup after the app crashed or was closed unexpectedly. %s is the app's name.
+#, fuzzy
+msgid "%s closed unexpectedly the last time it ran. Would you like to report the problem?"
+msgstr "%s đã đóng bất ngờ lần chạy cuối cùng. Bạn có muốn báo cáo sự cố này không?"
+
+#. TRANSLATORS: Check box in the question asked after a crash, which stops the question being asked again
+#, fuzzy
+msgid "&Don't ask again"
+msgstr "&Không hỏi lại"
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog after a crash. %s is the app's name.
+#, fuzzy
+msgid "%s closed unexpectedly the last time it ran. Describe what you were doing when it happened."
+msgstr "%s đã đóng bất ngờ lần chạy cuối cùng. Vui lòng mô tả những gì bạn đang làm khi sự cố xảy ra."
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog
+#, fuzzy
+msgid "Describe the problem, and what you were doing when it happened."
+msgstr "Mô tả sự cố và những gì bạn đang làm khi sự cố xảy ra."
+
+#. TRANSLATORS: Label of the field for describing the problem in the Report a Problem dialog
+#, fuzzy
+msgid "&What happened:"
+msgstr "&Chuyện gì đã xảy ra:"
+
+#, fuzzy
+msgid "&Your email address, if you'd like a reply:"
+msgstr "&Địa chỉ email của bạn, nếu bạn muốn nhận phản hồi:"
+
+#. TRANSLATORS: Check box in the Report a Problem dialog that attaches the app's log to the report
+#, fuzzy
+msgid "&Include the log"
+msgstr "&Bao gồm nhật ký"
+
+#. TRANSLATORS: Explains what a problem report contains, in the Report a Problem dialog. %s is the app's name.
+#, fuzzy
+msgid "The report also includes %s's version and your operating system. Select Preview to see everything that will be sent."
+msgstr "Báo cáo này cũng bao gồm phiên bản của %s và hệ điều hành của bạn. Chọn Xem trước để xem mọi thứ sẽ được gửi."
+
+#. TRANSLATORS: Button in the Report a Problem dialog that shows the report before it is sent
+#, fuzzy
+msgid "&Preview"
+msgstr "&Xem trước"
+
+#. TRANSLATORS: Button in the Report a Problem dialog that sends the report
+#, fuzzy
+msgid "&Send"
+msgstr "&Gửi"
+
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button that closes the Find dialog
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Hủy"
+
+#. TRANSLATORS: Title of the window that shows a problem report before it is sent
+#, fuzzy
+msgid "Report Preview"
+msgstr "Xem trước báo cáo"
+
+#. TRANSLATORS: Title of an error message
+#. TRANSLATORS: Generic error dialog title
+msgid "Error"
+msgstr "Lỗi"
+
+#. TRANSLATORS: Shown when Send is pressed in the Report a Problem dialog with the description empty
+#, fuzzy
+msgid "Describe the problem before sending the report."
+msgstr "Vui lòng mô tả sự cố trước khi gửi báo cáo."
+
+#. TRANSLATORS: Shown when a problem report breaks a limit, such as being too long. %s is the reason, in English.
+#, fuzzy
+msgid "The report can't be sent: %s"
+msgstr "Không thể gửi báo cáo: %s"
+
+#. TRANSLATORS: Message in the progress window shown while a problem report is sent
+#, fuzzy
+msgid "Sending the report..."
+msgstr "Đang gửi báo cáo..."
+
+#. TRANSLATORS: Shown after a problem report was sent
+#. TRANSLATORS: Title of a message saying something worked
+#, fuzzy
+msgid "Thank you. Your report was sent."
+msgstr "Cảm ơn. Báo cáo của bạn đã được gửi."
+
+#, fuzzy
+msgid "Success"
+msgstr "Thành công"
+
+#, fuzzy
+msgid "Email can't be delivered to that address. Check it for typing mistakes, or leave it blank."
+msgstr "Không thể gửi email đến địa chỉ đó. Vui lòng kiểm tra lỗi gõ, hoặc để trống."
+
+#. TRANSLATORS: Shown when the report server has taken as many reports as it will for the day
+#, fuzzy
+msgid "Too many reports have been sent today."
+msgstr "Quá nhiều báo cáo đã được gửi hôm nay."
+
+#. TRANSLATORS: Shown when sending a problem report failed. %s is the reason, in English.
+#, fuzzy
+msgid "The report couldn't be sent: %s"
+msgstr "Không thể gửi báo cáo: %s"
+
+#. TRANSLATORS: Asked after a problem report couldn't be sent. %s explains what went wrong.
+#, fuzzy
+msgid ""
+"%s\n"
+"\n"
+"Would you like to save the report to a file, so you can send it another way?"
+msgstr ""
+"%s\n"
+"\n"
+"Bạn có muốn lưu báo cáo vào tệp tin để gửi bằng cách khác không?"
+
+#. TRANSLATORS: Title of the dialog for saving a problem report to a file
+#, fuzzy
+msgid "Save Report"
+msgstr "Lưu báo cáo"
+
+#. TRANSLATORS: Default file name for a saved problem report
+#, fuzzy
+msgid "Problem report"
+msgstr "Báo cáo sự cố"
+
+#. TRANSLATORS: File type filter in the dialog for saving a problem report
+#, fuzzy
+msgid "Text files (*.txt)|*.txt"
+msgstr "Tệp tin văn bản (*.txt)|*.txt"
+
+#. TRANSLATORS: Shown after a problem report was saved to a file
+#, fuzzy
+msgid "The report was saved."
+msgstr "Báo cáo đã được lưu."
+
+#, fuzzy
+msgid "The report couldn't be saved: %s"
+msgstr "Không thể lưu báo cáo: %s"
 
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 #, fuzzy
@@ -77,17 +223,17 @@ msgstr "Không có ngôn ngữ OCR nào được cài đặt. Thêm một ngôn 
 msgid "No OCR language is installed. Install a Tesseract language package from your package manager."
 msgstr "Không có ngôn ngữ OCR nào được cài đặt. Cài đặt gói ngôn ngữ Tesseract từ trình quản lý gói của bạn."
 
-#. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
-msgid "Failed to create IPC server"
-msgstr "Không thể tạo máy chủ IPC"
+#. TRANSLATORS: Announced when skipping forward while read aloud is on the last paragraph
+#, fuzzy
+msgid "No next paragraph."
+msgstr "Không có đoạn tiếp theo."
 
-#. TRANSLATORS: Title of a warning dialog
-msgid "Warning"
-msgstr "Cảnh báo"
+#. TRANSLATORS: Announced when skipping back while read aloud is on the first paragraph
+#, fuzzy
+msgid "No previous paragraph."
+msgstr "Không có đoạn trước đó."
 
-#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
-#. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
 #. TRANSLATORS: Announced when trying to change audio volume on a document that has none
 #, fuzzy
 msgid "This document has no audio."
@@ -98,8 +244,23 @@ msgstr "Tài liệu này không có âm thanh."
 msgid "Audio hasn't started playing yet."
 msgstr "Âm thanh vẫn chưa bắt đầu phát."
 
+#, fuzzy
+msgid "This book doesn't say how long its audio runs, so Paperback can't go to a time in it."
+msgstr "Cuốn sách này không cho biết độ dài của file âm thanh, vì vậy Paperback không thể chuyển đến một thời điểm trong đó."
+
+#. TRANSLATORS: Announced when asking for the time in an audiobook's chapter while the length of its files isn't known, such as in many DAISY books
+#, fuzzy
+msgid "This book doesn't say how long its audio runs."
+msgstr "Cuốn sách này không cho biết thời lượng âm thanh của nó."
+
+#. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
+#, fuzzy
+msgid "Rate {}"
+msgstr "Tốc độ {}"
+
 #. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
 #. TRANSLATORS: Announced when the audio volume is already at its loudest; {} is the current volume, e.g. "200%"
+#. TRANSLATORS: Announced when a setting is already at its highest; {} is its value
 #. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
 #, fuzzy
 msgid "{} (maximum)"
@@ -107,6 +268,7 @@ msgstr "{} (tối đa)"
 
 #. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
 #. TRANSLATORS: Announced when the audio volume is already at its quietest; {} is the current volume, e.g. "10%"
+#. TRANSLATORS: Announced when a setting is already at its lowest; {} is its value
 #. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
 #, fuzzy
 msgid "{} (minimum)"
@@ -715,6 +877,26 @@ msgstr "&Phát/Tạm dừng âm thanh"
 msgid "Play or pause this document's audio narration"
 msgstr "Phát hoặc tạm dừng phần đọc lời bình bằng âm thanh của tài liệu này"
 
+#. TRANSLATORS: Menu item in the Audio menu to jump to a time typed in, such as 1:23:45.
+#, fuzzy
+msgid "Go to &Time..."
+msgstr "Chuyển đến &Thời điểm..."
+
+#. TRANSLATORS: Status-bar help text for the Go to Time menu item.
+#, fuzzy
+msgid "Go to a time in the recording"
+msgstr "Chuyển đến một thời điểm trong bản ghi âm"
+
+#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter of an audiobook the reader is, and how much of it is left.
+#, fuzzy
+msgid "Announce &Chapter Time"
+msgstr "Thông báo &Thời gian Chương"
+
+#. TRANSLATORS: Status-bar help text for the Announce Chapter Time menu item.
+#, fuzzy
+msgid "Say how far into this chapter you are and how much is left"
+msgstr "Nói bạn đã đi được bao xa trong chương này và còn lại bao lâu"
+
 #. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 #, fuzzy
 msgid "Seek Audio &Forward"
@@ -871,6 +1053,7 @@ msgstr "&Xóa tất cả"
 #. TRANSLATORS: Label for a button that closes the View Note dialog
 #. TRANSLATORS: Label for a button that closes the Web View dialog
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#. TRANSLATORS: Button that closes a window showing text
 msgid "Close"
 msgstr "Đóng"
 
@@ -996,10 +1179,6 @@ msgstr "trống"
 #. TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
 msgid "Please select a bookmark to jump to."
 msgstr "Vui lòng chọn một dấu trang để nhảy đến."
-
-#. TRANSLATORS: Generic error dialog title
-msgid "Error"
-msgstr "Lỗi"
 
 #. TRANSLATORS: Label/prompt in the Note editor dialog
 msgid "Edit bookmark note:"
@@ -1166,12 +1345,6 @@ msgstr "Xuất"
 msgid "Go"
 msgstr "Đi"
 
-#. TRANSLATORS: Label for the cancellation button
-#. TRANSLATORS: Cancel button that closes the Find dialog
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr "Hủy"
-
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
 msgstr "Đi đến dòng"
@@ -1217,6 +1390,25 @@ msgstr "&Phần trăm"
 #, fuzzy
 msgid "Percent out of range."
 msgstr "Phần trăm ngoài phạm vi."
+
+#. TRANSLATORS: Title of the Go to Time dialog, which jumps to a time typed in, in an audiobook
+#, fuzzy
+msgid "Go to Time"
+msgstr "Chuyển đến Thời điểm"
+
+#, fuzzy
+msgid "Go to time ({}/{}):"
+msgstr "Chuyển đến thời điểm ({}/{})"
+
+#. TRANSLATORS: Announced when what was typed in the Go to Time dialog is not a time
+#, fuzzy
+msgid "Type a time like 1:23:45, 23:45 or 45."
+msgstr "Nhập một thời điểm như 1:23:45, 23:45 hoặc 45."
+
+#. TRANSLATORS: Announced when the time typed in the Go to Time dialog is past the end of the recording, or before its start
+#, fuzzy
+msgid "Time out of range."
+msgstr "Thời điểm ngoài phạm vi."
 
 #. TRANSLATORS: Title of the view showing the text recognized in a picture
 #, fuzzy
@@ -1277,6 +1469,254 @@ msgstr "Liên kết:"
 msgid "Security Warning"
 msgstr "Cảnh báo bảo mật"
 
+#. TRANSLATORS: Label for the update channel selection dropdown
+#, fuzzy
+msgid "Update Channel:"
+msgstr "Kênh cập nhật:"
+
+#. TRANSLATORS: Stable update channel option
+#, fuzzy
+msgid "Stable"
+msgstr "Ổn định"
+
+#. TRANSLATORS: Developer/development update channel option
+#, fuzzy
+msgid "Dev"
+msgstr "Dev"
+
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+#, fuzzy
+msgid "Log Level:"
+msgstr "Mức ghi nhật ký:"
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+#, fuzzy
+msgid "Off"
+msgstr "Tắt"
+
+#. TRANSLATORS: Log level choice that records only errors
+#, fuzzy
+msgid "Errors"
+msgstr "Lỗi"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+#, fuzzy
+msgid "Warnings"
+msgstr "Cảnh báo"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+#, fuzzy
+msgid "Information"
+msgstr "Thông tin"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+#, fuzzy
+msgid "Debug"
+msgstr "Gỡ lỗi"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+#, fuzzy
+msgid "Trace"
+msgstr "Theo dõi"
+
+#. TRANSLATORS: Option to toggle word wrapping of text
+msgid "&Word wrap"
+msgstr "&Tự động ngắt dòng"
+
+#. TRANSLATORS: Label/header for the Font options section
+#, fuzzy
+msgid "Font"
+msgstr "Phông chữ"
+
+#. TRANSLATORS: Button label to pick a font
+#, fuzzy
+msgid "Choose &Font..."
+msgstr "Chọn &Font..."
+
+#. TRANSLATORS: Button label to restore font settings to default values
+#, fuzzy
+msgid "&Reset to Default Font"
+msgstr "&Đặt lại Font mặc định"
+
+#. TRANSLATORS: Label/header for the Background Color options section
+#, fuzzy
+msgid "Background Color"
+msgstr "Màu nền"
+
+#. TRANSLATORS: Button label to pick a background color
+#, fuzzy
+msgid "Choose &Background Color..."
+msgstr "Chọn &Màu nền..."
+
+#. TRANSLATORS: Button label to restore background color to default values
+#, fuzzy
+msgid "Reset to &Default Background"
+msgstr "Đặt lại &Màu nền mặc định"
+
+#, fuzzy
+msgid "&Line spacing:"
+msgstr "&Khoảng cách dòng:"
+
+#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
+#, fuzzy
+msgid "Normal"
+msgstr "Bình thường"
+
+#. TRANSLATORS: 1.5x line spacing option
+#, fuzzy
+msgid "1.5×"
+msgstr "1.5×"
+
+#. TRANSLATORS: Double line spacing option
+#, fuzzy
+msgid "Double"
+msgstr "Gấp đôi"
+
+#, fuzzy
+msgid "&Paragraph spacing:"
+msgstr "&Khoảng cách giữa các đoạn:"
+
+#. TRANSLATORS: Relaxed paragraph spacing option
+#, fuzzy
+msgid "Relaxed"
+msgstr "Thư giãn"
+
+#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
+#, fuzzy
+msgid "Wide"
+msgstr "Rộng"
+
+#, fuzzy
+msgid "L&etter spacing:"
+msgstr "K&hoảng cách chữ cái:"
+
+#. TRANSLATORS: Very Wide letter spacing option
+#, fuzzy
+msgid "Very Wide"
+msgstr "Rất rộng"
+
+#, fuzzy
+msgid "Text &alignment:"
+msgstr "&Căn chỉnh văn bản:"
+
+#. TRANSLATORS: Left text alignment option
+#, fuzzy
+msgid "Left"
+msgstr "Bên trái"
+
+#. TRANSLATORS: Center text alignment option
+#, fuzzy
+msgid "Center"
+msgstr "Trung tâm"
+
+#. TRANSLATORS: Right text alignment option
+#, fuzzy
+msgid "Right"
+msgstr "Phải"
+
+#. TRANSLATORS: Justified text alignment option
+#, fuzzy
+msgid "Justify"
+msgstr "Căn đều"
+
+#. TRANSLATORS: Title of the system dialog for picking a background colour
+#, fuzzy
+msgid "Choose a colour"
+msgstr "Chọn một màu"
+
+#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
+#, fuzzy
+msgid "Play &sounds on bookmarks and notes"
+msgstr "Phát &âm thanh khi gặp dấu trang và ghi chú"
+
+#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+#, fuzzy
+msgid "&Sync caret to audio playback"
+msgstr "&Đồng bộ vị trí con trỏ với quá trình phát lại âm thanh"
+
+#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
+#, fuzzy
+msgid "&Audio seek amount:"
+msgstr "&Giá trị tìm kiếm âm thanh:"
+
+#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
+#, fuzzy
+msgid "Seeking &past the end of a chapter continues into the next"
+msgstr "Tìm kiếm &vượt quá cuối chương tiếp tục vào chương tiếp theo"
+
+#. TRANSLATORS: Label of the group of read aloud settings on the Audio tab of Settings: engine, voice, rate, pitch and pauses
+#, fuzzy
+msgid "Read Aloud"
+msgstr "Đọc to"
+
+#. TRANSLATORS: Label of the list of speech engines, such as OneCore or SAPI 5, on the Audio tab of Settings
+#, fuzzy
+msgid "&Engine:"
+msgstr "&Công cụ:"
+
+#. TRANSLATORS: Label of the list of voices on the Audio tab of Settings
+#, fuzzy
+msgid "&Voice:"
+msgstr "&Giọng nói:"
+
+#. TRANSLATORS: Label of the speech rate slider on the Audio tab of Settings
+#, fuzzy
+msgid "&Rate:"
+msgstr "&Tốc độ:"
+
+#. TRANSLATORS: Label of the speech pitch slider on the Audio tab of Settings
+#, fuzzy
+msgid "Pi&tch:"
+msgstr "Cao &độ:"
+
+#, fuzzy
+msgid "Pause after each para&graph (milliseconds):"
+msgstr "Tạm dừng sau mỗi &đoạn (mili giây):"
+
+#, fuzzy
+msgid "Use this voice, rate and pitch for this &book only"
+msgstr "Sử dụng giọng nói, tốc độ và cao độ này cho &cuốn sách này chỉ"
+
+#. TRANSLATORS: Button on the Audio tab of Settings that speaks a sample with the chosen voice, rate and pitch
+#, fuzzy
+msgid "Play Sa&mple"
+msgstr "Phát &Mẫu"
+
+#. TRANSLATORS: First choice in the voice list on the Audio tab of Settings, which leaves the choice of voice to the system
+#, fuzzy
+msgid "System default"
+msgstr "Mặc định của hệ thống"
+
+#. TRANSLATORS: Note at the top of the Documents tab of Settings, whose options change how a file is read
+#, fuzzy
+msgid "Changing these reads your open documents again when you press OK."
+msgstr "Thay đổi các tùy chọn này sẽ đọc lại các tài liệu đang mở của bạn khi bạn nhấn OK."
+
+#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
+#, fuzzy
+msgid "Render tables &inline"
+msgstr "Hiển thị bảng &inline"
+
+#. TRANSLATORS: Option to join the wrapped lines of a page back into paragraphs, in documents laid out as pages, such as PDFs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
+#, fuzzy
+msgid "&Join wrapped lines into paragraphs"
+msgstr "&Nối các dòng được gói lại thành các đoạn"
+
+#. TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
+#, fuzzy
+msgid "Remove repeated page &headers and footers"
+msgstr "Xóa &đầu trang và chân trang được lặp lại"
+
+#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
+#, fuzzy
+msgid "Read text between dollar signs as &math in Markdown"
+msgstr "Đọc văn bản giữa dấu dollar dưới dạng &công thức toán học trong Markdown"
+
+#. TRANSLATORS: Label for the dropdown choosing the braille code that Braille Ready Files (BRF) and PEF books are written in, so Paperback can turn their braille back into print
+#, fuzzy
+msgid "&Braille code of BRF and PEF books:"
+msgstr "&Mã Braille của sách BRF và PEF:"
+
 #. TRANSLATORS: Description text shown when the background color is set to default
 #, fuzzy
 msgid "Background: Default"
@@ -1327,11 +1767,6 @@ msgstr "Gạch ngang"
 msgid "Choose a font"
 msgstr "Chọn một phông chữ"
 
-#. TRANSLATORS: Title of the Settings dialog
-#, fuzzy
-msgid "Settings"
-msgstr "Cài đặt"
-
 #. TRANSLATORS: Option to restore documents that were open when the app was last closed
 msgid "&Restore previously opened documents on startup"
 msgstr "&Khôi phục các tài liệu đã mở khi khởi động"
@@ -1341,6 +1776,10 @@ msgstr "&Khôi phục các tài liệu đã mở khi khởi động"
 msgid "&Automatically reload changed documents"
 msgstr "&Tự động tải lại các tài liệu đã được chỉnh sửa"
 
+#. TRANSLATORS: Label for the number of recently opened documents to keep in history
+msgid "Number of &recent documents to show:"
+msgstr "Số lượng tài liệu &gần đây hiển thị:"
+
 #. TRANSLATORS: Option to start the app maximized
 msgid "&Start maximized"
 msgstr "&Khởi động ở chế độ toàn màn hình"
@@ -1349,29 +1788,18 @@ msgstr "&Khởi động ở chế độ toàn màn hình"
 msgid "&Minimize to system tray"
 msgstr "&Thu nhỏ xuống khay hệ thống"
 
-#. TRANSLATORS: Option to toggle word wrapping of text
-msgid "&Word wrap"
-msgstr "&Tự động ngắt dòng"
+#. TRANSLATORS: Option to check for app updates automatically on startup
+msgid "Check for &updates on startup"
+msgstr "&Kiểm tra cập nhật khi khởi động"
 
-#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
-#, fuzzy
-msgid "Render tables &inline"
-msgstr "Hiển thị bảng &inline"
+#. TRANSLATORS: Label for the language selection dropdown
+msgid "&Language:"
+msgstr "&Ngôn ngữ:"
 
-#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
+#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 #, fuzzy
-msgid "&Join wrapped lines into paragraphs in PDFs"
-msgstr "&Nối các dòng được gói lại thành các đoạn trong PDF"
-
-#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
-#, fuzzy
-msgid "Remove repeated page &headers and footers in PDFs"
-msgstr "Loại bỏ &đầu trang và chân trang lặp lại trong PDF"
-
-#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
-#, fuzzy
-msgid "Read text between dollar signs as &math in Markdown"
-msgstr "Đọc văn bản giữa dấu dollar dưới dạng &công thức toán học trong Markdown"
+msgid "Customize &Keyboard Shortcuts..."
+msgstr "Tùy chỉnh &Phím tắt..."
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -1391,216 +1819,45 @@ msgstr "Di chuyển đến &đầu dòng"
 msgid "&Highlight found text"
 msgstr "&Tô sáng văn bản tìm thấy"
 
-#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
-#, fuzzy
-msgid "Play &sounds on bookmarks and notes"
-msgstr "Phát &âm thanh khi gặp dấu trang và ghi chú"
-
-#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
-#, fuzzy
-msgid "&Sync caret to audio playback"
-msgstr "&Đồng bộ vị trí con trỏ với quá trình phát lại âm thanh"
-
-#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
-#, fuzzy
-msgid "&Audio seek amount:"
-msgstr "&Giá trị tìm kiếm âm thanh:"
-
-#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
-#, fuzzy
-msgid "Seeking &past the end of a chapter continues into the next"
-msgstr "Tìm kiếm &vượt quá cuối chương tiếp tục vào chương tiếp theo"
-
-#. TRANSLATORS: Option to check for app updates automatically on startup
-msgid "Check for &updates on startup"
-msgstr "&Kiểm tra cập nhật khi khởi động"
-
-#. TRANSLATORS: Label for the update channel selection dropdown
-#, fuzzy
-msgid "Update Channel:"
-msgstr "Kênh cập nhật:"
-
-#. TRANSLATORS: Stable update channel option
-#, fuzzy
-msgid "Stable"
-msgstr "Ổn định"
-
-#. TRANSLATORS: Developer/development update channel option
-#, fuzzy
-msgid "Dev"
-msgstr "Dev"
-
-#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
-#, fuzzy
-msgid "Log Level:"
-msgstr "Mức ghi nhật ký:"
-
-#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
-#, fuzzy
-msgid "Customize &Keyboard Shortcuts..."
-msgstr "Tùy chỉnh &Phím tắt..."
-
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 #, fuzzy
 msgid "&Reading speed (words per minute):"
 msgstr "&Tốc độ đọc (số từ mỗi phút):"
 
-#. TRANSLATORS: Label for the number of recently opened documents to keep in history
-msgid "Number of &recent documents to show:"
-msgstr "Số lượng tài liệu &gần đây hiển thị:"
-
-#. TRANSLATORS: Label for the language selection dropdown
-msgid "&Language:"
-msgstr "&Ngôn ngữ:"
-
-#. TRANSLATORS: Label/header for the Font options section
+#. TRANSLATORS: Title of the Settings dialog
 #, fuzzy
-msgid "Font"
-msgstr "Phông chữ"
-
-#. TRANSLATORS: Button label to pick a font
-#, fuzzy
-msgid "Choose &Font..."
-msgstr "Chọn &Font..."
-
-#. TRANSLATORS: Button label to restore font settings to default values
-#, fuzzy
-msgid "&Reset to Default Font"
-msgstr "&Đặt lại Font mặc định"
-
-#. TRANSLATORS: Label/header for the Background Color options section
-#, fuzzy
-msgid "Background Color"
-msgstr "Màu nền"
-
-#. TRANSLATORS: Button label to pick a background color
-#, fuzzy
-msgid "Choose &Background Color..."
-msgstr "Chọn &Màu nền..."
-
-#. TRANSLATORS: Button label to restore background color to default values
-#, fuzzy
-msgid "Reset to &Default Background"
-msgstr "Đặt lại &Màu nền mặc định"
-
-#. TRANSLATORS: Label for the line spacing dropdown
-#, fuzzy
-msgid "&Line spacing:"
-msgstr "&Khoảng cách dòng:"
-
-#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
-#, fuzzy
-msgid "Normal"
-msgstr "Bình thường"
-
-#. TRANSLATORS: 1.5x line spacing option
-#, fuzzy
-msgid "1.5×"
-msgstr "1.5×"
-
-#. TRANSLATORS: Double line spacing option
-#, fuzzy
-msgid "Double"
-msgstr "Gấp đôi"
-
-#. TRANSLATORS: Label for the paragraph spacing dropdown
-#, fuzzy
-msgid "&Paragraph spacing:"
-msgstr "&Khoảng cách giữa các đoạn:"
-
-#. TRANSLATORS: Relaxed paragraph spacing option
-#, fuzzy
-msgid "Relaxed"
-msgstr "Thư giãn"
-
-#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-#, fuzzy
-msgid "Wide"
-msgstr "Rộng"
-
-#. TRANSLATORS: Label for the letter spacing dropdown
-#, fuzzy
-msgid "L&etter spacing:"
-msgstr "K&hoảng cách chữ cái:"
-
-#. TRANSLATORS: Very Wide letter spacing option
-#, fuzzy
-msgid "Very Wide"
-msgstr "Rất rộng"
-
-#. TRANSLATORS: Label for the text alignment dropdown
-#, fuzzy
-msgid "Text &alignment:"
-msgstr "&Căn chỉnh văn bản:"
-
-#. TRANSLATORS: Left text alignment option
-#, fuzzy
-msgid "Left"
-msgstr "Bên trái"
-
-#. TRANSLATORS: Center text alignment option
-#, fuzzy
-msgid "Center"
-msgstr "Trung tâm"
-
-#. TRANSLATORS: Right text alignment option
-#, fuzzy
-msgid "Right"
-msgstr "Phải"
-
-#. TRANSLATORS: Justified text alignment option
-#, fuzzy
-msgid "Justify"
-msgstr "Căn đều"
+msgid "Settings"
+msgstr "Cài đặt"
 
 #. TRANSLATORS: Tab label for the General options panel
 msgid "General"
 msgstr "Chung"
 
-#. TRANSLATORS: Tab label for the Reading options panel
+#. TRANSLATORS: Tab label for the Reading options panel, about moving through and searching a document
 #, fuzzy
 msgid "Reading"
 msgstr "Đọc"
 
-#. TRANSLATORS: Tab label for the Readability options panel
+#. TRANSLATORS: Tab label for the Settings panel about playing audio books and narration
+#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 #, fuzzy
-msgid "Readability"
-msgstr "Khả năng đọc"
+msgid "Audio"
+msgstr "Âm Thanh"
 
-#. TRANSLATORS: Title of the system dialog for picking a background colour
+#. TRANSLATORS: Tab label for the Settings panel about how text looks: font, colour, spacing and alignment
 #, fuzzy
-msgid "Choose a colour"
-msgstr "Chọn một màu"
+msgid "Appearance"
+msgstr "Giao diện"
 
-#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+#. TRANSLATORS: Tab label for the Settings panel about how a file is read, such as whether tables are shown inline
 #, fuzzy
-msgid "Off"
-msgstr "Tắt"
+msgid "Documents"
+msgstr "Tài liệu"
 
-#. TRANSLATORS: Log level choice that records only errors
+#. TRANSLATORS: Tab label for the Settings panel with options most people never need, such as the update channel and log level
 #, fuzzy
-msgid "Errors"
-msgstr "Lỗi"
-
-#. TRANSLATORS: Log level choice that records warnings and errors
-#, fuzzy
-msgid "Warnings"
-msgstr "Cảnh báo"
-
-#. TRANSLATORS: Log level choice that records general activity, warnings and errors
-#, fuzzy
-msgid "Information"
-msgstr "Thông tin"
-
-#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
-#, fuzzy
-msgid "Debug"
-msgstr "Gỡ lỗi"
-
-#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
-#, fuzzy
-msgid "Trace"
-msgstr "Theo dõi"
+msgid "Advanced"
+msgstr "Nâng cao"
 
 #, fuzzy
 msgid "System-Wide"
@@ -1809,6 +2066,21 @@ msgstr "Dấu trang tạm thời."
 msgid "%s, page %d"
 msgstr "%s, trang %d"
 
+#. TRANSLATORS: Announced when read aloud is started with nothing left to read after the caret
+#, fuzzy
+msgid "End of document"
+msgstr "Hết tài liệu"
+
+#. TRANSLATORS: Spoken by the Play Sample button on the Audio tab of Settings
+#, fuzzy
+msgid "This is a sample of the current voice and speed settings."
+msgstr "Đây là mẫu của cài đặt giọng nói và tốc độ hiện tại."
+
+#. TRANSLATORS: Announced when read aloud is asked for on a system Paperback has no speech engine for yet
+#, fuzzy
+msgid "Read aloud isn't available on this system yet."
+msgstr "Đọc to chưa khả dụng trên hệ thống này."
+
 #. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
 msgstr "Đã chuyển tới liên kết nội bộ."
@@ -1897,6 +2169,10 @@ msgstr "Không thể mở trang ủng hộ trên trình duyệt."
 #, fuzzy
 msgid "Paperback cannot perform any actions while Web View is open."
 msgstr "Paperback không thể thực hiện bất kỳ thao tác nào khi Web View đang mở."
+
+#. TRANSLATORS: Title of a warning dialog
+msgid "Warning"
+msgstr "Cảnh báo"
 
 #. TRANSLATORS: First message in the window that downloads documents from links, before the first server answers
 #, fuzzy
@@ -2441,6 +2717,16 @@ msgstr "Kiểm &tra cập nhật"
 #, fuzzy
 msgid "Check for updates"
 msgstr "Kiểm tra các bản cập nhật"
+
+#. TRANSLATORS: Menu item in the Help menu that opens a dialog for sending a problem report to the developer.
+#, fuzzy
+msgid "&Report a Problem..."
+msgstr "&Báo cáo sự cố..."
+
+#. TRANSLATORS: Status-bar help text for the Help > Report a Problem menu item.
+#, fuzzy
+msgid "Send a problem report to the developer"
+msgstr "Gửi báo cáo sự cố cho nhà phát triển"
 
 #. TRANSLATORS: Menu item in the Help menu to open the donation page for the application.
 #, fuzzy
@@ -3268,6 +3554,16 @@ msgstr "Phát/Tạm Dừng Âm Thanh"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
+msgid "Go to Time..."
+msgstr "Chuyển đến Thời điểm..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Announce Chapter Time"
+msgstr "Thông báo Thời gian Chương"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
 msgid "Seek Audio Forward"
 msgstr "Tua Âm Thanh Tiến Tới"
 
@@ -3406,11 +3702,6 @@ msgstr "Chỉnh sửa"
 msgid "View"
 msgstr "Xem"
 
-#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
-#, fuzzy
-msgid "Audio"
-msgstr "Âm Thanh"
-
 #. TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 #, fuzzy
 msgid "Tools"
@@ -3500,10 +3791,10 @@ msgstr "[Chỉ hình ảnh. Nhấn Enter để OCR.]"
 msgid "[Image only. This page has no text to read.]"
 msgstr "[Chỉ hình ảnh. Trang này không có văn bản để đọc.]"
 
-#. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
+#. TRANSLATORS: A table of contents entry for one volume of a braille book; {} is the volume's number
 #, fuzzy
-msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
-msgstr "Paperback không thể đọc các kho lưu trữ truyện tranh RAR trên thiết bị này. Đóng gói lại thành .cbz để đọc tại đây."
+msgid "Volume {}"
+msgstr "Tập {}"
 
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 #, fuzzy
@@ -3562,6 +3853,7 @@ msgid "Figure"
 msgstr "Hình"
 
 #. TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
+#. TRANSLATORS: Label standing in for a picture in an OS/2 help panel, shown as "[Image]"
 #, fuzzy
 msgid "Image"
 msgstr "Hình ảnh"
@@ -3635,6 +3927,11 @@ msgstr "Chủ đề {}"
 #, fuzzy
 msgid "HTML file is empty: {}"
 msgstr "Tệp HTML trống: {}"
+
+#. TRANSLATORS: Error shown when an OS/2 help file (.inf or .hlp) cannot be read; {} is the underlying error
+#, fuzzy
+msgid "Failed to parse OS/2 help file: {}"
+msgstr "Không thể phân tích tệp trợ giúp OS/2: {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 #, fuzzy
@@ -3901,6 +4198,16 @@ msgstr "Nội dung tệp không giống như văn bản thuần túy"
 msgid "Legacy DOC parse failed: {}. OOXML fallback failed: {}"
 msgstr "Lỗi phân tích cú pháp DOC cũ: {}. Lỗi chuyển sang định dạng OOXML dự phòng: {}"
 
+#. TRANSLATORS: Error shown when an XPS document has no pages
+#, fuzzy
+msgid "XPS file contains no pages"
+msgstr "Tệp XPS không chứa trang nào"
+
+#. TRANSLATORS: Shown in place of an XPS page that has no text, such as a scanned one
+#, fuzzy
+msgid "This page has no text."
+msgstr "Trang này không có văn bản."
+
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 #, fuzzy
 msgid "No file extension found for: {}"
@@ -3916,14 +4223,32 @@ msgstr "Không tìm thấy trình phân tích cú pháp cho phần mở rộng: 
 msgid "All parsers failed for extension: .{}"
 msgstr "Tất cả các trình phân tích cú pháp đều không thành công đối với phần mở rộng: . {}"
 
+#. TRANSLATORS: Announced with how far into an audiobook's chapter the reader is: the time left in it; {} is written like 12:05
+#, fuzzy
+msgid "{} left"
+msgstr "Còn lại {}"
+
+#. TRANSLATORS: Announced for how far into an audiobook the reader is: the first {} is the time played so far and the second how long it runs, both written like 1:02:03
+#, fuzzy
+msgid "{} of {}"
+msgstr "{} của {}"
+
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 #, fuzzy
 msgid "image"
 msgstr "image"
 
 #, fuzzy
+msgid "Paperback can't open a RAR archive split into parts. Join the parts into one archive to read it here."
+msgstr "Paperback không thể mở tệp lưu trữ RAR được chia thành nhiều phần. Hãy gộp các phần lại thành một tệp lưu trữ để đọc tại đây."
+
+#, fuzzy
 msgid "Current version is not a valid semver."
 msgstr "Phiên bản hiện tại không phải là semver hợp lệ."
+
+#, fuzzy
+msgid "No release has a valid semver tag."
+msgstr "Không có bản phát hành nào có thẻ semver hợp lệ."
 
 #, fuzzy
 msgid "Latest release tag is not a valid semver."
@@ -4881,12 +5206,6 @@ msgstr "Chơi"
 #. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
 #: swift
 #, fuzzy
-msgid "End of document"
-msgstr "Hết tài liệu"
-
-#. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
-#: swift
-#, fuzzy
 msgid "Beginning of document"
 msgstr "Đầu tài liệu"
 
@@ -5170,12 +5489,6 @@ msgstr "Các tùy chọn khác"
 #, fuzzy
 msgid "Pause Read Aloud"
 msgstr "Tạm dừng Đọc to"
-
-#. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: swift kt
-#, fuzzy
-msgid "Read Aloud"
-msgstr "Đọc to"
 
 #. TRANSLATORS: Menu item / accessibility action to open the export document dialog
 #: kt
@@ -5562,12 +5875,6 @@ msgstr "Công thức"
 msgid "No matches."
 msgstr "Không có kết quả khớp."
 
-#. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
-#: swift
-#, fuzzy
-msgid "Appearance"
-msgstr "Giao diện"
-
 #. TRANSLATORS: Appearance option following the phone's own light/dark setting
 #: swift
 #, fuzzy
@@ -5812,6 +6119,27 @@ msgstr "Thời lượng trung bình"
 #, fuzzy
 msgid "Select audio speed"
 msgstr "Chọn tốc độ âm thanh"
+
+#. TRANSLATORS: Section header in Settings grouping controls for how document text is displayed
+#: kt swift
+#, fuzzy
+msgid "Readability"
+msgstr "Khả năng đọc"
+
+#, fuzzy
+#~ msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
+#~ msgstr "Paperback không thể đọc các kho lưu trữ truyện tranh RAR trên thiết bị này. Đóng gói lại thành .cbz để đọc tại đây."
+
+#, fuzzy
+#~ msgid "&Join wrapped lines into paragraphs in PDFs"
+#~ msgstr "&Nối các dòng được gói lại thành các đoạn trong PDF"
+
+#, fuzzy
+#~ msgid "Remove repeated page &headers and footers in PDFs"
+#~ msgstr "Loại bỏ &đầu trang và chân trang lặp lại trong PDF"
+
+#~ msgid "Failed to create IPC server"
+#~ msgstr "Không thể tạo máy chủ IPC"
 
 #, fuzzy
 #~ msgid "Window Hotkey"

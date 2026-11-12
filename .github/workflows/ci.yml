@@ -6,6 +6,8 @@ on:
   pull_request:
     branches:
       - master
+  # The translation pull request is opened with the workflow token, whose pushes start no workflow, so auto-translate.yml starts this run on its branch for the checks master requires.
+  workflow_dispatch:
 # One run per branch at a time: pushing again while a run is going makes that run pointless, and
 # the queued macOS jobs it holds are what everything else is waiting behind.
 concurrency:
@@ -15,7 +17,7 @@ jobs:
   # What a pull request touches, so the jobs that cost the most can sit out the ones that cannot
   # break them. A translation or documentation pull request still gets the Windows tests and the
   # Android checks, which compile every catalogue; it does not need an iPhone simulator.
-  # A push to master always runs everything.
+  # A push to master always runs everything; a run started by hand on a branch is judged as its pull request would be.
   changes:
     name: What changed
     runs-on: ubuntu-latest
@@ -27,11 +29,11 @@ jobs:
           fetch-depth: 0
       - id: check
         run: |
-          if [ "${{ github.event_name }}" != "pull_request" ]; then
+          if [ "${{ github.event_name }}" = "push" ]; then
             echo "code=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          files=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+          files=$(git diff --name-only "origin/${{ github.base_ref || 'master' }}...HEAD")
           if echo "$files" | grep -qvE '^(po/|doc/|web/|README\.md$)'; then
             echo "code=true" >> "$GITHUB_OUTPUT"
           else
@@ -49,7 +51,7 @@ jobs:
       # deliberate change with the reformat in the same commit.
       - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: nightly-2026-11-02
+          toolchain: nightly-2026-11-09
           components: rustfmt
       - name: Check formatting
         run: cargo fmt --check

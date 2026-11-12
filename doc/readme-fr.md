@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - version 1.1
 
@@ -26,7 +26,7 @@ Paperback fonctionne sur Windows 10/11, toutes les versions modernes d'ARM macOS
 * Signets et notes, pour que vous puissiez marquer votre place et y revenir.
 * Chaque raccourci clavier peut être modifié.
 * Ouvre les documents directement à partir de liens http et https, et les télécharge à nouveau quand vous les rouvrez ou appuyez sur `F5`, en conservant votre position de lecture et vos signets. Lors de la restauration des documents que vous aviez ouverts, il télécharge à nouveau ceux des liens qui faisaient 2 Mo ou moins.
-* Livré avec `pb`, un outil en ligne de commande qui convertit tout document pris en charge en HTML, Markdown ou texte brut. Il accepte autant de documents que vous lui en fournissez, développe `*.pdf` et les fichiers similaires de lui-même pour que la même ligne de commande fonctionne sur Windows, et peut écrire un fichier par document dans un dossier. Il peut également lire une liste de documents à partir d'un fichier ou de stdin avec `--files-from`, et convertir des documents directement à partir de liens http et https.
+* Livré avec `pb`, un outil en ligne de commande qui convertit tout document pris en charge en HTML, Markdown ou texte brut. Il accepte autant de documents que vous lui en fournissez, développe `*.pdf` et les fichiers similaires de lui-même pour que la même ligne de commande fonctionne sur Windows, et peut écrire un fichier par document dans un dossier, en convertissant plusieurs à la fois (`--jobs` définit le nombre). Il peut également lire une liste de documents à partir d'un fichier ou de stdin avec `--files-from`, et convertir des documents directement à partir de liens http et https.
 
 ## Compatibilité avec les lecteurs d'écran
 
@@ -48,11 +48,13 @@ Si JAWS ne dit rien lorsque vous appuyez sur une touche qui devrait signaler que
 
 Paperback prend en charge les formats et extensions suivants :
 
-* Archives de bandes dessinées (`.cbz`)
+* Fichiers Braille Ready et livres au format Portable Embosser Format, rétro-traduits en imprimé avec la table braille de votre choix (`.brf`, `.pef`)
+* Archives de bandes dessinées (`.cbz`, `.cbr`)
 * Fichiers d'aide CHM (`.chm`)
 * Livres DAISY (`.opf`, `.zip`)
 * Livres EPUB (`.epub`)
 * Livres électroniques FB2 (`.fb2`)
+* Manuels GNU Info (`.info`, compressés ou non, et manuels divisés ouverts à partir de n'importe laquelle de leurs parties)
 * Documents HTML (`.htm`, `.html`, `.xhtml`)
 * Pages de manuel, à la fois `man` et BSD `mdoc` (`.1` à `.9`, `.man`, `.roff` et les versions compressées de chacun)
 * Documents Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -62,12 +64,15 @@ Paperback prend en charge les formats et extensions suivants :
 * Livres audio MP3 (`.mp3`)
 * Présentations OpenDocument (`.odp`, `.fodp`)
 * Fichiers texte OpenDocument (`.odt`, `.fodt`)
+* Fichiers d'aide et livres OS/2, avec leurs images (`.inf`, `.hlp`)
 * Documents PDF (`.pdf`)
 * Présentations PowerPoint (`.pptx`, `.pptm`, `.ppt`)
+* Archives RAR de livres, qui s'ouvrent comme un zip, avec une liste à choisir quand l'une en contient plusieurs (`.rar`)
 * Documents reStructuredText (`.rst`, `.rest`)
 * Documents RTF (`.rtf`)
 * Documents Windows Write (`.wri`)
 * Fichiers WinHelp (`.hlp`)
+* Documents XPS et OpenXPS (`.xps`, `.oxps`)
 * Fichiers texte brut et fichiers journaux (`.txt`, `.log`)
 
 ## Raccourcis clavier
@@ -75,6 +80,8 @@ Paperback prend en charge les formats et extensions suivants :
 Paperback est conçu pour une utilisation en priorité au clavier. Voici les raccourcis actuels.
 
 Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équivalent est indiqué entre parenthèses — principalement parce que Ctrl+G, Ctrl+W et Alt+Left/Right sont déjà utilisés par d'autres conventions système ou d'application sur cette plateforme.
+
+Les raccourcis de ponctuation sont nommés d'après les touches d'un clavier américain. Sur une autre disposition, appuyez sur la touche au même endroit, peu importe son étiquette : sur un clavier hongrois, la touche étiquetée `é` fonctionne comme `;` et celle étiquetée `á` comme `'`, donc `Ctrl+'` signifie Ctrl et la touche `á`. Les menus affichent toujours les noms américains. Sur macOS, les menus affichent à la place les touches que votre disposition utilise.
 
 ### Menu Fichier
 
@@ -115,7 +122,7 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 * `Ctrl+G` (macOS : `Cmd+L`) : Aller à la ligne.
 * `Ctrl+Shift+G` (macOS : `Cmd+Shift+L`) : Aller au pourcentage.
 * `Ctrl+P` : Aller à la page (si supporté par le document actif).
-* `=` : Annoncer votre pourcentage de lecture actuel et votre page, par exemple « 15%, page 30 ». La page est omise pour les documents sans numéros de page.
+* `=` : Annoncer votre pourcentage de lecture actuel et votre page, par exemple « 15%, page 30 ». La page est omise pour les documents sans numéros de page. Dans un livre audio, votre progression et la durée totale apparaissent ensuite, par exemple « 15%, 1:02:03 de 10:30:00 ».
 * `Alt+Left` (macOS : `Cmd+[`) : Revenir en arrière dans l'historique de navigation.
 * `Alt+Right` (macOS : `Cmd+]`) : Avancer dans l'historique de navigation.
 * `[` : Section précédente.
@@ -163,6 +170,8 @@ Les raccourcis ci-dessous concernent Windows. Lorsque macOS diffère, l'équival
 ### Menu Audio
 
 * `Ctrl+Space` (macOS : `Control+Space`, c'est-à-dire la touche Control physique, car Cmd+Space ouvre Spotlight) : Lecture/pause de la narration audio.
+* `Ctrl+J` : Aller à un moment de l'enregistrement. Tapez-le comme `1:23:45`, `23:45` ou `45` secondes, ou mettez `+` ou `-` devant pour vous déplacer à partir de votre position actuelle, par exemple `+5:00`. La boîte de dialogue affiche votre avancement et la durée du livre.
+* `Shift+=` : Indiquer votre avancement dans ce chapitre et ce qui reste, par exemple « Chapitre 3, 4:10 de 12:00, 7:50 restant ».
 * `'` : Avancer rapidement dans la narration audio.
 * `;` : Reculer rapidement dans la narration audio.
 * `Shift+'` : Augmenter le montant de l'avance rapide audio.

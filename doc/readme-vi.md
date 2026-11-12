@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - phiên bản 1.1
 
@@ -26,7 +26,7 @@ Paperback chạy trên Windows 10/11, tất cả các phiên bản ARM macOS hi�
 * Dấu trang và ghi chú, để bạn có thể đánh dấu vị trí của mình và quay lại nó.
 * Mọi phím tắt bàn phím có thể được thay đổi.
 * Mở tài liệu trực tiếp từ các liên kết http và https, và tải xuống lại chúng khi bạn mở lại hoặc nhấn `F5`, giữ lại vị trí đọc và dấu trang của bạn. Khi khôi phục các tài liệu bạn đã mở, nó tải xuống lại những tài liệu từ các liên kết có kích thước 2 MB trở xuống.
-* Đi kèm với `pb`, một công cụ dòng lệnh chuyển đổi bất kỳ tài liệu được hỗ trợ nào thành HTML, Markdown hoặc văn bản thuần túy. Nó có thể nhận bao nhiêu tài liệu bạn cung cấp, tự động mở rộng `*.pdf` và các tệp tương tự để lệnh dòng lệnh tương tự hoạt động trên Windows, và có thể ghi một tệp trên mỗi tài liệu vào một thư mục. Nó cũng có thể đọc danh sách các tài liệu từ một tệp hoặc từ stdin với `--files-from`, và chuyển đổi các tài liệu trực tiếp từ các liên kết http và https.
+* Đi kèm với `pb`, một công cụ dòng lệnh chuyển đổi bất kỳ tài liệu được hỗ trợ nào thành HTML, Markdown hoặc văn bản thuần túy. Nó có thể nhận bao nhiêu tài liệu bạn cung cấp, tự động mở rộng `*.pdf` và các tệp tương tự để lệnh dòng lệnh tương tự hoạt động trên Windows, và có thể ghi một tệp trên mỗi tài liệu vào một thư mục, chuyển đổi nhiều tài liệu cùng một lúc (`--jobs` xác định số lượng). Nó cũng có thể đọc danh sách các tài liệu từ một tệp hoặc từ stdin với `--files-from`, và chuyển đổi các tài liệu trực tiếp từ các liên kết http và https.
 
 ## Khả năng Tương thích với Trình Đọc Màn hình
 
@@ -48,11 +48,13 @@ Nếu JAWS không nói gì khi bạn nhấn một phím mà nó sẽ báo cáo �
 
 Paperback hỗ trợ các định dạng và phần mở rộng sau:
 
-* Lưu trữ sách truyện tranh (`.cbz`)
+* Tệp Braille Sẵn sàng và sách Portable Embosser Format, được dịch ngược lại thành bản in với bảng braille bạn chọn (`.brf`, `.pef`)
+* Lưu trữ sách truyện tranh (`.cbz`, `.cbr`)
 * Tệp trợ giúp CHM (`.chm`)
 * Sách DAISY (`.opf`, `.zip`)
 * Sách EPUB (`.epub`)
 * Sách điện tử FB2 (`.fb2`)
+* Hướng dẫn GNU Info (`.info`, có nén gzip hoặc không, và các hướng dẫn tách được mở từ bất kỳ phần nào của chúng)
 * Tài liệu HTML (`.htm`, `.html`, `.xhtml`)
 * Các trang hướng dẫn, cả `man` và BSD `mdoc` (`.1` đến `.9`, `.man`, `.roff` và các dạng nén gzip của mỗi trang)
 * Tài liệu Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -62,12 +64,15 @@ Paperback hỗ trợ các định dạng và phần mở rộng sau:
 * Sách nói MP3 (`.mp3`)
 * Trình chiếu OpenDocument (`.odp`, `.fodp`)
 * Tệp văn bản OpenDocument (`.odt`, `.fodt`)
+* Tệp trợ giúp và sách OS/2, cùng với hình ảnh của chúng (`.inf`, `.hlp`)
 * Tài liệu PDF (`.pdf`)
 * Trình chiếu PowerPoint (`.pptx`, `.pptm`, `.ppt`)
+* Lưu trữ RAR của sách, được mở như zip, với danh sách để chọn khi một tệp chứa nhiều sách (`.rar`)
 * Tài liệu reStructuredText (`.rst`, `.rest`)
 * Tài liệu RTF (`.rtf`)
 * Tài liệu Windows Write (`.wri`)
 * Tệp WinHelp (`.hlp`)
+* Tài liệu XPS và OpenXPS (`.xps`, `.oxps`)
 * Tệp văn bản thuần túy và tệp nhật ký (`.txt`, `.log`)
 
 ## Phím tắt bàn phím
@@ -75,6 +80,8 @@ Paperback hỗ trợ các định dạng và phần mở rộng sau:
 Paperback được thiết kế để sử dụng với bàn phím trước tiên. Dưới đây là các phím tắt hiện tại.
 
 Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương đương được ghi chú trong dấu ngoặc — chủ yếu vì Ctrl+G, Ctrl+W, và Alt+Left/Right đã bị chiếm bởi các quy ước hệ thống hoặc ứng dụng khác trên nền tảng đó.
+
+Các phím tắt dấu câu được đặt tên theo các phím của bàn phím US. Trên bàn phím khác, nhấn phím ở cùng một vị trí, bất kể nó được ghi nhãn là gì: trên bàn phím Hungary, phím được ghi nhãn `é` hoạt động như `;` và phím được ghi nhãn `á` như `'`, vì vậy `Ctrl+'` có nghĩa là Ctrl và phím `á`. Các menu vẫn hiển thị tên US. Trên macOS, các menu sẽ hiển thị các phím mà bàn phím của bạn sử dụng thay vào đó.
 
 ### Menu Tệp
 
@@ -115,7 +122,7 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 * `Ctrl+G` (macOS: `Cmd+L`): Đi đến dòng.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Đi đến phần trăm.
 * `Ctrl+P`: Đi đến trang (khi được tài liệu hiện tại hỗ trợ).
-* `=`: Thông báo phần trăm đọc hiện tại của bạn và trang, ví dụ: "15%, trang 30". Trang bị bỏ qua đối với các tài liệu không có số trang.
+* `=`: Thông báo phần trăm đọc hiện tại của bạn và trang, ví dụ: "15%, trang 30". Trang bị bỏ qua đối với các tài liệu không có số trang. Trong một cuốn sách âm thanh, bạn đã tiến bao xa và nó chạy bao lâu sẽ đến sau, ví dụ: "15%, 1:02:03 của 10:30:00".
 * `Alt+Left` (macOS: `Cmd+[`): Quay lại trong lịch sử điều hướng.
 * `Alt+Right` (macOS: `Cmd+]`): Tiến lên trong lịch sử điều hướng.
 * `[`: Phần trước.
@@ -163,6 +170,8 @@ Các phím tắt dưới đây là cho Windows. Nơi macOS khác, phím tương 
 ### Menu Âm Thanh
 
 * `Ctrl+Space` (macOS: `Control+Space`, tức là phím Control vật lý, vì Cmd+Space mở Spotlight): Phát/tạm dừng kể chuyện âm thanh.
+* `Ctrl+J`: Đi tới một thời điểm trong bản ghi âm. Nhập dưới dạng `1:23:45`, `23:45` hoặc `45` giây, hoặc đặt `+` hoặc `-` ở phía trước để di chuyển từ nơi bạn đang ở, ví dụ: `+5:00`. Hộp thoại hiển thị bạn đã tiến bao xa và cuốn sách chạy bao lâu.
+* `Shift+=`: Nói bạn đã tiến bao xa vào chương này và còn lại bao nhiêu, ví dụ: "Chương 3, 4:10 của 12:00, 7:50 còn lại".
 * `'`: Tìm kiếm kể chuyện âm thanh về phía trước.
 * `;`: Tìm kiếm kể chuyện âm thanh về phía sau.
 * `Shift+'`: Tăng lượng tìm kiếm âm thanh.

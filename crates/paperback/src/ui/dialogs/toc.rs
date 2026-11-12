@@ -21,6 +21,7 @@ fn show_toc_dialog_dv(parent: &Frame, toc_items: &[TocItem], current_offset: i32
 	// TRANSLATORS: Title of the Table of Contents dialog
 	let dialog_title = t("Table of Contents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let selected_offset = Rc::new(Cell::new(-1i32));
 	let tree = DataViewTreeCtrl::builder(&dialog).with_size(dialog.from_dip(Size::new(400, 500))).build();
 	let mut item_offsets: HashMap<usize, i32> = HashMap::new();
@@ -118,27 +119,23 @@ fn bind_toc_activation_dv(
 
 #[cfg(not(target_os = "windows"))]
 fn bind_toc_layout_dv(dialog: Dialog, tree: DataViewTreeCtrl, ok_button: Button, cancel_button: Button) {
+	let padding = super::dialog_padding(&dialog);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add(&tree, 1, SizerFlag::Expand | SizerFlag::All, super::DIALOG_PADDING);
+	content_sizer.add(&tree, 1, SizerFlag::Expand | SizerFlag::All, padding);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	button_sizer.add_stretch_spacer(1);
 	// macOS HIG puts the default action rightmost; Linux keeps OK first.
 	#[cfg(target_os = "macos")]
 	{
-		button_sizer.add(&cancel_button, 0, SizerFlag::Right, super::DIALOG_PADDING);
-		button_sizer.add(&ok_button, 0, SizerFlag::Right, super::DIALOG_PADDING);
+		button_sizer.add(&cancel_button, 0, SizerFlag::Right, padding);
+		button_sizer.add(&ok_button, 0, SizerFlag::Right, padding);
 	}
 	#[cfg(not(target_os = "macos"))]
 	{
-		button_sizer.add(&ok_button, 0, SizerFlag::Right, super::DIALOG_PADDING);
-		button_sizer.add(&cancel_button, 0, SizerFlag::Right, super::DIALOG_PADDING);
+		button_sizer.add(&ok_button, 0, SizerFlag::Right, padding);
+		button_sizer.add(&cancel_button, 0, SizerFlag::Right, padding);
 	}
-	content_sizer.add_sizer(
-		&button_sizer,
-		0,
-		SizerFlag::Expand | SizerFlag::Bottom | SizerFlag::Right,
-		super::DIALOG_PADDING,
-	);
+	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::Bottom | SizerFlag::Right, padding);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 }
@@ -172,6 +169,7 @@ fn show_toc_dialog_wx(parent: &Frame, toc_items: &[TocItem], current_offset: i32
 	// TRANSLATORS: Title of the Table of Contents dialog
 	let dialog_title = t("Table of Contents");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let selected_offset = Rc::new(Cell::new(-1));
 	let (tree, _root) = build_toc_tree(dialog, toc_items, current_offset);
 	bind_toc_selection(tree, Rc::clone(&selected_offset));
@@ -256,18 +254,14 @@ fn bind_toc_search(tree: TreeCtrl) {
 
 #[cfg(target_os = "windows")]
 fn bind_toc_layout(dialog: Dialog, tree: TreeCtrl, ok_button: Button, cancel_button: Button) {
+	let padding = super::dialog_padding(&dialog);
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add(&tree, 1, SizerFlag::Expand | SizerFlag::All, super::DIALOG_PADDING);
+	content_sizer.add(&tree, 1, SizerFlag::Expand | SizerFlag::All, padding);
 	let button_sizer = BoxSizer::builder(Orientation::Horizontal).build();
 	button_sizer.add_stretch_spacer(1);
-	button_sizer.add(&ok_button, 0, SizerFlag::Right, super::DIALOG_PADDING);
-	button_sizer.add(&cancel_button, 0, SizerFlag::Right, super::DIALOG_PADDING);
-	content_sizer.add_sizer(
-		&button_sizer,
-		0,
-		SizerFlag::Expand | SizerFlag::Bottom | SizerFlag::Right,
-		super::DIALOG_PADDING,
-	);
+	button_sizer.add(&ok_button, 0, SizerFlag::Right, padding);
+	button_sizer.add(&cancel_button, 0, SizerFlag::Right, padding);
+	content_sizer.add_sizer(&button_sizer, 0, SizerFlag::Expand | SizerFlag::Bottom | SizerFlag::Right, padding);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();
 }
@@ -349,16 +343,13 @@ fn bind_toc_ok(
 			selected_offset.set(offset);
 			dialog_for_ok.end_modal(ID_OK);
 		} else {
-			MessageDialog::builder(
+			wx_utils::show_info(
 				&dialog_for_ok,
 				// TRANSLATORS: Error message shown when the user attempts to confirm the Table of Contents dialog without having selected any section
-				&t("Please select a section from the table of contents."),
+				t("Please select a section from the table of contents."),
 				// TRANSLATORS: Title of the error dialog shown when the user attempts to confirm the Table of Contents dialog without having selected any section
 				&t("No Selection"),
-			)
-			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
-			.build()
-			.show_modal();
+			);
 		}
 	});
 }

@@ -1,13 +1,20 @@
 use std::{rc::Rc, sync::Mutex};
 
-use paperback_core::{audio::AudioTimeline, config::ConfigManager};
+use paperback_core::{
+	audio::{AudioTimeline, clock},
+	config::ConfigManager,
+};
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{dialogs, document_manager::DocumentManager, navigation::set_caret_to_doc_offset};
+use super::{
+	dialogs,
+	document_manager::DocumentManager,
+	navigation::{self, set_caret_to_doc_offset},
+};
 use crate::{
 	audio_player::{self, AudioPlayer},
-	ui::navigation::announce_for_command,
+	ui::navigation::{announce, announce_for_command},
 };
 
 pub fn handle_toggle_play_pause_audio(
@@ -25,10 +32,14 @@ pub fn handle_toggle_play_pause_audio(
 			false
 		}
 	};
+	if has_audio {
+		return;
+	}
+	// A document without recorded audio is read aloud instead.
+	let result = dm.toggle_read_aloud();
 	drop(dm);
-	if !has_audio {
-		// TRANSLATORS: Announced when trying to play/pause audio on a document that has none
-		announce_for_command(live_region_label, from_keyboard, t("This document has no audio."));
+	if let Err(message) = result {
+		announce_for_command(live_region_label, from_keyboard, message);
 	}
 }
 
@@ -73,9 +84,19 @@ pub fn handle_seek_audio(
 	let mut dm = doc_manager.lock().unwrap();
 	let Some(tab) = dm.active_tab_mut() else { return };
 	let Some(player) = tab.audio_player.as_mut() else {
+		// Without recorded audio, the seek keys move read aloud by a paragraph.
+		let skipped = dm.skip_read_aloud(forward);
 		drop(dm);
-		// TRANSLATORS: Announced when trying to seek audio on a document that has none
-		announce_for_command(live_region_label, from_keyboard, t("This document has no audio."));
+		let message = match skipped {
+			Some(true) => return,
+			// TRANSLATORS: Announced when skipping forward while read aloud is on the last paragraph
+			Some(false) if forward => t("No next paragraph."),
+			// TRANSLATORS: Announced when skipping back while read aloud is on the first paragraph
+			Some(false) => t("No previous paragraph."),
+			// TRANSLATORS: Announced when trying to seek audio on a document that has none
+			None => t("This document has no audio."),
+		};
+		announce_for_command(live_region_label, from_keyboard, message);
 		return;
 	};
 	let Some(current_ms) = player.resume_point_ms() else {
@@ -105,6 +126,89 @@ pub fn handle_seek_audio(
 	}
 }
 
+pub fn handle_go_to_time(
+	frame: &Frame,
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+	live_region_label: StaticText,
+	from_keyboard: bool,
+) {
+	let times = {
+		let dm = doc_manager.lock().unwrap();
+		let Some(tab) = dm.active_tab() else { return };
+		tab.audio_player.as_ref().map(|player| {
+			let timeline = player.timeline();
+			let caret_ms = || timeline.point_for_position(navigation::doc_caret(tab)).map(|point| point.time_ms);
+			(
+				timeline.durations_are_known(),
+				player.resume_point_ms().or_else(caret_ms).unwrap_or(0),
+				timeline.total_duration_ms(),
+			)
+		})
+	};
+	let (current_ms, total_ms) = match times {
+		Some((true, current_ms, total_ms)) => (current_ms, total_ms),
+		// Without every file's length, a time can't be placed: the timeline gives an unprobed file a placeholder length.
+		Some((false, ..)) => {
+			// TRANSLATORS: Announced by Go to Time in an audiobook whose files don't say how long they run, such as many DAISY books
+			announce_for_command(
+				live_region_label,
+				from_keyboard,
+				t("This book doesn't say how long its audio runs, so Paperback can't go to a time in it."),
+			);
+			return;
+		}
+		None => {
+			// TRANSLATORS: Announced when trying to seek audio on a document that has none
+			announce_for_command(live_region_label, from_keyboard, t("This document has no audio."));
+			return;
+		}
+	};
+	let Some(target_ms) = dialogs::show_go_to_time_dialog(frame, current_ms, total_ms, live_region_label) else {
+		return;
+	};
+	let mut dm = doc_manager.lock().unwrap();
+	let Some(tab) = dm.active_tab_mut() else { return };
+	let Some(player) = tab.audio_player.as_mut() else { return };
+	player.seek_to_ms(target_ms);
+	let clip_start = player
+		.timeline()
+		.cursor_at_elapsed(target_ms)
+		.and_then(|cursor| player.timeline().clip(cursor.clip))
+		.map(|clip| clip.start);
+	let Some(clip_start) = clip_start else { return };
+	let update = navigation::move_caret_and_record_history(tab, clip_start);
+	// As Go to Percent does, the landing line says where the time falls, such as a chapter's title.
+	let content = tab.session.get_line_text(clip_start);
+	let message = if content.trim().is_empty() { clock::format_ms(target_ms) } else { content.trim().to_string() };
+	drop(dm);
+	navigation::persist_navigation_history(config, Some(&update));
+	announce(live_region_label, message);
+}
+
+pub fn handle_announce_chapter_time(
+	doc_manager: &Rc<Mutex<DocumentManager>>,
+	live_region_label: StaticText,
+	from_keyboard: bool,
+) {
+	let message = {
+		let dm = doc_manager.lock().unwrap();
+		let Some(tab) = dm.active_tab() else { return };
+		if tab.audio_player.is_none() {
+			// TRANSLATORS: Announced when trying to seek audio on a document that has none
+			t("This document has no audio.")
+		} else {
+			navigation::audio_elapsed_ms(tab).and_then(|ms| tab.session.audio_chapter_announcement(ms)).unwrap_or_else(
+				|| {
+					// TRANSLATORS: Announced when asking for the time in an audiobook's chapter while the length of its files isn't known, such as in many DAISY books
+					t("This book doesn't say how long its audio runs.")
+				},
+			)
+		}
+	};
+	announce_for_command(live_region_label, from_keyboard, message);
+}
+
 pub fn handle_change_audio_speed(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
@@ -123,12 +227,22 @@ pub fn handle_change_audio_speed(
 		dm.set_audio_speed(speed);
 		config.lock().unwrap().set_app_string(audio_player::SPEED_KEY, &speed.to_string());
 	}
-	drop(dm);
 	let Some((speed, at_limit)) = result else {
-		// TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
-		announce_for_command(live_region_label, from_keyboard, t("This document has no audio."));
+		// Without recorded audio, the speed keys change the speech rate.
+		let changed = dm.change_read_aloud_rate(increase);
+		drop(dm);
+		let message = match changed {
+			Ok((rate, at_limit)) => {
+				// TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
+				limit_message(&t("Rate {}").replace("{}", &rate.to_string()), at_limit, increase)
+			}
+			Err(message) if message.is_empty() => return,
+			Err(message) => message,
+		};
+		announce_for_command(live_region_label, from_keyboard, message);
 		return;
 	};
+	drop(dm);
 	let label = speed_label(speed);
 	let message = if at_limit && increase {
 		// TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
@@ -155,6 +269,8 @@ pub fn handle_change_audio_volume(
 		let after = if increase { player.increase_volume() } else { player.decrease_volume() };
 		(after, (after - before).abs() < f32::EPSILON)
 	});
+	// Without recorded audio, the volume keys change the volume of read aloud.
+	let result = result.or_else(|| dm.change_read_aloud_volume(increase));
 	drop(dm);
 	let Some((volume, at_limit)) = result else {
 		// TRANSLATORS: Announced when trying to change audio volume on a document that has none
@@ -172,6 +288,17 @@ pub fn handle_change_audio_volume(
 		label
 	};
 	announce_for_command(live_region_label, from_keyboard, message);
+}
+
+/// `label`, marked as the limit when a step couldn't go any further.
+fn limit_message(label: &str, at_limit: bool, increase: bool) -> String {
+	match (at_limit, increase) {
+		// TRANSLATORS: Announced when a setting is already at its highest; {} is its value
+		(true, true) => t("{} (maximum)").replace("{}", label),
+		// TRANSLATORS: Announced when a setting is already at its lowest; {} is its value
+		(true, false) => t("{} (minimum)").replace("{}", label),
+		_ => label.to_owned(),
+	}
 }
 
 fn volume_label(volume: f32) -> String {

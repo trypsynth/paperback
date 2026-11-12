@@ -1,9 +1,12 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use bitflags::bitflags;
 use scraper::Html;
 
-use super::{block_spans::BlockSpans, format_spans::FormatSpans, line_builder::LineBuilder, list_style::ListStyle};
+use super::{
+	block_spans::BlockSpans, format_spans::FormatSpans, formula::LinkFormula, line_builder::LineBuilder,
+	list_style::ListStyle,
+};
 use crate::{
 	document::DocPos,
 	parser::ConverterOutput,
@@ -47,6 +50,7 @@ pub struct HtmlToText {
 	current_link_text: String,
 	/// Placeholder in the link's text, info whose offset is still to be found, and whether it is a figure.
 	current_link_images: Vec<(String, ImageInfo, bool)>,
+	current_link_formulas: Vec<LinkFormula>,
 	list_style_stack: Vec<ListStyle>,
 	list_level: i32,
 	/// `None` marks an unrecorded list (no direct `<li>`), keeping the stack balanced so list lengths land on the right entries.
@@ -57,6 +61,8 @@ pub struct HtmlToText {
 	source_mode_markdown: bool,
 	/// A config flag, not parse state, so it survives `clear()`.
 	render_tables_inline: bool,
+	/// The sources of the pictures with an empty `alt` that the format measured as content, see [`image_text::is_decorative`]. Given per document, not parse state, so it survives `clear()`.
+	content_images: HashSet<String>,
 }
 
 impl HtmlToText {
@@ -68,6 +74,13 @@ impl HtmlToText {
 	#[must_use]
 	pub fn with_render_tables_inline(render_tables_inline: bool) -> Self {
 		Self { render_tables_inline, ..Self::default() }
+	}
+
+	/// Shows the pictures with an empty `alt` whose sources are in `sources`, which the format measured as big enough to be content.
+	#[must_use]
+	pub fn with_content_images(mut self, sources: HashSet<String>) -> Self {
+		self.content_images = sources;
+		self
 	}
 
 	pub fn convert(&mut self, html_content: &str, mode: HtmlSourceMode) {
@@ -191,6 +204,7 @@ impl HtmlToText {
 		self.current_link_href.clear();
 		self.current_link_text.clear();
 		self.current_link_images.clear();
+		self.current_link_formulas.clear();
 		self.list_style_stack.clear();
 		self.list_level = 0;
 		self.open_lists.clear();

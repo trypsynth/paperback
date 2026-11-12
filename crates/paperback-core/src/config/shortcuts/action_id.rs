@@ -249,6 +249,11 @@ actions! {
 	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 	PlayPauseAudio, Audio, t("Play/Pause Audio"), ctrl("Space"), mac: physical_ctrl("Space");
 	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+	GoToAudioTime, Audio, t("Go to Time..."), ctrl("J");
+	// Beside `=`, which gives the time in the whole book.
+	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+	AnnounceChapterTime, Audio, t("Announce Chapter Time"), shift("=");
+	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 	SeekAudioForward, Audio, t("Seek Audio Forward"), key("'");
 	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 	SeekAudioBackward, Audio, t("Seek Audio Backward"), key(";");
@@ -301,4 +306,6 @@ actions! {
 	CheckForUpdates, Help, t("Check for Updates"), ctrl_shift("U");
 	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 	Donate, Help, t("Donate"), ctrl("D");
+	// TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+	ReportProblem, Help, t("Report a Problem"), None;
 }

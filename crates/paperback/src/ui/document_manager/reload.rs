@@ -3,7 +3,7 @@ use std::{fs, path::Path, time::SystemTime};
 use paperback_core::{
 	config::ConfigManager,
 	document::{DocPos, ParseSettings},
-	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
+	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, braille},
 	session::DocumentSession,
 };
 use patois::t;
@@ -187,6 +187,7 @@ pub(super) fn parse_settings(cfg: &ConfigManager) -> ParseSettings {
 		join_pdf_paragraphs: cfg.get_app_bool("join_pdf_paragraphs", true),
 		strip_running_text: cfg.get_app_bool("strip_running_text", true),
 		markdown_dollar_math: cfg.get_app_bool("markdown_dollar_math", true),
+		braille_table: braille::chosen_table(&cfg.get_app_string("braille_table", braille::DEFAULT_TABLE)),
 	}
 }
 

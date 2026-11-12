@@ -10,8 +10,9 @@ mod legacy_config;
 mod links;
 #[cfg(target_os = "linux")]
 mod linux_integration;
-mod logging;
 mod ocr;
+mod problem_report;
+mod read_aloud;
 mod shell;
 #[cfg(test)]
 mod test_locale;
@@ -20,17 +21,37 @@ mod text_window;
 mod translation_manager;
 mod ui;
 mod updater;
+#[cfg(target_os = "windows")]
+mod windows_audio;
 mod working_copy;
 
 use std::{env, fs, io};
 
+use logkeeper::Logkeeper;
 use paperback_core::version;
 use ui::PaperbackApp;
 use wxdragon::prelude::{Appearance, set_appearance};
 
 fn main() {
-	let _log_guard = logging::init(&config_ext::config_dir(), config_ext::log_level_from_disk());
+	// Before logging or wxWidgets start, so a second copy hands over its files and exits without touching the running copy's log.
+	#[cfg(any(target_os = "linux", target_os = "windows"))]
+	let door = match doorbell::ring(ipc::APP_NAME, &ipc::message_from_args(env::args().skip(1))) {
+		Ok(doorbell::Ring::Delivered) => return,
+		Ok(doorbell::Ring::First(door)) => Ok(door),
+		Err(e) => Err(e),
+	};
+	let _log_guard = Logkeeper::new(config_ext::config_dir(), "paperback")
+		.with_crates(["paperback", "paperback_core"])
+		.init(config_ext::log_level_from_disk());
 	tracing::info!(version = env!("CARGO_PKG_VERSION"), commit = version::COMMIT_HASH, "starting");
+	#[cfg(any(target_os = "linux", target_os = "windows"))]
+	match door {
+		Ok(door) => ui::keep_door(door),
+		Err(e) => {
+			tracing::warn!(error = %e, "couldn't check for a running copy, so files opened from now on start another");
+		}
+	}
+	problem_report::begin_session();
 	cleanup_legacy_files();
 	// Under `cargo run` macOS treats the unbundled binary as a Terminal background process with no menu bar; must run before wx initializes.
 	#[cfg(target_os = "macos")]
@@ -40,6 +61,7 @@ fn main() {
 		let app_state = PaperbackApp::new(app);
 		let _ = Box::leak(Box::new(app_state));
 	});
+	problem_report::end_session();
 }
 
 #[cfg(target_os = "macos")]

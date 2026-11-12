@@ -23,6 +23,15 @@ fn odt_table_emits_placeholder_when_off() {
 }
 
 #[test]
+fn odt_table_keeps_header_and_grouped_rows_in_order() {
+	let xml = "<document><table><table-header-rows><table-row><table-cell>Name</table-cell></table-row></table-header-rows><table-rows><table-row><table-cell>Ann</table-cell></table-row></table-rows><table-row-group><table-row-group><table-row><table-cell>Bo</table-cell></table-row></table-row-group></table-row-group></table></document>";
+	let xml_doc = XmlDocument::parse(xml).expect("valid xml");
+	let mut buffer = DocumentBuffer::new();
+	traverse(xml_doc.root(), &mut buffer, &mut HashMap::new(), true, &HashMap::new());
+	assert_eq!(buffer.content.split_whitespace().collect::<Vec<_>>(), ["Name", "Ann", "Bo"]);
+}
+
+#[test]
 fn odt_table_cell_id_registered_at_table_start() {
 	let xml = "<document><p>before</p><table><table-row><table-cell><span id=\"anchor1\">Kop</span></table-cell></table-row></table></document>";
 	let xml_doc = XmlDocument::parse(xml).expect("valid xml");

@@ -24,7 +24,7 @@ Paperback działa w systemach Windows 10/11, we wszystkich nowoczesnych wersjach
 * Pozwala dodawać zakładki i notatki, aby zaznaczać miejsca i do nich wracać.
 * Umożliwia zmianę każdego skrótu klawiszowego.
 * Otwiera dokumenty bezpośrednio z odnośników HTTP i HTTPS. Pobiera je ponownie przy ponownym otwarciu lub po naciśnięciu `F5`, zachowując pozycję czytania i zakładki. Przy przywracaniu wcześniej otwartych dokumentów ponownie pobiera z odnośników te dokumenty, które przy ostatnim pobraniu miały nie więcej niż 2 MB.
-* Zawiera `pb`, narzędzie wiersza poleceń, które przekształca dowolny obsługiwany dokument na HTML, Markdown lub zwykły tekst. Przyjmuje wiele dokumentów naraz i samodzielnie rozwija wzorce nazw plików, takie jak `*.pdf`, dzięki czemu to samo polecenie działa także w systemie Windows. Może zapisać w folderze osobny plik dla każdego dokumentu. Opcja `--files-from` pozwala też wczytać listę dokumentów z pliku lub ze standardowego wejścia. Można również przekształcać dokumenty bezpośrednio z odnośników HTTP i HTTPS.
+* Zawiera `pb`, narzędzie wiersza poleceń, które przekształca dowolny obsługiwany dokument na HTML, Markdown lub zwykły tekst. Przyjmuje wiele dokumentów naraz i samodzielnie rozwija wzorce nazw plików, takie jak `*.pdf`, dzięki czemu to samo polecenie działa także w systemie Windows. Może zapisać w folderze osobny plik dla każdego dokumentu, przekształcając kilka dokumentów równolegle (opcja `--jobs` określa ich liczbę). Opcja `--files-from` pozwala też wczytać listę dokumentów z pliku lub ze standardowego wejścia. Można również przekształcać dokumenty bezpośrednio z odnośników HTTP i HTTPS.
 
 ## Zgodność z czytnikami ekranu
 
@@ -48,11 +48,13 @@ Jeśli JAWS milczy po naciśnięciu klawisza, który powinien wywołać komunika
 
 Paperback obsługuje następujące formaty i rozszerzenia:
 
-* Archiwa komiksów (`.cbz`)
+* Pliki BRF (Braille Ready Files) i książki PEF (Portable Embosser Format), przekształcane z brajla na zwykły tekst przy użyciu wybranej tablicy brajlowskiej (`.brf`, `.pef`)
+* Archiwa komiksów (`.cbz`, `.cbr`)
 * Pliki pomocy CHM (`.chm`)
 * Książki DAISY (`.opf`, `.zip`)
 * Książki EPUB (`.epub`)
 * E-booki FB2 (`.fb2`)
+* Podręczniki GNU Info (`.info`, niespakowane lub spakowane gzipem; podręczniki podzielone na części można otworzyć z dowolnej z nich)
 * Dokumenty HTML (`.htm`, `.html`, `.xhtml`)
 * Dokumenty Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Dokumenty Microsoft Word (`.docx`, `.docm`, `.doc`)
@@ -62,12 +64,15 @@ Paperback obsługuje następujące formaty i rozszerzenia:
 * Audiobooki MP3 (`.mp3`)
 * Prezentacje OpenDocument (`.odp`, `.fodp`)
 * Pliki tekstowe OpenDocument (`.odt`, `.fodt`)
+* Pliki pomocy i książki systemu OS/2 wraz z ilustracjami (`.inf`, `.hlp`)
 * Dokumenty PDF (`.pdf`)
 * Prezentacje PowerPoint (`.pptx`, `.pptm`, `.ppt`)
+* Archiwa RAR z książkami, otwierane tak samo jak archiwa ZIP; jeśli archiwum zawiera kilka książek, można wybrać jedną z listy (`.rar`)
 * Dokumenty reStructuredText (`.rst`, `.rest`)
 * Dokumenty RTF (`.rtf`)
 * Dokumenty Windows Write (`.wri`)
 * Pliki WinHelp (`.hlp`)
+* Dokumenty XPS i OpenXPS (`.xps`, `.oxps`)
 * Pliki zwykłego tekstu i dzienników (`.txt`, `.log`)
 
 ## Skróty klawiszowe
@@ -75,6 +80,8 @@ Paperback obsługuje następujące formaty i rozszerzenia:
 Paperback został zaprojektowany przede wszystkim do pracy z klawiaturą. Poniżej znajdują się aktualne skróty.
 
 Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowiednik podano w nawiasie. Wynika to głównie z tego, że skróty Ctrl+G, Ctrl+W oraz Alt+Strzałka w lewo i w prawo są w tym systemie zajęte przez inne konwencje systemowe lub aplikacyjne.
+
+Skróty ze znakami interpunkcyjnymi nazwano według klawiszy klawiatury amerykańskiej. W innym układzie naciśnij klawisz w tym samym miejscu, niezależnie od jego oznaczenia: na klawiaturze węgierskiej klawisz oznaczony `é` działa jak `;`, a klawisz `á` jak `'`, więc `Ctrl+'` oznacza Ctrl i klawisz `á`. Menu nadal pokazują oznaczenia amerykańskie. W systemie macOS menu pokazują natomiast klawisze z używanego układu.
 
 ### Menu Plik
 
@@ -163,6 +170,7 @@ Podane skróty dotyczą systemu Windows. Tam, gdzie macOS używa innych, odpowie
 ### Menu Dźwięk
 
 * `Ctrl+Spacja` (macOS: `Control+Spacja`, czyli fizyczny klawisz Control, ponieważ Cmd+Spacja otwiera Spotlight): Odtwórz lub wstrzymaj narrację dźwiękową.
+* `Ctrl+J`: Przejdź do wskazanego czasu w nagraniu. Wpisz czas w postaci `1:23:45`, `23:45` lub liczbę sekund, na przykład `45`. Aby przesunąć się względem bieżącej pozycji, poprzedź czas znakiem `+` lub `-`, na przykład `+5:00`. Okno dialogowe pokazuje bieżącą pozycję i długość całego nagrania.
 * `'`: Przewiń narrację dźwiękową w przód.
 * `;`: Przewiń narrację dźwiękową w tył.
 * `Shift+'`: Zwiększ skok przewijania dźwięku.

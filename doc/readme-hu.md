@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback – 1.1-es verzió
 
@@ -26,7 +26,7 @@ A Paperback a következő rendszereken fut: Windows 10/11, az ARM-alapú macOS �
 * Könyvjelzők és jegyzetek, hogy megjelölhesse, hol tart, és később visszatérhessen oda.
 * Minden billentyűparancs módosítható.
 * Dokumentumokat közvetlenül http- és https-hivatkozásokról is megnyit, és újra letölti őket, amikor ismét megnyitja őket, vagy megnyomja az `F5` billentyűt; az olvasási pozíció és a könyvjelzők ilyenkor is megmaradnak. A korábban megnyitott dokumentumok visszaállításakor a hivatkozásról megnyitottak közül a legfeljebb 2 MB méretűeket tölti le újra.
-* Része a `pb` parancssori eszköz, amely bármely támogatott dokumentumot HTML-, Markdown- vagy egyszerű szöveges formátumba alakít. Egyszerre tetszőleges számú dokumentumot feldolgoz, a `*.pdf` és a hasonló mintákat maga bontja ki, így ugyanaz a parancssor Windowson is működik, és dokumentumonként külön fájlt is írhat egy mappába. A `--files-from` kapcsolóval a dokumentumok listáját fájlból vagy a szabványos bemenetről (stdin) is beolvashatja, és közvetlenül http- és https-hivatkozásokról is át tud alakítani dokumentumokat.
+* Része a `pb` parancssori eszköz, amely bármely támogatott dokumentumot HTML-ként, Markdownként vagy egyszerű szöveges formátumba alakít. Egyszerre tetszőleges számú dokumentumot feldolgoz, a `*.pdf` és a hasonló mintákat maga bontja ki, így ugyanaz a parancssor Windowson is működik, és dokumentumonként egy fájlt írhat egy mappába, így több dokumentumot egy időben konvertálhat (`--jobs` beállítja, hány fájlt). A `--files-from` kapcsolóval a dokumentumok listáját fájlból vagy a szabványos bemenetről (stdin) is beolvashatja, és közvetlenül http- és https-hivatkozásokról is konvertálhat dokumentumokat.
 
 ## Képernyőolvasó-kompatibilitás
 
@@ -48,11 +48,13 @@ Ha a JAWS semmit sem mond, amikor olyan billentyűt nyom meg, amelynek valamit b
 
 A Paperback a következő formátumokat és kiterjesztéseket támogatja:
 
-* Képregényarchívumok (`.cbz`)
+* Braille Ready Files és Portable Embosser Format könyvek, a kiválasztott braille-táblázattal visszafordítva nyomtatásra (`.brf`, `.pef`)
+* Képregényarchívumok (`.cbz`, `.cbr`)
 * CHM-súgófájlok (`.chm`)
 * DAISY-könyvek (`.opf`, `.zip`)
 * EPUB-könyvek (`.epub`)
 * FB2 formátumú e-könyvek (`.fb2`)
+* GNU Info-kézikönyvek (`.info`, tömörítve vagy sem, valamint felosztott kézikönyvek megnyitva bármelyik részükből)
 * HTML-dokumentumok (`.htm`, `.html`, `.xhtml`)
 * Unix-kézikönyvoldalak, `man` és BSD `mdoc` formátumban is (`.1`–`.9`, `.man`, `.roff`, valamint mindegyik gzippel tömörített változata)
 * Markdown-dokumentumok (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -62,12 +64,15 @@ A Paperback a következő formátumokat és kiterjesztéseket támogatja:
 * MP3-hangoskönyvek (`.mp3`)
 * OpenDocument-bemutatók (`.odp`, `.fodp`)
 * OpenDocument-szövegfájlok (`.odt`, `.fodt`)
+* OS/2-súgófájlok és könyvek a képeikkel (`.inf`, `.hlp`)
 * PDF-dokumentumok (`.pdf`)
 * PowerPoint-bemutatók (`.pptx`, `.pptm`, `.ppt`)
+* Könyvarchívumok RAR-formátumban, amelyek úgy nyílnak meg, mint egy zip-fájl, és több könyvet tartalmazva válassza ki a kívántat (`.rar`)
 * reStructuredText-dokumentumok (`.rst`, `.rest`)
 * RTF-dokumentumok (`.rtf`)
 * Windows Write-dokumentumok (`.wri`)
 * WinHelp-fájlok (`.hlp`)
+* XPS és OpenXPS dokumentumok (`.xps`, `.oxps`)
 * Egyszerű szöveges és naplófájlok (`.txt`, `.log`)
 
 ## Billentyűparancsok
@@ -75,6 +80,8 @@ A Paperback a következő formátumokat és kiterjesztéseket támogatja:
 A Paperback elsősorban billentyűzetes használatra készült. Az alábbiakban a jelenlegi billentyűparancsok olvashatók.
 
 Az alábbi billentyűparancsok a Windowsra vonatkoznak. Ahol a macOS eltér, a megfelelő billentyűparancs zárójelben szerepel – főleg azért, mert ezen a platformon a Ctrl+G, a Ctrl+W és az Alt+Balra/Jobbra nyíl már más rendszer- vagy alkalmazáskonvenciókhoz tartozik. macOS-en a Ctrl helyett a Cmd billentyűt kell használni ott is, ahol nincs külön macOS-billentyűparancs feltüntetve: a `Ctrl+R` például `Cmd+R`.
+
+Az írásjelekre vonatkozó billentyűparancsok az amerikai billentyűzet billentyűiről kapták a nevüket. Más billentyűzetkiosztás esetén nyomja meg az ugyanazon helyen lévő billentyűt, függetlenül annak feliratától: magyar billentyűzeten az `é` feliratú billentyű `;` szerepét tölti be, az `á` feliratú pedig `'` szerepét, így a `Ctrl+'` a Ctrl billentyűt és az `á` billentyűt jelenti. A menükben továbbra is az amerikai nevek láthatók. macOS-en a menükben a saját kiosztásának megfelelő billentyűk jelennek meg helyette.
 
 ### Fájl menü
 
@@ -115,7 +122,7 @@ Az alábbi billentyűparancsok a Windowsra vonatkoznak. Ahol a macOS eltér, a m
 * `Ctrl+G` (macOS: `Cmd+L`): Ugrás sorra.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Ugrás adott százalékra.
 * `Ctrl+P`: Ugrás oldalra (ha az aktuális dokumentum támogatja).
-* `=`: Az aktuális olvasási százalék és oldal bejelentése, például „15%, 30. oldal”. Az oldalszám nélküli dokumentumoknál az oldal kimarad.
+* `=`: Az aktuális olvasási százalék és oldal bejelentése, például „15%, 30. oldal". Az oldalszám nélküli dokumentumoknál az oldal kimarad. A hangoskönyvben az eddigi lejátszási idő és a teljes hossz is megjelenik, például „15%, 1:02:03 / 10:30:00".
 * `Alt+Left` (macOS: `Cmd+[`): Visszalépés a navigációs előzményekben.
 * `Alt+Right` (macOS: `Cmd+]`): Előrelépés a navigációs előzményekben.
 * `[`: Előző szakasz.
@@ -163,6 +170,8 @@ Az alábbi billentyűparancsok a Windowsra vonatkoznak. Ahol a macOS eltér, a m
 ### Hang menü
 
 * `Ctrl+Space` (macOS: `Control+Space`, azaz a fizikai Control billentyű, mivel a Cmd+Space a Spotlightot nyitja meg): Az audionarráció lejátszása vagy szüneteltetése.
+* `Ctrl+J`: Ugrás a felvétel egy adott helyére. Írja be így: `1:23:45`, `23:45` vagy `45` másodperc, vagy a `+` vagy `-` jellel módosítsa az aktuális pozícióból, például `+5:00`. A párbeszédpanel mutatja, hogy hol tart a felvételben, és a könyv teljes hossza.
+* `Shift+=`: Az aktuális fejezet lejátszási idejének és hátralévő részének bejelentése, például „3. fejezet, 4:10 / 12:00, 7:50 hátra".
 * `'`: Az audionarráció előretekerése.
 * `;`: Az audionarráció visszatekerése.
 * `Shift+'`: A léptetési időegység növelése.

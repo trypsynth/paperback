@@ -308,6 +308,20 @@ fn line_helpers_handle_empty_and_unterminated_documents() {
 }
 
 #[test]
+fn heading_line_after_keeps_a_chapter_number_above_the_title() {
+	let session = session_with_content("them.\n21\nWhistleblowing\nIf any\n");
+	assert_eq!(session.heading_line_after(pos_after("them.\n")), "21 Whistleblowing");
+	assert_eq!(session.first_content_line_after(pos_after("them.\n")), "Whistleblowing");
+}
+
+#[test]
+fn heading_line_after_skips_blank_lines_and_page_labels() {
+	let session = session_with_content("\n\nPage 27\nChapter One\n");
+	assert_eq!(session.heading_line_after(DocPos::ZERO), "Chapter One");
+	assert_eq!(session_with_content("\n\n").heading_line_after(DocPos::ZERO), "");
+}
+
+#[test]
 fn first_content_line_after_skips_headers_after_emoji() {
 	let session = session_with_content("😀\nPage 27\n\nab\n");
 	assert_eq!(session.first_content_line_after(pos_after("😀\n")), "ab");

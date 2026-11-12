@@ -5,6 +5,14 @@ pub fn toggle_play_pause(ctx: &Ctx) {
 	audio::handle_toggle_play_pause_audio(ctx.dm, ctx.live_region_label, ctx.from_keyboard);
 }
 
+pub fn go_to_time(ctx: &Ctx) {
+	audio::handle_go_to_time(ctx.frame, ctx.dm, ctx.config, ctx.live_region_label, ctx.from_keyboard);
+}
+
+pub fn announce_chapter_time(ctx: &Ctx) {
+	audio::handle_announce_chapter_time(ctx.dm, ctx.live_region_label, ctx.from_keyboard);
+}
+
 pub fn seek_forward(ctx: &Ctx) {
 	audio::handle_seek_audio(ctx.dm, ctx.config, ctx.live_region_label, true, ctx.from_keyboard);
 }

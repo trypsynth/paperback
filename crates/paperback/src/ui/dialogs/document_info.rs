@@ -5,7 +5,7 @@ use patois::t;
 use wx_utils::format_duration_ms;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_single_button_footer};
+use super::{add_single_button_footer, dialog_padding};
 
 const DOC_INFO_WIDTH: i32 = 600;
 const DOC_INFO_HEIGHT: i32 = 400;
@@ -14,6 +14,8 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	// TRANSLATORS: Title of the Document Info dialog
 	let dialog_title = t("Document Info");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
+	let padding = dialog_padding(&dialog);
 	dialog.set_escape_id(ID_CANCEL);
 	let info_ctrl = TextCtrl::builder(&dialog)
 		.with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly)
@@ -64,7 +66,7 @@ pub fn show_document_info_dialog(parent: &Frame, path: &Path, title: &str, autho
 	let ok_label = t("Close");
 	let ok_button = Button::builder(&dialog).with_id(ID_CANCEL).with_label(&ok_label).build();
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add(&info_ctrl, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add(&info_ctrl, 1, SizerFlag::Expand | SizerFlag::All, padding);
 	add_single_button_footer(content_sizer, ok_button);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();

@@ -8,6 +8,7 @@ private val EXTRA_MIME_TYPES = mapOf(
 	"doc" to setOf("application/msword"),
 	"docm" to setOf("application/vnd.ms-word.document.macroEnabled.12"),
 	"docx" to setOf("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+	"ebrl" to setOf("application/ebrl+zip"),
 	"epub" to setOf("application/epub+zip"),
 	"fb2" to setOf("application/x-fictionbook+xml"),
 	"fodp" to setOf("application/vnd.oasis.opendocument.presentation"),
@@ -18,11 +19,14 @@ private val EXTRA_MIME_TYPES = mapOf(
 	"odp" to setOf("application/vnd.oasis.opendocument.presentation"),
 	"odt" to setOf("application/vnd.oasis.opendocument.text"),
 	"opf" to setOf("application/oebps-package+xml"),
+	"oxps" to setOf("application/oxps"),
 	"pdf" to setOf("application/pdf"),
 	"pptx" to setOf("application/vnd.openxmlformats-officedocument.presentationml.presentation"),
+	"rar" to setOf("application/vnd.rar", "application/x-rar-compressed"),
 	"rtf" to setOf("application/rtf"),
 	"txt" to setOf("text/plain"),
 	"xml" to setOf("application/xml", "text/xml"),
+	"xps" to setOf("application/vnd.ms-xpsdocument"),
 	"zip" to setOf("application/zip")
 )
 

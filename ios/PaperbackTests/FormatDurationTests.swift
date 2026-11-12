@@ -57,6 +57,18 @@ final class NavUnitTests: XCTestCase {
 		XCTAssertNotEqual(NavUnit.time(seconds: 30), NavUnit.time(seconds: 60))
 	}
 
+	func testASegmentAndASeekAmountComeBackAsTheyWereSaved() {
+		for unit in [NavUnit.segment(.heading), .segment(.listItem), .time(seconds: 30)] {
+			XCTAssertEqual(unit.stored.map(NavUnit.init), unit)
+		}
+		XCTAssertEqual(NavUnit.time(seconds: 30).stored, .seconds(seconds: 30))
+	}
+
+	/// The search Find steps through is gone once the document closes.
+	func testFindIsNotSaved() {
+		XCTAssertNil(NavUnit.find.stored)
+	}
+
 	/// Every amount the reading bar offers needs a name of its own, or two entries read alike.
 	func testEverySeekAmountOfferedHasItsOwnName() {
 		let names = audioSeekAmountsSeconds.map { seekAmountName($0) }

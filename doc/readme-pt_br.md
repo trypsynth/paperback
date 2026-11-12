@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versão 1.1
 
@@ -26,7 +26,7 @@ Paperback funciona no Windows 10/11, em todas as versões modernas de ARM macOS,
 * Marcadores e notas, para que você possa marcar seu lugar e voltar a ele.
 * Todos os atalhos de teclado podem ser alterados.
 * Abre documentos diretamente de links http e https, e os baixa novamente quando você os reabre ou pressiona `F5`, mantendo sua posição de leitura e Favoritos. Ao restaurar os documentos que você tinha abertos, ele baixa novamente os dos links que eram 2 MB ou menores.
-* Vem com `pb`, uma ferramenta de linha de comando que converte qualquer documento suportado para HTML, Markdown ou texto simples. Ele aceita quantos documentos você fornecer, expande `*.pdf` e similares por conta própria para que o mesmo comando funcione no Windows, e pode escrever um arquivo por documento em uma pasta. Também pode ler uma lista de documentos de um arquivo ou de stdin com `--files-from`, e converter documentos diretamente de links http e https.
+* Vem com `pb`, uma ferramenta de linha de comando que converte qualquer documento suportado para HTML, Markdown ou texto simples. Ele aceita quantos documentos você fornecer, expande `*.pdf` e similares por conta própria para que o mesmo comando funcione no Windows, e pode escrever um arquivo por documento em uma pasta, convertendo vários de uma vez (`--jobs` define quantos). Ele também pode ler uma lista de documentos de um arquivo ou de stdin com `--files-from`, e converter documentos diretamente de links http e https.
 
 ## Compatibilidade com Leitores de Tela
 
@@ -48,11 +48,13 @@ Se o JAWS não disser nada quando você pressionar uma tecla que deveria relatar
 
 O Paperback oferece suporte aos seguintes formatos e extensões:
 
-* Arquivos de histórias em quadrinhos (`.cbz`)
+* Arquivos Braille Ready e livros Portable Embosser Format, retrotraduzidos para impressão com a tabela braille que você escolher (`.brf`, `.pef`)
+* Arquivos de histórias em quadrinhos (`.cbz`, `.cbr`)
 * Arquivos de ajuda CHM (`.chm`)
 * Livros DAISY (`.opf`, `.zip`)
 * Livros EPUB (`.epub`)
 * E-books FB2 (`.fb2`)
+* Manuais GNU Info (`.info`, compactados ou não, e manuais divididos abertos de qualquer uma de suas partes)
 * Documentos HTML (`.htm`, `.html`, `.xhtml`)
 * Páginas de manual, tanto `man` quanto BSD `mdoc` (`.1` a `.9`, `.man`, `.roff` e as formas compactadas de cada um)
 * Documentos Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -62,12 +64,15 @@ O Paperback oferece suporte aos seguintes formatos e extensões:
 * Audiolivros MP3 (`.mp3`)
 * Apresentações OpenDocument (`.odp`, `.fodp`)
 * Arquivos de texto OpenDocument (`.odt`, `.fodt`)
+* Arquivos de ajuda e livros OS/2, com suas imagens (`.inf`, `.hlp`)
 * Documentos PDF (`.pdf`)
 * Apresentações PowerPoint (`.pptx`, `.pptm`, `.ppt`)
+* Arquivos RAR de livros, que abrem como um zip, com uma lista para escolher quando há vários (`.rar`)
 * Documentos reStructuredText (`.rst`, `.rest`)
 * Documentos RTF (`.rtf`)
 * Documentos Windows Write (`.wri`)
 * Arquivos WinHelp (`.hlp`)
+* Documentos XPS e OpenXPS (`.xps`, `.oxps`)
 * Arquivos de texto simples e arquivos de log (`.txt`, `.log`)
 
 ## Atalhos de teclado
@@ -75,6 +80,8 @@ O Paperback oferece suporte aos seguintes formatos e extensões:
 O Paperback foi projetado para uso com teclado em primeiro lugar. Aqui estão os atalhos atuais.
 
 Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é anotado entre parênteses — principalmente porque Ctrl+G, Ctrl+W e Alt+Left/Right já são utilizados por outras convenções de sistema ou aplicativos nessa plataforma.
+
+Os atalhos de pontuação são nomeados conforme as teclas de um teclado dos EUA. Em outro layout, pressione a tecla no mesmo lugar, seja qual for o rótulo: em um teclado húngaro, a tecla rotulada `é` funciona como `;` e a rotulada `á` como `'`, portanto `Ctrl+'` significa Ctrl e a tecla `á`. Os menus ainda mostram os nomes dos EUA. No macOS, os menus mostram as teclas do seu próprio layout.
 
 ### Menu Arquivo
 
@@ -115,7 +122,7 @@ Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é ano
 * `Ctrl+G` (macOS: `Cmd+L`): Ir para linha.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Ir para percentual.
 * `Ctrl+P`: Ir para página (quando suportado pelo documento atual).
-* `=`: Anunciar seu percentual de leitura atual e página, por exemplo, "15%, página 30". A página é omitida para documentos que não possuem números de página.
+* `=`: Anunciar seu percentual de leitura atual e página, por exemplo, "15%, página 30". A página é omitida para documentos que não possuem números de página. Em um audiolivro, quanto tempo você já ouviu e quanto tempo ele dura aparecem depois, por exemplo, "15%, 1:02:03 de 10:30:00".
 * `Alt+Left` (macOS: `Cmd+[`): Voltar no histórico de navegação.
 * `Alt+Right` (macOS: `Cmd+]`): Avançar no histórico de navegação.
 * `[`: Seção anterior.
@@ -163,6 +170,8 @@ Os atalhos abaixo são para Windows. Quando o macOS difere, o equivalente é ano
 ### Menu Áudio
 
 * `Ctrl+Space` (macOS: `Control+Space`, ou seja, a tecla Control física, pois Cmd+Space abre o Spotlight): Reproduzir/pausar narração de áudio.
+* `Ctrl+J`: Ir para um tempo na gravação. Digite como `1:23:45`, `23:45` ou `45` segundos, ou coloque `+` ou `-` na frente para se mover de onde você está, por exemplo, `+5:00`. O diálogo mostra a que ponto você chegou e quanto tempo o livro dura.
+* `Shift+=`: Dizer quanto você avançou neste capítulo e quanto ainda falta, por exemplo, "Capítulo 3, 4:10 de 12:00, 7:50 restantes".
 * `'`: Avançar narração de áudio.
 * `;`: Retroceder narração de áudio.
 * `Shift+'`: Aumentar o valor de busca de áudio.

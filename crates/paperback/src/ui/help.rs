@@ -18,13 +18,9 @@ use crate::translation_manager::TranslationManager;
 
 pub fn readme_path() -> Option<PathBuf> {
 	let lang = TranslationManager::instance().lock().unwrap().current_language();
-	let (lang, bytes) = match lang_readmes::readme_for_lang(&lang) {
-		Some(bytes) => (lang, bytes),
+	let (lang, html) = match lang_readmes::readme_for_lang(&lang) {
+		Some(html) => (lang, html),
 		None => ("en".to_string(), lang_readmes::readme_for_lang("en")?),
-	};
-	let Ok(html) = miniz_oxide::inflate::decompress_to_vec(bytes) else {
-		tracing::warn!(lang, "embedded readme is not valid deflate data");
-		return None;
 	};
 	let tmp = env::temp_dir().join(format!("paperback-readme-{lang}.html"));
 	match fs::write(&tmp, html) {
@@ -140,9 +136,8 @@ mod tests {
 	use super::finder_reveal_command;
 
 	#[test]
-	fn the_embedded_readme_inflates_to_an_html_page() {
-		let deflated = super::lang_readmes::readme_for_lang("en").expect("the English readme is embedded");
-		let html = miniz_oxide::inflate::decompress_to_vec(deflated).expect("the readme inflates");
+	fn the_embedded_readme_is_an_html_page() {
+		let html = super::lang_readmes::readme_for_lang("en").expect("the English readme is embedded");
 		assert!(html.starts_with(b"<!DOCTYPE html>"));
 	}
 

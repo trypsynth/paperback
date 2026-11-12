@@ -1,7 +1,7 @@
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_ok_cancel_footer, build_ok_cancel_buttons};
+use super::{add_ok_cancel_footer, build_ok_cancel_buttons, dialog_padding};
 
 pub enum ChoiceAction {
 	Associate(&'static [&'static str]),
@@ -18,6 +18,8 @@ pub fn show_linux_setup_dialog(parent: &Frame, choices: &[AssociationChoice]) ->
 	// TRANSLATORS: Title of the one-time dialog offering to associate Paperback with file types, shown the first time it's run from an AppImage
 	let title = t("Set Up Paperback");
 	let dialog = Dialog::builder(parent, &title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
+	let padding = dialog_padding(&dialog);
 	// TRANSLATORS: Explains the checkbox list below in the Linux file-association setup dialog
 	let intro_text = t("Choose which file types should open in Paperback:");
 	let intro = StaticText::builder(&dialog).with_label(&intro_text).build();
@@ -31,8 +33,8 @@ pub fn show_linux_setup_dialog(parent: &Frame, choices: &[AssociationChoice]) ->
 	// TRANSLATORS: Confirms the file association choices in the Linux setup dialog and applies them
 	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("Set Up"));
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add(&intro, 0, SizerFlag::All, DIALOG_PADDING / 2);
-	content_sizer.add(&list, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING / 2);
+	content_sizer.add(&intro, 0, SizerFlag::All, padding / 2);
+	content_sizer.add(&list, 1, SizerFlag::Expand | SizerFlag::All, padding / 2);
 	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();

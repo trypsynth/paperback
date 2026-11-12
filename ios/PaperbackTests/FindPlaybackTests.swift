@@ -36,6 +36,8 @@ private final class FindPlaybackContext: ReadingContext {
 	var activeLineScrollIndex = 0
 	var position: Int64 = 0
 	func persistPosition(_ position: Int64) { self.position = position }
+	func persistNavUnit(_ unit: NavigationUnit) {}
+	func savedNavUnit(for tab: DocumentTab) -> NavigationUnit? { nil }
 }
 
 @MainActor

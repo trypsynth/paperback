@@ -3,10 +3,10 @@ use std::path::PathBuf;
 use clap::{Parser, ValueEnum};
 
 #[derive(Parser)]
-#[command(name = "pb", about = "Convert any document to text, HTML, or Markdown")]
+#[command(name = "pb", version = env!("PB_DISPLAY_VERSION"), about = "Convert any document to text, HTML, or Markdown")]
 pub struct Cli {
 	/// Input document files, patterns or http(s) links. `*` and `?` are expanded, so the same command line works on Windows. Quote a link that holds ? or &
-	#[arg(required_unless_present_any = ["list_formats", "files_from"], num_args = 1..)]
+	#[arg(required_unless_present_any = ["list_formats", "list_braille_tables", "files_from"], num_args = 1..)]
 	pub input: Vec<PathBuf>,
 	/// Also convert the documents listed in this file, one path per line; `-` reads the list from stdin. Spaces around a name are removed, blank lines and lines starting with # are skipped, and patterns are not expanded
 	#[arg(long, value_name = "FILE")]
@@ -14,6 +14,12 @@ pub struct Cli {
 	/// List the formats pb can read, and the extensions it knows them by
 	#[arg(long)]
 	pub list_formats: bool,
+	/// List the braille tables Braille Ready Files and PEF books can be read with, for --braille-table
+	#[arg(long)]
+	pub list_braille_tables: bool,
+	/// The braille table to back-translate Braille Ready Files and PEF books with, such as en-us-g2.ctb (default: en-ueb-g2.ctb, Unified English Braille grade 2)
+	#[arg(long, value_name = "TABLE")]
+	pub braille_table: Option<String>,
 	/// Output format
 	#[arg(short, long, default_value = "text")]
 	pub format: Format,
@@ -50,7 +56,7 @@ pub struct Cli {
 	/// The largest document to download from a link, in MB
 	#[arg(long, value_name = "MB", default_value_t = 512)]
 	pub max_download_size: u64,
-	/// Keep every line of an untagged or OCR-read PDF page separate instead of joining wrapped lines back into paragraphs (for code listings, poetry and transcripts)
+	/// Keep every line separate instead of joining wrapped lines back into paragraphs, on pages that don't mark their paragraphs, such as untagged or OCR-read PDF pages (for code listings, poetry and transcripts)
 	#[arg(long)]
 	pub no_join_paragraphs: bool,
 	/// Print paperback-core's parser log output to stderr (set `RUST_LOG` for finer control)
@@ -194,6 +200,15 @@ mod tests {
 		assert_eq!(cli.password.as_deref(), Some("hunter2"));
 		assert!(cli.metadata);
 		assert!(cli.no_prompt);
+	}
+
+	#[test]
+	fn accepts_a_braille_table() {
+		assert_eq!(
+			parse(&["pb", "book.brf", "--braille-table", "en-us-g2.ctb"]).braille_table.as_deref(),
+			Some("en-us-g2.ctb")
+		);
+		assert!(parse(&["pb", "--list-braille-tables"]).list_braille_tables);
 	}
 
 	#[test]

@@ -46,11 +46,14 @@ If JAWS says nothing when you press a key that should report something, open Set
 
 Paperback supports the following formats and extensions:
 
-* Comic book archives (`.cbz`)
+* Braille Ready Files and Portable Embosser Format books, back-translated to print with the braille table you choose (`.brf`, `.pef`)
+* Comic book archives (`.cbz`, `.cbr`)
 * CHM help files (`.chm`)
 * DAISY books (`.opf`, `.zip`)
-* EPUB books (`.epub`)
+* eBraille books, read in print when they include it, and otherwise back-translated with the braille code they name (`.ebrl`, or the `.opf` of one that isn't zipped)
+* EPUB books (`.epub`, or the `.opf` of one that isn't zipped)
 * FB2 ebooks (`.fb2`)
+* GNU Info manuals (`.info`, gzipped or not, and split manuals opened from any of their parts)
 * HTML documents (`.htm`, `.html`, `.xhtml`)
 * Manual pages, both `man` and BSD `mdoc` (`.1` to `.9`, `.man`, `.roff`, and the gzipped forms of each)
 * Markdown documents (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -60,12 +63,15 @@ Paperback supports the following formats and extensions:
 * MP3 audiobooks (`.mp3`)
 * OpenDocument presentations (`.odp`, `.fodp`)
 * OpenDocument text files (`.odt`, `.fodt`)
+* OS/2 help files and books, with their pictures (`.inf`, `.hlp`)
 * PDF documents (`.pdf`)
 * PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
+* RAR archives of books, which open as a zip does, with a list to pick from when one holds several (`.rar`)
 * reStructuredText documents (`.rst`, `.rest`)
 * RTF documents (`.rtf`)
 * Windows Write documents (`.wri`)
 * WinHelp files (`.hlp`)
+* XPS and OpenXPS documents (`.xps`, `.oxps`)
 * Plain text and log files (`.txt`, `.log`)
 
 ## Keyboard shortcuts
@@ -73,6 +79,8 @@ Paperback supports the following formats and extensions:
 Paperback is designed for keyboard-first use. Here are the current shortcuts.
 
 Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in parentheses — mainly because Ctrl+G, Ctrl+W, and Alt+Left/Right are already claimed by other system or app conventions on that platform.
+
+Punctuation shortcuts are named after the keys of a US keyboard. On another layout, press the key in the same place, whatever it's labelled: on a Hungarian keyboard, the key labelled `é` works as `;` and the one labelled `á` as `'`, so `Ctrl+'` means Ctrl and the `á` key. Menus still show the US names. On macOS, menus show the keys your own layout uses instead.
 
 ### File menu
 
@@ -113,7 +121,7 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 * `Ctrl+G` (macOS: `Cmd+L`): Go to line.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Go to percent.
 * `Ctrl+P`: Go to page (when supported by the current document).
-* `=`: Announce your current reading percentage and page, e.g. "15%, page 30". The page is left out for documents that have no page numbers.
+* `=`: Announce your current reading percentage and page, e.g. "15%, page 30". The page is left out for documents that have no page numbers. In an audio book, how far in you are and how long it runs come after, e.g. "15%, 1:02:03 of 10:30:00".
 * `Alt+Left` (macOS: `Cmd+[`): Go back in navigation history.
 * `Alt+Right` (macOS: `Cmd+]`): Go forward in navigation history.
 * `[`: Previous section.
@@ -161,6 +169,8 @@ Shortcuts below are for Windows. Where macOS differs, the equivalent is noted in
 ### Audio menu
 
 * `Ctrl+Space` (macOS: `Control+Space`, i.e. the physical Control key, since Cmd+Space opens Spotlight): Play/pause audio narration.
+* `Ctrl+J`: Go to a time in the recording. Type it as `1:23:45`, `23:45` or `45` seconds, or put `+` or `-` in front to move from where you are, e.g. `+5:00`. The dialog shows how far in you are and how long the book runs.
+* `Shift+=`: Say how far into this chapter you are and how much of it is left, e.g. "Chapter 3, 4:10 of 12:00, 7:50 left".
 * `'`: Seek audio narration forward.
 * `;`: Seek audio narration backward.
 * `Shift+'`: Increase the audio seek amount.

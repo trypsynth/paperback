@@ -23,7 +23,11 @@ fn slugify(name: &str) -> String {
 fn format_tasks_block() -> String {
 	let mut lines = Vec::new();
 	for format in paperback_formats::ALL {
-		let ext_list = format.extensions.iter().map(|ext| format!("*.{ext}")).collect::<Vec<_>>().join(", ");
+		let ext_list = paperback_formats::associated_extensions(format)
+			.iter()
+			.map(|ext| format!("*.{ext}"))
+			.collect::<Vec<_>>()
+			.join(", ");
 		let flags = if format.installer.default_checked { String::new() } else { "; Flags: unchecked".to_string() };
 		lines.push(format!(
 			"\tName: \"assoc_{}\"; Description: \"Associate with {} ({})\"{}",
@@ -41,9 +45,9 @@ fn format_registry_block() -> String {
 	for format in paperback_formats::ALL {
 		let task = format!("assoc_{}", slugify(format.name));
 		lines.push(format!("\t; {}.", format.name));
-		for ext in format.extensions {
+		for ext in paperback_formats::associated_extensions(format) {
 			// DAISY, Word-in-zip and zipped FB2 all register zip, so it has its own standalone task rather than one format's checkbox.
-			if *ext == "zip" {
+			if ext == "zip" {
 				continue;
 			}
 			if format.installer.default_handler {

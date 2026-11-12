@@ -218,6 +218,7 @@ impl MainWindow {
 				menu_ids::DONATE => {
 					help::handle_donate(&frame_copy);
 				}
+				menu_ids::REPORT_PROBLEM => crate::problem_report::show(&frame_copy),
 				menu_ids::COPY => {
 					// Other macOS controls keep Cocoa's responder-chain copy; only the reader needs our handling and announcement.
 					#[cfg(target_os = "macos")]
@@ -252,7 +253,14 @@ pub(super) fn bind_key_source(frame: &Frame, config: &Rc<Mutex<ConfigManager>>, 
 	frame.bind_internal(EventType::CHAR_HOOK, move |event| {
 		let Some(key) = event.get_key_code() else { return };
 		let Ok(cfg) = config.try_lock() else { return };
-		let action = cfg.find_shortcut_action(key, event.control_down(), event.alt_down(), event.shift_down());
+		let action = menu::shortcut_for_key(
+			&cfg,
+			key,
+			event.control_down(),
+			event.alt_down(),
+			event.shift_down(),
+			event.get_raw_key_flags(),
+		);
 		#[cfg(target_os = "windows")]
 		let punctuation = action
 			.and_then(|action| cfg.get_shortcut_chord(action))

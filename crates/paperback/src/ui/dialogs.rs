@@ -1,11 +1,21 @@
 pub(super) use wx_utils::{
-	DIALOG_PADDING, add_ok_cancel_footer, add_single_button_footer, bind_enter_confirms, build_ok_cancel_buttons,
+	add_ok_cancel_footer, add_single_button_footer, bind_enter_confirms, build_ok_cancel_buttons, dialog_padding,
 };
+use wxdragon::prelude::{Dialog, WxWidget};
 
 #[cfg(target_os = "macos")]
 mod activation;
 #[cfg(target_os = "macos")]
 use activation::bind_enter_button;
+
+/// wxDragon's `Dialog` is `Copy` with no `Drop`, so one never destroyed stayed alive, hidden, with all its controls and handlers until exit.
+struct DestroyOnDrop(Dialog);
+
+impl Drop for DestroyOnDrop {
+	fn drop(&mut self) {
+		self.0.destroy();
+	}
+}
 
 /// NVDA counts the focused item's siblings with one cross-process message each on every tree move, so more than this under one parent are split into groups to keep arrow keys from lagging.
 #[cfg(target_os = "windows")]
@@ -38,6 +48,8 @@ mod go_to_page;
 pub use go_to_page::show_go_to_page_dialog;
 mod go_to_percent;
 pub use go_to_percent::show_go_to_percent_dialog;
+mod go_to_time;
+pub use go_to_time::show_go_to_time_dialog;
 mod image_text;
 pub use image_text::show_image_text_dialog;
 #[cfg(target_os = "linux")]
@@ -52,7 +64,7 @@ mod open_url;
 pub use open_url::{confirm_download, show_open_url_dialog};
 mod options;
 pub(crate) use options::AUDIO_SEEK_AMOUNTS_SECONDS;
-pub use options::show_options_dialog;
+pub use options::{OptionsContext, OptionsDialogResult, PlaySample, show_options_dialog};
 mod shortcuts;
 pub use shortcuts::{Keymap, prompt_for_shortcuts};
 mod sleep_timer;

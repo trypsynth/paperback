@@ -55,8 +55,11 @@ pub fn reading_percent(tab: &DocumentTab, position: DocPos) -> i32 {
 }
 
 pub fn audio_percent(tab: &DocumentTab) -> Option<i32> {
-	let elapsed_ms = tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms)?;
-	tab.session.audio_progress_percent(elapsed_ms).map(|percent| percent.clamp(0, 100))
+	tab.session.audio_progress_percent(audio_elapsed_ms(tab)?).map(|percent| percent.clamp(0, 100))
+}
+
+pub fn audio_elapsed_ms(tab: &DocumentTab) -> Option<u64> {
+	tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms)
 }
 
 pub fn doc_selected_range(tab: &DocumentTab) -> (DocPos, DocPos) {
@@ -97,6 +100,13 @@ pub fn reveal_doc_range(tab: &mut DocumentTab, start: DocPos, end: DocPos, highl
 pub fn move_to_offset_and_record_history(tab: &mut DocumentTab, offset: DocPos) -> HistoryUpdate {
 	let from = doc_caret(tab);
 	jump_to_doc_offset(tab, offset);
+	record_history(tab, from, offset)
+}
+
+/// For a jump that has already seeked the audio inside the clip at `offset`, which seeking to `offset` would move back to the clip's start.
+pub fn move_caret_and_record_history(tab: &mut DocumentTab, offset: DocPos) -> HistoryUpdate {
+	let from = doc_caret(tab);
+	set_caret_to_doc_offset(tab, offset);
 	record_history(tab, from, offset)
 }
 

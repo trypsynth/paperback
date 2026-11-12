@@ -19,6 +19,7 @@ pub fn show_web_view_dialog(
 		.with_style(DialogStyle::DefaultDialogStyle | DialogStyle::ResizeBorder)
 		.with_size(parent.from_dip_int(800), parent.from_dip_int(600))
 		.build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	ACTIVE_WEB_VIEW.with(|v| v.set(Some(dialog)));
 	let web_view = WebView::builder(&dialog).build();
 	web_view.add_script_message_handler("wx");

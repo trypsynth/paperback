@@ -178,7 +178,7 @@ fn open_downloads(
 	if opened_any {
 		update_title_from_manager(frame, &dm.lock().unwrap());
 		rebuild_menu_bar(frame, dm, config);
-		dm.lock().unwrap().focus_document_text();
+		dm.lock().unwrap().focus_document_text_announced();
 	}
 	if !problems.is_empty() {
 		// TRANSLATORS: Title of the error listing the links that could not be opened

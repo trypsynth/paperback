@@ -13,7 +13,7 @@
 
   const getReleases = () => fetchJSON(`https://api.github.com/repos/${owner}/${repo}/releases?per_page=50`);
 
-  const fmtCount = n => `downloaded ${n} ${n === 1 ? "time" : "times"}`;
+  const fmtCount = n => `downloaded ${n.toLocaleString("en")} ${n === 1 ? "time" : "times"}`;
 
   // "paperback.zip"/"paperback_setup.exe" are unsuffixed duplicates of the x64 build, kept
   // in the release only so pre-ship-shape (0.8.5 and earlier) clients' exact-name update
@@ -22,10 +22,15 @@
 
   // One row per download: the link, then the count as quiet text beside it.
   const row = (url, label, count) =>
-    count === null ? `<li><a href="${url}">${label}</a></li>` : `<li><a href="${url}">${label}</a> <span class="count">${fmtCount(count)}</span></li>`;
+    count === null ? `<li><a href="${url}">${label}</a></li>` : `<li><a href="${url}">${label}</a>, <span class="count">${fmtCount(count)}</span></li>`;
+
+  // Signatures are left out because the updater fetches one with every download, which would count each download twice. The legacy duplicates stay in, since old clients really downloaded them.
+  const releaseTotal = release =>
+    (release.assets ?? []).filter(a => !a.name.toLowerCase().endsWith(".minisig")).reduce((sum, a) => sum + a.download_count, 0);
 
   // Each development build replaces the last, so its counts start again from nothing every time and say nothing about it.
-  const render = (release, label, subtitle = "", showMac = false, showCounts = true) => {
+  // `showHeading` is off where a heading in the summary that opens the section already names it.
+  const render = (release, label, subtitle = "", showMac = false, showCounts = true, showHeading = true) => {
     const assets = (release.assets ?? []).filter(a => !legacyAssetNames.has(a.name.toLowerCase()));
     const exes = assets.filter(a => a.name.toLowerCase().endsWith(".exe"));
     const winZips = assets.filter(a => a.name.toLowerCase().endsWith(".zip"));
@@ -35,20 +40,22 @@
     const version = release.tag_name.replace(/^v/, "");
     const archLabel = name => name.toLowerCase().includes("arm64") ? " (ARM64)" : name.toLowerCase().includes("x64") ? " (x64)" : "";
     const count = a => showCounts ? a.download_count : null;
+    const total = releaseTotal(release);
     const archOrder = name => name.toLowerCase().includes("arm64") ? 1 : 0;
     const byArch = list => list.sort((a, b) => archOrder(a.name) - archOrder(b.name));
     const rows = [
       ...byArch(exes).map(a => row(a.browser_download_url, `Windows Installer${archLabel(a.name)} (.exe)`, count(a))),
       ...byArch(winZips).map(a => row(a.browser_download_url, `Windows Portable${archLabel(a.name)} (.zip)`, count(a))),
-      ...(showMac && macDmg ? [row(macDmg.browser_download_url, "macOS (.dmg)", count(macDmg))] : []),
+      ...(showMac && macDmg ? [row(macDmg.browser_download_url, "macOS (Universal) (.dmg)", count(macDmg))] : []),
       ...byArch(linuxAppImages).map(a => row(a.browser_download_url, `Linux Installer${archLabel(a.name)} (.AppImage)`, count(a))),
       ...byArch(linuxTarballs).map(a => row(a.browser_download_url, `Linux Portable${archLabel(a.name)} (.tar.gz)`, count(a))),
     ];
     // The development build's tag is "latest", which says nothing a reader needs after its name.
     const heading = release.tag_name === "latest" ? label : `${label} ${version}`;
     return `
-      <h3>${heading}</h3>
+      ${showHeading ? `<h3>${heading}</h3>` : ""}
       ${subtitle ? `<p class="subtitle">${subtitle}</p>` : ""}
+      ${showCounts ? `<p class="total">${total.toLocaleString("en")} ${total === 1 ? "download" : "downloads"}</p>` : ""}
       <ul>
         ${rows.join("\n        ")}
         <li><a href="${release.html_url}">Release notes on GitHub</a></li>
@@ -64,13 +71,16 @@
     const dev = releases.find(r => r.tag_name === "latest");
     const previousStable = releases.filter(isStable).slice(1);
     stableEl.innerHTML = stable ? render(stable, "Stable Version", "Recommended for most users", true) : "No stable release found.";
-    devEl.innerHTML = dev ? render(dev, "Development Build", "Includes experimental features, may be unstable", true, false) : "No development builds found.";
+    devEl.innerHTML = dev ? render(dev, "Development Build", "Includes experimental features, may be unstable", true, false, false) : "No development builds found.";
     if (previousStable.length > 0) {
-      const blocks = previousStable.map(r => `<div class="release">${render(r, "Stable Version", "", true)}</div>`).join("");
+      // One line per release, linking to its page on GitHub, which lists every file it had.
+      const items = previousStable.map(r => row(r.html_url, `Version ${r.tag_name.replace(/^v/, "")}`, releaseTotal(r)));
       historyEl.innerHTML = `
         <details>
-          <summary>Previous stable releases</summary>
-          ${blocks}
+          <summary><h3>Previous stable releases</h3></summary>
+          <ul>
+            ${items.join("\n            ")}
+          </ul>
         </details>
       `;
     } else {

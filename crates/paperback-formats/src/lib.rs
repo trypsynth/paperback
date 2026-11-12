@@ -78,6 +78,13 @@ formats! {
 		mime_types: ["application/vnd.comicbook-rar"],
 		flags: SUPPORTS_PAGES | SUPPORTS_IMAGES,
 	},
+	/// Opened as a zip copy of itself, so it holds what a zip can: one book or several, a DAISY book, an audiobook in parts. The flags are those of the formats that claim `.zip`.
+	RAR {
+		name: "RAR archives",
+		extensions: ["rar"],
+		mime_types: ["application/vnd.rar", "application/x-rar-compressed"],
+		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_PAGES | SUPPORTS_IMAGES,
+	},
 	CBZ {
 		name: "Comic book archives",
 		extensions: ["cbz"],
@@ -96,6 +103,13 @@ formats! {
 		mime_types: ["application/winhlp"],
 		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_IMAGES,
 	},
+	/// OS/2 application help shares WinHelp's `.hlp`, and the WinHelp parser hands it over, so only books' `.inf` is claimed here; Windows setup files share that and open as text.
+	OS2_HELP {
+		name: "OS/2 help files",
+		extensions: ["inf"],
+		mime_types: ["application/x-os2-inf"],
+		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_IMAGES,
+	},
 	/// Declared ahead of [`WORD`] so it gets first crack at the `.zip` both claim.
 	/// `application/x-daisy-opf` isn't a registered freedesktop.org type, so the Linux association dialog installs a shared-mime-info entry for it.
 	DAISY {
@@ -110,9 +124,17 @@ formats! {
 		mime_types: ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"],
 		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_LISTS | SUPPORTS_PAGES | SUPPORTS_IMAGES,
 	},
+	/// An EPUB 3 in braille, read back into print with the braille table its package names. Ahead of [`EPUB`], so an unpacked one's `.opf` is taken as braille before the EPUB parser would show its braille as it is.
+	EBRAILLE {
+		name: "eBraille books",
+		extensions: ["ebrl", "opf"],
+		mime_types: ["application/ebrl+zip"],
+		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_PAGES | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
+	},
+	/// `.opf` is an unpacked EPUB's package document, which DAISY and eBraille, declared ahead, decline.
 	EPUB {
 		name: "EPUB Books",
-		extensions: ["epub"],
+		extensions: ["epub", "opf"],
 		mime_types: ["application/epub+zip"],
 		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_PAGES | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
 		installer: CHECKED_HANDLER,
@@ -143,6 +165,26 @@ formats! {
 		extensions: ["man", "roff", "gz", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
 		mime_types: ["application/x-troff-man", "text/troff"],
 		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
+	},
+	/// Installed manuals are gzipped and split, `find.info.gz` and `find.info-1.gz`, which the parser recognizes by name rather than by extension.
+	INFO {
+		name: "GNU Info Manuals",
+		extensions: ["info"],
+		mime_types: ["application/x-info"],
+		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
+	},
+	/// Back-translated to print with the reader's braille table.
+	BRF {
+		name: "Braille Ready Files",
+		extensions: ["brf"],
+		mime_types: ["application/x-brf"],
+		flags: SUPPORTS_PAGES,
+	},
+	PEF {
+		name: "Portable Embosser Format",
+		extensions: ["pef"],
+		mime_types: ["application/x-pef+xml"],
+		flags: SUPPORTS_PAGES | SUPPORTS_TOC,
 	},
 	MARKDOWN {
 		name: "Markdown Files",
@@ -225,6 +267,25 @@ formats! {
 		mime_types: ["application/x-mswrite"],
 		flags: NONE,
 	},
+	XPS {
+		name: "XPS Documents",
+		extensions: ["xps", "oxps"],
+		mime_types: ["application/vnd.ms-xpsdocument", "application/oxps"],
+		flags: SUPPORTS_PAGES | SUPPORTS_TOC | SUPPORTS_LISTS,
+	},
+}
+
+/// The extensions `format` is associated with: those no format declared before it also claims, so an extension several formats open, such as `.opf` for DAISY, eBraille and EPUB books, is associated once, by the first. `.zip` is the first claimer's too, though installers give it a task of its own.
+#[must_use]
+pub fn associated_extensions(format: &FormatMeta) -> Vec<&'static str> {
+	format
+		.extensions
+		.iter()
+		.copied()
+		.filter(|ext| {
+			ALL.iter().find(|other| other.extensions.contains(ext)).is_some_and(|first| first.name == format.name)
+		})
+		.collect()
 }
 
 #[cfg(test)]
@@ -263,6 +324,22 @@ mod tests {
 				);
 			}
 		}
+	}
+
+	/// An unpacked EPUB or eBraille book opens by its `.opf`, but installing Paperback must not take `.opf` from DAISY, which has always held it, nor make Paperback its default handler through EPUB's checkbox.
+	#[test]
+	fn opf_is_associated_through_daisy_alone() {
+		assert_eq!(associated_extensions(&DAISY), ["opf", "zip"]);
+		assert_eq!(associated_extensions(&EBRAILLE), ["ebrl"]);
+		assert_eq!(associated_extensions(&EPUB), ["epub"]);
+		assert_eq!(associated_extensions(&WORD), ["docx", "docm", "doc"]);
+	}
+
+	#[test]
+	fn xps_covers_both_generations_of_the_format() {
+		assert_eq!(XPS.extensions, ["xps", "oxps"]);
+		assert_eq!(XPS.mime_types, ["application/vnd.ms-xpsdocument", "application/oxps"]);
+		assert_eq!(XPS.flags, ParserFlags::SUPPORTS_PAGES | ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS);
 	}
 
 	#[test]

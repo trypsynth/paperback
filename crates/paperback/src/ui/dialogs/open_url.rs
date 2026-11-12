@@ -13,6 +13,7 @@ pub fn show_open_url_dialog(parent: &Frame, initial: &str) -> Option<String> {
 pub fn confirm_download(parent: &dyn WxWidget, warning: &str) -> bool {
 	// TRANSLATORS: Title of the security warning shown before downloading a document from a link
 	let dialog = Dialog::builder(parent, &t("Security Warning")).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	let padding = dialog_padding(&dialog);
 	let label = StaticText::builder(&dialog).with_label(warning).build();
 	let (yes_button, no_button) = build_yes_no_buttons(&dialog);

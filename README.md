@@ -110,7 +110,7 @@ cargo android --debug
 
 ## Translations
 
-Paperback uses gettext catalogs through [patois](https://github.com/trypsynth/patois). Strings marked with `t()` in Rust, Swift, and Kotlin are collected into `po/paperback.pot`. To update the template, run the following command:
+Paperback uses gettext catalogs through [patois](https://github.com/accessware/patois). Strings marked with `t()` in Rust, Swift, and Kotlin are collected into `po/paperback.pot`. To update the template, run the following command:
 
 ```
 cargo gen-pot

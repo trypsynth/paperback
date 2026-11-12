@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 22df4b9e765b4a46; sections: 64167837,db723a70,df2f4c18,ca908bbd,1387e8b7,3887c286,b8e6e026,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - Version 1.1
 
@@ -26,7 +26,7 @@ Paperback läuft auf Windows 10/11, allen modernen ARM-Versionen von macOS, Linu
 * Lesezeichen und Notizen, damit du deine Position markieren und später dorthin zurückkehren kannst.
 * Jede Tastenkombination kann geändert werden.
 * Öffnet Dokumente direkt aus http- und https-Links, und lädt sie erneut herunter, wenn du sie erneut öffnest oder `F5` drückst, wobei die Leseposition und Lesezeichen erhalten bleiben. Beim Wiederherstellen der Dokumente, die du geöffnet hattest, lädt es erneut die Dokumente aus Links herunter, die 2 MB oder kleiner waren.
-* Kommt mit `pb`, einem Befehlszeilentool, das beliebige unterstützte Dokumente in HTML, Markdown oder einfachen Text konvertiert. Es verarbeitet beliebig viele Dokumente, expandiert `*.pdf` und ähnliches selbst, sodass dieselbe Befehlszeile auf Windows funktioniert, und kann eine Datei pro Dokument in einen Ordner schreiben. Es kann auch eine Liste von Dokumenten aus einer Datei oder von stdin mit `--files-from` lesen und Dokumente direkt von http- und https-Links konvertieren.
+* Kommt mit `pb`, einem Befehlszeilentool, das beliebige unterstützte Dokumente in HTML, Markdown oder einfachen Text konvertiert. Es verarbeitet beliebig viele Dokumente, expandiert `*.pdf` und ähnliches selbst, sodass dieselbe Befehlszeile auf Windows funktioniert, und kann eine Datei pro Dokument in einen Ordner schreiben, wobei mehrere gleichzeitig konvertiert werden (`--jobs` legt fest, wie viele). Es kann auch eine Liste von Dokumenten aus einer Datei oder von stdin mit `--files-from` lesen und Dokumente direkt von http- und https-Links konvertieren.
 
 ## Bildschirmleser-Kompatibilität
 
@@ -48,11 +48,13 @@ Wenn JAWS nichts sagt, wenn du eine Taste drückst, die etwas melden sollte, öf
 
 Paperback unterstützt die folgenden Formate und Dateitypen:
 
-* Comic-Book-Archive (`.cbz`)
+* Braille-Ready-Dateien und Portable-Embosser-Format-Bücher, zurückgewandelt in Druck mit der von dir gewählten Braille-Tabelle (`.brf`, `.pef`)
+* Comic-Book-Archive (`.cbz`, `.cbr`)
 * CHM-Hilfedateien (`.chm`)
 * DAISY-Bücher (`.opf`, `.zip`)
 * EPUB-Bücher (`.epub`)
 * FB2-eBooks (`.fb2`)
+* GNU-Info-Handbücher (`.info`, komprimiert oder nicht, und geteilte Handbücher, die von einem ihrer Teile aus geöffnet werden)
 * HTML-Dokumente (`.htm`, `.html`, `.xhtml`)
 * Manualseiten, sowohl `man` als auch BSD `mdoc` (`.1` bis `.9`, `.man`, `.roff` und die komprimierten Versionen von jedem)
 * Markdown-Dokumente (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -62,12 +64,15 @@ Paperback unterstützt die folgenden Formate und Dateitypen:
 * MP3-Hörbücher (`.mp3`)
 * OpenDocument-Präsentationen (`.odp`, `.fodp`)
 * OpenDocument-Textdateien (`.odt`, `.fodt`)
+* OS/2-Hilfedateien und Bücher mit ihren Bildern (`.inf`, `.hlp`)
 * PDF-Dokumente (`.pdf`)
 * PowerPoint-Präsentationen (`.pptx`, `.pptm`, `.ppt`)
+* RAR-Archive von Büchern, die sich wie eine ZIP-Datei öffnen, mit einer Liste zur Auswahl, wenn mehrere enthalten sind (`.rar`)
 * reStructuredText-Dokumente (`.rst`, `.rest`)
 * RTF-Dokumente (`.rtf`)
 * Windows-Write-Dokumente (`.wri`)
 * WinHelp-Dateien (`.hlp`)
+* XPS- und OpenXPS-Dokumente (`.xps`, `.oxps`)
 * Reine Textdateien und Logdateien (`.txt`, `.log`)
 
 ## Tastenkombinationen
@@ -75,6 +80,8 @@ Paperback unterstützt die folgenden Formate und Dateitypen:
 Paperback ist für die Verwendung mit der Tastatur ausgerichtet. Hier sind die aktuellen Tastenkombinationen.
 
 Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet, ist das Äquivalent in Klammern vermerkt — hauptsächlich, weil `Ctrl+G`, `Ctrl+W` und `Alt+Left`/`Alt+Right` auf dieser Plattform bereits von anderen System- oder App-Konventionen belegt sind.
+
+Sonderzeichentastenkombinationen sind nach den Tasten einer US-Tastatur benannt. Bei einer anderen Belegung drücke die Taste an derselben Stelle, unabhängig davon, wie sie beschriftet ist: Bei einer ungarischen Tastatur funktioniert die Taste mit der Beschriftung `é` als `;` und die mit `á` beschriftete als `'`, daher bedeutet `Ctrl+'` Strg und die `á`-Taste. Menüs zeigen weiterhin die US-Namen. Auf macOS zeigen Menüs stattdessen die Tasten deiner eigenen Belegung an.
 
 ### Menü „Datei"
 
@@ -115,7 +122,7 @@ Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet
 * `Ctrl+G` (macOS: `Cmd+L`): Zur Zeile gehen.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Zum Prozentsatz gehen.
 * `Ctrl+P`: Zur Seite gehen (wenn vom aktuellen Dokument unterstützt).
-* `=`: Ankündigung des aktuellen Leseprozentsatzes und der Seitenzahl, z. B. „15 %, Seite 30". Die Seitenzahl wird bei Dokumenten ohne Seitenzahlen weggelassen.
+* `=`: Ankündigung des aktuellen Leseprozentsatzes und der Seitenzahl, z. B. „15 %, Seite 30". Die Seitenzahl wird bei Dokumenten ohne Seitenzahlen weggelassen. In einem Hörbuch werden danach angekündigt, wie weit du fortgeschritten bist und wie lange es dauert, z. B. „15 %, 1:02:03 von 10:30:00".
 * `Alt+Left` (macOS: `Cmd+[`): Zurück in der Navigationshistorie.
 * `Alt+Right` (macOS: `Cmd+]`): Vorwärts in der Navigationshistorie.
 * `[`: Vorheriger Abschnitt.
@@ -163,6 +170,8 @@ Die folgenden Tastenkombinationen sind für Windows. Wo sich macOS unterscheidet
 ### Menü „Audio"
 
 * `Ctrl+Space` (macOS: `Control+Space`, d. h. die physische Strg-Taste, da Cmd+Space Spotlight öffnet): Audioerzählung abspielen/pausieren.
+* `Ctrl+J`: Zu einer Zeit in der Aufzeichnung gehen. Gib es ein als `1:23:45`, `23:45` oder `45` Sekunden, oder stell `+` oder `-` voran, um dich von deiner aktuellen Position aus zu bewegen, z. B. `+5:00`. Das Dialogfeld zeigt, wie weit du fortgeschritten bist und wie lange das Buch dauert.
+* `Shift+=`: Sagt an, wie weit du in diesem Kapitel vorangekommen bist und wie viel davon noch übrig ist, z. B. „Kapitel 3, 4:10 von 12:00, 7:50 verbleibend".
 * `'`: Audioerzählung vorwärts spulen.
 * `;`: Audioerzählung rückwärts spulen.
 * `Shift+'`: Spulmenge der Audioerzählung erhöhen.

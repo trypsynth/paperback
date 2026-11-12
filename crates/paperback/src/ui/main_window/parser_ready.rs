@@ -9,18 +9,20 @@ use std::{
 
 use paperback_core::{
 	config::ConfigManager,
-	parser::{parser_supports_extension, parser_supports_path},
-	util::zip::{extract_zip_entry_to_cache, zip_books_to_browse},
+	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, parser_supports_extension, parser_supports_path},
+	util::{
+		rar,
+		zip::{extract_zip_entry_to_cache, zip_books_to_browse},
+	},
 };
 use patois::t;
 use wxdragon::prelude::*;
 
 use super::dialogs;
-use crate::ui::dialogs::ZipChoice;
+use crate::ui::{dialogs::ZipChoice, document_manager::prompt_for_password};
 
 pub fn choose_format(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
-	let cfg = config.lock().unwrap();
-	ensure_parser_for_unknown_file(frame, path, &cfg)
+	ensure_parser_for_unknown_file(frame, path, config)
 }
 
 pub(crate) fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
@@ -28,8 +30,7 @@ pub(crate) fn ensure_parser_ready_for_path(frame: &Frame, path: &Path, config: &
 	if extension.is_empty() || parser_supports_path(path) {
 		return true;
 	}
-	let cfg = config.lock().unwrap();
-	ensure_parser_for_unknown_file(frame, path, &cfg)
+	ensure_parser_for_unknown_file(frame, path, config)
 }
 
 /// Runs before the document manager is locked, since the picker is modal.
@@ -39,13 +40,40 @@ pub(crate) fn resolve_zip_path(
 	config: &Rc<Mutex<ConfigManager>>,
 	quit_if_closed: bool,
 ) -> Option<PathBuf> {
+	let is_rar = path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("rar"));
 	// A format the user forced for this zip means they want it opened as one document, not browsed.
-	if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip"))
+	if !(is_rar || path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("zip")))
 		|| !config.lock().unwrap().get_document_format(&path.to_string_lossy()).is_empty()
 	{
 		return Some(path.to_path_buf());
 	}
-	browse_zip(frame, path, quit_if_closed)
+	// A RAR is opened as its zip copy, so it gets the picker and everything else a zip does.
+	let path = if is_rar { rar_copy(frame, path, config)? } else { path.to_path_buf() };
+	browse_zip(frame, &path, quit_if_closed)
+}
+
+/// Asks for the password when the archive needs one, and keeps it as a document's password is kept, in case the copy has to be made again.
+fn rar_copy(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> Option<PathBuf> {
+	let path_str = path.to_string_lossy();
+	let saved = config.lock().unwrap().get_document_password(&path_str);
+	let mut password = (!saved.is_empty()).then_some(saved);
+	loop {
+		match rar::zip_copy(path, password.as_deref(), &rar::cache_root()) {
+			Ok(copy) => {
+				if let Some(password) = &password {
+					config.lock().unwrap().set_document_password(&path_str, password);
+				}
+				return Some(copy);
+			}
+			Err(err) if err.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
+				password = Some(prompt_for_password(frame)?);
+			}
+			Err(err) => {
+				show_extract_error(frame, path, &err);
+				return None;
+			}
+		}
+	}
 }
 
 /// Skips the saved-format check, for a downloaded zip whose settings are kept under its link.
@@ -80,18 +108,22 @@ pub fn browse_zip(frame: &Frame, path: &Path, quit_if_closed: bool) -> Option<Pa
 	match extract_zip_entry_to_cache(path, &names[chosen], &cache) {
 		Ok(extracted) => Some(extracted),
 		Err(err) => {
-			tracing::error!(path = %path.display(), error = %err, "failed to extract archive entry");
-			// TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
-			let message = t("Couldn't extract the document from the archive: {}").replace("{}", &err.to_string());
-			// TRANSLATORS: Generic error dialog title
-			let title = t("Error");
-			MessageDialog::builder(frame, &message, &title)
-				.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
-				.build()
-				.show_modal();
+			show_extract_error(frame, path, &err);
 			None
 		}
 	}
+}
+
+fn show_extract_error(frame: &Frame, path: &Path, err: &anyhow::Error) {
+	tracing::error!(path = %path.display(), error = %err, "failed to extract archive entry");
+	// TRANSLATORS: Error shown when a document inside a zip archive can't be extracted; {} is the underlying error
+	let message = t("Couldn't extract the document from the archive: {}").replace("{}", &err.to_string());
+	// TRANSLATORS: Generic error dialog title
+	let title = t("Error");
+	MessageDialog::builder(frame, &message, &title)
+		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+		.build()
+		.show_modal();
 }
 
 fn parser_extension_for_path(path: &Path) -> String {
@@ -116,9 +148,10 @@ fn clean_extension_token(raw: &str) -> String {
 	trimmed.chars().take_while(char::is_ascii_alphanumeric).collect()
 }
 
-fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigManager) -> bool {
+/// The config is locked only around reading and saving the format, not while the dialog is up: a handler in the dialog's event loop that locks it would otherwise wait on this frame forever, which is what opening an unknown file from the command line did.
+fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> bool {
 	let path_str = path.to_string_lossy();
-	let saved_format = config.get_document_format(&path_str);
+	let saved_format = config.lock().unwrap().get_document_format(&path_str);
 	if !saved_format.is_empty() && parser_supports_extension(&saved_format) {
 		return true;
 	}
@@ -136,7 +169,7 @@ fn ensure_parser_for_unknown_file(parent: &Frame, path: &Path, config: &ConfigMa
 		dialog.show_modal();
 		return false;
 	}
-	config.set_document_format(&path_str, &format);
+	config.lock().unwrap().set_document_format(&path_str, &format);
 	true
 }
 

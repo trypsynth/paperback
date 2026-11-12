@@ -33,7 +33,7 @@ cfb = { git = "https://github.com/trypsynth/rust-cfb", branch = "permissive-repa
 chardetng = "1.0.0"
 ego-tree = "0.11.1"
 encoding_rs = "0.8.44"
-flate2 = "1.1.10"
+flate2 = "1.1.11"
 # Without memmap, the first PDF needing an unembedded font read every installed font whole, which is 334 MB on one Windows machine.
 fontdb = { version = "0.24.0", default-features = false, features = ["fs", "memmap"] }
 hayro = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
@@ -45,6 +45,9 @@ image = { workspace = true, features = ["jpeg", "png", "gif", "webp", "bmp"] }
 key-chord = { version = "0.2.2", features = ["serde"] }
 libchm = "0.3.1"
 libhlp = "0.3.0"
+libinf = "0.1.0"
+# Upstream main plus the back-translation fixes BRF and PEF books still need, until they are merged (liblouis/louis-rs#44, #45 and #51).
+louis-rs = { git = "https://github.com/trypsynth/louis-rs", branch = "paperback-next" }
 lofty = "0.25.5"
 math-core = "0.9.0"
 mathcat = { version = "0.7.7", features = ["include-zip"] }
@@ -56,31 +59,37 @@ paperback-formats = { workspace = true }
 patois = { workspace = true }
 percent-encoding = "2.3.2"
 pulldown-cmark = { version = "0.13.6", default-features = false, features = ["html"] }
-rayon = "1.12.0"
+# Pinned: it is young and mostly one person's, so each update is read before it lands. Only reading, and only the encryption password-protected archives need.
+rars = { version = "=0.12.4", default-features = false, features = ["encryption"] }
+rayon = { workspace = true }
 regex = "1.13.1"
-rustc-hash = "2.1.3"
-smallvec = "1.16.4"
 roman = "0.2.2"
 roxmltree = "0.21.2"
 rtf-parser = "0.4.3"
+rustc-hash = "2.1.3"
 scraper = "0.29.0"
 serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
 serde_json = { workspace = true }
 sha1 = "0.11.0"
+skrifa = "0.46.2"
+smallvec = "1.16.5"
 thiserror = "2.0.21"
 toml = { workspace = true }
 tracing = { workspace = true }
 unicode-bidi = "0.3.18"
 uniffi = { version = "0.32.2", features = ["cli"], optional = true }
-ureq = { version = "3.5.0", default-features = false, features = ["rustls"], optional = true }
+ureq = { version = "3.5.1", default-features = false, features = ["rustls"], optional = true }
 web_atoms = "0.3.0"
 zip = { workspace = true }
 
 [build-dependencies]
+flate2 = "1.1.11"
 shipfitter = { workspace = true }
 uniffi = { version = "0.32.2", features = ["build"], optional = true }
 
 [dev-dependencies]
+# Tests write the archives they read, so no RAR files need checking in.
+rars = { version = "=0.12.4", default-features = false, features = ["encryption", "write"] }
 rstest = { workspace = true }
 zip = { workspace = true, features = ["aes-crypto"] }
 

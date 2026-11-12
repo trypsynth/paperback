@@ -25,7 +25,7 @@ impl Drop for LocaleGuard {
 #[must_use]
 pub fn pinned_to(locale: &str) -> LocaleGuard {
 	let guard = lock();
-	let previous = patois::get_locale();
+	let previous = patois::locale();
 	patois::set_locale(locale);
 	LocaleGuard { previous, _guard: guard }
 }

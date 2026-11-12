@@ -1,23 +1,25 @@
 //! Old Mobipocket files use `<font size="N">` instead of heading tags, so a document with none gets them rewritten into headings the TOC builder can find.
 
-use std::sync::LazyLock;
+use std::{borrow::Cow, sync::LazyLock};
 
-pub(super) fn rewrite_font_size_headings(html: &str) -> String {
+pub(super) fn rewrite_font_size_headings(html: String) -> String {
 	static RE_H1_6: LazyLock<regex::Regex> = LazyLock::new(|| regex::Regex::new(r"(?i)<h[1-6]\b").unwrap());
-	if RE_H1_6.is_match(html) {
+	if RE_H1_6.is_match(&html) {
 		tracing::debug!("existing heading tags found, skipping font size heading heuristic");
-		return html.to_string();
+		return html;
 	}
 	tracing::debug!("no existing heading tags found, applying font size heading heuristic");
 	// One pass, not one per size: each pass was a full scan and copy of a string that runs to a hundred megabytes on the largest books. An unclosed font tag now goes to the size that opens first; see `an_unclosed_font_tag_is_taken_in_the_order_it_opens`.
 	static RE_FONT: LazyLock<regex::Regex> =
 		LazyLock::new(|| regex::Regex::new(r#"(?is)<font\b[^>]*\bsize=["']?([4-7])["']?[^>]*>(.*?)</font>"#).unwrap());
-	RE_FONT
-		.replace_all(html, |caps: &regex::Captures<'_>| {
-			let level = b'7' - caps[1].as_bytes()[0] + 1;
-			format!("<h{level}>{}</h{level}>", &caps[2])
-		})
-		.into_owned()
+	let rewritten = RE_FONT.replace_all(&html, |caps: &regex::Captures<'_>| {
+		let level = b'7' - caps[1].as_bytes()[0] + 1;
+		format!("<h{level}>{}</h{level}>", &caps[2])
+	});
+	match rewritten {
+		Cow::Owned(rewritten) => rewritten,
+		Cow::Borrowed(_) => html,
+	}
 }
 
 #[cfg(test)]

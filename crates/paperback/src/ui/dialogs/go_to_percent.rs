@@ -10,14 +10,19 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32, live_regi
 	// TRANSLATORS: Title of the Go to Percent dialog
 	let dialog_title = t("Go to Percent");
 	let dialog = Dialog::builder(parent, &dialog_title).build();
+	let _destroy = super::DestroyOnDrop(dialog);
 	// TRANSLATORS: Label/prompt template for the percentage selection dialog. The %d placeholders represent current_percent and 100 respectively.
 	let label_template = t("Go to percent (%d/%d):");
 	let label_text = label_template.replacen("%d", &current_percent.to_string(), 1).replacen("%d", "100", 1);
 	let label = StaticText::builder(&dialog).with_label(&label_text).build();
 	// TRANSLATORS: Label for the percentage selection slider
 	let slider_label = StaticText::builder(&dialog).with_label(&t("&Percent")).build();
-	let percent_slider =
-		Slider::builder(&dialog).with_value(current_percent).with_min_value(0).with_max_value(100).build();
+	let percent_slider = Slider::builder(&dialog)
+		.with_value(current_percent)
+		.with_min_value(0)
+		.with_max_value(100)
+		.with_natural_keys(true)
+		.build();
 	let entry = Rc::new(NumberEntry::new(dialog, current_percent, 0, 100));
 	// `change_value` fires no event, so syncing the slider and field both ways cannot loop.
 	let input_for_slider = entry.ctrl;
@@ -44,30 +49,6 @@ pub fn show_go_to_percent_dialog(parent: &Frame, current_percent: i32, live_regi
 			return;
 		}
 		event.skip(true);
-	});
-	let percent_slider_for_keys = percent_slider;
-	let input_for_char = entry.ctrl;
-	percent_slider.bind_internal(EventType::CHAR, move |event| {
-		let key = event.get_key_code().unwrap_or(0);
-		let current = percent_slider_for_keys.value();
-		let min_val = percent_slider_for_keys.min();
-		let max_val = percent_slider_for_keys.max();
-		let new_value = match key {
-			WXK_UP | WXK_RIGHT => Some((current + 1).min(max_val)),
-			WXK_DOWN | WXK_LEFT => Some((current - 1).max(min_val)),
-			WXK_PAGEUP => Some((current + 10).min(max_val)),
-			WXK_PAGEDOWN => Some((current - 10).max(min_val)),
-			WXK_HOME => Some(min_val),
-			WXK_END => Some(max_val),
-			_ => None,
-		};
-		if let Some(val) = new_value {
-			percent_slider_for_keys.set_value(val);
-			input_for_char.change_value(&val.to_string());
-			event.skip(false);
-		} else {
-			event.skip(true);
-		}
 	});
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
 	content_sizer.add(&slider_label, 0, SizerFlag::Left | SizerFlag::Top, 5);

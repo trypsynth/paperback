@@ -135,13 +135,16 @@ pub(super) fn handle_go_to_percent(
 				let Some(tab) = dm_guard.active_tab_mut() else {
 					return;
 				};
-				let target_pos = navigation::seek_audio_to_percent(tab, percent)
-					.unwrap_or_else(|| tab.session.position_from_percent(percent));
+				let (target_pos, update) = if let Some(clip_start) = navigation::seek_audio_to_percent(tab, percent) {
+					(clip_start, navigation::move_caret_and_record_history(tab, clip_start))
+				} else {
+					let target_pos = tab.session.position_from_percent(percent);
+					(target_pos, navigation::move_to_offset_and_record_history(tab, target_pos))
+				};
 				// A percentage alone says nothing about where it points, so the landing line is read, as Go to Line does.
 				let content = tab.session.get_line_text(target_pos);
 				let message =
 					if content.trim().is_empty() { format!("{percent}%") } else { content.trim().to_string() };
-				let update = navigation::move_to_offset_and_record_history(tab, target_pos);
 				(message, update)
 			};
 			drop(dm_guard);
@@ -193,7 +196,7 @@ pub(super) fn handle_table_of_contents(
 
 /// Never read as a page jump: a section at the top of a page shares the page marker's offset, where a "Page N:" prefix would be redundant.
 fn toc_announcement(session: &DocumentSession, offset: DocPos) -> String {
-	let content = session.first_content_line_after(offset);
+	let content = session.heading_line_after(offset);
 	if content.trim().is_empty() {
 		// TRANSLATORS: Announced when landing on a blank line; %d is the line number
 		t("Line %d").replacen("%d", &session.line_from_position(offset).to_string(), 1)

@@ -119,10 +119,8 @@ fn formula_view(formula: &FormulaInfo) -> Html {
 #[case::heading_2("h2")]
 #[case::heading_6("h6")]
 #[case::list_item("li")]
-#[ignore = "deferred: links need shared rendering for nested content and its markers"]
-#[case::deferred_link("a")]
-#[ignore = "deferred: table cells flatten nested content to raw text"]
-#[case::deferred_table("td")]
+#[case::link("a")]
+#[case::table("td")]
 fn embedded_formulas_preserve_text_spans_and_anchors(
 	#[values(Source::Html, Source::Xml)] source: Source,
 	#[case] tag: &str,
@@ -295,11 +293,18 @@ fn xml_formula_view_retains_foreign_annotations(#[case] annotation: &str, #[case
 	assert_eq!(annotation.text().collect::<String>(), "annotation");
 }
 
-// TODO: merge with xml_formula_fragments_work_for_mathcat_and_html when links and tables use shared XML rendering.
-#[rstest]
-#[ignore = "deferred: links flatten XML text, and tables reparse source slices as HTML"]
-fn xml_prefixes_survive_link_and_table_rendering(#[values("a", "td")] tag: &str) {
-	let converted = convert_with_tables(&wrap(tag, INHERITED_PREFIX), Source::Xml, Tables::Inline);
+#[test]
+fn xml_prefixes_survive_link_rendering() {
+	let converted = convert_with_tables(&wrap("a", INHERITED_PREFIX), Source::Xml, Tables::Inline);
+	assert_eq!(converted.text, "sqrt(x)");
+	assert_eq!(converted.formulas.len(), 1);
+}
+
+// TODO: merge with xml_prefixes_survive_link_rendering when tables use shared XML rendering.
+#[test]
+#[ignore = "deferred: tables reparse the XML source slice as HTML, which drops namespace prefixes"]
+fn xml_prefixes_survive_table_rendering() {
+	let converted = convert_with_tables(&wrap("td", INHERITED_PREFIX), Source::Xml, Tables::Inline);
 	assert_eq!(converted.text, "sqrt(x)");
 	assert_eq!(converted.formulas.len(), 1);
 }
@@ -336,7 +341,6 @@ fn svg_formulas_use_their_parsed_namespace(
 }
 
 #[rstest]
-#[ignore = "deferred: table cells flatten nested content to raw text"]
 fn table_formulas_preserve_text_and_spans(
 	#[values(Source::Html, Source::Xml)] source: Source,
 	#[values(Tables::Inline, Tables::Placeholder)] tables: Tables,
@@ -360,7 +364,6 @@ fn table_formulas_preserve_text_and_spans(
 	}
 }
 
-// TODO: merge with the link case in embedded_formulas_preserve_text_spans_and_anchors when links retain markers.
 #[test]
 fn html_link_text_uses_formula_conversion() {
 	let converted = convert(&wrap("a", &format!("Before <math>{}</math> after.", POWER.0)), Source::Html);
@@ -373,7 +376,6 @@ fn html_link_text_uses_formula_conversion() {
 #[rstest]
 #[case::at_start("")]
 #[case::after_text("Before ")]
-#[ignore = "deferred: links need shared rendering for nested content and its markers"]
 fn link_formula_spans_count_boundary_whitespace_once(
 	#[case] prefix: &str,
 	#[values(Source::Html, Source::Xml)] source: Source,

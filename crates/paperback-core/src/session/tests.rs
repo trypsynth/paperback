@@ -60,7 +60,7 @@ fn session_with_content(content: &str) -> DocumentSession {
 	}
 }
 
-fn session_from_buffer(buffer: DocumentBuffer) -> DocumentSession {
+pub(super) fn session_from_buffer(buffer: DocumentBuffer) -> DocumentSession {
 	let mut doc = Document::new().with_title("Title".to_string()).with_author("Author".to_string());
 	doc.set_buffer(buffer);
 	DocumentSession {

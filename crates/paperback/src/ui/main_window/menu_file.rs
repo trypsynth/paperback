@@ -212,16 +212,13 @@ pub(super) fn handle_export_document_data(
 		let path_str = tab.file_path.to_string_lossy();
 		config.lock().unwrap().export_document_settings(&path_str, &path);
 		tracing::info!(doc = %tab.file_path.display(), export = %path, "document data exported");
-		let dialog = MessageDialog::builder(
+		wx_utils::show_info(
 			frame,
 			// TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
-			&t("Notes and bookmarks exported successfully."),
+			t("Notes and bookmarks exported successfully."),
 			// TRANSLATORS: Title of the export-succeeded dialog
 			&t("Export Successful"),
-		)
-		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
-		.build();
-		dialog.show_modal();
+		);
 	}
 }
 
@@ -251,10 +248,7 @@ pub(super) fn handle_export_notes_and_bookmarks(
 	let caption = t("Export notes and bookmarks");
 	if entries.is_empty() {
 		let message = if choice.filter == BookmarkFilterType::NotesOnly { t("No notes.") } else { t("No bookmarks.") };
-		MessageDialog::builder(frame, &message, &caption)
-			.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconInformation | MessageDialogStyle::Centre)
-			.build()
-			.show_modal();
+		wx_utils::show_info(frame, message, &caption);
 		return;
 	}
 	// TRANSLATORS: File filter shown in the "Export notes and bookmarks" save dialog

@@ -1,8 +1,10 @@
 package dev.paperback.android.ui.state
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import uniffi.paperback.NavigationUnit
 import uniffi.paperback.SegmentTypeFfi
 
 class FormatDurationTest {
@@ -73,5 +75,22 @@ class SeekAmountsTest {
 		assertEquals(AUDIO_SEEK_AMOUNTS_SECONDS.sorted(), AUDIO_SEEK_AMOUNTS_SECONDS)
 		assertEquals(AUDIO_SEEK_AMOUNTS_SECONDS.size, AUDIO_SEEK_AMOUNTS_SECONDS.toSet().size)
 		assertTrue(AUDIO_SEEK_AMOUNTS_SECONDS.all { it > 0 })
+	}
+}
+
+class StoredNavUnitTest {
+	@Test
+	fun `a segment and a seek amount come back as they were saved`() {
+		val heading = NavUnit.Segment(SegmentTypeFfi.HEADING)
+		val units = listOf(heading, NavUnit.Segment(SegmentTypeFfi.LIST_ITEM), NavUnit.Time(30))
+		for (unit in units) {
+			assertEquals(unit, unit.toStored()?.toNavUnit())
+		}
+		assertEquals(NavigationUnit.Seconds(30u), NavUnit.Time(30).toStored())
+	}
+
+	@Test
+	fun `find is not saved`() {
+		assertNull(NavUnit.Find.toStored())
 	}
 }

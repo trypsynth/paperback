@@ -39,6 +39,7 @@ pub fn maybe_run_first_run_setup(parent: &Frame, config: &Mutex<ConfigManager>) 
 	let choices = association_choices();
 	// Cancel quits rather than dropping the user into a main window they never asked to open.
 	let Some(selections) = show_linux_setup_dialog(parent, &choices) else {
+		crate::problem_report::end_session();
 		process::exit(0);
 	};
 	if let Err(err) = apply_selections(&appimage_path, &choices, &selections) {
@@ -74,10 +75,9 @@ fn association_choices() -> Vec<AssociationChoice> {
 }
 
 fn format_label(format: &FormatMeta) -> String {
-	let extensions = format
-		.extensions
-		.iter()
-		.filter(|ext| **ext != "zip")
+	let extensions = paperback_formats::associated_extensions(format)
+		.into_iter()
+		.filter(|ext| *ext != "zip")
 		.map(|ext| format!(".{ext}"))
 		.collect::<Vec<_>>()
 		.join(", ");

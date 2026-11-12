@@ -10,6 +10,7 @@ mod pdf_engine;
 pub mod reader_core;
 pub mod reading;
 pub mod session;
+pub mod speech;
 pub mod types;
 pub mod util;
 pub mod version;

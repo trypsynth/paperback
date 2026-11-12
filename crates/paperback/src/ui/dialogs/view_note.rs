@@ -1,11 +1,13 @@
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_single_button_footer};
+use super::{add_single_button_footer, dialog_padding};
 
 pub fn show_view_note_dialog(parent: &dyn WxWidget, note_text: &str) {
 	// TRANSLATORS: Title of the View Note dialog
 	let dialog = Dialog::builder(parent, &t("View Note")).build();
+	let _destroy = super::DestroyOnDrop(dialog);
+	let padding = dialog_padding(&dialog);
 	let note_ctrl = TextCtrl::builder(&dialog)
 		.with_value(note_text)
 		.with_style(TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly | TextCtrlStyle::Rich2)
@@ -19,7 +21,7 @@ pub fn show_view_note_dialog(parent: &dyn WxWidget, note_text: &str) {
 		dialog_for_close.end_modal(ID_OK);
 	});
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add(&note_ctrl, 1, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add(&note_ctrl, 1, SizerFlag::Expand | SizerFlag::All, padding);
 	add_single_button_footer(content_sizer, close_button);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();

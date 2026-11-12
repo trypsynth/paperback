@@ -56,6 +56,27 @@ fn init() -> bool {
 	true
 }
 
+/// A formula inside a link, whose place in the text isn't known until the link's text is finished.
+pub(super) struct LinkFormula {
+	/// Where it starts in the link's text before its whitespace is collapsed.
+	pub(super) raw_start: usize,
+	pub(super) text: String,
+	pub(super) mathml: String,
+	/// The ids inside it, which should lead to the formula rather than to the start of the link.
+	pub(super) ids: Vec<String>,
+}
+
+/// Where `needle` starts in `collapsed`, the collapsed form of `raw`, given that it started at `raw_start` in `raw`. Searching from about there, rather than from the start, keeps an identical word earlier in the link from being taken for it.
+pub(super) fn place_in_collapsed(raw: &str, raw_start: usize, collapsed: &str, needle: &str) -> Option<usize> {
+	let prefix = collapse_whitespace(raw.get(..raw_start)?);
+	// Collapsing the prefix alone can leave one more space than the whole text has there.
+	let mut earliest = prefix.len().saturating_sub(1).min(collapsed.len());
+	while !collapsed.is_char_boundary(earliest) {
+		earliest -= 1;
+	}
+	collapsed[earliest..].find(needle).map(|found| earliest + found)
+}
+
 /// An empty expression with no fallback emits neither text nor a marker.
 pub(super) fn formula_text(
 	mathml: &str,

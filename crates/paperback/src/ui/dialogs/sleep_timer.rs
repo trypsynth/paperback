@@ -1,11 +1,13 @@
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DIALOG_PADDING, add_ok_cancel_footer, bind_enter_confirms, build_ok_cancel_buttons};
+use super::{add_ok_cancel_footer, bind_enter_confirms, build_ok_cancel_buttons, dialog_padding};
 
 pub fn show_sleep_timer_dialog(parent: &Frame, initial_duration: i32) -> Option<i32> {
 	// TRANSLATORS: Title of the Sleep Timer dialog
 	let dialog = Dialog::builder(parent, &t("Sleep Timer")).build();
+	let _destroy = super::DestroyOnDrop(dialog);
+	let padding = dialog_padding(&dialog);
 	// TRANSLATORS: Label for the input field where users enter the number of minutes for the sleep timer.
 	let label = StaticText::builder(&dialog).with_label(&t("&Minutes:")).build();
 	let input_ctrl = SpinCtrl::builder(&dialog)
@@ -20,7 +22,7 @@ pub fn show_sleep_timer_dialog(parent: &Frame, initial_duration: i32) -> Option<
 	// TRANSLATORS: OK button that confirms the entered sleep timer duration
 	let (ok_button, cancel_button) = build_ok_cancel_buttons(&dialog, &t("OK"));
 	let content_sizer = BoxSizer::builder(Orientation::Vertical).build();
-	content_sizer.add_sizer(&input_sizer, 0, SizerFlag::Expand | SizerFlag::All, DIALOG_PADDING);
+	content_sizer.add_sizer(&input_sizer, 0, SizerFlag::Expand | SizerFlag::All, padding);
 	add_ok_cancel_footer(content_sizer, ok_button, cancel_button);
 	dialog.set_sizer_and_fit(content_sizer, true);
 	dialog.centre();

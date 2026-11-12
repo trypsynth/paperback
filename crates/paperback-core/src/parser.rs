@@ -19,15 +19,20 @@ use crate::{
 	},
 };
 
+pub mod braille;
 pub mod cbr;
 pub mod cbz;
 pub mod chm;
 pub mod convert;
 pub mod daisy;
+pub mod ebraille;
 pub mod epub;
 pub mod fb2;
 pub mod hlp;
 pub mod html;
+pub mod info;
+pub mod ipf;
+pub(crate) mod layout;
 pub mod m4b;
 pub mod man;
 pub mod markdown;
@@ -38,14 +43,21 @@ pub mod odp;
 pub mod odt;
 pub mod pdf;
 pub mod powerpoint;
+pub mod rar;
 pub mod rst;
 pub mod rtf;
 pub mod text;
 pub mod util;
 pub mod word;
 pub mod wri;
+pub mod xps;
 
 pub const PASSWORD_REQUIRED_ERROR_PREFIX: &str = "[password_required]";
+
+/// A parser's answer for a file of an extension it shares but in a format that isn't its own, such as a DAISY book's `.opf` to the EPUB parser. It is never the error shown, since the file's own parser has a better one.
+#[derive(Debug, thiserror::Error)]
+#[error("{0} isn't this parser's format")]
+pub(crate) struct NotThisFormat(pub &'static str);
 
 pub trait Parser: Send + Sync {
 	/// # Errors
@@ -135,16 +147,22 @@ impl ParserRegistry {
 		REGISTRY.get_or_init(|| {
 			parser_registry! {
 				CBR => cbr::CbrParser,
+				RAR => rar::RarParser,
 				CBZ => cbz::CbzParser,
 				CHM => chm::ChmParser,
 				HLP => hlp::HlpParser,
+				OS2_HELP => ipf::IpfParser,
 				DAISY => daisy::DaisyParser,
 				WORD => word::WordParser,
+				EBRAILLE => ebraille::EbrailleParser,
 				EPUB => epub::EpubParser,
 				FB2 => fb2::Fb2Parser,
 				HTML => html::HtmlParser,
 				PDF => pdf::PdfParser,
 				MAN => man::ManParser,
+				INFO => info::InfoParser,
+				BRF => braille::BrfParser,
+				PEF => braille::PefParser,
 				MARKDOWN => markdown::MarkdownParser,
 				M4B => m4b::M4bParser,
 				MP3 => mp3::Mp3Parser,
@@ -158,6 +176,7 @@ impl ParserRegistry {
 				RTF => rtf::RtfParser,
 				TEXT => text::TextParser,
 				WRI => wri::WriParser,
+				XPS => xps::XpsParser,
 			}
 		})
 	}
@@ -169,6 +188,10 @@ fn resolve_extension(path: &Path) -> Option<&str> {
 		return Some("opf");
 	}
 	// Manual pages are named for their section (`ls.1`, `Tcl_Init.3tcl`, `printf.3.gz`), which names the format as surely as an extension.
+	// Info manuals are gzipped and split by name (`find.info.gz`, `find.info-1.gz`), so `.gz` and `.info-1` say nothing on their own.
+	if info::is_info_name(path) {
+		return Some("info");
+	}
 	if man::is_manual_page_name(path) {
 		return Some("man");
 	}
@@ -207,7 +230,9 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 					return Err(e);
 				}
 				tracing::warn!(path = %context.file_path, parser = parser.name(), error = %e, "parser failed, trying next");
-				last_error = Some(e);
+				if e.downcast_ref::<NotThisFormat>().is_none() || last_error.is_none() {
+					last_error = Some(e);
+				}
 			}
 		}
 	}

@@ -67,10 +67,7 @@ impl DocumentManager {
 			let message = t("A .paperback file was found for this document. Would you like to import it?");
 			// TRANSLATORS: Title of the dialog prompting to import a document's saved settings and bookmarks
 			let title = t("Import document data");
-			let dialog = MessageDialog::builder(&self.notebook, &message, &title)
-				.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::IconQuestion | MessageDialogStyle::Centre)
-				.build();
-			if dialog.show_modal() == ID_YES {
+			if wx_utils::confirm(&self.notebook, &message, &title) {
 				let config = self.config.lock().unwrap();
 				config.import_settings_from_file(&path.to_string_lossy(), import_path.to_str().unwrap());
 			}
@@ -89,7 +86,6 @@ impl DocumentManager {
 		let (password, forced_extension, settings) = {
 			let config = self.config.lock().unwrap();
 			let path_str = path.to_string_lossy();
-			config.refresh_document_hash(&path_str);
 			let forced_extension = config.get_document_format(&path_str);
 			let password = config.get_document_password(&path_str);
 			let settings = parse_settings(&config);
@@ -249,6 +245,9 @@ impl DocumentManager {
 		if index >= self.tabs.len() {
 			return false;
 		}
+		if self.tabs.get(index).map(|tab| &tab.file_path) == self.speaker_tab.as_ref() {
+			self.stop_read_aloud();
+		}
 		if let Some(tab) = self.tabs.get(index) {
 			tracing::info!(path = %tab.file_path.display(), "closing document");
 			// Reopening an untracked document would give it the wrong title and make it tracked.
@@ -351,7 +350,7 @@ impl DocumentManager {
 	}
 }
 
-pub(super) fn prompt_for_password(parent: &dyn WxWidget) -> Option<String> {
+pub(crate) fn prompt_for_password(parent: &dyn WxWidget) -> Option<String> {
 	// TRANSLATORS: Label for the password entry field in the "Document Password" prompt dialog
 	let dialog = TextEntryDialog::builder(parent, &t("&Password:"), &t("Document Password")).password().build();
 	if dialog.show_modal() != ID_OK {
@@ -361,10 +360,7 @@ pub(super) fn prompt_for_password(parent: &dyn WxWidget) -> Option<String> {
 }
 
 pub(super) fn show_error_dialog(parent: &dyn WxWidget, message: &str, title: &str) {
-	let dialog = MessageDialog::builder(parent, message, title)
-		.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
-		.build();
-	dialog.show_modal();
+	wx_utils::show_error(parent, message, title);
 }
 
 pub(super) fn build_document_load_error_message(path: &Path, error: &str) -> String {

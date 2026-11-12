@@ -1,0 +1,193 @@
+use super::{
+	page::Page,
+	structure::{Block, Fragment, FragmentKind},
+};
+use crate::{
+	document::{DocPos, DocumentBuffer, Marker, MarkerType},
+	parser::convert::table_text::{build_html_table_from_grid, table_render_bundle},
+	util::text::{collapse_whitespace, trim_string},
+};
+
+fn joined(parts: impl IntoIterator<Item = String>) -> String {
+	parts.into_iter().filter(|part| !part.is_empty()).collect::<Vec<_>>().join(" ")
+}
+
+/// A paragraph outside any list or table, the only place a heading can be.
+#[derive(Debug)]
+pub(super) struct WrittenParagraph {
+	pub position: DocPos,
+	pub text: String,
+	pub size: f64,
+}
+
+/// Writes a page that declares its structure.
+pub(super) struct PageWriter<'a> {
+	buffer: &'a mut DocumentBuffer,
+	page: &'a Page,
+	render_tables_inline: bool,
+	/// A fragment need not name everything on its page, and text nothing names must still reach the reader.
+	read: Vec<bool>,
+	paragraphs: Vec<WrittenParagraph>,
+}
+
+impl<'a> PageWriter<'a> {
+	pub fn new(buffer: &'a mut DocumentBuffer, page: &'a Page, render_tables_inline: bool) -> Self {
+		Self { buffer, page, render_tables_inline, read: vec![false; page.runs.len()], paragraphs: Vec::new() }
+	}
+
+	/// The size most of a paragraph is set in, so one large initial doesn't speak for the rest.
+	fn size_of(&self, names: &[String]) -> f64 {
+		let ranges = names.iter().filter_map(|name| self.page.groups.get(name)).cloned();
+		let runs = ranges.flatten().map(|index| &self.page.runs[index]);
+		runs.max_by_key(|run| run.text.chars().count()).map_or(0.0, |run| run.size)
+	}
+
+	fn text_of(&mut self, names: &[String]) -> String {
+		let mut text = String::new();
+		for name in names {
+			for index in self.page.groups.get(name).cloned().unwrap_or_default() {
+				self.read[index] = true;
+				text.push_str(&self.page.runs[index].text);
+			}
+		}
+		trim_string(&collapse_whitespace(&text))
+	}
+
+	fn paragraphs(&mut self, blocks: &[Block]) -> Vec<String> {
+		let names =
+			blocks.iter().filter_map(|block| if let Block::Paragraph(names) = block { Some(names) } else { None });
+		names.map(|names| self.text_of(names)).filter(|text| !text.is_empty()).collect()
+	}
+
+	fn write_line(&mut self, text: &str) {
+		if !text.is_empty() {
+			self.buffer.append(text);
+			self.buffer.append("\n");
+		}
+	}
+
+	/// Word draws a bullet as a paragraph of its own, which means nothing read aloud; a number has a digit and stays.
+	fn item_text(&mut self, blocks: &[Block]) -> String {
+		let mut parts = self.paragraphs(blocks);
+		if parts.len() > 1 && !parts[0].chars().any(char::is_alphanumeric) {
+			parts.remove(0);
+		}
+		parts.join(" ")
+	}
+
+	fn write_list(&mut self, items: &[Vec<Block>], level: i32) {
+		let start = self.buffer.end();
+		let mut count = 0i32;
+		for item in items {
+			let item_start = self.buffer.end();
+			let text = self.item_text(item);
+			if !text.is_empty() {
+				count = count.saturating_add(1);
+				self.write_line(&text);
+				self.buffer.add_marker(Marker::new(MarkerType::ListItem, item_start).with_text(text).with_level(level));
+			}
+			self.write_nested(item, level);
+		}
+		let length = self.buffer.end() - start;
+		if !length.is_zero() {
+			self.buffer.add_marker(Marker::new(MarkerType::List, start).with_level(count).with_length(length));
+		}
+	}
+
+	fn write_nested(&mut self, blocks: &[Block], level: i32) {
+		for block in blocks {
+			match block {
+				Block::Paragraph(_) => {}
+				Block::List(items) => self.write_list(items, level + 1),
+				Block::Table(rows) => self.write_table(rows),
+			}
+		}
+	}
+
+	/// A grid cell is one line of text, so a list or table inside it is read into that line.
+	fn cell_text(&mut self, blocks: &[Block]) -> String {
+		let mut parts = Vec::new();
+		for block in blocks {
+			parts.push(match block {
+				Block::Paragraph(names) => self.text_of(names),
+				Block::List(items) => joined(items.iter().map(|item| self.item_in_cell(item))),
+				Block::Table(rows) => joined(rows.iter().flatten().map(|cell| self.cell_text(cell))),
+			});
+		}
+		joined(parts)
+	}
+
+	fn item_in_cell(&mut self, item: &[Block]) -> String {
+		let mut parts = vec![self.item_text(item)];
+		for block in item.iter().filter(|block| !matches!(block, Block::Paragraph(_))) {
+			parts.push(self.cell_text(std::slice::from_ref(block)));
+		}
+		joined(parts)
+	}
+
+	fn write_table(&mut self, rows: &[Vec<Vec<Block>>]) {
+		let grid: Vec<Vec<String>> =
+			rows.iter().map(|row| row.iter().map(|cell| self.cell_text(cell)).collect()).collect();
+		let html = build_html_table_from_grid(&grid);
+		let table = table_render_bundle(&html, self.render_tables_inline);
+		let offset = self.buffer.end();
+		self.write_line(&table.lines.join("\n"));
+		let marker = Marker::new(MarkerType::Table, offset)
+			.with_text(table.caption)
+			.with_reference(html)
+			.with_length(table.length);
+		self.buffer.add_marker(marker);
+	}
+
+	fn write_blocks(&mut self, blocks: &[Block]) {
+		for block in blocks {
+			match block {
+				Block::Paragraph(names) => {
+					let position = self.buffer.end();
+					let text = self.text_of(names);
+					self.write_line(&text);
+					if !text.is_empty() {
+						self.paragraphs.push(WrittenParagraph { position, text, size: self.size_of(names) });
+					}
+				}
+				Block::List(items) => self.write_list(items, 1),
+				Block::Table(rows) => self.write_table(rows),
+			}
+		}
+	}
+
+	fn write_unnamed_runs(&mut self) {
+		for index in 0..self.read.len() {
+			if !self.read[index] {
+				self.write_line(&trim_string(&collapse_whitespace(&self.page.runs[index].text)));
+			}
+		}
+	}
+
+	fn skip_blocks(&mut self, blocks: &[Block]) {
+		for block in blocks {
+			match block {
+				Block::Paragraph(names) => {
+					self.text_of(names);
+				}
+				Block::List(items) => items.iter().for_each(|item| self.skip_blocks(item)),
+				Block::Table(rows) => rows.iter().flatten().for_each(|cell| self.skip_blocks(cell)),
+			}
+		}
+	}
+
+	/// A file can list these after the body, as Word does, but they belong around the page.
+	pub fn write(mut self, fragments: &[Fragment], strip_running_text: bool) -> Vec<WrittenParagraph> {
+		for kind in [FragmentKind::Header, FragmentKind::Content, FragmentKind::Footer] {
+			for fragment in fragments.iter().filter(|fragment| fragment.kind == kind) {
+				if strip_running_text && kind != FragmentKind::Content {
+					self.skip_blocks(&fragment.blocks);
+				} else {
+					self.write_blocks(&fragment.blocks);
+				}
+			}
+		}
+		self.write_unnamed_runs();
+		self.paragraphs
+	}
+}

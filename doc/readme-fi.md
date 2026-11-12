@@ -24,7 +24,7 @@ Paperback toimii Windows 10:ssä ja 11:ssä, kaikissa uusissa ARM-pohjaisissa ma
 * Kirjanmerkit ja muistiinpanot lukukohdan merkitsemistä ja siihen palaamista varten.
 * Kaikkia pikanäppäimiä on mahdollista muokata.
 * Avaa asiakirjoja suoraan HTTP- ja HTTPS-osoitteista. Ne ladataan uudelleen jokaisella avauskerralla tai `F5`-näppäimen painalluksella, mutta lukukohta ja kirjanmerkit säilyvät. Kun aiemmin avoinna olleet asiakirjat palautetaan, URL-osoitteista avatut asiakirjat ladataan uudelleen, jos niiden koko on enintään 2 Mt.
-* Mukana tulee `pb`-komentorivityökalu, joka muuntaa minkä tahansa tuetun asiakirjan HTML-, Markdown- tai tekstimuotoon. Se käsittelee kerralla useita asiakirjoja, tulkitsee `*.pdf`-tyyppiset jokerimerkit myös Windowsissa ja tallentaa muunnetut asiakirjat määritettyyn kansioon omiksi tiedostoikseen. Lisäksi se pystyy lukemaan `--files-from`-valitsimella käsiteltävien asiakirjojen luettelon tiedostosta tai vakiosyötteestä. Asiakirjoja voi muuntaa myös suoraan HTTP- ja HTTPS-osoitteista.
+* Mukana tulee `pb`-komentorivityökalu, joka muuntaa minkä tahansa tuetun asiakirjan HTML-, Markdown- tai tekstimuotoon. Se käsittelee kerralla useita asiakirjoja, tulkitsee `*.pdf`-tyyppiset jokerimerkit myös Windowsissa ja tallentaa muunnetut asiakirjat määritettyyn kansioon omiksi tiedostoikseen. Useiden asiakirjojen samanaikainen muuntaminen on myös mahdollista (muunnosten määrä valitaan `--jobs`-valitsimella). Lisäksi se pystyy lukemaan käsiteltävien asiakirjojen luettelon `--files-from`-valitsimella määritetystä tiedostosta tai vakiosyötteestä. Asiakirjoja voi muuntaa myös suoraan HTTP- ja HTTPS-osoitteista.
 
 ## Ruudunlukijoiden yhteensopivuus
 
@@ -46,11 +46,13 @@ Jos JAWS ei puhu mitään painaessasi jotain ilmoituksen aiheuttavaa näppäint�
 
 Paperback tukee seuraavia tiedostomuotoja:
 
-* Sarjakuvapaketit (`.cbz`)
+* Braille Ready File- ja Portable Embosser Format -muodossa olevat pistekirjat (`.brf`, `.pef`), joiden pistekirjoitus muunnetaan tavalliseksi tekstiksi käyttäjän valitseman pistetaulukon avulla
+* Sarjakuvapaketit (`.cbz`, `.cbr`)
 * CHM-ohjetiedostot (`.chm`)
 * DAISY-kirjat (`.opf`, `.zip`)
 * EPUB-kirjat (`.epub`)
 * FB2-e-kirjat (`.fb2`)
+* GNU Info -ohjeet (`.info`, myös gzip-pakattuina, sekä useaan tiedostoon jaetut ohjeet, jotka voidaan avata mistä tahansa osasta)
 * HTML-asiakirjat (`.htm`, `.html`, `.xhtml`)
 * `Man`- ja BSD `mdoc` -muodoissa olevat man-sivut (`.1`–`.9`, `.man`, `.roff` sekä niiden gzip-pakatut versiot)
 * Markdown-asiakirjat (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
@@ -60,19 +62,24 @@ Paperback tukee seuraavia tiedostomuotoja:
 * MP3-äänikirjat (`.mp3`)
 * OpenDocument-esitykset (`.odp`, `.fodp`)
 * OpenDocument-tekstiasiakirjat (`.odt`, `.fodt`)
+* OS/2:n ohjetiedostot ja -kirjat kuvineen (`.inf`, `.hlp`)
 * PDF-asiakirjat (`.pdf`)
 * PowerPoint-esitykset (`.pptx`, `.pptm`, `.ppt`)
+* Kirjoja sisältävät RAR-paketit, jotka avataan ZIP-pakettien tavoin. Jos paketissa on useita kirjoja, avattava kirja valitaan luettelosta (`.rar`)
 * reStructuredText-asiakirjat (`.rst`, `.rest`)
 * RTF-asiakirjat (`.rtf`)
 * Windows Write -asiakirjat (`.wri`)
 * WinHelp-ohjetiedostot (`.hlp`)
+* XPS- ja OpenXPS-asiakirjat (`.xps`, `.oxps`)
 * Teksti- ja lokitiedostot (`.txt`, `.log`)
 
 ## Pikanäppäimet
 
 Paperback on suunniteltu ensisijaisesti näppäimistöllä käytettäväksi. Alla on luettelo kaikista pikanäppäimistä.
 
-Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa. Erot johtuvat siitä, että näppäinyhdistelmät Ctrl+G, Ctrl+W sekä Alt + vasen/oikea nuoli on varattu macOS-alustalla järjestelmän tai muiden sovellusten käyttöön.
+Nämä pikanäppäimet toimivat Windowsissa. Jos macOSin pikanäppäin poikkeaa Windowsin vastaavasta, se ilmoitetaan sulkeissa. Erot johtuvat pääasiassa siitä, että macOSissa Ctrl+G, Ctrl+W ja Alt+Vasen/Oikea nuoli ovat jo muiden järjestelmä- tai sovellustoimintojen käytössä.
+
+Välimerkkejä käyttävien pikanäppäinten nimet perustuvat amerikkalaiseen näppäimistöasetteluun. Jos käytössä on jokin muu näppäimistöasettelu, paina samassa kohdassa olevaa näppäintä sen merkinnästä riippumatta. Esimerkiksi unkarilaisessa näppäimistöasettelussa é-näppäin vastaa ;-näppäintä ja á-näppäin '-näppäintä. Siksi Ctrl+' tarkoittaa Ctrl- ja á-näppäimien painamista yhdessä. Valikoissa näytetään silti amerikkalaisen näppäimistöasettelun mukaiset näppäimet. macOSissa valikoissa näytetään sen sijaan käytössä olevan näppäimistöasettelun mukaiset näppäimet.
 
 ### Tiedosto-valikko
 
@@ -161,6 +168,7 @@ Nämä pikanäppäimet toimivat Windowsissa. MacOS-komennot mainitaan sulkeissa.
 ### Ääni-valikko
 
 * `Ctrl+Välilyönti` (macOSissa `Control+Välilyönti` eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.
+* `Ctrl+J`: Siirry tiettyyn äänitteen kohtaan. Anna aika muodossa `1:23:45`, `23:45` tai `45` sekuntia. Voit myös lisätä ajan eteen `+`- tai `-`-merkin, jolloin nykyisestä toistokohdasta siirrytään eteen- tai taaksepäin, esimerkiksi `+5:00`. Valintaikkunassa näytetään nykyinen toistokohta ja kirjan kokonaiskesto.
 * `'`: Kelaa äänitettä eteenpäin.
 * `;`: Kelaa äänitettä taaksepäin.
 * `Vaihto+'`: Pidennä kelauksen aikasiirtymää.

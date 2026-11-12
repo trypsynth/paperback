@@ -1,14 +1,15 @@
 #[cfg(target_os = "macos")]
 use std::path::Path;
-#[cfg(any(target_os = "linux", target_os = "windows"))]
-use std::process;
 use std::{
+	collections::VecDeque,
 	env,
 	rc::Rc,
 	sync::{
 		Mutex,
-		atomic::{AtomicUsize, Ordering},
+		atomic::{AtomicBool, AtomicUsize, Ordering},
 	},
+	thread,
+	time::Duration,
 };
 
 use paperback_core::config::ConfigManager;
@@ -16,9 +17,7 @@ use wxdragon::prelude::*;
 
 use super::MainWindow;
 #[cfg(any(target_os = "linux", target_os = "windows"))]
-use crate::ipc::IPC_COMMAND_TOGGLE_VISIBILITY;
-#[cfg(any(target_os = "linux", target_os = "windows"))]
-use crate::ipc::{IPC_COMMAND_ACTIVATE, IpcCommand, SINGLE_INSTANCE_NAME, Target};
+use crate::ipc::commands_from_message;
 use crate::{
 	config_ext::{config_toml_path, get_update_channel},
 	ipc::target_for_argument,
@@ -29,9 +28,6 @@ use crate::{
 pub struct PaperbackApp {
 	_config: Rc<Mutex<ConfigManager>>,
 	_main_window: Rc<MainWindow>,
-	_pipe_server: PipeServer,
-	#[cfg(any(target_os = "linux", target_os = "windows"))]
-	_single_instance_checker: Option<SingleInstanceChecker>,
 }
 
 static MAIN_WINDOW_PTR: AtomicUsize = AtomicUsize::new(0);
@@ -52,23 +48,11 @@ impl PaperbackApp {
 			}
 		}
 		let config = Rc::new(Mutex::new(config));
-		#[cfg(any(target_os = "linux", target_os = "windows"))]
-		let single_instance_checker = {
-			let checker = SingleInstanceChecker::new(SINGLE_INSTANCE_NAME, None);
-			if let Some(checker) = checker.as_ref()
-				&& checker.is_another_running()
-			{
-				let cmd = ipc_command_from_cli();
-				tracing::info!(command = ?cmd, "another instance is running, forwarding command and exiting");
-				send_ipc_command(&cmd);
-				process::exit(0);
-			}
-			checker
-		};
 		let main_window = Rc::new(MainWindow::new(Rc::clone(&config)));
 		MAIN_WINDOW_PTR.store(Rc::as_ptr(&main_window) as usize, Ordering::SeqCst);
 		set_top_window(main_window.frame());
-		let pipe_server = start_pipe_server(&Rc::clone(&main_window));
+		#[cfg(any(target_os = "linux", target_os = "windows"))]
+		listen_for_other_copies();
 		main_window.show();
 		#[cfg(target_os = "linux")]
 		crate::linux_integration::maybe_run_first_run_setup(main_window.frame(), &config);
@@ -95,6 +79,12 @@ impl PaperbackApp {
 			}
 		});
 		open_from_command_line(&main_window);
+		// Queued so the main window is up and focused before the question takes the focus.
+		wx_utils::post_to_ui(|| {
+			if let Some(window) = main_window_from_ptr() {
+				crate::problem_report::offer_after_crash(window.frame());
+			}
+		});
 		let (check_updates, channel) = {
 			let cfg = config.lock().unwrap();
 			(cfg.get_app_bool("check_for_updates_on_startup", true), get_update_channel(&cfg))
@@ -102,13 +92,7 @@ impl PaperbackApp {
 		if check_updates {
 			main_window.check_for_updates(true, channel);
 		}
-		Self {
-			_config: config,
-			_main_window: main_window,
-			_pipe_server: pipe_server,
-			#[cfg(any(target_os = "linux", target_os = "windows"))]
-			_single_instance_checker: single_instance_checker,
-		}
+		Self { _config: config, _main_window: main_window }
 	}
 }
 
@@ -128,221 +112,55 @@ pub fn main_window_from_ptr() -> Option<&'static MainWindow> {
 	unsafe { (ptr as *const MainWindow).as_ref() }
 }
 
-#[cfg(any(target_os = "linux", target_os = "windows"))]
-fn ipc_command_from_cli() -> IpcCommand {
-	env::args().nth(1).map_or(IpcCommand::Activate, |argument| IpcCommand::Open(target_for_argument(&argument)))
+type Waiting = Box<dyn FnOnce(&'static MainWindow) + Send>;
+
+static WAITING: Mutex<VecDeque<Waiting>> = Mutex::new(VecDeque::new());
+static RETRY_PENDING: AtomicBool = AtomicBool::new(false);
+
+/// In order, once no modal dialog holds the manager or config: blocking on them from inside its event loop hung the app for good.
+pub fn when_unlocked(action: impl FnOnce(&'static MainWindow) + Send + 'static) {
+	WAITING.lock().unwrap().push_back(Box::new(action));
+	wx_utils::post_to_ui(run_waiting);
 }
 
-// Replaces wxWidgets DDE, which let any process in the session send OpenFile commands; the default pipe security descriptor limits connections to the same user plus SYSTEM/Administrators, and the name is scoped by USERNAME.
-#[cfg(windows)]
-mod pipe {
-	use std::{ffi::OsStr, iter, os::windows::ffi::OsStrExt as _, thread};
-
-	use windows::{
-		Win32::{
-			Foundation::{CloseHandle, ERROR_PIPE_CONNECTED, HANDLE},
-			Storage::FileSystem::{
-				CreateFileW, FILE_ATTRIBUTE_NORMAL, FILE_FLAGS_AND_ATTRIBUTES, FILE_SHARE_MODE, OPEN_EXISTING,
-				ReadFile, WriteFile,
-			},
-			System::Pipes::{ConnectNamedPipe, CreateNamedPipeW, DisconnectNamedPipe, NAMED_PIPE_MODE, WaitNamedPipeW},
-		},
-		core::PCWSTR,
-	};
-
-	const BUF: u32 = 4096;
-	const GENERIC_WRITE: u32 = 0x4000_0000;
-	// Windows SDK values, since windows-rs doesn't export them without a larger feature matrix.
-	const PIPE_ACCESS_INBOUND: u32 = 0x0000_0001;
-	const PIPE_FLAG_FIRST_INSTANCE: u32 = 0x0008_0000; // FILE_FLAG_FIRST_PIPE_INSTANCE
-	const PIPE_UNLIMITED_INSTANCES: u32 = 255;
-
-	fn wide_nul(s: &str) -> Vec<u16> {
-		OsStr::new(s).encode_wide().chain(iter::once(0)).collect()
-	}
-
-	pub fn try_create_server(pipe_name: &str) -> Option<HANDLE> {
-		let name = wide_nul(pipe_name);
-		let handle = unsafe {
-			CreateNamedPipeW(
-				PCWSTR(name.as_ptr()),
-				FILE_FLAGS_AND_ATTRIBUTES(PIPE_ACCESS_INBOUND | PIPE_FLAG_FIRST_INSTANCE),
-				NAMED_PIPE_MODE(0), // PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT = 0
-				PIPE_UNLIMITED_INSTANCES,
-				0,
-				BUF,
-				0,
-				None,
-			)
-		};
-		if handle.is_invalid() { None } else { Some(handle) }
-	}
-
-	pub fn serve_loop(handle: HANDLE, on_data: impl Fn(Vec<u8>) + Send + 'static) {
-		// HANDLE is !Send, so it crosses the thread boundary as a raw usize.
-		let raw = handle.0 as usize;
-		thread::spawn(move || {
-			let h = HANDLE(raw as *mut _);
-			loop {
-				let conn = unsafe { ConnectNamedPipe(h, None) };
-				let ready =
-					conn.is_ok() || unsafe { windows::Win32::Foundation::GetLastError() } == ERROR_PIPE_CONNECTED;
-				if ready {
-					let mut buf = vec![0u8; BUF as usize];
-					let mut n = 0u32;
-					let ok = unsafe { ReadFile(h, Some(&mut buf), Some(&raw mut n), None) };
-					if ok.is_ok() && n > 0 {
-						on_data(buf[..n as usize].to_vec());
-					}
-				}
-				let _ = unsafe { DisconnectNamedPipe(h) };
+fn run_waiting() {
+	let Some(window) = main_window_from_ptr() else { return };
+	loop {
+		if window.locks_held() {
+			if !RETRY_PENDING.swap(true, Ordering::SeqCst) {
+				thread::spawn(|| {
+					thread::sleep(Duration::from_millis(250));
+					RETRY_PENDING.store(false, Ordering::SeqCst);
+					wx_utils::post_to_ui(run_waiting);
+				});
 			}
-		});
-	}
-
-	pub fn send(pipe_name: &str, payload: &str) {
-		let name = wide_nul(pipe_name);
-		let _ = unsafe { WaitNamedPipeW(PCWSTR(name.as_ptr()), 2000) };
-		let Ok(file) = (unsafe {
-			CreateFileW(
-				PCWSTR(name.as_ptr()),
-				GENERIC_WRITE,
-				FILE_SHARE_MODE(0),
-				None,
-				OPEN_EXISTING,
-				FILE_ATTRIBUTE_NORMAL,
-				None,
-			)
-		}) else {
 			return;
-		};
-		let _ = unsafe { WriteFile(file, Some(payload.as_bytes()), None, None) };
-		let _ = unsafe { CloseHandle(file) };
-	}
-}
-
-// $XDG_RUNTIME_DIR is user-owned with mode 700, so only the same user (and root) can connect without SO_PEERCRED; the username suffix is belt-and-braces.
-#[cfg(target_os = "linux")]
-mod pipe_unix {
-	use std::{
-		env, fs,
-		io::{Read, Write},
-		os::unix::net::{UnixListener, UnixStream},
-		path::{Path, PathBuf},
-		thread,
-	};
-
-	pub fn socket_path() -> Option<PathBuf> {
-		let dir = env::var("XDG_RUNTIME_DIR").ok()?;
-		let user = env::var("USER").unwrap_or_else(|_| "user".to_string());
-		Some(Path::new(&dir).join(format!("paperback-{user}.sock")))
-	}
-
-	pub fn try_create_server() -> Option<UnixListener> {
-		let path = socket_path()?;
-		// Safe to remove: SingleInstanceChecker already confirmed no other instance.
-		let _ = fs::remove_file(&path);
-		UnixListener::bind(&path).ok()
-	}
-
-	pub fn serve_loop(listener: UnixListener, on_data: impl Fn(Vec<u8>) + Send + 'static) {
-		thread::spawn(move || {
-			for mut stream in listener.incoming().flatten() {
-				let mut buf = vec![0u8; 4096];
-				if let Ok(n) = stream.read(&mut buf)
-					&& n > 0
-				{
-					on_data(buf[..n].to_vec());
-				}
-			}
-		});
-	}
-
-	pub fn send(payload: &str) {
-		let Some(path) = socket_path() else { return };
-		if let Ok(mut stream) = UnixStream::connect(&path) {
-			let _ = stream.write_all(payload.as_bytes());
 		}
+		let Some(action) = WAITING.lock().unwrap().pop_front() else { return };
+		action(window);
 	}
 }
 
-pub struct PipeServer {
-	// Empty: the server thread runs until the process exits, not for this value's lifetime.
-}
-
-fn start_pipe_server(main_window: &Rc<MainWindow>) -> PipeServer {
-	#[cfg(not(target_os = "windows"))]
-	let _ = main_window;
-	#[cfg(windows)]
-	{
-		use patois::t;
-
-		use crate::ipc::{decode_execute_payload, named_pipe_path};
-		let name = named_pipe_path();
-		if let Some(handle) = pipe::try_create_server(&name) {
-			tracing::info!(pipe = %name, "IPC server started");
-			pipe::serve_loop(handle, move |data| {
-				if let Some(cmd) = decode_execute_payload(&data) {
-					call_after(Box::new(move || {
-						if let Some(window) = main_window_from_ptr() {
-							window.handle_ipc_command(cmd);
-						}
-					}));
-					wake_up_idle();
-				}
-			});
-		} else {
-			tracing::error!(pipe = %name, "failed to create IPC server; named pipe already exists");
-			// TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
-			let dialog = MessageDialog::builder(main_window.frame(), &t("Failed to create IPC server"), &t("Warning"))
-				.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconWarning | MessageDialogStyle::Centre)
-				.build();
-			dialog.show_modal();
-		}
-	}
-	#[cfg(target_os = "linux")]
-	{
-		use crate::ipc::decode_execute_payload;
-		if let Some(listener) = pipe_unix::try_create_server() {
-			if let Some(path) = pipe_unix::socket_path() {
-				tracing::info!(socket = %path.display(), "IPC server started");
-			}
-			pipe_unix::serve_loop(listener, move |data| {
-				if let Some(cmd) = decode_execute_payload(&data) {
-					wxdragon::call_after(Box::new(move || {
-						if let Some(window) = main_window_from_ptr() {
-							window.handle_ipc_command(cmd);
-						}
-					}));
-				}
-			});
-		} else {
-			tracing::warn!("XDG_RUNTIME_DIR not set; IPC file forwarding unavailable");
-		}
-	}
-	PipeServer {}
-}
+/// The first copy's door, kept from `main`, where the check for a running copy happens before wxWidgets starts, until the main window can take messages.
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+static DOOR: Mutex<Option<doorbell::Door>> = Mutex::new(None);
 
 #[cfg(any(target_os = "linux", target_os = "windows"))]
-fn send_ipc_command(command: &IpcCommand) {
-	tracing::debug!(?command, "sending IPC command to existing instance");
-	let payload = match command {
-		IpcCommand::Activate => IPC_COMMAND_ACTIVATE.to_string(),
-		#[cfg(any(target_os = "linux", target_os = "windows", test))]
-		IpcCommand::ToggleVisibility => IPC_COMMAND_TOGGLE_VISIBILITY.to_string(),
-		IpcCommand::Open(Target::File(path)) => path.to_string_lossy().to_string(),
-		IpcCommand::Open(Target::Link(link)) => link.clone(),
-	};
-	#[cfg(windows)]
-	{
-		use windows::Win32::UI::WindowsAndMessaging::AllowSetForegroundWindow;
+pub fn keep_door(door: doorbell::Door) {
+	*DOOR.lock().unwrap() = Some(door);
+}
 
-		use crate::ipc::named_pipe_path;
-		let _ = unsafe { AllowSetForegroundWindow(u32::MAX) };
-		pipe::send(&named_pipe_path(), &payload);
-	}
-	#[cfg(target_os = "linux")]
-	pipe_unix::send(&payload);
+/// Copies started while this one runs hand over their files here. Until it's called, their messages wait.
+#[cfg(any(target_os = "linux", target_os = "windows"))]
+fn listen_for_other_copies() {
+	let Some(door) = DOOR.lock().unwrap().take() else { return };
+	door.listen(|message| {
+		when_unlocked(move |window| {
+			for command in commands_from_message(&message) {
+				window.handle_ipc_command(command);
+			}
+		});
+	});
 }
 
 /// Force-closes so normal persistence and audio cleanup run, which the updater's default `process::exit` would skip, without macOS's hide-on-close veto.
@@ -354,8 +172,7 @@ pub fn quit_for_update() {
 	// macOS posts live-region announcements on the next run-loop iteration, so the window stays alive briefly without blocking the UI thread.
 	std::thread::spawn(|| {
 		std::thread::sleep(std::time::Duration::from_secs(2));
-		wxdragon::call_after(Box::new(finish_quit_for_update));
-		wxdragon::wake_up_idle();
+		wx_utils::post_to_ui(finish_quit_for_update);
 	});
 }
 
