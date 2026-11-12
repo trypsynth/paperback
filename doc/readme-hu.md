@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 8f86cb6afe2b098d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback – 1.1-es verzió
 
@@ -122,7 +122,7 @@ Az írásjelekre vonatkozó billentyűparancsok az amerikai billentyűzet billen
 * `Ctrl+G` (macOS: `Cmd+L`): Ugrás sorra.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Ugrás adott százalékra.
 * `Ctrl+P`: Ugrás oldalra (ha az aktuális dokumentum támogatja).
-* `=`: Az aktuális olvasási százalék és oldal bejelentése, például „15%, 30. oldal”. Az oldalszám nélküli dokumentumoknál az oldal kimarad.
+* `=`: Az aktuális olvasási százalék és oldal bejelentése, például „15%, 30. oldal". Az oldalszám nélküli dokumentumoknál az oldal kimarad. A hangoskönyvben az eddigi lejátszási idő és a teljes hossz is megjelenik, például „15%, 1:02:03 / 10:30:00".
 * `Alt+Left` (macOS: `Cmd+[`): Visszalépés a navigációs előzményekben.
 * `Alt+Right` (macOS: `Cmd+]`): Előrelépés a navigációs előzményekben.
 * `[`: Előző szakasz.
@@ -171,6 +171,7 @@ Az írásjelekre vonatkozó billentyűparancsok az amerikai billentyűzet billen
 
 * `Ctrl+Space` (macOS: `Control+Space`, azaz a fizikai Control billentyű, mivel a Cmd+Space a Spotlightot nyitja meg): Az audionarráció lejátszása vagy szüneteltetése.
 * `Ctrl+J`: Ugrás a felvétel egy adott helyére. Írja be így: `1:23:45`, `23:45` vagy `45` másodperc, vagy a `+` vagy `-` jellel módosítsa az aktuális pozícióból, például `+5:00`. A párbeszédpanel mutatja, hogy hol tart a felvételben, és a könyv teljes hossza.
+* `Shift+=`: Az aktuális fejezet lejátszási idejének és hátralévő részének bejelentése, például „3. fejezet, 4:10 / 12:00, 7:50 hátra".
 * `'`: Az audionarráció előretekerése.
 * `;`: Az audionarráció visszatekerése.
 * `Shift+'`: A léptetési időegység növelése.

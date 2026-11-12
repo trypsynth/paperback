@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 8f86cb6afe2b098d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - Version 1.1
 
@@ -122,7 +122,7 @@ Sonderzeichentastenkombinationen sind nach den Tasten einer US-Tastatur benannt.
 * `Ctrl+G` (macOS: `Cmd+L`): Zur Zeile gehen.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Zum Prozentsatz gehen.
 * `Ctrl+P`: Zur Seite gehen (wenn vom aktuellen Dokument unterstützt).
-* `=`: Ankündigung des aktuellen Leseprozentsatzes und der Seitenzahl, z. B. „15 %, Seite 30". Die Seitenzahl wird bei Dokumenten ohne Seitenzahlen weggelassen.
+* `=`: Ankündigung des aktuellen Leseprozentsatzes und der Seitenzahl, z. B. „15 %, Seite 30". Die Seitenzahl wird bei Dokumenten ohne Seitenzahlen weggelassen. In einem Hörbuch werden danach angekündigt, wie weit du fortgeschritten bist und wie lange es dauert, z. B. „15 %, 1:02:03 von 10:30:00".
 * `Alt+Left` (macOS: `Cmd+[`): Zurück in der Navigationshistorie.
 * `Alt+Right` (macOS: `Cmd+]`): Vorwärts in der Navigationshistorie.
 * `[`: Vorheriger Abschnitt.
@@ -171,6 +171,7 @@ Sonderzeichentastenkombinationen sind nach den Tasten einer US-Tastatur benannt.
 
 * `Ctrl+Space` (macOS: `Control+Space`, d. h. die physische Strg-Taste, da Cmd+Space Spotlight öffnet): Audioerzählung abspielen/pausieren.
 * `Ctrl+J`: Zu einer Zeit in der Aufzeichnung gehen. Gib es ein als `1:23:45`, `23:45` oder `45` Sekunden, oder stell `+` oder `-` voran, um dich von deiner aktuellen Position aus zu bewegen, z. B. `+5:00`. Das Dialogfeld zeigt, wie weit du fortgeschritten bist und wie lange das Buch dauert.
+* `Shift+=`: Sagt an, wie weit du in diesem Kapitel vorangekommen bist und wie viel davon noch übrig ist, z. B. „Kapitel 3, 4:10 von 12:00, 7:50 verbleibend".
 * `'`: Audioerzählung vorwärts spulen.
 * `;`: Audioerzählung rückwärts spulen.
 * `Shift+'`: Spulmenge der Audioerzählung erhöhen.

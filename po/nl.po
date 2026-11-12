@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 00:42+0000\n"
+"POT-Creation-Date: 2026-11-12 13:50+0000\n"
 "PO-Revision-Date: 2026-09-22 08:22+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -234,6 +234,11 @@ msgstr "Afspelen van audio is nog niet begonnen."
 #, fuzzy
 msgid "This book doesn't say how long its audio runs, so Paperback can't go to a time in it."
 msgstr "Dit boek geeft niet aan hoe lang het audio duurt, dus Paperback kan niet naar een moment erin gaan."
+
+#. TRANSLATORS: Announced when asking for the time in an audiobook's chapter while the length of its files isn't known, such as in many DAISY books
+#, fuzzy
+msgid "This book doesn't say how long its audio runs."
+msgstr "Dit boek geeft niet aan hoe lang de audio duurt."
 
 #. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
 #, fuzzy
@@ -758,6 +763,16 @@ msgstr "Ga naar &tijd..."
 #, fuzzy
 msgid "Go to a time in the recording"
 msgstr "Naar een moment in de opname gaan"
+
+#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter of an audiobook the reader is, and how much of it is left.
+#, fuzzy
+msgid "Announce &Chapter Time"
+msgstr "Announce &Chapter Time"
+
+#. TRANSLATORS: Status-bar help text for the Announce Chapter Time menu item.
+#, fuzzy
+msgid "Say how far into this chapter you are and how much is left"
+msgstr "Melden hoe ver je in dit hoofdstuk bent en hoeveel er nog te gaan is"
 
 #. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 msgid "Seek Audio &Forward"
@@ -3019,6 +3034,11 @@ msgid "Go to Time..."
 msgstr "Ga naar tijd..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#, fuzzy
+msgid "Announce Chapter Time"
+msgstr "Announce Chapter Time"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Forward"
 msgstr "Audio vooruitspoelen"
 
@@ -3551,6 +3571,16 @@ msgstr "Geen verwerker gevonden voor extensie: .{}"
 #. TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
 msgid "All parsers failed for extension: .{}"
 msgstr "Alle verwerkers zijn mislukt voor extensie: .{}"
+
+#. TRANSLATORS: Announced with how far into an audiobook's chapter the reader is: the time left in it; {} is written like 12:05
+#, fuzzy
+msgid "{} left"
+msgstr "{} resterend"
+
+#. TRANSLATORS: Announced for how far into an audiobook the reader is: the first {} is the time played so far and the second how long it runs, both written like 1:02:03
+#, fuzzy
+msgid "{} of {}"
+msgstr "{} van {}"
 
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 msgid "image"

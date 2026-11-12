@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 8f86cb6afe2b098d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versie 1.1
 
@@ -122,7 +122,7 @@ Leestekenssneltoetsen krijgen hun naam van de toetsen van een amerikaans toetsen
 * `Ctrl+G` (macOS: `Cmd+L`): Ga naar regel.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Ga naar percentage.
 * `Ctrl+P`: Ga naar pagina (indien ondersteund door het huidige document).
-* `=`: Je huidige leespercentage en pagina melden, bijvoorbeeld "15%, pagina 30". Bij documenten zonder paginanummers wordt de pagina weggelaten.
+* `=`: Je huidige leespercentage en pagina melden, bijvoorbeeld "15%, pagina 30". Bij documenten zonder paginanummers wordt de pagina weggelaten. In een audioboek volgen je voortgang en de totale duur erna, bijvoorbeeld "15%, 1:02:03 van 10:30:00".
 * `Alt+Links` (macOS: `Cmd+[`): Terug in navigatiegeschiedenis.
 * `Alt+Rechts` (macOS: `Cmd+]`): Vooruit in navigatiegeschiedenis.
 * `[`: Vorige sectie.
@@ -171,6 +171,7 @@ Leestekenssneltoetsen krijgen hun naam van de toetsen van een amerikaans toetsen
 
 * `Ctrl+Spatie` (macOS: `Control+Spatie`, oftewel de fysieke Control-toets, omdat Cmd+Spatie Spotlight opent): Audio afspelen/pauzeren.
 * `Ctrl+J`: Naar een bepaald moment in de opname gaan. Typ het als `1:23:45`, `23:45` of `45` seconden, of zet `+` of `-` ervoor om vanuit jouw huidige positie te verplaatsen, bijvoorbeeld `+5:00`. Het venster toont hoe ver je bent en hoe lang het boek duurt.
+* `Shift+=`: Melden hoe ver je in dit hoofdstuk bent en hoeveel er nog over is, bijvoorbeeld "Hoofdstuk 3, 4:10 van 12:00, 7:50 resterend".
 * `'`: Audio vooruitspoelen.
 * `;`: Audio terugspoelen.
 * `Shift+'`: De audiospoelstap vergroten.
