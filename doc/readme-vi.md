@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 622feff4c57acdc0; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 8f86cb6afe2b098d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - phiên bản 1.1
 
@@ -49,7 +49,7 @@ Nếu JAWS không nói gì khi bạn nhấn một phím mà nó sẽ báo cáo �
 Paperback hỗ trợ các định dạng và phần mở rộng sau:
 
 * Tệp Braille Sẵn sàng và sách Portable Embosser Format, được dịch ngược lại thành bản in với bảng braille bạn chọn (`.brf`, `.pef`)
-* Lưu trữ sách truyện tranh (`.cbz`)
+* Lưu trữ sách truyện tranh (`.cbz`, `.cbr`)
 * Tệp trợ giúp CHM (`.chm`)
 * Sách DAISY (`.opf`, `.zip`)
 * Sách EPUB (`.epub`)
@@ -67,6 +67,7 @@ Paperback hỗ trợ các định dạng và phần mở rộng sau:
 * Tệp trợ giúp và sách OS/2, cùng với hình ảnh của chúng (`.inf`, `.hlp`)
 * Tài liệu PDF (`.pdf`)
 * Trình chiếu PowerPoint (`.pptx`, `.pptm`, `.ppt`)
+* Lưu trữ RAR của sách, được mở như zip, với danh sách để chọn khi một tệp chứa nhiều sách (`.rar`)
 * Tài liệu reStructuredText (`.rst`, `.rest`)
 * Tài liệu RTF (`.rtf`)
 * Tài liệu Windows Write (`.wri`)

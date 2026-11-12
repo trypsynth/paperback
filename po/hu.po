@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-11 17:53+0000\n"
+"POT-Creation-Date: 2026-11-12 00:42+0000\n"
 "PO-Revision-Date: 2026-10-21 12:00+0200\n"
 "Last-Translator: Torma Zsolt <torma.zsolt@gmail.com>\n"
 "Language-Team: Torma Zsolt <torma.zsolt@gmail.com>\n"
@@ -3205,10 +3205,6 @@ msgstr "[Csak kép. Ezen az oldalon nincs olvasható szöveg.]"
 msgid "Volume {}"
 msgstr "{}. kötet"
 
-#. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
-msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
-msgstr "A Paperback nem tudja olvasni a RAR formátumú képregényarchívumokat. Csomagolja újra .cbz formátumba, hogy itt olvashassa."
-
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 msgid "Failed to parse comic archive: {}"
 msgstr "Nem sikerült feldolgozni a képregényarchívumot: {}"
@@ -3558,6 +3554,10 @@ msgstr "Egyik feldolgozó sem tudta megnyitni ezt a kiterjesztést: .{}"
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 msgid "image"
 msgstr "kép"
+
+#, fuzzy
+msgid "Paperback can't open a RAR archive split into parts. Join the parts into one archive to read it here."
+msgstr "A Paperback nem tudja megnyitni a több részre felosztott RAR-archívumot. A dokumentum olvasásához egyesítse az archívum részfájljait."
 
 msgid "Current version is not a valid semver."
 msgstr "Az aktuális verziószám érvénytelen."
@@ -5109,6 +5109,9 @@ msgstr "Lejátszási sebesség kiválasztása"
 #: kt swift
 msgid "Readability"
 msgstr "Olvashatóság"
+
+#~ msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
+#~ msgstr "A Paperback nem tudja olvasni a RAR formátumú képregényarchívumokat. Csomagolja újra .cbz formátumba, hogy itt olvashassa."
 
 #~ msgid "&Join wrapped lines into paragraphs in PDFs"
 #~ msgstr "Tördelt sorok &egyesítése bekezdésekké PDF-ekben"

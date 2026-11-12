@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-11 17:53+0000\n"
+"POT-Creation-Date: 2026-11-12 00:42+0000\n"
 "PO-Revision-Date: 2026-11-04 14:11+0100\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
@@ -3215,10 +3215,6 @@ msgstr "[Nur Bild. Diese Seite hat keinen lesbaren Text.]"
 msgid "Volume {}"
 msgstr "Band {}"
 
-#. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
-msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
-msgstr "Paperback kann RAR-Comic-Archive nicht lesen. Packe die Datei als .cbz neu, um sie hier lesen zu können."
-
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 msgid "Failed to parse comic archive: {}"
 msgstr "Das Comic-Archiv konnte nicht verarbeitet werden: {}"
@@ -3568,6 +3564,10 @@ msgstr "Alle Parser für die Erweiterung .{} fehlgeschlagen"
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 msgid "image"
 msgstr "bild"
+
+#, fuzzy
+msgid "Paperback can't open a RAR archive split into parts. Join the parts into one archive to read it here."
+msgstr "Paperback kann ein in mehrere Teile aufgeteiltes RAR-Archiv nicht öffnen. Füge die Teile zu einem Archiv zusammen, um es hier zu lesen."
 
 msgid "Current version is not a valid semver."
 msgstr "Aktuelle Version ist keine gültige Semver."
@@ -5119,6 +5119,9 @@ msgstr "Audiowiedergabegeschwindigkeit wählen"
 #: kt swift
 msgid "Readability"
 msgstr "Lesbarkeit"
+
+#~ msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
+#~ msgstr "Paperback kann RAR-Comic-Archive nicht lesen. Packe die Datei als .cbz neu, um sie hier lesen zu können."
 
 #~ msgid "&Join wrapped lines into paragraphs in PDFs"
 #~ msgstr "Zeilenumbrüche in PDF-Dateien zu Absätzen &zusammenführen"

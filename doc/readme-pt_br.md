@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 622feff4c57acdc0; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,5d054454,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 8f86cb6afe2b098d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,00232738,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versão 1.1
 
@@ -49,7 +49,7 @@ Se o JAWS não disser nada quando você pressionar uma tecla que deveria relatar
 O Paperback oferece suporte aos seguintes formatos e extensões:
 
 * Arquivos Braille Ready e livros Portable Embosser Format, retrotraduzidos para impressão com a tabela braille que você escolher (`.brf`, `.pef`)
-* Arquivos de histórias em quadrinhos (`.cbz`)
+* Arquivos de histórias em quadrinhos (`.cbz`, `.cbr`)
 * Arquivos de ajuda CHM (`.chm`)
 * Livros DAISY (`.opf`, `.zip`)
 * Livros EPUB (`.epub`)
@@ -67,6 +67,7 @@ O Paperback oferece suporte aos seguintes formatos e extensões:
 * Arquivos de ajuda e livros OS/2, com suas imagens (`.inf`, `.hlp`)
 * Documentos PDF (`.pdf`)
 * Apresentações PowerPoint (`.pptx`, `.pptm`, `.ppt`)
+* Arquivos RAR de livros, que abrem como um zip, com uma lista para escolher quando há vários (`.rar`)
 * Documentos reStructuredText (`.rst`, `.rest`)
 * Documentos RTF (`.rtf`)
 * Documentos Windows Write (`.wri`)

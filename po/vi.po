@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-11 17:53+0000\n"
+"POT-Creation-Date: 2026-11-12 00:42+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -3776,11 +3776,6 @@ msgstr "[Chỉ hình ảnh. Trang này không có văn bản để đọc.]"
 msgid "Volume {}"
 msgstr "Tập {}"
 
-#. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
-#, fuzzy
-msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
-msgstr "Paperback không thể đọc các kho lưu trữ truyện tranh RAR trên thiết bị này. Đóng gói lại thành .cbz để đọc tại đây."
-
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 #, fuzzy
 msgid "Failed to parse comic archive: {}"
@@ -4212,6 +4207,10 @@ msgstr "Tất cả các trình phân tích cú pháp đều không thành công 
 #, fuzzy
 msgid "image"
 msgstr "image"
+
+#, fuzzy
+msgid "Paperback can't open a RAR archive split into parts. Join the parts into one archive to read it here."
+msgstr "Paperback không thể mở tệp lưu trữ RAR được chia thành nhiều phần. Hãy gộp các phần lại thành một tệp lưu trữ để đọc tại đây."
 
 #, fuzzy
 msgid "Current version is not a valid semver."
@@ -6096,6 +6095,10 @@ msgstr "Chọn tốc độ âm thanh"
 #, fuzzy
 msgid "Readability"
 msgstr "Khả năng đọc"
+
+#, fuzzy
+#~ msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
+#~ msgstr "Paperback không thể đọc các kho lưu trữ truyện tranh RAR trên thiết bị này. Đóng gói lại thành .cbz để đọc tại đây."
 
 #, fuzzy
 #~ msgid "&Join wrapped lines into paragraphs in PDFs"
