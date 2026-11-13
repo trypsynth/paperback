@@ -39,6 +39,8 @@ const TABLES: &[NationalAscii] = &[
 	NationalAscii { name: "SV_SE_CX", languages: &["sv"], encoding: Encoding::Windows1252, cells: " a,b.k;l^cif/msp'e:h*o!r~djgäntq_å?ê-u(v@îöë§xèç\"û+ü)z=à|ôwï#yùé" },
 	// Norwegian, Braillo 047
 	NationalAscii { name: "BRAILLO_6DOT_047_01", languages: &["no", "nb", "nn"], encoding: Encoding::Windows1252, cells: " A,B.K;L`CIF/MSP'E:H@O!RaDJG[NTQ*]?r-U\"Vqm\\h&Xli_e%u$Z=k|dWg#Ynj" },
+	// North American, which Slovak and Czech files are written in although their tables define the same characters as other cells
+	NationalAscii { name: "NABCC", languages: &["sk", "cs", "hu"], encoding: Encoding::Windows1252, cells: " A1B'K2L@CIF/MSP\"E3H9O6R^DJG>NTQ,*5<-U8V.%[$+X!&;:4\\0Z7(_?W]#Y)=" },
 ];
 
 /// The upper half of code page 850, DOS Western European, which Danish braille files are written in.
@@ -75,7 +77,7 @@ impl NationalAscii {
 		}
 	}
 
-	/// The cell each character stands for. A letter the table writes in one case stands for the same cell in the other, as files are written in either, but Norwegian's capitals and small letters are different cells.
+	/// The cell each character stands for. A letter the table writes in one case stands for the same cell in the other, as files are written in either, but Norwegian's capitals and small letters are different cells. A NUL, a tab or a vertical tab is the blank cell, as in a table's own braille ASCII, so a stray one doesn't leave this one a character unread.
 	pub fn cells(&self) -> HashMap<char, char> {
 		let mut cells = HashMap::new();
 		for (dots, character) in self.cells.chars().enumerate() {
@@ -95,6 +97,9 @@ impl NationalAscii {
 			})
 			.collect();
 		cells.extend(same_letter);
+		for blank in ['\0', '\t', '\x0b'] {
+			cells.insert(blank, '\u{2800}');
+		}
 		cells
 	}
 }

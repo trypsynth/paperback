@@ -119,6 +119,107 @@ fn reads_danish_written_in_code_page_850() {
 	assert_eq!(document.buffer.content, "det skal være en bog om sø og åer.\n");
 }
 
+/// French braille ASCII writes the digits as themselves, as `fr-bfu-comp6.utb` defines them, rather than as the lowered North American cells.
+#[test]
+fn reads_digits_in_the_braille_ascii_of_the_tables_country() {
+	let document = parse_with(&BrfParser, "fr.brf", "000 morts\n", |context| ParserContext {
+		braille_table: "fr-bfu-comp6.utb",
+		..context
+	})
+	.unwrap();
+	assert_eq!(document.buffer.content, "000 morts\n");
+}
+
+/// Slovak braille files are written in North American Braille ASCII, although `sk-g1.ctb` defines `,` as dot 2 and `*` as dots 3 and 5 and has no `display` rules.
+#[test]
+fn reads_slovak_files_as_north_american_braille_ascii() {
+	let document = parse_with(&BrfParser, "sk.brf", ",betsabe3 \\a!ko sk+:an* kr*sa\n", |context| ParserContext {
+		braille_table: "sk-g1.ctb",
+		..context
+	})
+	.unwrap();
+	assert_eq!(document.buffer.content, "Betsabe: ťažko skúšaná krása\n");
+}
+
+/// A Czech file in North American Braille ASCII reads as one, rather than in Dotify's Czech braille ASCII, as `cs-g1.ctb` defines the same cells as `sk-g1.ctb` for it; the letters here are shared by both languages.
+#[test]
+fn reads_czech_files_as_north_american_braille_ascii() {
+	let document = parse_with(&BrfParser, "cs.brf", ",autor3 ,angela ,hunt1 \\a!ko sk+:an* kr*sa\n", |context| {
+		ParserContext { braille_table: "cs-g1.ctb", ..context }
+	})
+	.unwrap();
+	assert_eq!(document.buffer.content, "Autor: Angela Hunt, ťažko skúšaná krása\n");
+}
+
+/// Hungarian braille files are written in North American Braille ASCII, although `hu-hu-g1.ctb` writes `1` as dots 1 and 6 and `@` as dots 4 and 5, and has no cell for `*`. This is a library book's title page, in capitals with `@ [ ( )` for á ó ü ű.
+#[test]
+fn reads_hungarian_files_as_north_american_braille_ascii() {
+	let title_page = concat!(
+		"    .ARTHUR .CONAN .DOYLE3\r\n",
+		"      .SHERLOCK .HOLMES\r\n",
+		"         EML*KIRATAI\r\n",
+		"   !.B)N(?I ELBE:*L*SEKZ\r\n",
+		"\r\n",
+		"    .KRITERION .KQ$VKIAD[1\r\n",
+		"       .BUKAREST1 #AIGF\r\n",
+		"         .FORD/TOTTA3\r\n",
+		"        .KATONA .TAM@S\r\n",
+	);
+	let document = parse_with(&BrfParser, "hu.brf", title_page, |context| ParserContext {
+		braille_table: "hu-hu-g1.ctb",
+		..context
+	})
+	.unwrap();
+	assert_eq!(
+		document.buffer.content,
+		"Arthur Conan Doyle:\nSherlock Holmes\nemlékiratai\n(Bűnügyi elbeszélések)\nKriterion Könyvkiadó,\nBukarest, 1976\nFordította:\nKatona Tamás\n"
+	);
+}
+
+/// Other Hungarian books are written in lowercase, with `` ` { } `` for á ó ő, as on this library book's title page.
+#[test]
+fn reads_lowercase_hungarian_files_as_north_american_braille_ascii() {
+	let title_page = concat!(
+		"   .alan .alexander .milne\r\n",
+		"\r\n",
+		"          .micimack{\r\n",
+		"\r\n",
+		".ford/totta3 .karinthy .fri?es\r\n",
+		"\r\n",
+		"       .m{ra .kq$vkiad{\r\n",
+		"\r\n",
+		"..isbn3 #igh-#ifc-#dae-#hea-#f\r\n",
+		"\r\n",
+		"      .braille-v`lto<at\r\n",
+		"        ..mv?o:3 #bjbb\r\n",
+		"\r\n",
+		"          k*tkqtetes\r\n",
+		"\r\n",
+		"         .els} kqtet\r\n",
+	);
+	let document = parse_with(&BrfParser, "hu.brf", title_page, |context| ParserContext {
+		braille_table: "hu-hu-g1.ctb",
+		..context
+	})
+	.unwrap();
+	assert_eq!(
+		document.buffer.content,
+		"Alan Alexander Milne\nMicimackó\nFordította: Karinthy Frigyes\nMóra Könyvkiadó\nISBN: 978-963-415-851-6\nBraille-változat\nMVGYOSZ: 2022\nkétkötetes\nElső kötet\n"
+	);
+}
+
+/// A table's braille ASCII reads a NUL or a tab as the blank cell, so another country's has to as well, or a single one on a title page or a blank line would leave it a character unread and lose it the file.
+#[test]
+fn reads_nul_and_tabs_as_blank_in_another_countrys_braille_ascii() {
+	let line = ".:*P ]:I *G3 .@D@M1 .*VA *S .?URI +JRA ITT VOLT1 DE NEM :[LT SEMMIT'\n";
+	let document = parse_with(&BrfParser, "hu.brf", format!("\0\n{line}\t\n{line}"), |context| ParserContext {
+		braille_table: "hu-hu-g1.ctb",
+		..context
+	})
+	.unwrap();
+	assert!(document.buffer.content.contains("Szép őszi ég: Ádám, Éva"), "{:?}", document.buffer.content);
+}
+
 /// UEB's tables display a capital A as the computer braille cell with dot 7, which is no six-dot braille file's.
 #[test]
 fn reads_capitals_as_north_american_braille_ascii_for_english() {
