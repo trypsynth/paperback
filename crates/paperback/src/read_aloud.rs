@@ -34,8 +34,8 @@ const MAX_VOLUME: f32 = 2.0;
 /// What happened in reading since the last tick.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Followed {
-	/// A paragraph started, for the caret to move to.
-	Paragraph(DocPos),
+	/// A word started, or a paragraph when the engine doesn't say where its words are, for the caret to move to.
+	Word(DocPos),
 	/// The last paragraph has been read.
 	End,
 }
@@ -271,7 +271,7 @@ impl Speaker {
 		self.moved = None;
 	}
 
-	/// Prepares the paragraphs ahead, and returns what the caret should follow: a paragraph that has just started, or the end, once. Call it on every tick for the document being read. Nothing is followed while the user is moving the caret.
+	/// Prepares the paragraphs ahead, and returns what the caret should follow: a word that has just started, or the end, once. Call it on every tick for the document being read. Nothing is followed while the user is moving the caret.
 	pub fn pump(&mut self, session: &DocumentSession) -> Option<Followed> {
 		self.player.as_ref()?;
 		self.read_aloud.refill(session);
@@ -286,11 +286,13 @@ impl Speaker {
 			self.player = None;
 			return Some(Followed::End);
 		}
-		if progress.paragraph == self.followed {
+		// The caret follows each word, so pausing and moving it goes on from the word being read rather than from where its paragraph starts.
+		let at = progress.word.or(progress.paragraph);
+		if at == self.followed {
 			return None;
 		}
-		self.followed = progress.paragraph;
-		progress.paragraph.map(Followed::Paragraph)
+		self.followed = at;
+		at.map(Followed::Word)
 	}
 
 	/// Returns the new volume, and whether it was already at its limit.

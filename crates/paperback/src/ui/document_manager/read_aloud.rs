@@ -217,7 +217,7 @@ impl DocumentManager {
 		}
 	}
 
-	/// Moves the caret to each paragraph as it starts, and past the last one once it's read, so starting again doesn't repeat it. When the user moves the caret while reading, reading goes on from there. Called on its own short timer.
+	/// Moves the caret to each word as it's spoken, and past the last paragraph once it's read, so starting again doesn't repeat it. When the user moves the caret while reading, reading goes on from there. Called on its own short timer.
 	pub fn pump_read_aloud(&mut self) {
 		// Not `reading_tab_index`, since that stops counting the document once reading has finished, and finishing is what this has to notice.
 		let Some(index) =
@@ -236,7 +236,7 @@ impl DocumentManager {
 			speaker.read_from_caret(&tab.session, moved_to, &config, &tab.file_path.to_string_lossy(), paused);
 		}
 		match speaker.pump(&tab.session) {
-			Some(Followed::Paragraph(position)) => {
+			Some(Followed::Word(position)) => {
 				if position != caret {
 					let local = tab.window.to_local(position);
 					tab.text_ctrl.set_insertion_point(local);
