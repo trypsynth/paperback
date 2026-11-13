@@ -77,7 +77,7 @@ impl NationalAscii {
 		}
 	}
 
-	/// The cell each character stands for. A letter the table writes in one case stands for the same cell in the other, as files are written in either, but Norwegian's capitals and small letters are different cells.
+	/// The cell each character stands for. A letter the table writes in one case stands for the same cell in the other, as files are written in either, but Norwegian's capitals and small letters are different cells. A NUL, a tab or a vertical tab is the blank cell, as in a table's own braille ASCII, so a stray one doesn't leave this one a character unread.
 	pub fn cells(&self) -> HashMap<char, char> {
 		let mut cells = HashMap::new();
 		for (dots, character) in self.cells.chars().enumerate() {
@@ -97,6 +97,9 @@ impl NationalAscii {
 			})
 			.collect();
 		cells.extend(same_letter);
+		for blank in ['\0', '\t', '\x0b'] {
+			cells.insert(blank, '\u{2800}');
+		}
 		cells
 	}
 }

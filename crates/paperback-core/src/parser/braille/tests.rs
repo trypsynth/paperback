@@ -164,6 +164,18 @@ fn reads_hungarian_files_as_north_american_braille_ascii() {
 	assert_eq!(document.buffer.content, "Szép őszi ég: Ádám, Éva és Gyuri újra itt volt, de nem szólt semmit.\n");
 }
 
+/// A table's braille ASCII reads a NUL or a tab as the blank cell, so another country's has to as well, or a single one on a title page or a blank line would leave it a character unread and lose it the file.
+#[test]
+fn reads_nul_and_tabs_as_blank_in_another_countrys_braille_ascii() {
+	let line = ".:*P ]:I *G3 .@D@M1 .*VA *S .?URI +JRA ITT VOLT1 DE NEM :[LT SEMMIT'\n";
+	let document = parse_with(&BrfParser, "hu.brf", format!("\0\n{line}\t\n{line}"), |context| ParserContext {
+		braille_table: "hu-hu-g1.ctb",
+		..context
+	})
+	.unwrap();
+	assert!(document.buffer.content.contains("Szép őszi ég: Ádám, Éva"), "{:?}", document.buffer.content);
+}
+
 /// UEB's tables display a capital A as the computer braille cell with dot 7, which is no six-dot braille file's.
 #[test]
 fn reads_capitals_as_north_american_braille_ascii_for_english() {
