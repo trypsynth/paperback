@@ -1293,7 +1293,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -2525,7 +2525,7 @@ dependencies = [
  "sxd-xpath-no-unsafe",
  "unicode-script",
  "yaml-rust",
- "zip 9.5.0",
+ "zip",
 ]
 
 [[package]]
@@ -2983,7 +2983,7 @@ dependencies = [
  "sha1 0.11.0",
  "sha2 0.11.1",
  "thiserror 2.0.21",
- "zip 9.5.0",
+ "zip",
 ]
 
 [[package]]
@@ -3143,7 +3143,7 @@ dependencies = [
  "windows-core",
  "wx-utils",
  "wxdragon",
- "zip 9.5.0",
+ "zip",
 ]
 
 [[package]]
@@ -3204,7 +3204,7 @@ dependencies = [
  "ureq",
  "web_atoms",
  "windows",
- "zip 9.5.0",
+ "zip",
 ]
 
 [[package]]
@@ -3254,9 +3254,9 @@ checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "patois"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65bc7431eaf0d46219e3142a741439181c9fb97c85e15e52ff99d66728b50c05"
+checksum = "b72128cb4b0781eb385d0d97364376380f852337833a8db1f4ae054d0026aec4"
 dependencies = [
  "inventory",
  "patois-macros",
@@ -3275,9 +3275,9 @@ dependencies = [
 
 [[package]]
 name = "patois-macros"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0908224da8a29773f5d9f668a7fd1f8c8476f208ad845db0aac002e8ba3412e"
+checksum = "76e924bc5d3bff22fe4cccc1a7cbc5d15b1ed73443545cf447b4a1a92abc79ef"
 dependencies = [
  "proc-macro2 1.0.107",
  "quote 1.0.47",
@@ -4061,7 +4061,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4397,9 +4397,9 @@ dependencies = [
 
 [[package]]
 name = "shipfitter"
-version = "0.2.4"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91ac0595a8daf8c8e137fd328a71fbe7a61dfc2721dc676a17060cf448731300"
+checksum = "f205c1d80f14d30b8711f5c196c0691f5e44a8874b76abaa4b84de475d78c093"
 dependencies = [
  "embed-manifest",
  "finl_unicode",
@@ -4412,7 +4412,7 @@ dependencies = [
  "ureq",
  "walkdir",
  "winres",
- "zip 8.6.0",
+ "zip",
 ]
 
 [[package]]
@@ -4895,7 +4895,7 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -5261,12 +5261,6 @@ name = "typed-arena"
 version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6af6ae20167a9ece4bcb41af5b80f8a1f1df981f6391189ce00fd257af04126a"
-
-[[package]]
-name = "typed-path"
-version = "0.12.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54ec2755506471f54baf5e4bb5499d8e510cc1caf271270e778a736bd2d7336c"
 
 [[package]]
 name = "typed-path"
@@ -5778,7 +5772,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -6266,20 +6260,6 @@ dependencies = [
 
 [[package]]
 name = "zip"
-version = "8.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d04a6b5381502aa6087c94c669499eb1602eb9c5e8198e534de571f7154809b"
-dependencies = [
- "crc32fast",
- "flate2",
- "indexmap",
- "memchr",
- "typed-path 0.12.4",
- "zopfli",
-]
-
-[[package]]
-name = "zip"
 version = "9.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0700e6c427aff64acdbf02e85fbfd946c2ee12319d1af013092f3a2178914ff8"
@@ -6297,7 +6277,7 @@ dependencies = [
  "nix",
  "pbkdf2 0.13.0",
  "sha1 0.11.0",
- "typed-path 0.13.0",
+ "typed-path",
  "windows-sys 0.61.2",
  "zeroize",
  "zopfli",
