@@ -173,7 +173,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Sarjakuvapaketit (<code>.cbz</code>, <code>.cbr</code>)</li>
 <li>CHM-ohjetiedostot (<code>.chm</code>)</li>
 <li>DAISY-kirjat (<code>.opf</code>, <code>.zip</code>)</li>
-<li>EPUB-kirjat (<code>.epub</code>)</li>
+<li>eBraille-kirjat, joiden tavallinen teksti luetaan, jos sellainen on saatavilla. Muussa tapauksessa pistekirjoitus muunnetaan tavalliseksi tekstiksi kirjassa määritetyn pistetaulukon avulla (<code>.ebrl</code> tai pakkaamattoman kirjan <code>.opf</code>-tiedosto)</li>
+<li>EPUB-kirjat (<code>.epub</code> tai pakkaamattoman kirjan <code>.opf</code>-tiedosto)</li>
 <li>FB2-e-kirjat (<code>.fb2</code>)</li>
 <li>GNU Info -ohjeet (<code>.info</code>, myös gzip-pakattuina, sekä useaan tiedostoon jaetut ohjeet, jotka voidaan avata mistä tahansa osasta)</li>
 <li>HTML-asiakirjat (<code>.htm</code>, <code>.html</code>, <code>.xhtml</code>)</li>
@@ -239,7 +240,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+G</code> (macOSissa <code>Cmd+L</code>): Siirry riville.
 §* <code>Ctrl+Vaihto+G</code> (macOSissa <code>Cmd+Vaihto+L</code>): Siirry prosenttiin.</li>
 <li><code>Ctrl+P</code>: Siirry sivulle (jos asiakirja tukee sitä).</li>
-<li><code>=</code>: Ilmoittaa asiakirjan lukukohdan prosentteina sekä sivunumeron (esim. ”15 %, sivu 30”). Sivunumeroa ei ilmoiteta, jos asiakirjassa ei niitä ole.</li>
+<li><code>=</code>: Ilmoita asiakirjan sivunumero ja lukukohta prosentteina (esim. ”15 %, sivu 30”). Sivunumeroita ei ilmoiteta, jos asiakirjassa ei niitä ole. Äänikirjoissa ilmoitetaan lisäksi nykyinen toistokohta ja kirjan kokonaiskesto, esimerkiksi ”15 %, 1:02:03 / 10:30:00”.</li>
 <li><code>Alt+Vasen nuoli</code> (macOSissa <code>Cmd+[</code>): Siirry taaksepäin navigointihistoriassa.</li>
 <li><code>Alt+Oikea nuoli</code> (macOSissa <code>Cmd+]</code>): Siirry eteenpäin navigointihistoriassa.</li>
 <li><code>[</code>: Edellinen luku.</li>
@@ -288,6 +289,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li><code>Ctrl+Välilyönti</code> (macOSissa <code>Control+Välilyönti</code> eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.</li>
 <li><code>Ctrl+J</code>: Siirry tiettyyn äänitteen kohtaan. Anna aika muodossa <code>1:23:45</code>, <code>23:45</code> tai <code>45</code> sekuntia. Voit myös lisätä ajan eteen <code>+</code>- tai <code>-</code>-merkin, jolloin nykyisestä toistokohdasta siirrytään eteen- tai taaksepäin, esimerkiksi <code>+5:00</code>. Valintaikkunassa näytetään nykyinen toistokohta ja kirjan kokonaiskesto.</li>
+<li><code>Vaihto+=</code>: Ilmoita nykyisen luvun kulunut ja jäljellä oleva toistoaika, esimerkiksi ”Luku 3, 4:10 / 12:00, jäljellä 7:50”.</li>
 <li><code>'</code>: Kelaa äänitettä eteenpäin.</li>
 <li><code>;</code>: Kelaa äänitettä taaksepäin.</li>
 <li><code>Vaihto+'</code>: Pidennä kelauksen aikasiirtymää.</li>
