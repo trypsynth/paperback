@@ -3,6 +3,7 @@ use crate::document::{Document, DocumentBuffer, Marker};
 
 mod accessors;
 mod audio;
+mod chapter;
 mod find_all;
 mod formula;
 mod images;

@@ -10,6 +10,7 @@ use crate::{
 };
 
 mod audio;
+mod chapter;
 mod export;
 mod find_all;
 mod images;
