@@ -119,6 +119,38 @@ fn reads_danish_written_in_code_page_850() {
 	assert_eq!(document.buffer.content, "det skal være en bog om sø og åer.\n");
 }
 
+/// French braille ASCII writes the digits as themselves, as `fr-bfu-comp6.utb` defines them, rather than as the lowered North American cells.
+#[test]
+fn reads_digits_in_the_braille_ascii_of_the_tables_country() {
+	let document = parse_with(&BrfParser, "fr.brf", "000 morts\n", |context| ParserContext {
+		braille_table: "fr-bfu-comp6.utb",
+		..context
+	})
+	.unwrap();
+	assert_eq!(document.buffer.content, "000 morts\n");
+}
+
+/// Slovak braille files are written in North American Braille ASCII, although `sk-g1.ctb` defines `,` as dot 2 and `*` as dots 3 and 5 and has no `display` rules.
+#[test]
+fn reads_slovak_files_as_north_american_braille_ascii() {
+	let document = parse_with(&BrfParser, "sk.brf", ",betsabe3 \\a!ko sk+:an* kr*sa\n", |context| ParserContext {
+		braille_table: "sk-g1.ctb",
+		..context
+	})
+	.unwrap();
+	assert_eq!(document.buffer.content, "Betsabe: ťažko skúšaná krása\n");
+}
+
+/// A Czech file in North American Braille ASCII reads as one, rather than in Dotify's Czech braille ASCII, as `cs-g1.ctb` defines the same cells as `sk-g1.ctb` for it; the letters here are shared by both languages.
+#[test]
+fn reads_czech_files_as_north_american_braille_ascii() {
+	let document = parse_with(&BrfParser, "cs.brf", ",autor3 ,angela ,hunt1 \\a!ko sk+:an* kr*sa\n", |context| {
+		ParserContext { braille_table: "cs-g1.ctb", ..context }
+	})
+	.unwrap();
+	assert_eq!(document.buffer.content, "Autor: Angela Hunt, ťažko skúšaná krása\n");
+}
+
 /// UEB's tables display a capital A as the computer braille cell with dot 7, which is no six-dot braille file's.
 #[test]
 fn reads_capitals_as_north_american_braille_ascii_for_english() {
