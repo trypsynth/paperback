@@ -3,6 +3,7 @@
 //! Both hold braille a translator already produced, wrapped to the embosser's line length and page height. The parser joins the wrapped lines back into paragraphs, back-translates each with the reader's braille table through louis-rs, and keeps a marker at the start of every embossed page.
 
 mod document;
+mod national_ascii;
 mod tables;
 
 use std::{borrow::Cow, collections::HashMap, fs};
@@ -14,6 +15,7 @@ use rayon::prelude::*;
 use roxmltree::{Document as XmlDocument, Node};
 
 pub(crate) use self::document::back_translate_document;
+use self::national_ascii::NationalAscii;
 pub use self::tables::{
 	BrailleCode, BrailleTable, DEFAULT_TABLE, back_translator, braille_tables, chosen_table, table_for_code, table_name,
 };
@@ -60,7 +62,7 @@ impl Parser for BrfParser {
 		let bytes =
 			fs::read(&context.file_path).with_context(|| format!("Failed to open BRF file '{}'", context.file_path))?;
 		let (translator, braille_ascii) = tables::back_translator(context.braille_table)?;
-		let pages = brf_pages(&bytes, &braille_ascii);
+		let pages = likeliest_pages(&bytes, &braille_ascii, &translator, context);
 		let buffer = back_translate(&pages, &translator, context);
 		tracing::debug!(path = %context.file_path, pages = pages.len(), "parsed BRF file");
 		let mut document = Document::new().with_title(extract_title_from_path(&context.file_path));
@@ -71,10 +73,8 @@ impl Parser for BrfParser {
 
 /// A BRF page ends with a form feed, and an embosser's last one often leaves an empty page after it. Lines end with a line feed, a carriage return and a line feed, or, in older files, a carriage return alone.
 ///
-/// `braille_ascii` is the table's own braille ASCII, which beyond the North American one uses letters outside ASCII, so a file is read as UTF-8 when it is valid UTF-8, and as Windows-1252 otherwise. A character the table has no cell for is read as North American Braille ASCII. Some files named `.brf` hold Unicode braille instead, as the Internet Archive's braille music does, and those cells are read as they are.
-fn brf_pages(bytes: &[u8], braille_ascii: &HashMap<char, char>) -> Vec<Page> {
-	let text =
-		std::str::from_utf8(bytes).map_or_else(|_| WINDOWS_1252.decode_without_bom_handling(bytes).0, Cow::Borrowed);
+/// `braille_ascii` is the braille ASCII the file is read in. A character it has no cell for is read as North American Braille ASCII. Some files named `.brf` hold Unicode braille instead, as the Internet Archive's braille music does, and those cells are read as they are.
+fn brf_pages(text: &str, braille_ascii: &HashMap<char, char>) -> Vec<Page> {
 	let characters: Vec<char> = text.chars().collect();
 	let mut text = String::with_capacity(characters.len());
 	for (index, &character) in characters.iter().enumerate() {
@@ -96,6 +96,122 @@ fn brf_pages(bytes: &[u8], braille_ascii: &HashMap<char, char>) -> Vec<Page> {
 		pages.pop();
 	}
 	pages
+}
+
+/// A table's own braille ASCII uses letters outside ASCII beyond the North American one, so a file is read as UTF-8 when it is valid UTF-8, and as Windows-1252 otherwise.
+fn decode_brf(bytes: &[u8]) -> Cow<'_, str> {
+	std::str::from_utf8(bytes).map_or_else(|_| WINDOWS_1252.decode_without_bom_handling(bytes).0, Cow::Borrowed)
+}
+
+/// Countries don't all write braille ASCII one way: DAISY Pipeline, for one, writes Norwegian, Swedish, Danish, Spanish and Italian files with other tables than the one liblouis displays braille with. So a file is read with each braille ASCII its table's language is written in, and the likeliest wins, the table's own when none is likelier.
+fn likeliest_pages(
+	bytes: &[u8],
+	braille_ascii: &HashMap<char, char>,
+	translator: &Translator,
+	context: &ParserContext,
+) -> Vec<Page> {
+	let language = tables::table_language(context.braille_table);
+	let others: Vec<&NationalAscii> = NationalAscii::for_language(&language).collect();
+	if others.is_empty() {
+		return brf_pages(&decode_brf(bytes), braille_ascii);
+	}
+	let candidate = |name: &'static str, text: &str, cells: &HashMap<char, char>| {
+		let pages = brf_pages(text, cells);
+		let likeness = Likeness::of(text, &pages, &Layout::of(&pages, context.strip_running_text), translator);
+		tracing::debug!(
+			braille_ascii = name,
+			unread = likeness.unread,
+			odd = likeness.odd,
+			words = likeness.words,
+			like_words = likeness.like_words,
+			"scored a braille ASCII"
+		);
+		(likeness, pages)
+	};
+	let mut best = candidate("liblouis", &decode_brf(bytes), braille_ascii);
+	for national in others {
+		let other = candidate(national.name, &national.decode(bytes), &national.cells());
+		if other.0.is_likelier_than(&best.0) {
+			best = other;
+		}
+	}
+	best.1
+}
+
+/// How likely a braille ASCII is the one a file was written in.
+struct Likeness {
+	/// Characters it has no cell for, which the right one has none of.
+	unread: usize,
+	/// Characters outside ASCII that aren't letters, which a file read in the wrong code page is full of, as Danish æ read in Windows-1252 is ‘.
+	odd: usize,
+	/// Of a sample of the file's words, how many read as words, and how many there are.
+	like_words: u64,
+	words: u64,
+}
+
+impl Likeness {
+	fn of(text: &str, pages: &[Page], layout: &Layout, translator: &Translator) -> Self {
+		let unread =
+			pages.iter().flatten().flat_map(|line| line.chars()).filter(|&character| !is_cell(character)).count();
+		let odd = text
+			.chars()
+			.filter(|&character| !character.is_ascii() && !character.is_alphabetic() && !is_cell(character))
+			.count();
+		let (like_words, words) = word_likeness(layout, translator);
+		Self { unread, odd, like_words, words }
+	}
+
+	/// Fewer characters left unread, then fewer odd ones, and then more words reading as words out of all of them, compared without dividing.
+	fn is_likelier_than(&self, other: &Self) -> bool {
+		(self.unread, self.odd) < (other.unread, other.odd)
+			|| ((self.unread, self.odd) == (other.unread, other.odd)
+				&& u128::from(self.like_words) * u128::from(other.words)
+					> u128::from(other.like_words) * u128::from(self.words))
+	}
+}
+
+/// How many cells of a file's paragraphs are back-translated to judge its braille ASCII by: enough for a few hundred words, skipping the title pages at the start.
+const SAMPLE_CELLS: usize = 6000;
+
+/// Of a sample of the file's words, how many read as words, and how many there are. A wrong braille ASCII turns letters into digits and signs, and leaves cells the table has no print for.
+fn word_likeness(layout: &Layout, translator: &Translator) -> (u64, u64) {
+	let mut cells = 0;
+	let sample: Vec<&String> = layout
+		.paragraphs
+		.iter()
+		.skip(layout.paragraphs.len() / 10)
+		.take_while(|paragraph| {
+			let before = cells;
+			cells += paragraph.chars().count();
+			before < SAMPLE_CELLS
+		})
+		.collect();
+	sample
+		.par_iter()
+		.map(|paragraph| words_like_words(&translate_paragraph(translator, paragraph).0))
+		.reduce(|| (0, 0), |a, b| (a.0 + b.0, a.1 + b.1))
+}
+
+/// A word reads as one when, without the punctuation around it, it is letters, perhaps with an apostrophe or a hyphen, or a number. Signs such as `*` or `|` stuck to a word aren't punctuation, as a capital sign read in the wrong braille ASCII is.
+fn words_like_words(text: &str) -> (u64, u64) {
+	let punctuation = |character: char| ".,;:!?\"'()[]«»„“”‚‘’–—…-/¡¿".contains(character);
+	let mut like = 0;
+	let mut all = 0;
+	for word in text.split_whitespace() {
+		let core = word.trim_matches(punctuation);
+		if core.is_empty() {
+			continue;
+		}
+		all += 1;
+		let letters = !core.is_empty()
+			&& core.chars().all(|character| character.is_alphabetic() || matches!(character, '\'' | '’' | '-'));
+		let number = !core.is_empty()
+			&& core.chars().all(|character| character.is_ascii_digit() || matches!(character, '.' | ',' | ':' | '-'));
+		if letters || number {
+			like += 1;
+		}
+	}
+	(like, all)
 }
 
 const fn is_cell(character: char) -> bool {

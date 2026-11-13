@@ -102,6 +102,23 @@ fn reads_the_braille_ascii_of_the_tables_country() {
 	assert_eq!(windows_1252.buffer.content, "Le Président\n");
 }
 
+/// DAISY Pipeline writes Norwegian with Braillo's table, whose capital sign is `*` rather than liblouis's `´`.
+#[test]
+fn reads_norwegian_written_with_another_countrys_braille_ascii() {
+	let norwegian = |context: ParserContext| ParserContext { braille_table: "no-no-g0.utb", ..context };
+	let document = parse_with(&BrfParser, "no.brf", "  *HEI *VERDEN, DETTE ER EN BOK.\r\n", norwegian).unwrap();
+	assert_eq!(document.buffer.content, "Hei Verden, dette er en bok.\n");
+}
+
+/// Danish files are written in code page 850, so æ, ø and å are bytes Windows-1252 has other characters for.
+#[test]
+fn reads_danish_written_in_code_page_850() {
+	let danish = |context: ParserContext| ParserContext { braille_table: "da-dk-g16.ctb", ..context };
+	let document =
+		parse_with(&BrfParser, "da.brf", b"det skal v\x91re en bog om s\x9b og \x86er.\r\n", danish).unwrap();
+	assert_eq!(document.buffer.content, "det skal være en bog om sø og åer.\n");
+}
+
 /// UEB's tables display a capital A as the computer braille cell with dot 7, which is no six-dot braille file's.
 #[test]
 fn reads_capitals_as_north_american_braille_ascii_for_english() {
