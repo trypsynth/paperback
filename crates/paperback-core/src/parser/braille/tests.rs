@@ -151,17 +151,61 @@ fn reads_czech_files_as_north_american_braille_ascii() {
 	assert_eq!(document.buffer.content, "Autor: Angela Hunt, ťažko skúšaná krása\n");
 }
 
-/// Hungarian braille files are written in North American Braille ASCII, although `hu-hu-g1.ctb` writes `1` as dots 1 and 6 and `@` as dots 4 and 5, and has no cell for `*`.
+/// Hungarian braille files are written in North American Braille ASCII, although `hu-hu-g1.ctb` writes `1` as dots 1 and 6 and `@` as dots 4 and 5, and has no cell for `*`. This is a library book's title page, in capitals with `@ [ ( )` for á ó ü ű.
 #[test]
 fn reads_hungarian_files_as_north_american_braille_ascii() {
-	let document = parse_with(
-		&BrfParser,
-		"hu.brf",
-		".:*P ]:I *G3 .@D@M1 .*VA *S .?URI +JRA ITT VOLT1 DE NEM :[LT SEMMIT'\n",
-		|context| ParserContext { braille_table: "hu-hu-g1.ctb", ..context },
-	)
+	let title_page = concat!(
+		"    .ARTHUR .CONAN .DOYLE3\r\n",
+		"      .SHERLOCK .HOLMES\r\n",
+		"         EML*KIRATAI\r\n",
+		"   !.B)N(?I ELBE:*L*SEKZ\r\n",
+		"\r\n",
+		"    .KRITERION .KQ$VKIAD[1\r\n",
+		"       .BUKAREST1 #AIGF\r\n",
+		"         .FORD/TOTTA3\r\n",
+		"        .KATONA .TAM@S\r\n",
+	);
+	let document = parse_with(&BrfParser, "hu.brf", title_page, |context| ParserContext {
+		braille_table: "hu-hu-g1.ctb",
+		..context
+	})
 	.unwrap();
-	assert_eq!(document.buffer.content, "Szép őszi ég: Ádám, Éva és Gyuri újra itt volt, de nem szólt semmit.\n");
+	assert_eq!(
+		document.buffer.content,
+		"Arthur Conan Doyle:\nSherlock Holmes\nemlékiratai\n(Bűnügyi elbeszélések)\nKriterion Könyvkiadó,\nBukarest, 1976\nFordította:\nKatona Tamás\n"
+	);
+}
+
+/// Other Hungarian books are written in lowercase, with `` ` { } `` for á ó ő, as on this library book's title page.
+#[test]
+fn reads_lowercase_hungarian_files_as_north_american_braille_ascii() {
+	let title_page = concat!(
+		"   .alan .alexander .milne\r\n",
+		"\r\n",
+		"          .micimack{\r\n",
+		"\r\n",
+		".ford/totta3 .karinthy .fri?es\r\n",
+		"\r\n",
+		"       .m{ra .kq$vkiad{\r\n",
+		"\r\n",
+		"..isbn3 #igh-#ifc-#dae-#hea-#f\r\n",
+		"\r\n",
+		"      .braille-v`lto<at\r\n",
+		"        ..mv?o:3 #bjbb\r\n",
+		"\r\n",
+		"          k*tkqtetes\r\n",
+		"\r\n",
+		"         .els} kqtet\r\n",
+	);
+	let document = parse_with(&BrfParser, "hu.brf", title_page, |context| ParserContext {
+		braille_table: "hu-hu-g1.ctb",
+		..context
+	})
+	.unwrap();
+	assert_eq!(
+		document.buffer.content,
+		"Alan Alexander Milne\nMicimackó\nFordította: Karinthy Frigyes\nMóra Könyvkiadó\nISBN: 978-963-415-851-6\nBraille-változat\nMVGYOSZ: 2022\nkétkötetes\nElső kötet\n"
+	);
 }
 
 /// A table's braille ASCII reads a NUL or a tab as the blank cell, so another country's has to as well, or a single one on a title page or a blank line would leave it a character unread and lose it the file.
