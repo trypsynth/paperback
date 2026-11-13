@@ -611,13 +611,13 @@ pub static COMMANDS: &[Command] = &[
 		behavior: Behavior::Run(audio::go_to_time),
 	},
 	Command {
-		action: ActionId::AnnounceChapterTime,
-		// TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter of an audiobook the reader is, and how much of it is left.
-		label: || t("Announce &Chapter Time"),
-		// TRANSLATORS: Status-bar help text for the Announce Chapter Time menu item.
+		action: ActionId::AnnounceChapterProgress,
+		// TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter the reader is and how much of it is left: by time in an audiobook, by words in a text book.
+		label: || t("Announce &Chapter Progress"),
+		// TRANSLATORS: Status-bar help text for the Announce Chapter Progress menu item.
 		help: Some(|| t("Say how far into this chapter you are and how much is left")),
 		enable: Enable::HasDocument,
-		behavior: Behavior::Run(audio::announce_chapter_time),
+		behavior: Behavior::Run(audio::announce_chapter_progress),
 	},
 	Command {
 		action: ActionId::SeekAudioForward,
@@ -774,7 +774,7 @@ mod tests {
 	#[rstest]
 	#[case::play_pause(ActionId::PlayPauseAudio)]
 	#[case::go_to_time(ActionId::GoToAudioTime)]
-	#[case::chapter_time(ActionId::AnnounceChapterTime)]
+	#[case::chapter_progress(ActionId::AnnounceChapterProgress)]
 	#[case::seek_forward(ActionId::SeekAudioForward)]
 	#[case::seek_backward(ActionId::SeekAudioBackward)]
 	#[case::increase_speed(ActionId::IncreaseAudioSpeed)]

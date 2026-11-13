@@ -96,7 +96,7 @@ seq_ids!(BASE + 470 => SET_SELECTION_START, COPY_FROM_SELECTION_START, JUMP_TO_S
 
 seq_ids!(BASE + 480 => SAVE_IMAGE, READ_IMAGE_TEXT);
 
-seq_ids!(BASE + 490 => ANNOUNCE_CHAPTER_TIME);
+seq_ids!(BASE + 490 => ANNOUNCE_CHAPTER_PROGRESS);
 
 seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE, REPORT_PROBLEM);
 
@@ -184,7 +184,7 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::ToggleWordWrap => TOGGLE_WORD_WRAP,
 		ActionId::PlayPauseAudio => PLAY_PAUSE_AUDIO,
 		ActionId::GoToAudioTime => GO_TO_AUDIO_TIME,
-		ActionId::AnnounceChapterTime => ANNOUNCE_CHAPTER_TIME,
+		ActionId::AnnounceChapterProgress => ANNOUNCE_CHAPTER_PROGRESS,
 		ActionId::SeekAudioForward => SEEK_AUDIO_FORWARD,
 		ActionId::SeekAudioBackward => SEEK_AUDIO_BACKWARD,
 		ActionId::IncreaseAudioSeekAmount => INCREASE_AUDIO_SEEK_AMOUNT,

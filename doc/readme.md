@@ -170,7 +170,7 @@ Punctuation shortcuts are named after the keys of a US keyboard. On another layo
 
 * `Ctrl+Space` (macOS: `Control+Space`, i.e. the physical Control key, since Cmd+Space opens Spotlight): Play/pause audio narration.
 * `Ctrl+J`: Go to a time in the recording. Type it as `1:23:45`, `23:45` or `45` seconds, or put `+` or `-` in front to move from where you are, e.g. `+5:00`. The dialog shows how far in you are and how long the book runs.
-* `Shift+=`: Say how far into this chapter you are and how much of it is left, e.g. "Chapter 3, 4:10 of 12:00, 7:50 left".
+* `Shift+=`: Say how far into this chapter you are and how much of it is left, e.g. "Chapter 3, 4:10 of 12:00, 7:50 left". In a book without recorded audio, the percentage through the chapter and the words left in it, e.g. "Chapter 3, 42%, 1850 words left".
 * `'`: Seek audio narration forward.
 * `;`: Seek audio narration backward.
 * `Shift+'`: Increase the audio seek amount.
