@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: ba700ddfbaf3e99f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,b8a00464,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - Version 1.1
 
@@ -52,7 +52,8 @@ Paperback unterstützt die folgenden Formate und Dateitypen:
 * Comic-Book-Archive (`.cbz`, `.cbr`)
 * CHM-Hilfedateien (`.chm`)
 * DAISY-Bücher (`.opf`, `.zip`)
-* EPUB-Bücher (`.epub`)
+* eBraille-Bücher, gelesen in Druck, wenn sie ihn enthalten, ansonsten zurückgewandelt mit dem Braille-Code, den sie bezeichnen (`.ebrl`, oder das `.opf` eines, das nicht komprimiert ist)
+* EPUB-Bücher (`.epub`, oder das `.opf` eines, das nicht komprimiert ist)
 * FB2-eBooks (`.fb2`)
 * GNU-Info-Handbücher (`.info`, komprimiert oder nicht, und geteilte Handbücher, die von einem ihrer Teile aus geöffnet werden)
 * HTML-Dokumente (`.htm`, `.html`, `.xhtml`)

@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: ba700ddfbaf3e99f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,b8a00464,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versie 1.1
 
@@ -52,7 +52,8 @@ Paperback ondersteunt de volgende indelingen en extensies:
 * Comicarchieven (`.cbz`, `.cbr`)
 * CHM-helpbestanden (`.chm`)
 * DAISY-boeken (`.opf`, `.zip`)
-* EPUB-boeken (`.epub`)
+* eBraille-boeken, gelezen in druk als ze die bevatten, en anders teruggezet met de braillecode die ze aangeven (`.ebrl`, of de `.opf` van een die niet gecomprimeerd is)
+* EPUB-boeken (`.epub`, of de `.opf` van een die niet gecomprimeerd is)
 * FB2-e-books (`.fb2`)
 * GNU Info-handleidingen (`.info`, met of zonder gzip, en gesplitste handleidingen geopend vanaf een van hun onderdelen)
 * HTML-documenten (`.htm`, `.html`, `.xhtml`)

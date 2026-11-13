@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: ba700ddfbaf3e99f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,b8a00464,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - version 1.1
 
@@ -52,7 +52,8 @@ Paperback prend en charge les formats et extensions suivants :
 * Archives de bandes dessinées (`.cbz`, `.cbr`)
 * Fichiers d'aide CHM (`.chm`)
 * Livres DAISY (`.opf`, `.zip`)
-* Livres EPUB (`.epub`)
+* Livres eBraille, lus en imprimé quand ils l'incluent, sinon rétro-traduits avec le code braille qu'ils indiquent (`.ebrl`, ou le `.opf` d'un qui n'est pas compressé)
+* Livres EPUB (`.epub`, ou le `.opf` d'un qui n'est pas compressé)
 * Livres électroniques FB2 (`.fb2`)
 * Manuels GNU Info (`.info`, compressés ou non, et manuels divisés ouverts à partir de n'importe laquelle de leurs parties)
 * Documents HTML (`.htm`, `.html`, `.xhtml`)

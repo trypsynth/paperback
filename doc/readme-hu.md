@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: ba700ddfbaf3e99f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,b8a00464,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback – 1.1-es verzió
 
@@ -52,7 +52,8 @@ A Paperback a következő formátumokat és kiterjesztéseket támogatja:
 * Képregényarchívumok (`.cbz`, `.cbr`)
 * CHM-súgófájlok (`.chm`)
 * DAISY-könyvek (`.opf`, `.zip`)
-* EPUB-könyvek (`.epub`)
+* eBraille-könyvek, nyomtatásban olvasva, ha tartalmazzák, egyéb esetben pedig a megnevezett braille-kóddal visszafordítva (`.ebrl`, vagy az `.opf` fájlja, amely nincs tömörítve)
+* EPUB-könyvek (`.epub`, vagy az `.opf` fájlja, amely nincs tömörítve)
 * FB2 formátumú e-könyvek (`.fb2`)
 * GNU Info-kézikönyvek (`.info`, tömörítve vagy sem, valamint felosztott kézikönyvek megnyitva bármelyik részükből)
 * HTML-dokumentumok (`.htm`, `.html`, `.xhtml`)

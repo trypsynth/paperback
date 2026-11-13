@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 13:50+0000\n"
+"POT-Creation-Date: 2026-11-13 12:52+0000\n"
 "PO-Revision-Date: 2026-11-04 14:11+0100\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
@@ -5149,6 +5149,12 @@ msgstr "Audiowiedergabegeschwindigkeit wählen"
 #: kt swift
 msgid "Readability"
 msgstr "Lesbarkeit"
+
+#. TRANSLATORS: Go To mode option: navigate to a time in an audiobook, such as 1:23:45
+#: kt swift
+#, fuzzy
+msgid "Time"
+msgstr "Zeit"
 
 #~ msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
 #~ msgstr "Paperback kann RAR-Comic-Archive nicht lesen. Packe die Datei als .cbz neu, um sie hier lesen zu können."

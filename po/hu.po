@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 13:50+0000\n"
+"POT-Creation-Date: 2026-11-13 12:52+0000\n"
 "PO-Revision-Date: 2026-10-21 12:00+0200\n"
 "Last-Translator: Torma Zsolt <torma.zsolt@gmail.com>\n"
 "Language-Team: Torma Zsolt <torma.zsolt@gmail.com>\n"
@@ -5139,6 +5139,12 @@ msgstr "Lejátszási sebesség kiválasztása"
 #: kt swift
 msgid "Readability"
 msgstr "Olvashatóság"
+
+#. TRANSLATORS: Go To mode option: navigate to a time in an audiobook, such as 1:23:45
+#: kt swift
+#, fuzzy
+msgid "Time"
+msgstr "Időpontjára"
 
 #~ msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
 #~ msgstr "A Paperback nem tudja olvasni a RAR formátumú képregényarchívumokat. Csomagolja újra .cbz formátumba, hogy itt olvashassa."

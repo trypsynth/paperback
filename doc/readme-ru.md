@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: ba700ddfbaf3e99f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,b8a00464,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - версия 1.1
 
@@ -52,7 +52,8 @@ Paperback поддерживает следующие форматы и расш
 * Архивы комиксов (`.cbz`, `.cbr`)
 * Файлы справки CHM (`.chm`)
 * Книги DAISY (`.opf`, `.zip`)
-* Книги EPUB (`.epub`)
+* Книги eBraille, читаемые в печати, когда они её включают, или иначе обратно преобразованные с помощью кода Брайля, который они указывают (`.ebrl`, или `.opf` для неархивированных)
+* Книги EPUB (`.epub`, или `.opf` для неархивированных)
 * Электронные книги FB2 (`.fb2`)
 * GNU Info справочники (`.info`, сжатые или нет, и разделённые справочники, открытые с любой из их частей)
 * HTML-документы (`.htm`, `.html`, `.xhtml`)
