@@ -151,6 +151,19 @@ fn reads_czech_files_as_north_american_braille_ascii() {
 	assert_eq!(document.buffer.content, "Autor: Angela Hunt, ťažko skúšaná krása\n");
 }
 
+/// Hungarian braille files are written in North American Braille ASCII, although `hu-hu-g1.ctb` writes `1` as dots 1 and 6 and `@` as dots 4 and 5, and has no cell for `*`.
+#[test]
+fn reads_hungarian_files_as_north_american_braille_ascii() {
+	let document = parse_with(
+		&BrfParser,
+		"hu.brf",
+		".:*P ]:I *G3 .@D@M1 .*VA *S .?URI +JRA ITT VOLT1 DE NEM :[LT SEMMIT'\n",
+		|context| ParserContext { braille_table: "hu-hu-g1.ctb", ..context },
+	)
+	.unwrap();
+	assert_eq!(document.buffer.content, "Szép őszi ég: Ádám, Éva és Gyuri újra itt volt, de nem szólt semmit.\n");
+}
+
 /// UEB's tables display a capital A as the computer braille cell with dot 7, which is no six-dot braille file's.
 #[test]
 fn reads_capitals_as_north_american_braille_ascii_for_english() {
