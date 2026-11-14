@@ -239,6 +239,22 @@ fn joins_wrapped_lines_and_words_broken_at_a_hyphen() {
 }
 
 #[test]
+fn reads_guide_dots_as_one_space() {
+	let contents = layout(
+		&[&[
+			"  ,HOT ,COCOA \"\"\"\"\"\"\"\"\"\"\"\" #DF",
+			"  ,A LONG ,T\\LE",
+			"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"",
+			"#DG",
+		]],
+		true,
+	);
+	assert_eq!(contents.paragraphs, [cells(",HOT ,COCOA #DF"), cells(",A LONG ,T\\LE #DG")]);
+	let nearly_full = layout(&[&["  ,SALADS & ,SALAD ,DRESS+S \"\" #BFA", "  ,WORD\"\"S"]], true);
+	assert_eq!(nearly_full.paragraphs, [cells(",SALADS & ,SALAD ,DRESS+S #BFA"), cells(",WORD\"\"S")]);
+}
+
+#[test]
 fn keeps_the_space_after_a_dash_that_ends_a_line() {
 	let layout = layout(&[&["  HAIR,-", ",CAN'T", "M]E--", "?AN"]], true);
 	assert_eq!(layout.paragraphs, [cells("HAIR,- ,CAN'T M]E-- ?AN")]);

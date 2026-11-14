@@ -379,6 +379,11 @@ impl Layout {
 					layout.finish(&mut current);
 					continue;
 				}
+				let content = without_guide_dots(&content);
+				// A line of guide dots alone leads from an entry on the line before to its page number on the next.
+				if content.is_empty() {
+					continue;
+				}
 				let standalone = indent >= CENTERED_INDENT || is_separator(&content);
 				if indent > 0 || standalone {
 					layout.finish(&mut current);
@@ -408,6 +413,36 @@ impl Layout {
 		}
 	}
 }
+
+/// The guide dots of a contents page, a run of dot 5 cells between an entry and its page number, read as one space, as print's leaders are: three or more in a row, or two between spaces, are never text.
+fn without_guide_dots(line: &str) -> String {
+	let mut out = String::with_capacity(line.len());
+	let mut cells = line.chars().peekable();
+	while let Some(cell) = cells.next() {
+		if cell != GUIDE_DOT {
+			out.push(cell);
+			continue;
+		}
+		let mut run = 1;
+		while cells.next_if_eq(&GUIDE_DOT).is_some() {
+			run += 1;
+		}
+		// An entry that nearly fills its line leaves room for only two, a pair with a space on either side.
+		let alone = (out.is_empty() || out.ends_with(BLANK)) && cells.peek().is_none_or(|&next| next == BLANK);
+		if run < 2 || (run == 2 && !alone) {
+			out.extend(std::iter::repeat_n(GUIDE_DOT, run));
+			continue;
+		}
+		while cells.next_if_eq(&BLANK).is_some() {}
+		if !out.is_empty() && !out.ends_with(BLANK) && cells.peek().is_some() {
+			out.push(BLANK);
+		}
+	}
+	out.trim_end_matches(BLANK).to_string()
+}
+
+/// Dot 5, which guide dots are made of.
+const GUIDE_DOT: char = '\u{2810}';
 
 /// A line ends in a word broken at its hyphen when its last cell is the hyphen and the one before isn't dot 6 or another hyphen, which make it a dash: UEB and German write a dash as ⠠⠤, and some codes as ⠤⠤. The next line goes on that word, so no space joins them.
 fn ends_in_broken_word(line: &str) -> bool {
