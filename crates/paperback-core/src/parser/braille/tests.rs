@@ -381,6 +381,17 @@ fn starts_a_paragraph_at_an_indent_or_a_blank_line() {
 	assert_eq!(layout.paragraphs, [cells("ONE TWO"), cells("?REE"), cells("F\\R")]);
 }
 
+/// A file that never indents a paragraph, as DAISY Pipeline's BRFs don't, is one paragraph, back-translated a piece at a time so it takes seconds rather than minutes, and reading as if it were back-translated whole.
+#[test]
+fn reads_a_paragraph_longer_than_a_piece() {
+	let document = parse_with(&BrfParser, "long.brf", "CAT AND DOG\n".repeat(1000), |context| ParserContext {
+		braille_table: "en-us-g1.ctb",
+		..context
+	})
+	.unwrap();
+	assert_eq!(document.buffer.content, format!("{}\n", ["cat and dog"; 1000].join(" ")));
+}
+
 /// A sidebar is boxed in by a line of dots 2356 above it and one of dots 1245 below, which are only formatting, as in this cookbook from NLS.
 #[test]
 fn reads_a_box_without_its_box_lines() {

@@ -184,16 +184,22 @@ const SAMPLE_CELLS: usize = 6000;
 /// Of a sample of the file's words, how many read as words, and how many there are. A wrong braille ASCII turns letters into digits and signs, and leaves cells the table has no print for.
 fn word_likeness(layout: &Layout, translator: &Translator) -> (u64, u64) {
 	let mut cells = 0;
-	let sample: Vec<&String> = layout
-		.paragraphs
-		.iter()
-		.skip(layout.paragraphs.len() / 10)
-		.take_while(|paragraph| {
-			let before = cells;
-			cells += paragraph.chars().count();
-			before < SAMPLE_CELLS
-		})
-		.collect();
+	let mut sample: Vec<String> = Vec::new();
+	for paragraph in layout.paragraphs.iter().skip(layout.paragraphs.len() / 10) {
+		if cells >= SAMPLE_CELLS {
+			break;
+		}
+		// A paragraph is cut at a blank cell where the sample is full, as a file that never indents one is a single paragraph.
+		let room = SAMPLE_CELLS - cells;
+		let paragraph: Vec<char> = paragraph.chars().collect();
+		let end = if paragraph.len() > room {
+			paragraph[..room].iter().rposition(|&cell| cell == BLANK).unwrap_or(room)
+		} else {
+			paragraph.len()
+		};
+		cells += paragraph.len();
+		sample.push(paragraph[..end].iter().collect());
+	}
 	sample
 		.par_iter()
 		.map(|paragraph| words_like_words(&translate_paragraph(translator, paragraph).0))
@@ -346,10 +352,34 @@ fn back_translate(pages: &[Page], translator: &Translator, context: &ParserConte
 	buffer
 }
 
+/// A paragraph longer than this many cells is back-translated a piece at a time, split at a blank cell. Back-translation takes time growing with the square of its input, and a file that never indents a paragraph, as DAISY Pipeline's BRFs don't, is one paragraph.
+const PIECE_CELLS: usize = 4000;
+
 /// The paragraph's print, and for each of its cells where that cell's print begins.
 fn translate_paragraph(translator: &Translator, paragraph: &str) -> (String, Vec<usize>) {
-	let result = translator.translate_with_options(paragraph, TranslationOptions::default());
-	(result.output, result.output_positions)
+	let cells: Vec<char> = paragraph.chars().collect();
+	let mut output = String::new();
+	let mut positions = Vec::with_capacity(cells.len());
+	let mut start = 0;
+	while start < cells.len() {
+		let mut end = cells.len();
+		if end - start > PIECE_CELLS {
+			end =
+				cells[start..start + PIECE_CELLS].iter().rposition(|&cell| cell == BLANK).map_or(end, |at| start + at);
+		}
+		let piece: String = cells[start..end].iter().collect();
+		let result = translator.translate_with_options(&piece, TranslationOptions::default());
+		let offset = output.chars().count();
+		positions.extend(result.output_positions.iter().map(|position| offset + position));
+		output.push_str(&result.output);
+		if end < cells.len() {
+			positions.push(output.chars().count());
+			output.push(' ');
+			end += 1;
+		}
+		start = end;
+	}
+	(output, positions)
 }
 
 /// The braille rejoined into paragraphs, and where in them each page begins.
