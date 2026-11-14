@@ -373,22 +373,29 @@ impl Layout {
 		let mut after_entry = false;
 		let mut opened_after_entry = false;
 		let mut opened_at = 0;
+		// The indent of the open entry's run-over lines, once it has one deeper than its first line.
+		let mut run_over_at = None;
+		let is_running_head = |line_index: usize, line: &String| line_index == 0 && running_heads.contains(line);
 		for (page_index, lines) in pages.iter().enumerate() {
 			layout.page_starts.push(None);
 			waiting_pages.push(page_index);
 			for (line_index, line) in lines.iter().enumerate() {
-				if line_index == 0 && running_heads.contains(line) {
+				if is_running_head(line_index, line) {
 					continue;
 				}
-				let indent = line.chars().take_while(|&character| character == BLANK).count();
+				let indent = indent_of(line);
 				let content: String = line.chars().skip(indent).collect();
 				if content.is_empty() || is_box_line(&content) {
 					layout.finish(&mut current);
+					run_over_at = None;
 					after_entry = false;
 					continue;
 				}
 				let guided = without_guide_dots(&content);
-				let led = guided != content;
+				let (guided, led) = match without_page_number_gap(&guided) {
+					Some(joined) => (joined, true),
+					None => (guided.clone(), guided != content),
+				};
 				// A line of guide dots alone leads from an entry on the line before to its page number on the next.
 				if guided.is_empty() {
 					led_to_next = true;
@@ -406,7 +413,28 @@ impl Layout {
 					&& ends_entry
 					&& current.is_some()
 					&& opened_after_entry;
-				if (indent > 0 && !runs_on) || standalone {
+				// An entry whose first line has no page number can instead run over onto lines indented further, as poetry contents do: two cells beyond the deepest entry.
+				let runs_over = current.is_some()
+					&& opened_after_entry
+					&& !standalone
+					&& indent > opened_at
+					&& run_over_at.map_or_else(
+						|| {
+							let following =
+								lines[line_index..].iter().chain(pages[page_index + 1..].iter().flat_map(|page| {
+									page.iter()
+										.enumerate()
+										.filter(|(index, line)| !is_running_head(*index, line))
+										.map(|(_, line)| line)
+								}));
+							entry_runs_over(following, opened_at)
+						},
+						|at| at == indent,
+					);
+				if runs_over {
+					run_over_at = Some(indent);
+				}
+				if (indent > 0 && !runs_on && !runs_over) || standalone {
 					if current.is_some() {
 						after_entry = false;
 					}
@@ -429,6 +457,9 @@ impl Layout {
 				if standalone || ends_entry {
 					layout.finish(&mut current);
 					after_entry = ends_entry;
+				}
+				if current.is_none() {
+					run_over_at = None;
 				}
 			}
 		}
@@ -468,6 +499,51 @@ fn without_guide_dots(line: &str) -> String {
 		}
 	}
 	out.trim_end_matches(BLANK).to_string()
+}
+
+/// A contents entry with no room for guide dots ends its line in blank cells and its page number instead. Returns the line with them read as one space, as its guide dots would be.
+fn without_page_number_gap(line: &str) -> Option<String> {
+	let cells: Vec<char> = line.chars().collect();
+	let token_start = cells.iter().rposition(|&cell| cell == BLANK)? + 1;
+	let token = &cells[token_start..];
+	let blanks = cells[..token_start].iter().rev().take_while(|&&cell| cell == BLANK).count();
+	let is_page_number = token.len() <= 6
+		&& token.first() == Some(&NUMBER_SIGN)
+		&& token.last().is_some_and(|&cell| is_digit_cell(cell));
+	(is_page_number && blanks >= 3 && blanks < token_start).then(|| {
+		let mut joined: String = cells[..token_start - blanks].iter().collect();
+		joined.push(BLANK);
+		joined.extend(token);
+		joined
+	})
+}
+
+fn indent_of(line: &str) -> usize {
+	line.chars().take_while(|&character| character == BLANK).count()
+}
+
+/// Whether the lines from here run an unfinished contents entry over rather than start entries under it as a heading: they stay at one indent deeper than the entry's until one ends in guide dots, and the line after that comes back out to the entry's indent or less.
+fn entry_runs_over<'a>(mut lines: impl Iterator<Item = &'a String>, entry_indent: usize) -> bool {
+	let Some(first) = lines.next() else { return false };
+	let indent = indent_of(first);
+	let mut line = first;
+	// An entry runs over a few lines at most, and a page of text at one indent mustn't be scanned again for each of its lines.
+	for _ in 0..8 {
+		let content: String = line.chars().skip(indent).collect();
+		if content.is_empty() || is_box_line(&content) {
+			return false;
+		}
+		let led = without_guide_dots(&content) != content || without_page_number_gap(&content).is_some();
+		let next = lines.next();
+		if led {
+			return next.is_none_or(|next| next.is_empty() || indent_of(next) <= entry_indent);
+		}
+		match next {
+			Some(next) if indent_of(next) == indent => line = next,
+			_ => return false,
+		}
+	}
+	false
 }
 
 /// Dot 5, which guide dots are made of.

@@ -309,6 +309,66 @@ fn ends_a_contents_entry_after_its_guide_dots() {
 	);
 }
 
+/// Poetry contents run an entry over onto lines indented two cells beyond the deepest entry, as in this collection from NLS, where the entry's first line has no page number, unlike a heading's entries under it.
+#[test]
+fn runs_a_contents_entry_over_onto_deeper_lines() {
+	let contents = layout(
+		&[&[
+			"  XXX4 ,FI% @& ,WILDLIFE \"\"\"\"\"\" #BFB",
+			"  XXXI4 ,D\\BLE ,VIEW ( !",
+			"    ,ADIRONDACKS Z ,REFLECT$ OV]",
+			"    ,P>K \"\"\"\"\"\"\"\"\"\"\" #BFD",
+			"  XXXII4 ,! ,VALKYRIE \"\"\"\"\"\" #BFE",
+			",! ,ABSURD ,MAN ,SUITE \"\"\"\"\"\" #BFF",
+			"  ,AUGU/9IAN \"\"\"\"\"\"\"\"\"\" #BFG",
+			",,P>T ,,TWO",
+			"  ,A ,P\\M \"\"\"\"\"\"\"\"\"\"\"\" #BFH",
+			"  ,ANO!R ,P\\M \"\"\"\"\"\"\"\" #BFI",
+		]],
+		true,
+	);
+	assert_eq!(
+		contents.paragraphs,
+		[
+			cells("XXX4 ,FI% @& ,WILDLIFE #BFB"),
+			cells("XXXI4 ,D\\BLE ,VIEW ( ! ,ADIRONDACKS Z ,REFLECT$ OV] ,P>K #BFD"),
+			cells("XXXII4 ,! ,VALKYRIE #BFE"),
+			cells(",! ,ABSURD ,MAN ,SUITE #BFF"),
+			cells(",AUGU/9IAN #BFG"),
+			cells(",,P>T ,,TWO"),
+			cells(",A ,P\\M #BFH"),
+			cells(",ANO!R ,P\\M #BFI"),
+		]
+	);
+}
+
+/// An entry that leaves no room for guide dots ends in blank cells and its page number, as in this anthology from NLS.
+#[test]
+fn ends_a_contents_entry_at_a_page_number_after_blank_cells() {
+	let contents = layout(
+		&[&[
+			"        ,,,\"P I3 LOVE & C>E,' \"\"\"\" #AB",
+			".1,UNSPOOL+ ,NICOLE ,LEE ,S*RO$]   #AB",
+			".7,ROSA%>ON ,T1*ES ,ME TO ,BR1!3",
+			"  ,ON ,ANIMALS1 ,4ABILITIES1 &",
+			"  ,9TIMACIES.' ,ADA ,HUBRIG \"\"\"\"\"\" #BG",
+			".7,! ,LA/ ,WALK.' ,MELISSA ,HUNG   #CI",
+			".7,! ,5D \"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\" #EA",
+		]],
+		true,
+	);
+	assert_eq!(
+		contents.paragraphs,
+		[
+			cells(",,,\"P I3 LOVE & C>E,' #AB"),
+			cells(".1,UNSPOOL+ ,NICOLE ,LEE ,S*RO$] #AB"),
+			cells(".7,ROSA%>ON ,T1*ES ,ME TO ,BR1!3 ,ON ,ANIMALS1 ,4ABILITIES1 & ,9TIMACIES.' ,ADA ,HUBRIG #BG"),
+			cells(".7,! ,LA/ ,WALK.' ,MELISSA ,HUNG #CI"),
+			cells(".7,! ,5D #EA"),
+		]
+	);
+}
+
 #[test]
 fn keeps_the_space_after_a_dash_that_ends_a_line() {
 	let layout = layout(&[&["  HAIR,-", ",CAN'T", "M]E--", "?AN"]], true);
