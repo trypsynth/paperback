@@ -80,16 +80,16 @@ fn refuses_a_table_it_does_not_have() {
 /// A paragraph that runs onto the next page is one paragraph, and that page's marker falls on its first word there.
 #[test]
 fn joins_a_paragraph_across_a_page_and_marks_where_the_page_begins() {
-	let document = parse(&BrfParser, "pages.brf", "  HELLO\r\n\x0c_W\r\n\x0c");
-	assert_eq!(document.buffer.content, "hello world\n");
-	assert_eq!(page_markers(&document), [(0, "Page 1".to_string()), (6, "Page 2".to_string())]);
+	let document = parse(&BrfParser, "pages.brf", "  HELLO HELLO HELLO HELLO HELLO HELLOS\r\n\x0c_W\r\n\x0c");
+	assert_eq!(document.buffer.content, "hello hello hello hello hello hellos world\n");
+	assert_eq!(page_markers(&document), [(0, "Page 1".to_string()), (37, "Page 2".to_string())]);
 }
 
 /// Older BRF files, such as the Internet Archive's, end their lines with a carriage return alone.
 #[test]
 fn reads_lines_ended_by_a_carriage_return_alone() {
-	let document = parse(&BrfParser, "cr.brf", "  HELLO\r_W\r\r  ,! ,ORBIT\r");
-	assert_eq!(document.buffer.content, "hello world\nThe Orbit\n");
+	let document = parse(&BrfParser, "cr.brf", "  HELLO HELLO HELLO HELLO HELLO HELLOS\r_W\r\r  ,! ,ORBIT\r");
+	assert_eq!(document.buffer.content, "hello hello hello hello hello hellos world\nThe Orbit\n");
 }
 
 /// French braille ASCII writes the capital sign as ¨ and é as itself, as `fr-bfu-comp6.utb` defines them.
@@ -249,14 +249,14 @@ fn reads_capitals_as_north_american_braille_ascii_for_english() {
 
 #[test]
 fn reads_a_brf_written_in_unicode_braille() {
-	let document = parse(&BrfParser, "unicode.brf", "  ⠓⠑⠇⠇⠕\r\n⠸⠺\r\n");
-	assert_eq!(document.buffer.content, "hello world\n");
+	let document = parse(&BrfParser, "unicode.brf", "  ⠓⠑⠇⠇⠕⠀⠓⠑⠇⠇⠕⠀⠓⠑⠇⠇⠕⠀⠓⠑⠇⠇⠕⠀⠓⠑⠇⠇⠕⠀⠓⠑⠇⠇⠕⠎\r\n⠸⠺\r\n");
+	assert_eq!(document.buffer.content, "hello hello hello hello hello hellos world\n");
 }
 
 #[test]
 fn joins_wrapped_lines_and_words_broken_at_a_hyphen() {
-	let layout = layout(&[&["  SELF-", "3TA9$ BOOK", "R1D]"]], true);
-	assert_eq!(layout.paragraphs, [cells("SELF-3TA9$ BOOK R1D]")]);
+	let layout = layout(&[&["  SELF-", "3TA9$ BOOK ) ! SAME DEGREE ( LOVE & C>E", "R1D]"]], true);
+	assert_eq!(layout.paragraphs, [cells("SELF-3TA9$ BOOK ) ! SAME DEGREE ( LOVE & C>E R1D]")]);
 }
 
 #[test]
@@ -371,14 +371,89 @@ fn ends_a_contents_entry_at_a_page_number_after_blank_cells() {
 
 #[test]
 fn keeps_the_space_after_a_dash_that_ends_a_line() {
-	let layout = layout(&[&["  HAIR,-", ",CAN'T", "M]E--", "?AN"]], true);
-	assert_eq!(layout.paragraphs, [cells("HAIR,- ,CAN'T M]E-- ?AN")]);
+	let layout = layout(
+		&[&["  ,! HAIR ,- ,BOBI'S THICK1 %9Y COAT,-", ",CAN'T ,TOM $ITS ! L;GE/ LIV+ DOG M]E--", "?AN ANY O!R4"]],
+		true,
+	);
+	assert_eq!(
+		layout.paragraphs,
+		[cells(",! HAIR ,- ,BOBI'S THICK1 %9Y COAT,- ,CAN'T ,TOM $ITS ! L;GE/ LIV+ DOG M]E-- ?AN ANY O!R4")]
+	);
 }
 
 #[test]
 fn starts_a_paragraph_at_an_indent_or_a_blank_line() {
-	let layout = layout(&[&["  ONE", "TWO", "  ?REE", "", "F\\R"]], true);
-	assert_eq!(layout.paragraphs, [cells("ONE TWO"), cells("?REE"), cells("F\\R")]);
+	let layout = layout(&[&["  ,WE WANT TO IMBUE ? BOOK ) ! SAME", "DEGREE4", "  ?REE", "", "F\\R"]], true);
+	assert_eq!(layout.paragraphs, [cells(",WE WANT TO IMBUE ? BOOK ) ! SAME DEGREE4"), cells("?REE"), cells("F\\R")]);
+}
+
+/// Embossed braille wraps a line only where the next word doesn't fit, so a line with room left for it ends there on purpose, whatever the indents: as each line of a poem does, here from a collection from NLS, which runs a long line over two cells further in.
+#[test]
+fn keeps_a_line_that_ends_on_purpose() {
+	let layout = layout(
+		&[&[
+			",E S (T5 \"O HAS TO MAKE A S.D",
+			"( T]RIBLE PA9 Z ?\\< 9 B.D.S WOODS",
+			"\"O'S C&LELIT D9N] AT ,ELEV5 ,MADISON",
+			"  ,P>K",
+			") XS :ITE L95S SAD Z MILK & SILV]W>E",
+		]],
+		true,
+	);
+	assert_eq!(
+		layout.paragraphs,
+		[
+			cells(",E S (T5 \"O HAS TO MAKE A S.D"),
+			cells("( T]RIBLE PA9 Z ?\\< 9 B.D.S WOODS"),
+			cells("\"O'S C&LELIT D9N] AT ,ELEV5 ,MADISON ,P>K"),
+			cells(") XS :ITE L95S SAD Z MILK & SILV]W>E"),
+		]
+	);
+}
+
+/// A paragraph whose last line has no room for the next paragraph's first word still ends there: the next one starts at the indent of its first line, where its own words would go on at the margin, as in this novel from NLS.
+#[test]
+fn starts_a_paragraph_after_one_whose_last_line_is_full() {
+	let layout = layout(
+		&[&[
+			"  8,NO4 ,X'S N L X'S .18 W$D+1 ,$DIE40",
+			"  8,! 9VITA;N SAYS .1:ITE .1TIE1",
+			",CECILIA40",
+			"  8,X'S .1,S+APORE1 ,$DIE1 & NO \"O \"!",
+		]],
+		true,
+	);
+	assert_eq!(
+		layout.paragraphs,
+		[
+			cells("8,NO4 ,X'S N L X'S .18 W$D+1 ,$DIE40"),
+			cells("8,! 9VITA;N SAYS .1:ITE .1TIE1 ,CECILIA40"),
+			cells("8,X'S .1,S+APORE1 ,$DIE1 & NO \"O \"!"),
+		]
+	);
+}
+
+/// A book can leave a cell blank down the left of every line, so a paragraph's wrapped lines are indented as well: it's still told by its first line being indented further, as in this book from NLS.
+#[test]
+fn reads_a_paragraph_whose_lines_are_all_indented() {
+	let layout = layout(
+		&[&[
+			"   ,S =A FEW \"DS WE _H BE5 CAT*+ UP 9",
+			" E>LY-MORN+ 3V]S,N :ILE SITT+ 2S ! POOL",
+			" (! ,$ISON ,WA?ALL ,HOTEL 9 ,JACKSON1",
+			"   ,MISSISSIPPI4",
+		]],
+		true,
+	);
+	assert_eq!(
+		layout.paragraphs,
+		[
+			cells(
+				",S =A FEW \"DS WE _H BE5 CAT*+ UP 9 E>LY-MORN+ 3V]S,N :ILE SITT+ 2S ! POOL (! ,$ISON ,WA?ALL ,HOTEL 9 ,JACKSON1"
+			),
+			cells(",MISSISSIPPI4"),
+		]
+	);
 }
 
 /// A file that never indents a paragraph, as DAISY Pipeline's BRFs don't, is one long paragraph.
@@ -397,19 +472,24 @@ fn reads_a_file_that_never_indents_a_paragraph() {
 fn reads_a_box_without_its_box_lines() {
 	let layout = layout(
 		&[&[
-			"  ,WE WANT TO",
-			"IMBUE ?",
-			"7777777777777777",
-			"^7,FATTY ,ACIDS ,HELP",
-			",F/ MO;T",
-			"GGGGGGGGGGGGGGGG",
-			"  ,! DOG",
+			"  ,LEONEL'S NEI<BORS SD X BE/3 ? OLD DOG",
+			"DID .1\"S?+ \"R4",
+			"",
+			"7777777777777777777777777777777777777777",
+			"^7,FATTY ,ACIDS ,HELP ,HAIR ,GR[3^' ,F !",
+			"F/ MO;T WE MET ,BOBI1 \"O ?+ T /RUCK U 0",
+			"GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
+			"  ,WE WANT TO IMBUE ? BOOK ) ! SAME",
 		]],
 		true,
 	);
 	assert_eq!(
 		layout.paragraphs,
-		[cells(",WE WANT TO IMBUE ?"), cells("^7,FATTY ,ACIDS ,HELP ,F/ MO;T"), cells(",! DOG")]
+		[
+			cells(",LEONEL'S NEI<BORS SD X BE/3 ? OLD DOG DID .1\"S?+ \"R4"),
+			cells("^7,FATTY ,ACIDS ,HELP ,HAIR ,GR[3^' ,F ! F/ MO;T WE MET ,BOBI1 \"O ?+ T /RUCK U 0"),
+			cells(",WE WANT TO IMBUE ? BOOK ) ! SAME"),
+		]
 	);
 }
 
@@ -421,8 +501,17 @@ fn keeps_a_centered_heading_apart_from_the_text_after_it() {
 
 #[test]
 fn drops_page_numbers_and_padding() {
-	let layout = layout(&[&["                                      #A", "  ONE  ", "TWO         #A#B", "", ""]], true);
-	assert_eq!(layout.paragraphs, [cells("ONE TWO")]);
+	let layout = layout(
+		&[&[
+			"                                      #A",
+			"  ,LEONEL'S NEI<BORS SD X BE/3 ? OLD DOG  ",
+			"_H BE5       #A#B",
+			"",
+			"",
+		]],
+		true,
+	);
+	assert_eq!(layout.paragraphs, [cells(",LEONEL'S NEI<BORS SD X BE/3 ? OLD DOG _H BE5")]);
 }
 
 /// A continuation page numbers itself with a letter before the number, as in ⠁⠼⠁.
@@ -434,18 +523,37 @@ fn drops_a_continuation_page_number() {
 
 #[test]
 fn drops_a_running_head_only_when_asked() {
-	let pages: &[&[&str]] = &[&["  ONE"], &["   ,HEAD", "TWO"], &["   ,HEAD", "?REE"], &["   ,HEAD", "F\\R"]];
-	assert_eq!(layout(pages, true).paragraphs, [cells("ONE TWO ?REE F\\R")]);
+	let pages: &[&[&str]] = &[
+		&["  ,WE WANT TO IMBUE ? BOOK ) ! SAME"],
+		&["   ,H", "DEGREE ( LOVE & C>E ! ,=\"E ,PETS WE'VE"],
+		&["   ,H", "DESCRIB$ 5JOY$ \"?\\T _! L;G LIVES4 ,\"? A"],
+		&["   ,H", "J\\RNEY4"],
+	];
+	assert_eq!(
+		layout(pages, true).paragraphs,
+		[cells(
+			",WE WANT TO IMBUE ? BOOK ) ! SAME DEGREE ( LOVE & C>E ! ,=\"E ,PETS WE'VE DESCRIB$ 5JOY$ \"?\\T _! L;G LIVES4 ,\"? A J\\RNEY4"
+		)]
+	);
+	// Kept, a running head is a line of its own, which the text below it doesn't wrap onto.
 	assert_eq!(
 		layout(pages, false).paragraphs,
-		[cells("ONE"), cells(",HEAD TWO"), cells(",HEAD ?REE"), cells(",HEAD F\\R")]
+		[
+			cells(",WE WANT TO IMBUE ? BOOK ) ! SAME"),
+			cells(",H"),
+			cells("DEGREE ( LOVE & C>E ! ,=\"E ,PETS WE'VE"),
+			cells(",H"),
+			cells("DESCRIB$ 5JOY$ \"?\\T _! L;G LIVES4 ,\"? A"),
+			cells(",H"),
+			cells("J\\RNEY4"),
+		]
 	);
 }
 
 #[test]
 fn marks_pages_without_text_where_the_next_text_starts() {
-	let layout = layout(&[&["  ONE"], &[], &["TWO"], &[]], true);
-	assert_eq!(layout.page_starts, [Some((0, 0)), Some((0, 4)), Some((0, 4)), None]);
+	let layout = layout(&[&["  ,WE WANT TO IMBUE ? BOOK ) ! SAME"], &[], &["DEGREE4"], &[]], true);
+	assert_eq!(layout.page_starts, [Some((0, 0)), Some((0, 34)), Some((0, 34)), None]);
 }
 
 #[test]
@@ -497,11 +605,14 @@ fn reads_pef_rows_as_lines_and_pages() {
 fn ignores_line_breaks_inside_pef_rows() {
 	let row = |text: &str| format!("<row>{}\n</row>\n", cells(text));
 	let volumes = format!(
-		r#"<volume cols="28" rows="4" rowgap="0" duplex="false"><section><page>{}{}</page></section></volume>"#,
-		row("  HELLO      #A"),
+		r#"<volume cols="40" rows="4" rowgap="0" duplex="false"><section><page>{}{}</page></section></volume>"#,
+		row("  HELLO HELLO HELLO HELLO HELLO HELLOS"),
 		row("_W")
 	);
-	assert_eq!(parse(&PefParser, "rows.pef", pef("", &volumes)).buffer.content, "hello world\n");
+	assert_eq!(
+		parse(&PefParser, "rows.pef", pef("", &volumes)).buffer.content,
+		"hello hello hello hello hello hellos world\n"
+	);
 }
 
 #[test]
