@@ -63,7 +63,7 @@ impl DocumentManager {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
-		self.last_sound_position.set(Some(tab.window.to_doc(tab.text_ctrl.get_insertion_point())));
+		self.last_sound_position.set(Some(tab.to_doc(tab.text_ctrl.get_insertion_point())));
 	}
 
 	pub(crate) fn check_bookmark_sounds(&self) {
@@ -74,7 +74,7 @@ impl DocumentManager {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
-		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 		let prev = self.last_sound_position.get().unwrap_or(position);
 		self.last_sound_position.set(Some(position));
 		if prev == position {
@@ -135,9 +135,9 @@ impl DocumentManager {
 			return;
 		};
 		// TODO(windowing): sets the caret directly rather than through a window-aware jump, so a target outside the loaded window is clamped instead of reloading.
-		let current = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let current = tab.to_doc(tab.text_ctrl.get_insertion_point());
 		if position != current {
-			let local = tab.window.to_local(position);
+			let local = tab.to_local(position);
 			tab.text_ctrl.set_insertion_point(local);
 			tab.text_ctrl.show_position(local);
 		}

@@ -23,9 +23,6 @@ pub struct AppearanceSettings {
 	/// A packed RGB colour, or negative for the system's.
 	pub bg_color: i32,
 	pub line_spacing: i32,
-	pub paragraph_spacing: i32,
-	pub letter_spacing: i32,
-	pub text_alignment: i32,
 }
 
 impl AppearanceSettings {
@@ -35,9 +32,6 @@ impl AppearanceSettings {
 			readability_font: config.get_readability_font(),
 			bg_color: config.get_bg_color(),
 			line_spacing: config.get_line_spacing(),
-			paragraph_spacing: config.get_paragraph_spacing(),
-			letter_spacing: config.get_letter_spacing(),
-			text_alignment: config.get_text_alignment(),
 		}
 	}
 
@@ -46,9 +40,6 @@ impl AppearanceSettings {
 		config.set_readability_font(&self.readability_font);
 		config.set_bg_color(self.bg_color);
 		config.set_line_spacing(self.line_spacing);
-		config.set_paragraph_spacing(self.paragraph_spacing);
-		config.set_letter_spacing(self.letter_spacing);
-		config.set_text_alignment(self.text_alignment);
 	}
 }
 
@@ -57,9 +48,6 @@ pub(super) struct AppearanceTab {
 	font: Rc<RefCell<ReadabilityFont>>,
 	bg_color: Rc<Cell<i32>>,
 	line_spacing: Choice,
-	paragraph_spacing: Choice,
-	letter_spacing: Choice,
-	text_alignment: Choice,
 }
 
 impl AppearanceTab {
@@ -102,65 +90,14 @@ impl AppearanceTab {
 				t("Double"),
 			],
 		);
-		// TRANSLATORS: Label for the paragraph spacing dropdown
-		let (paragraph_spacing_label, paragraph_spacing) = labeled_choice(
-			panel,
-			&t("&Paragraph spacing:"),
-			&[
-				// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
-				t("Normal"),
-				// TRANSLATORS: Relaxed paragraph spacing option
-				t("Relaxed"),
-				// TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-				t("Wide"),
-			],
-		);
-		// TRANSLATORS: Label for the letter spacing dropdown
-		let (letter_spacing_label, letter_spacing) = labeled_choice(
-			panel,
-			&t("L&etter spacing:"),
-			&[
-				// TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
-				t("Normal"),
-				// TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-				t("Wide"),
-				// TRANSLATORS: Very Wide letter spacing option
-				t("Very Wide"),
-			],
-		);
-		// TRANSLATORS: Label for the text alignment dropdown
-		let (text_alignment_label, text_alignment) = labeled_choice(
-			panel,
-			&t("Text &alignment:"),
-			&[
-				// TRANSLATORS: Left text alignment option
-				t("Left"),
-				// TRANSLATORS: Center text alignment option
-				t("Center"),
-				// TRANSLATORS: Right text alignment option
-				t("Right"),
-				// TRANSLATORS: Justified text alignment option
-				t("Justify"),
-			],
-		);
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
 		sizer.add(&word_wrap, 0, SizerFlag::All, OPTION_PADDING);
 		sizer.add_sizer(&font_sizer, 0, SizerFlag::Expand | SizerFlag::All, OPTION_PADDING);
 		sizer.add_sizer(&bg_sizer, 0, SizerFlag::Expand | SizerFlag::All, OPTION_PADDING);
-		for (label, choice) in [
-			(line_spacing_label, line_spacing),
-			(paragraph_spacing_label, paragraph_spacing),
-			(letter_spacing_label, letter_spacing),
-			(text_alignment_label, text_alignment),
-		] {
-			sizer.add_sizer(&labeled_row(label, &choice, padding), 0, SizerFlag::All, OPTION_PADDING);
-		}
+		sizer.add_sizer(&labeled_row(line_spacing_label, &line_spacing, padding), 0, SizerFlag::All, OPTION_PADDING);
 		panel.set_sizer(sizer, true);
 		word_wrap.set_value(settings.word_wrap);
 		line_spacing.set_selection(settings.line_spacing.clamp(0, 2).unsigned_abs());
-		paragraph_spacing.set_selection(settings.paragraph_spacing.clamp(0, 2).unsigned_abs());
-		letter_spacing.set_selection(settings.letter_spacing.clamp(0, 2).unsigned_abs());
-		text_alignment.set_selection(settings.text_alignment.clamp(0, 3).unsigned_abs());
 		font_preview.set_label(&font_description(&settings.readability_font));
 		bg_preview.set_label(&color_description(settings.bg_color));
 		let font = Rc::new(RefCell::new(settings.readability_font.clone()));
@@ -200,7 +137,7 @@ impl AppearanceTab {
 			bg_state.set(-1);
 			bg_preview.set_label(&color_description(-1));
 		});
-		Self { word_wrap, font, bg_color, line_spacing, paragraph_spacing, letter_spacing, text_alignment }
+		Self { word_wrap, font, bg_color, line_spacing }
 	}
 
 	pub(super) fn values(&self) -> AppearanceSettings {
@@ -210,9 +147,6 @@ impl AppearanceTab {
 			readability_font: self.font.borrow().clone(),
 			bg_color: self.bg_color.get(),
 			line_spacing: selection(&self.line_spacing),
-			paragraph_spacing: selection(&self.paragraph_spacing),
-			letter_spacing: selection(&self.letter_spacing),
-			text_alignment: selection(&self.text_alignment),
 		}
 	}
 }

@@ -8,7 +8,7 @@ use common::fixture;
 
 /// A page read by OCR comes back with the document the next time it is opened, rather than as its placeholder again (#1160).
 #[test]
-#[ignore = "drives the real GUI via UI Automation; needs an interactive desktop and an OCR language"]
+#[ignore = "needs the wxStyledTextCtrl UIA text provider (see #1246); also needs an interactive desktop and an OCR language"]
 fn a_page_read_by_ocr_is_there_when_the_document_is_opened_again() {
 	let has_words = |text: Option<String>| text.is_some_and(|text| text.to_lowercase().contains(fixture::COMIC_WORDS));
 	let mut app = common::launch_on("keeps-recognized-text", fixture::write_comic, |config| {

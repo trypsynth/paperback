@@ -3,7 +3,7 @@
 mod common;
 
 #[test]
-#[ignore = "drives the real GUI via UI Automation; needs an interactive desktop"]
+#[ignore = "needs the wxStyledTextCtrl UIA text provider (see #1246); also needs an interactive desktop"]
 fn status_bar_shows_the_caret_line_from_the_moment_a_document_opens() {
 	let app = common::launch("status-bar");
 	common::wait_for_reader_focus(app.pid);

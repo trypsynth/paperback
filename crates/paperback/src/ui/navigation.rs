@@ -7,7 +7,6 @@ use wxdragon::prelude::*;
 use super::{
 	document_manager::{DocumentManager, DocumentTab},
 	reader_ctrl::ReaderCtrl,
-	text_render::reload_window_around,
 };
 use crate::{audio_player::AudioPlayer, text_window::CtrlPos};
 
@@ -38,7 +37,7 @@ fn record_history(tab: &mut DocumentTab, from: DocPos, to: DocPos) -> HistoryUpd
 
 /// The control's own insertion point is relative to the loaded window, not the document.
 pub fn doc_caret(tab: &DocumentTab) -> DocPos {
-	tab.window.to_doc(tab.text_ctrl.get_insertion_point())
+	tab.to_doc(tab.text_ctrl.get_insertion_point())
 }
 
 /// By time, not text: whole-file recordings have one blank line of text per file, so a text percentage picks a file by count rather than duration.
@@ -65,15 +64,12 @@ pub fn audio_elapsed_ms(tab: &DocumentTab) -> Option<u64> {
 
 pub fn doc_selected_range(tab: &DocumentTab) -> (DocPos, DocPos) {
 	let (start, end) = selected_range(tab.text_ctrl);
-	(tab.window.to_doc(start), tab.window.to_doc(end))
+	(tab.to_doc(start), tab.to_doc(end))
 }
 
 /// Leaves audio alone, for audio driving the caret (`handle_seek_audio`), where re-seeking would lose a mid-clip or spilled-over position.
-pub(super) fn set_caret_to_doc_offset(tab: &mut DocumentTab, offset: DocPos) {
-	if tab.window.needs_reload_for(offset, tab.session.document_len()) {
-		reload_window_around(tab, offset, "caret jump");
-	}
-	let local = tab.window.to_local(offset);
+pub(super) fn set_caret_to_doc_offset(tab: &DocumentTab, offset: DocPos) {
+	let local = tab.to_local(offset);
 	tab.text_ctrl.set_focus();
 	tab.text_ctrl.set_insertion_point(local);
 	tab.text_ctrl.show_position(local);
@@ -86,13 +82,9 @@ fn jump_to_doc_offset(tab: &mut DocumentTab, offset: DocPos) {
 }
 
 /// Without `highlight` nothing is selected, so a screen reader reads the line rather than announcing a selected string; the caret goes to `start` because screen readers speak the character after it.
-/// Only `start` is checked against the window, since a match is far shorter than `RELOAD_MARGIN`.
 pub fn reveal_doc_range(tab: &mut DocumentTab, start: DocPos, end: DocPos, highlight: bool) {
-	if tab.window.needs_reload_for(start, tab.session.document_len()) {
-		reload_window_around(tab, start, "selection jump");
-	}
-	let local_start = tab.window.to_local(start);
-	let local_end = tab.window.to_local(end);
+	let local_start = tab.to_local(start);
+	let local_end = tab.to_local(end);
 	tab.text_ctrl.set_focus();
 	if highlight {
 		tab.text_ctrl.set_selection(local_start, local_end);
@@ -183,8 +175,9 @@ fn apply_navigation_result(
 		_ => 0,
 	};
 	let message = format_nav_found_message(&ann, &context_text, context_index, result.wrapped, next);
-	announce_for_command(live_region_label, from_keyboard, &message);
 	jump_to_doc_offset(tab, result.offset);
+	// After the jump: the caret move raises an accessibility event that would cancel a message raised before it.
+	announce_for_command(live_region_label, from_keyboard, &message);
 	true
 }
 

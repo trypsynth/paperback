@@ -155,18 +155,16 @@ fn main() {
 	wxdragon::main(move |_| {
 		let frame = Frame::builder().with_title("Paperback shortcut checks").build();
 		let panel = Panel::builder(&frame).build();
-		let text = TextCtrl::builder(&panel)
-			.with_style(
-				TextCtrlStyle::MultiLine | TextCtrlStyle::ReadOnly | TextCtrlStyle::Rich2 | TextCtrlStyle::WordWrap,
-			)
-			.build();
+		let text = StyledTextCtrl::builder(&panel).build();
+		text.set_wrap_mode(WrapMode::Word);
 		let mut config = ConfigManager::new();
 		assert!(config.initialize(config_path_for_app.clone()));
 		let config = Rc::new(Mutex::new(config));
 		let from_keyboard = Rc::new(Cell::new(false));
 		let received = Rc::new(RefCell::new(Vec::new()));
 		let session = Rc::new(link_session());
-		text.set_value(&session.text_range(doc(0), session.document_len().as_pos()));
+		text.set_text(&session.text_range(doc(0), session.document_len().as_pos()));
+		text.set_read_only(true);
 		let session_for_menu = Rc::clone(&session);
 		let activated = Rc::new(RefCell::new(Vec::new()));
 		let opened_elements = Rc::new(RefCell::new(Vec::new()));
@@ -174,7 +172,7 @@ fn main() {
 		let activated_for_key = Rc::clone(&activated);
 		let session_for_key = Rc::clone(&session);
 		activation::bind_activation(text, move |enter| {
-			let position = doc(text.get_insertion_point());
+			let position = doc(i64::from(text.get_current_pos()));
 			if let Some(html) = session_for_key.get_formula_at_position(position) {
 				opened_for_key.borrow_mut().push(("formula", html));
 				return;
@@ -185,7 +183,7 @@ fn main() {
 			}
 			let result = session_for_key.activate_link(position);
 			if result.action == paperback_core::session::LinkAction::Internal {
-				text.set_insertion_point(ctrl(result.offset));
+				text.set_current_pos(i32::try_from(ctrl(result.offset)).unwrap_or(i32::MAX));
 			}
 			activated_for_key.borrow_mut().push((enter, result));
 		});
@@ -202,10 +200,10 @@ fn main() {
 			received_for_menu.borrow_mut().push((event.get_id(), source_for_menu.replace(false)));
 			if event.get_id() == menu_ids::COPY {
 				event.skip(false);
-				assert!(wxdragon::clipboard::Clipboard::get().set_text(&text.get_string_selection()));
+				assert!(wxdragon::clipboard::Clipboard::get().set_text(&text.get_selected_text()));
 				return;
 			}
-			let position = doc(text.get_insertion_point());
+			let position = doc(i64::from(text.get_current_pos()));
 			let result = match event.get_id() {
 				menu_ids::NEXT_LINK => Some(session_for_menu.navigate_link(position, false, true)),
 				menu_ids::NEXT_TABLE => Some(session_for_menu.navigate_table(position, false, true)),
@@ -214,7 +212,7 @@ fn main() {
 			};
 			if let Some(result) = result {
 				assert!(result.found);
-				text.set_insertion_point(ctrl(result.offset));
+				text.set_current_pos(i32::try_from(ctrl(result.offset)).unwrap_or(i32::MAX));
 			}
 		});
 		let menu = Menu::builder()
@@ -243,9 +241,9 @@ fn main() {
 		assert!(!from_keyboard.get());
 		assert!(activated.borrow().is_empty(), "Control+Space must stay an audio shortcut");
 		for (character, hardware_key, enter) in [("\r", 36, true), ("\u{3}", 76, true), (" ", 49, false)] {
-			text.set_insertion_point(0);
+			text.set_current_pos(0);
 			expect_command(&received, frame, "k", 0, 40, menu_ids::NEXT_LINK);
-			let link_position = doc(text.get_insertion_point());
+			let link_position = doc(i64::from(text.get_current_pos()));
 			activated.borrow_mut().clear();
 			send_key(frame, character, 0, hardware_key);
 			let results = activated.borrow();
@@ -253,10 +251,10 @@ fn main() {
 			assert_eq!(results[0].0, enter);
 			assert_eq!(results[0].1.action, paperback_core::session::LinkAction::Internal);
 			assert!(results[0].1.offset > link_position);
-			assert_eq!(text.get_insertion_point(), ctrl(results[0].1.offset));
+			assert_eq!(i64::from(text.get_current_pos()), ctrl(results[0].1.offset));
 			assert!(session.get_line_text(results[0].1.offset).contains("Destination"));
 			drop(results);
-			text.set_insertion_point(0);
+			text.set_current_pos(0);
 			send_key(frame, "k", 0, 40);
 			send_key(frame, "k", 0, 40);
 			activated.borrow_mut().clear();
@@ -271,7 +269,7 @@ fn main() {
 			("m", 46, menu_ids::NEXT_FORMULA, "formula", "<mi>x</mi>"),
 		] {
 			for (character, hardware_key) in [("\r", 36), ("\u{3}", 76), (" ", 49)] {
-				text.set_insertion_point(0);
+				text.set_current_pos(0);
 				expect_command(&received, frame, shortcut, 0, key, id);
 				opened_elements.borrow_mut().clear();
 				activated.borrow_mut().clear();
@@ -284,7 +282,7 @@ fn main() {
 			}
 		}
 		activated.borrow_mut().clear();
-		text.set_insertion_point(0);
+		text.set_current_pos(0);
 		send_key(frame, "\r", 0, 36);
 		assert_eq!(activated.borrow().len(), 1);
 		assert!(!activated.borrow()[0].1.found, "ordinary text must not follow a link");

@@ -31,7 +31,7 @@ impl DocumentManager {
 			return;
 		}
 		let Some(tab) = self.active_tab() else { return };
-		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 		let bytes = match tab.session.image_bytes_at(position) {
 			Ok(bytes) => bytes,
 			Err(error) => {

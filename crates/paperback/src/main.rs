@@ -13,8 +13,6 @@ mod linux_integration;
 mod ocr;
 mod problem_report;
 mod read_aloud;
-#[cfg(any(target_os = "windows", test))]
-mod rtf;
 mod shell;
 #[cfg(test)]
 mod test_locale;
@@ -58,23 +56,12 @@ fn main() {
 	// Under `cargo run` macOS treats the unbundled binary as a Terminal background process with no menu bar; must run before wx initializes.
 	#[cfg(target_os = "macos")]
 	promote_unbundled_to_regular_app();
-	#[cfg(target_os = "windows")]
-	pin_rich_edit();
 	let _ = wxdragon::main(|app| {
 		let _ = set_appearance(Appearance::System);
 		let app_state = PaperbackApp::new(app);
 		let _ = Box::leak(Box::new(app_state));
 	});
 	problem_report::end_session();
-}
-
-/// wx frees the rich edit library before COM shuts down, so a screen reader's accessibility objects in it crashed the process at exit.
-#[cfg(target_os = "windows")]
-fn pin_rich_edit() {
-	use windows::{Win32::System::LibraryLoader::LoadLibraryW, core::w};
-	if let Err(e) = unsafe { LoadLibraryW(w!("msftedit.dll")) } {
-		tracing::warn!(error = %e, "could not pin msftedit.dll");
-	}
 }
 
 #[cfg(target_os = "macos")]

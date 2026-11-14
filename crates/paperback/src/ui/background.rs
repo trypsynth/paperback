@@ -8,7 +8,6 @@ const STATUS_INTERVAL_MS: i32 = 1000;
 const AUDIO_SYNC_INTERVAL_MS: i32 = 250;
 /// Short, so reading notices the user moving the caret quickly. Each tick does nothing unless a document is being read.
 const READ_ALOUD_INTERVAL_MS: i32 = 50;
-const WINDOW_EXTEND_INTERVAL_MS: i32 = 250;
 
 /// Hold the returned timers for the window's lifetime: `Timer`'s `Drop` destroys the wx timer.
 pub fn start_timers(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) -> Vec<Rc<Timer<Frame>>> {
@@ -16,7 +15,6 @@ pub fn start_timers(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) -> 
 		status_timer(frame, doc_manager),
 		pump_timer(frame, doc_manager, AUDIO_SYNC_INTERVAL_MS, DocumentManager::pump_audio),
 		pump_timer(frame, doc_manager, READ_ALOUD_INTERVAL_MS, DocumentManager::pump_read_aloud),
-		pump_timer(frame, doc_manager, WINDOW_EXTEND_INTERVAL_MS, DocumentManager::pump_window_extend),
 	]
 }
 
@@ -54,7 +52,7 @@ fn pump_timer(
 	timer
 }
 
-/// A resize makes `RichEdit` rewrap everything loaded, so a long read's growth is given back first.
+/// A resize rewraps everything loaded, so the control is repainted after the layout settles.
 pub fn bind_resize(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
 	let dm = Rc::clone(doc_manager);
 	let last_frame_size = Rc::new(Cell::new((0, 0)));
@@ -63,12 +61,11 @@ pub fn bind_resize(frame: &Frame, doc_manager: &Rc<Mutex<DocumentManager>>) {
 		event.skip(true);
 		let size = frame_for_resize.get_size();
 		let dimensions = (size.width, size.height);
-		// Layout work sends size events mid Say-All, and compaction moves the loaded start out from under the screen reader, so only a real shape change compacts.
 		if last_frame_size.replace(dimensions) == dimensions {
 			return;
 		}
-		if let Ok(mut dm) = dm.try_lock() {
-			dm.compact_window_if_grown();
+		if let Ok(dm) = dm.try_lock() {
+			dm.update_status_bar();
 		}
 	});
 }

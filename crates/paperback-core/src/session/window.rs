@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::{borrow::Cow, collections::BTreeMap};
 
 use super::{DocumentSession, LineMarker};
 use crate::{
@@ -12,11 +12,12 @@ pub const WINDOW_LEN: DocLen = DocLen::from_raw(500_000);
 pub const WHOLE_DOCUMENT_LEN: DocLen = DocLen::from_raw(WINDOW_LEN.get() + WINDOW_LEN.get() / 2);
 
 #[derive(Debug, Clone)]
-pub struct WindowSlice {
+pub struct WindowSlice<'a> {
 	/// After paragraph snapping, so it may differ from the start that was asked for.
 	pub start: DocPos,
 	pub end: DocPos,
-	pub text: String,
+	/// Borrowed when the window covers the whole document, so loading the reader does not copy a book that the session already owns.
+	pub text: Cow<'a, str>,
 	/// Positions are in `text` (`start` is the document position of 0), not in the document.
 	pub markers: Vec<LineMarker>,
 	/// Sorted and non-overlapping; positions are in `text`.
@@ -51,7 +52,7 @@ impl DocumentSession {
 	}
 
 	#[must_use]
-	pub fn get_window(&self, raw_start: DocPos, raw_end: DocPos) -> WindowSlice {
+	pub fn get_window(&self, raw_start: DocPos, raw_end: DocPos) -> WindowSlice<'_> {
 		let buf = &self.handle.document().buffer;
 		let raw_start = raw_start.min(buf.end());
 		let raw_end = raw_end.min(buf.end()).max(raw_start);
@@ -59,7 +60,12 @@ impl DocumentSession {
 		let byte_end = snap_end_to_paragraph_boundary(buf, buf.byte_at(raw_end));
 		let start = buf.pos_at_byte(byte_start);
 		let end = buf.pos_at_byte(byte_end);
-		let text = buf.slice(byte_start..byte_end).to_string();
+		let sliced = buf.slice(byte_start..byte_end);
+		let text = if byte_start == ContentBytePos::ZERO && byte_end == buf.content_end() {
+			Cow::Borrowed(sliced)
+		} else {
+			Cow::Owned(sliced.to_string())
+		};
 		let markers = buf
 			.markers
 			.iter()
@@ -171,6 +177,21 @@ mod tests {
 		assert_eq!(slice.start, 0);
 		assert_eq!(slice.end, len);
 		assert_eq!(slice.text, "first paragraph\nsecond paragraph\nthird paragraph");
+	}
+
+	/// Loading the whole document must not copy text the session already owns. A part still needs its own copy, since it is a
+	/// distinct range that the caller can hold while the session changes.
+	#[test]
+	fn get_window_borrows_the_whole_document_and_owns_a_part() {
+		let session = session_with("first paragraph\nsecond paragraph", &[]);
+		let len = session.document_len().as_pos();
+		assert!(matches!(session.get_window(0.into(), len).text, Cow::Borrowed(_)));
+		assert!(matches!(session.get_window(0.into(), 100_000.into()).text, Cow::Borrowed(_)));
+		assert!(matches!(session.get_window(2.into(), 4.into()).text, Cow::Owned(_)));
+
+		let trailing_newline = session_with("first paragraph\nsecond paragraph\n", &[]);
+		let len = trailing_newline.document_len().as_pos();
+		assert!(matches!(trailing_newline.get_window(0.into(), len).text, Cow::Borrowed(_)));
 	}
 
 	#[test]

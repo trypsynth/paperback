@@ -123,6 +123,8 @@ pub(super) fn handle_options(
 		re_register_hotkey(hotkey_handle, options.general.hotkey.as_ref());
 	}
 	drop(cfg);
+	// Applies to the controls already open; new ones read the setting when they are built.
+	crate::ui::reader_ctrl::set_edge_beep(options.advanced.edge_beep);
 	let (was, look) = (&old.appearance, &options.appearance);
 	let font_changed = was.readability_font != look.readability_font;
 	let bg_color_changed = was.bg_color != look.bg_color;
@@ -148,15 +150,6 @@ pub(super) fn handle_options(
 		}
 		if was.line_spacing != look.line_spacing {
 			dm_ref.apply_line_spacing(look.line_spacing);
-		}
-		if was.text_alignment != look.text_alignment {
-			dm_ref.apply_text_alignment(look.text_alignment);
-		}
-		if was.letter_spacing != look.letter_spacing {
-			dm_ref.apply_letter_spacing(look.letter_spacing);
-		}
-		if was.paragraph_spacing != look.paragraph_spacing {
-			dm_ref.apply_paragraph_spacing(look.paragraph_spacing);
 		}
 	}
 	if old.documents != options.documents {

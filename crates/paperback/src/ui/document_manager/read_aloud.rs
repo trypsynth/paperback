@@ -41,7 +41,7 @@ impl DocumentManager {
 		}
 		self.speaker()?;
 		let tab = &self.tabs[index];
-		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let position = tab.to_doc(tab.text_ctrl.get_insertion_point());
 		let started = self.speaker.as_mut().is_some_and(|speaker| {
 			speaker.start(&tab.session, position, &self.config.lock().unwrap(), &path.to_string_lossy())
 		});
@@ -227,7 +227,7 @@ impl DocumentManager {
 		};
 		let tab = &mut self.tabs[index];
 		let Some(speaker) = self.speaker.as_mut() else { return };
-		let caret = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		let caret = tab.to_doc(tab.text_ctrl.get_insertion_point());
 		// `try_lock` because Settings holds the config while it's open; the move is still there to read from on a later tick.
 		if let Some(moved_to) = speaker.caret_moved_to(caret)
 			&& let Ok(config) = self.config.try_lock()
@@ -238,10 +238,10 @@ impl DocumentManager {
 		match speaker.pump(&tab.session) {
 			Some(Followed::Word(position)) => {
 				if position != caret {
-					let local = tab.window.to_local(position);
+					let local = tab.to_local(position);
 					tab.text_ctrl.set_insertion_point(local);
 					tab.text_ctrl.show_position(local);
-					speaker.caret_followed(tab.window.to_doc(tab.text_ctrl.get_insertion_point()));
+					speaker.caret_followed(tab.to_doc(tab.text_ctrl.get_insertion_point()));
 				}
 			}
 			Some(Followed::End) => set_caret_to_doc_offset(tab, tab.session.document_len().as_pos()),
