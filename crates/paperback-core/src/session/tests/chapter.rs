@@ -102,3 +102,40 @@ fn an_audio_only_book_of_unknown_length_has_no_answer() {
 		"Chapter 1, 42%, 2 words left"
 	);
 }
+
+#[test]
+fn chapter_progress_comes_in_parts_by_words_or_by_time() {
+	let session = session_with(chapters(), Some(timeline(true)), false);
+	assert_eq!(
+		session.chapter_progress_ffi(8.into(), -1),
+		ChapterProgressFfi {
+			found: true,
+			title: "Chapter 1".to_string(),
+			percent: 42,
+			words_left: 2,
+			elapsed_ms: -1,
+			total_ms: -1,
+		}
+	);
+	assert_eq!(
+		session.chapter_progress_ffi(8.into(), 105_000),
+		ChapterProgressFfi {
+			found: true,
+			title: "Chapter 2".to_string(),
+			percent: 25,
+			words_left: -1,
+			elapsed_ms: 45_000,
+			total_ms: 180_000,
+		}
+	);
+}
+
+#[test]
+fn chapter_progress_in_parts_falls_back_as_the_announcement_does() {
+	let by_words = session_with(chapters(), Some(timeline(false)), false).chapter_progress_ffi(8.into(), 30_000);
+	assert_eq!((by_words.found, by_words.percent, by_words.words_left), (true, 42, 2));
+	let unknown = session_with(chapters(), Some(timeline(false)), true).chapter_progress_ffi(8.into(), 30_000);
+	assert!(!unknown.found);
+	let untitled = session_with(Vec::new(), None, false).chapter_progress_ffi(19.into(), -1);
+	assert_eq!((untitled.title.as_str(), untitled.percent, untitled.words_left), ("", 39, 6));
+}

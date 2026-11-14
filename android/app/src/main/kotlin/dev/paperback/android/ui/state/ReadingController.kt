@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import uniffi.paperback.ChapterProgressFfi
 import uniffi.paperback.ConfigManagerFfi
 import uniffi.paperback.DocumentSession
 import uniffi.paperback.ReadingStepFfi
@@ -457,6 +458,33 @@ class ReadingController(
 		if (narration.isNarrating(tab.documentUri)) narration.resumePointMs()?.let { return it }
 		val point = tab.session.audioPointForPositionFfi(_ttsPosition.value)
 		return if (point.found) point.timeMs else null
+	}
+
+	private val _showsChapterProgress = MutableStateFlow(false)
+
+	/** Whether the progress under the reading bar is the chapter's rather than the book's. */
+	val showsChapterProgress: StateFlow<Boolean> = _showsChapterProgress.asStateFlow()
+
+	/** Null only for a book that is all audio whose files' lengths aren't known, which has no chapter to measure. */
+	fun chapterProgress(): ChapterProgressFfi? {
+		val tab = activeTab() ?: return null
+		return tab.session.chapterProgressFfi(_ttsPosition.value, audioElapsedMs() ?: -1L).takeIf { it.found }
+	}
+
+	/** Announces what it switched to, since TalkBack doesn't read a focused button again when its text changes. */
+	fun toggleChapterProgress() {
+		val chapter = if (_showsChapterProgress.value) null else chapterProgress()
+		_showsChapterProgress.value = chapter != null
+		val text = chapter?.let(::chapterProgressText) ?: bookProgressText()
+		if (text.isNotEmpty()) announcer(text)
+	}
+
+	/** An audio-only book gives no percentage here, as on the screen. */
+	private fun bookProgressText(): String {
+		val tab = activeTab() ?: return ""
+		val percent = if (tab.isAudioOnly) null else progressPercent()
+		val time = audioElapsedMs()?.let { tab.session.audioTimeAnnouncementFfi(it) }?.ifEmpty { null }
+		return listOfNotNull(percent?.let { t("{}% through", it.toString()) }, time).joinToString(", ")
 	}
 
 	fun seekAudioToMs(elapsedMs: Long): Boolean = narration.seekToMs(elapsedMs)

@@ -381,6 +381,50 @@ final class ReadingController {
 		return Int(session.getStatusInfo(position: ttsPosition).percentage)
 	}
 
+	/// Whether the progress under the reading bar is the chapter's rather than the book's.
+	var showsChapterProgress = false
+	@ObservationIgnored private var countedChapterProgress: (session: ObjectIdentifier, position: Int64, progress: ChapterProgressFfi)?
+
+	/// False only for a book that is all audio whose files' lengths aren't known, which has no chapter to measure.
+	var canShowChapterProgress: Bool {
+		guard let session = activeSession else { return false }
+		return !isAudioOnly || !session.audioTimeAnnouncementFfi(elapsedMs: 0).isEmpty
+	}
+
+	/// The screen asks every second for a recording's sake, so a text book's answer is kept until the reading position moves: counting the words left reads the rest of the chapter.
+	func chapterProgress() -> ChapterProgressFfi? {
+		guard let session = activeSession else { return nil }
+		let elapsed = audioElapsedMs()
+		let id = ObjectIdentifier(session)
+		if elapsed == nil, let counted = countedChapterProgress, counted.session == id, counted.position == ttsPosition {
+			return counted.progress
+		}
+		let progress = session.chapterProgressFfi(position: ttsPosition, elapsedMs: elapsed ?? -1)
+		guard progress.found else { return nil }
+		if elapsed == nil { countedChapterProgress = (id, ttsPosition, progress) }
+		return progress
+	}
+
+	/// Announces what it switched to, since VoiceOver doesn't read a focused button again when its text changes.
+	func toggleChapterProgress() {
+		let chapter = showsChapterProgress ? nil : chapterProgress()
+		showsChapterProgress = chapter != nil
+		let text = chapter.map(chapterProgressText) ?? bookProgressText()
+		if !text.isEmpty { announce(text) }
+	}
+
+	/// How far into the recording, such as "1:02:03 of 10:30:00", or nil while a file's length is unknown.
+	func audioTimeText() -> String? {
+		guard let session = activeSession, let elapsed = audioElapsedMs() else { return nil }
+		let time = session.audioTimeAnnouncementFfi(elapsedMs: elapsed)
+		return time.isEmpty ? nil : time
+	}
+
+	private func bookProgressText() -> String {
+		let percent = progressPercent().map { t("{}% through").replacingOccurrences(of: "{}", with: "\($0)") }
+		return [percent, audioTimeText()].compactMap { $0 }.joined(separator: ", ")
+	}
+
 	func goToPercent(_ percent: Int32, announce shouldAnnounce: Bool = false) {
 		guard let session = activeSession else { return }
 		jump(to: session.positionFromPercent(percent: percent), announce: shouldAnnounce)
