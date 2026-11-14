@@ -366,6 +366,11 @@ impl Layout {
 		let mut layout = Self::default();
 		let mut current: Option<String> = None;
 		let mut waiting_pages = Vec::new();
+		let mut led_to_next = false;
+		// Whether the last paragraph was a contents entry, and whether the open one started right after one.
+		let mut after_entry = false;
+		let mut opened_after_entry = false;
+		let mut opened_at = 0;
 		for (page_index, lines) in pages.iter().enumerate() {
 			layout.page_starts.push(None);
 			waiting_pages.push(page_index);
@@ -377,16 +382,37 @@ impl Layout {
 				let content: String = line.chars().skip(indent).collect();
 				if content.is_empty() {
 					layout.finish(&mut current);
+					after_entry = false;
 					continue;
 				}
-				let content = without_guide_dots(&content);
+				let guided = without_guide_dots(&content);
+				let led = guided != content;
 				// A line of guide dots alone leads from an entry on the line before to its page number on the next.
-				if content.is_empty() {
+				if guided.is_empty() {
+					led_to_next = true;
 					continue;
 				}
-				let standalone = indent >= CENTERED_INDENT || is_separator(&content);
-				if indent > 0 || standalone {
+				let content = guided;
+				// A contents entry ends at its page number, after its guide dots. The next starts at the margin, as a paragraph's run-on line does, so it's told apart by the dots.
+				let ends_entry = led || std::mem::take(&mut led_to_next);
+				// Contents entries are indented as far as a centered heading, and aren't one.
+				let standalone = (indent >= CENTERED_INDENT && !after_entry) || is_separator(&content);
+				// An entry's run-on line is indented, where a paragraph's first line is, and ends the entry with its dots. It's indented less than the entry's first line, as one indented further is an entry under a heading.
+				let runs_on = indent > 0
+					&& indent < opened_at
+					&& !standalone
+					&& ends_entry
+					&& current.is_some()
+					&& opened_after_entry;
+				if (indent > 0 && !runs_on) || standalone {
+					if current.is_some() {
+						after_entry = false;
+					}
 					layout.finish(&mut current);
+				}
+				if current.is_none() {
+					opened_after_entry = after_entry;
+					opened_at = indent;
 				}
 				let paragraph_index = layout.paragraphs.len();
 				let paragraph = current.get_or_insert_with(String::new);
@@ -398,8 +424,9 @@ impl Layout {
 					layout.page_starts[page] = Some((paragraph_index, cell));
 				}
 				paragraph.push_str(&content);
-				if standalone {
+				if standalone || ends_entry {
 					layout.finish(&mut current);
+					after_entry = ends_entry;
 				}
 			}
 		}

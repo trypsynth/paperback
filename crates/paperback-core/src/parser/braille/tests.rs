@@ -254,6 +254,40 @@ fn reads_guide_dots_as_one_space() {
 	assert_eq!(nearly_full.paragraphs, [cells(",SALADS & ,SALAD ,DRESS+S #BFA"), cells(",WORD\"\"S")]);
 }
 
+/// A contents page starts each entry at the margin and indents its run-on lines, the other way round from paragraphs, so an entry ends at its page number.
+#[test]
+fn ends_a_contents_entry_after_its_guide_dots() {
+	let contents = layout(
+		&[&[
+			",,TABLE ,,SERVICE & ,,ETIQUETTE \"\"\"\" #CA",
+			",,BEV]AGES \"\"\"\"\"\"\"\"\"\"\"\"\"\"\" #DD",
+			",A LONG ,T\\LE",
+			"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"",
+			"#DG",
+			",SUMM>Y \"\"\"\"\"\"\"\"\" #DH",
+			"    ,EQUIVAL5T ,WEI<TS &",
+			"  ,MEASURES \"\"\"\"\"\"\"\" #A",
+			",,M1L ,,PLANN+3",
+			"    ,M1L ,PLANN+ \"\"\"\"\"\" #AA",
+			"  ,AN INDENT$ ,P>AGRAPH",
+		]],
+		true,
+	);
+	assert_eq!(
+		contents.paragraphs,
+		[
+			cells(",,TABLE ,,SERVICE & ,,ETIQUETTE #CA"),
+			cells(",,BEV]AGES #DD"),
+			cells(",A LONG ,T\\LE #DG"),
+			cells(",SUMM>Y #DH"),
+			cells(",EQUIVAL5T ,WEI<TS & ,MEASURES #A"),
+			cells(",,M1L ,,PLANN+3"),
+			cells(",M1L ,PLANN+ #AA"),
+			cells(",AN INDENT$ ,P>AGRAPH")
+		]
+	);
+}
+
 #[test]
 fn keeps_the_space_after_a_dash_that_ends_a_line() {
 	let layout = layout(&[&["  HAIR,-", ",CAN'T", "M]E--", "?AN"]], true);
