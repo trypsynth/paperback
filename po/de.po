@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 12:52+0000\n"
+"POT-Creation-Date: 2026-11-14 18:56+0000\n"
 "PO-Revision-Date: 2026-11-04 14:11+0100\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
@@ -773,12 +773,12 @@ msgstr "Gehe zu &Zeit..."
 msgid "Go to a time in the recording"
 msgstr "Springt zu einer Zeit in der Aufnahme"
 
-#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter of an audiobook the reader is, and how much of it is left.
+#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter the reader is and how much of it is left: by time in an audiobook, by words in a text book.
 #, fuzzy
-msgid "Announce &Chapter Time"
-msgstr "&Kapitelzeit ankündigen"
+msgid "Announce &Chapter Progress"
+msgstr "&Kapitelfortschritt ankündigen"
 
-#. TRANSLATORS: Status-bar help text for the Announce Chapter Time menu item.
+#. TRANSLATORS: Status-bar help text for the Announce Chapter Progress menu item.
 #, fuzzy
 msgid "Say how far into this chapter you are and how much is left"
 msgstr "Ankündigen, wie weit du in diesem Kapitel fortgeschritten bist und wie viel übrig ist"
@@ -3044,8 +3044,8 @@ msgstr "Gehe zu Zeit..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
-msgid "Announce Chapter Time"
-msgstr "Kapitelzeit ankündigen"
+msgid "Announce Chapter Progress"
+msgstr "Kapitelfortschritt ankündigen"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Forward"
@@ -3590,6 +3590,13 @@ msgstr "{} verbleibend"
 #, fuzzy
 msgid "{} of {}"
 msgstr "{} von {}"
+
+#. TRANSLATORS: Announced with how far through a book's chapter the reader is: the number of words left in it. %d is the number.
+#, fuzzy
+msgid "%d word left"
+msgid_plural "%d words left"
+msgstr[0] "%d Wort verbleibend"
+msgstr[1] "%d Wörter verbleibend"
 
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 msgid "image"
@@ -5155,6 +5162,14 @@ msgstr "Lesbarkeit"
 #, fuzzy
 msgid "Time"
 msgstr "Zeit"
+
+#, fuzzy
+#~ msgid "Announce &Chapter Time"
+#~ msgstr "&Kapitelzeit ankündigen"
+
+#, fuzzy
+#~ msgid "Announce Chapter Time"
+#~ msgstr "Kapitelzeit ankündigen"
 
 #~ msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
 #~ msgstr "Paperback kann RAR-Comic-Archive nicht lesen. Packe die Datei als .cbz neu, um sie hier lesen zu können."

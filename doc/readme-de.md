@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: ba700ddfbaf3e99f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,b8a00464,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 12e7ba171a5bd0b4; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,ead885cc,8423460b,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - Version 1.1
 
@@ -48,6 +48,7 @@ Wenn JAWS nichts sagt, wenn du eine Taste drückst, die etwas melden sollte, öf
 
 Paperback unterstützt die folgenden Formate und Dateitypen:
 
+* BARD-Braille-Bücher aus dem National Library Service, jedes Volumen als ein Buch, zurückgewandelt mit dem Braille-Code ihrer Paketnamen (die `.zip`, die BARD herunterlädt, oder deren `.bopf` nach dem Entpacken)
 * Braille-Ready-Dateien und Portable-Embosser-Format-Bücher, zurückgewandelt in Druck mit der von dir gewählten Braille-Tabelle (`.brf`, `.pef`)
 * Comic-Book-Archive (`.cbz`, `.cbr`)
 * CHM-Hilfedateien (`.chm`)
@@ -56,7 +57,7 @@ Paperback unterstützt die folgenden Formate und Dateitypen:
 * EPUB-Bücher (`.epub`, oder das `.opf` eines, das nicht komprimiert ist)
 * FB2-eBooks (`.fb2`)
 * GNU-Info-Handbücher (`.info`, komprimiert oder nicht, und geteilte Handbücher, die von einem ihrer Teile aus geöffnet werden)
-* HTML-Dokumente (`.htm`, `.html`, `.xhtml`)
+* HTML-Dokumente (`.htm`, `.html`, `.shtml`, `.xhtml`)
 * Manualseiten, sowohl `man` als auch BSD `mdoc` (`.1` bis `.9`, `.man`, `.roff` und die komprimierten Versionen von jedem)
 * Markdown-Dokumente (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Microsoft-Word-Dokumente (`.docx`, `.docm`, `.doc`)
@@ -172,7 +173,7 @@ Sonderzeichentastenkombinationen sind nach den Tasten einer US-Tastatur benannt.
 
 * `Ctrl+Space` (macOS: `Control+Space`, d. h. die physische Strg-Taste, da Cmd+Space Spotlight öffnet): Audioerzählung abspielen/pausieren.
 * `Ctrl+J`: Zu einer Zeit in der Aufzeichnung gehen. Gib es ein als `1:23:45`, `23:45` oder `45` Sekunden, oder stell `+` oder `-` voran, um dich von deiner aktuellen Position aus zu bewegen, z. B. `+5:00`. Das Dialogfeld zeigt, wie weit du fortgeschritten bist und wie lange das Buch dauert.
-* `Shift+=`: Sagt an, wie weit du in diesem Kapitel vorangekommen bist und wie viel davon noch übrig ist, z. B. „Kapitel 3, 4:10 von 12:00, 7:50 verbleibend".
+* `Shift+=`: Sagt an, wie weit du in diesem Kapitel vorangekommen bist und wie viel davon noch übrig ist, z. B. „Kapitel 3, 4:10 von 12:00, 7:50 verbleibend". In einem Buch ohne aufgezeichnete Audioerzählung der Prozentsatz durch das Kapitel und die verbleibenden Wörter darin, z. B. „Kapitel 3, 42 %, 1850 Wörter verbleibend".
 * `'`: Audioerzählung vorwärts spulen.
 * `;`: Audioerzählung rückwärts spulen.
 * `Shift+'`: Spulmenge der Audioerzählung erhöhen.

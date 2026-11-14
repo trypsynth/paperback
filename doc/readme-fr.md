@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: ba700ddfbaf3e99f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,b8a00464,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 12e7ba171a5bd0b4; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,ead885cc,8423460b,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - version 1.1
 
@@ -48,6 +48,7 @@ Si JAWS ne dit rien lorsque vous appuyez sur une touche qui devrait signaler que
 
 Paperback prend en charge les formats et extensions suivants :
 
+* Livres braille BARD de la National Library Service, chaque volume en tant que livre unique, rétro-traduits avec le code braille que leurs noms de paquet indiquent (le `.zip` que BARD télécharge, ou son `.bopf` une fois décompressé)
 * Fichiers Braille Ready et livres au format Portable Embosser Format, rétro-traduits en imprimé avec la table braille de votre choix (`.brf`, `.pef`)
 * Archives de bandes dessinées (`.cbz`, `.cbr`)
 * Fichiers d'aide CHM (`.chm`)
@@ -56,7 +57,7 @@ Paperback prend en charge les formats et extensions suivants :
 * Livres EPUB (`.epub`, ou le `.opf` d'un qui n'est pas compressé)
 * Livres électroniques FB2 (`.fb2`)
 * Manuels GNU Info (`.info`, compressés ou non, et manuels divisés ouverts à partir de n'importe laquelle de leurs parties)
-* Documents HTML (`.htm`, `.html`, `.xhtml`)
+* Documents HTML (`.htm`, `.html`, `.shtml`, `.xhtml`)
 * Pages de manuel, à la fois `man` et BSD `mdoc` (`.1` à `.9`, `.man`, `.roff` et les versions compressées de chacun)
 * Documents Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Documents Microsoft Word (`.docx`, `.docm`, `.doc`)
@@ -172,7 +173,7 @@ Les raccourcis de ponctuation sont nommés d'après les touches d'un clavier am�
 
 * `Ctrl+Space` (macOS : `Control+Space`, c'est-à-dire la touche Control physique, car Cmd+Space ouvre Spotlight) : Lecture/pause de la narration audio.
 * `Ctrl+J` : Aller à un moment de l'enregistrement. Tapez-le comme `1:23:45`, `23:45` ou `45` secondes, ou mettez `+` ou `-` devant pour vous déplacer à partir de votre position actuelle, par exemple `+5:00`. La boîte de dialogue affiche votre avancement et la durée du livre.
-* `Shift+=` : Indiquer votre avancement dans ce chapitre et ce qui reste, par exemple « Chapitre 3, 4:10 de 12:00, 7:50 restant ».
+* `Shift+=` : Indiquer votre avancement dans ce chapitre et ce qui reste, par exemple « Chapitre 3, 4:10 de 12:00, 7:50 restant ». Dans un livre sans audio enregistré, le pourcentage du chapitre et les mots qui y restent, par exemple « Chapitre 3, 42%, 1850 mots restants ».
 * `'` : Avancer rapidement dans la narration audio.
 * `;` : Reculer rapidement dans la narration audio.
 * `Shift+'` : Augmenter le montant de l'avance rapide audio.

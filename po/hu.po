@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 12:52+0000\n"
+"POT-Creation-Date: 2026-11-14 18:56+0000\n"
 "PO-Revision-Date: 2026-10-21 12:00+0200\n"
 "Last-Translator: Torma Zsolt <torma.zsolt@gmail.com>\n"
 "Language-Team: Torma Zsolt <torma.zsolt@gmail.com>\n"
@@ -763,12 +763,12 @@ msgstr "Ugrás az &időpontra..."
 msgid "Go to a time in the recording"
 msgstr "Ugrás a felvétel egy adott időpontjára"
 
-#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter of an audiobook the reader is, and how much of it is left.
+#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter the reader is and how much of it is left: by time in an audiobook, by words in a text book.
 #, fuzzy
-msgid "Announce &Chapter Time"
-msgstr "Fejezet i&dejének bejelentése"
+msgid "Announce &Chapter Progress"
+msgstr "Fejezet &haladásának bejelentése"
 
-#. TRANSLATORS: Status-bar help text for the Announce Chapter Time menu item.
+#. TRANSLATORS: Status-bar help text for the Announce Chapter Progress menu item.
 #, fuzzy
 msgid "Say how far into this chapter you are and how much is left"
 msgstr "Bejelentés, hogy meddig jutott ebben a fejezetben, és mennyi van még hátra"
@@ -3034,8 +3034,8 @@ msgstr "Ugrás az időpontra..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
-msgid "Announce Chapter Time"
-msgstr "Fejezet idejének bejelentése"
+msgid "Announce Chapter Progress"
+msgstr "Fejezet haladásának bejelentése"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Forward"
@@ -3580,6 +3580,13 @@ msgstr "{} van még hátra"
 #, fuzzy
 msgid "{} of {}"
 msgstr "{} a(z) {}ből"
+
+#. TRANSLATORS: Announced with how far through a book's chapter the reader is: the number of words left in it. %d is the number.
+#, fuzzy
+msgid "%d word left"
+msgid_plural "%d words left"
+msgstr[0] "%d karakter maradt"
+msgstr[1] "%d karakter maradt"
 
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 msgid "image"
@@ -5145,6 +5152,14 @@ msgstr "Olvashatóság"
 #, fuzzy
 msgid "Time"
 msgstr "Időpontjára"
+
+#, fuzzy
+#~ msgid "Announce &Chapter Time"
+#~ msgstr "Fejezet i&dejének bejelentése"
+
+#, fuzzy
+#~ msgid "Announce Chapter Time"
+#~ msgstr "Fejezet idejének bejelentése"
 
 #~ msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
 #~ msgstr "A Paperback nem tudja olvasni a RAR formátumú képregényarchívumokat. Csomagolja újra .cbz formátumba, hogy itt olvashassa."

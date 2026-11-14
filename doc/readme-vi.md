@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: ba700ddfbaf3e99f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,b8a00464,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 12e7ba171a5bd0b4; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,ead885cc,8423460b,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - phiên bản 1.1
 
@@ -48,6 +48,7 @@ Nếu JAWS không nói gì khi bạn nhấn một phím mà nó sẽ báo cáo �
 
 Paperback hỗ trợ các định dạng và phần mở rộng sau:
 
+* Sách braille BARD từ Dịch vụ Thư viện Quốc gia, mỗi tập là một cuốn sách, được dịch ngược lại với mã braille mà tên gói của chúng đặt tên (`.zip` mà BARD tải xuống, hoặc `.bopf` của nó sau khi giải nén)
 * Tệp Braille Sẵn sàng và sách Portable Embosser Format, được dịch ngược lại thành bản in với bảng braille bạn chọn (`.brf`, `.pef`)
 * Lưu trữ sách truyện tranh (`.cbz`, `.cbr`)
 * Tệp trợ giúp CHM (`.chm`)
@@ -56,7 +57,7 @@ Paperback hỗ trợ các định dạng và phần mở rộng sau:
 * Sách EPUB (`.epub`, hoặc `.opf` của sách không được nén)
 * Sách điện tử FB2 (`.fb2`)
 * Hướng dẫn GNU Info (`.info`, có nén gzip hoặc không, và các hướng dẫn tách được mở từ bất kỳ phần nào của chúng)
-* Tài liệu HTML (`.htm`, `.html`, `.xhtml`)
+* Tài liệu HTML (`.htm`, `.html`, `.shtml`, `.xhtml`)
 * Các trang hướng dẫn, cả `man` và BSD `mdoc` (`.1` đến `.9`, `.man`, `.roff` và các dạng nén gzip của mỗi trang)
 * Tài liệu Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Tài liệu Microsoft Word (`.docx`, `.docm`, `.doc`)
@@ -172,7 +173,7 @@ Các phím tắt dấu câu được đặt tên theo các phím của bàn phí
 
 * `Ctrl+Space` (macOS: `Control+Space`, tức là phím Control vật lý, vì Cmd+Space mở Spotlight): Phát/tạm dừng kể chuyện âm thanh.
 * `Ctrl+J`: Đi tới một thời điểm trong bản ghi âm. Nhập dưới dạng `1:23:45`, `23:45` hoặc `45` giây, hoặc đặt `+` hoặc `-` ở phía trước để di chuyển từ nơi bạn đang ở, ví dụ: `+5:00`. Hộp thoại hiển thị bạn đã tiến bao xa và cuốn sách chạy bao lâu.
-* `Shift+=`: Nói bạn đã tiến bao xa vào chương này và còn lại bao nhiêu, ví dụ: "Chương 3, 4:10 của 12:00, 7:50 còn lại".
+* `Shift+=`: Nói bạn đã tiến bao xa vào chương này và còn lại bao nhiêu, ví dụ: "Chương 3, 4:10 của 12:00, 7:50 còn lại". Trong một cuốn sách không có âm thanh được ghi âm, phần trăm tiến hành qua chương và các từ còn lại trong đó, ví dụ: "Chương 3, 42%, 1850 từ còn lại".
 * `'`: Tìm kiếm kể chuyện âm thanh về phía trước.
 * `;`: Tìm kiếm kể chuyện âm thanh về phía sau.
 * `Shift+'`: Tăng lượng tìm kiếm âm thanh.

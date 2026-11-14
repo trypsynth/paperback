@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 12:52+0000\n"
+"POT-Creation-Date: 2026-11-14 18:56+0000\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -868,12 +868,12 @@ msgstr "Ir a &Hora..."
 msgid "Go to a time in the recording"
 msgstr "Ir a una hora en la grabación"
 
-#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter of an audiobook the reader is, and how much of it is left.
+#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter the reader is and how much of it is left: by time in an audiobook, by words in a text book.
 #, fuzzy
-msgid "Announce &Chapter Time"
-msgstr "Anunciar &tiempo del capítulo"
+msgid "Announce &Chapter Progress"
+msgstr "Anunciar &Progreso del Capítulo"
 
-#. TRANSLATORS: Status-bar help text for the Announce Chapter Time menu item.
+#. TRANSLATORS: Status-bar help text for the Announce Chapter Progress menu item.
 #, fuzzy
 msgid "Say how far into this chapter you are and how much is left"
 msgstr "Indicar cuánto tiempo llevas en este capítulo y cuánto queda"
@@ -3460,8 +3460,8 @@ msgstr "Ir a Hora..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
-msgid "Announce Chapter Time"
-msgstr "Anunciar tiempo del capítulo"
+msgid "Announce Chapter Progress"
+msgstr "Anunciar Progreso del Capítulo"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -4133,6 +4133,13 @@ msgstr "{} restante"
 #, fuzzy
 msgid "{} of {}"
 msgstr "{} de {}"
+
+#. TRANSLATORS: Announced with how far through a book's chapter the reader is: the number of words left in it. %d is the number.
+#, fuzzy
+msgid "%d word left"
+msgid_plural "%d words left"
+msgstr[0] "%d palabra restante"
+msgstr[1] "%d palabras restantes"
 
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 #, fuzzy
@@ -6029,6 +6036,14 @@ msgstr "Legibilidad"
 #, fuzzy
 msgid "Time"
 msgstr "Tiempo"
+
+#, fuzzy
+#~ msgid "Announce &Chapter Time"
+#~ msgstr "Anunciar &tiempo del capítulo"
+
+#, fuzzy
+#~ msgid "Announce Chapter Time"
+#~ msgstr "Anunciar tiempo del capítulo"
 
 #, fuzzy
 #~ msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
