@@ -2,11 +2,12 @@
 //!
 //! Both hold braille a translator already produced, wrapped to the embosser's line length and page height. The parser joins the wrapped lines back into paragraphs, back-translates each with the reader's braille table through louis-rs, and keeps a marker at the start of every embossed page.
 
+mod bopf;
 mod document;
 mod national_ascii;
 mod tables;
 
-use std::{borrow::Cow, collections::HashMap, fs};
+use std::{borrow::Cow, collections::HashMap, fs, path::Path};
 
 use anyhow::{Context, Result};
 use encoding_rs::WINDOWS_1252;
@@ -16,8 +17,12 @@ use roxmltree::{Document as XmlDocument, Node};
 
 pub(crate) use self::document::back_translate_document;
 use self::national_ascii::NationalAscii;
-pub use self::tables::{
-	BrailleCode, BrailleTable, DEFAULT_TABLE, back_translator, braille_tables, chosen_table, table_for_code, table_name,
+pub use self::{
+	bopf::BopfParser,
+	tables::{
+		BrailleCode, BrailleTable, DEFAULT_TABLE, back_translator, braille_tables, chosen_table, table_for_code,
+		table_name,
+	},
 };
 use crate::{
 	document::{DocLen, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
@@ -61,7 +66,10 @@ impl Parser for BrfParser {
 		tracing::debug!(path = %context.file_path, table = context.braille_table, "parsing BRF file");
 		let bytes =
 			fs::read(&context.file_path).with_context(|| format!("Failed to open BRF file '{}'", context.file_path))?;
-		let (translator, braille_ascii) = tables::back_translator(context.braille_table)?;
+		// One volume of a BARD book, opened on its own, is read with the table its book's package names.
+		let table = bopf::table_beside(Path::new(&context.file_path)).unwrap_or(context.braille_table);
+		let context = &ParserContext { braille_table: table, ..context.clone() };
+		let (translator, braille_ascii) = tables::back_translator(table)?;
 		let pages = likeliest_pages(&bytes, &braille_ascii, &translator, context);
 		let buffer = back_translate(&pages, &translator, context);
 		tracing::debug!(path = %context.file_path, pages = pages.len(), "parsed BRF file");

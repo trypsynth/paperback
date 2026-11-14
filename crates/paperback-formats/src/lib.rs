@@ -118,6 +118,13 @@ formats! {
 		mime_types: ["application/x-daisy-opf"],
 		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_PAGES,
 	},
+	/// NLS BARD's braille books, a zip or a folder of BRF volumes with a braille package. After [`DAISY`], which keeps `.zip`'s association, and turns down a zip that's no DAISY book.
+	BARD_BRAILLE {
+		name: "BARD braille books",
+		extensions: ["bopf", "zip"],
+		mime_types: ["application/x-bopf+xml"],
+		flags: SUPPORTS_PAGES | SUPPORTS_TOC,
+	},
 	WORD {
 		name: "Word Documents",
 		extensions: ["docx", "docm", "doc", "zip"],

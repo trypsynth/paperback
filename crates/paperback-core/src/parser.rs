@@ -153,6 +153,7 @@ impl ParserRegistry {
 				HLP => hlp::HlpParser,
 				OS2_HELP => ipf::IpfParser,
 				DAISY => daisy::DaisyParser,
+				BARD_BRAILLE => braille::BopfParser,
 				WORD => word::WordParser,
 				EBRAILLE => ebraille::EbrailleParser,
 				EPUB => epub::EpubParser,
