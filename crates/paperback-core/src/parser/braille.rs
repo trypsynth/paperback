@@ -382,7 +382,7 @@ impl Layout {
 				}
 				let indent = line.chars().take_while(|&character| character == BLANK).count();
 				let content: String = line.chars().skip(indent).collect();
-				if content.is_empty() {
+				if content.is_empty() || is_box_line(&content) {
 					layout.finish(&mut current);
 					after_entry = false;
 					continue;
@@ -525,6 +525,12 @@ const fn is_digit_cell(cell: char) -> bool {
 			| '\u{280a}'
 			| '\u{281a}'
 	)
+}
+
+/// A line of dots 2356 above a box, as print draws around a sidebar, or of dots 1245 below one. It is formatting, not text, so it only ends the paragraph before it.
+fn is_box_line(content: &str) -> bool {
+	content.chars().count() >= 6
+		&& ['\u{2836}', '\u{281b}'].iter().any(|&cell| content.chars().all(|character| character == cell))
 }
 
 /// A line of hyphens or colons marks where a print page turns, and belongs to neither paragraph around it.

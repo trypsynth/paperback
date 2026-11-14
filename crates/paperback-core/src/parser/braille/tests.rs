@@ -321,6 +321,27 @@ fn starts_a_paragraph_at_an_indent_or_a_blank_line() {
 	assert_eq!(layout.paragraphs, [cells("ONE TWO"), cells("?REE"), cells("F\\R")]);
 }
 
+/// A sidebar is boxed in by a line of dots 2356 above it and one of dots 1245 below, which are only formatting, as in this cookbook from NLS.
+#[test]
+fn reads_a_box_without_its_box_lines() {
+	let layout = layout(
+		&[&[
+			"  ,WE WANT TO",
+			"IMBUE ?",
+			"7777777777777777",
+			"^7,FATTY ,ACIDS ,HELP",
+			",F/ MO;T",
+			"GGGGGGGGGGGGGGGG",
+			"  ,! DOG",
+		]],
+		true,
+	);
+	assert_eq!(
+		layout.paragraphs,
+		[cells(",WE WANT TO IMBUE ?"), cells("^7,FATTY ,ACIDS ,HELP ,F/ MO;T"), cells(",! DOG")]
+	);
+}
+
 #[test]
 fn keeps_a_centered_heading_apart_from_the_text_after_it() {
 	let layout = layout(&[&["          ,! ,ORBIT", ",! ,ORBIT IS"]], true);
