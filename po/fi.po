@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 13:50+0000\n"
-"PO-Revision-Date: 2026-11-12 22:57+0200\n"
+"POT-Creation-Date: 2026-11-13 12:52+0000\n"
+"PO-Revision-Date: 2026-11-14 21:14+0200\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -237,9 +237,6 @@ msgstr ""
 "kokonaiskesto ei ole tiedossa."
 
 #. TRANSLATORS: Announced when asking for the time in an audiobook's chapter while the length of its files isn't known, such as in many DAISY books
-#| msgid ""
-#| "This book doesn't say how long its audio runs, so Paperback can't go to a "
-#| "time in it."
 msgid "This book doesn't say how long its audio runs."
 msgstr "Kirjan äänitteen kokonaiskesto ei ole tiedossa."
 
@@ -3038,7 +3035,6 @@ msgid "Go to Time..."
 msgstr "Siirry aikaan..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#| msgid "Announce Percentage"
 msgid "Announce Chapter Time"
 msgstr "Ilmoita luvun toistotiedot"
 
@@ -5230,3 +5226,8 @@ msgstr "Äänitteen toistonopeus"
 #: kt swift
 msgid "Readability"
 msgstr "Luettavuus"
+
+#. TRANSLATORS: Go To mode option: navigate to a time in an audiobook, such as 1:23:45
+#: kt swift
+msgid "Time"
+msgstr "Aika"
