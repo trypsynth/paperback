@@ -7,12 +7,7 @@ pub mod sapi5;
 #[cfg(windows)]
 mod wav;
 
-use std::{
-	num::NonZero,
-	rc::Rc,
-	sync::Arc,
-	time::{Duration, Instant},
-};
+use std::{num::NonZero, rc::Rc, sync::Arc};
 
 use anyhow::Result;
 use paperback_core::{
@@ -35,14 +30,12 @@ const DEFAULT_PERCENT: i32 = 50;
 const MAX_PAUSE_MS: i32 = 1000;
 const VOLUME_STEP: f32 = 0.1;
 const MAX_VOLUME: f32 = 2.0;
-/// How long the caret has to stay where the user moved it before reading starts there, so a screen reader speaks the move first and a held arrow key doesn't start reading at every step.
-const CARET_SETTLE: Duration = Duration::from_millis(150);
 
 /// What happened in reading since the last tick.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Followed {
-	/// A paragraph started, for the caret to move to.
-	Paragraph(DocPos),
+	/// A word started, or a paragraph when the engine doesn't say where its words are, for the caret to move to.
+	Word(DocPos),
 	/// The last paragraph has been read.
 	End,
 }
@@ -63,8 +56,8 @@ pub struct Speaker {
 	followed: Option<DocPos>,
 	/// Where the caret was left, by reading or by the user, so a move of the user's own can be told apart.
 	caret: Option<DocPos>,
-	/// Where the user moved the caret while reading, and when, to read from once it has settled there.
-	moved: Option<(DocPos, Instant)>,
+	/// Where the user moved the caret while reading, until reading starts there.
+	moved: Option<DocPos>,
 }
 
 impl Speaker {
@@ -135,21 +128,16 @@ impl Speaker {
 		}
 	}
 
-	/// Notices the caret at `caret` somewhere reading didn't leave it, and returns it once it has stayed there long enough to read from, which [`Self::read_from_caret`] then does.
+	/// Notices the caret at `caret` somewhere reading didn't leave it, and returns where to read from, which [`Self::read_from_caret`] then does. A move reading hasn't started at yet is returned again.
 	pub fn caret_moved_to(&mut self, caret: DocPos) -> Option<DocPos> {
 		if !self.is_reading() && self.moved.is_none() {
 			return None;
 		}
 		if self.caret != Some(caret) {
 			self.caret = Some(caret);
-			self.moved = Some((caret, Instant::now()));
-			// Quiet until reading starts again there, so it doesn't talk over the screen reader saying where the caret went. `paused` stays as it was, for the new start.
-			if let Some(player) = &self.player {
-				player.pause();
-			}
-			return None;
+			self.moved = Some(caret);
 		}
-		self.moved.filter(|&(_, since)| since.elapsed() >= CARET_SETTLE).map(|(at, _)| at)
+		self.moved
 	}
 
 	/// Reads on from where the user moved the caret to, paused or not.
@@ -170,7 +158,7 @@ impl Speaker {
 	/// Where the user moved the caret while reading, if reading hasn't started there yet.
 	#[must_use]
 	pub fn pending_move(&self) -> Option<DocPos> {
-		self.moved.map(|(at, _)| at)
+		self.moved
 	}
 
 	/// Records that reading moved the caret to `caret`.
@@ -283,7 +271,7 @@ impl Speaker {
 		self.moved = None;
 	}
 
-	/// Prepares the paragraphs ahead, and returns what the caret should follow: a paragraph that has just started, or the end, once. Call it on every tick for the document being read. Nothing is followed while the user is moving the caret.
+	/// Prepares the paragraphs ahead, and returns what the caret should follow: a word that has just started, or the end, once. Call it on every tick for the document being read. Nothing is followed while the user is moving the caret.
 	pub fn pump(&mut self, session: &DocumentSession) -> Option<Followed> {
 		self.player.as_ref()?;
 		self.read_aloud.refill(session);
@@ -298,11 +286,13 @@ impl Speaker {
 			self.player = None;
 			return Some(Followed::End);
 		}
-		if progress.paragraph == self.followed {
+		// The caret follows each word, so pausing and moving it goes on from the word being read rather than from where its paragraph starts.
+		let at = progress.word.or(progress.paragraph);
+		if at == self.followed {
 			return None;
 		}
-		self.followed = progress.paragraph;
-		progress.paragraph.map(Followed::Paragraph)
+		self.followed = at;
+		at.map(Followed::Word)
 	}
 
 	/// Returns the new volume, and whether it was already at its limit.

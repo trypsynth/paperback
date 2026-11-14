@@ -272,7 +272,7 @@ fn build_bookmark_repopulate(params: BookmarkRepopulateParams) -> Rc<dyn Fn(DocP
 				// TRANSLATORS: Placeholder text shown in the bookmarks list when the bookmark text range is empty or blank
 				snippet = t("blank");
 			}
-			let display = if item.note.is_empty() { snippet.clone() } else { format!("{} - {}", item.note, snippet) };
+			let display = if item.note.is_empty() { snippet } else { format!("{} - {}", item.note, snippet) };
 			entries.borrow_mut().push(BookmarkDisplayEntry {
 				start: item.start,
 				end: item.end,

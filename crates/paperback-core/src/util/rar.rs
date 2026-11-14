@@ -92,7 +92,7 @@ fn repack(path: &Path, password: Option<&str>, output: &Path) -> Result<()> {
 		}
 		let decoded = decoded_name(&member.meta.name, member.name_is_unicode(), None)
 			.map_or_else(|_| member.meta.name_lossy(), |name| String::from_utf8_lossy(&name).into_owned());
-		names.insert(member.meta.name.clone(), decoded);
+		names.insert(member.meta.name, decoded);
 	}
 	let file = File::create(output).with_context(|| format!("Failed to create '{}'", output.display()))?;
 	let writer = Rc::new(RefCell::new(ZipWriter::new(BufWriter::new(file))));

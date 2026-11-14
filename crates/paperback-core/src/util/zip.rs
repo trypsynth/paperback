@@ -201,6 +201,10 @@ pub fn zip_books(entries: &[ZipEntryInfo]) -> Vec<String> {
 /// A lone DAISY book or a set of Word documents has a parser of its own, which a picker would only get in the way of.
 pub fn zip_books_to_browse<R: Read + Seek>(archive: &ZipArchive<R>) -> Option<Vec<String>> {
 	let entries = list_zip_entries(archive);
+	// A BARD braille book's volumes are one book, which its package says how to read.
+	if entries.iter().any(|e| extension_is(&e.name, &["bopf"])) {
+		return None;
+	}
 	let books = zip_books(&entries);
 	let main_books: Vec<&String> = books.iter().filter(|name| !is_companion_file(name)).collect();
 	if !main_books.is_empty() && main_books.iter().all(|name| is_audio_file(name)) {

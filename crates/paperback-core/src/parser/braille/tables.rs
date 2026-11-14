@@ -163,6 +163,16 @@ pub fn table_name(name: &str) -> Option<&'static str> {
 	packed_entry(name).map(|(name, ..)| *name)
 }
 
+/// The language of a table, without its region, from its metadata, or from its name when it has none, as `es-g1.ctb` doesn't.
+pub(super) fn table_language(name: &str) -> String {
+	let named = TABLE_METADATA
+		.iter()
+		.find(|(table, _)| *table == name)
+		.and_then(|(_, metadata)| metadata.iter().find(|(key, _)| *key == "language").map(|(_, value)| *value));
+	let language = named.unwrap_or(name).trim();
+	language.split(|character: char| !character.is_ascii_alphabetic()).next().unwrap_or_default().to_ascii_lowercase()
+}
+
 /// The table and everything it includes as one source, since louis-rs reads includes only from files on disk. Hyphenation dictionaries are left out, as back-translation never hyphenates.
 fn inlined_source(name: &str) -> Result<String> {
 	let mut source = String::new();

@@ -2,10 +2,12 @@
 //!
 //! Both hold braille a translator already produced, wrapped to the embosser's line length and page height. The parser joins the wrapped lines back into paragraphs, back-translates each with the reader's braille table through louis-rs, and keeps a marker at the start of every embossed page.
 
+mod bopf;
 mod document;
+mod national_ascii;
 mod tables;
 
-use std::{borrow::Cow, collections::HashMap, fs};
+use std::{borrow::Cow, collections::HashMap, fs, path::Path};
 
 use anyhow::{Context, Result};
 use encoding_rs::WINDOWS_1252;
@@ -14,8 +16,13 @@ use rayon::prelude::*;
 use roxmltree::{Document as XmlDocument, Node};
 
 pub(crate) use self::document::back_translate_document;
-pub use self::tables::{
-	BrailleCode, BrailleTable, DEFAULT_TABLE, back_translator, braille_tables, chosen_table, table_for_code, table_name,
+use self::national_ascii::NationalAscii;
+pub use self::{
+	bopf::BopfParser,
+	tables::{
+		BrailleCode, BrailleTable, DEFAULT_TABLE, back_translator, braille_tables, chosen_table, table_for_code,
+		table_name,
+	},
 };
 use crate::{
 	document::{DocLen, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
@@ -59,8 +66,11 @@ impl Parser for BrfParser {
 		tracing::debug!(path = %context.file_path, table = context.braille_table, "parsing BRF file");
 		let bytes =
 			fs::read(&context.file_path).with_context(|| format!("Failed to open BRF file '{}'", context.file_path))?;
-		let (translator, braille_ascii) = tables::back_translator(context.braille_table)?;
-		let pages = brf_pages(&bytes, &braille_ascii);
+		// One volume of a BARD book, opened on its own, is read with the table its book's package names.
+		let table = bopf::table_beside(Path::new(&context.file_path)).unwrap_or(context.braille_table);
+		let context = &ParserContext { braille_table: table, ..context.clone() };
+		let (translator, braille_ascii) = tables::back_translator(table)?;
+		let pages = likeliest_pages(&bytes, &braille_ascii, &translator, context);
 		let buffer = back_translate(&pages, &translator, context);
 		tracing::debug!(path = %context.file_path, pages = pages.len(), "parsed BRF file");
 		let mut document = Document::new().with_title(extract_title_from_path(&context.file_path));
@@ -71,10 +81,8 @@ impl Parser for BrfParser {
 
 /// A BRF page ends with a form feed, and an embosser's last one often leaves an empty page after it. Lines end with a line feed, a carriage return and a line feed, or, in older files, a carriage return alone.
 ///
-/// `braille_ascii` is the table's own braille ASCII, which beyond the North American one uses letters outside ASCII, so a file is read as UTF-8 when it is valid UTF-8, and as Windows-1252 otherwise. A character the table has no cell for is read as North American Braille ASCII. Some files named `.brf` hold Unicode braille instead, as the Internet Archive's braille music does, and those cells are read as they are.
-fn brf_pages(bytes: &[u8], braille_ascii: &HashMap<char, char>) -> Vec<Page> {
-	let text =
-		std::str::from_utf8(bytes).map_or_else(|_| WINDOWS_1252.decode_without_bom_handling(bytes).0, Cow::Borrowed);
+/// `braille_ascii` is the braille ASCII the file is read in. A character it has no cell for is read as North American Braille ASCII. Some files named `.brf` hold Unicode braille instead, as the Internet Archive's braille music does, and those cells are read as they are.
+fn brf_pages(text: &str, braille_ascii: &HashMap<char, char>) -> Vec<Page> {
 	let characters: Vec<char> = text.chars().collect();
 	let mut text = String::with_capacity(characters.len());
 	for (index, &character) in characters.iter().enumerate() {
@@ -96,6 +104,124 @@ fn brf_pages(bytes: &[u8], braille_ascii: &HashMap<char, char>) -> Vec<Page> {
 		pages.pop();
 	}
 	pages
+}
+
+/// A table's own braille ASCII uses letters outside ASCII beyond the North American one, so a file is read as UTF-8 when it is valid UTF-8, and as Windows-1252 otherwise.
+fn decode_brf(bytes: &[u8]) -> Cow<'_, str> {
+	std::str::from_utf8(bytes).map_or_else(|_| WINDOWS_1252.decode_without_bom_handling(bytes).0, Cow::Borrowed)
+}
+
+/// Countries don't all write braille ASCII one way: DAISY Pipeline, for one, writes Norwegian, Swedish, Danish, Spanish and Italian files with other tables than the one liblouis displays braille with. So a file is read with each braille ASCII its table's language is written in, and the likeliest wins, the table's own when none is likelier.
+fn likeliest_pages(
+	bytes: &[u8],
+	braille_ascii: &HashMap<char, char>,
+	translator: &Translator,
+	context: &ParserContext,
+) -> Vec<Page> {
+	let language = tables::table_language(context.braille_table);
+	let others: Vec<&NationalAscii> = NationalAscii::for_language(&language).collect();
+	if others.is_empty() {
+		return brf_pages(&decode_brf(bytes), braille_ascii);
+	}
+	let candidate = |name: &'static str, text: &str, cells: &HashMap<char, char>| {
+		let pages = brf_pages(text, cells);
+		let likeness = Likeness::of(text, &pages, &Layout::of(&pages, context.strip_running_text), translator);
+		tracing::debug!(
+			braille_ascii = name,
+			unread = likeness.unread,
+			odd = likeness.odd,
+			words = likeness.words,
+			like_words = likeness.like_words,
+			"scored a braille ASCII"
+		);
+		(likeness, pages)
+	};
+	let mut best = candidate("liblouis", &decode_brf(bytes), braille_ascii);
+	for national in others {
+		let other = candidate(national.name, &national.decode(bytes), &national.cells());
+		if other.0.is_likelier_than(&best.0) {
+			best = other;
+		}
+	}
+	best.1
+}
+
+/// How likely a braille ASCII is the one a file was written in.
+struct Likeness {
+	/// Characters it has no cell for, which the right one has none of.
+	unread: usize,
+	/// Characters outside ASCII that aren't letters, which a file read in the wrong code page is full of, as Danish æ read in Windows-1252 is ‘.
+	odd: usize,
+	/// Of a sample of the file's words, how many read as words, and how many there are.
+	like_words: u64,
+	words: u64,
+}
+
+impl Likeness {
+	fn of(text: &str, pages: &[Page], layout: &Layout, translator: &Translator) -> Self {
+		let unread =
+			pages.iter().flatten().flat_map(|line| line.chars()).filter(|&character| !is_cell(character)).count();
+		let odd = text
+			.chars()
+			.filter(|&character| !character.is_ascii() && !character.is_alphabetic() && !is_cell(character))
+			.count();
+		let (like_words, words) = word_likeness(layout, translator);
+		Self { unread, odd, like_words, words }
+	}
+
+	/// Fewer characters left unread, then fewer odd ones, and then more words reading as words out of all of them, compared without dividing.
+	fn is_likelier_than(&self, other: &Self) -> bool {
+		(self.unread, self.odd) < (other.unread, other.odd)
+			|| ((self.unread, self.odd) == (other.unread, other.odd)
+				&& u128::from(self.like_words) * u128::from(other.words)
+					> u128::from(other.like_words) * u128::from(self.words))
+	}
+}
+
+/// How many cells of a file's paragraphs are back-translated to judge its braille ASCII by: enough for a few hundred words, skipping the title pages at the start.
+const SAMPLE_CELLS: usize = 6000;
+
+/// Of a sample of the file's words, how many read as words, and how many there are. A wrong braille ASCII turns letters into digits and signs, and leaves cells the table has no print for.
+fn word_likeness(layout: &Layout, translator: &Translator) -> (u64, u64) {
+	let mut cells = 0;
+	let sample: Vec<&String> = layout
+		.paragraphs
+		.iter()
+		.skip(layout.paragraphs.len() / 10)
+		.take_while(|paragraph| {
+			let before = cells;
+			cells += paragraph.chars().count();
+			before < SAMPLE_CELLS
+		})
+		.collect();
+	sample
+		.par_iter()
+		.map(|paragraph| words_like_words(&translate_paragraph(translator, paragraph).0))
+		.reduce(|| (0, 0), |a, b| (a.0 + b.0, a.1 + b.1))
+}
+
+/// A word reads as one when, without the punctuation around it, it is letters, perhaps with an apostrophe or a hyphen, or a number. Signs such as `*` or `|` stuck to a word aren't punctuation, as a capital sign read in the wrong braille ASCII is.
+fn words_like_words(text: &str) -> (u64, u64) {
+	// Only what opens a word comes before it, so a capital sign read as a full stop, ".servicio", isn't a word.
+	let opening = |character: char| "\"'([«„“‘‚¡¿–—…-".contains(character);
+	let closing = |character: char| ".,;:!?\"')]»“”’–—…-/".contains(character);
+	let mut like = 0;
+	let mut all = 0;
+	for word in text.split_whitespace() {
+		if word.chars().all(|character| opening(character) || closing(character)) {
+			continue;
+		}
+		let core = word.trim_start_matches(opening).trim_end_matches(closing);
+		all += 1;
+		let letters = !core.is_empty()
+			&& core.chars().all(|character| character.is_alphabetic() || matches!(character, '\'' | '’' | '-'));
+		let number = !core.is_empty()
+			&& core.chars().all(|character| character.is_ascii_digit() || matches!(character, '.' | ',' | ':' | '-'));
+		if letters || number {
+			like += 1;
+		}
+	}
+	(like, all)
 }
 
 const fn is_cell(character: char) -> bool {
@@ -242,6 +368,11 @@ impl Layout {
 		let mut layout = Self::default();
 		let mut current: Option<String> = None;
 		let mut waiting_pages = Vec::new();
+		let mut led_to_next = false;
+		// Whether the last paragraph was a contents entry, and whether the open one started right after one.
+		let mut after_entry = false;
+		let mut opened_after_entry = false;
+		let mut opened_at = 0;
 		for (page_index, lines) in pages.iter().enumerate() {
 			layout.page_starts.push(None);
 			waiting_pages.push(page_index);
@@ -251,17 +382,43 @@ impl Layout {
 				}
 				let indent = line.chars().take_while(|&character| character == BLANK).count();
 				let content: String = line.chars().skip(indent).collect();
-				if content.is_empty() {
+				if content.is_empty() || is_box_line(&content) {
 					layout.finish(&mut current);
+					after_entry = false;
 					continue;
 				}
-				let standalone = indent >= CENTERED_INDENT || is_separator(&content);
-				if indent > 0 || standalone {
+				let guided = without_guide_dots(&content);
+				let led = guided != content;
+				// A line of guide dots alone leads from an entry on the line before to its page number on the next.
+				if guided.is_empty() {
+					led_to_next = true;
+					continue;
+				}
+				let content = guided;
+				// A contents entry ends at its page number, after its guide dots. The next starts at the margin, as a paragraph's run-on line does, so it's told apart by the dots.
+				let ends_entry = led || std::mem::take(&mut led_to_next);
+				// Contents entries are indented as far as a centered heading, and aren't one.
+				let standalone = (indent >= CENTERED_INDENT && !after_entry) || is_separator(&content);
+				// An entry's run-on line is indented, where a paragraph's first line is, and ends the entry with its dots. It's indented less than the entry's first line, as one indented further is an entry under a heading.
+				let runs_on = indent > 0
+					&& indent < opened_at
+					&& !standalone
+					&& ends_entry
+					&& current.is_some()
+					&& opened_after_entry;
+				if (indent > 0 && !runs_on) || standalone {
+					if current.is_some() {
+						after_entry = false;
+					}
 					layout.finish(&mut current);
+				}
+				if current.is_none() {
+					opened_after_entry = after_entry;
+					opened_at = indent;
 				}
 				let paragraph_index = layout.paragraphs.len();
 				let paragraph = current.get_or_insert_with(String::new);
-				if !paragraph.is_empty() && !paragraph.ends_with(HYPHEN) {
+				if !paragraph.is_empty() && !ends_in_broken_word(paragraph) {
 					paragraph.push(BLANK);
 				}
 				let cell = paragraph.chars().count();
@@ -269,8 +426,9 @@ impl Layout {
 					layout.page_starts[page] = Some((paragraph_index, cell));
 				}
 				paragraph.push_str(&content);
-				if standalone {
+				if standalone || ends_entry {
 					layout.finish(&mut current);
+					after_entry = ends_entry;
 				}
 			}
 		}
@@ -283,6 +441,42 @@ impl Layout {
 			self.paragraphs.push(paragraph);
 		}
 	}
+}
+
+/// The guide dots of a contents page, a run of dot 5 cells between an entry and its page number, read as one space, as print's leaders are: three or more in a row, or two between spaces, are never text.
+fn without_guide_dots(line: &str) -> String {
+	let mut out = String::with_capacity(line.len());
+	let mut cells = line.chars().peekable();
+	while let Some(cell) = cells.next() {
+		if cell != GUIDE_DOT {
+			out.push(cell);
+			continue;
+		}
+		let mut run = 1;
+		while cells.next_if_eq(&GUIDE_DOT).is_some() {
+			run += 1;
+		}
+		// An entry that nearly fills its line leaves room for only two, a pair with a space on either side.
+		let alone = (out.is_empty() || out.ends_with(BLANK)) && cells.peek().is_none_or(|&next| next == BLANK);
+		if run < 2 || (run == 2 && !alone) {
+			out.extend(std::iter::repeat_n(GUIDE_DOT, run));
+			continue;
+		}
+		while cells.next_if_eq(&BLANK).is_some() {}
+		if !out.is_empty() && !out.ends_with(BLANK) && cells.peek().is_some() {
+			out.push(BLANK);
+		}
+	}
+	out.trim_end_matches(BLANK).to_string()
+}
+
+/// Dot 5, which guide dots are made of.
+const GUIDE_DOT: char = '\u{2810}';
+
+/// A line ends in a word broken at its hyphen when its last cell is the hyphen and the one before isn't dot 6 or another hyphen, which make it a dash: UEB and German write a dash as ⠠⠤, and some codes as ⠤⠤. The next line goes on that word, so no space joins them.
+fn ends_in_broken_word(line: &str) -> bool {
+	let mut cells = line.chars().rev();
+	cells.next() == Some(HYPHEN) && !matches!(cells.next(), Some(HYPHEN | '\u{2820}'))
 }
 
 /// A page's lines without the blank cells padding them, their page numbers, or the blank lines at the page's end.
@@ -331,6 +525,12 @@ const fn is_digit_cell(cell: char) -> bool {
 			| '\u{280a}'
 			| '\u{281a}'
 	)
+}
+
+/// A line of dots 2356 above a box, as print draws around a sidebar, or of dots 1245 below one. It is formatting, not text, so it only ends the paragraph before it.
+fn is_box_line(content: &str) -> bool {
+	content.chars().count() >= 6
+		&& ['\u{2836}', '\u{281b}'].iter().any(|&cell| content.chars().all(|character| character == cell))
 }
 
 /// A line of hyphens or colons marks where a print page turns, and belongs to neither paragraph around it.

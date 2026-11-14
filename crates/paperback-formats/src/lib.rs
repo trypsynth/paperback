@@ -118,6 +118,13 @@ formats! {
 		mime_types: ["application/x-daisy-opf"],
 		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_PAGES,
 	},
+	/// NLS BARD's braille books, a zip or a folder of BRF volumes with a braille package. After [`DAISY`], which keeps `.zip`'s association, and turns down a zip that's no DAISY book.
+	BARD_BRAILLE {
+		name: "BARD braille books",
+		extensions: ["bopf", "zip"],
+		mime_types: ["application/x-bopf+xml"],
+		flags: SUPPORTS_PAGES | SUPPORTS_TOC,
+	},
 	WORD {
 		name: "Word Documents",
 		extensions: ["docx", "docm", "doc", "zip"],
@@ -148,7 +155,7 @@ formats! {
 	},
 	HTML {
 		name: "HTML Files",
-		extensions: ["htm", "html", "xhtml"],
+		extensions: ["htm", "html", "shtml", "xhtml"],
 		mime_types: ["text/html", "application/xhtml+xml"],
 		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
 	},
@@ -352,6 +359,12 @@ mod tests {
 		assert!(!TEXT.installer.default_checked, "unspecified installer settings default to OPT_IN");
 		assert!(EPUB.installer.default_checked && EPUB.installer.default_handler);
 		assert!(!FB2.installer.default_checked && FB2.installer.default_handler);
+	}
+
+	/// A `.shtml` page is HTML with server-side includes already filled in by the server, as on old sites such as sfw.org (#1310).
+	#[test]
+	fn html_covers_server_side_include_pages() {
+		assert_eq!(HTML.extensions, ["htm", "html", "shtml", "xhtml"]);
 	}
 
 	/// The Word parser marks lists, their items and pages, and the mobile apps only offer those to step through for a format that claims them.

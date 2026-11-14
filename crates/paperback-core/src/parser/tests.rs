@@ -350,9 +350,17 @@ fn registration_order_matches_the_format_table() {
 }
 
 #[test]
-fn zip_is_offered_to_daisy_then_word_then_fb2() {
+fn zip_is_offered_to_daisy_then_bard_braille_then_word_then_fb2() {
 	let names: Vec<_> = ParserRegistry::global().get_parsers_for_extension("zip").iter().map(|p| p.name()).collect();
-	assert_eq!(names, vec![paperback_formats::DAISY.name, paperback_formats::WORD.name, paperback_formats::FB2.name]);
+	assert_eq!(
+		names,
+		vec![
+			paperback_formats::DAISY.name,
+			paperback_formats::BARD_BRAILLE.name,
+			paperback_formats::WORD.name,
+			paperback_formats::FB2.name
+		]
+	);
 }
 
 #[test]

@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 0752d36d9531f24d; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,d751e269,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: ba700ddfbaf3e99f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,b8a00464,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - phiên bản 1.1
 
@@ -52,7 +52,8 @@ Paperback hỗ trợ các định dạng và phần mở rộng sau:
 * Lưu trữ sách truyện tranh (`.cbz`, `.cbr`)
 * Tệp trợ giúp CHM (`.chm`)
 * Sách DAISY (`.opf`, `.zip`)
-* Sách EPUB (`.epub`)
+* Sách eBraille, được đọc bản in khi chúng bao gồm nó, và ngược lại được dịch ngược với mã braille mà chúng đặt tên (`.ebrl`, hoặc `.opf` của sách không được nén)
+* Sách EPUB (`.epub`, hoặc `.opf` của sách không được nén)
 * Sách điện tử FB2 (`.fb2`)
 * Hướng dẫn GNU Info (`.info`, có nén gzip hoặc không, và các hướng dẫn tách được mở từ bất kỳ phần nào của chúng)
 * Tài liệu HTML (`.htm`, `.html`, `.xhtml`)

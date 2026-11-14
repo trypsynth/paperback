@@ -17,12 +17,12 @@ image = { version = "0.25.10", default-features = false }
 native-ocr = "0.2.1"
 paperback-core = { path = "crates/paperback-core" }
 paperback-formats = { path = "crates/paperback-formats" }
-patois = "0.3.2"
+patois = "0.3.3"
 patois-build = "0.1.19"
 rayon = "1.12.0"
 rstest = "0.28.0"
 serde_json = "1.0.154"
-shipfitter = "0.2.4"
+shipfitter = "0.2.5"
 tempfile = "3.27.0"
 toml = "1.2.1"
 tracing = "0.1.44"

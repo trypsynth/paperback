@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 13:50+0000\n"
+"POT-Creation-Date: 2026-11-13 12:52+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5153,4 +5153,10 @@ msgstr ""
 #: kt
 #: swift
 msgid "Readability"
+msgstr ""
+
+#. TRANSLATORS: Go To mode option: navigate to a time in an audiobook, such as 1:23:45
+#: kt
+#: swift
+msgid "Time"
 msgstr ""
