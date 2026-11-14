@@ -352,34 +352,10 @@ fn back_translate(pages: &[Page], translator: &Translator, context: &ParserConte
 	buffer
 }
 
-/// A paragraph longer than this many cells is back-translated a piece at a time, split at a blank cell. Back-translation takes time growing with the square of its input, and a file that never indents a paragraph, as DAISY Pipeline's BRFs don't, is one paragraph.
-const PIECE_CELLS: usize = 4000;
-
 /// The paragraph's print, and for each of its cells where that cell's print begins.
 fn translate_paragraph(translator: &Translator, paragraph: &str) -> (String, Vec<usize>) {
-	let cells: Vec<char> = paragraph.chars().collect();
-	let mut output = String::new();
-	let mut positions = Vec::with_capacity(cells.len());
-	let mut start = 0;
-	while start < cells.len() {
-		let mut end = cells.len();
-		if end - start > PIECE_CELLS {
-			end =
-				cells[start..start + PIECE_CELLS].iter().rposition(|&cell| cell == BLANK).map_or(end, |at| start + at);
-		}
-		let piece: String = cells[start..end].iter().collect();
-		let result = translator.translate_with_options(&piece, TranslationOptions::default());
-		let offset = output.chars().count();
-		positions.extend(result.output_positions.iter().map(|position| offset + position));
-		output.push_str(&result.output);
-		if end < cells.len() {
-			positions.push(output.chars().count());
-			output.push(' ');
-			end += 1;
-		}
-		start = end;
-	}
-	(output, positions)
+	let result = translator.translate_with_options(paragraph, TranslationOptions::default());
+	(result.output, result.output_positions)
 }
 
 /// The braille rejoined into paragraphs, and where in them each page begins.

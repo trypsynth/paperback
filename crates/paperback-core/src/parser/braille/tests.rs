@@ -381,9 +381,9 @@ fn starts_a_paragraph_at_an_indent_or_a_blank_line() {
 	assert_eq!(layout.paragraphs, [cells("ONE TWO"), cells("?REE"), cells("F\\R")]);
 }
 
-/// A file that never indents a paragraph, as DAISY Pipeline's BRFs don't, is one paragraph, back-translated a piece at a time so it takes seconds rather than minutes, and reading as if it were back-translated whole.
+/// A file that never indents a paragraph, as DAISY Pipeline's BRFs don't, is one long paragraph.
 #[test]
-fn reads_a_paragraph_longer_than_a_piece() {
+fn reads_a_file_that_never_indents_a_paragraph() {
 	let document = parse_with(&BrfParser, "long.brf", "CAT AND DOG\n".repeat(1000), |context| ParserContext {
 		braille_table: "en-us-g1.ctb",
 		..context
