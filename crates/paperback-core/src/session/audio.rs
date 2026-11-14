@@ -223,9 +223,22 @@ impl DocumentSession {
 		Some(of_total(elapsed_ms.min(total_ms), total_ms))
 	}
 
-	/// The chapter `elapsed_ms` is in, how far into it and how much of it is left, such as "Chapter 3, 4:10 of 12:00, 7:50 left". Chapters are the table of contents' entries, placed by when they play, and of entries starting together the deepest, as it names the most. Before the first entry, or in a book without any, the whole recording is the chapter, untitled. `None` while any file's length is unknown.
+	/// The chapter `elapsed_ms` is in, how far into it and how much of it is left, such as "Chapter 3, 4:10 of 12:00, 7:50 left". `None` while any file's length is unknown.
 	#[must_use]
 	pub fn audio_chapter_announcement(&self, elapsed_ms: u64) -> Option<String> {
+		let (title, elapsed_ms, length_ms) = self.audio_chapter_span(elapsed_ms)?;
+		let mut parts = Vec::with_capacity(3);
+		if !title.is_empty() {
+			parts.push(title);
+		}
+		parts.push(of_total(elapsed_ms, length_ms));
+		// TRANSLATORS: Announced with how far into an audiobook's chapter the reader is: the time left in it; {} is written like 12:05
+		parts.push(t("{} left").replace("{}", &clock::format_ms(length_ms - elapsed_ms)));
+		Some(parts.join(", "))
+	}
+
+	/// The title of the chapter `elapsed_ms` is in, the time played of it and how long it runs. Chapters are the table of contents' entries, placed by when they play, and of entries starting together the deepest, as it names the most. Before the first entry, or in a book without any, the whole recording is the chapter, untitled. `None` while any file's length is unknown.
+	pub(super) fn audio_chapter_span(&self, elapsed_ms: u64) -> Option<(String, u64, u64)> {
 		let timeline = self.audio()?;
 		if !timeline.durations_are_known() {
 			return None;
@@ -252,14 +265,8 @@ impl DocumentSession {
 			.filter(|next_ms| *next_ms > start_ms)
 			.min()
 			.unwrap_or(total_ms);
-		let mut parts = Vec::with_capacity(3);
-		if let Some((_, _, title)) = current.filter(|(_, _, title)| !title.is_empty()) {
-			parts.push((*title).to_owned());
-		}
-		parts.push(of_total(elapsed_ms - start_ms, end_ms - start_ms));
-		// TRANSLATORS: Announced with how far into an audiobook's chapter the reader is: the time left in it; {} is written like 12:05
-		parts.push(t("{} left").replace("{}", &clock::format_ms(end_ms - elapsed_ms)));
-		Some(parts.join(", "))
+		let title = current.map_or("", |(_, _, title)| *title).to_owned();
+		Some((title, elapsed_ms - start_ms, end_ms - start_ms))
 	}
 }
 

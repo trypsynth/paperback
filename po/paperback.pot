@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 12:52+0000\n"
+"POT-Creation-Date: 2026-11-14 20:14+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -728,11 +728,11 @@ msgstr ""
 msgid "Go to a time in the recording"
 msgstr ""
 
-#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter of an audiobook the reader is, and how much of it is left.
-msgid "Announce &Chapter Time"
+#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter the reader is and how much of it is left: by time in an audiobook, by words in a text book.
+msgid "Announce &Chapter Progress"
 msgstr ""
 
-#. TRANSLATORS: Status-bar help text for the Announce Chapter Time menu item.
+#. TRANSLATORS: Status-bar help text for the Announce Chapter Progress menu item.
 msgid "Say how far into this chapter you are and how much is left"
 msgstr ""
 
@@ -2971,7 +2971,7 @@ msgid "Go to Time..."
 msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Announce Chapter Time"
+msgid "Announce Chapter Progress"
 msgstr ""
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
@@ -3511,6 +3511,12 @@ msgstr ""
 #. TRANSLATORS: Announced for how far into an audiobook the reader is: the first {} is the time played so far and the second how long it runs, both written like 1:02:03
 msgid "{} of {}"
 msgstr ""
+
+#. TRANSLATORS: Announced with how far through a book's chapter the reader is: the number of words left in it. %d is the number.
+msgid "%d word left"
+msgid_plural "%d words left"
+msgstr[0] ""
+msgstr[1] ""
 
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 msgid "image"
@@ -5159,4 +5165,32 @@ msgstr ""
 #: kt
 #: swift
 msgid "Time"
+msgstr ""
+
+#. TRANSLATORS: Shown and announced with how far through a book's chapter the reader is: the number of words left in it; {} is the number. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: kt
+#: swift
+msgid "{} word left"
+msgstr ""
+
+#: kt
+#: swift
+msgid "{} words left"
+msgstr ""
+
+#: kt
+#: swift
+msgid "{} words left⁣"
+msgstr ""
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt
+#: swift
+msgid "Show book progress"
+msgstr ""
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt
+#: swift
+msgid "Show chapter progress"
 msgstr ""

@@ -230,6 +230,18 @@ pub struct AudioPointFfi {
 	pub time_ms: i64,
 }
 
+/// How far through a chapter the reader is. A chapter is measured by time or by words, never both: `words_left` is negative when it is by time, and `elapsed_ms` and `total_ms` are when it is by words.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ChapterProgressFfi {
+	pub found: bool,
+	pub title: String,
+	pub percent: i32,
+	pub words_left: i64,
+	pub elapsed_ms: i64,
+	pub total_ms: i64,
+}
+
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error), uniffi(flat_error))]
 #[derive(Debug, thiserror::Error)]
 pub enum DocumentError {
