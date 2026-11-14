@@ -208,6 +208,27 @@ fn reads_lowercase_hungarian_files_as_north_american_braille_ascii() {
 	);
 }
 
+/// Spanish files from ONCE, as NLS lends them, are written in North American Braille ASCII, so a capital sign is `.` and á is `(`. This is a library book's title page.
+#[test]
+fn reads_spanish_files_as_north_american_braille_ascii() {
+	let title_page = concat!(
+		"          .EDUARDO .MENDOZA\r\n",
+		"\r\n",
+		"            .EL REY RECIBE\r\n",
+		"\r\n",
+		"               .O.N.C.E\r\n",
+		"       .SERVICIO .BIBLIOGR(FICO\r\n",
+		"          #JHJAE .BARCELONA\r\n",
+	);
+	let document =
+		parse_with(&BrfParser, "es.brf", title_page, |context| ParserContext { braille_table: "es.tbl", ..context })
+			.unwrap();
+	assert_eq!(
+		document.buffer.content,
+		"Eduardo Mendoza\nEl rey recibe\nONCE\nServicio Bibliográfico\n08015 Barcelona\n"
+	);
+}
+
 /// A table's braille ASCII reads a NUL or a tab as the blank cell, so another country's has to as well, or a single one on a title page or a blank line would leave it a character unread and lose it the file.
 #[test]
 fn reads_nul_and_tabs_as_blank_in_another_countrys_braille_ascii() {

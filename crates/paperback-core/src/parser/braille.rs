@@ -202,14 +202,16 @@ fn word_likeness(layout: &Layout, translator: &Translator) -> (u64, u64) {
 
 /// A word reads as one when, without the punctuation around it, it is letters, perhaps with an apostrophe or a hyphen, or a number. Signs such as `*` or `|` stuck to a word aren't punctuation, as a capital sign read in the wrong braille ASCII is.
 fn words_like_words(text: &str) -> (u64, u64) {
-	let punctuation = |character: char| ".,;:!?\"'()[]«»„“”‚‘’–—…-/¡¿".contains(character);
+	// Only what opens a word comes before it, so a capital sign read as a full stop, ".servicio", isn't a word.
+	let opening = |character: char| "\"'([«„“‘‚¡¿–—…-".contains(character);
+	let closing = |character: char| ".,;:!?\"')]»“”’–—…-/".contains(character);
 	let mut like = 0;
 	let mut all = 0;
 	for word in text.split_whitespace() {
-		let core = word.trim_matches(punctuation);
-		if core.is_empty() {
+		if word.chars().all(|character| opening(character) || closing(character)) {
 			continue;
 		}
+		let core = word.trim_start_matches(opening).trim_end_matches(closing);
 		all += 1;
 		let letters = !core.is_empty()
 			&& core.chars().all(|character| character.is_alphabetic() || matches!(character, '\'' | '’' | '-'));
