@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 12:52+0000\n"
+"POT-Creation-Date: 2026-11-14 18:56+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -887,12 +887,12 @@ msgstr "Chuyển đến &Thời điểm..."
 msgid "Go to a time in the recording"
 msgstr "Chuyển đến một thời điểm trong bản ghi âm"
 
-#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter of an audiobook the reader is, and how much of it is left.
+#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter the reader is and how much of it is left: by time in an audiobook, by words in a text book.
 #, fuzzy
-msgid "Announce &Chapter Time"
-msgstr "Thông báo &Thời gian Chương"
+msgid "Announce &Chapter Progress"
+msgstr "Thông báo Tiến &trình Chương"
 
-#. TRANSLATORS: Status-bar help text for the Announce Chapter Time menu item.
+#. TRANSLATORS: Status-bar help text for the Announce Chapter Progress menu item.
 #, fuzzy
 msgid "Say how far into this chapter you are and how much is left"
 msgstr "Nói bạn đã đi được bao xa trong chương này và còn lại bao lâu"
@@ -3559,8 +3559,8 @@ msgstr "Chuyển đến Thời điểm..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
-msgid "Announce Chapter Time"
-msgstr "Thông báo Thời gian Chương"
+msgid "Announce Chapter Progress"
+msgstr "Thông báo Tiến trình Chương"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -4232,6 +4232,12 @@ msgstr "Còn lại {}"
 #, fuzzy
 msgid "{} of {}"
 msgstr "{} của {}"
+
+#. TRANSLATORS: Announced with how far through a book's chapter the reader is: the number of words left in it. %d is the number.
+#, fuzzy
+msgid "%d word left"
+msgid_plural "%d words left"
+msgstr[0] "%d từ còn lại"
 
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 #, fuzzy
@@ -6131,6 +6137,14 @@ msgstr "Khả năng đọc"
 #, fuzzy
 msgid "Time"
 msgstr "Thời gian"
+
+#, fuzzy
+#~ msgid "Announce &Chapter Time"
+#~ msgstr "Thông báo &Thời gian Chương"
+
+#, fuzzy
+#~ msgid "Announce Chapter Time"
+#~ msgstr "Thông báo Thời gian Chương"
 
 #, fuzzy
 #~ msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."

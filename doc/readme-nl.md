@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: ba700ddfbaf3e99f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,b8a00464,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 12e7ba171a5bd0b4; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,ead885cc,8423460b,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versie 1.1
 
@@ -48,6 +48,7 @@ Als JAWS niets zegt wanneer je op een toets drukt die iets zou moeten melden, op
 
 Paperback ondersteunt de volgende indelingen en extensies:
 
+* BARD-braillebieken van de National Library Service, elk deel als één boek, teruggezet met de braillecode die hun pakketnamen aangeven (de `.zip` die BARD downloadt, of de `.bopf` ervan zodra deze is uitgepakt)
 * Braille Ready Files en Portable Embosser Format-boeken, teruggezet naar druk met de brailletabel van jouw keuze (`.brf`, `.pef`)
 * Comicarchieven (`.cbz`, `.cbr`)
 * CHM-helpbestanden (`.chm`)
@@ -56,7 +57,7 @@ Paperback ondersteunt de volgende indelingen en extensies:
 * EPUB-boeken (`.epub`, of de `.opf` van een die niet gecomprimeerd is)
 * FB2-e-books (`.fb2`)
 * GNU Info-handleidingen (`.info`, met of zonder gzip, en gesplitste handleidingen geopend vanaf een van hun onderdelen)
-* HTML-documenten (`.htm`, `.html`, `.xhtml`)
+* HTML-documenten (`.htm`, `.html`, `.shtml`, `.xhtml`)
 * Manual pages, zowel `man` als BSD `mdoc` (`.1` t/m `.9`, `.man`, `.roff` en de met gzip gecomprimeerde vormen daarvan)
 * Markdown-documenten (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Microsoft Word-documenten (`.docx`, `.docm`, `.doc`)
@@ -172,7 +173,7 @@ Leestekenssneltoetsen krijgen hun naam van de toetsen van een amerikaans toetsen
 
 * `Ctrl+Spatie` (macOS: `Control+Spatie`, oftewel de fysieke Control-toets, omdat Cmd+Spatie Spotlight opent): Audio afspelen/pauzeren.
 * `Ctrl+J`: Naar een bepaald moment in de opname gaan. Typ het als `1:23:45`, `23:45` of `45` seconden, of zet `+` of `-` ervoor om vanuit jouw huidige positie te verplaatsen, bijvoorbeeld `+5:00`. Het venster toont hoe ver je bent en hoe lang het boek duurt.
-* `Shift+=`: Melden hoe ver je in dit hoofdstuk bent en hoeveel er nog over is, bijvoorbeeld "Hoofdstuk 3, 4:10 van 12:00, 7:50 resterend".
+* `Shift+=`: Melden hoe ver je in dit hoofdstuk bent en hoeveel er nog over is, bijvoorbeeld "Hoofdstuk 3, 4:10 van 12:00, 7:50 resterend". In een boek zonder opgenomen audio het percentage door het hoofdstuk en de woorden die er nog in over zijn, bijvoorbeeld "Hoofdstuk 3, 42%, 1850 woorden resterend".
 * `'`: Audio vooruitspoelen.
 * `;`: Audio terugspoelen.
 * `Shift+'`: De audiospoelstap vergroten.

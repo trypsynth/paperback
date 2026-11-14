@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: ba700ddfbaf3e99f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,b8a00464,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 12e7ba171a5bd0b4; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,ead885cc,8423460b,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback – 1.1-es verzió
 
@@ -48,6 +48,7 @@ Ha a JAWS semmit sem mond, amikor olyan billentyűt nyom meg, amelynek valamit b
 
 A Paperback a következő formátumokat és kiterjesztéseket támogatja:
 
+* BARD braille könyvek a Nemzeti Könyvtári Szolgálatból, minden kötet egy könyvként, a braille-kóddal visszafordítva, amelynek a csomagnév (a BARD által letöltött `.zip`, vagy a kitöltés után a `.bopf`)
 * Braille Ready Files és Portable Embosser Format könyvek, a kiválasztott braille-táblázattal visszafordítva nyomtatásra (`.brf`, `.pef`)
 * Képregényarchívumok (`.cbz`, `.cbr`)
 * CHM-súgófájlok (`.chm`)
@@ -56,7 +57,7 @@ A Paperback a következő formátumokat és kiterjesztéseket támogatja:
 * EPUB-könyvek (`.epub`, vagy az `.opf` fájlja, amely nincs tömörítve)
 * FB2 formátumú e-könyvek (`.fb2`)
 * GNU Info-kézikönyvek (`.info`, tömörítve vagy sem, valamint felosztott kézikönyvek megnyitva bármelyik részükből)
-* HTML-dokumentumok (`.htm`, `.html`, `.xhtml`)
+* HTML-dokumentumok (`.htm`, `.html`, `.shtml`, `.xhtml`)
 * Unix-kézikönyvoldalak, `man` és BSD `mdoc` formátumban is (`.1`–`.9`, `.man`, `.roff`, valamint mindegyik gzippel tömörített változata)
 * Markdown-dokumentumok (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Microsoft Word-dokumentumok (`.docx`, `.docm`, `.doc`)
@@ -172,7 +173,7 @@ Az írásjelekre vonatkozó billentyűparancsok az amerikai billentyűzet billen
 
 * `Ctrl+Space` (macOS: `Control+Space`, azaz a fizikai Control billentyű, mivel a Cmd+Space a Spotlightot nyitja meg): Az audionarráció lejátszása vagy szüneteltetése.
 * `Ctrl+J`: Ugrás a felvétel egy adott helyére. Írja be így: `1:23:45`, `23:45` vagy `45` másodperc, vagy a `+` vagy `-` jellel módosítsa az aktuális pozícióból, például `+5:00`. A párbeszédpanel mutatja, hogy hol tart a felvételben, és a könyv teljes hossza.
-* `Shift+=`: Az aktuális fejezet lejátszási idejének és hátralévő részének bejelentése, például „3. fejezet, 4:10 / 12:00, 7:50 hátra".
+* `Shift+=`: Az aktuális fejezet lejátszási idejének és hátralévő részének bejelentése, például „3. fejezet, 4:10 / 12:00, 7:50 hátra". Hangoskönyv nélküli könyvben a fejezeten belüli százalék és a szövegben hátralévő szavak száma, például „3. fejezet, 42%, 1850 szó hátra".
 * `'`: Az audionarráció előretekerése.
 * `;`: Az audionarráció visszatekerése.
 * `Shift+'`: A léptetési időegység növelése.

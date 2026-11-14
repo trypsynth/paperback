@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: ba700ddfbaf3e99f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,b8a00464,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 12e7ba171a5bd0b4; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,ead885cc,8423460b,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versión 1.1
 
@@ -48,6 +48,7 @@ Si JAWS no dice nada cuando presiona una tecla que debería reportar algo, abra 
 
 Paperback admite los siguientes formatos y extensiones:
 
+* Libros braille BARD de la Biblioteca Nacional de Servicios, cada volumen como un libro, retrotranducidos con el código braille que sus nombres de paquete especifican (el `.zip` que BARD descarga, o su `.bopf` una vez descomprimido)
 * Archivos Braille Listo y libros Portable Embosser Format, retrotranducidos a impresión con la tabla braille que elijas (`.brf`, `.pef`)
 * Archivos de cómics (`.cbz`, `.cbr`)
 * Archivos de ayuda CHM (`.chm`)
@@ -56,7 +57,7 @@ Paperback admite los siguientes formatos y extensiones:
 * Libros EPUB (`.epub`, o el `.opf` de uno que no esté comprimido)
 * Libros electrónicos FB2 (`.fb2`)
 * Manuales GNU Información (`.info`, comprimidos o no, y manuales divididos abiertos desde cualquiera de sus partes)
-* Documentos HTML (`.htm`, `.html`, `.xhtml`)
+* Documentos HTML (`.htm`, `.html`, `.shtml`, `.xhtml`)
 * Páginas de manual, tanto `man` como BSD `mdoc` (`.1` a `.9`, `.man`, `.roff` y sus formas comprimidas)
 * Documentos Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Documentos Microsoft Word (`.docx`, `.docm`, `.doc`)
@@ -172,7 +173,7 @@ Los atajos de puntuación se nombran según las teclas de un teclado estadounide
 
 * `Ctrl+Space` (macOS: `Control+Space`, es decir, la tecla Control física, ya que `Cmd+Space` abre Spotlight): Reproduce/pausa la narración de audio.
 * `Ctrl+J`: Ir a un momento en la grabación. Escríbelo como `1:23:45`, `23:45` o `45` segundos, o pon `+` o `-` delante para moverte desde donde estés, p. ej. `+5:00`. El diálogo muestra tu avance y la duración del libro.
-* `Shift+=`: Di cuánto llevas de este capítulo y cuánto te queda, p. ej. "Capítulo 3, 4:10 de 12:00, 7:50 restante".
+* `Shift+=`: Di cuánto llevas de este capítulo y cuánto te queda, p. ej. "Capítulo 3, 4:10 de 12:00, 7:50 restante". En un libro sin audio grabado, el porcentaje del capítulo y las palabras que quedan, p. ej. "Capítulo 3, 42%, 1850 palabras restantes".
 * `'`: Busca hacia adelante en la narración de audio.
 * `;`: Busca hacia atrás en la narración de audio.
 * `Shift+'`: Aumenta la cantidad de búsqueda de audio.
