@@ -1,5 +1,7 @@
 //! Read aloud on the desktop: the speech engine, and core's read-aloud audio played on the output device audio books use.
 
+#[cfg(target_os = "macos")]
+pub mod avspeech;
 #[cfg(windows)]
 pub mod onecore;
 #[cfg(windows)]
@@ -7,7 +9,7 @@ pub mod sapi5;
 #[cfg(windows)]
 mod wav;
 
-use std::{num::NonZero, rc::Rc, sync::Arc};
+use std::{num::NonZero, rc::Rc, sync::Arc, thread};
 
 use anyhow::Result;
 use paperback_core::{
@@ -16,7 +18,7 @@ use paperback_core::{
 	session::DocumentSession,
 	speech::{
 		AudioChunk, AudioFeed, FeedSample, ReadAloud, ReadAloudSettings, SpeechEngine, SpeechRequest, Synthesis, Voice,
-		WordBoundary, choose_voice,
+		WholeSynthesis, WordBoundary, choose_voice,
 	},
 };
 use rodio::{ChannelCount, MixerDeviceSink, Player, SampleRate, Source};
@@ -49,7 +51,7 @@ pub struct Speaker {
 	/// A new one for each start, since clearing a player blocks the UI thread.
 	player: Option<Player>,
 	/// The settings dialog's sample, apart from reading so it never disturbs where reading is.
-	sample: Option<Player>,
+	sample: Option<Arc<Player>>,
 	paused: bool,
 	volume: f32,
 	/// The paragraph the caret was last moved to, so it only moves when a new one starts.
@@ -168,9 +170,11 @@ impl Speaker {
 
 	/// Speaks `text` with the engine called `engine_id` and this voice, rate and pitch, replacing any sample still playing. The engine reading uses stays as it is.
 	///
+	/// It's synthesized on a thread of its own, so Settings never waits for it, and since macOS hands its voices' audio over on the UI thread, which waiting would hold up.
+	///
 	/// # Errors
 	///
-	/// Returns why the engine couldn't speak it.
+	/// Returns why the engine couldn't be started. Why it couldn't speak the sample is logged.
 	pub fn play_sample(
 		&mut self,
 		engine_id: &str,
@@ -182,16 +186,30 @@ impl Speaker {
 		let request = SpeechRequest { text: text.to_owned(), voice, rate_percent, pitch_percent };
 		let engine =
 			if engine_id == self.engine.id() { Arc::clone(&self.engine) } else { resampled(engine_id, &self.device)? };
-		let mut synthesis = engine.synthesize(&request)?;
-		let rate = NonZero::new(synthesis.sample_rate()).unwrap_or(NonZero::<u32>::MIN);
-		let mut samples = Vec::new();
-		while let Some(chunk) = synthesis.next_chunk() {
-			samples.extend(chunk?.samples.iter().map(|&sample| f32::from(sample) / 32_768.0));
-		}
-		let player = Player::connect_new(self.device.mixer());
+		let player = Arc::new(Player::connect_new(self.device.mixer()));
 		player.set_volume(self.volume);
-		player.append(rodio::buffer::SamplesBuffer::new(NonZero::<u16>::MIN, rate, samples));
+		// A sample replaced or stopped before it's ready is never played.
+		let pending = Arc::downgrade(&player);
 		self.sample = Some(player);
+		thread::spawn(move || {
+			let spoken = (|| -> Result<_> {
+				let mut synthesis = engine.synthesize(&request)?;
+				let rate = NonZero::new(synthesis.sample_rate()).unwrap_or(NonZero::<u32>::MIN);
+				let mut samples = Vec::new();
+				while let Some(chunk) = synthesis.next_chunk() {
+					samples.extend(chunk?.samples.iter().map(|&sample| f32::from(sample) / 32_768.0));
+				}
+				Ok((rate, samples))
+			})();
+			match spoken {
+				Ok((rate, samples)) => {
+					if let Some(player) = pending.upgrade() {
+						player.append(rodio::buffer::SamplesBuffer::new(NonZero::<u16>::MIN, rate, samples));
+					}
+				}
+				Err(error) => tracing::warn!(%error, "read aloud: couldn't play the sample"),
+			}
+		});
 		Ok(())
 	}
 
@@ -359,7 +377,9 @@ impl Speaker {
 pub const fn engines() -> &'static [(&'static str, &'static str)] {
 	#[cfg(windows)]
 	return &[("onecore", "OneCore"), ("sapi5", "SAPI 5")];
-	#[cfg(not(windows))]
+	#[cfg(target_os = "macos")]
+	return &[("avspeech", "macOS")];
+	#[cfg(not(any(windows, target_os = "macos")))]
 	return &[];
 }
 
@@ -379,7 +399,14 @@ fn engine(id: &str) -> Result<Arc<dyn SpeechEngine>> {
 	Ok(if id == "sapi5" { Arc::new(sapi5::Sapi5) } else { Arc::new(onecore::OneCore) })
 }
 
-#[cfg(not(windows))]
+/// macOS has the one engine.
+#[cfg(target_os = "macos")]
+#[allow(clippy::unnecessary_wraps, reason = "other systems have no engine yet, so callers handle failure")]
+fn engine(_id: &str) -> Result<Arc<dyn SpeechEngine>> {
+	Ok(Arc::new(avspeech::AvSpeech))
+}
+
+#[cfg(not(any(windows, target_os = "macos")))]
 fn engine(_id: &str) -> Result<Arc<dyn SpeechEngine>> {
 	anyhow::bail!("there's no speech engine for this system yet")
 }
@@ -441,28 +468,6 @@ fn resample(samples: &[i16], from: u32, to: u32) -> Result<Vec<i16>> {
 		.into_iter()
 		.map(|sample| (sample * 32_768.0).round().clamp(-32_768.0, 32_767.0) as i16)
 		.collect())
-}
-
-/// An engine's whole paragraph, handed over as one chunk.
-pub(crate) struct WholeSynthesis {
-	sample_rate: u32,
-	chunk: Option<AudioChunk>,
-}
-
-impl WholeSynthesis {
-	pub(crate) const fn new(sample_rate: u32, chunk: AudioChunk) -> Self {
-		Self { sample_rate, chunk: Some(chunk) }
-	}
-}
-
-impl Synthesis for WholeSynthesis {
-	fn sample_rate(&self) -> u32 {
-		self.sample_rate
-	}
-
-	fn next_chunk(&mut self) -> Option<Result<AudioChunk>> {
-		self.chunk.take().map(Ok)
-	}
 }
 
 /// Core's read-aloud audio as a rodio source.

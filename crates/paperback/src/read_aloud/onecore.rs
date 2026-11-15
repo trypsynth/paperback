@@ -2,7 +2,7 @@
 
 use anyhow::{Context, Result};
 use paperback_core::speech::{
-	AudioChunk, SpeechEngine, SpeechRequest, Synthesis, Voice, WordBoundary, utf16_to_char_offset,
+	AudioChunk, SpeechEngine, SpeechRequest, Synthesis, Voice, WholeSynthesis, WordBoundary, utf16_to_char_offset,
 };
 use windows::{
 	Media::{Core::SpeechCue, SpeechSynthesis::SpeechSynthesizer},
@@ -11,7 +11,7 @@ use windows::{
 	core::{HSTRING, Interface},
 };
 
-use super::{WholeSynthesis, wav};
+use super::wav;
 
 /// Ticks of a `TimeSpan`, which counts in 100 nanoseconds.
 const TICKS_PER_SECOND: i64 = 10_000_000;

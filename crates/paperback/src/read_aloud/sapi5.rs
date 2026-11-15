@@ -3,7 +3,7 @@
 //! Paperback is a 64-bit app, so it finds only voices installed for 64-bit programs.
 
 use anyhow::{Context, Result};
-use paperback_core::speech::{AudioChunk, SpeechEngine, SpeechRequest, Synthesis, Voice, WordBoundary};
+use paperback_core::speech::{AudioChunk, SpeechEngine, SpeechRequest, Synthesis, Voice, WholeSynthesis, WordBoundary};
 use windows::{
 	Win32::{
 		Foundation::HGLOBAL,
@@ -23,8 +23,6 @@ use windows::{
 	},
 	core::{GUID, HSTRING, PCWSTR, PWSTR, w},
 };
-
-use super::WholeSynthesis;
 
 /// SAPI's identifier for audio described by a `WAVEFORMATEX`, which the windows crate doesn't define.
 const SPDFID_WAVE_FORMAT_EX: GUID = GUID::from_u128(0xc31a_dbae_527f_4ff5_a230_f62b_b61f_f70c);

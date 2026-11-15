@@ -228,8 +228,11 @@ impl SpeechSection {
 		let group = StaticBox::builder(&panel).with_label(&t("Read Aloud")).build();
 		let sizer = StaticBoxSizerBuilder::new_with_box(&group, Orientation::Vertical).build();
 		// TRANSLATORS: Label of the list of speech engines, such as OneCore or SAPI 5, on the Audio tab of Settings
-		let engine_label = StaticText::builder(&panel).with_label(&t("&Engine:")).build();
+		let engine_label_text = t("&Engine:");
+		let engine_label = StaticText::builder(&panel).with_label(&engine_label_text).build();
 		let engine = Choice::builder(&panel).build();
+		#[cfg(target_os = "macos")]
+		engine.set_accessibility_label(engine_label_text.replace('&', "").trim_end_matches(':').trim());
 		let engines = read_aloud::engines();
 		for (_, name) in engines {
 			engine.append(name);
@@ -237,8 +240,11 @@ impl SpeechSection {
 		let engine_index = engines.iter().position(|(id, _)| *id == settings.engine).unwrap_or(0);
 		engine.set_selection(u32::try_from(engine_index).unwrap_or(0));
 		// TRANSLATORS: Label of the list of voices on the Audio tab of Settings
-		let voice_label = StaticText::builder(&panel).with_label(&t("&Voice:")).build();
+		let voice_label_text = t("&Voice:");
+		let voice_label = StaticText::builder(&panel).with_label(&voice_label_text).build();
 		let voice = Choice::builder(&panel).build();
+		#[cfg(target_os = "macos")]
+		voice.set_accessibility_label(voice_label_text.replace('&', "").trim_end_matches(':').trim());
 		let voice_ids = Rc::new(RefCell::new(fill_voices(voice, voices(&settings.engine), settings.voice.as_deref())));
 		// TRANSLATORS: Label of the speech rate slider on the Audio tab of Settings
 		let rate_label = StaticText::builder(&panel).with_label(&t("&Rate:")).build();
