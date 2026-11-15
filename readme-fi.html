@@ -169,15 +169,16 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h2 id="tuettavat-tiedostomuodot">Tuettavat tiedostomuodot</h2>
 <p>Paperback tukee seuraavia tiedostomuotoja:</p>
 <ul>
+<li>National Library Service -palvelun BARD-pistekirjat, joiden jokainen nide käsitellään omana kirjanaan. Pistekirjoitus muunnetaan tavalliseksi tekstiksi kirjapaketissa ilmoitetun pistetaulukon avulla (BARD-palvelusta ladatut <code>.zip</code>-paketit tai purettujen pakettien <code>.bopf</code>-tiedostot).</li>
 <li>Braille Ready File- ja Portable Embosser Format -muodossa olevat pistekirjat (<code>.brf</code>, <code>.pef</code>), joiden pistekirjoitus muunnetaan tavalliseksi tekstiksi käyttäjän valitseman pistetaulukon avulla</li>
 <li>Sarjakuvapaketit (<code>.cbz</code>, <code>.cbr</code>)</li>
 <li>CHM-ohjetiedostot (<code>.chm</code>)</li>
 <li>DAISY-kirjat (<code>.opf</code>, <code>.zip</code>)</li>
 <li>eBraille-kirjat, joiden tavallinen teksti luetaan, jos sellainen on saatavilla. Muussa tapauksessa pistekirjoitus muunnetaan tavalliseksi tekstiksi kirjassa määritetyn pistetaulukon avulla (<code>.ebrl</code> tai pakkaamattoman kirjan <code>.opf</code>-tiedosto)</li>
-<li>EPUB-kirjat (<code>.epub</code> tai pakkaamattoman kirjan <code>.opf</code>-tiedosto)</li>
+<li>EPUB-kirjat (<code>.epub</code> tai pakkaamattomien kirjojen <code>.opf</code>-tiedostot)</li>
 <li>FB2-e-kirjat (<code>.fb2</code>)</li>
 <li>GNU Info -ohjeet (<code>.info</code>, myös gzip-pakattuina, sekä useaan tiedostoon jaetut ohjeet, jotka voidaan avata mistä tahansa osasta)</li>
-<li>HTML-asiakirjat (<code>.htm</code>, <code>.html</code>, <code>.xhtml</code>)</li>
+<li>HTML-asiakirjat (<code>.htm</code>, <code>.html</code>, <code>.shtml</code>, <code>.xhtml</code>)</li>
 <li><code>Man</code>- ja BSD <code>mdoc</code> -muodoissa olevat man-sivut (<code>.1</code>–<code>.9</code>, <code>.man</code>, <code>.roff</code> sekä niiden gzip-pakatut versiot)</li>
 <li>Markdown-asiakirjat (<code>.md</code>, <code>.markdown</code>, <code>.mdx</code>, <code>.mdown</code>, <code>.mdwn</code>, <code>.mkd</code>, <code>.mkdn</code>, <code>.mkdown</code>, <code>.ronn</code>)</li>
 <li>Microsoft Word -asiakirjat (<code>.docx</code>, <code>.docm</code>, <code>.doc</code>)</li>
@@ -289,7 +290,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li><code>Ctrl+Välilyönti</code> (macOSissa <code>Control+Välilyönti</code> eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.</li>
 <li><code>Ctrl+J</code>: Siirry tiettyyn äänitteen kohtaan. Anna aika muodossa <code>1:23:45</code>, <code>23:45</code> tai <code>45</code> sekuntia. Voit myös lisätä ajan eteen <code>+</code>- tai <code>-</code>-merkin, jolloin nykyisestä toistokohdasta siirrytään eteen- tai taaksepäin, esimerkiksi <code>+5:00</code>. Valintaikkunassa näytetään nykyinen toistokohta ja kirjan kokonaiskesto.</li>
-<li><code>Vaihto+=</code>: Ilmoita nykyisen luvun kulunut ja jäljellä oleva toistoaika, esimerkiksi ”Luku 3, 4:10 / 12:00, jäljellä 7:50”.</li>
+<li><code>Vaihto+=</code>: Ilmoita nykyisen luvun kulunut ja jäljellä oleva toistoaika, esimerkiksi ”Luku 3, 4:10 / 12:00, jäljellä 7:50”. Jos kirjassa ei ole äänitettä, luvun lukemisen edistyminen ilmoitetaan prosentteina ja jäljellä oleva osuus sanojen määränä, esimerkiksi ”Luku 3, 42 %, jäljellä 1 850 sanaa”.</li>
 <li><code>'</code>: Kelaa äänitettä eteenpäin.</li>
 <li><code>;</code>: Kelaa äänitettä taaksepäin.</li>
 <li><code>Vaihto+'</code>: Pidennä kelauksen aikasiirtymää.</li>

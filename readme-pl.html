@@ -174,7 +174,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Archiwa komiksów (<code>.cbz</code>, <code>.cbr</code>)</li>
 <li>Pliki pomocy CHM (<code>.chm</code>)</li>
 <li>Książki DAISY (<code>.opf</code>, <code>.zip</code>)</li>
-<li>Książki EPUB (<code>.epub</code>)</li>
+<li>Książki eBraille, odczytywane jako zwykły tekst, jeśli go zawierają, a w przeciwnym razie przekształcane z brajla na tekst z użyciem wskazanego w nich kodu brajlowskiego (<code>.ebrl</code> lub plik <code>.opf</code> książki niespakowanej do archiwum ZIP)</li>
+<li>Książki EPUB (<code>.epub</code> lub plik <code>.opf</code> książki niespakowanej do archiwum ZIP)</li>
 <li>E-booki FB2 (<code>.fb2</code>)</li>
 <li>Podręczniki GNU Info (<code>.info</code>, niespakowane lub spakowane gzipem; podręczniki podzielone na części można otworzyć z dowolnej z nich)</li>
 <li>Dokumenty HTML (<code>.htm</code>, <code>.html</code>, <code>.xhtml</code>)</li>
@@ -240,7 +241,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Przejdź do wiersza.</li>
 <li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Przejdź do procentu.</li>
 <li><code>Ctrl+P</code>: Przejdź do strony (gdy jest obsługiwana przez bieżący dokument).</li>
-<li><code>=</code>: Odczytaj bieżącą pozycję procentową i numer strony, na przykład „15%, strona 30”. W dokumentach bez numerów stron numer strony jest pomijany.</li>
+<li><code>=</code>: Odczytaj bieżącą pozycję procentową i numer strony, na przykład „15%, strona 30”. W dokumentach bez numerów stron numer strony jest pomijany. W audiobooku po tych informacjach podawane są bieżąca pozycja czasowa i długość całego nagrania, na przykład „15%, 1:02:03 z 10:30:00”.</li>
 <li><code>Alt+Strzałka w lewo</code> (macOS: <code>Cmd+[</code>): Przejdź wstecz w historii nawigacji.</li>
 <li><code>Alt+Strzałka w prawo</code> (macOS: <code>Cmd+]</code>): Przejdź do przodu w historii nawigacji.</li>
 <li><code>[</code>: Poprzednia sekcja.</li>
@@ -289,6 +290,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li><code>Ctrl+Spacja</code> (macOS: <code>Control+Spacja</code>, czyli fizyczny klawisz Control, ponieważ Cmd+Spacja otwiera Spotlight): Odtwórz lub wstrzymaj narrację dźwiękową.</li>
 <li><code>Ctrl+J</code>: Przejdź do wskazanego czasu w nagraniu. Wpisz czas w postaci <code>1:23:45</code>, <code>23:45</code> lub liczbę sekund, na przykład <code>45</code>. Aby przesunąć się względem bieżącej pozycji, poprzedź czas znakiem <code>+</code> lub <code>-</code>, na przykład <code>+5:00</code>. Okno dialogowe pokazuje bieżącą pozycję i długość całego nagrania.</li>
+<li><code>Shift+=</code>: Odczytaj bieżącą pozycję w rozdziale i ile zostało do końca, na przykład „Rozdział 3, 4:10 z 12:00, pozostało 7:50”. W książce bez nagrania odczytywane są procentowa pozycja w rozdziale i liczba pozostałych w nim słów, na przykład „Rozdział 3, 42%, pozostało 1850 słów”.</li>
 <li><code>'</code>: Przewiń narrację dźwiękową w przód.</li>
 <li><code>;</code>: Przewiń narrację dźwiękową w tył.</li>
 <li><code>Shift+'</code>: Zwiększ skok przewijania dźwięku.</li>
