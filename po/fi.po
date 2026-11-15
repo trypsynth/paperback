@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-13 12:52+0000\n"
-"PO-Revision-Date: 2026-11-14 21:14+0200\n"
+"PO-Revision-Date: 2026-11-16 00:20+0200\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -1428,7 +1428,7 @@ msgstr ""
 
 #. TRANSLATORS: Label of the group of read aloud settings on the Audio tab of Settings: engine, voice, rate, pitch and pauses
 msgid "Read Aloud"
-msgstr "Lue tekstistä puheeksi -toiminnolla"
+msgstr "Tekstistä puheeksi"
 
 #. TRANSLATORS: Label of the list of speech engines, such as OneCore or SAPI 5, on the Audio tab of Settings
 msgid "&Engine:"
