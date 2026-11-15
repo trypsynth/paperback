@@ -52,7 +52,8 @@ Paperback obsługuje następujące formaty i rozszerzenia:
 * Archiwa komiksów (`.cbz`, `.cbr`)
 * Pliki pomocy CHM (`.chm`)
 * Książki DAISY (`.opf`, `.zip`)
-* Książki EPUB (`.epub`)
+* Książki eBraille, odczytywane jako zwykły tekst, jeśli go zawierają, a w przeciwnym razie przekształcane z brajla na tekst z użyciem wskazanego w nich kodu brajlowskiego (`.ebrl` lub plik `.opf` książki niespakowanej do archiwum ZIP)
+* Książki EPUB (`.epub` lub plik `.opf` książki niespakowanej do archiwum ZIP)
 * E-booki FB2 (`.fb2`)
 * Podręczniki GNU Info (`.info`, niespakowane lub spakowane gzipem; podręczniki podzielone na części można otworzyć z dowolnej z nich)
 * Dokumenty HTML (`.htm`, `.html`, `.xhtml`)
@@ -122,7 +123,7 @@ Skróty ze znakami interpunkcyjnymi nazwano według klawiszy klawiatury ameryka�
 * `Ctrl+G` (macOS: `Cmd+L`): Przejdź do wiersza.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Przejdź do procentu.
 * `Ctrl+P`: Przejdź do strony (gdy jest obsługiwana przez bieżący dokument).
-* `=`: Odczytaj bieżącą pozycję procentową i numer strony, na przykład „15%, strona 30”. W dokumentach bez numerów stron numer strony jest pomijany.
+* `=`: Odczytaj bieżącą pozycję procentową i numer strony, na przykład „15%, strona 30”. W dokumentach bez numerów stron numer strony jest pomijany. W audiobooku po tych informacjach podawane są bieżąca pozycja czasowa i długość całego nagrania, na przykład „15%, 1:02:03 z 10:30:00”.
 * `Alt+Strzałka w lewo` (macOS: `Cmd+[`): Przejdź wstecz w historii nawigacji.
 * `Alt+Strzałka w prawo` (macOS: `Cmd+]`): Przejdź do przodu w historii nawigacji.
 * `[`: Poprzednia sekcja.
@@ -171,6 +172,7 @@ Skróty ze znakami interpunkcyjnymi nazwano według klawiszy klawiatury ameryka�
 
 * `Ctrl+Spacja` (macOS: `Control+Spacja`, czyli fizyczny klawisz Control, ponieważ Cmd+Spacja otwiera Spotlight): Odtwórz lub wstrzymaj narrację dźwiękową.
 * `Ctrl+J`: Przejdź do wskazanego czasu w nagraniu. Wpisz czas w postaci `1:23:45`, `23:45` lub liczbę sekund, na przykład `45`. Aby przesunąć się względem bieżącej pozycji, poprzedź czas znakiem `+` lub `-`, na przykład `+5:00`. Okno dialogowe pokazuje bieżącą pozycję i długość całego nagrania.
+* `Shift+=`: Odczytaj bieżącą pozycję w rozdziale i ile zostało do końca, na przykład „Rozdział 3, 4:10 z 12:00, pozostało 7:50”. W książce bez nagrania odczytywane są procentowa pozycja w rozdziale i liczba pozostałych w nim słów, na przykład „Rozdział 3, 42%, pozostało 1850 słów”.
 * `'`: Przewiń narrację dźwiękową w przód.
 * `;`: Przewiń narrację dźwiękową w tył.
 * `Shift+'`: Zwiększ skok przewijania dźwięku.

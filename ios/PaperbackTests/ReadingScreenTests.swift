@@ -89,7 +89,8 @@ final class ReadingScreenTests: XCTestCase {
 	func testOnlyTheRotorsTheBookHasSomethingForAreOffered() throws {
 		let plain = try book(paragraphs(3))
 		XCTAssertEqual(plain.accessibilityCustomRotors?.count, 0)
-		let structured = try book("<h1>A</h1><p><a href=\"#b\">to B</a></p><table><tr><td>1</td><td>2</td></tr></table><h2 id=\"b\">B</h2>")
+		// A table of one row is page layout, and read as its cells' text, so this one is a table of data.
+		let structured = try book("<h1>A</h1><p><a href=\"#b\">to B</a></p><table><tr><th>X</th><th>Y</th></tr><tr><td>1</td><td>2</td></tr></table><h2 id=\"b\">B</h2>")
 		let types = structured.accessibilityCustomRotors?.map(\.systemRotorType) ?? []
 		XCTAssertTrue(types.contains(.heading))
 		XCTAssertTrue(types.contains(.link))

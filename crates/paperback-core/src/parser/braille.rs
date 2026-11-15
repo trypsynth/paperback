@@ -184,16 +184,22 @@ const SAMPLE_CELLS: usize = 6000;
 /// Of a sample of the file's words, how many read as words, and how many there are. A wrong braille ASCII turns letters into digits and signs, and leaves cells the table has no print for.
 fn word_likeness(layout: &Layout, translator: &Translator) -> (u64, u64) {
 	let mut cells = 0;
-	let sample: Vec<&String> = layout
-		.paragraphs
-		.iter()
-		.skip(layout.paragraphs.len() / 10)
-		.take_while(|paragraph| {
-			let before = cells;
-			cells += paragraph.chars().count();
-			before < SAMPLE_CELLS
-		})
-		.collect();
+	let mut sample: Vec<String> = Vec::new();
+	for paragraph in layout.paragraphs.iter().skip(layout.paragraphs.len() / 10) {
+		if cells >= SAMPLE_CELLS {
+			break;
+		}
+		// A paragraph is cut at a blank cell where the sample is full, as a file that never indents one is a single paragraph.
+		let room = SAMPLE_CELLS - cells;
+		let paragraph: Vec<char> = paragraph.chars().collect();
+		let end = if paragraph.len() > room {
+			paragraph[..room].iter().rposition(|&cell| cell == BLANK).unwrap_or(room)
+		} else {
+			paragraph.len()
+		};
+		cells += paragraph.len();
+		sample.push(paragraph[..end].iter().collect());
+	}
 	sample
 		.par_iter()
 		.map(|paragraph| words_like_words(&translate_paragraph(translator, paragraph).0))
@@ -363,7 +369,18 @@ struct Layout {
 impl Layout {
 	/// Embossed braille wraps paragraphs at the line length, marks a new paragraph by indenting it, centers headings, and breaks a word only at a hyphen it already has. Pages are padded with blank cells, and number themselves at the end of their first or last line.
 	fn of(pages: &[Page], strip_running_heads: bool) -> Self {
+		// Each line's length before its page number is taken off, as the transcriber left room for the number.
+		let lengths: Vec<Vec<usize>> = pages
+			.iter()
+			.map(|page| {
+				page.iter().map(|line| line.replace(' ', "\u{2800}").trim_end_matches(BLANK).chars().count()).collect()
+			})
+			.collect();
+		let width = line_width(&lengths);
 		let pages: Vec<Vec<String>> = pages.iter().map(page_lines).collect();
+		let margin = left_margin(&pages);
+		let listed: Vec<bool> =
+			pages.iter().zip(&lengths).map(|(lines, lengths)| is_listed(lines, lengths, width, margin)).collect();
 		let running_heads = if strip_running_heads { running_heads(&pages) } else { Vec::new() };
 		let mut layout = Self::default();
 		let mut current: Option<String> = None;
@@ -373,32 +390,83 @@ impl Layout {
 		let mut after_entry = false;
 		let mut opened_after_entry = false;
 		let mut opened_at = 0;
+		// The indent of the open entry's run-over lines, once it has one deeper than its first line.
+		let mut run_over_at = None;
+		// The indent and length of the open paragraph's last line, and whether it was the paragraph's first.
+		let mut previous: Option<(usize, usize, bool)> = None;
+		let is_running_head = |line_index: usize, line: &String| line_index == 0 && running_heads.contains(line);
+		// The lines from one on, across pages, without running heads.
+		let following = |page_index: usize, line_index: usize| {
+			pages[page_index][line_index.min(pages[page_index].len())..].iter().chain(
+				pages[page_index + 1..].iter().flat_map(|page| {
+					page.iter().enumerate().filter(|(index, line)| !is_running_head(*index, line)).map(|(_, line)| line)
+				}),
+			)
+		};
 		for (page_index, lines) in pages.iter().enumerate() {
 			layout.page_starts.push(None);
 			waiting_pages.push(page_index);
 			for (line_index, line) in lines.iter().enumerate() {
-				if line_index == 0 && running_heads.contains(line) {
+				if is_running_head(line_index, line) {
 					continue;
 				}
-				let indent = line.chars().take_while(|&character| character == BLANK).count();
+				let indent = indent_of(line);
 				let content: String = line.chars().skip(indent).collect();
 				if content.is_empty() || is_box_line(&content) {
 					layout.finish(&mut current);
+					run_over_at = None;
 					after_entry = false;
 					continue;
 				}
 				let guided = without_guide_dots(&content);
-				let led = guided != content;
+				let (guided, led) = match without_page_number_gap(&guided) {
+					Some(joined) => (joined, true),
+					None => (guided.clone(), guided != content),
+				};
 				// A line of guide dots alone leads from an entry on the line before to its page number on the next.
 				if guided.is_empty() {
 					led_to_next = true;
 					continue;
 				}
 				let content = guided;
+				let after_dots = led_to_next;
 				// A contents entry ends at its page number, after its guide dots. The next starts at the margin, as a paragraph's run-on line does, so it's told apart by the dots.
 				let ends_entry = led || std::mem::take(&mut led_to_next);
-				// Contents entries are indented as far as a centered heading, and aren't one.
-				let standalone = (indent >= CENTERED_INDENT && !after_entry) || is_separator(&content);
+				// Embossed braille wraps a line only where the next word doesn't fit, so a line with room left for it ended there on purpose, as a line of verse or a list's item does, whatever the indents.
+				let first_word = content.chars().take_while(|&cell| cell != BLANK).count();
+				let wraps = after_dots
+					|| current.as_deref().is_some_and(ends_in_broken_word)
+					|| previous.is_some_and(|(_, length, _)| length + 1 + first_word > width);
+				// A paragraph's wrapped words go on further out, at the book's margin, so at the indent of its indented first line is the next paragraph. On a page laid out as a list, as an index, a recipe or a poem is, an item starts at the margin and goes on further in. Elsewhere, a line two cells further in goes on an item that runs over: it stays further in, or comes back out after a short line.
+				let wrapped_on = current.is_some()
+					&& wraps
+					&& previous.is_some_and(|(previous_indent, _, opened)| {
+						// a paragraph on such a page is indented as anywhere else
+						if listed[page_index] && opened_at == margin {
+							indent > previous_indent || (indent == previous_indent && indent != margin && !opened)
+						} else {
+							indent < previous_indent
+								|| (indent == previous_indent && (indent == margin || !opened))
+								|| (indent == previous_indent + 2
+									&& following(page_index, line_index + 1).next().is_some_and(|after| {
+										let after_indent = indent_of(after);
+										let after_word =
+											after.chars().skip(after_indent).take_while(|&cell| cell != BLANK).count();
+										// an item running over two lines or more stays further in, where a paragraph's words go back out
+										after_word > 0
+											&& (after_indent == indent
+												|| (after_indent == previous_indent
+													&& lengths[page_index][line_index] + 1 + after_word <= width))
+									}))
+						}
+					});
+				// A centered heading ends where it does on purpose, with room left for the next line's first word, where a paragraph indented as far, as a picture's description is, wraps. Contents entries are indented as far as a centered heading, and aren't one.
+				let ends_on_purpose = following(page_index, line_index + 1).next().is_none_or(|next| {
+					let next_word = next.chars().skip(indent_of(next)).take_while(|&cell| cell != BLANK).count();
+					next_word == 0 || lengths[page_index][line_index] + 1 + next_word <= width
+				});
+				let standalone = (!wrapped_on && ends_on_purpose && indent >= CENTERED_INDENT && !after_entry)
+					|| is_separator(&content);
 				// An entry's run-on line is indented, where a paragraph's first line is, and ends the entry with its dots. It's indented less than the entry's first line, as one indented further is an entry under a heading.
 				let runs_on = indent > 0
 					&& indent < opened_at
@@ -406,7 +474,20 @@ impl Layout {
 					&& ends_entry
 					&& current.is_some()
 					&& opened_after_entry;
-				if (indent > 0 && !runs_on) || standalone {
+				// An entry whose first line has no page number can instead run over onto lines indented further, as poetry contents do: two cells beyond the deepest entry.
+				let runs_over = current.is_some()
+					&& opened_after_entry
+					&& !standalone
+					&& indent > opened_at
+					&& run_over_at.map_or_else(
+						|| entry_runs_over(following(page_index, line_index), opened_at),
+						|at| at == indent,
+					);
+				if runs_over {
+					run_over_at = Some(indent);
+				}
+				let breaks = !wrapped_on;
+				if (breaks && !runs_on && !runs_over) || standalone {
 					if current.is_some() {
 						after_entry = false;
 					}
@@ -422,13 +503,18 @@ impl Layout {
 					paragraph.push(BLANK);
 				}
 				let cell = paragraph.chars().count();
+				let opened = cell == 0;
 				for page in std::mem::take(&mut waiting_pages) {
 					layout.page_starts[page] = Some((paragraph_index, cell));
 				}
 				paragraph.push_str(&content);
+				previous = Some((indent, lengths[page_index][line_index], opened));
 				if standalone || ends_entry {
 					layout.finish(&mut current);
 					after_entry = ends_entry;
+				}
+				if current.is_none() {
+					run_over_at = None;
 				}
 			}
 		}
@@ -468,6 +554,104 @@ fn without_guide_dots(line: &str) -> String {
 		}
 	}
 	out.trim_end_matches(BLANK).to_string()
+}
+
+/// A contents entry with no room for guide dots ends its line in blank cells and its page number instead. Returns the line with them read as one space, as its guide dots would be.
+fn without_page_number_gap(line: &str) -> Option<String> {
+	let cells: Vec<char> = line.chars().collect();
+	let token_start = cells.iter().rposition(|&cell| cell == BLANK)? + 1;
+	let token = &cells[token_start..];
+	let blanks = cells[..token_start].iter().rev().take_while(|&&cell| cell == BLANK).count();
+	let is_page_number = token.len() <= 6
+		&& token.first() == Some(&NUMBER_SIGN)
+		&& token.last().is_some_and(|&cell| is_digit_cell(cell));
+	(is_page_number && blanks >= 3 && blanks < token_start).then(|| {
+		let mut joined: String = cells[..token_start - blanks].iter().collect();
+		joined.push(BLANK);
+		joined.extend(token);
+		joined
+	})
+}
+
+/// Whether a page is laid out as a list rather than in paragraphs: an index, a recipe or a poem starts each item at the margin and runs it over further in, where a paragraph is indented and goes on at the margin. Such a page has a few items that end with room to spare and are followed by another at the margin, more of them than paragraphs that do and are followed by an indented one, and an item that runs over. A page that never indents a line, as DAISY Pipeline writes them, is in paragraphs.
+fn is_listed(lines: &[String], lengths: &[usize], width: usize, margin: usize) -> bool {
+	let first_word = |line: &str| line.chars().skip(indent_of(line)).take_while(|&cell| cell != BLANK).count();
+	let (mut items, mut paragraphs, mut run_overs) = (0, 0, 0);
+	for index in 0..lines.len().saturating_sub(1) {
+		let (line, next) = (&lines[index], &lines[index + 1]);
+		if line.is_empty() || next.is_empty() || indent_of(line) != margin {
+			continue;
+		}
+		let room = lengths[index] + 1 + first_word(next) <= width;
+		let deeper = indent_of(next) > margin;
+		match (room, deeper) {
+			(true, false) => items += 1,
+			(true, true) => paragraphs += 1,
+			(false, true)
+				if lines.get(index + 2).is_some_and(|after| !after.is_empty() && indent_of(after) == margin) =>
+			{
+				run_overs += 1;
+			}
+			_ => {}
+		}
+	}
+	// a page's footnotes alone, a list of their own, don't make it one
+	const FEW_ITEMS: usize = 3;
+	run_overs > 0 && items >= FEW_ITEMS && items > paragraphs
+}
+
+/// The indent a book's lines go on at: none, or the cell or so some leave blank down the left of every line. It's the least that a good share of its lines have, as a title page's lines can start at the edge.
+fn left_margin(pages: &[Vec<String>]) -> usize {
+	let indents: Vec<usize> =
+		pages.iter().flatten().filter(|line| !line.is_empty()).map(|line| indent_of(line)).collect();
+	let mut counts: HashMap<usize, usize> = HashMap::new();
+	for &indent in &indents {
+		*counts.entry(indent).or_default() += 1;
+	}
+	counts
+		.into_iter()
+		.filter(|&(_, count)| count * 20 >= indents.len())
+		.map(|(indent, _)| indent)
+		.min()
+		.unwrap_or_default()
+}
+
+/// How many cells the file's lines hold: about as long as its longest, leaving out the odd one a transcriber ran past the margin. A file of a page or so, such as a title page, may have no line that long, and is taken to hold the 40 most braille is embossed with.
+fn line_width(lengths: &[Vec<usize>]) -> usize {
+	const FEW_LINES: usize = 200;
+	const COMMON_WIDTH: usize = 40;
+	let mut lengths: Vec<usize> = lengths.iter().flatten().copied().filter(|&length| length > 0).collect();
+	lengths.sort_unstable();
+	let width = lengths.get(lengths.len() * 199 / 200).copied().unwrap_or_default();
+	if lengths.len() < FEW_LINES { width.max(COMMON_WIDTH) } else { width }
+}
+
+fn indent_of(line: &str) -> usize {
+	line.chars().take_while(|&character| character == BLANK).count()
+}
+
+/// Whether the lines from here run an unfinished contents entry over rather than start entries under it as a heading: they stay at one indent deeper than the entry's until one ends in guide dots, and the line after that comes back out to the entry's indent or less.
+fn entry_runs_over<'a>(mut lines: impl Iterator<Item = &'a String>, entry_indent: usize) -> bool {
+	let Some(first) = lines.next() else { return false };
+	let indent = indent_of(first);
+	let mut line = first;
+	// An entry runs over a few lines at most, and a page of text at one indent mustn't be scanned again for each of its lines.
+	for _ in 0..8 {
+		let content: String = line.chars().skip(indent).collect();
+		if content.is_empty() || is_box_line(&content) {
+			return false;
+		}
+		let led = without_guide_dots(&content) != content || without_page_number_gap(&content).is_some();
+		let next = lines.next();
+		if led {
+			return next.is_none_or(|next| next.is_empty() || indent_of(next) <= entry_indent);
+		}
+		match next {
+			Some(next) if indent_of(next) == indent => line = next,
+			_ => return false,
+		}
+	}
+	false
 }
 
 /// Dot 5, which guide dots are made of.

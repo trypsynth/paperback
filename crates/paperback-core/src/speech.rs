@@ -9,7 +9,9 @@ mod text_map;
 mod voice;
 
 pub use dictionary::{MatchType, RuleScope, SpeechRule, VoiceFilter, apply_rules};
-pub use engine::{AudioChunk, SpeechEngine, SpeechRequest, Synthesis, Voice, WordBoundary, utf16_to_char_offset};
+pub use engine::{
+	AudioChunk, SpeechEngine, SpeechRequest, Synthesis, Voice, WholeSynthesis, WordBoundary, utf16_to_char_offset,
+};
 pub(crate) use read_aloud::SpeechParagraph;
 pub use read_aloud::{AudioFeed, FeedSample, ReadAloud, ReadAloudProgress, ReadAloudSettings};
 pub use text_map::TextMap;

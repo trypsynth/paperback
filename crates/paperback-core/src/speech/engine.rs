@@ -72,6 +72,29 @@ pub trait SpeechEngine: Send + Sync {
 	fn synthesize(&self, request: &SpeechRequest) -> Result<Box<dyn Synthesis>>;
 }
 
+/// An engine's whole paragraph, handed over as one chunk.
+pub struct WholeSynthesis {
+	sample_rate: u32,
+	chunk: Option<AudioChunk>,
+}
+
+impl WholeSynthesis {
+	#[must_use]
+	pub const fn new(sample_rate: u32, chunk: AudioChunk) -> Self {
+		Self { sample_rate, chunk: Some(chunk) }
+	}
+}
+
+impl Synthesis for WholeSynthesis {
+	fn sample_rate(&self) -> u32 {
+		self.sample_rate
+	}
+
+	fn next_chunk(&mut self) -> Option<Result<AudioChunk>> {
+		self.chunk.take().map(Ok)
+	}
+}
+
 /// Engines count text in UTF-16 code units, as their platforms do, and core counts chars, so a word boundary is converted with this. An offset inside a surrogate pair counts as the char it's in.
 #[must_use]
 pub fn utf16_to_char_offset(text: &str, utf16_offset: usize) -> usize {

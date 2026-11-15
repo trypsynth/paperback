@@ -1,0 +1,15 @@
+// Signing for every target. These are the maintainer's values, which App Store builds use.
+//
+// Everyone else signs with their own team and bundle ID, from one file per Mac:
+// ~/.config/paperback-dev/ios-signing.xcconfig, which `cargo ios run --device` writes.
+// An include path can't start at the home folder, so `cargo ios` gives each checkout a
+// gitignored Local.xcconfig that includes that file by its full path.
+//
+// The project file must not set any of these: a value there overrides this file for every
+// contributor. ios/Scripts/check-signing-settings.sh fails the build when it does.
+
+CODE_SIGN_STYLE = Automatic
+DEVELOPMENT_TEAM = 63Z3C555W6
+PAPERBACK_BUNDLE_ID = dev.paperback.ios
+
+#include? "Local.xcconfig"

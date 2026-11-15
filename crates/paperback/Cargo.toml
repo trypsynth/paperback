@@ -40,8 +40,11 @@ zip = { workspace = true }
 doorbell = "0.1.0"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-block = "0.1.6"
-objc = "0.2.7"
+block2 = "0.6.2"
+objc2 = "0.6.5"
+objc2-app-kit = { version = "0.3.2", default-features = false, features = ["std", "block2", "NSApplication", "NSButton", "NSControl", "NSEvent", "NSGraphics", "NSGraphicsContext", "NSLayoutManager", "NSResponder", "NSRunningApplication", "NSScrollView", "NSText", "NSTextView", "NSView", "NSWindow", "objc2-core-foundation"] }
+objc2-avf-audio = { version = "0.3.2", default-features = false, features = ["std", "block2", "AVAudioBuffer", "AVAudioFormat", "AVAudioTypes", "AVSpeechSynthesis"] }
+objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSArray", "NSEnumerator", "NSGeometry", "NSObject", "NSRange", "NSString"] }
 
 [target.'cfg(windows)'.dependencies]
 windows = { workspace = true, features = ["Foundation", "Foundation_Collections", "Media", "Media_Core", "Media_SpeechSynthesis", "Storage_Streams", "Win32_Foundation", "Win32_Globalization", "Win32_Graphics_Gdi", "Win32_Media_Audio", "Win32_Media_Speech", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Com_StructuredStorage", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Ole", "Win32_System_Threading", "Win32_System_Variant", "Win32_System_WinRT", "Win32_UI_Accessibility", "Win32_UI_Controls_RichEdit", "Win32_UI_Input", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
@@ -55,6 +58,10 @@ shipfitter = { workspace = true, features = ["docs", "windows-resources"] }
 
 [dev-dependencies]
 rstest = { workspace = true }
+
+# The read aloud test turns the main run loop itself, as the app's event loop does.
+[target.'cfg(target_os = "macos")'.dev-dependencies]
+objc2-foundation = { version = "0.3.2", default-features = false, features = ["NSDate", "NSRunLoop"] }
 
 [target.'cfg(windows)'.dev-dependencies]
 uiautomation = "0.25.1"
@@ -70,6 +77,10 @@ harness = false
 
 [[test]]
 name = "macos_menu_shortcuts"
+harness = false
+
+[[test]]
+name = "macos_read_aloud"
 harness = false
 
 [[test]]

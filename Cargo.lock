@@ -382,12 +382,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "block"
-version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
-
-[[package]]
 name = "block-buffer"
 version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2393,7 +2387,7 @@ dependencies = [
 [[package]]
 name = "louis-rs"
 version = "0.3.1"
-source = "git+https://github.com/trypsynth/louis-rs?branch=paperback-next#c7bed8a9816d9bc39dd981035798d1fab3cb2d5b"
+source = "git+https://github.com/trypsynth/louis-rs?branch=paperback-next#e4d1d76bc5680da1fbc5f8d1b2300fdea226b80a"
 dependencies = [
  "enumset",
  "log",
@@ -2834,6 +2828,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "objc2-app-kit"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d49e936b501e5c5bf01fda3a9452ff86dc3ea98ad5f283e1455153142d97518c"
+dependencies = [
+ "bitflags 2.13.2",
+ "block2",
+ "objc2",
+ "objc2-core-foundation",
+ "objc2-foundation",
+]
+
+[[package]]
 name = "objc2-audio-toolbox"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2854,6 +2861,8 @@ version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13a380031deed8e99db00065c45937da434ca987c034e13b87e4441f9e4090be"
 dependencies = [
+ "bitflags 2.13.2",
+ "block2",
  "objc2",
  "objc2-foundation",
 ]
@@ -3115,7 +3124,7 @@ dependencies = [
  "anyhow",
  "base64 0.23.1",
  "bitflags 2.13.2",
- "block",
+ "block2",
  "doorbell",
  "dunce",
  "homeport",
@@ -3124,7 +3133,10 @@ dependencies = [
  "logkeeper",
  "mailbag-wx",
  "native-ocr",
- "objc",
+ "objc2",
+ "objc2-app-kit",
+ "objc2-avf-audio",
+ "objc2-foundation",
  "paperback-core",
  "paperback-formats",
  "patois",
@@ -6145,9 +6157,11 @@ dependencies = [
 name = "xtask"
 version = "0.1.0"
 dependencies = [
+ "clap",
  "patois",
  "patois-build",
  "patois-translate",
+ "serde",
  "serde_json",
  "shipfitter",
 ]
