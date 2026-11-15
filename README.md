@@ -85,9 +85,9 @@ cargo ios run
 
 This builds the reading engine for devices and the Simulator, generates the Swift bindings and translations that the Xcode project uses, then builds the app and starts it. It uses the booted simulator, or the newest iPhone simulator if none is booted. To pick one, add `--simulator` with its name or UDID, like `--simulator "iPhone 17"`. To keep printing the app's output until it quits, add `--console`.
 
-`cargo ios` (with no `run`) builds the Rust Parts. Afterwards, you can also open `ios/Paperback.xcodeproj` and build in Xcode.
+`cargo ios` (with no `run`) builds the Rust parts. Afterwards, you can also open `ios/Paperback.xcodeproj` and build in Xcode.
 
-Simulators aren't very accessible with VO; this is more for agents testing their work; humans probably want to run on a device instead.
+The Simulator doesn't work well with VoiceOver, so this is mostly for agents testing their work. To try Paperback yourself, run it on a device instead.
 
 ### Run on your iPhone or iPad
 
