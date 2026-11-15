@@ -46,15 +46,16 @@ Jos JAWS ei puhu mitään painaessasi jotain ilmoituksen aiheuttavaa näppäint�
 
 Paperback tukee seuraavia tiedostomuotoja:
 
+* National Library Service -palvelun BARD-pistekirjat, joiden jokainen nide käsitellään omana kirjanaan. Pistekirjoitus muunnetaan tavalliseksi tekstiksi kirjapaketissa ilmoitetun pistetaulukon avulla (BARD-palvelusta ladatut `.zip`-paketit tai purettujen pakettien `.bopf`-tiedostot).
 * Braille Ready File- ja Portable Embosser Format -muodossa olevat pistekirjat (`.brf`, `.pef`), joiden pistekirjoitus muunnetaan tavalliseksi tekstiksi käyttäjän valitseman pistetaulukon avulla
 * Sarjakuvapaketit (`.cbz`, `.cbr`)
 * CHM-ohjetiedostot (`.chm`)
 * DAISY-kirjat (`.opf`, `.zip`)
 * eBraille-kirjat, joiden tavallinen teksti luetaan, jos sellainen on saatavilla. Muussa tapauksessa pistekirjoitus muunnetaan tavalliseksi tekstiksi kirjassa määritetyn pistetaulukon avulla (`.ebrl` tai pakkaamattoman kirjan `.opf`-tiedosto)
-* EPUB-kirjat (`.epub` tai pakkaamattoman kirjan `.opf`-tiedosto)
+* EPUB-kirjat (`.epub` tai pakkaamattomien kirjojen `.opf`-tiedostot)
 * FB2-e-kirjat (`.fb2`)
 * GNU Info -ohjeet (`.info`, myös gzip-pakattuina, sekä useaan tiedostoon jaetut ohjeet, jotka voidaan avata mistä tahansa osasta)
-* HTML-asiakirjat (`.htm`, `.html`, `.xhtml`)
+* HTML-asiakirjat (`.htm`, `.html`, `.shtml`, `.xhtml`)
 * `Man`- ja BSD `mdoc` -muodoissa olevat man-sivut (`.1`–`.9`, `.man`, `.roff` sekä niiden gzip-pakatut versiot)
 * Markdown-asiakirjat (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Microsoft Word -asiakirjat (`.docx`, `.docm`, `.doc`)
@@ -170,7 +171,7 @@ Välimerkkejä käyttävien pikanäppäinten nimet perustuvat amerikkalaiseen n�
 
 * `Ctrl+Välilyönti` (macOSissa `Control+Välilyönti` eli fyysinen Ctrl-näppäin, koska Cmd+Välilyönti avaa Spotlight-haun): Aloita tai pysäytä äänitteen toisto.
 * `Ctrl+J`: Siirry tiettyyn äänitteen kohtaan. Anna aika muodossa `1:23:45`, `23:45` tai `45` sekuntia. Voit myös lisätä ajan eteen `+`- tai `-`-merkin, jolloin nykyisestä toistokohdasta siirrytään eteen- tai taaksepäin, esimerkiksi `+5:00`. Valintaikkunassa näytetään nykyinen toistokohta ja kirjan kokonaiskesto.
-* `Vaihto+=`: Ilmoita nykyisen luvun kulunut ja jäljellä oleva toistoaika, esimerkiksi ”Luku 3, 4:10 / 12:00, jäljellä 7:50”.
+* `Vaihto+=`: Ilmoita nykyisen luvun kulunut ja jäljellä oleva toistoaika, esimerkiksi ”Luku 3, 4:10 / 12:00, jäljellä 7:50”. Jos kirjassa ei ole äänitettä, luvun lukemisen edistyminen ilmoitetaan prosentteina ja jäljellä oleva osuus sanojen määränä, esimerkiksi ”Luku 3, 42 %, jäljellä 1 850 sanaa”.
 * `'`: Kelaa äänitettä eteenpäin.
 * `;`: Kelaa äänitettä taaksepäin.
 * `Vaihto+'`: Pidennä kelauksen aikasiirtymää.
