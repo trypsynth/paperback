@@ -79,17 +79,17 @@ fn pin_rich_edit() {
 
 #[cfg(target_os = "macos")]
 fn promote_unbundled_to_regular_app() {
-	use objc::{class, msg_send, runtime::Object, sel, sel_impl};
+	use objc2::MainThreadMarker;
+	use objc2_app_kit::{NSApplication, NSApplicationActivationPolicy};
 	// When in a bundle, MacOS handles this for us.
 	if config_ext::home().kind() == homeport::InstallKind::MacBundle {
 		return;
 	}
-	// NSApplicationActivationPolicyRegular = 0.
-	unsafe {
-		let ns_app: *mut Object = msg_send![class!(NSApplication), sharedApplication];
-		let _: () = msg_send![ns_app, setActivationPolicy: 0_isize];
-		let _: () = msg_send![ns_app, activateIgnoringOtherApps: true];
-	}
+	let Some(main_thread) = MainThreadMarker::new() else { return };
+	let app = NSApplication::sharedApplication(main_thread);
+	app.setActivationPolicy(NSApplicationActivationPolicy::Regular);
+	#[allow(deprecated, reason = "its replacement, activate, needs macOS 14")]
+	app.activateIgnoringOtherApps(true);
 }
 
 fn cleanup_legacy_files() {
