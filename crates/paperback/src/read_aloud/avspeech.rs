@@ -185,7 +185,7 @@ fn speech_rate(percent: u8) -> f32 {
 
 /// From half to twice the voice's pitch, with 50 its own.
 fn pitch_multiplier(percent: u8) -> f32 {
-	2_f32.powf((f32::from(percent.min(100)) - 50.0) / 50.0)
+	((f32::from(percent.min(100)) - 50.0) / 50.0).exp2()
 }
 
 #[cfg(test)]
