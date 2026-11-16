@@ -156,7 +156,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>书签和笔记，让您可以标记位置并随时返回。</li>
 <li>每个键盘快捷键都可以更改。</li>
 <li>直接从 http 和 https 链接打开文档，并在您重新打开它们或按 <code>F5</code> 时再次下载，同时保留您的阅读位置和书签。恢复上次打开的文档时，来自链接且大小为 2 MB 或更小的文档会被重新下载。</li>
-<li>附带 <code>pb</code>，一个命令行工具，可将任何支持的文档转换为 HTML、Markdown 或纯文本。它可以接受任意数量的文档，并自行展开 <code>*.pdf</code> 之类的通配符，因此同一条命令在 Windows 上同样适用，还可以为每个文档各写一个文件到指定文件夹。它也能通过 <code>--files-from</code> 从文件或标准输入读取文档列表，并可直接转换来自 http 和 https 链接的文档。</li>
+<li>附带 <code>pb</code>，一个命令行工具，可将任何支持的文档转换为 HTML、Markdown 或纯文本。它可以接受任意数量的文档，并自行展开 <code>*.pdf</code> 之类的通配符，因此同一条命令在 Windows 上同样适用，还可以为每个文档各写一个文件到指定文件夹，并同时转换多个文档（<code>--jobs</code> 可设置数量）。它也能通过 <code>--files-from</code> 从文件或标准输入读取文档列表，并可直接转换来自 http 和 https 链接的文档。</li>
 </ul>
 <h2 id="屏幕阅读器兼容性">屏幕阅读器兼容性</h2>
 <p>Paperback 可与所有主流屏幕阅读器良好配合。不过，对于 JAWS 用户存在两个已知问题。</p>
@@ -169,12 +169,16 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h2 id="当前支持的文件类型">当前支持的文件类型</h2>
 <p>Paperback 支持以下格式和扩展名：</p>
 <ul>
-<li>漫画压缩包（<code>.cbz</code>）</li>
+<li>美国国家图书馆服务（NLS）的 BARD 盲文图书，将其所有卷合为一本阅读，并按其包中指定的盲文编码反向转换为明文（BARD 下载的 <code>.zip</code>，或解压后的 <code>.bopf</code>）</li>
+<li>Braille Ready Files 和 Portable Embosser Format 图书，按您选择的盲文编码反向转换为明文（<code>.brf</code>、<code>.pef</code>）</li>
+<li>漫画压缩包（<code>.cbz</code>、<code>.cbr</code>）</li>
 <li>CHM 帮助文件（<code>.chm</code>）</li>
 <li>DAISY 图书（<code>.opf</code>、<code>.zip</code>）</li>
-<li>EPUB 图书（<code>.epub</code>）</li>
+<li>eBraille 图书：若含明文则按明文阅读，否则按其指定的盲文编码反向转换（<code>.ebrl</code>，或未压缩图书的 <code>.opf</code>）</li>
+<li>EPUB 图书（<code>.epub</code>，或未压缩图书的 <code>.opf</code>）</li>
 <li>FB2 电子书（<code>.fb2</code>）</li>
-<li>HTML 文档（<code>.htm</code>、<code>.html</code>、<code>.xhtml</code>）</li>
+<li>GNU Info 手册（<code>.info</code>，可经 gzip 压缩；分卷手册可从任一部分打开）</li>
+<li>HTML 文档（<code>.htm</code>、<code>.html</code>、<code>.shtml</code>、<code>.xhtml</code>）</li>
 <li>手册页，包括 <code>man</code> 和 BSD <code>mdoc</code>（<code>.1</code> 到 <code>.9</code>、<code>.man</code>、<code>.roff</code>，以及各自的 gzip 压缩形式）</li>
 <li>Markdown 文档（<code>.md</code>、<code>.markdown</code>、<code>.mdx</code>、<code>.mdown</code>、<code>.mdwn</code>、<code>.mkd</code>、<code>.mkdn</code>、<code>.mkdown</code>、<code>.ronn</code>）</li>
 <li>Microsoft Word 文档（<code>.docx</code>、<code>.docm</code>、<code>.doc</code>）</li>
@@ -183,17 +187,21 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>MP3 有声书（<code>.mp3</code>）</li>
 <li>OpenDocument 演示文稿（<code>.odp</code>、<code>.fodp</code>）</li>
 <li>OpenDocument 文本文件（<code>.odt</code>、<code>.fodt</code>）</li>
+<li>OS/2 帮助文件和图书，含其中的图片（<code>.inf</code>、<code>.hlp</code>）</li>
 <li>PDF 文档（<code>.pdf</code>）</li>
 <li>PowerPoint 演示文稿（<code>.pptx</code>、<code>.pptm</code>、<code>.ppt</code>）</li>
+<li>图书的 RAR 压缩包，打开方式与 zip 相同；包含多个文档时会列出清单供选择（<code>.rar</code>）</li>
 <li>reStructuredText 文档（<code>.rst</code>、<code>.rest</code>）</li>
 <li>RTF 文档（<code>.rtf</code>）</li>
 <li>Windows Write 文档（<code>.wri</code>）</li>
 <li>WinHelp 文件（<code>.hlp</code>）</li>
+<li>XPS 和 OpenXPS 文档（<code>.xps</code>、<code>.oxps</code>）</li>
 <li>纯文本和日志文件（<code>.txt</code>、<code>.log</code>）</li>
 </ul>
 <h2 id="键盘快捷键">键盘快捷键</h2>
 <p>Paperback 专为键盘优先使用而设计。以下是当前的快捷键。</p>
 <p>以下快捷键适用于 Windows。若 macOS 有所不同，将在括号中注明等效按键——主要是因为在该平台上 Ctrl+G、Ctrl+W 以及 Alt+左/右箭头已被其他系统或应用约定占用。</p>
+<p>标点快捷键按美式键盘的键位命名。在其他键盘布局上，请按相同位置的按键，无论其上标注的是什么：在匈牙利语键盘上，标注为 <code>é</code> 的键相当于 <code>;</code>，标注为 <code>á</code> 的键相当于 <code>'</code>，因此 <code>Ctrl+'</code> 表示 Ctrl 加 <code>á</code> 键。菜单仍显示美式名称。在 macOS 上，菜单改为显示您所用布局对应的按键。</p>
 <h3 id="文件菜单">文件菜单</h3>
 <ul>
 <li><code>Ctrl+O</code>：打开文档。</li>
@@ -233,7 +241,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+G</code>（macOS：<code>Cmd+L</code>）：转到行。</li>
 <li><code>Ctrl+Shift+G</code>（macOS：<code>Cmd+Shift+L</code>）：转到百分比。</li>
 <li><code>Ctrl+P</code>：转到页（当当前文档支持时）。</li>
-<li><code>=</code>：朗读当前阅读百分比和页码，例如“15%，第 30 页”。对于没有页码的文档，将省略页码。</li>
+<li><code>=</code>：朗读当前阅读百分比和页码，例如“15%，第 30 页”。对于没有页码的文档，将省略页码。对于有声书，随后还会朗读您的进度和总时长，例如“15%，1:02:03，共 10:30:00”。</li>
 <li><code>Alt+Left</code>（macOS：<code>Cmd+[</code>）：在导航历史中后退。</li>
 <li><code>Alt+Right</code>（macOS：<code>Cmd+]</code>）：在导航历史中前进。</li>
 <li><code>[</code>：上一章节。</li>
@@ -281,6 +289,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="音频菜单">音频菜单</h3>
 <ul>
 <li><code>Ctrl+Space</code>（macOS：<code>Control+Space</code>，即物理 Control 键，因为 Cmd+Space 会打开 Spotlight）：播放/暂停音频朗读。</li>
+<li><code>Ctrl+J</code>：跳转到录音中的时间点。可输入 <code>1:23:45</code>、<code>23:45</code> 或 <code>45</code> 秒，也可在前面加 <code>+</code> 或 <code>-</code> 表示从当前位置前后移动，例如 <code>+5:00</code>。对话框会显示您的进度和全书时长。</li>
+<li><code>Shift+=</code>：朗读您在本章中的进度和剩余内容，例如“第 3 章，4:10，共 12:00，剩余 7:50”。对于没有录制音频的图书，则朗读本章的百分比进度和剩余字数，例如“第 3 章，42%，剩余 1850 字”。</li>
 <li><code>'</code>：音频朗读向前跳转。</li>
 <li><code>;</code>：音频朗读向后跳转。</li>
 <li><code>Shift+'</code>：增大音频跳转步长。</li>
