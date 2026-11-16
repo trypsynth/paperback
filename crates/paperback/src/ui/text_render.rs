@@ -93,8 +93,11 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: ReaderCtrl, slice: &WindowSlice, w
 		tracing::warn!("RTF append did not complete");
 		return false;
 	}
+	// wxWidgets leaves the caret at the end of what it appended, where the timer that called this sees it at the loaded end and appends again, until a forward read lands on the book's last line.
+	let (sel_start, sel_end) = text_ctrl.get_selection();
 	let base = text_ctrl.get_last_position();
 	text_ctrl.append_text(content);
+	text_ctrl.set_selection(sel_start, sel_end);
 	if text_ctrl.get_last_position() <= base {
 		return false;
 	}
