@@ -46,7 +46,7 @@ Jos JAWS ei puhu mitään painaessasi jotain ilmoituksen aiheuttavaa näppäint�
 
 Paperback tukee seuraavia tiedostomuotoja:
 
-* National Library Service -palvelun BARD-pistekirjat, joiden jokainen nide käsitellään omana kirjanaan. Pistekirjoitus muunnetaan tavalliseksi tekstiksi kirjapaketissa ilmoitetun pistetaulukon avulla (BARD-palvelusta ladatut `.zip`-paketit tai purettujen pakettien `.bopf`-tiedostot).
+* National Library Service -palvelun BARD-pistekirjat, joiden niteet luetaan yhtenä kirjana. Pistekirjoitus muunnetaan tavalliseksi tekstiksi kirjapaketissa ilmoitetun pistetaulukon avulla (BARD-palvelusta ladatut `.zip`-paketit tai purettujen pakettien `.bopf`-tiedostot)
 * Braille Ready File- ja Portable Embosser Format -muodossa olevat pistekirjat (`.brf`, `.pef`), joiden pistekirjoitus muunnetaan tavalliseksi tekstiksi käyttäjän valitseman pistetaulukon avulla
 * Sarjakuvapaketit (`.cbz`, `.cbr`)
 * CHM-ohjetiedostot (`.chm`)
