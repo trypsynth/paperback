@@ -12,6 +12,10 @@ struct TtsControlBar: View {
 		if case .segment(let type) = viewModel.reading.currentNavUnit {
 			return previousUnitLabel(type)
 		}
+		if viewModel.reading.currentNavUnit == .bookmark {
+			// TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by bookmark
+			return t("Previous Bookmark")
+		}
 		// TRANSLATORS: Accessibility label for the "previous" button when navigating audio by time; {} is an amount like "30 seconds"
 		return t("Previous {}").replacingOccurrences(of: "{}", with: viewModel.reading.currentNavUnit.name)
 	}
@@ -23,6 +27,10 @@ struct TtsControlBar: View {
 		}
 		if case .segment(let type) = viewModel.reading.currentNavUnit {
 			return nextUnitLabel(type)
+		}
+		if viewModel.reading.currentNavUnit == .bookmark {
+			// TRANSLATORS: Accessibility label for the read-aloud bar's next button when navigating by bookmark
+			return t("Next Bookmark")
 		}
 		// TRANSLATORS: Accessibility label for the "next" button when navigating audio by time; {} is an amount like "30 seconds"
 		return t("Next {}").replacingOccurrences(of: "{}", with: viewModel.reading.currentNavUnit.name)

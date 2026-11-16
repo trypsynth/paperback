@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -83,6 +84,8 @@ fun ReadAloudPane(
 	readability: ReadabilityStyle,
 	progressPercent: Int?,
 	audioTime: String?,
+	note: String? = null,
+	onEditNote: () -> Unit = {},
 	sleepTimerRemaining: Int?,
 	onCancelSleepTimer: () -> Unit
 ) {
@@ -103,6 +106,20 @@ fun ReadAloudPane(
 				style = readability.textStyle,
 				modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp)
 			)
+		}
+		if (note != null) {
+			Spacer(modifier = Modifier.height(16.dp))
+			// TRANSLATORS: TalkBack label for the note shown under the passage being read; {} is the note's text
+			val noteLabel = t("Note: {}", note)
+			Surface(
+				onClick = onEditNote,
+				modifier = Modifier.fillMaxWidth().semantics { contentDescription = noteLabel },
+				shape = MaterialTheme.shapes.medium,
+				color = MaterialTheme.colorScheme.secondaryContainer,
+				contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+			) {
+				Text(note, Modifier.padding(12.dp), style = MaterialTheme.typography.bodyMedium, maxLines = 4)
+			}
 		}
 		if (progressPercent != null) {
 			Spacer(modifier = Modifier.height(24.dp))

@@ -27,6 +27,9 @@ struct TtsModeView: View {
 					// The text above is the real content, so VoiceOver reading both would say the same words twice.
 					.accessibilityHidden(true)
 			}
+			if let note = viewModel.reading.bookmarkHere?.note, !note.isEmpty {
+				noteCard(note)
+			}
 			// A recording moves on between the clip changes the view is told about, so its share is read again every second while it plays.
 			TimelineView(.periodic(from: .now, by: 1)) { _ in
 				if let percent = viewModel.reading.progressPercent() {
@@ -54,6 +57,25 @@ struct TtsModeView: View {
 			}
 			Spacer()
 		}
+	}
+
+	private func noteCard(_ note: String) -> some View {
+		Button {
+			viewModel.navigation.bookmarkNote = viewModel.reading.noteTargetHere()
+		} label: {
+			Label(note, systemImage: "note.text")
+				.font(.callout)
+				.lineLimit(4)
+				.frame(maxWidth: .infinity, alignment: .leading)
+				.padding(12)
+				.background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+		}
+		.buttonStyle(.plain)
+		.padding(.horizontal, 24)
+		// TRANSLATORS: VoiceOver label for the note shown under the passage being read; {} is the note's text
+		.accessibilityLabel(t("Note: {}").replacingOccurrences(of: "{}", with: note))
+		// TRANSLATORS: VoiceOver hint on the note shown under the passage being read
+		.accessibilityHint(t("Double-tap to edit."))
 	}
 
 	/// How far into the recording, such as "1:02:03 of 10:30:00", or nil while a file's length is unknown.

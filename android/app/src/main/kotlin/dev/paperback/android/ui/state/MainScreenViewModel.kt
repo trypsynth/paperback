@@ -99,6 +99,13 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 
 	val navigation = NavigationRouter()
 
+	val bookmarks = Bookmarks(config, reading, activeTab = { uiState.value.activeTab }, announcer = ::announceForAccessibility)
+
+	fun openBookmarks() {
+		if (uiState.value.activeTab == null) return
+		navigation.bookmarksRequest.request()
+	}
+
 	/** Downloads go where file managers can reach them, falling back to private storage when shared storage is missing. */
 	val links = LinkOpener(
 		viewModelScope,
@@ -128,6 +135,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 	fun confirmImportSettings() {
 		val path = _importPromptPath.value ?: return
 		config.importDocumentSettings(path)
+		bookmarks.refresh()
 		val tab = uiState.value.activeTab
 		if (tab != null) {
 			val savedPosition = config.getDocumentPosition(tab.documentUri)
@@ -494,6 +502,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 	fun importSettingsFromUri(context: Context, sourceUri: Uri): Boolean {
 		val tab = uiState.value.activeTab ?: return false
 		if (!settingsTransfer.importFrom(context, tab.documentUri, sourceUri)) return false
+		bookmarks.refresh()
 		val savedPosition = config.getDocumentPosition(tab.documentUri)
 		if (savedPosition > 0L) {
 			reading.updateTtsPosition(savedPosition)

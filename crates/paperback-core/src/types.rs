@@ -135,6 +135,7 @@ pub struct SearchResult {
 	pub end: DocPos,
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BookmarkFilterType {
 	All,
@@ -171,6 +172,50 @@ pub struct BookmarkDisplayAtPosition {
 	pub found: bool,
 	pub note: String,
 	pub snippet: String,
+}
+
+/// A bookmark as the mobile apps see it; `audio_ms` is set only for one in an audio-only book, which is told apart by its playback time.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct BookmarkFfi {
+	pub found: bool,
+	pub start: DocPos,
+	pub end: DocPos,
+	pub note: String,
+	pub audio_ms: Option<i64>,
+}
+
+/// A step to the previous or next bookmark. `any` says whether there was anything to step to at all, so "No bookmarks." and "No next bookmark." can be told apart.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct BookmarkStepFfi {
+	pub found: bool,
+	pub any: bool,
+	pub wrapped: bool,
+	pub start: DocPos,
+	pub audio_ms: Option<i64>,
+	pub note: String,
+	/// 1-based, for "Bookmark 3".
+	pub number: i32,
+}
+
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BookmarkRowFfi {
+	pub start: DocPos,
+	pub end: DocPos,
+	pub note: String,
+	/// The text marked, or for an audio-only book the chapter's title.
+	pub snippet: String,
+	pub audio_ms: Option<i64>,
+}
+
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BookmarkRowsFfi {
+	pub rows: Vec<BookmarkRowFfi>,
+	/// The row nearest the reading position, or -1 with none.
+	pub closest_index: i32,
 }
 
 #[derive(Debug, Clone)]

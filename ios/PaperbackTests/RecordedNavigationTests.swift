@@ -55,6 +55,8 @@ private final class AudioReadingContext: ReadingContext {
 	func persistPosition(_ position: Int64) { self.position = position }
 	func persistNavUnit(_ unit: NavigationUnit) {}
 	func savedNavUnit(for tab: DocumentTab) -> NavigationUnit? { nil }
+	let configManager = ConfigManagerFfi()
+	var activeDocPath: String? { nil }
 }
 
 @MainActor

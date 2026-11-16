@@ -67,6 +67,12 @@ struct ReaderView: View {
 		.navigationDestination(isPresented: $navigation.showElements) {
 			ElementsView().environment(viewModel)
 		}
+		.navigationDestination(isPresented: $navigation.showBookmarks) {
+			BookmarksView().environment(viewModel)
+		}
+		.sheet(item: $navigation.bookmarkNote) { target in
+			BookmarkNoteSheet(target: target).environment(viewModel)
+		}
 		.sheet(
 			isPresented: Binding(
 				get: { viewModel.navigation.passwordPromptUrl != nil },
@@ -135,6 +141,9 @@ struct ReaderView: View {
 	@ToolbarContentBuilder
 	private var readerToolbar: some ToolbarContent {
 		ToolbarItemGroup(placement: .topBarTrailing) {
+			if viewModel.activeTab != nil {
+				BookmarkButton().environment(viewModel)
+			}
 			Button { viewModel.navigation.showFilePicker = true } label: {
 				Image(systemName: "folder")
 			}

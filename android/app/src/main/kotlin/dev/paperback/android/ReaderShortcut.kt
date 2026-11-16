@@ -51,6 +51,15 @@ sealed interface ReaderShortcut {
 
 	object ImportSettings : ReaderShortcut
 
+	object ToggleBookmark : ReaderShortcut
+
+	object BookmarkNote : ReaderShortcut
+
+	object OpenBookmarks : ReaderShortcut
+
+	/** Desktop's B and N: every bookmark, or only those with a note. */
+	data class StepBookmark(val forward: Boolean, val notesOnly: Boolean) : ReaderShortcut
+
 	data class OpenGoTo(val mode: String) : ReaderShortcut
 
 	data class Navigate(val type: SegmentTypeFfi, val direction: SegmentDirectionFfi) : ReaderShortcut
@@ -85,6 +94,8 @@ private fun ctrlShortcutFor(keyCode: Int, shiftPressed: Boolean, altPressed: Boo
 		KeyEvent.KEYCODE_E -> if (shiftPressed) ReaderShortcut.ExportSettings else ReaderShortcut.ExportDocument
 		KeyEvent.KEYCODE_I -> if (shiftPressed) ReaderShortcut.ImportSettings else ReaderShortcut.OpenDocumentInfo
 		KeyEvent.KEYCODE_S -> if (shiftPressed) ReaderShortcut.OpenSleepTimer else null
+		KeyEvent.KEYCODE_B -> if (shiftPressed) ReaderShortcut.ToggleBookmark else ReaderShortcut.OpenBookmarks
+		KeyEvent.KEYCODE_N -> if (shiftPressed) ReaderShortcut.BookmarkNote else null
 		else -> null
 	}
 
@@ -109,6 +120,8 @@ private fun readingShortcutFor(keyCode: Int, shiftPressed: Boolean): ReaderShort
 		KeyEvent.KEYCODE_S -> navigate(SegmentTypeFfi.SEPARATOR, direction)
 		KeyEvent.KEYCODE_L -> navigate(SegmentTypeFfi.LIST, direction)
 		KeyEvent.KEYCODE_I -> navigate(SegmentTypeFfi.LIST_ITEM, direction)
+		KeyEvent.KEYCODE_B -> ReaderShortcut.StepBookmark(forward = !shiftPressed, notesOnly = false)
+		KeyEvent.KEYCODE_N -> ReaderShortcut.StepBookmark(forward = !shiftPressed, notesOnly = true)
 		else -> null
 	}
 }

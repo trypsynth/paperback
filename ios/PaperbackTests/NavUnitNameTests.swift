@@ -64,3 +64,15 @@ final class AppearanceChoiceTests: XCTestCase {
 		XCTAssertNil((-1).preferredColorSchemeChoice)
 	}
 }
+
+final class BookmarkUnitNameTests: XCTestCase {
+	/// Bookmark joins the unit list whenever the document has bookmarks.
+	func testBookmarkHasANameOfItsOwnAndIsNeverStored() {
+		let name = NavUnit.bookmark.name
+		XCTAssertFalse(name.isEmpty)
+		for unit in [NavUnit.find, .segment(.paragraph), .segment(.line), .segment(.section)] {
+			XCTAssertNotEqual(name, unit.name)
+		}
+		XCTAssertNil(NavUnit.bookmark.stored)
+	}
+}

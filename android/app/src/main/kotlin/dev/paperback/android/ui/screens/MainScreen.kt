@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -30,11 +31,13 @@ import dev.paperback.android.ui.components.ReadAloudPane
 import dev.paperback.android.ui.components.SearchBottomBar
 import dev.paperback.android.ui.components.TtsBottomBar
 import dev.paperback.android.ui.components.rememberReadabilityStyle
+import dev.paperback.android.ui.dialogs.BookmarkRemoveDialog
 import dev.paperback.android.ui.dialogs.BrowseForFileDialog
 import dev.paperback.android.ui.dialogs.DocumentPromptDialogs
 import dev.paperback.android.ui.dialogs.DocumentTextDialogs
 import dev.paperback.android.ui.dialogs.DocumentToolDialogs
 import dev.paperback.android.ui.dialogs.PermissionRationaleDialog
+import dev.paperback.android.ui.state.Bookmarks
 import dev.paperback.android.ui.state.MainScreenUiState
 import dev.paperback.android.ui.state.MainScreenViewModel
 import dev.paperback.android.ui.state.NavUnit
@@ -48,6 +51,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import uniffi.paperback.DocumentSession
 import uniffi.paperback.ExportFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -132,6 +136,17 @@ fun MainScreen(
 		highContrastText
 	)
 	var ttsConfigDialogOpen by remember { mutableStateOf(false) }
+	val bookmarkRevision by viewModel.bookmarks.revision.collectAsStateWithLifecycle()
+	// An audio-only book's bookmarks are times, so whether one is here changes as it plays.
+	val activeUri = state.activeTab?.documentUri
+	val bookmarkHere by produceState(viewModel.bookmarks.here(), ttsPosition, bookmarkRevision, activeUri) {
+		while (true) {
+			value = viewModel.bookmarks.here()
+			if (state.activeTab?.isAudioOnly != true) break
+			delay(1000)
+		}
+	}
+	var confirmingBookmarkRemoval by remember { mutableStateOf(false) }
 	val sleepTimerRemaining by viewModel.reading.sleepTimer.remaining.collectAsStateWithLifecycle()
 
 	val view = LocalView.current
@@ -329,7 +344,13 @@ fun MainScreen(
 					onOpenFromUrl = { viewModel.links.prompt() },
 					onHelpOpen = {
 						viewModel.openHelpDocument()
-					}
+					},
+					bookmarkHere = bookmarkHere,
+					onToggleBookmark = {
+						if (bookmarkHere?.note.isNullOrEmpty()) viewModel.bookmarks.toggle() else confirmingBookmarkRemoval = true
+					},
+					onBookmarkNote = { viewModel.bookmarks.openNoteHere() },
+					onBookmarksOpen = { viewModel.openBookmarks() }
 				)
 			},
 			bottomBar = {
@@ -356,7 +377,9 @@ fun MainScreen(
 				} else if (!isTextMode && activeTab != null) {
 					val audioSpeed by viewModel.reading.audioSpeed.collectAsStateWithLifecycle()
 					val baseNavUnits = remember(activeTab.session) { viewModel.reading.navUnitsFor(activeTab) }
-					val navUnits = if (activeSearchQuery != null) baseNavUnits + NavUnit.Find else baseNavUnits
+					val hasBookmarks = remember(activeTab.documentUri, bookmarkRevision) { viewModel.bookmarks.hasBookmarks() }
+					val withBookmarks = if (hasBookmarks) baseNavUnits + NavUnit.Bookmark else baseNavUnits
+					val navUnits = if (activeSearchQuery != null) withBookmarks + NavUnit.Find else withBookmarks
 					LaunchedEffect(activeTab.documentUri, navUnits) {
 						viewModel.reading.ensureNavUnitSupported(activeTab, navUnits)
 					}
@@ -478,6 +501,8 @@ fun MainScreen(
 									readability = readability,
 									progressPercent = progressPercent,
 									audioTime = audioTime,
+									note = bookmarkHere?.note?.ifEmpty { null },
+									onEditNote = { viewModel.bookmarks.openNoteHere() },
 									sleepTimerRemaining = sleepTimerRemaining,
 									onCancelSleepTimer = { viewModel.reading.sleepTimer.cancel() }
 								)
@@ -492,6 +517,9 @@ fun MainScreen(
 									activeSearchOptions = activeSearchOptions,
 									onCloseSearch = {
 										viewModel.search.clear()
+									},
+									lineActions = remember(docState.documentUri, bookmarkRevision) {
+										{ lineStart: Long -> bookmarkLineActions(viewModel.bookmarks, docState.session, lineStart) }
 									}
 								)
 							}
@@ -524,6 +552,16 @@ fun MainScreen(
 			}
 		}
 		DocumentPromptDialogs(viewModel)
+		if (confirmingBookmarkRemoval) {
+			BookmarkRemoveDialog(
+				note = bookmarkHere?.note.orEmpty(),
+				onConfirm = {
+					confirmingBookmarkRemoval = false
+					viewModel.bookmarks.toggle()
+				},
+				onDismiss = { confirmingBookmarkRemoval = false }
+			)
+		}
 		val showPermissionRationale by viewModel.navigation.permissionRationaleDialog.isOpen.collectAsStateWithLifecycle()
 		if (showPermissionRationale) {
 			PermissionRationaleDialog(
@@ -568,6 +606,29 @@ fun MainScreen(
 		}
 		PermissionsGate(viewModel)
 	}
+}
+
+/** TalkBack's actions on a line of text mode. Every line drawn asks, so it's looked up in what [Bookmarks] keeps, not the core. */
+private fun bookmarkLineActions(
+	bookmarks: Bookmarks,
+	session: DocumentSession,
+	start: Long
+): List<CustomAccessibilityAction> {
+	val next = session.positionFromLine(session.lineFromPosition(start) + 1)
+	val end = if (next > start) next else Long.MAX_VALUE
+	val existing = bookmarks.onLine(start, end)
+	// TRANSLATORS: TalkBack action on a line in text mode that marks or unmarks it with a bookmark
+	val toggleLabel = if (existing == null) t("Add Bookmark") else t("Remove Bookmark")
+	return listOf(
+		CustomAccessibilityAction(toggleLabel) {
+			bookmarks.toggleAt(start, end)
+			true
+		},
+		CustomAccessibilityAction(noteActionLabel(!existing?.note.isNullOrEmpty())) {
+			bookmarks.openNoteAt(start, end)
+			true
+		}
+	)
 }
 
 /** The result is a file the reader can't see from here, so it has to be said. */

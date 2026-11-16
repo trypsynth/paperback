@@ -16,9 +16,6 @@ use super::{
 };
 use crate::ui::navigation::{announce, announce_for_command};
 
-/// Playback moves on between presses, so an exact match would never happen and the second press would add a bookmark instead of removing the first.
-const TOGGLE_REACH_MS: u64 = 1500;
-
 fn audio_bookmark_time(tab: &DocumentTab) -> Option<u64> {
 	if !tab.session.handle().document().audio_only {
 		return None;
@@ -221,7 +218,8 @@ pub fn handle_toggle_bookmark(
 	};
 	let cfg = config.lock().unwrap();
 	let existed = if let Some(ms) = audio_ms {
-		let here = cfg.audio_bookmark_near(&path_str, ms, TOGGLE_REACH_MS).and_then(|bm| bm.audio_ms);
+		let here =
+			cfg.audio_bookmark_near(&path_str, ms, reader_core::AUDIO_BOOKMARK_REACH_MS).and_then(|bm| bm.audio_ms);
 		match here {
 			Some(existing) => cfg.remove_audio_bookmark(&path_str, existing),
 			None => cfg.add_audio_bookmark(&path_str, start, ms, ""),
@@ -253,7 +251,7 @@ pub fn handle_bookmark_with_note(
 	let existing = {
 		let cfg = config.lock().unwrap();
 		match audio_ms {
-			Some(ms) => cfg.audio_bookmark_near(&path_str, ms, TOGGLE_REACH_MS),
+			Some(ms) => cfg.audio_bookmark_near(&path_str, ms, reader_core::AUDIO_BOOKMARK_REACH_MS),
 			None => cfg
 				.get_bookmarks(&path_str)
 				.into_iter()
@@ -298,7 +296,10 @@ pub fn handle_view_note_text(
 	let note = {
 		let cfg = config.lock().unwrap();
 		match audio_ms {
-			Some(ms) => cfg.audio_bookmark_near(&path_str, ms, TOGGLE_REACH_MS).map(|bm| bm.note).unwrap_or_default(),
+			Some(ms) => cfg
+				.audio_bookmark_near(&path_str, ms, reader_core::AUDIO_BOOKMARK_REACH_MS)
+				.map(|bm| bm.note)
+				.unwrap_or_default(),
 			None => reader_core::bookmark_note_at_position(&cfg, &path_str, current_pos),
 		}
 	};
