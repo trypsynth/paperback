@@ -27,6 +27,8 @@ struct BookmarkButton: View {
 		}
 		// TRANSLATORS: Accessibility label of the reading screen's button that marks or unmarks the current paragraph with a bookmark
 		.accessibilityLabel(t("Bookmark"))
+		// A menu is already announced as a pop-up button, so without this VoiceOver says "button" twice, as on the More options button.
+		.accessibilityRemoveTraits(.isButton)
 		.accessibilityAddTraits(here == nil ? [] : .isSelected)
 		// TRANSLATORS: VoiceOver value of the bookmark button when the bookmark at the current paragraph has a note
 		.accessibilityValue(hasNote ? t("Has note") : "")
