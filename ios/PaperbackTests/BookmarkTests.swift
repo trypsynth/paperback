@@ -136,12 +136,12 @@ final class BookmarkTests: XCTestCase {
 	func testMovingWithoutChangingTheBookmarkDoesNotRedrawItsViews() {
 		let reading = reader(at: 10)
 		reading.toggleBookmark()
-		var redrawn = false
-		withObservationTracking { _ = reading.bookmarkHere } onChange: { redrawn = true }
+		let redrawn = Flag()
+		withObservationTracking { _ = reading.bookmarkHere } onChange: { redrawn.set() }
 		reading.goToPosition(15)
-		XCTAssertFalse(redrawn, "same paragraph, same bookmark")
+		XCTAssertFalse(redrawn.value, "same paragraph, same bookmark")
 		reading.goToPosition(20)
-		XCTAssertTrue(redrawn, "left the bookmarked paragraph")
+		XCTAssertTrue(redrawn.value, "left the bookmarked paragraph")
 	}
 
 	func testNotesOnlySkipsPlainBookmarks() {
@@ -153,4 +153,10 @@ final class BookmarkTests: XCTestCase {
 		XCTAssertTrue(reading.stepBookmark(forward: true, notesOnly: true))
 		XCTAssertEqual(reading.ttsPosition, 30)
 	}
+}
+
+/// Set from the observation callback, which Swift treats as running concurrently.
+private final class Flag: @unchecked Sendable {
+	private(set) var value = false
+	func set() { value = true }
 }

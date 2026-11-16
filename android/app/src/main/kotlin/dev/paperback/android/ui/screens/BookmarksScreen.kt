@@ -164,8 +164,14 @@ private fun BookmarkRow(
 				).semantics(mergeDescendants = true) {
 					contentDescription = listOfNotNull(main, secondary.ifEmpty { null }, time).joinToString(", ")
 					customActions = listOf(
-						CustomAccessibilityAction(noteAction) { onEditNote(); true },
-						CustomAccessibilityAction(deleteLabel) { onDelete(); true }
+						CustomAccessibilityAction(noteAction) {
+							onEditNote()
+							true
+						},
+						CustomAccessibilityAction(deleteLabel) {
+							onDelete()
+							true
+						}
 					)
 				}.padding(horizontal = 16.dp, vertical = 12.dp),
 			verticalAlignment = Alignment.CenterVertically
@@ -192,8 +198,14 @@ private fun BookmarkRow(
 			}
 		}
 		DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
-			DropdownMenuItem(text = { Text(noteAction) }, onClick = { menuExpanded = false; onEditNote() })
-			DropdownMenuItem(text = { Text(deleteLabel) }, onClick = { menuExpanded = false; onDelete() })
+			DropdownMenuItem(text = { Text(noteAction) }, onClick = {
+				menuExpanded = false
+				onEditNote()
+			})
+			DropdownMenuItem(text = { Text(deleteLabel) }, onClick = {
+				menuExpanded = false
+				onDelete()
+			})
 		}
 	}
 }

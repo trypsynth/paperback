@@ -386,12 +386,7 @@ fun MainScreenTopBar(
 /** Tap marks or unmarks the paragraph being read; a long press, or TalkBack's actions, reach the note and the list. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun BookmarkTopBarButton(
-	here: BookmarkFfi?,
-	onToggle: () -> Unit,
-	onNote: () -> Unit,
-	onList: () -> Unit
-) {
+private fun BookmarkTopBarButton(here: BookmarkFfi?, onToggle: () -> Unit, onNote: () -> Unit, onList: () -> Unit) {
 	var menuExpanded by remember { mutableStateOf(false) }
 	val hasNote = !here?.note.isNullOrEmpty()
 	val actions = listOf(

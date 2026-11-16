@@ -183,7 +183,7 @@ class Bookmarks(
 		reading.jumpToBookmark(row.start, row.audioMs, speaking)
 		if (speaking) return
 		val place = row.audioMs?.let { formatDuration(it) } ?: row.snippet
-		announcer(if (row.note.isEmpty()) place else if (place.isEmpty()) row.note else "${row.note}, $place")
+		announcer(noteAndPlace(row.note, place))
 	}
 
 	/** The previous or next bookmark, or note with [notesOnly]. Reading carries on from it when [speak]; otherwise it's announced as desktop announces it. */
@@ -205,7 +205,7 @@ class Bookmarks(
 
 	private fun landing(tab: DocumentTabState, step: BookmarkStepFfi, forward: Boolean): String {
 		val place = step.audioMs?.let { formatDuration(it) } ?: tab.session.getLineText(step.start).trim()
-		val content = if (step.note.isEmpty()) place else if (place.isEmpty()) step.note else "${step.note}, $place"
+		val content = noteAndPlace(step.note, place)
 		// TRANSLATORS: Announcement when landing on a bookmark; %s is the bookmark/line text, %d is the bookmark's 1-based index
 		val text = t("%s - Bookmark %d").replace("%s", content).replace("%d", step.number.toString())
 		if (!step.wrapped) return text
@@ -219,6 +219,13 @@ class Bookmarks(
 
 	/** After bookmarks arrive from elsewhere, such as an imported .paperback file. */
 	fun refresh() = changed()
+}
+
+/** The note before the text or time it marks, as desktop says a bookmark. */
+private fun noteAndPlace(note: String, place: String): String = when {
+	note.isEmpty() -> place
+	place.isEmpty() -> note
+	else -> "$note, $place"
 }
 
 internal fun nothingToStepTo(any: Boolean, forward: Boolean, notesOnly: Boolean): String = when {

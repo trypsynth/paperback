@@ -99,7 +99,8 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 
 	val navigation = NavigationRouter()
 
-	val bookmarks = Bookmarks(config, reading, activeTab = { uiState.value.activeTab }, announcer = ::announceForAccessibility)
+	val bookmarks =
+		Bookmarks(config, reading, activeTab = { uiState.value.activeTab }, announcer = ::announceForAccessibility)
 
 	fun openBookmarks() {
 		if (uiState.value.activeTab == null) return
