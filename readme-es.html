@@ -169,6 +169,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h2 id="tipos-de-archivo-actualmente-compatibles">Tipos de archivo actualmente compatibles</h2>
 <p>Paperback admite los siguientes formatos y extensiones:</p>
 <ul>
+<li>Libros braille BARD de la Biblioteca Nacional de Servicios, leídos como un libro de todos sus volúmenes, retrotranducidos con el código braille nombrado en su paquete (el <code>.zip</code> que descarga BARD, o su <code>.bopf</code> una vez descomprimido)</li>
 <li>Archivos Braille Listo y libros Portable Embosser Format, retrotranducidos a impresión con la tabla braille que elijas (<code>.brf</code>, <code>.pef</code>)</li>
 <li>Archivos de cómics (<code>.cbz</code>, <code>.cbr</code>)</li>
 <li>Archivos de ayuda CHM (<code>.chm</code>)</li>
@@ -177,7 +178,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Libros EPUB (<code>.epub</code>, o el <code>.opf</code> de uno que no esté comprimido)</li>
 <li>Libros electrónicos FB2 (<code>.fb2</code>)</li>
 <li>Manuales GNU Información (<code>.info</code>, comprimidos o no, y manuales divididos abiertos desde cualquiera de sus partes)</li>
-<li>Documentos HTML (<code>.htm</code>, <code>.html</code>, <code>.xhtml</code>)</li>
+<li>Documentos HTML (<code>.htm</code>, <code>.html</code>, <code>.shtml</code>, <code>.xhtml</code>)</li>
 <li>Páginas de manual, tanto <code>man</code> como BSD <code>mdoc</code> (<code>.1</code> a <code>.9</code>, <code>.man</code>, <code>.roff</code> y sus formas comprimidas)</li>
 <li>Documentos Markdown (<code>.md</code>, <code>.markdown</code>, <code>.mdx</code>, <code>.mdown</code>, <code>.mdwn</code>, <code>.mkd</code>, <code>.mkdn</code>, <code>.mkdown</code>, <code>.ronn</code>)</li>
 <li>Documentos Microsoft Word (<code>.docx</code>, <code>.docm</code>, <code>.doc</code>)</li>
@@ -289,7 +290,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li><code>Ctrl+Space</code> (macOS: <code>Control+Space</code>, es decir, la tecla Control física, ya que <code>Cmd+Space</code> abre Spotlight): Reproduce/pausa la narración de audio.</li>
 <li><code>Ctrl+J</code>: Ir a un momento en la grabación. Escríbelo como <code>1:23:45</code>, <code>23:45</code> o <code>45</code> segundos, o pon <code>+</code> o <code>-</code> delante para moverte desde donde estés, p. ej. <code>+5:00</code>. El diálogo muestra tu avance y la duración del libro.</li>
-<li><code>Shift+=</code>: Di cuánto llevas de este capítulo y cuánto te queda, p. ej. “Capítulo 3, 4:10 de 12:00, 7:50 restante”.</li>
+<li><code>Shift+=</code>: Di cuánto llevas de este capítulo y cuánto te queda, p. ej. “Capítulo 3, 4:10 de 12:00, 7:50 restante”. En un libro sin audio grabado, el porcentaje del capítulo y las palabras que quedan en él, p. ej. “Capítulo 3, 42%, 1850 palabras restantes”.</li>
 <li><code>'</code>: Busca hacia adelante en la narración de audio.</li>
 <li><code>;</code>: Busca hacia atrás en la narración de audio.</li>
 <li><code>Shift+'</code>: Aumenta la cantidad de búsqueda de audio.</li>

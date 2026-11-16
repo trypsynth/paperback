@@ -169,6 +169,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h2 id="jelenleg-támogatott-fájltípusok">Jelenleg támogatott fájltípusok</h2>
 <p>A Paperback a következő formátumokat és kiterjesztéseket támogatja:</p>
 <ul>
+<li>BARD braille-könyvek a Nemzeti Könyvtári Szolgálattól, egy könyvként olvasva az összes kötetüket, a csomag által megnevezett braille-kóddal visszafordítva (a <code>.zip</code> BARD-letöltések, vagy a <code>.bopf</code> fájlja a kicsomagolás után)</li>
 <li>Braille Ready Files és Portable Embosser Format könyvek, a kiválasztott braille-táblázattal visszafordítva nyomtatásra (<code>.brf</code>, <code>.pef</code>)</li>
 <li>Képregényarchívumok (<code>.cbz</code>, <code>.cbr</code>)</li>
 <li>CHM-súgófájlok (<code>.chm</code>)</li>
@@ -177,7 +178,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>EPUB-könyvek (<code>.epub</code>, vagy az <code>.opf</code> fájlja, amely nincs tömörítve)</li>
 <li>FB2 formátumú e-könyvek (<code>.fb2</code>)</li>
 <li>GNU Info-kézikönyvek (<code>.info</code>, tömörítve vagy sem, valamint felosztott kézikönyvek megnyitva bármelyik részükből)</li>
-<li>HTML-dokumentumok (<code>.htm</code>, <code>.html</code>, <code>.xhtml</code>)</li>
+<li>HTML-dokumentumok (<code>.htm</code>, <code>.html</code>, <code>.shtml</code>, <code>.xhtml</code>)</li>
 <li>Unix-kézikönyvoldalak, <code>man</code> és BSD <code>mdoc</code> formátumban is (<code>.1</code>–<code>.9</code>, <code>.man</code>, <code>.roff</code>, valamint mindegyik gzippel tömörített változata)</li>
 <li>Markdown-dokumentumok (<code>.md</code>, <code>.markdown</code>, <code>.mdx</code>, <code>.mdown</code>, <code>.mdwn</code>, <code>.mkd</code>, <code>.mkdn</code>, <code>.mkdown</code>, <code>.ronn</code>)</li>
 <li>Microsoft Word-dokumentumok (<code>.docx</code>, <code>.docm</code>, <code>.doc</code>)</li>
@@ -289,7 +290,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li><code>Ctrl+Space</code> (macOS: <code>Control+Space</code>, azaz a fizikai Control billentyű, mivel a Cmd+Space a Spotlightot nyitja meg): Az audionarráció lejátszása vagy szüneteltetése.</li>
 <li><code>Ctrl+J</code>: Ugrás a felvétel egy adott helyére. Írja be így: <code>1:23:45</code>, <code>23:45</code> vagy <code>45</code> másodperc, vagy a <code>+</code> vagy <code>-</code> jellel módosítsa az aktuális pozícióból, például <code>+5:00</code>. A párbeszédpanel mutatja, hogy hol tart a felvételben, és a könyv teljes hossza.</li>
-<li><code>Shift+=</code>: Az aktuális fejezet lejátszási idejének és hátralévő részének bejelentése, például „3. fejezet, 4:10 / 12:00, 7:50 hátra“.</li>
+<li><code>Shift+=</code>: Az aktuális fejezet lejátszási idejének és hátralévő részének bejelentése, például „3. fejezet, 4:10 / 12:00, 7:50 hátra“. Szövegfelismeréses könyvben az aktuális fejezet százaléka és a hátralévő szavak száma, például „3. fejezet, 42%, 1850 szó hátra“.</li>
 <li><code>'</code>: Az audionarráció előretekerése.</li>
 <li><code>;</code>: Az audionarráció visszatekerése.</li>
 <li><code>Shift+'</code>: A léptetési időegység növelése.</li>

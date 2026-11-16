@@ -169,6 +169,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h2 id="types-de-fichiers-actuellement-pris-en-charge">Types de fichiers actuellement pris en charge</h2>
 <p>Paperback prend en charge les formats et extensions suivants :</p>
 <ul>
+<li>Livres braille BARD de la National Library Service, lus comme un seul livre de tous leurs volumes, rétro-traduits avec le code braille indiqué dans leur package (le <code>.zip</code> téléchargé par BARD, ou son <code>.bopf</code> une fois décompressé)</li>
 <li>Fichiers Braille Ready et livres au format Portable Embosser Format, rétro-traduits en imprimé avec la table braille de votre choix (<code>.brf</code>, <code>.pef</code>)</li>
 <li>Archives de bandes dessinées (<code>.cbz</code>, <code>.cbr</code>)</li>
 <li>Fichiers d’aide CHM (<code>.chm</code>)</li>
@@ -177,7 +178,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Livres EPUB (<code>.epub</code>, ou le <code>.opf</code> d’un qui n’est pas compressé)</li>
 <li>Livres électroniques FB2 (<code>.fb2</code>)</li>
 <li>Manuels GNU Info (<code>.info</code>, compressés ou non, et manuels divisés ouverts à partir de n’importe laquelle de leurs parties)</li>
-<li>Documents HTML (<code>.htm</code>, <code>.html</code>, <code>.xhtml</code>)</li>
+<li>Documents HTML (<code>.htm</code>, <code>.html</code>, <code>.shtml</code>, <code>.xhtml</code>)</li>
 <li>Pages de manuel, à la fois <code>man</code> et BSD <code>mdoc</code> (<code>.1</code> à <code>.9</code>, <code>.man</code>, <code>.roff</code> et les versions compressées de chacun)</li>
 <li>Documents Markdown (<code>.md</code>, <code>.markdown</code>, <code>.mdx</code>, <code>.mdown</code>, <code>.mdwn</code>, <code>.mkd</code>, <code>.mkdn</code>, <code>.mkdown</code>, <code>.ronn</code>)</li>
 <li>Documents Microsoft Word (<code>.docx</code>, <code>.docm</code>, <code>.doc</code>)</li>
@@ -289,7 +290,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li><code>Ctrl+Space</code> (macOS : <code>Control+Space</code>, c’est-à-dire la touche Control physique, car Cmd+Space ouvre Spotlight) : Lecture/pause de la narration audio.</li>
 <li><code>Ctrl+J</code> : Aller à un moment de l’enregistrement. Tapez-le comme <code>1:23:45</code>, <code>23:45</code> ou <code>45</code> secondes, ou mettez <code>+</code> ou <code>-</code> devant pour vous déplacer à partir de votre position actuelle, par exemple <code>+5:00</code>. La boîte de dialogue affiche votre avancement et la durée du livre.</li>
-<li><code>Shift+=</code> : Indiquer votre avancement dans ce chapitre et ce qui reste, par exemple « Chapitre 3, 4:10 de 12:00, 7:50 restant ».</li>
+<li><code>Shift+=</code> : Indiquer votre avancement dans ce chapitre et ce qui reste, par exemple « Chapitre 3, 4:10 de 12:00, 7:50 restant ». Dans un livre sans audio enregistré, le pourcentage du chapitre et les mots qui restent, par exemple « Chapitre 3, 42%, 1850 mots restants ».</li>
 <li><code>'</code> : Avancer rapidement dans la narration audio.</li>
 <li><code>;</code> : Reculer rapidement dans la narration audio.</li>
 <li><code>Shift+'</code> : Augmenter le montant de l’avance rapide audio.</li>

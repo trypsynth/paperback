@@ -169,6 +169,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h2 id="поддерживаемые-форматы-файлов">Поддерживаемые форматы файлов</h2>
 <p>Paperback поддерживает следующие форматы и расширения:</p>
 <ul>
+<li>Книги Брайля BARD из Национальной библиотеки для слепых, читаемые как одна книга со всеми их томами, обратно преобразованные с помощью кода Брайля, указанного в их пакете (<code>.zip</code>-файл, скачиваемый BARD, или его <code>.bopf</code> после распаковки)</li>
 <li>Файлы Braille Готово и книги в формате Portable Embosser Format, обратно преобразованные в печать с помощью выбранной вами таблицы Брайля (<code>.brf</code>, <code>.pef</code>)</li>
 <li>Архивы комиксов (<code>.cbz</code>, <code>.cbr</code>)</li>
 <li>Файлы справки CHM (<code>.chm</code>)</li>
@@ -177,7 +178,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Книги EPUB (<code>.epub</code>, или <code>.opf</code> для неархивированных)</li>
 <li>Электронные книги FB2 (<code>.fb2</code>)</li>
 <li>GNU Info справочники (<code>.info</code>, сжатые или нет, и разделённые справочники, открытые с любой из их частей)</li>
-<li>HTML-документы (<code>.htm</code>, <code>.html</code>, <code>.xhtml</code>)</li>
+<li>HTML-документы (<code>.htm</code>, <code>.html</code>, <code>.shtml</code>, <code>.xhtml</code>)</li>
 <li>Справочные страницы, как <code>man</code>, так и BSD <code>mdoc</code> (<code>.1</code> – <code>.9</code>, <code>.man</code>, <code>.roff</code>, а также сжатые версии каждого)</li>
 <li>Документы Markdown (<code>.md</code>, <code>.markdown</code>, <code>.mdx</code>, <code>.mdown</code>, <code>.mdwn</code>, <code>.mkd</code>, <code>.mkdn</code>, <code>.mkdown</code>, <code>.ronn</code>)</li>
 <li>Документы Microsoft Word (<code>.docx</code>, <code>.docm</code>, <code>.doc</code>)</li>
@@ -289,7 +290,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li><code>Ctrl+Space</code> (macOS: <code>Control+Space</code>, то есть физическая клавиша Control, так как Cmd+Space открывает Spotlight): воспроизведение/пауза звукового повествования.</li>
 <li><code>Ctrl+J</code>: перейти на время в записи. Введите его в формате <code>1:23:45</code>, <code>23:45</code> или <code>45</code> секунд, или поставьте <code>+</code> или <code>-</code> в начале, чтобы переместиться от текущей позиции, например <code>+5:00</code>. Диалог показывает, как далеко вы продвинулись, и продолжительность аудиокниги.</li>
-<li><code>Shift+=</code>: озвучить, как далеко вы продвинулись в этой главе и сколько её осталось, например «Глава 3, 4:10 из 12:00, осталось 7:50».</li>
+<li><code>Shift+=</code>: озвучить, как далеко вы продвинулись в этой главе и сколько её осталось, например «Глава 3, 4:10 из 12:00, осталось 7:50». В книге без записанного аудио — процент пройденной части главы и количество оставшихся слов, например «Глава 3, 42%, осталось 1850 слов».</li>
 <li><code>'</code>: перемотать звуковое повествование вперёд.</li>
 <li><code>;</code>: перемотать звуковое повествование назад.</li>
 <li><code>Shift+'</code>: увеличить время перемотки звука.</li>

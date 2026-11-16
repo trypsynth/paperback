@@ -169,6 +169,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h2 id="các-định-dạng-tệp-được-hỗ-trợ-hiện-tại">Các định dạng tệp được hỗ trợ hiện tại</h2>
 <p>Paperback hỗ trợ các định dạng và phần mở rộng sau:</p>
 <ul>
+<li>Sách braille BARD từ Dịch vụ Thư viện Quốc gia, được đọc dưới dạng một cuốn sách chứa tất cả các tập của chúng, được dịch ngược với mã braille được đặt tên trong gói của chúng (tệp <code>.zip</code> mà BARD tải xuống, hoặc <code>.bopf</code> của nó sau khi giải nén)</li>
 <li>Tệp Braille Sẵn sàng và sách Portable Embosser Format, được dịch ngược lại thành bản in với bảng braille bạn chọn (<code>.brf</code>, <code>.pef</code>)</li>
 <li>Lưu trữ sách truyện tranh (<code>.cbz</code>, <code>.cbr</code>)</li>
 <li>Tệp trợ giúp CHM (<code>.chm</code>)</li>
@@ -177,7 +178,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Sách EPUB (<code>.epub</code>, hoặc <code>.opf</code> của sách không được nén)</li>
 <li>Sách điện tử FB2 (<code>.fb2</code>)</li>
 <li>Hướng dẫn GNU Info (<code>.info</code>, có nén gzip hoặc không, và các hướng dẫn tách được mở từ bất kỳ phần nào của chúng)</li>
-<li>Tài liệu HTML (<code>.htm</code>, <code>.html</code>, <code>.xhtml</code>)</li>
+<li>Tài liệu HTML (<code>.htm</code>, <code>.html</code>, <code>.shtml</code>, <code>.xhtml</code>)</li>
 <li>Các trang hướng dẫn, cả <code>man</code> và BSD <code>mdoc</code> (<code>.1</code> đến <code>.9</code>, <code>.man</code>, <code>.roff</code> và các dạng nén gzip của mỗi trang)</li>
 <li>Tài liệu Markdown (<code>.md</code>, <code>.markdown</code>, <code>.mdx</code>, <code>.mdown</code>, <code>.mdwn</code>, <code>.mkd</code>, <code>.mkdn</code>, <code>.mkdown</code>, <code>.ronn</code>)</li>
 <li>Tài liệu Microsoft Word (<code>.docx</code>, <code>.docm</code>, <code>.doc</code>)</li>
@@ -289,7 +290,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li><code>Ctrl+Space</code> (macOS: <code>Control+Space</code>, tức là phím Control vật lý, vì Cmd+Space mở Spotlight): Phát/tạm dừng kể chuyện âm thanh.</li>
 <li><code>Ctrl+J</code>: Đi tới một thời điểm trong bản ghi âm. Nhập dưới dạng <code>1:23:45</code>, <code>23:45</code> hoặc <code>45</code> giây, hoặc đặt <code>+</code> hoặc <code>-</code> ở phía trước để di chuyển từ nơi bạn đang ở, ví dụ: <code>+5:00</code>. Hộp thoại hiển thị bạn đã tiến bao xa và cuốn sách chạy bao lâu.</li>
-<li><code>Shift+=</code>: Nói bạn đã tiến bao xa vào chương này và còn lại bao nhiêu, ví dụ: “Chương 3, 4:10 của 12:00, 7:50 còn lại”.</li>
+<li><code>Shift+=</code>: Nói bạn đã tiến bao xa vào chương này và còn lại bao nhiêu, ví dụ: “Chương 3, 4:10 của 12:00, 7:50 còn lại”. Trong một cuốn sách không có âm thanh được ghi âm, phần trăm qua chương và từ còn lại trong đó, ví dụ: “Chương 3, 42%, 1850 từ còn lại”.</li>
 <li><code>'</code>: Tìm kiếm kể chuyện âm thanh về phía trước.</li>
 <li><code>;</code>: Tìm kiếm kể chuyện âm thanh về phía sau.</li>
 <li><code>Shift+'</code>: Tăng lượng tìm kiếm âm thanh.</li>
