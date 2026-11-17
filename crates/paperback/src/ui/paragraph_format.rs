@@ -7,7 +7,9 @@ use windows::{
 	Win32::{
 		Foundation::{HWND, LPARAM, WPARAM},
 		UI::{
-			Controls::RichEdit::{EM_GETOLEINTERFACE, IRichEditOle, ITextDocument, tomListBullet, tomListNoNumber},
+			Controls::RichEdit::{
+				EM_GETOLEINTERFACE, IRichEditOle, ITextDocument, ITextRange, tomListBullet, tomListNoNumber,
+			},
 			WindowsAndMessaging::SendMessageW,
 		},
 	},
@@ -25,6 +27,17 @@ pub fn apply_paragraph_formats(
 	if paragraphs.is_empty() {
 		return;
 	}
+	change_text_document(text_ctrl, |document| {
+		for paragraph in paragraphs {
+			if let Err(error) = apply(document, &place, paragraph) {
+				tracing::warn!(%error, "could not set a paragraph's heading or list formatting");
+			}
+		}
+	});
+}
+
+/// Runs `change` on the control's text document with the control made writable.
+pub(super) fn change_text_document(text_ctrl: ReaderCtrl, change: impl FnOnce(&ITextDocument)) {
 	let Some(document) = text_document(text_ctrl.widget()) else {
 		return;
 	};
@@ -32,16 +45,22 @@ pub fn apply_paragraph_formats(
 	text_ctrl.freeze();
 	// The Text Object Model refuses to change a read-only control; toggling it raises no accessibility event.
 	text_ctrl.set_editable(true);
-	for paragraph in paragraphs {
-		if let Err(error) = apply(&document, &place, paragraph) {
-			tracing::warn!(%error, "could not set a paragraph's heading or list formatting");
-		}
-	}
+	change(&document);
 	text_ctrl.set_editable(editable);
 	text_ctrl.thaw();
 }
 
-fn text_document(text_ctrl: TextCtrl) -> Option<ITextDocument> {
+pub(super) fn text_range(
+	document: &ITextDocument,
+	place: &impl Fn(DocPos) -> CtrlPos,
+	start: DocPos,
+	end: DocPos,
+) -> windows::core::Result<ITextRange> {
+	let position = |offset: DocPos| i32::try_from(place(offset).get()).unwrap_or(i32::MAX);
+	unsafe { document.Range(position(start), position(end)) }
+}
+
+pub(super) fn text_document(text_ctrl: TextCtrl) -> Option<ITextDocument> {
 	let hwnd_ptr = text_ctrl.get_handle();
 	if hwnd_ptr.is_null() {
 		return None;
@@ -61,9 +80,8 @@ fn apply(
 	place: &impl Fn(DocPos) -> CtrlPos,
 	paragraph: &ParagraphFormat,
 ) -> windows::core::Result<()> {
-	let position = |offset: DocPos| i32::try_from(place(offset).get()).unwrap_or(i32::MAX);
 	unsafe {
-		let para = document.Range(position(paragraph.start), position(paragraph.end))?.GetPara()?;
+		let para = text_range(document, place, paragraph.start, paragraph.end)?.GetPara()?;
 		// Whole format changed and applied in one go, since setting only the style would also apply RichEdit's own heading spacing.
 		let format = para.GetDuplicate()?;
 		if let Some(level) = paragraph.heading_level {

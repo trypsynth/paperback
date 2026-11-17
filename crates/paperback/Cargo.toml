@@ -88,5 +88,5 @@ name = "windows_rtf_window_append"
 harness = false
 
 [[test]]
-name = "windows_paragraph_styles"
+name = "windows_reader_formats"
 harness = false
