@@ -8,7 +8,8 @@ use windows::{
 		Foundation::{HWND, LPARAM, WPARAM},
 		UI::{
 			Controls::RichEdit::{
-				EM_GETOLEINTERFACE, IRichEditOle, ITextDocument, ITextRange, tomListBullet, tomListNoNumber,
+				EM_GETOLEINTERFACE, EM_SETEVENTMASK, IRichEditOle, ITextDocument, ITextRange, tomListBullet,
+				tomListNoNumber,
 			},
 			WindowsAndMessaging::SendMessageW,
 		},
@@ -45,7 +46,13 @@ pub(super) fn change_text_document(text_ctrl: ReaderCtrl, change: impl FnOnce(&I
 	text_ctrl.freeze();
 	// The Text Object Model refuses to change a read-only control; toggling it raises no accessibility event.
 	text_ctrl.set_editable(true);
+	// RichEdit tells its parent of every change, which with a screen reader running costs several times the change itself, and none of these changes alter the text. Frozen, the document lays out all the changes at once.
+	let hwnd = HWND(text_ctrl.widget().get_handle());
+	let events = unsafe { SendMessageW(hwnd, EM_SETEVENTMASK, Some(WPARAM(0)), Some(LPARAM(0))) };
+	let _ = unsafe { document.Freeze() };
 	change(&document);
+	let _ = unsafe { document.Unfreeze() };
+	unsafe { SendMessageW(hwnd, EM_SETEVENTMASK, Some(WPARAM(0)), Some(LPARAM(events.0))) };
 	text_ctrl.set_editable(editable);
 	text_ctrl.thaw();
 }
