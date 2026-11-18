@@ -2386,8 +2386,8 @@ dependencies = [
 
 [[package]]
 name = "louis-rs"
-version = "0.3.1"
-source = "git+https://github.com/trypsynth/louis-rs?branch=paperback-next#e4d1d76bc5680da1fbc5f8d1b2300fdea226b80a"
+version = "0.4.0"
+source = "git+https://github.com/trypsynth/louis-rs?branch=paperback-next#249dd40f8bd13f8e83c93a1f070d436492e6cd8b"
 dependencies = [
  "enumset",
  "log",

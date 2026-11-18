@@ -354,8 +354,8 @@ fn back_translate(pages: &[Page], translator: &Translator, context: &ParserConte
 
 /// The paragraph's print, and for each of its cells where that cell's print begins.
 fn translate_paragraph(translator: &Translator, paragraph: &str) -> (String, Vec<usize>) {
-	let result = translator.translate_with_options(paragraph, TranslationOptions::default());
-	(result.output, result.output_positions)
+	let result = translator.translate_with_options(paragraph, &TranslationOptions::default());
+	(result.output().to_owned(), result.output_positions().to_vec())
 }
 
 /// The braille rejoined into paragraphs, and where in them each page begins.

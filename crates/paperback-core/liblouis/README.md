@@ -12,6 +12,8 @@ They come from a release rather than from liblouis's repository because a releas
 
 - `2181-ueb-curly-apostrophes-forward-only.patch`, [liblouis#2181](https://github.com/liblouis/liblouis/pull/2181): in `en-ueb-g2.ctb`, the curly apostrophe variants are forward-only, so back-translation gives the plain apostrophe rather than choosing between rules for the same cells.
 - `2182-it-comp6-del-forward-only.patch`, [liblouis#2182](https://github.com/liblouis/liblouis/pull/2182): in `it-it-comp6.utb`, the DEL character is forward-only, so the blank cell back-translates to a space.
+- `2196-it-comp6-math-context-without-lookback.patch`, [liblouis#2196](https://github.com/liblouis/liblouis/pull/2196): in `it-it-comp6.utb`, two rules that open the math context check for letters without stepping back with `_`, which louis-rs refuses in the middle of a test, so the table loads.
+- `2197-th-g2-drop-always-true-check.patch`, [liblouis#2197](https://github.com/liblouis/liblouis/pull/2197): in `th-g2.ctb`, a rule drops a check that is always true and stepped back with `_` in the middle of its test, so the table loads.
 
 Once a release includes a fix, delete its patch.
 
