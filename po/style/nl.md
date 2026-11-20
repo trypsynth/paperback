@@ -2,7 +2,7 @@
 
 - Address the reader informally: `je`, `jij`, `jou`, `jouw`. Never `u` or `uw`; `kun je`, not `kunt u`.
 - Do not add articles the English does not have. "File is encrypted" is `Bestand is versleuteld`, "Error loading document" is `Fout bij laden van document`.
-- Do not start a sentence with `Er is` or `Er zijn` unless the English starts with "There is" or "There are". "No readable text found" is `Geen leesbare tekst gevonden`.
+- Do not start a sentence with `Er is` or `Er zijn` unless the English starts with "There is" or "There are". "No readable text found" is `Geen leesbare tekst gevonden`. Exception: a passive sentence with an indefinite subject needs `er` in Dutch. Keep it rather than rewording the English: "Too many reports have been sent today." is `Er zijn vandaag al te veel rapporten verzonden.`
 - Menu items, buttons, checkbox labels, status-bar help text and window titles end in the infinitive: `Document openen`, `Alle documenten sluiten`, `Lettertype kiezen`, `Inhoudsopgave tonen`.
 - "Go to ...", "Go back" and "Go forward" keep the verb first: `Ga naar regel`, `Ga naar begin van regel`, `Ga terug`, `Ga vooruit`. "Jump to ..." is `Naar ... springen`.
 - "Failed to X" is `X mislukt`: `Document laden mislukt.`, `Bestandslocatie openen mislukt.`
@@ -30,6 +30,8 @@ English → Dutch. Use these consistently.
 - batch OCR → bulk-OCR
 - bookmark → bladwijzer; note → notitie; bookmark note → bladwijzernotitie
 - braille display → brailleleesregel
+- braille code → braillecode; braille table → brailletabel; back-translate → terugvertalen; print (as opposed to braille) → zwartschrift
+- volume (of a braille book) → band
 - command line, command-line tool → terminal, terminalprogramma
 - comic archive → comicarchief; comic book page → comicpagina; front cover → voorkaft; inside cover → binnenkant kaft; back cover → achterkaft
 - comment (in a document) → opmerking; speaker notes → sprekersnotities
@@ -39,6 +41,7 @@ English → Dutch. Use these consistently.
 - download (the file) → download; downloading → downloaden
 - duration → tijdsduur
 - elements list → elementenlijst
+- example → voorbeeld
 - executable → uitvoerbaar bestand; exe path → exe-pad
 - file manager → bestandsbeheerder; in-app file browser → bestandsbrowser in de app; file picker → bestandskiezer
 - front matter (Markdown) → frontmatter
@@ -49,6 +52,7 @@ English → Dutch. Use these consistently.
 - metadata → metadata, never metagegevens
 - headers and footers (of a page) → kop- en voetteksten
 - heading → kop (plural koppen); heading level 2 → kop niveau 2
+- help file → helpbestand
 - keyboard shortcut → toetsenbordsneltoets; shortcut (on its own) → sneltoets; customize keyboard shortcuts → toetsenbordsneltoetsen aanpassen; window hotkey → venstersneltoets
 - legacy (file format) → klassiek; legacy (encoding) → verouderd
 - link → link, never koppeling; web link → weblink; from a link → via een link
@@ -67,6 +71,7 @@ English → Dutch. Use these consistently.
 - render tables inline → tabellen in de tekst weergeven
 - restore (open documents at startup) → heropenen; restore (a window from the tray) → herstellen
 - reveal file in folder → bestandslocatie openen
+- sample (of a voice) → voorbeeld, never monster; play sample → voorbeeld afspelen
 - screen reader → schermlezer; browse mode → bladermodus
 - section → sectie; separator → scheiding
 - selection start → begin van selectie
@@ -74,11 +79,12 @@ English → Dutch. Use these consistently.
 - share sheet (iOS) → deelmenu
 - show → tonen; view (a note) → bekijken; view source → bron weergeven
 - sleep timer → slaaptimer
-- speech engine → spraakengine; speech dictionary → uitspraakwoordenboek; speech rate → spreeksnelheid; pitch → toonhoogte; text to speech → tekst-naar-spraak
+- speech engine → spraakengine; speech dictionary → uitspraakwoordenboek; speech rate → spraaksnelheid, never spreeksnelheid (that can mean the pace of recorded speech); rate (of speech) → snelheid; pitch → toonhoogte; text to speech → tekst-naar-spraak
 - system tray → systeemvak
 - system-wide → systeembreed
 - table of contents → inhoudsopgave
 - text mode → tekstmodus
+- go to time (the command) → ga naar tijd; time (the Go To mode) → tijd; a time in a recording → tijdstip
 - toggle bookmark → bladwijzer plaatsen/verwijderen; toggle word wrap → automatische terugloop in-/uitschakelen
 - web view → webweergave; table view → tabelweergave; formula view → formuleweergave
 - word wrap → automatische terugloop
