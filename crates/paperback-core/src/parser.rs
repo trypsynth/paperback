@@ -10,7 +10,8 @@ use paperback_formats::FormatMeta;
 
 use crate::{
 	document::{
-		DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem, is_heading_marker,
+		DocLen, DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, ParserFlags, TocItem,
+		is_heading_marker,
 	},
 	t,
 	types::{
@@ -511,10 +512,28 @@ pub fn add_heading_markers_where(
 				5 => MarkerType::Heading5,
 				_ => MarkerType::Heading6,
 			};
-			buffer.add_marker(Marker::new(marker_type, item.offset).with_text(item.name.clone()).with_level(level));
+			let (position, text) = toc_heading(buffer, item);
+			buffer.add_marker(Marker::new(marker_type, position).with_text(text).with_level(level));
 		}
 		add_heading_markers_where(buffer, &item.children, level + 1, wanted);
 	}
+}
+
+/// Where an entry's heading starts and what it says. An anchor inside the line that is the entry's title, as after a drop cap's letter, heads the whole line, and the line is read as written: such books often space the label the same way ("C HAPTER 1").
+fn toc_heading(buffer: &DocumentBuffer, item: &TocItem) -> (DocPos, String) {
+	let newlines = buffer.newline_positions();
+	let after = newlines.partition_point(|newline| *newline < item.offset);
+	let line_start = if after == 0 { DocPos::ZERO } else { newlines[after - 1] + DocLen::from_raw(1) };
+	let line_end = newlines.get(after).copied().unwrap_or_else(|| buffer.end());
+	let line = buffer.text(line_start..line_end);
+	let title = line.trim();
+	let squeezed =
+		|text: &str| text.chars().filter(|c| !c.is_whitespace()).flat_map(char::to_lowercase).collect::<String>();
+	if title.is_empty() || squeezed(title) != squeezed(&item.name) {
+		return (item.offset, item.name.clone());
+	}
+	let indent = line.chars().take_while(|c| c.is_whitespace()).count();
+	(line_start + DocLen::from_raw(indent), title.to_string())
 }
 
 /// Skips entries whose span already holds a real heading, so a well-marked-up book is left alone and nothing is announced twice; classic Gutenberg EPUBs and old CHMs and MOBIs need this.
