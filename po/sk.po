@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-31 21:30+0000\n"
+"POT-Creation-Date: 2026-11-15 01:48+0000\n"
 "PO-Revision-Date: 2026-09-23 13:11+0200\n"
 "Last-Translator: Peter Vágner <pvagner@pvagner.sk>\n"
 "Language-Team: slovak\n"
@@ -16,6 +16,142 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n>=2 && n<=4 ? 1 : 2);\n"
+
+#. TRANSLATORS: Title of the question asked after the app closed unexpectedly
+#. TRANSLATORS: Title of the dialog for sending a problem report to the developer
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Report a Problem"
+msgstr "Nahlásiť problém"
+
+#. TRANSLATORS: Asked at startup after the app crashed or was closed unexpectedly. %s is the app's name.
+msgid ""
+"%s closed unexpectedly the last time it ran. Would you like to report the "
+"problem?"
+msgstr ""
+"Posledné spustenie aplikácie %s bolo neočakávane ukončené. Chceli by ste nahlásiť "
+"problém?"
+
+#. TRANSLATORS: Check box in the question asked after a crash, which stops the question being asked again
+msgid "&Don't ask again"
+msgstr "Viac sa &nepýtať"
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog after a crash. %s is the app's name.
+msgid ""
+"%s closed unexpectedly the last time it ran. Describe what you were doing "
+"when it happened."
+msgstr ""
+"Posledné spustenie aplikácie %s bolo neočakávane ukončené. Opíšte, čo ste práve robili "
+"keď sa to stalo."
+
+#. TRANSLATORS: Shown at the top of the Report a Problem dialog
+msgid "Describe the problem, and what you were doing when it happened."
+msgstr "Opíšte problém a čo ste presne robili, keď sa to stalo."
+
+#. TRANSLATORS: Label of the field for describing the problem in the Report a Problem dialog
+msgid "&What happened:"
+msgstr "Čo sa &stalo:"
+
+msgid "&Your email address, if you'd like a reply:"
+msgstr "Vaša &emailová adresa, ak očakávate odpoveď"
+
+#. TRANSLATORS: Check box in the Report a Problem dialog that attaches the app's log to the report
+msgid "&Include the log"
+msgstr "Pr&iložiť záznamy"
+
+#. TRANSLATORS: Explains what a problem report contains, in the Report a Problem dialog. %s is the app's name.
+msgid ""
+"The report also includes %s's version and your operating system. Select "
+"Preview to see everything that will be sent."
+msgstr ""
+"Hlásenie obsahuje aj číslo verzie aplikácie %s a informácie o operačnom systéme. "
+"Vyberte tlačidlo Ukážka a skontrolujte si údaje, ktoré budú odoslané."
+
+#. TRANSLATORS: Button in the Report a Problem dialog that shows the report before it is sent
+msgid "&Preview"
+msgstr "&Ukážka"
+
+#. TRANSLATORS: Button in the Report a Problem dialog that sends the report
+msgid "&Send"
+msgstr "&Odoslať"
+
+#. TRANSLATORS: Label for the cancellation button
+#. TRANSLATORS: Cancel button that closes the Find dialog
+#. TRANSLATORS: Label for the cancellation button
+msgid "Cancel"
+msgstr "Zrušiť"
+
+#. TRANSLATORS: Title of the window that shows a problem report before it is sent
+msgid "Report Preview"
+msgstr "Ukážka hlásenia"
+
+#. TRANSLATORS: Title of an error message
+#. TRANSLATORS: Generic error dialog title
+msgid "Error"
+msgstr "Chyba"
+
+#. TRANSLATORS: Shown when Send is pressed in the Report a Problem dialog with the description empty
+msgid "Describe the problem before sending the report."
+msgstr "Opíšte problém ešte pred odoslaním hlásenia."
+
+#. TRANSLATORS: Shown when a problem report breaks a limit, such as being too long. %s is the reason, in English.
+msgid "The report can't be sent: %s"
+msgstr "Hlásenie nie je možné odoslať: %s"
+
+#. TRANSLATORS: Message in the progress window shown while a problem report is sent
+msgid "Sending the report..."
+msgstr "Odosielanie hlásenia..."
+
+#. TRANSLATORS: Shown after a problem report was sent
+#. TRANSLATORS: Title of a message saying something worked
+msgid "Thank you. Your report was sent."
+msgstr "Ďakujeme. Hlásenie bolo odoslané."
+
+msgid "Success"
+msgstr "Hotovo"
+
+msgid ""
+"Email can't be delivered to that address. Check it for typing mistakes, or "
+"leave it blank."
+msgstr ""
+"Na adresu, ktorú ste zadali nie je možné posielať správy. Skontrolujte, či je zadaná správne, "
+"alebo pole nechajte prázdne."
+
+#. TRANSLATORS: Shown when the report server has taken as many reports as it will for the day
+msgid "Too many reports have been sent today."
+msgstr "Dnes už bolo odoslaných veľké množstvo hlásení."
+
+#. TRANSLATORS: Shown when sending a problem report failed. %s is the reason, in English.
+msgid "The report couldn't be sent: %s"
+msgstr "Nie je možné odoslať hlásenie: %s"
+
+#. TRANSLATORS: Asked after a problem report couldn't be sent. %s explains what went wrong.
+msgid ""
+"%s\n"
+"\n"
+"Would you like to save the report to a file, so you can send it another way?"
+msgstr ""
+"%s\n"
+"\n"
+"Želáte si hlásenie uložiť do súboru, aby ste ho mohli odoslať iným spôsobom?"
+
+#. TRANSLATORS: Title of the dialog for saving a problem report to a file
+msgid "Save Report"
+msgstr "Uložiť hlásenie"
+
+#. TRANSLATORS: Default file name for a saved problem report
+msgid "Problem report"
+msgstr "Hlásenie problému"
+
+#. TRANSLATORS: File type filter in the dialog for saving a problem report
+msgid "Text files (*.txt)|*.txt"
+msgstr "Textové súbory (*.txt)|*.txt"
+
+#. TRANSLATORS: Shown after a problem report was saved to a file
+msgid "The report was saved."
+msgstr "Hlásenie bolo uložené."
+
+msgid "The report couldn't be saved: %s"
+msgstr "Hlásenie nie je možné uložiť: %s"
 
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 msgid "Checking %s"
@@ -74,17 +210,15 @@ msgstr ""
 "Nainštalujte si jazykové balíčky pre aplikáciu Tesseract cez systémového "
 "správcu balíkov."
 
-#. TRANSLATORS: Error message shown when another app instance's IPC pipe already exists and a new one can't be created
-msgid "Failed to create IPC server"
-msgstr "Nie je možné spustiť server IPC"
+#. TRANSLATORS: Announced when skipping forward while read aloud is on the last paragraph
+msgid "No next paragraph."
+msgstr "Žiadny ďalší odsek."
 
-#. TRANSLATORS: Title of a warning dialog
-msgid "Warning"
-msgstr "Upozornenie"
+#. TRANSLATORS: Announced when skipping back while read aloud is on the first paragraph
+msgid "No previous paragraph."
+msgstr "Žiadny predchádzajúci odsek."
 
-#. TRANSLATORS: Announced when trying to play/pause audio on a document that has none
 #. TRANSLATORS: Announced when trying to seek audio on a document that has none
-#. TRANSLATORS: Announced when trying to change audio playback speed on a document that has none
 #. TRANSLATORS: Announced when trying to change audio volume on a document that has none
 msgid "This document has no audio."
 msgstr "Tento dokument neobsahuje audio."
@@ -93,14 +227,31 @@ msgstr "Tento dokument neobsahuje audio."
 msgid "Audio hasn't started playing yet."
 msgstr "Prehrávanie zvuku zatiaľ nebolo spustené."
 
+msgid ""
+"This book doesn't say how long its audio runs, so Paperback can't go to a "
+"time in it."
+msgstr ""
+"Táto kniha neobsahuje informácie o dĺžke prehrávania zvuku, Paperback nedokáže "
+"prejsť na zadaný čas."
+
+#. TRANSLATORS: Announced when asking for the time in an audiobook's chapter while the length of its files isn't known, such as in many DAISY books
+msgid "This book doesn't say how long its audio runs."
+msgstr "Táto kniha neobsahuje informácie o dĺžke prehrávania zvuku."
+
+#. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
+msgid "Rate {}"
+msgstr "Tempo {}"
+
 #. TRANSLATORS: Announced when the audio speed is already at its fastest; {} is the current speed, e.g. "2x"
 #. TRANSLATORS: Announced when the audio volume is already at its loudest; {} is the current volume, e.g. "200%"
+#. TRANSLATORS: Announced when a setting is already at its highest; {} is its value
 #. TRANSLATORS: Announced when the audio seek amount is already at its largest preset; {} is the current amount, e.g. "1 hour"
 msgid "{} (maximum)"
 msgstr "{} (maximum)"
 
 #. TRANSLATORS: Announced when the audio speed is already at its slowest; {} is the current speed, e.g. "0.5x"
 #. TRANSLATORS: Announced when the audio volume is already at its quietest; {} is the current volume, e.g. "10%"
+#. TRANSLATORS: Announced when a setting is already at its lowest; {} is its value
 #. TRANSLATORS: Announced when the audio seek amount is already at its smallest preset; {} is the current amount, e.g. "5 seconds"
 msgid "{} (minimum)"
 msgstr "{} (minimum)"
@@ -600,6 +751,22 @@ msgstr "&Prehrať/Pozastaviť zvuk"
 msgid "Play or pause this document's audio narration"
 msgstr "Prehrať alebo pozastaviť zvukovú stopu v dokumente"
 
+#. TRANSLATORS: Menu item in the Audio menu to jump to a time typed in, such as 1:23:45.
+msgid "Go to &Time..."
+msgstr "Prejsť na č&as..."
+
+#. TRANSLATORS: Status-bar help text for the Go to Time menu item.
+msgid "Go to a time in the recording"
+msgstr "Prejsť na zadaný čas nahrávky"
+
+#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter the reader is and how much of it is left: by time in an audiobook, by words in a text book.
+msgid "Announce &Chapter Progress"
+msgstr "Oznámiť priebeh &kapitoly"
+
+#. TRANSLATORS: Status-bar help text for the Announce Chapter Progress menu item.
+msgid "Say how far into this chapter you are and how much is left"
+msgstr "Oznámiť koľko z aktuálnej kapitoli už máte za sebou a koľko ostáva do jej konca"
+
 #. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 msgid "Seek Audio &Forward"
 msgstr "Posunúť zvuk &vpred"
@@ -739,6 +906,7 @@ msgstr "Odstrániť &všetky"
 #. TRANSLATORS: Label for a button that closes the View Note dialog
 #. TRANSLATORS: Label for a button that closes the Web View dialog
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+#. TRANSLATORS: Button that closes a window showing text
 msgid "Close"
 msgstr "Zavrieť"
 
@@ -753,8 +921,8 @@ msgid ""
 "Are you sure you want to remove the {} selected documents? This will also "
 "remove their reading positions and bookmarks."
 msgstr ""
-"Ste si istí, že chcete odstrániť {} vybraných dokumenty? Odstráni to tiež pozície "
-"v texte a záložky."
+"Ste si istí, že chcete odstrániť {} vybraných dokumenty? Odstráni to tiež "
+"pozície v texte a záložky."
 
 #. TRANSLATORS: Title of the confirmation dialog
 msgid "Confirm"
@@ -867,10 +1035,6 @@ msgstr "prázdny"
 #. TRANSLATORS: Error message shown when the user attempts to jump without selecting any bookmark
 msgid "Please select a bookmark to jump to."
 msgstr "Prosím, najprv vyberte záložku, na ktorú si želáte prejsť."
-
-#. TRANSLATORS: Generic error dialog title
-msgid "Error"
-msgstr "Chyba"
 
 #. TRANSLATORS: Label/prompt in the Note editor dialog
 msgid "Edit bookmark note:"
@@ -1014,12 +1178,6 @@ msgstr "Exportovať"
 msgid "Go"
 msgstr "Prejsť"
 
-#. TRANSLATORS: Label for the cancellation button
-#. TRANSLATORS: Cancel button that closes the Find dialog
-#. TRANSLATORS: Label for the cancellation button
-msgid "Cancel"
-msgstr "Zrušiť"
-
 #. TRANSLATORS: Title of the Go to Line dialog
 msgid "Go to Line"
 msgstr "Prejsť na riadok"
@@ -1059,6 +1217,21 @@ msgstr "&Percent"
 #. TRANSLATORS: Announced when the entered percentage is outside the 0 to 100 range
 msgid "Percent out of range."
 msgstr "Počet percent je mimo povolený rozsah."
+
+#. TRANSLATORS: Title of the Go to Time dialog, which jumps to a time typed in, in an audiobook
+msgid "Go to Time"
+msgstr "Prejsť na čas"
+
+msgid "Go to time ({}/{}):"
+msgstr "Prejsť na čas ({}/{}):"
+
+#. TRANSLATORS: Announced when what was typed in the Go to Time dialog is not a time
+msgid "Type a time like 1:23:45, 23:45 or 45."
+msgstr "Zadajte čas ako napríklad 1:23:45, 23:45 alebo 45."
+
+#. TRANSLATORS: Announced when the time typed in the Go to Time dialog is past the end of the recording, or before its start
+msgid "Time out of range."
+msgstr "Zadaný čas je mimo povolený rozsah."
 
 #. TRANSLATORS: Title of the view showing the text recognized in a picture
 msgid "Image Text"
@@ -1112,6 +1285,206 @@ msgstr "Odkaz:"
 msgid "Security Warning"
 msgstr "Bezpečnostné upozornenie"
 
+#. TRANSLATORS: Label for the update channel selection dropdown
+msgid "Update Channel:"
+msgstr "Kanál aktualizácií"
+
+#. TRANSLATORS: Stable update channel option
+msgid "Stable"
+msgstr "Stabilný"
+
+#. TRANSLATORS: Developer/development update channel option
+msgid "Dev"
+msgstr "Vývojový"
+
+#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
+msgid "Log Level:"
+msgstr "Úroveň záznamu:"
+
+#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
+msgid "Off"
+msgstr "Vypnuté"
+
+#. TRANSLATORS: Log level choice that records only errors
+msgid "Errors"
+msgstr "Chyby"
+
+#. TRANSLATORS: Log level choice that records warnings and errors
+msgid "Warnings"
+msgstr "Upozornenia"
+
+#. TRANSLATORS: Log level choice that records general activity, warnings and errors
+msgid "Information"
+msgstr "Informácie"
+
+#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
+msgid "Debug"
+msgstr "Ladenie"
+
+#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
+msgid "Trace"
+msgstr "Sledovanie"
+
+#. TRANSLATORS: Option to toggle word wrapping of text
+msgid "&Word wrap"
+msgstr "&Zalamovať slová"
+
+#. TRANSLATORS: Label/header for the Font options section
+msgid "Font"
+msgstr "Písmo"
+
+#. TRANSLATORS: Button label to pick a font
+msgid "Choose &Font..."
+msgstr "Vybrať &písmo..."
+
+#. TRANSLATORS: Button label to restore font settings to default values
+msgid "&Reset to Default Font"
+msgstr "&Obnoviť predvolené písmo"
+
+#. TRANSLATORS: Label/header for the Background Color options section
+msgid "Background Color"
+msgstr "Farba pozadia"
+
+#. TRANSLATORS: Button label to pick a background color
+msgid "Choose &Background Color..."
+msgstr "Vy&brať farbu pozadia"
+
+#. TRANSLATORS: Button label to restore background color to default values
+msgid "Reset to &Default Background"
+msgstr "Obnoviť pre&dvolené pozadie"
+
+msgid "&Line spacing:"
+msgstr "&Riadkovanie:"
+
+#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
+msgid "Normal"
+msgstr "Normálne"
+
+#. TRANSLATORS: 1.5x line spacing option
+msgid "1.5×"
+msgstr "1,5×"
+
+#. TRANSLATORS: Double line spacing option
+msgid "Double"
+msgstr "Dvojité"
+
+msgid "&Paragraph spacing:"
+msgstr "Rozostu&py odsekov:"
+
+#. TRANSLATORS: Relaxed paragraph spacing option
+msgid "Relaxed"
+msgstr "Voľné"
+
+#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
+msgid "Wide"
+msgstr "Široké"
+
+msgid "L&etter spacing:"
+msgstr "Rozostupy &znakov:"
+
+#. TRANSLATORS: Very Wide letter spacing option
+msgid "Very Wide"
+msgstr "Veľmi široké"
+
+msgid "Text &alignment:"
+msgstr "Z&arovnanie textu:"
+
+#. TRANSLATORS: Left text alignment option
+msgid "Left"
+msgstr "Vľavo"
+
+#. TRANSLATORS: Center text alignment option
+msgid "Center"
+msgstr "V strede"
+
+#. TRANSLATORS: Right text alignment option
+msgid "Right"
+msgstr "Vpravo"
+
+#. TRANSLATORS: Justified text alignment option
+msgid "Justify"
+msgstr "V bloku"
+
+#. TRANSLATORS: Title of the system dialog for picking a background colour
+msgid "Choose a colour"
+msgstr "Vybrať farbu"
+
+#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
+msgid "Play &sounds on bookmarks and notes"
+msgstr "Prehrávať &zvuky pre záložky a poznámky"
+
+#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
+msgid "&Sync caret to audio playback"
+msgstr "&Synchronizovať kurzor podľa prehrávania zvuku"
+
+#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
+msgid "&Audio seek amount:"
+msgstr "Vzdi&alenosť posúvania zvuku"
+
+#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
+msgid "Seeking &past the end of a chapter continues into the next"
+msgstr "&Posunutie za koniec kapitoli pokračuje ďalej"
+
+#. TRANSLATORS: Label of the group of read aloud settings on the Audio tab of Settings: engine, voice, rate, pitch and pauses
+msgid "Read Aloud"
+msgstr "Čítať hlasom"
+
+#. TRANSLATORS: Label of the list of speech engines, such as OneCore or SAPI 5, on the Audio tab of Settings
+msgid "&Engine:"
+msgstr "Hla&sový výstup:"
+
+#. TRANSLATORS: Label of the list of voices on the Audio tab of Settings
+msgid "&Voice:"
+msgstr "&Hlas:"
+
+#. TRANSLATORS: Label of the speech rate slider on the Audio tab of Settings
+msgid "&Rate:"
+msgstr "&Tempo:"
+
+#. TRANSLATORS: Label of the speech pitch slider on the Audio tab of Settings
+msgid "Pi&tch:"
+msgstr "&Výška:"
+
+msgid "Pause after each para&graph (milliseconds):"
+msgstr "Prestávka po každom &odseku (v milisekundách):"
+
+msgid "Use this voice, rate and pitch for this &book only"
+msgstr "Použiť tento hlas, tempo a výšku len pre túto &knihu"
+
+#. TRANSLATORS: Button on the Audio tab of Settings that speaks a sample with the chosen voice, rate and pitch
+msgid "Play Sa&mple"
+msgstr "Prehr&ať ukážku"
+
+#. TRANSLATORS: First choice in the voice list on the Audio tab of Settings, which leaves the choice of voice to the system
+msgid "System default"
+msgstr "Predvolený systémový"
+
+#. TRANSLATORS: Note at the top of the Documents tab of Settings, whose options change how a file is read
+msgid "Changing these reads your open documents again when you press OK."
+msgstr "Keď zmeníte niektoré z týchto nastavení, po stlačení tlačidla OK sa opätovne načítajú otvorené dokumenty."
+
+#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
+msgid "Render tables &inline"
+msgstr "Vnorené spracovanie tabul&iek"
+
+#. TRANSLATORS: Option to join the wrapped lines of a page back into paragraphs, in documents laid out as pages, such as PDFs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
+msgid "&Join wrapped lines into paragraphs"
+msgstr "Spá&jať zalomené riadky do odsekov"
+
+#. TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
+msgid "Remove repeated page &headers and footers"
+msgstr "Odstrániť opakujúce sa &hlavičky a päty"
+
+#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
+msgid "Read text between dollar signs as &math in Markdown"
+msgstr ""
+"Čítať texty obklopené znakmi dolár ako &matematické vzorce v dokumentoch "
+"&Markdown"
+
+#. TRANSLATORS: Label for the dropdown choosing the braille code that Braille Ready Files (BRF) and PEF books are written in, so Paperback can turn their braille back into print
+msgid "&Braille code of BRF and PEF books:"
+msgstr "&Brailová tabuľka pre knihy vo formáte BRF a PEF:"
+
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
 msgstr "Pozadie: Predvolené"
@@ -1152,10 +1525,6 @@ msgstr "Prečiarknuté"
 msgid "Choose a font"
 msgstr "Vybrať písmo"
 
-#. TRANSLATORS: Title of the Settings dialog
-msgid "Settings"
-msgstr "Nastavenia"
-
 #. TRANSLATORS: Option to restore documents that were open when the app was last closed
 msgid "&Restore previously opened documents on startup"
 msgstr "P&ri štarte obnoviť pred tým otvorené dokumenty"
@@ -1163,6 +1532,10 @@ msgstr "P&ri štarte obnoviť pred tým otvorené dokumenty"
 #. TRANSLATORS: Option to automatically reload an open document when its file changes on disk
 msgid "&Automatically reload changed documents"
 msgstr "&Automaticky opätovne načítať zmenené dokumenty"
+
+#. TRANSLATORS: Label for the number of recently opened documents to keep in history
+msgid "Number of &recent documents to show:"
+msgstr "Počet nedávno otvo&rených na zobrazenie:"
 
 #. TRANSLATORS: Option to start the app maximized
 msgid "&Start maximized"
@@ -1172,27 +1545,17 @@ msgstr "&Spustiť maximalizované"
 msgid "&Minimize to system tray"
 msgstr "&Minimalizovať do systémovej oblasti"
 
-#. TRANSLATORS: Option to toggle word wrapping of text
-msgid "&Word wrap"
-msgstr "&Zalamovať slová"
+#. TRANSLATORS: Option to check for app updates automatically on startup
+msgid "Check for &updates on startup"
+msgstr "Skontrolovať akt&ualizácie po spustení"
 
-#. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
-msgid "Render tables &inline"
-msgstr "Vnorené spracovanie tabul&iek"
+#. TRANSLATORS: Label for the language selection dropdown
+msgid "&Language:"
+msgstr "&Jazyk:"
 
-#. TRANSLATORS: Option to join the wrapped lines of a PDF page back into paragraphs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
-msgid "&Join wrapped lines into paragraphs in PDFs"
-msgstr "Spá&jať zalomené riadky v PDF do odsekov"
-
-#. TRANSLATORS: Option to take the headers and footers a PDF repeats on every page out of the text. Turning it off keeps them, which suits a document whose page-edge lines are content.
-msgid "Remove repeated page &headers and footers in PDFs"
-msgstr "Odstrániť opakujúce sa &hlavičky a päty v PDF"
-
-#. TRANSLATORS: Option to read text between dollar signs in Markdown documents, such as $x^2$, as a math formula. Turning it off keeps the dollar signs as plain text, which suits documents that use them for other things, such as shell variables or prices.
-msgid "Read text between dollar signs as &math in Markdown"
-msgstr ""
-"Čítať texty obklopené znakmi dolár ako &matematické vzorce v dokumentoch "
-"&Markdown"
+#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
+msgid "Customize &Keyboard Shortcuts..."
+msgstr "Prispôsobiť &klávesové skratky..."
 
 #. TRANSLATORS: Option to show a compact Go navigation menu in the menu bar
 msgid "Show compact &go menu"
@@ -1210,177 +1573,38 @@ msgstr "Kurzor umie&stňovať na začiatok riadku"
 msgid "&Highlight found text"
 msgstr "&Vysvietiť nájdený text"
 
-#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
-msgid "Play &sounds on bookmarks and notes"
-msgstr "Prehrávať &zvuky pre záložky a poznámky"
-
-#. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
-msgid "&Sync caret to audio playback"
-msgstr "&Synchronizovať kurzor podľa prehrávania zvuku"
-
-#. TRANSLATORS: Label for the audio seek amount dropdown, used when skipping audio narration backward/forward
-msgid "&Audio seek amount:"
-msgstr "Vzdi&alenosť posúvania zvuku"
-
-#. TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
-msgid "Seeking &past the end of a chapter continues into the next"
-msgstr "&Posunutie za koniec kapitoli pokračuje ďalej"
-
-#. TRANSLATORS: Option to check for app updates automatically on startup
-msgid "Check for &updates on startup"
-msgstr "Skontrolovať akt&ualizácie po spustení"
-
-#. TRANSLATORS: Label for the update channel selection dropdown
-msgid "Update Channel:"
-msgstr "Kanál aktualizácií"
-
-#. TRANSLATORS: Stable update channel option
-msgid "Stable"
-msgstr "Stabilný"
-
-#. TRANSLATORS: Developer/development update channel option
-msgid "Dev"
-msgstr "Vývojový"
-
-#. TRANSLATORS: Label for the dropdown choosing how much Paperback writes to its log file
-msgid "Log Level:"
-msgstr "Úroveň záznamu:"
-
-#. TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
-msgid "Customize &Keyboard Shortcuts..."
-msgstr "Prispôsobiť &klávesové skratky..."
-
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
 msgstr "&Rýchlosť čítania (počet slov za minútu):"
 
-#. TRANSLATORS: Label for the number of recently opened documents to keep in history
-msgid "Number of &recent documents to show:"
-msgstr "Počet nedávno otvo&rených na zobrazenie:"
-
-#. TRANSLATORS: Label for the language selection dropdown
-msgid "&Language:"
-msgstr "&Jazyk:"
-
-#. TRANSLATORS: Label/header for the Font options section
-msgid "Font"
-msgstr "Písmo"
-
-#. TRANSLATORS: Button label to pick a font
-msgid "Choose &Font..."
-msgstr "Vybrať &písmo..."
-
-#. TRANSLATORS: Button label to restore font settings to default values
-msgid "&Reset to Default Font"
-msgstr "&Obnoviť predvolené písmo"
-
-#. TRANSLATORS: Label/header for the Background Color options section
-msgid "Background Color"
-msgstr "Farba pozadia"
-
-#. TRANSLATORS: Button label to pick a background color
-msgid "Choose &Background Color..."
-msgstr "Vy&brať farbu pozadia"
-
-#. TRANSLATORS: Button label to restore background color to default values
-msgid "Reset to &Default Background"
-msgstr "Obnoviť pre&dvolené pozadie"
-
-#. TRANSLATORS: Label for the line spacing dropdown
-msgid "&Line spacing:"
-msgstr "&Riadkovanie:"
-
-#. TRANSLATORS: Default spacing option (as opposed to relaxed/wide), shown in the line, paragraph, and letter spacing dropdowns
-msgid "Normal"
-msgstr "Normálne"
-
-#. TRANSLATORS: 1.5x line spacing option
-msgid "1.5×"
-msgstr "1,5×"
-
-#. TRANSLATORS: Double line spacing option
-msgid "Double"
-msgstr "Dvojité"
-
-#. TRANSLATORS: Label for the paragraph spacing dropdown
-msgid "&Paragraph spacing:"
-msgstr "Rozostu&py odsekov:"
-
-#. TRANSLATORS: Relaxed paragraph spacing option
-msgid "Relaxed"
-msgstr "Voľné"
-
-#. TRANSLATORS: Wide spacing option, shown in the paragraph and letter spacing dropdowns
-msgid "Wide"
-msgstr "Široké"
-
-#. TRANSLATORS: Label for the letter spacing dropdown
-msgid "L&etter spacing:"
-msgstr "Rozostupy &znakov:"
-
-#. TRANSLATORS: Very Wide letter spacing option
-msgid "Very Wide"
-msgstr "Veľmi široké"
-
-#. TRANSLATORS: Label for the text alignment dropdown
-msgid "Text &alignment:"
-msgstr "Z&arovnanie textu:"
-
-#. TRANSLATORS: Left text alignment option
-msgid "Left"
-msgstr "Vľavo"
-
-#. TRANSLATORS: Center text alignment option
-msgid "Center"
-msgstr "V strede"
-
-#. TRANSLATORS: Right text alignment option
-msgid "Right"
-msgstr "Vpravo"
-
-#. TRANSLATORS: Justified text alignment option
-msgid "Justify"
-msgstr "V bloku"
+#. TRANSLATORS: Title of the Settings dialog
+msgid "Settings"
+msgstr "Nastavenia"
 
 #. TRANSLATORS: Tab label for the General options panel
 msgid "General"
 msgstr "Všeobecné"
 
-#. TRANSLATORS: Tab label for the Reading options panel
+#. TRANSLATORS: Tab label for the Reading options panel, about moving through and searching a document
 msgid "Reading"
 msgstr "Čítanie"
 
-#. TRANSLATORS: Tab label for the Readability options panel
-msgid "Readability"
-msgstr "Čitateľnosť"
+#. TRANSLATORS: Tab label for the Settings panel about playing audio books and narration
+#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
+msgid "Audio"
+msgstr "Zvuk"
 
-#. TRANSLATORS: Title of the system dialog for picking a background colour
-msgid "Choose a colour"
-msgstr "Vybrať farbu"
+#. TRANSLATORS: Tab label for the Settings panel about how text looks: font, colour, spacing and alignment
+msgid "Appearance"
+msgstr "Vzhľad"
 
-#. TRANSLATORS: Log level choice that turns logging off, so Paperback writes no log file at all
-msgid "Off"
-msgstr "Vypnuté"
+#. TRANSLATORS: Tab label for the Settings panel about how a file is read, such as whether tables are shown inline
+msgid "Documents"
+msgstr "Dokumenty"
 
-#. TRANSLATORS: Log level choice that records only errors
-msgid "Errors"
-msgstr "Chyby"
-
-#. TRANSLATORS: Log level choice that records warnings and errors
-msgid "Warnings"
-msgstr "Upozornenia"
-
-#. TRANSLATORS: Log level choice that records general activity, warnings and errors
-msgid "Information"
-msgstr "Informácie"
-
-#. TRANSLATORS: Log level choice with the detail useful for reporting a bug; the default
-msgid "Debug"
-msgstr "Ladenie"
-
-#. TRANSLATORS: Log level choice that records everything Paperback can, which makes a very large log
-msgid "Trace"
-msgstr "Sledovanie"
+#. TRANSLATORS: Tab label for the Settings panel with options most people never need, such as the update channel and log level
+msgid "Advanced"
+msgstr "Pokročilé"
 
 msgid "System-Wide"
 msgstr "Pre celý systém"
@@ -1567,6 +1791,18 @@ msgstr "Dočasná záložka."
 msgid "%s, page %d"
 msgstr "%s, strana %d"
 
+#. TRANSLATORS: Announced when read aloud is started with nothing left to read after the caret
+msgid "End of document"
+msgstr "Koniec dokumentu"
+
+#. TRANSLATORS: Spoken by the Play Sample button on the Audio tab of Settings
+msgid "This is a sample of the current voice and speed settings."
+msgstr "Toto je ukážka aktuálneho nastavenia hlasu a tempa."
+
+#. TRANSLATORS: Announced when read aloud is asked for on a system Paperback has no speech engine for yet
+msgid "Read aloud isn't available on this system yet."
+msgstr "Čítanie hlasom nie je zatiaľ k dispozícii v tomto systéme."
+
 #. TRANSLATORS: Announcement read by screen readers after following an internal link within the document
 msgid "Navigated to internal link."
 msgstr "Navigácia cez interný odkaz."
@@ -1657,6 +1893,10 @@ msgid "Paperback cannot perform any actions while Web View is open."
 msgstr ""
 "Aplikácia Paperback nemôže vykonávať žiadne akcie, kým je otvorené webové "
 "zobrazenie."
+
+#. TRANSLATORS: Title of a warning dialog
+msgid "Warning"
+msgstr "Upozornenie"
 
 #. TRANSLATORS: First message in the window that downloads documents from links, before the first server answers
 msgid "Connecting..."
@@ -2108,6 +2348,14 @@ msgstr "Skontrolovať akt&ualizácie"
 #. TRANSLATORS: Status-bar help text for the Help > Check for Updates menu item.
 msgid "Check for updates"
 msgstr "Skontrolovať aktualizácie"
+
+#. TRANSLATORS: Menu item in the Help menu that opens a dialog for sending a problem report to the developer.
+msgid "&Report a Problem..."
+msgstr "Nahlásiť p&roblém..."
+
+#. TRANSLATORS: Status-bar help text for the Help > Report a Problem menu item.
+msgid "Send a problem report to the developer"
+msgstr "Nahlásiť problém vývojárom aplikácie"
 
 #. TRANSLATORS: Menu item in the Help menu to open the donation page for the application.
 msgid "&Donate"
@@ -2790,6 +3038,14 @@ msgid "Play/Pause Audio"
 msgstr "Prehrať/Pozastaviť zvuk"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Go to Time..."
+msgstr "Prejsť na čas..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Announce Chapter Progress"
+msgstr "Oznámiť priebeh kapitoly"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Forward"
 msgstr "Posunúť zvuk vpred"
 
@@ -2901,10 +3157,6 @@ msgstr "Upraviť"
 msgid "View"
 msgstr "Zobraziť:"
 
-#. TRANSLATORS: Name of the "Audio" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
-msgid "Audio"
-msgstr "Zvuk"
-
 #. TRANSLATORS: Name of the "Tools" category of keyboard shortcuts, shown as a tab label in the Customize Keyboard Shortcuts dialog
 msgid "Tools"
 msgstr "Nástroje"
@@ -2986,13 +3238,9 @@ msgid "[Image only. This page has no text to read.]"
 msgstr ""
 "[Obsahuje len obrázok. Na tejto strane nie je žiadny text na prečítanie.]"
 
-#. TRANSLATORS: Error shown when opening a comic book archive packed with RAR (.cbr), which Paperback cannot read
-msgid ""
-"Paperback cannot read RAR comic archives. Repack it as a .cbz to read it "
-"here."
-msgstr ""
-"Paperback nedokáže čítať archívy komiksov vo formáte RAR. Prekonvertujte "
-"súbor na .cbz ak ho chcete čítať v aplikácii Paperback."
+#. TRANSLATORS: A table of contents entry for one volume of a braille book; {} is the volume's number
+msgid "Volume {}"
+msgstr "Zväzok {}"
 
 #. TRANSLATORS: Error shown when a comic book archive (.cbz) cannot be opened; {} is the underlying error
 msgid "Failed to parse comic archive: {}"
@@ -3040,6 +3288,7 @@ msgid "Figure"
 msgstr "Ilustrácia"
 
 #. TRANSLATORS: Label standing in for a picture in a WinHelp topic, shown as "[Image]"
+#. TRANSLATORS: Label standing in for a picture in an OS/2 help panel, shown as "[Image]"
 msgid "Image"
 msgstr "Grafika"
 
@@ -3102,6 +3351,10 @@ msgstr "Téma {}"
 #. TRANSLATORS: Error shown when an HTML file has no content; {} is the file path
 msgid "HTML file is empty: {}"
 msgstr "Súbor HTML je prázdny: {}"
+
+#. TRANSLATORS: Error shown when an OS/2 help file (.inf or .hlp) cannot be read; {} is the underlying error
+msgid "Failed to parse OS/2 help file: {}"
+msgstr "Nie je možné prečítať súbor pomocníka OS/2: {}"
 
 #. TRANSLATORS: Error shown when a MOBI file's header is missing Huffman compression parameters
 msgid "Missing HUFF parameters in header"
@@ -3320,6 +3573,14 @@ msgstr ""
 "Zastarané spracovanie súboru DOC zlyhalo: {}. záložné spracovanie OOXML "
 "zlyhalo: {}"
 
+#. TRANSLATORS: Error shown when an XPS document has no pages
+msgid "XPS file contains no pages"
+msgstr "Súbor XPS neobsahuje žiadne strany"
+
+#. TRANSLATORS: Shown in place of an XPS page that has no text, such as a scanned one
+msgid "This page has no text."
+msgstr "Táto strana neobsahuje žiadny text."
+
 #. TRANSLATORS: Error shown when a file has no extension to determine its format; {} is the file path
 msgid "No file extension found for: {}"
 msgstr "Nebola zistená prípona súboru: {}"
@@ -3332,12 +3593,37 @@ msgstr "Nebol nájdený parser pre súbory s príponou: .{}"
 msgid "All parsers failed for extension: .{}"
 msgstr "Všetky parsery zlyhali pre súbor s príponou: .{}"
 
+#. TRANSLATORS: Announced with how far into an audiobook's chapter the reader is: the time left in it; {} is written like 12:05
+msgid "{} left"
+msgstr "{} zostáva"
+
+#. TRANSLATORS: Announced for how far into an audiobook the reader is: the first {} is the time played so far and the second how long it runs, both written like 1:02:03
+msgid "{} of {}"
+msgstr "{} z {}"
+
+#. TRANSLATORS: Announced with how far through a book's chapter the reader is: the number of words left in it. %d is the number.
+msgid "%d word left"
+msgid_plural "%d words left"
+msgstr[0] "zostáva %d slovo"
+msgstr[1] "zostávajú %d slová"
+msgstr[2] "zostáva %d slov"
+
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 msgid "image"
 msgstr "obrázok"
 
+msgid ""
+"Paperback can't open a RAR archive split into parts. Join the parts into one "
+"archive to read it here."
+msgstr ""
+"Paperback nedokáže otvoriť archívy vo formáte RAR rozdelené na časti. "
+"Spojte všetky časti do samostatného archívu, ak ho chcete čítať v aplikácii Paperback."
+
 msgid "Current version is not a valid semver."
 msgstr "Aktuálna verzia nie je platný semver."
+
+msgid "No release has a valid semver tag."
+msgstr "Žiadne vydanie neobsahuje platný tag semver."
 
 msgid "Latest release tag is not a valid semver."
 msgstr "Tag posledného vydania nie je platný semver."
@@ -4143,11 +4429,6 @@ msgstr "Prehrať"
 
 #. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
 #: swift
-msgid "End of document"
-msgstr "Koniec dokumentu"
-
-#. TRANSLATORS: Accessibility announcement spoken when trying to navigate past the start or end of the document
-#: swift
 msgid "Beginning of document"
 msgstr "Začiatok dokumentu"
 
@@ -4397,11 +4678,6 @@ msgstr "Ďalšie možnosti"
 #: swift kt
 msgid "Pause Read Aloud"
 msgstr "Pozastaviť čítanie hlasom"
-
-#. TRANSLATORS: Menu item / accessibility action toggling text-to-speech playback; label names the action that tapping it performs
-#: swift kt
-msgid "Read Aloud"
-msgstr "Čítať hlasom"
 
 #. TRANSLATORS: Menu item / accessibility action to open the export document dialog
 #: kt
@@ -4760,11 +5036,6 @@ msgstr "Vzorec"
 msgid "No matches."
 msgstr "Žiadne výsledky."
 
-#. TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
-#: swift
-msgid "Appearance"
-msgstr "Vzhľad"
-
 #. TRANSLATORS: Appearance option following the phone's own light/dark setting
 #: swift
 msgid "System"
@@ -4835,7 +5106,7 @@ msgstr ""
 #. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by paragraph
 #: kt swift
 msgid "Previous Paragraph"
-msgstr "Predchádzajúca strana"
+msgstr "Predchádzajúci odsek"
 
 #. TRANSLATORS: Accessibility label for the read-aloud bar's previous button when navigating by line
 #: kt swift
@@ -4891,7 +5162,7 @@ msgstr "Zastaviť čítanie po prechode po výsledkoch hľadania"
 #: swift kt
 msgid "Turn off to continue reading while navigating by search matches."
 msgstr ""
-"Vypnite, ak chcete, aby čítanie pokračovalo počas navigácii po výsledkoch "
+"Vypnite, ak chcete, aby čítanie pokračovalo počas navigácie po výsledkoch "
 "hľadania"
 
 #. TRANSLATORS: VoiceOver label for the read-aloud bar's control that speeds up or slows down a book's recorded audio
@@ -4972,6 +5243,19 @@ msgstr "Priemerná dĺžka"
 #: kt
 msgid "Select audio speed"
 msgstr "Vybrať tempo zvuku"
+
+#. TRANSLATORS: Section header in Settings grouping controls for how document text is displayed
+#: kt swift
+msgid "Readability"
+msgstr "Čitateľnosť"
+
+#. TRANSLATORS: Go To mode option: navigate to a time in an audiobook, such as 1:23:45
+#: kt swift
+msgid "Time"
+msgstr "Čas"
+
+#~ msgid "Failed to create IPC server"
+#~ msgstr "Nie je možné spustiť server IPC"
 
 #~ msgid "Window Hotkey"
 #~ msgstr "Okno klávesovej skratky"
