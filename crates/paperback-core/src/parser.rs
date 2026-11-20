@@ -521,6 +521,22 @@ pub fn add_heading_markers_where(
 
 /// Where an entry's heading starts and what it says. An anchor inside the line that is the entry's title, as after a drop cap's letter, heads the whole line, and the line is read as written: such books often space the label the same way ("C HAPTER 1").
 fn toc_heading(buffer: &DocumentBuffer, item: &TocItem) -> (DocPos, String) {
+	title_line(buffer, item)
+		.map_or_else(|| (item.offset, item.name.clone()), |(start, title)| (start, title.to_string()))
+}
+
+/// Moves each entry whose anchor falls inside the line that is its title to that line's start, named as the line reads, so choosing it lands where its heading does.
+pub fn align_toc_to_title_lines(buffer: &DocumentBuffer, items: &mut [TocItem]) {
+	for item in items {
+		if let Some((start, title)) = title_line(buffer, item) {
+			item.offset = start;
+			item.name = title.to_string();
+		}
+		align_toc_to_title_lines(buffer, &mut item.children);
+	}
+}
+
+fn title_line<'a>(buffer: &'a DocumentBuffer, item: &TocItem) -> Option<(DocPos, &'a str)> {
 	let newlines = buffer.newline_positions();
 	let after = newlines.partition_point(|newline| *newline < item.offset);
 	let line_start = if after == 0 { DocPos::ZERO } else { newlines[after - 1] + DocLen::from_raw(1) };
@@ -529,11 +545,12 @@ fn toc_heading(buffer: &DocumentBuffer, item: &TocItem) -> (DocPos, String) {
 	let title = line.trim();
 	let squeezed =
 		|text: &str| text.chars().filter(|c| !c.is_whitespace()).flat_map(char::to_lowercase).collect::<String>();
-	if title.is_empty() || squeezed(title) != squeezed(&item.name) {
-		return (item.offset, item.name.clone());
+	let start = line_start + DocLen::from_raw(line.chars().take_while(|c| c.is_whitespace()).count());
+	// An anchor at the start of its line already lands right, and its label may well be truer than the text, which can split a word ("Un compromised").
+	if item.offset <= start || title.is_empty() || squeezed(title) != squeezed(&item.name) {
+		return None;
 	}
-	let indent = line.chars().take_while(|c| c.is_whitespace()).count();
-	(line_start + DocLen::from_raw(indent), title.to_string())
+	Some((start, title))
 }
 
 /// Skips entries whose span already holds a real heading, so a well-marked-up book is left alone and nothing is announced twice; classic Gutenberg EPUBs and old CHMs and MOBIs need this.
