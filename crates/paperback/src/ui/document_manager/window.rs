@@ -103,7 +103,7 @@ impl DocumentManager {
 		}
 		let previous_end = tab.window.end();
 		tab.window = extended;
-		// A burst of these with the caret pinned at the loaded end means the append moved the caret, which `append_rtf_into_ctrl` saves the selection to prevent.
+		// A burst of these with the caret pinned at the loaded end means the append moved the caret, which both of `append_slice_to_ctrl`'s appends save the selection to prevent.
 		tracing::debug!(
 			caret = tab.window.to_doc(tab.text_ctrl.get_insertion_point()).get(),
 			from_end = previous_end.get(),

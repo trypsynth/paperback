@@ -410,7 +410,7 @@ impl ReadingLayout {
 			.take_while(|marker| marker.position < end)
 			.filter_map(|marker| {
 				let offset = marker.position.get().checked_sub(content_start.get())?;
-				let length = if marker.length.is_zero() { DocLen::of(&marker.text).get() } else { marker.length.get() };
+				let length = marker.link_len().get();
 				(offset < text_len && length > 0).then(|| ReadingLinkFfi {
 					position: marker.position,
 					start: to_i64(offset),

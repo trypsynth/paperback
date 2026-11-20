@@ -51,7 +51,7 @@ jobs:
       # deliberate change with the reformat in the same commit.
       - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: nightly-2026-11-09
+          toolchain: nightly-2026-11-18
           components: rustfmt
       - name: Check formatting
         run: cargo fmt --check
