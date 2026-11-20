@@ -169,13 +169,13 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h2 id="momenteel-ondersteunde-bestandstypen">Momenteel ondersteunde bestandstypen</h2>
 <p>Paperback ondersteunt de volgende indelingen en extensies:</p>
 <ul>
-<li>BARD-brailleboeken van de National Library Service, gelezen als één boek van al hun volumes, teruggezet met de braillecode die in hun pakket wordt genoemd (de <code>.zip</code> die BARD download, of de <code>.bopf</code> ervan na uitpakken)</li>
-<li>Braille Ready Files en Portable Embosser Format-boeken, teruggezet naar druk met de brailletabel van jouw keuze (<code>.brf</code>, <code>.pef</code>)</li>
+<li>BARD-brailleboeken van de National Library Service, gelezen als één boek met al hun banden, terugvertaald met de braillecode die in hun pakket staat (de <code>.zip</code> die je van BARD downloadt, of de <code>.bopf</code> ervan na het uitpakken)</li>
+<li>Braille Ready Files en boeken in Portable Embosser Format, terugvertaald naar zwartschrift met de brailletabel die je kiest (<code>.brf</code>, <code>.pef</code>)</li>
 <li>Comicarchieven (<code>.cbz</code>, <code>.cbr</code>)</li>
 <li>CHM-helpbestanden (<code>.chm</code>)</li>
 <li>DAISY-boeken (<code>.opf</code>, <code>.zip</code>)</li>
-<li>eBraille-boeken, gelezen in druk als ze die bevatten, en anders teruggezet met de braillecode die ze aangeven (<code>.ebrl</code>, of de <code>.opf</code> van een die niet gecomprimeerd is)</li>
-<li>EPUB-boeken (<code>.epub</code>, of de <code>.opf</code> van een die niet gecomprimeerd is)</li>
+<li>eBraille-boeken, in zwartschrift gelezen als ze dat bevatten, en anders terugvertaald met de braillecode die ze noemen (<code>.ebrl</code>, of de <code>.opf</code> van een boek dat niet gecomprimeerd is)</li>
+<li>EPUB-boeken (<code>.epub</code>, of de <code>.opf</code> van een boek dat niet gecomprimeerd is)</li>
 <li>FB2-e-books (<code>.fb2</code>)</li>
 <li>GNU Info-handleidingen (<code>.info</code>, met of zonder gzip, en gesplitste handleidingen geopend vanaf een van hun onderdelen)</li>
 <li>HTML-documenten (<code>.htm</code>, <code>.html</code>, <code>.shtml</code>, <code>.xhtml</code>)</li>
@@ -190,18 +190,18 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>OS/2-helpbestanden en -boeken, met hun afbeeldingen (<code>.inf</code>, <code>.hlp</code>)</li>
 <li>PDF-documenten (<code>.pdf</code>)</li>
 <li>PowerPoint-presentaties (<code>.pptx</code>, <code>.pptm</code>, <code>.ppt</code>)</li>
-<li>RAR-archieven van boeken, die openen als een ZIP-bestand, met een lijst om uit te kiezen als er meerdere in zitten (<code>.rar</code>)</li>
+<li>RAR-archieven van boeken, die net als een ZIP-bestand worden geopend, met een lijst om uit te kiezen als er meerdere in zitten (<code>.rar</code>)</li>
 <li>reStructuredText-documenten (<code>.rst</code>, <code>.rest</code>)</li>
 <li>RTF-documenten (<code>.rtf</code>)</li>
 <li>Windows Write-documenten (<code>.wri</code>)</li>
 <li>WinHelp-bestanden (<code>.hlp</code>)</li>
-<li>XPS en OpenXPS-documenten (<code>.xps</code>, <code>.oxps</code>)</li>
+<li>XPS- en OpenXPS-documenten (<code>.xps</code>, <code>.oxps</code>)</li>
 <li>Plattetekst- en logbestanden (<code>.txt</code>, <code>.log</code>)</li>
 </ul>
 <h2 id="sneltoetsen">Sneltoetsen</h2>
 <p>Paperback is ontworpen voor toetsenbordgericht gebruik. Hieronder staan de huidige sneltoetsen.</p>
 <p>De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equivalent tussen haakjes — vooral omdat Ctrl+G, Ctrl+W en Alt+Links/Rechts op dat platform al bezet zijn door andere systeem- of appconventies.</p>
-<p>Leestekenssneltoetsen krijgen hun naam van de toetsen van een amerikaans toetsenbord. Op een ander toetsenbordindeling druk je op de toets op dezelfde plaats, ongeacht het label: op een Hongaars toetsenbord werkt de toets met label <code>é</code> als <code>;</code> en die met label <code>á</code> als <code>'</code>, dus <code>Ctrl+'</code> betekent Ctrl en de <code>á</code>-toets. Menu’s tonen nog steeds de amerikaanse namen. Op macOS tonen menu’s in plaats daarvan de toetsen die jouw indeling gebruikt.</p>
+<p>Sneltoetsen met leestekens zijn genoemd naar de toetsen van een Amerikaans toetsenbord. Op een andere toetsenbordindeling druk je op de toets op dezelfde plek, wat er ook op staat: op een Hongaars toetsenbord werkt de toets met <code>é</code> als <code>;</code> en die met <code>á</code> als <code>'</code>, dus <code>Ctrl+'</code> betekent Ctrl en de <code>á</code>-toets. Menu’s tonen nog steeds de Amerikaanse namen. Op macOS tonen menu’s in plaats daarvan de toetsen die je eigen indeling gebruikt.</p>
 <h3 id="menu-bestand">Menu Bestand</h3>
 <ul>
 <li><code>Ctrl+O</code>: Een document openen.</li>
@@ -241,7 +241,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><code>Ctrl+G</code> (macOS: <code>Cmd+L</code>): Ga naar regel.</li>
 <li><code>Ctrl+Shift+G</code> (macOS: <code>Cmd+Shift+L</code>): Ga naar percentage.</li>
 <li><code>Ctrl+P</code>: Ga naar pagina (indien ondersteund door het huidige document).</li>
-<li><code>=</code>: Je huidige leespercentage en pagina melden, bijvoorbeeld “15%, pagina 30”. Bij documenten zonder paginanummers wordt de pagina weggelaten. In een audioboek volgen je voortgang en de totale duur erna, bijvoorbeeld “15%, 1:02:03 van 10:30:00”.</li>
+<li><code>=</code>: Je huidige leespercentage en pagina melden, bijvoorbeeld “15%, pagina 30”. Bij documenten zonder paginanummers wordt de pagina weggelaten. In een audioboek volgen daarna hoe ver je bent en hoe lang het duurt, bijvoorbeeld “15%, 1:02:03 van 10:30:00”.</li>
 <li><code>Alt+Links</code> (macOS: <code>Cmd+[</code>): Terug in navigatiegeschiedenis.</li>
 <li><code>Alt+Rechts</code> (macOS: <code>Cmd+]</code>): Vooruit in navigatiegeschiedenis.</li>
 <li><code>[</code>: Vorige sectie.</li>
@@ -289,8 +289,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="menu-audio">Menu Audio</h3>
 <ul>
 <li><code>Ctrl+Spatie</code> (macOS: <code>Control+Spatie</code>, oftewel de fysieke Control-toets, omdat Cmd+Spatie Spotlight opent): Audio afspelen/pauzeren.</li>
-<li><code>Ctrl+J</code>: Naar een bepaald moment in de opname gaan. Typ het als <code>1:23:45</code>, <code>23:45</code> of <code>45</code> seconden, of zet <code>+</code> of <code>-</code> ervoor om vanuit jouw huidige positie te verplaatsen, bijvoorbeeld <code>+5:00</code>. Het venster toont hoe ver je bent en hoe lang het boek duurt.</li>
-<li><code>Shift+=</code>: Melden hoe ver je in dit hoofdstuk bent en hoeveel er nog over is, bijvoorbeeld “Hoofdstuk 3, 4:10 van 12:00, 7:50 resterend”. In een boek zonder geluidsopname het percentage door het hoofdstuk en het aantal woorden dat er nog in over is, bijvoorbeeld “Hoofdstuk 3, 42%, 1850 woorden resterend”.</li>
+<li><code>Ctrl+J</code>: Ga naar een tijdstip in de opname. Typ het als <code>1:23:45</code>, <code>23:45</code> of <code>45</code> seconden, of zet er <code>+</code> of <code>-</code> voor om vanaf je huidige positie te verspringen, bijvoorbeeld <code>+5:00</code>. Het venster toont hoe ver je bent en hoe lang het boek duurt.</li>
+<li><code>Shift+=</code>: Melden hoe ver je in dit hoofdstuk bent en hoeveel er nog over is, bijvoorbeeld “Hoofdstuk 3, 4:10 van 12:00, 7:50 resterend”. In een boek zonder opgenomen audio is dat het percentage van het hoofdstuk en het aantal woorden dat nog over is, bijvoorbeeld “Hoofdstuk 3, 42%, 1850 woorden resterend”.</li>
 <li><code>'</code>: Audio vooruitspoelen.</li>
 <li><code>;</code>: Audio terugspoelen.</li>
 <li><code>Shift+'</code>: De audiospoelstap vergroten.</li>
@@ -343,7 +343,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <ul>
 <li>De navigatie-eenheid, zoals alinea, kop, pagina of link. Veeg erop omhoog of omlaag om die te wijzigen.</li>
 <li>De knoppen Vorige, Afspelen en Volgende. Vorige en Volgende navigeren per navigatie-eenheid.</li>
-<li>De spreeksnelheid. Veeg erop omhoog of omlaag om te wijzigen hoe snel Paperback voorleest.</li>
+<li>De spraaksnelheid. Veeg erop omhoog of omlaag om te wijzigen hoe snel Paperback voorleest.</li>
 </ul>
 <p>Je kunt ook omhoog of omlaag vegen op de afspeelknop om per navigatie-eenheid te navigeren, zonder naar de knoppen Vorige en Volgende te hoeven gaan. Als je alleen dat gebruikt, haalt de instelling Knoppen voor vorige en volgende verbergen ze uit de weg van je schermlezer. De instelling Omhoog vegen gaat vooruit bepaalt welke kant een veeg op gaat.</p>
 <h3 id="meer-opties">Meer opties</h3>
@@ -362,7 +362,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><strong>Help:</strong> opent deze handleiding.</li>
 <li><strong>Instellingen:</strong>
 <ul>
-<li><strong>Tekst-naar-spraak:</strong> de stem, spreeksnelheid en toonhoogte, een knop Voorbeeld afspelen om ze te horen, en de pauze tussen alinea’s. Op Android kun je hier ook de spraakengine kiezen. Op iOS vind je hier ook het uitspraakwoordenboek: regels die veranderen hoe woorden worden uitgesproken, voor elke stem of alleen voor sommige.</li>
+<li><strong>Tekst-naar-spraak:</strong> de stem, spraaksnelheid en toonhoogte, een knop Voorbeeld afspelen om ze te horen, en de pauze tussen alinea’s. Op Android kun je hier ook de spraakengine kiezen. Op iOS vind je hier ook het uitspraakwoordenboek: regels die veranderen hoe woorden worden uitgesproken, voor elke stem of alleen voor sommige.</li>
 <li><strong>Leesbaarheid:</strong> tekstgrootte, regelafstand, alinea-afstand, uitlijning en tekst met hoog contrast. iOS heeft ook een lichte en een donkere weergave.</li>
 <li><strong>Gedrag:</strong> of je documenten opnieuw worden geopend wanneer de app start, welke kant een veeg op de afspeelknop op gaat, en of de knoppen Vorige en Volgende worden verborgen. Op Android staat hier ook de bestandsbrowser in de app.</li>
 </ul>
@@ -486,12 +486,12 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Tekstmodus wordt onthouden.</li>
 <li>Doorgaan met lezen na Zoeken.</li>
 <li>iOS: tekstmodus opnieuw gebouwd voor VoiceOver. Alles laten voorlezen gaat door het hele boek, de rotors kunnen de hele inhoud bereiken, lijsten en tabellen zijn echte lijsten en tabellen, vegen met drie vingers slaat pagina’s om, en tikken met drie vingers geeft de pagina en het percentage.</li>
-<li>iOS: een stem, spreeksnelheid en toonhoogte per boek, via Spraak voor dit boek.</li>
+<li>iOS: een stem, snelheid en toonhoogte per boek, via Spraak voor dit boek.</li>
 <li>iOS: met een wachtwoord beveiligde documenten.</li>
 <li>iOS: gecomprimeerde DAISY-boeken en MP3-audioboeken delen met Paperback.</li>
 <li>iOS: de slaaptimer stopt audioboeken.</li>
 <li>iOS: Slowaaks en Oekraïens.</li>
-<li>Android: wijzigingen in spreeksnelheid en toonhoogte gelden voor de alinea die wordt voorgelezen, en werken met de standaardengine van het systeem.</li>
+<li>Android: wijzigingen in snelheid en toonhoogte gelden voor de alinea die wordt voorgelezen, en werken met de standaardengine van het systeem.</li>
 <li>Android: draait op x86_64-apparaten.</li>
 </ul>
 <h5 id="macos">macOS</h5>
@@ -692,7 +692,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h4 id="ios-en-android-3">iOS en Android</h4>
 <p>De iOS- en Android-apps openen elke indeling die de desktopversie ondersteunt, en bevatten:</p>
 <ul>
-<li>Voorlezen, met je eigen keuze van stem, snelheid en toonhoogte, een regelaar voor de spreeksnelheid direct op de leesbalk, en een optionele pauze tussen alinea’s.</li>
+<li>Voorlezen, met je eigen keuze van stem, snelheid en toonhoogte, een regelaar voor de spraaksnelheid direct op de leesbalk, en een optionele pauze tussen alinea’s.</li>
 <li>Afspelen van DAISY-, M4B- en MP3-audioboeken, dat doorgaat op de achtergrond en vanaf het vergrendelscherm.</li>
 <li>Navigatie per kop, pagina, link, tabel, lijst en meer vanaf de leesbalk, plus de inhoudsopgave en Zoeken.</li>
 <li>Een slaaptimer, woordenaantal en documentexport, plus een uitspraakwoordenboek op iOS. Op iOS loopt exporteren via het deelmenu, zodat een boek naar een andere app of naar Bestanden kan, in een andere indeling of precies zoals het is.</li>
