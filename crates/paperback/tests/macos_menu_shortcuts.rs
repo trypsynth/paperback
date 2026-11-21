@@ -73,23 +73,12 @@ fn link_session() -> paperback_core::session::DocumentSession {
 
 #[cfg(target_os = "macos")]
 mod native {
-	use std::{cell::RefCell, ffi::CString, rc::Rc};
+	use std::{cell::RefCell, rc::Rc};
 
-	use objc::{Encode, Encoding, class, msg_send, runtime::Object, sel, sel_impl};
+	use objc2::MainThreadMarker;
+	use objc2_app_kit::{NSApplication, NSEvent, NSEventModifierFlags, NSEventType, NSView};
+	use objc2_foundation::{NSPoint, NSString};
 	use wxdragon::prelude::*;
-
-	#[repr(C)]
-	#[derive(Clone, Copy)]
-	struct Point {
-		x: f64,
-		y: f64,
-	}
-
-	unsafe impl Encode for Point {
-		fn encode() -> Encoding {
-			unsafe { Encoding::from_str("{CGPoint=dd}") }
-		}
-	}
 
 	pub const COMMAND: usize = 1 << 20;
 	pub const SHIFT: usize = 1 << 17;
@@ -97,28 +86,25 @@ mod native {
 	pub const OPTION: usize = 1 << 19;
 
 	pub fn send_key(frame: impl WxWidget + Copy, text: &str, modifiers: usize, hardware_key: u16) {
-		let text = CString::new(text).unwrap();
-		unsafe {
-			let string: *mut Object = msg_send![class!(NSString), stringWithUTF8String: text.as_ptr()];
-			let view = frame.get_handle().cast::<Object>();
-			let window: *mut Object = msg_send![view, window];
-			let number: isize = msg_send![window, windowNumber];
-			let event: *mut Object = msg_send![class!(NSEvent),
-				keyEventWithType: 10_usize
-				location: Point { x: 0.0, y: 0.0 }
-				modifierFlags: modifiers
-				timestamp: 0.0_f64
-				windowNumber: number
-				context: std::ptr::null_mut::<Object>()
-				characters: string
-				charactersIgnoringModifiers: string
-				isARepeat: false
-				keyCode: hardware_key
-			];
-			assert!(!event.is_null());
-			let app: *mut Object = msg_send![class!(NSApplication), sharedApplication];
-			let _: () = msg_send![app, sendEvent: event];
-		}
+		let main_thread = MainThreadMarker::new().expect("on the main thread");
+		let string = NSString::from_str(text);
+		// wxWidgets owns the frame's view while the test runs.
+		let view = unsafe { &*frame.get_handle().cast::<NSView>() };
+		let window = view.window().expect("the frame has a window");
+		let event = NSEvent::keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCode(
+			NSEventType::KeyDown,
+			NSPoint::new(0.0, 0.0),
+			NSEventModifierFlags(modifiers),
+			0.0,
+			window.windowNumber(),
+			None,
+			&string,
+			&string,
+			false,
+			hardware_key,
+		)
+		.expect("a key event");
+		NSApplication::sharedApplication(main_thread).sendEvent(&event);
 	}
 
 	pub fn expect_command(

@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: ba700ddfbaf3e99f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,b8a00464,74f0c8e7,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: b1e8b46ff69081ba; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versie 1.1
 
@@ -48,15 +48,16 @@ Als JAWS niets zegt wanneer je op een toets drukt die iets zou moeten melden, op
 
 Paperback ondersteunt de volgende indelingen en extensies:
 
-* Braille Ready Files en Portable Embosser Format-boeken, teruggezet naar druk met de brailletabel van jouw keuze (`.brf`, `.pef`)
+* BARD-brailleboeken van de National Library Service, gelezen als één boek met al hun banden, terugvertaald met de braillecode die in hun pakket staat (de `.zip` die je van BARD downloadt, of de `.bopf` ervan na het uitpakken)
+* Braille Ready Files en boeken in Portable Embosser Format, terugvertaald naar zwartschrift met de brailletabel die je kiest (`.brf`, `.pef`)
 * Comicarchieven (`.cbz`, `.cbr`)
 * CHM-helpbestanden (`.chm`)
 * DAISY-boeken (`.opf`, `.zip`)
-* eBraille-boeken, gelezen in druk als ze die bevatten, en anders teruggezet met de braillecode die ze aangeven (`.ebrl`, of de `.opf` van een die niet gecomprimeerd is)
-* EPUB-boeken (`.epub`, of de `.opf` van een die niet gecomprimeerd is)
+* eBraille-boeken, in zwartschrift gelezen als ze dat bevatten, en anders terugvertaald met de braillecode die ze noemen (`.ebrl`, of de `.opf` van een boek dat niet gecomprimeerd is)
+* EPUB-boeken (`.epub`, of de `.opf` van een boek dat niet gecomprimeerd is)
 * FB2-e-books (`.fb2`)
 * GNU Info-handleidingen (`.info`, met of zonder gzip, en gesplitste handleidingen geopend vanaf een van hun onderdelen)
-* HTML-documenten (`.htm`, `.html`, `.xhtml`)
+* HTML-documenten (`.htm`, `.html`, `.shtml`, `.xhtml`)
 * Manual pages, zowel `man` als BSD `mdoc` (`.1` t/m `.9`, `.man`, `.roff` en de met gzip gecomprimeerde vormen daarvan)
 * Markdown-documenten (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Microsoft Word-documenten (`.docx`, `.docm`, `.doc`)
@@ -68,12 +69,12 @@ Paperback ondersteunt de volgende indelingen en extensies:
 * OS/2-helpbestanden en -boeken, met hun afbeeldingen (`.inf`, `.hlp`)
 * PDF-documenten (`.pdf`)
 * PowerPoint-presentaties (`.pptx`, `.pptm`, `.ppt`)
-* RAR-archieven van boeken, die openen als een ZIP-bestand, met een lijst om uit te kiezen als er meerdere in zitten (`.rar`)
+* RAR-archieven van boeken, die net als een ZIP-bestand worden geopend, met een lijst om uit te kiezen als er meerdere in zitten (`.rar`)
 * reStructuredText-documenten (`.rst`, `.rest`)
 * RTF-documenten (`.rtf`)
 * Windows Write-documenten (`.wri`)
 * WinHelp-bestanden (`.hlp`)
-* XPS en OpenXPS-documenten (`.xps`, `.oxps`)
+* XPS- en OpenXPS-documenten (`.xps`, `.oxps`)
 * Plattetekst- en logbestanden (`.txt`, `.log`)
 
 ## Sneltoetsen
@@ -82,7 +83,7 @@ Paperback is ontworpen voor toetsenbordgericht gebruik. Hieronder staan de huidi
 
 De sneltoetsen hieronder gelden voor Windows. Waar macOS afwijkt, staat het equivalent tussen haakjes — vooral omdat Ctrl+G, Ctrl+W en Alt+Links/Rechts op dat platform al bezet zijn door andere systeem- of appconventies.
 
-Leestekenssneltoetsen krijgen hun naam van de toetsen van een amerikaans toetsenbord. Op een ander toetsenbordindeling druk je op de toets op dezelfde plaats, ongeacht het label: op een Hongaars toetsenbord werkt de toets met label `é` als `;` en die met label `á` als `'`, dus `Ctrl+'` betekent Ctrl en de `á`-toets. Menu's tonen nog steeds de amerikaanse namen. Op macOS tonen menu's in plaats daarvan de toetsen die jouw indeling gebruikt.
+Sneltoetsen met leestekens zijn genoemd naar de toetsen van een Amerikaans toetsenbord. Op een andere toetsenbordindeling druk je op de toets op dezelfde plek, wat er ook op staat: op een Hongaars toetsenbord werkt de toets met `é` als `;` en die met `á` als `'`, dus `Ctrl+'` betekent Ctrl en de `á`-toets. Menu's tonen nog steeds de Amerikaanse namen. Op macOS tonen menu's in plaats daarvan de toetsen die je eigen indeling gebruikt.
 
 ### Menu Bestand
 
@@ -123,7 +124,7 @@ Leestekenssneltoetsen krijgen hun naam van de toetsen van een amerikaans toetsen
 * `Ctrl+G` (macOS: `Cmd+L`): Ga naar regel.
 * `Ctrl+Shift+G` (macOS: `Cmd+Shift+L`): Ga naar percentage.
 * `Ctrl+P`: Ga naar pagina (indien ondersteund door het huidige document).
-* `=`: Je huidige leespercentage en pagina melden, bijvoorbeeld "15%, pagina 30". Bij documenten zonder paginanummers wordt de pagina weggelaten. In een audioboek volgen je voortgang en de totale duur erna, bijvoorbeeld "15%, 1:02:03 van 10:30:00".
+* `=`: Je huidige leespercentage en pagina melden, bijvoorbeeld "15%, pagina 30". Bij documenten zonder paginanummers wordt de pagina weggelaten. In een audioboek volgen daarna hoe ver je bent en hoe lang het duurt, bijvoorbeeld "15%, 1:02:03 van 10:30:00".
 * `Alt+Links` (macOS: `Cmd+[`): Terug in navigatiegeschiedenis.
 * `Alt+Rechts` (macOS: `Cmd+]`): Vooruit in navigatiegeschiedenis.
 * `[`: Vorige sectie.
@@ -171,8 +172,8 @@ Leestekenssneltoetsen krijgen hun naam van de toetsen van een amerikaans toetsen
 ### Menu Audio
 
 * `Ctrl+Spatie` (macOS: `Control+Spatie`, oftewel de fysieke Control-toets, omdat Cmd+Spatie Spotlight opent): Audio afspelen/pauzeren.
-* `Ctrl+J`: Naar een bepaald moment in de opname gaan. Typ het als `1:23:45`, `23:45` of `45` seconden, of zet `+` of `-` ervoor om vanuit jouw huidige positie te verplaatsen, bijvoorbeeld `+5:00`. Het venster toont hoe ver je bent en hoe lang het boek duurt.
-* `Shift+=`: Melden hoe ver je in dit hoofdstuk bent en hoeveel er nog over is, bijvoorbeeld "Hoofdstuk 3, 4:10 van 12:00, 7:50 resterend".
+* `Ctrl+J`: Ga naar een tijdstip in de opname. Typ het als `1:23:45`, `23:45` of `45` seconden, of zet er `+` of `-` voor om vanaf je huidige positie te verspringen, bijvoorbeeld `+5:00`. Het venster toont hoe ver je bent en hoe lang het boek duurt.
+* `Shift+=`: Melden hoe ver je in dit hoofdstuk bent en hoeveel er nog over is, bijvoorbeeld "Hoofdstuk 3, 4:10 van 12:00, 7:50 resterend". In een boek zonder opgenomen audio is dat het percentage van het hoofdstuk en het aantal woorden dat nog over is, bijvoorbeeld "Hoofdstuk 3, 42%, 1850 woorden resterend".
 * `'`: Audio vooruitspoelen.
 * `;`: Audio terugspoelen.
 * `Shift+'`: De audiospoelstap vergroten.
@@ -231,7 +232,7 @@ De balk onderaan het scherm bevat, van links naar rechts:
 
 * De navigatie-eenheid, zoals alinea, kop, pagina of link. Veeg erop omhoog of omlaag om die te wijzigen.
 * De knoppen Vorige, Afspelen en Volgende. Vorige en Volgende navigeren per navigatie-eenheid.
-* De spreeksnelheid. Veeg erop omhoog of omlaag om te wijzigen hoe snel Paperback voorleest.
+* De spraaksnelheid. Veeg erop omhoog of omlaag om te wijzigen hoe snel Paperback voorleest.
 
 Je kunt ook omhoog of omlaag vegen op de afspeelknop om per navigatie-eenheid te navigeren, zonder naar de knoppen Vorige en Volgende te hoeven gaan. Als je alleen dat gebruikt, haalt de instelling Knoppen voor vorige en volgende verbergen ze uit de weg van je schermlezer. De instelling Omhoog vegen gaat vooruit bepaalt welke kant een veeg op gaat.
 
@@ -251,7 +252,7 @@ In het menu Meer opties vind je al het andere. Sommige items werken in elke app 
 * **Slaaptimer:** stopt het lezen na 5, 10, 15, 30, 45 of 60 minuten, of na een tijd die je zelf opgeeft. Open hem opnieuw terwijl hij loopt om te zien hoeveel tijd er nog over is, of om hem te annuleren.
 * **Help:** opent deze handleiding.
 * **Instellingen:**
-    * **Tekst-naar-spraak:** de stem, spreeksnelheid en toonhoogte, een knop Voorbeeld afspelen om ze te horen, en de pauze tussen alinea's. Op Android kun je hier ook de spraakengine kiezen. Op iOS vind je hier ook het uitspraakwoordenboek: regels die veranderen hoe woorden worden uitgesproken, voor elke stem of alleen voor sommige.
+    * **Tekst-naar-spraak:** de stem, spraaksnelheid en toonhoogte, een knop Voorbeeld afspelen om ze te horen, en de pauze tussen alinea's. Op Android kun je hier ook de spraakengine kiezen. Op iOS vind je hier ook het uitspraakwoordenboek: regels die veranderen hoe woorden worden uitgesproken, voor elke stem of alleen voor sommige.
     * **Leesbaarheid:** tekstgrootte, regelafstand, alinea-afstand, uitlijning en tekst met hoog contrast. iOS heeft ook een lichte en een donkere weergave.
     * **Gedrag:** of je documenten opnieuw worden geopend wanneer de app start, welke kant een veeg op de afspeelknop op gaat, en of de knoppen Vorige en Volgende worden verborgen. Op Android staat hier ook de bestandsbrowser in de app.
 
@@ -375,12 +376,12 @@ Let op: een openbare GitHub-sponsor beschouw ik als grond voor automatische opna
 * Tekstmodus wordt onthouden.
 * Doorgaan met lezen na Zoeken.
 * iOS: tekstmodus opnieuw gebouwd voor VoiceOver. Alles laten voorlezen gaat door het hele boek, de rotors kunnen de hele inhoud bereiken, lijsten en tabellen zijn echte lijsten en tabellen, vegen met drie vingers slaat pagina's om, en tikken met drie vingers geeft de pagina en het percentage.
-* iOS: een stem, spreeksnelheid en toonhoogte per boek, via Spraak voor dit boek.
+* iOS: een stem, snelheid en toonhoogte per boek, via Spraak voor dit boek.
 * iOS: met een wachtwoord beveiligde documenten.
 * iOS: gecomprimeerde DAISY-boeken en MP3-audioboeken delen met Paperback.
 * iOS: de slaaptimer stopt audioboeken.
 * iOS: Slowaaks en Oekraïens.
-* Android: wijzigingen in spreeksnelheid en toonhoogte gelden voor de alinea die wordt voorgelezen, en werken met de standaardengine van het systeem.
+* Android: wijzigingen in snelheid en toonhoogte gelden voor de alinea die wordt voorgelezen, en werken met de standaardengine van het systeem.
 * Android: draait op x86_64-apparaten.
 
 ##### macOS
@@ -563,7 +564,7 @@ Let op: een openbare GitHub-sponsor beschouw ik als grond voor automatische opna
 
 De iOS- en Android-apps openen elke indeling die de desktopversie ondersteunt, en bevatten:
 
-* Voorlezen, met je eigen keuze van stem, snelheid en toonhoogte, een regelaar voor de spreeksnelheid direct op de leesbalk, en een optionele pauze tussen alinea's.
+* Voorlezen, met je eigen keuze van stem, snelheid en toonhoogte, een regelaar voor de spraaksnelheid direct op de leesbalk, en een optionele pauze tussen alinea's.
 * Afspelen van DAISY-, M4B- en MP3-audioboeken, dat doorgaat op de achtergrond en vanaf het vergrendelscherm.
 * Navigatie per kop, pagina, link, tabel, lijst en meer vanaf de leesbalk, plus de inhoudsopgave en Zoeken.
 * Een slaaptimer, woordenaantal en documentexport, plus een uitspraakwoordenboek op iOS. Op iOS loopt exporteren via het deelmenu, zodat een boek naar een andere app of naar Bestanden kan, in een andere indeling of precies zoals het is.

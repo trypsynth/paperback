@@ -13,7 +13,7 @@ fn html_converter_emits_table_inline_or_placeholder(#[case] inline: bool) {
 	let html = concat!(
 		"<html><body>",
 		"<p>Intro</p>",
-		"<table><tr><td>A</td><td>B</td></tr></table>",
+		"<table><tr><th>A</th><td>B</td></tr></table>",
 		"<h2>After heading</h2>",
 		"</body></html>"
 	);
@@ -137,7 +137,7 @@ fn test_ordered_list_metadata() {
 
 #[test]
 fn test_table_caption_fallback() {
-	let html = "<html><body><table><tr><td>Header</td></tr></table></body></html>";
+	let html = "<html><body><table><tr><th>Header</th></tr></table></body></html>";
 	let mut converter = HtmlToText::new();
 	converter.convert(html, HtmlSourceMode::NativeHtml);
 	let tables = converter.get_tables();
@@ -222,7 +222,7 @@ fn clear_resets_converter_state() {
 #[test]
 fn html_table_length_counts_positions_not_bytes() {
 	let html =
-		concat!("<html><body><p>Intro</p>", "<table><tr><td>A</td><td>\u{1D11E}</td></tr></table>", "</body></html>");
+		concat!("<html><body><p>Intro</p>", "<table><tr><th>A</th><td>\u{1D11E}</td></tr></table>", "</body></html>");
 	let mut converter = HtmlToText::with_render_tables_inline(true);
 	converter.convert(html, HtmlSourceMode::NativeHtml);
 	let tables = converter.get_tables();
@@ -237,8 +237,8 @@ fn html_table_length_counts_positions_not_bytes() {
 fn html_two_tables_offsets_are_cumulative() {
 	let html = concat!(
 		"<html><body>",
-		"<table><tr><td>X</td></tr></table>",
-		"<table><tr><td>Y</td></tr></table>",
+		"<table><tr><th>X</th></tr></table>",
+		"<table><tr><th>Y</th></tr></table>",
 		"</body></html>"
 	);
 	let mut converter = HtmlToText::new();
@@ -463,4 +463,19 @@ fn a_document_nested_far_deeper_than_the_stack_still_converts() {
 	let body = format!("{}deep text{}", "<span>".repeat(depth), "</span>".repeat(depth));
 	let converter = converted_body(&body);
 	assert_eq!(converter.get_text(), "deep text");
+}
+
+/// #1310: an old site's page in a table, its menu in one cell and the text in the other, reads as that text, not as a table on one line.
+#[test]
+fn a_page_laid_out_in_a_table_reads_as_its_text() {
+	let converter = converted_body(concat!(
+		"<table id=\"layout\"><tr>",
+		"<td><ul><li><a href=\"index.html\">Home</a></li><li><a href=\"films.html\">Films</a></li></ul></td>",
+		"<td><h1>Chapter One</h1><p>The first paragraph mentions a lantern.</p><h2>Chapter Two</h2><p>The third paragraph.</p></td>",
+		"</tr></table>",
+	));
+	assert!(converter.get_tables().is_empty());
+	let headings: Vec<&str> = converter.get_headings().iter().map(|heading| heading.text.as_str()).collect();
+	assert_eq!(headings, ["Chapter One", "Chapter Two"]);
+	assert!(converter.get_text().lines().any(|line| line == "The first paragraph mentions a lantern."));
 }

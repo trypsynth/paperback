@@ -46,7 +46,7 @@ If JAWS says nothing when you press a key that should report something, open Set
 
 Paperback supports the following formats and extensions:
 
-* BARD braille books from the National Library Service, every volume as one book, back-translated with the braille code their package names (the `.zip` BARD downloads, or its `.bopf` once unzipped)
+* BARD braille books from the National Library Service, read as one book of all their volumes, back-translated with the braille code named in their package (the `.zip` BARD downloads, or its `.bopf` once unzipped)
 * Braille Ready Files and Portable Embosser Format books, back-translated to print with the braille table you choose (`.brf`, `.pef`)
 * Comic book archives (`.cbz`, `.cbr`)
 * CHM help files (`.chm`)
@@ -55,7 +55,7 @@ Paperback supports the following formats and extensions:
 * EPUB books (`.epub`, or the `.opf` of one that isn't zipped)
 * FB2 ebooks (`.fb2`)
 * GNU Info manuals (`.info`, gzipped or not, and split manuals opened from any of their parts)
-* HTML documents (`.htm`, `.html`, `.xhtml`)
+* HTML documents (`.htm`, `.html`, `.shtml`, `.xhtml`)
 * Manual pages, both `man` and BSD `mdoc` (`.1` to `.9`, `.man`, `.roff`, and the gzipped forms of each)
 * Markdown documents (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Microsoft Word documents (`.docx`, `.docm`, `.doc`)

@@ -3,6 +3,7 @@ pub(crate) mod block_spans;
 mod format_spans;
 mod formula;
 pub(crate) mod image_text;
+mod layout_table;
 mod line_builder;
 mod list_style;
 

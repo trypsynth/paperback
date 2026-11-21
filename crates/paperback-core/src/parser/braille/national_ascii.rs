@@ -39,8 +39,8 @@ const TABLES: &[NationalAscii] = &[
 	NationalAscii { name: "SV_SE_CX", languages: &["sv"], encoding: Encoding::Windows1252, cells: " a,b.k;l^cif/msp'e:h*o!r~djgäntq_å?ê-u(v@îöë§xèç\"û+ü)z=à|ôwï#yùé" },
 	// Norwegian, Braillo 047
 	NationalAscii { name: "BRAILLO_6DOT_047_01", languages: &["no", "nb", "nn"], encoding: Encoding::Windows1252, cells: " A,B.K;L`CIF/MSP'E:H@O!RaDJG[NTQ*]?r-U\"Vqm\\h&Xli_e%u$Z=k|dWg#Ynj" },
-	// North American, which Slovak, Czech and Hungarian files are written in although their tables define the same characters as other cells
-	NationalAscii { name: "NABCC", languages: &["sk", "cs", "hu"], encoding: Encoding::Windows1252, cells: " A1B'K2L@CIF/MSP\"E3H9O6R^DJG>NTQ,*5<-U8V.%[$+X!&;:4\\0Z7(_?W]#Y)=" },
+	// North American, which Slovak, Czech and Hungarian files are written in although their tables define the same characters as other cells, and Spanish ones from ONCE, as NLS lends them
+	NationalAscii { name: "NABCC", languages: &["sk", "cs", "hu", "es"], encoding: Encoding::Windows1252, cells: " A1B'K2L@CIF/MSP\"E3H9O6R^DJG>NTQ,*5<-U8V.%[$+X!&;:4\\0Z7(_?W]#Y)=" },
 ];
 
 /// The upper half of code page 850, DOS Western European, which Danish braille files are written in.

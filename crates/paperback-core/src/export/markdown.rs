@@ -34,12 +34,12 @@ pub fn render(doc: &Document) -> String {
 				events.push(Ev { pos, kind: Mk::LinkOpen, span });
 				events.push(Ev { pos: end, kind: Mk::LinkClose(marker.reference.clone()), span });
 			}
-			MarkerType::Bold => {
+			MarkerType::Bold if !marker.length.is_zero() => {
 				let end = pos + marker.length;
 				events.push(Ev { pos, kind: Mk::BoldOpen, span });
 				events.push(Ev { pos: end, kind: Mk::BoldClose, span });
 			}
-			MarkerType::Italic => {
+			MarkerType::Italic if !marker.length.is_zero() => {
 				let end = pos + marker.length;
 				events.push(Ev { pos, kind: Mk::ItalicOpen, span });
 				events.push(Ev { pos: end, kind: Mk::ItalicClose, span });
@@ -250,5 +250,19 @@ mod tests {
 		assert!(md.contains("*italic*"), "Expected *italic* in markdown with closing *: {md}");
 		let count = md.matches('*').count();
 		assert_eq!(count, 2, "Expected exactly 2 occurrences of * (open and close)");
+	}
+
+	// An empty `<i></i>` before a heading wrote `*# *Chapter`.
+	#[test]
+	fn an_empty_span_writes_no_syntax() {
+		let doc = simple_doc(
+			"Chapter 1",
+			vec![
+				Marker::new(MarkerType::Italic, 0.into()).with_length(0.into()),
+				Marker::new(MarkerType::Bold, 0.into()).with_length(0.into()),
+				Marker::new(MarkerType::Heading1, 0.into()).with_level(1),
+			],
+		);
+		assert_eq!(render(&doc).trim(), "# Chapter 1");
 	}
 }

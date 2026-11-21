@@ -6,7 +6,9 @@ use zip::ZipArchive;
 
 use crate::{
 	document::{Document, Marker, MarkerType, ParserContext},
-	parser::{NotThisFormat, Parser, add_toc_heading_markers, util::path::extract_title_from_path},
+	parser::{
+		NotThisFormat, Parser, add_toc_heading_markers, align_toc_to_title_lines, util::path::extract_title_from_path,
+	},
 	t,
 	util::{package as unpacked, zip::read_zip_entry_by_name},
 };
@@ -89,7 +91,7 @@ pub(crate) fn parse_epub(context: &ParserContext, rootfile: Option<&str>) -> Res
 			fallback
 		});
 	let author = metadata.author.unwrap_or_default();
-	let toc_items = build_epub_toc(
+	let mut toc_items = build_epub_toc(
 		&mut archive,
 		nav_path.as_deref(),
 		ncx_path.as_deref(),
@@ -111,6 +113,7 @@ pub(crate) fn parse_epub(context: &ParserContext, rootfile: Option<&str>) -> Res
 	}
 	let manifest_items: HashMap<String, String> =
 		manifest.values().map(|item| (item.id.clone(), item.path.clone())).collect();
+	align_toc_to_title_lines(&conversion.buffer, &mut toc_items);
 	add_toc_heading_markers(&mut conversion.buffer, &toc_items);
 	let mut document = Document::new().with_title(title).with_author(author);
 	document.set_buffer(conversion.buffer);

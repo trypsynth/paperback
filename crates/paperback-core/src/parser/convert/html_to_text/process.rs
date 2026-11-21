@@ -11,6 +11,7 @@ use crate::{
 		format_spans::FormatKind,
 		formula::{LinkFormula, formula_text, is_dom_formula, place_in_collapsed},
 		image_text,
+		layout_table::is_layout_table,
 		line_builder::LineBuilder,
 		list_style::ListStyle,
 		table_text::{collect_dom_text, table_render_bundle},
@@ -61,7 +62,8 @@ impl HtmlToText {
 						}
 						continue;
 					}
-					if tag_name == "table" {
+					// A table laying out the page is read as the blocks in its cells, which the usual handling below does.
+					if tag_name == "table" && !is_layout_table(node) {
 						if self.flags.contains(ProcessingFlags::IN_BODY)
 							&& let Some(id) = element.attr("id").or_else(|| element.attr("name"))
 						{

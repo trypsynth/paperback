@@ -59,7 +59,9 @@ impl DocumentSession {
 		}
 		let ext = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
 		match ext.as_deref() {
-			Some("html" | "htm" | "xhtml") => Some(WebviewTarget { path: self.file_path.clone(), fragment: None }),
+			Some("html" | "htm" | "shtml" | "xhtml") => {
+				Some(WebviewTarget { path: self.file_path.clone(), fragment: None })
+			}
 			Some("md" | "markdown") => {
 				if let Some(doc_temp_dir) = self.document_temp_dir(temp_dir) {
 					let html_path = doc_temp_dir.join("document.html");
@@ -152,7 +154,7 @@ impl DocumentSession {
 			return true;
 		}
 		let ext = Path::new(&self.file_path).extension().map(|ext| ext.to_string_lossy().to_ascii_lowercase());
-		matches!(ext.as_deref(), Some("html" | "htm" | "xhtml" | "md" | "markdown"))
+		matches!(ext.as_deref(), Some("html" | "htm" | "shtml" | "xhtml" | "md" | "markdown"))
 	}
 
 	#[must_use]
@@ -182,7 +184,7 @@ impl DocumentSession {
 		let name = Path::new(&self.file_path).file_name()?.to_string_lossy().to_string();
 		let content = convert_to_utf8(&fs::read(&self.file_path).ok()?);
 		let caret = match ext.as_deref() {
-			Some("html" | "htm" | "xhtml") => Self::xml_caret(&content, pos),
+			Some("html" | "htm" | "shtml" | "xhtml") => Self::xml_caret(&content, pos),
 			Some("md" | "markdown") => self.markdown_caret(&content, pos),
 			_ => return None,
 		};

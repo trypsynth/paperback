@@ -42,7 +42,7 @@ impl DocumentSession {
 		let pos = position.min(self.handle.document().buffer.end());
 		let link_index = self.handle.current_marker_index(pos, MarkerType::Link)?;
 		let marker = self.handle.document().buffer.markers.get(link_index)?;
-		let link_end = marker.position + DocLen::of(&marker.text);
+		let link_end = marker.position + marker.link_len();
 		if pos < marker.position || pos > link_end || marker.reference.is_empty() {
 			return None;
 		}
