@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: b1e8b46ff69081ba; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2e060f0cdd2c601f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,77b4e1b6,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versão 1.1
 
@@ -226,6 +226,8 @@ Cada aplicativo tem duas formas de ler um documento. No modo texto, você lê o 
 
 Audiolivros, como DAISY, M4B e livros MP3, reproduzem sua própria gravação.
 
+No modo de leitura em voz alta, a tela mostra o quanto você avançou no livro. Toque para ver o capítulo em vez disso: seu nome, quanto você avançou nele e quantas palavras restam, por exemplo, "Capítulo 3, 42%, 1.850 palavras restantes". Em um audiolivro, mostra o tempo, por exemplo, "Capítulo 3, 4:10 de 12:00, 7:50 restantes". Toque novamente para voltar ao livro inteiro.
+
 ### A barra de leitura
 
 A barra na parte inferior da tela tem, da esquerda para a direita:
@@ -236,12 +238,27 @@ A barra na parte inferior da tela tem, da esquerda para a direita:
 
 Você também pode deslizar para cima ou para baixo no botão play para se mover pela unidade de navegação, sem alcançar os botões previous e next. Se é tudo o que você usa, a configuração Hide previous and next buttons os remove do caminho do seu leitor de tela. A configuração Swipe up moves forward escolhe para qual direção um deslize vai.
 
+### Marcadores e anotações
+
+O botão de marcador na parte superior da tela marca seu lugar. Toque para marcar o parágrafo em que você está e toque novamente para remover o marcador. Seu leitor de tela diz Selected quando o parágrafo já tem um. Remover um marcador que tem uma anotação pede confirmação primeiro.
+
+* No modo de leitura em voz alta, o marcador fica no início do parágrafo sendo lido, então ao voltar a ele, lê o parágrafo novamente do início. No modo texto, fica no parágrafo em que você está.
+* Em um audiolivro sem texto, como um livro MP3, o marcador mantém a hora exata, assim como faz no desktop.
+* Pressione e mantenha pressionado o botão de marcador ou use suas ações do leitor de tela para adicionar ou editar uma anotação ou abrir a lista de Marcadores. Enquanto você escreve uma anotação, a leitura pausa e recomeça quando você fecha a anotação.
+* No modo de leitura em voz alta, a anotação de um parágrafo aparece sob ele. Toque na anotação para editá-la.
+* No modo texto, cada parágrafo tem ações do leitor de tela para adicionar ou remover um marcador e para adicionar ou editar uma anotação. No iOS, um parágrafo marcado diz Marcador ou sua anotação após seu texto, e o rotor de Marcadores se move entre eles.
+* **Marcadores** no menu Mais opções lista cada marcador e anotação, com Tudo, Marcadores e Notas para filtrá-los. Abre no mais próximo de onde você está. Escolha um para ir a ele. Deslize em um marcador no iOS ou pressione e mantenha pressionado no Android ou use as ações do leitor de tela para editar sua anotação ou deletá-lo.
+* Quando um documento tem marcadores, Marcador se junta às unidades de navegação na barra de leitura, para que previous e next se movam entre eles.
+
+Marcadores e anotações são os mesmos que o desktop usa, então eles viajam entre eles no arquivo `.paperback` de um documento.
+
 ### Mais opções
 
 O menu More Options é onde tudo mais fica. Alguns itens funcionam um pouco diferente em cada aplicativo.
 
 * **Switch to TTS Mode ou Switch to Text Mode:** alterna entre modo de leitura em voz alta e modo texto, descrito acima. No modo texto, um item Read Aloud inicia e pausa a leitura em voz alta sem sair do modo texto.
 * **Table of Contents:** os capítulos do livro, aberto no que você está lendo. Escolha um para ir direto a ele. Entradas com capítulos sob elas podem ser expandidas e recolhidas com as ações do leitor de tela.
+* **Marcadores:** seus marcadores e anotações neste documento, descritos acima.
 * **Elements:** uma lista dos headings ou links do documento. Alterne entre os dois com o Type picker no iOS ou as abas no Android, depois escolha um para ir a ele.
 * **Find:** digite o que procurar ou escolha uma busca anterior de Search History e escolha se deseja corresponder maiúsculas e minúsculas, corresponder apenas palavras inteiras ou usar uma expressão regular. Find Previous e Find Next saltam para uma correspondência e dizem onde caíram, e Find fica aberto para que você possa continuar. No modo de leitura em voz alta, Find também aparece como uma unidade de navegação na barra de leitura, para que você possa percorrer as correspondências de lá também. **Stop reading after search matches** em Settings sob Síntese de Fala está ativado por padrão e para após ler o parágrafo contendo uma correspondência. Desative-o para continuar lendo a partir da correspondência enquanto os controles previous e next da barra de leitura ainda navegam por Find.
 * **Go To:** salte para uma linha, uma página ou uma porcentagem através do documento. Escolha qual com o Mode picker.
@@ -258,7 +275,7 @@ O menu More Options é onde tudo mais fica. Alguns itens funcionam um pouco dife
 
 ### Teclados e headsets
 
-Com um teclado, os atalhos do desktop para abrir livros, documentos recentes, Find, Go To, table of contents, word count, document info, export e sleep timer funcionam, usando `Cmd` em vez de `Ctrl` no iOS. O mesmo acontece com as teclas de letra única para se mover por heading, página, link e o resto, e `Space` reproduz e pausa. No iOS, as teclas de letra única apenas alcançam Paperback enquanto o Quick Nav de letra única do VoiceOver estiver desligado.
+Com um teclado, os atalhos do desktop para abrir livros, documentos recentes, Localizar, Ir para, sumário, contagem de palavras, informações do documento, exportar e temporizador funcionam, usando `Cmd` em vez de `Ctrl` no iOS. O mesmo acontece com as teclas de letra única para se mover por heading, página, link e o resto, e `Space` reproduz e pausa. As teclas de marcador correspondem ao desktop também: `B` e `Shift+B` se movem para o próximo e anterior marcador, `N` e `Shift+N` para a próxima e anterior anotação, `Ctrl+Shift+B` adiciona ou remove um marcador, `Ctrl+Shift+N` adiciona ou edita uma anotação e `Ctrl+B` abre a lista de Marcadores. No iOS, as teclas de letra única apenas alcançam Paperback enquanto o Quick Nav de letra única do VoiceOver estiver desligado.
 
 No Android, um botão de headset reproduz e pausa com um pressionamento, avança com dois e volta com três.
 

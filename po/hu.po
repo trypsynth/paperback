@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-15 01:48+0000\n"
+"POT-Creation-Date: 2026-11-21 13:54-0700\n"
 "PO-Revision-Date: 2026-10-21 12:00+0200\n"
 "Last-Translator: Torma Zsolt <torma.zsolt@gmail.com>\n"
 "Language-Team: Torma Zsolt <torma.zsolt@gmail.com>\n"
@@ -1453,6 +1453,11 @@ msgstr "Ezen a &könyven ezt a beszédhanget, sebességet és hangmagasságot ha
 msgid "Play Sa&mple"
 msgstr "Minta le&játszása"
 
+#. TRANSLATORS: Button on the Audio tab of Settings that opens the speech dictionary, which changes how words are read aloud
+#, fuzzy
+msgid "Speech &Dictionary..."
+msgstr "Beszéd&szótár..."
+
 #. TRANSLATORS: First choice in the voice list on the Audio tab of Settings, which leaves the choice of voice to the system
 #, fuzzy
 msgid "System default"
@@ -1577,6 +1582,133 @@ msgstr "&Talált szöveg kiemelése"
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
 msgstr "&Olvasási sebesség (szó/perc):"
+
+#. TRANSLATORS: Title of the speech dictionary dialog, opened from the Read Aloud group on the Audio tab of Settings
+msgid "Speech Dictionary"
+msgstr "Kiejtési szótár"
+
+#. TRANSLATORS: Label of the list of speech dictionary rules, which are applied in order and can each be turned on or off
+#, fuzzy
+msgid "&Rules:"
+msgstr "&Szabályok:"
+
+#. TRANSLATORS: Said of a speech dictionary rule that is on
+#, fuzzy
+msgid "on"
+msgstr "bekapcsolva"
+
+#. TRANSLATORS: Said of a speech dictionary rule that is off
+#, fuzzy
+msgid "off"
+msgstr "kikapcsolva"
+
+#. TRANSLATORS: Button in the speech dictionary dialog that adds a rule
+#, fuzzy
+msgid "&Add..."
+msgstr "&Hozzáadás..."
+
+#. TRANSLATORS: Button in the speech dictionary dialog that edits the current rule
+#, fuzzy
+msgid "&Edit..."
+msgstr "&Szerkesztés..."
+
+#. TRANSLATORS: Button in the speech dictionary dialog that removes the current rule
+#, fuzzy
+msgid "Re&move"
+msgstr "Tö&rlés"
+
+#. TRANSLATORS: In the speech dictionary's list, the replacement of a rule that removes what it finds
+#, fuzzy
+msgid "removed"
+msgstr "eltávolítva"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches whole words only
+#, fuzzy
+msgid "whole words"
+msgstr "teljes szavak"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches inside words too
+msgid "words"
+msgstr "szó"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches a regular expression across a paragraph
+#, fuzzy
+msgid "paragraphs, regular expression"
+msgstr "bekezdések, reguláris kifejezés"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches text across a paragraph
+#, fuzzy
+msgid "paragraphs"
+msgstr "bekezdések"
+
+#. TRANSLATORS: In the speech dictionary, a rule that applies to every voice
+#, fuzzy
+msgid "all voices"
+msgstr "minden beszédhang"
+
+#. TRANSLATORS: Title of the dialog that adds a speech dictionary rule
+msgid "Add Rule"
+msgstr "Szabály hozzáadása"
+
+#. TRANSLATORS: Title of the dialog that edits a speech dictionary rule
+msgid "Edit Rule"
+msgstr "Szabály szerkesztése"
+
+#. TRANSLATORS: Label of the text a speech dictionary rule matches, or its regular expression
+#, fuzzy
+msgid "&Pattern:"
+msgstr "&Minta:"
+
+#, fuzzy
+msgid "&Replacement:"
+msgstr "&Helyettesítés:"
+
+#. TRANSLATORS: Label of the choice between a rule matching words and one matching across a whole paragraph
+#, fuzzy
+msgid "&Applies to:"
+msgstr "&Vonatkozik:"
+
+#. TRANSLATORS: Speech dictionary rule scope: the rule matches words
+msgid "Words"
+msgstr "Szavak"
+
+#. TRANSLATORS: Speech dictionary rule scope: the rule matches across a whole paragraph, and can be a regular expression
+#, fuzzy
+msgid "Whole paragraphs"
+msgstr "Teljes bekezdések"
+
+#. TRANSLATORS: Label of the choice of voices a speech dictionary rule applies to
+#, fuzzy
+msgid "&Voices:"
+msgstr "&Beszédhangoк:"
+
+#. TRANSLATORS: First choice of voices for a speech dictionary rule
+msgid "All voices"
+msgstr "Minden beszédhang"
+
+#. TRANSLATORS: A choice of voices for a speech dictionary rule: every voice of one language; %s is the language
+#, fuzzy
+msgid "Voices in %s"
+msgstr "%s nyelvű beszédhangoк"
+
+#. TRANSLATORS: Check box: a word rule matches only whole words, not part of a longer word
+#, fuzzy
+msgid "Match &whole words only"
+msgstr "Csak teljes &szavak"
+
+#. TRANSLATORS: Check box: a paragraph rule's pattern is a regular expression, whose groups the replacement can use as \1
+#, fuzzy
+msgid "Regular e&xpression"
+msgstr "R&eguláris kifejezés"
+
+#. TRANSLATORS: Shown when a speech dictionary rule is saved without a pattern
+#, fuzzy
+msgid "Type a pattern for the rule."
+msgstr "Adjon meg egy mintát a szabályhoz."
+
+#, fuzzy
+msgid "The regular expression isn't valid: %s"
+msgstr "A reguláris kifejezés nem érvényes: %s"
 
 #. TRANSLATORS: Title of the Settings dialog
 msgid "Settings"
@@ -4027,6 +4159,7 @@ msgstr "Könyv megnyitása"
 msgid "Locate"
 msgstr "Megkeresés"
 
+#. TRANSLATORS: Button confirming removal of a bookmark and its note
 #: kt swift
 msgid "Remove"
 msgstr "Eltávolítás"
@@ -4074,11 +4207,6 @@ msgstr "Beszédsebesség"
 #: kt swift
 msgid "Pitch"
 msgstr "Hangmagasság"
-
-#. TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
-#: swift
-msgid "Speech Dictionary"
-msgstr "Kiejtési szótár"
 
 #: kt swift
 msgid "Play Sample"
@@ -4128,11 +4256,6 @@ msgstr "Cím"
 #: kt swift
 msgid "Author"
 msgstr "Szerző"
-
-#. TRANSLATORS: Row label for the document's total word count
-#: kt swift
-msgid "Words"
-msgstr "Szavak"
 
 #. TRANSLATORS: Row label for the document's total line count
 #: kt swift
@@ -4263,20 +4386,10 @@ msgstr "Beszédhangok"
 msgid "New Rule"
 msgstr "Új szabály"
 
-#. TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
-#: swift
-msgid "Edit Rule"
-msgstr "Szabály szerkesztése"
-
-#. TRANSLATORS: Button to save the rule and dismiss the editor
-#: swift
+#. TRANSLATORS: Button that saves what was typed and closes the editor, such as a speech rule or a bookmark's note
+#: kt swift
 msgid "Save"
 msgstr "Mentés"
-
-#. TRANSLATORS: Row label for selecting all TTS voices as the target of a rule, rather than a specific language or voice
-#: swift
-msgid "All voices"
-msgstr "Minden beszédhang"
 
 #. TRANSLATORS: Navigation title for the screen where the user picks which voices a rule applies to
 #: swift
@@ -4325,11 +4438,6 @@ msgstr "Időzítő leállítása"
 #: swift
 msgid "Start Timer"
 msgstr "Időzítő indítása"
-
-#. TRANSLATORS: Accessibility label for the "+" button that adds a new speech dictionary rule
-#: swift
-msgid "Add Rule"
-msgstr "Szabály hozzáadása"
 
 #. TRANSLATORS: Message shown when no speech dictionary rules have been created yet
 #: swift
@@ -4557,14 +4665,6 @@ msgstr "Kibontás"
 #: swift kt
 msgid "This document contains {} words."
 msgstr "A dokumentum {} szót tartalmaz."
-
-#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
-#. three forms is used depends on the target language's own plural rule, read
-#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
-#. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
-#: kt
-msgid "words"
-msgstr "szó"
 
 #. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
@@ -5152,6 +5252,148 @@ msgstr "Olvashatóság"
 #, fuzzy
 msgid "Time"
 msgstr "Időpontjára"
+
+#. TRANSLATORS: Shown and announced with how far through a book's chapter the reader is: the number of words left in it; {} is the number. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: kt swift
+#, fuzzy
+msgid "{} word left"
+msgstr "{} szó maradt"
+
+#: kt swift
+#, fuzzy
+msgid "{} words left"
+msgstr "{} szó maradt"
+
+#: kt swift
+#, fuzzy
+msgid "{} words left⁣"
+msgstr "{} szó maradt⁣"
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt swift
+#, fuzzy
+msgid "Show book progress"
+msgstr "Könyv haladásának megjelenítése"
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt swift
+#, fuzzy
+msgid "Show chapter progress"
+msgstr "Fejezet haladásának megjelenítése"
+
+#. TRANSLATORS: Name of the "Bookmark" navigation unit, which moves between the reader's bookmarks and notes
+#: kt swift
+#, fuzzy
+msgid "Bookmark"
+msgstr "Könyvjelző"
+
+#. TRANSLATORS: Announced after clearing a bookmark's note, which keeps the bookmark
+#: kt swift
+#, fuzzy
+msgid "Note deleted."
+msgstr "Jegyzet törölve."
+
+#. TRANSLATORS: VoiceOver label for the note shown under the passage being read; {} is the note's text
+#: kt swift
+#, fuzzy
+msgid "Note: {}"
+msgstr "Jegyzet: {}"
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt swift
+#, fuzzy
+msgid "Add Bookmark"
+msgstr "Könyvjelző hozzáadása"
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt swift
+#, fuzzy
+msgid "Remove Bookmark"
+msgstr "Könyvjelző eltávolítása"
+
+#. TRANSLATORS: VoiceOver value of the bookmark button when the bookmark at the current paragraph has a note
+#: kt swift
+#, fuzzy
+msgid "Has note"
+msgstr "Jegyzettel"
+
+#. TRANSLATORS: Title of the alert confirming removal of a bookmark that has a note
+#: kt swift
+#, fuzzy
+msgid "Remove this bookmark and its note?"
+msgstr "Törölni szeretné ezt a könyvjelzőt és annak jegyzetét?"
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt swift
+#, fuzzy
+msgid "Edit Note..."
+msgstr "Jegyzet szerkesztése..."
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt swift
+#, fuzzy
+msgid "Add Note..."
+msgstr "Jegyzet hozzáadása..."
+
+#. TRANSLATORS: Label for the picker choosing whether the Bookmarks screen shows everything, only bookmarks, or only notes
+#: swift
+#, fuzzy
+msgid "Show"
+msgstr "Megjelenítés"
+
+#. TRANSLATORS: Swipe / accessibility action deleting a bookmark from the Bookmarks screen
+#: kt swift
+#, fuzzy
+msgid "Delete"
+msgstr "Törlés"
+
+#. TRANSLATORS: Title shown when the current document has no bookmarks or notes
+#: kt swift
+#, fuzzy
+msgid "No Bookmarks"
+msgstr "Nincsenek könyvjelzők"
+
+#. TRANSLATORS: Description shown under the "No Bookmarks" title
+#: kt swift
+#, fuzzy
+msgid "Tap the bookmark button while reading to mark your place."
+msgstr "Válassza a könyvjelzőgombot az olvasás közben a helyének megjelöléséhez."
+
+#. TRANSLATORS: VoiceOver hint on the note shown under the passage being read
+#: swift
+#, fuzzy
+msgid "Double-tap to edit."
+msgstr "Koppintson duplán a szerkesztéshez."
+
+#. TRANSLATORS: Heading over the passage (or audiobook time) a bookmark note is attached to
+#: swift
+#, fuzzy
+msgid "Bookmarked"
+msgstr "Könyvjelzőzve"
+
+#. TRANSLATORS: Heading over the text field where a bookmark's note is typed
+#: swift
+#, fuzzy
+msgid "Note"
+msgstr "Jegyzet"
+
+#. TRANSLATORS: Button that clears a bookmark's note but keeps the bookmark
+#: kt swift
+#, fuzzy
+msgid "Delete Note"
+msgstr "Jegyzet törlése"
+
+#. TRANSLATORS: TalkBack action label for a long press on the bookmark button, which opens its note and list options
+#: kt
+#, fuzzy
+msgid "show note and bookmark options"
+msgstr "jegyzet és könyvjelző beállításainak megjelenítése"
+
+#. TRANSLATORS: TalkBack action label for a bookmark in the Bookmarks screen, read as "double tap to go to bookmark"
+#: kt
+#, fuzzy
+msgid "go to bookmark"
+msgstr "ugrás a könyvjelzőre"
 
 #, fuzzy
 #~ msgid "Announce &Chapter Time"

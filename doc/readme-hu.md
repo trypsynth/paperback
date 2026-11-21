@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: b1e8b46ff69081ba; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2e060f0cdd2c601f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,77b4e1b6,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback – 1.1-es verzió
 
@@ -226,6 +226,8 @@ Mindkét alkalmazásban kétféleképpen olvashat egy dokumentumot. Szöveges m�
 
 A hangoskönyvek, például a DAISY-, M4B- és MP3-könyvek ehelyett a saját hangfelvételüket játsszák le.
 
+Felolvasási módban a képernyő mutatja, hogy hol tart a könyvben. Erre koppintva helyette a fejezetet láthatja: a nevét, hogy benne hol tart, valamint hogy hány szava van még hátra, például „3. fejezet, 42%, még 1850 szó". Hangoskönyv esetén az időt mutatja, például „3. fejezet, 4:10 / 12:00, 7:50 hátra". Ismét koppintva visszatér az egész könyv nézetéhez.
+
 ### Az olvasósáv
 
 A képernyő alján lévő sávon balról jobbra a következők találhatók:
@@ -236,12 +238,27 @@ A képernyő alján lévő sávon balról jobbra a következők találhatók:
 
 A lejátszás gombon felfelé vagy lefelé legyintve is léptethet navigációs egységenként, anélkül hogy az előző vagy a következő gombhoz kellene nyúlnia. Ha csak ezt használja, az „Előző és következő gomb elrejtése” beállítással ezek a gombok nem lesznek a képernyőolvasó útjában. A „Felfelé legyintés előre léptet” beállítással azt adhatja meg, merre léptessen a legyintés.
 
+### Könyvjelzők és jegyzetek
+
+A képernyő tetején lévő könyvjelző gomb megjelöli az olvasási helyét. Koppintson rá, hogy könyvjelzőt tegyen a bekezdésre, amelyen éppen tartanak, és újra koppintson a könyvjelző eltávolításához. A képernyőolvasó azt jelenti be, hogy „Kijelölt", amikor a bekezdésnek már van könyvjelzője. Ha eltávolít egy jegyzettel rendelkező könyvjelzőt, akkor az előbb megerősítésre vár.
+
+* Felolvasási módban a könyvjelző a beolvasott bekezdés elején kerül elhelyezésre, így rá visszatérve a bekezdés ismét az elejétől szól. Szöveges módban az aktuális bekezdésre kerül.
+* Szöveg nélküli hangoskönyv esetén, mint az MP3-könyv, a könyvjelző az asztali verzióhoz hasonlóan az adott időpontot tartja meg.
+* A könyvjelző gomb hosszan megnyomásával vagy a képernyőolvasó műveleteivel jegyzetet adhat hozzá vagy módosíthat, vagy megnyithatja a Könyvjelzők listáját. Jegyzet írása közben a felolvasás szünetel, és a jegyzet lezárásakor újra elindul.
+* Felolvasási módban a bekezdés jegyzete alatta jelenik meg. Koppintson rá a szerkesztéshez.
+* Szöveges módban minden bekezdéshez vannak képernyőolvasó műveletek könyvjelző hozzáadásához vagy eltávolításához, valamint jegyzet hozzáadásához vagy szerkesztéséhez. iOS-en a könyvjelzővel rendelkező bekezdés a szövege után a „Könyvjelző" szöveget vagy a jegyzetét jeleníti meg, és a Könyvjelzők forgója közöttük mozog.
+* A **Könyvjelzők** a További lehetőségek menüben felsorolja az összes könyvjelzőt és jegyzetet, az Összes, a Könyvjelzők és a Jegyzetek gomb segítségével szűrheti őket. Az Önhöz legközelebb esőt nyitja meg. Válasszon ki egyet, és odaugrik. iOS-en gesturázzon egy könyvjelzőn, Androidon hosszan nyomja meg, vagy használja a képernyőolvasó műveleteit a jegyzet szerkesztéséhez vagy az eltávolításához.
+* Miután egy dokumentumnak vannak könyvjelzői, a Könyvjelző csatlakozik az olvasósáv navigációs egységeihez, így az előző és a következő gomb közöttük mozog.
+
+A könyvjelzők és jegyzetek ugyanazok, amelyeket az asztali verzió használ, így a dokumentum `.paperback` fájljában közöttük közlekednek.
+
 ### További lehetőségek
 
 A További lehetőségek menüben található minden más. Egyes elemek a két alkalmazásban kissé eltérően működnek.
 
 * **Váltás felolvasási módra vagy Váltás szöveges módra:** vált a fent leírt felolvasási és szöveges mód között. Szöveges módban a Felolvasás elem elindítja és szünetelteti a felolvasást anélkül, hogy kilépne a szöveges módból.
 * **Tartalomjegyzék:** a könyv fejezetei, az éppen olvasottnál megnyitva. Válasszon ki egyet, és közvetlenül odaugrik. Az alfejezeteket tartalmazó bejegyzések a képernyőolvasó műveleteivel kibonthatók és összecsukhatók.
+* **Könyvjelzők és jegyzetek:** a jelen dokumentumban lévő könyvjelzők és jegyzetek, a fentebb leírtak szerint.
 * **Elemek:** a dokumentum címsorainak vagy hivatkozásainak listája. iOS-en a Típus választóval, Androidon a lapokkal válthat a kettő között, majd válasszon ki egy elemet, és odaugrik.
 * **Keresés:** írja be, mit keres, vagy válasszon egy korábbi keresést a Keresési előzmények közül, és adja meg, hogy megkülönböztesse-e a kis- és nagybetűket, csak teljes szavakra keressen-e, illetve reguláris kifejezést használjon-e. Az Előző keresése és a Következő keresése a találatra ugrik, és bejelenti, hová került, a Keresés pedig nyitva marad, így folytathatja. Felolvasási módban a Keresés navigációs egységként is megjelenik az olvasósávon, így onnan is végiglépkedhet a találatokon. A Beállításokban a Szövegfelolvasás alatt található **Felolvasás leállítása a keresési találatok után** beállítás alapértelmezés szerint be van kapcsolva, és a találatot tartalmazó bekezdés felolvasása után leállítja a felolvasást. Kapcsolja ki, ha a találattól folytatni szeretné a felolvasást; az olvasósáv előző és következő gombja ekkor is a keresési találatok között navigál.
 * **Ugrás:** ugrás egy sorra, egy oldalra vagy a dokumentum adott százalékára. Hogy melyikre, azt a Mód választóval adhatja meg.
@@ -258,7 +275,7 @@ A További lehetőségek menüben található minden más. Egyes elemek a két a
 
 ### Billentyűzet és headset
 
-Billentyűzettel az asztali változat billentyűparancsai is működnek a könyvek megnyitásához, a legutóbbi dokumentumokhoz, a Kereséshez, az Ugráshoz, a tartalomjegyzékhez, a szavak számához, a dokumentuminformációkhoz, az exportáláshoz és az elalvási időzítőhöz; iOS-en a `Ctrl` helyett a `Cmd` billentyűvel. Ugyanígy működnek a címsorok, oldalak, hivatkozások és a többi elem közötti navigáció egybetűs billentyűi is, a `Space` pedig elindítja és szünetelteti a lejátszást. iOS-en az egybetűs billentyűk csak akkor jutnak el a Paperbackhez, ha a VoiceOver egybillentyűs gyorsnavigációja ki van kapcsolva.
+Billentyűzettel az asztali változat billentyűparancsai is működnek a könyvek megnyitásához, a legutóbbi dokumentumokhoz, a Kereséshez, az Ugráshoz, a tartalomjegyzékhez, a szavak számához, a dokumentuminformációkhoz, az exportáláshoz és az elalvási időzítőhöz; iOS-en a `Cmd` helyett a `Ctrl` billentyűvel. Ugyanígy működnek a címsorok, oldalak, hivatkozások és a többi elem közötti navigáció egybetűs billentyűi is, a `Space` pedig elindítja és szünetelteti a lejátszást. A könyvjelzőkhöz tartozó billentyűk is az asztali verzióéval egyeznek: a `B` és a `Shift+B` a következő és az előző könyvjelzőre lép, az `N` és a `Shift+N` a következő és az előző jegyzetre, a `Ctrl+Shift+B` hozzáadja vagy eltávolítja a könyvjelzőt, a `Ctrl+Shift+N` hozzáadja vagy szerkeszti a jegyzetet, a `Ctrl+B` pedig megnyitja a Könyvjelzők listáját. iOS-en az egybetűs billentyűk csak akkor jutnak el a Paperbackhez, ha a VoiceOver egybillentyűs gyorsnavigációja ki van kapcsolva.
 
 Androidon a headset gombjának egyszeri megnyomása elindítja vagy szünetelteti a lejátszást, a kétszeri előre, a háromszori pedig visszaléptet.
 
