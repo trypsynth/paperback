@@ -15,6 +15,7 @@ mod documents;
 mod font;
 mod general;
 mod reading;
+mod speech_dictionary;
 
 pub use advanced::AdvancedSettings;
 pub use appearance::AppearanceSettings;

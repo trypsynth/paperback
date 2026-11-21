@@ -76,7 +76,30 @@ impl Default for SpeechRule {
 	}
 }
 
+/// Why a rule can't be saved.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RuleProblem {
+	EmptyPattern,
+	/// The regular expression doesn't parse, for this reason.
+	InvalidRegex(String),
+}
+
 impl SpeechRule {
+	/// Whether the rule can be saved: it needs a pattern, and a regular expression that parses.
+	///
+	/// # Errors
+	///
+	/// Returns what's wrong with the rule.
+	pub fn check(&self) -> Result<(), RuleProblem> {
+		if self.pattern.is_empty() {
+			return Err(RuleProblem::EmptyPattern);
+		}
+		if self.scope == RuleScope::Paragraph && self.match_type == MatchType::Regex {
+			Regex::new(&self.pattern).map_err(|error| RuleProblem::InvalidRegex(error.to_string()))?;
+		}
+		Ok(())
+	}
+
 	/// Applies the rule to `text` and records what it replaced in `map`. A rule that's off, empty, for another voice, or an invalid regular expression changes nothing.
 	fn apply(&self, text: &str, voice: Option<&Voice>, map: &mut TextMap) -> String {
 		if !self.enabled || self.pattern.is_empty() || !self.voice_filter.matches(voice) {
@@ -240,6 +263,15 @@ mod tests {
 		assert_eq!(spoken, "Ask Doctor Smith");
 		assert_eq!(map.to_original(spoken.find("Smith").unwrap()), "Ask Dr ".len());
 		assert_eq!(map.to_original(spoken.find("Doctor").unwrap()), "Ask ".len());
+	}
+
+	#[test]
+	fn a_rule_needs_a_pattern_and_a_valid_regular_expression() {
+		assert_eq!(word("", "x").check(), Err(RuleProblem::EmptyPattern));
+		assert_eq!(word("(", "x").check(), Ok(()), "a word rule's pattern is literal");
+		let regex = SpeechRule { scope: RuleScope::Paragraph, match_type: MatchType::Regex, ..word("(", "x") };
+		assert!(matches!(regex.check(), Err(RuleProblem::InvalidRegex(_))));
+		assert_eq!(SpeechRule { pattern: r"\d+".into(), ..regex }.check(), Ok(()));
 	}
 
 	#[test]

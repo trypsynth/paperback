@@ -365,7 +365,7 @@ impl Speaker {
 			voice,
 			rate_percent: percent(book.rate_percent, "tts_rate"),
 			pitch_percent: percent(book.pitch_percent, "tts_pitch"),
-			rules: Vec::new(),
+			rules: config.get_speech_rules(),
 			paragraph_pause_ms: u32::try_from(config.get_app_int("tts_paragraph_pause_ms", 0).clamp(0, MAX_PAUSE_MS))
 				.unwrap_or(0),
 		}

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-21 09:02-0700\n"
+"POT-Creation-Date: 2026-11-21 13:54-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1403,6 +1403,10 @@ msgstr ""
 msgid "Play Sa&mple"
 msgstr ""
 
+#. TRANSLATORS: Button on the Audio tab of Settings that opens the speech dictionary, which changes how words are read aloud
+msgid "Speech &Dictionary..."
+msgstr ""
+
 #. TRANSLATORS: First choice in the voice list on the Audio tab of Settings, which leaves the choice of voice to the system
 msgid "System default"
 msgstr ""
@@ -1521,6 +1525,112 @@ msgstr ""
 
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
+msgstr ""
+
+#. TRANSLATORS: Title of the speech dictionary dialog, opened from the Read Aloud group on the Audio tab of Settings
+msgid "Speech Dictionary"
+msgstr ""
+
+#. TRANSLATORS: Label of the list of speech dictionary rules, which are applied in order and can each be turned on or off
+msgid "&Rules:"
+msgstr ""
+
+#. TRANSLATORS: Said of a speech dictionary rule that is on
+msgid "on"
+msgstr ""
+
+#. TRANSLATORS: Said of a speech dictionary rule that is off
+msgid "off"
+msgstr ""
+
+#. TRANSLATORS: Button in the speech dictionary dialog that adds a rule
+msgid "&Add..."
+msgstr ""
+
+#. TRANSLATORS: Button in the speech dictionary dialog that edits the current rule
+msgid "&Edit..."
+msgstr ""
+
+#. TRANSLATORS: Button in the speech dictionary dialog that removes the current rule
+msgid "Re&move"
+msgstr ""
+
+#. TRANSLATORS: In the speech dictionary's list, the replacement of a rule that removes what it finds
+msgid "removed"
+msgstr ""
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches whole words only
+msgid "whole words"
+msgstr ""
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches inside words too
+msgid "words"
+msgstr ""
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches a regular expression across a paragraph
+msgid "paragraphs, regular expression"
+msgstr ""
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches text across a paragraph
+msgid "paragraphs"
+msgstr ""
+
+#. TRANSLATORS: In the speech dictionary, a rule that applies to every voice
+msgid "all voices"
+msgstr ""
+
+#. TRANSLATORS: Title of the dialog that adds a speech dictionary rule
+msgid "Add Rule"
+msgstr ""
+
+#. TRANSLATORS: Title of the dialog that edits a speech dictionary rule
+msgid "Edit Rule"
+msgstr ""
+
+#. TRANSLATORS: Label of the text a speech dictionary rule matches, or its regular expression
+msgid "&Pattern:"
+msgstr ""
+
+msgid "&Replacement:"
+msgstr ""
+
+#. TRANSLATORS: Label of the choice between a rule matching words and one matching across a whole paragraph
+msgid "&Applies to:"
+msgstr ""
+
+#. TRANSLATORS: Speech dictionary rule scope: the rule matches words
+msgid "Words"
+msgstr ""
+
+#. TRANSLATORS: Speech dictionary rule scope: the rule matches across a whole paragraph, and can be a regular expression
+msgid "Whole paragraphs"
+msgstr ""
+
+#. TRANSLATORS: Label of the choice of voices a speech dictionary rule applies to
+msgid "&Voices:"
+msgstr ""
+
+#. TRANSLATORS: First choice of voices for a speech dictionary rule
+msgid "All voices"
+msgstr ""
+
+#. TRANSLATORS: A choice of voices for a speech dictionary rule: every voice of one language; %s is the language
+msgid "Voices in %s"
+msgstr ""
+
+#. TRANSLATORS: Check box: a word rule matches only whole words, not part of a longer word
+msgid "Match &whole words only"
+msgstr ""
+
+#. TRANSLATORS: Check box: a paragraph rule's pattern is a regular expression, whose groups the replacement can use as \1
+msgid "Regular e&xpression"
+msgstr ""
+
+#. TRANSLATORS: Shown when a speech dictionary rule is saved without a pattern
+msgid "Type a pattern for the rule."
+msgstr ""
+
+msgid "The regular expression isn't valid: %s"
 msgstr ""
 
 #. TRANSLATORS: Title of the Settings dialog
@@ -4022,11 +4132,6 @@ msgstr ""
 msgid "Pitch"
 msgstr ""
 
-#. TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
-#: swift
-msgid "Speech Dictionary"
-msgstr ""
-
 #: kt
 #: swift
 msgid "Play Sample"
@@ -4082,12 +4187,6 @@ msgstr ""
 #: kt
 #: swift
 msgid "Author"
-msgstr ""
-
-#. TRANSLATORS: Row label for the document's total word count
-#: kt
-#: swift
-msgid "Words"
 msgstr ""
 
 #. TRANSLATORS: Row label for the document's total line count
@@ -4226,20 +4325,10 @@ msgstr ""
 msgid "New Rule"
 msgstr ""
 
-#. TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
-#: swift
-msgid "Edit Rule"
-msgstr ""
-
 #. TRANSLATORS: Button that saves what was typed and closes the editor, such as a speech rule or a bookmark's note
 #: kt
 #: swift
 msgid "Save"
-msgstr ""
-
-#. TRANSLATORS: Row label for selecting all TTS voices as the target of a rule, rather than a specific language or voice
-#: swift
-msgid "All voices"
 msgstr ""
 
 #. TRANSLATORS: Navigation title for the screen where the user picks which voices a rule applies to
@@ -4289,11 +4378,6 @@ msgstr ""
 #. TRANSLATORS: Button that starts the sleep timer with the selected duration, or stops it if one is already running
 #: swift
 msgid "Start Timer"
-msgstr ""
-
-#. TRANSLATORS: Accessibility label for the "+" button that adds a new speech dictionary rule
-#: swift
-msgid "Add Rule"
 msgstr ""
 
 #. TRANSLATORS: Message shown when no speech dictionary rules have been created yet
@@ -4535,14 +4619,6 @@ msgstr ""
 #: swift
 #: kt
 msgid "This document contains {} words."
-msgstr ""
-
-#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
-#. three forms is used depends on the target language's own plural rule, read
-#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
-#. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
-#: kt
-msgid "words"
 msgstr ""
 
 #. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
