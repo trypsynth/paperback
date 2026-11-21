@@ -224,6 +224,8 @@ Each app has two ways to read a document. In text mode, you read the text with y
 
 Audio books, like DAISY, M4B, and MP3 books, play their own recording instead.
 
+In read aloud mode, the screen shows how far through the book you are. Tap that to see the chapter instead: its name, how far through it you are, and how many words of it are left, e.g. "Chapter 3, 42%, 1,850 words left". In an audio book it gives the time, e.g. "Chapter 3, 4:10 of 12:00, 7:50 left". Tap it again to go back to the whole book.
+
 ### The reading bar
 
 The bar at the bottom of the screen has, from left to right:

@@ -48,6 +48,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import uniffi.paperback.ChapterProgressFfi
 import uniffi.paperback.ExportFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -473,11 +474,33 @@ fun MainScreen(
 										delay(1000)
 									}
 								}
+								val showsChapterProgress by viewModel.reading.showsChapterProgress.collectAsStateWithLifecycle()
+								// Asked once per book: it is false only for an all-audio book whose files' lengths aren't known.
+								val canShowChapterProgress = remember(session) { viewModel.reading.chapterProgress() != null }
+								// Read again every second only for a recording; in a text book the count of words left changes with the reading position alone.
+								val chapterProgress by produceState<ChapterProgressFfi?>(
+									null,
+									session,
+									showsChapterProgress,
+									ttsPosition
+								) {
+									if (!showsChapterProgress) {
+										value = null
+										return@produceState
+									}
+									do {
+										value = viewModel.reading.chapterProgress()
+										delay(1000)
+									} while (docState.hasAudio)
+								}
 								ReadAloudPane(
 									segmentText = currentSegmentText,
 									readability = readability,
 									progressPercent = progressPercent,
 									audioTime = audioTime,
+									chapterProgress = chapterProgress,
+									canShowChapterProgress = canShowChapterProgress,
+									onToggleChapterProgress = { viewModel.reading.toggleChapterProgress() },
 									sleepTimerRemaining = sleepTimerRemaining,
 									onCancelSleepTimer = { viewModel.reading.sleepTimer.cancel() }
 								)

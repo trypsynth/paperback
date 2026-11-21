@@ -20,10 +20,10 @@ pub use crate::{
 	export::ExportFormat,
 	ffi_config::ConfigManagerFfi,
 	session::{
-		AudioClipFfi, AudioCursorFfi, AudioPointFfi, DocumentError, DocumentSession, DocumentStatsFfi, HeadingTreeFfi,
-		HeadingTreeItemFfi, LineMarker, LinkAction, LinkActivationResult, LinkListFfi, LinkListItemFfi,
-		SearchOptionsFfi, SearchResultFfi, SegmentDirectionFfi, SegmentTypeFfi, StatusInfo, TextSegmentFfi, TocEntry,
-		WHOLE_DOCUMENT_LEN, WINDOW_LEN,
+		AudioClipFfi, AudioCursorFfi, AudioPointFfi, ChapterProgressFfi, DocumentError, DocumentSession,
+		DocumentStatsFfi, HeadingTreeFfi, HeadingTreeItemFfi, LineMarker, LinkAction, LinkActivationResult,
+		LinkListFfi, LinkListItemFfi, SearchOptionsFfi, SearchResultFfi, SegmentDirectionFfi, SegmentTypeFfi,
+		StatusInfo, TextSegmentFfi, TocEntry, WHOLE_DOCUMENT_LEN, WINDOW_LEN,
 	},
 };
 

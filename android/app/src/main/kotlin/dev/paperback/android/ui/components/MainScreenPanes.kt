@@ -1,5 +1,6 @@
 package dev.paperback.android.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
@@ -14,13 +15,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
 import dev.paperback.android.ui.state.RecentDocumentItem
+import dev.paperback.android.ui.state.chapterProgressText
+import uniffi.paperback.ChapterProgressFfi
 import androidx.compose.foundation.lazy.items as lazyItems
 
 private const val RECENT_DOCUMENTS_PREVIEW_COUNT = 5
@@ -83,6 +88,9 @@ fun ReadAloudPane(
 	readability: ReadabilityStyle,
 	progressPercent: Int?,
 	audioTime: String?,
+	chapterProgress: ChapterProgressFfi?,
+	canShowChapterProgress: Boolean,
+	onToggleChapterProgress: () -> Unit,
 	sleepTimerRemaining: Int?,
 	onCancelSleepTimer: () -> Unit
 ) {
@@ -104,24 +112,51 @@ fun ReadAloudPane(
 				modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp)
 			)
 		}
-		if (progressPercent != null) {
-			Spacer(modifier = Modifier.height(24.dp))
-			// The text below says the same number, so the bar is for the eye only.
-			LinearProgressIndicator(
-				progress = { progressPercent / 100f },
-				modifier = Modifier.fillMaxWidth().clearAndSetSemantics { }
-			)
-			Spacer(modifier = Modifier.height(8.dp))
-			Text(
+		val shownPercent = chapterProgress?.percent ?: progressPercent
+		val progressLines = if (chapterProgress != null) {
+			listOf(chapterProgressText(chapterProgress))
+		} else {
+			listOfNotNull(
 				// TRANSLATORS: How far through the document the reader has got, shown under the read-aloud progress bar; {} is a whole-number percentage
-				t("{}% through", progressPercent.toString()),
-				style = MaterialTheme.typography.labelMedium,
-				color = MaterialTheme.colorScheme.onSurfaceVariant
+				progressPercent?.let { t("{}% through", it.toString()) },
+				audioTime
 			)
 		}
-		if (audioTime != null) {
-			Spacer(modifier = Modifier.height(8.dp))
-			Text(audioTime, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+		if (progressLines.isNotEmpty()) {
+			Spacer(modifier = Modifier.height(16.dp))
+			val toggleLabel = if (chapterProgress != null) {
+				// TRANSLATORS: What tapping the chapter's progress under the read-aloud bar does: it switches to how far through the whole book the reader is
+				t("Show book progress")
+			} else {
+				// TRANSLATORS: What tapping the book's progress under the read-aloud bar does: it switches to how far through the current chapter the reader is and how much of it is left
+				t("Show chapter progress")
+			}
+			val tappable = if (canShowChapterProgress) {
+				Modifier.clickable(onClickLabel = toggleLabel, role = Role.Button, onClick = onToggleChapterProgress)
+			} else {
+				Modifier
+			}
+			Column(
+				modifier = Modifier.fillMaxWidth().then(tappable).padding(vertical = 8.dp),
+				horizontalAlignment = Alignment.CenterHorizontally,
+				verticalArrangement = Arrangement.spacedBy(8.dp)
+			) {
+				if (shownPercent != null) {
+					// The text below says the same number, so the bar is for the eye only.
+					LinearProgressIndicator(
+						progress = { shownPercent / 100f },
+						modifier = Modifier.fillMaxWidth().clearAndSetSemantics { }
+					)
+				}
+				for (line in progressLines) {
+					Text(
+						line,
+						style = MaterialTheme.typography.labelMedium,
+						color = MaterialTheme.colorScheme.onSurfaceVariant,
+						textAlign = TextAlign.Center
+					)
+				}
+			}
 		}
 		if (sleepTimerRemaining == null) return@Column
 		Spacer(modifier = Modifier.height(16.dp))
