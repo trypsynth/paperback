@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-15 01:48+0000\n"
+"POT-Creation-Date: 2026-11-21 13:54-0700\n"
 "PO-Revision-Date: 2026-09-22 08:22+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -1408,6 +1408,11 @@ msgstr "Deze stem, snelheid en toonhoogte alleen voor dit &boek gebruiken"
 msgid "Play Sa&mple"
 msgstr "V&oorbeeld afspelen"
 
+#. TRANSLATORS: Button on the Audio tab of Settings that opens the speech dictionary, which changes how words are read aloud
+#, fuzzy
+msgid "Speech &Dictionary..."
+msgstr "Uitspraak&woordenboek..."
+
 #. TRANSLATORS: First choice in the voice list on the Audio tab of Settings, which leaves the choice of voice to the system
 msgid "System default"
 msgstr "Systeemstandaard"
@@ -1527,6 +1532,133 @@ msgstr "Gevonden tekst &markeren"
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
 msgstr "&Leessnelheid (woorden per minuut):"
+
+#. TRANSLATORS: Title of the speech dictionary dialog, opened from the Read Aloud group on the Audio tab of Settings
+msgid "Speech Dictionary"
+msgstr "Uitspraakwoordenboek"
+
+#. TRANSLATORS: Label of the list of speech dictionary rules, which are applied in order and can each be turned on or off
+#, fuzzy
+msgid "&Rules:"
+msgstr "&Regels:"
+
+#. TRANSLATORS: Said of a speech dictionary rule that is on
+#, fuzzy
+msgid "on"
+msgstr "aan"
+
+#. TRANSLATORS: Said of a speech dictionary rule that is off
+#, fuzzy
+msgid "off"
+msgstr "uit"
+
+#. TRANSLATORS: Button in the speech dictionary dialog that adds a rule
+#, fuzzy
+msgid "&Add..."
+msgstr "&Toevoegen..."
+
+#. TRANSLATORS: Button in the speech dictionary dialog that edits the current rule
+#, fuzzy
+msgid "&Edit..."
+msgstr "Be&werken..."
+
+#. TRANSLATORS: Button in the speech dictionary dialog that removes the current rule
+#, fuzzy
+msgid "Re&move"
+msgstr "Ve&rwijderen"
+
+#. TRANSLATORS: In the speech dictionary's list, the replacement of a rule that removes what it finds
+#, fuzzy
+msgid "removed"
+msgstr "verwijderd"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches whole words only
+#, fuzzy
+msgid "whole words"
+msgstr "heel woord"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches inside words too
+msgid "words"
+msgstr "woorden"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches a regular expression across a paragraph
+#, fuzzy
+msgid "paragraphs, regular expression"
+msgstr "alinea's, reguliere expressie"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches text across a paragraph
+#, fuzzy
+msgid "paragraphs"
+msgstr "alinea's"
+
+#. TRANSLATORS: In the speech dictionary, a rule that applies to every voice
+#, fuzzy
+msgid "all voices"
+msgstr "alle stemmen"
+
+#. TRANSLATORS: Title of the dialog that adds a speech dictionary rule
+msgid "Add Rule"
+msgstr "Regel toevoegen"
+
+#. TRANSLATORS: Title of the dialog that edits a speech dictionary rule
+msgid "Edit Rule"
+msgstr "Regel bewerken"
+
+#. TRANSLATORS: Label of the text a speech dictionary rule matches, or its regular expression
+#, fuzzy
+msgid "&Pattern:"
+msgstr "&Patroon:"
+
+#, fuzzy
+msgid "&Replacement:"
+msgstr "&Vervanging:"
+
+#. TRANSLATORS: Label of the choice between a rule matching words and one matching across a whole paragraph
+#, fuzzy
+msgid "&Applies to:"
+msgstr "&Van toepassing op:"
+
+#. TRANSLATORS: Speech dictionary rule scope: the rule matches words
+msgid "Words"
+msgstr "Woorden"
+
+#. TRANSLATORS: Speech dictionary rule scope: the rule matches across a whole paragraph, and can be a regular expression
+#, fuzzy
+msgid "Whole paragraphs"
+msgstr "Hele alinea's"
+
+#. TRANSLATORS: Label of the choice of voices a speech dictionary rule applies to
+#, fuzzy
+msgid "&Voices:"
+msgstr "&Stemmen:"
+
+#. TRANSLATORS: First choice of voices for a speech dictionary rule
+msgid "All voices"
+msgstr "Alle stemmen"
+
+#. TRANSLATORS: A choice of voices for a speech dictionary rule: every voice of one language; %s is the language
+#, fuzzy
+msgid "Voices in %s"
+msgstr "Stemmen in %s"
+
+#. TRANSLATORS: Check box: a word rule matches only whole words, not part of a longer word
+#, fuzzy
+msgid "Match &whole words only"
+msgstr "Alleen heel &woord overeenkomsten"
+
+#. TRANSLATORS: Check box: a paragraph rule's pattern is a regular expression, whose groups the replacement can use as \1
+#, fuzzy
+msgid "Regular e&xpression"
+msgstr "Reguliere e&xpressie"
+
+#. TRANSLATORS: Shown when a speech dictionary rule is saved without a pattern
+#, fuzzy
+msgid "Type a pattern for the rule."
+msgstr "Typ een patroon voor de regel."
+
+#, fuzzy
+msgid "The regular expression isn't valid: %s"
+msgstr "De reguliere expressie is ongeldig: %s"
 
 #. TRANSLATORS: Title of the Settings dialog
 msgid "Settings"
@@ -3960,6 +4092,7 @@ msgstr "Boek openen"
 msgid "Locate"
 msgstr "Terugvinden"
 
+#. TRANSLATORS: Button confirming removal of a bookmark and its note
 #: kt swift
 msgid "Remove"
 msgstr "Verwijderen"
@@ -4007,11 +4140,6 @@ msgstr "Spraaksnelheid"
 #: kt swift
 msgid "Pitch"
 msgstr "Toonhoogte"
-
-#. TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
-#: swift
-msgid "Speech Dictionary"
-msgstr "Uitspraakwoordenboek"
 
 #: kt swift
 msgid "Play Sample"
@@ -4061,11 +4189,6 @@ msgstr "Titel"
 #: kt swift
 msgid "Author"
 msgstr "Auteur"
-
-#. TRANSLATORS: Row label for the document's total word count
-#: kt swift
-msgid "Words"
-msgstr "Woorden"
 
 #. TRANSLATORS: Row label for the document's total line count
 #: kt swift
@@ -4196,20 +4319,10 @@ msgstr "Stemmen"
 msgid "New Rule"
 msgstr "Nieuwe regel"
 
-#. TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
-#: swift
-msgid "Edit Rule"
-msgstr "Regel bewerken"
-
-#. TRANSLATORS: Button to save the rule and dismiss the editor
-#: swift
+#. TRANSLATORS: Button that saves what was typed and closes the editor, such as a speech rule or a bookmark's note
+#: kt swift
 msgid "Save"
 msgstr "Opslaan"
-
-#. TRANSLATORS: Row label for selecting all TTS voices as the target of a rule, rather than a specific language or voice
-#: swift
-msgid "All voices"
-msgstr "Alle stemmen"
 
 #. TRANSLATORS: Navigation title for the screen where the user picks which voices a rule applies to
 #: swift
@@ -4258,11 +4371,6 @@ msgstr "Timer stoppen"
 #: swift
 msgid "Start Timer"
 msgstr "Timer starten"
-
-#. TRANSLATORS: Accessibility label for the "+" button that adds a new speech dictionary rule
-#: swift
-msgid "Add Rule"
-msgstr "Regel toevoegen"
 
 #. TRANSLATORS: Message shown when no speech dictionary rules have been created yet
 #: swift
@@ -4490,14 +4598,6 @@ msgstr "Uitvouwen"
 #: swift kt
 msgid "This document contains {} words."
 msgstr "Dit document bevat {} woorden."
-
-#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
-#. three forms is used depends on the target language's own plural rule, read
-#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
-#. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
-#: kt
-msgid "words"
-msgstr "woorden"
 
 #. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
@@ -5084,6 +5184,148 @@ msgstr "Leesbaarheid"
 #: kt swift
 msgid "Time"
 msgstr "Tijd"
+
+#. TRANSLATORS: Shown and announced with how far through a book's chapter the reader is: the number of words left in it; {} is the number. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: kt swift
+#, fuzzy
+msgid "{} word left"
+msgstr "{} woord over"
+
+#: kt swift
+#, fuzzy
+msgid "{} words left"
+msgstr "{} woorden over"
+
+#: kt swift
+#, fuzzy
+msgid "{} words left⁣"
+msgstr "{} woorden over⁣"
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt swift
+#, fuzzy
+msgid "Show book progress"
+msgstr "Voortgang boek tonen"
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt swift
+#, fuzzy
+msgid "Show chapter progress"
+msgstr "Voortgang hoofdstuk tonen"
+
+#. TRANSLATORS: Name of the "Bookmark" navigation unit, which moves between the reader's bookmarks and notes
+#: kt swift
+#, fuzzy
+msgid "Bookmark"
+msgstr "Bladwijzer"
+
+#. TRANSLATORS: Announced after clearing a bookmark's note, which keeps the bookmark
+#: kt swift
+#, fuzzy
+msgid "Note deleted."
+msgstr "Notitie verwijderd."
+
+#. TRANSLATORS: VoiceOver label for the note shown under the passage being read; {} is the note's text
+#: kt swift
+#, fuzzy
+msgid "Note: {}"
+msgstr "Notitie: {}"
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt swift
+#, fuzzy
+msgid "Add Bookmark"
+msgstr "bladwijzer toevoegen"
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt swift
+#, fuzzy
+msgid "Remove Bookmark"
+msgstr "bladwijzer verwijderen"
+
+#. TRANSLATORS: VoiceOver value of the bookmark button when the bookmark at the current paragraph has a note
+#: kt swift
+#, fuzzy
+msgid "Has note"
+msgstr "Heeft notitie"
+
+#. TRANSLATORS: Title of the alert confirming removal of a bookmark that has a note
+#: kt swift
+#, fuzzy
+msgid "Remove this bookmark and its note?"
+msgstr "Deze bladwijzer en bijbehorende notitie verwijderen?"
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt swift
+#, fuzzy
+msgid "Edit Note..."
+msgstr "Notitie bewerken..."
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt swift
+#, fuzzy
+msgid "Add Note..."
+msgstr "Notitie toevoegen..."
+
+#. TRANSLATORS: Label for the picker choosing whether the Bookmarks screen shows everything, only bookmarks, or only notes
+#: swift
+#, fuzzy
+msgid "Show"
+msgstr "Tonen"
+
+#. TRANSLATORS: Swipe / accessibility action deleting a bookmark from the Bookmarks screen
+#: kt swift
+#, fuzzy
+msgid "Delete"
+msgstr "verwijderen"
+
+#. TRANSLATORS: Title shown when the current document has no bookmarks or notes
+#: kt swift
+#, fuzzy
+msgid "No Bookmarks"
+msgstr "Geen bladwijzers"
+
+#. TRANSLATORS: Description shown under the "No Bookmarks" title
+#: kt swift
+#, fuzzy
+msgid "Tap the bookmark button while reading to mark your place."
+msgstr "Tik op de bladwijzerknop tijdens het lezen om je plaats op te slaan."
+
+#. TRANSLATORS: VoiceOver hint on the note shown under the passage being read
+#: swift
+#, fuzzy
+msgid "Double-tap to edit."
+msgstr "Dubbeltik om te bewerken."
+
+#. TRANSLATORS: Heading over the passage (or audiobook time) a bookmark note is attached to
+#: swift
+#, fuzzy
+msgid "Bookmarked"
+msgstr "Met bladwijzer"
+
+#. TRANSLATORS: Heading over the text field where a bookmark's note is typed
+#: swift
+#, fuzzy
+msgid "Note"
+msgstr "Notitie"
+
+#. TRANSLATORS: Button that clears a bookmark's note but keeps the bookmark
+#: kt swift
+#, fuzzy
+msgid "Delete Note"
+msgstr "Notitie verwijderen"
+
+#. TRANSLATORS: TalkBack action label for a long press on the bookmark button, which opens its note and list options
+#: kt
+#, fuzzy
+msgid "show note and bookmark options"
+msgstr "notitie en bladwijzeropties tonen"
+
+#. TRANSLATORS: TalkBack action label for a bookmark in the Bookmarks screen, read as "double tap to go to bookmark"
+#: kt
+#, fuzzy
+msgid "go to bookmark"
+msgstr "gaan naar bladwijzer"
 
 #, fuzzy
 #~ msgid "Announce &Chapter Time"

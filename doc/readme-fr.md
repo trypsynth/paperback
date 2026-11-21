@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: b1e8b46ff69081ba; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2e060f0cdd2c601f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,77b4e1b6,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - version 1.1
 
@@ -226,6 +226,8 @@ Chaque application a deux façons de lire un document. En mode texte, vous lisez
 
 Les livres audio, comme DAISY, M4B et les livres MP3, lisent leur propre enregistrement à la place.
 
+En mode lecture à haute voix, l'écran montre votre progression dans le livre. Appuyez dessus pour voir le chapitre à la place : son nom, votre progression dans le chapitre, et combien de mots il en reste, par exemple « Chapitre 3, 42%, 1 850 mots restants ». Dans un livre audio, il affiche l'heure, par exemple « Chapitre 3, 4:10 de 12:00, 7:50 restant ». Appuyez à nouveau pour revenir au livre entier.
+
 ### La barre de lecture
 
 La barre en bas de l'écran a, de gauche à droite :
@@ -236,12 +238,27 @@ La barre en bas de l'écran a, de gauche à droite :
 
 Vous pouvez également balayer vers le haut ou vers le bas sur le bouton de lecture pour vous déplacer par l'unité de navigation, sans avoir besoin d'atteindre les boutons Précédent et Suivant. Si c'est tout ce que vous utilisez, le paramètre Masquer les boutons Précédent et Suivant les retire du chemin de votre lecteur d'écran. Le paramètre Balayage vers le haut avance choisit la direction dans laquelle va un balayage.
 
+### Signets et notes
+
+Le bouton Signet en haut de l'écran marque votre place. Appuyez dessus pour ajouter un signet au paragraphe sur lequel vous êtes, et appuyez à nouveau pour supprimer le signet. Votre lecteur d'écran dit Sélectionné quand le paragraphe en a déjà un. La suppression d'un signet qui a une note demande d'abord une confirmation.
+
+* En mode lecture à haute voix, le signet se place au début du paragraphe en cours de lecture, afin que revenir à celui-ci relise ce paragraphe du début. En mode texte, il se place sur le paragraphe sur lequel vous êtes.
+* Dans un livre audio sans texte, comme un livre MP3, le signet conserve l'heure exacte à la place, comme sur le bureau.
+* Appuyez longuement sur le bouton Signet, ou utilisez ses actions du lecteur d'écran, pour ajouter ou modifier une note, ou pour ouvrir la liste des Signets. Pendant que vous écrivez une note, la lecture s'arrête, et elle reprend quand vous fermez la note.
+* En mode lecture à haute voix, la note d'un paragraphe s'affiche sous celui-ci. Appuyez sur la note pour la modifier.
+* En mode texte, chaque paragraphe a des actions du lecteur d'écran pour ajouter ou supprimer un signet et pour ajouter ou modifier une note. Sur iOS, un paragraphe avec signet affiche Signet, ou sa note, après son texte, et le rotor Signets se déplace entre eux.
+* **Signets** dans le menu Plus d'options répertorie chaque signet et note, avec Tous, Signets et Notes pour les filtrer. Il s'ouvre sur celui le plus proche de votre position. Choisissez-en un pour y aller. Balayez sur un signet sur iOS, ou appuyez longuement dessus sur Android, ou utilisez les actions du lecteur d'écran, pour modifier sa note ou le supprimer.
+* Une fois qu'un document a des signets, Signet se joint aux unités de navigation sur la barre de lecture, afin que précédent et suivant se déplacent entre eux.
+
+Les signets et les notes sont les mêmes que ceux utilisés par le bureau, afin qu'ils se propagent entre eux dans le fichier `.paperback` d'un document.
+
 ### Plus d'options
 
 Le menu Plus d'options est l'endroit où tout le reste se trouve. Certains éléments fonctionnent un peu différemment sur chaque application.
 
 * **Passer au mode TTS ou Passer au mode Texte :** bascule entre le mode lecture à haute voix et le mode texte, décrit ci-dessus. En mode texte, un élément Lire à haute voix lance et met en pause la lecture à haute voix sans quitter le mode texte.
 * **Table des matières :** les chapitres du livre, ouverts à celui que vous lisez. Choisissez-en un pour y aller directement. Les entrées ayant des chapitres sous elles peuvent être développées et réduites avec les actions du lecteur d'écran.
+* **Signets :** vos signets et notes dans ce document, décrits ci-dessus.
 * **Éléments :** une liste des titres ou des liens du document. Basculez entre les deux avec le sélecteur Type sur iOS, ou les onglets sur Android, puis choisissez-en un pour y aller.
 * **Rechercher :** tapez ce que vous cherchez, ou choisissez une recherche antérieure dans l'Historique des recherches, et choisissez s'il faut respecter la casse, faire correspondre des mots entiers seulement, ou utiliser une expression régulière. Rechercher le précédent et Rechercher suivant sautent à une correspondance et indiquent où c'est tombé, et Rechercher reste ouvert pour que vous puissiez continuer. En mode lecture à haute voix, Rechercher s'affiche également comme une unité de navigation sur la barre de lecture, ce qui vous permet de parcourir les correspondances à partir de là aussi. **Arrêter la lecture après les correspondances de recherche** dans les Paramètres sous Synthèse vocale est activé par défaut et arrête après la lecture du paragraphe contenant une correspondance. Désactivez-le pour continuer la lecture à partir de la correspondance tandis que les contrôles précédent et suivant de la barre de lecture naviguent toujours par Rechercher.
 * **Aller à :** sautez à une ligne, une page, ou un pourcentage du document. Choisissez lequel avec le sélecteur Mode.
@@ -258,7 +275,7 @@ Le menu Plus d'options est l'endroit où tout le reste se trouve. Certains élé
 
 ### Claviers et casques
 
-Avec un clavier, les raccourcis de bureau pour ouvrir des livres, les documents récents, Rechercher, Aller à, la table des matières, le nombre de mots, les informations sur le document, l'exportation et la minuterie de sommeil fonctionnent tous, en utilisant `Cmd` à la place de `Ctrl` sur iOS. Tout comme les touches à une seule lettre pour se déplacer par titre, page, lien et le reste, et `Space` pour jouer et mettre en pause. Sur iOS, les touches à une seule lettre ne touchent Paperback que lorsque la navigation rapide à une lettre VoiceOver est désactivée.
+Avec un clavier, les raccourcis de bureau pour ouvrir des livres, les documents récents, Rechercher, Aller à, la table des matières, le nombre de mots, les informations sur le document, l'exportation et la minuterie de sommeil fonctionnent tous, en utilisant `Cmd` à la place de `Ctrl` sur iOS. Tout comme les touches à une seule lettre pour se déplacer par titre, page, lien et le reste, et `Space` pour jouer et mettre en pause. Les touches de signet correspondent aussi au bureau : `B` et `Shift+B` se déplacent au signet suivant et précédent, `N` et `Shift+N` à la note suivante et précédente, `Ctrl+Shift+B` ajoute ou supprime un signet, `Ctrl+Shift+N` ajoute ou modifie une note, et `Ctrl+B` ouvre la liste des Signets. Sur iOS, les touches à une seule lettre ne touchent Paperback que lorsque la navigation rapide à une lettre VoiceOver est désactivée.
 
 Sur Android, un bouton de casque joue et met en pause avec une pression, avance avec deux, et revient avec trois.
 
