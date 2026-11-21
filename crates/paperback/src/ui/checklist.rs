@@ -29,7 +29,9 @@ struct State {
 	current: usize,
 	top: usize,
 	reorderable: bool,
+	#[cfg_attr(not(target_os = "windows"), expect(dead_code, reason = "only Windows names the rows so far"))]
 	checked_word: String,
+	#[cfg_attr(not(target_os = "windows"), expect(dead_code, reason = "only Windows names the rows so far"))]
 	unchecked_word: String,
 	on_change: Option<Rc<dyn Fn(ChecklistChange)>>,
 }
