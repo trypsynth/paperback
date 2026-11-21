@@ -37,6 +37,17 @@ extension MagicTapWindow {
 			cmd("l", .shift, #selector(kbPrevList), t("Previous List")),
 			cmd("i", [], #selector(kbNextListItem), t("Next List Item")),
 			cmd("i", .shift, #selector(kbPrevListItem), t("Previous List Item")),
+			cmd("b", [], #selector(kbNextBookmark), t("Next Bookmark")),
+			cmd("b", .shift, #selector(kbPrevBookmark), t("Previous Bookmark")),
+			// TRANSLATORS: Keyboard shortcut title for moving to the next bookmark that has a note
+			cmd("n", [], #selector(kbNextNote), t("Next Note")),
+			// TRANSLATORS: Keyboard shortcut title for moving to the previous bookmark that has a note
+			cmd("n", .shift, #selector(kbPrevNote), t("Previous Note")),
+			// TRANSLATORS: Keyboard shortcut title for marking or unmarking the current paragraph with a bookmark
+			cmd("b", [.command, .shift], #selector(kbToggleBookmark), t("Toggle Bookmark")),
+			// TRANSLATORS: Keyboard shortcut title for writing or editing the current bookmark's note
+			cmd("n", [.command, .shift], #selector(kbBookmarkNote), t("Bookmark Note")),
+			cmd("b", .command, #selector(kbBookmarks), t("Bookmarks")),
 			cmd(UIKeyCommand.f3, [], #selector(kbFindNext), t("Find Next")),
 			cmd(UIKeyCommand.f3, .shift, #selector(kbFindPrev), t("Find Previous")),
 			cmd(UIKeyCommand.f7, [], #selector(kbElements), t("Elements List...")),
@@ -70,6 +81,14 @@ extension MagicTapWindow {
 	}
 
 	@objc private func kbTogglePlayPause()  { onMain { $0.reading.togglePlayPause() } }
+
+	@objc private func kbNextBookmark()   { onMain { $0.reading.stepBookmark(forward: true) } }
+	@objc private func kbPrevBookmark()   { onMain { $0.reading.stepBookmark(forward: false) } }
+	@objc private func kbNextNote()       { onMain { $0.reading.stepBookmark(forward: true, notesOnly: true) } }
+	@objc private func kbPrevNote()       { onMain { $0.reading.stepBookmark(forward: false, notesOnly: true) } }
+	@objc private func kbToggleBookmark() { onMain { if $0.activeTab != nil { $0.reading.toggleBookmark() } } }
+	@objc private func kbBookmarkNote()   { onMain { if $0.activeTab != nil { $0.navigation.bookmarkNote = $0.reading.noteTargetHere() } } }
+	@objc private func kbBookmarks()      { onMain { if $0.activeTab != nil { $0.navigation.showBookmarks = true } } }
 
 	@objc private func kbNextSection()    { onMain { $0.reading.navigateByType(.section,  direction: .next) } }
 	@objc private func kbPrevSection()    { onMain { $0.reading.navigateByType(.section,  direction: .previous) } }

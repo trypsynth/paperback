@@ -104,6 +104,10 @@ class MainActivity : ComponentActivity() {
 			ReaderShortcut.ExportDocument -> vm.openExportDocumentDialog()
 			ReaderShortcut.ExportSettings -> vm.navigation.exportSettingsRequest.request()
 			ReaderShortcut.ImportSettings -> vm.navigation.importSettingsRequest.request()
+			ReaderShortcut.ToggleBookmark -> vm.bookmarks.toggle()
+			ReaderShortcut.BookmarkNote -> vm.bookmarks.openNoteHere()
+			ReaderShortcut.OpenBookmarks -> vm.openBookmarks()
+			is ReaderShortcut.StepBookmark -> vm.bookmarks.step(shortcut.forward, shortcut.notesOnly)
 			is ReaderShortcut.OpenGoTo -> vm.openGoToDialog(shortcut.mode)
 			is ReaderShortcut.Navigate -> vm.reading.navigateByType(shortcut.type, shortcut.direction)
 		}

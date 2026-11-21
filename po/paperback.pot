@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-21 08:28-0700\n"
+"POT-Creation-Date: 2026-11-21 09:02-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3967,6 +3967,7 @@ msgstr ""
 msgid "Locate"
 msgstr ""
 
+#. TRANSLATORS: Button confirming removal of a bookmark and its note
 #: kt
 #: swift
 msgid "Remove"
@@ -4230,7 +4231,8 @@ msgstr ""
 msgid "Edit Rule"
 msgstr ""
 
-#. TRANSLATORS: Button to save the rule and dismiss the editor
+#. TRANSLATORS: Button that saves what was typed and closes the editor, such as a speech rule or a bookmark's note
+#: kt
 #: swift
 msgid "Save"
 msgstr ""
@@ -5193,4 +5195,112 @@ msgstr ""
 #: kt
 #: swift
 msgid "Show chapter progress"
+msgstr ""
+
+#. TRANSLATORS: Name of the "Bookmark" navigation unit, which moves between the reader's bookmarks and notes
+#: kt
+#: swift
+msgid "Bookmark"
+msgstr ""
+
+#. TRANSLATORS: Announced after clearing a bookmark's note, which keeps the bookmark
+#: kt
+#: swift
+msgid "Note deleted."
+msgstr ""
+
+#. TRANSLATORS: VoiceOver label for the note shown under the passage being read; {} is the note's text
+#: kt
+#: swift
+msgid "Note: {}"
+msgstr ""
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt
+#: swift
+msgid "Add Bookmark"
+msgstr ""
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt
+#: swift
+msgid "Remove Bookmark"
+msgstr ""
+
+#. TRANSLATORS: VoiceOver value of the bookmark button when the bookmark at the current paragraph has a note
+#: kt
+#: swift
+msgid "Has note"
+msgstr ""
+
+#. TRANSLATORS: Title of the alert confirming removal of a bookmark that has a note
+#: kt
+#: swift
+msgid "Remove this bookmark and its note?"
+msgstr ""
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt
+#: swift
+msgid "Edit Note..."
+msgstr ""
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt
+#: swift
+msgid "Add Note..."
+msgstr ""
+
+#. TRANSLATORS: Label for the picker choosing whether the Bookmarks screen shows everything, only bookmarks, or only notes
+#: swift
+msgid "Show"
+msgstr ""
+
+#. TRANSLATORS: Swipe / accessibility action deleting a bookmark from the Bookmarks screen
+#: kt
+#: swift
+msgid "Delete"
+msgstr ""
+
+#. TRANSLATORS: Title shown when the current document has no bookmarks or notes
+#: kt
+#: swift
+msgid "No Bookmarks"
+msgstr ""
+
+#. TRANSLATORS: Description shown under the "No Bookmarks" title
+#: kt
+#: swift
+msgid "Tap the bookmark button while reading to mark your place."
+msgstr ""
+
+#. TRANSLATORS: VoiceOver hint on the note shown under the passage being read
+#: swift
+msgid "Double-tap to edit."
+msgstr ""
+
+#. TRANSLATORS: Heading over the passage (or audiobook time) a bookmark note is attached to
+#: swift
+msgid "Bookmarked"
+msgstr ""
+
+#. TRANSLATORS: Heading over the text field where a bookmark's note is typed
+#: swift
+msgid "Note"
+msgstr ""
+
+#. TRANSLATORS: Button that clears a bookmark's note but keeps the bookmark
+#: kt
+#: swift
+msgid "Delete Note"
+msgstr ""
+
+#. TRANSLATORS: TalkBack action label for a long press on the bookmark button, which opens its note and list options
+#: kt
+msgid "show note and bookmark options"
+msgstr ""
+
+#. TRANSLATORS: TalkBack action label for a bookmark in the Bookmarks screen, read as "double tap to go to bookmark"
+#: kt
+msgid "go to bookmark"
 msgstr ""

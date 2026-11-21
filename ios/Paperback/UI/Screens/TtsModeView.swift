@@ -27,6 +27,9 @@ struct TtsModeView: View {
 					// The text above is the real content, so VoiceOver reading both would say the same words twice.
 					.accessibilityHidden(true)
 			}
+			if let note = viewModel.reading.bookmarkHere?.note, !note.isEmpty {
+				noteCard(note)
+			}
 			// A recording moves on between the clip changes the view is told about, so its share is read again every second while it plays.
 			TimelineView(.periodic(from: .now, by: 1)) { _ in
 				let reading = viewModel.reading
@@ -46,6 +49,25 @@ struct TtsModeView: View {
 			}
 			Spacer()
 		}
+	}
+
+	private func noteCard(_ note: String) -> some View {
+		Button {
+			viewModel.navigation.bookmarkNote = viewModel.reading.noteTargetHere()
+		} label: {
+			Label(note, systemImage: "note.text")
+				.font(.callout)
+				.lineLimit(4)
+				.frame(maxWidth: .infinity, alignment: .leading)
+				.padding(12)
+				.background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+		}
+		.buttonStyle(.plain)
+		.padding(.horizontal, 24)
+		// TRANSLATORS: VoiceOver label for the note shown under the passage being read; {} is the note's text
+		.accessibilityLabel(t("Note: {}").replacingOccurrences(of: "{}", with: note))
+		// TRANSLATORS: VoiceOver hint on the note shown under the passage being read
+		.accessibilityHint(t("Double-tap to edit."))
 	}
 
 	/// The book's progress, or the chapter's once tapped; tapping switches between the two wherever the chapter can be measured.

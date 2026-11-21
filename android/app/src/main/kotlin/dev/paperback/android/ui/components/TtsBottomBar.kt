@@ -78,6 +78,9 @@ fun TtsBottomBar(
 			// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by Find matches
 			t("Find Previous")
 		is NavUnit.Segment -> getPreviousUnitLabel(currentUnit.type)
+		is NavUnit.Bookmark ->
+			// TRANSLATORS: TalkBack label for the read-aloud bar's previous button when navigating by bookmark
+			t("Previous Bookmark")
 	}
 	val nextLabel = when (currentUnit) {
 		is NavUnit.Time ->
@@ -87,6 +90,9 @@ fun TtsBottomBar(
 			// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by Find matches
 			t("Find Next")
 		is NavUnit.Segment -> getNextUnitLabel(currentUnit.type)
+		is NavUnit.Bookmark ->
+			// TRANSLATORS: TalkBack label for the read-aloud bar's next button when navigating by bookmark
+			t("Next Bookmark")
 	}
 
 	BottomAppBar(modifier = modifier) {

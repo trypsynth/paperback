@@ -130,6 +130,13 @@ impl ConfigManager {
 		self.dirty.set(true);
 	}
 
+	/// The text bookmark a reader is on when reading `start..end`, such as the paragraph being read aloud: one made mid-paragraph, or as a range on desktop, still counts. An empty range matches only a bookmark at `start`.
+	pub fn text_bookmark_in(&self, path: &str, start: DocPos, end: DocPos) -> Option<Bookmark> {
+		self.get_bookmarks(path)
+			.into_iter()
+			.find(|bm| bm.audio_ms.is_none() && (bm.start == start || (start <= bm.start && bm.start < end)))
+	}
+
 	/// Playback moves on between key presses, so a second toggle never lands on the millisecond the first one set.
 	pub fn audio_bookmark_near(&self, path: &str, audio_ms: u64, within_ms: u64) -> Option<Bookmark> {
 		self.get_bookmarks(path)
@@ -195,6 +202,23 @@ mod tests {
 		assert_eq!("edited", config.get_bookmarks("book.mp3")[0].note);
 		config.remove_audio_bookmark("book.mp3", 5000);
 		assert!(config.get_bookmarks("book.mp3").is_empty());
+	}
+
+	#[test]
+	fn a_bookmark_anywhere_in_the_paragraph_is_found_but_not_one_past_it() {
+		let config = config();
+		config.add_bookmark("book.epub", 15.into(), 15.into(), "mid");
+		config.add_bookmark("book.epub", 30.into(), 30.into(), "");
+		assert_eq!("mid", config.text_bookmark_in("book.epub", 10.into(), 30.into()).unwrap().note);
+		assert!(config.text_bookmark_in("book.epub", 0.into(), 10.into()).is_none());
+		assert!(config.text_bookmark_in("book.epub", 30.into(), 30.into()).is_some());
+	}
+
+	#[test]
+	fn an_audio_bookmark_is_not_a_text_bookmark_in_range() {
+		let config = config();
+		config.add_audio_bookmark("book.mp3", 0.into(), 5000, "");
+		assert!(config.text_bookmark_in("book.mp3", 0.into(), 10.into()).is_none());
 	}
 
 	/// Older builds must read a text bookmark written now, and vice versa.

@@ -44,6 +44,9 @@ pub fn bookmark_navigate(
 	ffi::BookmarkNavResult { found: false, start: DocPos::ZERO, note: String::new(), index: -1, wrapped }
 }
 
+/// How near the playback time an audio bookmark still counts as the one the reader is on: playback moves on between presses, so an exact match would never happen and a second press would add a bookmark instead of removing the first.
+pub const AUDIO_BOOKMARK_REACH_MS: u64 = 1500;
+
 /// Playback has moved a moment past a bookmark just jumped to, so without this "previous" would find it again, as a media player's previous-track button allows for.
 const PREVIOUS_SLACK_MS: u64 = 1500;
 

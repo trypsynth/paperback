@@ -63,6 +63,11 @@ class ReadingController(
 
 	val sleepTimer = SleepTimer(scope) { pauseTts() }
 
+	/** Steps by bookmark when Bookmark is the unit: forward, speak, announce. Set by [Bookmarks], which owns the stepping. */
+	internal var stepBookmark: ((Boolean, Boolean, Boolean) -> Unit)? = null
+
+	fun isPlaying(): Boolean = narrator.isPlaying()
+
 	/** Compared against the live position rather than cleared as a flag, so a move of any kind invalidates it on its own. */
 	private var spokenThroughPosition: Long? = null
 
@@ -341,6 +346,28 @@ class ReadingController(
 		}
 	}
 
+	/** A bookmark's position, then in an audio-only book its time: moving the position seeks to the start of the chapter, so the time comes after. */
+	fun jumpToBookmark(start: Long, audioMs: Long?, speak: Boolean) {
+		val tab = activeTab() ?: return
+		_ttsPosition.value = start
+		refreshSegmentPreview()
+		saveTtsPositionToConfig(start)
+		if (tab.hasAudio) {
+			narration.seekToPosition(start)
+			if (audioMs != null) narration.seekToMs(audioMs)
+			if (speak) narration.play()
+			return
+		}
+		if (speak) {
+			ttsManager.stop()
+			ttsManager.speak(_currentSegmentText.value)
+			precacheNextContinuousSegment()
+		} else if (ttsManager.isPaused.value) {
+			// Otherwise a later resume would play the old paragraph's paused audio instead of the new position.
+			ttsManager.stop()
+		}
+	}
+
 	fun playNextSegment(speak: Boolean = true, announce: Boolean = false) =
 		stepSegment(SegmentDirectionFfi.NEXT, speak, announce)
 
@@ -350,6 +377,11 @@ class ReadingController(
 	private fun stepSegment(direction: SegmentDirectionFfi, speak: Boolean, announce: Boolean) {
 		val forward = direction == SegmentDirectionFfi.NEXT
 		if (navigateByFind(forward = forward, speak = speak, announce = announce)) return
+		if (_currentNavUnit.value is NavUnit.Bookmark) {
+			// Like Find, always handled: there's nothing for previous/next to fall back to.
+			stepBookmark?.invoke(forward, speak, announce || !speak)
+			return
+		}
 		if (seekAudioByNavUnit(forward = forward)) return
 		val tab = activeTab() ?: return
 		val step = tab.session.readingStep(_ttsPosition.value, StepUnitFfi.Segment(navSegmentType()), direction)

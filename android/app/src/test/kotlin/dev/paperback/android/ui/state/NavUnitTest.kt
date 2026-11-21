@@ -93,4 +93,10 @@ class StoredNavUnitTest {
 	fun `find is not saved`() {
 		assertNull(NavUnit.Find.toStored())
 	}
+
+	@Test
+	fun `bookmark is not saved and has a name of its own`() {
+		assertNull(NavUnit.Bookmark.toStored())
+		assertEquals("Bookmark", getNavUnitName(NavUnit.Bookmark))
+	}
 }

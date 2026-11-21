@@ -236,12 +236,27 @@ The bar at the bottom of the screen has, from left to right:
 
 You can also swipe up or down on the play button to move by the navigation unit, without reaching for the previous and next buttons. If that is all you use, the Hide previous and next buttons setting takes them out of your screen reader's way. The Swipe up moves forward setting picks which way a swipe goes.
 
+### Bookmarks and notes
+
+The bookmark button at the top of the screen marks your place. Tap it to bookmark the paragraph you're on, and tap it again to remove the bookmark. Your screen reader says Selected when the paragraph already has one. Removing a bookmark that has a note asks first.
+
+* In read aloud mode, the bookmark goes at the start of the paragraph being read, so coming back to it reads that paragraph again from the top. In text mode, it goes on the paragraph you're on.
+* In an audio book with no text, like an MP3 book, the bookmark keeps the exact time instead, as it does on the desktop.
+* Long-press the bookmark button, or use its screen reader actions, to add or edit a note, or to open the Bookmarks list. While you write a note, reading pauses, and it starts again when you close the note.
+* In read aloud mode, a paragraph's note shows under it. Tap the note to edit it.
+* In text mode, each paragraph has screen reader actions to add or remove a bookmark and to add or edit a note. On iOS, a bookmarked paragraph says Bookmark, or its note, after its text, and the Bookmarks rotor moves between them.
+* **Bookmarks** in the More Options menu lists every bookmark and note, with All, Bookmarks, and Notes to filter them. It opens on the one nearest to where you are. Pick one to go to it. Swipe on a bookmark on iOS, or long-press it on Android, or use the screen reader actions, to edit its note or delete it.
+* Once a document has bookmarks, Bookmark joins the navigation units on the reading bar, so previous and next move between them.
+
+Bookmarks and notes are the same ones the desktop uses, so they travel between them in a document's `.paperback` file.
+
 ### More options
 
 The More Options menu is where everything else lives. Some items work a little differently on each app.
 
 * **Switch to TTS Mode or Switch to Text Mode:** moves between read aloud mode and text mode, described above. In text mode, a Read Aloud item starts and pauses reading aloud without leaving text mode.
 * **Table of Contents:** the book's chapters, opened at the one you're reading. Pick one to go straight to it. Entries with chapters under them can be expanded and collapsed with the screen reader's actions.
+* **Bookmarks:** your bookmarks and notes in this document, described above.
 * **Elements:** a list of the document's headings or links. Switch between the two with the Type picker on iOS, or the tabs on Android, then pick one to go to it.
 * **Find:** type what to look for, or pick an earlier search from Search History, and choose whether to match case, match whole words only, or use a regular expression. Find Previous and Find Next jump to a match and say where it landed, and Find stays open so you can keep going. In read aloud mode, Find also shows up as a navigation unit on the reading bar, so you can step through the matches from there too. **Stop reading after search matches** in Settings under Text to Speech is on by default and stops after reading the paragraph containing a match. Turn it off to keep reading from the match while the reading bar's previous and next controls still navigate by Find.
 * **Go To:** jump to a line, a page, or a percentage through the document. Pick which with the Mode picker.
@@ -258,7 +273,7 @@ The More Options menu is where everything else lives. Some items work a little d
 
 ### Keyboards and headsets
 
-With a keyboard, the desktop shortcuts for opening books, recent documents, Find, Go To, the table of contents, word count, document info, export, and the sleep timer all work, using `Cmd` in place of `Ctrl` on iOS. So do the single-letter keys for moving by heading, page, link, and the rest, and `Space` plays and pauses. On iOS, the single-letter keys only reach Paperback while VoiceOver's single-letter Quick Nav is off.
+With a keyboard, the desktop shortcuts for opening books, recent documents, Find, Go To, the table of contents, word count, document info, export, and the sleep timer all work, using `Cmd` in place of `Ctrl` on iOS. So do the single-letter keys for moving by heading, page, link, and the rest, and `Space` plays and pauses. The bookmark keys match the desktop's too: `B` and `Shift+B` move to the next and previous bookmark, `N` and `Shift+N` to the next and previous note, `Ctrl+Shift+B` adds or removes a bookmark, `Ctrl+Shift+N` adds or edits a note, and `Ctrl+B` opens the Bookmarks list. On iOS, the single-letter keys only reach Paperback while VoiceOver's single-letter Quick Nav is off.
 
 On Android, a headset button plays and pauses with one press, moves forward with two, and goes back with three.
 

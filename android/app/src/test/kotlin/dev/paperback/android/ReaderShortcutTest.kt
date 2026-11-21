@@ -34,6 +34,17 @@ class ReaderShortcutTest {
 	}
 
 	@Test
+	fun `bookmark keys match desktop`() {
+		assertEquals(ReaderShortcut.StepBookmark(forward = true, notesOnly = false), plain(KeyEvent.KEYCODE_B))
+		assertEquals(ReaderShortcut.StepBookmark(forward = false, notesOnly = false), shift(KeyEvent.KEYCODE_B))
+		assertEquals(ReaderShortcut.StepBookmark(forward = true, notesOnly = true), plain(KeyEvent.KEYCODE_N))
+		assertEquals(ReaderShortcut.StepBookmark(forward = false, notesOnly = true), shift(KeyEvent.KEYCODE_N))
+		assertEquals(ReaderShortcut.ToggleBookmark, ctrlShift(KeyEvent.KEYCODE_B))
+		assertEquals(ReaderShortcut.BookmarkNote, ctrlShift(KeyEvent.KEYCODE_N))
+		assertEquals(ReaderShortcut.OpenBookmarks, ctrl(KeyEvent.KEYCODE_B))
+	}
+
+	@Test
 	fun `alt turns opening a file into opening a link, as on desktop`() {
 		assertEquals(ReaderShortcut.OpenBook, ctrl(KeyEvent.KEYCODE_O))
 		assertEquals(ReaderShortcut.OpenFromUrl, ctrlAlt(KeyEvent.KEYCODE_O))
