@@ -51,8 +51,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import uniffi.paperback.DocumentSession
 import uniffi.paperback.ChapterProgressFfi
+import uniffi.paperback.DocumentSession
 import uniffi.paperback.ExportFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
