@@ -73,6 +73,21 @@ struct ReaderView: View {
 		.sheet(item: $navigation.bookmarkNote) { target in
 			BookmarkNoteSheet(target: target).environment(viewModel)
 		}
+		// TRANSLATORS: Title of the alert confirming removal of a bookmark that has a note
+		.alert(t("Remove this bookmark and its note?"), isPresented: Binding(
+			get: { viewModel.navigation.bookmarkRemoval != nil },
+			set: { if !$0 { viewModel.navigation.bookmarkRemoval = nil } }
+		)) {
+			// TRANSLATORS: Button confirming removal of a bookmark and its note
+			Button(t("Remove"), role: .destructive) {
+				if let bookmark = viewModel.navigation.bookmarkRemoval {
+					viewModel.reading.deleteBookmark(start: bookmark.start, end: bookmark.end, audioMs: bookmark.audioMs)
+				}
+			}
+			Button(t("Cancel"), role: .cancel) { }
+		} message: {
+			Text(viewModel.navigation.bookmarkRemoval?.note ?? "")
+		}
 		.sheet(
 			isPresented: Binding(
 				get: { viewModel.navigation.passwordPromptUrl != nil },

@@ -85,6 +85,9 @@ final class AppViewModel {
 		reading.onRequestBookmarkNote = { [weak self] target in
 			self?.navigation.bookmarkNote = target
 		}
+		reading.onRequestBookmarkRemoval = { [weak self] bookmark in
+			self?.navigation.bookmarkRemoval = bookmark
+		}
 		reading.stopAfterFindMatch = configManager.getAppBool(key: "tts_stop_after_find_match", defaultValue: true)
 		reading.onStopAfterFindMatchChanged = { [weak self] stop in
 			self?.configManager.setAppBool(key: "tts_stop_after_find_match", value: stop)

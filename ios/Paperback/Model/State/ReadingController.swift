@@ -23,6 +23,8 @@ final class ReadingController {
 	var bookmarksRevision = 0
 	/// Opens the note sheet, for text mode's VoiceOver actions, which have no view of their own to do it from.
 	@ObservationIgnored var onRequestBookmarkNote: ((BookmarkNoteTarget) -> Void)?
+	/// Asks to confirm removing a bookmark that has a note, for text mode's VoiceOver actions likewise.
+	@ObservationIgnored var onRequestBookmarkRemoval: ((BookmarkFfi) -> Void)?
 	/// The active document's bookmarks as last read from the core. VoiceOver asks about bookmarks on every move in text mode, so it's answered from here rather than the core each time.
 	@ObservationIgnored var bookmarkSnapshot: BookmarkSnapshot?
 	@ObservationIgnored var paragraphBoundsCache: (session: ObjectIdentifier, position: Int64, bounds: (Int64, Int64))?

@@ -159,9 +159,17 @@ class Bookmarks(
 			config.addBookmark(tab.documentUri, target.position, target.audioMs, note)
 		}
 		changed()
-		// TRANSLATORS: Announced after saving a bookmark's note text
-		announcer(t("Bookmark saved."))
+		val message = if (existing != null && note.isEmpty()) {
+			// TRANSLATORS: Announced after clearing a bookmark's note, which keeps the bookmark
+			t("Note deleted.")
+		} else {
+			// TRANSLATORS: Announced after saving a bookmark's note text
+			t("Bookmark saved.")
+		}
+		announcer(message)
 	}
+
+	fun announce(message: String) = announcer(message)
 
 	fun closeNote(target: BookmarkNoteTarget) {
 		_noteTarget.value = null

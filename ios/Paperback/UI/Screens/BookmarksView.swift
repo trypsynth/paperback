@@ -37,6 +37,12 @@ struct BookmarksView: View {
 				emptyView
 			}
 		}
+		// VoiceOver stays on the filter, so what the list changed to is said.
+		.onChange(of: filter) {
+			guard viewModel.reading.bookmarkRows(filter)?.rows.isEmpty == true else { return }
+			// TRANSLATORS: Announced when there are no bookmarks/notes at all to navigate to
+			viewModel.reading.announce(filter == .notesOnly ? t("No notes.") : t("No bookmarks."))
+		}
 		// TRANSLATORS: Navigation title of the screen listing the document's bookmarks and notes
 		.navigationTitle(t("Bookmarks"))
 		.navigationBarTitleDisplayMode(.inline)

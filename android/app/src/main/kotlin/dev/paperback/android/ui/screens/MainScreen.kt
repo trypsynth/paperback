@@ -147,6 +147,7 @@ fun MainScreen(
 		}
 	}
 	var confirmingBookmarkRemoval by remember { mutableStateOf(false) }
+	var lineBookmarkRemoval by remember { mutableStateOf<LineBookmarkRemoval?>(null) }
 	val sleepTimerRemaining by viewModel.reading.sleepTimer.remaining.collectAsStateWithLifecycle()
 
 	val view = LocalView.current
@@ -519,7 +520,9 @@ fun MainScreen(
 										viewModel.search.clear()
 									},
 									lineActions = remember(docState.documentUri, bookmarkRevision) {
-										{ lineStart: Long -> bookmarkLineActions(viewModel.bookmarks, docState.session, lineStart) }
+										{ lineStart: Long ->
+											bookmarkLineActions(viewModel.bookmarks, docState.session, lineStart) { lineBookmarkRemoval = it }
+										}
 									}
 								)
 							}
@@ -560,6 +563,16 @@ fun MainScreen(
 					viewModel.bookmarks.toggle()
 				},
 				onDismiss = { confirmingBookmarkRemoval = false }
+			)
+		}
+		lineBookmarkRemoval?.let { line ->
+			BookmarkRemoveDialog(
+				note = line.note,
+				onConfirm = {
+					lineBookmarkRemoval = null
+					viewModel.bookmarks.toggleAt(line.start, line.end)
+				},
+				onDismiss = { lineBookmarkRemoval = null }
 			)
 		}
 		val showPermissionRationale by viewModel.navigation.permissionRationaleDialog.isOpen.collectAsStateWithLifecycle()
@@ -612,7 +625,8 @@ fun MainScreen(
 private fun bookmarkLineActions(
 	bookmarks: Bookmarks,
 	session: DocumentSession,
-	start: Long
+	start: Long,
+	confirmRemoval: (LineBookmarkRemoval) -> Unit
 ): List<CustomAccessibilityAction> {
 	val next = session.positionFromLine(session.lineFromPosition(start) + 1)
 	val end = if (next > start) next else Long.MAX_VALUE
@@ -621,7 +635,9 @@ private fun bookmarkLineActions(
 	val toggleLabel = if (existing == null) t("Add Bookmark") else t("Remove Bookmark")
 	return listOf(
 		CustomAccessibilityAction(toggleLabel) {
-			bookmarks.toggleAt(start, end)
+			// A note goes with its bookmark, so removing one that has a note is asked first, as from the bookmark button. Looked up again, in case it changed since TalkBack asked for the actions.
+			val note = bookmarks.onLine(start, end)?.note.orEmpty()
+			if (note.isEmpty()) bookmarks.toggleAt(start, end) else confirmRemoval(LineBookmarkRemoval(start, end, note))
 			true
 		},
 		CustomAccessibilityAction(noteActionLabel(!existing?.note.isNullOrEmpty())) {
@@ -630,6 +646,9 @@ private fun bookmarkLineActions(
 		}
 	)
 }
+
+/** A line's bookmark waiting on the reader to confirm that its note goes too. */
+private data class LineBookmarkRemoval(val start: Long, val end: Long, val note: String)
 
 /** The result is a file the reader can't see from here, so it has to be said. */
 private fun CoroutineScope.reportResult(context: Context, succeeded: String, failed: String, work: () -> Boolean) {

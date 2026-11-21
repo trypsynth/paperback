@@ -77,9 +77,12 @@ fun BookmarksScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () 
 			}
 			val rows = list?.rows.orEmpty()
 			if (rows.isEmpty()) {
+				// TRANSLATORS: Announced when there are no bookmarks/notes at all to navigate to
+				val empty = if (filter == BookmarkFilterType.NOTES_ONLY) t("No notes.") else t("No bookmarks.")
+				// TalkBack stays on the filter's tab, so what the list changed to is said.
+				LaunchedEffect(filter) { bookmarks.announce(empty) }
 				Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-					// TRANSLATORS: Announced when there are no bookmarks/notes at all to navigate to
-					Text(if (filter == BookmarkFilterType.NOTES_ONLY) t("No notes.") else t("No bookmarks."))
+					Text(empty)
 				}
 				return@Column
 			}

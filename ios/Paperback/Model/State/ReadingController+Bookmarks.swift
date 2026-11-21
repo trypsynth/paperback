@@ -159,8 +159,13 @@ extension ReadingController {
 			context.configManager.addBookmark(path: path, position: target.position, audioMs: target.audioMs, note: note)
 		}
 		bookmarksChanged()
-		// TRANSLATORS: Announced after saving a bookmark's note text
-		announce(t("Bookmark saved."))
+		if target.existing != nil && note.isEmpty {
+			// TRANSLATORS: Announced after clearing a bookmark's note, which keeps the bookmark
+			announce(t("Note deleted."))
+		} else {
+			// TRANSLATORS: Announced after saving a bookmark's note text
+			announce(t("Bookmark saved."))
+		}
 	}
 
 	func finishNote(_ target: BookmarkNoteTarget) {
@@ -299,7 +304,13 @@ extension ReadingController {
 			UIAccessibilityCustomAction(name: toggleName) { [weak self] _ in
 				guard let self else { return false }
 				// Looked up again, in case it changed since VoiceOver asked for the actions.
-				toggleBookmark(existing: bookmarks?.bookmark(from: start, to: end), position: start, audioMs: nil)
+				let existing = bookmarks?.bookmark(from: start, to: end)
+				// A note goes with its bookmark, so removing one that has a note is asked first, as from the bookmark button.
+				if let existing, !existing.note.isEmpty {
+					onRequestBookmarkRemoval?(existing)
+				} else {
+					toggleBookmark(existing: existing, position: start, audioMs: nil)
+				}
 				return true
 			},
 			UIAccessibilityCustomAction(name: noteTitle(hasNote: hasNote)) { [weak self] _ in
