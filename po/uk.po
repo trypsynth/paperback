@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-15 01:48+0000\n"
-"PO-Revision-Date: 2026-11-17 11:23+0200\n"
+"POT-Creation-Date: 2026-11-21 09:02-0700\n"
+"PO-Revision-Date: 2026-11-22 01:09+0200\n"
 "Last-Translator: Ivan Shtefuriak <ip0877@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -342,7 +342,7 @@ msgstr "Закладка."
 
 #. TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
 msgid "Bookmark removed."
-msgstr "Закладку видалено."
+msgstr "Закладку вилучено."
 
 msgid "Bookmark added."
 msgstr "Закладку додано."
@@ -707,7 +707,7 @@ msgstr "Переглянути нотатку в поточній позиції
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to add or remove a bookmark at the current reading position.
 msgid "&Toggle Bookmark"
-msgstr "&Додати/видалити закладку"
+msgstr "&Додати/вилучити закладку"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
 msgid "Bookmark &with Note..."
@@ -3014,7 +3014,7 @@ msgstr "Переглянути джерело"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Toggle Bookmark"
-msgstr "Додати/видалити закладку"
+msgstr "Додати/вилучити закладку"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Bookmark with Note"
@@ -4071,6 +4071,7 @@ msgstr "Відкрити книгу"
 msgid "Locate"
 msgstr "Знайти"
 
+#. TRANSLATORS: Button confirming removal of a bookmark and its note
 #: kt swift
 msgid "Remove"
 msgstr "Вилучити"
@@ -4312,8 +4313,8 @@ msgstr "Нове правило"
 msgid "Edit Rule"
 msgstr "Редагувати правило"
 
-#. TRANSLATORS: Button to save the rule and dismiss the editor
-#: swift
+#. TRANSLATORS: Button that saves what was typed and closes the editor, such as a speech rule or a bookmark's note
+#: kt swift
 msgid "Save"
 msgstr "Зберегти"
 
@@ -5241,6 +5242,125 @@ msgstr "Читабельність"
 #: kt swift
 msgid "Time"
 msgstr "Час"
+
+#. TRANSLATORS: Shown and announced with how far through a book's chapter the reader is: the number of words left in it; {} is the number. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: kt swift
+msgid "{} word left"
+msgstr "залишилося {} слово"
+
+#: kt swift
+msgid "{} words left"
+msgstr "залишилося {} слів"
+
+#: kt swift
+msgid "{} words left⁣"
+msgstr "залишилося {} слів"
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt swift
+msgid "Show book progress"
+msgstr "Показувати перебіг книги"
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt swift
+msgid "Show chapter progress"
+msgstr "Показувати перебіг розділу"
+
+#. TRANSLATORS: Name of the "Bookmark" navigation unit, which moves between the reader's bookmarks and notes
+#: kt swift
+msgid "Bookmark"
+msgstr "Закладка"
+
+#. TRANSLATORS: Announced after clearing a bookmark's note, which keeps the bookmark
+#: kt swift
+msgid "Note deleted."
+msgstr "Нотатку вилучено."
+
+#. TRANSLATORS: VoiceOver label for the note shown under the passage being read; {} is the note's text
+#: kt swift
+msgid "Note: {}"
+msgstr "Нотатка: {}"
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt swift
+msgid "Add Bookmark"
+msgstr "Додати закладку"
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt swift
+msgid "Remove Bookmark"
+msgstr "Вилучити закладку"
+
+#. TRANSLATORS: VoiceOver value of the bookmark button when the bookmark at the current paragraph has a note
+#: kt swift
+msgid "Has note"
+msgstr "Має нотатку"
+
+#. TRANSLATORS: Title of the alert confirming removal of a bookmark that has a note
+#: kt swift
+msgid "Remove this bookmark and its note?"
+msgstr "Вилучити цю закладку та її нотатку?"
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt swift
+msgid "Edit Note..."
+msgstr "Редагувати нотатку..."
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt swift
+msgid "Add Note..."
+msgstr "Додати нотатку..."
+
+#. TRANSLATORS: Label for the picker choosing whether the Bookmarks screen shows everything, only bookmarks, or only notes
+#: swift
+msgid "Show"
+msgstr "Показувати"
+
+#. TRANSLATORS: Swipe / accessibility action deleting a bookmark from the Bookmarks screen
+#: kt swift
+msgid "Delete"
+msgstr "Вилучити"
+
+#. TRANSLATORS: Title shown when the current document has no bookmarks or notes
+#: kt swift
+msgid "No Bookmarks"
+msgstr "Немає закладок"
+
+#. TRANSLATORS: Description shown under the "No Bookmarks" title
+#: kt swift
+msgid "Tap the bookmark button while reading to mark your place."
+msgstr ""
+"Торкніться кнопки закладки під час читання, щоб зберегти поточне місце."
+
+#. TRANSLATORS: VoiceOver hint on the note shown under the passage being read
+#: swift
+msgid "Double-tap to edit."
+msgstr "Натисніть двічі для редагування."
+
+#. TRANSLATORS: Heading over the passage (or audiobook time) a bookmark note is attached to
+#: swift
+msgid "Bookmarked"
+msgstr "Закладка"
+
+#. TRANSLATORS: Heading over the text field where a bookmark's note is typed
+#: swift
+msgid "Note"
+msgstr "Нотатка"
+
+#. TRANSLATORS: Button that clears a bookmark's note but keeps the bookmark
+#: kt swift
+msgid "Delete Note"
+msgstr "Вилучити нотатку"
+
+#. TRANSLATORS: TalkBack action label for a long press on the bookmark button, which opens its note and list options
+#: kt
+msgid "show note and bookmark options"
+msgstr "показати параметри нотаток і закладок"
+
+#. TRANSLATORS: TalkBack action label for a bookmark in the Bookmarks screen, read as "double tap to go to bookmark"
+#: kt
+msgid "go to bookmark"
+msgstr "перейти до закладки"
 
 #~ msgid "Failed to create IPC server"
 #~ msgstr "Не вдалося створити сервер IPC"
