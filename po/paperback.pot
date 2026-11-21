@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 21:05+0800\n"
+"POT-Creation-Date: 2026-11-21 09:02-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5169,10 +5169,44 @@ msgstr ""
 msgid "Time"
 msgstr ""
 
+#. TRANSLATORS: Shown and announced with how far through a book's chapter the reader is: the number of words left in it; {} is the number. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: kt
+#: swift
+msgid "{} word left"
+msgstr ""
+
+#: kt
+#: swift
+msgid "{} words left"
+msgstr ""
+
+#: kt
+#: swift
+msgid "{} words left⁣"
+msgstr ""
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt
+#: swift
+msgid "Show book progress"
+msgstr ""
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt
+#: swift
+msgid "Show chapter progress"
+msgstr ""
+
 #. TRANSLATORS: Name of the "Bookmark" navigation unit, which moves between the reader's bookmarks and notes
 #: kt
 #: swift
 msgid "Bookmark"
+msgstr ""
+
+#. TRANSLATORS: Announced after clearing a bookmark's note, which keeps the bookmark
+#: kt
+#: swift
+msgid "Note deleted."
 msgstr ""
 
 #. TRANSLATORS: VoiceOver label for the note shown under the passage being read; {} is the note's text

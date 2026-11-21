@@ -8,6 +8,8 @@ mod document_manager;
 mod find;
 mod help;
 mod icon;
+#[cfg(target_os = "windows")]
+mod link_format;
 #[cfg(target_os = "macos")]
 mod mac_shortcuts;
 mod main_window;

@@ -5479,16 +5479,16 @@ msgid "This book doesn't say how long its audio runs."
 msgstr "Ta książka nie zawiera informacji o długości nagrania."
 
 #. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter of an audiobook the reader is, and how much of it is left.
-msgid "Announce &Chapter Time"
-msgstr "Odczytaj czas w &rozdziale"
+#~ msgid "Announce &Chapter Time"
+#~ msgstr "Odczytaj czas w &rozdziale"
 
 #. TRANSLATORS: Status-bar help text for the Announce Chapter Time menu item.
 msgid "Say how far into this chapter you are and how much is left"
 msgstr "Odczytaj bieżącą pozycję w rozdziale i ile zostało do końca"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-msgid "Announce Chapter Time"
-msgstr "Odczytaj czas w rozdziale"
+#~ msgid "Announce Chapter Time"
+#~ msgstr "Odczytaj czas w rozdziale"
 
 #. TRANSLATORS: Announced with how far into an audiobook's chapter the reader is: the time left in it; {} is written like 12:05
 msgid "{} left"
@@ -5506,3 +5506,18 @@ msgstr "Paperback nie może otworzyć archiwum RAR podzielonego na części. Po�
 #: swift
 msgid "Time"
 msgstr "Czas"
+
+#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter the reader is and how much of it is left: by time in an audiobook, by words in a text book.
+msgid "Announce &Chapter Progress"
+msgstr "Odczytaj postęp w &rozdziale"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Announce Chapter Progress"
+msgstr "Odczytaj postęp w rozdziale"
+
+#. TRANSLATORS: Announced with how far through a book's chapter the reader is: the number of words left in it. %d is the number.
+msgid "%d word left"
+msgid_plural "%d words left"
+msgstr[0] "pozostało %d słowo"
+msgstr[1] "pozostały %d słowa"
+msgstr[2] "pozostało %d słów"

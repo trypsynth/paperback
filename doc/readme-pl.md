@@ -48,6 +48,7 @@ Jeśli JAWS milczy po naciśnięciu klawisza, który powinien wywołać komunika
 
 Paperback obsługuje następujące formaty i rozszerzenia:
 
+* Książki brajlowskie BARD z National Library Service, których wszystkie tomy są odczytywane jako jedna książka, przekształcane z brajla na tekst z użyciem kodu brajlowskiego wskazanego w pakiecie (archiwum `.zip` pobrane z BARD lub plik `.bopf` po jego rozpakowaniu)
 * Pliki BRF (Braille Ready Files) i książki PEF (Portable Embosser Format), przekształcane z brajla na zwykły tekst przy użyciu wybranej tablicy brajlowskiej (`.brf`, `.pef`)
 * Archiwa komiksów (`.cbz`, `.cbr`)
 * Pliki pomocy CHM (`.chm`)
@@ -56,7 +57,7 @@ Paperback obsługuje następujące formaty i rozszerzenia:
 * Książki EPUB (`.epub` lub plik `.opf` książki niespakowanej do archiwum ZIP)
 * E-booki FB2 (`.fb2`)
 * Podręczniki GNU Info (`.info`, niespakowane lub spakowane gzipem; podręczniki podzielone na części można otworzyć z dowolnej z nich)
-* Dokumenty HTML (`.htm`, `.html`, `.xhtml`)
+* Dokumenty HTML (`.htm`, `.html`, `.shtml`, `.xhtml`)
 * Dokumenty Markdown (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Dokumenty Microsoft Word (`.docx`, `.docm`, `.doc`)
 * Strony podręcznika systemowego, zarówno `man`, jak i `mdoc` z BSD (`.1` do `.9`, `.man`, `.roff` oraz każdy z nich spakowany gzipem)

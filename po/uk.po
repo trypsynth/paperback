@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 00:42+0000\n"
-"PO-Revision-Date: 2026-11-12 15:09+0200\n"
+"POT-Creation-Date: 2026-11-15 01:48+0000\n"
+"PO-Revision-Date: 2026-11-17 11:23+0200\n"
 "Last-Translator: Ivan Shtefuriak <ip0877@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -235,6 +235,10 @@ msgid ""
 msgstr ""
 "У цій книзі не вказано, скільки триває аудіозапис, тому Paperback не може "
 "перейти до певного моменту в ній."
+
+#. TRANSLATORS: Announced when asking for the time in an audiobook's chapter while the length of its files isn't known, such as in many DAISY books
+msgid "This book doesn't say how long its audio runs."
+msgstr "У цій книзі не вказано тривалість аудіо."
 
 #. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
 msgid "Rate {}"
@@ -756,6 +760,15 @@ msgstr "Перейти до &часу..."
 #. TRANSLATORS: Status-bar help text for the Go to Time menu item.
 msgid "Go to a time in the recording"
 msgstr "Перейти до певного часу в записі"
+
+#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter the reader is and how much of it is left: by time in an audiobook, by words in a text book.
+msgid "Announce &Chapter Progress"
+msgstr "Оголосити перебіг &розділу"
+
+#. TRANSLATORS: Status-bar help text for the Announce Chapter Progress menu item.
+msgid "Say how far into this chapter you are and how much is left"
+msgstr ""
+"Озвучити, скільки вже прочитано в цьому розділі і скільки ще залишилося"
 
 #. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 msgid "Seek Audio &Forward"
@@ -3032,6 +3045,10 @@ msgid "Go to Time..."
 msgstr "Перейти до часу..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Announce Chapter Progress"
+msgstr "Оголосити перебіг розділу"
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Forward"
 msgstr "Перемотати вперед"
 
@@ -3575,6 +3592,21 @@ msgstr "Не знайдено парсер для розширення: .{}"
 #. TRANSLATORS: Error shown when every parser for a file's extension failed; {} is the extension (without the leading dot)
 msgid "All parsers failed for extension: .{}"
 msgstr "Усі парсери повернули помилку для розширення: .{}"
+
+#. TRANSLATORS: Announced with how far into an audiobook's chapter the reader is: the time left in it; {} is written like 12:05
+msgid "{} left"
+msgstr "залишилося {}"
+
+#. TRANSLATORS: Announced for how far into an audiobook the reader is: the first {} is the time played so far and the second how long it runs, both written like 1:02:03
+msgid "{} of {}"
+msgstr "{} із {}"
+
+#. TRANSLATORS: Announced with how far through a book's chapter the reader is: the number of words left in it. %d is the number.
+msgid "%d word left"
+msgid_plural "%d words left"
+msgstr[0] "залишилося %d слово"
+msgstr[1] "залишилося %d слова"
+msgstr[2] "залишилося %d слів"
 
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 msgid "image"
@@ -5204,6 +5236,11 @@ msgstr "Вибрати швидкість відтворення"
 #: kt swift
 msgid "Readability"
 msgstr "Читабельність"
+
+#. TRANSLATORS: Go To mode option: navigate to a time in an audiobook, such as 1:23:45
+#: kt swift
+msgid "Time"
+msgstr "Час"
 
 #~ msgid "Failed to create IPC server"
 #~ msgstr "Не вдалося створити сервер IPC"

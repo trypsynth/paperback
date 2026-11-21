@@ -2386,8 +2386,8 @@ dependencies = [
 
 [[package]]
 name = "louis-rs"
-version = "0.3.1"
-source = "git+https://github.com/trypsynth/louis-rs?branch=paperback-next#e4d1d76bc5680da1fbc5f8d1b2300fdea226b80a"
+version = "0.4.0"
+source = "git+https://github.com/trypsynth/louis-rs?branch=paperback-next#249dd40f8bd13f8e83c93a1f070d436492e6cd8b"
 dependencies = [
  "enumset",
  "log",
@@ -4391,9 +4391,9 @@ dependencies = [
 
 [[package]]
 name = "ship-shape"
-version = "0.6.0"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7845b55386c79fc751844054ef6125129aed3c70394f2642ba28275918c8a93f"
+checksum = "d89002a0260be108fcaa76505142ac1e3838e2272414dd0fe40bb07efa2437ee"
 dependencies = [
  "homeport",
  "minisign-verify",

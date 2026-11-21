@@ -18,6 +18,7 @@ use super::{
 };
 #[cfg(target_os = "windows")]
 use super::{
+	link_format::apply_link_marks,
 	paragraph_format::apply_paragraph_formats,
 	rtf_stream::{append_rtf_into_ctrl, stream_rtf_into_ctrl},
 };
@@ -74,6 +75,15 @@ pub fn reload_window_around(tab: &mut DocumentTab, doc_offset: DocPos, reason: &
 
 /// Returns false if the append did not complete, so the caller rebuilds rather than trusting a control left part-way through a chunk.
 pub(super) fn append_slice_to_ctrl(text_ctrl: ReaderCtrl, slice: &WindowSlice, window: &TextWindow) -> bool {
+	let appended = append_formatted_slice(text_ctrl, slice, window);
+	#[cfg(target_os = "windows")]
+	if appended {
+		mark_links(text_ctrl, slice, window);
+	}
+	appended
+}
+
+fn append_formatted_slice(text_ctrl: ReaderCtrl, slice: &WindowSlice, window: &TextWindow) -> bool {
 	let content = slice.text.as_str();
 	let segments = merge_formatting_markers(&slice.markers);
 	#[cfg(target_os = "windows")]
@@ -93,8 +103,11 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: ReaderCtrl, slice: &WindowSlice, w
 		tracing::warn!("RTF append did not complete");
 		return false;
 	}
+	// wxWidgets leaves the caret at the end of what it appended, where the timer that called this sees it at the loaded end and appends again, until a forward read lands on the book's last line.
+	let (sel_start, sel_end) = text_ctrl.get_selection();
 	let base = text_ctrl.get_last_position();
 	text_ctrl.append_text(content);
+	text_ctrl.set_selection(sel_start, sel_end);
 	if text_ctrl.get_last_position() <= base {
 		return false;
 	}
@@ -103,6 +116,13 @@ pub(super) fn append_slice_to_ctrl(text_ctrl: ReaderCtrl, slice: &WindowSlice, w
 	apply_paragraph_formats(text_ctrl, place, &slice.paragraphs);
 	apply_formatting_markers_to_ctrl_from_segments(text_ctrl, &segments, place);
 	true
+}
+
+#[cfg(target_os = "windows")]
+fn mark_links(text_ctrl: ReaderCtrl, slice: &WindowSlice, window: &TextWindow) {
+	let started = Instant::now();
+	apply_link_marks(text_ctrl, |offset: DocPos| window.to_local(slice.start + offset.from_start()), &slice.markers);
+	tracing::debug!(links_ms = started.elapsed().as_millis(), "marked links in the reading control");
 }
 
 /// Streaming RTF costs about 3.5s however little formatting it carries, against about 2s for plain text plus 10ms per styled span, so it only pays past a hundred spans or so (#920). Headings and lists always take it, since setting them on a visible control costs about 1ms each (#1211).
@@ -132,6 +152,12 @@ pub(super) fn style_and_fill(
 }
 
 pub(super) fn fill_text_ctrl_with_formatting(text_ctrl: ReaderCtrl, slice: &WindowSlice, window: &TextWindow) {
+	fill_formatted(text_ctrl, slice, window);
+	#[cfg(target_os = "windows")]
+	mark_links(text_ctrl, slice, window);
+}
+
+fn fill_formatted(text_ctrl: ReaderCtrl, slice: &WindowSlice, window: &TextWindow) {
 	let content = slice.text.as_str();
 	let segments = merge_formatting_markers(&slice.markers);
 	#[cfg(target_os = "windows")]

@@ -117,6 +117,10 @@ pub(super) fn build_text_ctrl(
 			dm.save_position_throttled();
 			// A click onto a bookmark is deliberate enough for the sound; this compares against the last arrow-key position, which is why jumps keep it current.
 			dm.check_bookmark_sounds();
+			let (from, to) = text_ctrl.get_selection();
+			if from == to && dm.link_at_caret() {
+				super::app::when_unlocked(|window| window.document_manager().lock().unwrap().activate_current_link());
+			}
 		}
 	});
 	let text_ctrl_for_menu = text_ctrl;
