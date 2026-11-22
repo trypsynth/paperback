@@ -388,8 +388,15 @@ final class AppViewModel {
 		recentDocuments.removeAll()
 	}
 
+	/// An open tab of it is closed first, as on Windows, so it isn't left open or brought back at the next launch, and closing it can't write back the position just removed.
 	func removeRecentDocument(url: URL) {
-		configManager.removeDocumentHistory(path: url.path(percentEncoded: false))
+		let path = url.path(percentEncoded: false)
+		for tab in tabs where tab.url.path(percentEncoded: false) == path {
+			closeTab(tab)
+		}
+		configManager.removeDocumentHistory(path: path)
+		configManager.flush()
+		UserDefaults.standard.removeObject(forKey: bookmarkKey(path))
 		recentDocuments.removeAll { $0.url == url }
 	}
 
