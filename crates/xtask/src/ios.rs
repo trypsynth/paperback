@@ -488,8 +488,7 @@ fn find_simulator(name: Option<&str>) -> Result<Simulator, Box<dyn Error>> {
 
 /// Saves signing overrides when using a team other than the project's default.
 /// The bundle ID depends only on the team so checkouts reuse it: free teams can register 10 App IDs per week.
-/// It stays outside `dev.paperback.ios`, which belongs to the maintainer's team: Apple refuses to register IDs
-/// under it for any other team.
+/// It stays outside `dev.paperback.ios`, which Apple only registers IDs under for the maintainer's team.
 fn set_up_signing(root: &Path, team: Option<&str>) -> Result<(), Box<dyn Error>> {
 	let mac_file = mac_signing_file();
 	// Files from before the move out of `dev.paperback.ios` hold an ID that can never register, so redo them.
@@ -545,8 +544,7 @@ fn set_up_signing(root: &Path, team: Option<&str>) -> Result<(), Box<dyn Error>>
 	Ok(())
 }
 
-/// Reads Xcode's undocumented preference mapping accounts to their teams. Xcode 27 renamed it from
-/// `IDEProvisioningTeams` to `IDEProvisioningTeamByIdentifier`, keeping the entries' shape.
+/// Reads Xcode's undocumented account-to-teams preference, which Xcode 27 renamed from `IDEProvisioningTeams`.
 fn xcode_teams() -> Result<Vec<XcodeTeam>, Box<dyn Error>> {
 	let preferences = Command::new("defaults").args(["export", "com.apple.dt.Xcode", "-"]).output()?;
 	for key in ["IDEProvisioningTeamByIdentifier", "IDEProvisioningTeams"] {
