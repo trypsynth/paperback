@@ -3,7 +3,7 @@ import SwiftUI
 struct RecentDocumentRow: View {
 	let doc: RecentDocument
 	var showClosedStatus: Bool = true
-	// The empty-state preview isn't a List, so it has no swipe action and this button is its only way to remove.
+	// The empty-state preview isn't a List, so it has no swipe action and this button is its only way to remove. Off, the row also leaves Remove to the swipe action VoiceOver offers.
 	var showRemoveButton: Bool = true
 	let onOpen: () -> Void
 	let onRemove: () -> Void
@@ -13,12 +13,12 @@ struct RecentDocumentRow: View {
 		if doc.isMissing, let onLocate {
 			content
 				.accessibilityAction(named: t("Locate"), onLocate)
-				.accessibilityAction(named: t("Remove"), onRemove)
+				.modifier(RemoveAction(isNeeded: showRemoveButton, onRemove: onRemove))
 		} else {
 			content
 				.accessibilityAddTraits(.isButton)
 				.accessibilityAction(.default, onOpen)
-				.accessibilityAction(named: t("Remove"), onRemove)
+				.modifier(RemoveAction(isNeeded: showRemoveButton, onRemove: onRemove))
 		}
 	}
 
@@ -68,6 +68,20 @@ struct RecentDocumentRow: View {
 			Text(t("Closed"))
 				.font(.caption)
 				.foregroundStyle(.secondary)
+		}
+	}
+}
+
+/// A row in a List removes by its swipe action, which VoiceOver already offers as Remove, so a second action of that name would be read twice (#1333).
+private struct RemoveAction: ViewModifier {
+	let isNeeded: Bool
+	let onRemove: () -> Void
+
+	func body(content: Content) -> some View {
+		if isNeeded {
+			content.accessibilityAction(named: t("Remove"), onRemove)
+		} else {
+			content
 		}
 	}
 }
