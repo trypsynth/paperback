@@ -226,6 +226,8 @@ W obu aplikacjach dokument można czytać na dwa sposoby. W trybie tekstowym czy
 
 Audiobooki, na przykład w formatach DAISY, M4B i MP3, zamiast syntezy mowy odtwarzają własne nagranie.
 
+W trybie mowy pod paskiem czytania widać postęp w całej książce. Jeśli Paperback może obliczyć postęp w rozdziale, stuknij ten tekst, aby zamiast tego zobaczyć nazwę rozdziału, procent przeczytanej treści i liczbę słów do końca, na przykład „Rozdział 3, 42%, pozostało 1850 słów”. Gdy Paperback mierzy postęp w rozdziale na podstawie nagrania, pokazuje czas zamiast procentu i liczby słów, na przykład „Rozdział 3, 4:10 z 12:00, pozostało 7:50”. Stuknij ponownie, aby wrócić do postępu w całej książce.
+
 ### Pasek czytania
 
 Na pasku u dołu ekranu znajdują się, od lewej do prawej:
@@ -236,12 +238,27 @@ Na pasku u dołu ekranu znajdują się, od lewej do prawej:
 
 Możesz też przesuwać palcem w górę lub w dół po przycisku odtwarzania, aby poruszać się o wybraną jednostkę, bez sięgania do przycisków nawigacji. Jeśli korzystasz tylko z tych gestów, ustawienie Ukryj przyciski nawigacji przed czytnikiem ekranu sprawia, że czytnik ekranu pomija te przyciski. Ustawienie Przesunięcie w górę przenosi do przodu określa kierunek działania gestu.
 
+### Zakładki i notatki
+
+Przycisk Zakładka u góry ekranu pozwala zaznaczyć miejsce w dokumencie. Stuknij go, aby dodać zakładkę, i stuknij ponownie, aby ją usunąć. Jeśli w tym miejscu jest już zakładka, czytnik ekranu sygnalizuje, że przycisk jest zaznaczony. Usunięcie zakładki z notatką wymaga potwierdzenia.
+
+* W trybie mowy zakładka wskazuje początek czytanego akapitu. Po powrocie do niej odczyt zacznie się od początku tego akapitu. W trybie tekstowym zakładka trafia do bieżącego akapitu.
+* W audiobooku bez tekstu, na przykład w formacie MP3, zakładka zapamiętuje dokładny czas nagrania, tak jak w wersji komputerowej.
+* Przytrzymaj przycisk Zakładka lub użyj akcji tego przycisku dostępnych w czytniku ekranu, aby dodać albo edytować notatkę lub otworzyć listę Zakładki. Jeśli odtwarzanie jest w toku, zatrzyma się na czas edycji i wznowi po zamknięciu notatki.
+* W trybie mowy notatka jest wyświetlana pod akapitem, którego dotyczy. Stuknij ją, aby ją edytować.
+* W trybie tekstowym każdy akapit ma akcje czytnika ekranu do dodawania lub usuwania zakładki oraz dodawania lub edytowania notatki. W iOS VoiceOver po treści oznaczonego akapitu odczytuje „Zakładka” albo „Notatka:” i jej treść. Pozycja Zakładki na pokrętle VoiceOver pozwala przechodzić między oznaczonymi akapitami.
+* Polecenie **Zakładki** w menu Więcej opcji otwiera listę zakładek i notatek. Do jej filtrowania służą opcje Wszystko, Zakładki i Notatki. Lista otwiera się na pozycji najbliższej bieżącemu miejscu w dokumencie. Wybierz pozycję, aby do niej przejść. Aby edytować notatkę lub usunąć zakładkę, przesuń palcem po pozycji na liście w iOS, przytrzymaj ją w Androidzie lub użyj akcji czytnika ekranu.
+* Gdy dokument ma zakładki, na pasku czytania pojawia się jednostka nawigacji Zakładka. Przyciski wstecz i dalej przenoszą wtedy między zakładkami, jeśli wybierzesz tę jednostkę.
+
+Zakładki i notatki możesz przenosić między aplikacjami mobilnymi a wersją komputerową. Wyeksportuj dane dokumentu do pliku `.paperback` i zaimportuj go w drugiej aplikacji.
+
 ### Więcej opcji
 
 Menu Więcej opcji zawiera pozostałe funkcje. Niektóre działają nieco inaczej w każdej z aplikacji.
 
 * **Przełącz na tryb mowy lub Przełącz na tryb tekstowy:** przełącza między opisanymi wyżej sposobami czytania. W Androidzie jest też polecenie Czytaj na głos, które uruchamia i wstrzymuje odczyt.
 * **Spis treści:** lista rozdziałów książki, otwierana na aktualnie czytanym rozdziale. Wybierz rozdział, aby od razu do niego przejść. Pozycje z podrozdziałami można rozwijać i zwijać za pomocą akcji czytnika ekranu.
+* **Zakładki:** zakładki i notatki w tym dokumencie, opisane powyżej.
 * **Elementy:** lista nagłówków lub odnośników w dokumencie. W iOS wybierz rodzaj elementów w polu Typ, a w Androidzie przełącz kartę. Następnie wybierz element, aby do niego przejść.
 * **Znajdź:** wpisz szukany tekst albo wybierz wcześniejsze wyszukiwanie z Historii wyszukiwania. Określ, czy uwzględniać wielkość liter, czy szukać tylko całych słów i czy używać wyrażenia regularnego. Przyciski Znajdź poprzednie i Znajdź następne przenoszą do dopasowania i podają jego położenie. Ekran Znajdź pozostaje otwarty, aby można było kontynuować wyszukiwanie. W trybie mowy Znajdź pojawia się też jako jednostka nawigacji na pasku czytania, co pozwala przechodzić między dopasowaniami także z tego paska. Opcja **Zatrzymuj czytanie po akapicie z dopasowaniem**, dostępna w Ustawieniach w sekcji Synteza mowy, jest domyślnie włączona i zatrzymuje odczyt po akapicie zawierającym dopasowanie. Wyłącz ją, aby kontynuować czytanie od znalezionego miejsca. Przyciski Znajdź poprzednie i Znajdź następne na pasku czytania nadal pozwalają przechodzić między dopasowaniami.
 * **Przejdź do:** przenosi do wybranego wiersza, strony lub pozycji wyrażonej procentowo. Rodzaj pozycji wybiera się w polu Tryb.
@@ -258,7 +275,7 @@ Menu Więcej opcji zawiera pozostałe funkcje. Niektóre działają nieco inacze
 
 ### Klawiatury i zestawy słuchawkowe
 
-Po podłączeniu klawiatury działają skróty z wersji komputerowej do otwierania książek, ostatnich dokumentów, wyszukiwania, przechodzenia do wskazanej pozycji, spisu treści, liczby słów, informacji o dokumencie, eksportu i wyłącznika czasowego. W iOS używa się `Cmd` zamiast `Ctrl`. Działają też pojedyncze litery do przechodzenia między nagłówkami, stronami, odnośnikami i pozostałymi elementami, a `Spacja` uruchamia i wstrzymuje odtwarzanie. W iOS pojedyncze litery docierają do Paperbacka tylko wtedy, gdy nawigacja pojedynczymi literami VoiceOver (Quick Nav) jest wyłączona.
+Po podłączeniu klawiatury działają skróty z wersji komputerowej do otwierania książek, ostatnich dokumentów, wyszukiwania, przechodzenia do wskazanej pozycji, spisu treści, liczby słów, informacji o dokumencie, eksportu i wyłącznika czasowego. W iOS używa się `Cmd` zamiast `Ctrl`. Działają też pojedyncze litery do przechodzenia między nagłówkami, stronami, odnośnikami i pozostałymi elementami, a `Spacja` uruchamia i wstrzymuje odtwarzanie. Skróty zakładek też odpowiadają wersji komputerowej: `B` i `Shift+B` przenoszą do następnej i poprzedniej zakładki, a `N` i `Shift+N` do następnej i poprzedniej notatki. `Ctrl+Shift+B` dodaje lub usuwa zakładkę, `Ctrl+Shift+N` dodaje lub edytuje notatkę, a `Ctrl+B` otwiera listę Zakładki. W tych trzech skrótach w iOS naciśnij `Cmd` zamiast `Ctrl`. W iOS pojedyncze litery docierają do Paperbacka tylko wtedy, gdy nawigacja pojedynczymi literami VoiceOver (Quick Nav) jest wyłączona.
 
 W Androidzie jedno naciśnięcie przycisku zestawu słuchawkowego uruchamia lub wstrzymuje odtwarzanie, dwa przenoszą do przodu, a trzy do tyłu.
 
