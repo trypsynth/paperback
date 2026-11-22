@@ -5,6 +5,7 @@ use crate::{
 	config::ConfigManager,
 	document::{self, DocLen, DocPos, MarkerType},
 	export::annotations::AnnotationEntry,
+	ffi_config::ConfigManagerFfi,
 	reader_core::{get_filtered_bookmarks, resolve_link},
 	types::{self as ffi},
 };
@@ -31,6 +32,37 @@ impl DocumentSession {
 			items: list.items.into_iter().map(|i| LinkListItemFfi { offset: i.offset, text: i.text }).collect(),
 			closest_index: list.closest_index,
 		}
+	}
+
+	/// The Bookmarks screen's rows, each with the text it marks. `path` is where the settings are kept: the link, for a document opened from one.
+	#[must_use]
+	#[allow(clippy::needless_pass_by_value)]
+	pub fn bookmark_rows(
+		&self,
+		config: &ConfigManagerFfi,
+		path: String,
+		position: DocPos,
+		filter: ffi::BookmarkFilterType,
+	) -> ffi::BookmarkRowsFfi {
+		let list = config.with(|config| get_filtered_bookmarks(config, &path, position, filter));
+		let rows = list
+			.items
+			.into_iter()
+			.map(|b| {
+				let marked = if b.is_whole_line { self.line_text_at(b.start) } else { self.text_range(b.start, b.end) };
+				let marked = marked.split_whitespace().collect::<Vec<_>>().join(" ");
+				// An audio-only book's text is a blank line per chapter, so its title is the only thing to show.
+				let snippet = if marked.is_empty() { self.section_title_at(b.start) } else { marked };
+				ffi::BookmarkRowFfi {
+					start: b.start,
+					end: b.end,
+					note: b.note,
+					snippet,
+					audio_ms: b.audio_ms.and_then(|ms| i64::try_from(ms).ok()),
+				}
+			})
+			.collect();
+		ffi::BookmarkRowsFfi { rows, closest_index: list.closest_index }
 	}
 
 	#[must_use]

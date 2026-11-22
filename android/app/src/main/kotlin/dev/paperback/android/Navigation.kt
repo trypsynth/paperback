@@ -1,11 +1,15 @@
 package dev.paperback.android
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import dev.paperback.android.ui.dialogs.BookmarkNoteDialog
 import dev.paperback.android.ui.screens.AllDocumentsScreen
+import dev.paperback.android.ui.screens.BookmarksScreen
 import dev.paperback.android.ui.screens.ElementsScreen
 import dev.paperback.android.ui.screens.MainScreen
 import dev.paperback.android.ui.screens.SettingsScreen
@@ -29,6 +33,9 @@ fun MainNavigation() {
 	}
 	OnScreenRequest(viewModel.navigation.elementsRequest) {
 		if (backStack.lastOrNull() != ElementsRoute) backStack.add(ElementsRoute)
+	}
+	OnScreenRequest(viewModel.navigation.bookmarksRequest) {
+		if (backStack.lastOrNull() != BookmarksRoute) backStack.add(BookmarksRoute)
 	}
 	NavDisplay(
 		backStack = backStack,
@@ -61,6 +68,12 @@ fun MainNavigation() {
 						onDismiss = { backStack.removeLastOrNull() }
 					)
 				}
+				entry<BookmarksRoute> {
+					BookmarksScreen(
+						viewModel = viewModel,
+						onDismiss = { backStack.removeLastOrNull() }
+					)
+				}
 				entry<ElementsRoute> {
 					ElementsScreen(
 						viewModel = viewModel,
@@ -69,4 +82,7 @@ fun MainNavigation() {
 				}
 			},
 	)
+	// Here rather than in a screen, so editing a note from the Bookmarks screen shows over it as well as over the reader.
+	val noteTarget by viewModel.bookmarks.noteTarget.collectAsStateWithLifecycle()
+	noteTarget?.let { BookmarkNoteDialog(viewModel.bookmarks, it) }
 }

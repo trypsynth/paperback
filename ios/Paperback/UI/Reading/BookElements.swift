@@ -69,6 +69,17 @@ final class ParagraphElement: UIAccessibilityElement, BookElement {
 		bookView?.unitBecameFocused(unit)
 	}
 
+	/// Asked each time, since bookmarks change while the element is kept.
+	override var accessibilityValue: String? {
+		get { bookView?.bookmarkValue?(unit) }
+		set {}
+	}
+
+	override var accessibilityCustomActions: [UIAccessibilityCustomAction]? {
+		get { bookView?.bookmarkActions?(unit) }
+		set {}
+	}
+
 	/// Handled even when there is nothing to do, or VoiceOver taps the middle of the paragraph and may land on a link in it.
 	override func accessibilityActivate() -> Bool {
 		if isWholeLink { bookView?.onFollowLink?(unit, 0) }

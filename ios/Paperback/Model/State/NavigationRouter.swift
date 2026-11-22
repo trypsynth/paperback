@@ -16,6 +16,10 @@ final class NavigationRouter {
 	var showSleepTimer = false
 	var showBookSpeech = false
 	var showElements = false
+	var showBookmarks = false
+	var bookmarkNote: BookmarkNoteTarget? = nil
+	/// A text mode paragraph's bookmark waiting on the reader to confirm that its note goes too.
+	var bookmarkRemoval: BookmarkFfi? = nil
 	var showFilePicker = false
 	var showOpenFromURL = false
 	var passwordPromptUrl: URL? = nil

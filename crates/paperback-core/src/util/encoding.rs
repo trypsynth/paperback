@@ -32,7 +32,8 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 	if let Ok(s) = str::from_utf8(input) {
 		return s.to_string();
 	}
-	if looks_like_utf16(sample_of(input)) {
+	let sample = sample_of(input);
+	if looks_like_utf16(sample) {
 		let (decoded, encoding, had_errors) = UTF_16LE.decode(input);
 		if !had_errors && encoding == UTF_16LE {
 			return decoded.to_string();
@@ -42,9 +43,12 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 			return decoded.to_string();
 		}
 	}
+	// A short DOS file reads to the detector as a clean CJK encoding, so its box drawing and accents are checked first.
+	if looks_like_cp437(sample) {
+		return decode_cp437(input);
+	}
 	// Only a multi-byte guess is trusted: their structure makes a clean decode meaningful, while single-byte encodings decode almost anything.
 	let mut detector = EncodingDetector::new(Iso2022JpDetection::Allow);
-	let sample = sample_of(input);
 	detector.feed(sample, sample.len() == input.len());
 	let detected = detector.guess(None, Utf8Detection::Allow);
 	if !detected.is_single_byte() {
@@ -53,6 +57,9 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 			return decoded.to_string();
 		}
 	}
+	if detected.is_single_byte() && detected != WINDOWS_1252 && reads_better_than_western(sample, detected) {
+		return detected.decode_without_bom_handling(input).0.into_owned();
+	}
 	let (decoded, _, _) = WINDOWS_1252.decode(input);
 	if decoded.chars().any(|c| !c.is_control() || c.is_whitespace()) {
 		return decoded.to_string();
@@ -60,7 +67,7 @@ pub fn convert_to_utf8(input: &[u8]) -> String {
 	String::from_utf8_lossy(input).to_string()
 }
 
-/// For a format that names no encoding and was usually written in its reader's own code page, such as PalmDOC: the detector's guess is taken even when it's a single-byte encoding, which `convert_to_utf8` doesn't trust because a text file is more often UTF-8 or Western.
+/// For a format that names no encoding and was usually written in its reader's own code page, such as PalmDOC: the detector's guess is taken even when it's a single-byte encoding, which `convert_to_utf8` needs more evidence for because a text file is more often UTF-8 or Western.
 #[must_use]
 pub fn decode_guessing_code_page(input: Vec<u8>) -> String {
 	let input = match String::from_utf8(input) {
@@ -145,14 +152,14 @@ const CP437_HIGH: &str = "\u{C7}\u{FC}\u{E9}\u{E2}\u{E4}\u{E0}\u{E5}\u{E7}\u{EA}
 
 /// `encoding_rs` follows the web, which has no code page 437.
 #[must_use]
-pub fn decode_cp437(bytes: &[u8]) -> String {
+fn decode_cp437(bytes: &[u8]) -> String {
 	let high: Vec<char> = CP437_HIGH.chars().collect();
 	bytes.iter().map(|&byte| if byte < 0x80 { char::from(byte) } else { high[usize::from(byte) - 0x80] }).collect()
 }
 
 /// DOS text gives itself away by a line of box drawing, which is one byte repeated, or by accented letters in a range Windows code pages keep for punctuation. A double-byte script fills that range too, but it is mostly non-ASCII and rarely repeats a byte.
 #[must_use]
-pub fn looks_like_cp437(bytes: &[u8]) -> bool {
+fn looks_like_cp437(bytes: &[u8]) -> bool {
 	if str::from_utf8(bytes).is_ok() {
 		return false;
 	}
@@ -212,6 +219,25 @@ fn decode_utf32_be(input: &[u8]) -> String {
 /// The detector must not be told a cut sample is the end of input, or it reads the cut character as malformed and rules out the right encoding (#907).
 fn sample_of(input: &[u8]) -> &[u8] {
 	&input[..input.len().min(DETECTION_SAMPLE_BYTES)]
+}
+
+/// The detector takes a pound sign or a copyright sign in Western text for Central European, so its single-byte guess is only taken when Windows-1252 would leave symbols inside words, as `Za¿ó³æ` for Polish (#1338).
+fn reads_better_than_western(sample: &[u8], encoding: &'static Encoding) -> bool {
+	let western = symbols_inside_words(&WINDOWS_1252.decode_without_bom_handling(sample).0);
+	western >= 3 && western > symbols_inside_words(&encoding.decode_without_bom_handling(sample).0) * 2
+}
+
+fn symbols_inside_words(text: &str) -> usize {
+	let chars: Vec<char> = text.chars().collect();
+	chars
+		.windows(3)
+		.filter(|around| {
+			!around[1].is_ascii()
+				&& !around[1].is_alphabetic()
+				&& around[0].is_alphabetic()
+				&& around[2].is_alphabetic()
+		})
+		.count()
 }
 
 fn looks_like_utf16(input: &[u8]) -> bool {
@@ -414,6 +440,26 @@ mod tests {
 	fn test_convert_to_utf8_falls_back_to_lossy_when_no_viable_decode() {
 		let input = b"\x81\x8D";
 		assert_eq!(convert_to_utf8(input), "\u{FFFD}\u{FFFD}");
+	}
+
+	#[rstest]
+	#[case(
+		encoding_rs::WINDOWS_1250,
+		"Zażółć gęślą jaźń.\nPchnąć w tę łódź jeża lub ośm skrzyń fig.\nĆma i źrebak żują świeżą trawę.\n"
+	)]
+	#[case(WINDOWS_1252, "Registration of Orator is £15.00 Sterling for UK and Eire, © 1992.")]
+	#[case(WINDOWS_1252, "Smørrebrød og æbleskiver på Åland.")]
+	#[case(WINDOWS_1252, "It’s a “quoted” word, and that’s all.")]
+	fn a_text_file_in_a_single_byte_code_page_is_read_in_it(#[case] encoding: &'static Encoding, #[case] text: &str) {
+		assert_eq!(convert_to_utf8(&encoding.encode(text).0), text);
+	}
+
+	#[test]
+	fn a_dos_text_file_is_read_as_code_page_437() {
+		assert_eq!(
+			convert_to_utf8(b"\xC9\xCD\xCD\xCD\xCD\xBB\r\nHilfetext f\x81r FILEMAN"),
+			"\u{2554}\u{2550}\u{2550}\u{2550}\u{2550}\u{2557}\r\nHilfetext f\u{FC}r FILEMAN"
+		);
 	}
 
 	#[test]

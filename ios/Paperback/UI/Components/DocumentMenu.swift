@@ -30,6 +30,7 @@ struct DocumentMenu: View {
 			.accessibilityAction(named: t("Find")) { viewModel.navigation.showFind = true }
 			.accessibilityAction(named: t("Elements")) { viewModel.navigation.showElements = true }
 			.accessibilityAction(named: t("Table of Contents")) { viewModel.navigation.showToc = true }
+			.accessibilityAction(named: t("Bookmarks")) { viewModel.navigation.showBookmarks = true }
 			.accessibilityActions {
 				if speaksWithTts {
 					Button(t("Speech for This Book")) { viewModel.navigation.showBookSpeech = true }
@@ -116,6 +117,10 @@ struct DocumentMenu: View {
 		Button { viewModel.navigation.showElements = true } label: {
 			// TRANSLATORS: Menu item to open the list of headings and links found in the document
 			Label(t("Elements"), systemImage: "list.dash")
+		}
+		Button { viewModel.navigation.showBookmarks = true } label: {
+			// TRANSLATORS: Menu item / accessibility action opening the list of the document's bookmarks and notes
+			Label(t("Bookmarks"), systemImage: "bookmark")
 		}
 		Divider()
 		Button { viewModel.navigation.showFind = true } label: {

@@ -8,7 +8,7 @@ mod read_aloud;
 mod text_map;
 mod voice;
 
-pub use dictionary::{MatchType, RuleScope, SpeechRule, VoiceFilter, apply_rules};
+pub use dictionary::{MatchType, RuleProblem, RuleScope, SpeechRule, VoiceFilter, apply_rules};
 pub use engine::{
 	AudioChunk, SpeechEngine, SpeechRequest, Synthesis, Voice, WholeSynthesis, WordBoundary, utf16_to_char_offset,
 };

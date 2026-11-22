@@ -44,6 +44,28 @@ final class TabSwitchTests: XCTestCase {
 		for tab in viewModel.tabs where tab.url == first || tab.url == second { viewModel.closeTab(tab) }
 	}
 
+	func testRemovingAnOpenDocumentClosesItsTab() throws {
+		let url = try book("removed.txt", "Alpha paragraph.")
+		let viewModel = AppViewModel()
+		XCTAssertTrue(viewModel.openDocument(url: url))
+		viewModel.removeRecentDocument(url: url)
+		XCTAssertFalse(viewModel.tabs.contains { $0.url == url })
+		XCTAssertFalse(viewModel.recentDocuments.contains { $0.url == url })
+	}
+
+	func testARemovedDocumentStaysGoneAfterRelaunching() async throws {
+		let url = try book("removed.txt", "Alpha paragraph.")
+		let path = url.path(percentEncoded: false)
+		let viewModel = AppViewModel()
+		XCTAssertTrue(viewModel.openDocument(url: url))
+		viewModel.removeRecentDocument(url: url)
+		let relaunched = AppViewModel()
+		await relaunched.restoreTask?.value
+		XCTAssertFalse(relaunched.tabs.contains { $0.url.path(percentEncoded: false) == path })
+		XCTAssertFalse(relaunched.configManager.getRecentDocuments().contains(path))
+		XCTAssertFalse(relaunched.configManager.getOpenedDocuments().contains(path))
+	}
+
 	func testRelaunchingKeepsRecentsInReadingOrder() async throws {
 		let paths = try [book("first.txt", "Alpha paragraph."), book("second.txt", "Beta paragraph.")].map { $0.path(percentEncoded: false) }
 		let config = AppViewModel().configManager

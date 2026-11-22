@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import uniffi.paperback.ChapterProgressFfi
 import uniffi.paperback.ConfigManagerFfi
 import uniffi.paperback.DocumentSession
 import uniffi.paperback.ReadingStepFfi
@@ -61,6 +62,11 @@ class ReadingController(
 	val currentSegmentText: StateFlow<String> = _currentSegmentText.asStateFlow()
 
 	val sleepTimer = SleepTimer(scope) { pauseTts() }
+
+	/** Steps by bookmark when Bookmark is the unit: forward, speak, announce. Set by [Bookmarks], which owns the stepping. */
+	internal var stepBookmark: ((Boolean, Boolean, Boolean) -> Unit)? = null
+
+	fun isPlaying(): Boolean = narrator.isPlaying()
 
 	/** Compared against the live position rather than cleared as a flag, so a move of any kind invalidates it on its own. */
 	private var spokenThroughPosition: Long? = null
@@ -340,6 +346,28 @@ class ReadingController(
 		}
 	}
 
+	/** A bookmark's position, then in an audio-only book its time: moving the position seeks to the start of the chapter, so the time comes after. */
+	fun jumpToBookmark(start: Long, audioMs: Long?, speak: Boolean) {
+		val tab = activeTab() ?: return
+		_ttsPosition.value = start
+		refreshSegmentPreview()
+		saveTtsPositionToConfig(start)
+		if (tab.hasAudio) {
+			narration.seekToPosition(start)
+			if (audioMs != null) narration.seekToMs(audioMs)
+			if (speak) narration.play()
+			return
+		}
+		if (speak) {
+			ttsManager.stop()
+			ttsManager.speak(_currentSegmentText.value)
+			precacheNextContinuousSegment()
+		} else if (ttsManager.isPaused.value) {
+			// Otherwise a later resume would play the old paragraph's paused audio instead of the new position.
+			ttsManager.stop()
+		}
+	}
+
 	fun playNextSegment(speak: Boolean = true, announce: Boolean = false) =
 		stepSegment(SegmentDirectionFfi.NEXT, speak, announce)
 
@@ -349,6 +377,11 @@ class ReadingController(
 	private fun stepSegment(direction: SegmentDirectionFfi, speak: Boolean, announce: Boolean) {
 		val forward = direction == SegmentDirectionFfi.NEXT
 		if (navigateByFind(forward = forward, speak = speak, announce = announce)) return
+		if (_currentNavUnit.value is NavUnit.Bookmark) {
+			// Like Find, always handled: there's nothing for previous/next to fall back to.
+			stepBookmark?.invoke(forward, speak, announce || !speak)
+			return
+		}
 		if (seekAudioByNavUnit(forward = forward)) return
 		val tab = activeTab() ?: return
 		val step = tab.session.readingStep(_ttsPosition.value, StepUnitFfi.Segment(navSegmentType()), direction)
@@ -457,6 +490,33 @@ class ReadingController(
 		if (narration.isNarrating(tab.documentUri)) narration.resumePointMs()?.let { return it }
 		val point = tab.session.audioPointForPositionFfi(_ttsPosition.value)
 		return if (point.found) point.timeMs else null
+	}
+
+	private val _showsChapterProgress = MutableStateFlow(false)
+
+	/** Whether the progress under the reading bar is the chapter's rather than the book's. */
+	val showsChapterProgress: StateFlow<Boolean> = _showsChapterProgress.asStateFlow()
+
+	/** Null only for a book that is all audio whose files' lengths aren't known, which has no chapter to measure. */
+	fun chapterProgress(): ChapterProgressFfi? {
+		val tab = activeTab() ?: return null
+		return tab.session.chapterProgressFfi(_ttsPosition.value, audioElapsedMs() ?: -1L).takeIf { it.found }
+	}
+
+	/** Announces what it switched to, since TalkBack doesn't read a focused button again when its text changes. */
+	fun toggleChapterProgress() {
+		val chapter = if (_showsChapterProgress.value) null else chapterProgress()
+		_showsChapterProgress.value = chapter != null
+		val text = chapter?.let(::chapterProgressText) ?: bookProgressText()
+		if (text.isNotEmpty()) announcer(text)
+	}
+
+	/** An audio-only book gives no percentage here, as on the screen. */
+	private fun bookProgressText(): String {
+		val tab = activeTab() ?: return ""
+		val percent = if (tab.isAudioOnly) null else progressPercent()
+		val time = audioElapsedMs()?.let { tab.session.audioTimeAnnouncementFfi(it) }?.ifEmpty { null }
+		return listOfNotNull(percent?.let { t("{}% through", it.toString()) }, time).joinToString(", ")
 	}
 
 	fun seekAudioToMs(elapsedMs: Long): Boolean = narration.seekToMs(elapsedMs)

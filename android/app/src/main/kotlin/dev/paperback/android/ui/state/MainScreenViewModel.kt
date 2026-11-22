@@ -99,6 +99,14 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 
 	val navigation = NavigationRouter()
 
+	val bookmarks =
+		Bookmarks(config, reading, activeTab = { uiState.value.activeTab }, announcer = ::announceForAccessibility)
+
+	fun openBookmarks() {
+		if (uiState.value.activeTab == null) return
+		navigation.bookmarksRequest.request()
+	}
+
 	/** Downloads go where file managers can reach them, falling back to private storage when shared storage is missing. */
 	val links = LinkOpener(
 		viewModelScope,
@@ -128,6 +136,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 	fun confirmImportSettings() {
 		val path = _importPromptPath.value ?: return
 		config.importDocumentSettings(path)
+		bookmarks.refresh()
 		val tab = uiState.value.activeTab
 		if (tab != null) {
 			val savedPosition = config.getDocumentPosition(tab.documentUri)
@@ -243,13 +252,20 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 		}
 	}
 
+	/** An open tab of it is closed first, as on Windows, so it isn't left open or brought back at the next launch, and closing it can't write back what was just removed. */
 	fun removeRecentDocument(uriString: String) {
+		val index = currentTabs.indexOfFirst { it.documentUri == uriString }
+		val wasActive = index == currentActiveIndex
+		val closedTab = if (index != -1) removeTabAt(index) else null
 		viewModelScope.launch(Dispatchers.IO) {
+			if (closedTab != null) {
+				forgetClosedTabIO(closedTab)
+			}
 			config.removeDocumentHistory(uriString)
 			config.saveSoon()
 			updateRecentDocuments()
 			withContext(Dispatchers.Main) {
-				emitTabsState()
+				if (closedTab != null) showTabAfterClose(wasActive) else emitTabsState()
 			}
 		}
 	}
@@ -293,30 +309,51 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 
 	fun closeTab(index: Int) {
 		if (index in currentTabs.indices) {
-			val closedTab = currentTabs.removeAt(index)
+			val wasActive = index == currentActiveIndex
+			val closedTab = removeTabAt(index)
 			viewModelScope.launch(Dispatchers.IO) {
-				config.removeOpenedDocument(closedTab.documentUri)
-				config.setDocumentOpened(closedTab.documentUri, false)
+				forgetClosedTabIO(closedTab)
 				config.saveSoon()
-				documentCache.directoryFor(closedTab.documentUri).deleteRecursively()
 				updateRecentDocuments()
 				withContext(Dispatchers.Main) {
-					currentActiveIndex = if (currentTabs.isEmpty()) -1 else currentActiveIndex.coerceIn(0, currentTabs.size - 1)
-					if (currentActiveIndex != -1) {
-						persistActiveDocument(currentTabs[currentActiveIndex].docKey)
-					}
-					emitTabsState()
-					if (currentActiveIndex != -1) {
-						reading.setPosition(currentTabs[currentActiveIndex].savedPosition)
-						updateTtsMetadata()
-						reading.refreshSegmentPreview()
-					} else {
-						reading.setPosition(0)
-						reading.clearSegment()
-						updateTtsMetadata()
-					}
+					showTabAfterClose(wasActive)
 				}
 			}
+		}
+	}
+
+	private fun forgetClosedTabIO(closedTab: DocumentTabState) {
+		config.removeOpenedDocument(closedTab.documentUri)
+		config.setDocumentOpened(closedTab.documentUri, false)
+		documentCache.directoryFor(closedTab.documentUri).deleteRecursively()
+	}
+
+	// A tab before the active one shifts it down, so the index follows it rather than landing on the next document.
+	private fun removeTabAt(index: Int): DocumentTabState {
+		val tab = currentTabs.removeAt(index)
+		if (index < currentActiveIndex) currentActiveIndex--
+		currentActiveIndex = if (currentTabs.isEmpty()) -1 else currentActiveIndex.coerceIn(0, currentTabs.size - 1)
+		return tab
+	}
+
+	private fun showTabAfterClose(wasActive: Boolean) {
+		// A tab's savedPosition is where it was opened, so moving the reader there would lose the active document's place.
+		if (!wasActive) {
+			emitTabsState()
+			return
+		}
+		if (currentActiveIndex != -1) {
+			persistActiveDocument(currentTabs[currentActiveIndex].docKey)
+		}
+		emitTabsState()
+		if (currentActiveIndex != -1) {
+			reading.setPosition(currentTabs[currentActiveIndex].savedPosition)
+			updateTtsMetadata()
+			reading.refreshSegmentPreview()
+		} else {
+			reading.setPosition(0)
+			reading.clearSegment()
+			updateTtsMetadata()
 		}
 	}
 
@@ -494,6 +531,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 	fun importSettingsFromUri(context: Context, sourceUri: Uri): Boolean {
 		val tab = uiState.value.activeTab ?: return false
 		if (!settingsTransfer.importFrom(context, tab.documentUri, sourceUri)) return false
+		bookmarks.refresh()
 		val savedPosition = config.getDocumentPosition(tab.documentUri)
 		if (savedPosition > 0L) {
 			reading.updateTtsPosition(savedPosition)

@@ -1,130 +1,77 @@
-use std::{rc::Rc, sync::Mutex};
+use std::{cell::RefCell, rc::Rc, sync::Mutex};
 
 use paperback_core::config::ConfigManager;
 use patois::t;
+use wx_utils::tray::{Tray, Visibility};
 use wxdragon::prelude::*;
 
-use super::{document_manager::DocumentManager, icon, menu_ids};
+use super::{document_manager::DocumentManager, icon};
 
-/// Left unset if the artwork can't be built, since a blank slot beats a stock "information" glyph that looks like another app's message.
-pub fn set_tray_icon(tray_icon: &TaskBarIcon) {
-	if let Some(bundle) = icon::notification_area_bundle() {
-		tray_icon.set_icon_bundle(&bundle, "Paperback");
-	}
-}
+/// The notification area icon, made the first time Paperback is minimized to the tray, and
+/// hidden again whenever the window comes back.
+pub type TrayIcon = Rc<RefCell<Option<Tray>>>;
 
-pub struct TrayState {
-	pub icon: TaskBarIcon,
-	#[allow(dead_code)] // Menu must stay alive for the tray popup
-	menu: Menu,
-}
-
+/// Hides Paperback to the tray when it's minimized, while "Minimize to system tray" is on.
 pub fn bind_tray_events(
 	frame: Frame,
+	visibility: &Rc<Visibility>,
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
-	tray_state: &Rc<Mutex<Option<TrayState>>>,
+	tray: &TrayIcon,
 ) {
-	// Both on_size and on_idle need the same minimize-to-tray logic to handle different timing scenarios across platforms.
-	macro_rules! bind_minimize_handler {
-		($method:ident) => {{
-			let config = Rc::clone(config);
-			let doc_manager = Rc::clone(doc_manager);
-			let tray_state = Rc::clone(tray_state);
-			frame.$method(move |event| {
-				handle_minimize_to_tray(frame, &config, &doc_manager, &tray_state);
-				event.skip(true);
-			});
-		}};
-	}
-	bind_minimize_handler!(on_size);
-	bind_minimize_handler!(on_idle);
-}
-
-fn handle_minimize_to_tray(
-	frame: Frame,
-	config: &Rc<Mutex<ConfigManager>>,
-	doc_manager: &Rc<Mutex<DocumentManager>>,
-	tray_state: &Rc<Mutex<Option<TrayState>>>,
-) {
-	// A frame hidden in the tray still reports itself iconized; without the shown check every idle event rebuilt the icon and spun a core.
-	if !frame.is_iconized() || !frame.is_shown() {
-		return;
-	}
-	if !config.lock().unwrap().get_app_bool("minimize_to_tray", false) {
-		return;
-	}
-	let mut tray_state_guard = tray_state.lock().unwrap();
-	if tray_state_guard.is_none() {
-		let state = create_tray_state(frame, Rc::clone(doc_manager), Rc::clone(tray_state));
-		*tray_state_guard = Some(state);
-	} else {
-		let state = tray_state_guard.as_mut().unwrap();
-		set_tray_icon(&state.icon);
-	}
-	drop(tray_state_guard);
-	frame.show(false);
-}
-
-fn create_tray_state(
-	frame: Frame,
-	doc_manager: Rc<Mutex<DocumentManager>>,
-	tray_state: Rc<Mutex<Option<TrayState>>>,
-) -> TrayState {
-	// TRANSLATORS: System tray menu item to restore the main window from the tray
-	let restore_label = t("&Restore");
-	// TRANSLATORS: Status bar help text for the tray menu's "Restore" item
-	let restore_help = t("Restore Paperback");
-	// TRANSLATORS: System tray menu item to quit the application
-	let exit_label = t("E&xit");
-	// TRANSLATORS: Status bar help text for the tray menu's "Exit" item
-	let exit_help = t("Exit Paperback");
-	let mut menu = Menu::builder()
-		.append_item(menu_ids::RESTORE, &restore_label, &restore_help)
-		.append_separator()
-		.append_item(menu_ids::EXIT, &exit_label, &exit_help)
-		.build();
-	let icon = TaskBarIcon::builder().build();
-	set_tray_icon(&icon);
-	icon.set_popup_menu(&mut menu);
-	{
-		let doc_manager = Rc::clone(&doc_manager);
-		let tray_state = Rc::clone(&tray_state);
-		icon.on_menu(move |event| match event.get_id() {
-			menu_ids::RESTORE => restore_from_tray(frame, &doc_manager, &tray_state),
-			menu_ids::EXIT => {
-				frame.close(true);
+	let config = Rc::clone(config);
+	let (restoring, doc_manager, tray) = (Rc::clone(visibility), Rc::clone(doc_manager), Rc::clone(tray));
+	visibility.hide_when_minimized(
+		// Not waited for: a dialog up the stack holding the config would otherwise hang every idle event.
+		move || config.try_lock().is_ok_and(|config| config.get_app_bool("minimize_to_tray", false)),
+		move || {
+			let mut slot = tray.borrow_mut();
+			match slot.as_ref() {
+				Some(icon) => icon.show(),
+				None => *slot = Some(create_tray(frame, &restoring, &doc_manager, &tray)),
 			}
-			_ => {}
-		});
-	}
-	#[cfg(any(target_os = "windows", target_os = "linux"))]
-	{
-		let doc_manager_click = Rc::clone(&doc_manager);
-		let tray_state_click = Rc::clone(&tray_state);
-		icon.on_left_up(move |_event| {
-			restore_from_tray(frame, &doc_manager_click, &tray_state_click);
-		});
-		icon.on_left_double_click(move |_event| {
-			restore_from_tray(frame, &doc_manager, &tray_state);
-		});
-	}
-	TrayState { icon, menu }
+		},
+	);
 }
 
-fn restore_from_tray(
+fn create_tray(
 	frame: Frame,
+	visibility: &Rc<Visibility>,
 	doc_manager: &Rc<Mutex<DocumentManager>>,
-	tray_state: &Rc<Mutex<Option<TrayState>>>,
-) {
-	if frame.is_iconized() {
-		frame.iconize(false);
+	tray: &TrayIcon,
+) -> Tray {
+	let restore: Rc<dyn Fn()> = {
+		let (visibility, doc_manager, tray) = (Rc::clone(visibility), Rc::clone(doc_manager), Rc::clone(tray));
+		Rc::new(move || restore_from_tray(&visibility, &doc_manager, &tray))
+	};
+	let clicked = Rc::clone(&restore);
+	let mut builder = Tray::builder("Paperback")
+		.show_hide_label(
+			// TRANSLATORS: System tray menu item to restore the main window from the tray
+			&t("&Restore"),
+			// TRANSLATORS: Status bar help text for the tray menu's "Restore" item
+			&t("Restore Paperback"),
+		)
+		.on_click(move || clicked())
+		.on_show_hide(move || restore());
+	if let Some(bundle) = icon::notification_area_bundle() {
+		builder = builder.icon_bundle(bundle);
 	}
-	frame.show(true);
-	frame.raise();
-	doc_manager.lock().unwrap().restore_focus();
-	let mut state_guard = tray_state.lock().unwrap();
-	if let Some(state) = state_guard.as_mut() {
-		state.icon.remove_icon();
+	let icon = builder.build(&frame);
+	icon.on_exit(move || {
+		frame.close(true);
+	});
+	icon
+}
+
+/// Brings Paperback back from the tray, onto the dialog the user was in if there was one, and
+/// takes the icon away until it's minimized there again.
+pub fn restore_from_tray(visibility: &Visibility, doc_manager: &Rc<Mutex<DocumentManager>>, tray: &TrayIcon) {
+	visibility.come_forward();
+	if !visibility.has_dialog() {
+		doc_manager.lock().unwrap().restore_focus();
+	}
+	if let Some(icon) = tray.borrow().as_ref() {
+		icon.hide();
 	}
 }

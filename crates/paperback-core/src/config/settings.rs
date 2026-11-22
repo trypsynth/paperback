@@ -275,6 +275,9 @@ pub struct ConfigData {
 	pub documents: HashMap<String, DocumentConfig>,
 	#[serde(default)]
 	pub path_hashes: HashMap<String, String>,
+	/// The speech dictionary, in the order its rules apply.
+	#[serde(default, skip_serializing_if = "Vec::is_empty")]
+	pub speech_rules: Vec<crate::speech::SpeechRule>,
 }
 
 impl Default for ConfigData {
@@ -287,6 +290,7 @@ impl Default for ConfigData {
 			find_history: Vec::new(),
 			documents: HashMap::new(),
 			path_hashes: HashMap::new(),
+			speech_rules: Vec::new(),
 		}
 	}
 }
@@ -348,6 +352,35 @@ mod tests {
 		let bare: DocumentConfig = toml::from_str("path = \"book.epub\"\n").unwrap();
 		assert_eq!(bare.audio_time_ms, None);
 		assert!(!toml::to_string(&bare).unwrap().contains("audio_time_ms"));
+	}
+
+	#[test]
+	fn speech_rules_round_trip_in_order_and_are_left_out_when_there_are_none() {
+		use crate::speech::{MatchType, RuleScope, SpeechRule, VoiceFilter};
+		let rules = vec![
+			SpeechRule {
+				pattern: "Dr".into(),
+				replacement: "Doctor".into(),
+				whole_word: true,
+				..SpeechRule::default()
+			},
+			SpeechRule {
+				scope: RuleScope::Paragraph,
+				match_type: MatchType::Regex,
+				pattern: r"(\d+)%".into(),
+				replacement: r"\1 percent".into(),
+				voice_filter: VoiceFilter::Language("fi-FI".into()),
+				..SpeechRule::default()
+			},
+		];
+		let config = ConfigData {
+			speech_rules: rules.clone(),
+			recent_documents: vec!["a.epub".into()],
+			..ConfigData::default()
+		};
+		let saved = toml::to_string(&config).unwrap();
+		assert_eq!(toml::from_str::<ConfigData>(&saved).unwrap().speech_rules, rules, "{saved}");
+		assert!(!toml::to_string(&ConfigData::default()).unwrap().contains("speech_rules"));
 	}
 
 	#[test]

@@ -33,6 +33,19 @@ private struct ReadingScreen: UIViewControllerRepresentable {
 		reading.onTextModeFollow = { [weak controller] position in
 			controller?.follow(position: position)
 		}
+		let bookView = controller.bookView
+		bookView.bookmarkUnits = { [weak reading, weak model] in
+			guard let reading, let model else { return [] }
+			return reading.bookmarkUnits(in: model)
+		}
+		bookView.bookmarkValue = { [weak reading, weak model] unit in
+			guard let reading, let model else { return nil }
+			return reading.bookmarkValue(forUnit: unit, in: model)
+		}
+		bookView.bookmarkActions = { [weak reading, weak model] unit in
+			guard let reading, let model else { return [] }
+			return reading.bookmarkActions(forUnit: unit, in: model)
+		}
 		return controller
 	}
 

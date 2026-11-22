@@ -82,6 +82,12 @@ final class AppViewModel {
 		highContrastText = configManager.getAppBool(key: "high_contrast_text", defaultValue: false)
 
 		reading.context = self
+		reading.onRequestBookmarkNote = { [weak self] target in
+			self?.navigation.bookmarkNote = target
+		}
+		reading.onRequestBookmarkRemoval = { [weak self] bookmark in
+			self?.navigation.bookmarkRemoval = bookmark
+		}
 		reading.stopAfterFindMatch = configManager.getAppBool(key: "tts_stop_after_find_match", defaultValue: true)
 		reading.onStopAfterFindMatchChanged = { [weak self] stop in
 			self?.configManager.setAppBool(key: "tts_stop_after_find_match", value: stop)
@@ -316,6 +322,7 @@ final class AppViewModel {
 		guard FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) else { return false }
 		let path = tab.url.path(percentEncoded: false)
 		configManager.importSettingsFromFile(docPath: path, importPath: url.path(percentEncoded: false))
+		reading.bookmarksChanged()
 		let savedPos = configManager.getDocumentPosition(path: path)
 		if let idx = tabs.firstIndex(where: { $0.id == tab.id }) {
 			tabs[idx].currentPosition = savedPos
@@ -381,8 +388,15 @@ final class AppViewModel {
 		recentDocuments.removeAll()
 	}
 
+	/// An open tab of it is closed first, as on Windows, so it isn't left open or brought back at the next launch, and closing it can't write back the position just removed.
 	func removeRecentDocument(url: URL) {
-		configManager.removeDocumentHistory(path: url.path(percentEncoded: false))
+		let path = url.path(percentEncoded: false)
+		for tab in tabs where tab.url.path(percentEncoded: false) == path {
+			closeTab(tab)
+		}
+		configManager.removeDocumentHistory(path: path)
+		configManager.flush()
+		UserDefaults.standard.removeObject(forKey: bookmarkKey(path))
 		recentDocuments.removeAll { $0.url == url }
 	}
 
@@ -437,12 +451,15 @@ extension AppViewModel: ReadingContext {
 	func savedNavUnit(for tab: DocumentTab) -> NavigationUnit? {
 		configManager.getDocumentNavigationUnit(path: tab.url.path(percentEncoded: false))
 	}
+
+	var activeDocPath: String? { activeTab?.url.path(percentEncoded: false) }
 }
 
 enum NavUnit: Hashable {
 	case segment(SegmentTypeFfi)
 	case time(seconds: Int)
 	case find
+	case bookmark
 
 	init(_ stored: NavigationUnit) {
 		switch stored {
@@ -451,12 +468,12 @@ enum NavUnit: Hashable {
 		}
 	}
 
-	/// Find has no stored form, since the search it steps through ends with the document.
+	/// Find has no stored form, since the search it steps through ends with the document; Bookmark has none so older versions and desktop never read one they don't know.
 	var stored: NavigationUnit? {
 		switch self {
 		case .segment(let type): return .segment(segmentType: type)
 		case .time(let seconds): return .seconds(seconds: UInt32(seconds))
-		case .find: return nil
+		case .find, .bookmark: return nil
 		}
 	}
 
@@ -466,6 +483,8 @@ enum NavUnit: Hashable {
 		case .time(let seconds): return seekAmountName(seconds)
 		// TRANSLATORS: Name of the "Find" navigation unit, which moves between search matches
 		case .find: return t("Find")
+		// TRANSLATORS: Name of the "Bookmark" navigation unit, which moves between the reader's bookmarks and notes
+		case .bookmark: return t("Bookmark")
 		}
 	}
 }

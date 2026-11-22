@@ -100,8 +100,6 @@ seq_ids!(BASE + 490 => ANNOUNCE_CHAPTER_PROGRESS);
 
 seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE, REPORT_PROBLEM);
 
-seq_ids!(BASE + 900 => RESTORE);
-
 pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 {
 	use paperback_core::config::ActionId;
 	match action {

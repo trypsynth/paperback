@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: b1e8b46ff69081ba; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2e060f0cdd2c601f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,77b4e1b6,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - phiên bản 1.1
 
@@ -226,6 +226,8 @@ Mỗi ứng dụng có hai cách để đọc tài liệu. Ở chế độ văn 
 
 Các audiobook, như DAISY, M4B và sách MP3, phát bản ghi âm của riêng chúng thay thế.
 
+Ở chế độ đọc to, màn hình hiển thị bạn đã đọc được bao xa trong sách. Nhấn vào đó để xem chương thay thế: tên của nó, bạn đã đọc được bao xa trong chương đó và còn bao nhiêu từ, ví dụ "Chapter 3, 42%, 1,850 words left". Trong sách âm thanh, nó hiển thị thời gian, ví dụ "Chapter 3, 4:10 of 12:00, 7:50 left". Nhấn lại để quay lại toàn bộ cuốn sách.
+
 ### Thanh đọc
 
 Thanh ở dưới cùng của màn hình có, từ trái sang phải:
@@ -236,12 +238,27 @@ Thanh ở dưới cùng của màn hình có, từ trái sang phải:
 
 Bạn cũng có thể vuốt lên hoặc xuống trên nút phát để di chuyển theo đơn vị điều hướng, mà không cần tiếp cận các nút Trước và Tiếp theo. Nếu đó là tất cả những gì bạn sử dụng, cài đặt Hide previous and next buttons sẽ loại bỏ chúng khỏi đường dẫn của trình đọc màn hình. Cài đặt Swipe up moves forward chọn hướng vuốt đi.
 
+### Dấu trang và ghi chú
+
+Nút dấu trang ở trên cùng của màn hình đánh dấu vị trí của bạn. Nhấn vào nó để đánh dấu đoạn văn bạn đang ở, và nhấn lại để xóa dấu trang. Trình đọc màn hình của bạn sẽ nói Selected khi đoạn văn đã có dấu trang. Xóa dấu trang có ghi chú sẽ hỏi trước.
+
+* Ở chế độ đọc to, dấu trang đặt ở đầu đoạn văn được đọc, vì vậy khi quay lại sẽ đọc lại đoạn văn đó từ đầu. Ở chế độ văn bản, nó đặt ở đoạn văn bạn đang ở.
+* Trong sách âm thanh không có văn bản, giống như sách MP3, dấu trang giữ lại thời gian chính xác thay thế, giống như trên máy tính để bàn.
+* Nhấn giữ nút dấu trang hoặc sử dụng các hành động của trình đọc màn hình để thêm hoặc chỉnh sửa ghi chú, hoặc để mở danh sách Dấu trang. Khi bạn viết ghi chú, việc đọc sẽ tạm dừng và tiếp tục khi bạn đóng ghi chú.
+* Ở chế độ đọc to, ghi chú của đoạn văn hiển thị dưới nó. Nhấn vào ghi chú để chỉnh sửa nó.
+* Ở chế độ văn bản, mỗi đoạn văn có các hành động của trình đọc màn hình để thêm hoặc xóa dấu trang và để thêm hoặc chỉnh sửa ghi chú. Trên iOS, đoạn văn có dấu trang sẽ nói Bookmark hoặc ghi chú của nó sau văn bản, và bộ quay Dấu trang di chuyển giữa chúng.
+* **Dấu trang** trong menu Các tùy chọn khác liệt kê mọi dấu trang và ghi chú, với Tất cả, Dấu trang và Ghi chú để lọc chúng. Nó mở ở phần gần nhất với nơi bạn đang ở. Chọn một để đi tới nó. Vuốt trên dấu trang trên iOS hoặc nhấn giữ nó trên Android, hoặc sử dụng các hành động của trình đọc màn hình để chỉnh sửa ghi chú hoặc xóa nó.
+* Khi tài liệu có dấu trang, Dấu trang tham gia vào các đơn vị điều hướng trên thanh đọc, vì vậy Trước và Tiếp theo di chuyển giữa chúng.
+
+Dấu trang và ghi chú là những cái mà máy tính để bàn sử dụng, vì vậy chúng di chuyển giữa chúng trong tệp `.paperback` của tài liệu.
+
 ### More Options
 
 Menu More Options là nơi mọi thứ khác nằm. Một số mục hoạt động khác một chút trên mỗi ứng dụng.
 
 * **Switch to TTS Mode hoặc Switch to Text Mode:** di chuyển giữa chế độ đọc to và chế độ văn bản, được mô tả ở trên. Ở chế độ văn bản, mục Read Aloud bắt đầu và tạm dừng đọc to mà không rời khỏi chế độ văn bản.
 * **Table of Contents:** các chương của sách, được mở tại chương bạn đang đọc. Chọn một để đi thẳng tới nó. Các mục có các chương dưới chúng có thể được mở rộng và thu gọn bằng các hành động của trình đọc màn hình.
+* **Dấu trang:** dấu trang và ghi chú của bạn trong tài liệu này, được mô tả ở trên.
 * **Elements:** danh sách các tiêu đề hoặc liên kết của tài liệu. Chuyển đổi giữa hai cái bằng Bộ chọn Type trên iOS hoặc các thẻ trên Android, sau đó chọn một để đi tới nó.
 * **Find:** nhập những gì cần tìm hoặc chọn tìm kiếm trước đó từ Lịch sử tìm kiếm, và chọn xem có so khớp chữ hoa chữ thường, chỉ khớp toàn bộ từ hay sử dụng biểu thức chính quy. Tìm từ trước và Tìm từ tiếp theo nhảy đến một kết quả khớp và cho biết nó được đặt ở đâu, và Tìm vẫn mở để bạn có thể tiếp tục. Ở chế độ đọc to, Tìm cũng xuất hiện dưới dạng đơn vị điều hướng trên thanh đọc, vì vậy bạn có thể bước qua các kết quả khớp từ đó. **Stop reading after search matches** trong Cài đặt dưới Text to Speech được bật theo mặc định và dừng lại sau khi đọc đoạn văn chứa kết quả khớp. Tắt nó để tiếp tục đọc từ kết quả khớp trong khi các điều khiển trước và tiếp theo của thanh đọc vẫn điều hướng theo Tìm.
 * **Go To:** nhảy tới một dòng, một trang hoặc một phần trăm trong tài liệu. Chọn cái nào bằng Bộ chọn Mode.
@@ -258,7 +275,7 @@ Menu More Options là nơi mọi thứ khác nằm. Một số mục hoạt đ�
 
 ### Bàn phím và tai nghe
 
-Với bàn phím, các phím tắt máy tính để bàn để mở sách, tài liệu gần đây, Find, Go To, mục lục, số từ, thông tin tài liệu, xuất và bộ định thời ngủ đều hoạt động, sử dụng `Cmd` thay vì `Ctrl` trên iOS. Tương tự như vậy với các phím chữ cái duy nhất để di chuyển theo tiêu đề, trang, liên kết và các phím khác, và `Space` phát và tạm dừng. Trên iOS, các phím chữ cái duy nhất chỉ tiếp cận Paperback khi Tắt Quick Nav chữ cái duy nhất của VoiceOver.
+Với bàn phím, các phím tắt máy tính để bàn để mở sách, tài liệu gần đây, Tìm, Chuyển đến, mục lục, số từ, thông tin tài liệu, xuất và bộ hẹn giờ ngủ đều hoạt động, sử dụng `Cmd` thay vì `Ctrl` trên iOS. Tương tự như vậy với các phím chữ cái duy nhất để di chuyển theo tiêu đề, trang, liên kết và các phím khác, và `Space` phát và tạm dừng. Các phím dấu trang cũng khớp với máy tính để bàn: `B` và `Shift+B` di chuyển đến dấu trang tiếp theo và dấu trang trước đó, `N` và `Shift+N` đến ghi chú tiếp theo và ghi chú trước đó, `Ctrl+Shift+B` thêm hoặc xóa dấu trang, `Ctrl+Shift+N` thêm hoặc chỉnh sửa ghi chú, và `Ctrl+B` mở danh sách Dấu trang. Trên iOS, các phím chữ cái duy nhất chỉ tiếp cận Paperback khi Tắt Quick Nav chữ cái duy nhất của VoiceOver.
 
 Trên Android, nút tai nghe phát và tạm dừng bằng một lần nhấn, di chuyển về phía trước bằng hai lần, và quay lại bằng ba lần.
 
