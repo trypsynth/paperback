@@ -52,6 +52,7 @@ pub struct MainWindow {
 	doc_manager: Rc<Mutex<DocumentManager>>,
 	config: Rc<Mutex<ConfigManager>>,
 	/// Hides the window and brings it back along with whichever dialog the user was in.
+	#[cfg_attr(target_os = "macos", expect(dead_code, reason = "only the IPC code reads it, and macOS has none"))]
 	visibility: Rc<Visibility>,
 	#[cfg(target_os = "windows")]
 	tray: tray::TrayIcon,
