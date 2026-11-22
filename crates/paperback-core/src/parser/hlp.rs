@@ -11,7 +11,7 @@ use crate::{
 	},
 	parser::{Parser, ipf, text::text_document, util::path::extract_title_from_path, word::looks_like_text_content},
 	t,
-	util::encoding::{convert_to_utf8, decode_cp437, looks_like_cp437},
+	util::encoding::convert_to_utf8,
 };
 
 /// The prefix stops a bare topic number reading as a fragment when the reader resolves a link.
@@ -64,7 +64,7 @@ impl Parser for HlpParser {
 /// DOS programs often shipped their help as a plain text file with this extension. Others shipped obfuscated data or ANSI art, which decodes to control codes and few letters.
 fn plain_text(path: &str) -> Option<String> {
 	let bytes = fs::read(path).ok()?;
-	let text = if looks_like_cp437(&bytes) { decode_cp437(&bytes) } else { convert_to_utf8(&bytes) };
+	let text = convert_to_utf8(&bytes);
 	if !looks_like_text_content(&text) {
 		return None;
 	}
