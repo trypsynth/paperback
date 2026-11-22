@@ -245,7 +245,7 @@ struct Simulator {
 	state: String,
 }
 
-/// One entry of Xcode's `IDEProvisioningTeams` preference.
+/// One team entry of Xcode's account-to-teams preference.
 #[derive(Deserialize)]
 struct XcodeTeam {
 	#[serde(rename = "teamID")]
@@ -488,9 +488,14 @@ fn find_simulator(name: Option<&str>) -> Result<Simulator, Box<dyn Error>> {
 
 /// Saves signing overrides when using a team other than the project's default.
 /// The bundle ID depends only on the team so checkouts reuse it: free teams can register 10 App IDs per week.
+/// It stays outside `dev.paperback.ios`, which belongs to the maintainer's team: Apple refuses to register IDs
+/// under it for any other team.
 fn set_up_signing(root: &Path, team: Option<&str>) -> Result<(), Box<dyn Error>> {
 	let mac_file = mac_signing_file();
-	if team.is_none() && mac_file.exists() {
+	// Files from before the move out of `dev.paperback.ios` hold an ID that can never register, so redo them.
+	let saved = fs::read_to_string(&mac_file).ok();
+	let usable = saved.is_some_and(|saved| !saved.contains("PAPERBACK_BUNDLE_ID = dev.paperback.ios."));
+	if team.is_none() && usable {
 		return Ok(());
 	}
 	let checked_in_team = checked_in_signing_value(root, "DEVELOPMENT_TEAM")?;
@@ -525,7 +530,7 @@ fn set_up_signing(root: &Path, team: Option<&str>) -> Result<(), Box<dyn Error>>
 		}
 		return Ok(());
 	}
-	let bundle_id = format!("dev.paperback.ios.{}", team.to_lowercase());
+	let bundle_id = format!("local.paperback-dev.{}", team.to_lowercase());
 	fs::create_dir_all(mac_file.parent().expect("the file is inside ~/.config"))?;
 	fs::write(
 		&mac_file,
@@ -540,26 +545,32 @@ fn set_up_signing(root: &Path, team: Option<&str>) -> Result<(), Box<dyn Error>>
 	Ok(())
 }
 
-/// Reads Xcode's undocumented `IDEProvisioningTeams` preference, which maps accounts to their teams.
+/// Reads Xcode's undocumented preference mapping accounts to their teams. Xcode 27 renamed it from
+/// `IDEProvisioningTeams` to `IDEProvisioningTeamByIdentifier`, keeping the entries' shape.
 fn xcode_teams() -> Result<Vec<XcodeTeam>, Box<dyn Error>> {
 	let preferences = Command::new("defaults").args(["export", "com.apple.dt.Xcode", "-"]).output()?;
-	let mut plutil = Command::new("plutil")
-		.args(["-extract", "IDEProvisioningTeams", "json", "-o", "-", "-"])
-		.stdin(Stdio::piped())
-		.stdout(Stdio::piped())
-		.stderr(Stdio::null())
-		.spawn()?;
-	plutil.stdin.take().expect("stdin is piped").write_all(&preferences.stdout)?;
-	let output = plutil.wait_with_output()?;
-	// The preference only exists once an account has been signed in.
-	if !output.status.success() {
-		return Ok(Vec::new());
+	for key in ["IDEProvisioningTeamByIdentifier", "IDEProvisioningTeams"] {
+		let mut plutil = Command::new("plutil")
+			.args(["-extract", key, "json", "-o", "-", "-"])
+			.stdin(Stdio::piped())
+			.stdout(Stdio::piped())
+			.stderr(Stdio::null())
+			.spawn()?;
+		plutil.stdin.take().expect("stdin is piped").write_all(&preferences.stdout)?;
+		let output = plutil.wait_with_output()?;
+		// The preference only exists once an account has been signed in.
+		if !output.status.success() {
+			continue;
+		}
+		let accounts: BTreeMap<String, Vec<XcodeTeam>> = serde_json::from_slice(&output.stdout)?;
+		// Two signed-in accounts can belong to the same team.
+		let teams: BTreeMap<String, XcodeTeam> =
+			accounts.into_values().flatten().map(|team| (team.id.clone(), team)).collect();
+		if !teams.is_empty() {
+			return Ok(teams.into_values().collect());
+		}
 	}
-	let accounts: BTreeMap<String, Vec<XcodeTeam>> = serde_json::from_slice(&output.stdout)?;
-	// Two signed-in accounts can belong to the same team.
-	let teams: BTreeMap<String, XcodeTeam> =
-		accounts.into_values().flatten().map(|team| (team.id.clone(), team)).collect();
-	Ok(teams.into_values().collect())
+	Ok(Vec::new())
 }
 
 /// Reads a `NAME = value` line from `ios/Config/Signing.xcconfig`.
