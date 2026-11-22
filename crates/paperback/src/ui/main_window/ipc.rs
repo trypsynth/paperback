@@ -1,16 +1,8 @@
-#[cfg(target_os = "windows")]
-use std::sync::atomic::{AtomicIsize, Ordering};
-
 use patois::t;
 use wxdragon::prelude::*;
 
-#[cfg(target_os = "windows")]
-use super::tray;
 use super::{MainWindow, dialogs};
 use crate::ipc::IpcCommand;
-
-#[cfg(target_os = "windows")]
-static HIDDEN_POPUP: AtomicIsize = AtomicIsize::new(0);
 
 impl MainWindow {
 	pub fn handle_ipc_command(&self, command: IpcCommand) {
@@ -48,29 +40,11 @@ impl MainWindow {
 
 	#[cfg(target_os = "windows")]
 	fn toggle_visibility(&self) {
-		let is_shown = self.frame.is_shown();
-		if is_shown && self.is_window_active() {
-			#[cfg_attr(not(target_os = "windows"), allow(unused_mut))]
-			let mut has_popup = false;
-			#[cfg(target_os = "windows")]
-			{
-				use windows::Win32::{
-					Foundation::HWND,
-					UI::WindowsAndMessaging::{GetLastActivePopup, SW_HIDE, ShowWindow},
-				};
-				let handle = self.frame.get_handle();
-				if !handle.is_null() {
-					let frame_hwnd = HWND(handle);
-					let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
-					if active_popup != frame_hwnd {
-						has_popup = true;
-						HIDDEN_POPUP.store(active_popup.0 as isize, Ordering::SeqCst);
-						let _ = unsafe { ShowWindow(active_popup, SW_HIDE) };
-					}
-				}
-			}
-			if has_popup {
-				self.frame.show(false);
+		if self.frame.is_shown() && self.visibility.is_active() {
+			// With a dialog open the two are hidden together; otherwise the window is minimized,
+			// which "Minimize to system tray" can take on to the tray.
+			if self.visibility.has_dialog() {
+				self.visibility.hide();
 			} else {
 				self.frame.iconize(true);
 			}
@@ -80,56 +54,15 @@ impl MainWindow {
 	}
 
 	fn activate_from_ipc(&self) {
-		self.frame.show(true);
-		self.frame.iconize(false);
+		self.visibility.come_forward();
 		self.frame.request_user_attention(UserAttentionFlag::Info);
-		self.frame.raise();
-		#[allow(unused_mut)]
-		let mut has_popup = false;
-		#[cfg(target_os = "windows")]
-		{
-			use windows::Win32::{
-				Foundation::HWND,
-				UI::WindowsAndMessaging::{GetLastActivePopup, SW_SHOW, SetForegroundWindow, ShowWindow},
-			};
-			let handle = self.frame.get_handle();
-			if !handle.is_null() {
-				let frame_hwnd = HWND(handle);
-				let hidden = HIDDEN_POPUP.swap(0, Ordering::SeqCst);
-				if hidden != 0 {
-					let active_popup = HWND(hidden as _);
-					let _ = unsafe { ShowWindow(active_popup, SW_SHOW) };
-					let _ = unsafe { SetForegroundWindow(active_popup) };
-					has_popup = true;
-				} else {
-					let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
-					has_popup = active_popup != frame_hwnd;
-					let _ = unsafe { SetForegroundWindow(active_popup) };
-				}
-			}
-		}
-		if !has_popup {
+		if !self.visibility.has_dialog() {
 			self.doc_manager.lock().unwrap().restore_focus();
 		}
-		#[cfg(not(target_os = "linux"))]
-		if let Some(state) = self.tray_state.lock().unwrap().as_mut() {
-			tray::set_tray_icon(&state.icon);
+		// Back from the tray, the icon goes until Paperback is minimized there again.
+		#[cfg(target_os = "windows")]
+		if let Some(icon) = self.tray.borrow().as_ref() {
+			icon.hide();
 		}
-	}
-
-	#[cfg(target_os = "windows")]
-	fn is_window_active(&self) -> bool {
-		use windows::Win32::{
-			Foundation::HWND,
-			UI::WindowsAndMessaging::{GetForegroundWindow, GetLastActivePopup},
-		};
-		let handle = self.frame.get_handle();
-		if handle.is_null() {
-			return self.frame.has_focus();
-		}
-		let frame_hwnd = HWND(handle);
-		let foreground = unsafe { GetForegroundWindow() };
-		let active_popup = unsafe { GetLastActivePopup(frame_hwnd) };
-		foreground == frame_hwnd || foreground == active_popup
 	}
 }

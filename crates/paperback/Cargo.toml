@@ -31,8 +31,8 @@ ship-shape = "0.6.1"
 tempfile = { workspace = true }
 toml = { workspace = true }
 tracing = { workspace = true }
-wx-utils = { version = "0.5.2", features = ["global-hotkeys", "shortcuts"] }
-wxdragon = { version = "0.9.24", default-features = false, features = ["webview"] }
+wx-utils = { version = "0.5.3", features = ["global-hotkeys", "shortcuts", "tray"] }
+wxdragon = { version = "0.9.25", default-features = false, features = ["webview"] }
 zip = { workspace = true }
 
 # macOS keeps a bundled app to one copy by itself.
