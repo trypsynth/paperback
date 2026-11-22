@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-21 13:54-0700\n"
+"POT-Creation-Date: 2026-11-22 15:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -416,7 +416,6 @@ msgid "Remove all documents from the Recent Documents list"
 msgstr ""
 
 #. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
-#. TRANSLATORS: System tray menu item to quit the application
 msgid "E&xit"
 msgstr ""
 
@@ -2804,10 +2803,6 @@ msgstr ""
 msgid "Restore Paperback"
 msgstr ""
 
-#. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
-msgid "Exit Paperback"
-msgstr ""
-
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Open..."
 msgstr ""
@@ -3955,6 +3950,15 @@ msgstr ""
 
 #. TRANSLATORS: A shortcut in the Customize Keyboard Shortcuts list whose key is not on the keyboard layout in use, so it cannot be pressed. The {} placeholder is replaced with the shortcut, for example "Ctrl+;".
 msgid "{} (not on this keyboard layout)"
+msgstr ""
+
+msgid "&Show/Hide"
+msgstr ""
+
+msgid "Show or hide the window"
+msgstr ""
+
+msgid "Close the app"
 msgstr ""
 
 #: kt
