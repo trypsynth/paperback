@@ -90,8 +90,7 @@ impl HeadingRule {
 				};
 				let set_in_bold = line.bold;
 				self.bold_is_rare
-					&& set_in_bold
-					&& *len <= BOLD_HEADING_MAX_LEN
+					&& set_in_bold && *len <= BOLD_HEADING_MAX_LEN
 					&& reads_as_a_title(text)
 					&& !bold_beside(index.checked_sub(1))
 					&& !bold_beside(Some(index + 1))

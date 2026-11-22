@@ -439,27 +439,26 @@ impl Layout {
 					|| previous.is_some_and(|(_, length, _)| length + 1 + first_word > width);
 				// A paragraph's wrapped words go on further out, at the book's margin, so at the indent of its indented first line is the next paragraph. On a page laid out as a list, as an index, a recipe or a poem is, an item starts at the margin and goes on further in. Elsewhere, a line two cells further in goes on an item that runs over: it stays further in, or comes back out after a short line.
 				let wrapped_on = current.is_some()
-					&& wraps
-					&& previous.is_some_and(|(previous_indent, _, opened)| {
-						// a paragraph on such a page is indented as anywhere else
-						if listed[page_index] && opened_at == margin {
-							indent > previous_indent || (indent == previous_indent && indent != margin && !opened)
-						} else {
-							indent < previous_indent
-								|| (indent == previous_indent && (indent == margin || !opened))
-								|| (indent == previous_indent + 2
-									&& following(page_index, line_index + 1).next().is_some_and(|after| {
-										let after_indent = indent_of(after);
-										let after_word =
-											after.chars().skip(after_indent).take_while(|&cell| cell != BLANK).count();
-										// an item running over two lines or more stays further in, where a paragraph's words go back out
-										after_word > 0
-											&& (after_indent == indent
-												|| (after_indent == previous_indent
-													&& lengths[page_index][line_index] + 1 + after_word <= width))
-									}))
-						}
-					});
+					&& wraps && previous.is_some_and(|(previous_indent, _, opened)| {
+					// a paragraph on such a page is indented as anywhere else
+					if listed[page_index] && opened_at == margin {
+						indent > previous_indent || (indent == previous_indent && indent != margin && !opened)
+					} else {
+						indent < previous_indent
+							|| (indent == previous_indent && (indent == margin || !opened))
+							|| (indent == previous_indent + 2
+								&& following(page_index, line_index + 1).next().is_some_and(|after| {
+									let after_indent = indent_of(after);
+									let after_word =
+										after.chars().skip(after_indent).take_while(|&cell| cell != BLANK).count();
+									// an item running over two lines or more stays further in, where a paragraph's words go back out
+									after_word > 0
+										&& (after_indent == indent
+											|| (after_indent == previous_indent
+												&& lengths[page_index][line_index] + 1 + after_word <= width))
+								}))
+					}
+				});
 				// A centered heading ends where it does on purpose, with room left for the next line's first word, where a paragraph indented as far, as a picture's description is, wraps. Contents entries are indented as far as a centered heading, and aren't one.
 				let ends_on_purpose = following(page_index, line_index + 1).next().is_none_or(|next| {
 					let next_word = next.chars().skip(indent_of(next)).take_while(|&cell| cell != BLANK).count();
@@ -470,15 +469,13 @@ impl Layout {
 				// An entry's run-on line is indented, where a paragraph's first line is, and ends the entry with its dots. It's indented less than the entry's first line, as one indented further is an entry under a heading.
 				let runs_on = indent > 0
 					&& indent < opened_at
-					&& !standalone
-					&& ends_entry
+					&& !standalone && ends_entry
 					&& current.is_some()
 					&& opened_after_entry;
 				// An entry whose first line has no page number can instead run over onto lines indented further, as poetry contents do: two cells beyond the deepest entry.
 				let runs_over = current.is_some()
 					&& opened_after_entry
-					&& !standalone
-					&& indent > opened_at
+					&& !standalone && indent > opened_at
 					&& run_over_at.map_or_else(
 						|| entry_runs_over(following(page_index, line_index), opened_at),
 						|at| at == indent,

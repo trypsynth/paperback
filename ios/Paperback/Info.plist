@@ -227,6 +227,27 @@
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
+			<string>dev.paperback.qch</string>
+			<key>UTTypeDescription</key>
+			<string>Qt Compressed Help</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>qch</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/x-qt-qch</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
 			<string>dev.paperback.hlp</string>
 			<key>UTTypeDescription</key>
 			<string>WinHelp</string>
@@ -470,6 +491,7 @@
 			<array>
 				<string>dev.paperback.chm</string>
 				<string>dev.paperback.hlp</string>
+				<string>dev.paperback.qch</string>
 			</array>
 		</dict>
 	</array>

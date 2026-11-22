@@ -15,7 +15,7 @@ use zip::ZipArchive;
 use super::DocumentSession;
 use crate::{
 	document::{DocPos, MarkerType},
-	parser::{cbz, fb2, ipf, is_data_uri, is_external_url, mobi},
+	parser::{cbz, fb2, ipf, is_data_uri, is_external_url, mobi, qch},
 	t,
 	util::{
 		rar,
@@ -109,6 +109,7 @@ impl DocumentSession {
 				let entry = chm.find(source)?;
 				Ok(chm.read(&entry)?)
 			}
+			Some("qch") => qch::file_bytes(&self.file_path, source),
 			Some("fb2") => Ok(LENIENT_BASE64.decode(strip_whitespace(&fb2::binary_data(&self.file_path, source)?))?),
 			// A zipped DAISY book, whatever its name: its parser has already pointed each picture at its entry, and the archive may need the book's password.
 			_ if cbz::is_zip(&self.file_path) => {
