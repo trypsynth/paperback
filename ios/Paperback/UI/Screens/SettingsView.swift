@@ -137,13 +137,16 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 	}
 }
 
+private let textScaleRangePercent = 70...300
+private let textScaleStepPercent = 10
+
 private struct ReadabilitySettingsSection: View {
 	@Bindable var viewModel: AppViewModel
 
 	var body: some View {
 		// TRANSLATORS: Section header in Settings grouping controls for how document text is displayed
 		Section(t("Readability")) {
-			Stepper(value: $viewModel.textScalePercent, in: 70...300, step: 10) {
+			Stepper(value: $viewModel.textScalePercent, in: textScaleRangePercent, step: textScaleStepPercent) {
 				HStack {
 					// TRANSLATORS: Row label for the control that scales the size of document text
 					Text(t("Text Size"))
@@ -153,7 +156,7 @@ private struct ReadabilitySettingsSection: View {
 						.monospacedDigit()
 				}
 			}
-			.adjustableStepper(label: t("Text Size"), value: "\(viewModel.textScalePercent)%", number: $viewModel.textScalePercent, in: 70...300, step: 10)
+			.adjustableStepper(label: t("Text Size"), value: "\(viewModel.textScalePercent)%", number: $viewModel.textScalePercent, in: textScaleRangePercent, step: textScaleStepPercent)
 			// TRANSLATORS: Label for the picker choosing how much space sits between lines of text
 			Picker(t("Line Spacing"), selection: $viewModel.lineSpacingChoice) {
 				// TRANSLATORS: Default spacing option, shown in the line and paragraph spacing pickers
