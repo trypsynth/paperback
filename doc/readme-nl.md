@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: b1e8b46ff69081ba; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,490ed50c,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: 2e060f0cdd2c601f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,77b4e1b6,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
 
 # Paperback - versie 1.1
 
@@ -226,6 +226,8 @@ Elke app heeft twee manieren om een document te lezen. In de tekstmodus lees je 
 
 Audioboeken, zoals DAISY-, M4B- en MP3-boeken, spelen in plaats daarvan hun eigen opname af.
 
+In de voorleesmodus toont het scherm hoe ver je in het boek bent. Tik erop om in plaats daarvan het hoofdstuk te zien: de naam, hoe ver je erin bent en hoeveel woorden ervan nog over zijn, bijvoorbeeld "Hoofdstuk 3, 42%, 1.850 woorden resterend". Bij een audioboek geeft het de tijd, bijvoorbeeld "Hoofdstuk 3, 4:10 van 12:00, 7:50 resterend". Tik nogmaals om terug te gaan naar het hele boek.
+
 ### De leesbalk
 
 De balk onderaan het scherm bevat, van links naar rechts:
@@ -236,12 +238,27 @@ De balk onderaan het scherm bevat, van links naar rechts:
 
 Je kunt ook omhoog of omlaag vegen op de afspeelknop om per navigatie-eenheid te navigeren, zonder naar de knoppen Vorige en Volgende te hoeven gaan. Als je alleen dat gebruikt, haalt de instelling Knoppen voor vorige en volgende verbergen ze uit de weg van je schermlezer. De instelling Omhoog vegen gaat vooruit bepaalt welke kant een veeg op gaat.
 
+### Bladwijzers en notities
+
+De bladwijzerknop bovenaan het scherm markeert je plaats. Tik erop om de alinea waar je bent in een bladwijzer om te zetten, en tik nogmaals om de bladwijzer te verwijderen. Je schermlezer zegt Geselecteerd als de alinea er al een heeft. Als je een bladwijzer met een notitie verwijdert, wordt je eerst om bevestiging gevraagd.
+
+* In de voorleesmodus gaat de bladwijzer aan het begin van de alinea die wordt voorgelezen, zodat je er opnieuw naartoe gaat en die alinea weer van het begin wordt voorgelezen. In de tekstmodus gaat het op de alinea waar je bent.
+* Bij een audioboek zonder tekst, zoals een MP3-boek, onthoudt de bladwijzer in plaats daarvan het exacte tijdstip, net zoals op de desktopversie.
+* Houd de bladwijzerknop lang ingedrukt, of gebruik zijn schermlezeracties, om een notitie toe te voegen of te bewerken, of om de list Bladwijzers te openen. Terwijl je een notitie schrijft, pauzeert het voorlezen en begint het opnieuw wanneer je de notitie sluit.
+* In de voorleesmodus verschijnt de notitie van een alinea eronder. Tik op de notitie om deze te bewerken.
+* In de tekstmodus heeft elke alinea schermlezeracties om een bladwijzer toe te voegen of te verwijderen en om een notitie toe te voegen of te bewerken. Op iOS zegt een alinea met een bladwijzer Bladwijzer, of de notitie ervan, na de tekst, en de rotor Bladwijzers beweegt ertussen.
+* **Bladwijzers** in het menu Meer opties toont elke bladwijzer en notitie, met Alle, Bladwijzers en Notities om ze te filteren. Het opent op degene die het dichtst bij je huidige plaats staat. Kies er een om er naartoe te gaan. Veeg op iOS op een bladwijzer, of houd deze op Android lang ingedrukt, of gebruik de schermlezeracties, om de notitie ervan te bewerken of te verwijderen.
+* Zodra een document bladwijzers heeft, voegt Bladwijzer zich bij de navigatie-eenheden op de leesbalk, zodat Vorige en Volgende ertussen navigeren.
+
+Bladwijzers en notities zijn dezelfde als die welke de desktopversie gebruikt, dus ze reizen ertussen mee in het `.paperback`-bestand van een document.
+
 ### Meer opties
 
 In het menu Meer opties vind je al het andere. Sommige items werken in elke app een beetje anders.
 
 * **Overschakelen naar TTS-modus of Overschakelen naar tekstmodus:** wisselt tussen de voorleesmodus en de tekstmodus, zoals hierboven beschreven. In de tekstmodus start en pauzeert een item Voorlezen het voorlezen zonder de tekstmodus te verlaten.
 * **Inhoudsopgave:** de hoofdstukken van het boek, geopend bij het hoofdstuk dat je aan het lezen bent. Kies er een om er direct naartoe te gaan. Items met hoofdstukken eronder kun je uit- en samenvouwen met de acties van je schermlezer.
+* **Bladwijzers:** je bladwijzers en notities in dit document, hierboven beschreven.
 * **Elementen:** een lijst met de koppen of links van het document. Wissel tussen de twee met de keuzelijst Type op iOS of de tabbladen op Android, en kies er dan een om ernaartoe te gaan.
 * **Zoeken:** typ waarnaar je wilt zoeken, of kies een eerdere zoekopdracht uit Zoekgeschiedenis, en kies of je hoofdlettergevoelig wilt zoeken, alleen hele woorden wilt vinden of een reguliere expressie wilt gebruiken. Vorige zoeken en Volgende zoeken springen naar een overeenkomst en zeggen waar je terecht bent gekomen, en Zoeken blijft open zodat je verder kunt. In de voorleesmodus verschijnt Zoeken ook als navigatie-eenheid op de leesbalk, zodat je ook van daaruit door de overeenkomsten kunt gaan. **Voorlezen stoppen na zoekovereenkomsten** in Instellingen onder Tekst-naar-spraak staat standaard aan en stopt na het voorlezen van de alinea met de overeenkomst. Schakel dit uit om vanaf de overeenkomst door te blijven lezen, terwijl Vorige en Volgende op de leesbalk nog steeds per zoekovereenkomst navigeren.
 * **Ga naar:** spring naar een regel, een pagina of een percentage van het document. Kies welke met de keuzelijst Modus.
@@ -258,7 +275,7 @@ In het menu Meer opties vind je al het andere. Sommige items werken in elke app 
 
 ### Toetsenborden en headsets
 
-Met een toetsenbord werken alle desktopsneltoetsen voor het openen van boeken, recente documenten, Zoeken, Ga naar, de inhoudsopgave, woordenaantal, documentinformatie, exporteren en de slaaptimer, met `Cmd` in plaats van `Ctrl` op iOS. Dat geldt ook voor de lettertoetsen om per kop, pagina, link enzovoort te navigeren, en `Spatie` speelt af en pauzeert. Op iOS bereiken de lettertoetsen Paperback alleen zolang de snelnavigatie met één letter van VoiceOver uit staat.
+Met een toetsenbord werken alle desktopsneltoetsen voor het openen van boeken, recente documenten, Zoeken, Ga naar, de inhoudsopgave, woordenaantal, documentinformatie, exporteren en de slaaptimer, met `Cmd` in plaats van `Ctrl` op iOS. Dat geldt ook voor de lettertoetsen om per kop, pagina, link enzovoort te navigeren, en `Space` speelt af en pauzeert. De bladwijzertoetsen komen overeen met die van de desktopversie: `B` en `Shift+B` navigeren naar de volgende en vorige bladwijzer, `N` en `Shift+N` naar de volgende en vorige notitie, `Ctrl+Shift+B` voegt een bladwijzer toe of verwijdert deze, `Ctrl+Shift+N` voegt een notitie toe of bewerkt deze, en `Ctrl+B` opent de list Bladwijzers. Op iOS bereiken de lettertoetsen Paperback alleen zolang de snelnavigatie met één letter van VoiceOver uit staat.
 
 Op Android speelt een headsetknop af en pauzeert met één druk, gaat vooruit met twee en terug met drie.
 
