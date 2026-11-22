@@ -88,6 +88,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#abrindo-documentos">Abrindo documentos</a></li>
 <li><a href="#lendo-e-ouvindo">Lendo e ouvindo</a></li>
 <li><a href="#a-barra-de-leitura">A barra de leitura</a></li>
+<li><a href="#marcadores-e-anotações">Marcadores e anotações</a></li>
 <li><a href="#mais-opções">Mais opções</a></li>
 <li><a href="#teclados-e-headsets">Teclados e headsets</a></li>
 </ul>
@@ -338,6 +339,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="lendo-e-ouvindo">Lendo e ouvindo</h3>
 <p>Cada aplicativo tem duas formas de ler um documento. No modo texto, você lê o texto com seu leitor de tela. No modo de leitura em voz alta, Paperback lê o texto para você com a voz que você escolher em Settings, e continua funcionando em segundo plano e na tela de bloqueio. Alterne entre eles no menu More Options.</p>
 <p>Audiolivros, como DAISY, M4B e livros MP3, reproduzem sua própria gravação.</p>
+<p>No modo de leitura em voz alta, a tela mostra o quanto você avançou no livro. Toque nele para ver o capítulo em vez disso: seu nome, quanto você avançou nele e quantas palavras faltam, por exemplo, “Capítulo 3, 42%, 1.850 palavras restantes”. Em um audiolivro, mostra o tempo, por exemplo, “Capítulo 3, 4:10 de 12:00, 7:50 restante”. Toque novamente para voltar ao livro inteiro.</p>
 <h3 id="a-barra-de-leitura">A barra de leitura</h3>
 <p>A barra na parte inferior da tela tem, da esquerda para a direita:</p>
 <ul>
@@ -346,11 +348,24 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>A velocidade de fala. Deslize para cima ou para baixo nela para alterar a velocidade de leitura do Paperback.</li>
 </ul>
 <p>Você também pode deslizar para cima ou para baixo no botão play para se mover pela unidade de navegação, sem alcançar os botões previous e next. Se é tudo o que você usa, a configuração Hide previous and next buttons os remove do caminho do seu leitor de tela. A configuração Swipe up moves forward escolhe para qual direção um deslize vai.</p>
+<h3 id="marcadores-e-anotações">Marcadores e anotações</h3>
+<p>O botão Marcador na parte superior da tela marca seu lugar. Toque nele para adicionar um marcador ao parágrafo em que você está e toque novamente para remover o marcador. Seu leitor de tela diz Selecionado quando o parágrafo já tem um. Remover um marcador que tem uma anotação pede confirmação primeiro.</p>
+<ul>
+<li>No modo de leitura em voz alta, o marcador vai no início do parágrafo sendo lido, então ao voltar a ele, lê aquele parágrafo novamente do começo. No modo texto, vai no parágrafo em que você está.</li>
+<li>Em um audiolivro sem texto, como um livro MP3, o marcador mantém o tempo exato em vez disso, como faz no desktop.</li>
+<li>Pressione e mantenha pressionado o botão Marcador ou use suas ações do leitor de tela para adicionar ou editar uma anotação, ou para abrir a lista Marcadores. Enquanto você escreve uma anotação, a leitura pausa e recomeça quando você fecha a anotação.</li>
+<li>No modo de leitura em voz alta, a anotação de um parágrafo aparece abaixo dele. Toque na anotação para editá-la.</li>
+<li>No modo texto, cada parágrafo tem ações do leitor de tela para adicionar ou remover um marcador e para adicionar ou editar uma anotação. No iOS, um parágrafo com marcador diz Marcador ou sua anotação após seu texto, e o rotor Marcadores se move entre eles.</li>
+<li><strong>Marcadores</strong> no menu Mais opções lista todos os marcadores e anotações, com Tudo, Marcadores e Anotações para filtrá-los. Abre no mais próximo de onde você está. Escolha um para ir a ele. Deslize em um marcador no iOS, ou pressione e mantenha pressionado no Android, ou use as ações do leitor de tela para editar sua anotação ou excluir.</li>
+<li>Quando um documento tem marcadores, Marcador se junta às unidades de navegação na barra de leitura, para que previous e next se movam entre eles.</li>
+</ul>
+<p>Marcadores e anotações são os mesmos que o desktop usa, então viajam entre eles no arquivo <code>.paperback</code> de um documento.</p>
 <h3 id="mais-opções">Mais opções</h3>
 <p>O menu More Options é onde tudo mais fica. Alguns itens funcionam um pouco diferente em cada aplicativo.</p>
 <ul>
 <li><strong>Switch to TTS Mode ou Switch to Text Mode:</strong> alterna entre modo de leitura em voz alta e modo texto, descrito acima. No modo texto, um item Read Aloud inicia e pausa a leitura em voz alta sem sair do modo texto.</li>
 <li><strong>Table of Contents:</strong> os capítulos do livro, aberto no que você está lendo. Escolha um para ir direto a ele. Entradas com capítulos sob elas podem ser expandidas e recolhidas com as ações do leitor de tela.</li>
+<li><strong>Marcadores:</strong> seus marcadores e anotações neste documento, descritos acima.</li>
 <li><strong>Elements:</strong> uma lista dos headings ou links do documento. Alterne entre os dois com o Type picker no iOS ou as abas no Android, depois escolha um para ir a ele.</li>
 <li><strong>Find:</strong> digite o que procurar ou escolha uma busca anterior de Search History e escolha se deseja corresponder maiúsculas e minúsculas, corresponder apenas palavras inteiras ou usar uma expressão regular. Find Previous e Find Next saltam para uma correspondência e dizem onde caíram, e Find fica aberto para que você possa continuar. No modo de leitura em voz alta, Find também aparece como uma unidade de navegação na barra de leitura, para que você possa percorrer as correspondências de lá também. <strong>Stop reading after search matches</strong> em Settings sob Síntese de Fala está ativado por padrão e para após ler o parágrafo contendo uma correspondência. Desative-o para continuar lendo a partir da correspondência enquanto os controles previous e next da barra de leitura ainda navegam por Find.</li>
 <li><strong>Go To:</strong> salte para uma linha, uma página ou uma porcentagem através do documento. Escolha qual com o Mode picker.</li>
@@ -369,7 +384,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </li>
 </ul>
 <h3 id="teclados-e-headsets">Teclados e headsets</h3>
-<p>Com um teclado, os atalhos do desktop para abrir livros, documentos recentes, Find, Go To, table of contents, word count, document info, export e sleep timer funcionam, usando <code>Cmd</code> em vez de <code>Ctrl</code> no iOS. O mesmo acontece com as teclas de letra única para se mover por heading, página, link e o resto, e <code>Space</code> reproduz e pausa. No iOS, as teclas de letra única apenas alcançam Paperback enquanto o Quick Nav de letra única do VoiceOver estiver desligado.</p>
+<p>Com um teclado, os atalhos do desktop para abrir livros, documentos recentes, Find, Go To, Sumário, Word Count, Informações do Documento, Export e Sleep Timer funcionam, usando <code>Cmd</code> em vez de <code>Ctrl</code> no iOS. O mesmo acontece com as teclas de letra única para se mover por heading, página, link e o resto, e <code>Space</code> reproduz e pausa. As teclas de marcador coincidem com as do desktop também: <code>B</code> e <code>Shift+B</code> se movem para o próximo e anterior marcador, <code>N</code> e <code>Shift+N</code> para a próxima e anterior anotação, <code>Ctrl+Shift+B</code> adiciona ou remove um marcador, <code>Ctrl+Shift+N</code> adiciona ou edita uma anotação, e <code>Ctrl+B</code> abre a lista Marcadores. No iOS, as teclas de letra única apenas alcançam Paperback enquanto o Quick Nav de letra única do VoiceOver estiver desativado.</p>
 <p>No Android, um botão de headset reproduz e pausa com um pressionamento, avança com dois e volta com três.</p>
 <h2 id="idiomas-suportados">Idiomas suportados</h2>
 <p>O Paperback é traduzido para muitos idiomas diferentes, com mais sendo adicionados o tempo todo. Uma lista completa segue abaixo.</p>

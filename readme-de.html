@@ -88,6 +88,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#dokumente-öffnen">Dokumente öffnen</a></li>
 <li><a href="#lesen-und-anhören">Lesen und Anhören</a></li>
 <li><a href="#die-lesezeile">Die Lesezeile</a></li>
+<li><a href="#lesezeichen-und-notizen">Lesezeichen und Notizen</a></li>
 <li><a href="#weitere-optionen">Weitere Optionen</a></li>
 <li><a href="#tastaturen-und-headsets">Tastaturen und Headsets</a></li>
 </ul>
@@ -338,6 +339,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="lesen-und-anhören">Lesen und Anhören</h3>
 <p>Jede App hat zwei Möglichkeiten, ein Dokument zu lesen. Im Textmodus liest der Bildschirmleser den Text vor. Im Modus „Vorlesen“ liest Paperback den Text mit der Stimme vor, die du in den Einstellungen wählst, und spielt im Hintergrund sowie vom Sperrbildschirm weiter. Wechsle zwischen ihnen im Menü „Weitere Optionen“.</p>
 <p>Audiobücher wie DAISY, M4B und MP3-Bücher spielen stattdessen ihre eigene Aufnahme ab.</p>
+<p>Im Vorlesemodus zeigt der Bildschirm an, wie weit du im Buch vorangekommen bist. Tippe darauf, um stattdessen das Kapitel zu sehen: seinen Namen, wie weit du darin vorangekommen bist, und wie viele Wörter noch übrig sind, z. B. „Kapitel 3, 42%, 1.850 Wörter übrig“. Bei einem Audiobuch zeigt es die Zeit an, z. B. „Kapitel 3, 4:10 von 12:00, 7:50 übrig“. Tippe erneut darauf, um zum gesamten Buch zurückzukehren.</p>
 <h3 id="die-lesezeile">Die Lesezeile</h3>
 <p>Die Leiste am unteren Rand des Bildschirms enthält von links nach rechts:</p>
 <ul>
@@ -346,11 +348,24 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>Die Sprechgeschwindigkeit. Wische nach oben oder unten darauf, um zu ändern, wie schnell Paperback vorliest.</li>
 </ul>
 <p>Du kannst auch nach oben oder unten auf die Abspielen-Schaltfläche wischen, um dich um die Navigationseinheit zu bewegen, ohne die Schaltflächen für Zurück und Weiter erreichen zu müssen. Falls du nur das nutzt, entfernt die Einstellung Schaltflächen für Zurück und Weiter ausblenden diese aus dem Weg deines Bildschirmlesers. Die Einstellung Wischen nach oben bewegt vorwärts bestimmt, in welche Richtung ein Wisch führt.</p>
+<h3 id="lesezeichen-und-notizen">Lesezeichen und Notizen</h3>
+<p>Die Lesezeichen-Schaltfläche am oberen Rand des Bildschirms markiert deine Position. Tippe darauf, um ein Lesezeichen für den Absatz zu setzen, auf dem du dich befindest, und tippe erneut, um das Lesezeichen zu entfernen. Der Bildschirmleser sagt „Ausgewählt“, wenn der Absatz bereits ein Lesezeichen hat. Das Löschen eines Lesezeichens mit einer Notiz fragt zuerst nach.</p>
+<ul>
+<li>Im Vorlesemodus wird das Lesezeichen am Anfang des gerade gelesenen Absatzes platziert, sodass beim Zurückommen zu diesem das Vorlesen wieder von oben beginnt. Im Textmodus wird es auf dem Absatz platziert, auf dem du dich befindest.</li>
+<li>In einem Audiobuch ohne Text, wie einem MP3-Buch, speichert das Lesezeichen stattdessen die genaue Zeit, wie auch auf der Desktop-Version.</li>
+<li>Halte die Lesezeichen-Schaltfläche gedrückt, oder nutze ihre Bildschirmleser-Aktionen, um eine Notiz hinzuzufügen oder zu bearbeiten, oder um die Lesezeichen-Liste zu öffnen. Während du eine Notiz schreibst, pausiert das Vorlesen und wird fortgesetzt, wenn du die Notiz schließt.</li>
+<li>Im Vorlesemodus wird die Notiz eines Absatzes darunter angezeigt. Tippe auf die Notiz, um sie zu bearbeiten.</li>
+<li>Im Textmodus hat jeder Absatz Bildschirmleser-Aktionen zum Hinzufügen oder Entfernen eines Lesezeichens und zum Hinzufügen oder Bearbeiten einer Notiz. Unter iOS sagt ein Absatz mit Lesezeichen nach seinem Text „Lesezeichen“ oder seine Notiz, und das Lesezeichen-Drehrad bewegt sich zwischen ihnen.</li>
+<li><strong>Lesezeichen</strong> im Menü „Weitere Optionen“ listet jedes Lesezeichen und jede Notiz auf, mit Filteroptionen für Alle, Lesezeichen und Notizen. Es öffnet sich bei dem, das dir am nächsten liegt. Wähle eines aus, um dorthin zu springen. Wische auf einem Lesezeichen unter iOS, oder halte es unter Android gedrückt, oder nutze die Bildschirmleser-Aktionen, um seine Notiz zu bearbeiten oder es zu löschen.</li>
+<li>Sobald ein Dokument Lesezeichen hat, wird Lesezeichen zu den Navigationseinheiten in der Lesezeile hinzugefügt, sodass Zurück und Weiter sich zwischen ihnen bewegen.</li>
+</ul>
+<p>Lesezeichen und Notizen sind dieselben wie auf der Desktop-Version, daher werden sie zwischen ihnen in der Datei <code>.paperback</code> eines Dokuments übertragen.</p>
 <h3 id="weitere-optionen">Weitere Optionen</h3>
 <p>Das Menü „Weitere Optionen“ enthält alles Übrige. Einige Einträge verhalten sich auf den einzelnen Apps etwas anders.</p>
 <ul>
 <li><strong>Zu Vorlesemodus oder zu Textmodus wechseln:</strong> wechselt zwischen dem Modus „Vorlesen“ und dem Textmodus (siehe oben). Im Textmodus startet und pausiert ein Eintrag „Vorlesen“ die Wiedergabe, ohne den Textmodus zu verlassen.</li>
 <li><strong>Inhaltsverzeichnis:</strong> zeigt die Kapitel des Buchs und öffnet das Kapitel, das du gerade liest. Wähle ein Kapitel, um direkt dorthin zu springen. Einträge mit Unterkapiteln können mit den Aktionen des Bildschirmlesers aus- und eingeklappt werden.</li>
+<li><strong>Lesezeichen:</strong> deine Lesezeichen und Notizen in diesem Dokument, oben beschrieben.</li>
 <li><strong>Elemente:</strong> eine Liste der Überschriften oder Links des Dokuments. Wechsle zwischen beiden mit der Typauswahl unter iOS oder den Registerkarten unter Android, und wähle dann einen Eintrag, um dorthin zu springen.</li>
 <li><strong>Suchen:</strong> gib ein, was zu suchen ist, oder wähle eine frühere Suche aus dem Suchverlauf, und entscheide, ob Groß- und Kleinschreibung beachtet werden soll, nur ganze Wörter gesucht werden sollen, oder ein regulärer Ausdruck verwendet werden soll. „Vorheriges finden“ und „Nächstes finden“ springen zu einer Übereinstimmung und geben an, wo sie gefunden wurde. Die Suche bleibt offen, sodass du weitermachen kannst. Im Vorlesemodus wird die Suche auch als Navigationselement in der Leiste angezeigt, sodass du die Übereinstimmungen auch von dort aus durchgehen kannst. <strong>Nach Suchtreffern stoppen</strong> in den Einstellungen unter „Sprachausgabe“ ist standardmäßig aktiviert und stoppt nach dem Vorlesen des Absatzes, der einen Treffer enthält. Deaktiviere diese Einstellung, um ab dem Treffer weiterzulesen, während die Steuerelemente „Vorheriges“ und „Nächstes“ in der Leiste weiterhin nach Suchtreffern navigieren.</li>
 <li><strong>Gehe zu:</strong> springe zu einer Zeile, einer Seite oder einer Prozentzahl im Dokument. Wähle mit der Modusauswahl aus.</li>
@@ -369,7 +384,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </li>
 </ul>
 <h3 id="tastaturen-und-headsets">Tastaturen und Headsets</h3>
-<p>Mit einer Tastatur funktionieren die Desktop-Tastenkombinationen zum Öffnen von Büchern, zuletzt geöffneten Dokumenten, Suchen, Gehe zu, dem Inhaltsverzeichnis, Wortanzahl, Dokumentinformationen, Exportieren und dem Schlaf-Timer, wobei <code>Cmd</code> auf iOS anstelle von <code>Ctrl</code> verwendet wird. Dasselbe gilt für die Einzelbuchstaben-Tasten zum Navigieren nach Überschrift, Seite, Link und mehr, und <code>Space</code> startet und pausiert die Wiedergabe. Auf iOS erreichen die Einzelbuchstaben-Tasten Paperback nur, wenn VoiceOvers Single-Letter Quick Nav ausgeschaltet ist.</p>
+<p>Mit einer Tastatur funktionieren die Desktop-Tastenkombinationen zum Öffnen von Büchern, zuletzt geöffneten Dokumenten, Suchen, Gehe zu, dem Inhaltsverzeichnis, Wortanzahl, Dokumentinfo, Exportieren und dem Einschlaftimer, wobei auf iOS <code>Cmd</code> anstelle von <code>Ctrl</code> verwendet wird. Dasselbe gilt für die Einzelbuchstaben-Tasten zum Navigieren nach Überschrift, Seite, Link und mehr, und <code>Space</code> startet und pausiert die Wiedergabe. Die Lesezeichen-Tasten entsprechen auch denen der Desktop-Version: <code>B</code> und <code>Shift+B</code> springen zum nächsten und vorherigen Lesezeichen, <code>N</code> und <code>Shift+N</code> zur nächsten und vorherigen Notiz, <code>Ctrl+Shift+B</code> fügt ein Lesezeichen hinzu oder entfernt es, <code>Ctrl+Shift+N</code> fügt eine Notiz hinzu oder bearbeitet sie, und <code>Ctrl+B</code> öffnet die Lesezeichen-Liste. Unter iOS erreichen die Einzelbuchstaben-Tasten Paperback nur, wenn VoiceOvers Single-Letter Quick Nav ausgeschaltet ist.</p>
 <p>Auf Android startet und pausiert eine Kopfhörer-Taste mit einem Druck, springt vorwärts mit zwei und geht mit drei zurück.</p>
 <h2 id="unterstützte-sprachen">Unterstützte Sprachen</h2>
 <p>Paperback ist in viele verschiedene Sprachen übersetzt, und ständig kommen neue hinzu. Eine vollständige Liste folgt unten.</p>

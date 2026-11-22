@@ -88,6 +88,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li><a href="#apertura-de-documentos">Apertura de documentos</a></li>
 <li><a href="#lectura-y-escucha">Lectura y escucha</a></li>
 <li><a href="#la-barra-de-lectura">La barra de lectura</a></li>
+<li><a href="#marcapáginas-y-notas">Marcapáginas y notas</a></li>
 <li><a href="#más-opciones">Más opciones</a></li>
 <li><a href="#teclados-y-auriculares">Teclados y auriculares</a></li>
 </ul>
@@ -338,6 +339,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h3 id="lectura-y-escucha">Lectura y escucha</h3>
 <p>Cada aplicación tiene dos formas de leer un documento. En modo texto, lees el texto con tu lector de pantalla. En modo lectura en voz alta, Paperback lee el texto por ti con la voz que elijas en Configuración, y continúa en segundo plano y desde la pantalla de bloqueo. Cambia entre ellos desde el menú Más opciones.</p>
 <p>Los audiolibros, como DAISY, M4B y libros MP3, reproducen su propia grabación en su lugar.</p>
+<p>En modo lectura en voz alta, la pantalla muestra en qué punto del libro estás. Toca eso para ver el capítulo en su lugar: su nombre, en qué punto estás en él, y cuántas palabras quedan de él, por ejemplo, “Capítulo 3, 42%, 1850 palabras restantes”. En un audiolibro muestra la hora, por ejemplo, “Capítulo 3, 4:10 de 12:00, 7:50 restantes”. Toca de nuevo para volver al libro completo.</p>
 <h3 id="la-barra-de-lectura">La barra de lectura</h3>
 <p>La barra en la parte inferior de la pantalla tiene, de izquierda a derecha:</p>
 <ul>
@@ -346,11 +348,24 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>La velocidad de voz. Desliza hacia arriba o hacia abajo en ella para cambiar la velocidad de lectura de Paperback.</li>
 </ul>
 <p>También puedes deslizar hacia arriba o hacia abajo en el botón reproducir para moverte por la unidad de navegación, sin necesidad de alcanzar los botones Anterior y Siguiente. Si eso es todo lo que usas, la configuración Ocultar botones Anterior y Siguiente los elimina del camino del lector de pantalla. La configuración Deslizar hacia arriba avanza elige en qué dirección va un deslizamiento.</p>
+<h3 id="marcapáginas-y-notas">Marcapáginas y notas</h3>
+<p>El botón de marcador en la parte superior de la pantalla marca tu lugar. Toca para marcar el párrafo en el que estás, y toca de nuevo para quitar el marcador. Tu lector de pantalla dice Seleccionado cuando el párrafo ya tiene uno. Eliminar un marcador que tiene una nota pregunta primero.</p>
+<ul>
+<li>En modo lectura en voz alta, el marcador se coloca al principio del párrafo que se está leyendo, por lo que volver a él lee ese párrafo de nuevo desde el principio. En modo texto, se coloca en el párrafo en el que estás.</li>
+<li>En un audiolibro sin texto, como un libro MP3, el marcador guarda la hora exacta en su lugar, como lo hace en la versión de escritorio.</li>
+<li>Mantén pulsado el botón de marcador, o usa sus acciones del lector de pantalla, para agregar o editar una nota, o para abrir la lista de Marcadores. Mientras escribes una nota, la lectura se pausa y se reanuda cuando cierras la nota.</li>
+<li>En modo lectura en voz alta, la nota de un párrafo se muestra debajo de él. Toca la nota para editarla.</li>
+<li>En modo texto, cada párrafo tiene acciones del lector de pantalla para agregar o quitar un marcador y para agregar o editar una nota. En iOS, un párrafo marcado dice Marcador, o su nota, después de su texto, y el rotor de Marcadores se mueve entre ellos.</li>
+<li><strong>Marcadores</strong> en el menú Más opciones lista cada marcador y nota, con Todos, Marcadores y Notas para filtrarlos. Se abre en el más cercano a donde estás. Elige uno para ir a él. Desliza sobre un marcador en iOS, o manténlo pulsado en Android, o usa las acciones del lector de pantalla, para editar su nota o eliminarlo.</li>
+<li>Una vez que un documento tiene marcadores, Marcador se une a las unidades de navegación en la barra de lectura, por lo que anterior y siguiente se mueven entre ellos.</li>
+</ul>
+<p>Los marcapáginas y notas son los mismos que usa la versión de escritorio, por lo que se trasladan entre ellos en el archivo <code>.paperback</code> de un documento.</p>
 <h3 id="más-opciones">Más opciones</h3>
 <p>El menú Más opciones es donde vive todo lo demás. Algunos elementos funcionan un poco diferente en cada aplicación.</p>
 <ul>
 <li><strong>Cambiar a modo TTS o Cambiar a modo Texto:</strong> se mueve entre el modo lectura en voz alta y el modo texto, descrito arriba. En modo texto, un elemento Lectura en voz alta inicia y pausa la lectura en voz alta sin salir del modo texto.</li>
 <li><strong>Tabla de contenidos:</strong> los capítulos del libro, abiertos en el que estás leyendo. Elige uno para ir directamente a él. Las entradas con capítulos bajo ellas pueden expandirse y contraerse con las acciones del lector de pantalla.</li>
+<li><strong>Marcadores:</strong> tus marcapáginas y notas en este documento, descritos anteriormente.</li>
 <li><strong>Elementos:</strong> una lista de los encabezados o enlaces del documento. Cambia entre los dos con el selector de Tipo en iOS, o las pestañas en Android, luego elige uno para ir a él.</li>
 <li><strong>Buscar:</strong> escribe lo que quieres buscar, o elige una búsqueda anterior del Historial de búsquedas, y elige si deseas coincidir mayúsculas y minúsculas, coincidir solo palabras completas, o usar una expresión regular. Buscar anterior y Buscar siguiente saltan a una coincidencia y dicen dónde llegó, y Buscar permanece abierto para que puedas continuar. En modo lectura en voz alta, Buscar también aparece como una unidad de navegación en la barra de lectura, para que puedas navegar por las coincidencias desde allí también. <strong>Detener lectura después de coincidencias de búsqueda</strong> en Configuración bajo Síntesis de voz está activado por defecto y se detiene después de leer el párrafo que contiene una coincidencia. Desactívalo para continuar leyendo desde la coincidencia mientras los controles Anterior y Siguiente de la barra de lectura aún navegan por Buscar.</li>
 <li><strong>Ir a:</strong> salta a una línea, una página, o un porcentaje del documento. Elige cuál con el selector de Modo.</li>
@@ -369,7 +384,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </li>
 </ul>
 <h3 id="teclados-y-auriculares">Teclados y auriculares</h3>
-<p>Con un teclado, los atajos de escritorio para abrir libros, documentos recientes, Buscar, Ir a, la tabla de contenidos, contar palabras, información del documento, exportar y el temporizador de sueño funcionan todos, usando <code>Cmd</code> en lugar de <code>Ctrl</code> en iOS. También lo hacen las teclas de una sola letra para moverte por encabezado, página, enlace y el resto, y <code>Space</code> reproduce y pausa. En iOS, las teclas de una sola letra solo llegan a Paperback mientras la Quick Nav de una sola letra de VoiceOver está desactivada.</p>
+<p>Con un teclado, los atajos de escritorio para abrir libros, documentos recientes, Buscar, Ir a, la tabla de contenidos, contar palabras, información del documento, exportar y el temporizador de sueño funcionan todos, usando <code>Cmd</code> en lugar de <code>Ctrl</code> en iOS. También lo hacen las teclas de una sola letra para moverte por encabezado, página, enlace y el resto, y <code>Space</code> reproduce y pausa. Las teclas de marcador también coinciden con la versión de escritorio: <code>B</code> y <code>Shift+B</code> se mueven al siguiente y anterior marcador, <code>N</code> y <code>Shift+N</code> al siguiente y anterior nota, <code>Ctrl+Shift+B</code> agrega o quita un marcador, <code>Ctrl+Shift+N</code> agrega o edita una nota, y <code>Ctrl+B</code> abre la lista de Marcadores. En iOS, las teclas de una sola letra solo llegan a Paperback mientras la Quick Nav de una sola letra de VoiceOver está desactivada.</p>
 <p>En Android, un botón de auricular reproduce y pausa con una pulsación, avanza con dos, y retrocede con tres.</p>
 <h2 id="idiomas-compatibles">Idiomas compatibles</h2>
 <p>Paperback se traduce a muchos idiomas diferentes, y se añaden más constantemente. A continuación se presenta una lista completa.</p>
