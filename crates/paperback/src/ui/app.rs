@@ -165,7 +165,10 @@ fn listen_for_other_copies() {
 
 /// Force-closes so normal persistence and audio cleanup run, which the updater's default `process::exit` would skip, without macOS's hide-on-close veto.
 pub fn quit_for_update() {
+	// The update has downloaded and its installer waits for this process to end, so these lines say how far quitting got when it stalls (#1344).
+	tracing::info!("update ready to install; quitting for it");
 	if let Some(window) = main_window_from_ptr() {
+		tracing::info!(locks_held = window.locks_held(), "closing for the update");
 		window.frame().enable(false);
 		window.announce_update_restart();
 	}
@@ -178,8 +181,10 @@ pub fn quit_for_update() {
 
 fn finish_quit_for_update() {
 	if let Some(window) = main_window_from_ptr() {
+		tracing::info!(locks_held = window.locks_held(), "closing the main window for the update");
 		window.frame().close(true);
 	}
+	tracing::info!("ending the event loop for the update");
 	if let Some(app) = wxdragon::app::get_app_instance() {
 		app.exit_main_loop();
 	}
