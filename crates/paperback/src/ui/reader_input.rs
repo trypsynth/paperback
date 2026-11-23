@@ -109,6 +109,24 @@ pub(super) fn build_text_ctrl(
 			}
 		}
 	});
+	#[cfg(target_os = "windows")]
+	{
+		let dm_for_caret = Rc::clone(self_rc);
+		let hwnd = text_ctrl.widget().get_handle().addr();
+		super::external_caret::watch_caret(text_ctrl, move |moved| {
+			if !moved.external {
+				return;
+			}
+			let (before, after) = (moved.before, moved.after);
+			if let Ok(dm) = dm_for_caret.try_lock() {
+				dm.sound_external_move(hwnd, before, after);
+			} else {
+				super::app::when_unlocked(move |window| {
+					window.document_manager().lock().unwrap().sound_external_move(hwnd, before, after);
+				});
+			}
+		});
+	}
 	let dm_for_mouse = Rc::clone(self_rc);
 	text_ctrl.bind_internal(wxdragon::event::EventType::LEFT_UP, move |event| {
 		event.skip(true);

@@ -4,7 +4,10 @@ use patois::t;
 use super::DocumentManager;
 use crate::{
 	read_aloud::{Followed, RATE_STEP, Speaker},
-	ui::{bookmark_sounds::Unit, navigation::set_caret_to_doc_offset},
+	ui::{
+		bookmark_sounds::{Unit, sound_for_move},
+		navigation::set_caret_to_doc_offset,
+	},
 };
 
 impl DocumentManager {
@@ -244,7 +247,11 @@ impl DocumentManager {
 					tab.text_ctrl.show_position(local);
 					speaker.caret_followed(tab.window.to_doc(tab.text_ctrl.get_insertion_point()));
 				}
-				self.sound_moves(caret, words.into_iter().map(|(start, end)| (start, Some(Unit { start, end }))));
+				self.sound_moves(
+					sound_for_move,
+					caret,
+					words.into_iter().map(|(start, end)| (start, Some(Unit { start, end }))),
+				);
 			}
 			Some(Followed::End) => set_caret_to_doc_offset(tab, tab.session.document_len().as_pos()),
 			None => {}

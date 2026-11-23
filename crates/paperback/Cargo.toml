@@ -92,3 +92,7 @@ harness = false
 [[test]]
 name = "windows_reader_formats"
 harness = false
+
+[[test]]
+name = "windows_external_caret"
+harness = false
