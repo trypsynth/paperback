@@ -50,8 +50,8 @@ struct SpokenParagraph {
 	sample_rate: u32,
 	/// The speech, then the pause after it.
 	samples: Vec<i16>,
-	/// Where each word starts in `samples`, and its place in the document, in order.
-	words: Vec<(usize, DocPos)>,
+	/// Where each word starts in `samples`, and where it starts and ends in the document, in order.
+	words: Vec<(usize, DocPos, DocPos)>,
 }
 
 struct Job {
@@ -74,6 +74,8 @@ struct Shared {
 	last_queued: AtomicBool,
 	playing_paragraph: AtomicUsize,
 	playing_word: AtomicUsize,
+	/// The paragraph's start until the engine reports a word in the paragraph playing.
+	playing_word_end: AtomicUsize,
 	/// Set while a paragraph is playing, so the positions above mean something.
 	has_position: AtomicBool,
 	finished: AtomicBool,
@@ -93,6 +95,8 @@ pub struct ReadAloudProgress {
 	pub paragraph: Option<DocPos>,
 	/// The word being spoken, for resuming at it and saving the place exactly.
 	pub word: Option<DocPos>,
+	/// Where that word ends; the paragraph's start until the engine reports a word.
+	pub word_end: Option<DocPos>,
 	/// Every paragraph to the end of the document has been played.
 	pub finished: bool,
 }
@@ -194,6 +198,7 @@ impl ReadAloud {
 		ReadAloudProgress {
 			paragraph: at(&self.shared.playing_paragraph),
 			word: at(&self.shared.playing_word),
+			word_end: at(&self.shared.playing_word_end),
 			finished: self.shared.finished.load(Ordering::SeqCst),
 		}
 	}
@@ -282,10 +287,11 @@ impl AudioFeed {
 				return FeedSample::Done;
 			}
 			if let Some(playing) = self.playing.as_mut() {
-				while let Some(&(sample, position)) = playing.paragraph.words.get(playing.next_word)
+				while let Some(&(sample, start, end)) = playing.paragraph.words.get(playing.next_word)
 					&& sample <= playing.next_sample
 				{
-					self.shared.playing_word.store(position.get(), Ordering::SeqCst);
+					self.shared.playing_word_end.store(end.get(), Ordering::SeqCst);
+					self.shared.playing_word.store(start.get(), Ordering::SeqCst);
 					playing.next_word += 1;
 				}
 				if let Some(&sample) = playing.paragraph.samples.get(playing.next_sample) {
@@ -299,6 +305,7 @@ impl AudioFeed {
 			match next {
 				Some((generation, paragraph)) if generation == self.generation => {
 					self.shared.playing_paragraph.store(paragraph.start.get(), Ordering::SeqCst);
+					self.shared.playing_word_end.store(paragraph.start.get(), Ordering::SeqCst);
 					self.shared.playing_word.store(paragraph.start.get(), Ordering::SeqCst);
 					self.shared.has_position.store(true, Ordering::SeqCst);
 					self.playing = Some(Playing { paragraph, next_sample: 0, next_word: 0 });
@@ -373,8 +380,9 @@ fn speak(
 	while let Some(chunk) = synthesis.next_chunk() {
 		let chunk = chunk?;
 		for word in &chunk.words {
-			let offset = DocLen::from_raw(map.to_original(word.text_offset));
-			words.push((samples.len() + word.sample, paragraph.text_start + offset));
+			let start = DocLen::from_raw(map.to_original(word.text_offset));
+			let end = DocLen::from_raw(map.to_original(word.text_offset + word.text_len));
+			words.push((samples.len() + word.sample, paragraph.text_start + start, paragraph.text_start + end));
 		}
 		samples.extend_from_slice(&chunk.samples);
 	}
@@ -423,7 +431,11 @@ mod tests {
 				chars.iter().flat_map(|&c| [i16::try_from(u32::from(c)).unwrap_or(1); SAMPLES_PER_CHAR]).collect();
 			let words = (0..chars.len())
 				.filter(|&i| !chars[i].is_whitespace() && (i == 0 || chars[i - 1].is_whitespace()))
-				.map(|i| WordBoundary { sample: i * SAMPLES_PER_CHAR, text_offset: i, text_len: 1 })
+				.map(|i| WordBoundary {
+					sample: i * SAMPLES_PER_CHAR,
+					text_offset: i,
+					text_len: chars[i..].iter().take_while(|c| !c.is_whitespace()).count(),
+				})
 				.collect();
 			Ok(Box::new(FakeSynthesis(Some(AudioChunk { samples, words }))))
 		}
@@ -451,6 +463,17 @@ mod tests {
 				&& paragraphs.last() != Some(&paragraph)
 			{
 				paragraphs.push(paragraph);
+			}
+		}
+	}
+
+	/// Plays `feed` until the samples for `chars` chars have been heard, counting on from `heard`.
+	fn play_past(feed: &mut AudioFeed, heard: &mut usize, chars: usize) {
+		while *heard <= chars * SAMPLES_PER_CHAR {
+			if matches!(feed.next_sample(), FeedSample::Sample(_)) {
+				*heard += 1;
+			} else {
+				thread::sleep(Duration::from_millis(1));
 			}
 		}
 	}
@@ -523,14 +546,7 @@ mod tests {
 			.start(&session, DocPos::from_raw(text.find("Smith").unwrap()), ReadAloudSettings::default())
 			.expect("there is text to read");
 		// "Smith now." has "now" at char 6.
-		let mut heard = 0;
-		while heard <= 6 * SAMPLES_PER_CHAR {
-			if matches!(feed.next_sample(), FeedSample::Sample(_)) {
-				heard += 1;
-			} else {
-				thread::sleep(Duration::from_millis(1));
-			}
-		}
+		play_past(&mut feed, &mut 0, 6);
 		assert_eq!(reader.progress().word, Some(DocPos::from_raw(text.find("now").unwrap())));
 		assert_eq!(reader.progress().paragraph, Some(DocPos::from_raw(text.find("Smith").unwrap())));
 	}
@@ -547,7 +563,7 @@ mod tests {
 
 	#[test]
 	fn the_word_playing_is_its_place_in_the_document_even_after_a_rule_rewrote_it() {
-		let text = "  Ask Dr Smith.";
+		let text = "  Ask Dr Smith now.";
 		let session = DocumentSession::from_text(text);
 		let mut reader = read_aloud();
 		let rule = SpeechRule {
@@ -559,16 +575,13 @@ mod tests {
 		};
 		let settings = ReadAloudSettings { rules: vec![rule], ..ReadAloudSettings::default() };
 		let mut feed = reader.start(&session, DocPos::from_raw(0), settings).expect("there is text to read");
-		// "Ask Doctor Smith." has "Smith" at char 11.
+		// "Ask Doctor Smith now." has "Doctor" at char 4 and "Smith" at char 11.
 		let mut heard = 0;
-		while heard <= 11 * SAMPLES_PER_CHAR {
-			if matches!(feed.next_sample(), FeedSample::Sample(_)) {
-				heard += 1;
-			} else {
-				thread::sleep(Duration::from_millis(1));
-			}
-		}
+		play_past(&mut feed, &mut heard, 4);
+		assert_eq!(reader.progress().word_end, Some(DocPos::from_raw(text.find(" Smith").unwrap())), "Dr ends");
+		play_past(&mut feed, &mut heard, 11);
 		assert_eq!(reader.progress().word, Some(DocPos::from_raw(text.find("Smith").unwrap())));
+		assert_eq!(reader.progress().word_end, Some(DocPos::from_raw(text.find(" now").unwrap())), "Smith ends");
 		assert_eq!(reader.progress().paragraph, Some(DocPos::from_raw(0)));
 	}
 

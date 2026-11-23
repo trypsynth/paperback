@@ -71,10 +71,13 @@ impl SpeechEngine for Sapi5 {
 		let words = spoken
 			.words
 			.into_iter()
-			.map(|word| WordBoundary {
-				sample: usize::try_from(word.byte_offset / 2).unwrap_or(usize::MAX),
-				text_offset: markup.to_text_offset(word.position),
-				text_len: word.len,
+			.map(|word| {
+				let text_offset = markup.to_text_offset(word.position);
+				WordBoundary {
+					sample: usize::try_from(word.byte_offset / 2).unwrap_or(usize::MAX),
+					text_offset,
+					text_len: markup.to_text_end(word.position + word.len).saturating_sub(text_offset),
+				}
 			})
 			.collect();
 		Ok(Box::new(WholeSynthesis::new(SAMPLE_RATE, AudioChunk { samples, words })))
@@ -92,6 +95,7 @@ struct SpokenWord {
 	byte_offset: u64,
 	/// Where the word starts in the markup, in UTF-16 units.
 	position: usize,
+	/// In UTF-16 units of the markup.
 	len: usize,
 }
 
@@ -207,6 +211,11 @@ impl Markup {
 	fn to_text_offset(&self, position: usize) -> usize {
 		self.starts.partition_point(|&start| start <= position).saturating_sub(1)
 	}
+
+	/// The end in the original text of a stretch of the markup that ends at `end`.
+	fn to_text_end(&self, end: usize) -> usize {
+		self.starts.partition_point(|&start| start < end)
+	}
 }
 
 /// SAPI lists a voice's languages as hexadecimal locale numbers, such as `409;9`, the first being its own.
@@ -264,6 +273,16 @@ mod tests {
 		assert_eq!(markup.to_text_offset(in_markup("Tom")), 0);
 		assert_eq!(markup.to_text_offset(in_markup("Jerry")), "Tom & ".len());
 		assert_eq!(markup.to_text_offset(in_markup("&lt;")), "Tom & Jerry ".len());
+	}
+
+	#[test]
+	fn word_ends_map_back_to_the_text() {
+		let markup = Markup::new("Tom & Jerry <3", 100);
+		let end_of = |word: &str| markup.text.find(word).unwrap() + word.len();
+		assert_eq!(markup.to_text_end(end_of("&amp;")), "Tom &".len());
+		assert_eq!(markup.to_text_end(end_of("&lt;3")), "Tom & Jerry <3".len(), "the last word");
+		let markup = Markup::new("a \u{1F600} b", 50);
+		assert_eq!(markup.to_text_end(4), 3, "a char of two UTF-16 units");
 	}
 
 	#[test]

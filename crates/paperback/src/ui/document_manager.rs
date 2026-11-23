@@ -16,7 +16,7 @@ use super::navigation::{move_to_offset_and_record_history, persist_navigation_hi
 use crate::{
 	audio_player::AudioPlayer,
 	text_window::TextWindow,
-	ui::{navigation::announce, reader_ctrl::ReaderCtrl},
+	ui::{bookmark_sounds::Unit, navigation::announce, reader_ctrl::ReaderCtrl},
 	working_copy::WorkingCopy,
 };
 
@@ -102,6 +102,8 @@ pub struct DocumentManager {
 	live_region_label: StaticText,
 	last_position_save: Cell<Option<Instant>>,
 	last_sound_position: Cell<Option<DocPos>>,
+	/// The word, line or paragraph the last move went to, under the unit setting.
+	last_sound_unit: Cell<Option<Unit>>,
 	last_audio_seek_position: Cell<Option<i64>>,
 	last_focus_in_text: Cell<bool>,
 	recently_closed: Vec<PathBuf>,
@@ -132,6 +134,7 @@ impl DocumentManager {
 			live_region_label,
 			last_position_save: Cell::new(None),
 			last_sound_position: Cell::new(None),
+			last_sound_unit: Cell::new(None),
 			last_audio_seek_position: Cell::new(None),
 			last_focus_in_text: Cell::new(true),
 			recently_closed: Vec::new(),

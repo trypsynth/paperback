@@ -12,7 +12,7 @@ use wxdragon::prelude::*;
 use super::{
 	OPTION_PADDING,
 	font::{color_description, font_description, show_font_picker},
-	labeled_row,
+	labeled_choice, labeled_row,
 };
 use crate::ui::readability::stored_colour;
 
@@ -215,16 +215,4 @@ impl AppearanceTab {
 			text_alignment: selection(&self.text_alignment),
 		}
 	}
-}
-
-/// A label and a dropdown of `options`, created in that order so the label names the dropdown.
-fn labeled_choice(panel: Panel, label_text: &str, options: &[String]) -> (StaticText, Choice) {
-	let label = StaticText::builder(&panel).with_label(label_text).build();
-	let choice = Choice::builder(&panel).build();
-	for option in options {
-		choice.append(option);
-	}
-	#[cfg(target_os = "macos")]
-	choice.set_accessibility_label(label_text.replace('&', "").trim_end_matches(':').trim());
-	(label, choice)
 }

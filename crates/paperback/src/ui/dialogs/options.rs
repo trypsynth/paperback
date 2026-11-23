@@ -127,6 +127,18 @@ pub fn show_options_dialog(
 	result
 }
 
+/// A label and a dropdown of `options`, created in that order so the label names the dropdown.
+fn labeled_choice(panel: Panel, label_text: &str, options: &[String]) -> (StaticText, Choice) {
+	let label = StaticText::builder(&panel).with_label(label_text).build();
+	let choice = Choice::builder(&panel).build();
+	for option in options {
+		choice.append(option);
+	}
+	#[cfg(target_os = "macos")]
+	choice.set_accessibility_label(label_text.replace('&', "").trim_end_matches(':').trim());
+	(label, choice)
+}
+
 /// A label and the control it names, side by side.
 fn labeled_row(label: StaticText, control: &impl WxWidget, padding: i32) -> BoxSizer {
 	let row = BoxSizer::builder(Orientation::Horizontal).build();

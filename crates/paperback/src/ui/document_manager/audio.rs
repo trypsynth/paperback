@@ -3,10 +3,39 @@ use std::rc::Rc;
 
 #[cfg(target_os = "windows")]
 use paperback_core::config::ConfigManager;
+use paperback_core::document::DocPos;
 #[cfg(target_os = "windows")]
 use wxdragon::prelude::*;
 
-use super::DocumentManager;
+use super::{DocumentManager, DocumentTab};
+#[cfg(target_os = "windows")]
+use crate::ui::reader_units::visual_line_at;
+use crate::ui::{
+	bookmark_sounds::{BookmarkSoundMode, MoveUnit, Unit, remembered_unit, sound_for_move},
+	navigation::doc_caret,
+};
+
+/// The word, visual line or paragraph at the caret.
+#[cfg(target_os = "windows")]
+fn unit_at_caret(tab: &DocumentTab, unit: MoveUnit) -> Option<Unit> {
+	let caret = tab.text_ctrl.get_insertion_point();
+	let (start, end) = match unit {
+		MoveUnit::Character => return None,
+		MoveUnit::Word => (caret, crate::ui::reader_units::word_end(tab.text_ctrl, caret)),
+		MoveUnit::Line => visual_line_at(tab.text_ctrl, caret)?,
+		MoveUnit::Paragraph => {
+			let (start, end) = tab.session.line_bounds_at(tab.window.to_doc(caret))?;
+			return Some(Unit { start, end });
+		}
+	};
+	Some(Unit { start: tab.window.to_doc(start), end: tab.window.to_doc(end) })
+}
+
+/// Only Windows measures the unit a key moves by.
+#[cfg(not(target_os = "windows"))]
+const fn unit_at_caret(_tab: &DocumentTab, _unit: MoveUnit) -> Option<Unit> {
+	None
+}
 
 impl DocumentManager {
 	pub fn stop_all_audio(&mut self) {
@@ -59,47 +88,62 @@ impl DocumentManager {
 	}
 
 	/// Called after a jump, so the next step isn't measured from the old position and sounded as crossing a bookmark it never crossed.
-	pub(crate) fn forget_bookmark_sound_position(&self) {
+	fn forget_bookmark_sound_position(&self) {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
-		self.last_sound_position.set(Some(tab.window.to_doc(tab.text_ctrl.get_insertion_point())));
+		let caret = doc_caret(tab);
+		self.last_sound_unit.set(Some(remembered_unit(self.last_sound_unit.get(), None, caret)));
+		self.last_sound_position.set(Some(caret));
+	}
+
+	/// Sounds a bookmark after a key moved the caret by `unit`. Other keys only note the caret's position.
+	pub(crate) fn sound_key_move(&self, unit: Option<MoveUnit>) {
+		let Some(unit) = unit else {
+			self.forget_bookmark_sound_position();
+			return;
+		};
+		let Some(tab) = self.active_tab() else {
+			return;
+		};
+		let caret = doc_caret(tab);
+		// A line or paragraph move sounds only by its unit.
+		let before = match unit {
+			MoveUnit::Character | MoveUnit::Word => self.last_sound_position.get().unwrap_or(caret),
+			MoveUnit::Line | MoveUnit::Paragraph => caret,
+		};
+		self.sound_move(before, caret, |tab| unit_at_caret(tab, unit));
 	}
 
 	pub(crate) fn check_bookmark_sounds(&self) {
-		let config = self.config.lock().unwrap();
-		if !config.get_app_bool("bookmark_sounds", true) {
-			return;
-		}
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
-		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-		let prev = self.last_sound_position.get().unwrap_or(position);
-		self.last_sound_position.set(Some(position));
-		if prev == position {
+		let caret = doc_caret(tab);
+		self.sound_move(self.last_sound_position.get().unwrap_or(caret), caret, |_| None);
+	}
+
+	/// Sounds the caret's move from `before` to `after` by the setting. Under the unit setting, `unit_of` measures the unit moved to; without a unit, the move sounds the bookmarks it entered.
+	pub(super) fn sound_move(&self, before: DocPos, after: DocPos, unit_of: impl FnOnce(&DocumentTab) -> Option<Unit>) {
+		let Some(tab) = self.active_tab() else {
+			return;
+		};
+		let Ok(config) = self.config.try_lock() else {
+			return;
+		};
+		let mode = BookmarkSoundMode::load(&config);
+		self.last_sound_position.set(Some(after));
+		if mode == BookmarkSoundMode::Never {
+			self.last_sound_unit.set(None);
 			return;
 		}
-		let path_str = tab.file_path.to_string_lossy().to_string();
-		let bookmarks = config.get_bookmarks(&path_str);
+		let unit = if mode == BookmarkSoundMode::InUnit { unit_of(tab) } else { None };
+		let bookmarks = config.get_bookmarks(&tab.file_path.to_string_lossy());
 		drop(config);
-		let mut has_note = false;
-		let mut has_bookmark = false;
-		for bm in &bookmarks {
-			let was_inside = if bm.start == bm.end { prev == bm.start } else { prev >= bm.start && prev < bm.end };
-			let is_inside =
-				if bm.start == bm.end { position == bm.start } else { position >= bm.start && position < bm.end };
-			let triggered = is_inside && !was_inside;
-			if triggered {
-				if bm.note.is_empty() {
-					has_bookmark = true;
-				} else {
-					has_note = true;
-				}
-			}
-		}
-		if has_note || has_bookmark {
-			crate::ui::sounds::play_bookmark_sound(has_note);
+		let (sound, remembered) = sound_for_move(&bookmarks, self.last_sound_unit.get(), before, after, unit);
+		self.last_sound_unit.set(Some(remembered));
+		if let Some(sound) = sound {
+			sound.play();
 		}
 	}
 
@@ -130,16 +174,19 @@ impl DocumentManager {
 			tracing::warn!(elapsed, "sync caret to audio: no clip covers the current elapsed time");
 			return;
 		};
-		let Some(position) = player.timeline().clip(cursor.clip).map(|clip| clip.start) else {
+		let Some(clip) = player.timeline().clip(cursor.clip).map(|clip| Unit { start: clip.start, end: clip.end })
+		else {
 			tracing::warn!(clip_index = cursor.clip, "sync caret to audio: cursor names a clip that doesn't exist");
 			return;
 		};
+		let position = clip.start;
 		// TODO(windowing): sets the caret directly rather than through a window-aware jump, so a target outside the loaded window is clamped instead of reloading.
 		let current = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
 		if position != current {
 			let local = tab.window.to_local(position);
 			tab.text_ctrl.set_insertion_point(local);
 			tab.text_ctrl.show_position(local);
+			self.sound_move(current, position, |_| Some(clip));
 		}
 	}
 
@@ -160,6 +207,7 @@ impl DocumentManager {
 
 	pub fn reset_sound_line(&self) {
 		self.last_sound_position.set(None);
+		self.last_sound_unit.set(None);
 		self.last_audio_seek_position.set(None);
 	}
 }

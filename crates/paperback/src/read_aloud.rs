@@ -36,8 +36,8 @@ const MAX_VOLUME: f32 = 2.0;
 /// What happened in reading since the last tick.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Followed {
-	/// A word started, or a paragraph when the engine doesn't say where its words are, for the caret to move to.
-	Word(DocPos),
+	/// A word started, or a paragraph when the engine doesn't say where its words are, for the caret to move to `start`. `end` is where the word ends, or `start` without word reports.
+	Word { start: DocPos, end: DocPos },
 	/// The last paragraph has been read.
 	End,
 }
@@ -310,7 +310,7 @@ impl Speaker {
 			return None;
 		}
 		self.followed = at;
-		at.map(Followed::Word)
+		at.map(|start| Followed::Word { start, end: progress.word_end.unwrap_or(start) })
 	}
 
 	/// Returns the new volume, and whether it was already at its limit.
