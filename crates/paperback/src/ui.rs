@@ -2,7 +2,6 @@ mod app;
 mod audio;
 mod background;
 mod bookmarks;
-mod checklist;
 mod commands;
 mod dialogs;
 mod document_manager;

@@ -65,6 +65,7 @@ fn main() {
 		let app_state = PaperbackApp::new(app);
 		let _ = Box::leak(Box::new(app_state));
 	});
+	tracing::info!("event loop ended");
 	problem_report::end_session();
 }
 

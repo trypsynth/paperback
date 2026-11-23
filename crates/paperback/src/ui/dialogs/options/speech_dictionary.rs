@@ -1,4 +1,4 @@
-//! The speech dictionary, opened from the Read Aloud group: rules in the order they apply, each on or off, and a dialog for one rule.
+//! The speech dictionary, opened from the Read Aloud group: rules in the order they apply, each checked if it's on, and a dialog for one rule.
 
 use std::{cell::RefCell, rc::Rc};
 
@@ -8,7 +8,6 @@ use wx_utils::{add_ok_cancel_footer, build_ok_cancel_buttons, dialog_padding, fo
 use wxdragon::prelude::*;
 
 use super::audio::language_label;
-use crate::ui::checklist::{Checklist, ChecklistChange, ChecklistRow};
 
 /// `voices` are the engine's, offered to rules that fix one voice's or one language's pronunciation. `None` if cancelled.
 pub(super) fn show_speech_dictionary(
@@ -19,20 +18,9 @@ pub(super) fn show_speech_dictionary(
 	// TRANSLATORS: Title of the speech dictionary dialog, opened from the Read Aloud group on the Audio tab of Settings
 	let dialog = Dialog::builder(parent, &t("Speech Dictionary")).build();
 	let form = Form::new(dialog);
-	let mut built = None;
+	let size = Size::new(dialog.get_char_width() * 60, dialog.get_char_height() * 12);
 	// TRANSLATORS: Label of the list of speech dictionary rules, which are applied in order and can each be turned on or off
-	form.labeled_above(&t("&Rules:"), true, |parent| {
-		// TRANSLATORS: Said of a speech dictionary rule that is on
-		let on = t("on");
-		// TRANSLATORS: Said of a speech dictionary rule that is off
-		let off = t("off");
-		let list = Checklist::new(parent, &on, &off);
-		let panel = list.panel();
-		built = Some(list);
-		panel
-	});
-	let list = built?;
-	list.set_reorderable(true);
+	let list = form.labeled_above(&t("&Rules:"), true, |parent| CheckListBox::builder(parent).with_size(size).build());
 	let rules = Rc::new(RefCell::new(rules.to_vec()));
 	let voices: Rc<[Voice]> = voices.into();
 	let padding = dialog_padding(&dialog);
@@ -49,62 +37,68 @@ pub(super) fn show_speech_dictionary(
 	form.sizer().add_sizer(&buttons, 0, SizerFlag::Left | SizerFlag::Right | SizerFlag::Top, padding);
 	let (ok, cancel) = build_ok_cancel_buttons(&dialog, &t("OK"));
 	add_ok_cancel_footer(form.sizer(), ok, cancel);
+	let current = move || list.get_selection().map(|index| index as usize);
 	let show = {
-		let (list, rules, voices) = (list.clone(), Rc::clone(&rules), Rc::clone(&voices));
-		Rc::new(move |current: usize| {
-			list.set_rows(rules.borrow().iter().map(|rule| row(rule, &voices)).collect(), current);
-			let any = !rules.borrow().is_empty();
-			edit.enable(any);
-			remove.enable(any);
+		let (rules, voices) = (Rc::clone(&rules), Rc::clone(&voices));
+		Rc::new(move |selected: usize| {
+			list.clear();
+			let rules = rules.borrow();
+			for (index, rule) in rules.iter().enumerate() {
+				list.append(&row(rule, &voices));
+				list.check(u32::try_from(index).unwrap_or_default(), rule.enabled);
+			}
+			if !rules.is_empty() {
+				list.set_selection(u32::try_from(selected.min(rules.len() - 1)).unwrap_or_default(), true);
+			}
+			edit.enable(!rules.is_empty());
+			remove.enable(!rules.is_empty());
 		})
 	};
 	show(0);
 	{
 		let rules = Rc::clone(&rules);
-		list.on_change(move |change| match change {
-			ChecklistChange::Toggled(index) => {
-				if let Some(rule) = rules.borrow_mut().get_mut(index) {
-					rule.enabled = !rule.enabled;
-				}
+		list.on_toggled(move |event| {
+			let Some(index) = event.get_selection() else { return };
+			if let Some(rule) = rules.borrow_mut().get_mut(index as usize) {
+				rule.enabled = list.is_checked(index);
 			}
-			ChecklistChange::Moved { from, to } => rules.borrow_mut().swap(from, to),
-			ChecklistChange::Current(_) => {}
 		});
 	}
 	{
-		let (list, rules, voices, show) = (list.clone(), Rc::clone(&rules), Rc::clone(&voices), Rc::clone(&show));
+		let (rules, voices, show) = (Rc::clone(&rules), Rc::clone(&voices), Rc::clone(&show));
 		add.on_click(move |_| {
 			if let Some(rule) = edit_rule(dialog, &SpeechRule::default(), &voices, true) {
-				let index = list.current().map_or(rules.borrow().len(), |current| current + 1);
+				let index = current().map_or(rules.borrow().len(), |current| current + 1);
 				rules.borrow_mut().insert(index, rule);
 				show(index);
 			}
-			list.panel().set_focus();
+			list.set_focus();
 		});
 	}
 	let edit_current = {
-		let (list, rules, voices, show) = (list.clone(), Rc::clone(&rules), Rc::clone(&voices), Rc::clone(&show));
+		let (rules, voices, show) = (Rc::clone(&rules), Rc::clone(&voices), Rc::clone(&show));
 		Rc::new(move || {
-			let Some(index) = list.current() else { return };
+			let Some(index) = current() else { return };
 			let Some(existing) = rules.borrow().get(index).cloned() else { return };
 			if let Some(rule) = edit_rule(dialog, &existing, &voices, false) {
 				rules.borrow_mut()[index] = rule;
 				show(index);
 			}
-			list.panel().set_focus();
+			list.set_focus();
 		})
 	};
 	{
 		let edit_current = Rc::clone(&edit_current);
 		edit.on_click(move |_| edit_current());
 	}
+	list.on_double_clicked(move |_| edit_current());
 	let remove_current = {
-		let (list, rules, show) = (list.clone(), Rc::clone(&rules), Rc::clone(&show));
+		let (rules, show) = (Rc::clone(&rules), Rc::clone(&show));
 		Rc::new(move || {
-			let Some(index) = list.current() else { return };
+			let Some(index) = current() else { return };
 			rules.borrow_mut().remove(index);
 			show(index);
-			list.panel().set_focus();
+			list.set_focus();
 		})
 	};
 	{
@@ -112,38 +106,52 @@ pub(super) fn show_speech_dictionary(
 		remove.on_click(move |_| remove_current());
 	}
 	{
-		let list = list.clone();
+		let rules = Rc::clone(&rules);
 		dialog.on_char_hook(move |event| {
 			if let WindowEventData::Keyboard(key) = &event
-				&& list.panel().has_focus()
-				&& matches!(key.get_key_code(), Some(WXK_DELETE | WXK_NUMPAD_DELETE))
+				&& list.has_focus()
 			{
-				remove_current();
-				key.event.skip(false);
-				return;
+				let handled = match key.get_key_code() {
+					Some(WXK_DELETE | WXK_NUMPAD_DELETE) => {
+						remove_current();
+						true
+					}
+					Some(code @ (WXK_UP | WXK_DOWN)) if key.control_down() => {
+						if let Some(from) = current() {
+							let to = if code == WXK_DOWN { from + 1 } else { from.wrapping_sub(1) };
+							if to < rules.borrow().len() {
+								rules.borrow_mut().swap(from, to);
+								show(to);
+							}
+						}
+						true
+					}
+					_ => false,
+				};
+				if handled {
+					key.event.skip(false);
+					return;
+				}
 			}
 			event.skip(true);
 		});
 	}
 	dialog.set_sizer_and_fit(form.sizer(), true);
 	dialog.centre();
-	list.panel().set_focus();
+	list.set_focus();
 	let accepted = dialog.show_modal() == ID_OK;
 	dialog.destroy();
 	accepted.then(|| rules.take())
 }
 
-fn row(rule: &SpeechRule, voices: &[Voice]) -> ChecklistRow {
+fn row(rule: &SpeechRule, voices: &[Voice]) -> String {
 	let replacement = if rule.replacement.is_empty() {
 		// TRANSLATORS: In the speech dictionary's list, the replacement of a rule that removes what it finds
 		t("removed")
 	} else {
 		rule.replacement.clone()
 	};
-	ChecklistRow {
-		cells: vec![rule.pattern.clone(), replacement, applies_to(rule), voices_text(&rule.voice_filter, voices)],
-		checked: rule.enabled,
-	}
+	[rule.pattern.clone(), replacement, applies_to(rule), voices_text(&rule.voice_filter, voices)].join(", ")
 }
 
 fn applies_to(rule: &SpeechRule) -> String {
@@ -299,7 +307,7 @@ mod tests {
 	}
 
 	#[test]
-	fn a_row_reads_find_replacement_scope_and_voices() {
+	fn a_row_reads_pattern_replacement_scope_and_voices() {
 		let voices = [voice("v1", "Satu", "fi-FI")];
 		let rule = SpeechRule {
 			pattern: "Dr".into(),
@@ -308,9 +316,7 @@ mod tests {
 			enabled: false,
 			..SpeechRule::default()
 		};
-		let row = row(&rule, &voices);
-		assert_eq!(row.cells, ["Dr", "removed", "whole words", "Satu"]);
-		assert!(!row.checked);
+		assert_eq!(row(&rule, &voices), "Dr, removed, whole words, Satu");
 	}
 
 	#[test]
