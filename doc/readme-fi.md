@@ -224,6 +224,8 @@ Asiakirjoja voi lukea sovelluksissa kahdella tavalla. Tekstitilassa teksti lueta
 
 DAISY-, M4B- ja MP3-äänikirjoissa toistetaan niiden omaa äänitallennetta.
 
+Tekstistä puheeksi -tilassa näytetään oletusarvoisesti koko kirjan lukemisen edistyminen. Edistymistietoa napauttamalla näet sen sijaan nykyisen luvun nimen, lukemisen edistymisen ja jäljellä olevien sanojen määrän, esimerkiksi ”Luku 3, 42 %, jäljellä 1 850 sanaa”. Äänikirjoissa näytetään vastaavat aikatiedot, esimerkiksi ”Luku 3, 4:10 / 12:00, jäljellä 7:50”. Palaa takaisin koko kirjan edistymistietoihin napauttamalla edistymistietoa uudelleen.
+
 ### Lukupalkki
 
 Näytön alareunassa olevassa palkissa ovat vasemmalta oikealle:
@@ -234,12 +236,27 @@ Näytön alareunassa olevassa palkissa ovat vasemmalta oikealle:
 
 Voit siirtyä valitun siirtymistavan mukaisesti myös pyyhkäisemällä Toista-painikkeen kohdalla ylös- tai alaspäin, jolloin Edellinen- ja Seuraava-painikkeita ei tarvitse käyttää. Jos käytät vain tätä tapaa, voit piilottaa painikkeet ruudunlukijalta Piilota Edellinen- ja Seuraava-painikkeet -asetuksella. Ylöspäin pyyhkäisy siirtää eteenpäin -asetuksella valitaan, kumpaan suuntaan pyyhkäisyllä siirrytään.
 
+### Kirjanmerkit ja muistiinpanot
+
+Näytön yläreunassa olevalla kirjanmerkkipainikkeella voit merkitä nykyisen lukukohdan. Napauta painiketta lisätäksesi kirjanmerkin nykyiseen kappaleeseen ja napauta sitä uudelleen poistaaksesi kirjanmerkin. Jos kappaleessa on jo kirjanmerkki, ruudunlukija ilmoittaa ”Valittu”. Jos kirjanmerkkiin on liitetty muistiinpano, sen poistaminen edellyttää vahvistusta.
+
+* Kirjanmerkki lisätään tekstistä puheeksi -tilassa luettavan kappaleen alkuun, joten kirjanmerkkiin palattaessa kappale luetaan uudelleen alusta. Tekstitilassa kirjanmerkki lisätään nykyiseen kappaleeseen.
+* MP3- ja muissa äänikirjoissa kirjanmerkki tallentaa sen sijaan tarkan toistokohdan, kuten työpöytäversiossakin.
+* Paina kirjanmerkkipainiketta pitkään tai käytä sen ruudunlukijatoimintoja, kun haluat lisätä tai muokata muistiinpanoa tai avata kirjanmerkkiluettelon. Tekstistä puheeksi -toiminnolla lukeminen keskeytyy muistiinpanon kirjoittamisen ajaksi ja jatkuu sulkiessasi muistiinpanoikkunan.
+* Tekstistä puheeksi -tilassa kappaleeseen liitetty muistiinpano näytetään sen alapuolella. Voit muokata muistiinpanoa napauttamalla sitä.
+* Tekstitilassa jokaisella kappaleella on ruudunlukijatoiminnot kirjanmerkin lisäämiseen ja poistamiseen sekä muistiinpanon lisäämiseen ja muokkaamiseen. iOSissa VoiceOver ilmoittaa kirjanmerkillä merkityn kappaleen tekstin jälkeen joko ”Kirjanmerkki” tai siihen liitetyn muistiinpanon. Roottorin Kirjanmerkit-vaihtoehdolla voi siirtyä kirjanmerkin sisältävien kappaleiden välillä.
+* Lisää vaihtoehtoja -valikon **Kirjanmerkit**-kohdasta avautuu kirjanmerkkien ja muistiinpanojen luettelo. Sitä voi suodattaa Kaikki-, Kirjanmerkit- ja Muistiinpanot-valinnoilla. Luettelo avautuu nykyistä lukukohtaa lähimpänä olevan merkinnän kohdalta. Valitse merkintä siirtyäksesi kirjassa sen kohdalle. Voit muokata kirjanmerkkiin liitettyä muistiinpanoa tai poistaa kirjanmerkin iOSissa pyyhkäisemällä sen kohdalla, Androidissa painamalla sitä pitkään tai käyttämällä ruudunlukijatoimintoja.
+* Kun asiakirjassa on kirjanmerkkejä, lukupalkin navigoinnin tarkkuuteen lisätään Kirjanmerkki-vaihtoehto. Kun se on valittuna, Edellinen- ja Seuraava-painikkeilla voi siirtyä kirjanmerkkien välillä.
+
+Kirjanmerkit ja muistiinpanot ovat yhteensopivia työpöytäversion kanssa, joten ne voidaan siirtää versiosta toiseen asiakirjan `.paperback`-tiedostossa.
+
 ### Lisää vaihtoehtoja
 
 Muut toiminnot löytyvät Lisää vaihtoehtoja -valikosta. Osa niistä toimii sovelluksesta riippuen hieman eri tavalla.
 
 * **Vaihda tekstistä puheeksi -tilaan tai Vaihda tekstitilaan:** vaihtaa edellä kuvatun tekstistä puheeksi -lukutilan ja tekstitilan välillä. Tekstitilassa ”Lue tekstistä puheeksi -toiminnolla” -vaihtoehto aloittaa ja pysäyttää ääneenluvun poistumatta tekstitilasta.
 * **Sisällysluettelo:** näyttää kirjan luvut avattuna parhaillaan luettavan luvun kohdalta. Valitse luku siirtyäksesi sen kohdalle. Alalukuja sisältävät kohdat voidaan laajentaa ja supistaa ruudunlukijan toiminnoilla.
+* **Kirjanmerkit:** asiakirjan kirjanmerkit ja muistiinpanot, jotka on kuvailtu edellä.
 * **Elementit:** näyttää asiakirjan otsikot ja linkit erillisissä luetteloissa. iOSissa luetteloa vaihdetaan Tyyppi-valitsimella ja Androidissa välilehdillä. Valitse haluamasi kohde siirtyäksesi siihen.
 * **Etsi:** kirjoita etsittävä teksti tai valitse hakuhistoriasta aiempi haku ja valitse, otetaanko kirjainkoko huomioon, etsitäänkö vain kokonaisia sanoja vai käytetäänkö säännöllistä lauseketta. Etsi edellinen- ja Etsi seuraava -painikkeet siirtävät hakutuloksen kohdalle samalla kun sen sijainti ilmoitetaan. Etsi-ikkuna pysyy avoinna haun jatkamista varten. Tekstistä puheeksi -lukutilassa Etsi-toiminto näkyy myös lukupalkissa navigoinnin tarkkuuden yksikkönä, joten hakutuloksia voi selata myös sitä kautta. **Keskeytä lukeminen hakutuloksen sisältävän kappaleen jälkeen** -asetus on oletusarvoisesti käytössä Tekstistä puheeksi -asetuksissa. Kun asetus on käytössä, lukeminen keskeytetään hakutuloksen sisältävän kappaleen jälkeen. Poista asetus käytöstä, jos haluat lukemisen jatkuvan hakutuloksen kohdalta samalla, kun lukupalkin Edellinen- ja Seuraava-painikkeilla voi edelleen siirtyä hakutulosten välillä.
 * **Siirry:** siirry asiakirjassa haluamallesi riville, sivulle tai tiettyyn prosenttikohtaan. Valitse haluamasi siirtymätapa Tila-valitsimella.
@@ -256,7 +273,7 @@ Muut toiminnot löytyvät Lisää vaihtoehtoja -valikosta. Osa niistä toimii so
 
 ### Näppäimistöt ja kuulokkeet
 
-Näppäimistöä käytettäessä työpöytäsovelluksen pikanäppäimillä voi avata kirjoja ja viimeksi avattuja asiakirjoja, käyttää Etsi- ja Siirry-toimintoja, avata sisällysluettelon, tarkistaa sanamäärän ja tarkastella asiakirjan tietoja, viedä asiakirjan eri tiedostomuotoihin sekä käyttää uniajastinta. iOSissa käytetään `Ctrl`-näppäimen sijasta `Cmd`-näppäintä. Myös otsikoiden, sivujen, linkkien ja muiden kohteiden välillä siirtymiseen tarkoitetut navigointikomennot toimivat, ja `Välilyönti` aloittaa ja pysäyttää toiston. iOSissa navigointikomennot toimivat Paperbackissa vain, kun VoiceOverin pikanavigointinäppäimet on poistettu käytöstä.
+Näppäimistöä käytettäessä työpöytäsovelluksen pikanäppäimillä voi avata kirjoja ja viimeksi avattuja asiakirjoja, käyttää Etsi- ja Siirry-toimintoja, avata sisällysluettelon, tarkistaa sanamäärän ja tarkastella asiakirjan tietoja, viedä asiakirjan eri tiedostomuotoihin sekä käyttää uniajastinta. iOSissa `Ctrl`-näppäin korvataan `Cmd`-näppäimellä. Myös otsikoiden, sivujen, linkkien ja muiden kohteiden välillä siirtymiseen tarkoitetut navigointikomennot toimivat, ja `Välilyönti` aloittaa ja keskeyttää toiston. Kirjanmerkkien pikanäppäimet ovat samat kuin työpöytäversiossa: `B` ja `Vaihto+B` siirtävät seuraavaan ja edelliseen kirjanmerkkiin, `N` ja `Vaihto+N` seuraavaan ja edelliseen muistiinpanoon, `Ctrl+Vaihto+B` lisää tai poistaa kirjanmerkin, `Ctrl+Vaihto+N` lisää muistiinpanon tai muokkaa sitä ja `Ctrl+B` avaa kirjanmerkkiluettelon. Paperbackin navigointikomennot toimivat iOSissa vain, kun VoiceOverin pikanavigointinäppäimet on poistettu käytöstä.
 
 Android-laitteissa kuulokkeiden painikkeen yksi painallus aloittaa tai pysäyttää toiston, kaksi painallusta siirtää eteenpäin ja kolme painallusta taaksepäin.
 
