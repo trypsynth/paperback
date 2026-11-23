@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-22 15:05+0000\n"
-"PO-Revision-Date: 2026-11-22 22:47+0200\n"
+"PO-Revision-Date: 2026-11-23 23:30+0200\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -1671,21 +1671,21 @@ msgstr "Ko&hdistuu:"
 
 #. TRANSLATORS: Speech dictionary rule scope: the rule matches words
 msgid "Words"
-msgstr "Sanojen määrä"
+msgstr "Sanoihin"
 
 #. TRANSLATORS: Speech dictionary rule scope: the rule matches across a whole paragraph, and can be a regular expression
 #| msgid "No next paragraph."
 msgid "Whole paragraphs"
-msgstr "Kokonaiset kappaleet"
+msgstr "Kappaleisiin"
 
 #. TRANSLATORS: Label of the choice of voices a speech dictionary rule applies to
 #| msgid "&Voice:"
 msgid "&Voices:"
-msgstr "Va&littuihin puheääniin:"
+msgstr "&Puheäänet:"
 
 #. TRANSLATORS: First choice of voices for a speech dictionary rule
 msgid "All voices"
-msgstr "Kaikki puheäänet"
+msgstr "Kaikki"
 
 #. TRANSLATORS: A choice of voices for a speech dictionary rule: every voice of one language; %s is the language
 #| msgid "Voices"
