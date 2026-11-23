@@ -92,9 +92,14 @@ shipfitter = { workspace = true }
 uniffi = { version = "0.32.2", features = ["build"], optional = true }
 
 [dev-dependencies]
+# Qt ships its help files as .tar.xz archives, which the opt-in test of the latest Qt and CMake documentation downloads and unpacks.
+lzma-rust2 = { version = "0.25.0", default-features = false, features = ["std", "xz", "optimization"] }
 # Tests write the archives they read, so no RAR files need checking in.
 rars = { version = "=0.12.4", default-features = false, features = ["encryption", "write"] }
 rstest = { workspace = true }
+tar = { version = "0.4.46", default-features = false }
+# The same client as the fetch feature, for the tests that download documents.
+ureq = { version = "3.5.2", default-features = false, features = ["rustls"] }
 zip = { workspace = true, features = ["aes-crypto"] }
 
 [target.'cfg(windows)'.dev-dependencies]

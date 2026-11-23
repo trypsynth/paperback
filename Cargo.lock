@@ -2512,6 +2512,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "lzma-rust2"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef1d73c59a56771343712b22ea5615092c612c16ba291c0979e3105dfeec4890"
+dependencies = [
+ "sha2 0.11.1",
+]
+
+[[package]]
 name = "mach2"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3300,6 +3309,7 @@ dependencies = [
  "libsqlite3-sys",
  "lofty",
  "louis-rs",
+ "lzma-rust2",
  "math-core",
  "mathcat",
  "memchr",
@@ -3325,6 +3335,7 @@ dependencies = [
  "shipfitter",
  "skrifa 0.46.2",
  "smallvec",
+ "tar",
  "thiserror 2.0.21",
  "toml 1.2.1+spec-1.1.0",
  "tracing",
