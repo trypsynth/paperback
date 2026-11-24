@@ -2,17 +2,13 @@
 
 use std::collections::{HashMap, HashSet};
 
-use diesel::{
-	Connection, QueryableByName, RunQueryDsl, sql_query,
-	sql_types::{BigInt, Text},
-	sqlite::SqliteConnection,
-};
 use paperback_core::{
 	document::{DocPos, Document, Marker, MarkerType, ParseSettings, TocItem},
 	parser::qch::file_bytes,
 	session::{DocumentSession, LinkAction},
 	util::text::url_decode,
 };
+use rusqlite::Connection;
 
 /// Where the parser leaves a contents entry whose page the book doesn't have.
 const UNRESOLVED: usize = usize::MAX;
@@ -42,14 +38,8 @@ pub struct Report {
 	pub links_to_other_books: usize,
 }
 
-#[derive(QueryableByName)]
-struct Name {
-	#[diesel(sql_type = Text)]
-	name: String,
-}
-
-fn query_name(connection: &mut SqliteConnection, query: &str) -> String {
-	sql_query(query).get_result::<Name>(connection).unwrap_or_else(|err| panic!("{query}: {err}")).name
+fn query_name(connection: &Connection, query: &str) -> String {
+	connection.query_row(query, [], |row| row.get(0)).unwrap_or_else(|err| panic!("{query}: {err}"))
 }
 
 fn flatten(items: &[TocItem]) -> Vec<&TocItem> {
@@ -93,15 +83,15 @@ pub fn read_book(path: &str) -> Book {
 	let session =
 		DocumentSession::new(path, "", "", ParseSettings::default()).unwrap_or_else(|err| panic!("{path}: {err}"));
 	let document = session.handle().document();
-	let mut connection = SqliteConnection::establish(path).unwrap();
-	let namespace = query_name(&mut connection, "SELECT Name AS name FROM NamespaceTable LIMIT 1");
-	let folder = query_name(&mut connection, "SELECT Name AS name FROM FolderTable WHERE Id = 1");
+	let connection = Connection::open(path).unwrap();
+	let namespace = query_name(&connection, "SELECT Name AS name FROM NamespaceTable LIMIT 1");
+	let folder = query_name(&connection, "SELECT Name AS name FROM FolderTable WHERE Id = 1");
 	assert!(!document.title.trim().is_empty(), "{path}: no title");
 	assert!(!document.toc_items.is_empty(), "{path}: no contents");
 	let mut pages = Pages { path, html: HashMap::new() };
 	let mut report = Report::default();
 	check_contents(path, document, &mut pages, &mut report);
-	check_pictures(path, document, &mut connection, &mut report);
+	check_pictures(path, document, &connection, &mut report);
 	let foreign_links = check_links(path, &session, &namespace, &folder, &mut pages, &mut report);
 	Book {
 		title: document.title.clone(),
@@ -151,30 +141,22 @@ fn check_contents(path: &str, document: &Document, pages: &mut Pages, report: &m
 	}
 }
 
-#[derive(QueryableByName)]
-struct Count {
-	#[diesel(sql_type = BigInt)]
-	count: i64,
-}
-
 /// A picture the lookup can't find counts as Qt's only when no file of the book has its file name, in any folder; one that is there under another path is Paperback naming it wrongly.
-fn check_pictures(path: &str, document: &Document, connection: &mut SqliteConnection, report: &mut Report) {
+fn check_pictures(path: &str, document: &Document, connection: &Connection, report: &mut Report) {
 	for marker in document.buffer.markers.iter().filter(|marker| marker.mtype == MarkerType::Image) {
 		report.pictures += 1;
 		match file_bytes(path, &marker.reference) {
 			Ok(bytes) => assert!(!bytes.is_empty(), "{path}: picture {:?} is empty", marker.reference),
 			Err(err) => {
 				let file_name = marker.reference.rsplit('/').next().unwrap_or_default();
-				let found =
-					sql_query("SELECT COUNT(*) AS count FROM FileNameTable WHERE Name = ? OR Name LIKE ? ESCAPE '\\'")
-						.bind::<Text, _>(file_name)
-						.bind::<Text, _>(format!(
-							"%/{}",
-							file_name.replace('\\', "\\\\").replace('%', "\\%").replace('_', "\\_")
-						))
-						.get_result::<Count>(connection)
-						.unwrap()
-						.count;
+				let pattern = format!("%/{}", file_name.replace('\\', "\\\\").replace('%', "\\%").replace('_', "\\_"));
+				let found: i64 = connection
+					.query_row(
+						"SELECT COUNT(*) FROM FileNameTable WHERE Name = ?1 OR Name LIKE ?2 ESCAPE '\'",
+						[file_name, pattern.as_str()],
+						|row| row.get(0),
+					)
+					.unwrap();
 				assert_eq!(
 					found, 0,
 					"{path}: picture {:?} is in the file under another name: {err:#}",

@@ -1,11 +1,6 @@
 use std::path::Path;
 
-use diesel::{
-	prelude::*,
-	sql_query,
-	sql_types::{BigInt, Binary, Text},
-	sqlite::SqliteConnection,
-};
+use rusqlite::{Connection, params};
 
 use super::{QchParser, compress::q_compress, file_bytes, stream::write_contents};
 use crate::{
@@ -17,7 +12,7 @@ use crate::{
 const PIXEL: &[u8] = b"\x89PNG\r\n\x1a\n not really a picture";
 
 /// As `HelpGeneratorPrivate::createTables` writes them, with `IndexTable` as files from before Qt 4.6 had it.
-fn create_tables(connection: &mut SqliteConnection, legacy: bool) {
+fn create_tables(connection: &Connection, legacy: bool) {
 	let identifier = if legacy { "ContextName" } else { "Identifier" };
 	let mut statements = vec![
 		"CREATE TABLE NamespaceTable (Id INTEGER PRIMARY KEY,Name TEXT )".to_string(),
@@ -40,7 +35,7 @@ fn create_tables(connection: &mut SqliteConnection, legacy: bool) {
 		statements.push("CREATE TABLE MetaDataTable(Name Text, Value BLOB )".into());
 	}
 	for statement in statements {
-		sql_query(statement).execute(connection).unwrap();
+		connection.execute(&statement, []).unwrap();
 	}
 }
 
@@ -56,47 +51,28 @@ struct Project<'a> {
 /// What `qhelpgenerator` does with a project, in its order: the missing-file page first, then the folder, the files and the contents.
 fn write_qch(dir: &TempDir, file_name: &str, project: &Project) -> String {
 	let path = dir.path().join(file_name);
-	let mut connection = SqliteConnection::establish(path.to_str().unwrap()).unwrap();
-	create_tables(&mut connection, project.legacy);
-	sql_query("INSERT INTO FileDataTable VALUES (NULL, ?)")
-		.bind::<Binary, _>(Vec::<u8>::new())
-		.execute(&mut connection)
-		.unwrap();
-	sql_query("INSERT INTO FileNameTable (FolderId, Name, FileId, Title) VALUES (0, '', 1, '')")
-		.execute(&mut connection)
-		.unwrap();
+	let connection = Connection::open(&path).unwrap();
+	create_tables(&connection, project.legacy);
+	connection.execute("INSERT INTO FileDataTable VALUES (NULL, ?1)", [Vec::<u8>::new()]).unwrap();
+	connection.execute("INSERT INTO FileNameTable (FolderId, Name, FileId, Title) VALUES (0, '', 1, '')", []).unwrap();
 	for (name, value) in project.metadata {
-		sql_query("INSERT INTO MetaDataTable VALUES(?, ?)")
-			.bind::<Text, _>(name)
-			.bind::<Text, _>(value)
-			.execute(&mut connection)
-			.unwrap();
+		connection.execute("INSERT INTO MetaDataTable VALUES(?1, ?2)", [name, value]).unwrap();
 	}
-	sql_query("INSERT INTO NamespaceTable VALUES(NULL, ?)")
-		.bind::<Text, _>(project.namespace)
-		.execute(&mut connection)
-		.unwrap();
-	sql_query("INSERT INTO FolderTable (NamespaceId, Name) VALUES (1, ?)")
-		.bind::<Text, _>(project.folder)
-		.execute(&mut connection)
-		.unwrap();
+	connection.execute("INSERT INTO NamespaceTable VALUES(NULL, ?1)", [project.namespace]).unwrap();
+	connection.execute("INSERT INTO FolderTable (NamespaceId, Name) VALUES (1, ?1)", [project.folder]).unwrap();
 	for (index, (name, data)) in project.files.iter().enumerate() {
 		let file_id = i64::try_from(index).unwrap() + 2;
-		sql_query("INSERT INTO FileDataTable VALUES (Null, ?)")
-			.bind::<Binary, _>(q_compress(data))
-			.execute(&mut connection)
-			.unwrap();
-		sql_query("INSERT INTO FileNameTable (FolderId, Name, FileId, Title) VALUES (1, ?, ?, ?)")
-			.bind::<Text, _>(name)
-			.bind::<BigInt, _>(file_id)
-			.bind::<Text, _>(name)
-			.execute(&mut connection)
+		connection.execute("INSERT INTO FileDataTable VALUES (NULL, ?1)", [q_compress(data)]).unwrap();
+		connection
+			.execute(
+				"INSERT INTO FileNameTable (FolderId, Name, FileId, Title) VALUES (1, ?1, ?2, ?3)",
+				params![name, file_id, name],
+			)
 			.unwrap();
 	}
 	for entries in project.contents {
-		sql_query("INSERT INTO ContentsTable (NamespaceId, Data) VALUES(1, ?)")
-			.bind::<Binary, _>(write_contents(entries))
-			.execute(&mut connection)
+		connection
+			.execute("INSERT INTO ContentsTable (NamespaceId, Data) VALUES(1, ?1)", [write_contents(entries)])
 			.unwrap();
 	}
 	path.to_string_lossy().into_owned()
@@ -226,8 +202,8 @@ fn a_book_without_contents_is_named_by_its_file() {
 fn turns_away_what_is_not_a_qt_help_file() {
 	let dir = TempDir::new("qch-not");
 	let other = dir.path().join("other.qch");
-	let mut connection = SqliteConnection::establish(other.to_str().unwrap()).unwrap();
-	sql_query("CREATE TABLE Notes (Id INTEGER PRIMARY KEY)").execute(&mut connection).unwrap();
+	let connection = Connection::open(&other).unwrap();
+	connection.execute("CREATE TABLE Notes (Id INTEGER PRIMARY KEY)", []).unwrap();
 	drop(connection);
 	assert!(QchParser.parse(&ParserContext::new(other.to_string_lossy().into_owned())).is_err());
 	let garbage = dir.write("garbage.qch", b"this is not an SQLite database at all, not even close");

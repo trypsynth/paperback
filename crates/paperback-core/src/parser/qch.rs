@@ -23,7 +23,6 @@ use crate::{
 mod compress;
 mod db;
 mod href;
-mod schema;
 mod stream;
 
 use db::{FileEntry, QchDatabase};
@@ -45,7 +44,7 @@ fn is_html_name(name: &str) -> bool {
 impl Parser for QchParser {
 	fn parse(&self, context: &ParserContext) -> Result<Document> {
 		tracing::debug!(path = %context.file_path, "parsing qch file");
-		let mut db = QchDatabase::open(&context.file_path)?;
+		let db = QchDatabase::open(&context.file_path)?;
 		let namespace = db.namespace()?;
 		let (folder_id, folder) = db.virtual_folder()?;
 		let book = BookLocation { namespace, folder };
@@ -170,7 +169,7 @@ fn convert_pages(
 		.map_init(
 			|| QchDatabase::open(source_path).map_err(|err| err.to_string()),
 			|db, page| {
-				let db = db.as_mut().map_err(|err| format!("{} ({err})", page.name))?;
+				let db = db.as_ref().map_err(|err| format!("{} ({err})", page.name))?;
 				let bytes = db.file_data(page.file_id).map_err(|err| format!("{} ({err:#})", page.name))?;
 				Ok(convert_section(&bytes, render_tables_inline, None))
 			},
