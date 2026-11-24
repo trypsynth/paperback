@@ -383,7 +383,7 @@ impl<'a> Converter<'a> {
 		let file_path = input.to_string_lossy().into_owned();
 		let mut context = ParserContext::new(file_path)
 			.with_render_tables_inline(true)
-			.with_join_pdf_paragraphs(!cli.no_join_paragraphs)
+			.with_page_layout(cli.page_layout())
 			.with_braille_table(cli.braille_table.as_deref().map_or(braille::DEFAULT_TABLE, braille::chosen_table))
 			.with_keep_braille(cli.keep_braille);
 		// Stripping repeated page-edge lines can cost real sentences (see `ParserContext::strip_running_text`), hence `--keep-repeated`.
@@ -421,7 +421,13 @@ impl<'a> Converter<'a> {
 		let ocr = ocr::Selection { image_pages: cli.ocr_image_pages, text_pages: cli.ocr_text_pages };
 		if ocr.any() {
 			// After the slice so only kept pages are read, and after the password so an encrypted document opens once.
-			ocr::pages(&mut doc, &context.file_path, context.password.as_deref(), ocr, !cli.no_join_paragraphs)?;
+			ocr::pages(
+				&mut doc,
+				&context.file_path,
+				context.password.as_deref(),
+				ocr,
+				cli.page_layout().joins_lines(),
+			)?;
 		}
 		ocr::reword_placeholders(&mut doc, ocr.image_pages);
 		Ok(match (cli.metadata, cli.format) {

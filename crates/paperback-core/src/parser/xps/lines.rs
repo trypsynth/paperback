@@ -86,12 +86,25 @@ fn finish_line(runs: &[(&Run, RunStyle)], height: f64) -> Line {
 	let main = runs.iter().map(|(run, _)| *run).max_by_key(|run| run.text.chars().count());
 	let (size, baseline) = main.map_or((0.0, 0.0), |run| (run.size, run.y));
 	let top = size.mul_add(ASCENT, height - baseline);
-	let mut visible = runs.iter().filter(|(run, _)| !run.text.trim().is_empty()).map(|(_, style)| style);
+	let printed = runs.iter().filter(|(run, _)| !run.text.trim().is_empty());
+	// Without a width a character is taken as half its size across, about what a proportional face averages.
+	let (left, right) = printed
+		.clone()
+		.map(|(run, style)| {
+			extent(run, *style)
+				.unwrap_or_else(|| (run.x, (run.text.chars().count() as f64 * run.size).mul_add(0.5, run.x)))
+		})
+		.fold((f64::INFINITY, f64::NEG_INFINITY), |(left, right), (start, end)| {
+			(left.min(start.min(end)), right.max(start.max(end)))
+		});
+	let mut visible = printed.map(|(_, style)| style);
 	Line {
 		text: line_text(runs),
 		size,
 		top,
 		bottom: top - size,
+		left,
+		right,
 		monospaced: visible.clone().all(|style| style.monospaced),
 		bold: visible.all(|style| style.bold),
 	}

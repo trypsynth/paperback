@@ -2,6 +2,7 @@
 
 use crate::{
 	document::{DocLen, DocPos, DocumentBuffer, Marker, MarkerType},
+	parser::layout::Line,
 	pdf_engine::{ObjectKind, Page, PageImage},
 	t,
 };
@@ -112,10 +113,50 @@ pub(super) fn images_before_each_paragraph(image_tops: &[f64], paragraph_tops: &
 	counts
 }
 
+/// For a page read by columns, whose paragraphs don't run down it in order: an image goes before the paragraph holding the first line read under it, a line beside it if there is one. One list per paragraph plus a last one for the rest.
+pub(super) fn images_by_position(
+	image_tops: &[f64],
+	image_spans: &[(f64, f64)],
+	lines: &[Line],
+	paragraph_starts: &[usize],
+) -> Vec<Vec<usize>> {
+	let mut placed = vec![Vec::new(); paragraph_starts.len() + 1];
+	for (index, (top, (left, right))) in image_tops.iter().zip(image_spans).enumerate() {
+		let below = |line: &Line| line.top <= *top;
+		let beside = |line: &Line| line.left < *right && line.right > *left;
+		let first = lines.iter().position(|line| below(line) && beside(line)).or_else(|| lines.iter().position(below));
+		let paragraph = first.map_or(paragraph_starts.len(), |line| {
+			paragraph_starts.partition_point(|start| *start <= line).saturating_sub(1)
+		});
+		placed[paragraph].push(index);
+	}
+	placed
+}
+
 #[cfg(test)]
 mod tests {
-	use super::{UnclaimedImages, append_image, images_before_each_paragraph};
-	use crate::document::{DocumentBuffer, MarkerType};
+	use super::{UnclaimedImages, append_image, images_before_each_paragraph, images_by_position};
+	use crate::{
+		document::{DocumentBuffer, MarkerType},
+		parser::layout::Line,
+	};
+
+	#[test]
+	fn an_image_read_by_columns_goes_before_the_first_line_under_it_in_its_column() {
+		let line = |left: f64, right: f64, top: f64| Line {
+			text: String::from("text"),
+			size: 10.0,
+			top,
+			bottom: top - 10.0,
+			left,
+			right,
+			monospaced: false,
+			bold: false,
+		};
+		let lines = [line(300.0, 550.0, 700.0), line(50.0, 280.0, 500.0), line(300.0, 550.0, 650.0)];
+		let placed = images_by_position(&[680.0, 20.0], &[(50.0, 280.0), (300.0, 550.0)], &lines, &[0, 1, 2]);
+		assert_eq!(placed, [vec![], vec![0], vec![], vec![1]]);
+	}
 
 	#[test]
 	fn a_described_figure_is_written_as_a_line_of_its_own() {

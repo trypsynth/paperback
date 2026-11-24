@@ -1,7 +1,7 @@
 use super::ConfigManager;
 use crate::{
 	config::settings::{DocumentSpeech, NavigationHistory, NavigationUnit},
-	document::{DocPos, ReplaceOutcome},
+	document::{DocPos, PageLayout, ReplaceOutcome},
 };
 
 impl ConfigManager {
@@ -210,6 +210,34 @@ impl ConfigManager {
 		self.data.borrow().documents.get(&key).and_then(|d| d.navigation_unit)
 	}
 
+	/// `None` hands the document back to the app's page layout.
+	pub fn set_document_page_layout(&self, path: &str, layout: Option<PageLayout>) {
+		if !self.initialized {
+			return;
+		}
+		{
+			let key = self.get_doc_key(path);
+			let mut data = self.data.borrow_mut();
+			Self::doc_entry_mut(&mut data, key, path).page_layout = layout;
+		}
+		self.dirty.set(true);
+	}
+
+	#[must_use]
+	pub fn get_document_page_layout(&self, path: &str) -> Option<PageLayout> {
+		if !self.initialized {
+			return None;
+		}
+		let key = self.get_doc_key(path);
+		self.data.borrow().documents.get(&key).and_then(|d| d.page_layout)
+	}
+
+	/// The document's own page layout, or the app's where it has none.
+	#[must_use]
+	pub fn page_layout_for(&self, path: &str) -> PageLayout {
+		self.get_document_page_layout(path).unwrap_or_else(|| self.get_page_layout())
+	}
+
 	pub fn set_document_password(&self, path: &str, password: &str) {
 		if !self.initialized {
 			return;
@@ -314,6 +342,21 @@ mod tests {
 		assert_eq!(config.get_document_navigation_unit("b.mp3"), Some(NavigationUnit::Seconds { seconds: 30 }));
 		config.set_document_navigation_unit("a.epub", None);
 		assert_eq!(config.get_document_navigation_unit("a.epub"), None);
+	}
+
+	#[test]
+	fn a_document_page_layout_overrides_the_app_one_until_cleared() {
+		let config = ConfigManager::in_memory();
+		config.set_page_layout(PageLayout::Lines);
+		config.set_document_page_layout("pattern.pdf", Some(PageLayout::Columns));
+		assert_eq!(config.page_layout_for("pattern.pdf"), PageLayout::Columns);
+		assert_eq!(config.page_layout_for("novel.pdf"), PageLayout::Lines);
+		config.set_document_page_layout("pattern.pdf", None);
+		assert_eq!(config.page_layout_for("pattern.pdf"), PageLayout::Lines);
+		let document =
+			crate::config::settings::DocumentConfig { page_layout: Some(PageLayout::Columns), ..Default::default() };
+		let json = serde_json::to_string(&document).expect("serialize");
+		assert!(json.contains(r#""page_layout":"columns""#), "{json}");
 	}
 
 	#[test]

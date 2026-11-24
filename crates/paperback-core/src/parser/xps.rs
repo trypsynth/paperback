@@ -18,12 +18,12 @@ use self::{
 	writer::{PageWriter, WrittenParagraph},
 };
 use crate::{
-	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
+	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, PageLayout, ParserContext, TocItem},
 	parser::{
 		Parser,
 		layout::{
-			Line, PendingLink, RunningText, build_toc_tree, page_paragraphs, place_links, resolve_headings,
-			split_lines, survey_running_text,
+			Line, PendingLink, RunningText, build_toc_tree, page_paragraphs, place_links, read_by_columns,
+			resolve_headings, split_lines, survey_running_text,
 		},
 		util::{ooxml::parse_core_properties, path::extract_title_from_path},
 	},
@@ -125,6 +125,13 @@ impl ReadPage {
 		Self { content: Content::Drawn(Vec::new()), links: Vec::new() }
 	}
 
+	/// Done before the running heads are surveyed, which look at the first and last lines.
+	fn read_by_columns(&mut self) {
+		if let Content::Drawn(lines) = &mut self.content {
+			*lines = read_by_columns(mem::take(lines));
+		}
+	}
+
 	fn drawn_lines(&self) -> Option<&[Line]> {
 		match &self.content {
 			Content::Drawn(lines) => Some(lines.as_slice()),
@@ -133,9 +140,9 @@ impl ReadPage {
 	}
 
 	/// Takes the lines, since only their paragraphs are written.
-	fn lay_out(&mut self, running: &RunningText, join: bool) -> Vec<(String, bool, usize)> {
+	fn lay_out(&mut self, running: &RunningText, layout: PageLayout) -> Vec<(String, bool, usize)> {
 		match &mut self.content {
-			Content::Drawn(lines) => page_paragraphs(mem::take(lines), running, join).1,
+			Content::Drawn(lines) => page_paragraphs(mem::take(lines), running, layout).1,
 			Content::Declared(..) => Vec::new(),
 		}
 	}
@@ -258,6 +265,8 @@ fn detected_headings(written: Vec<WrittenPage>) -> Vec<(DocPos, String)> {
 					size: paragraph.size,
 					top: 0.0,
 					bottom: 0.0,
+					left: 0.0,
+					right: 0.0,
 					monospaced: false,
 					bold: false,
 				};
@@ -301,9 +310,11 @@ fn read_document<R: Read + Seek>(
 			},
 		)
 		.collect();
+	if context.page_layout.reads_by_columns() {
+		read.par_iter_mut().for_each(ReadPage::read_by_columns);
+	}
 	let running = survey_running_text(read.iter().filter_map(ReadPage::drawn_lines), context.strip_running_text);
-	let laid_out: Vec<_> =
-		read.par_iter_mut().map(|page| page.lay_out(&running, context.join_pdf_paragraphs)).collect();
+	let laid_out: Vec<_> = read.par_iter_mut().map(|page| page.lay_out(&running, context.page_layout)).collect();
 	let mut buffer = DocumentBuffer::new();
 	let mut id_positions = HashMap::new();
 	let mut written: Vec<WrittenPage> = Vec::new();

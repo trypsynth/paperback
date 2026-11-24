@@ -3,7 +3,10 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use super::shortcuts::{KeyChord, ShortcutsConfig, default_window_hotkey};
-use crate::{document::DocPos, session::SegmentTypeFfi};
+use crate::{
+	document::{DocPos, PageLayout},
+	session::SegmentTypeFfi,
+};
 
 const CONFIG_VERSION: u32 = 4;
 const DEFAULT_RECENT_DOCUMENTS_TO_SHOW: i64 = 25;
@@ -103,8 +106,9 @@ pub struct AppSettings {
 	pub word_wrap: bool,
 	#[serde(default = "default_true")]
 	pub render_tables_inline: bool,
-	#[serde(default = "default_true")]
-	pub join_pdf_paragraphs: bool,
+	/// Unset in a config from before the setting, which `join_pdf_paragraphs` in `extra` then decides.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub page_layout: Option<PageLayout>,
 	#[serde(default = "default_true")]
 	pub strip_running_text: bool,
 	#[serde(default = "default_true")]
@@ -166,7 +170,7 @@ impl Default for AppSettings {
 			restore_previous_documents: true,
 			word_wrap: false,
 			render_tables_inline: true,
-			join_pdf_paragraphs: true,
+			page_layout: None,
 			strip_running_text: true,
 			markdown_dollar_math: true,
 			navigation_wrap: false,
@@ -261,6 +265,9 @@ pub struct DocumentConfig {
 	pub speech: DocumentSpeech,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub navigation_unit: Option<NavigationUnit>,
+	/// Overrides the app's page layout for this document alone.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub page_layout: Option<PageLayout>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

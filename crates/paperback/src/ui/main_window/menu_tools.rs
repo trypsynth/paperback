@@ -160,7 +160,7 @@ pub(super) fn handle_options(
 		}
 	}
 	if old.documents != options.documents {
-		dm.lock().unwrap().apply_parse_settings(options.documents.parse_settings());
+		dm.lock().unwrap().apply_parse_settings();
 	}
 	let language_changed = current_language != options.general.language;
 	if language_changed || old.reading.compact_go_menu != options.reading.compact_go_menu {

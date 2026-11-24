@@ -188,7 +188,7 @@ mod tests {
 	fn ids(entries: &[MenuEntry], out: &mut Vec<i32>) {
 		for entry in entries {
 			match entry {
-				MenuEntry::Item(spec) | MenuEntry::Check(spec, _) => out.push(spec.id),
+				MenuEntry::Item(spec) | MenuEntry::Check(spec, _) | MenuEntry::Radio(spec, _) => out.push(spec.id),
 				MenuEntry::Submenu { entries, .. } => ids(entries, out),
 				MenuEntry::Separator | MenuEntry::Disabled(_) => {}
 			}
@@ -225,7 +225,9 @@ mod tests {
 		entries
 			.iter()
 			.filter_map(|entry| match entry {
-				MenuEntry::Item(spec) | MenuEntry::Check(spec, _) => Some(spec.label.as_str()),
+				MenuEntry::Item(spec) | MenuEntry::Check(spec, _) | MenuEntry::Radio(spec, _) => {
+					Some(spec.label.as_str())
+				}
 				MenuEntry::Submenu { label, .. } => Some(label.as_str()),
 				MenuEntry::Separator | MenuEntry::Disabled(_) => None,
 			})

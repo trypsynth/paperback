@@ -2,7 +2,7 @@ use std::{fs, path::Path, time::SystemTime};
 
 use paperback_core::{
 	config::ConfigManager,
-	document::{DocPos, ParseSettings},
+	document::{DocPos, PageLayout, ParseSettings},
 	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, braille},
 	session::DocumentSession,
 };
@@ -43,21 +43,52 @@ pub(super) fn read_fingerprint(path: &Path) -> Option<FileFingerprint> {
 
 impl DocumentManager {
 	/// Re-parses rather than transforming in place so every format's table rendering stays identical via the shared parse-time helper.
-	pub fn apply_parse_settings(&mut self, settings: ParseSettings) {
+	/// Each document is read with its own settings, since it can keep a page layout of its own.
+	pub fn apply_parse_settings(&mut self) {
 		let (style, parse_inputs) = {
 			let cfg = self.config.lock().unwrap();
-			let parse_inputs: Vec<(String, String)> = self
+			let parse_inputs: Vec<(String, String, ParseSettings)> = self
 				.tabs
 				.iter()
 				.map(|tab| {
 					let path_str = tab.file_path.to_string_lossy();
-					(cfg.get_document_password(&path_str), cfg.get_document_format(&path_str))
+					(
+						cfg.get_document_password(&path_str),
+						cfg.get_document_format(&path_str),
+						parse_settings(&cfg, &path_str),
+					)
 				})
 				.collect();
 			(readability_style(&cfg), parse_inputs)
 		};
-		for (tab, (password, forced_extension)) in self.tabs.iter_mut().zip(parse_inputs) {
+		for (tab, (password, forced_extension, settings)) in self.tabs.iter_mut().zip(parse_inputs) {
 			let _ = reparse_tab_in_place(tab, &password, &forced_extension, settings, &style);
+		}
+	}
+
+	/// The open document's key in the config, when it is laid out as pages and so can have a page layout of its own.
+	pub fn active_paged_document(&self) -> Option<String> {
+		let tab = self.active_tab()?;
+		lays_out_pages(tab.local_path()).then(|| tab.file_path.to_string_lossy().into_owned())
+	}
+
+	/// `None` hands the open document back to the app's page layout; it is read again only if that changes how it reads.
+	pub fn set_active_page_layout(&mut self, layout: Option<PageLayout>) {
+		let (Some(index), Some(path)) = (self.active_tab_index(), self.active_paged_document()) else {
+			return;
+		};
+		let (inputs, style) = {
+			let cfg = self.config.lock().unwrap();
+			let before = cfg.page_layout_for(&path);
+			cfg.set_document_page_layout(&path, layout);
+			cfg.flush();
+			let inputs = (cfg.page_layout_for(&path) != before).then(|| {
+				(cfg.get_document_password(&path), cfg.get_document_format(&path), parse_settings(&cfg, &path))
+			});
+			(inputs, readability_style(&cfg))
+		};
+		if let Some((password, forced_extension, settings)) = inputs {
+			let _ = reparse_tab_in_place(&mut self.tabs[index], &password, &forced_extension, settings, &style);
 		}
 	}
 
@@ -119,7 +150,7 @@ impl DocumentManager {
 		}
 		let password = cfg.get_document_password(&path_str);
 		let forced_extension = cfg.get_document_format(&path_str);
-		let settings = parse_settings(&cfg);
+		let settings = parse_settings(&cfg, &path_str);
 		let style = readability_style(&cfg);
 		drop(cfg);
 		let tab = &mut self.tabs[index];
@@ -179,10 +210,18 @@ impl DocumentManager {
 	}
 }
 
-pub(super) fn parse_settings(cfg: &ConfigManager) -> ParseSettings {
+/// The formats a page layout applies to, which read their text off laid-out pages.
+fn lays_out_pages(path: &Path) -> bool {
+	path.extension()
+		.and_then(|extension| extension.to_str())
+		.is_some_and(|extension| ["pdf", "xps", "oxps"].iter().any(|known| extension.eq_ignore_ascii_case(known)))
+}
+
+/// `path` is the document's key in the config, which for a link is the link.
+pub(super) fn parse_settings(cfg: &ConfigManager, path: &str) -> ParseSettings {
 	ParseSettings {
 		render_tables_inline: cfg.get_app_bool("render_tables_inline", true),
-		join_pdf_paragraphs: cfg.get_app_bool("join_pdf_paragraphs", true),
+		page_layout: cfg.page_layout_for(path),
 		strip_running_text: cfg.get_app_bool("strip_running_text", true),
 		markdown_dollar_math: cfg.get_app_bool("markdown_dollar_math", true),
 		braille_table: braille::chosen_table(&cfg.get_app_string("braille_table", braille::DEFAULT_TABLE)),
@@ -224,7 +263,7 @@ fn reparse_tab_in_place(
 	restore_saved_pages(
 		&mut tab.session,
 		&saved_pages_of(&local_path),
-		is_pdf(&local_path) && settings.join_pdf_paragraphs,
+		is_pdf(&local_path) && settings.page_layout.joins_lines(),
 	);
 	// Scaled by length rather than through the whole-number percentage, which in a book of millions of characters is tens of thousands off.
 	let doc_len = tab.session.document_len();

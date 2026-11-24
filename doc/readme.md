@@ -465,6 +465,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * A new PDF engine: faster, uses every CPU core, and needs no pdfium library.
 * Headings found in untagged pages, and better titles.
 * A setting to keep repeated page headers and footers.
+* A page layout setting for PDFs read out of order, in the Documents tab of Settings and for one document in View > Page Layout: by columns finds the columns from where the text sits instead of following the document, and can keep every line apart. It replaces the setting that kept lines apart. `pb --layout` does the same.
 
 ##### Other Documents
 * Word: numbered and bulleted lists, footnotes, endnotes, comments, picture alt text, list navigation, and Word's own pages.

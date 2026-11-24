@@ -179,7 +179,7 @@ pub fn join_wrapped_runs(runs: &[&str]) -> Vec<String> {
 	let measure = full_line_len(&trimmed);
 	runs.iter()
 		.map(|lines| {
-			join_paragraphs_measured(lines, RECOGNIZED_TEXT_SIZE, Some(measure))
+			join_paragraphs_measured(lines, RECOGNIZED_TEXT_SIZE, Some(measure), false)
 				.into_iter()
 				.map(|(paragraph, ..)| paragraph)
 				.collect::<Vec<String>>()
@@ -197,6 +197,8 @@ fn recognized_lines(text: &str) -> Vec<Line> {
 			size: RECOGNIZED_TEXT_SIZE,
 			top,
 			bottom: top - RECOGNIZED_TEXT_SIZE,
+			left: 0.0,
+			right: 0.0,
 			monospaced: false,
 			bold: false,
 		});
@@ -207,13 +209,19 @@ fn recognized_lines(text: &str) -> Vec<Line> {
 
 /// The third field indexes the paragraph's first line in `raw_lines`, which an untagged page needs to place its images.
 pub(super) fn join_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
-	join_paragraphs_measured(raw_lines, body_font_size, None)
+	join_paragraphs_measured(raw_lines, body_font_size, None, false)
+}
+
+/// For lines put in order by [`super::read_by_columns`], where a line above the one before it opens a column or a box of its own unless a sentence runs on into it.
+pub(super) fn join_column_paragraphs(raw_lines: &[Line], body_font_size: f64) -> Vec<(String, bool, usize)> {
+	join_paragraphs_measured(raw_lines, body_font_size, None, true)
 }
 
 fn join_paragraphs_measured(
 	raw_lines: &[Line],
 	body_font_size: f64,
 	measure: Option<usize>,
+	breaks_where_it_climbs: bool,
 ) -> Vec<(String, bool, usize)> {
 	let raw_lines = merge_drop_caps(raw_lines, body_font_size);
 	let trimmed = trimmed_lines(&raw_lines);
@@ -237,6 +245,7 @@ fn join_paragraphs_measured(
 	let mut last_line_ends_with_punctuation = false;
 	// Infinity so the first line of a page never reads as following a gap.
 	let mut last_line_bottom = f64::INFINITY;
+	let mut last_line_top = f64::INFINITY;
 	let mut previous_was_monospaced = false;
 	for (line_index, (line_info, is_heading_line)) in lines.iter().enumerate() {
 		let Line { text: line, size, top, bottom, monospaced, .. } = line_info;
@@ -248,6 +257,7 @@ fn join_paragraphs_measured(
 			last_line_len = 0;
 			last_line_ends_with_punctuation = false;
 			last_line_bottom = f64::INFINITY;
+			last_line_top = f64::INFINITY;
 			previous_was_monospaced = false;
 			continue;
 		}
@@ -272,7 +282,10 @@ fn join_paragraphs_measured(
 			let opened_by_a_gap = *size > 0.0 && last_line_bottom - *top > *size * PARAGRAPH_GAP_RATIO;
 			// A monospaced line's breaks are the content, and geometry can't see it: a listing shares the prose's left edge and leading.
 			let set_apart_by_its_face = *monospaced || previous_was_monospaced;
+			let runs_on = first_char.is_some_and(char::is_lowercase) && !last_line_ends_with_punctuation;
+			let climbs = breaks_where_it_climbs && *bottom > last_line_top && !runs_on;
 			let break_paragraph = is_list_item
+				|| climbs
 				|| opens_with_a_label(line)
 				|| opened_by_a_gap
 				|| set_apart_by_its_face
@@ -303,6 +316,7 @@ fn join_paragraphs_measured(
 		}
 		last_line_len = len;
 		last_line_bottom = *bottom;
+		last_line_top = *top;
 		previous_was_monospaced = *monospaced;
 		last_line_ends_with_punctuation = line.ends_with('.')
 			|| line.ends_with('?')
@@ -327,7 +341,10 @@ fn join_paragraphs_measured(
 
 #[cfg(test)]
 mod tests {
-	use super::{Line, full_line_len, join_paragraphs, join_wrapped_lines, opens_with_a_label, split_lines};
+	use super::{
+		Line, full_line_len, join_column_paragraphs, join_paragraphs, join_wrapped_lines, opens_with_a_label,
+		split_lines,
+	};
 
 	/// Page 67 of the PDF attached to #813, with the sizes and doubled lines pdfium reports for it.
 	fn issue_813_page() -> Vec<Line> {
@@ -525,12 +542,42 @@ c. can print words"
 	}
 
 	/// No gap between any two lines, so a test about the text alone isn't accidentally testing the paragraph-gap rule.
+	#[test]
+	fn a_column_read_after_another_starts_a_paragraph_unless_a_sentence_runs_on() {
+		let at = |text: &str, top: f64| Line { top, bottom: top - 10.0, ..tight(&[(text, 10.0)])[0].clone() };
+		let lines = vec![
+			at("(Stitch count: 4 Shells and 20 sc sts)", 120.0),
+			at("Reminder:", 700.0),
+			at("Shell = 5 dc in the same st", 688.0),
+			at("and the round runs on to the foot of the column", 676.0),
+			at("and into the head of the next", 720.0),
+		];
+		let texts: Vec<String> = join_column_paragraphs(&lines, 10.0).into_iter().map(|(text, ..)| text).collect();
+		assert_eq!(
+			texts,
+			[
+				"(Stitch count: 4 Shells and 20 sc sts)",
+				"Reminder:",
+				"Shell = 5 dc in the same st and the round runs on to the foot of the column and into the head of the next",
+			]
+		);
+	}
+
 	fn tight(lines: &[(&str, f64)]) -> Vec<Line> {
 		let mut top = 700.0;
 		let mut out = Vec::new();
 		for (text, size) in lines {
 			let bottom = top - size;
-			out.push(Line { text: (*text).to_string(), size: *size, top, bottom, monospaced: false, bold: false });
+			out.push(Line {
+				text: (*text).to_string(),
+				size: *size,
+				top,
+				bottom,
+				left: 0.0,
+				right: 0.0,
+				monospaced: false,
+				bold: false,
+			});
 			top = bottom - size * 0.2;
 		}
 		out
@@ -544,7 +591,16 @@ c. can print words"
 				top -= size * 1.4;
 			}
 			let bottom = top - size;
-			out.push(Line { text: (*text).to_string(), size: *size, top, bottom, monospaced: false, bold: false });
+			out.push(Line {
+				text: (*text).to_string(),
+				size: *size,
+				top,
+				bottom,
+				left: 0.0,
+				right: 0.0,
+				monospaced: false,
+				bold: false,
+			});
 			top = bottom - size * 0.2;
 		}
 		out
