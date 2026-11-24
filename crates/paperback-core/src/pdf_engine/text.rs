@@ -545,7 +545,8 @@ impl TextObject {
 						let width = outline.advance_width().unwrap_or(0.0);
 						// A visible glyph with no outline is one hayro's substitute font cannot draw (Cyrillic in a missing Times New Roman); pdfium finds a system font that can, so it gets the box it would have rather than reading as an empty object.
 						let missing = bbox == GlyphBox::default()
-							&& width > 0.0 && !unicode.is_empty()
+							&& width > 0.0
+							&& !unicode.is_empty()
 							&& unicode.iter().any(|&c| char::from_u32(c).is_some_and(|ch| !ch.is_whitespace()));
 						let bbox = if missing {
 							GlyphBox { left: 0, bottom: font.descent, right: width.round() as i32, top: font.ascent }
@@ -1222,9 +1223,12 @@ impl<'p> Builder<'p> {
 					let first_item = &prev.items[0];
 					let (m, d) = (prev.matrix, self.display);
 					if prev_item.origin.0 > first_item.origin.0
-						&& d.a > 0.9 && d.b < 0.1
-						&& d.c < 0.1 && d.d < -0.9
-						&& m.b < 0.1 && m.c < 0.1
+						&& d.a > 0.9
+						&& d.b < 0.1
+						&& d.c < 0.1
+						&& d.d < -0.9
+						&& m.b < 0.1
+						&& m.c < 0.1
 					{
 						let prev_band = FRect::new(0.0, prev.rect.bottom, 1000.0, prev.rect.top);
 						if prev_band.contains(object.pos)
