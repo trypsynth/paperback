@@ -106,6 +106,10 @@ impl ConfigManagerFfi {
 		self.inner.lock().unwrap().get_document_position(&path)
 	}
 
+	pub fn seed_document_position(&self, path: String, position: DocPos) {
+		self.inner.lock().unwrap().seed_document_position(&path, position);
+	}
+
 	/// `time_ms < 0` leaves the stored value alone, so a document that hasn't started playing can't wipe it.
 	pub fn set_document_audio_time_ffi(&self, path: String, time_ms: i64) {
 		let time_ms = u64::try_from(time_ms).ok();

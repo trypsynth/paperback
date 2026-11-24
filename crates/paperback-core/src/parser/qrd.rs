@@ -29,6 +29,7 @@ struct Book {
 	metadata_location: Option<String>,
 	#[serde(default)]
 	original_path: String,
+	current_position: Option<i64>,
 }
 
 #[derive(Deserialize, Default)]
@@ -205,6 +206,7 @@ impl Parser for QrdParser {
 			document = document.with_author(metadata.authors.join(", "));
 		}
 		document.toc_items = toc_items(&nodes, &|node| span(node).0);
+		document.start_position = book.current_position.filter(|&unit| unit > 0).map(|unit| offsets.position(unit));
 		document.set_buffer(buffer);
 		document.id_positions = id_positions;
 		Ok(document)

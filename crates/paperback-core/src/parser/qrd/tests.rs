@@ -204,3 +204,15 @@ fn a_table_laying_out_a_page_is_read_as_text() {
 	assert!(markers(&document, MarkerType::Table).is_empty());
 	assert_eq!(markers(&document, MarkerType::Heading1)[0].text, "Run");
 }
+
+#[test]
+fn remembers_where_qread_left_off() {
+	let (unit, _) = units(STORY, "Part Two");
+	let mut entries = book(STORY, &story_tree(), &json!({}), r"C:\Books\story.epub");
+	entries[0].1 = json!({"original_path": r"C:\Books\story.epub", "current_position": unit}).to_string();
+	let dir = TempDir::new("qrd-position");
+	let document = open(write_qrd(&dir, "story.qrd", &entries));
+	assert_eq!(document.start_position, Some(chars(&document.buffer.content, "Part Two").into()));
+	let unread = open(write_qrd(&dir, "unread.qrd", &book(STORY, &story_tree(), &json!({}), "")));
+	assert_eq!(unread.start_position, None);
+}

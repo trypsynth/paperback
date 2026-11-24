@@ -32,6 +32,8 @@ pub struct Document {
 	pub audio: Option<AudioTimeline>,
 	/// The text only anchors audio (a zip of bare narration files), so read-aloud UIs navigate by time, as text units would have nothing to land on.
 	pub audio_only: bool,
+	/// Where the file says reading left off, as QRead's books keep it; used only until Paperback has a position of its own for the document.
+	pub start_position: Option<DocPos>,
 }
 
 impl Document {
@@ -48,6 +50,7 @@ impl Document {
 			stats: OnceLock::new(),
 			audio: None,
 			audio_only: false,
+			start_position: None,
 		}
 	}
 

@@ -74,6 +74,26 @@ impl ConfigManager {
 		self.data.borrow().documents.get(&key).map_or(DocPos::ZERO, |d| d.last_position)
 	}
 
+	/// The file's own idea of where reading left off, taken the first time only and only if Paperback hasn't moved from the start, so Paperback's position wins after that.
+	pub fn seed_document_position(&self, path: &str, position: DocPos) {
+		if !self.initialized {
+			return;
+		}
+		{
+			let key = self.get_doc_key(path);
+			let mut data = self.data.borrow_mut();
+			let entry = Self::doc_entry_mut(&mut data, key, path);
+			if entry.start_position_used {
+				return;
+			}
+			entry.start_position_used = true;
+			if entry.last_position == DocPos::ZERO {
+				entry.last_position = position;
+			}
+		}
+		self.dirty.set(true);
+	}
+
 	#[must_use]
 	pub fn get_validated_document_position(&self, path: &str, max_position: DocPos) -> Option<DocPos> {
 		let saved = self.get_document_position(path);
@@ -245,6 +265,20 @@ impl ConfigManager {
 mod tests {
 	use super::*;
 	use crate::session::SegmentTypeFfi;
+
+	#[test]
+	fn a_documents_own_start_position_is_taken_once_and_never_over_paperbacks() {
+		let config = ConfigManager::in_memory();
+		config.add_recent_document("new.qrd");
+		config.seed_document_position("new.qrd", 40.into());
+		assert_eq!(config.get_document_position("new.qrd"), 40);
+		config.set_document_position("new.qrd", DocPos::ZERO);
+		config.seed_document_position("new.qrd", 40.into());
+		assert_eq!(config.get_document_position("new.qrd"), 0, "back at the top is where the reader left it");
+		config.set_document_position("read.qrd", 7.into());
+		config.seed_document_position("read.qrd", 40.into());
+		assert_eq!(config.get_document_position("read.qrd"), 7);
+	}
 
 	#[test]
 	fn the_download_size_is_kept_for_each_link() {

@@ -420,9 +420,10 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 			}
 
 			val docKey = config.getDocKey(uriString)
-			val savedPosition = config.getDocumentPosition(uriString)
 			val password = providedPassword ?: config.getDocumentPassword(uriString)
 			val session = DocumentSession.newFfi(absolutePath, password, "", false)
+			session.startPosition()?.let { config.seedDocumentPosition(uriString, it) }
+			val savedPosition = config.getDocumentPosition(uriString)
 			if (providedPassword != null) {
 				config.setDocumentPassword(uriString, providedPassword)
 				config.saveSoon()

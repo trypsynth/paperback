@@ -366,6 +366,11 @@ impl DocumentSession {
 	}
 
 	#[must_use]
+	pub fn start_position(&self) -> Option<DocPos> {
+		self.handle.document().start_position
+	}
+
+	#[must_use]
 	pub fn content(&self) -> String {
 		self.handle.document().buffer.content.clone()
 	}
