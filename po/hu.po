@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 15:05+0000\n"
+"POT-Creation-Date: 2026-11-24 01:53+0000\n"
 "PO-Revision-Date: 2026-10-21 12:00+0200\n"
 "Last-Translator: Torma Zsolt <torma.zsolt@gmail.com>\n"
 "Language-Team: Torma Zsolt <torma.zsolt@gmail.com>\n"
@@ -1590,16 +1590,6 @@ msgstr "Kiejtési szótár"
 #, fuzzy
 msgid "&Rules:"
 msgstr "&Szabályok:"
-
-#. TRANSLATORS: Said of a speech dictionary rule that is on
-#, fuzzy
-msgid "on"
-msgstr "bekapcsolt"
-
-#. TRANSLATORS: Said of a speech dictionary rule that is off
-#, fuzzy
-msgid "off"
-msgstr "kikapcsolt"
 
 #. TRANSLATORS: Button in the speech dictionary dialog that adds a rule
 #, fuzzy
@@ -5401,6 +5391,14 @@ msgstr "jegyzet és könyvjelző beállításai megjelenítése"
 #, fuzzy
 msgid "go to bookmark"
 msgstr "ugrás a könyvjelzőre"
+
+#, fuzzy
+#~ msgid "on"
+#~ msgstr "bekapcsolt"
+
+#, fuzzy
+#~ msgid "off"
+#~ msgstr "kikapcsolt"
 
 #~ msgid "Exit Paperback"
 #~ msgstr "Kilépés a Paperbackből"

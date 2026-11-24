@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 15:05+0000\n"
+"POT-Creation-Date: 2026-11-24 01:53+0000\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -1804,16 +1804,6 @@ msgstr "Словарь речи"
 #, fuzzy
 msgid "&Rules:"
 msgstr "&Правила:"
-
-#. TRANSLATORS: Said of a speech dictionary rule that is on
-#, fuzzy
-msgid "on"
-msgstr "включено"
-
-#. TRANSLATORS: Said of a speech dictionary rule that is off
-#, fuzzy
-msgid "off"
-msgstr "отключено"
 
 #. TRANSLATORS: Button in the speech dictionary dialog that adds a rule
 #, fuzzy
@@ -6316,6 +6306,14 @@ msgstr "показать заметку и параметры закладки"
 #, fuzzy
 msgid "go to bookmark"
 msgstr "перейти к закладке"
+
+#, fuzzy
+#~ msgid "on"
+#~ msgstr "включено"
+
+#, fuzzy
+#~ msgid "off"
+#~ msgstr "отключено"
 
 #~ msgid "Exit Paperback"
 #~ msgstr "Выход из Paperback"
