@@ -103,6 +103,8 @@ pub struct ParseSettings {
 	pub markdown_dollar_math: bool,
 	/// The liblouis table Braille Ready Files and PEF books are back-translated with, one of [`crate::parser::braille::braille_tables`].
 	pub braille_table: &'static str,
+	/// Braille books keep their braille, as Unicode braille, for a reader on a braille display, whose screen reader would otherwise translate the print back into braille.
+	pub keep_braille: bool,
 }
 
 impl Default for ParseSettings {
@@ -113,6 +115,7 @@ impl Default for ParseSettings {
 			strip_running_text: true,
 			markdown_dollar_math: true,
 			braille_table: braille::DEFAULT_TABLE,
+			keep_braille: false,
 		}
 	}
 }
@@ -129,7 +132,9 @@ pub struct ParserContext {
 	pub strip_running_text: bool,
 	/// Off is for dollars that are not math, such as `$HOME/bin:$PATH` in a README, since Markdown can't say which the writer meant.
 	pub markdown_dollar_math: bool,
+	/// Still read when `keep_braille` is on, since it says which braille ASCII a BRF is written in.
 	pub braille_table: &'static str,
+	pub keep_braille: bool,
 }
 
 impl ParserContext {
@@ -144,6 +149,7 @@ impl ParserContext {
 			strip_running_text: true,
 			markdown_dollar_math: true,
 			braille_table: braille::DEFAULT_TABLE,
+			keep_braille: false,
 		}
 	}
 
@@ -184,12 +190,19 @@ impl ParserContext {
 	}
 
 	#[must_use]
+	pub const fn with_keep_braille(mut self, keep: bool) -> Self {
+		self.keep_braille = keep;
+		self
+	}
+
+	#[must_use]
 	pub const fn with_parse_settings(mut self, settings: ParseSettings) -> Self {
 		self.render_tables_inline = settings.render_tables_inline;
 		self.join_pdf_paragraphs = settings.join_pdf_paragraphs;
 		self.strip_running_text = settings.strip_running_text;
 		self.markdown_dollar_math = settings.markdown_dollar_math;
 		self.braille_table = settings.braille_table;
+		self.keep_braille = settings.keep_braille;
 		self
 	}
 }

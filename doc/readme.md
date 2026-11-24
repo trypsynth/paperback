@@ -347,6 +347,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Braille Ready Files (`.brf`) and PEF books open back-translated to print, in the braille code you choose in Settings.
 * eBraille books (`.ebrl`) open in print when they carry it, and are otherwise back-translated with the braille code they name.
 * NLS BARD braille books, from the zip or its `.bopf`, open as one book of all their volumes, in the braille code their package names.
+* To read braille books on a braille display, a setting in the Documents tab of Settings keeps them in braille, as Unicode braille, so the screen reader shows the transcriber's braille instead of translating print back into braille. `pb --keep-braille` does the same.
 * Braille files written in another country's braille ASCII, such as Norwegian, Danish, French, Spanish, Slovak, Czech, or Hungarian, are recognized.
 
 ##### New Formats

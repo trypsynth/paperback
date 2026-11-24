@@ -384,7 +384,8 @@ impl<'a> Converter<'a> {
 		let mut context = ParserContext::new(file_path)
 			.with_render_tables_inline(true)
 			.with_join_pdf_paragraphs(!cli.no_join_paragraphs)
-			.with_braille_table(cli.braille_table.as_deref().map_or(braille::DEFAULT_TABLE, braille::chosen_table));
+			.with_braille_table(cli.braille_table.as_deref().map_or(braille::DEFAULT_TABLE, braille::chosen_table))
+			.with_keep_braille(cli.keep_braille);
 		// Stripping repeated page-edge lines can cost real sentences (see `ParserContext::strip_running_text`), hence `--keep-repeated`.
 		context = context.with_strip_running_text(!cli.keep_repeated);
 		if let Some(password) = self.password() {

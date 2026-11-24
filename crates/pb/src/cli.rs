@@ -20,6 +20,9 @@ pub struct Cli {
 	/// The braille table to back-translate Braille Ready Files and PEF books with, such as en-us-g2.ctb (default: en-ueb-g2.ctb, Unified English Braille grade 2)
 	#[arg(long, value_name = "TABLE")]
 	pub braille_table: Option<String>,
+	/// Keep braille books in braille, as Unicode braille, instead of back-translating them to print. --braille-table still says which braille a BRF is written in
+	#[arg(long)]
+	pub keep_braille: bool,
 	/// Output format
 	#[arg(short, long, default_value = "text")]
 	pub format: Format,
@@ -209,6 +212,7 @@ mod tests {
 			Some("en-us-g2.ctb")
 		);
 		assert!(parse(&["pb", "--list-braille-tables"]).list_braille_tables);
+		assert!(parse(&["pb", "book.brf", "--keep-braille"]).keep_braille);
 	}
 
 	#[test]

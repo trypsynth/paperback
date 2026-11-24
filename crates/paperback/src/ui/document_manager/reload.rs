@@ -186,6 +186,7 @@ pub(super) fn parse_settings(cfg: &ConfigManager) -> ParseSettings {
 		strip_running_text: cfg.get_app_bool("strip_running_text", true),
 		markdown_dollar_math: cfg.get_app_bool("markdown_dollar_math", true),
 		braille_table: braille::chosen_table(&cfg.get_app_string("braille_table", braille::DEFAULT_TABLE)),
+		keep_braille: cfg.get_app_bool("keep_braille", false),
 	}
 }
 
