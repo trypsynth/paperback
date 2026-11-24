@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 15:05+0000\n"
+"POT-Creation-Date: 2026-11-24 01:53+0000\n"
 "PO-Revision-Date: 2026-04-19 15:24-0300\n"
 "Last-Translator: Marco Paulinelli <mpaulinelli@gmail.com>\n"
 "Language-Team: \n"
@@ -1800,16 +1800,6 @@ msgstr "Dicionário de fala"
 #, fuzzy
 msgid "&Rules:"
 msgstr "&Regras:"
-
-#. TRANSLATORS: Said of a speech dictionary rule that is on
-#, fuzzy
-msgid "on"
-msgstr "ativada"
-
-#. TRANSLATORS: Said of a speech dictionary rule that is off
-#, fuzzy
-msgid "off"
-msgstr "desativada"
 
 #. TRANSLATORS: Button in the speech dictionary dialog that adds a rule
 #, fuzzy
@@ -6286,6 +6276,14 @@ msgstr "mostrar anotação e opções de marcador"
 #, fuzzy
 msgid "go to bookmark"
 msgstr "ir para marcador"
+
+#, fuzzy
+#~ msgid "on"
+#~ msgstr "ativada"
+
+#, fuzzy
+#~ msgid "off"
+#~ msgstr "desativada"
 
 #~ msgid "Exit Paperback"
 #~ msgstr "Sair do Paperback"
