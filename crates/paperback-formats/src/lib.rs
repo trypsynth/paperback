@@ -110,6 +110,22 @@ formats! {
 		mime_types: ["application/x-os2-inf"],
 		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_IMAGES,
 	},
+	/// Qt Compressed Help, as `qhelpgenerator` builds it for Qt Assistant and Qt Creator.
+	/// `application/x-qt-qch` isn't a registered freedesktop.org type, so the Linux association dialog installs a shared-mime-info entry for it.
+	QCH {
+		name: "Qt Compressed Help files",
+		extensions: ["qch"],
+		mime_types: ["application/x-qt-qch"],
+		flags: SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_SECTIONS | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
+	},
+	/// Books saved by QRead, a discontinued reader; often the only copy left of a book it opened.
+	/// `application/x-qread` isn't a registered freedesktop.org type, so the Linux association dialog installs a shared-mime-info entry for it.
+	QRD {
+		name: "QRead books",
+		extensions: ["qrd"],
+		mime_types: ["application/x-qread"],
+		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_PAGES,
+	},
 	/// Declared ahead of [`WORD`] so it gets first crack at the `.zip` both claim.
 	/// `application/x-daisy-opf` isn't a registered freedesktop.org type, so the Linux association dialog installs a shared-mime-info entry for it.
 	DAISY {

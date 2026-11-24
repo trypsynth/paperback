@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 15:05+0000\n"
+"POT-Creation-Date: 2026-11-24 01:53+0000\n"
 "PO-Revision-Date: 2026-02-26 00:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1808,16 +1808,6 @@ msgstr "Dictionnaire de la parole"
 msgid "&Rules:"
 msgstr "&Règles :"
 
-#. TRANSLATORS: Said of a speech dictionary rule that is on
-#, fuzzy
-msgid "on"
-msgstr "activée"
-
-#. TRANSLATORS: Said of a speech dictionary rule that is off
-#, fuzzy
-msgid "off"
-msgstr "désactivée"
-
 #. TRANSLATORS: Button in the speech dictionary dialog that adds a rule
 #, fuzzy
 msgid "&Add..."
@@ -1918,8 +1908,9 @@ msgid "Match &whole words only"
 msgstr "Correspondre au&x mots entiers seulement"
 
 #. TRANSLATORS: Check box: a paragraph rule's pattern is a regular expression, whose groups the replacement can use as \1
+#, fuzzy
 msgid "Regular e&xpression"
-msgstr ""
+msgstr "E&xpression régulière"
 
 #. TRANSLATORS: Shown when a speech dictionary rule is saved without a pattern
 #, fuzzy
@@ -6287,6 +6278,14 @@ msgstr "afficher la note et les options de signet"
 #, fuzzy
 msgid "go to bookmark"
 msgstr "aller au signet"
+
+#, fuzzy
+#~ msgid "on"
+#~ msgstr "activée"
+
+#, fuzzy
+#~ msgid "off"
+#~ msgstr "désactivée"
 
 #~ msgid "Exit Paperback"
 #~ msgstr "Quitter Paperback"

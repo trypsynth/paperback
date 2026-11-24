@@ -169,6 +169,9 @@ impl DocumentManager {
 		sizer.add(&text_ctrl.widget(), 1, SizerFlag::Expand | SizerFlag::All, 0);
 		panel.set_sizer(sizer, true);
 		let path_str = path.to_string_lossy();
+		if let Some(start) = session.start_position() {
+			config.seed_document_position(&path_str, start);
+		}
 		let doc_len = session.document_len();
 		let initial_pos = config.get_validated_document_position(&path_str, doc_len.as_pos()).unwrap_or_default();
 		let window = load_window_into_ctrl(text_ctrl, &session, initial_pos, doc_len);

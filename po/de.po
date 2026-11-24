@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 15:05+0000\n"
+"POT-Creation-Date: 2026-11-24 01:53+0000\n"
 "PO-Revision-Date: 2026-11-04 14:11+0100\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
@@ -1600,16 +1600,6 @@ msgstr "Sprachausgabenwörterbuch"
 #, fuzzy
 msgid "&Rules:"
 msgstr "&Regeln:"
-
-#. TRANSLATORS: Said of a speech dictionary rule that is on
-#, fuzzy
-msgid "on"
-msgstr "aktiv"
-
-#. TRANSLATORS: Said of a speech dictionary rule that is off
-#, fuzzy
-msgid "off"
-msgstr "inaktiv"
 
 #. TRANSLATORS: Button in the speech dictionary dialog that adds a rule
 #, fuzzy
@@ -5411,6 +5401,14 @@ msgstr "Notiz und Lesezeichen-Optionen anzeigen"
 #, fuzzy
 msgid "go to bookmark"
 msgstr "zum Lesezeichen springen"
+
+#, fuzzy
+#~ msgid "on"
+#~ msgstr "aktiv"
+
+#, fuzzy
+#~ msgid "off"
+#~ msgstr "inaktiv"
 
 #~ msgid "Exit Paperback"
 #~ msgstr "Paperback beenden"

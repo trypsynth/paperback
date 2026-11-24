@@ -1,6 +1,6 @@
 //! eBraille, the DAISY Consortium's EPUB 3 for braille, whose text is Unicode braille and whose package names its braille code.
 //!
-//! A book that carries its print as a second rendition is read in print, as written. Otherwise its braille is back-translated with the table its code names, such as `en-ueb-g2.ctb` for `UEB grade2` in `en-Brai-US`, or with the reader's own table when none matches.
+//! A book that carries its print as a second rendition is read in print, as written, unless the reader keeps braille books in braille. Otherwise its braille is back-translated with the table its code names, such as `en-ueb-g2.ctb` for `UEB grade2` in `en-Brai-US`, or with the reader's own table when none matches.
 
 use std::{
 	fs::{self, File},
@@ -16,7 +16,7 @@ use crate::{
 	document::{Document, ParserContext},
 	parser::{
 		NotThisFormat, Parser,
-		braille::{self, BrailleCode, back_translate_document, table_for_code},
+		braille::{self, BrailleCode, back_translate_document, keep_braille_document, table_for_code},
 		epub::{parse_epub, rootfiles},
 	},
 	util::{package, zip::read_zip_entry_by_name},
@@ -52,7 +52,7 @@ impl Parser for EbrailleParser {
 					.then(|| renditions.iter().find(|rendition| rendition.access_mode.as_deref() != Some("tactile")))
 					.flatten()
 			});
-		if let Some(print) = print {
+		if let Some(print) = print.filter(|_| !context.keep_braille) {
 			tracing::debug!(path = %context.file_path, rendition = %print.path, "ebraille has a print rendition, reading it");
 			return parse_epub(context, Some(&print.path));
 		}
@@ -61,6 +61,11 @@ impl Parser for EbrailleParser {
 			.find(|rendition| rendition.access_mode.as_deref() == Some("tactile"))
 			.or_else(|| renditions.first())
 			.context("eBraille container names no package document")?;
+		if context.keep_braille {
+			let mut document = parse_epub(context, Some(&braille_rendition.path))?;
+			keep_braille_document(&mut document);
+			return Ok(document);
+		}
 		let package = read_zip_entry_by_name(&mut archive, &braille_rendition.path)?;
 		let (language, system, cells) = braille_code(&package);
 		let table = table_for_code(BrailleCode { language: &language, system: &system, cells })
@@ -202,6 +207,24 @@ mod book_tests {
 				"{}",
 				document.buffer.content
 			);
+		}
+	}
+
+	#[test]
+	fn keeps_the_braille_rendition_when_asked_even_beside_a_print_one() {
+		let dir = TempDir::new("ebraille-keep");
+		let package =
+			PACKAGE.replace("<dc:language>en-Brai-US</dc:language>", "").replace("ebraille/one.html", "one.html");
+		let chapter = r#"<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml"><head><title>one</title></head><body><p>In print.</p></body></html>"#;
+		for print in [None, Some((package.as_str(), chapter, true))] {
+			let book = write_book(&dir, &format!("zoo-{}.ebrl", print.is_some()), print);
+			let document =
+				EbrailleParser.parse(&ParserContext::new(book).with_keep_braille(true)).expect("read the book");
+			assert!(document.buffer.content.contains("⠠⠍⠁⠭ ⠴ ⠁ ⠇⠇ ⠍⠕⠝⠅⠑⠽⠲"), "{}", document.buffer.content);
+			assert!(!document.buffer.content.contains("print"), "{}", document.buffer.content);
+			let heading =
+				document.buffer.markers.iter().find(|marker| marker.mtype == MarkerType::Heading1).expect("a heading");
+			assert_eq!(heading.text, "⠠⠍⠁⠭ ⠁⠞ ⠮ ⠠⠵⠕⠕");
 		}
 	}
 }

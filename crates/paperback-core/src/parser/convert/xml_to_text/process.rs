@@ -335,9 +335,13 @@ impl XmlToText {
 		for line in render.lines {
 			self.text.push_finalized_line(&line);
 		}
+		// Over the table's start, which every id inside it was given above.
+		for (id, offset) in render.ids {
+			self.id_positions.insert(id, start_offset + offset);
+		}
 		for formula in render.formulas {
 			let offset = start_offset + formula.offset;
-			// Over the table's start, which every id inside it was given above.
+			// Over the table's start and its cells.
 			for id in formula.ids {
 				self.id_positions.insert(id, offset);
 			}

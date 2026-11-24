@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.9.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 15:05+0000\n"
+"POT-Creation-Date: 2026-11-24 01:53+0000\n"
 "PO-Revision-Date: 2026-09-22 08:22+0200\n"
 "Last-Translator: Leonard de Ruijter <alderuijter@gmail.com>\n"
 "Language-Team: Leonard de Ruijter <alderuijter@gmail.com>\n"
@@ -1540,16 +1540,6 @@ msgstr "Uitspraakwoordenboek"
 #, fuzzy
 msgid "&Rules:"
 msgstr "&Regels:"
-
-#. TRANSLATORS: Said of a speech dictionary rule that is on
-#, fuzzy
-msgid "on"
-msgstr "aan"
-
-#. TRANSLATORS: Said of a speech dictionary rule that is off
-#, fuzzy
-msgid "off"
-msgstr "uit"
 
 #. TRANSLATORS: Button in the speech dictionary dialog that adds a rule
 #, fuzzy
@@ -5333,6 +5323,14 @@ msgstr "notitie en bladwijzeropties tonen"
 #, fuzzy
 msgid "go to bookmark"
 msgstr "gaan naar bladwijzer"
+
+#, fuzzy
+#~ msgid "on"
+#~ msgstr "aan"
+
+#, fuzzy
+#~ msgid "off"
+#~ msgstr "uit"
 
 #~ msgid "Exit Paperback"
 #~ msgstr "Paperback afsluiten"

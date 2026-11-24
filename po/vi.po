@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-22 15:05+0000\n"
+"POT-Creation-Date: 2026-11-24 01:53+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1837,16 +1837,6 @@ msgstr "Từ điển phát âm"
 #, fuzzy
 msgid "&Rules:"
 msgstr "&Quy tắc:"
-
-#. TRANSLATORS: Said of a speech dictionary rule that is on
-#, fuzzy
-msgid "on"
-msgstr "bật"
-
-#. TRANSLATORS: Said of a speech dictionary rule that is off
-#, fuzzy
-msgid "off"
-msgstr "tắt"
 
 #. TRANSLATORS: Button in the speech dictionary dialog that adds a rule
 #, fuzzy
@@ -6385,6 +6375,14 @@ msgstr "hiển thị ghi chú và tùy chọn dấu trang"
 #, fuzzy
 msgid "go to bookmark"
 msgstr "đi tới dấu trang"
+
+#, fuzzy
+#~ msgid "on"
+#~ msgstr "bật"
+
+#, fuzzy
+#~ msgid "off"
+#~ msgstr "tắt"
 
 #, fuzzy
 #~ msgid "Exit Paperback"

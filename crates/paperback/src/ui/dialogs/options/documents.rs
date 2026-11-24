@@ -13,6 +13,7 @@ pub struct DocumentSettings {
 	pub strip_running_text: bool,
 	pub markdown_dollar_math: bool,
 	pub braille_table: &'static str,
+	pub keep_braille: bool,
 }
 
 impl DocumentSettings {
@@ -23,6 +24,7 @@ impl DocumentSettings {
 			strip_running_text: config.get_app_bool("strip_running_text", true),
 			markdown_dollar_math: config.get_app_bool("markdown_dollar_math", true),
 			braille_table: braille::chosen_table(&config.get_app_string("braille_table", braille::DEFAULT_TABLE)),
+			keep_braille: config.get_app_bool("keep_braille", false),
 		}
 	}
 
@@ -32,6 +34,7 @@ impl DocumentSettings {
 		config.set_app_bool("strip_running_text", self.strip_running_text);
 		config.set_app_bool("markdown_dollar_math", self.markdown_dollar_math);
 		config.set_app_string("braille_table", self.braille_table);
+		config.set_app_bool("keep_braille", self.keep_braille);
 	}
 
 	pub const fn parse_settings(&self) -> ParseSettings {
@@ -41,6 +44,7 @@ impl DocumentSettings {
 			strip_running_text: self.strip_running_text,
 			markdown_dollar_math: self.markdown_dollar_math,
 			braille_table: self.braille_table,
+			keep_braille: self.keep_braille,
 		}
 	}
 }
@@ -51,6 +55,7 @@ pub(super) struct DocumentsTab {
 	strip_running_text: CheckBox,
 	markdown_dollar_math: CheckBox,
 	braille_table: Choice,
+	keep_braille: CheckBox,
 }
 
 impl DocumentsTab {
@@ -87,12 +92,17 @@ impl DocumentsTab {
 		braille_table.thaw();
 		#[cfg(target_os = "macos")]
 		braille_table.set_accessibility_label(braille_table_label_text.replace('&', "").trim_end_matches(':').trim());
+		let keep_braille = CheckBox::builder(&panel)
+			// TRANSLATORS: Option to show BRF, PEF, eBraille and BARD braille books as their braille, in Unicode braille, instead of turning them into print. It suits reading on a braille display, where the screen reader would otherwise turn the print back into braille; speech reads the cells as braille patterns. The braille code above still says which braille the books are written in.
+			.with_label(&t("&Keep braille books in braille, for reading on a braille display"))
+			.build();
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
 		sizer.add(&note, 0, SizerFlag::All, OPTION_PADDING);
 		for check in [&render_tables_inline, &join_pdf_paragraphs, &strip_running_text, &markdown_dollar_math] {
 			sizer.add(check, 0, SizerFlag::All, OPTION_PADDING);
 		}
 		sizer.add_sizer(&labeled_row(braille_table_label, &braille_table, padding), 0, SizerFlag::All, OPTION_PADDING);
+		sizer.add(&keep_braille, 0, SizerFlag::All, OPTION_PADDING);
 		panel.set_sizer(sizer, true);
 		render_tables_inline.set_value(settings.render_tables_inline);
 		join_pdf_paragraphs.set_value(settings.join_pdf_paragraphs);
@@ -103,7 +113,15 @@ impl DocumentsTab {
 			.position(|table| table.file_name == settings.braille_table)
 			.unwrap_or_default();
 		braille_table.set_selection(u32::try_from(table_index).unwrap_or_default());
-		Self { render_tables_inline, join_pdf_paragraphs, strip_running_text, markdown_dollar_math, braille_table }
+		keep_braille.set_value(settings.keep_braille);
+		Self {
+			render_tables_inline,
+			join_pdf_paragraphs,
+			strip_running_text,
+			markdown_dollar_math,
+			braille_table,
+			keep_braille,
+		}
 	}
 
 	pub(super) fn values(&self) -> DocumentSettings {
@@ -117,6 +135,7 @@ impl DocumentsTab {
 				.get_selection()
 				.and_then(|index| braille::braille_tables().get(index as usize))
 				.map_or(braille::DEFAULT_TABLE, |table| table.file_name),
+			keep_braille: self.keep_braille.is_checked(),
 		}
 	}
 }

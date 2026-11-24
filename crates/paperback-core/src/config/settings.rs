@@ -248,6 +248,9 @@ pub struct DocumentConfig {
 	pub password: String,
 	#[serde(default)]
 	pub opened: bool,
+	/// Whether the document's own starting position has been offered, so it's taken once and never over Paperback's.
+	#[serde(default, skip_serializing_if = "std::ops::Not::not")]
+	pub start_position_used: bool,
 	/// Decides whether a document opened from a link is downloaded again at startup.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub download_size: Option<u64>,

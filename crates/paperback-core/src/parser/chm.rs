@@ -15,7 +15,7 @@ use crate::{
 	util::text::url_decode,
 };
 
-mod convert;
+pub(super) mod convert;
 mod encoding;
 mod href;
 mod toc;

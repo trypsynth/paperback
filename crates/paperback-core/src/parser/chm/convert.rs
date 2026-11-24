@@ -17,8 +17,8 @@ use crate::{
 	util::encoding::decode_html,
 };
 
-/// Owns its data because it crosses back from a rayon worker to the sequential assembly step.
-pub(super) struct SectionContent {
+/// Owns its data because it crosses back from a rayon worker to the sequential assembly step. QCH topics are HTML too, and come through here.
+pub(crate) struct SectionContent {
 	pub text: String,
 	headings: Vec<HeadingInfo>,
 	pub links: Vec<LinkInfo>,
@@ -122,7 +122,7 @@ pub(super) fn convert_sections(
 		.collect()
 }
 
-fn convert_section(
+pub(crate) fn convert_section(
 	content_bytes: &[u8],
 	render_tables_inline: bool,
 	encoding: Option<&'static Encoding>,

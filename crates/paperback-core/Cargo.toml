@@ -46,6 +46,8 @@ key-chord = { version = "0.2.2", features = ["serde"] }
 libchm = "0.3.1"
 libhlp = "0.3.0"
 libinf = "0.1.0"
+# Qt help files are SQLite databases. Bundled, so desktop and mobile builds read them without a system SQLite.
+rusqlite = { version = "0.43.0", default-features = false, features = ["bundled"] }
 # The 0.4.0 release plus the back-translation fixes BRF and PEF books still need, until they are merged (liblouis/louis-rs#44, #45 and #51).
 louis-rs = { git = "https://github.com/trypsynth/louis-rs", branch = "paperback-next" }
 lofty = "0.25.5"
@@ -88,9 +90,14 @@ shipfitter = { workspace = true }
 uniffi = { version = "0.32.2", features = ["build"], optional = true }
 
 [dev-dependencies]
+# Qt ships its help files as .tar.xz archives, which the opt-in test of the latest Qt and CMake documentation downloads and unpacks.
+lzma-rust2 = { version = "0.25.0", default-features = false, features = ["std", "xz", "optimization"] }
 # Tests write the archives they read, so no RAR files need checking in.
 rars = { version = "=0.12.4", default-features = false, features = ["encryption", "write"] }
 rstest = { workspace = true }
+tar = { version = "0.4.46", default-features = false }
+# The same client as the fetch feature, for the tests that download documents.
+ureq = { version = "3.5.2", default-features = false, features = ["rustls"] }
 zip = { workspace = true, features = ["aes-crypto"] }
 
 [target.'cfg(windows)'.dev-dependencies]

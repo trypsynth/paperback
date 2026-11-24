@@ -15,7 +15,7 @@ use louis::{TranslationOptions, Translator};
 use rayon::prelude::*;
 use roxmltree::{Document as XmlDocument, Node};
 
-pub(crate) use self::document::back_translate_document;
+pub(crate) use self::document::{back_translate_document, keep_braille_document};
 use self::national_ascii::NationalAscii;
 pub use self::{
 	bopf::BopfParser,
@@ -329,8 +329,15 @@ fn is_blank(line: &str) -> bool {
 /// The pages as print, a paragraph to a line, with a marker where each page begins.
 fn back_translate(pages: &[Page], translator: &Translator, context: &ParserContext) -> DocumentBuffer {
 	let layout = Layout::of(pages, context.strip_running_text);
-	let translated: Vec<(String, Vec<usize>)> =
-		layout.paragraphs.par_iter().map(|paragraph| translate_paragraph(translator, paragraph)).collect();
+	let translated: Vec<(String, Vec<usize>)> = layout
+		.paragraphs
+		.par_iter()
+		.map(
+			|paragraph| {
+				if context.keep_braille { as_braille(paragraph) } else { translate_paragraph(translator, paragraph) }
+			},
+		)
+		.collect();
 	let mut buffer = DocumentBuffer::new();
 	let mut paragraph_starts = Vec::with_capacity(translated.len());
 	for (text, _) in &translated {
@@ -350,6 +357,13 @@ fn back_translate(pages: &[Page], translator: &Translator, context: &ParserConte
 		buffer.add_marker(Marker::new(MarkerType::PageBreak, position).with_text(format!("Page {}", index + 1)));
 	}
 	buffer
+}
+
+/// The paragraph as its cells, with each blank cell a space so the text wraps and moves by word as print does; a braille display shows a space as a blank cell.
+fn as_braille(paragraph: &str) -> (String, Vec<usize>) {
+	let text: String = paragraph.chars().map(|cell| if cell == BLANK { ' ' } else { cell }).collect();
+	let positions = (0..text.chars().count()).collect();
+	(text, positions)
 }
 
 /// The paragraph's print, and for each of its cells where that cell's print begins.

@@ -91,6 +91,14 @@ pub fn resolve_link(doc: &DocumentHandle, href: &str, current_position: DocPos) 
 		return LinkNavigation { found: true, is_external: true, offset: DocPos::ZERO, url: href_trimmed.to_string() };
 	}
 	let current_section = current_section_path(doc, current_position.min(doc.document().buffer.end()));
+	// `#` alone is the top of the page it's on, as a browser has it.
+	if href_trimmed == "#" {
+		let position = current_position.min(doc.document().buffer.end());
+		let offset = doc
+			.current_marker_index(position, crate::document::MarkerType::SectionBreak)
+			.map_or(DocPos::ZERO, |index| doc.document().buffer.markers[index].position);
+		return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
+	}
 	if let Some(fragment) = href_trimmed.strip_prefix('#') {
 		if let Some(offset) = find_fragment_offset(doc, fragment, current_section.as_deref()) {
 			return LinkNavigation { found: true, is_external: false, offset, url: String::new() };
@@ -209,6 +217,17 @@ mod tests {
 		let result = resolve_link(&doc, "chapter2.xhtml#intro", 0.into());
 		assert!(result.found);
 		assert_eq!(result.offset, 100);
+	}
+
+	#[test]
+	fn resolve_link_bare_hash_goes_to_the_top_of_its_page() {
+		let doc = sample_link_doc_handle();
+		assert_eq!(resolve_link(&doc, "#", 150.into()).offset, 100);
+		assert_eq!(resolve_link(&doc, "#", 50.into()).offset, 0);
+		let single = sample_single_file_doc_handle();
+		let result = resolve_link(&single, " # ", 60.into());
+		assert!(result.found && !result.is_external);
+		assert_eq!(result.offset, 0);
 	}
 
 	#[test]
