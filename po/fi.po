@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-15 01:48+0000\n"
-"PO-Revision-Date: 2026-11-16 21:03+0200\n"
+"POT-Creation-Date: 2026-11-22 15:05+0000\n"
+"PO-Revision-Date: 2026-11-23 23:30+0200\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -449,7 +449,6 @@ msgid "Remove all documents from the Recent Documents list"
 msgstr "Tyhjennä viimeksi avattujen asiakirjojen luettelo"
 
 #. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
-#. TRANSLATORS: System tray menu item to quit the application
 msgid "E&xit"
 msgstr "&Lopeta"
 
@@ -763,7 +762,7 @@ msgstr "Siirry äänitteessä tiettyyn kohtaan"
 
 #. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter the reader is and how much of it is left: by time in an audiobook, by words in a text book.
 msgid "Announce &Chapter Progress"
-msgstr "Ilmoita &luvun lukemisen edistyminen"
+msgstr "Ilmoita &luvun edistyminen"
 
 #. TRANSLATORS: Status-bar help text for the Announce Chapter Progress menu item.
 msgid "Say how far into this chapter you are and how much is left"
@@ -1456,6 +1455,11 @@ msgstr "Käytä näitä puheasetuksia vain tässä &kirjassa"
 msgid "Play Sa&mple"
 msgstr "Toista &näyte"
 
+#. TRANSLATORS: Button on the Audio tab of Settings that opens the speech dictionary, which changes how words are read aloud
+#| msgid "Speech Dictionary"
+msgid "Speech &Dictionary..."
+msgstr "Käyttäjän &sanasto..."
+
 #. TRANSLATORS: First choice in the voice list on the Audio tab of Settings, which leaves the choice of voice to the system
 msgid "System default"
 msgstr "Järjestelmän oletus"
@@ -1579,6 +1583,132 @@ msgstr "&Korosta löydetty teksti"
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
 msgstr "&Lukunopeus (sanaa minuutissa):"
+
+#. TRANSLATORS: Title of the speech dictionary dialog, opened from the Read Aloud group on the Audio tab of Settings
+msgid "Speech Dictionary"
+msgstr "Käyttäjän sanasto"
+
+#. TRANSLATORS: Label of the list of speech dictionary rules, which are applied in order and can each be turned on or off
+#| msgid "Rule"
+msgid "&Rules:"
+msgstr "&Säännöt:"
+
+#. TRANSLATORS: Said of a speech dictionary rule that is on
+#| msgid "Font"
+msgid "on"
+msgstr "käytössä"
+
+#. TRANSLATORS: Said of a speech dictionary rule that is off
+#| msgid "Off"
+msgid "off"
+msgstr "ei käytössä"
+
+#. TRANSLATORS: Button in the speech dictionary dialog that adds a rule
+#| msgid "&Find..."
+msgid "&Add..."
+msgstr "&Lisää..."
+
+#. TRANSLATORS: Button in the speech dictionary dialog that edits the current rule
+#| msgid "&Edit"
+msgid "&Edit..."
+msgstr "&Muokkaa..."
+
+#. TRANSLATORS: Button in the speech dictionary dialog that removes the current rule
+#| msgid "Remove"
+msgid "Re&move"
+msgstr "&Poista"
+
+#. TRANSLATORS: In the speech dictionary's list, the replacement of a rule that removes what it finds
+#| msgid "Remove"
+msgid "removed"
+msgstr "poistettu"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches whole words only
+#| msgid "Whole Word"
+msgid "whole words"
+msgstr "kokonaisiin sanoihin"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches inside words too
+msgid "words"
+msgstr "sanaa"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches a regular expression across a paragraph
+#| msgid "Use &regular expressions"
+msgid "paragraphs, regular expression"
+msgstr "kappaleisiin, säännöllinen lauseke"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches text across a paragraph
+#| msgid "Paragraph"
+msgid "paragraphs"
+msgstr "kappaleisiin"
+
+#. TRANSLATORS: In the speech dictionary, a rule that applies to every voice
+#| msgid "All voices"
+msgid "all voices"
+msgstr "kaikkiin puheääniin"
+
+#. TRANSLATORS: Title of the dialog that adds a speech dictionary rule
+msgid "Add Rule"
+msgstr "Säännön lisäys"
+
+#. TRANSLATORS: Title of the dialog that edits a speech dictionary rule
+msgid "Edit Rule"
+msgstr "Muokkaa sääntöä"
+
+#. TRANSLATORS: Label of the text a speech dictionary rule matches, or its regular expression
+#| msgid "Pattern"
+msgid "&Pattern:"
+msgstr "&Korvattava teksti:"
+
+#| msgid "Replacement"
+msgid "&Replacement:"
+msgstr "K&orvaava teksti:"
+
+#. TRANSLATORS: Label of the choice between a rule matching words and one matching across a whole paragraph
+#| msgid "Apply to"
+msgid "&Applies to:"
+msgstr "Ko&hdistuu:"
+
+#. TRANSLATORS: Speech dictionary rule scope: the rule matches words
+msgid "Words"
+msgstr "Sanoihin"
+
+#. TRANSLATORS: Speech dictionary rule scope: the rule matches across a whole paragraph, and can be a regular expression
+#| msgid "No next paragraph."
+msgid "Whole paragraphs"
+msgstr "Kappaleisiin"
+
+#. TRANSLATORS: Label of the choice of voices a speech dictionary rule applies to
+#| msgid "&Voice:"
+msgid "&Voices:"
+msgstr "&Puheäänet:"
+
+#. TRANSLATORS: First choice of voices for a speech dictionary rule
+msgid "All voices"
+msgstr "Kaikki"
+
+#. TRANSLATORS: A choice of voices for a speech dictionary rule: every voice of one language; %s is the language
+#| msgid "Voices"
+msgid "Voices in %s"
+msgstr "Kielen %s puheäänet"
+
+#. TRANSLATORS: Check box: a word rule matches only whole words, not part of a longer word
+#| msgid "Match &whole word"
+msgid "Match &whole words only"
+msgstr "Vain &kokonaiset sanat"
+
+#. TRANSLATORS: Check box: a paragraph rule's pattern is a regular expression, whose groups the replacement can use as \1
+#| msgid "Regular Expression"
+msgid "Regular e&xpression"
+msgstr "Sää&nnöllinen lauseke"
+
+#. TRANSLATORS: Shown when a speech dictionary rule is saved without a pattern
+msgid "Type a pattern for the rule."
+msgstr "Anna säännön korvattava teksti."
+
+#| msgid "Use &regular expressions"
+msgid "The regular expression isn't valid: %s"
+msgstr "Säännöllinen lauseke on virheellinen: %s"
 
 #. TRANSLATORS: Title of the Settings dialog
 msgid "Settings"
@@ -2758,10 +2888,6 @@ msgstr "&Palauta"
 msgid "Restore Paperback"
 msgstr "Palauta Paperback"
 
-#. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
-msgid "Exit Paperback"
-msgstr "Lopeta Paperback"
-
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Open..."
 msgstr "Avaa..."
@@ -3035,9 +3161,8 @@ msgid "Go to Time..."
 msgstr "Siirry aikaan..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
-#| msgid "Announce Chapter Time"
 msgid "Announce Chapter Progress"
-msgstr "Ilmoita luvun lukemisen edistyminen"
+msgstr "Ilmoita luvun edistyminen"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Forward"
@@ -3959,6 +4084,16 @@ msgstr "Oletuspikanäppäinten palautus"
 msgid "{} (not on this keyboard layout)"
 msgstr "{} (ei käytettävissä tässä näppäimistöasettelussa)"
 
+msgid "&Show/Hide"
+msgstr "&Näytä tai piilota"
+
+msgid "Show or hide the window"
+msgstr "Näytä tai piilota ikkuna"
+
+#| msgid "Close Search"
+msgid "Close the app"
+msgstr "Sulje sovellus"
+
 #: kt swift
 msgid "Export Document Data"
 msgstr "Vie asiakirjan tiedot"
@@ -4065,6 +4200,7 @@ msgstr "Avaa kirja"
 msgid "Locate"
 msgstr "Etsi"
 
+#. TRANSLATORS: Button confirming removal of a bookmark and its note
 #: kt swift
 msgid "Remove"
 msgstr "Poista"
@@ -4112,11 +4248,6 @@ msgstr "Puhenopeus"
 #: kt swift
 msgid "Pitch"
 msgstr "Äänenkorkeus"
-
-#. TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
-#: swift
-msgid "Speech Dictionary"
-msgstr "Käyttäjän sanasto"
 
 #: kt swift
 msgid "Play Sample"
@@ -4166,11 +4297,6 @@ msgstr "Nimi"
 #: kt swift
 msgid "Author"
 msgstr "Tekijä"
-
-#. TRANSLATORS: Row label for the document's total word count
-#: kt swift
-msgid "Words"
-msgstr "Sanojen määrä"
 
 #. TRANSLATORS: Row label for the document's total line count
 #: kt swift
@@ -4301,20 +4427,10 @@ msgstr "Puheäänet"
 msgid "New Rule"
 msgstr "Uusi sääntö"
 
-#. TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
-#: swift
-msgid "Edit Rule"
-msgstr "Muokkaa sääntöä"
-
-#. TRANSLATORS: Button to save the rule and dismiss the editor
-#: swift
+#. TRANSLATORS: Button that saves what was typed and closes the editor, such as a speech rule or a bookmark's note
+#: kt swift
 msgid "Save"
 msgstr "Tallenna"
-
-#. TRANSLATORS: Row label for selecting all TTS voices as the target of a rule, rather than a specific language or voice
-#: swift
-msgid "All voices"
-msgstr "Kaikki puheäänet"
 
 #. TRANSLATORS: Navigation title for the screen where the user picks which voices a rule applies to
 #: swift
@@ -4363,11 +4479,6 @@ msgstr "Pysäytä ajastin"
 #: swift
 msgid "Start Timer"
 msgstr "Käynnistä ajastin"
-
-#. TRANSLATORS: Accessibility label for the "+" button that adds a new speech dictionary rule
-#: swift
-msgid "Add Rule"
-msgstr "Säännön lisäys"
 
 #. TRANSLATORS: Message shown when no speech dictionary rules have been created yet
 #: swift
@@ -4607,14 +4718,6 @@ msgstr "Laajenna"
 #: swift kt
 msgid "This document contains {} words."
 msgstr "Asiakirjassa on {} sanaa."
-
-#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
-#. three forms is used depends on the target language's own plural rule, read
-#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
-#. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
-#: kt
-msgid "words"
-msgstr "sanaa"
 
 #. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
@@ -5238,3 +5341,146 @@ msgstr "Luettavuus"
 #: kt swift
 msgid "Time"
 msgstr "Aika"
+
+#. TRANSLATORS: Shown and announced with how far through a book's chapter the reader is: the number of words left in it; {} is the number. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: kt swift
+#| msgid "%d word left"
+#| msgid_plural "%d words left"
+msgid "{} word left"
+msgstr "jäljellä {} sana"
+
+#: kt swift
+#| msgid "%d word left"
+#| msgid_plural "%d words left"
+msgid "{} words left"
+msgstr "jäljellä {} sanaa"
+
+#: kt swift
+#| msgid "%d word left"
+#| msgid_plural "%d words left"
+msgid "{} words left⁣"
+msgstr "jäljellä {} sanaa⁣"
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt swift
+msgid "Show book progress"
+msgstr "Näytä kirjan edistyminen"
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt swift
+#| msgid "Announce Chapter Progress"
+msgid "Show chapter progress"
+msgstr "Näytä luvun edistyminen"
+
+#. TRANSLATORS: Name of the "Bookmark" navigation unit, which moves between the reader's bookmarks and notes
+#: kt swift
+#| msgid "Bookmark."
+msgid "Bookmark"
+msgstr "Kirjanmerkki"
+
+#. TRANSLATORS: Announced after clearing a bookmark's note, which keeps the bookmark
+#: kt swift
+#| msgid "1 document selected."
+msgid "Note deleted."
+msgstr "Muistiinpano poistettu."
+
+#. TRANSLATORS: VoiceOver label for the note shown under the passage being read; {} is the note's text
+#: kt swift
+#| msgid "Font: {}"
+msgid "Note: {}"
+msgstr "Muistiinpano: {}"
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt swift
+#| msgid "Bookmark."
+msgid "Add Bookmark"
+msgstr "Lisää kirjanmerkki"
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt swift
+#| msgid "Toggle Bookmark"
+msgid "Remove Bookmark"
+msgstr "Poista kirjanmerkki"
+
+#. TRANSLATORS: VoiceOver value of the bookmark button when the bookmark at the current paragraph has a note
+#: kt swift
+msgid "Has note"
+msgstr "Sisältää muistiinpanon"
+
+#. TRANSLATORS: Title of the alert confirming removal of a bookmark that has a note
+#: kt swift
+#| msgid "Show all bookmarks and notes"
+msgid "Remove this bookmark and its note?"
+msgstr "Poistetaanko tämä kirjanmerkki muistiinpanoineen?"
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt swift
+#| msgid "&Edit Note"
+msgid "Edit Note..."
+msgstr "Muokkaa muistiinpanoa..."
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt swift
+msgid "Add Note..."
+msgstr "Lisää muistiinpano..."
+
+#. TRANSLATORS: Label for the picker choosing whether the Bookmarks screen shows everything, only bookmarks, or only notes
+#: swift
+#| msgid "Show All"
+msgid "Show"
+msgstr "Näytä"
+
+#. TRANSLATORS: Swipe / accessibility action deleting a bookmark from the Bookmarks screen
+#: kt swift
+#| msgid "&Delete"
+msgid "Delete"
+msgstr "Poista"
+
+#. TRANSLATORS: Title shown when the current document has no bookmarks or notes
+#: kt swift
+#| msgid "No bookmarks."
+msgid "No Bookmarks"
+msgstr "Kirjanmerkkejä ei ole"
+
+#. TRANSLATORS: Description shown under the "No Bookmarks" title
+#: kt swift
+msgid "Tap the bookmark button while reading to mark your place."
+msgstr "Lisää kirjanmerkki napauttamalla kirjanmerkkipainiketta."
+
+#. TRANSLATORS: VoiceOver hint on the note shown under the passage being read
+#: swift
+msgid "Double-tap to edit."
+msgstr "Muokkaa kaksoisnapauttamalla."
+
+#. TRANSLATORS: Heading over the passage (or audiobook time) a bookmark note is attached to
+#: swift
+#| msgid "Bookmark."
+msgid "Bookmarked"
+msgstr "Kirjanmerkki"
+
+#. TRANSLATORS: Heading over the text field where a bookmark's note is typed
+#: swift
+#| msgid "Notes"
+msgid "Note"
+msgstr "Muistiinpano"
+
+#. TRANSLATORS: Button that clears a bookmark's note but keeps the bookmark
+#: kt swift
+#| msgid "Next Note"
+msgid "Delete Note"
+msgstr "Poista muistiinpano"
+
+#. TRANSLATORS: TalkBack action label for a long press on the bookmark button, which opens its note and list options
+#: kt
+#| msgid "show import and export options"
+msgid "show note and bookmark options"
+msgstr "avataksesi muistiinpanojen ja kirjanmerkkien asetukset"
+
+#. TRANSLATORS: TalkBack action label for a bookmark in the Bookmarks screen, read as "double tap to go to bookmark"
+#: kt
+#| msgid "Go to next bookmark"
+msgid "go to bookmark"
+msgstr "siirtyäksesi kirjanmerkkiin"
+
+#~ msgid "Exit Paperback"
+#~ msgstr "Lopeta Paperback"
