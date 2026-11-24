@@ -44,6 +44,7 @@ pub mod odp;
 pub mod odt;
 pub mod pdf;
 pub mod powerpoint;
+pub mod qch;
 pub mod rar;
 pub mod rst;
 pub mod rtf;
@@ -153,6 +154,7 @@ impl ParserRegistry {
 				CHM => chm::ChmParser,
 				HLP => hlp::HlpParser,
 				OS2_HELP => ipf::IpfParser,
+				QCH => qch::QchParser,
 				DAISY => daisy::DaisyParser,
 				BARD_BRAILLE => braille::BopfParser,
 				WORD => word::WordParser,

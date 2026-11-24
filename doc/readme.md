@@ -66,6 +66,7 @@ Paperback supports the following formats and extensions:
 * OpenDocument text files (`.odt`, `.fodt`)
 * OS/2 help files and books, with their pictures (`.inf`, `.hlp`)
 * PDF documents (`.pdf`)
+* Qt help files, the documentation Qt Assistant and Qt Creator read, such as Qt's and CMake's own (`.qch`)
 * PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
 * RAR archives of books, which open as a zip does, with a list to pick from when one holds several (`.rar`)
 * reStructuredText documents (`.rst`, `.rest`)

@@ -31,6 +31,17 @@ const DAISY_OPF_MIME_INFO: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
 </mime-info>
 "#;
 
+/// `.qch` has no registered media type either. A Qt help file is an SQLite database, which shared-mime-info sniffs as `application/vnd.sqlite3`, so the glob is weighted to win over the magic.
+const QCH_MIME_INFO: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+	<mime-type type="application/x-qt-qch">
+		<comment>Qt Compressed Help</comment>
+		<sub-class-of type="application/vnd.sqlite3"/>
+		<glob pattern="*.qch" weight="60"/>
+	</mime-type>
+</mime-info>
+"#;
+
 pub fn maybe_run_first_run_setup(parent: &Frame, config: &Mutex<ConfigManager>) {
 	let Ok(appimage_path) = env::var("APPIMAGE") else { return };
 	if config.lock().unwrap().get_app_bool(SETUP_DONE_KEY, false) {
@@ -100,7 +111,7 @@ fn apply_selections(appimage_path: &str, choices: &[AssociationChoice], selectio
 		}
 	}
 	write_desktop_file(&apps_dir, appimage_path, &icon_name, &mime_types)?;
-	install_daisy_opf_mime_info();
+	install_mime_info();
 	run_best_effort("update-desktop-database", &[&apps_dir.to_string_lossy()]);
 	for mime in &mime_types {
 		run_best_effort("xdg-mime", &["default", DESKTOP_FILE_ID, mime]);
@@ -160,12 +171,13 @@ fn install_icon() -> io::Result<String> {
 	Ok("paperback".to_string())
 }
 
-fn install_daisy_opf_mime_info() {
+fn install_mime_info() {
 	let Ok(mime_packages_dir) = local_share_dir("mime/packages") else { return };
 	if fs::create_dir_all(&mime_packages_dir).is_err() {
 		return;
 	}
-	if fs::write(mime_packages_dir.join("paperback-daisy.xml"), DAISY_OPF_MIME_INFO).is_err() {
+	let packages = [("paperback-daisy.xml", DAISY_OPF_MIME_INFO), ("paperback-qch.xml", QCH_MIME_INFO)];
+	if packages.iter().any(|(name, info)| fs::write(mime_packages_dir.join(name), info).is_err()) {
 		return;
 	}
 	if let Ok(mime_home) = local_share_dir("mime") {

@@ -21,6 +21,7 @@ private val EXTRA_MIME_TYPES = mapOf(
 	"opf" to setOf("application/oebps-package+xml"),
 	"oxps" to setOf("application/oxps"),
 	"pdf" to setOf("application/pdf"),
+	"qch" to setOf("application/x-qt-qch", "application/vnd.sqlite3", "application/x-sqlite3"),
 	"pptx" to setOf("application/vnd.openxmlformats-officedocument.presentationml.presentation"),
 	"rar" to setOf("application/vnd.rar", "application/x-rar-compressed"),
 	"rtf" to setOf("application/rtf"),

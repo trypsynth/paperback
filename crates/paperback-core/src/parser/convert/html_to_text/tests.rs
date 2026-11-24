@@ -191,6 +191,17 @@ fn element_id_is_indexed() {
 }
 
 #[test]
+fn an_id_in_a_table_cell_is_indexed_at_its_cell() {
+	let html = "<html><body><p>Intro</p><table><tr><td>Name</td><td>Use</td></tr><tr><td><span id=\"qt-two\"></span>QT_TWO</td><td>Second</td></tr></table></body></html>";
+	for (inline, expected) in [(true, "QT_TWO"), (false, "[Table")] {
+		let mut converter = HtmlToText::with_render_tables_inline(inline);
+		converter.convert(html, HtmlSourceMode::NativeHtml);
+		let offset = converter.get_id_positions()["qt-two"].from_start().get();
+		assert_eq!(converter.get_text().chars().skip(offset).take(6).collect::<String>(), expected);
+	}
+}
+
+#[test]
 fn pre_block_preserves_whitespace_characters() {
 	let html = "<html><body><pre>  spaced  </pre></body></html>";
 	let mut converter = HtmlToText::new();

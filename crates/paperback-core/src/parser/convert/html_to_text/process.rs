@@ -149,6 +149,11 @@ impl HtmlToText {
 		for line in render.lines {
 			self.text.push_finalized_line(&line);
 		}
+		if self.flags.contains(ProcessingFlags::IN_BODY) {
+			for (id, offset) in render.ids {
+				self.id_positions.insert(id, start_offset + offset);
+			}
+		}
 		for formula in render.formulas {
 			let offset = start_offset + formula.offset;
 			for id in formula.ids {

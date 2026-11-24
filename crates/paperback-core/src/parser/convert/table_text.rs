@@ -98,6 +98,8 @@ pub struct TableRenderBundle {
 	pub length: DocLen,
 	/// The formulas the table's text shows, so each can be navigated to there: every one in an inline table, and those in the summary line of a table shown as a link.
 	pub formulas: Vec<TableFormula>,
+	/// Every id inside the table, from the start of its text: at the cell it is in when the rows are the text, and at the table when a summary line stands for them. A link into a row of a reference table, as Qt's documentation has throughout, then lands on that row.
+	pub ids: Vec<(String, DocLen)>,
 }
 
 /// A formula shown in a table's text.
@@ -136,8 +138,42 @@ pub fn table_render_bundle(html: &str, inline: bool) -> TableRenderBundle {
 	);
 	let display = tsv_to_display(&tsv, inline);
 	let formulas = table.map(|table| place_formulas(table, &display)).unwrap_or_default();
+	let ids = table.map(|table| place_ids(table, inline)).unwrap_or_default();
 	let (lines, length) = display_lines_and_length(&display);
-	TableRenderBundle { caption, lines, length, formulas }
+	TableRenderBundle { caption, lines, length, formulas, ids }
+}
+
+fn ids_within(node: ego_tree::NodeRef<'_, Node>) -> impl Iterator<Item = String> + '_ {
+	node.descendants().filter_map(|descendant| match descendant.value() {
+		Node::Element(element) => element.attr("id").or_else(|| element.attr("name")).map(str::to_string),
+		_ => None,
+	})
+}
+
+/// Walks the rows and cells as `collect_rows` and `collect_cells` make the text, so each cell's place is the text before it: the rows before, and the cells before in its row with a tab after each. An id outside every cell, such as a caption's, is at the table; one in a cell's nested table is at that cell, where its text is.
+fn place_ids(table: ego_tree::NodeRef<'_, Node>, inline: bool) -> Vec<(String, DocLen)> {
+	let mut placed: Vec<(String, DocLen)> = ids_within(table).map(|id| (id, DocLen::ZERO)).collect();
+	if !inline {
+		return placed;
+	}
+	let mut rows = Vec::new();
+	collect_row_nodes(table, false, &mut rows);
+	let mut row_start = DocLen::ZERO;
+	for (row, _) in rows {
+		placed.extend(ids_within(row).map(|id| (id, row_start)));
+		let mut cells = Vec::new();
+		collect_cell_nodes(row, &mut cells);
+		let mut cell_start = row_start;
+		for (index, cell) in cells.into_iter().enumerate() {
+			if index > 0 {
+				cell_start += DocLen::ONE;
+			}
+			placed.extend(ids_within(cell).map(|id| (id, cell_start)));
+			cell_start += DocLen::of(&cell_text(cell));
+		}
+		row_start = cell_start + DocLen::ONE;
+	}
+	placed
 }
 
 /// The table's formulas in document order, each found in `display` after the one before, which is the order the cells are read in. One `display` doesn't show, as in a row past a summary line, is left out.
