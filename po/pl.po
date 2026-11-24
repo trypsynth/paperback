@@ -2322,8 +2322,8 @@ msgid "Restore Paperback"
 msgstr "Przywróć Paperback"
 
 #. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
-msgid "Exit Paperback"
-msgstr "Zakończ Paperback"
+#~ msgid "Exit Paperback"
+#~ msgstr "Zakończ Paperback"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Open..."
@@ -5531,12 +5531,12 @@ msgid "&Rules:"
 msgstr "&Reguły:"
 
 #. TRANSLATORS: Said of a speech dictionary rule that is on
-msgid "on"
-msgstr "włączona"
+#~ msgid "on"
+#~ msgstr "włączona"
 
 #. TRANSLATORS: Said of a speech dictionary rule that is off
-msgid "off"
-msgstr "wyłączona"
+#~ msgid "off"
+#~ msgstr "wyłączona"
 
 #. TRANSLATORS: Button in the speech dictionary dialog that adds a rule
 msgid "&Add..."
@@ -5743,3 +5743,12 @@ msgstr "pokazać opcje notatek i zakładek"
 #: kt
 msgid "go to bookmark"
 msgstr "przejść do zakładki"
+
+msgid "&Show/Hide"
+msgstr "&Pokaż lub ukryj"
+
+msgid "Show or hide the window"
+msgstr "Pokaż lub ukryj okno"
+
+msgid "Close the app"
+msgstr "Zakończ aplikację"
