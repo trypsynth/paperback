@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-24 01:53+0000\n"
-"PO-Revision-Date: 2026-11-24 20:09+0200\n"
+"POT-Creation-Date: 2026-11-25 16:45+0000\n"
+"PO-Revision-Date: 2026-11-25 22:35+0200\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -156,6 +156,26 @@ msgstr "Raportti on tallennettu."
 msgid "The report couldn't be saved: %s"
 msgstr "Raporttia ei voitu tallentaa: %s"
 
+#. TRANSLATORS: Checkbox in the Windows installer for a Paperback shortcut in the Start Menu, beside Inno Setup's own "Create a desktop shortcut". The & marks the key that checks it.
+msgid "Create a &Start Menu shortcut"
+msgstr "Luo &Käynnistä-valikon pikakuvake"
+
+#. TRANSLATORS: Checkbox in the Windows installer: EPUB books open in Paperback when opened from File Explorer. Every other format Paperback reads is offered in Explorer's "Open with" without asking.
+msgid "Make Paperback the default app for EPUB books (*.epub)"
+msgstr "Määritä Paperback EPUB-kirjojen oletussovellukseksi"
+
+#. TRANSLATORS: Checkbox in the Windows installer: PDF files open in Paperback when opened from File Explorer, instead of in a browser or another PDF reader.
+msgid "Make Paperback the default app for PDF files (*.pdf)"
+msgstr "Määritä Paperback PDF-tiedostojen oletussovellukseksi"
+
+#. TRANSLATORS: Checkbox in the Windows installer adding Paperback's folder to the PATH environment variable, so pb, Paperback's command-line converter, runs from any command prompt.
+msgid "Add Paperback's folder to PATH, for the pb command"
+msgstr "Lisää Paperbackin kansio PATH-ympäristömuuttujaan pb-komentoa varten"
+
+#. TRANSLATORS: The file type File Explorer shows for a document set to open in Paperback, as in its Type column.
+msgid "Paperback Document"
+msgstr "Paperback-asiakirja"
+
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 msgid "Checking %s"
 msgstr "Tarkistetaan osoitetta %s"
@@ -180,7 +200,7 @@ msgstr "Lisää pb-komentorivityökalu PATH-ympäristömuuttujaan"
 
 #. TRANSLATORS: Checkbox label in the Linux file-association setup dialog. Shared by
 #. multiple parsers (DAISY, Word-in-zip), so it's kept as its own opt-in entry rather
-#. than tied to one format, same as the Windows installer's "assoc_zip" task.
+#. than tied to one format.
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP-paketit (.zip)"
 
@@ -1463,6 +1483,18 @@ msgstr "Käyttäjän &sanasto..."
 msgid "System default"
 msgstr "Järjestelmän oletus"
 
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: PDF and XPS pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+msgid "Automatic"
+msgstr "Automaattinen"
+
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: the document's own reading order is ignored and the columns of each page are found from where the text sits, then read one after the other. It suits documents whose text is read out of order, such as two-column layouts
+msgid "By columns, ignoring the document's own order"
+msgstr "Palstoittain (asiakirjan lukujärjestys ohitetaan)"
+
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: like reading by columns, but every line is kept apart instead of joined into paragraphs, which suits code, poetry and lists of clauses whose line breaks are the content
+msgid "By columns, keeping every line apart"
+msgstr "Palstoittain (rivinvaihdot säilytetään)"
+
 #. TRANSLATORS: Note at the top of the Documents tab of Settings, whose options change how a file is read
 msgid "Changing these reads your open documents again when you press OK."
 msgstr ""
@@ -1473,9 +1505,9 @@ msgstr ""
 msgid "Render tables &inline"
 msgstr "Näytä taulukot tekst&in osana"
 
-#. TRANSLATORS: Option to join the wrapped lines of a page back into paragraphs, in documents laid out as pages, such as PDFs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
-msgid "&Join wrapped lines into paragraphs"
-msgstr "&Yhdistä rivitetyt tekstit kappaleiksi"
+#. TRANSLATORS: Label for the dropdown choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for every document not given a page layout of its own in the View menu
+msgid "Page &layout of PDF and XPS documents:"
+msgstr "PDF- ja XPS-asiakirjojen &lukemisjärjestys:"
 
 #. TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
 msgid "Remove repeated page &headers and footers"
@@ -1490,6 +1522,10 @@ msgstr ""
 #. TRANSLATORS: Label for the dropdown choosing the braille code that Braille Ready Files (BRF) and PEF books are written in, so Paperback can turn their braille back into print
 msgid "&Braille code of BRF and PEF books:"
 msgstr "&BRF- ja PEF-kirjojen pistetaulukko:"
+
+#. TRANSLATORS: Option to show BRF, PEF, eBraille and BARD braille books as their braille, in Unicode braille, instead of turning them into print. It suits reading on a braille display, where the screen reader would otherwise turn the print back into braille; speech reads the cells as braille patterns. The braille code above still says which braille the books are written in.
+msgid "&Keep braille books in braille, for reading on a braille display"
+msgstr "&Näytä pistekirjojen teksti Unicode-pistekirjoituksena"
 
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
@@ -2524,6 +2560,50 @@ msgstr "Näytä läh&dekoodi"
 #. TRANSLATORS: Status-bar help text for the View Source menu item.
 msgid "Open the document source in a new tab"
 msgstr "Avaa asiakirjan lähdekoodi uudessa välilehdessä"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open PDF or XPS document follows the page layout chosen for all documents in Settings
+msgid "&Same as Other Documents"
+msgstr "&Sama kuin muissa asiakirjoissa"
+
+#. TRANSLATORS: Status-bar help text for the Same as Other Documents page layout item
+msgid "Read this document with the page layout set in Settings"
+msgstr "Lue asiakirja asetuksissa määritettyä lukemisjärjestystä käyttäen"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open document's pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+msgid "&Automatic"
+msgstr "&Automaattinen"
+
+#. TRANSLATORS: Status-bar help text for the Automatic page layout item
+msgid "Read this document in its own order, joining wrapped lines"
+msgstr ""
+"Lue asiakirja sen omaa lukemisjärjestystä noudattaen ja yhdistä rivittymisen "
+"vuoksi katkenneet rivit"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open document's own reading order is ignored and the columns of each page are found from where the text sits, for documents read out of order
+msgid "By &Columns"
+msgstr "&Palstoittain"
+
+#. TRANSLATORS: Status-bar help text for the By Columns page layout item
+msgid ""
+"Find the columns of each page instead of following the document's own order"
+msgstr ""
+"Tunnista kunkin sivun palstat asiakirjan oman lukemisjärjestyksen "
+"noudattamisen sijaan"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: like By Columns, but every line is kept apart instead of joined into paragraphs, for code, poetry and lists of clauses
+msgid "By Columns, &Every Line Apart"
+msgstr "Palstoittain (rivinvaihdot säilytetään)"
+
+#. TRANSLATORS: Status-bar help text for the By Columns, Every Line Apart page layout item
+msgid "Find the columns of each page and keep every line separate"
+msgstr "Tunnista kunkin sivun palstat ja säilytä rivinvaihdot"
+
+#. TRANSLATORS: Submenu of the View menu choosing how the open PDF or XPS document's pages are put in reading order and paragraphs
+msgid "Page &Layout"
+msgstr "&Lukemisjärjestys"
+
+msgid "How this document's pages are read"
+msgstr "Miten tämän asiakirjan sivut luetaan"
 
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
@@ -4358,27 +4438,27 @@ msgid "Pattern & Replacement"
 msgstr "Etsittävä ja korvaava teksti"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the text (or regex) to search for
-#: swift
+#: kt swift
 msgid "Pattern"
 msgstr "Etsittävä teksti"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the replacement text
-#: swift
+#: kt swift
 msgid "Replacement"
 msgstr "Korvaava teksti"
 
 #. TRANSLATORS: Toggle limiting a word-scope rule to whole-word matches only (no partial-word matches)
-#: swift
+#: kt swift
 msgid "Whole word only"
 msgstr "Koko sana"
 
 #. TRANSLATORS: Toggle enabling regex matching for a paragraph-scope rule; "\1" is a regex backreference syntax and must stay untranslated
-#: swift
+#: kt swift
 msgid "Regular expression (\\1 = first capture group)"
 msgstr "Säännöllinen lauseke (\\1 = ensimmäinen sieppausryhmä)"
 
 #. TRANSLATORS: Toggle for whether this text-substitution rule is currently active
-#: swift
+#: kt swift
 msgid "Enabled"
 msgstr "Käytössä"
 
@@ -4388,7 +4468,7 @@ msgid "Apply to"
 msgstr "Käytä kohteessa"
 
 #. TRANSLATORS: Row label leading to the voice-filter picker for this rule
-#: swift
+#: kt swift
 msgid "Voices"
 msgstr "Puheäänet"
 
@@ -4451,7 +4531,7 @@ msgid "Start Timer"
 msgstr "Käynnistä ajastin"
 
 #. TRANSLATORS: Message shown when no speech dictionary rules have been created yet
-#: swift
+#: kt swift
 msgid "No Rules"
 msgstr "Ei sääntöjä"
 
@@ -5429,3 +5509,84 @@ msgstr "avataksesi muistiinpanojen ja kirjanmerkkien asetukset"
 #: kt
 msgid "go to bookmark"
 msgstr "siirtyäksesi kirjanmerkkiin"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: the open PDF or XPS document follows the page layout chosen for all documents in Settings
+#: kt swift
+msgid "Same as Other Documents"
+msgstr "Sama kuin muissa asiakirjoissa"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: the open document's own reading order is ignored and the columns of each page are found from where the text sits, for documents read out of order
+#: kt swift
+msgid "By Columns"
+msgstr "Palstoittain"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: like By Columns, but every line is kept apart instead of joined into paragraphs, for code, poetry and lists of clauses
+#: kt swift
+msgid "By Columns, Every Line Apart"
+msgstr "Palstoittain (rivinvaihdot säilytetään)"
+
+#. TRANSLATORS: Submenu of the document actions menu choosing how the open PDF or XPS document's pages are put in reading order and paragraphs
+#: kt swift
+msgid "Page Layout"
+msgstr "Lukemisjärjestys"
+
+#. TRANSLATORS: Label for the picker choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for every document not given a page layout of its own in the More options menu
+#: kt swift
+msgid "Page layout of PDF and XPS documents"
+msgstr "PDF- ja XPS-asiakirjojen lukemisjärjestys"
+
+#. TRANSLATORS: Label of the choice between a rule matching words and one matching across a whole paragraph
+#: kt
+msgid "Applies to"
+msgstr "Kohdistuu"
+
+#. TRANSLATORS: Footer under the Speech Dictionary row in Settings, explaining what its rules do
+#: kt
+msgid "Change how words are read aloud, without changing the document."
+msgstr "Muuta sanojen lukutapaa muuttamatta itse asiakirjaa."
+
+#: kt
+msgid "Moved to {} of {}"
+msgstr "Siirretty kohtaan {} kohdasta {}"
+
+#. TRANSLATORS: Announced after a speech dictionary rule is deleted
+#: kt
+msgid "Rule deleted"
+msgstr "Sääntö poistettu"
+
+#. TRANSLATORS: Menu item and TalkBack action moving a speech dictionary rule one place earlier, so it applies sooner
+#: kt
+msgid "Move Up"
+msgstr "Siirrä ylös"
+
+#. TRANSLATORS: Menu item and TalkBack action moving a speech dictionary rule one place later, so it applies later
+#: kt
+msgid "Move Down"
+msgstr "Siirrä alas"
+
+#. TRANSLATORS: TalkBack action turning a speech dictionary rule off, so it no longer changes what is read aloud
+#: kt
+msgid "Turn Off"
+msgstr "Poista käytöstä"
+
+#. TRANSLATORS: TalkBack action turning a speech dictionary rule back on
+#: kt
+msgid "Turn On"
+msgstr "Ota käyttöön"
+
+#. TRANSLATORS: TalkBack state of a speech dictionary rule that is on
+#: kt
+msgid "On"
+msgstr "Käytössä"
+
+#. TRANSLATORS: TalkBack action label for a rule in the Speech Dictionary, read as "double tap to edit rule"
+#: kt
+msgid "edit rule"
+msgstr "muokataksesi sääntöä"
+
+#. TRANSLATORS: Shown under "No Rules" in the Speech Dictionary, saying how to make the first rule
+#: kt
+msgid "Use Add Rule to change how a word or pattern is read aloud."
+msgstr ""
+"Lisää-painikkeella voit lisätä säännön, joka määrittää, miten sana tai muu "
+"korvattava teksti puhutaan."

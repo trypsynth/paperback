@@ -83,7 +83,7 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä käytettäväksi. All
 
 Nämä pikanäppäimet toimivat Windowsissa. Jos macOSin pikanäppäin poikkeaa Windowsin vastaavasta, se ilmoitetaan sulkeissa. Erot johtuvat pääasiassa siitä, että macOSissa Ctrl+G, Ctrl+W ja Alt+Vasen/Oikea nuoli ovat jo muiden järjestelmä- tai sovellustoimintojen käytössä.
 
-Välimerkkejä käyttävien pikanäppäinten nimet perustuvat amerikkalaiseen näppäimistöasetteluun. Jos käytössä on jokin muu näppäimistöasettelu, paina samassa kohdassa olevaa näppäintä sen merkinnästä riippumatta. Esimerkiksi unkarilaisessa näppäimistöasettelussa é-näppäin vastaa ;-näppäintä ja á-näppäin '-näppäintä. Siksi Ctrl+' tarkoittaa Ctrl- ja á-näppäimien painamista yhdessä. Valikoissa näytetään silti amerikkalaisen näppäimistöasettelun mukaiset näppäimet. macOSissa valikoissa näytetään sen sijaan käytössä olevan näppäimistöasettelun mukaiset näppäimet.
+Välimerkkejä käyttävien pikanäppäinten nimet perustuvat yhdysvaltalaiseen näppäimistöasetteluun. Jos käytössä on jokin muu näppäimistöasettelu, paina samassa kohdassa olevaa näppäintä sen merkinnästä riippumatta. Esimerkiksi unkarilaisessa näppäimistöasettelussa é-näppäin vastaa ;-näppäintä ja á-näppäin '-näppäintä. Siksi Ctrl+' tarkoittaa Ctrl- ja á-näppäimien painamista yhdessä. Valikoissa näytetään silti amerikkalaisen näppäimistöasettelun mukaiset näppäimet. macOSissa valikoissa näytetään sen sijaan käytössä olevan näppäimistöasettelun mukaiset näppäimet.
 
 ### Tiedosto-valikko
 
@@ -374,12 +374,15 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 * Kaavoihin voi siirtyä myös silloin, kun ne ovat linkkejä tai sijaitsevat taulukon soluissa.
 * Sisennetyt lainaukset, kuvat, määritelmäluettelot, sivuhuomautukset, rivinvaihdot sekä ylä- ja alaindeksit säilyvät HTML-muotoon vietäessä.
 * Ruudunlukijat ilmoittavat Windowsissa asiakirjaa luettaessa linkkien kohdalla ”linkki”. Linkin voi avata napsauttamalla tai painamalla `Enter`-näppäintä.
+* PDF-asiakirjojen virheellistä lukemisjärjestystä voi korjata uudella lukemisjärjestyksen asetuksella, joka löytyy Asetukset-ikkunan Asiakirjat-välilehdeltä ja asiakirjakohtaisesti Näytä-valikon Lukemisjärjestys-kohdasta. Palstoittainen asettelu tunnistaa palstat tekstin sijainnin perusteella asiakirjan oman lukemisjärjestyksen sijaan. Myös rivinvaihdot voidaan säilyttää. Uusi asetus korvaa aiemman asetuksen, jolla rivit pidettiin erillisinä. Sama toiminto on käytettävissä `pb`-komentorivityökalun `--layout` -valitsimella.
 
 ##### iOS ja Android
 * Siirry-toiminnossa on äänikirjoille tarkoitettu Aika-tila, jonka voi avata iPadin näppäimistöllä painamalla `Cmd+J`. Toistonäkymässä näytetään nykyinen toistokohta ja kirjan kokonaiskesto.
 * Navigointitarkkuuden valinta tallennetaan kirjakohtaisesti.
 * Lukunäkymän yläpalkissa on painike kirjanmerkkien ja muistiinpanojen käsittelyä varten. Muistiinpano lisätään tai kirjanmerkkiluettelo avataan painamalla kyseistä painiketta pitkään tai käyttämällä sen ruudunlukijatoimintoja. Kirjanmerkit ja muistiinpanot tallennetaan mobiili- ja työpöytäversioissa samalla tavalla, joten ne ovat helposti siirrettävissä versioiden välillä kopioimalla kirjojen `.paperback`-tiedostot. Myös työpöytäversion kirjanmerkkipikanäppäimet toimivat näppäimistöä käytettäessä.
 * Tekstistä puheeksi -lukupalkin alapuolella näkyvän edistymistiedon voi vaihtaa näyttämään luvun edistymistä napauttamalla sitä. Näytettäviä tietoja ovat luvun nimi, luettu osuus prosentteina ja jäljellä olevien sanojen määrä tai äänikirjan tapauksessa luvun aikatiedot.
+* PDF-asiakirjojen virheellisen lukemisjärjestyksen korjaamiseen tarkoitettu lukemisjärjestyksen asetus löytyy Asetukset-ikkunasta ja PDF- tai XPS-asiakirjoille tiedostokohtaisesti Lisää vaihtoehtoja -valikosta.
+* Android-version Asetukset-ikkunaan on lisätty käyttäjän sanasto, ja molemmat mobiiliversiot käsittelevät nyt sen sääntöjä täsmälleen samalla tavalla kuin työpöytäversio. iOSissa aiemmin tallennetut säännöt siirretään automaattisesti sovelluksen ensimmäisen käynnistyksen yhteydessä.
 
 ##### pb
 * Paperbackin pb-komentorivityökalu käsittelee useimpia tekstimuotoja 2–4 kertaa aiempaa nopeammin ja pystyy muuntamaan useita asiakirjoja samanaikaisesti. Muunnosten enimmäismäärä määräytyy suorittimien määrän tai `--jobs`-valitsimella annetun arvon perusteella.
@@ -388,15 +391,18 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 #### Muutettu
 * Asetukset on ryhmitelty aihealueittain kuudelle eri välilehdelle.
 * PDF-asiakirjat, laajat CHM-muodossa olevat hakuteokset ja MOBI-kirjat avautuvat aiempaa nopeammin.
+* Windows-version asennusohjelmassa on aiempaa vähemmän valintoja. Paperback näkyy Avaa sovelluksessa -valikossa kaikkien tuettujen tiedostomuotojen kohdalla, ja oletussovellukseksi määrittämistä tarjotaan vain EPUB-kirjoille ja PDF-asiakirjoille. Käynnistä-valikon pikakuvake luodaan nyt oletusarvoisesti.
+* Windows-version asennusohjelma avautuu Windowsin näyttökielellä, jos Paperback tukee kyseistä kieltä. Muussa tapauksessa asennusohjelma pyytää valitsemaan käytettävän kielen.
 
 #### Korjattu
 
 ##### Yleiset
+* Windowsin koodisivua käyttävien SAPI 5 -puhesyntetisaattoreiden merkistöongelma on korjattu. Esimerkiksi Mikropuhe lukee nyt ä- ja ö-kirjaimet oikein.
 * Välimerkkejä sisältävät pikanäppäimet toimivat kaikilla näppäimistöasetteluilla. Niiden toiminta perustuu näppäinten fyysisiin sijainteihin yhdysvaltalaisella näppäimistöllä.
 * Paperback ei enää lakkaa vastaamasta, kun Asetukset avataan `Vaihto`-näppäintä ja välimerkkiä käyttävällä pikanäppäimellä tai komentoriviltä avataan tiedosto, jota ei voida lukea. Jumiutumista ei enää tapahdu myöskään silloin, kun tekstintunnistuksen tulokset avautuvat, toisesta Paperbackin kopiosta lähetetty tiedosto avataan tai uniajastimen ilmoitus puhutaan valintaikkunan ollessa avoinna.
 * Erittäin monitasoiset HTML- ja XML-asiakirjarakenteet eivät enää aiheuta sovelluksen kaatumista.
 * Jos asetustiedostoa ei voida avata, se säilytetään `.bad`-päätteisenä eikä sitä korvata uudella. Tallennus ei myöskään enää jätä asetustiedostoa keskeneräiseksi.
-* Tiedosto > Lopeta -komento tallentaa ikkunan koon ja avoinna olevan välilehden sekä poistaa ilmoitusalueen kuvakkeen.
+* Tiedosto-valikon Lopeta-komento tallentaa ikkunan koon ja avoinna olevan välilehden sekä poistaa ilmoitusalueen kuvakkeen.
 * Paperback ei enää kuormita suoritinydintä tarpeettomasti ollessaan piilotettuna ilmoitusalueelle. Suljettujen valintaikkunoiden muistinkäyttö on myös korjattu.
 * Jos Paperback on jo käynnissä, useiden tiedostojen avaaminen avaa nyt ne kaikki.
 * Asiakirjan nimi ilmoitetaan heti sen avautuessa riippumatta siitä, sulkeutuuko valintaikkuna ensin.
