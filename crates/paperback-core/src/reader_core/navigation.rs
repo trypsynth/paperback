@@ -1,11 +1,7 @@
 use crate::{
 	document::{DocLen, DocPos, DocumentHandle, MarkerType},
-	types::{self as ffi, HeadingInfo},
+	types as ffi,
 };
-
-fn heading_info(doc: &DocumentHandle, idx: i32) -> Option<HeadingInfo> {
-	doc.heading_info(idx)
-}
 
 fn select_marker_index(
 	doc: &DocumentHandle,
@@ -46,10 +42,7 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 			let kind = if req.target == NavTarget::Section { MarkerType::SectionBreak } else { MarkerType::PageBreak };
 			let (idx_opt, wrapped) = select_marker_index(doc, position, req.wrap, req.direction, kind);
 			if let Some(idx) = idx_opt {
-				let Ok(idx_i32) = i32::try_from(idx) else {
-					return build_nav_result(false, wrapped, DocPos::ZERO, 0, String::new());
-				};
-				let offset = doc.marker_position(idx_i32).unwrap_or_default();
+				let offset = doc.document().buffer.markers.get(idx).map_or(DocPos::ZERO, |m| m.position);
 				// A section's label is a synthetic "Section N", so the UI reads the line at `offset` instead; an audio-only book has no lines, and its label is the file name.
 				let marker_text_is_the_label = req.target == NavTarget::Page || doc.document().audio_only;
 				let text = if marker_text_is_the_label {
@@ -63,33 +56,23 @@ pub fn reader_navigate(doc: &DocumentHandle, req: &ffi::NavRequest) -> ffi::NavR
 		}
 		NavTarget::Heading => {
 			let level_filter = if req.level_filter > 0 { Some(req.level_filter) } else { None };
-			let (idx_opt, wrapped) = match req.direction {
-				ffi::NavDirection::Next => doc.next_heading_index(position, level_filter),
-				ffi::NavDirection::Previous => doc.previous_heading_index(position, level_filter),
-			}
-			.map_or((None, false), |idx| (usize::try_from(idx).ok(), false));
-			let (idx_final, wrapped_final) = if idx_opt.is_none() && req.wrap {
-				let retry = match req.direction {
-					ffi::NavDirection::Next => doc.first_heading_index(level_filter),
-					ffi::NavDirection::Previous => doc.last_heading_index(level_filter),
-				};
-				let retry_idx = retry.and_then(|i| usize::try_from(i).ok());
-				(retry_idx, retry.is_some())
-			} else {
-				(idx_opt, wrapped)
+			let found = match req.direction {
+				ffi::NavDirection::Next => doc.next_heading_marker_index(position, level_filter),
+				ffi::NavDirection::Previous => doc.previous_heading_marker_index(position, level_filter),
 			};
-			if let Some(idx) = idx_final {
-				let Ok(idx_i32) = i32::try_from(idx) else {
-					return build_nav_result(false, wrapped_final, DocPos::ZERO, 0, String::new());
+			let (found, wrapped) = if found.is_none() && req.wrap {
+				let retry = match req.direction {
+					ffi::NavDirection::Next => doc.first_heading_marker_index(level_filter),
+					ffi::NavDirection::Previous => doc.last_heading_marker_index(level_filter),
 				};
-				let offset = doc.marker_position(idx_i32).unwrap_or_default();
-				let (level, text) = doc.document().buffer.markers.get(idx).map_or_else(
-					|| heading_info(doc, idx_i32).map_or((0, String::new()), |h| (h.level, h.text)),
-					|marker| (marker.level, marker.text.clone()),
-				);
-				return build_nav_result(true, wrapped_final, offset, level, text);
+				(retry, retry.is_some())
+			} else {
+				(found, false)
+			};
+			if let Some(marker) = found.and_then(|idx| doc.document().buffer.markers.get(idx)) {
+				return build_nav_result(true, wrapped, marker.position, marker.level, marker.text.clone());
 			}
-			build_nav_result(false, wrapped_final, DocPos::ZERO, 0, String::new())
+			build_nav_result(false, wrapped, DocPos::ZERO, 0, String::new())
 		}
 		NavTarget::List
 		| NavTarget::ListItem
