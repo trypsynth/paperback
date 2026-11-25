@@ -13,6 +13,8 @@ pub(super) struct SidecarData {
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	last_position: Option<DocPos>,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
+	audio_time_ms: Option<u64>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
 	format: Option<String>,
 	#[serde(default, skip_serializing_if = "Vec::is_empty")]
 	bookmarks: Vec<StoredBookmark>,
@@ -41,6 +43,9 @@ impl ConfigManager {
 		if let Some(pos) = sidecar.last_position {
 			self.set_document_position(doc_path, pos);
 		}
+		if let Some(time_ms) = sidecar.audio_time_ms {
+			self.set_document_audio_time(doc_path, Some(time_ms));
+		}
 		if let Some(format) = sidecar.format {
 			self.set_document_format(doc_path, &format);
 		}
@@ -67,6 +72,7 @@ impl ConfigManager {
 		let doc = data.documents.get(&key);
 		let sidecar = SidecarData {
 			last_position: doc.map(|d| d.last_position).filter(|&p| p > DocPos::ZERO),
+			audio_time_ms: doc.and_then(|d| d.audio_time_ms),
 			format: doc.and_then(|d| if d.format.is_empty() { None } else { Some(d.format.clone()) }),
 			bookmarks: doc.map(|d| d.bookmarks.clone()).unwrap_or_default(),
 			temporary_bookmark: doc.and_then(|d| d.temporary_bookmark),
@@ -100,5 +106,19 @@ mod tests {
 		let to = config();
 		to.import_settings_from_file("book.epub", &file);
 		assert_eq!(to.get_document_speech("book.epub"), speech);
+	}
+
+	#[test]
+	fn audio_resume_time_round_trips_independently_of_audio_bookmarks() {
+		let dir = TempDir::new("sidecar-audio");
+		let file = dir.join_str("book.paperback");
+		let from = config();
+		from.set_document_audio_time("book.m4b", Some(81_250));
+		from.add_audio_bookmark("book.m4b", DocPos::ZERO, 12_345, "Earlier");
+		from.export_document_settings("book.m4b", &file);
+		let to = config();
+		to.import_settings_from_file("book.m4b", &file);
+		assert_eq!(to.get_document_audio_time("book.m4b"), Some(81_250));
+		assert_eq!(to.get_bookmarks("book.m4b")[0].audio_ms, Some(12_345));
 	}
 }

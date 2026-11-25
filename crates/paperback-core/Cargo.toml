@@ -23,6 +23,7 @@ required-features = ["uniffi"]
 
 [features]
 fetch = ["dep:ureq"]
+book-sync = ["fetch", "dep:getrandom", "dep:sha2"]
 uniffi = ["dep:uniffi"]
 
 [dependencies]
@@ -36,6 +37,7 @@ encoding_rs = "0.8.44"
 flate2 = "1.1.11"
 # Without memmap, the first PDF needing an unembedded font read every installed font whole, which is 334 MB on one Windows machine.
 fontdb = { version = "0.24.0", default-features = false, features = ["fs", "memmap"] }
+getrandom = { version = "0.4", optional = true }
 hayro = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
 hayro-interpret = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
 hayro-syntax = { git = "https://github.com/trypsynth/hayro", branch = "paperback" }
@@ -73,6 +75,7 @@ scraper = "0.29.0"
 serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
 serde_json = { workspace = true }
 sha1 = "0.11.0"
+sha2 = { version = "0.11", optional = true }
 skrifa = "0.46.2"
 smallvec = "1.16.5"
 thiserror = "2.0.21"

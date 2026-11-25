@@ -68,7 +68,7 @@ impl ReadabilityFont {
 	}
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq, Eq)]
 pub struct StoredBookmark {
 	pub start: DocPos,
 	pub end: DocPos,
@@ -268,6 +268,12 @@ pub struct DocumentConfig {
 	/// Overrides the app's page layout for this document alone.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub page_layout: Option<PageLayout>,
+	#[cfg(feature = "book-sync")]
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub drive_sync_baseline: Option<crate::book_sync::SyncBaseline>,
+	#[cfg(feature = "book-sync")]
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub drive_upload_approval: Option<crate::book_sync::UploadApproval>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -285,6 +291,9 @@ pub struct ConfigData {
 	pub documents: HashMap<String, DocumentConfig>,
 	#[serde(default)]
 	pub path_hashes: HashMap<String, String>,
+	#[cfg(feature = "book-sync")]
+	#[serde(default, skip_serializing_if = "HashMap::is_empty")]
+	pub document_sources: HashMap<String, String>,
 	/// The speech dictionary, in the order its rules apply.
 	#[serde(default, skip_serializing_if = "Vec::is_empty")]
 	pub speech_rules: Vec<crate::speech::SpeechRule>,
@@ -300,6 +309,8 @@ impl Default for ConfigData {
 			find_history: Vec::new(),
 			documents: HashMap::new(),
 			path_hashes: HashMap::new(),
+			#[cfg(feature = "book-sync")]
+			document_sources: HashMap::new(),
 			speech_rules: Vec::new(),
 		}
 	}

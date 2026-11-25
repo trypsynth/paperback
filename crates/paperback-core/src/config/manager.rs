@@ -14,6 +14,8 @@ use super::{
 };
 
 mod app_settings;
+#[cfg(feature = "book-sync")]
+mod book_sync;
 mod bookmarks;
 mod document_list;
 mod document_state;
@@ -97,6 +99,9 @@ impl ConfigManager {
 		let mut data = self.data.borrow_mut();
 		data.path_hashes.insert(uri.to_string(), new_key);
 		self.dirty.set(true);
+		drop(data);
+		#[cfg(feature = "book-sync")]
+		self.remember_document_local_source(uri, local_path);
 	}
 
 	pub fn get_doc_key(&self, path: &str) -> String {

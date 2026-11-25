@@ -46,14 +46,16 @@ pub fn filter_document_list<'a>(
 		.collect()
 }
 
-/// A link's download name wins, since its last segment can be a script like `download` or nothing at all.
+/// A download's original name can differ from its URL or local cache path.
 #[must_use]
 pub fn document_name(config: &ConfigManager, path: &str) -> String {
-	let name = if is_remote_url(path) {
-		config.get_document_download_name(path).or_else(|| url_file_name(path))
-	} else {
-		Path::new(path).file_name().and_then(|name| name.to_str()).map(str::to_string)
-	};
+	let name = config.get_document_download_name(path).or_else(|| {
+		if is_remote_url(path) {
+			url_file_name(path)
+		} else {
+			Path::new(path).file_name().and_then(|name| name.to_str()).map(str::to_string)
+		}
+	});
 	name.unwrap_or_else(|| path.to_string())
 }
 

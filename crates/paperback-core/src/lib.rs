@@ -1,4 +1,6 @@
 pub mod audio;
+#[cfg(feature = "book-sync")]
+pub mod book_sync;
 pub mod config;
 pub mod document;
 pub mod export;
