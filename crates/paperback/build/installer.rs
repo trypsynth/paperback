@@ -1,3 +1,4 @@
+use paperback_formats::FormatMeta;
 use shipfitter::build::configure_file;
 
 use crate::paths::{self, target_profile_dir};
@@ -20,45 +21,52 @@ fn slugify(name: &str) -> String {
 	slug
 }
 
+/// Named apart from the old per-format `assoc_` tasks, so a box someone ticked for those years ago isn't carried over.
+fn default_task(format: &FormatMeta) -> String {
+	format!("default_{}", slugify(format.name))
+}
+
 fn format_tasks_block() -> String {
 	let mut lines = Vec::new();
-	for format in paperback_formats::ALL {
+	for format in paperback_formats::ALL.iter().filter(|format| format.installer.offered_as_default) {
 		let ext_list = paperback_formats::associated_extensions(format)
 			.iter()
 			.map(|ext| format!("*.{ext}"))
 			.collect::<Vec<_>>()
 			.join(", ");
-		let flags = if format.installer.default_checked { String::new() } else { "; Flags: unchecked".to_string() };
+		let flags = if format.installer.default_checked { "" } else { "; Flags: unchecked" };
 		lines.push(format!(
-			"\tName: \"assoc_{}\"; Description: \"Associate with {} ({})\"{}",
-			slugify(format.name),
-			format.name,
-			ext_list,
-			flags
+			"\tName: \"{}\"; Description: \"Make Paperback the default app for {} ({ext_list})\"{flags}",
+			default_task(format),
+			format.name
 		));
 	}
 	lines.join("\n")
 }
 
+/// Every extension gets Paperback in its "Open with" list, which takes nothing over; a format whose box is ticked also gets Paperback as its default. `.zip`, which several formats open, is listed once.
 fn format_registry_block() -> String {
 	let mut lines = Vec::new();
+	let mut listed: Vec<&str> = Vec::new();
 	for format in paperback_formats::ALL {
-		let task = format!("assoc_{}", slugify(format.name));
 		lines.push(format!("\t; {}.", format.name));
 		for ext in paperback_formats::associated_extensions(format) {
-			// DAISY, Word-in-zip and zipped FB2 all register zip, so it has its own standalone task rather than one format's checkbox.
-			if ext == "zip" {
+			if format.installer.offered_as_default && ext != "zip" {
+				lines.push(format!(
+					"\tRoot: HKCR; Subkey: \".{ext}\"; ValueType: string; ValueName: \"\"; ValueData: \"Paperback.Document\"; Flags: uninsdeletevalue; Tasks: {}",
+					default_task(format)
+				));
+			}
+			if listed.contains(&ext) {
 				continue;
 			}
-			if format.installer.default_handler {
-				lines.push(format!(
-					"\tRoot: HKCR; Subkey: \".{ext}\"; ValueType: string; ValueName: \"\"; ValueData: \"Paperback.Document\"; Flags: uninsdeletevalue; Tasks: {task}"
-				));
-			} else {
-				lines.push(format!(
-					"\tRoot: HKCR; Subkey: \".{ext}\\OpenWithProgids\"; ValueType: string; ValueName: \"Paperback.Document\"; ValueData: \"\"; Flags: uninsdeletevalue; Tasks: {task}"
-				));
-			}
+			listed.push(ext);
+			lines.push(format!(
+				"\tRoot: HKCR; Subkey: \".{ext}\\OpenWithProgids\"; ValueType: string; ValueName: \"Paperback.Document\"; ValueData: \"\"; Flags: uninsdeletevalue"
+			));
+			lines.push(format!(
+				"\tRoot: HKCR; Subkey: \"Applications\\paperback.exe\\SupportedTypes\"; ValueType: string; ValueName: \".{ext}\"; ValueData: \"\""
+			));
 		}
 	}
 	lines.join("\n")
