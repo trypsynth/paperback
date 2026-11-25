@@ -374,6 +374,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Formulas inside links and table cells can be navigated to.
 * HTML export keeps block quotes, figures, definition lists, asides, line breaks, superscripts, and subscripts.
 * On Windows, screen readers say "link" on the links in a document as you read, and clicking a link follows it, as `Enter` does.
+* A page layout setting for PDFs read out of order, in the Documents tab of Settings and for one document in View > Page Layout: by columns finds the columns from where the text sits instead of following the document, and can keep every line apart. It replaces the setting that kept lines apart. `pb --layout` does the same.
 
 ##### iOS and Android
 * Go To has a Time mode for audio books, with `Cmd+J` on an iPad keyboard, and the playing screen shows how far in you are and how long the book runs.
@@ -388,6 +389,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 #### Changed
 * Settings is split into six tabs, one for each kind of setting.
 * PDFs, big CHM references, and MOBI books open faster.
+* The Windows installer asks about less: Paperback shows in Open with for every format it reads, and setup only offers to make it the default app for EPUB books and PDFs. The Start Menu shortcut is now on by default.
 
 #### Fixed
 
@@ -465,7 +467,6 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * A new PDF engine: faster, uses every CPU core, and needs no pdfium library.
 * Headings found in untagged pages, and better titles.
 * A setting to keep repeated page headers and footers.
-* A page layout setting for PDFs read out of order, in the Documents tab of Settings and for one document in View > Page Layout: by columns finds the columns from where the text sits instead of following the document, and can keep every line apart. It replaces the setting that kept lines apart. `pb --layout` does the same.
 
 ##### Other Documents
 * Word: numbered and bulleted lists, footnotes, endnotes, comments, picture alt text, list navigation, and Word's own pages.
