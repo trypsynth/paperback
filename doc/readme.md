@@ -396,6 +396,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 #### Fixed
 
 ##### General
+* Read aloud with a SAPI 5 voice that works in the Windows code page, such as Mikropuhe, no longer garbles letters like ä and ö.
 * Punctuation shortcuts work on every keyboard layout, matched by the key's place on a US keyboard.
 * Paperback no longer hangs when a shortcut with `Shift` and punctuation opens Settings, when a file it can't read is opened from the command line, or when OCR results, a file from another copy, or the sleep timer arrive while a dialog is open.
 * Very deeply nested HTML and XML documents no longer crash.
