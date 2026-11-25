@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use super::{TextMap, Voice};
 
 /// How much of the text a rule considers. Paragraph rules run first, so a paragraph rule can't undo what a word rule produced.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum RuleScope {
@@ -17,6 +18,7 @@ pub enum RuleScope {
 }
 
 /// Only paragraph rules can be regular expressions.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MatchType {
@@ -26,6 +28,7 @@ pub enum MatchType {
 }
 
 /// Which voices a rule applies to, since a rule that fixes one voice's pronunciation can break another's.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case", tag = "type", content = "value")]
 pub enum VoiceFilter {
@@ -47,6 +50,7 @@ impl VoiceFilter {
 	}
 }
 
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct SpeechRule {
@@ -77,6 +81,7 @@ impl Default for SpeechRule {
 }
 
 /// Why a rule can't be saved.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RuleProblem {
 	EmptyPattern,
