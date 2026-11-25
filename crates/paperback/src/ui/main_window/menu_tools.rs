@@ -8,7 +8,7 @@ use wxdragon::prelude::*;
 
 use super::{DocumentManager, build_font_from_readability, dialogs, menu, update_title_from_manager};
 #[cfg(target_os = "windows")]
-use super::{HotkeyHandle, re_register_hotkey};
+use super::{HotkeyHandle, drive_sync::DriveWindow, re_register_hotkey};
 use crate::{translation_manager::TranslationManager, ui::navigation::announce_for_command};
 
 pub(super) fn handle_word_count(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, config: &Rc<Mutex<ConfigManager>>) {
@@ -85,6 +85,7 @@ pub(super) fn handle_options(
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	#[cfg(target_os = "windows")] hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
+	#[cfg(target_os = "windows")] drive: &Rc<DriveWindow>,
 ) {
 	let current_language = TranslationManager::instance().lock().unwrap().current_language();
 	let book = dm.lock().unwrap().active_tab().map(|tab| tab.file_path.to_string_lossy().into_owned());
@@ -100,7 +101,12 @@ pub(super) fn handle_options(
 			}
 			dm.play_speech_sample(&configured_engine, engine, voice, rate, pitch);
 		});
-	let context = dialogs::OptionsContext { book: book.clone(), play_sample };
+	let context = dialogs::OptionsContext {
+		book: book.clone(),
+		play_sample,
+		#[cfg(target_os = "windows")]
+		drive: Rc::clone(drive),
+	};
 	let options = {
 		let cfg = config.lock().unwrap();
 		dialogs::show_options_dialog(frame, &cfg, context)

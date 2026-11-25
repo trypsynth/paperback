@@ -37,11 +37,17 @@ impl MainWindow {
 		let sleep_timer_handle = Rc::clone(sleep_timer.timer());
 		let mut timers = background::start_timers(frame, doc_manager);
 		timers.push(sleep_timer_handle);
+		#[cfg(target_os = "windows")]
+		let drive = super::drive_sync::DriveWindow::bind(frame, doc_manager, &config, &mut timers);
 		background::bind_resize(frame, doc_manager);
 		let (dm_for_open, config_for_open) = (Rc::clone(&dm), Rc::clone(&config));
 		frame.on_menu_opened(move |_| menu_view::sync_page_layout_items(&frame_copy, &dm_for_open, &config_for_open));
 		frame.on_menu(move |event| {
 			let id = event.get_id();
+			#[cfg(target_os = "windows")]
+			if drive.handle(id) {
+				return;
+			}
 			if menu_view::handle_page_layout(&dm, id) {
 				return;
 			}
@@ -176,6 +182,8 @@ impl MainWindow {
 						&config,
 						#[cfg(target_os = "windows")]
 						&hotkey_handle_for_options,
+						#[cfg(target_os = "windows")]
+						&drive,
 					);
 				}
 				menu_ids::CUSTOMIZE_SHORTCUTS => {
@@ -239,7 +247,16 @@ impl MainWindow {
 					menu_edit::handle_select_all(&dm, live_region_label, from_keyboard);
 				}
 				_ => {
-					menu_file::handle_fallback(id, &frame_copy, &dm, &config, live_region_label, from_keyboard);
+					menu_file::handle_fallback(
+						id,
+						&frame_copy,
+						&dm,
+						&config,
+						live_region_label,
+						from_keyboard,
+						#[cfg(target_os = "windows")]
+						&drive,
+					);
 				}
 			}
 		});

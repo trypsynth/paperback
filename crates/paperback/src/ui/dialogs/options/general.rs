@@ -7,6 +7,8 @@ use patois::{t, wx::populate_language_choice};
 use wxdragon::prelude::*;
 
 use super::{OPTION_PADDING, labeled_row};
+#[cfg(target_os = "windows")]
+use crate::ui::main_window::drive_sync::DriveWindow;
 use crate::{
 	translation_manager::TranslationManager,
 	ui::dialogs::{Keymap, prompt_for_shortcuts},
@@ -22,6 +24,8 @@ pub struct GeneralSettings {
 	pub start_maximized: bool,
 	pub minimize_to_tray: bool,
 	pub check_for_updates_on_startup: bool,
+	#[cfg(target_os = "windows")]
+	pub sync_book_data: bool,
 	/// A language code, or empty for the system's language.
 	pub language: String,
 	pub hotkey: Option<KeyChord>,
@@ -37,6 +41,8 @@ impl GeneralSettings {
 			start_maximized: config.get_app_bool("start_maximized", false),
 			minimize_to_tray: config.get_app_bool("minimize_to_tray", false),
 			check_for_updates_on_startup: config.get_app_bool("check_for_updates_on_startup", true),
+			#[cfg(target_os = "windows")]
+			sync_book_data: config.get_app_bool(paperback_core::book_sync::ENABLED_SETTING, false),
 			language: config.get_app_string("language", ""),
 			hotkey: config.get_hotkey(),
 			shortcuts: config.get_shortcuts(),
@@ -50,6 +56,8 @@ impl GeneralSettings {
 		config.set_app_bool("start_maximized", self.start_maximized);
 		config.set_app_bool("minimize_to_tray", self.minimize_to_tray);
 		config.set_app_bool("check_for_updates_on_startup", self.check_for_updates_on_startup);
+		#[cfg(target_os = "windows")]
+		config.set_app_bool(paperback_core::book_sync::ENABLED_SETTING, self.sync_book_data);
 		config.set_app_string("language", &self.language);
 		config.set_hotkey(self.hotkey.as_ref());
 		config.set_shortcuts(&self.shortcuts);
@@ -63,6 +71,8 @@ pub(super) struct GeneralTab {
 	start_maximized: CheckBox,
 	minimize_to_tray: CheckBox,
 	check_for_updates: CheckBox,
+	#[cfg(target_os = "windows")]
+	sync_book_data: CheckBox,
 	language: Choice,
 	language_codes: Vec<String>,
 	current_language: String,
@@ -72,7 +82,13 @@ pub(super) struct GeneralTab {
 
 impl GeneralTab {
 	/// `dialog` is the parent of the shortcut editor this tab opens.
-	pub(super) fn new(panel: Panel, dialog: Dialog, settings: &GeneralSettings, padding: i32) -> Self {
+	pub(super) fn new(
+		panel: Panel,
+		dialog: Dialog,
+		settings: &GeneralSettings,
+		padding: i32,
+		#[cfg(target_os = "windows")] drive: &Rc<DriveWindow>,
+	) -> Self {
 		let restore_docs =
 			// TRANSLATORS: Option to restore documents that were open when the app was last closed
 			CheckBox::builder(&panel).with_label(&t("&Restore previously opened documents on startup")).build();
@@ -101,6 +117,8 @@ impl GeneralTab {
 		// TRANSLATORS: Button label to open the Keyboard Shortcuts customization dialog
 		let shortcuts_button = Button::builder(&panel).with_label(&t("Customize &Keyboard Shortcuts...")).build();
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
+		#[cfg(target_os = "windows")]
+		let sync_book_data = CheckBox::builder(&panel).with_label(&t("Sync book data with Google Drive")).build();
 		sizer.add(&restore_docs, 0, SizerFlag::All, OPTION_PADDING);
 		sizer.add(&auto_reload, 0, SizerFlag::All, OPTION_PADDING);
 		sizer.add_sizer(&labeled_row(recent_docs_label, &recent_docs, padding), 0, SizerFlag::All, OPTION_PADDING);
@@ -110,6 +128,32 @@ impl GeneralTab {
 		#[cfg(not(target_os = "windows"))]
 		minimize_to_tray.show(false);
 		sizer.add(&check_for_updates, 0, SizerFlag::All, OPTION_PADDING);
+		#[cfg(target_os = "windows")]
+		{
+			let connect = Button::builder(&panel).with_label(&t("Connect Google account")).build();
+			let row = BoxSizer::builder(Orientation::Horizontal).build();
+			row.add(&sync_book_data, 0, SizerFlag::AlignCenterVertical | SizerFlag::Right, padding);
+			row.add(&connect, 0, SizerFlag::AlignCenterVertical, 0);
+			sizer.add_sizer(&row, 0, SizerFlag::All, OPTION_PADDING);
+			sync_book_data.set_value(settings.sync_book_data);
+			connect.enable(settings.sync_book_data);
+			let drive_for_checkbox = Rc::clone(drive);
+			sync_book_data.on_toggled(move |_| {
+				let enabled = sync_book_data.is_checked();
+				connect.enable(enabled);
+				if enabled
+					&& !drive_for_checkbox.is_connected()
+					&& wx_utils::confirm(
+						&dialog,
+						t("Connect your Google account now?"),
+						&t("Google Drive synchronization"),
+					) {
+					drive_for_checkbox.connect(&dialog);
+				}
+			});
+			let drive_for_button = Rc::clone(drive);
+			connect.on_click(move |_| drive_for_button.connect(&dialog));
+		}
 		sizer.add_sizer(&labeled_row(language_label, &language, padding), 0, SizerFlag::All, OPTION_PADDING);
 		sizer.add(&shortcuts_button, 0, SizerFlag::All, OPTION_PADDING);
 		panel.set_sizer(sizer, true);
@@ -145,6 +189,8 @@ impl GeneralTab {
 			start_maximized,
 			minimize_to_tray,
 			check_for_updates,
+			#[cfg(target_os = "windows")]
+			sync_book_data,
 			language,
 			language_codes,
 			current_language,
@@ -161,6 +207,8 @@ impl GeneralTab {
 			start_maximized: self.start_maximized.is_checked(),
 			minimize_to_tray: self.minimize_to_tray.is_checked(),
 			check_for_updates_on_startup: self.check_for_updates.is_checked(),
+			#[cfg(target_os = "windows")]
+			sync_book_data: self.sync_book_data.is_checked(),
 			language: patois::wx::resolve_language_choice(&self.language, &self.language_codes)
 				.unwrap_or_else(|| self.current_language.clone()),
 			hotkey: self.hotkey.borrow().clone(),

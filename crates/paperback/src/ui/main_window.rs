@@ -25,6 +25,8 @@ use crate::{
 
 #[cfg(target_os = "windows")]
 mod audio_events;
+#[cfg(target_os = "windows")]
+pub(in crate::ui) mod drive_sync;
 #[cfg(any(target_os = "linux", target_os = "windows"))]
 mod ipc;
 mod links;

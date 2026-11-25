@@ -71,6 +71,9 @@ jobs:
           gettext
           mingw-w64-ucrt-x86_64-gettext-tools
     - name: Build
+      env:
+        PAPERBACK_GOOGLE_DRIVE_CLIENT_ID: ${{ secrets.PAPERBACK_GOOGLE_DRIVE_CLIENT_ID }}
+        PAPERBACK_GOOGLE_DRIVE_CLIENT_SECRET: ${{ secrets.PAPERBACK_GOOGLE_DRIVE_CLIENT_SECRET }}
       run: |
         $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
         cargo release
@@ -161,6 +164,9 @@ jobs:
           gettext
           mingw-w64-ucrt-x86_64-gettext-tools
     - name: Build
+      env:
+        PAPERBACK_GOOGLE_DRIVE_CLIENT_ID: ${{ secrets.PAPERBACK_GOOGLE_DRIVE_CLIENT_ID }}
+        PAPERBACK_GOOGLE_DRIVE_CLIENT_SECRET: ${{ secrets.PAPERBACK_GOOGLE_DRIVE_CLIENT_SECRET }}
       run: |
         $env:PATH = "$env:PATH;${{ steps.msys2.outputs.msys2-location }}\ucrt64\bin;${{ steps.msys2.outputs.msys2-location }}\usr\bin"
         cargo release

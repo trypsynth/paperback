@@ -23,16 +23,19 @@ pub fn handle_toggle_play_pause_audio(
 	from_keyboard: bool,
 ) {
 	let mut dm = doc_manager.lock().unwrap();
-	let has_audio = {
+	let paused = {
 		let Some(tab) = dm.active_tab_mut() else { return };
 		if let Some(player) = tab.audio_player.as_mut() {
 			player.toggle();
-			true
+			Some(!player.is_playing())
 		} else {
-			false
+			None
 		}
 	};
-	if has_audio {
+	if let Some(paused) = paused {
+		if paused {
+			dm.save_active_position();
+		}
 		return;
 	}
 	// A document without recorded audio is read aloud instead.

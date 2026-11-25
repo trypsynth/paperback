@@ -45,6 +45,8 @@ struct AllDocumentsWidgets {
 	clear_all_button: Button,
 	status_choice: Choice,
 	status_bar: StatusBar,
+	#[cfg(target_os = "windows")]
+	sync_button: Option<Button>,
 }
 
 #[derive(Clone)]
@@ -65,6 +67,7 @@ pub fn show_all_documents_dialog(
 	parent: &Frame,
 	config: &Rc<Mutex<ConfigManager>>,
 	open_paths: Vec<String>,
+	#[cfg(target_os = "windows")] drive: &Rc<crate::ui::main_window::drive_sync::DriveWindow>,
 ) -> AllDocumentsResult {
 	let open_paths = Rc::new(open_paths);
 	// TRANSLATORS: Title of the All Documents dialog
@@ -80,6 +83,12 @@ pub fn show_all_documents_dialog(
 	let list = build_all_documents_list(dialog);
 	let status_bar = build_all_documents_status_bar(dialog);
 	let (open_button, locate_button, remove_button, clear_all_button, ok_button) = build_all_documents_buttons(dialog);
+	#[cfg(target_os = "windows")]
+	let sync_button = config
+		.lock()
+		.unwrap()
+		.get_app_bool(paperback_core::book_sync::ENABLED_SETTING, false)
+		.then(|| Button::builder(&dialog).with_label(&t("Upload book file to Google Drive")).build());
 	let widgets = AllDocumentsWidgets {
 		list,
 		open_button,
@@ -88,12 +97,16 @@ pub fn show_all_documents_dialog(
 		clear_all_button,
 		status_choice,
 		status_bar,
+		#[cfg(target_os = "windows")]
+		sync_button,
 	};
 	dialog.set_escape_id(ID_CANCEL);
 	let status_debounce =
 		StatusBarDebounce { timer: Rc::new(Timer::new(&dialog)), suppress: Rc::new(Cell::new(false)) };
 	status_debounce.timer.on_tick(move |_event| {
 		update_document_status_bar(widgets.list, widgets.status_bar);
+		#[cfg(target_os = "windows")]
+		update_drive_button(widgets);
 	});
 	let documents = Rc::new(RefCell::new(load_documents(config, &open_paths)));
 	populate_document_list(&DocumentListParams {
@@ -105,6 +118,16 @@ pub fn show_all_documents_dialog(
 		status_debounce: &status_debounce,
 	});
 	bind_all_documents_selection(widgets, status_debounce.clone());
+	#[cfg(target_os = "windows")]
+	if let Some(button) = widgets.sync_button {
+		let drive = Rc::clone(drive);
+		button.on_click(move |_| {
+			let [index] = get_selected_indices(list)[..] else { return };
+			if let Some(path) = get_path_for_index(list, index) {
+				drive.queue_book_upload(&dialog, &path);
+			}
+		});
+	}
 	let open_action = make_all_documents_open_action(dialog, widgets.list, Rc::clone(&selected_paths));
 	bind_all_documents_open(widgets.list, widgets.open_button, &open_action);
 	let remove_action = make_all_documents_remove_action(
@@ -536,6 +559,7 @@ fn bind_all_documents_layout(dialog: Dialog, layout: AllDocumentsLayout) {
 		clear_all_button,
 		status_choice,
 		status_bar,
+		..
 	} = widgets;
 	let dialog_for_ok = dialog;
 	ok_button.on_click(move |_| {
@@ -555,6 +579,10 @@ fn bind_all_documents_layout(dialog: Dialog, layout: AllDocumentsLayout) {
 	action_sizer.add(&locate_button, 0, SizerFlag::Right, padding);
 	action_sizer.add(&remove_button, 0, SizerFlag::Right, padding);
 	action_sizer.add(&clear_all_button, 0, SizerFlag::Right, padding);
+	#[cfg(target_os = "windows")]
+	if let Some(button) = widgets.sync_button {
+		action_sizer.add(&button, 0, SizerFlag::Right, padding);
+	}
 	content_sizer.add_sizer(
 		&action_sizer,
 		0,
@@ -620,6 +648,15 @@ fn populate_document_list(params: &DocumentListParams<'_>) {
 	}
 	status_debounce.suppress.set(false);
 	update_document_status_bar(list, status_bar);
+	#[cfg(target_os = "windows")]
+	update_drive_button(widgets);
+}
+
+#[cfg(target_os = "windows")]
+fn update_drive_button(widgets: AllDocumentsWidgets) {
+	if let Some(button) = widgets.sync_button {
+		button.enable(get_selected_indices(widgets.list).len() == 1);
+	}
 }
 
 /// Read when the dialog opens and again only when the history changes, since a search only narrows it.

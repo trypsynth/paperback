@@ -67,6 +67,8 @@ pub struct OptionsContext {
 	/// The open document, whose own voice the Audio tab can set.
 	pub book: Option<String>,
 	pub play_sample: PlaySample,
+	#[cfg(target_os = "windows")]
+	pub drive: std::rc::Rc<crate::ui::main_window::drive_sync::DriveWindow>,
 }
 
 pub fn show_options_dialog(
@@ -82,7 +84,14 @@ pub fn show_options_dialog(
 	let page = || Panel::builder(&notebook).build();
 	let (general_panel, reading_panel, audio_panel) = (page(), page(), page());
 	let (appearance_panel, documents_panel, advanced_panel) = (page(), page(), page());
-	let general = general::GeneralTab::new(general_panel, dialog, &initial.general, padding);
+	let general = general::GeneralTab::new(
+		general_panel,
+		dialog,
+		&initial.general,
+		padding,
+		#[cfg(target_os = "windows")]
+		&context.drive,
+	);
 	let reading = reading::ReadingTab::new(reading_panel, &initial.reading, padding);
 	let audio = audio::AudioTab::new(audio_panel, &initial.audio, padding, context.book.is_some(), context.play_sample);
 	let appearance = appearance::AppearanceTab::new(appearance_panel, dialog, &initial.appearance, padding);

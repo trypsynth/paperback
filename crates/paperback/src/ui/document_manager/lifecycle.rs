@@ -249,6 +249,10 @@ impl DocumentManager {
 			let tab = &self.tabs[tab_index];
 			if let (Some(copy), Some(fingerprint)) = (&tab.working_copy, tab.disk_fingerprint) {
 				config.set_document_download(&path_str, &copy.file_name(), fingerprint.len());
+				#[cfg(target_os = "windows")]
+				if let Some(local_path) = copy.path().to_str() {
+					config.remember_document_local_source(&path_str, local_path);
+				}
 			}
 		}
 		config.flush();
@@ -350,6 +354,11 @@ impl DocumentManager {
 		{
 			return;
 		}
+		self.save_active_position();
+		self.last_position_save.set(Some(now));
+	}
+
+	pub(in crate::ui) fn save_active_position(&self) {
 		if let Some(tab) = self.active_tab()
 			&& tab.track
 		{
@@ -360,7 +369,6 @@ impl DocumentManager {
 			config.set_document_audio_time(&path_str, tab.audio_player.as_ref().and_then(AudioPlayer::resume_point_ms));
 			config.flush();
 		}
-		self.last_position_save.set(Some(now));
 	}
 }
 

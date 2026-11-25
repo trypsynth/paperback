@@ -12,6 +12,8 @@ use paperback_core::{
 use patois::t;
 use wxdragon::prelude::*;
 
+#[cfg(target_os = "windows")]
+use super::drive_sync::DriveWindow;
 use super::{
 	DocumentManager, DocumentTab, dialogs, ensure_parser_ready_for_path, menu, menu_ids, open_links, resolve_zip_path,
 	update_title_from_manager,
@@ -28,6 +30,7 @@ pub(super) fn handle_fallback(
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 	from_keyboard: bool,
+	#[cfg(target_os = "windows")] drive: &Rc<DriveWindow>,
 ) {
 	if (menu_ids::RECENT_DOCUMENT_BASE..=menu_ids::RECENT_DOCUMENT_MAX).contains(&id) {
 		let doc_index = id - menu_ids::RECENT_DOCUMENT_BASE;
@@ -60,7 +63,15 @@ pub(super) fn handle_fallback(
 			}
 		}
 	} else if id == menu_ids::SHOW_ALL_DOCUMENTS {
-		handle_show_all_documents(frame, dm, config, live_region_label, from_keyboard);
+		handle_show_all_documents(
+			frame,
+			dm,
+			config,
+			live_region_label,
+			from_keyboard,
+			#[cfg(target_os = "windows")]
+			drive,
+		);
 	}
 }
 
@@ -70,6 +81,7 @@ fn handle_show_all_documents(
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 	from_keyboard: bool,
+	#[cfg(target_os = "windows")] drive: &Rc<DriveWindow>,
 ) {
 	let has_documents = {
 		let config_guard = config.lock().unwrap();
@@ -82,7 +94,13 @@ fn handle_show_all_documents(
 	}
 	let open_paths = dm.lock().unwrap().open_paths();
 	let config_for_dialog = Rc::clone(config);
-	let result = dialogs::show_all_documents_dialog(frame, &config_for_dialog, open_paths);
+	let result = dialogs::show_all_documents_dialog(
+		frame,
+		&config_for_dialog,
+		open_paths,
+		#[cfg(target_os = "windows")]
+		drive,
+	);
 	{
 		let mut dm_ref = dm.lock().unwrap();
 		for path_str in &result.paths_to_close {

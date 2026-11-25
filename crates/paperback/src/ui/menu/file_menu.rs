@@ -53,6 +53,11 @@ pub fn entries(config: &ConfigManager) -> Vec<MenuEntry> {
 	let mut entries = commands::menu_entries(&[ActionId::Open, ActionId::OpenFromUrl], config);
 	entries.push(submenu(recent_label, recent_help, recent_document_entries(config)));
 	entries.push(commands::menu_entry(ActionId::ReopenLastClosed, config));
+	#[cfg(target_os = "windows")]
+	if config.get_app_bool(paperback_core::book_sync::ENABLED_SETTING, false) {
+		entries.push(item(menu_ids::DRIVE_UPLOAD_BOOK, t("Upload book file to Google Drive")));
+		entries.push(item(menu_ids::DRIVE_LIBRARY, t("Cloud books")));
+	}
 	entries.extend([
 		MenuEntry::Separator,
 		submenu(export_label, String::new(), export_formats),
