@@ -158,16 +158,23 @@ pub fn handle_bookmark_dialog(
 	live_region_label: StaticText,
 	filter: BookmarkFilterType,
 ) {
+	let Some((path, path_str, current_pos, snippets)) = doc_manager.lock().unwrap().active_tab().map(|tab| {
+		let path_str = tab.file_path.to_string_lossy().to_string();
+		let snippets = dialogs::text_snippets(&tab.session, &config.lock().unwrap().get_bookmarks(&path_str));
+		(tab.file_path.clone(), path_str, doc_caret(tab), snippets)
+	}) else {
+		return;
+	};
+	// Shown unlocked, since a held lock stops read aloud, media keys and the update quitting while it's open.
+	let Some(selection) =
+		dialogs::show_bookmark_dialog(frame, snippets, &path_str, &Rc::clone(config), current_pos, filter)
+	else {
+		return;
+	};
 	let mut dm = doc_manager.lock().unwrap();
 	let (message, history_update) = {
-		let Some(tab) = dm.active_tab_mut() else {
-			return;
-		};
-		let current_pos = doc_caret(tab);
-		let path_str = tab.file_path.to_string_lossy().to_string();
-		let selection =
-			dialogs::show_bookmark_dialog(frame, &tab.session, &path_str, &Rc::clone(config), current_pos, filter);
-		let Some(selection) = selection else {
+		// A file opened from another copy of Paperback while the dialog was open can have become the active tab.
+		let Some(tab) = dm.active_tab_mut().filter(|tab| tab.file_path == path) else {
 			return;
 		};
 		let update = move_to_offset_and_record_history(tab, selection.start);

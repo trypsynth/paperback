@@ -26,14 +26,14 @@ pub struct BookmarkDialogResult {
 
 pub fn show_bookmark_dialog(
 	parent: &Frame,
-	session: &DocumentSession,
+	snippets: BookmarkSnippets,
 	file_path: &str,
 	config: &Rc<Mutex<ConfigManager>>,
 	current_pos: DocPos,
 	initial_filter: BookmarkFilterType,
 ) -> Option<BookmarkDialogResult> {
 	let file_path = file_path.to_string();
-	let snippets = Rc::new(text_snippets(session, &config.lock().unwrap().get_bookmarks(&file_path)));
+	let snippets = Rc::new(snippets);
 	// TRANSLATORS: Title of the Jump to Bookmark dialog
 	let dialog = Dialog::builder(parent, &t("Jump to Bookmark")).build();
 	let _destroy = super::DestroyOnDrop(dialog);
@@ -204,8 +204,12 @@ fn build_bookmark_dialog_ui(dialog: Dialog, initial_filter: BookmarkFilterType) 
 	}
 }
 
-/// Worked out once when the dialog opens, since every change of filter refills the list.
-fn text_snippets(session: &DocumentSession, bookmarks: &[Bookmark]) -> HashMap<(DocPos, DocPos), String> {
+/// The text of each bookmark, keyed by its span.
+pub type BookmarkSnippets = HashMap<(DocPos, DocPos), String>;
+
+/// Worked out once, before the dialog opens, so the document needn't stay locked while it's open, and because every change of filter refills the list.
+#[must_use]
+pub fn text_snippets(session: &DocumentSession, bookmarks: &[Bookmark]) -> BookmarkSnippets {
 	bookmarks
 		.iter()
 		.filter(|bm| bm.audio_ms.is_none())
