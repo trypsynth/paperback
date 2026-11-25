@@ -40,7 +40,7 @@ mod export_annotations;
 pub use document_info::show_document_info_dialog;
 pub use export_annotations::show_export_annotations_dialog;
 mod elements;
-pub use elements::{ElementsKind, show_elements_dialog};
+pub use elements::{ElementsData, ElementsKind, show_elements_dialog};
 mod go_to;
 mod go_to_line;
 pub use go_to_line::show_go_to_line_dialog;
