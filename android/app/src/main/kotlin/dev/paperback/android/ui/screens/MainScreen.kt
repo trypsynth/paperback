@@ -344,6 +344,7 @@ fun MainScreen(
 					onExportSettings = exportSettings,
 					onImportSettings = importSettings,
 					onOpenFromUrl = { viewModel.links.prompt() },
+					onPageLayoutChange = { viewModel.setDocumentPageLayout(it) },
 					onHelpOpen = {
 						viewModel.openHelpDocument()
 					},
@@ -470,7 +471,8 @@ fun MainScreen(
 									viewModel.reading.refreshSegmentPreview()
 								}
 							}
-							LaunchedEffect(ttsPosition) {
+							// Keyed on the session too: a document read again with another page layout can keep its position but move its lines.
+							LaunchedEffect(ttsPosition, docState.session) {
 								if (isTextMode) {
 									val index = lineIndexFor(docState.session.lineFromPosition(ttsPosition))
 									// A scroll that settles saves its top line as the position, and following that back would snap the reader's scroll flush to the line.
@@ -480,7 +482,7 @@ fun MainScreen(
 									}
 								}
 							}
-							LaunchedEffect(docState.documentUri) {
+							LaunchedEffect(docState.documentUri, docState.session) {
 								snapshotFlow { listState.firstVisibleItemIndex }
 									.scrollsWorthSaving()
 									.collect { index -> viewModel.reading.savePosition(docState.session, docState.documentUri, index) }
@@ -542,7 +544,7 @@ fun MainScreen(
 									onCloseSearch = {
 										viewModel.search.clear()
 									},
-									lineActions = remember(docState.documentUri, bookmarkRevision) {
+									lineActions = remember(docState.session, bookmarkRevision) {
 										{ lineStart: Long ->
 											bookmarkLineActions(viewModel.bookmarks, docState.session, lineStart) { lineBookmarkRemoval = it }
 										}

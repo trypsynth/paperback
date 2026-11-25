@@ -30,6 +30,7 @@ import dev.paperback.android.ui.components.PickerMenuItem
 import dev.paperback.android.ui.components.pickerAnchorColors
 import dev.paperback.android.ui.state.MainScreenViewModel
 import dev.paperback.android.ui.state.ReaderSettings
+import uniffi.paperback.PageLayout
 import kotlin.math.roundToInt
 
 private val MIN_SCALE = ReaderSettings.MIN_TEXT_SCALE_PERCENT.toFloat()
@@ -154,6 +155,7 @@ fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -
 	val paragraphSpacing by settings.paragraphSpacing.state.collectAsStateWithLifecycle()
 	val textAlignment by settings.textAlignment.state.collectAsStateWithLifecycle()
 	val highContrastText by settings.highContrastText.state.collectAsStateWithLifecycle()
+	val pageLayout by settings.pageLayout.state.collectAsStateWithLifecycle()
 	val currentSpeechRate by viewModel.ttsManager.currentSpeechRate.collectAsStateWithLifecycle()
 	val currentPitch by viewModel.ttsManager.currentPitch.collectAsStateWithLifecycle()
 	val paragraphPauseMs by viewModel.ttsManager.paragraphPauseMs.collectAsStateWithLifecycle()
@@ -275,6 +277,21 @@ fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -
 					t("With TalkBack, swipe up on the play button to move forward, or down to move back."),
 					style = MaterialTheme.typography.bodySmall,
 					color = MaterialTheme.colorScheme.onSurfaceVariant
+				)
+				Spacer(modifier = Modifier.height(16.dp))
+				ChoiceSetting(
+					// TRANSLATORS: Label for the picker choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for documents without a page layout of their own
+					label = t("Page layout of PDF and XPS documents"),
+					options = listOf(
+						// TRANSLATORS: Page layout choice in Settings: PDF and XPS pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+						t("Automatic"),
+						// TRANSLATORS: Page layout choice in Settings: the document's own reading order is ignored and the columns of each page are found from where the text sits, then read one after the other. It suits documents whose text is read out of order, such as two-column layouts
+						t("By columns, ignoring the document's own order"),
+						// TRANSLATORS: Page layout choice in Settings: like reading by columns, but every line is kept apart instead of joined into paragraphs, which suits code, poetry and lists of clauses whose line breaks are the content
+						t("By columns, keeping every line apart")
+					),
+					selectedIndex = PageLayout.entries.indexOf(pageLayout),
+					onSelect = { viewModel.setPageLayout(PageLayout.entries[it]) }
 				)
 				// Per-app languages only exist from Android 13; before that the only language is the phone's.
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

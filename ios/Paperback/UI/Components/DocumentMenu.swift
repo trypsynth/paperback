@@ -94,6 +94,9 @@ struct DocumentMenu: View {
 					Label(t("Speech for This Book"), systemImage: "person.wave.2")
 				}
 			}
+			if let layout = viewModel.activeDocumentPageLayout {
+				pageLayoutPicker(layout)
+			}
 			Divider()
 			helpAndSettingsItems
 		} label: {
@@ -171,6 +174,24 @@ struct DocumentMenu: View {
 			let title: String = viewModel.reading.sleepTimerRemaining != nil ? t("Sleep Timer (active)") : t("Sleep Timer")
 			Label(title, systemImage: "timer")
 		}
+	}
+
+	// Left out of the More options button's actions: its four choices would crowd the rotor, and the menu already says which one is selected.
+	private func pageLayoutPicker(_ layout: PageLayout?) -> some View {
+		Picker(selection: Binding(get: { layout }, set: { viewModel.setActiveDocumentPageLayout($0) })) {
+			// TRANSLATORS: Item in the Page Layout submenu of the document actions menu: the open PDF or XPS document follows the page layout chosen for all documents in Settings
+			Text(t("Same as Other Documents")).tag(PageLayout?.none)
+			// TRANSLATORS: Item in the Page Layout submenu of the document actions menu: the open document's pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+			Text(t("Automatic")).tag(PageLayout?.some(.automatic))
+			// TRANSLATORS: Item in the Page Layout submenu of the document actions menu: the open document's own reading order is ignored and the columns of each page are found from where the text sits, for documents read out of order
+			Text(t("By Columns")).tag(PageLayout?.some(.columns))
+			// TRANSLATORS: Item in the Page Layout submenu of the document actions menu: like By Columns, but every line is kept apart instead of joined into paragraphs, for code, poetry and lists of clauses
+			Text(t("By Columns, Every Line Apart")).tag(PageLayout?.some(.lines))
+		} label: {
+			// TRANSLATORS: Submenu of the document actions menu choosing how the open PDF or XPS document's pages are put in reading order and paragraphs
+			Label(t("Page Layout"), systemImage: "doc.text")
+		}
+		.pickerStyle(.menu)
 	}
 
 	@ViewBuilder private var helpAndSettingsItems: some View {

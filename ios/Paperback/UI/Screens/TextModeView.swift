@@ -7,7 +7,8 @@ struct TextModeView: View {
 	var body: some View {
 		if let model = viewModel.bookModel(for: tab) {
 			ReadingScreen(model: model, reading: viewModel.reading, style: ReadingStyle(scalePercent: viewModel.textScalePercent, lineSpacingChoice: viewModel.lineSpacingChoice, paragraphSpacingChoice: viewModel.paragraphSpacingChoice, alignmentChoice: viewModel.textAlignmentChoice, highContrast: viewModel.highContrastText))
-				.id(tab.id)
+				// A document read again with a new page layout gets a new model, which needs a new reading screen.
+				.id(ObjectIdentifier(model))
 		} else {
 			Text("No document open.")
 				.padding()

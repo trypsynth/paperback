@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import uniffi.paperback.ConfigManagerFfi
+import uniffi.paperback.PageLayout
 
 /** Persisted on every write because Android can kill the process without a callback; [sanitize] also applies to the stored value so a bad config file can't reach the UI. */
 class Setting<T>(stored: T, private val sanitize: (T) -> T = { it }, private val persist: (T) -> Unit) {
@@ -44,6 +45,11 @@ class ReaderSettings(private val config: ConfigManagerFfi) {
 	val highContrastText = boolSetting("high_contrast_text", false)
 
 	val textMode = boolSetting("text_mode", false)
+
+	val pageLayout = Setting<PageLayout>(config.getPageLayout()) {
+		config.setPageLayout(it)
+		config.saveSoon()
+	}
 
 	private fun boolSetting(key: String, default: Boolean) = Setting(config.getAppBool(key, default)) {
 		config.setAppBool(key, it)

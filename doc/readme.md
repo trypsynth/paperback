@@ -381,6 +381,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Each book remembers its navigation unit.
 * Bookmarks and notes, from a button in the reader's top bar: hold it, or use the screen reader's actions, to add a note or open the Bookmarks list. They are the same bookmarks the desktop keeps, so they travel in `.paperback` files, and the desktop's bookmark keys work with a keyboard.
 * Tapping the progress under the read-aloud bar switches it to the chapter's: its name, percentage, and words left, or its times in an audio book.
+* The page layout setting for PDFs read out of order is in Settings, and in the More options menu for one PDF or XPS document.
 
 ##### pb
 * pb is two to four times faster on most text formats, and converts as many documents at once as there are processors, or as many as `--jobs` says.
