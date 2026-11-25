@@ -12,9 +12,15 @@ pub struct MenuItemSpec {
 pub enum MenuEntry {
 	Item(MenuItemSpec),
 	Check(MenuItemSpec, bool),
+	/// One of a run of items side by side, of which only one is checked.
+	Radio(MenuItemSpec, bool),
 	Disabled(String),
 	Separator,
-	Submenu { label: String, help: String, entries: Vec<Self> },
+	Submenu {
+		label: String,
+		help: String,
+		entries: Vec<Self>,
+	},
 }
 
 pub const fn item(id: i32, label: String) -> MenuEntry {
@@ -27,6 +33,10 @@ pub const fn item_with_help(id: i32, label: String, help: String) -> MenuEntry {
 
 pub const fn check(id: i32, label: String, help: String, checked: bool) -> MenuEntry {
 	MenuEntry::Check(MenuItemSpec { id, label, help: Some(help) }, checked)
+}
+
+pub const fn radio(id: i32, label: String, help: String, checked: bool) -> MenuEntry {
+	MenuEntry::Radio(MenuItemSpec { id, label, help: Some(help) }, checked)
 }
 
 pub const fn submenu(label: String, help: String, entries: Vec<MenuEntry>) -> MenuEntry {
@@ -49,6 +59,10 @@ pub fn append_menu_entries(menu: &Menu, entries: &[MenuEntry]) {
 				let _ = menu.append(spec.id, &spec.label, spec.help.as_deref().unwrap_or(""), ItemKind::Check);
 				menu.check_item(spec.id, *checked);
 			}
+			MenuEntry::Radio(spec, checked) => {
+				let _ = menu.append(spec.id, &spec.label, spec.help.as_deref().unwrap_or(""), ItemKind::Radio);
+				menu.check_item(spec.id, *checked);
+			}
 			MenuEntry::Disabled(label) => {
 				if let Some(item) = menu.append(ID_ANY.try_into().unwrap(), label, "", ItemKind::Normal) {
 					item.enable(false);
@@ -67,7 +81,9 @@ pub fn deduplicate_access_keys(entries: &mut [MenuEntry]) {
 	let mut used = Vec::new();
 	for entry in entries {
 		match entry {
-			MenuEntry::Item(spec) | MenuEntry::Check(spec, _) => claim_access_key(&mut spec.label, &mut used),
+			MenuEntry::Item(spec) | MenuEntry::Check(spec, _) | MenuEntry::Radio(spec, _) => {
+				claim_access_key(&mut spec.label, &mut used);
+			}
 			MenuEntry::Submenu { label, entries, .. } => {
 				claim_access_key(label, &mut used);
 				deduplicate_access_keys(entries);
@@ -140,7 +156,9 @@ mod tests {
 		entries
 			.iter()
 			.filter_map(|entry| match entry {
-				MenuEntry::Item(spec) | MenuEntry::Check(spec, _) => Some(spec.label.as_str()),
+				MenuEntry::Item(spec) | MenuEntry::Check(spec, _) | MenuEntry::Radio(spec, _) => {
+					Some(spec.label.as_str())
+				}
 				MenuEntry::Submenu { label, .. } => Some(label.as_str()),
 				MenuEntry::Separator | MenuEntry::Disabled(_) => None,
 			})

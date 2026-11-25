@@ -7,7 +7,6 @@ use super::{
 	position::DocPos,
 	toc::TocItem,
 };
-use crate::types::HeadingInfo;
 
 #[derive(Debug, Clone)]
 pub struct DocumentHandle {
@@ -49,18 +48,14 @@ impl DocumentHandle {
 		self.doc.buffer.markers.iter().enumerate().filter(move |(_, m)| m.mtype == marker_type)
 	}
 
-	fn heading_markers(&self, level: Option<i32>) -> Vec<(usize, &Marker)> {
-		let mut result: Vec<(usize, &Marker)> = self
-			.doc
-			.buffer
-			.markers
+	/// Which of its type the marker at or before `position` is, counting from zero.
+	fn index_among_type(&self, position: DocPos, marker_type: MarkerType) -> Option<i32> {
+		let markers = &self.doc.buffer.markers;
+		let count = markers[..markers.partition_point(|marker| marker.position <= position)]
 			.iter()
-			.enumerate()
-			.filter(|(_, marker)| is_heading_marker(marker.mtype))
-			.filter(|(_, marker)| level.is_none_or(|lvl| marker.level == lvl))
-			.collect();
-		result.sort_by_key(|(_, marker)| marker.position);
-		result
+			.filter(|marker| marker.mtype == marker_type)
+			.count();
+		i32::try_from(count.checked_sub(1)?).ok()
 	}
 
 	#[must_use]
@@ -111,26 +106,27 @@ impl DocumentHandle {
 
 	#[must_use]
 	pub fn next_heading_marker_index(&self, position: DocPos, level: Option<i32>) -> Option<usize> {
-		self.heading_markers(level).into_iter().find(|(_, m)| m.position > position).map(|(idx, _)| idx)
+		let markers = &self.doc.buffer.markers;
+		let start = markers.partition_point(|marker| marker.position <= position);
+		markers[start..].iter().position(|marker| is_heading_of(marker, level)).map(|idx| start + idx)
 	}
 
 	#[must_use]
 	pub fn previous_heading_marker_index(&self, position: DocPos, level: Option<i32>) -> Option<usize> {
-		self.heading_markers(level).into_iter().filter(|(_, m)| m.position < position).map(|(idx, _)| idx).next_back()
+		let markers = &self.doc.buffer.markers;
+		markers[..markers.partition_point(|marker| marker.position < position)]
+			.iter()
+			.rposition(|marker| is_heading_of(marker, level))
 	}
 
 	#[must_use]
-	pub fn marker_position(&self, marker_index: i32) -> Option<DocPos> {
-		let idx = usize::try_from(marker_index).ok()?;
-		self.doc.buffer.markers.get(idx).map(|m| m.position)
+	pub fn first_heading_marker_index(&self, level: Option<i32>) -> Option<usize> {
+		self.doc.buffer.markers.iter().position(|marker| is_heading_of(marker, level))
 	}
 
 	#[must_use]
-	pub fn heading_info(&self, heading_index: i32) -> Option<HeadingInfo> {
-		let idx = usize::try_from(heading_index).ok()?;
-		let heading_markers = self.heading_markers(None);
-		let (_, marker) = heading_markers.get(idx)?;
-		Some(HeadingInfo { offset: marker.position, level: marker.level, text: marker.text.clone() })
+	pub fn last_heading_marker_index(&self, level: Option<i32>) -> Option<usize> {
+		self.doc.buffer.markers.iter().rposition(|marker| is_heading_of(marker, level))
 	}
 
 	#[must_use]
@@ -168,47 +164,17 @@ impl DocumentHandle {
 
 	#[must_use]
 	pub fn section_index(&self, position: DocPos) -> Option<i32> {
-		let count = self
-			.doc
-			.buffer
-			.markers
-			.iter()
-			.filter(|m| m.mtype == MarkerType::SectionBreak && m.position <= position)
-			.count();
-		if count == 0 { None } else { i32::try_from(count - 1).ok() }
+		self.index_among_type(position, MarkerType::SectionBreak)
 	}
 
 	#[must_use]
 	pub fn page_index(&self, position: DocPos) -> Option<i32> {
-		let count = self
-			.doc
-			.buffer
-			.markers
-			.iter()
-			.filter(|m| m.mtype == MarkerType::PageBreak && m.position <= position)
-			.count();
-		if count == 0 { None } else { i32::try_from(count - 1).ok() }
+		self.index_among_type(position, MarkerType::PageBreak)
 	}
+}
 
-	#[must_use]
-	pub fn next_heading_index(&self, position: DocPos, level: Option<i32>) -> Option<i32> {
-		self.next_heading_marker_index(position, level).and_then(|idx| i32::try_from(idx).ok())
-	}
-
-	#[must_use]
-	pub fn previous_heading_index(&self, position: DocPos, level: Option<i32>) -> Option<i32> {
-		self.previous_heading_marker_index(position, level).and_then(|idx| i32::try_from(idx).ok())
-	}
-
-	#[must_use]
-	pub fn first_heading_index(&self, level: Option<i32>) -> Option<i32> {
-		self.heading_markers(level).first().and_then(|&(idx, _)| i32::try_from(idx).ok())
-	}
-
-	#[must_use]
-	pub fn last_heading_index(&self, level: Option<i32>) -> Option<i32> {
-		self.heading_markers(level).last().and_then(|&(idx, _)| i32::try_from(idx).ok())
-	}
+fn is_heading_of(marker: &Marker, level: Option<i32>) -> bool {
+	is_heading_marker(marker.mtype) && level.is_none_or(|level| marker.level == level)
 }
 
 #[cfg(test)]
@@ -304,28 +270,11 @@ mod tests {
 	}
 
 	#[test]
-	fn marker_position_and_marker_type_lookup_work() {
+	fn marker_type_lookup_works() {
 		let handle = sample_handle();
-		assert_eq!(handle.marker_position(2), Some(20.into()));
-		assert_eq!(handle.marker_position(-1), None);
 		assert_eq!(handle.get_marker_position_by_index(MarkerType::SectionBreak, 0), Some(5.into()));
 		assert_eq!(handle.get_marker_position_by_index(MarkerType::SectionBreak, 1), Some(60.into()));
 		assert_eq!(handle.get_marker_position_by_index(MarkerType::SectionBreak, 2), None);
-	}
-
-	#[test]
-	fn heading_info_returns_sorted_heading_entries() {
-		let handle = sample_handle();
-		let first = handle.heading_info(0).unwrap();
-		assert_eq!(first.offset, 10);
-		assert_eq!(first.level, 1);
-		assert_eq!(first.text, "H1");
-		let second = handle.heading_info(1).unwrap();
-		assert_eq!(second.offset, 30);
-		assert_eq!(second.level, 2);
-		assert_eq!(second.text, "H2");
-		assert!(handle.heading_info(2).is_none());
-		assert!(handle.heading_info(-1).is_none());
 	}
 
 	#[test]
@@ -342,8 +291,10 @@ mod tests {
 		let handle = sample_handle();
 		assert_eq!(handle.section_index(61.into()), Some(1));
 		assert_eq!(handle.page_index(25.into()), Some(0));
-		assert_eq!(handle.next_heading_index(0.into(), None), Some(1));
-		assert_eq!(handle.previous_heading_index(100.into(), None), Some(3));
+		assert_eq!(handle.first_heading_marker_index(None), Some(1));
+		assert_eq!(handle.last_heading_marker_index(None), Some(3));
+		assert_eq!(handle.first_heading_marker_index(Some(2)), Some(3));
+		assert_eq!(handle.last_heading_marker_index(Some(1)), Some(1));
 	}
 
 	#[test]
@@ -371,8 +322,10 @@ mod tests {
 	#[test]
 	fn heading_index_helpers_return_none_when_filtered_level_missing() {
 		let handle = sample_handle();
-		assert_eq!(handle.next_heading_index(0.into(), Some(6)), None);
-		assert_eq!(handle.previous_heading_index(100.into(), Some(6)), None);
+		assert_eq!(handle.next_heading_marker_index(0.into(), Some(6)), None);
+		assert_eq!(handle.previous_heading_marker_index(100.into(), Some(6)), None);
+		assert_eq!(handle.first_heading_marker_index(Some(6)), None);
+		assert_eq!(handle.last_heading_marker_index(Some(6)), None);
 	}
 
 	#[test]

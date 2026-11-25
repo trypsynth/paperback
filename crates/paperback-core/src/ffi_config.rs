@@ -2,9 +2,10 @@ use std::{collections::HashSet, sync::Mutex};
 
 use crate::{
 	config::{Bookmark, ConfigManager, DocumentSpeech, NavigationUnit},
-	document::DocPos,
+	document::{DocPos, PageLayout},
 	parser::ParserRegistry,
 	reader_core::{AUDIO_BOOKMARK_REACH_MS, audio_bookmark_navigate, bookmark_navigate},
+	speech::{RuleProblem, SpeechRule, Voice, apply_rules},
 	types::{BookmarkFfi, BookmarkStepFfi},
 };
 
@@ -135,6 +136,53 @@ impl ConfigManagerFfi {
 
 	pub fn get_document_navigation_unit(&self, path: String) -> Option<NavigationUnit> {
 		self.inner.lock().unwrap().get_document_navigation_unit(&path)
+	}
+
+	pub fn get_page_layout(&self) -> PageLayout {
+		self.inner.lock().unwrap().get_page_layout()
+	}
+
+	pub fn set_page_layout(&self, layout: PageLayout) {
+		self.inner.lock().unwrap().set_page_layout(layout);
+	}
+
+	/// `None` follows the app's page layout.
+	pub fn get_document_page_layout(&self, path: String) -> Option<PageLayout> {
+		self.inner.lock().unwrap().get_document_page_layout(&path)
+	}
+
+	pub fn set_document_page_layout(&self, path: String, layout: Option<PageLayout>) {
+		self.inner.lock().unwrap().set_document_page_layout(&path, layout);
+	}
+
+	/// What to open the document at `path` with: its own page layout, or the app's.
+	pub fn page_layout_for(&self, path: String) -> PageLayout {
+		self.inner.lock().unwrap().page_layout_for(&path)
+	}
+
+	/// Only PDF and XPS documents have a page layout to choose, so the choice is offered for nothing else.
+	pub fn page_layout_applies_to(&self, path: String) -> bool {
+		PageLayout::applies_to(&path)
+	}
+
+	pub fn get_speech_rules(&self) -> Vec<SpeechRule> {
+		self.inner.lock().unwrap().get_speech_rules()
+	}
+
+	pub fn set_speech_rules(&self, rules: Vec<SpeechRule>) {
+		self.inner.lock().unwrap().set_speech_rules(rules);
+	}
+
+	/// Checked by core rather than the platform's own regular expressions, which accept patterns core can't apply.
+	pub fn speech_rule_problem(&self, rule: SpeechRule) -> Option<RuleProblem> {
+		rule.check().err()
+	}
+
+	/// The saved rules that fit the voice, applied to `text`; without a voice, only rules for every voice apply.
+	pub fn apply_speech_rules(&self, text: String, voice_id: Option<String>, voice_language: Option<String>) -> String {
+		let rules = self.inner.lock().unwrap().get_speech_rules();
+		let voice = voice_id.map(|id| Voice { id, name: String::new(), language: voice_language.unwrap_or_default() });
+		apply_rules(&rules, &text, voice.as_ref()).0
 	}
 
 	pub fn set_document_password(&self, path: String, password: String) {
@@ -325,6 +373,34 @@ mod tests {
 
 	fn config() -> ConfigManagerFfi {
 		ConfigManagerFfi::in_memory()
+	}
+
+	#[test]
+	fn the_saved_speech_rules_apply_to_the_voices_they_name() {
+		use crate::speech::{MatchType, RuleScope, VoiceFilter};
+		let config = config();
+		let finnish = SpeechRule {
+			pattern: "Dr.".into(),
+			replacement: "tohtori".into(),
+			voice_filter: VoiceFilter::Language("fi-FI".into()),
+			..SpeechRule::default()
+		};
+		let everyone = SpeechRule { pattern: "&".into(), replacement: " and ".into(), ..SpeechRule::default() };
+		config.set_speech_rules(vec![finnish, everyone]);
+		assert_eq!(config.get_speech_rules().len(), 2);
+		assert_eq!(
+			config.apply_speech_rules("Dr. Who & co".into(), Some("mikko".into()), Some("fi-FI".into())),
+			"tohtori Who  and  co"
+		);
+		assert_eq!(config.apply_speech_rules("Dr. Who & co".into(), None, None), "Dr. Who  and  co");
+		let broken = SpeechRule {
+			scope: RuleScope::Paragraph,
+			match_type: MatchType::Regex,
+			pattern: "(".into(),
+			..SpeechRule::default()
+		};
+		assert!(matches!(config.speech_rule_problem(broken), Some(RuleProblem::InvalidRegex(_))));
+		assert_eq!(config.speech_rule_problem(SpeechRule { pattern: "x".into(), ..SpeechRule::default() }), None);
 	}
 
 	#[test]

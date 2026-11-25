@@ -7,7 +7,7 @@ final class ReadingScreenTests: XCTestCase {
 	private func model(_ contents: String, as fileExtension: String = "html") throws -> BookModel {
 		let url = FileManager.default.temporaryDirectory.appending(path: "\(UUID().uuidString).\(fileExtension)")
 		try contents.write(to: url, atomically: true, encoding: .utf8)
-		let session = try DocumentSession.newFfi(filePath: url.path(percentEncoded: false), password: "", forcedExtension: "", renderTablesInline: false)
+		let session = try DocumentSession.newFfi(filePath: url.path(percentEncoded: false), password: "", forcedExtension: "", renderTablesInline: false, pageLayout: .automatic)
 		return BookModel(session: session, layout: ReadingLayout(session: session))
 	}
 

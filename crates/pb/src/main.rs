@@ -13,7 +13,7 @@ use clap::Parser;
 use paperback_core::{
 	document::{Document, DocumentHandle, ParserContext},
 	export::{self, ExportFormat},
-	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, braille, parse_document},
+	parser::{PasswordRequired, braille, parse_document},
 };
 
 mod cli;
@@ -328,8 +328,8 @@ impl std::error::Error for NeedsPassword {}
 
 /// The password prefix is a sentinel between the parsers and pb, not something to show the reader.
 fn parse_failed(shown: &str, error: &anyhow::Error) -> anyhow::Error {
-	let message = error.to_string();
-	let message = message.strip_prefix(PASSWORD_REQUIRED_ERROR_PREFIX).unwrap_or(&message);
+	let message =
+		error.downcast_ref::<PasswordRequired>().map_or_else(|| error.to_string(), |password| password.0.clone());
 	anyhow::anyhow!("failed to parse {shown}: {message}")
 }
 
@@ -383,7 +383,7 @@ impl<'a> Converter<'a> {
 		let file_path = input.to_string_lossy().into_owned();
 		let mut context = ParserContext::new(file_path)
 			.with_render_tables_inline(true)
-			.with_join_pdf_paragraphs(!cli.no_join_paragraphs)
+			.with_page_layout(cli.page_layout())
 			.with_braille_table(cli.braille_table.as_deref().map_or(braille::DEFAULT_TABLE, braille::chosen_table))
 			.with_keep_braille(cli.keep_braille);
 		// Stripping repeated page-edge lines can cost real sentences (see `ParserContext::strip_running_text`), hence `--keep-repeated`.
@@ -393,7 +393,7 @@ impl<'a> Converter<'a> {
 		}
 		let doc = match parse_document(&context) {
 			Ok(doc) => doc,
-			Err(e) if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
+			Err(e) if e.is::<PasswordRequired>() => {
 				if cli.no_prompt {
 					return Err(anyhow::Error::new(NeedsPassword).context(shown.to_string()));
 				}
@@ -421,7 +421,13 @@ impl<'a> Converter<'a> {
 		let ocr = ocr::Selection { image_pages: cli.ocr_image_pages, text_pages: cli.ocr_text_pages };
 		if ocr.any() {
 			// After the slice so only kept pages are read, and after the password so an encrypted document opens once.
-			ocr::pages(&mut doc, &context.file_path, context.password.as_deref(), ocr, !cli.no_join_paragraphs)?;
+			ocr::pages(
+				&mut doc,
+				&context.file_path,
+				context.password.as_deref(),
+				ocr,
+				cli.page_layout().joins_lines(),
+			)?;
 		}
 		ocr::reword_placeholders(&mut doc, ocr.image_pages);
 		Ok(match (cli.metadata, cli.format) {
@@ -759,12 +765,10 @@ mod tests {
 
 	#[test]
 	fn the_password_marker_is_not_shown_to_the_reader() {
-		let error = parse_failed(
-			"alpha.pdf",
-			&anyhow::anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX}Password required or incorrect"),
-		);
+		let error =
+			parse_failed("alpha.pdf", &anyhow::anyhow!(PasswordRequired("Password required or incorrect".to_string())));
 		let printed = error.to_string();
-		assert!(!printed.contains(PASSWORD_REQUIRED_ERROR_PREFIX), "{printed}");
+		assert!(!printed.contains("password_required"), "{printed}");
 		assert!(printed.contains("alpha.pdf"), "{printed} does not name the document");
 		assert!(printed.contains("Password required or incorrect"), "{printed}");
 	}

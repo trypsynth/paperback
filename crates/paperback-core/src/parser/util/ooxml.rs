@@ -11,7 +11,7 @@ use roxmltree::{Node, NodeType};
 use zip::ZipArchive;
 
 use crate::{
-	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, util::path::resolve_relative_path},
+	parser::{PasswordRequired, util::path::resolve_relative_path},
 	t,
 	util::zip::read_zip_entry_by_name,
 };
@@ -130,7 +130,7 @@ pub fn try_decrypt_office_file(path: &str, password: Option<&str>) -> Result<Opt
 	}
 	let Some(password) = password else {
 		// TRANSLATORS: Error detail shown when an encrypted Office (OOXML) file needs a password (the internal sentinel prefix before it is not translated)
-		anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} {}", t("File is encrypted and requires a password"));
+		anyhow::bail!(PasswordRequired(t("File is encrypted and requires a password")));
 	};
 	let decrypted = decrypt_from_file(path, password)
 		// TRANSLATORS: Error shown when decrypting an encrypted Office (OOXML) file fails; {} is the underlying error

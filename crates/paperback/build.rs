@@ -2,6 +2,8 @@
 mod docs;
 #[path = "build/installer.rs"]
 mod installer;
+#[path = "src/installer_strings.rs"]
+mod installer_strings;
 #[path = "build/macos.rs"]
 mod macos;
 #[path = "build/paths.rs"]

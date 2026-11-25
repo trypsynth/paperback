@@ -30,6 +30,7 @@ import dev.paperback.android.t
 import dev.paperback.android.ui.screens.noteActionLabel
 import dev.paperback.android.ui.state.MainScreenUiState
 import uniffi.paperback.BookmarkFfi
+import uniffi.paperback.PageLayout
 
 /** One definition for both the visible menu item and the TalkBack custom action, so the two can't drift out of sync. */
 private data class MenuAction(val label: String, val onClick: () -> Unit)
@@ -53,6 +54,19 @@ private fun MenuActionItems(actions: List<MenuAction>, onItemClick: () -> Unit) 
 		)
 	}
 }
+
+/** Null hands the document back to the page layout chosen in Settings. */
+@Composable
+private fun pageLayoutChoices(): List<Pair<PageLayout?, String>> = listOf(
+	// TRANSLATORS: Choice in the Page Layout menu: the open PDF or XPS document follows the page layout chosen for all documents in Settings
+	null to t("Same as Other Documents"),
+	// TRANSLATORS: Choice in the Page Layout menu: the open document's pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+	PageLayout.AUTOMATIC to t("Automatic"),
+	// TRANSLATORS: Choice in the Page Layout menu: the open document's own reading order is ignored and the columns of each page are found from where the text sits, for documents read out of order
+	PageLayout.COLUMNS to t("By Columns"),
+	// TRANSLATORS: Choice in the Page Layout menu: like By Columns, but every line is kept apart instead of joined into paragraphs, for code, poetry and lists of clauses
+	PageLayout.LINES to t("By Columns, Every Line Apart")
+)
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -79,12 +93,14 @@ fun MainScreenTopBar(
 	onImportSettings: () -> Unit,
 	onOpenFromUrl: () -> Unit,
 	onHelpOpen: () -> Unit,
+	onPageLayoutChange: (PageLayout?) -> Unit = {},
 	bookmarkHere: BookmarkFfi? = null,
 	onToggleBookmark: () -> Unit = {},
 	onBookmarkNote: () -> Unit = {},
 	onBookmarksOpen: () -> Unit = {}
 ) {
 	var moreOptionsExpanded by remember { mutableStateOf(false) }
+	var pageLayoutExpanded by remember { mutableStateOf(false) }
 	val bookMenuActions = listOf(
 		// TRANSLATORS: Menu item / accessibility action that downloads a document from a web link and opens it
 		MenuAction(t("Open from URL..."), onOpenFromUrl),
@@ -200,6 +216,10 @@ fun MainScreenTopBar(
 							// TRANSLATORS: Menu item / accessibility action to open the export document dialog
 							add(MenuAction(t("Export As"), onExportDocumentOpen))
 						}
+						if (state.activeTab?.hasPageLayout == true) {
+							// TRANSLATORS: Menu item / accessibility action opening the choices of how the open PDF or XPS document's pages are put in reading order and paragraphs
+							add(MenuAction(t("Page Layout")) { pageLayoutExpanded = true })
+						}
 					}
 					if (!isAudioOnly) {
 						add(
@@ -295,6 +315,15 @@ fun MainScreenTopBar(
 							onDismissRequest = { moreOptionsExpanded = false }
 						) {
 							MenuActionItems(menuActions) { moreOptionsExpanded = false }
+						}
+						val ownPageLayout = state.activeTab?.ownPageLayout
+						DropdownMenu(expanded = pageLayoutExpanded, onDismissRequest = { pageLayoutExpanded = false }) {
+							pageLayoutChoices().forEach { (layout, label) ->
+								PickerMenuItem(label = label, selected = layout == ownPageLayout) {
+									pageLayoutExpanded = false
+									onPageLayoutChange(layout)
+								}
+							}
 						}
 					}
 				}

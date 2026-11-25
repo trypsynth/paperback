@@ -374,12 +374,15 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Formulas inside links and table cells can be navigated to.
 * HTML export keeps block quotes, figures, definition lists, asides, line breaks, superscripts, and subscripts.
 * On Windows, screen readers say "link" on the links in a document as you read, and clicking a link follows it, as `Enter` does.
+* A page layout setting for PDFs read out of order, in the Documents tab of Settings and for one document in View > Page Layout: by columns finds the columns from where the text sits instead of following the document, and can keep every line apart. It replaces the setting that kept lines apart. `pb --layout` does the same.
 
 ##### iOS and Android
 * Go To has a Time mode for audio books, with `Cmd+J` on an iPad keyboard, and the playing screen shows how far in you are and how long the book runs.
 * Each book remembers its navigation unit.
 * Bookmarks and notes, from a button in the reader's top bar: hold it, or use the screen reader's actions, to add a note or open the Bookmarks list. They are the same bookmarks the desktop keeps, so they travel in `.paperback` files, and the desktop's bookmark keys work with a keyboard.
 * Tapping the progress under the read-aloud bar switches it to the chapter's: its name, percentage, and words left, or its times in an audio book.
+* The page layout setting for PDFs read out of order is in Settings, and in the More options menu for one PDF or XPS document.
+* Android has a speech dictionary, in Settings, and both apps now read their rules exactly as the desktop does. Rules saved on iOS move over the first time it opens.
 
 ##### pb
 * pb is two to four times faster on most text formats, and converts as many documents at once as there are processors, or as many as `--jobs` says.
@@ -388,10 +391,13 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 #### Changed
 * Settings is split into six tabs, one for each kind of setting.
 * PDFs, big CHM references, and MOBI books open faster.
+* The Windows installer asks about less: Paperback shows in Open with for every format it reads, and setup only offers to make it the default app for EPUB books and PDFs. The Start Menu shortcut is now on by default.
+* The Windows installer opens in your Windows display language when Paperback is translated into it, and asks which language to use when it isn't.
 
 #### Fixed
 
 ##### General
+* Read aloud with a SAPI 5 voice that works in the Windows code page, such as Mikropuhe, no longer garbles letters like ä and ö.
 * Punctuation shortcuts work on every keyboard layout, matched by the key's place on a US keyboard.
 * Paperback no longer hangs when a shortcut with `Shift` and punctuation opens Settings, when a file it can't read is opened from the command line, or when OCR results, a file from another copy, or the sleep timer arrive while a dialog is open.
 * Very deeply nested HTML and XML documents no longer crash.

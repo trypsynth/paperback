@@ -6,6 +6,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import uniffi.paperback.ConfigManagerFfi
 import uniffi.paperback.NoHandle
+import uniffi.paperback.PageLayout
 
 private class FindPlaybackConfig : ConfigManagerFfi(NoHandle) {
 	val booleans = mutableMapOf<String, Boolean>()
@@ -13,6 +14,8 @@ private class FindPlaybackConfig : ConfigManagerFfi(NoHandle) {
 	override fun getAppBool(key: String, defaultValue: Boolean): Boolean = booleans[key] ?: defaultValue
 
 	override fun getAppInt(key: String, defaultValue: Int): Int = defaultValue
+
+	override fun getPageLayout(): PageLayout = PageLayout.AUTOMATIC
 
 	override fun setAppBool(key: String, value: Boolean) {
 		booleans[key] = value

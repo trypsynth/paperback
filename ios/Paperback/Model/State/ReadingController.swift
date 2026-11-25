@@ -33,10 +33,9 @@ final class ReadingController {
 
 	// Not in init, because both of these need the context to be set.
 	func start() {
-		if let data = UserDefaults.standard.data(forKey: "tts_rules"),
-		   let loaded = try? JSONDecoder().decode([TtsRule].self, from: data) {
-			ttsRules = loaded
-			ttsManager.rules = loaded
+		if let config = context?.configManager {
+			migrateLegacySpeechRules(from: .standard, into: config)
+			ttsManager.config = config
 		}
 		ttsManager.onUtteranceFinished = { [weak self] in
 			self?.advanceTtsAfterUtterance()
@@ -103,13 +102,13 @@ final class ReadingController {
 		guard !units.isEmpty, !units.contains(currentNavUnit) else { return }
 		currentNavUnit = units[0]
 	}
-	var ttsRules: [TtsRule] = [] {
-		didSet {
-			ttsManager.rules = ttsRules
-			if let data = try? JSONEncoder().encode(ttsRules) {
-				UserDefaults.standard.set(data, forKey: "tts_rules")
-			}
-		}
+	var speechRules: [SpeechRule] { context?.configManager.getSpeechRules() ?? [] }
+
+	func setSpeechRules(_ rules: [SpeechRule]) {
+		guard let config = context?.configManager else { return }
+		config.setSpeechRules(rules: rules)
+		config.flush()
+		ttsManager.speechRulesChanged()
 	}
 
 	var activeSearchQuery: String? = nil

@@ -1,24 +1,26 @@
 //! What PDF and XPS share once a page is lines of text with their positions: reading order, running heads, paragraphs, headings and links.
 
+mod columns;
 mod line;
 mod links;
 mod paragraphs;
 pub(in crate::parser) mod running;
 mod toc;
 
+pub(in crate::parser) use columns::read_by_columns;
 pub(crate) use line::keeps_line_end_hyphen;
 use line::median_line_font_size;
 pub(in crate::parser) use line::{COORDINATE_EPSILON, Line, restore_reading_order, sorted_median};
 pub(in crate::parser) use links::{PendingLink, place_links};
-use paragraphs::join_paragraphs;
 pub(in crate::parser) use paragraphs::split_lines;
+use paragraphs::{join_column_paragraphs, join_paragraphs};
 pub(crate) use paragraphs::{join_wrapped_lines, join_wrapped_runs};
 pub(in crate::parser) use running::RunningText;
 use running::{EDGE_LINES, PageEdges};
 pub(in crate::parser) use toc::build_toc_tree;
 
 use crate::{
-	document::{DocPos, DocumentBuffer, Marker, MarkerType, TocItem},
+	document::{DocPos, DocumentBuffer, Marker, MarkerType, PageLayout, TocItem},
 	parser::add_heading_markers,
 };
 
@@ -26,12 +28,16 @@ use crate::{
 pub(in crate::parser) fn page_paragraphs(
 	mut lines: Vec<Line>,
 	running_text: &RunningText,
-	join: bool,
+	layout: PageLayout,
 ) -> (Vec<Line>, Vec<(String, bool, usize)>) {
 	// Measured before the running headers come out: they sit at or below body size, so dropping them would pull the median up past a heading only just above it.
 	let body_size = median_line_font_size(&lines);
 	strip_running_text(&mut lines, running_text);
-	let paragraphs = if join { join_paragraphs(&lines, body_size) } else { split_lines(&lines, body_size) };
+	let paragraphs = match layout {
+		PageLayout::Automatic => join_paragraphs(&lines, body_size),
+		PageLayout::Columns => join_column_paragraphs(&lines, body_size),
+		PageLayout::Lines => split_lines(&lines, body_size),
+	};
 	(lines, paragraphs)
 }
 

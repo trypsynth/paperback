@@ -38,8 +38,13 @@ impl MainWindow {
 		let mut timers = background::start_timers(frame, doc_manager);
 		timers.push(sleep_timer_handle);
 		background::bind_resize(frame, doc_manager);
+		let (dm_for_open, config_for_open) = (Rc::clone(&dm), Rc::clone(&config));
+		frame.on_menu_opened(move |_| menu_view::sync_page_layout_items(&frame_copy, &dm_for_open, &config_for_open));
 		frame.on_menu(move |event| {
 			let id = event.get_id();
+			if menu_view::handle_page_layout(&dm, id) {
+				return;
+			}
 			// Cleared whatever the outcome, so a key that led nowhere can't leave it set for a later menu click.
 			let from_keyboard = from_keyboard.replace(false);
 			if commands::dispatch(

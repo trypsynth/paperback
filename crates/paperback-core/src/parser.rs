@@ -57,6 +57,11 @@ pub mod xps;
 
 pub const PASSWORD_REQUIRED_ERROR_PREFIX: &str = "[password_required]";
 
+/// Printed behind [`PASSWORD_REQUIRED_ERROR_PREFIX`], which is all that is left to tell it by once an error has crossed to an app as a string.
+#[derive(Debug, thiserror::Error)]
+#[error("[password_required]{0}")]
+pub struct PasswordRequired(pub String);
+
 /// A parser's answer for a file of an extension it shares but in a format that isn't its own, such as a DAISY book's `.opf` to the EPUB parser. It is never the error shown, since the file's own parser has a better one.
 #[derive(Debug, thiserror::Error)]
 #[error("{0} isn't this parser's format")]
@@ -232,7 +237,7 @@ pub fn parse_document(context: &ParserContext) -> Result<Document> {
 				return Ok(doc);
 			}
 			Err(e) => {
-				if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
+				if e.is::<PasswordRequired>() {
 					return Err(e);
 				}
 				tracing::warn!(path = %context.file_path, parser = parser.name(), error = %e, "parser failed, trying next");

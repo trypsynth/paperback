@@ -1,8 +1,9 @@
-import AVFoundation
 import Foundation
 
-struct TtsRule: Codable, Identifiable, Equatable {
-	var id: UUID
+let legacySpeechRulesKey = "tts_rules"
+
+/// A speech dictionary rule as iOS kept it in UserDefaults before the dictionary moved to core; read only to migrate it.
+struct TtsRule: Decodable {
 	var isEnabled: Bool
 	var scope: Scope
 	var matchType: MatchType
@@ -11,56 +12,22 @@ struct TtsRule: Codable, Identifiable, Equatable {
 	var wholeWord: Bool
 	var voiceFilter: VoiceFilter
 
-	init(
-		id: UUID = UUID(),
-		isEnabled: Bool = true,
-		scope: Scope = .word,
-		matchType: MatchType = .literal,
-		pattern: String = "",
-		replacement: String = "",
-		wholeWord: Bool = false,
-		voiceFilter: VoiceFilter = .all
-	) {
-		self.id = id
-		self.isEnabled = isEnabled
-		self.scope = scope
-		self.matchType = matchType
-		self.pattern = pattern
-		self.replacement = replacement
-		self.wholeWord = wholeWord
-		self.voiceFilter = voiceFilter
-	}
-
-	enum Scope: String, Codable, CaseIterable {
+	enum Scope: String, Decodable {
 		case word
 		case paragraph
 	}
 
-	enum MatchType: String, Codable, CaseIterable {
+	enum MatchType: String, Decodable {
 		case literal
 		case regex
 	}
 
-	enum VoiceFilter: Codable, Equatable {
+	enum VoiceFilter: Decodable {
 		case all
 		case language(String)
 		case voices([String])
 
 		private enum CodingKeys: String, CodingKey { case type, value, values }
-
-		func encode(to encoder: Encoder) throws {
-			var c = encoder.container(keyedBy: CodingKeys.self)
-			switch self {
-			case .all:
-				try c.encode("all", forKey: .type)
-			case .language(let lang):
-				try c.encode("language", forKey: .type)
-				try c.encode(lang, forKey: .value)
-			case .voices(let ids):
-				try c.encode("voices", forKey: .type)
-				try c.encode(ids, forKey: .values)
-			}
-		}
 
 		init(from decoder: Decoder) throws {
 			let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -73,62 +40,47 @@ struct TtsRule: Codable, Identifiable, Equatable {
 				self = .all
 			}
 		}
-
-		func matches(voiceId: String?) -> Bool {
-			switch self {
-			case .all:
-				return true
-			case .language(let lang):
-				guard let id = voiceId, let voice = AVSpeechSynthesisVoice(identifier: id) else { return false }
-				return voice.language == lang
-			case .voices(let ids):
-				guard let id = voiceId else { return false }
-				return ids.contains(id)
-			}
-		}
-
-		var label: String {
-			switch self {
-			case .all:
-				return "All voices"
-			case .language(let lang):
-				let name = Locale.current.localizedString(forIdentifier: lang) ?? lang
-				return "All \(name) voices"
-			case .voices(let ids):
-				if ids.isEmpty { return "No voices selected" }
-				if ids.count == 1, let v = AVSpeechSynthesisVoice(identifier: ids[0]) { return v.name }
-				return "\(ids.count) voices"
-			}
-		}
 	}
 
-	/// The editor promises `\1` for a capture group, as NVDA's speech dictionary uses, but the engine's templates only know `$1`.
-	static func template(_ replacement: String) -> String {
-		replacement.replacingOccurrences(of: #"\\(\d)"#, with: "\\$$1", options: .regularExpression)
+	var speechRule: SpeechRule {
+		let filter: Paperback.VoiceFilter
+		switch voiceFilter {
+		case .all: filter = .all
+		case .language(let language): filter = .language(language)
+		case .voices(let ids): filter = .voices(ids)
+		}
+		let isRegex = scope == .paragraph && matchType == .regex
+		return SpeechRule(enabled: isEnabled, scope: scope == .word ? .word : .paragraph, matchType: matchType == .regex ? .regex : .literal, pattern: pattern, replacement: isRegex ? Self.nvdaReplacement(replacement) : replacement, wholeWord: wholeWord, voiceFilter: filter)
 	}
 
-	func apply(to text: String, voiceId: String?) -> String {
-		guard isEnabled, voiceFilter.matches(voiceId: voiceId), !pattern.isEmpty else { return text }
-		switch scope {
-		case .word:
-			if wholeWord {
-				let esc = NSRegularExpression.escapedPattern(for: pattern)
-				guard let rx = try? NSRegularExpression(pattern: "\\b\(esc)\\b") else { return text }
-				return rx.stringByReplacingMatches(
-					in: text, range: NSRange(text.startIndex..., in: text),
-					withTemplate: NSRegularExpression.escapedTemplate(for: replacement)
-				)
+	/// iOS read a regex replacement as an NSRegularExpression template after turning `\1` into `$1`, so `$1` was a group too and other escapes dropped their backslash; core reads only `\1`.
+	static func nvdaReplacement(_ template: String) -> String {
+		let chars = Array(template)
+		var result = ""
+		var i = 0
+		while i < chars.count {
+			let next: Character? = i + 1 < chars.count ? chars[i + 1] : nil
+			if chars[i] == "\\" || chars[i] == "$", let next, ("0"..."9").contains(next) {
+				result += "\\\(next)"
+				i += 2
+			} else if chars[i] == "\\", let next {
+				result.append(next)
+				i += 2
+			} else {
+				result.append(chars[i])
+				i += 1
 			}
-			return text.replacingOccurrences(of: pattern, with: replacement)
-		case .paragraph:
-			if matchType == .regex {
-				guard let rx = try? NSRegularExpression(pattern: pattern) else { return text }
-				return rx.stringByReplacingMatches(
-					in: text, range: NSRange(text.startIndex..., in: text),
-					withTemplate: Self.template(replacement)
-				)
-			}
-			return text.replacingOccurrences(of: pattern, with: replacement)
 		}
+		return result
 	}
+}
+
+/// Runs once: the key goes when the rules are in core, but stays if they can't be read, so a failed decode loses nothing.
+func migrateLegacySpeechRules(from defaults: UserDefaults, into config: ConfigManagerFfi) {
+	guard let data = defaults.data(forKey: legacySpeechRulesKey), let legacy = try? JSONDecoder().decode([TtsRule].self, from: data) else { return }
+	if !legacy.isEmpty, config.getSpeechRules().isEmpty {
+		config.setSpeechRules(rules: legacy.map(\.speechRule))
+		config.flush()
+	}
+	defaults.removeObject(forKey: legacySpeechRulesKey)
 }

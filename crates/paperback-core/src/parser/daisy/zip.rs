@@ -19,7 +19,7 @@ use crate::{
 	audio::AudioLocation,
 	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
-		PASSWORD_REQUIRED_ERROR_PREFIX, add_converter_markers,
+		PasswordRequired, add_converter_markers,
 		convert::xml_to_text::XmlToText,
 		is_data_uri, is_external_url,
 		util::{
@@ -108,13 +108,7 @@ fn parse_archive(context: &ParserContext, path: &Path) -> Result<Document> {
 	if let Some(opf_name) = opf_path {
 		let opf_dir = opf_name.rsplit_once('/').map_or_else(String::new, |(dir, _)| dir.to_string());
 		let opf_content = read_zip_entry_by_name_with_password(&mut archive, &opf_name, context.password.as_deref())
-			.map_err(|e| {
-				if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
-					e
-				} else {
-					e.context("Failed to read OPF file")
-				}
-			})?;
+			.map_err(|e| if e.is::<PasswordRequired>() { e } else { e.context("Failed to read OPF file") })?;
 		let package = parse_opf_package(&opf_content, &opf_dir)?;
 		if let Some(t) = package.title.clone() {
 			title = t;
@@ -155,13 +149,7 @@ fn parse_archive(context: &ParserContext, path: &Path) -> Result<Document> {
 	let ncc_found = ncc_path.is_some();
 	if let Some(ncc_name) = ncc_path {
 		let ncc_content = read_zip_entry_by_name_with_password(&mut archive, &ncc_name, context.password.as_deref())
-			.map_err(|e| {
-				if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
-					e
-				} else {
-					e.context("Failed to read ncc.html")
-				}
-			})?;
+			.map_err(|e| if e.is::<PasswordRequired>() { e } else { e.context("Failed to read ncc.html") })?;
 		let (ncc_title, ncc_author) = parse_daisy2_ncc_metadata(&ncc_content);
 		if let Some(t) = ncc_title {
 			title = t;
@@ -243,14 +231,8 @@ fn dtbook_document<R: Read + Seek>(
 	title: String,
 	author: String,
 ) -> Result<Document> {
-	let xml_content =
-		read_zip_entry_by_name_with_password(archive, dtbook_path, context.password.as_deref()).map_err(|e| {
-			if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
-				e
-			} else {
-				e.context("Failed to read XML file from zip")
-			}
-		})?;
+	let xml_content = read_zip_entry_by_name_with_password(archive, dtbook_path, context.password.as_deref())
+		.map_err(|e| if e.is::<PasswordRequired>() { e } else { e.context("Failed to read XML file from zip") })?;
 	let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
 	let buffer = if converter.convert(&xml_content) {
 		let mut converted_buffer = DocumentBuffer::with_content(converter.take_text());

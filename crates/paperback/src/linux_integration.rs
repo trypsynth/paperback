@@ -88,7 +88,7 @@ fn association_choices() -> Vec<AssociationChoice> {
 	choices.push(AssociationChoice {
 		// TRANSLATORS: Checkbox label in the Linux file-association setup dialog. Shared by
 		// multiple parsers (DAISY, Word-in-zip), so it's kept as its own opt-in entry rather
-		// than tied to one format, same as the Windows installer's "assoc_zip" task.
+		// than tied to one format.
 		label: t("ZIP Archives (.zip)"),
 		action: ChoiceAction::Associate(&["application/zip"]),
 		default_checked: false,

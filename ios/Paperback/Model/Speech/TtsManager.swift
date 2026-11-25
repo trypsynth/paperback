@@ -3,19 +3,6 @@ import OSLog
 
 private let ttsLog = Logger(subsystem: "dev.paperback.ios", category: "tts")
 
-/// Paragraph rules run before word rules so a paragraph rule can't overwrite what a word rule produced.
-func applyRules(_ rules: [TtsRule], to text: String, voiceId: String?) -> String {
-	guard !rules.isEmpty else { return text }
-	var result = text
-	for rule in rules where rule.scope == .paragraph {
-		result = rule.apply(to: result, voiceId: voiceId)
-	}
-	for rule in rules where rule.scope == .word {
-		result = rule.apply(to: result, voiceId: voiceId)
-	}
-	return result
-}
-
 /// The step is small because a pause that sounds right and one that drags differ by tens of milliseconds; past a second it is no longer a paragraph pause.
 let paragraphPauseRangeMs = 0...1000
 let paragraphPauseStepMs = 10
@@ -150,12 +137,17 @@ final class TtsManager: NSObject {
 	@ObservationIgnored var onSpeechRateChanged: ((Float) -> Void)?
 	@ObservationIgnored var onPitchChanged: ((Float) -> Void)?
 	@ObservationIgnored var onParagraphPauseChanged: ((Int) -> Void)?
-	@ObservationIgnored var rules: [TtsRule] = [] {
-		didSet { invalidatePrefetch() }
+	/// Core applies the speech dictionary, so every platform speaks a rule the same way.
+	@ObservationIgnored var config: ConfigManagerFfi?
+
+	func speechRulesChanged() {
+		invalidatePrefetch()
 	}
 
 	func preprocessText(_ text: String) -> String {
-		applyRules(rules, to: text, voiceId: selectedVoiceIdentifier)
+		guard let config else { return text }
+		let language = selectedVoiceIdentifier.flatMap { AVSpeechSynthesisVoice(identifier: $0)?.language }
+		return config.applySpeechRules(text: text, voiceId: selectedVoiceIdentifier, voiceLanguage: language)
 	}
 
 	override init() {

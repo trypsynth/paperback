@@ -1,6 +1,10 @@
 //! Unknown keys fall through to `AppSettings::extra`, so a front end can add a setting without a schema change.
 
 use super::ConfigManager;
+use crate::document::PageLayout;
+
+/// What the page layout setting replaced: off kept every line apart.
+const OLD_JOIN_KEY: &str = "join_pdf_paragraphs";
 
 impl ConfigManager {
 	pub fn get_app_string(&self, key: &str, default_value: &str) -> String {
@@ -20,7 +24,6 @@ impl ConfigManager {
 			"restore_previous_documents" => data.app.restore_previous_documents,
 			"word_wrap" => data.app.word_wrap,
 			"render_tables_inline" => data.app.render_tables_inline,
-			"join_pdf_paragraphs" => data.app.join_pdf_paragraphs,
 			"strip_running_text" => data.app.strip_running_text,
 			"markdown_dollar_math" => data.app.markdown_dollar_math,
 			"navigation_wrap" => data.app.navigation_wrap,
@@ -77,7 +80,6 @@ impl ConfigManager {
 				"restore_previous_documents" => data.app.restore_previous_documents = value,
 				"word_wrap" => data.app.word_wrap = value,
 				"render_tables_inline" => data.app.render_tables_inline = value,
-				"join_pdf_paragraphs" => data.app.join_pdf_paragraphs = value,
 				"strip_running_text" => data.app.strip_running_text = value,
 				"markdown_dollar_math" => data.app.markdown_dollar_math = value,
 				"navigation_wrap" => data.app.navigation_wrap = value,
@@ -89,6 +91,30 @@ impl ConfigManager {
 					data.app.extra.insert(key.to_string(), toml::Value::Boolean(value));
 				}
 			}
+		}
+		self.dirty.set(true);
+	}
+
+	#[must_use]
+	pub fn get_page_layout(&self) -> PageLayout {
+		if !self.initialized {
+			return PageLayout::default();
+		}
+		let data = self.data.borrow();
+		data.app.page_layout.unwrap_or_else(|| {
+			let joined = data.app.extra.get(OLD_JOIN_KEY).and_then(toml::Value::as_bool).unwrap_or(true);
+			if joined { PageLayout::Automatic } else { PageLayout::Lines }
+		})
+	}
+
+	pub fn set_page_layout(&self, layout: PageLayout) {
+		if !self.initialized {
+			return;
+		}
+		{
+			let mut data = self.data.borrow_mut();
+			data.app.page_layout = Some(layout);
+			data.app.extra.remove(OLD_JOIN_KEY);
 		}
 		self.dirty.set(true);
 	}
@@ -124,12 +150,22 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn join_pdf_paragraphs_round_trips() {
+	fn page_layout_round_trips() {
 		let mut config = ConfigManager::new();
 		config.initialized = true;
-		assert!(config.get_app_bool("join_pdf_paragraphs", true));
-		config.set_app_bool("join_pdf_paragraphs", false);
-		assert!(!config.get_app_bool("join_pdf_paragraphs", true));
+		assert_eq!(config.get_page_layout(), PageLayout::Automatic);
+		config.set_page_layout(PageLayout::Columns);
+		assert_eq!(config.get_page_layout(), PageLayout::Columns);
+	}
+
+	#[test]
+	fn turning_off_joined_paragraphs_carries_over_as_keeping_every_line() {
+		let mut config = ConfigManager::new();
+		config.initialized = true;
+		config.set_app_bool(OLD_JOIN_KEY, false);
+		assert_eq!(config.get_page_layout(), PageLayout::Lines);
+		config.set_page_layout(PageLayout::Automatic);
+		assert!(config.get_app_bool(OLD_JOIN_KEY, true), "the old key goes once the new one is set");
 	}
 
 	#[test]

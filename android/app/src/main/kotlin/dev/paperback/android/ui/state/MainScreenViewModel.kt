@@ -34,12 +34,16 @@ import uniffi.paperback.DocumentSession
 import uniffi.paperback.ExportFormat
 import uniffi.paperback.HeadingTreeFfi
 import uniffi.paperback.LinkListFfi
+import uniffi.paperback.PageLayout
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Locale
 
 private const val ACTIVE_DOCUMENT_KEY = "active_document"
+
+// The session offers no length of its own, but a hundred percent in is the end of the text.
+private fun DocumentSession.textLength(): Long = positionFromPercent(100)
 
 class MainScreenViewModel(application: Application) : AndroidViewModel(application) {
 	private val context get() = getApplication<Application>()
@@ -421,7 +425,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 
 			val docKey = config.getDocKey(uriString)
 			val password = providedPassword ?: config.getDocumentPassword(uriString)
-			val session = DocumentSession.newFfi(absolutePath, password, "", false)
+			val session = DocumentSession.newFfi(absolutePath, password, "", false, config.pageLayoutFor(uriString))
 			session.startPosition()?.let { config.seedDocumentPosition(uriString, it) }
 			val savedPosition = config.getDocumentPosition(uriString)
 			if (providedPassword != null) {
@@ -445,7 +449,10 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 				initialScrollIndex = initialScrollIndex,
 				savedPosition = savedPosition,
 				hasAudio = session.hasAudioFfi(),
-				isAudioOnly = session.isAudioOnlyFfi()
+				isAudioOnly = session.isAudioOnlyFfi(),
+				localPath = absolutePath,
+				hasPageLayout = config.pageLayoutAppliesTo(absolutePath),
+				ownPageLayout = config.getDocumentPageLayout(uriString)
 			)
 		} catch (e: Exception) {
 			val msg = e.message ?: ""
@@ -503,6 +510,65 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 			reading.setPosition(tabState.savedPosition)
 			updateTtsMetadata()
 			reading.refreshSegmentPreview()
+		}
+	}
+
+	fun setPageLayout(layout: PageLayout) {
+		if (layout == settings.pageLayout.state.value) return
+		settings.pageLayout.set(layout)
+		rereadTabs(currentTabs.filter { it.hasPageLayout && it.ownPageLayout == null })
+	}
+
+	fun setDocumentPageLayout(layout: PageLayout?) {
+		val tab = currentTabs.getOrNull(currentActiveIndex) ?: return
+		if (!tab.hasPageLayout) return
+		val before = config.pageLayoutFor(tab.documentUri)
+		config.setDocumentPageLayout(tab.documentUri, layout)
+		config.saveSoon()
+		val updated = tab.copy(ownPageLayout = layout)
+		currentTabs[currentActiveIndex] = updated
+		emitTabsState()
+		if (config.pageLayoutFor(tab.documentUri) != before) rereadTabs(listOf(updated))
+	}
+
+	// Read again from the copy already parsed, so each tab stays where it is and keeps its reader's place.
+	private fun rereadTabs(tabs: List<DocumentTabState>) {
+		if (tabs.isEmpty()) return
+		viewModelScope.launch(Dispatchers.IO) {
+			for (tab in tabs) {
+				val uri = tab.documentUri
+				val layout = config.pageLayoutFor(uri)
+				val session = try {
+					DocumentSession.newFfi(tab.localPath, config.getDocumentPassword(uri), "", false, layout)
+				} catch (_: Exception) {
+					continue
+				}
+				withContext(Dispatchers.Main) {
+					val index = currentTabs.indexOfFirst { it.docKey == tab.docKey }
+					// Closed meanwhile, or changed again and so read by a later pass.
+					if (index == -1 || config.pageLayoutFor(uri) != layout) return@withContext
+					val current = currentTabs[index]
+					val isActive = index == currentActiveIndex
+					val oldPosition = if (isActive) reading.ttsPosition.value else config.getDocumentPosition(uri)
+					val position = positionAfterReread(oldPosition, current.session.textLength(), session.textLength())
+					currentTabs[index] = current.copy(
+						session = session,
+						title = session.title().ifBlank { current.fileName },
+						author = session.author(),
+						lineCount = session.lineCount(),
+						toc = session.getToc(),
+						initialScrollIndex = lineIndexFor(session.lineFromPosition(position)),
+						savedPosition = position
+					)
+					emitTabsState()
+					if (isActive) {
+						reading.updateTtsPosition(position)
+					} else {
+						config.setDocumentPosition(uri, position)
+						config.saveSoon()
+					}
+				}
+			}
 		}
 	}
 

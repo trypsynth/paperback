@@ -249,6 +249,19 @@ struct SettingsView: View {
 				Text(t("Opens Paperback in the Settings app, where its language can be changed."))
 			}
 			ReadabilitySettingsSection(viewModel: viewModel)
+			// TRANSLATORS: Section header in Settings grouping how documents are read in
+			Section(t("Documents")) {
+				// TRANSLATORS: Label for the picker choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for every document not given a page layout of its own in the More options menu
+				Picker(t("Page layout of PDF and XPS documents"), selection: Binding(get: { viewModel.pageLayout }, set: { viewModel.pageLayout = $0 })) {
+					// TRANSLATORS: Page layout choice in Settings: PDF and XPS pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+					Text(t("Automatic")).tag(PageLayout.automatic)
+					// TRANSLATORS: Page layout choice in Settings: the document's own reading order is ignored and the columns of each page are found from where the text sits, then read one after the other. It suits documents whose text is read out of order, such as two-column layouts
+					Text(t("By columns, ignoring the document's own order")).tag(PageLayout.columns)
+					// TRANSLATORS: Page layout choice in Settings: like reading by columns, but every line is kept apart instead of joined into paragraphs, which suits code, poetry and lists of clauses whose line breaks are the content
+					Text(t("By columns, keeping every line apart")).tag(PageLayout.lines)
+				}
+				.menuPickerTraits()
+			}
 			TtsSettingsSection(
 				ttsManager: viewModel.reading.ttsManager,
 				voiceName: voiceName(viewModel.speech.defaultVoice, in: viewModel.reading.ttsManager.availableVoices),

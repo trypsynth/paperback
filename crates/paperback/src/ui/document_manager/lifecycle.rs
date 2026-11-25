@@ -91,7 +91,7 @@ impl DocumentManager {
 			let path_str = path.to_string_lossy();
 			let forced_extension = config.get_document_format(&path_str);
 			let password = config.get_document_password(&path_str);
-			let settings = parse_settings(&config);
+			let settings = parse_settings(&config, &path_str);
 			drop(config);
 			(password, forced_extension, settings)
 		};
@@ -155,7 +155,11 @@ impl DocumentManager {
 		let config = self.config.lock().unwrap();
 		let mut session = session;
 		// Before the position is read, since it was saved against the text OCR put in.
-		restore_saved_pages(&mut session, &saved_pages_of(&local_path), joins_recognized_text(&local_path, &config));
+		restore_saved_pages(
+			&mut session,
+			&saved_pages_of(&local_path),
+			joins_recognized_text(&local_path, &path.to_string_lossy(), &config),
+		);
 		let word_wrap = config.get_app_bool("word_wrap", false);
 		let text_ctrl =
 			reader_input::build_text_ctrl(panel, word_wrap, self_rc, self.frame, self.from_keyboard.clone());
