@@ -2,7 +2,9 @@
 //!
 //! Ported from Paperback for iOS, which had it first, so its rules behave the same here and can move to core unchanged.
 
-use regex::{NoExpand, Regex};
+use std::{borrow::Cow, ops::Range};
+
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 use super::{TextMap, Voice};
@@ -105,26 +107,36 @@ impl SpeechRule {
 		Ok(())
 	}
 
-	/// Applies the rule to `text` and records what it replaced in `map`. A rule that's off, empty, for another voice, or an invalid regular expression changes nothing.
-	fn apply(&self, text: &str, voice: Option<&Voice>, map: &mut TextMap) -> String {
+	/// Applies the rule to `text` and records what it replaced in `map`. `None` when it changes nothing: a rule that's off, empty, for another voice, or an invalid regular expression, or one that matches nowhere.
+	fn apply(&self, text: &str, voice: Option<&Voice>, map: &mut TextMap) -> Option<String> {
 		if !self.enabled || self.pattern.is_empty() || !self.voice_filter.matches(voice) {
-			return text.to_owned();
+			return None;
 		}
 		match (self.scope, self.match_type) {
 			(RuleScope::Word, _) if self.whole_word => {
-				let Ok(pattern) = Regex::new(&format!(r"\b{}\b", regex::escape(&self.pattern))) else {
-					return text.to_owned();
-				};
-				replace(text, &pattern, |_, out| out.push_str(&self.replacement), map)
+				let pattern = Regex::new(&format!(r"\b{}\b", regex::escape(&self.pattern))).ok()?;
+				replace(
+					text,
+					pattern.captures_iter(text).map(with_range),
+					|_, out| out.push_str(&self.replacement),
+					map,
+				)
 			}
 			(RuleScope::Paragraph, MatchType::Regex) => {
-				let Ok(pattern) = Regex::new(&self.pattern) else { return text.to_owned() };
+				let pattern = Regex::new(&self.pattern).ok()?;
 				let template = nvda_template(&self.replacement);
-				replace(text, &pattern, |captures, out| captures.expand(&template, out), map)
+				replace(
+					text,
+					pattern.captures_iter(text).map(with_range),
+					|captures, out| captures.expand(&template, out),
+					map,
+				)
 			}
+			// Searched for as it is: most rules are this kind, and each would otherwise build a regular expression for every paragraph spoken.
 			_ => {
-				let pattern = Regex::new(&regex::escape(&self.pattern)).expect("an escaped pattern is valid");
-				replace(text, &pattern, |_, out| out.push_str(NoExpand(&self.replacement).0), map)
+				let found =
+					text.match_indices(self.pattern.as_str()).map(|(start, found)| (start..start + found.len(), ()));
+				replace(text, found, |(), out| out.push_str(&self.replacement), map)
 			}
 		}
 	}
@@ -134,40 +146,48 @@ impl SpeechRule {
 #[must_use]
 pub fn apply_rules(rules: &[SpeechRule], text: &str, voice: Option<&Voice>) -> (String, TextMap) {
 	let mut map = TextMap::default();
-	let mut result = text.to_owned();
+	let mut result = Cow::Borrowed(text);
 	for scope in [RuleScope::Paragraph, RuleScope::Word] {
 		for rule in rules.iter().filter(|rule| rule.scope == scope) {
-			result = rule.apply(&result, voice, &mut map);
+			if let Some(changed) = rule.apply(&result, voice, &mut map) {
+				result = Cow::Owned(changed);
+			}
 		}
 	}
-	(result, map)
+	(result.into_owned(), map)
 }
 
-/// Replaces every match of `pattern`, writing each replacement with `write`, and records the replacements in `map`.
-fn replace(
+fn with_range(captures: regex::Captures<'_>) -> (Range<usize>, regex::Captures<'_>) {
+	(captures.get(0).expect("group 0 is the whole match").range(), captures)
+}
+
+/// Replaces each of `matches`, which are in order and don't overlap, writing its replacement with `write`, and records the replacements in `map`. `None` when there are none, so the text isn't copied for a rule that doesn't touch it.
+fn replace<M>(
 	text: &str,
-	pattern: &Regex,
-	write: impl Fn(&regex::Captures<'_>, &mut String),
+	matches: impl Iterator<Item = (Range<usize>, M)>,
+	write: impl Fn(&M, &mut String),
 	map: &mut TextMap,
-) -> String {
+) -> Option<String> {
+	let mut matches = matches.peekable();
+	matches.peek()?;
 	let mut out = String::with_capacity(text.len());
 	let mut replacements = Vec::new();
 	let mut copied_to = 0;
 	let mut copied_chars = 0;
-	for captures in pattern.captures_iter(text) {
-		let whole = captures.get(0).expect("group 0 is the whole match");
-		let before = &text[copied_to..whole.start()];
+	for (range, found) in matches {
+		let before = &text[copied_to..range.start];
 		out.push_str(before);
 		copied_chars += before.chars().count();
 		let replaced_from = out.len();
-		write(&captures, &mut out);
-		replacements.push((copied_chars, whole.as_str().chars().count(), out[replaced_from..].chars().count()));
-		copied_chars += whole.as_str().chars().count();
-		copied_to = whole.end();
+		write(&found, &mut out);
+		let replaced_chars = text[range.clone()].chars().count();
+		replacements.push((copied_chars, replaced_chars, out[replaced_from..].chars().count()));
+		copied_chars += replaced_chars;
+		copied_to = range.end;
 	}
 	out.push_str(&text[copied_to..]);
 	map.push_step(&replacements);
-	out
+	Some(out)
 }
 
 /// The editor promises `\1` for a captured group, as NVDA does, but the regex crate writes it `${1}`. A literal `$` is escaped so it isn't read as a group.

@@ -109,7 +109,7 @@ impl DocumentManager {
 			crate::windows_audio::publish_playback_state(self.frame.get_handle(), self.media_playback_state());
 			self.follow_output_change();
 		}
-		// `try_lock` because a modal dialog like Options holds the config lock across `show_modal` while pumping messages, so a blocking lock on this tick would deadlock the UI thread.
+		// `try_lock` because a dialog opened with the config locked pumps messages, and a blocking lock on this tick would then deadlock the UI thread.
 		let sync_enabled = self.config.try_lock().ok().map(|config| config.get_app_bool("sync_caret_to_audio", true));
 		let Some(tab) = self.active_tab_mut() else {
 			return;

@@ -299,7 +299,7 @@ fn shortcut_for_shifted_character(kbd: &KeyboardEvent, dm: &Rc<Mutex<DocumentMan
 	let code = kbd.get_unicode_key().and_then(|code| u32::try_from(code).ok())?;
 	let typed = char::from_u32(code).filter(char::is_ascii_punctuation)?;
 	let dm = dm.try_lock().ok()?;
-	// `try_lock` because Settings holds the config while its modal loop delivers this key's character, so waiting would hang.
+	// `try_lock` because a dialog opened with the config locked can deliver this key's character from its modal loop, where waiting would hang.
 	let config = dm.config.try_lock().ok()?;
 	config.find_shortcut_action(i32::from(typed as u8), false, false, false)
 }

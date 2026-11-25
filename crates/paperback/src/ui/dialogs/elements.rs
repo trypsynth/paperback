@@ -5,7 +5,7 @@ use std::{
 #[cfg(not(target_os = "windows"))]
 use std::{collections::HashMap, ffi::c_void};
 
-use paperback_core::{document::DocPos, session::DocumentSession};
+use paperback_core::{document::DocPos, session::DocumentSession, types::HeadingTree};
 use patois::t;
 use wxdragon::prelude::*;
 
@@ -39,15 +39,24 @@ impl ElementsKind {
 	}
 }
 
-pub fn show_elements_dialog(
-	parent: &Frame,
-	session: &DocumentSession,
-	current_pos: DocPos,
-) -> Option<(DocPos, ElementsKind)> {
+/// What the dialog lists, read before it opens, so the document needn't stay locked while it's open.
+pub struct ElementsData {
+	tree: HeadingTree,
+	views: FlatViews,
+}
+
+impl ElementsData {
+	#[must_use]
+	pub fn gather(session: &DocumentSession, current_pos: DocPos) -> Self {
+		Self { tree: session.heading_tree(current_pos), views: FlatViews::for_session(session, current_pos) }
+	}
+}
+
+pub fn show_elements_dialog(parent: &Frame, data: ElementsData) -> Option<(DocPos, ElementsKind)> {
 	#[cfg(not(target_os = "windows"))]
-	return show_elements_dialog_dv(parent, session, current_pos);
+	return show_elements_dialog_dv(parent, data);
 	#[cfg(target_os = "windows")]
-	return show_elements_dialog_wx(parent, session, current_pos);
+	return show_elements_dialog_wx(parent, data);
 }
 
 #[cfg(not(target_os = "windows"))]
@@ -59,20 +68,16 @@ struct ElementsDialogUiDv {
 }
 
 #[cfg(not(target_os = "windows"))]
-fn show_elements_dialog_dv(
-	parent: &Frame,
-	session: &DocumentSession,
-	current_pos: DocPos,
-) -> Option<(DocPos, ElementsKind)> {
+fn show_elements_dialog_dv(parent: &Frame, data: ElementsData) -> Option<(DocPos, ElementsKind)> {
 	// TRANSLATORS: Title of the Elements dialog
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
 	let _destroy = super::DestroyOnDrop(dialog);
 	let flat_labels = Rc::new(RefCell::new(Vec::new()));
 	let ElementsDialogUiDv { content_sizer, view_choice, headings_tree, content_list } =
 		build_elements_dialog_ui_dv(dialog, Rc::clone(&flat_labels));
-	let (selected_offset, item_offsets) = populate_elements_dialog_dv(session, current_pos, headings_tree);
+	let (selected_offset, item_offsets) = populate_elements_dialog_dv(&data.tree, headings_tree);
 	let item_offsets = Rc::new(item_offsets);
-	let views = Rc::new(FlatViews::for_session(session, current_pos));
+	let views = Rc::new(data.views);
 	bind_elements_view_toggle_dv(*parent, view_choice, headings_tree, content_list, dialog, &views, &flat_labels);
 	bind_elements_activation_dv(
 		dialog,
@@ -151,13 +156,11 @@ fn build_elements_dialog_ui_dv(dialog: Dialog, flat_labels: Rc<RefCell<Vec<Strin
 
 #[cfg(not(target_os = "windows"))]
 fn populate_elements_dialog_dv(
-	session: &DocumentSession,
-	current_pos: DocPos,
+	tree_data: &HeadingTree,
 	headings_tree: DataViewTreeCtrl,
 ) -> (Rc<Cell<Option<DocPos>>>, HashMap<usize, DocPos>) {
 	let selected_offset = Rc::new(Cell::new(None));
 	let mut item_offsets: HashMap<usize, DocPos> = HashMap::new();
-	let tree_data = session.heading_tree(current_pos);
 	let mut has_children_vec = vec![false; tree_data.items.len()];
 	for item in &tree_data.items {
 		if item.parent_index >= 0
@@ -330,19 +333,15 @@ struct ElementsDialogUi {
 }
 
 #[cfg(target_os = "windows")]
-fn show_elements_dialog_wx(
-	parent: &Frame,
-	session: &DocumentSession,
-	current_pos: DocPos,
-) -> Option<(DocPos, ElementsKind)> {
+fn show_elements_dialog_wx(parent: &Frame, data: ElementsData) -> Option<(DocPos, ElementsKind)> {
 	// TRANSLATORS: Title of the Elements dialog
 	let dialog = Dialog::builder(parent, &t("Elements")).build();
 	let _destroy = super::DestroyOnDrop(dialog);
 	let flat_labels = Rc::new(RefCell::new(Vec::new()));
 	let ElementsDialogUi { content_sizer, view_choice, headings_tree, content_list } =
 		build_elements_dialog_ui(dialog, Rc::clone(&flat_labels));
-	let selected_offset = populate_elements_dialog(session, current_pos, headings_tree);
-	let views = Rc::new(FlatViews::for_session(session, current_pos));
+	let selected_offset = populate_elements_dialog(&data.tree, headings_tree);
+	let views = Rc::new(data.views);
 	bind_elements_view_toggle(*parent, view_choice, headings_tree, content_list, dialog, &views, &flat_labels);
 	bind_elements_activation(dialog, view_choice, headings_tree, content_list, &selected_offset, &views);
 	let (ok_button, cancel_button) = build_elements_buttons(dialog);
@@ -408,14 +407,9 @@ fn build_elements_dialog_ui(dialog: Dialog, flat_labels: Rc<RefCell<Vec<String>>
 }
 
 #[cfg(target_os = "windows")]
-fn populate_elements_dialog(
-	session: &DocumentSession,
-	current_pos: DocPos,
-	headings_tree: TreeCtrl,
-) -> Rc<Cell<Option<DocPos>>> {
+fn populate_elements_dialog(tree_data: &HeadingTree, headings_tree: TreeCtrl) -> Rc<Cell<Option<DocPos>>> {
 	let selected_offset = Rc::new(Cell::new(None));
 	let root = headings_tree.add_root("Root", None, None).unwrap();
-	let tree_data = session.heading_tree(current_pos);
 	let mut item_ids: Vec<TreeItemId> = Vec::new();
 	if !tree_data.items.is_empty() {
 		item_ids.reserve(tree_data.items.len());

@@ -69,12 +69,12 @@ pub struct OptionsContext {
 	pub play_sample: PlaySample,
 }
 
+/// `initial` is loaded by the caller, so the config needn't stay locked while Settings is open.
 pub fn show_options_dialog(
 	parent: &Frame,
-	config: &ConfigManager,
+	initial: &OptionsDialogResult,
 	context: OptionsContext,
 ) -> Option<OptionsDialogResult> {
-	let initial = OptionsDialogResult::load(config, context.book.as_deref());
 	// TRANSLATORS: Title of the Settings dialog
 	let dialog = Dialog::builder(parent, &t("Settings")).build();
 	let padding = dialog_padding(&dialog);

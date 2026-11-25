@@ -163,32 +163,36 @@ pub(super) fn handle_table_of_contents(
 	live_region_label: StaticText,
 	from_keyboard: bool,
 ) {
+	let Some((path, toc_items, current_toc_offset)) = dm.lock().unwrap().active_tab().map(|tab| {
+		let handle = tab.session.handle();
+		(
+			tab.file_path.clone(),
+			handle.document().toc_items.clone(),
+			handle.find_closest_toc_offset(navigation::doc_caret(tab)),
+		)
+	}) else {
+		return;
+	};
+	if toc_items.is_empty() {
+		// TRANSLATORS: Announced when opening the Table of Contents for a document that has none
+		announce_for_command(live_region_label, from_keyboard, t("No table of contents."));
+		return;
+	}
+	// Shown unlocked, since a held lock stops read aloud, media keys and the update quitting while it's open.
+	let Some(offset) =
+		dialogs::show_toc_dialog(frame, &toc_items, i32::try_from(current_toc_offset.get()).unwrap_or(i32::MAX))
+	else {
+		return;
+	};
 	let (message, update) = {
 		let mut dm_guard = dm.lock().unwrap();
-		let (message, update) = {
-			let Some(tab) = dm_guard.active_tab_mut() else {
-				return;
-			};
-			let toc_items = &tab.session.handle().document().toc_items;
-			if toc_items.is_empty() {
-				// TRANSLATORS: Announced when opening the Table of Contents for a document that has none
-				announce_for_command(live_region_label, from_keyboard, t("No table of contents."));
-				return;
-			}
-			let current_pos = navigation::doc_caret(tab);
-			let current_toc_offset = tab.session.handle().find_closest_toc_offset(current_pos);
-			let Some(offset) =
-				dialogs::show_toc_dialog(frame, toc_items, i32::try_from(current_toc_offset.get()).unwrap_or(i32::MAX))
-			else {
-				return;
-			};
-			let offset = tab.session.nearest_pos(i64::from(offset));
-			let update = navigation::move_to_offset_and_record_history(tab, offset);
-			let message = toc_announcement(&tab.session, offset);
-			(message, update)
+		// A file opened from another copy of Paperback while the dialog was open can have become the active tab.
+		let Some(tab) = dm_guard.active_tab_mut().filter(|tab| tab.file_path == path) else {
+			return;
 		};
-		drop(dm_guard);
-		(message, update)
+		let offset = tab.session.nearest_pos(i64::from(offset));
+		let update = navigation::move_to_offset_and_record_history(tab, offset);
+		(toc_announcement(&tab.session, offset), update)
 	};
 	navigation::persist_navigation_history(config, Some(&update));
 	announce(live_region_label, message);
@@ -211,22 +215,25 @@ pub(super) fn handle_elements_list(
 	config: &Rc<Mutex<ConfigManager>>,
 	live_region_label: StaticText,
 ) {
+	let Some((path, data)) =
+		dm.lock().unwrap().active_tab().map(|tab| {
+			(tab.file_path.clone(), dialogs::ElementsData::gather(&tab.session, navigation::doc_caret(tab)))
+		})
+	else {
+		return;
+	};
+	// Shown unlocked, since a held lock stops read aloud, media keys and the update quitting while it's open.
+	let Some((offset, kind)) = dialogs::show_elements_dialog(frame, data) else {
+		return;
+	};
 	let (message, update) = {
 		let mut dm_guard = dm.lock().unwrap();
-		let (message, update) = {
-			let Some(tab) = dm_guard.active_tab_mut() else {
-				return;
-			};
-			let current_pos = navigation::doc_caret(tab);
-			let Some((offset, kind)) = dialogs::show_elements_dialog(frame, &tab.session, current_pos) else {
-				return;
-			};
-			let update = navigation::move_to_offset_and_record_history(tab, offset);
-			let message = elements_announcement(&tab.session, offset, kind);
-			(message, update)
+		// A file opened from another copy of Paperback while the dialog was open can have become the active tab.
+		let Some(tab) = dm_guard.active_tab_mut().filter(|tab| tab.file_path == path) else {
+			return;
 		};
-		drop(dm_guard);
-		(message, update)
+		let update = navigation::move_to_offset_and_record_history(tab, offset);
+		(elements_announcement(&tab.session, offset, kind), update)
 	};
 	navigation::persist_navigation_history(config, Some(&update));
 	announce(live_region_label, message);

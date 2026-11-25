@@ -156,3 +156,8 @@ opt-level = 3
 [profile.release.package.cfb]
 opt-level = 3
 
+
+# Until releases log the update and its progress window (#1344).
+[patch.crates-io]
+ship-shape = { git = "https://github.com/accessware/ship-shape", rev = "e09a12d8954772e1f536b199bff57dafc0d65918" }
+wx-utils = { git = "https://github.com/accessware/wx-utils", rev = "ce1deed7ad906db8e50b12f7c20bf813afd8ef88" }

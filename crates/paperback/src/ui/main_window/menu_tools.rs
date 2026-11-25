@@ -15,36 +15,39 @@ pub(super) fn handle_word_count(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, 
 	let Ok(dm_ref) = dm.try_lock() else {
 		return;
 	};
-	if let Some(tab) = dm_ref.active_tab() {
-		let selection = tab.text_ctrl.get_string_selection();
-		let is_selection = !selection.trim().is_empty();
-		let word_count =
-			if is_selection { DocumentStats::from_text(&selection).word_count } else { tab.session.stats().word_count };
-		let audio_only = (!is_selection
-			&& tab.session.handle().document().audio_only
-			&& tab.session.audio().is_some_and(|timeline| !timeline.is_empty()))
-		.then(|| {
-			let stats = tab.session.stats();
-			dialogs::AudioOnlySummary {
-				file_count: stats.audio_file_count,
-				total_duration_ms: stats.audio_total_duration_ms,
-			}
-		});
-		let wpm = config.lock().unwrap().get_app_int("reading_speed_wpm", 150);
-		dialogs::show_word_count_dialog(frame, word_count, wpm, is_selection, audio_only);
-	}
+	let Some(tab) = dm_ref.active_tab() else {
+		return;
+	};
+	let selection = tab.text_ctrl.get_string_selection();
+	let is_selection = !selection.trim().is_empty();
+	let word_count =
+		if is_selection { DocumentStats::from_text(&selection).word_count } else { tab.session.stats().word_count };
+	let audio_only = (!is_selection
+		&& tab.session.handle().document().audio_only
+		&& tab.session.audio().is_some_and(|timeline| !timeline.is_empty()))
+	.then(|| {
+		let stats = tab.session.stats();
+		dialogs::AudioOnlySummary {
+			file_count: stats.audio_file_count,
+			total_duration_ms: stats.audio_total_duration_ms,
+		}
+	});
+	drop(dm_ref);
+	let wpm = config.lock().unwrap().get_app_int("reading_speed_wpm", 150);
+	dialogs::show_word_count_dialog(frame, word_count, wpm, is_selection, audio_only);
 }
 
 pub(super) fn handle_document_info(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>) {
 	let Ok(dm_ref) = dm.try_lock() else {
 		return;
 	};
-	if let Some(tab) = dm_ref.active_tab() {
-		let stats = tab.session.stats();
-		let title = tab.session.title();
-		let author = tab.session.author();
-		dialogs::show_document_info_dialog(frame, &tab.file_path, &title, &author, stats);
-	}
+	let Some(tab) = dm_ref.active_tab() else {
+		return;
+	};
+	let (path, title, author, stats) =
+		(tab.file_path.clone(), tab.session.title(), tab.session.author(), tab.session.stats().clone());
+	drop(dm_ref);
+	dialogs::show_document_info_dialog(frame, &path, &title, &author, &stats);
 }
 
 /// One item both starts and stops a batch, so nothing needs enabling or disabling as a job starts and ends.
@@ -101,10 +104,9 @@ pub(super) fn handle_options(
 			dm.play_speech_sample(&configured_engine, engine, voice, rate, pitch);
 		});
 	let context = dialogs::OptionsContext { book: book.clone(), play_sample };
-	let options = {
-		let cfg = config.lock().unwrap();
-		dialogs::show_options_dialog(frame, &cfg, context)
-	};
+	let initial = dialogs::OptionsDialogResult::load(&config.lock().unwrap(), book.as_deref());
+	// Shown unlocked, since a held lock stops read aloud, media keys and the update quitting while it's open.
+	let options = dialogs::show_options_dialog(frame, &initial, context);
 	dm.lock().unwrap().stop_speech_sample();
 	let Some(options) = options else {
 		if paused_reading.get() {

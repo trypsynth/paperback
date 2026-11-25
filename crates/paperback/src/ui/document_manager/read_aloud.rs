@@ -175,7 +175,7 @@ impl DocumentManager {
 		}
 	}
 
-	/// Speaks Settings' sample with the engine, voice, rate and pitch it shows. `configured_engine` is the one in the config, which a speaker made here starts with: Settings holds the config while it's open, so this can't read it.
+	/// Speaks Settings' sample with the engine, voice, rate and pitch it shows. `configured_engine` is the one in the config when Settings opened, which a speaker made here starts with.
 	pub fn play_speech_sample(
 		&mut self,
 		configured_engine: &str,
@@ -228,7 +228,7 @@ impl DocumentManager {
 		let tab = &mut self.tabs[index];
 		let Some(speaker) = self.speaker.as_mut() else { return };
 		let caret = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-		// `try_lock` because Settings holds the config while it's open; the move is still there to read from on a later tick.
+		// `try_lock` because a dialog may have been opened with the config locked; the move is still there to read from on a later tick.
 		if let Some(moved_to) = speaker.caret_moved_to(caret)
 			&& let Ok(config) = self.config.try_lock()
 		{
