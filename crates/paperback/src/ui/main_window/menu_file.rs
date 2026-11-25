@@ -187,15 +187,16 @@ pub(super) fn handle_export_document_data(
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 ) {
-	let Ok(dm_ref) = dm.try_lock() else {
+	let Some((file_path, default_name)) = dm.try_lock().ok().and_then(|dm_ref| {
+		dm_ref.active_tab().map(|tab| {
+			let default_name =
+				// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
+				tab.local_path().file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
+			(tab.file_path.clone(), default_name)
+		})
+	}) else {
 		return;
 	};
-	let Some(tab) = dm_ref.active_tab() else {
-		return;
-	};
-	let default_name =
-		// TRANSLATORS: Fallback file name stem used when the document's path has no file stem
-		tab.local_path().file_stem().map_or_else(|| t("document"), |s| s.to_string_lossy().to_string());
 	let default_file = format!("{default_name}.paperback");
 	// TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
 	let wildcard = t("Paperback files (*.paperback)|*.paperback");
@@ -209,9 +210,8 @@ pub(super) fn handle_export_document_data(
 	if dialog.show_modal() == ID_OK
 		&& let Some(path) = dialog.get_path()
 	{
-		let path_str = tab.file_path.to_string_lossy();
-		config.lock().unwrap().export_document_settings(&path_str, &path);
-		tracing::info!(doc = %tab.file_path.display(), export = %path, "document data exported");
+		config.lock().unwrap().export_document_settings(&file_path.to_string_lossy(), &path);
+		tracing::info!(doc = %file_path.display(), export = %path, "document data exported");
 		wx_utils::show_info(
 			frame,
 			// TRANSLATORS: Success message shown after exporting a document's notes and bookmarks
@@ -293,10 +293,8 @@ pub(super) fn handle_import_document_data(
 	dm: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 ) {
-	let Ok(mut dm_ref) = dm.try_lock() else {
-		return;
-	};
-	let Some(tab) = dm_ref.active_tab_mut() else {
+	let Some(file_path) = dm.try_lock().ok().and_then(|dm_ref| dm_ref.active_tab().map(|tab| tab.file_path.clone()))
+	else {
 		return;
 	};
 	// TRANSLATORS: File filter shown in the export/import notes-and-bookmarks (.paperback) dialogs
@@ -310,14 +308,15 @@ pub(super) fn handle_import_document_data(
 	if dialog.show_modal() == ID_OK
 		&& let Some(path) = dialog.get_path()
 	{
-		let path_str = tab.file_path.to_string_lossy();
-		let pos = {
-			let config = config.lock().unwrap();
-			config.import_settings_from_file(&path_str, &path);
-			config.get_validated_document_position(&path_str, tab.session.document_len().as_pos())
-		};
-		tracing::info!(doc = %tab.file_path.display(), import = %path, "document data imported");
-		if let Some(pos) = pos {
+		let path_str = file_path.to_string_lossy();
+		config.lock().unwrap().import_settings_from_file(&path_str, &path);
+		tracing::info!(doc = %file_path.display(), import = %path, "document data imported");
+		// A file opened from another copy of Paperback while the dialog was open can have become the active tab.
+		if let Ok(mut dm_ref) = dm.try_lock()
+			&& let Some(tab) = dm_ref.active_tab_mut().filter(|tab| tab.file_path == file_path)
+			&& let Some(pos) =
+				config.lock().unwrap().get_validated_document_position(&path_str, tab.session.document_len().as_pos())
+		{
 			set_caret_to_doc_offset(tab, pos);
 		}
 		let dialog = MessageDialog::builder(
@@ -334,14 +333,11 @@ pub(super) fn handle_import_document_data(
 }
 
 pub(super) fn handle_save_image(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>) {
-	let Ok(dm_ref) = dm.try_lock() else {
-		return;
-	};
-	let Some(tab) = dm_ref.active_tab() else {
-		return;
-	};
-	let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-	let Some(file_name) = tab.session.image_file_name_at(position) else {
+	let Some((file_path, position, file_name)) = dm.try_lock().ok().and_then(|dm_ref| {
+		let tab = dm_ref.active_tab()?;
+		let position = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
+		Some((tab.file_path.clone(), position, tab.session.image_file_name_at(position)?))
+	}) else {
 		return;
 	};
 	let dialog = FileDialog::builder(frame)
@@ -352,10 +348,17 @@ pub(super) fn handle_save_image(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>) 
 		.with_wildcard(&t("All files (*.*)|*.*"))
 		.with_style(FileDialogStyle::Save | FileDialogStyle::OverwritePrompt)
 		.build();
-	if dialog.show_modal() == ID_OK
-		&& let Some(path) = dialog.get_path()
-		&& let Err(e) = tab.session.save_image(position, &path)
-	{
+	if dialog.show_modal() != ID_OK {
+		return;
+	}
+	let Some(path) = dialog.get_path() else {
+		return;
+	};
+	// A file opened from another copy of Paperback while the dialog was open can have become the active tab.
+	let saved = dm.try_lock().ok().and_then(|dm_ref| {
+		dm_ref.active_tab().filter(|tab| tab.file_path == file_path).map(|tab| tab.session.save_image(position, &path))
+	});
+	if let Some(Err(e)) = saved {
 		tracing::error!(path = %path, error = %e, "failed to save image");
 		let dialog =
 			// TRANSLATORS: Error dialog shown when saving a picture from the document fails
