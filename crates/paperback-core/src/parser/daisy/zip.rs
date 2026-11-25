@@ -231,9 +231,8 @@ fn dtbook_document<R: Read + Seek>(
 	title: String,
 	author: String,
 ) -> Result<Document> {
-	let xml_content =
-		read_zip_entry_by_name_with_password(archive, dtbook_path, context.password.as_deref())
-			.map_err(|e| if e.is::<PasswordRequired>() { e } else { e.context("Failed to read XML file from zip") })?;
+	let xml_content = read_zip_entry_by_name_with_password(archive, dtbook_path, context.password.as_deref())
+		.map_err(|e| if e.is::<PasswordRequired>() { e } else { e.context("Failed to read XML file from zip") })?;
 	let mut converter = XmlToText::with_render_tables_inline(context.render_tables_inline);
 	let buffer = if converter.convert(&xml_content) {
 		let mut converted_buffer = DocumentBuffer::with_content(converter.take_text());
