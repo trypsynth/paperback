@@ -5,6 +5,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import uniffi.paperback.ConfigManagerFfi
 
@@ -15,6 +17,8 @@ private val saveScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 private val saveLock = Any()
 
 private var pendingSave: Job? = null
+private val configWritten = MutableSharedFlow<Boolean>(extraBufferCapacity = 1)
+internal val configWrites = configWritten.asSharedFlow()
 
 /** Each save rewrites the whole file and reading asks for one every paragraph, so a burst becomes one write; [saveNow] catches what is pending when the app leaves the screen. */
 fun ConfigManagerFfi.saveSoon() {
@@ -25,6 +29,7 @@ fun ConfigManagerFfi.saveSoon() {
 				delay(SAVE_DELAY_MS)
 				synchronized(saveLock) { pendingSave = null }
 				flush()
+				configWritten.tryEmit(false)
 			}
 	}
 }
@@ -35,4 +40,5 @@ fun ConfigManagerFfi.saveNow() {
 		pendingSave = null
 	}
 	flush()
+	configWritten.tryEmit(true)
 }

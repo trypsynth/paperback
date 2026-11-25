@@ -120,6 +120,18 @@ cargo android --debug
 
 `cargo android` builds the reading engine and generates the Kotlin bindings and translations. The `--debug` and `--release` options also build the app, and `--install-debug` installs it on a connected device. To work in Android Studio, run `cargo android` once, and then open the `android/` directory.
 
+### Google Drive synchronization on Windows and Android
+
+Turn on **Sync book data with Google Drive** on Windows or **Sync book data** on Android. Connect the same Google account on both devices. You can also choose **Connect Google account** in Settings later. Reading positions, bookmarks and notes then sync automatically.
+
+To include the whole book, select **Upload book file to Google Drive** for that book. For a book made up of several files, use a supported ZIP archive. On Android, choose **Wi-Fi only** or **Wi-Fi and mobile data** for book files. Reading data syncs on either connection. **Cloud books** also offers a choice of positions if two devices read the same book independently while offline.
+
+#### Preparing builds with Google Drive support
+
+Enable the Drive API and configure Google's consent screen in a publisher-managed Google Cloud project. Register a Desktop OAuth client and an Android OAuth client in that same project. The Android client must match `dev.paperback.android` and the SHA-1 fingerprint of the APK's signing certificate. Register each certificate used to distribute the app, including the Google Play app-signing certificate where applicable.
+
+Set `PAPERBACK_GOOGLE_DRIVE_CLIENT_ID` and `PAPERBACK_GOOGLE_DRIVE_CLIENT_SECRET` in the Windows build environment, or as GitHub Actions secrets for the release workflow. Builds without these values on Windows or a matching client registration on Android cannot complete authorization. If the Cloud project is in testing mode, add the testers' Google accounts to its audience.
+
 ## Translations
 
 Paperback uses gettext catalogs through [patois](https://github.com/accessware/patois). Strings marked with `t()` in Rust, Swift, and Kotlin are collected into `po/paperback.pot`. To update the template, run the following command:

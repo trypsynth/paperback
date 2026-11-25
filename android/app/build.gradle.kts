@@ -115,6 +115,7 @@ dependencies {
 	implementation(libs.androidx.lifecycle.runtime.compose)
 	implementation(libs.androidx.lifecycle.viewmodel.compose)
 	implementation(libs.androidx.media3.session)
+	implementation(libs.google.authorization)
 	// Compose
 	implementation(libs.androidx.compose.ui)
 	implementation(libs.androidx.compose.ui.tooling.preview)

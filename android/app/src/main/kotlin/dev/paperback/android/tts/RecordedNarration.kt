@@ -1,6 +1,7 @@
 package dev.paperback.android.tts
 
 import android.content.Context
+import dev.paperback.android.saveNow
 import dev.paperback.android.saveSoon
 import dev.paperback.android.ui.state.DocumentTabState
 import kotlinx.coroutines.CoroutineScope
@@ -33,7 +34,7 @@ class RecordedNarration(context: Context, private val config: ConfigManagerFfi, 
 	init {
 		player.onPlaybackStateChanged = { playing ->
 			onPlayingChanged?.invoke(playing)
-			if (!playing) persistPosition()
+			if (!playing) persistPosition(immediate = true)
 		}
 		player.onRelativeSeekLanded = { elapsedMs -> onSeekLanded?.invoke(elapsedMs) }
 		player.onClipChanged = { position ->
@@ -83,12 +84,12 @@ class RecordedNarration(context: Context, private val config: ConfigManagerFfi, 
 
 	fun isNarrating(documentUri: String): Boolean = attachedDocumentUri == documentUri
 
-	fun persistPosition() {
+	fun persistPosition(immediate: Boolean = false) {
 		val uri = attachedDocumentUri ?: return
 		val ms = player.resumePointMs() ?: return
 		scope.launch(Dispatchers.IO) {
 			config.setDocumentAudioTimeFfi(uri, ms)
-			config.saveSoon()
+			if (immediate) config.saveNow() else config.saveSoon()
 		}
 	}
 

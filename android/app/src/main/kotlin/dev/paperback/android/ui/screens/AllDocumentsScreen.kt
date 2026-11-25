@@ -29,6 +29,7 @@ fun AllDocumentsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: 
 	val state by viewModel.uiState.collectAsStateWithLifecycle()
 	val recentDocuments = (state as? MainScreenUiState.Success)?.recentDocuments.orEmpty()
 	val supportedMimeTypes by viewModel.supportedMimeTypes.collectAsStateWithLifecycle()
+	val driveEnabled by viewModel.driveSync.enabled.collectAsStateWithLifecycle()
 
 	var locateTargetUri by remember { mutableStateOf<String?>(null) }
 	var showClearConfirmation by remember { mutableStateOf(false) }
@@ -85,6 +86,11 @@ fun AllDocumentsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: 
 					}
 				},
 				actions = {
+					if (driveEnabled) {
+						TextButton(onClick = { viewModel.driveSync.showLibrary(true) }) {
+							Text(t("Cloud books"))
+						}
+					}
 					if (recentDocuments.isNotEmpty()) {
 						IconButton(onClick = { showClearConfirmation = true }) {
 							// TRANSLATORS: Accessibility label for the button that empties the recent documents list
@@ -112,6 +118,11 @@ fun AllDocumentsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: 
 								viewModel.openDocument(recentDoc.uri.toUri())
 							},
 							onRemove = { viewModel.removeRecentDocument(recentDoc.uri) },
+							onCloudSync = if (driveEnabled && !recentDoc.isMissing) {
+								{ viewModel.driveSync.selectUpload(recentDoc.uri) }
+							} else {
+								null
+							},
 							onLocate = {
 								locateTargetUri = recentDoc.uri
 								locateFilePickerLauncher.launch(supportedMimeTypes)

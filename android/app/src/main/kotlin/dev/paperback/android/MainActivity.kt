@@ -54,6 +54,11 @@ class MainActivity : ComponentActivity() {
 		vm.configManager.saveNow()
 	}
 
+	override fun onResume() {
+		super.onResume()
+		vm.driveSync.refresh()
+	}
+
 	override fun onDestroy() {
 		super.onDestroy()
 		headsethookHandler.removeCallbacks(headsethookRunnable)

@@ -5752,3 +5752,129 @@ msgstr "Pokaż lub ukryj okno"
 
 msgid "Close the app"
 msgstr "Zakończ aplikację"
+
+msgid "Google Drive synchronization"
+msgstr "Synchronizacja z Dyskiem Google"
+
+msgid "Sync book data"
+msgstr "Synchronizuj dane książek"
+
+msgid "Sync book data with Google Drive"
+msgstr "Synchronizuj dane książek z Dyskiem Google"
+
+msgid "Connection for book files"
+msgstr "Połączenie do przesyłania plików książek"
+
+msgid "Wi-Fi only"
+msgstr "Tylko przez Wi-Fi"
+
+msgid "Wi-Fi and mobile data"
+msgstr "Przez Wi-Fi i dane mobilne"
+
+msgid "Reading positions, bookmarks and notes sync on any internet connection."
+msgstr "Postęp, zakładki i notatki synchronizują się przez każde połączenie z internetem."
+
+msgid "Connect Google account"
+msgstr "Połącz konto Google"
+
+msgid "Connect your Google account now?"
+msgstr "Połączyć teraz konto Google?"
+
+msgid "No Google account is connected."
+msgstr "Nie połączono konta Google."
+
+msgid "The Google Drive account is still being checked. Try again shortly."
+msgstr "Trwa sprawdzanie konta Google. Spróbuj ponownie za chwilę."
+
+msgid "Upload book file to Google Drive"
+msgstr "Prześlij plik książki na Dysk Google"
+
+msgid "Upload"
+msgstr "Prześlij"
+
+msgid "Yes"
+msgstr "Tak"
+
+msgid "No"
+msgstr "Nie"
+
+msgid "Cloud books"
+msgstr "Książki w chmurze"
+
+msgid "Google Drive is disconnected."
+msgstr "Dysk Google jest odłączony."
+
+msgid "Connect to Google Drive to sync."
+msgstr "Połącz się z Dyskiem Google, aby zsynchronizować dane."
+
+msgid "Synchronizing book data…"
+msgstr "Trwa synchronizacja danych książek…"
+
+msgid "Book data synchronized."
+msgstr "Zsynchronizowano dane książek."
+
+msgid "Book data synchronized. Book files are waiting for a connection."
+msgstr "Zsynchronizowano dane książek. Pliki książek czekają na połączenie."
+
+msgid "Google Drive could not synchronize. You can retry."
+msgstr "Synchronizacja z Dyskiem Google nie powiodła się. Możesz spróbować ponownie."
+
+msgid "Retry synchronization"
+msgstr "Ponów synchronizację"
+
+msgid "Upload the book file to Google Drive (%s)?"
+msgstr "Przesłać plik książki na Dysk Google (%s)?"
+
+msgid "Book files on Google Drive: %s"
+msgstr "Pliki książek na Dysku Google zajmują %s"
+
+msgid "The book file is not available on this device yet."
+msgstr "Plik książki nie jest jeszcze dostępny na tym urządzeniu."
+
+msgid "Available offline"
+msgstr "Dostępna offline"
+
+msgid "On Google Drive"
+msgstr "Na Dysku Google"
+
+msgid "Book data only"
+msgstr "Tylko dane książki"
+
+msgid "Choose a place to resume"
+msgstr "Wybierz miejsce wznowienia"
+
+msgid "Character %s"
+msgstr "Znak %s"
+
+msgid "Remove offline copy"
+msgstr "Usuń pobraną kopię"
+
+msgid "Remove cloud file"
+msgstr "Przenieś plik do kosza w chmurze"
+
+msgid "Remove book file from Google Drive?"
+msgstr "Przenieść plik książki do kosza na Dysku Google?"
+
+msgid "Cloud books will appear after synchronization."
+msgstr "Książki w chmurze pojawią się po synchronizacji."
+
+msgid "Google Drive is unavailable in this build of Paperback."
+msgstr "Synchronizacja z Dyskiem Google jest niedostępna w tej kompilacji Paperbacka."
+
+msgid "Could not open the browser for Google Drive."
+msgstr "Nie udało się otworzyć przeglądarki, aby połączyć się z Dyskiem Google."
+
+msgid "Resume"
+msgstr "Wznów czytanie"
+
+msgid "Invalid Google Drive authorization request."
+msgstr "Nieprawidłowe żądanie autoryzacji Dysku Google."
+
+msgid "Authorization was canceled. You can return to Paperback."
+msgstr "Anulowano autoryzację. Możesz wrócić do Paperbacka."
+
+msgid "You can close this page and return to Paperback."
+msgstr "Możesz zamknąć tę stronę i wrócić do Paperbacka."
+
+msgid "Open a book first."
+msgstr "Najpierw otwórz książkę."

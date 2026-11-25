@@ -1,5 +1,8 @@
 use std::{collections::HashSet, sync::Mutex};
 
+#[cfg(all(feature = "book-sync", feature = "uniffi"))]
+mod drive_sync;
+
 use crate::{
 	config::{Bookmark, ConfigManager, DocumentSpeech, NavigationUnit},
 	document::{DocPos, PageLayout},

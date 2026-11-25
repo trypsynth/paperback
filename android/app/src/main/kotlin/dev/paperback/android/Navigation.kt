@@ -8,6 +8,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import dev.paperback.android.ui.dialogs.BookmarkNoteDialog
+import dev.paperback.android.ui.dialogs.DriveSyncDialogs
 import dev.paperback.android.ui.screens.AllDocumentsScreen
 import dev.paperback.android.ui.screens.BookmarksScreen
 import dev.paperback.android.ui.screens.ElementsScreen
@@ -93,4 +94,5 @@ fun MainNavigation() {
 	// Here rather than in a screen, so editing a note from the Bookmarks screen shows over it as well as over the reader.
 	val noteTarget by viewModel.bookmarks.noteTarget.collectAsStateWithLifecycle()
 	noteTarget?.let { BookmarkNoteDialog(viewModel.bookmarks, it) }
+	DriveSyncDialogs(viewModel)
 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
+import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Search
@@ -23,7 +24,8 @@ fun RecentDocumentItemRow(
 	showClosedStatus: Boolean = true,
 	onOpen: () -> Unit,
 	onRemove: () -> Unit,
-	onLocate: (() -> Unit)? = null
+	onLocate: (() -> Unit)? = null,
+	onCloudSync: (() -> Unit)? = null
 ) {
 	val statusText = when {
 		item.isMissing ->
@@ -47,6 +49,14 @@ fun RecentDocumentItemRow(
 				onClick = { if (!item.isMissing) onOpen() }
 			).semantics {
 				customActions = mutableListOf<CustomAccessibilityAction>().apply {
+					if (onCloudSync != null) {
+						add(
+							CustomAccessibilityAction(t("Upload book file to Google Drive")) {
+								onCloudSync()
+								true
+							}
+						)
+					}
 					if (item.isMissing && onLocate != null) {
 						add(
 							// TRANSLATORS: Accessibility action to pick a new file location for a document whose file can no longer be found
@@ -101,6 +111,11 @@ fun RecentDocumentItemRow(
 		},
 		trailingContent = {
 			Row {
+				if (onCloudSync != null) {
+					IconButton(onClick = onCloudSync, modifier = Modifier.clearAndSetSemantics { }) {
+						Icon(Icons.Filled.CloudUpload, contentDescription = null)
+					}
+				}
 				if (item.isMissing && onLocate != null) {
 					IconButton(
 						onClick = onLocate,

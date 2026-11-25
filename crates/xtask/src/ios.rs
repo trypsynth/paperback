@@ -93,7 +93,7 @@ fn prepare(release: bool) -> Result<(), Box<dyn Error>> {
 	let generated_dir = root.join("ios/Paperback/Generated");
 	fs::create_dir_all(&generated_dir)?;
 	println!("Generating Swift bindings via uniffi-bindgen...");
-	let ffi_library = build_host_ffi_library(&cargo)?.to_string_lossy().into_owned();
+	let ffi_library = build_host_ffi_library(&cargo, MOBILE_CORE_FEATURES)?.to_string_lossy().into_owned();
 	let status = Command::new(&cargo)
 		.current_dir(&root)
 		.args([

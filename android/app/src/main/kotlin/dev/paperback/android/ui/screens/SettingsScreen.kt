@@ -229,7 +229,6 @@ fun SettingsScreen(
 					style = MaterialTheme.typography.titleMedium,
 					modifier = Modifier.padding(bottom = 8.dp).semantics { heading() }
 				)
-
 				Row(
 					modifier = Modifier
 						.fillMaxWidth()
@@ -327,6 +326,9 @@ fun SettingsScreen(
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 					LanguageRow()
 				}
+
+				Spacer(modifier = Modifier.height(24.dp))
+				DriveSyncSettings(viewModel.driveSync)
 
 				Spacer(modifier = Modifier.height(24.dp))
 				// TRANSLATORS: Section header in Settings grouping controls for how document text is displayed

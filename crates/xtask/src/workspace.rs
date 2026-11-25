@@ -42,11 +42,11 @@ pub(crate) use shipfitter::package::crate_version;
 /// The core as the mobile apps link it: the FFI, and Open from URL.
 pub const MOBILE_CORE_FEATURES: &str = "uniffi,fetch";
 
-pub fn build_host_ffi_library(cargo: &str) -> Result<PathBuf, Box<dyn Error>> {
+pub fn build_host_ffi_library(cargo: &str, features: &str) -> Result<PathBuf, Box<dyn Error>> {
 	let status = Command::new(cargo)
 		.current_dir(project_root())
 		// Debug, since uniffi reads the interface out of the library's symbols and release strips them.
-		.args(["rustc", "-p", "paperback-core", "--features", MOBILE_CORE_FEATURES, "--lib", "--crate-type", "cdylib"])
+		.args(["rustc", "-p", "paperback-core", "--features", features, "--lib", "--crate-type", "cdylib"])
 		.status()?;
 	if !status.success() {
 		return Err("building paperback-core for the host failed".into());

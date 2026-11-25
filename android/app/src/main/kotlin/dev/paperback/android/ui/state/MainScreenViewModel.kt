@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import uniffi.paperback.CloudBookKey
 import uniffi.paperback.ConfigManagerFfi
 import uniffi.paperback.DocumentSession
 import uniffi.paperback.ExportFormat
@@ -63,6 +64,40 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 	val uiState: StateFlow<MainScreenUiState> = _uiState.asStateFlow()
 
 	private val currentTabs = mutableListOf<DocumentTabState>()
+	val driveSync = DriveSync(application, config, documentCache, viewModelScope, { currentTabs.map { it.documentUri } }) {
+		viewModelScope.launch {
+			updateRecentDocuments()
+			emitTabsState()
+		}
+	}
+
+	fun resumeDriveBook(book: CloudBookKey, choice: uniffi.paperback.ResumePosition? = null) {
+		viewModelScope.launch {
+			val locator = driveSync.prepareOpen(book, choice)
+			if (locator == null) {
+				announceForAccessibility(t("The book file is not available on this device yet."))
+				return@launch
+			}
+			val uri = locator.toUri()
+			val key = withContext(Dispatchers.IO) { config.getDocKey(locator) }
+			val index = currentTabs.indexOfFirst { it.docKey == key }
+			if (index < 0) {
+				openDocument(uri)
+				return@launch
+			}
+			val tab = currentTabs[index]
+			val position = config.getDocumentPosition(locator)
+			currentTabs[index] = tab.copy(savedPosition = position)
+			setActiveTab(index)
+			reading.updateTtsPosition(position)
+			val audioMs = config.getDocumentAudioTimeFfi(locator)
+			if (audioMs >= 0) reading.seekAudioToMs(audioMs)
+			reading.refreshSegmentPreview()
+			bookmarks.refresh()
+			emitTabsState()
+		}
+	}
+
 	private var currentActiveIndex = -1
 	private var recentDocumentsList = emptyList<RecentDocumentItem>()
 
@@ -238,7 +273,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 				}
 			} else {
 				val file = File(uri.path ?: uriString)
-				displayName = file.name
+				displayName = config.googleDriveBookTitle(uriString) ?: file.name
 				isMissing = !file.exists()
 			}
 			RecentDocumentItem(uriString, displayName, opened.contains(uriString), isMissing)
@@ -329,7 +364,9 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 	private fun forgetClosedTabIO(closedTab: DocumentTabState) {
 		config.removeOpenedDocument(closedTab.documentUri)
 		config.setDocumentOpened(closedTab.documentUri, false)
-		documentCache.directoryFor(closedTab.documentUri).deleteRecursively()
+		if (!config.googleDriveBookFileRequested(closedTab.documentUri)) {
+			documentCache.forget(closedTab.documentUri)
+		}
 	}
 
 	// A tab before the active one shifts it down, so the index follows it rather than landing on the next document.
@@ -373,6 +410,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 	}
 
 	override fun onCleared() {
+		driveSync.close()
 		reading.shutdown()
 		Thread {
 			try {
@@ -394,29 +432,17 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 			val displayName: String
 
 			if (isContentUri) {
-				val inputStream = context.contentResolver.openInputStream(uri) ?: return@withContext null
-				var name = ""
-				context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-					if (cursor.moveToFirst()) {
-						val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-						if (nameIndex != -1) name = cursor.getString(nameIndex)
-					}
-				}
-				displayName = name
-				val ext = displayName.substringAfterLast('.', "epub").lowercase()
-				val tempDir = documentCache.directoryFor(uriString)
-				tempDir.deleteRecursively()
-				tempDir.mkdirs()
-				val tempFile = File(tempDir, displayName.ifBlank { "document.$ext" })
-				FileOutputStream(tempFile).use { inputStream.copyTo(it) }
-				inputStream.close()
+				val pendingUpload = config.googleDriveBookFileRequested(uriString)
+				val tempFile =
+					documentCache.materialize(context.contentResolver, uri, reuse = pendingUpload) ?: return@withContext null
+				displayName = tempFile.name
 				absolutePath = tempFile.absolutePath
 				config.associateUriWithLocalFile(uriString, absolutePath)
 			} else {
 				absolutePath = uri.path ?: uriString
 				val file = File(absolutePath)
-				displayName = file.name
 				config.associateUriWithLocalFile(uriString, absolutePath)
+				displayName = config.googleDriveBookTitle(uriString) ?: file.name
 			}
 
 			if (!isRestore && File(sidecarPathFor(absolutePath)).exists()) {

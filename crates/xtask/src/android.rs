@@ -2,8 +2,10 @@ use std::{env, error::Error, process::Command};
 
 use crate::{
 	print_help,
-	workspace::{MOBILE_CORE_FEATURES, build_host_ffi_library, project_root},
+	workspace::{build_host_ffi_library, project_root},
 };
+
+const ANDROID_CORE_FEATURES: &str = "uniffi,book-sync";
 
 pub fn android() -> Result<(), Box<dyn Error>> {
 	let args = env::args().skip(2);
@@ -24,7 +26,7 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 	}
 	let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
 	println!("Generating Kotlin bindings via uniffi-bindgen...");
-	let ffi_library = build_host_ffi_library(&cargo)?.to_string_lossy().into_owned();
+	let ffi_library = build_host_ffi_library(&cargo, ANDROID_CORE_FEATURES)?.to_string_lossy().into_owned();
 	let status = Command::new(&cargo)
 		.current_dir(project_root())
 		.args([
@@ -67,7 +69,7 @@ pub fn android() -> Result<(), Box<dyn Error>> {
 			"-p",
 			"paperback-core",
 			"--features",
-			MOBILE_CORE_FEATURES,
+			ANDROID_CORE_FEATURES,
 			"--lib",
 			"--crate-type",
 			"cdylib",
