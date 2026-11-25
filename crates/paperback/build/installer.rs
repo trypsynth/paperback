@@ -1,34 +1,13 @@
-use std::{collections::HashMap, fs, path::Path};
+use std::fs;
 
 use paperback_formats::FormatMeta;
-use patois_build::po::PoDocument;
+use patois_build::gen_inno_sections;
 use shipfitter::build::configure_file;
 
 use crate::{
 	installer_strings::MESSAGES,
 	paths::{self, target_profile_dir},
 };
-
-/// Each catalog, the Inno Setup messages file for it, and whether that file is a copy in `installer/languages`, for the four Inno Setup ships only as unofficial translations.
-const LANGUAGES: [(&str, &str, bool); 17] = [
-	("bs", "Bosnian", true),
-	("cs", "Czech", false),
-	("de", "German", false),
-	("es", "Spanish", false),
-	("fi", "Finnish", false),
-	("fr", "French", false),
-	("hu", "Hungarian", false),
-	("ja", "Japanese", false),
-	("nl", "Dutch", false),
-	("pl", "Polish", false),
-	("pt_br", "BrazilianPortuguese", false),
-	("ru", "Russian", false),
-	("sk", "Slovak", false),
-	("sr", "SerbianLatin", true),
-	("uk", "Ukrainian", false),
-	("vi", "Vietnamese", true),
-	("zh_CN", "ChineseSimplified", true),
-];
 
 fn slugify(name: &str) -> String {
 	let mut slug = String::new();
@@ -101,48 +80,6 @@ fn format_registry_block() -> String {
 	lines.join("\n")
 }
 
-fn languages_block() -> String {
-	let vendored = paths::workspace_dir().join("installer").join("languages");
-	let mut lines = vec!["\tName: \"en\"; MessagesFile: \"compiler:Default.isl\"".to_string()];
-	for (code, inno, copied) in LANGUAGES {
-		let file = if copied {
-			vendored.join(format!("{inno}.isl")).display().to_string()
-		} else {
-			format!("compiler:Languages\\{inno}.isl")
-		};
-		lines.push(format!("\tName: \"{code}\"; MessagesFile: \"{file}\""));
-	}
-	lines.join("\n")
-}
-
-/// Machine translations are fuzzy and used, as the app uses them; a string a catalog lacks falls back to the English line, which names no language.
-fn custom_messages_block() -> String {
-	let po_dir = paths::workspace_dir().join("po");
-	let mut lines: Vec<String> = MESSAGES.iter().map(|(name, english)| format!("{name}={english}")).collect();
-	for (code, _, _) in LANGUAGES {
-		let translations = catalog(&po_dir.join(format!("{code}.po")));
-		for (name, english) in MESSAGES {
-			if let Some(translated) = translations.get(*english) {
-				lines.push(format!("{code}.{name}={}", translated.replace(['\r', '\n'], " ")));
-			}
-		}
-	}
-	lines.join("\n")
-}
-
-fn catalog(path: &Path) -> HashMap<String, String> {
-	let Ok(content) = fs::read_to_string(path) else {
-		println!("cargo:warning=No catalog at {} for the installer", path.display());
-		return HashMap::new();
-	};
-	PoDocument::parse(&content)
-		.entries
-		.into_iter()
-		.filter(|entry| !entry.msgid.is_empty() && !entry.msgstr.is_empty())
-		.map(|entry| (entry.msgid, entry.msgstr))
-		.collect()
-}
-
 pub fn configure() {
 	let Some(target_dir) = target_profile_dir() else {
 		return;
@@ -151,9 +88,21 @@ pub fn configure() {
 	if !input_path.exists() {
 		return;
 	}
+	// Beside the script, which names the messages files Inno Setup ships only as unofficial translations by path.
+	let sections =
+		match gen_inno_sections(paths::workspace_dir().join("po"), MESSAGES, target_dir.join("installer-languages")) {
+			Ok(sections) => sections,
+			Err(e) => {
+				println!("cargo:warning=Failed to translate the installer: {e}");
+				return;
+			}
+		};
+	for code in &sections.skipped {
+		println!("cargo:warning=The installer has no Inno Setup language for the {code} catalog");
+	}
 	let replacements = [
-		("LANGUAGES", languages_block()),
-		("CUSTOM_MESSAGES", custom_messages_block()),
+		("LANGUAGES", sections.languages),
+		("CUSTOM_MESSAGES", sections.custom_messages),
 		("FORMAT_TASKS", format_tasks_block()),
 		("FORMAT_REGISTRY", format_registry_block()),
 	];
