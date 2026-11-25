@@ -42,13 +42,16 @@ impl BookmarkSoundMode {
 		}
 	}
 
+	/// Off Windows, the unit setting reads as the caret setting.
 	pub fn load(config: &ConfigManager) -> Self {
-		Self::from_config(config.get_app_int(MODE_KEY, -1))
-			.unwrap_or_else(|| Self::from_old_checkbox(config.get_app_bool(OLD_KEY, true)))
+		let mode = Self::from_config(config.get_app_int(MODE_KEY, -1))
+			.unwrap_or_else(|| Self::from_old_checkbox(config.get_app_bool(OLD_KEY, true)));
+		if cfg!(target_os = "windows") || mode != Self::InUnit { mode } else { Self::OnBookmark }
 	}
 
 	pub fn save(self, config: &ConfigManager) {
 		config.set_app_int(MODE_KEY, self.to_config());
+		config.remove_app_key(OLD_KEY);
 	}
 }
 
@@ -61,7 +64,7 @@ pub enum MoveUnit {
 	Paragraph,
 }
 
-/// Ordered so a note's sound wins.
+/// A note sorts after a bookmark.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum BookmarkSound {
 	Bookmark,
@@ -92,7 +95,7 @@ fn end_or_next(start: DocPos, end: DocPos) -> DocPos {
 	if start == end { end + DocLen::from_raw(1) } else { end }
 }
 
-/// The sound for a move from `before` to `after`, and the unit to remember for the next move. With `unit`, the move sounds the bookmarks it holds and `previous` didn't. Without one, it sounds the bookmarks the caret entered.
+/// The sound for a move from `before` to `after`, and the unit to remember for the next move. With `unit`, the move sounds the bookmarks it holds and `previous` didn't. Without one, it sounds the bookmarks the caret entered and `previous` didn't hold. Bookmarks with a playback time stay silent.
 pub fn sound_for_move(
 	bookmarks: &[Bookmark],
 	previous: Option<Unit>,
@@ -100,32 +103,47 @@ pub fn sound_for_move(
 	after: DocPos,
 	unit: Option<Unit>,
 ) -> (Option<BookmarkSound>, Unit) {
+	let text_bookmarks = || bookmarks.iter().filter(|bookmark| bookmark.audio_ms.is_none());
 	let sound = match unit {
-		Some(unit) => new_in_unit(bookmarks, previous, unit),
-		None => entered_bookmark(bookmarks, before, after),
+		Some(unit) => new_in_unit(text_bookmarks(), previous, unit),
+		None => entered_bookmark(
+			text_bookmarks().filter(|bookmark| !previous.is_some_and(|previous| previous.holds(bookmark))),
+			before,
+			after,
+		),
 	};
 	(sound, remembered_unit(previous, unit, after))
 }
 
 /// The unit a move leaves remembered: its own, or else the remembered one while the caret is still on it, or else the caret's position.
 pub fn remembered_unit(previous: Option<Unit>, unit: Option<Unit>, caret: DocPos) -> Unit {
-	unit.or_else(|| previous.filter(|previous| previous.start <= caret && caret <= previous.end))
-		.unwrap_or(Unit { start: caret, end: caret })
+	unit.or_else(|| {
+		previous.filter(|previous| previous.start <= caret && caret < end_or_next(previous.start, previous.end))
+	})
+	.unwrap_or(Unit { start: caret, end: caret })
 }
 
 /// The sound for the bookmarks the caret entered between `before` and `after`. A note's sound wins.
-fn entered_bookmark(bookmarks: &[Bookmark], before: DocPos, after: DocPos) -> Option<BookmarkSound> {
+fn entered_bookmark<'a>(
+	bookmarks: impl IntoIterator<Item = &'a Bookmark>,
+	before: DocPos,
+	after: DocPos,
+) -> Option<BookmarkSound> {
 	let inside = |bookmark: &Bookmark, position: DocPos| {
 		position >= bookmark.start && position < end_or_next(bookmark.start, bookmark.end)
 	};
-	sound_of(bookmarks.iter().filter(|bookmark| inside(bookmark, after) && !inside(bookmark, before)))
+	sound_of(bookmarks.into_iter().filter(|bookmark| inside(bookmark, after) && !inside(bookmark, before)))
 }
 
 /// The sound for the bookmarks `unit` holds and `previous` didn't. A note's sound wins.
-fn new_in_unit(bookmarks: &[Bookmark], previous: Option<Unit>, unit: Unit) -> Option<BookmarkSound> {
+fn new_in_unit<'a>(
+	bookmarks: impl IntoIterator<Item = &'a Bookmark>,
+	previous: Option<Unit>,
+	unit: Unit,
+) -> Option<BookmarkSound> {
 	sound_of(
 		bookmarks
-			.iter()
+			.into_iter()
 			.filter(|bookmark| unit.holds(bookmark) && !previous.is_some_and(|previous| previous.holds(bookmark))),
 	)
 }
@@ -194,8 +212,9 @@ mod tests {
 	fn a_move_remembers_its_unit_or_else_the_one_the_caret_is_still_on() {
 		assert_eq!(remembered_unit(Some(line(0)), Some(unit(5, 9)), pos(5)), unit(5, 9), "a unit of its own");
 		assert_eq!(remembered_unit(Some(line(0)), None, pos(12)), line(0), "still on the line");
-		assert_eq!(remembered_unit(Some(line(0)), None, pos(40)), line(0), "at the line's end");
-		assert_eq!(remembered_unit(Some(line(0)), None, pos(41)), unit(41, 41), "off the line");
+		assert_eq!(remembered_unit(Some(line(0)), None, pos(39)), line(0), "on the line's break");
+		assert_eq!(remembered_unit(Some(line(0)), None, pos(40)), unit(40, 40), "on the next line's start");
+		assert_eq!(remembered_unit(Some(unit(7, 7)), None, pos(7)), unit(7, 7), "a position stays");
 		assert_eq!(remembered_unit(None, None, pos(7)), unit(7, 7), "nothing remembered");
 	}
 
@@ -309,5 +328,31 @@ mod tests {
 	fn a_new_bookmark_sounds_beside_one_the_previous_unit_held() {
 		let bookmarks = [bookmark(30, 35), note(38, 39)];
 		assert_eq!(new_in_unit(&bookmarks, Some(unit(10, 36)), unit(20, 40)), Some(BookmarkSound::Note));
+	}
+
+	#[test]
+	fn a_bookmark_with_a_playback_time_is_silent_for_moves() {
+		let timed = Bookmark { audio_ms: Some(60_000), ..bookmark(0, 0) };
+		let timed = [timed];
+		assert_eq!(sounds(&timed, &[(0, None)]), [None], "the caret landing on it");
+		assert_eq!(sounds(&timed, &[(0, Some(line(0)))]), [None], "a line holding it");
+	}
+
+	#[test]
+	fn a_step_into_a_bookmark_its_line_announced_is_silent() {
+		let heard = sounds(&[bookmark(20, 25)], &[(5, Some(line(0))), (20, None)]);
+		assert_eq!(heard, [Some(BookmarkSound::Bookmark), None]);
+	}
+
+	#[test]
+	fn stepping_onto_the_next_lines_start_leaves_the_line() {
+		let heard = sounds(&[bookmark(20, 25)], &[(39, Some(line(0))), (40, None), (1, Some(line(0)))]);
+		assert_eq!(heard, [Some(BookmarkSound::Bookmark), None, Some(BookmarkSound::Bookmark)]);
+	}
+
+	#[test]
+	fn a_step_into_a_bookmark_after_leaving_its_line_sounds() {
+		let heard = sounds(&[bookmark(20, 25)], &[(5, Some(line(0))), (45, None), (20, None)]);
+		assert_eq!(heard, [Some(BookmarkSound::Bookmark), None, Some(BookmarkSound::Bookmark)]);
 	}
 }

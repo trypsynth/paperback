@@ -22,6 +22,8 @@ use crate::{
 const AHEAD: usize = 2;
 /// Used until the first paragraph's audio arrives, so the feed has a rate to report.
 const FALLBACK_SAMPLE_RATE: u32 = 22_050;
+/// Started words kept for [`ReadAloud::take_started_words`], beyond which the oldest go.
+const STARTED_WORDS_KEPT: usize = 256;
 
 /// How read aloud speaks, fixed for one run of reading. Changing any of it means starting again from the current paragraph.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -47,6 +49,8 @@ pub(crate) struct SpeechParagraph {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct SpokenParagraph {
 	start: DocPos,
+	/// Where its text ends.
+	end: DocPos,
 	sample_rate: u32,
 	/// The speech, then the pause after it.
 	samples: Vec<i16>,
@@ -73,18 +77,38 @@ struct Shared {
 	/// No more paragraphs will come in this generation.
 	last_queued: AtomicBool,
 	playing_paragraph: AtomicUsize,
-	playing_word: AtomicUsize,
-	/// The paragraph's start until the engine reports a word in the paragraph playing.
-	playing_word_end: AtomicUsize,
+	words: Mutex<Words>,
 	/// Set while a paragraph is playing, so the positions above mean something.
 	has_position: AtomicBool,
 	finished: AtomicBool,
 	errors: Mutex<Vec<String>>,
 }
 
+/// Words as their start and end in the document.
+#[derive(Default)]
+struct Words {
+	/// The word playing. Until the engine reports a word in the paragraph playing, its start and the paragraph's start, or the paragraph's end when the engine reports none in it.
+	playing: (DocPos, DocPos),
+	/// Every word started since [`ReadAloud::take_started_words`] last took them.
+	started: VecDeque<(DocPos, DocPos)>,
+}
+
 impl Shared {
 	fn ready(&self) -> MutexGuard<'_, VecDeque<(u64, SpokenParagraph)>> {
 		self.ready.lock().unwrap_or_else(PoisonError::into_inner)
+	}
+
+	fn words(&self) -> MutexGuard<'_, Words> {
+		self.words.lock().unwrap_or_else(PoisonError::into_inner)
+	}
+
+	fn start_word(&self, word: (DocPos, DocPos)) {
+		let mut words = self.words();
+		words.playing = word;
+		if words.started.len() == STARTED_WORDS_KEPT {
+			words.started.pop_front();
+		}
+		words.started.push_back(word);
 	}
 }
 
@@ -95,7 +119,7 @@ pub struct ReadAloudProgress {
 	pub paragraph: Option<DocPos>,
 	/// The word being spoken, for resuming at it and saving the place exactly.
 	pub word: Option<DocPos>,
-	/// Where that word ends; the paragraph's start until the engine reports a word.
+	/// Where that word ends. Until the engine reports a word in the paragraph, the paragraph's start, or its end when the engine reports none in it.
 	pub word_end: Option<DocPos>,
 	/// Every paragraph to the end of the document has been played.
 	pub finished: bool,
@@ -194,13 +218,19 @@ impl ReadAloud {
 	#[must_use]
 	pub fn progress(&self) -> ReadAloudProgress {
 		let has_position = self.shared.has_position.load(Ordering::SeqCst);
-		let at = |value: &AtomicUsize| has_position.then(|| DocPos::from_raw(value.load(Ordering::SeqCst)));
+		let (word, word_end) = self.shared.words().playing;
 		ReadAloudProgress {
-			paragraph: at(&self.shared.playing_paragraph),
-			word: at(&self.shared.playing_word),
-			word_end: at(&self.shared.playing_word_end),
+			paragraph: has_position.then(|| DocPos::from_raw(self.shared.playing_paragraph.load(Ordering::SeqCst))),
+			word: has_position.then_some(word),
+			word_end: has_position.then_some(word_end),
 			finished: self.shared.finished.load(Ordering::SeqCst),
 		}
+	}
+
+	/// Every word started since the last call, in order, as its start and end. A paragraph the engine reports no words in comes as one word.
+	#[must_use]
+	pub fn take_started_words(&self) -> Vec<(DocPos, DocPos)> {
+		self.shared.words().started.drain(..).collect()
 	}
 
 	/// What the engine reported going wrong since the last call, such as a paragraph it couldn't speak. Reading carries on past it.
@@ -223,6 +253,7 @@ impl ReadAloud {
 		self.shared.played.store(0, Ordering::SeqCst);
 		self.shared.last_queued.store(false, Ordering::SeqCst);
 		self.shared.has_position.store(false, Ordering::SeqCst);
+		self.shared.words().started.clear();
 		self.queued_up_to = None;
 	}
 }
@@ -290,8 +321,7 @@ impl AudioFeed {
 				while let Some(&(sample, start, end)) = playing.paragraph.words.get(playing.next_word)
 					&& sample <= playing.next_sample
 				{
-					self.shared.playing_word_end.store(end.get(), Ordering::SeqCst);
-					self.shared.playing_word.store(start.get(), Ordering::SeqCst);
+					self.shared.start_word((start, end));
 					playing.next_word += 1;
 				}
 				if let Some(&sample) = playing.paragraph.samples.get(playing.next_sample) {
@@ -305,8 +335,11 @@ impl AudioFeed {
 			match next {
 				Some((generation, paragraph)) if generation == self.generation => {
 					self.shared.playing_paragraph.store(paragraph.start.get(), Ordering::SeqCst);
-					self.shared.playing_word_end.store(paragraph.start.get(), Ordering::SeqCst);
-					self.shared.playing_word.store(paragraph.start.get(), Ordering::SeqCst);
+					if paragraph.words.is_empty() {
+						self.shared.start_word((paragraph.start, paragraph.end));
+					} else {
+						self.shared.words().playing = (paragraph.start, paragraph.start);
+					}
 					self.shared.has_position.store(true, Ordering::SeqCst);
 					self.playing = Some(Playing { paragraph, next_sample: 0, next_word: 0 });
 				}
@@ -381,14 +414,20 @@ fn speak(
 		let chunk = chunk?;
 		for word in &chunk.words {
 			let start = DocLen::from_raw(map.to_original(word.text_offset));
-			let end = DocLen::from_raw(map.to_original(word.text_offset + word.text_len));
+			let end = DocLen::from_raw(map.to_original_end(word.text_offset + word.text_len));
 			words.push((samples.len() + word.sample, paragraph.text_start + start, paragraph.text_start + end));
 		}
 		samples.extend_from_slice(&chunk.samples);
 	}
 	let pause = usize::try_from(u64::from(sample_rate) * u64::from(settings.paragraph_pause_ms) / 1000).unwrap_or(0);
 	samples.resize(samples.len() + pause, 0);
-	Ok(SpokenParagraph { start: paragraph.start, sample_rate, samples, words })
+	Ok(SpokenParagraph {
+		start: paragraph.start,
+		end: paragraph.text_start + DocLen::of(&paragraph.text),
+		sample_rate,
+		samples,
+		words,
+	})
 }
 
 #[cfg(test)]
@@ -400,7 +439,7 @@ mod tests {
 
 	const SAMPLES_PER_CHAR: usize = 10;
 
-	/// Ten samples a char at 1000 a second, the char's code as each sample, and a word boundary at each word's start. Fails on any paragraph containing "FAIL".
+	/// Ten samples a char at 1000 a second, the char's code as each sample, and a word boundary at each word's start. Fails on any paragraph containing "FAIL", and reports no words in one containing "WORDLESS".
 	struct FakeEngine;
 
 	struct FakeSynthesis(Option<AudioChunk>);
@@ -430,6 +469,7 @@ mod tests {
 			let samples =
 				chars.iter().flat_map(|&c| [i16::try_from(u32::from(c)).unwrap_or(1); SAMPLES_PER_CHAR]).collect();
 			let words = (0..chars.len())
+				.filter(|_| !request.text.contains("WORDLESS"))
 				.filter(|&i| !chars[i].is_whitespace() && (i == 0 || chars[i - 1].is_whitespace()))
 				.map(|i| WordBoundary {
 					sample: i * SAMPLES_PER_CHAR,
@@ -583,6 +623,40 @@ mod tests {
 		assert_eq!(reader.progress().word, Some(DocPos::from_raw(text.find("Smith").unwrap())));
 		assert_eq!(reader.progress().word_end, Some(DocPos::from_raw(text.find(" now").unwrap())), "Smith ends");
 		assert_eq!(reader.progress().paragraph, Some(DocPos::from_raw(0)));
+	}
+
+	#[test]
+	fn every_word_started_waits_until_taken() {
+		let text = "One to a word.";
+		let session = DocumentSession::from_text(text);
+		let mut reader = read_aloud();
+		let mut feed =
+			reader.start(&session, DocPos::from_raw(0), ReadAloudSettings::default()).expect("there is text to read");
+		play_past(&mut feed, &mut 0, text.find("word").unwrap());
+		let at = |word: &str| DocPos::from_raw(text.find(word).unwrap());
+		let end = DocPos::from_raw(text.len());
+		let words = reader.take_started_words();
+		assert_eq!(
+			words,
+			[(at("One"), at(" to")), (at("to"), at(" a ")), (at("a "), at(" word")), (at("word"), end)],
+			"every word, with its end"
+		);
+		assert_eq!(reader.take_started_words(), [], "taken once");
+		assert_eq!(reader.progress().word, Some(at("word")));
+		assert_eq!(reader.progress().word_end, Some(end));
+	}
+
+	#[test]
+	fn a_paragraph_without_word_reports_is_one_word_to_its_end() {
+		let text = "WORDLESS one two.\nNext.";
+		let session = DocumentSession::from_text(text);
+		let mut reader = read_aloud();
+		let mut feed =
+			reader.start(&session, DocPos::from_raw(0), ReadAloudSettings::default()).expect("there is text to read");
+		play_past(&mut feed, &mut 0, 3);
+		let paragraph_end = DocPos::from_raw(text.find('\n').unwrap());
+		assert_eq!(reader.take_started_words(), [(DocPos::from_raw(0), paragraph_end)]);
+		assert_eq!(reader.progress().word_end, Some(paragraph_end));
 	}
 
 	#[test]

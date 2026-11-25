@@ -147,6 +147,7 @@ pub fn handle_bookmark_navigation(
 		}
 		None => navigate_text_bookmark(tab, config, wrap, next, notes_only),
 	};
+	dm.forget_bookmark_sound_position();
 	drop(dm);
 	announce_for_command(live_region_label, from_keyboard, message);
 	persist_navigation_history(config, history_update.as_ref());

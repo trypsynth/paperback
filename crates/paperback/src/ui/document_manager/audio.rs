@@ -1,9 +1,9 @@
 #[cfg(target_os = "windows")]
 use std::rc::Rc;
 
-#[cfg(target_os = "windows")]
-use paperback_core::config::ConfigManager;
 use paperback_core::document::DocPos;
+#[cfg(target_os = "windows")]
+use paperback_core::{config::ConfigManager, document::DocLen};
 #[cfg(target_os = "windows")]
 use wxdragon::prelude::*;
 
@@ -25,11 +25,16 @@ fn unit_at_caret(tab: &DocumentTab, unit: MoveUnit) -> Option<Unit> {
 		MoveUnit::Line => visual_line_at(tab.text_ctrl, caret)?,
 		MoveUnit::Paragraph => {
 			let (start, end) = tab.session.line_bounds_at(tab.window.to_doc(caret))?;
+			// Up to the next paragraph's start.
+			let end = if end < tab.session.document_len().as_pos() { end + DocLen::from_raw(1) } else { end };
 			return Some(Unit { start, end });
 		}
 	};
 	Some(Unit { start: tab.window.to_doc(start), end: tab.window.to_doc(end) })
 }
+
+/// Playback moving on further than this between two ticks counts as a jump.
+const MAX_PLAYED_PER_TICK_MS: u64 = 1500;
 
 /// Only Windows measures the unit a key moves by.
 #[cfg(not(target_os = "windows"))]
@@ -87,8 +92,9 @@ impl DocumentManager {
 		self.follow_default_audio_device(&config);
 	}
 
-	/// Called after a jump, so the next step isn't measured from the old position and sounded as crossing a bookmark it never crossed.
-	fn forget_bookmark_sound_position(&self) {
+	/// Remembers the caret's position without a sound, keeping the remembered unit while the caret is on it, and forgets the clip synced audio last followed.
+	pub(crate) fn forget_bookmark_sound_position(&self) {
+		self.last_followed_clip.set(None);
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
@@ -97,16 +103,16 @@ impl DocumentManager {
 		self.last_sound_position.set(Some(caret));
 	}
 
-	/// Sounds a bookmark after a key moved the caret by `unit`. Other keys only note the caret's position.
+	/// Sounds a bookmark after a key moved the caret by `unit`. Other keys, and a key that left the caret where it was, only note the caret's position.
 	pub(crate) fn sound_key_move(&self, unit: Option<MoveUnit>) {
-		let Some(unit) = unit else {
-			self.forget_bookmark_sound_position();
-			return;
-		};
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
 		let caret = doc_caret(tab);
+		let Some(unit) = unit.filter(|_| self.last_sound_position.get() != Some(caret)) else {
+			self.forget_bookmark_sound_position();
+			return;
+		};
 		// A line or paragraph move sounds only by its unit.
 		let before = match unit {
 			MoveUnit::Character | MoveUnit::Word => self.last_sound_position.get().unwrap_or(caret),
@@ -128,11 +134,13 @@ impl DocumentManager {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
+		self.last_sound_position.set(Some(after));
+		let previous = self.last_sound_unit.get();
 		let Ok(config) = self.config.try_lock() else {
+			self.last_sound_unit.set(Some(remembered_unit(previous, None, after)));
 			return;
 		};
 		let mode = BookmarkSoundMode::load(&config);
-		self.last_sound_position.set(Some(after));
 		if mode == BookmarkSoundMode::Never {
 			self.last_sound_unit.set(None);
 			return;
@@ -140,7 +148,7 @@ impl DocumentManager {
 		let unit = if mode == BookmarkSoundMode::InUnit { unit_of(tab) } else { None };
 		let bookmarks = config.get_bookmarks(&tab.file_path.to_string_lossy());
 		drop(config);
-		let (sound, remembered) = sound_for_move(&bookmarks, self.last_sound_unit.get(), before, after, unit);
+		let (sound, remembered) = sound_for_move(&bookmarks, previous, before, after, unit);
 		self.last_sound_unit.set(Some(remembered));
 		if let Some(sound) = sound {
 			sound.play();
@@ -155,6 +163,7 @@ impl DocumentManager {
 		}
 		// `try_lock` because a modal dialog like Options holds the config lock across `show_modal` while pumping messages, so a blocking lock on this tick would deadlock the UI thread.
 		let sync_enabled = self.config.try_lock().ok().map(|config| config.get_app_bool("sync_caret_to_audio", true));
+		let last_followed = self.last_followed_clip.get();
 		let Some(tab) = self.active_tab_mut() else {
 			return;
 		};
@@ -174,19 +183,31 @@ impl DocumentManager {
 			tracing::warn!(elapsed, "sync caret to audio: no clip covers the current elapsed time");
 			return;
 		};
-		let Some(clip) = player.timeline().clip(cursor.clip).map(|clip| Unit { start: clip.start, end: clip.end })
-		else {
+		let timeline = player.timeline();
+		let clip_unit = |index| timeline.clip(index).map(|clip| Unit { start: clip.start, end: clip.end });
+		let Some(clip) = clip_unit(cursor.clip) else {
 			tracing::warn!(clip_index = cursor.clip, "sync caret to audio: cursor names a clip that doesn't exist");
 			return;
 		};
+		// The clips played through since the last tick, before the one playing.
+		let passed: Vec<Unit> = last_followed
+			.filter(|&(index, at)| index < cursor.clip && at <= elapsed && elapsed - at <= MAX_PLAYED_PER_TICK_MS)
+			.map(|(index, _)| (index + 1..cursor.clip).filter_map(clip_unit).collect())
+			.unwrap_or_default();
 		let position = clip.start;
 		// TODO(windowing): sets the caret directly rather than through a window-aware jump, so a target outside the loaded window is clamped instead of reloading.
 		let current = tab.window.to_doc(tab.text_ctrl.get_insertion_point());
-		if position != current {
+		let moved = position != current;
+		if moved {
 			let local = tab.window.to_local(position);
 			tab.text_ctrl.set_insertion_point(local);
 			tab.text_ctrl.show_position(local);
-			self.sound_move(current, position, |_| Some(clip));
+		}
+		self.last_followed_clip.set(Some((cursor.clip, elapsed)));
+		let mut before = current;
+		for unit in passed.into_iter().chain(moved.then_some(clip)) {
+			self.sound_move(before, unit.start, |_| Some(unit));
+			before = unit.start;
 		}
 	}
 
@@ -208,6 +229,7 @@ impl DocumentManager {
 	pub fn reset_sound_line(&self) {
 		self.last_sound_position.set(None);
 		self.last_sound_unit.set(None);
+		self.last_followed_clip.set(None);
 		self.last_audio_seek_position.set(None);
 	}
 }

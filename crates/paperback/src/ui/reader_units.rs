@@ -20,9 +20,11 @@ pub fn word_end(text_ctrl: ReaderCtrl, position: CtrlPos) -> CtrlPos {
 	CtrlPos::from_raw(i64::try_from(next.0).unwrap_or_default()).max(position)
 }
 
-/// The visual line holding `position`, without its line break.
+/// The visual line holding `position`, up to the next line's start.
 pub fn visual_line_at(text_ctrl: ReaderCtrl, position: CtrlPos) -> Option<(CtrlPos, CtrlPos)> {
 	let (column, line) = text_ctrl.position_to_xy(position)?;
 	let start = position + -column;
-	Some((start, start + i64::from(text_ctrl.get_line_length(line))))
+	let next = text_ctrl.xy_to_position(0, line + 1);
+	let end = if next > start { next } else { start + i64::from(text_ctrl.get_line_length(line)) };
+	Some((start, end))
 }

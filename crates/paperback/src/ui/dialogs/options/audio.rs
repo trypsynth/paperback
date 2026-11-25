@@ -136,20 +136,20 @@ impl AudioTab {
 		has_book: bool,
 		play_sample: PlaySample,
 	) -> Self {
+		// In the order of `BookmarkSoundMode::to_config`.
+		let mut bookmark_sound_choices = vec![
+			// TRANSLATORS: Bookmark sounds option: no sound effects play for bookmarks and notes
+			t("Never"),
+			// TRANSLATORS: Bookmark sounds option: a sound plays when the caret moves onto a bookmark or note
+			t("When the caret is on a bookmark"),
+		];
+		if cfg!(target_os = "windows") {
+			// TRANSLATORS: Bookmark sounds option: a sound plays when the word, line or paragraph the caret moves to holds a bookmark or note
+			bookmark_sound_choices.push(t("When the word, line or paragraph you move to has a bookmark"));
+		}
 		// TRANSLATORS: Label for the dropdown choosing when sound effects play for bookmarks and notes
-		let (bookmark_sound_label, bookmark_sound_mode) = labeled_choice(
-			panel,
-			&t("Bookmark and note &sounds:"),
-			// In the order of `BookmarkSoundMode::to_config`.
-			&[
-				// TRANSLATORS: Bookmark sounds option: no sound effects play for bookmarks and notes
-				t("Never"),
-				// TRANSLATORS: Bookmark sounds option: a sound plays when the caret moves onto a bookmark or note
-				t("When the caret is on a bookmark"),
-				// TRANSLATORS: Bookmark sounds option: a sound plays when the word, line or paragraph the caret moves to holds a bookmark or note
-				t("When the word, line or paragraph you move to has a bookmark"),
-			],
-		);
+		let (bookmark_sound_label, bookmark_sound_mode) =
+			labeled_choice(panel, &t("Bookmark and note &sounds:"), &bookmark_sound_choices);
 		let sync_caret_to_audio =
 			// TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
 			CheckBox::builder(&panel).with_label(&t("&Sync caret to audio playback")).build();

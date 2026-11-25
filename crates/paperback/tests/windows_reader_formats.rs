@@ -362,7 +362,8 @@ mod units {
 
 	fn lines(text_ctrl: ReaderCtrl) {
 		text_ctrl.set_value("Short line\nNext");
-		assert_eq!(visual_line_at(text_ctrl, pos(3)), Some((pos(0), pos(10))), "a line without its break");
+		assert_eq!(visual_line_at(text_ctrl, pos(3)), Some((pos(0), pos(11))), "a line up to the next line's start");
+		assert_eq!(visual_line_at(text_ctrl, pos(10)), Some((pos(0), pos(11))), "its line break");
 		assert_eq!(visual_line_at(text_ctrl, pos(13)), Some((pos(11), pos(15))), "the last line");
 		let paragraph = "word ".repeat(200);
 		let paragraph_end = i64::try_from(paragraph.len()).unwrap();

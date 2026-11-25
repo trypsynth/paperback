@@ -236,14 +236,19 @@ impl DocumentManager {
 			speaker.read_from_caret(&tab.session, moved_to, &config, &tab.file_path.to_string_lossy(), paused);
 		}
 		match speaker.pump(&tab.session) {
-			Some(Followed::Word { start, end }) => {
-				if start != caret {
-					let local = tab.window.to_local(start);
+			Some(Followed::Words(words)) => {
+				let Some(&(last, _)) = words.last() else { return };
+				if last != caret {
+					let local = tab.window.to_local(last);
 					tab.text_ctrl.set_insertion_point(local);
 					tab.text_ctrl.show_position(local);
 					speaker.caret_followed(tab.window.to_doc(tab.text_ctrl.get_insertion_point()));
 				}
-				self.sound_move(caret, start, |_| Some(Unit { start, end }));
+				let mut before = caret;
+				for (start, end) in words {
+					self.sound_move(before, start, |_| Some(Unit { start, end }));
+					before = start;
+				}
 			}
 			Some(Followed::End) => set_caret_to_doc_offset(tab, tab.session.document_len().as_pos()),
 			None => {}
