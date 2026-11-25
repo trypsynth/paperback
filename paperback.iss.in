@@ -14,6 +14,8 @@
 	Compression=lzma2
 	SolidCompression=yes
 	WizardStyle=modern
+	; Setup opens in the Windows display language when Paperback is translated into it, and asks only when it isn't.
+	ShowLanguageDialog=auto
 	UninstallDisplayIcon={app}\paperback.exe
 	ChangesAssociations=yes
 	ChangesEnvironment=yes
@@ -21,7 +23,10 @@
 	ArchitecturesInstallIn64BitMode=@ARCH_MODE@
 
 [Languages]
-	Name: "english"; MessagesFile: "compiler:Default.isl"
+@LANGUAGES@
+
+[CustomMessages]
+@CUSTOM_MESSAGES@
 
 [Files]
 	Source: "paperback.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -36,10 +41,10 @@
 	Type: filesandordirs; Name: "{app}\sounds"
 
 [Tasks]
-	Name: "desktopicon"; Description: "Desktop Shortcut"
-	Name: "startmenuicon"; Description: "Start Menu Shortcut"
+	Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"
+	Name: "startmenuicon"; Description: "{cm:StartMenuIcon}"
 @FORMAT_TASKS@
-	Name: "addtopath"; Description: "Add Paperback directory to PATH"; Flags: unchecked
+	Name: "addtopath"; Description: "{cm:AddToPath}"; Flags: unchecked
 
 [Icons]
 	Name: "{autodesktop}\Paperback"; Filename: "{app}\paperback.exe"; Tasks: desktopicon
@@ -47,7 +52,7 @@
 
 [Registry]
 	; Core Paperback.Document class registration.
-	Root: HKCR; Subkey: "Paperback.Document"; ValueType: string; ValueName: ""; ValueData: "Paperback Document"; Flags: uninsdeletekey
+	Root: HKCR; Subkey: "Paperback.Document"; ValueType: string; ValueName: ""; ValueData: "{cm:DocumentType}"; Flags: uninsdeletekey
 	Root: HKCR; Subkey: "Paperback.Document\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\paperback.exe,0"
 	Root: HKCR; Subkey: "Paperback.Document\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\paperback.exe"" ""%1"""
 	; The name Explorer's "Open with" list shows. Without an explicit FriendlyAppName Windows falls
@@ -133,4 +138,4 @@ begin
 end;
 
 [Run]
-	Filename: "{app}\paperback.exe"; Description: "Launch Paperback"; Flags: nowait postinstall skipifsilent
+	Filename: "{app}\paperback.exe"; Description: "{cm:LaunchProgram,Paperback}"; Flags: nowait postinstall skipifsilent

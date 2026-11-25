@@ -390,6 +390,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * Settings is split into six tabs, one for each kind of setting.
 * PDFs, big CHM references, and MOBI books open faster.
 * The Windows installer asks about less: Paperback shows in Open with for every format it reads, and setup only offers to make it the default app for EPUB books and PDFs. The Start Menu shortcut is now on by default.
+* The Windows installer opens in your Windows display language when Paperback is translated into it, and asks which language to use when it isn't.
 
 #### Fixed
 

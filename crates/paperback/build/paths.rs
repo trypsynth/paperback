@@ -9,6 +9,9 @@ pub fn track_packaging_inputs() {
 	println!("cargo:rerun-if-changed=Cargo.toml");
 	println!("cargo:rerun-if-changed=assets");
 	println!("cargo:rerun-if-changed={}", workspace_dir().join("paperback.iss.in").display());
+	println!("cargo:rerun-if-changed={}", workspace_dir().join("installer").display());
+	println!("cargo:rerun-if-changed={}", workspace_dir().join("po").display());
+	println!("cargo:rerun-if-changed={}", manifest_dir().join("src").join("installer_strings.rs").display());
 }
 
 pub fn manifest_dir() -> PathBuf {
