@@ -5,7 +5,7 @@ use crate::{
 };
 
 impl MainWindow {
-	/// A play, pause or skip button of headphones or a keyboard. Does nothing while a dialog such as Options holds the config, since the handlers lock it and would freeze the window.
+	/// A play, pause or skip button of headphones or a keyboard. Does nothing while a dialog was opened with a lock held, since the handlers lock it and would freeze the window.
 	pub(crate) fn handle_media_button(&self, button: MediaButton) {
 		let free = self.config.try_lock().is_ok() && self.doc_manager.try_lock().is_ok();
 		if !free {

@@ -104,10 +104,9 @@ pub(super) fn handle_options(
 			dm.play_speech_sample(&configured_engine, engine, voice, rate, pitch);
 		});
 	let context = dialogs::OptionsContext { book: book.clone(), play_sample };
-	let options = {
-		let cfg = config.lock().unwrap();
-		dialogs::show_options_dialog(frame, &cfg, context)
-	};
+	let initial = dialogs::OptionsDialogResult::load(&config.lock().unwrap(), book.as_deref());
+	// Shown unlocked, since a held lock stops read aloud, media keys and the update quitting while it's open.
+	let options = dialogs::show_options_dialog(frame, &initial, context);
 	dm.lock().unwrap().stop_speech_sample();
 	let Some(options) = options else {
 		if paused_reading.get() {
