@@ -13,6 +13,7 @@ import dev.paperback.android.ui.screens.BookmarksScreen
 import dev.paperback.android.ui.screens.ElementsScreen
 import dev.paperback.android.ui.screens.MainScreen
 import dev.paperback.android.ui.screens.SettingsScreen
+import dev.paperback.android.ui.screens.SpeechDictionaryScreen
 import dev.paperback.android.ui.screens.TocScreen
 import dev.paperback.android.ui.state.MainScreenViewModel
 import dev.paperback.android.ui.state.OnScreenRequest
@@ -52,6 +53,13 @@ fun MainNavigation() {
 				}
 				entry<SettingsRoute> {
 					SettingsScreen(
+						viewModel = viewModel,
+						onOpenSpeechDictionary = { backStack.add(SpeechDictionaryRoute) },
+						onDismiss = { backStack.removeLastOrNull() }
+					)
+				}
+				entry<SpeechDictionaryRoute> {
+					SpeechDictionaryScreen(
 						viewModel = viewModel,
 						onDismiss = { backStack.removeLastOrNull() }
 					)

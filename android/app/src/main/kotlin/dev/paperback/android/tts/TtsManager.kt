@@ -205,7 +205,14 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 
 	/** The engine only hands audio over while making a file or playing it itself, and its own playback can't pause mid-paragraph, hence a file that keeps nothing. */
 	private fun synthesize(text: String, utteranceId: String): Boolean {
-		val queued = tts?.synthesizeToFile(text, null, DISCARDED_AUDIO, utteranceId)
+		val voice = voiceForRules()
+		val spoken = config.applySpeechRules(text, voice?.name, voice?.locale?.toLanguageTag())
+		// A rule can remove a whole paragraph, and an engine may fail an empty request, which would stop reading there.
+		if (spoken.isBlank()) {
+			playback.done(utteranceId)
+			return true
+		}
+		val queued = tts?.synthesizeToFile(spoken, null, DISCARDED_AUDIO, utteranceId)
 		if (queued != TextToSpeech.SUCCESS) {
 			Log.e(TAG, "TTS engine refused to synthesize (result $queued)")
 			playback.done(utteranceId)
@@ -576,6 +583,16 @@ class TtsManager(private val context: Context, private val config: ConfigManager
 	}
 
 	fun getCurrentVoice(): Voice? = _currentVoice.value
+
+	/** The system default engine leaves [currentVoice] empty, yet its voice still has a language for rules to match. */
+	fun voiceForRules(): Voice? = _currentVoice.value ?: try {
+		tts?.voice
+	} catch (_: Exception) {
+		null
+	}
+
+	/** Without a voice list, as with the system default engine, the voice speaking is still one a rule can be for. */
+	fun voicesForRules(): List<Voice> = _availableVoices.value.ifEmpty { listOfNotNull(voiceForRules()) }
 
 	@OptIn(UnstableApi::class)
 	fun shutdown() {

@@ -36,6 +36,22 @@ func languageLabel(_ code: String) -> String {
 	Locale.current.localizedString(forIdentifier: code) ?? code
 }
 
+extension VoiceFilter {
+	var label: String {
+		switch self {
+		case .all:
+			return "All voices"
+		case .language(let lang):
+			let name = Locale.current.localizedString(forIdentifier: lang) ?? lang
+			return "All \(name) voices"
+		case .voices(let ids):
+			if ids.isEmpty { return "No voices selected" }
+			if ids.count == 1, let v = AVSpeechSynthesisVoice(identifier: ids[0]) { return v.name }
+			return "\(ids.count) voices"
+		}
+	}
+}
+
 func buildSections(from voices: [AVSpeechSynthesisVoice]) -> [VoiceSection] {
 	let nativeCode = Locale.current.language.languageCode?.identifier ?? ""
 

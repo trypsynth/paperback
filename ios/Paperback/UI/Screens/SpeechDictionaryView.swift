@@ -1,19 +1,26 @@
 import SwiftUI
 
+/// Core's rules have no identity of their own, and the list needs one to keep a row's focus and animation through a move.
+private struct EditableRule: Identifiable {
+	let id = UUID()
+	var rule: SpeechRule
+}
+
 struct SpeechDictionaryView: View {
 	@Environment(AppViewModel.self) private var viewModel
-	@State private var editingRule: TtsRule? = nil
+	@State private var rules: [EditableRule] = []
+	@State private var editingRule: EditableRule? = nil
 	@State private var showAddRule = false
 	@Environment(\.editMode) private var editMode
 
 	var body: some View {
 		Group {
-			if viewModel.reading.ttsRules.isEmpty {
+			if rules.isEmpty {
 				emptyState
 			} else {
 				List {
-					ForEach(viewModel.reading.ttsRules) { rule in
-						RuleRow(rule: rule)
+					ForEach(rules) { rule in
+						RuleRow(rule: rule.rule)
 							.contentShape(Rectangle())
 							.onTapGesture { editingRule = rule }
 							.accessibilityAction(named: "Move Up") { moveUp(rule) }
@@ -31,7 +38,7 @@ struct SpeechDictionaryView: View {
 		.toolbar {
 			ToolbarItem(placement: .primaryAction) {
 				HStack(spacing: 16) {
-					if !viewModel.reading.ttsRules.isEmpty {
+					if !rules.isEmpty {
 						// TRANSLATORS: Toolbar button toggling the rule list's edit mode; label reflects the action it will perform next (finish editing / start editing)
 						Button(editMode?.wrappedValue.isEditing == true ? t("Done") : t("Edit")) {
 							withAnimation {
@@ -47,14 +54,17 @@ struct SpeechDictionaryView: View {
 				}
 			}
 		}
+		.onAppear { rules = viewModel.reading.speechRules.map { EditableRule(rule: $0) } }
 		.sheet(isPresented: $showAddRule) {
-			RuleEditSheet(rule: nil) { viewModel.reading.ttsRules.append($0) }
+			RuleEditSheet(rule: nil) { added in change { $0.append(EditableRule(rule: added)) } }
 				.environment(viewModel)
 		}
-		.sheet(item: $editingRule) { rule in
-			RuleEditSheet(rule: rule) { updated in
-				if let idx = viewModel.reading.ttsRules.firstIndex(where: { $0.id == updated.id }) {
-					viewModel.reading.ttsRules[idx] = updated
+		.sheet(item: $editingRule) { editing in
+			RuleEditSheet(rule: editing.rule) { updated in
+				change { list in
+					if let idx = list.firstIndex(where: { $0.id == editing.id }) {
+						list[idx].rule = updated
+					}
 				}
 			}
 			.environment(viewModel)
@@ -76,38 +86,43 @@ struct SpeechDictionaryView: View {
 		.padding()
 	}
 
-	private func moveUp(_ rule: TtsRule) {
-		guard let idx = viewModel.reading.ttsRules.firstIndex(where: { $0.id == rule.id }), idx > 0 else { return }
-		viewModel.reading.ttsRules.swapAt(idx, idx - 1)
+	private func change(_ edit: (inout [EditableRule]) -> Void) {
+		edit(&rules)
+		viewModel.reading.setSpeechRules(rules.map(\.rule))
 	}
 
-	private func moveDown(_ rule: TtsRule) {
-		guard let idx = viewModel.reading.ttsRules.firstIndex(where: { $0.id == rule.id }),
-		      idx < viewModel.reading.ttsRules.count - 1 else { return }
-		viewModel.reading.ttsRules.swapAt(idx, idx + 1)
+	private func moveUp(_ rule: EditableRule) {
+		guard let idx = rules.firstIndex(where: { $0.id == rule.id }), idx > 0 else { return }
+		change { $0.swapAt(idx, idx - 1) }
 	}
 
-	private func delete(_ rule: TtsRule) {
-		viewModel.reading.ttsRules.removeAll { $0.id == rule.id }
+	private func moveDown(_ rule: EditableRule) {
+		guard let idx = rules.firstIndex(where: { $0.id == rule.id }),
+		      idx < rules.count - 1 else { return }
+		change { $0.swapAt(idx, idx + 1) }
+	}
+
+	private func delete(_ rule: EditableRule) {
+		change { $0.removeAll { $0.id == rule.id } }
 	}
 
 	private func move(from source: IndexSet, to destination: Int) {
-		viewModel.reading.ttsRules.move(fromOffsets: source, toOffset: destination)
+		change { $0.move(fromOffsets: source, toOffset: destination) }
 	}
 
 	private func deleteAt(_ offsets: IndexSet) {
-		viewModel.reading.ttsRules.remove(atOffsets: offsets)
+		change { $0.remove(atOffsets: offsets) }
 	}
 }
 
 private struct RuleRow: View {
-	let rule: TtsRule
+	let rule: SpeechRule
 
 	var body: some View {
 		VStack(alignment: .leading, spacing: 3) {
 			HStack(spacing: 6) {
 				scopeBadge
-				if !rule.isEnabled {
+				if !rule.enabled {
 					Text("Off")
 						.font(.caption)
 						.foregroundStyle(.secondary)
@@ -132,7 +147,7 @@ private struct RuleRow: View {
 				.foregroundStyle(.secondary)
 		}
 		.padding(.vertical, 2)
-		.opacity(rule.isEnabled ? 1.0 : 0.5)
+		.opacity(rule.enabled ? 1.0 : 0.5)
 		.accessibilityElement(children: .ignore)
 		.accessibilityLabel(a11yLabel)
 	}
@@ -153,7 +168,7 @@ private struct RuleRow: View {
 		let scope = rule.scope == .word ? "Word rule" : "Paragraph rule"
 		let pat = rule.pattern.isEmpty ? "empty pattern" : rule.pattern
 		let repl = rule.replacement.isEmpty ? "nothing" : rule.replacement
-		let status = rule.isEnabled ? "" : ", disabled"
+		let status = rule.enabled ? "" : ", disabled"
 		return "\(scope): \(pat) to \(repl), \(rule.voiceFilter.label)\(status)"
 	}
 }

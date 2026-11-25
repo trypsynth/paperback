@@ -14,3 +14,5 @@ import kotlinx.serialization.Serializable
 @Serializable data object ElementsRoute : NavKey
 
 @Serializable data object BookmarksRoute : NavKey
+
+@Serializable data object SpeechDictionaryRoute : NavKey

@@ -14,8 +14,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.*
@@ -56,7 +59,7 @@ private const val PAUSE_STEPS = (MAX_PARAGRAPH_PAUSE_MS - MIN_PARAGRAPH_PAUSE_MS
 /** The readability choices share the desktop's index meanings, so the stored index is the setting. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ChoiceSetting(label: String, options: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit) {
+internal fun ChoiceSetting(label: String, options: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit) {
 	var expanded by remember { mutableStateOf(false) }
 	val selectedLabel = options.getOrElse(selectedIndex) { options.first() }
 	ExposedDropdownMenuBox(
@@ -141,9 +144,27 @@ private fun LanguageRow() {
 	}
 }
 
+@Composable
+private fun SpeechDictionaryRow(modifier: Modifier, onOpen: () -> Unit) {
+	Column(modifier = modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onOpen).padding(vertical = 8.dp)) {
+		// TRANSLATORS: Settings row opening the speech dictionary, the rules that change how words are read aloud
+		Text(t("Speech Dictionary"))
+		// TRANSLATORS: Footer under the Speech Dictionary row in Settings, explaining what its rules do
+		Text(
+			t("Change how words are read aloud, without changing the document."),
+			style = MaterialTheme.typography.bodySmall,
+			color = MaterialTheme.colorScheme.onSurfaceVariant
+		)
+	}
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -> Unit) {
+fun SettingsScreen(
+	viewModel: MainScreenViewModel = viewModel(),
+	onOpenSpeechDictionary: () -> Unit,
+	onDismiss: () -> Unit
+) {
 	val settings = viewModel.settings
 	val restorePreviousDocuments by settings.restorePreviousDocuments.state.collectAsStateWithLifecycle()
 	val useInAppFileBrowser by settings.useInAppFileBrowser.state.collectAsStateWithLifecycle()
@@ -167,6 +188,15 @@ fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -
 
 	var engineExpanded by remember { mutableStateOf(false) }
 	var voiceExpanded by remember { mutableStateOf(false) }
+	// Saved across the trip, so coming back lands on the row that left rather than the top of Settings.
+	var openedSpeechDictionary by rememberSaveable { mutableStateOf(false) }
+	val speechDictionaryFocus = remember { FocusRequester() }
+	LaunchedEffect(Unit) {
+		if (openedSpeechDictionary) {
+			openedSpeechDictionary = false
+			runCatching { speechDictionaryFocus.requestFocus() }
+		}
+	}
 
 	Surface(
 		modifier = Modifier.fillMaxSize().semantics { paneTitle = t("Settings") },
@@ -523,6 +553,14 @@ fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -
 						steps = 0
 					)
 				}
+				Spacer(modifier = Modifier.height(16.dp))
+				SpeechDictionaryRow(
+					modifier = Modifier.focusRequester(speechDictionaryFocus),
+					onOpen = {
+						openedSpeechDictionary = true
+						onOpenSpeechDictionary()
+					}
+				)
 				Spacer(modifier = Modifier.height(16.dp))
 				Row(
 					modifier = Modifier
