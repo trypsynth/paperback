@@ -4440,8 +4440,7 @@ dependencies = [
 [[package]]
 name = "ship-shape"
 version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d89002a0260be108fcaa76505142ac1e3838e2272414dd0fe40bb07efa2437ee"
+source = "git+https://github.com/accessware/ship-shape?rev=e09a12d8954772e1f536b199bff57dafc0d65918#e09a12d8954772e1f536b199bff57dafc0d65918"
 dependencies = [
  "homeport",
  "minisign-verify",
@@ -4449,6 +4448,7 @@ dependencies = [
  "pulldown-cmark",
  "serde",
  "tempfile",
+ "tracing",
  "ureq",
  "windows",
  "wx-utils",
@@ -6135,12 +6135,12 @@ checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 [[package]]
 name = "wx-utils"
 version = "0.5.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9386515afbcc9d4d5373e6348b027318652a356bceceb37239a1930664f4a049"
+source = "git+https://github.com/accessware/wx-utils?rev=ce1deed7ad906db8e50b12f7c20bf813afd8ef88#ce1deed7ad906db8e50b12f7c20bf813afd8ef88"
 dependencies = [
  "key-chord",
  "live-region",
  "patois",
+ "tracing",
  "windows",
  "wxdragon",
 ]

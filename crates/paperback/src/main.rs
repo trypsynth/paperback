@@ -43,7 +43,7 @@ fn main() {
 		Err(e) => Err(e),
 	};
 	let _log_guard = Logkeeper::new(config_ext::config_dir(), "paperback")
-		.with_crates(["paperback", "paperback_core"])
+		.with_crates(["paperback", "paperback_core", "ship_shape", "wx_utils"])
 		.init(config_ext::log_level_from_disk());
 	tracing::info!(version = env!("CARGO_PKG_VERSION"), commit = version::COMMIT_HASH, "starting");
 	#[cfg(any(target_os = "linux", target_os = "windows"))]
