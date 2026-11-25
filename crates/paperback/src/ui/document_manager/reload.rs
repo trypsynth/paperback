@@ -69,7 +69,8 @@ impl DocumentManager {
 	/// The open document's key in the config, when it is laid out as pages and so can have a page layout of its own.
 	pub fn active_paged_document(&self) -> Option<String> {
 		let tab = self.active_tab()?;
-		lays_out_pages(tab.local_path()).then(|| tab.file_path.to_string_lossy().into_owned())
+		PageLayout::applies_to(&tab.local_path().to_string_lossy())
+			.then(|| tab.file_path.to_string_lossy().into_owned())
 	}
 
 	/// `None` hands the open document back to the app's page layout; it is read again only if that changes how it reads.
@@ -208,13 +209,6 @@ impl DocumentManager {
 			}
 		}
 	}
-}
-
-/// The formats a page layout applies to, which read their text off laid-out pages.
-fn lays_out_pages(path: &Path) -> bool {
-	path.extension()
-		.and_then(|extension| extension.to_str())
-		.is_some_and(|extension| ["pdf", "xps", "oxps"].iter().any(|known| extension.eq_ignore_ascii_case(known)))
 }
 
 /// `path` is the document's key in the config, which for a link is the link.

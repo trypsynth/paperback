@@ -97,6 +97,7 @@ impl Default for Document {
 }
 
 /// How a document laid out as pages, such as a PDF, is turned into reading order and paragraphs.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum PageLayout {
@@ -120,6 +121,16 @@ impl PageLayout {
 	#[must_use]
 	pub const fn reads_by_columns(self) -> bool {
 		!matches!(self, Self::Automatic)
+	}
+
+	/// Whether the document at `path` is of a format read off laid-out pages, the only ones a page layout changes.
+	#[must_use]
+	pub fn applies_to(path: &str) -> bool {
+		let extension =
+			std::path::Path::new(path).extension().and_then(|extension| extension.to_str()).unwrap_or_default();
+		[&paperback_formats::PDF, &paperback_formats::XPS]
+			.iter()
+			.any(|format| format.extensions.iter().any(|known| extension.eq_ignore_ascii_case(known)))
 	}
 }
 
@@ -284,6 +295,14 @@ mod tests {
 		assert_eq!(context.file_path, "book.epub");
 		assert_eq!(context.password.as_deref(), Some("secret"));
 		assert_eq!(context.forced_extension.as_deref(), Some("txt"));
+	}
+
+	#[test]
+	fn a_page_layout_applies_only_to_documents_laid_out_as_pages() {
+		assert!(PageLayout::applies_to("/books/Pattern.PDF"));
+		assert!(PageLayout::applies_to("report.oxps"));
+		assert!(!PageLayout::applies_to("novel.epub"));
+		assert!(!PageLayout::applies_to("no extension"));
 	}
 
 	#[test]

@@ -2,7 +2,7 @@ use std::{collections::HashSet, sync::Mutex};
 
 use crate::{
 	config::{Bookmark, ConfigManager, DocumentSpeech, NavigationUnit},
-	document::DocPos,
+	document::{DocPos, PageLayout},
 	parser::ParserRegistry,
 	reader_core::{AUDIO_BOOKMARK_REACH_MS, audio_bookmark_navigate, bookmark_navigate},
 	types::{BookmarkFfi, BookmarkStepFfi},
@@ -135,6 +135,33 @@ impl ConfigManagerFfi {
 
 	pub fn get_document_navigation_unit(&self, path: String) -> Option<NavigationUnit> {
 		self.inner.lock().unwrap().get_document_navigation_unit(&path)
+	}
+
+	pub fn get_page_layout(&self) -> PageLayout {
+		self.inner.lock().unwrap().get_page_layout()
+	}
+
+	pub fn set_page_layout(&self, layout: PageLayout) {
+		self.inner.lock().unwrap().set_page_layout(layout);
+	}
+
+	/// `None` follows the app's page layout.
+	pub fn get_document_page_layout(&self, path: String) -> Option<PageLayout> {
+		self.inner.lock().unwrap().get_document_page_layout(&path)
+	}
+
+	pub fn set_document_page_layout(&self, path: String, layout: Option<PageLayout>) {
+		self.inner.lock().unwrap().set_document_page_layout(&path, layout);
+	}
+
+	/// What to open the document at `path` with: its own page layout, or the app's.
+	pub fn page_layout_for(&self, path: String) -> PageLayout {
+		self.inner.lock().unwrap().page_layout_for(&path)
+	}
+
+	/// Only PDF and XPS documents have a page layout to choose, so the choice is offered for nothing else.
+	pub fn page_layout_applies_to(&self, path: String) -> bool {
+		PageLayout::applies_to(&path)
 	}
 
 	pub fn set_document_password(&self, path: String, password: String) {

@@ -346,9 +346,10 @@ impl DocumentSession {
 		password: String,
 		forced_extension: String,
 		render_tables_inline: bool,
+		page_layout: crate::document::PageLayout,
 	) -> Result<Self, DocumentError> {
-		// The mobile front ends have a reader-facing switch only for table rendering, so they take the other defaults.
-		let settings = ParseSettings { render_tables_inline, ..ParseSettings::default() };
+		// The mobile front ends have reader-facing switches only for these, so they take the other defaults.
+		let settings = ParseSettings { render_tables_inline, page_layout, ..ParseSettings::default() };
 		Self::new(&file_path, &password, &forced_extension, settings).map_err(DocumentError::ParseError)
 	}
 }
