@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-25 16:45+0000\n"
-"PO-Revision-Date: 2026-11-25 22:35+0200\n"
+"PO-Revision-Date: 2026-11-25 23:54+0200\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -158,7 +158,7 @@ msgstr "Raporttia ei voitu tallentaa: %s"
 
 #. TRANSLATORS: Checkbox in the Windows installer for a Paperback shortcut in the Start Menu, beside Inno Setup's own "Create a desktop shortcut". The & marks the key that checks it.
 msgid "Create a &Start Menu shortcut"
-msgstr "Luo &Käynnistä-valikon pikakuvake"
+msgstr "Luo pikakuvake &Käynnistä-valikkoon"
 
 #. TRANSLATORS: Checkbox in the Windows installer: EPUB books open in Paperback when opened from File Explorer. Every other format Paperback reads is offered in Explorer's "Open with" without asking.
 msgid "Make Paperback the default app for EPUB books (*.epub)"
@@ -1489,7 +1489,7 @@ msgstr "Automaattinen"
 
 #. TRANSLATORS: Page layout choice in the Documents tab of Settings: the document's own reading order is ignored and the columns of each page are found from where the text sits, then read one after the other. It suits documents whose text is read out of order, such as two-column layouts
 msgid "By columns, ignoring the document's own order"
-msgstr "Palstoittain (asiakirjan lukujärjestys ohitetaan)"
+msgstr "Palstoittain (asiakirjan oma lukemisjärjestys ohitetaan)"
 
 #. TRANSLATORS: Page layout choice in the Documents tab of Settings: like reading by columns, but every line is kept apart instead of joined into paragraphs, which suits code, poetry and lists of clauses whose line breaks are the content
 msgid "By columns, keeping every line apart"
@@ -1499,7 +1499,7 @@ msgstr "Palstoittain (rivinvaihdot säilytetään)"
 msgid "Changing these reads your open documents again when you press OK."
 msgstr ""
 "Näiden asetusten muutokset tulevat voimaan, kun painat OK-painiketta. "
-"Samalla avoinna olevat asiakirjat käsitellään uudelleen."
+"Avoinna olevat asiakirjat käsitellään samalla uudelleen."
 
 #. TRANSLATORS: Option to render tables inline rather than showing a placeholder link
 msgid "Render tables &inline"
