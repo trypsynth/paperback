@@ -56,8 +56,9 @@ fn is_ocr_able(file_path: &Path) -> bool {
 	})
 }
 
-pub(super) fn joins_recognized_text(local_path: &Path, config: &ConfigManager) -> bool {
-	is_pdf(local_path) && config.get_app_bool("join_pdf_paragraphs", true)
+/// `path` is the document's key in the config, which for a link is the link rather than the copy read.
+pub(super) fn joins_recognized_text(local_path: &Path, path: &str, config: &ConfigManager) -> bool {
+	is_pdf(local_path) && config.page_layout_for(path).joins_lines()
 }
 
 pub(super) fn saved_pages_of(local_path: &Path) -> PathBuf {
@@ -237,7 +238,11 @@ impl DocumentManager {
 		let from_keyboard = self.tabs[index].ocr_job.as_ref().is_none_or(|job| job.from_keyboard);
 		let (join, plain_text) = {
 			let cfg = self.config.lock().unwrap();
-			(joins_recognized_text(self.tabs[index].local_path(), &cfg), cfg.get_app_bool("plain_text", false))
+			let tab = &self.tabs[index];
+			(
+				joins_recognized_text(tab.local_path(), &tab.file_path.to_string_lossy(), &cfg),
+				cfg.get_app_bool("plain_text", false),
+			)
 		};
 		let tab = &mut self.tabs[index];
 		let mut pages = Vec::with_capacity(results.len());

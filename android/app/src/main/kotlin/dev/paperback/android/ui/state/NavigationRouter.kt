@@ -13,6 +13,7 @@ class NavigationRouter {
 	val exportSettingsRequest = ScreenRequest()
 	val importSettingsRequest = ScreenRequest()
 	val elementsRequest = ScreenRequest()
+	val bookmarksRequest = ScreenRequest()
 
 	val findDialog = DialogState()
 	val exportDocumentDialog = DialogState()

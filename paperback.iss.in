@@ -14,6 +14,8 @@
 	Compression=lzma2
 	SolidCompression=yes
 	WizardStyle=modern
+	; Setup opens in the Windows display language when Paperback is translated into it, and asks only when it isn't.
+	ShowLanguageDialog=auto
 	UninstallDisplayIcon={app}\paperback.exe
 	ChangesAssociations=yes
 	ChangesEnvironment=yes
@@ -21,7 +23,10 @@
 	ArchitecturesInstallIn64BitMode=@ARCH_MODE@
 
 [Languages]
-	Name: "english"; MessagesFile: "compiler:Default.isl"
+@LANGUAGES@
+
+[CustomMessages]
+@CUSTOM_MESSAGES@
 
 [Files]
 	Source: "paperback.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -36,11 +41,10 @@
 	Type: filesandordirs; Name: "{app}\sounds"
 
 [Tasks]
-	Name: "desktopicon"; Description: "Desktop Shortcut"
-	Name: "startmenuicon"; Description: "Start Menu Shortcut"; Flags: unchecked
-	Name: "addtopath"; Description: "Add Paperback directory to PATH"; Flags: unchecked
+	Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"
+	Name: "startmenuicon"; Description: "{cm:StartMenuIcon}"
 @FORMAT_TASKS@
-	Name: "assoc_zip"; Description: "Associate with ZIP archives (*.zip)"; Flags: unchecked
+	Name: "addtopath"; Description: "{cm:AddToPath}"; Flags: unchecked
 
 [Icons]
 	Name: "{autodesktop}\Paperback"; Filename: "{app}\paperback.exe"; Tasks: desktopicon
@@ -48,7 +52,7 @@
 
 [Registry]
 	; Core Paperback.Document class registration.
-	Root: HKCR; Subkey: "Paperback.Document"; ValueType: string; ValueName: ""; ValueData: "Paperback Document"; Flags: uninsdeletekey
+	Root: HKCR; Subkey: "Paperback.Document"; ValueType: string; ValueName: ""; ValueData: "{cm:DocumentType}"; Flags: uninsdeletekey
 	Root: HKCR; Subkey: "Paperback.Document\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\paperback.exe,0"
 	Root: HKCR; Subkey: "Paperback.Document\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\paperback.exe"" ""%1"""
 	; The name Explorer's "Open with" list shows. Without an explicit FriendlyAppName Windows falls
@@ -60,9 +64,6 @@
 	Root: HKCR; Subkey: "Applications\paperback.exe\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\paperback.exe,0"
 	Root: HKCR; Subkey: "Applications\paperback.exe\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\paperback.exe"" ""%1"""
 @FORMAT_REGISTRY@
-	; ZIP archives. Shared by multiple parsers (DAISY, Word-in-zip), so it is kept as its own opt-in task
-	; rather than tied to any single format's checkbox.
-	Root: HKCR; Subkey: ".zip\OpenWithProgids"; ValueType: string; ValueName: "Paperback.Document"; ValueData: ""; Flags: uninsdeletevalue; Tasks: assoc_zip
 	; PATH. Appended when missing; [Code] removes it when the task is unchecked and at the start of uninstall.
 	Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; Flags: preservestringtype; Check: NeedsAddPath; Tasks: addtopath
 
@@ -137,4 +138,4 @@ begin
 end;
 
 [Run]
-	Filename: "{app}\paperback.exe"; Description: "Launch Paperback"; Flags: nowait postinstall skipifsilent
+	Filename: "{app}\paperback.exe"; Description: "{cm:LaunchProgram,Paperback}"; Flags: nowait postinstall skipifsilent

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 00:42+0000\n"
-"PO-Revision-Date: 2026-11-12 15:09+0200\n"
+"POT-Creation-Date: 2026-11-22 15:05+0000\n"
+"PO-Revision-Date: 2026-11-23 13:59+0200\n"
 "Last-Translator: Ivan Shtefuriak <ip0877@gmail.com>\n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -236,6 +236,10 @@ msgstr ""
 "У цій книзі не вказано, скільки триває аудіозапис, тому Paperback не може "
 "перейти до певного моменту в ній."
 
+#. TRANSLATORS: Announced when asking for the time in an audiobook's chapter while the length of its files isn't known, such as in many DAISY books
+msgid "This book doesn't say how long its audio runs."
+msgstr "У цій книзі не вказано тривалість аудіо."
+
 #. TRANSLATORS: Announced when the read aloud rate changes; {} is the rate from 0 to 100, where 50 is the voice's normal speed
 msgid "Rate {}"
 msgstr "Темп {}"
@@ -338,7 +342,7 @@ msgstr "Закладка."
 
 #. TRANSLATORS: Announced after toggling a bookmark at the current selection off/on
 msgid "Bookmark removed."
-msgstr "Закладку видалено."
+msgstr "Закладку вилучено."
 
 msgid "Bookmark added."
 msgstr "Закладку додано."
@@ -445,7 +449,6 @@ msgid "Remove all documents from the Recent Documents list"
 msgstr "Вилучити всі документи зі списку останніх документів"
 
 #. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
-#. TRANSLATORS: System tray menu item to quit the application
 msgid "E&xit"
 msgstr "&Вийти"
 
@@ -703,7 +706,7 @@ msgstr "Переглянути нотатку в поточній позиції
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to add or remove a bookmark at the current reading position.
 msgid "&Toggle Bookmark"
-msgstr "&Додати/видалити закладку"
+msgstr "&Додати/вилучити закладку"
 
 #. TRANSLATORS: Menu item in the Bookmarks menu to add a bookmark with an attached note at the current reading position.
 msgid "Bookmark &with Note..."
@@ -756,6 +759,15 @@ msgstr "Перейти до &часу..."
 #. TRANSLATORS: Status-bar help text for the Go to Time menu item.
 msgid "Go to a time in the recording"
 msgstr "Перейти до певного часу в записі"
+
+#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter the reader is and how much of it is left: by time in an audiobook, by words in a text book.
+msgid "Announce &Chapter Progress"
+msgstr "Оголосити перебіг &розділу"
+
+#. TRANSLATORS: Status-bar help text for the Announce Chapter Progress menu item.
+msgid "Say how far into this chapter you are and how much is left"
+msgstr ""
+"Озвучити, скільки вже прочитано в цьому розділі і скільки ще залишилося"
 
 #. TRANSLATORS: Menu item in the Audio menu to skip the audio narration forward.
 msgid "Seek Audio &Forward"
@@ -1447,6 +1459,10 @@ msgstr "Використовувати цей голос, темп і висот
 msgid "Play Sa&mple"
 msgstr "Відтворити &зразок"
 
+#. TRANSLATORS: Button on the Audio tab of Settings that opens the speech dictionary, which changes how words are read aloud
+msgid "Speech &Dictionary..."
+msgstr "Словник &вимови..."
+
 #. TRANSLATORS: First choice in the voice list on the Audio tab of Settings, which leaves the choice of voice to the system
 msgid "System default"
 msgstr "Системний за замовчуванням"
@@ -1568,6 +1584,112 @@ msgstr "&Виділяти знайдений текст"
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
 msgstr "&Швидкість читання (слів за хвилину):"
+
+#. TRANSLATORS: Title of the speech dictionary dialog, opened from the Read Aloud group on the Audio tab of Settings
+msgid "Speech Dictionary"
+msgstr "Словник вимови"
+
+#. TRANSLATORS: Label of the list of speech dictionary rules, which are applied in order and can each be turned on or off
+msgid "&Rules:"
+msgstr "&Правила:"
+
+#. TRANSLATORS: Said of a speech dictionary rule that is on
+msgid "on"
+msgstr "увімкнено"
+
+#. TRANSLATORS: Said of a speech dictionary rule that is off
+msgid "off"
+msgstr "вимкнено"
+
+#. TRANSLATORS: Button in the speech dictionary dialog that adds a rule
+msgid "&Add..."
+msgstr "&Додати..."
+
+#. TRANSLATORS: Button in the speech dictionary dialog that edits the current rule
+msgid "&Edit..."
+msgstr "&Редагувати..."
+
+#. TRANSLATORS: Button in the speech dictionary dialog that removes the current rule
+msgid "Re&move"
+msgstr "&Вилучити"
+
+#. TRANSLATORS: In the speech dictionary's list, the replacement of a rule that removes what it finds
+msgid "removed"
+msgstr "вилучено"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches whole words only
+msgid "whole words"
+msgstr "цілі слова"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches inside words too
+msgid "words"
+msgstr "слів"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches a regular expression across a paragraph
+msgid "paragraphs, regular expression"
+msgstr "абзаци, регулярний вираз"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches text across a paragraph
+msgid "paragraphs"
+msgstr "абзаци"
+
+#. TRANSLATORS: In the speech dictionary, a rule that applies to every voice
+msgid "all voices"
+msgstr "усі голоси"
+
+#. TRANSLATORS: Title of the dialog that adds a speech dictionary rule
+msgid "Add Rule"
+msgstr "Додати правило"
+
+#. TRANSLATORS: Title of the dialog that edits a speech dictionary rule
+msgid "Edit Rule"
+msgstr "Редагувати правило"
+
+#. TRANSLATORS: Label of the text a speech dictionary rule matches, or its regular expression
+msgid "&Pattern:"
+msgstr "&Шаблон:"
+
+msgid "&Replacement:"
+msgstr "&Заміна:"
+
+#. TRANSLATORS: Label of the choice between a rule matching words and one matching across a whole paragraph
+msgid "&Applies to:"
+msgstr "&Застосувати до:"
+
+#. TRANSLATORS: Speech dictionary rule scope: the rule matches words
+msgid "Words"
+msgstr "Слів"
+
+#. TRANSLATORS: Speech dictionary rule scope: the rule matches across a whole paragraph, and can be a regular expression
+msgid "Whole paragraphs"
+msgstr "Цілих абзаців"
+
+#. TRANSLATORS: Label of the choice of voices a speech dictionary rule applies to
+msgid "&Voices:"
+msgstr "&Голоси:"
+
+#. TRANSLATORS: First choice of voices for a speech dictionary rule
+msgid "All voices"
+msgstr "Усі голоси"
+
+#. TRANSLATORS: A choice of voices for a speech dictionary rule: every voice of one language; %s is the language
+msgid "Voices in %s"
+msgstr "Голоси %s"
+
+#. TRANSLATORS: Check box: a word rule matches only whole words, not part of a longer word
+msgid "Match &whole words only"
+msgstr "Лише &цілі слова"
+
+#. TRANSLATORS: Check box: a paragraph rule's pattern is a regular expression, whose groups the replacement can use as \1
+msgid "Regular e&xpression"
+msgstr "&Регулярний вираз"
+
+#. TRANSLATORS: Shown when a speech dictionary rule is saved without a pattern
+msgid "Type a pattern for the rule."
+msgstr "Введіть шаблон для правила."
+
+msgid "The regular expression isn't valid: %s"
+msgstr "Неправильний регулярний вираз: %s"
 
 #. TRANSLATORS: Title of the Settings dialog
 msgid "Settings"
@@ -2755,10 +2877,6 @@ msgstr "&Відновити"
 msgid "Restore Paperback"
 msgstr "Відновити  Paperback"
 
-#. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
-msgid "Exit Paperback"
-msgstr "Вийти з Paperback"
-
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Open..."
 msgstr "Відкрити..."
@@ -3001,7 +3119,7 @@ msgstr "Переглянути джерело"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Toggle Bookmark"
-msgstr "Додати/видалити закладку"
+msgstr "Додати/вилучити закладку"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Bookmark with Note"
@@ -3030,6 +3148,10 @@ msgstr "Відтворити/Призупинити аудіо"
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Go to Time..."
 msgstr "Перейти до часу..."
+
+#. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
+msgid "Announce Chapter Progress"
+msgstr "Оголосити перебіг розділу"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Forward"
@@ -3576,6 +3698,21 @@ msgstr "Не знайдено парсер для розширення: .{}"
 msgid "All parsers failed for extension: .{}"
 msgstr "Усі парсери повернули помилку для розширення: .{}"
 
+#. TRANSLATORS: Announced with how far into an audiobook's chapter the reader is: the time left in it; {} is written like 12:05
+msgid "{} left"
+msgstr "залишилося {}"
+
+#. TRANSLATORS: Announced for how far into an audiobook the reader is: the first {} is the time played so far and the second how long it runs, both written like 1:02:03
+msgid "{} of {}"
+msgstr "{} із {}"
+
+#. TRANSLATORS: Announced with how far through a book's chapter the reader is: the number of words left in it. %d is the number.
+msgid "%d word left"
+msgid_plural "%d words left"
+msgstr[0] "залишилося %d слово"
+msgstr[1] "залишилося %d слова"
+msgstr[2] "залишилося %d слів"
+
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 msgid "image"
 msgstr "зображення"
@@ -3933,6 +4070,15 @@ msgstr "Скидання комбінацій клавіш"
 msgid "{} (not on this keyboard layout)"
 msgstr "{} (немає в цій розкладці клавіатури)"
 
+msgid "&Show/Hide"
+msgstr "&Показати/Приховати"
+
+msgid "Show or hide the window"
+msgstr "Показати або приховати вікно"
+
+msgid "Close the app"
+msgstr "Закрити додаток"
+
 #: kt swift
 msgid "Export Document Data"
 msgstr "Експортувати дані документа"
@@ -4039,6 +4185,7 @@ msgstr "Відкрити книгу"
 msgid "Locate"
 msgstr "Знайти"
 
+#. TRANSLATORS: Button confirming removal of a bookmark and its note
 #: kt swift
 msgid "Remove"
 msgstr "Вилучити"
@@ -4086,11 +4233,6 @@ msgstr "Темп"
 #: kt swift
 msgid "Pitch"
 msgstr "Висота тону"
-
-#. TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
-#: swift
-msgid "Speech Dictionary"
-msgstr "Словник вимови"
 
 #: kt swift
 msgid "Play Sample"
@@ -4140,11 +4282,6 @@ msgstr "Назва"
 #: kt swift
 msgid "Author"
 msgstr "Автор"
-
-#. TRANSLATORS: Row label for the document's total word count
-#: kt swift
-msgid "Words"
-msgstr "Слів"
 
 #. TRANSLATORS: Row label for the document's total line count
 #: kt swift
@@ -4275,20 +4412,10 @@ msgstr "Голоси"
 msgid "New Rule"
 msgstr "Нове правило"
 
-#. TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
-#: swift
-msgid "Edit Rule"
-msgstr "Редагувати правило"
-
-#. TRANSLATORS: Button to save the rule and dismiss the editor
-#: swift
+#. TRANSLATORS: Button that saves what was typed and closes the editor, such as a speech rule or a bookmark's note
+#: kt swift
 msgid "Save"
 msgstr "Зберегти"
-
-#. TRANSLATORS: Row label for selecting all TTS voices as the target of a rule, rather than a specific language or voice
-#: swift
-msgid "All voices"
-msgstr "Усі голоси"
 
 #. TRANSLATORS: Navigation title for the screen where the user picks which voices a rule applies to
 #: swift
@@ -4337,11 +4464,6 @@ msgstr "Зупинити таймер"
 #: swift
 msgid "Start Timer"
 msgstr "Запустити таймер"
-
-#. TRANSLATORS: Accessibility label for the "+" button that adds a new speech dictionary rule
-#: swift
-msgid "Add Rule"
-msgstr "Додати правило"
 
 #. TRANSLATORS: Message shown when no speech dictionary rules have been created yet
 #: swift
@@ -4581,14 +4703,6 @@ msgstr "Розгорнути"
 #: swift kt
 msgid "This document contains {} words."
 msgstr "Цей документ містить {} слів."
-
-#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
-#. three forms is used depends on the target language's own plural rule, read
-#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
-#. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
-#: kt
-msgid "words"
-msgstr "слів"
 
 #. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
@@ -5204,6 +5318,133 @@ msgstr "Вибрати швидкість відтворення"
 #: kt swift
 msgid "Readability"
 msgstr "Читабельність"
+
+#. TRANSLATORS: Go To mode option: navigate to a time in an audiobook, such as 1:23:45
+#: kt swift
+msgid "Time"
+msgstr "Час"
+
+#. TRANSLATORS: Shown and announced with how far through a book's chapter the reader is: the number of words left in it; {} is the number. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: kt swift
+msgid "{} word left"
+msgstr "залишилося {} слово"
+
+#: kt swift
+msgid "{} words left"
+msgstr "залишилося {} слів"
+
+#: kt swift
+msgid "{} words left⁣"
+msgstr "залишилося {} слів"
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt swift
+msgid "Show book progress"
+msgstr "Показувати перебіг книги"
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt swift
+msgid "Show chapter progress"
+msgstr "Показувати перебіг розділу"
+
+#. TRANSLATORS: Name of the "Bookmark" navigation unit, which moves between the reader's bookmarks and notes
+#: kt swift
+msgid "Bookmark"
+msgstr "Закладка"
+
+#. TRANSLATORS: Announced after clearing a bookmark's note, which keeps the bookmark
+#: kt swift
+msgid "Note deleted."
+msgstr "Нотатку вилучено."
+
+#. TRANSLATORS: VoiceOver label for the note shown under the passage being read; {} is the note's text
+#: kt swift
+msgid "Note: {}"
+msgstr "Нотатка: {}"
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt swift
+msgid "Add Bookmark"
+msgstr "Додати закладку"
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt swift
+msgid "Remove Bookmark"
+msgstr "Вилучити закладку"
+
+#. TRANSLATORS: VoiceOver value of the bookmark button when the bookmark at the current paragraph has a note
+#: kt swift
+msgid "Has note"
+msgstr "Має нотатку"
+
+#. TRANSLATORS: Title of the alert confirming removal of a bookmark that has a note
+#: kt swift
+msgid "Remove this bookmark and its note?"
+msgstr "Вилучити цю закладку та її нотатку?"
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt swift
+msgid "Edit Note..."
+msgstr "Редагувати нотатку..."
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt swift
+msgid "Add Note..."
+msgstr "Додати нотатку..."
+
+#. TRANSLATORS: Label for the picker choosing whether the Bookmarks screen shows everything, only bookmarks, or only notes
+#: swift
+msgid "Show"
+msgstr "Показувати"
+
+#. TRANSLATORS: Swipe / accessibility action deleting a bookmark from the Bookmarks screen
+#: kt swift
+msgid "Delete"
+msgstr "Вилучити"
+
+#. TRANSLATORS: Title shown when the current document has no bookmarks or notes
+#: kt swift
+msgid "No Bookmarks"
+msgstr "Немає закладок"
+
+#. TRANSLATORS: Description shown under the "No Bookmarks" title
+#: kt swift
+msgid "Tap the bookmark button while reading to mark your place."
+msgstr ""
+"Торкніться кнопки закладки під час читання, щоб зберегти поточне місце."
+
+#. TRANSLATORS: VoiceOver hint on the note shown under the passage being read
+#: swift
+msgid "Double-tap to edit."
+msgstr "Натисніть двічі для редагування."
+
+#. TRANSLATORS: Heading over the passage (or audiobook time) a bookmark note is attached to
+#: swift
+msgid "Bookmarked"
+msgstr "Закладка"
+
+#. TRANSLATORS: Heading over the text field where a bookmark's note is typed
+#: swift
+msgid "Note"
+msgstr "Нотатка"
+
+#. TRANSLATORS: Button that clears a bookmark's note but keeps the bookmark
+#: kt swift
+msgid "Delete Note"
+msgstr "Вилучити нотатку"
+
+#. TRANSLATORS: TalkBack action label for a long press on the bookmark button, which opens its note and list options
+#: kt
+msgid "show note and bookmark options"
+msgstr "показати параметри нотаток і закладок"
+
+#. TRANSLATORS: TalkBack action label for a bookmark in the Bookmarks screen, read as "double tap to go to bookmark"
+#: kt
+msgid "go to bookmark"
+msgstr "перейти до закладки"
+
+#~ msgid "Exit Paperback"
+#~ msgstr "Вийти з Paperback"
 
 #~ msgid "Failed to create IPC server"
 #~ msgstr "Не вдалося створити сервер IPC"

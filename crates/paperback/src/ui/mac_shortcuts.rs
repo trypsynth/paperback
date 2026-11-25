@@ -1,20 +1,20 @@
 //! Run app shortcuts before Cocoa selects their menu items and `VoiceOver` reads their labels.
 
-use std::{cell::Cell, ptr, rc::Rc, sync::Mutex};
+use std::{cell::Cell, ptr, ptr::NonNull, rc::Rc, sync::Mutex};
 
-use block::ConcreteBlock;
-use objc::{class, msg_send, runtime::Object, sel, sel_impl};
+use block2::RcBlock;
+use objc2::{MainThreadMarker, rc::Retained};
+use objc2_app_kit::{NSApplication, NSEvent, NSEventMask, NSEventModifierFlags, NSView, NSWindow};
 use paperback_core::config::{ActionId, ConfigManager, KeyChord};
 use wxdragon::prelude::*;
 
 use crate::ui::menu_ids;
 
-// NSEventModifierFlags and NSEventMaskKeyDown, from AppKit.
+// NSEventModifierFlags, from AppKit.
 const SHIFT: usize = 1 << 17;
 const CONTROL: usize = 1 << 18;
 const OPTION: usize = 1 << 19;
 const COMMAND: usize = 1 << 20;
-const KEY_DOWN: usize = 1 << 10;
 
 fn wx_key_code(character: u16) -> Option<i32> {
 	match character {
@@ -37,28 +37,23 @@ fn wx_key_code(character: u16) -> Option<i32> {
 	}
 }
 
-fn event_key(event: *mut Object) -> Option<(usize, i32)> {
-	// NSEvents and their NSStrings are borrowed for the duration of this UI-thread callback.
-	unsafe {
-		let modifiers: usize = msg_send![event, modifierFlags];
-		let characters: *mut Object = msg_send![event, charactersIgnoringModifiers];
-		let length: usize = msg_send![characters, length];
-		if length == 1 {
-			let character: u16 = msg_send![characters, characterAtIndex: 0_usize];
-			// Preserve AppKit's special codes; applying modifiers turns some into control characters.
-			if character == 0x7f || (0xf700..=0xf8ff).contains(&character) {
-				return Some((modifiers, wx_key_code(character)?));
-			}
+/// The event is a key event, as the monitor only asks for key downs.
+fn event_key(event: &NSEvent) -> Option<(usize, i32)> {
+	let modifiers = event.modifierFlags().0;
+	let characters = event.charactersIgnoringModifiers()?;
+	if characters.length() == 1 {
+		let character = characters.characterAtIndex(0);
+		// Preserve AppKit's special codes; applying modifiers turns some into control characters.
+		if character == 0x7f || (0xf700..=0xf8ff).contains(&character) {
+			return Some((modifiers, wx_key_code(character)?));
 		}
-		// Remove Shift as well, so Shift+/ matches the base '/' key and a separate Shift flag.
-		let characters: *mut Object = msg_send![event, charactersByApplyingModifiers: 0_usize];
-		let length: usize = msg_send![characters, length];
-		if length != 1 {
-			return None;
-		}
-		let character: u16 = msg_send![characters, characterAtIndex: 0_usize];
-		Some((modifiers, wx_key_code(character)?))
 	}
+	// Remove Shift as well, so Shift+/ matches the base '/' key and a separate Shift flag.
+	let characters = event.charactersByApplyingModifiers(NSEventModifierFlags(0))?;
+	if characters.length() != 1 {
+		return None;
+	}
+	Some((modifiers, wx_key_code(characters.characterAtIndex(0))?))
 }
 
 // Plain Ctrl in the config means Command on macOS and RawCtrl means physical Control; test both so VoiceOver's Control+Option commands pass through unless that exact chord was assigned.
@@ -74,25 +69,29 @@ pub fn install(
 	from_keyboard: Rc<Cell<bool>>,
 	reader_has_focus: impl Fn() -> bool + 'static,
 ) {
-	let monitor = ConcreteBlock::new(move |event: *mut Object| -> *mut Object {
+	let Some(main_thread) = MainThreadMarker::new() else { return };
+	let monitor = RcBlock::new(move |event_ptr: NonNull<NSEvent>| -> *mut NSEvent {
+		let unchanged = event_ptr.as_ptr();
 		if !frame.is_valid() || !frame.is_enabled() {
-			return event;
+			return unchanged;
 		}
-		let view = frame.get_handle().cast::<Object>();
-		let (window, event_window, modal_window): (*mut Object, *mut Object, *mut Object) = unsafe {
-			let app: *mut Object = msg_send![class!(NSApplication), sharedApplication];
-			(msg_send![view, window], msg_send![event, window], msg_send![app, modalWindow])
-		};
+		// AppKit lends the event for the duration of this UI-thread callback, and wxWidgets owns the frame's view while it's valid.
+		let (event, view) = unsafe { (event_ptr.as_ref(), &*frame.get_handle().cast::<NSView>()) };
+		let address = |window: Option<Retained<NSWindow>>| window.map(|window| Retained::as_ptr(&window));
+		let window = address(view.window());
 		// Child controls belong to the frame's NSWindow too. Dialogs and other windows do not.
-		if window.is_null() || window != event_window || !modal_window.is_null() {
-			return event;
+		if window.is_none()
+			|| window != address(event.window(main_thread))
+			|| NSApplication::sharedApplication(main_thread).modalWindow().is_some()
+		{
+			return unchanged;
 		}
-		let Some((modifiers, key)) = event_key(event) else { return event };
+		let Some((modifiers, key)) = event_key(event) else { return unchanged };
 		let action =
 			config.try_lock().ok().and_then(|cfg| cfg.find_shortcut(|chord| chord_matches(chord, key, modifiers)));
 		// Percentage announcements have no menu item and already run in the reader's key handler.
 		if action == Some(ActionId::AnnouncePercent) {
-			return event;
+			return unchanged;
 		}
 		let copy_key = key == 'C' as i32 && modifiers & (COMMAND | CONTROL | OPTION | SHIFT) == COMMAND;
 		let id = if let Some(action) = action {
@@ -101,11 +100,11 @@ pub fn install(
 			// Copy is a stock wx command outside ActionId; catch it before Cocoa reads "Copy" so the app announces the character count instead.
 			menu_ids::COPY
 		} else {
-			return event;
+			return unchanged;
 		};
 		let item = frame.get_menu_bar().and_then(|bar| bar.find_item(id));
 		if !item.is_some_and(|item| item.is_enabled()) {
-			return event;
+			return unchanged;
 		}
 		// Synchronous dispatch keeps the keyboard mark from leaking to a later menu click.
 		from_keyboard.set(true);
@@ -113,22 +112,19 @@ pub fn install(
 		frame.process_menu_command(id);
 		from_keyboard.set(false);
 		ptr::null_mut()
-	})
-	.copy();
-	let token: *mut Object = unsafe {
-		let token: *mut Object =
-			msg_send![class!(NSEvent), addLocalMonitorForEventsMatchingMask: KEY_DOWN handler: &*monitor];
-		let _: *mut Object = msg_send![token, retain];
-		token
+	});
+	// The handler only runs on the main thread, where AppKit delivers local events.
+	let Some(token) =
+		(unsafe { NSEvent::addLocalMonitorForEventsMatchingMask_handler(NSEventMask::KeyDown, &monitor) })
+	else {
+		return;
 	};
 	let frame_handle = frame.handle_ptr();
 	frame.bind_internal(EventType::DESTROY, move |event| {
 		// Destroy events bubble from children too: closing a tab must not remove this monitor. The raw pointer, since `get_event_object` gives a window being deleted a null one.
 		if event.event_object_ptr() == frame_handle {
-			unsafe {
-				let _: () = msg_send![class!(NSEvent), removeMonitor: token];
-				let _: () = msg_send![token, release];
-			}
+			// The token is the one adding the monitor returned.
+			unsafe { NSEvent::removeMonitor(&token) };
 		}
 		event.skip(true);
 	});

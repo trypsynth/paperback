@@ -96,11 +96,22 @@ seq_ids!(BASE + 470 => SET_SELECTION_START, COPY_FROM_SELECTION_START, JUMP_TO_S
 
 seq_ids!(BASE + 480 => SAVE_IMAGE, READ_IMAGE_TEXT);
 
-seq_ids!(BASE + 490 => ANNOUNCE_CHAPTER_TIME);
+seq_ids!(BASE + 490 => ANNOUNCE_CHAPTER_PROGRESS);
 
 seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES, DONATE, REPORT_PROBLEM);
 
-seq_ids!(BASE + 900 => RESTORE);
+seq_ids!(BASE + 510 => PAGE_LAYOUT_SHARED, PAGE_LAYOUT_AUTOMATIC, PAGE_LAYOUT_COLUMNS, PAGE_LAYOUT_LINES);
+
+/// The View menu's page layout items and what each gives the open document, `None` following the app's own.
+pub const PAGE_LAYOUTS: [(i32, Option<paperback_core::document::PageLayout>); 4] = {
+	use paperback_core::document::PageLayout;
+	[
+		(PAGE_LAYOUT_SHARED, None),
+		(PAGE_LAYOUT_AUTOMATIC, Some(PageLayout::Automatic)),
+		(PAGE_LAYOUT_COLUMNS, Some(PageLayout::Columns)),
+		(PAGE_LAYOUT_LINES, Some(PageLayout::Lines)),
+	]
+};
 
 pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 {
 	use paperback_core::config::ActionId;
@@ -184,7 +195,7 @@ pub const fn action_to_menu_id(action: paperback_core::config::ActionId) -> i32 
 		ActionId::ToggleWordWrap => TOGGLE_WORD_WRAP,
 		ActionId::PlayPauseAudio => PLAY_PAUSE_AUDIO,
 		ActionId::GoToAudioTime => GO_TO_AUDIO_TIME,
-		ActionId::AnnounceChapterTime => ANNOUNCE_CHAPTER_TIME,
+		ActionId::AnnounceChapterProgress => ANNOUNCE_CHAPTER_PROGRESS,
 		ActionId::SeekAudioForward => SEEK_AUDIO_FORWARD,
 		ActionId::SeekAudioBackward => SEEK_AUDIO_BACKWARD,
 		ActionId::IncreaseAudioSeekAmount => INCREASE_AUDIO_SEEK_AMOUNT,

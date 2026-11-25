@@ -298,6 +298,24 @@ fn bookmark_display_at_position_reads_snippet_in_positions() {
 	);
 }
 
+#[test]
+fn bookmark_rows_carry_their_text_and_start_nearest_the_reader() {
+	let content = "first line\nsecond line\nthird";
+	let session = session_with_content(content);
+	let pos = |needle: &str| DocLen::of(&content[..content.find(needle).unwrap()]).as_pos();
+	let config = crate::ConfigManagerFfi::in_memory();
+	config.with(|c| {
+		c.add_bookmark("book.epub", pos("second"), pos("second"), "a note");
+		c.add_bookmark("book.epub", pos("line\nsecond"), pos("\nsecond"), "");
+	});
+	let all = session.bookmark_rows(&config, "book.epub".into(), pos("third"), ffi::BookmarkFilterType::All);
+	let shown: Vec<_> = all.rows.iter().map(|r| (r.snippet.as_str(), r.note.as_str())).collect();
+	assert_eq!(vec![("line", ""), ("second line", "a note")], shown);
+	assert_eq!(1, all.closest_index);
+	let notes = session.bookmark_rows(&config, "book.epub".into(), 0.into(), ffi::BookmarkFilterType::NotesOnly);
+	assert_eq!(1, notes.rows.len());
+}
+
 /// Covers the seam the narrower tests leave open: the parser stores the file name, but `reader_navigate` decides whether it reaches the UI.
 #[test]
 fn navigate_section_names_each_file_of_a_real_plain_audio_zip() {

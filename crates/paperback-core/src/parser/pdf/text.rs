@@ -7,7 +7,9 @@ use smallvec::SmallVec;
 
 use crate::{
 	parser::{
-		layout::{COORDINATE_EPSILON, Line, keeps_line_end_hyphen, restore_reading_order, sorted_median},
+		layout::{
+			COORDINATE_EPSILON, Line, keeps_line_end_hyphen, read_by_columns, restore_reading_order, sorted_median,
+		},
 		util::bidi,
 	},
 	pdf_engine::{FontFlags, PageChar, Rect, TextPage},
@@ -325,7 +327,7 @@ pub(super) fn reorder_run(text_page: &TextPage, chars: &[(char, usize)]) -> Stri
 }
 
 fn measure_line(text_page: &TextPage, chars: &[(char, usize)]) -> Line {
-	let (top, bottom) = line_edges(text_page, chars);
+	let LineEdges { top, bottom, left, right } = line_edges(text_page, chars);
 	let sampled = sampled_chars(chars);
 	Line {
 		size: line_font_size(text_page, &sampled),
@@ -334,10 +336,12 @@ fn measure_line(text_page: &TextPage, chars: &[(char, usize)]) -> Line {
 		text: reorder_run(text_page, chars),
 		top,
 		bottom,
+		left,
+		right,
 	}
 }
 
-pub(super) fn extract_text_lines(text_page: &TextPage, evidence: &mut PageEvidence) -> Vec<Line> {
+pub(super) fn extract_text_lines(text_page: &TextPage, evidence: &mut PageEvidence, by_columns: bool) -> Vec<Line> {
 	let char_count = text_page.char_count();
 	let mut result: Vec<Line> = Vec::new();
 	// Kept with their pdfium index so each line can be reordered visual to logical before paragraph joining.
@@ -367,20 +371,33 @@ pub(super) fn extract_text_lines(text_page: &TextPage, evidence: &mut PageEviden
 	if !current_chars.is_empty() {
 		result.push(measure_line(text_page, &current_chars));
 	}
-	restore_reading_order(result)
+	if by_columns { read_by_columns(result) } else { restore_reading_order(result) }
+}
+
+struct LineEdges {
+	top: f64,
+	bottom: f64,
+	left: f64,
+	right: f64,
 }
 
 /// The top is the first character's, since a few points decide nothing about where an image falls; the bottom must be the lowest, since the next line's gap is measured from it and pdfium's doubled lines reach a whole line lower.
-fn line_edges(text_page: &TextPage, chars: &[(char, usize)]) -> (f64, f64) {
+fn line_edges(text_page: &TextPage, chars: &[(char, usize)]) -> LineEdges {
 	let top =
 		chars.first().and_then(|(_, index)| text_page.char(*index)).map_or(f64::NEG_INFINITY, |ch| ch.bounds().top);
-	let mut bottom = f64::INFINITY;
-	for (_, index) in chars {
+	let mut edges = LineEdges { top, bottom: f64::INFINITY, left: f64::INFINITY, right: f64::NEG_INFINITY };
+	for (c, index) in chars {
 		if let Some(ch) = text_page.char(*index) {
-			bottom = bottom.min(ch.bounds().bottom);
+			let bounds = ch.bounds();
+			edges.bottom = edges.bottom.min(bounds.bottom);
+			// A space can be given the width of the gap it fills, which would carry a line across the gutter beside it.
+			if !c.is_whitespace() {
+				edges.left = edges.left.min(bounds.left);
+				edges.right = edges.right.max(bounds.right);
+			}
 		}
 	}
-	(top, bottom)
+	edges
 }
 
 /// The `Tf` size alone is 1.0 in PDFs that scale text through the matrix instead (#808 and #813 both do), so no line was ever tall enough to be a heading.

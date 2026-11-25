@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 13:50+0000\n"
+"POT-Creation-Date: 2026-11-25 16:45+0000\n"
 "PO-Revision-Date: 2026-11-04 14:11+0100\n"
 "Last-Translator: Steffen Schultz <steffenschultz@mailbox.org>\n"
 "Language-Team: Steffen Schultz <steffenschultz@mailbox.org>\n"
@@ -173,6 +173,31 @@ msgstr "Der Bericht wurde gespeichert."
 msgid "The report couldn't be saved: %s"
 msgstr "Der Bericht konnte nicht gespeichert werden: %s"
 
+#. TRANSLATORS: Checkbox in the Windows installer for a Paperback shortcut in the Start Menu, beside Inno Setup's own "Create a desktop shortcut". The & marks the key that checks it.
+#, fuzzy
+msgid "Create a &Start Menu shortcut"
+msgstr "Erstelle eine &Verknüpfung im Startmenü"
+
+#. TRANSLATORS: Checkbox in the Windows installer: EPUB books open in Paperback when opened from File Explorer. Every other format Paperback reads is offered in Explorer's "Open with" without asking.
+#, fuzzy
+msgid "Make Paperback the default app for EPUB books (*.epub)"
+msgstr "Paperback als Standard-App für EPUB-Bücher (*.epub) festlegen"
+
+#. TRANSLATORS: Checkbox in the Windows installer: PDF files open in Paperback when opened from File Explorer, instead of in a browser or another PDF reader.
+#, fuzzy
+msgid "Make Paperback the default app for PDF files (*.pdf)"
+msgstr "Paperback als Standard-App für PDF-Dateien (*.pdf) festlegen"
+
+#. TRANSLATORS: Checkbox in the Windows installer adding Paperback's folder to the PATH environment variable, so pb, Paperback's command-line converter, runs from any command prompt.
+#, fuzzy
+msgid "Add Paperback's folder to PATH, for the pb command"
+msgstr "Paperback-Ordner zu PATH hinzufügen, für den pb-Befehl"
+
+#. TRANSLATORS: The file type File Explorer shows for a document set to open in Paperback, as in its Type column.
+#, fuzzy
+msgid "Paperback Document"
+msgstr "Paperback-Dokument"
+
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 msgid "Checking %s"
 msgstr "Überprüfe %s"
@@ -197,7 +222,7 @@ msgstr "PB-Kommandozeilenwerkzeug zum Umgebungspfad hinzufügen"
 
 #. TRANSLATORS: Checkbox label in the Linux file-association setup dialog. Shared by
 #. multiple parsers (DAISY, Word-in-zip), so it's kept as its own opt-in entry rather
-#. than tied to one format, same as the Windows installer's "assoc_zip" task.
+#. than tied to one format.
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP-Archive (.zip)"
 
@@ -459,7 +484,6 @@ msgid "Remove all documents from the Recent Documents list"
 msgstr "Alle Dokumente aus der Liste zuletzt geöffneter Dokumente entfernen"
 
 #. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
-#. TRANSLATORS: System tray menu item to quit the application
 msgid "E&xit"
 msgstr "&Beenden"
 
@@ -773,12 +797,12 @@ msgstr "Gehe zu &Zeit..."
 msgid "Go to a time in the recording"
 msgstr "Springt zu einer Zeit in der Aufnahme"
 
-#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter of an audiobook the reader is, and how much of it is left.
+#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter the reader is and how much of it is left: by time in an audiobook, by words in a text book.
 #, fuzzy
-msgid "Announce &Chapter Time"
-msgstr "&Kapitelzeit ankündigen"
+msgid "Announce &Chapter Progress"
+msgstr "Fortschritt &ankündigen"
 
-#. TRANSLATORS: Status-bar help text for the Announce Chapter Time menu item.
+#. TRANSLATORS: Status-bar help text for the Announce Chapter Progress menu item.
 #, fuzzy
 msgid "Say how far into this chapter you are and how much is left"
 msgstr "Ankündigen, wie weit du in diesem Kapitel fortgeschritten bist und wie viel übrig ist"
@@ -1463,10 +1487,30 @@ msgstr "Diese Stimme, Geschwindigkeit und Höhe nur für dieses &Buch verwenden"
 msgid "Play Sa&mple"
 msgstr "Bei&spiel abspielen"
 
+#. TRANSLATORS: Button on the Audio tab of Settings that opens the speech dictionary, which changes how words are read aloud
+#, fuzzy
+msgid "Speech &Dictionary..."
+msgstr "Sprache&wörterbuch..."
+
 #. TRANSLATORS: First choice in the voice list on the Audio tab of Settings, which leaves the choice of voice to the system
 #, fuzzy
 msgid "System default"
 msgstr "Systemstandard"
+
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: PDF and XPS pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+#, fuzzy
+msgid "Automatic"
+msgstr "Automatisch"
+
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: the document's own reading order is ignored and the columns of each page are found from where the text sits, then read one after the other. It suits documents whose text is read out of order, such as two-column layouts
+#, fuzzy
+msgid "By columns, ignoring the document's own order"
+msgstr "Nach Spalten, Dokumentreihenfolge ignorieren"
+
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: like reading by columns, but every line is kept apart instead of joined into paragraphs, which suits code, poetry and lists of clauses whose line breaks are the content
+#, fuzzy
+msgid "By columns, keeping every line apart"
+msgstr "Nach Spalten, jede Zeile einzeln"
 
 #. TRANSLATORS: Note at the top of the Documents tab of Settings, whose options change how a file is read
 #, fuzzy
@@ -1477,10 +1521,9 @@ msgstr "Beim Klicken auf OK werden deine offenen Dokumente mit diesen Einstellun
 msgid "Render tables &inline"
 msgstr "Tabellen &innerhalb darstellen"
 
-#. TRANSLATORS: Option to join the wrapped lines of a page back into paragraphs, in documents laid out as pages, such as PDFs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
-#, fuzzy
-msgid "&Join wrapped lines into paragraphs"
-msgstr "&Umgebrochene Zeilen in Absätze zusammenführen"
+#. TRANSLATORS: Label for the dropdown choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for every document not given a page layout of its own in the View menu
+msgid "Page &layout of PDF and XPS documents:"
+msgstr ""
 
 #. TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
 #, fuzzy
@@ -1495,6 +1538,11 @@ msgstr "Text zwischen Dollarzeichen in &Markdown als Mathematik lesen"
 #, fuzzy
 msgid "&Braille code of BRF and PEF books:"
 msgstr "&Braille-Code von BRF- und PEF-Büchern:"
+
+#. TRANSLATORS: Option to show BRF, PEF, eBraille and BARD braille books as their braille, in Unicode braille, instead of turning them into print. It suits reading on a braille display, where the screen reader would otherwise turn the print back into braille; speech reads the cells as braille patterns. The braille code above still says which braille the books are written in.
+#, fuzzy
+msgid "&Keep braille books in braille, for reading on a braille display"
+msgstr "&Braille-Bücher in Braille behalten, zum Lesen auf einer Braille-Zeile"
 
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
@@ -1587,6 +1635,123 @@ msgstr "&Gefundenen Text hervorheben"
 #. TRANSLATORS: Label for the reading speed input field (Words Per Minute)
 msgid "&Reading speed (words per minute):"
 msgstr "&Lesegeschwindigkeit (Wörter pro Minute):"
+
+#. TRANSLATORS: Title of the speech dictionary dialog, opened from the Read Aloud group on the Audio tab of Settings
+msgid "Speech Dictionary"
+msgstr "Sprachausgabenwörterbuch"
+
+#. TRANSLATORS: Label of the list of speech dictionary rules, which are applied in order and can each be turned on or off
+#, fuzzy
+msgid "&Rules:"
+msgstr "&Regeln:"
+
+#. TRANSLATORS: Button in the speech dictionary dialog that adds a rule
+#, fuzzy
+msgid "&Add..."
+msgstr "&Hinzufügen..."
+
+#. TRANSLATORS: Button in the speech dictionary dialog that edits the current rule
+#, fuzzy
+msgid "&Edit..."
+msgstr "&Bearbeiten..."
+
+#. TRANSLATORS: Button in the speech dictionary dialog that removes the current rule
+#, fuzzy
+msgid "Re&move"
+msgstr "Entfe&rnen"
+
+#. TRANSLATORS: In the speech dictionary's list, the replacement of a rule that removes what it finds
+#, fuzzy
+msgid "removed"
+msgstr "entfernt"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches whole words only
+#, fuzzy
+msgid "whole words"
+msgstr "ganze Wörter"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches inside words too
+msgid "words"
+msgstr "Worte"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches a regular expression across a paragraph
+#, fuzzy
+msgid "paragraphs, regular expression"
+msgstr "Absätze, regulärer Ausdruck"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches text across a paragraph
+#, fuzzy
+msgid "paragraphs"
+msgstr "Absätze"
+
+#. TRANSLATORS: In the speech dictionary, a rule that applies to every voice
+#, fuzzy
+msgid "all voices"
+msgstr "alle Stimmen"
+
+#. TRANSLATORS: Title of the dialog that adds a speech dictionary rule
+msgid "Add Rule"
+msgstr "Regel hinzufügen"
+
+#. TRANSLATORS: Title of the dialog that edits a speech dictionary rule
+msgid "Edit Rule"
+msgstr "Regel bearbeiten"
+
+#. TRANSLATORS: Label of the text a speech dictionary rule matches, or its regular expression
+#, fuzzy
+msgid "&Pattern:"
+msgstr "&Muster:"
+
+#, fuzzy
+msgid "&Replacement:"
+msgstr "&Ersetzung:"
+
+#. TRANSLATORS: Label of the choice between a rule matching words and one matching across a whole paragraph
+#, fuzzy
+msgid "&Applies to:"
+msgstr "&Gilt für:"
+
+#. TRANSLATORS: Speech dictionary rule scope: the rule matches words
+msgid "Words"
+msgstr "Worte"
+
+#. TRANSLATORS: Speech dictionary rule scope: the rule matches across a whole paragraph, and can be a regular expression
+#, fuzzy
+msgid "Whole paragraphs"
+msgstr "Ganze Absätze"
+
+#. TRANSLATORS: Label of the choice of voices a speech dictionary rule applies to
+#, fuzzy
+msgid "&Voices:"
+msgstr "&Stimmen:"
+
+#. TRANSLATORS: First choice of voices for a speech dictionary rule
+msgid "All voices"
+msgstr "Alle Stimmen"
+
+#. TRANSLATORS: A choice of voices for a speech dictionary rule: every voice of one language; %s is the language
+#, fuzzy
+msgid "Voices in %s"
+msgstr "Stimmen in %s"
+
+#. TRANSLATORS: Check box: a word rule matches only whole words, not part of a longer word
+#, fuzzy
+msgid "Match &whole words only"
+msgstr "Nur &ganze Wörter abgleichen"
+
+#. TRANSLATORS: Check box: a paragraph rule's pattern is a regular expression, whose groups the replacement can use as \1
+#, fuzzy
+msgid "Regular e&xpression"
+msgstr "Regulärer &Ausdruck"
+
+#. TRANSLATORS: Shown when a speech dictionary rule is saved without a pattern
+#, fuzzy
+msgid "Type a pattern for the rule."
+msgstr "Gib ein Muster für die Regel ein."
+
+#, fuzzy
+msgid "The regular expression isn't valid: %s"
+msgstr "Der reguläre Ausdruck ist ungültig: %s"
 
 #. TRANSLATORS: Title of the Settings dialog
 msgid "Settings"
@@ -2431,6 +2596,54 @@ msgstr "&Quelltext ansehen"
 msgid "Open the document source in a new tab"
 msgstr "Dokumentenquelle in neuer Registerkarte öffnen"
 
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open PDF or XPS document follows the page layout chosen for all documents in Settings
+#, fuzzy
+msgid "&Same as Other Documents"
+msgstr "&Wie andere Dokumente"
+
+#. TRANSLATORS: Status-bar help text for the Same as Other Documents page layout item
+#, fuzzy
+msgid "Read this document with the page layout set in Settings"
+msgstr "Dieses Dokument mit dem in den Einstellungen festgelegten Seitenlayout lesen"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open document's pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+#, fuzzy
+msgid "&Automatic"
+msgstr "&Automatisch"
+
+#. TRANSLATORS: Status-bar help text for the Automatic page layout item
+#, fuzzy
+msgid "Read this document in its own order, joining wrapped lines"
+msgstr "Dieses Dokument in seiner eigenen Reihenfolge lesen, umgebrochene Zeilen verbinden"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open document's own reading order is ignored and the columns of each page are found from where the text sits, for documents read out of order
+#, fuzzy
+msgid "By &Columns"
+msgstr "Nach &Spalten"
+
+#. TRANSLATORS: Status-bar help text for the By Columns page layout item
+#, fuzzy
+msgid "Find the columns of each page instead of following the document's own order"
+msgstr "Die Spalten jeder Seite suchen, statt der Dokumentreihenfolge zu folgen"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: like By Columns, but every line is kept apart instead of joined into paragraphs, for code, poetry and lists of clauses
+#, fuzzy
+msgid "By Columns, &Every Line Apart"
+msgstr "Nach Spalten, &jede Zeile einzeln"
+
+#. TRANSLATORS: Status-bar help text for the By Columns, Every Line Apart page layout item
+#, fuzzy
+msgid "Find the columns of each page and keep every line separate"
+msgstr "Die Spalten jeder Seite suchen und jede Zeile einzeln halten"
+
+#. TRANSLATORS: Submenu of the View menu choosing how the open PDF or XPS document's pages are put in reading order and paragraphs
+msgid "Page &Layout"
+msgstr ""
+
+#, fuzzy
+msgid "How this document's pages are read"
+msgstr "Wie die Seiten dieses Dokuments gelesen werden"
+
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
 msgstr "&Datei"
@@ -2765,10 +2978,6 @@ msgstr "&Wiederherstellen"
 msgid "Restore Paperback"
 msgstr "Paperback wiederherstellen"
 
-#. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
-msgid "Exit Paperback"
-msgstr "Paperback beenden"
-
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Open..."
 msgstr "Öffnen..."
@@ -3044,8 +3253,8 @@ msgstr "Gehe zu Zeit..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
-msgid "Announce Chapter Time"
-msgstr "Kapitelzeit ankündigen"
+msgid "Announce Chapter Progress"
+msgstr "Fortschritt ankündigen"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 msgid "Seek Audio Forward"
@@ -3591,6 +3800,13 @@ msgstr "{} verbleibend"
 msgid "{} of {}"
 msgstr "{} von {}"
 
+#. TRANSLATORS: Announced with how far through a book's chapter the reader is: the number of words left in it. %d is the number.
+#, fuzzy
+msgid "%d word left"
+msgid_plural "%d words left"
+msgstr[0] "%d Wort verbleibend"
+msgstr[1] "%d Wörter verbleibend"
+
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 msgid "image"
 msgstr "bild"
@@ -3924,6 +4140,18 @@ msgstr "Tastenkombinationen zurücksetzen"
 msgid "{} (not on this keyboard layout)"
 msgstr "{} (nicht auf diesem Tastaturlayout)"
 
+#, fuzzy
+msgid "&Show/Hide"
+msgstr "&Anzeigen/Verbergen"
+
+#, fuzzy
+msgid "Show or hide the window"
+msgstr "Fenster anzeigen oder verbergen"
+
+#, fuzzy
+msgid "Close the app"
+msgstr "App beenden"
+
 #: kt swift
 msgid "Export Document Data"
 msgstr "Dokumentdaten exportieren"
@@ -4030,6 +4258,7 @@ msgstr "Buch öffnen"
 msgid "Locate"
 msgstr "Finden"
 
+#. TRANSLATORS: Button confirming removal of a bookmark and its note
 #: kt swift
 msgid "Remove"
 msgstr "Entfernen"
@@ -4077,11 +4306,6 @@ msgstr "Sprechgeschwindigkeit"
 #: kt swift
 msgid "Pitch"
 msgstr "Tonhöhe"
-
-#. TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
-#: swift
-msgid "Speech Dictionary"
-msgstr "Sprachausgabenwörterbuch"
 
 #: kt swift
 msgid "Play Sample"
@@ -4131,11 +4355,6 @@ msgstr "Titel"
 #: kt swift
 msgid "Author"
 msgstr "Autor"
-
-#. TRANSLATORS: Row label for the document's total word count
-#: kt swift
-msgid "Words"
-msgstr "Worte"
 
 #. TRANSLATORS: Row label for the document's total line count
 #: kt swift
@@ -4227,27 +4446,27 @@ msgid "Pattern & Replacement"
 msgstr "Muster & Ersetzung"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the text (or regex) to search for
-#: swift
+#: kt swift
 msgid "Pattern"
 msgstr "Muster"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the replacement text
-#: swift
+#: kt swift
 msgid "Replacement"
 msgstr "Ersetzung"
 
 #. TRANSLATORS: Toggle limiting a word-scope rule to whole-word matches only (no partial-word matches)
-#: swift
+#: kt swift
 msgid "Whole word only"
 msgstr "Nur ganzes Wort"
 
 #. TRANSLATORS: Toggle enabling regex matching for a paragraph-scope rule; "\1" is a regex backreference syntax and must stay untranslated
-#: swift
+#: kt swift
 msgid "Regular expression (\\1 = first capture group)"
 msgstr "Regulärer Ausdruck (\\1 = erste Erfassungsgruppe)"
 
 #. TRANSLATORS: Toggle for whether this text-substitution rule is currently active
-#: swift
+#: kt swift
 msgid "Enabled"
 msgstr "Eingeschaltet"
 
@@ -4257,7 +4476,7 @@ msgid "Apply to"
 msgstr "Übernehmen für"
 
 #. TRANSLATORS: Row label leading to the voice-filter picker for this rule
-#: swift
+#: kt swift
 msgid "Voices"
 msgstr "Stimmen"
 
@@ -4266,20 +4485,10 @@ msgstr "Stimmen"
 msgid "New Rule"
 msgstr "Neue Regel"
 
-#. TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
-#: swift
-msgid "Edit Rule"
-msgstr "Regel bearbeiten"
-
-#. TRANSLATORS: Button to save the rule and dismiss the editor
-#: swift
+#. TRANSLATORS: Button that saves what was typed and closes the editor, such as a speech rule or a bookmark's note
+#: kt swift
 msgid "Save"
 msgstr "Speichern"
-
-#. TRANSLATORS: Row label for selecting all TTS voices as the target of a rule, rather than a specific language or voice
-#: swift
-msgid "All voices"
-msgstr "Alle Stimmen"
 
 #. TRANSLATORS: Navigation title for the screen where the user picks which voices a rule applies to
 #: swift
@@ -4329,13 +4538,8 @@ msgstr "Timer anhalten"
 msgid "Start Timer"
 msgstr "Timer starten"
 
-#. TRANSLATORS: Accessibility label for the "+" button that adds a new speech dictionary rule
-#: swift
-msgid "Add Rule"
-msgstr "Regel hinzufügen"
-
 #. TRANSLATORS: Message shown when no speech dictionary rules have been created yet
-#: swift
+#: kt swift
 msgid "No Rules"
 msgstr "Keine Regeln"
 
@@ -4560,14 +4764,6 @@ msgstr "Ausklappen"
 #: swift kt
 msgid "This document contains {} words."
 msgstr "Dieses Dokument enthält {} Worte."
-
-#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
-#. three forms is used depends on the target language's own plural rule, read
-#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
-#. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
-#: kt
-msgid "words"
-msgstr "Worte"
 
 #. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
@@ -5149,6 +5345,272 @@ msgstr "Audiowiedergabegeschwindigkeit wählen"
 #: kt swift
 msgid "Readability"
 msgstr "Lesbarkeit"
+
+#. TRANSLATORS: Go To mode option: navigate to a time in an audiobook, such as 1:23:45
+#: kt swift
+#, fuzzy
+msgid "Time"
+msgstr "Zeit"
+
+#. TRANSLATORS: Shown and announced with how far through a book's chapter the reader is: the number of words left in it; {} is the number. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: kt swift
+#, fuzzy
+msgid "{} word left"
+msgstr "{} Wort verbleibend"
+
+#: kt swift
+#, fuzzy
+msgid "{} words left"
+msgstr "{} Wörter verbleibend"
+
+#: kt swift
+#, fuzzy
+msgid "{} words left⁣"
+msgstr "{} Wörter verbleibend⁣"
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt swift
+#, fuzzy
+msgid "Show book progress"
+msgstr "Buchfortschritt anzeigen"
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt swift
+#, fuzzy
+msgid "Show chapter progress"
+msgstr "Kapitelfortschritt anzeigen"
+
+#. TRANSLATORS: Name of the "Bookmark" navigation unit, which moves between the reader's bookmarks and notes
+#: kt swift
+#, fuzzy
+msgid "Bookmark"
+msgstr "Lesezeichen"
+
+#. TRANSLATORS: Announced after clearing a bookmark's note, which keeps the bookmark
+#: kt swift
+#, fuzzy
+msgid "Note deleted."
+msgstr "Notiz gelöscht."
+
+#. TRANSLATORS: VoiceOver label for the note shown under the passage being read; {} is the note's text
+#: kt swift
+#, fuzzy
+msgid "Note: {}"
+msgstr "Notiz: {}"
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt swift
+#, fuzzy
+msgid "Add Bookmark"
+msgstr "Lesezeichen hinzufügen"
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt swift
+#, fuzzy
+msgid "Remove Bookmark"
+msgstr "Lesezeichen entfernen"
+
+#. TRANSLATORS: VoiceOver value of the bookmark button when the bookmark at the current paragraph has a note
+#: kt swift
+#, fuzzy
+msgid "Has note"
+msgstr "Hat eine Notiz"
+
+#. TRANSLATORS: Title of the alert confirming removal of a bookmark that has a note
+#: kt swift
+#, fuzzy
+msgid "Remove this bookmark and its note?"
+msgstr "Dieses Lesezeichen und seine Notiz entfernen?"
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt swift
+#, fuzzy
+msgid "Edit Note..."
+msgstr "Notiz bearbeiten..."
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt swift
+#, fuzzy
+msgid "Add Note..."
+msgstr "Notiz hinzufügen..."
+
+#. TRANSLATORS: Label for the picker choosing whether the Bookmarks screen shows everything, only bookmarks, or only notes
+#: swift
+#, fuzzy
+msgid "Show"
+msgstr "Anzeigen"
+
+#. TRANSLATORS: Swipe / accessibility action deleting a bookmark from the Bookmarks screen
+#: kt swift
+#, fuzzy
+msgid "Delete"
+msgstr "Löschen"
+
+#. TRANSLATORS: Title shown when the current document has no bookmarks or notes
+#: kt swift
+#, fuzzy
+msgid "No Bookmarks"
+msgstr "Keine Lesezeichen"
+
+#. TRANSLATORS: Description shown under the "No Bookmarks" title
+#: kt swift
+#, fuzzy
+msgid "Tap the bookmark button while reading to mark your place."
+msgstr "Tippe die Schaltfläche für Lesezeichen beim Lesen, um deine Position zu markieren."
+
+#. TRANSLATORS: VoiceOver hint on the note shown under the passage being read
+#: swift
+#, fuzzy
+msgid "Double-tap to edit."
+msgstr "Zum Bearbeiten doppeltippen."
+
+#. TRANSLATORS: Heading over the passage (or audiobook time) a bookmark note is attached to
+#: swift
+#, fuzzy
+msgid "Bookmarked"
+msgstr "Mit Lesezeichen versehen"
+
+#. TRANSLATORS: Heading over the text field where a bookmark's note is typed
+#: swift
+#, fuzzy
+msgid "Note"
+msgstr "Notiz"
+
+#. TRANSLATORS: Button that clears a bookmark's note but keeps the bookmark
+#: kt swift
+#, fuzzy
+msgid "Delete Note"
+msgstr "Notiz löschen"
+
+#. TRANSLATORS: TalkBack action label for a long press on the bookmark button, which opens its note and list options
+#: kt
+#, fuzzy
+msgid "show note and bookmark options"
+msgstr "Notiz und Lesezeichen-Optionen anzeigen"
+
+#. TRANSLATORS: TalkBack action label for a bookmark in the Bookmarks screen, read as "double tap to go to bookmark"
+#: kt
+#, fuzzy
+msgid "go to bookmark"
+msgstr "zum Lesezeichen springen"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: the open PDF or XPS document follows the page layout chosen for all documents in Settings
+#: kt swift
+#, fuzzy
+msgid "Same as Other Documents"
+msgstr "Wie andere Dokumente"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: the open document's own reading order is ignored and the columns of each page are found from where the text sits, for documents read out of order
+#: kt swift
+#, fuzzy
+msgid "By Columns"
+msgstr "Nach Spalten"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: like By Columns, but every line is kept apart instead of joined into paragraphs, for code, poetry and lists of clauses
+#: kt swift
+#, fuzzy
+msgid "By Columns, Every Line Apart"
+msgstr "Nach Spalten, jede Zeile einzeln"
+
+#. TRANSLATORS: Submenu of the document actions menu choosing how the open PDF or XPS document's pages are put in reading order and paragraphs
+#: kt swift
+#, fuzzy
+msgid "Page Layout"
+msgstr "Seitenlayout"
+
+#. TRANSLATORS: Label for the picker choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for every document not given a page layout of its own in the More options menu
+#: kt swift
+#, fuzzy
+msgid "Page layout of PDF and XPS documents"
+msgstr "Seitenlayout von PDF- und XPS-Dokumenten"
+
+#. TRANSLATORS: Label of the choice between a rule matching words and one matching across a whole paragraph
+#: kt
+#, fuzzy
+msgid "Applies to"
+msgstr "Gilt für"
+
+#. TRANSLATORS: Footer under the Speech Dictionary row in Settings, explaining what its rules do
+#: kt
+#, fuzzy
+msgid "Change how words are read aloud, without changing the document."
+msgstr "Ändert, wie Wörter laut vorgelesen werden, ohne das Dokument zu ändern."
+
+#: kt
+#, fuzzy
+msgid "Moved to {} of {}"
+msgstr "Verschoben zu {} von {}"
+
+#. TRANSLATORS: Announced after a speech dictionary rule is deleted
+#: kt
+#, fuzzy
+msgid "Rule deleted"
+msgstr "Regel gelöscht"
+
+#. TRANSLATORS: Menu item and TalkBack action moving a speech dictionary rule one place earlier, so it applies sooner
+#: kt
+#, fuzzy
+msgid "Move Up"
+msgstr "Nach oben verschieben"
+
+#. TRANSLATORS: Menu item and TalkBack action moving a speech dictionary rule one place later, so it applies later
+#: kt
+#, fuzzy
+msgid "Move Down"
+msgstr "Nach unten verschieben"
+
+#. TRANSLATORS: TalkBack action turning a speech dictionary rule off, so it no longer changes what is read aloud
+#: kt
+#, fuzzy
+msgid "Turn Off"
+msgstr "Ausschalten"
+
+#. TRANSLATORS: TalkBack action turning a speech dictionary rule back on
+#: kt
+#, fuzzy
+msgid "Turn On"
+msgstr "Einschalten"
+
+#. TRANSLATORS: TalkBack state of a speech dictionary rule that is on
+#: kt
+#, fuzzy
+msgid "On"
+msgstr "aktiv"
+
+#. TRANSLATORS: TalkBack action label for a rule in the Speech Dictionary, read as "double tap to edit rule"
+#: kt
+#, fuzzy
+msgid "edit rule"
+msgstr "Regel bearbeiten"
+
+#. TRANSLATORS: Shown under "No Rules" in the Speech Dictionary, saying how to make the first rule
+#: kt
+#, fuzzy
+msgid "Use Add Rule to change how a word or pattern is read aloud."
+msgstr "Verwende „Regel hinzufügen\", um zu ändern, wie ein Wort oder Muster laut vorgelesen wird."
+
+#, fuzzy
+#~ msgid "&Join wrapped lines into paragraphs"
+#~ msgstr "&Umgebrochene Zeilen in Absätze zusammenführen"
+
+#, fuzzy
+#~ msgid "on"
+#~ msgstr "aktiv"
+
+#, fuzzy
+#~ msgid "off"
+#~ msgstr "inaktiv"
+
+#~ msgid "Exit Paperback"
+#~ msgstr "Paperback beenden"
+
+#, fuzzy
+#~ msgid "Announce &Chapter Time"
+#~ msgstr "&Kapitelzeit ankündigen"
+
+#, fuzzy
+#~ msgid "Announce Chapter Time"
+#~ msgstr "Kapitelzeit ankündigen"
 
 #~ msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."
 #~ msgstr "Paperback kann RAR-Comic-Archive nicht lesen. Packe die Datei als .cbz neu, um sie hier lesen zu können."

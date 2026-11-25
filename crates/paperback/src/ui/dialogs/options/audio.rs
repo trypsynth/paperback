@@ -4,12 +4,12 @@ use std::{cell::RefCell, rc::Rc};
 
 use paperback_core::{
 	config::{ConfigManager, DocumentSpeech},
-	speech::Voice,
+	speech::{SpeechRule, Voice},
 };
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{OPTION_PADDING, labeled_row};
+use super::{OPTION_PADDING, labeled_row, speech_dictionary::show_speech_dictionary};
 use crate::read_aloud;
 
 /// Indexed by the seek amount choice's selection and also stepped through by `audio::handle_change_seek_amount`, so it must match the choices in the tab.
@@ -63,6 +63,8 @@ pub struct SpeechSettings {
 	pub paragraph_pause_ms: i32,
 	/// Voice, rate and pitch belong to the open book alone, rather than to every book.
 	pub this_book_only: bool,
+	/// The speech dictionary, which every book and voice share.
+	pub rules: Vec<SpeechRule>,
 }
 
 impl SpeechSettings {
@@ -79,6 +81,7 @@ impl SpeechSettings {
 			rate: own.rate_percent.unwrap_or_else(|| config.get_app_int(&rate_key, 50)),
 			pitch: own.pitch_percent.unwrap_or_else(|| config.get_app_int(&pitch_key, 50)),
 			paragraph_pause_ms: config.get_app_int("tts_paragraph_pause_ms", 0),
+			rules: config.get_speech_rules(),
 			engine,
 		})
 	}
@@ -87,6 +90,7 @@ impl SpeechSettings {
 		let (voice_key, rate_key, pitch_key) = keys(&self.engine);
 		config.set_app_string("tts_engine", &self.engine);
 		config.set_app_int("tts_paragraph_pause_ms", self.paragraph_pause_ms);
+		config.set_speech_rules(self.rules.clone());
 		if let Some(path) = book
 			&& self.this_book_only
 		{
@@ -214,6 +218,7 @@ struct SpeechSection {
 	pause: SpinCtrl,
 	this_book_only: CheckBox,
 	has_book: bool,
+	rules: Rc<RefCell<Vec<SpeechRule>>>,
 }
 
 impl SpeechSection {
@@ -228,8 +233,11 @@ impl SpeechSection {
 		let group = StaticBox::builder(&panel).with_label(&t("Read Aloud")).build();
 		let sizer = StaticBoxSizerBuilder::new_with_box(&group, Orientation::Vertical).build();
 		// TRANSLATORS: Label of the list of speech engines, such as OneCore or SAPI 5, on the Audio tab of Settings
-		let engine_label = StaticText::builder(&panel).with_label(&t("&Engine:")).build();
+		let engine_label_text = t("&Engine:");
+		let engine_label = StaticText::builder(&panel).with_label(&engine_label_text).build();
 		let engine = Choice::builder(&panel).build();
+		#[cfg(target_os = "macos")]
+		engine.set_accessibility_label(engine_label_text.replace('&', "").trim_end_matches(':').trim());
 		let engines = read_aloud::engines();
 		for (_, name) in engines {
 			engine.append(name);
@@ -237,8 +245,11 @@ impl SpeechSection {
 		let engine_index = engines.iter().position(|(id, _)| *id == settings.engine).unwrap_or(0);
 		engine.set_selection(u32::try_from(engine_index).unwrap_or(0));
 		// TRANSLATORS: Label of the list of voices on the Audio tab of Settings
-		let voice_label = StaticText::builder(&panel).with_label(&t("&Voice:")).build();
+		let voice_label_text = t("&Voice:");
+		let voice_label = StaticText::builder(&panel).with_label(&voice_label_text).build();
 		let voice = Choice::builder(&panel).build();
+		#[cfg(target_os = "macos")]
+		voice.set_accessibility_label(voice_label_text.replace('&', "").trim_end_matches(':').trim());
 		let voice_ids = Rc::new(RefCell::new(fill_voices(voice, voices(&settings.engine), settings.voice.as_deref())));
 		// TRANSLATORS: Label of the speech rate slider on the Audio tab of Settings
 		let rate_label = StaticText::builder(&panel).with_label(&t("&Rate:")).build();
@@ -258,6 +269,8 @@ impl SpeechSection {
 		this_book_only.enable(has_book);
 		// TRANSLATORS: Button on the Audio tab of Settings that speaks a sample with the chosen voice, rate and pitch
 		let sample = Button::builder(&panel).with_label(&t("Play Sa&mple")).build();
+		// TRANSLATORS: Button on the Audio tab of Settings that opens the speech dictionary, which changes how words are read aloud
+		let dictionary = Button::builder(&panel).with_label(&t("Speech &Dictionary...")).build();
 		sizer.add_sizer(&labeled_row(engine_label, &engine, padding), 0, SizerFlag::All, OPTION_PADDING);
 		sizer.add_sizer(&labeled_row(voice_label, &voice, padding), 0, SizerFlag::All, OPTION_PADDING);
 		sizer.add_sizer(&labeled_row(rate_label, &rate, padding), 0, SizerFlag::All, OPTION_PADDING);
@@ -265,7 +278,17 @@ impl SpeechSection {
 		sizer.add_sizer(&labeled_row(pause_label, &pause, padding), 0, SizerFlag::All, OPTION_PADDING);
 		sizer.add(&this_book_only, 0, SizerFlag::All, OPTION_PADDING);
 		sizer.add(&sample, 0, SizerFlag::All, OPTION_PADDING);
-		let section = Self { engine, voice, voice_ids, rate, pitch, pause, this_book_only, has_book };
+		sizer.add(&dictionary, 0, SizerFlag::All, OPTION_PADDING);
+		let rules = Rc::new(RefCell::new(settings.rules.clone()));
+		let section =
+			Self { engine, voice, voice_ids, rate, pitch, pause, this_book_only, has_book, rules: Rc::clone(&rules) };
+		dictionary.on_click(move |_| {
+			let edited = show_speech_dictionary(&panel, &rules.borrow(), &voices(&chosen_engine(engine)));
+			if let Some(edited) = edited {
+				*rules.borrow_mut() = edited;
+			}
+			dictionary.set_focus();
+		});
 		let reload_ids = Rc::clone(&section.voice_ids);
 		// Each engine has voices of its own, so changing it lists them, starting from the system's default.
 		engine.on_selection_changed(move |_| {
@@ -287,6 +310,7 @@ impl SpeechSection {
 			pitch: self.pitch.get_value(),
 			paragraph_pause_ms: self.pause.value(),
 			this_book_only: self.has_book && self.this_book_only.is_checked(),
+			rules: self.rules.borrow().clone(),
 		}
 	}
 }
@@ -335,7 +359,7 @@ fn fill_voices(choice: Choice, mut voices: Vec<Voice>, selected: Option<&str>) -
 }
 
 /// A voice's language as people know it, with its tag after it, since one language can have voices for several countries.
-fn language_label(tag: &str) -> String {
+pub(super) fn language_label(tag: &str) -> String {
 	let base = tag.split(['-', '_']).next().unwrap_or(tag);
 	format!("{} ({tag})", patois::language_name(base))
 }

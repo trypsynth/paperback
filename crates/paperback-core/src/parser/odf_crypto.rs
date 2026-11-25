@@ -10,7 +10,7 @@ use odf_crypto::DecryptError;
 use zip::ZipArchive;
 
 use crate::{
-	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
+	parser::PasswordRequired,
 	t,
 	util::{encoding::convert_to_utf8, zip::read_zip_entry_bytes},
 };
@@ -42,11 +42,11 @@ fn read_entry<R: Read + Seek>(archive: &mut ZipArchive<R>, entry: &str) -> Resul
 fn decrypt(package: &[u8], password: Option<&str>) -> Result<Vec<u8>> {
 	let Some(password) = password.filter(|password| !password.is_empty()) else {
 		// TRANSLATORS: Error detail shown when an OpenDocument file is encrypted and no password was given (the internal sentinel prefix before it is not translated)
-		return Err(anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX}{}", t("Password required")));
+		return Err(anyhow!(PasswordRequired(t("Password required"))));
 	};
 	odf_crypto::decrypt(package, password).map_err(|error| match error {
 		// TRANSLATORS: Error detail shown when the password for an OpenDocument file is wrong (the internal sentinel prefix before it is not translated)
-		DecryptError::WrongPassword => anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX}{}", t("Password incorrect")),
+		DecryptError::WrongPassword => anyhow!(PasswordRequired(t("Password incorrect"))),
 		// Not the password error: no password opens a PGP-encrypted file or one LibreOffice itself would refuse, so asking for another would only go round in circles.
 		// TRANSLATORS: Error shown when an OpenDocument file is encrypted in a way Paperback does not support, such as with a PGP key; {} is the technical reason
 		other => anyhow!(

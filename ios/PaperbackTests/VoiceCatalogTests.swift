@@ -30,3 +30,26 @@ final class VoiceCatalogTests: XCTestCase {
 		XCTAssertEqual(2, loads)
 	}
 }
+
+final class VoiceBaseNameTests: XCTestCase {
+	/// Voice names arrive as "Samantha (Enhanced)"; grouping by bare name keeps one voice's qualities together.
+	func testATrailingQualitySuffixIsStripped() {
+		XCTAssertEqual("Samantha", baseName(of: "Samantha (Enhanced)"))
+		XCTAssertEqual("Daniel", baseName(of: "Daniel (Premium)"))
+	}
+
+	func testANameWithNoSuffixIsLeftAlone() {
+		XCTAssertEqual("Samantha", baseName(of: "Samantha"))
+	}
+
+	/// Only the last parenthetical is a quality marker; a name like "Alice (US)" keeps its own.
+	func testOnlyTheLastParentheticalIsStripped() {
+		XCTAssertEqual("Alice (US)", baseName(of: "Alice (US) (Enhanced)"))
+	}
+
+	func testATrailingBracketThatIsNotASuffixIsKept() {
+		XCTAssertEqual("Weird)", baseName(of: "Weird)"))
+	}
+
+	private func baseName(of name: String) -> String { voiceBaseName(ofName: name) }
+}

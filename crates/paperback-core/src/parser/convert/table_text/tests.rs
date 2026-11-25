@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use super::*;
 
 #[test]
@@ -114,6 +116,20 @@ fn table_render_bundle_includes_caption_lines_and_length() {
 	assert_eq!(bundle.caption, "Cap");
 	assert_eq!(bundle.lines, vec!["a\tb".to_string()]);
 	assert_eq!(bundle.length, 4);
+}
+
+/// The shape of Qt's reference tables, whose rows carry the ids that links elsewhere lead to.
+#[test]
+fn table_render_bundle_places_ids_at_their_cells() {
+	let html = r#"<table id="vars"><caption id="cap">Variables</caption><thead><tr><th>Name</th><th>Use</th></tr></thead><tr id="row"><td>QT_ONE</td><td><span id="one"></span>First</td></tr><tr><td><span id="two"></span>QT_TWO</td><td>Second <a name="more">more</a></td></tr></table>"#;
+	let ids: HashMap<String, DocLen> = table_render_bundle(html, true).ids.into_iter().collect();
+	// "Name\tUse\n" is 9, "QT_ONE\tFirst\n" 13.
+	let at = |id: &str| ids[id].get();
+	assert_eq!((at("vars"), at("cap")), (0, 0));
+	assert_eq!((at("row"), at("one")), (9, 16));
+	assert_eq!((at("two"), at("more")), (22, 29));
+	let summarized: HashMap<String, DocLen> = table_render_bundle(html, false).ids.into_iter().collect();
+	assert!(summarized.len() == 6 && summarized.values().all(|offset| offset.get() == 0));
 }
 
 #[test]

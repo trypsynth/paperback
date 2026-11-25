@@ -3,7 +3,10 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use super::shortcuts::{KeyChord, ShortcutsConfig, default_window_hotkey};
-use crate::{document::DocPos, session::SegmentTypeFfi};
+use crate::{
+	document::{DocPos, PageLayout},
+	session::SegmentTypeFfi,
+};
 
 const CONFIG_VERSION: u32 = 4;
 const DEFAULT_RECENT_DOCUMENTS_TO_SHOW: i64 = 25;
@@ -103,8 +106,9 @@ pub struct AppSettings {
 	pub word_wrap: bool,
 	#[serde(default = "default_true")]
 	pub render_tables_inline: bool,
-	#[serde(default = "default_true")]
-	pub join_pdf_paragraphs: bool,
+	/// Unset in a config from before the setting, which `join_pdf_paragraphs` in `extra` then decides.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub page_layout: Option<PageLayout>,
 	#[serde(default = "default_true")]
 	pub strip_running_text: bool,
 	#[serde(default = "default_true")]
@@ -166,7 +170,7 @@ impl Default for AppSettings {
 			restore_previous_documents: true,
 			word_wrap: false,
 			render_tables_inline: true,
-			join_pdf_paragraphs: true,
+			page_layout: None,
 			strip_running_text: true,
 			markdown_dollar_math: true,
 			navigation_wrap: false,
@@ -248,6 +252,9 @@ pub struct DocumentConfig {
 	pub password: String,
 	#[serde(default)]
 	pub opened: bool,
+	/// Whether the document's own starting position has been offered, so it's taken once and never over Paperback's.
+	#[serde(default, skip_serializing_if = "std::ops::Not::not")]
+	pub start_position_used: bool,
 	/// Decides whether a document opened from a link is downloaded again at startup.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub download_size: Option<u64>,
@@ -258,6 +265,9 @@ pub struct DocumentConfig {
 	pub speech: DocumentSpeech,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub navigation_unit: Option<NavigationUnit>,
+	/// Overrides the app's page layout for this document alone.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub page_layout: Option<PageLayout>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -275,6 +285,9 @@ pub struct ConfigData {
 	pub documents: HashMap<String, DocumentConfig>,
 	#[serde(default)]
 	pub path_hashes: HashMap<String, String>,
+	/// The speech dictionary, in the order its rules apply.
+	#[serde(default, skip_serializing_if = "Vec::is_empty")]
+	pub speech_rules: Vec<crate::speech::SpeechRule>,
 }
 
 impl Default for ConfigData {
@@ -287,6 +300,7 @@ impl Default for ConfigData {
 			find_history: Vec::new(),
 			documents: HashMap::new(),
 			path_hashes: HashMap::new(),
+			speech_rules: Vec::new(),
 		}
 	}
 }
@@ -348,6 +362,35 @@ mod tests {
 		let bare: DocumentConfig = toml::from_str("path = \"book.epub\"\n").unwrap();
 		assert_eq!(bare.audio_time_ms, None);
 		assert!(!toml::to_string(&bare).unwrap().contains("audio_time_ms"));
+	}
+
+	#[test]
+	fn speech_rules_round_trip_in_order_and_are_left_out_when_there_are_none() {
+		use crate::speech::{MatchType, RuleScope, SpeechRule, VoiceFilter};
+		let rules = vec![
+			SpeechRule {
+				pattern: "Dr".into(),
+				replacement: "Doctor".into(),
+				whole_word: true,
+				..SpeechRule::default()
+			},
+			SpeechRule {
+				scope: RuleScope::Paragraph,
+				match_type: MatchType::Regex,
+				pattern: r"(\d+)%".into(),
+				replacement: r"\1 percent".into(),
+				voice_filter: VoiceFilter::Language("fi-FI".into()),
+				..SpeechRule::default()
+			},
+		];
+		let config = ConfigData {
+			speech_rules: rules.clone(),
+			recent_documents: vec!["a.epub".into()],
+			..ConfigData::default()
+		};
+		let saved = toml::to_string(&config).unwrap();
+		assert_eq!(toml::from_str::<ConfigData>(&saved).unwrap().speech_rules, rules, "{saved}");
+		assert!(!toml::to_string(&ConfigData::default()).unwrap().contains("speech_rules"));
 	}
 
 	#[test]

@@ -1,4 +1,4 @@
-use std::{env, error::Error};
+use std::{env, process::ExitCode};
 
 mod android;
 mod docs;
@@ -8,19 +8,28 @@ mod release;
 mod translate;
 mod workspace;
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> ExitCode {
 	let task = env::args().nth(1);
-	match task.as_deref() {
-		Some("release") => release::release()?,
-		Some("android") => android::android()?,
-		Some("ios") => ios::ios()?,
-		Some("ios-release") => ios::ios_release()?,
-		Some("gen-pot") => pot::gen_pot()?,
-		Some("translate") => translate::translate()?,
-		Some("site-docs") => docs::site_docs()?,
-		_ => print_help(),
+	let result = match task.as_deref() {
+		Some("release") => release::release(),
+		Some("android") => android::android(),
+		Some("ios") => ios::ios(),
+		Some("ios-release") => ios::ios_release(),
+		Some("gen-pot") => pot::gen_pot(),
+		Some("translate") => translate::translate(),
+		Some("site-docs") => docs::site_docs(),
+		_ => {
+			print_help();
+			Ok(())
+		}
+	};
+	// Printed here instead of returned from main, which would print it with Debug: in quotes, with every line break
+	// shown as \n.
+	if let Err(error) = result {
+		eprintln!("Error: {error}");
+		return ExitCode::FAILURE;
 	}
-	Ok(())
+	ExitCode::SUCCESS
 }
 
 pub(crate) fn print_help() {
@@ -36,6 +45,12 @@ pub(crate) fn print_help() {
 	println!("	  --build-aab        Build a release App Bundle (.aab) for Play Store upload");
 	println!("	ios           Generate Swift bindings and build XCFramework for iOS");
 	println!("	  --release          Build in release mode (default is debug)");
+	println!("	ios run       Build the iOS app and start it on a simulator or device");
+	println!("	  --simulator [NAME] Simulator name or UDID (default: the booted one, else the newest iPhone)");
+	println!("	  --device [NAME]    Run on a paired iPhone or iPad; sets up signing on first use");
+	println!("	  --team ID          With --device, sign with this team instead of the one signed in to Xcode");
+	println!("	  --console          Stay attached and print the app's output until it exits");
+	println!("	  --release          Build in release mode");
 	println!("	ios-release   Archive and export a release IPA for App Store Connect");
 	println!("	  --upload           Upload directly to App Store Connect via altool");
 	println!("	translate     Regenerate the pot, sync po/*.po via msgmerge, and fill blank/fuzzy");

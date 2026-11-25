@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 13:50+0000\n"
+"POT-Creation-Date: 2026-11-24 01:53+0000\n"
 "PO-Revision-Date: 2025-12-04 08:13+0300\n"
 "Last-Translator: <gulmagomedovruslan77@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -485,7 +485,6 @@ msgid "Remove all documents from the Recent Documents list"
 msgstr "Удалить все документы из списка недавних документов"
 
 #. TRANSLATORS: Menu item in the File menu to exit the application, shown only on Windows and Linux since macOS provides its own Quit menu item.
-#. TRANSLATORS: System tray menu item to quit the application
 #, fuzzy
 msgid "E&xit"
 msgstr "В&ыход"
@@ -861,12 +860,12 @@ msgstr "Перейти на &время..."
 msgid "Go to a time in the recording"
 msgstr "Перейти на определённый момент времени в записи"
 
-#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter of an audiobook the reader is, and how much of it is left.
+#. TRANSLATORS: Menu item in the Audio menu that says how far into the current chapter the reader is and how much of it is left: by time in an audiobook, by words in a text book.
 #, fuzzy
-msgid "Announce &Chapter Time"
-msgstr "Объявить &время в главе"
+msgid "Announce &Chapter Progress"
+msgstr "Объявлять &прогресс в главе"
 
-#. TRANSLATORS: Status-bar help text for the Announce Chapter Time menu item.
+#. TRANSLATORS: Status-bar help text for the Announce Chapter Progress menu item.
 #, fuzzy
 msgid "Say how far into this chapter you are and how much is left"
 msgstr "Сообщить, насколько далеко вы находитесь в этой главе и сколько осталось"
@@ -1648,6 +1647,11 @@ msgstr "Использовать этот голос, скорость и тон
 msgid "Play Sa&mple"
 msgstr "Воспроизвести о&бразец"
 
+#. TRANSLATORS: Button on the Audio tab of Settings that opens the speech dictionary, which changes how words are read aloud
+#, fuzzy
+msgid "Speech &Dictionary..."
+msgstr "Словарь &речи..."
+
 #. TRANSLATORS: First choice in the voice list on the Audio tab of Settings, which leaves the choice of voice to the system
 #, fuzzy
 msgid "System default"
@@ -1790,6 +1794,129 @@ msgstr "&Выделять найденный текст"
 #, fuzzy
 msgid "&Reading speed (words per minute):"
 msgstr "&Скорость чтения (слов в минуту):"
+
+#. TRANSLATORS: Title of the speech dictionary dialog, opened from the Read Aloud group on the Audio tab of Settings
+#, fuzzy
+msgid "Speech Dictionary"
+msgstr "Словарь речи"
+
+#. TRANSLATORS: Label of the list of speech dictionary rules, which are applied in order and can each be turned on or off
+#, fuzzy
+msgid "&Rules:"
+msgstr "&Правила:"
+
+#. TRANSLATORS: Button in the speech dictionary dialog that adds a rule
+#, fuzzy
+msgid "&Add..."
+msgstr "&Добавить..."
+
+#. TRANSLATORS: Button in the speech dictionary dialog that edits the current rule
+#, fuzzy
+msgid "&Edit..."
+msgstr "&Редактировать..."
+
+#. TRANSLATORS: Button in the speech dictionary dialog that removes the current rule
+#, fuzzy
+msgid "Re&move"
+msgstr "У&далить"
+
+#. TRANSLATORS: In the speech dictionary's list, the replacement of a rule that removes what it finds
+#, fuzzy
+msgid "removed"
+msgstr "удалено"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches whole words only
+#, fuzzy
+msgid "whole words"
+msgstr "целые слова"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches inside words too
+#, fuzzy
+msgid "words"
+msgstr "слов"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches a regular expression across a paragraph
+#, fuzzy
+msgid "paragraphs, regular expression"
+msgstr "абзацы, регулярное выражение"
+
+#. TRANSLATORS: In the speech dictionary's list, a rule that matches text across a paragraph
+#, fuzzy
+msgid "paragraphs"
+msgstr "абзацы"
+
+#. TRANSLATORS: In the speech dictionary, a rule that applies to every voice
+#, fuzzy
+msgid "all voices"
+msgstr "все голоса"
+
+#. TRANSLATORS: Title of the dialog that adds a speech dictionary rule
+#, fuzzy
+msgid "Add Rule"
+msgstr "Добавить правило"
+
+#. TRANSLATORS: Title of the dialog that edits a speech dictionary rule
+#, fuzzy
+msgid "Edit Rule"
+msgstr "Изменить правило"
+
+#. TRANSLATORS: Label of the text a speech dictionary rule matches, or its regular expression
+#, fuzzy
+msgid "&Pattern:"
+msgstr "&Шаблон:"
+
+#, fuzzy
+msgid "&Replacement:"
+msgstr "&Замена:"
+
+#. TRANSLATORS: Label of the choice between a rule matching words and one matching across a whole paragraph
+#, fuzzy
+msgid "&Applies to:"
+msgstr "&Применяется к:"
+
+#. TRANSLATORS: Speech dictionary rule scope: the rule matches words
+#, fuzzy
+msgid "Words"
+msgstr "Слова"
+
+#. TRANSLATORS: Speech dictionary rule scope: the rule matches across a whole paragraph, and can be a regular expression
+#, fuzzy
+msgid "Whole paragraphs"
+msgstr "Целые абзацы"
+
+#. TRANSLATORS: Label of the choice of voices a speech dictionary rule applies to
+#, fuzzy
+msgid "&Voices:"
+msgstr "&Голоса:"
+
+#. TRANSLATORS: First choice of voices for a speech dictionary rule
+#, fuzzy
+msgid "All voices"
+msgstr "Все голоса"
+
+#. TRANSLATORS: A choice of voices for a speech dictionary rule: every voice of one language; %s is the language
+#, fuzzy
+msgid "Voices in %s"
+msgstr "Голоса на %s"
+
+#. TRANSLATORS: Check box: a word rule matches only whole words, not part of a longer word
+#, fuzzy
+msgid "Match &whole words only"
+msgstr "Совпадать &только целые слова"
+
+#. TRANSLATORS: Check box: a paragraph rule's pattern is a regular expression, whose groups the replacement can use as \1
+#, fuzzy
+msgid "Regular e&xpression"
+msgstr "Регулярное в&ыражение"
+
+#. TRANSLATORS: Shown when a speech dictionary rule is saved without a pattern
+#, fuzzy
+msgid "Type a pattern for the rule."
+msgstr "Введите шаблон для правила."
+
+#, fuzzy
+msgid "The regular expression isn't valid: %s"
+msgstr "Регулярное выражение неверно: %s"
 
 #. TRANSLATORS: Title of the Settings dialog
 #, fuzzy
@@ -3145,10 +3272,6 @@ msgstr "&Восстановить"
 msgid "Restore Paperback"
 msgstr "Восстановление Paperback"
 
-#. TRANSLATORS: Status bar help text for the tray menu's "Exit" item
-msgid "Exit Paperback"
-msgstr "Выход из Paperback"
-
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
 msgid "Open..."
@@ -3491,8 +3614,8 @@ msgstr "Перейти на время..."
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
-msgid "Announce Chapter Time"
-msgstr "Объявить время в главе"
+msgid "Announce Chapter Progress"
+msgstr "Объявлять прогресс в главе"
 
 #. TRANSLATORS: Name of this keyboard-shortcut action, shown in the Customize Keyboard Shortcuts dialog (its list of assignable actions, and the "Set Shortcut for {}" / conflict-reassignment prompts).
 #, fuzzy
@@ -4163,6 +4286,14 @@ msgstr "Осталось {}"
 msgid "{} of {}"
 msgstr "{} из {}"
 
+#. TRANSLATORS: Announced with how far through a book's chapter the reader is: the number of words left in it. %d is the number.
+#, fuzzy
+msgid "%d word left"
+msgid_plural "%d words left"
+msgstr[0] "%d слово осталось"
+msgstr[1] "%d слова осталось"
+msgstr[2] "%d слов осталось"
+
 #. TRANSLATORS: File name stem offered when saving a picture that has no file name of its own
 #, fuzzy
 msgid "image"
@@ -4586,6 +4717,18 @@ msgstr "Сброс сочетаний клавиш"
 msgid "{} (not on this keyboard layout)"
 msgstr "{} (отсутствует на этой раскладке клавиатуры)"
 
+#, fuzzy
+msgid "&Show/Hide"
+msgstr "&Показать/Скрыть"
+
+#, fuzzy
+msgid "Show or hide the window"
+msgstr "Показать или скрыть окно"
+
+#, fuzzy
+msgid "Close the app"
+msgstr "Закрыть приложение"
+
 #: kt swift
 #, fuzzy
 msgid "Export Document Data"
@@ -4714,6 +4857,7 @@ msgstr "«Открытая книга»"
 msgid "Locate"
 msgstr "Найти"
 
+#. TRANSLATORS: Button confirming removal of a bookmark and its note
 #: kt swift
 #, fuzzy
 msgid "Remove"
@@ -4771,12 +4915,6 @@ msgstr "Скорость речи"
 #, fuzzy
 msgid "Pitch"
 msgstr "Тон"
-
-#. TRANSLATORS: Row label navigating to the custom speech pronunciation dictionary
-#: swift
-#, fuzzy
-msgid "Speech Dictionary"
-msgstr "Словарь речи"
 
 #: kt swift
 #, fuzzy
@@ -4836,12 +4974,6 @@ msgstr "Название"
 #, fuzzy
 msgid "Author"
 msgstr "Автор"
-
-#. TRANSLATORS: Row label for the document's total word count
-#: kt swift
-#, fuzzy
-msgid "Words"
-msgstr "Слова"
 
 #. TRANSLATORS: Row label for the document's total line count
 #: kt swift
@@ -4998,23 +5130,11 @@ msgstr "Голоса"
 msgid "New Rule"
 msgstr "Новое правило"
 
-#. TRANSLATORS: Navigation title shown when creating a new text-substitution rule vs. editing an existing one
-#: swift
-#, fuzzy
-msgid "Edit Rule"
-msgstr "Изменить правило"
-
-#. TRANSLATORS: Button to save the rule and dismiss the editor
-#: swift
+#. TRANSLATORS: Button that saves what was typed and closes the editor, such as a speech rule or a bookmark's note
+#: kt swift
 #, fuzzy
 msgid "Save"
 msgstr "Сохранить"
-
-#. TRANSLATORS: Row label for selecting all TTS voices as the target of a rule, rather than a specific language or voice
-#: swift
-#, fuzzy
-msgid "All voices"
-msgstr "Все голоса"
 
 #. TRANSLATORS: Navigation title for the screen where the user picks which voices a rule applies to
 #: swift
@@ -5072,12 +5192,6 @@ msgstr "Остановить таймер"
 #, fuzzy
 msgid "Start Timer"
 msgstr "Запустить таймер"
-
-#. TRANSLATORS: Accessibility label for the "+" button that adds a new speech dictionary rule
-#: swift
-#, fuzzy
-msgid "Add Rule"
-msgstr "Добавить правило"
 
 #. TRANSLATORS: Message shown when no speech dictionary rules have been created yet
 #: swift
@@ -5350,15 +5464,6 @@ msgstr "Развернуть"
 #: swift kt
 msgid "This document contains {} words."
 msgstr "Этот документ содержет {} слов."
-
-#. TRANSLATORS: Unit label shown under the large word-count number. Which of the
-#. three forms is used depends on the target language's own plural rule, read
-#. from its catalogue (see nt() in Translations.kt). The "many" form's trailing
-#. character isn't a typo — see PLURAL_MANY_MARKER in Translations.kt.
-#: kt
-#, fuzzy
-msgid "words"
-msgstr "слов"
 
 #. TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
 #: kt
@@ -6053,6 +6158,173 @@ msgstr "Выбрать скорость воспроизведения"
 #: kt swift
 msgid "Readability"
 msgstr "Читаемость"
+
+#. TRANSLATORS: Go To mode option: navigate to a time in an audiobook, such as 1:23:45
+#: kt swift
+#, fuzzy
+msgid "Time"
+msgstr "Время"
+
+#. TRANSLATORS: Shown and announced with how far through a book's chapter the reader is: the number of words left in it; {} is the number. Which of the three forms is used depends on the language's plural rule, and the "many" form's trailing character isn't a typo.
+#: kt swift
+#, fuzzy
+msgid "{} word left"
+msgstr "осталось {} слово"
+
+#: kt swift
+#, fuzzy
+msgid "{} words left"
+msgstr "осталось {} слов"
+
+#: kt swift
+#, fuzzy
+msgid "{} words left⁣"
+msgstr "осталось {} слов⁣"
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt swift
+#, fuzzy
+msgid "Show book progress"
+msgstr "Показать прогресс книги"
+
+#. TRANSLATORS: What tapping the progress under the read-aloud bar does: it switches between how far through the whole book the reader is, and how far through the current chapter with how much of it is left
+#: kt swift
+#, fuzzy
+msgid "Show chapter progress"
+msgstr "Показать прогресс главы"
+
+#. TRANSLATORS: Name of the "Bookmark" navigation unit, which moves between the reader's bookmarks and notes
+#: kt swift
+#, fuzzy
+msgid "Bookmark"
+msgstr "Закладка"
+
+#. TRANSLATORS: Announced after clearing a bookmark's note, which keeps the bookmark
+#: kt swift
+#, fuzzy
+msgid "Note deleted."
+msgstr "Заметка удалена."
+
+#. TRANSLATORS: VoiceOver label for the note shown under the passage being read; {} is the note's text
+#: kt swift
+#, fuzzy
+msgid "Note: {}"
+msgstr "Заметка: {}"
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt swift
+#, fuzzy
+msgid "Add Bookmark"
+msgstr "Добавить закладку"
+
+#. TRANSLATORS: VoiceOver action on a paragraph in text mode that marks or unmarks it with a bookmark
+#: kt swift
+#, fuzzy
+msgid "Remove Bookmark"
+msgstr "Удалить закладку"
+
+#. TRANSLATORS: VoiceOver value of the bookmark button when the bookmark at the current paragraph has a note
+#: kt swift
+#, fuzzy
+msgid "Has note"
+msgstr "Есть заметка"
+
+#. TRANSLATORS: Title of the alert confirming removal of a bookmark that has a note
+#: kt swift
+#, fuzzy
+msgid "Remove this bookmark and its note?"
+msgstr "Удалить эту закладку и её заметку?"
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt swift
+#, fuzzy
+msgid "Edit Note..."
+msgstr "Редактировать заметку..."
+
+#. TRANSLATORS: Menu item / accessibility action to write a note on the current bookmark, or to change the one it has
+#: kt swift
+#, fuzzy
+msgid "Add Note..."
+msgstr "Добавить заметку..."
+
+#. TRANSLATORS: Label for the picker choosing whether the Bookmarks screen shows everything, only bookmarks, or only notes
+#: swift
+#, fuzzy
+msgid "Show"
+msgstr "Показать"
+
+#. TRANSLATORS: Swipe / accessibility action deleting a bookmark from the Bookmarks screen
+#: kt swift
+#, fuzzy
+msgid "Delete"
+msgstr "Удалить"
+
+#. TRANSLATORS: Title shown when the current document has no bookmarks or notes
+#: kt swift
+#, fuzzy
+msgid "No Bookmarks"
+msgstr "Нет закладок"
+
+#. TRANSLATORS: Description shown under the "No Bookmarks" title
+#: kt swift
+#, fuzzy
+msgid "Tap the bookmark button while reading to mark your place."
+msgstr "Коснитесь кнопки закладки во время чтения, чтобы отметить своё место."
+
+#. TRANSLATORS: VoiceOver hint on the note shown under the passage being read
+#: swift
+#, fuzzy
+msgid "Double-tap to edit."
+msgstr "Дважды коснитесь для редактирования."
+
+#. TRANSLATORS: Heading over the passage (or audiobook time) a bookmark note is attached to
+#: swift
+#, fuzzy
+msgid "Bookmarked"
+msgstr "Закладка"
+
+#. TRANSLATORS: Heading over the text field where a bookmark's note is typed
+#: swift
+#, fuzzy
+msgid "Note"
+msgstr "Заметка"
+
+#. TRANSLATORS: Button that clears a bookmark's note but keeps the bookmark
+#: kt swift
+#, fuzzy
+msgid "Delete Note"
+msgstr "Удалить заметку"
+
+#. TRANSLATORS: TalkBack action label for a long press on the bookmark button, which opens its note and list options
+#: kt
+#, fuzzy
+msgid "show note and bookmark options"
+msgstr "показать заметку и параметры закладки"
+
+#. TRANSLATORS: TalkBack action label for a bookmark in the Bookmarks screen, read as "double tap to go to bookmark"
+#: kt
+#, fuzzy
+msgid "go to bookmark"
+msgstr "перейти к закладке"
+
+#, fuzzy
+#~ msgid "on"
+#~ msgstr "включено"
+
+#, fuzzy
+#~ msgid "off"
+#~ msgstr "отключено"
+
+#~ msgid "Exit Paperback"
+#~ msgstr "Выход из Paperback"
+
+#, fuzzy
+#~ msgid "Announce &Chapter Time"
+#~ msgstr "Объявить &время в главе"
+
+#, fuzzy
+#~ msgid "Announce Chapter Time"
+#~ msgstr "Объявить время в главе"
 
 #, fuzzy
 #~ msgid "Paperback cannot read RAR comic archives. Repack it as a .cbz to read it here."

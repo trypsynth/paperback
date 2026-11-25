@@ -44,6 +44,11 @@ final class BookView: UIScrollView {
 	var onFollowLink: ((Int, Int) -> Void)?
 	/// A three-finger flick, forward or back, reporting whether there was a page to go to.
 	var onPageScroll: ((Bool) -> Bool)?
+	/// The units holding a bookmark, in order, for the Bookmarks rotor.
+	var bookmarkUnits: (() -> [Int])?
+	/// What VoiceOver says after a unit's text when it is bookmarked, and the bookmark actions it offers.
+	var bookmarkValue: ((Int) -> String?)?
+	var bookmarkActions: ((Int) -> [UIAccessibilityCustomAction])?
 
 	init(model: BookModel) {
 		self.model = model
@@ -500,6 +505,7 @@ final class BookView: UIScrollView {
 			if model.linkStop(fromUnit: 0, link: -1, forward: true) != nil { present.append(linksRotor) }
 			if !model.tableUnits.isEmpty { present.append(tablesRotor) }
 			if !model.sectionUnits.isEmpty { present.append(sectionsRotor) }
+			if !(bookmarkUnits?() ?? []).isEmpty { present.append(bookmarksRotor) }
 			return present
 		}
 		set {}
@@ -515,6 +521,11 @@ final class BookView: UIScrollView {
 	// TRANSLATORS: Name of the VoiceOver rotor setting that moves between the entries of a document's table of contents in text mode
 	private lazy var sectionsRotor = unitRotor(name: t("Sections")) { view, from, forward in
 		BookModel.stop(in: view.model.sectionUnits, from: from, forward: forward)
+	}
+
+	// TRANSLATORS: Name of the VoiceOver rotor setting that moves between the reader's bookmarks in text mode
+	private lazy var bookmarksRotor = unitRotor(name: t("Bookmarks")) { view, from, forward in
+		BookModel.stop(in: view.bookmarkUnits?() ?? [], from: from, forward: forward)
 	}
 
 	/// The next or previous table, counted from the start of the one the origin is inside.

@@ -10,6 +10,7 @@ use crate::{
 };
 
 mod audio;
+mod chapter;
 mod export;
 mod find_all;
 mod images;
@@ -229,6 +230,18 @@ pub struct AudioPointFfi {
 	pub time_ms: i64,
 }
 
+/// How far through a chapter the reader is. A chapter is measured by time or by words, never both: `words_left` is negative when it is by time, and `elapsed_ms` and `total_ms` are when it is by words.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ChapterProgressFfi {
+	pub found: bool,
+	pub title: String,
+	pub percent: i32,
+	pub words_left: i64,
+	pub elapsed_ms: i64,
+	pub total_ms: i64,
+}
+
 #[cfg_attr(feature = "uniffi", derive(uniffi::Error), uniffi(flat_error))]
 #[derive(Debug, thiserror::Error)]
 pub enum DocumentError {
@@ -333,9 +346,10 @@ impl DocumentSession {
 		password: String,
 		forced_extension: String,
 		render_tables_inline: bool,
+		page_layout: crate::document::PageLayout,
 	) -> Result<Self, DocumentError> {
-		// The mobile front ends have a reader-facing switch only for table rendering, so they take the other defaults.
-		let settings = ParseSettings { render_tables_inline, ..ParseSettings::default() };
+		// The mobile front ends have reader-facing switches only for these, so they take the other defaults.
+		let settings = ParseSettings { render_tables_inline, page_layout, ..ParseSettings::default() };
 		Self::new(&file_path, &password, &forced_extension, settings).map_err(DocumentError::ParseError)
 	}
 }
@@ -350,6 +364,11 @@ impl DocumentSession {
 	#[must_use]
 	pub fn author(&self) -> String {
 		self.handle.document().author.clone()
+	}
+
+	#[must_use]
+	pub fn start_position(&self) -> Option<DocPos> {
+		self.handle.document().start_position
 	}
 
 	#[must_use]

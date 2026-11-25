@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Parser, ValueEnum};
+use paperback_core::document::PageLayout;
 
 #[derive(Parser)]
 #[command(name = "pb", version = env!("PB_DISPLAY_VERSION"), about = "Convert any document to text, HTML, or Markdown")]
@@ -20,6 +21,9 @@ pub struct Cli {
 	/// The braille table to back-translate Braille Ready Files and PEF books with, such as en-us-g2.ctb (default: en-ueb-g2.ctb, Unified English Braille grade 2)
 	#[arg(long, value_name = "TABLE")]
 	pub braille_table: Option<String>,
+	/// Keep braille books in braille, as Unicode braille, instead of back-translating them to print. --braille-table still says which braille a BRF is written in
+	#[arg(long)]
+	pub keep_braille: bool,
 	/// Output format
 	#[arg(short, long, default_value = "text")]
 	pub format: Format,
@@ -56,8 +60,11 @@ pub struct Cli {
 	/// The largest document to download from a link, in MB
 	#[arg(long, value_name = "MB", default_value_t = 512)]
 	pub max_download_size: u64,
-	/// Keep every line separate instead of joining wrapped lines back into paragraphs, on pages that don't mark their paragraphs, such as untagged or OCR-read PDF pages (for code listings, poetry and transcripts)
-	#[arg(long)]
+	/// How PDF and XPS pages are put in reading order: automatic follows the document's tags where it has them and joins wrapped lines into paragraphs; columns finds the columns from where the text sits, for documents read out of order; lines does the same but keeps every line separate (for code listings, poetry and clauses)
+	#[arg(long, value_enum, default_value_t = Layout::Automatic)]
+	pub layout: Layout,
+	/// The same as --layout lines, from before there was --layout
+	#[arg(long, hide = true, conflicts_with = "layout")]
 	pub no_join_paragraphs: bool,
 	/// Print paperback-core's parser log output to stderr (set `RUST_LOG` for finer control)
 	#[arg(short, long)]
@@ -65,6 +72,25 @@ pub struct Cli {
 	/// How many documents to convert at once when there are several; 0, the default, means one per processor and 1 converts them in turn, reporting in the order given. Downloads, password prompts and OCR still take one document at a time
 	#[arg(short, long, value_name = "N", default_value_t = 0)]
 	pub jobs: usize,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug, ValueEnum)]
+pub enum Layout {
+	Automatic,
+	Columns,
+	Lines,
+}
+
+impl Cli {
+	#[must_use]
+	pub const fn page_layout(&self) -> PageLayout {
+		match self.layout {
+			_ if self.no_join_paragraphs => PageLayout::Lines,
+			Layout::Automatic => PageLayout::Automatic,
+			Layout::Columns => PageLayout::Columns,
+			Layout::Lines => PageLayout::Lines,
+		}
+	}
 }
 
 #[derive(Clone, Copy, ValueEnum)]
@@ -127,7 +153,7 @@ mod tests {
 		assert!(cli.password.is_none());
 		assert!(!cli.metadata);
 		assert!(!cli.no_prompt);
-		assert!(!cli.no_join_paragraphs);
+		assert_eq!(cli.page_layout(), PageLayout::Automatic);
 		assert!(!cli.verbose);
 		assert_eq!(cli.jobs, 0, "as many at once as there are processors unless asked");
 	}
@@ -209,11 +235,13 @@ mod tests {
 			Some("en-us-g2.ctb")
 		);
 		assert!(parse(&["pb", "--list-braille-tables"]).list_braille_tables);
+		assert!(parse(&["pb", "book.brf", "--keep-braille"]).keep_braille);
 	}
 
 	#[test]
-	fn accepts_the_no_join_paragraphs_flag() {
-		assert!(parse(&["pb", "b.pdf", "--no-join-paragraphs"]).no_join_paragraphs);
+	fn reads_the_page_layout() {
+		assert_eq!(parse(&["pb", "b.pdf", "--layout", "columns"]).page_layout(), PageLayout::Columns);
+		assert_eq!(parse(&["pb", "b.pdf", "--no-join-paragraphs"]).page_layout(), PageLayout::Lines);
 	}
 
 	/// Parsed later, so a bad one gets its error from the code that knows what a page is.

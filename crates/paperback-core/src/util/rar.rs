@@ -17,7 +17,7 @@ use rars::{ArchiveReadOptions, ArchiveReader, ErrorKind, entry_relative_path, fi
 use sha1::{Digest, Sha1};
 use zip::{CompressionMethod, ZipWriter, write::SimpleFileOptions};
 
-use crate::{parser::PASSWORD_REQUIRED_ERROR_PREFIX, t};
+use crate::{parser::PasswordRequired, t};
 
 /// Far more than any book, but it stops an archive that unpacks to far more than it holds, which a small one can, from filling the disk.
 const MAX_UNPACKED_BYTES: u64 = 16 << 30;
@@ -92,7 +92,7 @@ fn repack(path: &Path, password: Option<&str>, output: &Path) -> Result<()> {
 		}
 		let decoded = decoded_name(&member.meta.name, member.name_is_unicode(), None)
 			.map_or_else(|_| member.meta.name_lossy(), |name| String::from_utf8_lossy(&name).into_owned());
-		names.insert(member.meta.name.clone(), decoded);
+		names.insert(member.meta.name, decoded);
 	}
 	let file = File::create(output).with_context(|| format!("Failed to create '{}'", output.display()))?;
 	let writer = Rc::new(RefCell::new(ZipWriter::new(BufWriter::new(file))));
@@ -140,11 +140,11 @@ fn rar_error(error: &rars::Error, password: Option<&str>) -> anyhow::Error {
 	match error.kind() {
 		ErrorKind::PasswordRequired => {
 			// TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
-			anyhow::anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX}{}", t("Password required"))
+			anyhow::anyhow!(PasswordRequired(t("Password required")))
 		}
 		ErrorKind::BadPassword if password.is_some() => {
 			// TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
-			anyhow::anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX}{}", t("Password incorrect"))
+			anyhow::anyhow!(PasswordRequired(t("Password incorrect")))
 		}
 		_ => anyhow::anyhow!("{error}"),
 	}
@@ -158,7 +158,7 @@ mod tests {
 	use zip::ZipArchive;
 
 	use super::*;
-	use crate::util::test_support::TempDir;
+	use crate::{parser::PASSWORD_REQUIRED_ERROR_PREFIX, util::test_support::TempDir};
 
 	const CHAPTER: &[u8] = b"Chapter one. It was a bright cold day in April, and the clocks were striking thirteen.";
 

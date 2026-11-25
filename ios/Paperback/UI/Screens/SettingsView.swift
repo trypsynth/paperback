@@ -116,7 +116,7 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 						.monospacedDigit()
 				}
 			}
-			.accessibilityValue(paragraphPauseLabel)
+			.adjustableStepper(label: t("Paragraph Pause"), value: paragraphPauseLabel, number: $ttsManager.paragraphPauseMs, in: paragraphPauseRangeMs, step: paragraphPauseStepMs)
 			Toggle(isOn: $stopAfterFindMatch) {
 				// TRANSLATORS: Toggle controlling whether TTS stops after the paragraph containing a Find match while Find is the navigation unit
 				Text(t("Stop reading after search matches"))
@@ -137,13 +137,16 @@ private struct TtsSettingsSection<VoiceDestination: View>: View {
 	}
 }
 
+private let textScaleRangePercent = 70...300
+private let textScaleStepPercent = 10
+
 private struct ReadabilitySettingsSection: View {
 	@Bindable var viewModel: AppViewModel
 
 	var body: some View {
 		// TRANSLATORS: Section header in Settings grouping controls for how document text is displayed
 		Section(t("Readability")) {
-			Stepper(value: $viewModel.textScalePercent, in: 70...300, step: 10) {
+			Stepper(value: $viewModel.textScalePercent, in: textScaleRangePercent, step: textScaleStepPercent) {
 				HStack {
 					// TRANSLATORS: Row label for the control that scales the size of document text
 					Text(t("Text Size"))
@@ -153,7 +156,7 @@ private struct ReadabilitySettingsSection: View {
 						.monospacedDigit()
 				}
 			}
-			.accessibilityValue("\(viewModel.textScalePercent)%")
+			.adjustableStepper(label: t("Text Size"), value: "\(viewModel.textScalePercent)%", number: $viewModel.textScalePercent, in: textScaleRangePercent, step: textScaleStepPercent)
 			// TRANSLATORS: Label for the picker choosing how much space sits between lines of text
 			Picker(t("Line Spacing"), selection: $viewModel.lineSpacingChoice) {
 				// TRANSLATORS: Default spacing option, shown in the line and paragraph spacing pickers
@@ -163,6 +166,7 @@ private struct ReadabilitySettingsSection: View {
 				// TRANSLATORS: Double line spacing option
 				Text(t("Double")).tag(2)
 			}
+			.menuPickerTraits()
 			// TRANSLATORS: Label for the picker choosing how much space sits between paragraphs
 			Picker(t("Paragraph Spacing"), selection: $viewModel.paragraphSpacingChoice) {
 				Text(t("Normal")).tag(0)
@@ -171,6 +175,7 @@ private struct ReadabilitySettingsSection: View {
 				// TRANSLATORS: Wide paragraph spacing option
 				Text(t("Wide")).tag(2)
 			}
+			.menuPickerTraits()
 			// TRANSLATORS: Label for the picker choosing whether the app follows the system light/dark setting or is pinned to one of them
 			Picker(t("Appearance"), selection: $viewModel.appearanceChoice) {
 				// TRANSLATORS: Appearance option following the phone's own light/dark setting
@@ -180,6 +185,7 @@ private struct ReadabilitySettingsSection: View {
 				// TRANSLATORS: Appearance option pinning the app to its dark colours
 				Text(t("Dark")).tag(2)
 			}
+			.menuPickerTraits()
 			// TRANSLATORS: Toggle that renders document text in pure black on white, or white on black
 			Toggle(t("High Contrast Text"), isOn: $viewModel.highContrastText)
 			// TRANSLATORS: Label for the picker choosing how document text is aligned
@@ -191,6 +197,7 @@ private struct ReadabilitySettingsSection: View {
 				// TRANSLATORS: Right text alignment option
 				Text(t("Right")).tag(2)
 			}
+			.menuPickerTraits()
 		}
 	}
 }
@@ -242,6 +249,19 @@ struct SettingsView: View {
 				Text(t("Opens Paperback in the Settings app, where its language can be changed."))
 			}
 			ReadabilitySettingsSection(viewModel: viewModel)
+			// TRANSLATORS: Section header in Settings grouping how documents are read in
+			Section(t("Documents")) {
+				// TRANSLATORS: Label for the picker choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for every document not given a page layout of its own in the More options menu
+				Picker(t("Page layout of PDF and XPS documents"), selection: Binding(get: { viewModel.pageLayout }, set: { viewModel.pageLayout = $0 })) {
+					// TRANSLATORS: Page layout choice in Settings: PDF and XPS pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+					Text(t("Automatic")).tag(PageLayout.automatic)
+					// TRANSLATORS: Page layout choice in Settings: the document's own reading order is ignored and the columns of each page are found from where the text sits, then read one after the other. It suits documents whose text is read out of order, such as two-column layouts
+					Text(t("By columns, ignoring the document's own order")).tag(PageLayout.columns)
+					// TRANSLATORS: Page layout choice in Settings: like reading by columns, but every line is kept apart instead of joined into paragraphs, which suits code, poetry and lists of clauses whose line breaks are the content
+					Text(t("By columns, keeping every line apart")).tag(PageLayout.lines)
+				}
+				.menuPickerTraits()
+			}
 			TtsSettingsSection(
 				ttsManager: viewModel.reading.ttsManager,
 				voiceName: voiceName(viewModel.speech.defaultVoice, in: viewModel.reading.ttsManager.availableVoices),
@@ -271,5 +291,26 @@ struct SettingsView: View {
 		VoicePickerView(ttsManager: viewModel.reading.ttsManager, selected: viewModel.speech.defaultVoice) { identifier in
 			viewModel.speech.setDefaultVoice(identifier)
 		}
+	}
+}
+
+extension View {
+	/// One adjustable element for a screen reader, swiped up or down by `step`, rather than the stepper's separate decrement and increment buttons.
+	fileprivate func adjustableStepper(label: String, value: String, number: Binding<Int>, in range: ClosedRange<Int>, step: Int) -> some View {
+		accessibilityElement(children: .ignore)
+			.accessibilityLabel(label)
+			.accessibilityValue(value)
+			.accessibilityAdjustableAction { direction in
+				switch direction {
+				case .increment: number.wrappedValue = min(number.wrappedValue + step, range.upperBound)
+				case .decrement: number.wrappedValue = max(number.wrappedValue - step, range.lowerBound)
+				@unknown default: break
+				}
+			}
+	}
+
+	/// A menu picker is already announced as a pop-up button, so without this VoiceOver says "button" twice, as on the More options button.
+	fileprivate func menuPickerTraits() -> some View {
+		accessibilityRemoveTraits(.isButton)
 	}
 }

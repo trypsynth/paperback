@@ -350,9 +350,17 @@ fn registration_order_matches_the_format_table() {
 }
 
 #[test]
-fn zip_is_offered_to_daisy_then_word_then_fb2() {
+fn zip_is_offered_to_daisy_then_bard_braille_then_word_then_fb2() {
 	let names: Vec<_> = ParserRegistry::global().get_parsers_for_extension("zip").iter().map(|p| p.name()).collect();
-	assert_eq!(names, vec![paperback_formats::DAISY.name, paperback_formats::WORD.name, paperback_formats::FB2.name]);
+	assert_eq!(
+		names,
+		vec![
+			paperback_formats::DAISY.name,
+			paperback_formats::BARD_BRAILLE.name,
+			paperback_formats::WORD.name,
+			paperback_formats::FB2.name
+		]
+	);
 }
 
 #[test]
@@ -479,6 +487,50 @@ fn add_toc_heading_markers_fills_in_unmarked_chapters() {
 	let headings: Vec<DocPos> =
 		buffer.markers.iter().filter(|m| is_heading_marker(m.mtype)).map(|m| m.position).collect();
 	assert_eq!(headings, vec![0, 17, 34], "one heading per table-of-contents entry");
+}
+
+#[test]
+fn add_toc_heading_markers_heads_the_whole_line_an_anchor_falls_inside() {
+	let mut buffer = DocumentBuffer::new();
+	buffer.append("The end.\nCHAPTER 1\nIt was cold.\nCHAPTER 2\n");
+	let toc = vec![
+		TocItem::new("C HAPTER 1".to_string(), String::new(), 10.into()),
+		TocItem::new("Chapter Two".to_string(), String::new(), 34.into()),
+	];
+	add_toc_heading_markers(&mut buffer, &toc);
+	let headings: Vec<(DocPos, &str)> =
+		buffer.markers.iter().filter(|m| is_heading_marker(m.mtype)).map(|m| (m.position, m.text.as_str())).collect();
+	assert_eq!(
+		headings,
+		vec![(9.into(), "CHAPTER 1"), (34.into(), "Chapter Two")],
+		"a label that isn't the line keeps its anchor"
+	);
+}
+
+#[test]
+fn align_toc_to_title_lines_moves_an_entry_to_its_line() {
+	let mut buffer = DocumentBuffer::new();
+	buffer.append("The end.\nCHAPTER 1\nIt was cold.\nCHAPTER 2\n");
+	let mut toc = vec![with_children(
+		TocItem::new("C HAPTER 1".to_string(), String::new(), 10.into()),
+		vec![TocItem::new("Chapter Two".to_string(), String::new(), 34.into())],
+	)];
+	align_toc_to_title_lines(&buffer, &mut toc);
+	assert_eq!((toc[0].offset, toc[0].name.as_str()), (9.into(), "CHAPTER 1"));
+	assert_eq!(
+		(toc[0].children[0].offset, toc[0].children[0].name.as_str()),
+		(34.into(), "Chapter Two"),
+		"a label that isn't the line stays"
+	);
+}
+
+#[test]
+fn align_toc_to_title_lines_keeps_the_label_of_an_entry_at_its_line_start() {
+	let mut buffer = DocumentBuffer::new();
+	buffer.append("Un compromised Performance\n");
+	let mut toc = vec![TocItem::new("Uncompromised Performance".to_string(), String::new(), DocPos::ZERO)];
+	align_toc_to_title_lines(&buffer, &mut toc);
+	assert_eq!(toc[0].name, "Uncompromised Performance");
 }
 
 #[test]

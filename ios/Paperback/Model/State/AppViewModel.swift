@@ -62,6 +62,16 @@ final class AppViewModel {
 	var highContrastText: Bool = false {
 		didSet { configManager.setAppBool(key: "high_contrast_text", value: highContrastText) }
 	}
+	var pageLayout: PageLayout = .automatic {
+		didSet {
+			guard pageLayout != oldValue else { return }
+			configManager.setPageLayout(layout: pageLayout)
+			readAgain(tabs.filter { tab in
+				let path = tab.url.path(percentEncoded: false)
+				return configManager.pageLayoutAppliesTo(path: path) && configManager.getDocumentPageLayout(path: path) == nil
+			})
+		}
+	}
 
 	var recentDocuments: [RecentDocument] = []
 
@@ -80,8 +90,15 @@ final class AppViewModel {
 		hidePrevNextButtons = configManager.getAppBool(key: "hide_prev_next_buttons", defaultValue: false)
 		appearanceChoice = Int(configManager.getAppInt(key: "appearance", defaultValue: 0))
 		highContrastText = configManager.getAppBool(key: "high_contrast_text", defaultValue: false)
+		pageLayout = configManager.getPageLayout()
 
 		reading.context = self
+		reading.onRequestBookmarkNote = { [weak self] target in
+			self?.navigation.bookmarkNote = target
+		}
+		reading.onRequestBookmarkRemoval = { [weak self] bookmark in
+			self?.navigation.bookmarkRemoval = bookmark
+		}
 		reading.stopAfterFindMatch = configManager.getAppBool(key: "tts_stop_after_find_match", defaultValue: true)
 		reading.onStopAfterFindMatchChanged = { [weak self] stop in
 			self?.configManager.setAppBool(key: "tts_stop_after_find_match", value: stop)
@@ -163,7 +180,7 @@ final class AppViewModel {
 		let scopeStarted = url.startAccessingSecurityScopedResource()
 		let path = url.path(percentEncoded: false)
 		do {
-			let session = try Self.openSession(path: path, password: password ?? configManager.getDocumentPassword(path: path))
+			let session = try Self.openSession(path: path, password: password ?? configManager.getDocumentPassword(path: path), pageLayout: configManager.pageLayoutFor(path: path))
 			activeTabId = addTab(url: url, session: session, scopeStarted: scopeStarted)
 			if track {
 				configManager.addRecentDocument(path: path)
@@ -181,14 +198,78 @@ final class AppViewModel {
 		}
 	}
 
-	nonisolated private static func openSession(path: String, password: String) throws -> DocumentSession {
-		try DocumentSession.newFfi(filePath: path, password: password, forcedExtension: "", renderTablesInline: false)
+	nonisolated private static func openSession(path: String, password: String, pageLayout: PageLayout) throws -> DocumentSession {
+		try DocumentSession.newFfi(filePath: path, password: password, forcedExtension: "", renderTablesInline: false, pageLayout: pageLayout)
+	}
+
+	/// Nil when the active document isn't laid out as pages, and so has no page layout to choose.
+	var activeDocumentPageLayout: PageLayout?? {
+		_ = pageLayoutRevision
+		guard let path = activeDocPath, configManager.pageLayoutAppliesTo(path: path) else { return nil }
+		return .some(configManager.getDocumentPageLayout(path: path))
+	}
+
+	/// Nil gives the active document back to the page layout in Settings; it is read again only if that changes how it reads, as on desktop.
+	func setActiveDocumentPageLayout(_ layout: PageLayout?) {
+		guard let tab = activeTab else { return }
+		let path = tab.url.path(percentEncoded: false)
+		guard configManager.pageLayoutAppliesTo(path: path) else { return }
+		let before = configManager.pageLayoutFor(path: path)
+		configManager.setDocumentPageLayout(path: path, layout: layout)
+		configManager.flush()
+		if configManager.pageLayoutFor(path: path) != before { readAgain([tab]) }
+		pageLayoutRevision += 1
+	}
+
+	/// The document's own layout lives only in the core, so the menu showing it is told of a change through this.
+	private(set) var pageLayoutRevision = 0
+
+	/// Kept so a test can wait for the documents a page layout change reads again.
+	@ObservationIgnored private(set) var readAgainTask: Task<Void, Never>?
+
+	/// Parsed off the main thread, as at launch, since a long PDF takes a while; each waits for the one before, and is dropped if the layout changed again while it parsed.
+	private func readAgain(_ readTabs: [DocumentTab]) {
+		let requests = readTabs.map { tab in
+			let path = tab.url.path(percentEncoded: false)
+			return ReadAgainRequest(id: tab.id, path: path, password: configManager.getDocumentPassword(path: path), pageLayout: configManager.pageLayoutFor(path: path))
+		}
+		guard !requests.isEmpty else { return }
+		let previous = readAgainTask
+		readAgainTask = Task {
+			await previous?.value
+			let sessions = await Task.detached {
+				requests.map { request in try? Self.openSession(path: request.path, password: request.password, pageLayout: request.pageLayout) }
+			}.value
+			for (request, session) in zip(requests, sessions) {
+				guard let session, configManager.pageLayoutFor(path: request.path) == request.pageLayout else { continue }
+				replaceSession(ofTab: request.id, with: session)
+			}
+		}
+	}
+
+	private func replaceSession(ofTab id: UUID, with session: DocumentSession) {
+		guard let index = tabs.firstIndex(where: { $0.id == id }), let old = tabs[index].session else { return }
+		let isActive = id == activeTabId
+		let position = positionAfterReadingAgain(isActive ? reading.ttsPosition : tabs[index].currentPosition, from: old, to: session)
+		bookModels[id] = nil
+		tabs[index].session = session
+		tabs[index].currentPosition = position
+		configManager.setDocumentPosition(path: tabs[index].url.path(percentEncoded: false), position: position)
+		guard isActive else { return }
+		// What is queued to be spoken is the old reading's text, so reading aloud starts again from the same place in the new one.
+		let wasSpeaking = reading.ttsManager.isSpeaking
+		reading.ttsManager.stop()
+		reading.loadSegment(for: tabs[index])
+		if wasSpeaking { reading.playCurrentSegment() }
 	}
 
 	private func addTab(url: URL, session: DocumentSession, scopeStarted: Bool) -> UUID {
 		let path = url.path(percentEncoded: false)
 		let title = session.title().isEmpty ? url.deletingPathExtension().lastPathComponent : session.title()
 		var tab = DocumentTab(title: title, url: url, session: session)
+		if let start = session.startPosition() {
+			configManager.seedDocumentPosition(path: path, position: start)
+		}
 		tab.currentPosition = configManager.getDocumentPosition(path: path)
 		tab.securityScopeURL = scopeStarted ? url : nil
 		tabs.append(tab)
@@ -213,12 +294,13 @@ final class AppViewModel {
 		let requests: [RestoreRequest] = configManager.getOpenedDocuments().compactMap { path in
 			guard let url = resolvedURL(forPath: path) else { return nil }
 			let password = configManager.getDocumentPassword(path: url.path(percentEncoded: false))
-			return RestoreRequest(path: path, url: url, password: password, scopeStarted: url.startAccessingSecurityScopedResource())
+			let pageLayout = configManager.pageLayoutFor(path: url.path(percentEncoded: false))
+			return RestoreRequest(path: path, url: url, password: password, pageLayout: pageLayout, scopeStarted: url.startAccessingSecurityScopedResource())
 		}
 		restoreTask = Task {
 			let results = await Task.detached {
 				requests.map { request in
-					Result { try Self.openSession(path: request.url.path(percentEncoded: false), password: request.password) }
+					Result { try Self.openSession(path: request.url.path(percentEncoded: false), password: request.password, pageLayout: request.pageLayout) }
 				}
 			}.value
 			// A book opened while these parsed keeps the reader; the restored tabs go in behind it.
@@ -316,6 +398,7 @@ final class AppViewModel {
 		guard FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) else { return false }
 		let path = tab.url.path(percentEncoded: false)
 		configManager.importSettingsFromFile(docPath: path, importPath: url.path(percentEncoded: false))
+		reading.bookmarksChanged()
 		let savedPos = configManager.getDocumentPosition(path: path)
 		if let idx = tabs.firstIndex(where: { $0.id == tab.id }) {
 			tabs[idx].currentPosition = savedPos
@@ -381,8 +464,15 @@ final class AppViewModel {
 		recentDocuments.removeAll()
 	}
 
+	/// An open tab of it is closed first, as on Windows, so it isn't left open or brought back at the next launch, and closing it can't write back the position just removed.
 	func removeRecentDocument(url: URL) {
-		configManager.removeDocumentHistory(path: url.path(percentEncoded: false))
+		let path = url.path(percentEncoded: false)
+		for tab in tabs where tab.url.path(percentEncoded: false) == path {
+			closeTab(tab)
+		}
+		configManager.removeDocumentHistory(path: path)
+		configManager.flush()
+		UserDefaults.standard.removeObject(forKey: bookmarkKey(path))
 		recentDocuments.removeAll { $0.url == url }
 	}
 
@@ -437,12 +527,15 @@ extension AppViewModel: ReadingContext {
 	func savedNavUnit(for tab: DocumentTab) -> NavigationUnit? {
 		configManager.getDocumentNavigationUnit(path: tab.url.path(percentEncoded: false))
 	}
+
+	var activeDocPath: String? { activeTab?.url.path(percentEncoded: false) }
 }
 
 enum NavUnit: Hashable {
 	case segment(SegmentTypeFfi)
 	case time(seconds: Int)
 	case find
+	case bookmark
 
 	init(_ stored: NavigationUnit) {
 		switch stored {
@@ -451,12 +544,12 @@ enum NavUnit: Hashable {
 		}
 	}
 
-	/// Find has no stored form, since the search it steps through ends with the document.
+	/// Find has no stored form, since the search it steps through ends with the document; Bookmark has none so older versions and desktop never read one they don't know.
 	var stored: NavigationUnit? {
 		switch self {
 		case .segment(let type): return .segment(segmentType: type)
 		case .time(let seconds): return .seconds(seconds: UInt32(seconds))
-		case .find: return nil
+		case .find, .bookmark: return nil
 		}
 	}
 
@@ -466,6 +559,8 @@ enum NavUnit: Hashable {
 		case .time(let seconds): return seekAmountName(seconds)
 		// TRANSLATORS: Name of the "Find" navigation unit, which moves between search matches
 		case .find: return t("Find")
+		// TRANSLATORS: Name of the "Bookmark" navigation unit, which moves between the reader's bookmarks and notes
+		case .bookmark: return t("Bookmark")
 		}
 	}
 }
@@ -616,5 +711,28 @@ private struct RestoreRequest: Sendable {
 	let path: String
 	let url: URL
 	let password: String
+	let pageLayout: PageLayout
 	let scopeStarted: Bool
+}
+
+private struct ReadAgainRequest: Sendable {
+	let id: UUID
+	let path: String
+	let password: String
+	let pageLayout: PageLayout
+}
+
+/// Kept on the same page and as far into it, since a page holds the same words whatever its layout, though not in the same order or lines.
+func positionAfterReadingAgain(_ position: Int64, from old: DocumentSession, to new: DocumentSession) -> Int64 {
+	// The core gives the end of the document as 100 percent.
+	let (oldEnd, newEnd) = (old.positionFromPercent(percent: 100), new.positionFromPercent(percent: 100))
+	let page = old.currentPage(position: position)
+	let oldStart = page > 0 ? old.pageOffset(page: page) : 0
+	let newStart = page > 0 ? new.pageOffset(page: page) : 0
+	guard oldStart >= 0, newStart >= 0 else { return min(max(position, 0) * newEnd / max(oldEnd, 1), newEnd) }
+	let oldNext = old.pageOffset(page: page + 1)
+	let newNext = new.pageOffset(page: page + 1)
+	let oldLength = (page > 0 && oldNext >= 0 ? oldNext : oldEnd) - oldStart
+	let newLength = (page > 0 && newNext >= 0 ? newNext : newEnd) - newStart
+	return min(newStart + max(position - oldStart, 0) * newLength / max(oldLength, 1), newEnd)
 }

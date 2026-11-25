@@ -6,12 +6,12 @@ use paperback_core::config::ConfigManager;
 use patois::t;
 use wxdragon::{prelude::*, timer::Timer};
 
+#[cfg(target_os = "windows")]
+use super::HotkeyHandle;
 use super::{
 	DocumentManager, close_active_document_announced, display_title, menu, tab_index_for_key,
 	update_title_from_manager, window_geometry,
 };
-#[cfg(target_os = "windows")]
-use super::{HotkeyHandle, tray};
 use crate::ui::navigation::announce;
 
 pub(super) fn bind_document_events(
@@ -152,17 +152,20 @@ pub(super) fn bind_teardown(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	config: &Rc<Mutex<ConfigManager>>,
 	timers: &[Rc<Timer<Frame>>],
-	#[cfg(target_os = "windows")] tray_state: &Rc<Mutex<Option<tray::TrayState>>>,
 	#[cfg(target_os = "windows")] hotkey_handle: &Rc<RefCell<Option<HotkeyHandle>>>,
 ) {
 	let dm_for_close = Rc::clone(doc_manager);
 	let config_for_close = Rc::clone(config);
 	let timers_for_close = timers.to_vec();
 	#[cfg(target_os = "windows")]
-	let tray_for_close = Rc::clone(tray_state);
-	#[cfg(target_os = "windows")]
 	let hotkey_for_close = Rc::clone(hotkey_handle);
 	frame.on_close(move |event| {
+		// Blocking on a lock held further up the stack hangs here for good, so the log says whether that's what happened.
+		tracing::info!(
+			documents_busy = dm_for_close.try_lock().is_err(),
+			config_busy = config_for_close.try_lock().is_err(),
+			"closing the main window"
+		);
 		let mut dm = dm_for_close.lock().unwrap();
 		{
 			let cfg = config_for_close.lock().unwrap();
@@ -175,7 +178,9 @@ pub(super) fn bind_teardown(
 			frame.show(false);
 			cfg.flush();
 		}
+		tracing::info!(documents = dm.tab_count(), "saving reading positions");
 		dm.save_all_positions();
+		tracing::info!("stopping audio");
 		// Audio stops and focus leaves the per-tab controls (hidden audio control included) before the frame tears its children down.
 		dm.stop_all_audio();
 		frame.set_focus();
@@ -189,13 +194,10 @@ pub(super) fn bind_teardown(
 			return;
 		}
 		// Only once really quitting: on macOS the window is only hidden above, and its documents stay open.
+		tracing::info!("removing working copies");
 		dm.remove_working_copies();
 		// Here rather than only after the event loop, since Windows may end the process once it has closed the window at shutdown.
 		crate::problem_report::end_session();
-		#[cfg(target_os = "windows")]
-		if let Some(state) = tray_for_close.lock().unwrap().as_ref() {
-			state.icon.remove_icon();
-		}
 		// Dropping the registration gives the chord back to the system.
 		#[cfg(target_os = "windows")]
 		drop(hotkey_for_close.borrow_mut().take());
@@ -203,18 +205,9 @@ pub(super) fn bind_teardown(
 		for timer in &timers_for_close {
 			timer.stop();
 		}
+		tracing::info!("main window closed");
 		event.skip(true);
 	});
-	#[cfg(target_os = "windows")]
-	{
-		let tray_for_destroy = Rc::clone(tray_state);
-		frame.on_destroy(move |_event| {
-			let state = tray_for_destroy.lock().unwrap().take();
-			if let Some(state) = state {
-				state.icon.destroy();
-			}
-		});
-	}
 }
 
 /// The Windows tab control handles Ctrl+Tab itself; macOS and GTK don't. On the char hook so it works from the book and tab strip before Tab moves focus.

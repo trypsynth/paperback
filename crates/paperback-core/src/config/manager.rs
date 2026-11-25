@@ -22,6 +22,7 @@ mod find;
 mod keybindings;
 mod readability;
 mod sidecar;
+mod speech;
 
 pub use document_list::{
 	compute_document_hash, document_missing, document_name, filter_document_list, get_sorted_document_list,

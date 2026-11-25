@@ -4,6 +4,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
@@ -17,13 +19,18 @@ import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.paperback.android.t
+import dev.paperback.android.ui.screens.noteActionLabel
 import dev.paperback.android.ui.state.MainScreenUiState
+import uniffi.paperback.BookmarkFfi
+import uniffi.paperback.PageLayout
 
 /** One definition for both the visible menu item and the TalkBack custom action, so the two can't drift out of sync. */
 private data class MenuAction(val label: String, val onClick: () -> Unit)
@@ -47,6 +54,19 @@ private fun MenuActionItems(actions: List<MenuAction>, onItemClick: () -> Unit) 
 		)
 	}
 }
+
+/** Null hands the document back to the page layout chosen in Settings. */
+@Composable
+private fun pageLayoutChoices(): List<Pair<PageLayout?, String>> = listOf(
+	// TRANSLATORS: Choice in the Page Layout menu: the open PDF or XPS document follows the page layout chosen for all documents in Settings
+	null to t("Same as Other Documents"),
+	// TRANSLATORS: Choice in the Page Layout menu: the open document's pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+	PageLayout.AUTOMATIC to t("Automatic"),
+	// TRANSLATORS: Choice in the Page Layout menu: the open document's own reading order is ignored and the columns of each page are found from where the text sits, for documents read out of order
+	PageLayout.COLUMNS to t("By Columns"),
+	// TRANSLATORS: Choice in the Page Layout menu: like By Columns, but every line is kept apart instead of joined into paragraphs, for code, poetry and lists of clauses
+	PageLayout.LINES to t("By Columns, Every Line Apart")
+)
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -72,9 +92,15 @@ fun MainScreenTopBar(
 	onExportSettings: () -> Unit,
 	onImportSettings: () -> Unit,
 	onOpenFromUrl: () -> Unit,
-	onHelpOpen: () -> Unit
+	onHelpOpen: () -> Unit,
+	onPageLayoutChange: (PageLayout?) -> Unit = {},
+	bookmarkHere: BookmarkFfi? = null,
+	onToggleBookmark: () -> Unit = {},
+	onBookmarkNote: () -> Unit = {},
+	onBookmarksOpen: () -> Unit = {}
 ) {
 	var moreOptionsExpanded by remember { mutableStateOf(false) }
+	var pageLayoutExpanded by remember { mutableStateOf(false) }
 	val bookMenuActions = listOf(
 		// TRANSLATORS: Menu item / accessibility action that downloads a document from a web link and opens it
 		MenuAction(t("Open from URL..."), onOpenFromUrl),
@@ -184,9 +210,15 @@ fun MainScreenTopBar(
 								onTocOpen
 							)
 						)
+						// TRANSLATORS: Menu item / accessibility action opening the list of the document's bookmarks and notes
+						add(MenuAction(t("Bookmarks"), onBookmarksOpen))
 						if (!isAudioOnly) {
 							// TRANSLATORS: Menu item / accessibility action to open the export document dialog
 							add(MenuAction(t("Export As"), onExportDocumentOpen))
+						}
+						if (state.activeTab?.hasPageLayout == true) {
+							// TRANSLATORS: Menu item / accessibility action opening the choices of how the open PDF or XPS document's pages are put in reading order and paragraphs
+							add(MenuAction(t("Page Layout")) { pageLayoutExpanded = true })
 						}
 					}
 					if (!isAudioOnly) {
@@ -259,26 +291,40 @@ fun MainScreenTopBar(
 						)
 					)
 				}
-				Box {
-					IconButton(
-						onClick = { moreOptionsExpanded = true },
-						modifier = Modifier.semantics {
-							traversalIndex = 2f
-							// TRANSLATORS: TalkBack action on the top bar's overflow button, which opens its menu
-							this.onClick(label = t("Show all options in a menu")) {
-								moreOptionsExpanded = true
-								true
-							}
-							customActions = menuActions.toCustomActions()
-						}
-					) {
-						Icon(Icons.Filled.MoreVert, contentDescription = moreOptionsLabel)
+				Row(verticalAlignment = Alignment.CenterVertically) {
+					if (state.activeTab != null) {
+						BookmarkTopBarButton(bookmarkHere, onToggleBookmark, onBookmarkNote, onBookmarksOpen)
 					}
-					DropdownMenu(
-						expanded = moreOptionsExpanded,
-						onDismissRequest = { moreOptionsExpanded = false }
-					) {
-						MenuActionItems(menuActions) { moreOptionsExpanded = false }
+					Box {
+						IconButton(
+							onClick = { moreOptionsExpanded = true },
+							modifier = Modifier.semantics {
+								traversalIndex = 2f
+								// TRANSLATORS: TalkBack action on the top bar's overflow button, which opens its menu
+								this.onClick(label = t("Show all options in a menu")) {
+									moreOptionsExpanded = true
+									true
+								}
+								customActions = menuActions.toCustomActions()
+							}
+						) {
+							Icon(Icons.Filled.MoreVert, contentDescription = moreOptionsLabel)
+						}
+						DropdownMenu(
+							expanded = moreOptionsExpanded,
+							onDismissRequest = { moreOptionsExpanded = false }
+						) {
+							MenuActionItems(menuActions) { moreOptionsExpanded = false }
+						}
+						val ownPageLayout = state.activeTab?.ownPageLayout
+						DropdownMenu(expanded = pageLayoutExpanded, onDismissRequest = { pageLayoutExpanded = false }) {
+							pageLayoutChoices().forEach { (layout, label) ->
+								PickerMenuItem(label = label, selected = layout == ownPageLayout) {
+									pageLayoutExpanded = false
+									onPageLayoutChange(layout)
+								}
+							}
+						}
 					}
 				}
 			} else {
@@ -362,6 +408,45 @@ fun MainScreenTopBar(
 					)
 				}
 			}
+		}
+	}
+}
+
+/** Tap marks or unmarks the paragraph being read; a long press, or TalkBack's actions, reach the note and the list. */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun BookmarkTopBarButton(here: BookmarkFfi?, onToggle: () -> Unit, onNote: () -> Unit, onList: () -> Unit) {
+	var menuExpanded by remember { mutableStateOf(false) }
+	val hasNote = !here?.note.isNullOrEmpty()
+	val actions = listOf(
+		MenuAction(noteActionLabel(hasNote), onNote),
+		MenuAction(t("Bookmarks"), onList)
+	)
+	// TRANSLATORS: Accessibility label of the reading screen's button that marks or unmarks the current paragraph with a bookmark
+	val label = t("Bookmark")
+	Box {
+		Box(
+			modifier = Modifier
+				.size(48.dp)
+				.combinedClickable(
+					role = Role.Button,
+					onClick = onToggle,
+					onLongClick = { menuExpanded = true },
+					// TRANSLATORS: TalkBack action label for a long press on the bookmark button, which opens its note and list options
+					onLongClickLabel = t("show note and bookmark options")
+				).semantics {
+					traversalIndex = 1.5f
+					selected = here != null
+					// TRANSLATORS: TalkBack state of the bookmark button when the bookmark at the current paragraph has a note
+					if (hasNote) stateDescription = t("Has note")
+					customActions = actions.toCustomActions()
+				},
+			contentAlignment = Alignment.Center
+		) {
+			Icon(if (here == null) Icons.Filled.BookmarkBorder else Icons.Filled.Bookmark, contentDescription = label)
+		}
+		DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+			MenuActionItems(actions) { menuExpanded = false }
 		}
 	}
 }

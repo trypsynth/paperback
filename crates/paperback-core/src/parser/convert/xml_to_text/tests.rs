@@ -162,7 +162,7 @@ fn dtbook_list_closes_like_ul() {
 
 #[test]
 fn table_is_detected() {
-	let xml = "<root><body><table><tr><td>Cell</td></tr></table></body></root>";
+	let xml = "<root><body><table><tr><th>Cell</th></tr></table></body></root>";
 	let mut converter = XmlToText::new();
 	assert!(converter.convert(xml));
 	assert_eq!(converter.get_tables().len(), 1);
@@ -227,7 +227,7 @@ fn dl_dt_dd_produce_separate_lines() {
 #[test]
 fn xml_table_length_counts_positions_not_bytes() {
 	let xml =
-		concat!("<root><body><p>Intro</p>", "<table><tr><td>A</td><td>\u{1D11E}</td></tr></table>", "</body></root>");
+		concat!("<root><body><p>Intro</p>", "<table><tr><th>A</th><td>\u{1D11E}</td></tr></table>", "</body></root>");
 	let mut converter = XmlToText::with_render_tables_inline(true);
 	assert!(converter.convert(xml));
 	let tables = converter.get_tables();
@@ -253,8 +253,8 @@ fn xml_table_emits_placeholder_or_tsv_by_flag() {
 fn xml_two_tables_offsets_are_cumulative() {
 	let xml = concat!(
 		"<root><body>",
-		"<table><tr><td>X</td></tr></table>",
-		"<table><tr><td>Y</td></tr></table>",
+		"<table><tr><th>X</th></tr></table>",
+		"<table><tr><th>Y</th></tr></table>",
 		"</body></root>"
 	);
 	let mut converter = XmlToText::new();

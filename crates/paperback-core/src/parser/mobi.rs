@@ -13,7 +13,7 @@ use rayon::prelude::*;
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
-		Parser, add_converter_markers, add_toc_heading_markers,
+		Parser, add_converter_markers, add_toc_heading_markers, align_toc_to_title_lines,
 		convert::html_to_text::{HtmlSourceMode, HtmlToText},
 		text::text_document,
 		util::{path::extract_title_from_path, toc::build_toc_from_headings},
@@ -195,6 +195,7 @@ impl Parser for MobiParser {
 				toc_items = ncx_toc;
 			}
 		}
+		align_toc_to_title_lines(&buffer, &mut toc_items);
 		add_toc_heading_markers(&mut buffer, &toc_items);
 		document.set_buffer(buffer);
 		document.toc_items = toc_items;

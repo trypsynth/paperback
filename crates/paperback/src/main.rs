@@ -41,7 +41,7 @@ fn main() {
 		Err(e) => Err(e),
 	};
 	let _log_guard = Logkeeper::new(config_ext::config_dir(), "paperback")
-		.with_crates(["paperback", "paperback_core"])
+		.with_crates(["paperback", "paperback_core", "ship_shape", "wx_utils"])
 		.init(config_ext::log_level_from_disk());
 	tracing::info!(version = env!("CARGO_PKG_VERSION"), commit = version::COMMIT_HASH, "starting");
 	#[cfg(any(target_os = "linux", target_os = "windows"))]
@@ -61,22 +61,23 @@ fn main() {
 		let app_state = PaperbackApp::new(app);
 		let _ = Box::leak(Box::new(app_state));
 	});
+	tracing::info!("event loop ended");
 	problem_report::end_session();
 }
 
 #[cfg(target_os = "macos")]
 fn promote_unbundled_to_regular_app() {
-	use objc::{class, msg_send, runtime::Object, sel, sel_impl};
+	use objc2::MainThreadMarker;
+	use objc2_app_kit::{NSApplication, NSApplicationActivationPolicy};
 	// When in a bundle, MacOS handles this for us.
 	if config_ext::home().kind() == homeport::InstallKind::MacBundle {
 		return;
 	}
-	// NSApplicationActivationPolicyRegular = 0.
-	unsafe {
-		let ns_app: *mut Object = msg_send![class!(NSApplication), sharedApplication];
-		let _: () = msg_send![ns_app, setActivationPolicy: 0_isize];
-		let _: () = msg_send![ns_app, activateIgnoringOtherApps: true];
-	}
+	let Some(main_thread) = MainThreadMarker::new() else { return };
+	let app = NSApplication::sharedApplication(main_thread);
+	app.setActivationPolicy(NSApplicationActivationPolicy::Regular);
+	#[allow(deprecated, reason = "its replacement, activate, needs macOS 14")]
+	app.activateIgnoringOtherApps(true);
 }
 
 fn cleanup_legacy_files() {

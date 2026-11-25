@@ -4,7 +4,7 @@ use anyhow::Result;
 use rayon::prelude::*;
 
 use crate::{
-	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext},
+	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, PageLayout, ParserContext},
 	ocr::image_only_placeholder,
 	parser::{
 		Parser,
@@ -27,7 +27,8 @@ mod text;
 mod toc;
 
 use images::{
-	PAGE_IMAGE_COVERAGE, announced_images, append_image, images_before_each_paragraph, page_largest_image_coverage,
+	PAGE_IMAGE_COVERAGE, announced_images, append_image, images_before_each_paragraph, images_by_position,
+	page_largest_image_coverage,
 };
 use links::{collect_annotation_links, collect_web_links};
 use metadata::{cleaned_metadata, map_load_error, metadata_title};
@@ -46,6 +47,7 @@ struct PageContent {
 	web_links: Vec<PendingLink>,
 	annotation_links: Vec<PendingLink>,
 	image_tops: Vec<f64>,
+	image_spans: Vec<(f64, f64)>,
 	image_paths: Vec<String>,
 	largest_image_coverage: f64,
 }
@@ -54,6 +56,7 @@ fn read_page(
 	page: Result<Page<'_>, PdfError>,
 	page_index: usize,
 	render_tables_inline: bool,
+	layout: PageLayout,
 	evidence: &mut PageEvidence,
 ) -> PageContent {
 	let Ok(page) = page else {
@@ -65,6 +68,7 @@ fn read_page(
 	let announced = announced_images(&page);
 	let mut content = PageContent {
 		image_tops: announced.iter().map(|image| image.bounds.top).collect(),
+		image_spans: announced.iter().map(|image| (image.bounds.left, image.bounds.right)).collect(),
 		image_paths: announced.iter().map(|image| image.id.to_string()).collect(),
 		largest_image_coverage: page_largest_image_coverage(&page),
 		..Default::default()
@@ -75,22 +79,24 @@ fn read_page(
 		lines_info: Vec::new(),
 		toc_items: Vec::new(),
 	};
-	if extract_tagged_page_text(
-		&page,
-		text_page,
-		page_index,
-		&mut tagged.buffer,
-		&mut tagged.display_text,
-		&mut tagged.lines_info,
-		&mut tagged.toc_items,
-		render_tables_inline,
-		&content.image_tops,
-		&content.image_paths,
-		evidence,
-	) {
+	// Reading by columns is for pages whose tags put them in the wrong order, so they are passed over.
+	if !layout.reads_by_columns()
+		&& extract_tagged_page_text(
+			&page,
+			text_page,
+			page_index,
+			&mut tagged.buffer,
+			&mut tagged.display_text,
+			&mut tagged.lines_info,
+			&mut tagged.toc_items,
+			render_tables_inline,
+			&content.image_tops,
+			&content.image_paths,
+			evidence,
+		) {
 		content.tagged = Some(tagged);
 	} else {
-		content.lines = extract_text_lines(text_page, evidence);
+		content.lines = extract_text_lines(text_page, evidence, layout.reads_by_columns());
 	}
 	content.web_links = collect_web_links(text_page);
 	content.annotation_links = collect_annotation_links(&page, text_page);
@@ -158,35 +164,38 @@ enum UntaggedLine {
 	Image(String),
 }
 
-fn untagged_page_lines(page: &PageContent, running_text: &RunningText, join: bool) -> Vec<UntaggedLine> {
-	let (line_infos, paragraphs) = page_paragraphs(page.lines.clone(), running_text, join);
+fn untagged_page_lines(page: &PageContent, running_text: &RunningText, layout: PageLayout) -> Vec<UntaggedLine> {
+	let (line_infos, paragraphs) = page_paragraphs(page.lines.clone(), running_text, layout);
 	let line_tops: Vec<f64> = line_infos.iter().map(|line| line.top).collect();
 	// The caller's image-only placeholder is more use on a scanned page than a line for each piece it was scanned into.
 	if paragraphs.is_empty() {
 		return Vec::new();
 	}
-	// An untagged page says nothing about where its images belong, so each is placed by the height it was drawn at.
-	let paragraph_tops: Vec<f64> = paragraphs
-		.iter()
-		.map(|(.., line_index)| line_tops.get(*line_index).copied().unwrap_or(f64::NEG_INFINITY))
-		.collect();
-	let image_counts = images_before_each_paragraph(&page.image_tops, &paragraph_tops);
-	let mut lines = Vec::with_capacity(paragraphs.len());
-	let mut next_image = 0usize;
-	let take_image = |next_image: &mut usize| {
-		let path = page.image_paths.get(*next_image).cloned().unwrap_or_default();
-		*next_image += 1;
-		UntaggedLine::Image(path)
+	// An untagged page says nothing about where its images belong, so each is placed by where it was drawn.
+	let images = if layout.reads_by_columns() {
+		let starts: Vec<usize> = paragraphs.iter().map(|(.., line_index)| *line_index).collect();
+		images_by_position(&page.image_tops, &page.image_spans, &line_infos, &starts)
+	} else {
+		let paragraph_tops: Vec<f64> = paragraphs
+			.iter()
+			.map(|(.., line_index)| line_tops.get(*line_index).copied().unwrap_or(f64::NEG_INFINITY))
+			.collect();
+		let mut next = 0;
+		images_before_each_paragraph(&page.image_tops, &paragraph_tops)
+			.into_iter()
+			.map(|count| {
+				next += count;
+				(next - count..next).collect()
+			})
+			.collect()
 	};
-	for (index, (text, is_heading, _)) in paragraphs.iter().enumerate() {
-		for _ in 0..image_counts[index] {
-			lines.push(take_image(&mut next_image));
-		}
+	let image = |index: &usize| UntaggedLine::Image(page.image_paths.get(*index).cloned().unwrap_or_default());
+	let mut lines = Vec::with_capacity(paragraphs.len());
+	for ((text, is_heading, _), before) in paragraphs.iter().zip(&images) {
+		lines.extend(before.iter().map(image));
 		lines.push(UntaggedLine::Text(text.clone(), *is_heading));
 	}
-	for _ in 0..image_counts[paragraphs.len()] {
-		lines.push(take_image(&mut next_image));
-	}
+	lines.extend(images[paragraphs.len()].iter().map(image));
 	lines
 }
 
@@ -232,7 +241,12 @@ fn load_document(context: &ParserContext) -> Result<PdfDocument> {
 const RUN_LENGTH: usize = 16;
 
 /// Each thread keeps one page cache so a book's fonts are read once per thread, and reads runs in order so [`PageEvidence`] judges almost every hyphen from its own pages; the few it misjudges are read again against every page.
-fn read_pages(document: &PdfDocument, page_count: usize, render_tables_inline: bool) -> Vec<PageContent> {
+fn read_pages(
+	document: &PdfDocument,
+	page_count: usize,
+	render_tables_inline: bool,
+	layout: PageLayout,
+) -> Vec<PageContent> {
 	let runs = page_count.div_ceil(RUN_LENGTH);
 	let threads = std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get).clamp(1, runs.max(1));
 	let (read, words): (Vec<_>, Vec<_>) = std::thread::scope(|scope| {
@@ -251,6 +265,7 @@ fn read_pages(document: &PdfDocument, page_count: usize, render_tables_inline: b
 								document.page_with(index, &cache),
 								index,
 								render_tables_inline,
+								layout,
 								&mut evidence,
 							);
 							let (own, judgements) = evidence.finish();
@@ -281,6 +296,7 @@ fn read_pages(document: &PdfDocument, page_count: usize, render_tables_inline: b
 					document.page_with(index, cache),
 					index,
 					render_tables_inline,
+					layout,
 					&mut PageEvidence::new(index, &words),
 				)
 			},
@@ -310,14 +326,14 @@ impl Parser for PdfParser {
 		let mut has_any_text = false;
 		let mut has_any_images = false;
 		let mut detected_heading_positions: Vec<(DocPos, String)> = Vec::new();
-		let mut pages = read_pages(&document, page_count, render_tables_inline);
+		let mut pages = read_pages(&document, page_count, render_tables_inline, context.page_layout);
 		let running_text = strip_tagged_running_text(&mut pages, context.strip_running_text);
 		// Laying out an untagged page is what putting the document together spends its time on, and it needs only the page and the survey, so every page is laid out at once.
 		let untagged: Vec<Vec<UntaggedLine>> = pages
 			.par_iter()
 			.map(|page| {
 				if page.tagged.is_none() {
-					untagged_page_lines(page, &running_text, context.join_pdf_paragraphs)
+					untagged_page_lines(page, &running_text, context.page_layout)
 				} else {
 					Vec::new()
 				}
@@ -446,7 +462,16 @@ mod tests {
 	const BODY: f64 = 10.0;
 
 	fn line(text: &str) -> Line {
-		Line { text: text.to_string(), size: BODY, top: 0.0, bottom: 0.0, monospaced: false, bold: false }
+		Line {
+			text: text.to_string(),
+			size: BODY,
+			top: 0.0,
+			bottom: 0.0,
+			left: 0.0,
+			right: 0.0,
+			monospaced: false,
+			bold: false,
+		}
 	}
 
 	fn page(coverage: f64, lines: &[&str]) -> PageContent {

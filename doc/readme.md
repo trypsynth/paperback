@@ -46,6 +46,7 @@ If JAWS says nothing when you press a key that should report something, open Set
 
 Paperback supports the following formats and extensions:
 
+* BARD braille books from the National Library Service, read as one book of all their volumes, back-translated with the braille code named in their package (the `.zip` BARD downloads, or its `.bopf` once unzipped)
 * Braille Ready Files and Portable Embosser Format books, back-translated to print with the braille table you choose (`.brf`, `.pef`)
 * Comic book archives (`.cbz`, `.cbr`)
 * CHM help files (`.chm`)
@@ -54,7 +55,7 @@ Paperback supports the following formats and extensions:
 * EPUB books (`.epub`, or the `.opf` of one that isn't zipped)
 * FB2 ebooks (`.fb2`)
 * GNU Info manuals (`.info`, gzipped or not, and split manuals opened from any of their parts)
-* HTML documents (`.htm`, `.html`, `.xhtml`)
+* HTML documents (`.htm`, `.html`, `.shtml`, `.xhtml`)
 * Manual pages, both `man` and BSD `mdoc` (`.1` to `.9`, `.man`, `.roff`, and the gzipped forms of each)
 * Markdown documents (`.md`, `.markdown`, `.mdx`, `.mdown`, `.mdwn`, `.mkd`, `.mkdn`, `.mkdown`, `.ronn`)
 * Microsoft Word documents (`.docx`, `.docm`, `.doc`)
@@ -65,6 +66,8 @@ Paperback supports the following formats and extensions:
 * OpenDocument text files (`.odt`, `.fodt`)
 * OS/2 help files and books, with their pictures (`.inf`, `.hlp`)
 * PDF documents (`.pdf`)
+* Qt help files, the documentation Qt Assistant and Qt Creator read, such as Qt's and CMake's own (`.qch`)
+* QRead books, the copies QRead saved of each book it opened (`.qrd`)
 * PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
 * RAR archives of books, which open as a zip does, with a list to pick from when one holds several (`.rar`)
 * reStructuredText documents (`.rst`, `.rest`)
@@ -170,7 +173,7 @@ Punctuation shortcuts are named after the keys of a US keyboard. On another layo
 
 * `Ctrl+Space` (macOS: `Control+Space`, i.e. the physical Control key, since Cmd+Space opens Spotlight): Play/pause audio narration.
 * `Ctrl+J`: Go to a time in the recording. Type it as `1:23:45`, `23:45` or `45` seconds, or put `+` or `-` in front to move from where you are, e.g. `+5:00`. The dialog shows how far in you are and how long the book runs.
-* `Shift+=`: Say how far into this chapter you are and how much of it is left, e.g. "Chapter 3, 4:10 of 12:00, 7:50 left".
+* `Shift+=`: Say how far into this chapter you are and how much of it is left, e.g. "Chapter 3, 4:10 of 12:00, 7:50 left". In a book without recorded audio, the percentage through the chapter and the words left in it, e.g. "Chapter 3, 42%, 1850 words left".
 * `'`: Seek audio narration forward.
 * `;`: Seek audio narration backward.
 * `Shift+'`: Increase the audio seek amount.
@@ -223,6 +226,8 @@ Each app has two ways to read a document. In text mode, you read the text with y
 
 Audio books, like DAISY, M4B, and MP3 books, play their own recording instead.
 
+In read aloud mode, the screen shows how far through the book you are. Tap that to see the chapter instead: its name, how far through it you are, and how many words of it are left, e.g. "Chapter 3, 42%, 1,850 words left". In an audio book it gives the time, e.g. "Chapter 3, 4:10 of 12:00, 7:50 left". Tap it again to go back to the whole book.
+
 ### The reading bar
 
 The bar at the bottom of the screen has, from left to right:
@@ -233,12 +238,27 @@ The bar at the bottom of the screen has, from left to right:
 
 You can also swipe up or down on the play button to move by the navigation unit, without reaching for the previous and next buttons. If that is all you use, the Hide previous and next buttons setting takes them out of your screen reader's way. The Swipe up moves forward setting picks which way a swipe goes.
 
+### Bookmarks and notes
+
+The bookmark button at the top of the screen marks your place. Tap it to bookmark the paragraph you're on, and tap it again to remove the bookmark. Your screen reader says Selected when the paragraph already has one. Removing a bookmark that has a note asks first.
+
+* In read aloud mode, the bookmark goes at the start of the paragraph being read, so coming back to it reads that paragraph again from the top. In text mode, it goes on the paragraph you're on.
+* In an audio book with no text, like an MP3 book, the bookmark keeps the exact time instead, as it does on the desktop.
+* Long-press the bookmark button, or use its screen reader actions, to add or edit a note, or to open the Bookmarks list. While you write a note, reading pauses, and it starts again when you close the note.
+* In read aloud mode, a paragraph's note shows under it. Tap the note to edit it.
+* In text mode, each paragraph has screen reader actions to add or remove a bookmark and to add or edit a note. On iOS, a bookmarked paragraph says Bookmark, or its note, after its text, and the Bookmarks rotor moves between them.
+* **Bookmarks** in the More Options menu lists every bookmark and note, with All, Bookmarks, and Notes to filter them. It opens on the one nearest to where you are. Pick one to go to it. Swipe on a bookmark on iOS, or long-press it on Android, or use the screen reader actions, to edit its note or delete it.
+* Once a document has bookmarks, Bookmark joins the navigation units on the reading bar, so previous and next move between them.
+
+Bookmarks and notes are the same ones the desktop uses, so they travel between them in a document's `.paperback` file.
+
 ### More options
 
 The More Options menu is where everything else lives. Some items work a little differently on each app.
 
 * **Switch to TTS Mode or Switch to Text Mode:** moves between read aloud mode and text mode, described above. In text mode, a Read Aloud item starts and pauses reading aloud without leaving text mode.
 * **Table of Contents:** the book's chapters, opened at the one you're reading. Pick one to go straight to it. Entries with chapters under them can be expanded and collapsed with the screen reader's actions.
+* **Bookmarks:** your bookmarks and notes in this document, described above.
 * **Elements:** a list of the document's headings or links. Switch between the two with the Type picker on iOS, or the tabs on Android, then pick one to go to it.
 * **Find:** type what to look for, or pick an earlier search from Search History, and choose whether to match case, match whole words only, or use a regular expression. Find Previous and Find Next jump to a match and say where it landed, and Find stays open so you can keep going. In read aloud mode, Find also shows up as a navigation unit on the reading bar, so you can step through the matches from there too. **Stop reading after search matches** in Settings under Text to Speech is on by default and stops after reading the paragraph containing a match. Turn it off to keep reading from the match while the reading bar's previous and next controls still navigate by Find.
 * **Go To:** jump to a line, a page, or a percentage through the document. Pick which with the Mode picker.
@@ -255,7 +275,7 @@ The More Options menu is where everything else lives. Some items work a little d
 
 ### Keyboards and headsets
 
-With a keyboard, the desktop shortcuts for opening books, recent documents, Find, Go To, the table of contents, word count, document info, export, and the sleep timer all work, using `Cmd` in place of `Ctrl` on iOS. So do the single-letter keys for moving by heading, page, link, and the rest, and `Space` plays and pauses. On iOS, the single-letter keys only reach Paperback while VoiceOver's single-letter Quick Nav is off.
+With a keyboard, the desktop shortcuts for opening books, recent documents, Find, Go To, the table of contents, word count, document info, export, and the sleep timer all work, using `Cmd` in place of `Ctrl` on iOS. So do the single-letter keys for moving by heading, page, link, and the rest, and `Space` plays and pauses. The bookmark keys match the desktop's too: `B` and `Shift+B` move to the next and previous bookmark, `N` and `Shift+N` to the next and previous note, `Ctrl+Shift+B` adds or removes a bookmark, `Ctrl+Shift+N` adds or edits a note, and `Ctrl+B` opens the Bookmarks list. On iOS, the single-letter keys only reach Paperback while VoiceOver's single-letter Quick Nav is off.
 
 On Android, a headset button plays and pauses with one press, moves forward with two, and goes back with three.
 
@@ -313,9 +333,105 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 
 ## Changelog
 
-### Version 1.1
+### Version 1.2
 
-1.1 brings a new PDF engine, a rebuilt iOS text mode, OCR on Linux, documents from links, support for decades of older Word, Write, and PowerPoint files, and much more.
+#### Added
+
+##### Read Aloud
+* Read any document aloud, with OneCore or SAPI 5 voices on Windows and the system's own voices on macOS. `Ctrl+Space` starts and stops reading, the seek keys skip paragraphs, and the speed and volume keys work as they do for audio books.
+* Choose the voice, rate, pitch, and pause between paragraphs in the Audio tab of Settings, try them with a sample button, and give one book its own voice.
+* Reading starts at the caret, starts again wherever you move it, and moves the caret to each word as it's spoken.
+* A speech dictionary, from the Audio tab of Settings, changes how words are read aloud: each rule replaces a word or a pattern, can match whole words only or be a regular expression, and can be turned on and off.
+
+##### Braille
+* Braille Ready Files (`.brf`) and PEF books open back-translated to print, in the braille code you choose in Settings.
+* eBraille books (`.ebrl`) open in print when they carry it, and are otherwise back-translated with the braille code they name.
+* NLS BARD braille books, from the zip or its `.bopf`, open as one book of all their volumes, in the braille code their package names.
+* To read braille books on a braille display, a setting in the Documents tab of Settings keeps them in braille, as Unicode braille, so the screen reader shows the transcriber's braille instead of translating print back into braille. `pb --keep-braille` does the same.
+* Braille files written in another country's braille ASCII, such as Norwegian, Danish, French, Spanish, Slovak, Czech, or Hungarian, are recognized.
+
+##### New Formats
+* XPS and OpenXPS documents.
+* RAR archives and RAR comics (`.cbr`).
+* GNU Info manuals, gzipped or split, with their menus, cross-references, and index.
+* OS/2 help files and books (`.inf`, `.hlp`), with their pictures and links.
+* PalmDOC books.
+* `.shtml` pages, and EPUB books that aren't zipped, opened by their `.opf`.
+* A zip of MP3 or M4B parts opens as one audio book.
+* Qt help files (`.qch`), the documentation Qt Assistant and Qt Creator read, such as Qt's and CMake's own.
+* QRead books (`.qrd`), the copies QRead saved of each book it opened, which open where QRead left off the first time.
+
+##### Audio Books
+* Go to Time (`Ctrl+J`) jumps to a time, such as `1:23:45` or `+5:00`.
+* `=` also says how far into the book you are and how long it runs, and `Shift+=` says the same for the chapter, also in the Audio menu as Announce Chapter Time.
+* Go to Percent plays from that point, not the start of the chapter it falls in.
+* A headset's play, pause, and skip buttons control the book, and playback moves to a new default output device when it changes.
+
+##### General
+* Report a Problem, in the Help menu, sends a report of what went wrong, and is offered at the next start after Paperback closes unexpectedly.
+* `Shift+=` in a text book says how far through the chapter you are and how many words are left.
+* Pictures with an empty description in EPUB and HTML books show when they're big enough to be content, such as scanned letters and figures.
+* Formulas inside links and table cells can be navigated to.
+* HTML export keeps block quotes, figures, definition lists, asides, line breaks, superscripts, and subscripts.
+* On Windows, screen readers say "link" on the links in a document as you read, and clicking a link follows it, as `Enter` does.
+* A page layout setting for PDFs read out of order, in the Documents tab of Settings and for one document in View > Page Layout: by columns finds the columns from where the text sits instead of following the document, and can keep every line apart. It replaces the setting that kept lines apart. `pb --layout` does the same.
+
+##### iOS and Android
+* Go To has a Time mode for audio books, with `Cmd+J` on an iPad keyboard, and the playing screen shows how far in you are and how long the book runs.
+* Each book remembers its navigation unit.
+* Bookmarks and notes, from a button in the reader's top bar: hold it, or use the screen reader's actions, to add a note or open the Bookmarks list. They are the same bookmarks the desktop keeps, so they travel in `.paperback` files, and the desktop's bookmark keys work with a keyboard.
+* Tapping the progress under the read-aloud bar switches it to the chapter's: its name, percentage, and words left, or its times in an audio book.
+* The page layout setting for PDFs read out of order is in Settings, and in the More options menu for one PDF or XPS document.
+* Android has a speech dictionary, in Settings, and both apps now read their rules exactly as the desktop does. Rules saved on iOS move over the first time it opens.
+
+##### pb
+* pb is two to four times faster on most text formats, and converts as many documents at once as there are processors, or as many as `--jobs` says.
+* `--braille-table` chooses a braille book's code, `--list-braille-tables` lists the codes, and `--version` says which pb it is.
+
+#### Changed
+* Settings is split into six tabs, one for each kind of setting.
+* PDFs, big CHM references, and MOBI books open faster.
+* The Windows installer asks about less: Paperback shows in Open with for every format it reads, and setup only offers to make it the default app for EPUB books and PDFs. The Start Menu shortcut is now on by default.
+* The Windows installer opens in your Windows display language when Paperback is translated into it, and asks which language to use when it isn't.
+
+#### Fixed
+
+##### General
+* Read aloud with a SAPI 5 voice that works in the Windows code page, such as Mikropuhe, no longer garbles letters like ä and ö.
+* Punctuation shortcuts work on every keyboard layout, matched by the key's place on a US keyboard.
+* Paperback no longer hangs when a shortcut with `Shift` and punctuation opens Settings, when a file it can't read is opened from the command line, or when OCR results, a file from another copy, or the sleep timer arrive while a dialog is open.
+* Very deeply nested HTML and XML documents no longer crash.
+* A configuration that won't load is kept as a `.bad` file instead of being overwritten, and saving can no longer leave it half written.
+* File > Exit saves the window's size and open tab, and removes the tray icon.
+* Paperback hidden in the tray no longer keeps a processor core busy, and closed dialogs no longer stay in memory.
+* Opening several files while Paperback is running opens all of them.
+* The document's title is announced when it opens without a dialog closing first.
+* A contents entry's chapter number is announced with its title.
+* On macOS and Linux, a document too long to load at once no longer runs ahead to its end and saves that as the reading position.
+
+##### Documents
+* Pages that use a table for their layout read as text, so Find, `Enter`, and headings work in them.
+* Word lists that restart their numbering number the same every time, from their restart value.
+* OpenDocument table rows inside header rows and row groups are no longer dropped.
+* Nested lists in DTBook books keep their levels.
+* Damaged MOBI files no longer crash.
+* A man page that redirects to one that isn't installed says which page.
+* Text files in a Central European or other national code page, and DOS text files, open with the right characters instead of symbols inside words.
+* A contents entry whose anchor falls inside its title line, as after a drop cap, lands at the start of that line, and its heading reads as the line is written.
+* Markdown export no longer writes empty bold or italic markers.
+
+##### iOS and Android
+* iOS: reading aloud no longer stops after the first paragraph on iOS 27.3.
+* iOS: closing a downloaded book keeps it closed.
+* Android: links, pictures, and tables are no longer placed wrongly after an emoji in the same line.
+* Removing an open document from Recent Documents closes it, as on Windows.
+* iOS: VoiceOver no longer offers Remove twice in Recent Documents, and Text Size and Paragraph Pause in Settings are each one adjustable control.
+
+##### Linux
+* The Linux build runs on Ubuntu 24.04, and other systems with its glibc, again.
+* A file sent to a running copy opens at once.
+
+### Version 1.1
 
 #### Added
 

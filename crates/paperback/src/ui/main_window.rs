@@ -4,6 +4,7 @@ use std::{cell::Cell, path::Path, rc::Rc, sync::Mutex};
 
 use paperback_core::config::ConfigManager;
 use patois::t;
+use wx_utils::tray::Visibility;
 use wxdragon::{prelude::*, timer::Timer};
 
 #[cfg(target_os = "windows")]
@@ -50,8 +51,11 @@ pub struct MainWindow {
 	frame: Frame,
 	doc_manager: Rc<Mutex<DocumentManager>>,
 	config: Rc<Mutex<ConfigManager>>,
+	/// Hides the window and brings it back along with whichever dialog the user was in.
+	#[cfg_attr(target_os = "macos", expect(dead_code, reason = "only the IPC code reads it, and macOS has none"))]
+	visibility: Rc<Visibility>,
 	#[cfg(target_os = "windows")]
-	tray_state: Rc<Mutex<Option<tray::TrayState>>>,
+	tray: tray::TrayIcon,
 	live_region_label: StaticText,
 	_find_dialog: Rc<Mutex<Option<FindDialogState>>>,
 	#[cfg(target_os = "windows")]
@@ -132,17 +136,16 @@ impl MainWindow {
 		#[cfg(not(target_os = "windows"))]
 		window_events::bind_tab_cycling(&frame, &doc_manager);
 		window_events::bind_document_events(frame, &doc_manager, live_region_label);
+		let visibility = Rc::new(Visibility::new(frame));
 		#[cfg(target_os = "windows")]
-		let tray_state = Rc::new(Mutex::new(None));
+		let tray = tray::TrayIcon::default();
 		#[cfg(target_os = "windows")]
-		tray::bind_tray_events(frame, &doc_manager, &config, &tray_state);
+		tray::bind_tray_events(frame, &visibility, &doc_manager, &config, &tray);
 		window_events::bind_teardown(
 			frame,
 			&doc_manager,
 			&config,
 			&timers,
-			#[cfg(target_os = "windows")]
-			&tray_state,
 			#[cfg(target_os = "windows")]
 			&hotkey_handle,
 		);
@@ -151,8 +154,9 @@ impl MainWindow {
 			frame,
 			doc_manager,
 			config,
+			visibility,
 			#[cfg(target_os = "windows")]
-			tray_state,
+			tray,
 			live_region_label,
 			_find_dialog: find_dialog,
 			#[cfg(target_os = "windows")]

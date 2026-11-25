@@ -17,31 +17,31 @@ bitflags! {
 	}
 }
 
+/// Every format is offered in "Open with" for its extensions without asking; these decide whether setup also offers to make Paperback its default app.
 pub struct InstallerMeta {
+	pub offered_as_default: bool,
 	pub default_checked: bool,
-	/// Reserve this for formats unlikely to already have another default app on Windows.
-	pub default_handler: bool,
 }
 
 impl InstallerMeta {
-	/// The right default for formats that other Windows apps already claim.
-	pub const OPT_IN: Self = Self { default_checked: false, default_handler: false };
-	pub const OPT_IN_HANDLER: Self = Self { default_checked: false, default_handler: true };
-	pub const CHECKED: Self = Self { default_checked: true, default_handler: false };
-	pub const CHECKED_HANDLER: Self = Self { default_checked: true, default_handler: true };
+	/// Kept to a few common formats, since a box for each of thirty-odd formats buried the ones people want.
+	pub const OPEN_WITH: Self = Self { offered_as_default: false, default_checked: false };
+	/// For a format another app likely opens already, such as a browser for PDFs.
+	pub const OFFERED: Self = Self { offered_as_default: true, default_checked: false };
+	pub const CHECKED: Self = Self { offered_as_default: true, default_checked: true };
 }
 
 pub struct FormatMeta {
 	pub name: &'static str,
 	pub extensions: &'static [&'static str],
-	/// Never `application/zip`: several formats share `.zip`, which gets its own standalone association, like the Windows installer's `assoc_zip` task.
+	/// Never `application/zip`: several formats share `.zip`, which gets its own standalone association.
 	pub mime_types: &'static [&'static str],
 	pub flags: ParserFlags,
 	pub installer: InstallerMeta,
 }
 
 macro_rules! formats {
-	(@installer) => { InstallerMeta::OPT_IN };
+	(@installer) => { InstallerMeta::OPEN_WITH };
 	(@installer $installer:ident) => { InstallerMeta::$installer };
 	($(
 		$(#[$attr:meta])*
@@ -110,6 +110,22 @@ formats! {
 		mime_types: ["application/x-os2-inf"],
 		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_IMAGES,
 	},
+	/// Qt Compressed Help, as `qhelpgenerator` builds it for Qt Assistant and Qt Creator.
+	/// `application/x-qt-qch` isn't a registered freedesktop.org type, so the Linux association dialog installs a shared-mime-info entry for it.
+	QCH {
+		name: "Qt Compressed Help files",
+		extensions: ["qch"],
+		mime_types: ["application/x-qt-qch"],
+		flags: SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_SECTIONS | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
+	},
+	/// Books saved by QRead, a discontinued reader; often the only copy left of a book it opened.
+	/// `application/x-qread` isn't a registered freedesktop.org type, so the Linux association dialog installs a shared-mime-info entry for it.
+	QRD {
+		name: "QRead books",
+		extensions: ["qrd"],
+		mime_types: ["application/x-qread"],
+		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS | SUPPORTS_PAGES,
+	},
 	/// Declared ahead of [`WORD`] so it gets first crack at the `.zip` both claim.
 	/// `application/x-daisy-opf` isn't a registered freedesktop.org type, so the Linux association dialog installs a shared-mime-info entry for it.
 	DAISY {
@@ -117,6 +133,13 @@ formats! {
 		extensions: ["opf", "zip"],
 		mime_types: ["application/x-daisy-opf"],
 		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_PAGES,
+	},
+	/// NLS BARD's braille books, a zip or a folder of BRF volumes with a braille package. After [`DAISY`], which keeps `.zip`'s association, and turns down a zip that's no DAISY book.
+	BARD_BRAILLE {
+		name: "BARD braille books",
+		extensions: ["bopf", "zip"],
+		mime_types: ["application/x-bopf+xml"],
+		flags: SUPPORTS_PAGES | SUPPORTS_TOC,
 	},
 	WORD {
 		name: "Word Documents",
@@ -137,18 +160,17 @@ formats! {
 		extensions: ["epub", "opf"],
 		mime_types: ["application/epub+zip"],
 		flags: SUPPORTS_SECTIONS | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_PAGES | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
-		installer: CHECKED_HANDLER,
+		installer: CHECKED,
 	},
 	FB2 {
 		name: "FictionBook Documents",
 		extensions: ["fb2", "zip"],
 		mime_types: ["application/x-fictionbook+xml"],
 		flags: SUPPORTS_TOC | SUPPORTS_SECTIONS,
-		installer: OPT_IN_HANDLER,
 	},
 	HTML {
 		name: "HTML Files",
-		extensions: ["htm", "html", "xhtml"],
+		extensions: ["htm", "html", "shtml", "xhtml"],
 		mime_types: ["text/html", "application/xhtml+xml"],
 		flags: SUPPORTS_TOC | SUPPORTS_LISTS,
 	},
@@ -157,7 +179,7 @@ formats! {
 		extensions: ["pdf"],
 		mime_types: ["application/pdf"],
 		flags: SUPPORTS_PAGES | SUPPORTS_TOC | SUPPORTS_LISTS | SUPPORTS_IMAGES | SUPPORTS_FIGURES,
-		installer: CHECKED,
+		installer: OFFERED,
 	},
 	/// `gz` is claimed for installed pages like `printf.3.gz`; the parser checks what is inside, so other gzipped files are turned away.
 	MAN {
@@ -252,7 +274,6 @@ formats! {
 		extensions: ["rtf"],
 		mime_types: ["application/rtf", "text/rtf"],
 		flags: SUPPORTS_PAGES,
-		installer: CHECKED,
 	},
 	TEXT {
 		name: "Text Files",
@@ -349,9 +370,15 @@ mod tests {
 		assert!(HTML.flags.contains(ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_LISTS));
 		assert_eq!(M4B.flags, ParserFlags::SUPPORTS_SECTIONS | ParserFlags::SUPPORTS_TOC | ParserFlags::SUPPORTS_AUDIO);
 		assert!(!HTML.flags.contains(ParserFlags::SUPPORTS_PAGES));
-		assert!(!TEXT.installer.default_checked, "unspecified installer settings default to OPT_IN");
-		assert!(EPUB.installer.default_checked && EPUB.installer.default_handler);
-		assert!(!FB2.installer.default_checked && FB2.installer.default_handler);
+		assert!(!TEXT.installer.offered_as_default, "unspecified installer settings default to OPEN_WITH");
+		assert!(EPUB.installer.offered_as_default && EPUB.installer.default_checked);
+		assert!(PDF.installer.offered_as_default && !PDF.installer.default_checked);
+	}
+
+	/// A `.shtml` page is HTML with server-side includes already filled in by the server, as on old sites such as sfw.org (#1310).
+	#[test]
+	fn html_covers_server_side_include_pages() {
+		assert_eq!(HTML.extensions, ["htm", "html", "shtml", "xhtml"]);
 	}
 
 	/// The Word parser marks lists, their items and pages, and the mobile apps only offer those to step through for a format that claims them.

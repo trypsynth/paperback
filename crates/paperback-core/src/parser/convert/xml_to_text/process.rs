@@ -11,6 +11,7 @@ use crate::{
 			format_spans::FormatKind,
 			formula::{LinkFormula, formula_text, is_xml_formula, place_in_collapsed, xml_formula_fragment},
 			image_text,
+			layout_table::is_layout_table,
 			line_builder::LineBuilder,
 			list_style::ListStyle,
 			table_text::table_render_bundle,
@@ -103,7 +104,8 @@ impl XmlToText {
 		{
 			self.id_positions.insert(id.to_string(), self.text.get_current_text_position());
 		}
-		if Self::tag_is(tag_name, "table") {
+		// A table laying out the page is read as the blocks in its cells, which the usual handling below does.
+		if Self::tag_is(tag_name, "table") && !is_layout_table(node) {
 			self.handle_table_xml(node);
 			return true;
 		}
@@ -333,9 +335,13 @@ impl XmlToText {
 		for line in render.lines {
 			self.text.push_finalized_line(&line);
 		}
+		// Over the table's start, which every id inside it was given above.
+		for (id, offset) in render.ids {
+			self.id_positions.insert(id, start_offset + offset);
+		}
 		for formula in render.formulas {
 			let offset = start_offset + formula.offset;
-			// Over the table's start, which every id inside it was given above.
+			// Over the table's start and its cells.
 			for id in formula.ids {
 				self.id_positions.insert(id, offset);
 			}

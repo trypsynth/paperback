@@ -71,6 +71,8 @@ Buying the mobile apps is what pays for the work. If you would rather not, the s
 <li>OpenDocument text and presentations</li>
 <li>PDF, including scanned PDFs through OCR</li>
 <li>PowerPoint (.pptx, .ppt)</li>
+<li>Qt help files (.qch)</li>
+<li>QRead books (.qrd)</li>
 <li>reStructuredText</li>
 <li>RTF</li>
 <li>Windows Write (.wri)</li>

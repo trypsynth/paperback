@@ -147,7 +147,7 @@ fn read_ini(ini_path: &Path) -> ConfigData {
 			continue;
 		}
 		let mut doc = DocumentConfig {
-			path: path.clone(),
+			path,
 			last_position: saved_position(config.read_long("last_position", 0)),
 			opened: config.read_bool("opened", false),
 			format: config.read_string("format", ""),

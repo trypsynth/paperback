@@ -2,18 +2,20 @@ import SwiftUI
 import AVFoundation
 
 struct RuleEditSheet: View {
-	let original: TtsRule?
-	let onSave: (TtsRule) -> Void
+	let original: SpeechRule?
+	let onSave: (SpeechRule) -> Void
 
 	@Environment(AppViewModel.self) private var viewModel
 	@Environment(\.dismiss) private var dismiss
-	@State private var rule: TtsRule
+	@State private var rule: SpeechRule
 
-	init(rule: TtsRule?, onSave: @escaping (TtsRule) -> Void) {
+	init(rule: SpeechRule?, onSave: @escaping (SpeechRule) -> Void) {
 		self.original = rule
 		self.onSave = onSave
-		_rule = State(initialValue: rule ?? TtsRule())
+		_rule = State(initialValue: rule ?? SpeechRule(enabled: true, scope: .word, matchType: .literal, pattern: "", replacement: "", wholeWord: false, voiceFilter: .all))
 	}
+
+	private var problem: RuleProblem? { viewModel.configManager.speechRuleProblem(rule: rule) }
 
 	var body: some View {
 		NavigationStack {
@@ -23,9 +25,9 @@ struct RuleEditSheet: View {
 					// TRANSLATORS: Label for the picker choosing whether a rule applies to a whole word or a whole paragraph
 					Picker(t("Scope"), selection: $rule.scope) {
 						// TRANSLATORS: Rule scope option: the rule matches within a single word
-						Text(t("Word")).tag(TtsRule.Scope.word)
+						Text(t("Word")).tag(RuleScope.word)
 						// TRANSLATORS: Rule scope option: the rule matches within a whole paragraph
-						Text(t("Paragraph")).tag(TtsRule.Scope.paragraph)
+						Text(t("Paragraph")).tag(RuleScope.paragraph)
 					}
 					.pickerStyle(.wheel)
 				}
@@ -56,9 +58,14 @@ struct RuleEditSheet: View {
 							get: { rule.matchType == .regex },
 							set: { rule.matchType = $0 ? .regex : .literal }
 						))
+						if case .invalidRegex(let reason) = problem {
+							// TRANSLATORS: Shown when a speech dictionary rule's regular expression doesn't parse; %s is why
+							Text(t("The regular expression isn't valid: %s").replacingOccurrences(of: "%s", with: reason))
+								.foregroundStyle(.red)
+						}
 					}
 					// TRANSLATORS: Toggle for whether this text-substitution rule is currently active
-					Toggle(t("Enabled"), isOn: $rule.isEnabled)
+					Toggle(t("Enabled"), isOn: $rule.enabled)
 				}
 
 				// TRANSLATORS: Section header for choosing which TTS voices a rule applies to
@@ -89,7 +96,7 @@ struct RuleEditSheet: View {
 						onSave(rule)
 						dismiss()
 					}
-					.disabled(rule.pattern.isEmpty)
+					.disabled(problem != nil)
 				}
 			}
 			.navigationDestination(for: String.self) { _ in
@@ -103,7 +110,7 @@ struct RuleEditSheet: View {
 }
 
 private struct VoiceFilterPicker: View {
-	@Binding var filter: TtsRule.VoiceFilter
+	@Binding var filter: VoiceFilter
 	let voices: [AVSpeechSynthesisVoice]
 	@Environment(\.dismiss) private var dismiss
 
@@ -119,7 +126,7 @@ private struct VoiceFilterPicker: View {
 				}
 			}
 			ForEach(sections) { section in
-				let langFilter = TtsRule.VoiceFilter.language(section.language)
+				let langFilter = VoiceFilter.language(section.language)
 				Section(languageLabel(section.language)) {
 					filterRow(
 						label: "All \(languageLabel(section.language)) voices",

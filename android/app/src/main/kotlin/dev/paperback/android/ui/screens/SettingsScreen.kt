@@ -14,8 +14,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.*
@@ -30,6 +33,7 @@ import dev.paperback.android.ui.components.PickerMenuItem
 import dev.paperback.android.ui.components.pickerAnchorColors
 import dev.paperback.android.ui.state.MainScreenViewModel
 import dev.paperback.android.ui.state.ReaderSettings
+import uniffi.paperback.PageLayout
 import kotlin.math.roundToInt
 
 private val MIN_SCALE = ReaderSettings.MIN_TEXT_SCALE_PERCENT.toFloat()
@@ -55,7 +59,7 @@ private const val PAUSE_STEPS = (MAX_PARAGRAPH_PAUSE_MS - MIN_PARAGRAPH_PAUSE_MS
 /** The readability choices share the desktop's index meanings, so the stored index is the setting. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ChoiceSetting(label: String, options: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit) {
+internal fun ChoiceSetting(label: String, options: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit) {
 	var expanded by remember { mutableStateOf(false) }
 	val selectedLabel = options.getOrElse(selectedIndex) { options.first() }
 	ExposedDropdownMenuBox(
@@ -140,9 +144,27 @@ private fun LanguageRow() {
 	}
 }
 
+@Composable
+private fun SpeechDictionaryRow(modifier: Modifier, onOpen: () -> Unit) {
+	Column(modifier = modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onOpen).padding(vertical = 8.dp)) {
+		// TRANSLATORS: Settings row opening the speech dictionary, the rules that change how words are read aloud
+		Text(t("Speech Dictionary"))
+		// TRANSLATORS: Footer under the Speech Dictionary row in Settings, explaining what its rules do
+		Text(
+			t("Change how words are read aloud, without changing the document."),
+			style = MaterialTheme.typography.bodySmall,
+			color = MaterialTheme.colorScheme.onSurfaceVariant
+		)
+	}
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -> Unit) {
+fun SettingsScreen(
+	viewModel: MainScreenViewModel = viewModel(),
+	onOpenSpeechDictionary: () -> Unit,
+	onDismiss: () -> Unit
+) {
 	val settings = viewModel.settings
 	val restorePreviousDocuments by settings.restorePreviousDocuments.state.collectAsStateWithLifecycle()
 	val useInAppFileBrowser by settings.useInAppFileBrowser.state.collectAsStateWithLifecycle()
@@ -154,6 +176,7 @@ fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -
 	val paragraphSpacing by settings.paragraphSpacing.state.collectAsStateWithLifecycle()
 	val textAlignment by settings.textAlignment.state.collectAsStateWithLifecycle()
 	val highContrastText by settings.highContrastText.state.collectAsStateWithLifecycle()
+	val pageLayout by settings.pageLayout.state.collectAsStateWithLifecycle()
 	val currentSpeechRate by viewModel.ttsManager.currentSpeechRate.collectAsStateWithLifecycle()
 	val currentPitch by viewModel.ttsManager.currentPitch.collectAsStateWithLifecycle()
 	val paragraphPauseMs by viewModel.ttsManager.paragraphPauseMs.collectAsStateWithLifecycle()
@@ -165,6 +188,15 @@ fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -
 
 	var engineExpanded by remember { mutableStateOf(false) }
 	var voiceExpanded by remember { mutableStateOf(false) }
+	// Saved across the trip, so coming back lands on the row that left rather than the top of Settings.
+	var openedSpeechDictionary by rememberSaveable { mutableStateOf(false) }
+	val speechDictionaryFocus = remember { FocusRequester() }
+	LaunchedEffect(Unit) {
+		if (openedSpeechDictionary) {
+			openedSpeechDictionary = false
+			runCatching { speechDictionaryFocus.requestFocus() }
+		}
+	}
 
 	Surface(
 		modifier = Modifier.fillMaxSize().semantics { paneTitle = t("Settings") },
@@ -275,6 +307,21 @@ fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -
 					t("With TalkBack, swipe up on the play button to move forward, or down to move back."),
 					style = MaterialTheme.typography.bodySmall,
 					color = MaterialTheme.colorScheme.onSurfaceVariant
+				)
+				Spacer(modifier = Modifier.height(16.dp))
+				ChoiceSetting(
+					// TRANSLATORS: Label for the picker choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for documents without a page layout of their own
+					label = t("Page layout of PDF and XPS documents"),
+					options = listOf(
+						// TRANSLATORS: Page layout choice in Settings: PDF and XPS pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+						t("Automatic"),
+						// TRANSLATORS: Page layout choice in Settings: the document's own reading order is ignored and the columns of each page are found from where the text sits, then read one after the other. It suits documents whose text is read out of order, such as two-column layouts
+						t("By columns, ignoring the document's own order"),
+						// TRANSLATORS: Page layout choice in Settings: like reading by columns, but every line is kept apart instead of joined into paragraphs, which suits code, poetry and lists of clauses whose line breaks are the content
+						t("By columns, keeping every line apart")
+					),
+					selectedIndex = PageLayout.entries.indexOf(pageLayout),
+					onSelect = { viewModel.setPageLayout(PageLayout.entries[it]) }
 				)
 				// Per-app languages only exist from Android 13; before that the only language is the phone's.
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -506,6 +553,14 @@ fun SettingsScreen(viewModel: MainScreenViewModel = viewModel(), onDismiss: () -
 						steps = 0
 					)
 				}
+				Spacer(modifier = Modifier.height(16.dp))
+				SpeechDictionaryRow(
+					modifier = Modifier.focusRequester(speechDictionaryFocus),
+					onOpen = {
+						openedSpeechDictionary = true
+						onOpenSpeechDictionary()
+					}
+				)
 				Spacer(modifier = Modifier.height(16.dp))
 				Row(
 					modifier = Modifier

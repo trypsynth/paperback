@@ -4,7 +4,7 @@ use zip::ZipArchive;
 
 use super::{XpsParser, read_document};
 use crate::{
-	document::{DocLen, DocPos, Document, Marker, MarkerType, ParserContext, is_heading_marker},
+	document::{DocLen, DocPos, Document, Marker, MarkerType, PageLayout, ParserContext, is_heading_marker},
 	parser::{
 		Parser, ParserRegistry,
 		xps::package::{Package, zip_bytes},
@@ -514,7 +514,7 @@ fn wrapped_lines_join_into_paragraphs_on_a_page_with_no_structure() {
 #[test]
 fn lines_stay_apart_when_joining_is_off() {
 	let mut context = context();
-	context.join_pdf_paragraphs = false;
+	context.page_layout = PageLayout::Lines;
 	assert_eq!(unstructured_with(&[unstructured_page()], &context).buffer.content.lines().count(), 4);
 }
 

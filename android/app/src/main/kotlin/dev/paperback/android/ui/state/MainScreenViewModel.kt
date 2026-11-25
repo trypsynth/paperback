@@ -34,12 +34,16 @@ import uniffi.paperback.DocumentSession
 import uniffi.paperback.ExportFormat
 import uniffi.paperback.HeadingTreeFfi
 import uniffi.paperback.LinkListFfi
+import uniffi.paperback.PageLayout
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Locale
 
 private const val ACTIVE_DOCUMENT_KEY = "active_document"
+
+// The session offers no length of its own, but a hundred percent in is the end of the text.
+private fun DocumentSession.textLength(): Long = positionFromPercent(100)
 
 class MainScreenViewModel(application: Application) : AndroidViewModel(application) {
 	private val context get() = getApplication<Application>()
@@ -99,6 +103,14 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 
 	val navigation = NavigationRouter()
 
+	val bookmarks =
+		Bookmarks(config, reading, activeTab = { uiState.value.activeTab }, announcer = ::announceForAccessibility)
+
+	fun openBookmarks() {
+		if (uiState.value.activeTab == null) return
+		navigation.bookmarksRequest.request()
+	}
+
 	/** Downloads go where file managers can reach them, falling back to private storage when shared storage is missing. */
 	val links = LinkOpener(
 		viewModelScope,
@@ -128,6 +140,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 	fun confirmImportSettings() {
 		val path = _importPromptPath.value ?: return
 		config.importDocumentSettings(path)
+		bookmarks.refresh()
 		val tab = uiState.value.activeTab
 		if (tab != null) {
 			val savedPosition = config.getDocumentPosition(tab.documentUri)
@@ -243,13 +256,20 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 		}
 	}
 
+	/** An open tab of it is closed first, as on Windows, so it isn't left open or brought back at the next launch, and closing it can't write back what was just removed. */
 	fun removeRecentDocument(uriString: String) {
+		val index = currentTabs.indexOfFirst { it.documentUri == uriString }
+		val wasActive = index == currentActiveIndex
+		val closedTab = if (index != -1) removeTabAt(index) else null
 		viewModelScope.launch(Dispatchers.IO) {
+			if (closedTab != null) {
+				forgetClosedTabIO(closedTab)
+			}
 			config.removeDocumentHistory(uriString)
 			config.saveSoon()
 			updateRecentDocuments()
 			withContext(Dispatchers.Main) {
-				emitTabsState()
+				if (closedTab != null) showTabAfterClose(wasActive) else emitTabsState()
 			}
 		}
 	}
@@ -293,30 +313,51 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 
 	fun closeTab(index: Int) {
 		if (index in currentTabs.indices) {
-			val closedTab = currentTabs.removeAt(index)
+			val wasActive = index == currentActiveIndex
+			val closedTab = removeTabAt(index)
 			viewModelScope.launch(Dispatchers.IO) {
-				config.removeOpenedDocument(closedTab.documentUri)
-				config.setDocumentOpened(closedTab.documentUri, false)
+				forgetClosedTabIO(closedTab)
 				config.saveSoon()
-				documentCache.directoryFor(closedTab.documentUri).deleteRecursively()
 				updateRecentDocuments()
 				withContext(Dispatchers.Main) {
-					currentActiveIndex = if (currentTabs.isEmpty()) -1 else currentActiveIndex.coerceIn(0, currentTabs.size - 1)
-					if (currentActiveIndex != -1) {
-						persistActiveDocument(currentTabs[currentActiveIndex].docKey)
-					}
-					emitTabsState()
-					if (currentActiveIndex != -1) {
-						reading.setPosition(currentTabs[currentActiveIndex].savedPosition)
-						updateTtsMetadata()
-						reading.refreshSegmentPreview()
-					} else {
-						reading.setPosition(0)
-						reading.clearSegment()
-						updateTtsMetadata()
-					}
+					showTabAfterClose(wasActive)
 				}
 			}
+		}
+	}
+
+	private fun forgetClosedTabIO(closedTab: DocumentTabState) {
+		config.removeOpenedDocument(closedTab.documentUri)
+		config.setDocumentOpened(closedTab.documentUri, false)
+		documentCache.directoryFor(closedTab.documentUri).deleteRecursively()
+	}
+
+	// A tab before the active one shifts it down, so the index follows it rather than landing on the next document.
+	private fun removeTabAt(index: Int): DocumentTabState {
+		val tab = currentTabs.removeAt(index)
+		if (index < currentActiveIndex) currentActiveIndex--
+		currentActiveIndex = if (currentTabs.isEmpty()) -1 else currentActiveIndex.coerceIn(0, currentTabs.size - 1)
+		return tab
+	}
+
+	private fun showTabAfterClose(wasActive: Boolean) {
+		// A tab's savedPosition is where it was opened, so moving the reader there would lose the active document's place.
+		if (!wasActive) {
+			emitTabsState()
+			return
+		}
+		if (currentActiveIndex != -1) {
+			persistActiveDocument(currentTabs[currentActiveIndex].docKey)
+		}
+		emitTabsState()
+		if (currentActiveIndex != -1) {
+			reading.setPosition(currentTabs[currentActiveIndex].savedPosition)
+			updateTtsMetadata()
+			reading.refreshSegmentPreview()
+		} else {
+			reading.setPosition(0)
+			reading.clearSegment()
+			updateTtsMetadata()
 		}
 	}
 
@@ -383,9 +424,10 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 			}
 
 			val docKey = config.getDocKey(uriString)
-			val savedPosition = config.getDocumentPosition(uriString)
 			val password = providedPassword ?: config.getDocumentPassword(uriString)
-			val session = DocumentSession.newFfi(absolutePath, password, "", false)
+			val session = DocumentSession.newFfi(absolutePath, password, "", false, config.pageLayoutFor(uriString))
+			session.startPosition()?.let { config.seedDocumentPosition(uriString, it) }
+			val savedPosition = config.getDocumentPosition(uriString)
 			if (providedPassword != null) {
 				config.setDocumentPassword(uriString, providedPassword)
 				config.saveSoon()
@@ -407,7 +449,10 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 				initialScrollIndex = initialScrollIndex,
 				savedPosition = savedPosition,
 				hasAudio = session.hasAudioFfi(),
-				isAudioOnly = session.isAudioOnlyFfi()
+				isAudioOnly = session.isAudioOnlyFfi(),
+				localPath = absolutePath,
+				hasPageLayout = config.pageLayoutAppliesTo(absolutePath),
+				ownPageLayout = config.getDocumentPageLayout(uriString)
 			)
 		} catch (e: Exception) {
 			val msg = e.message ?: ""
@@ -468,6 +513,65 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 		}
 	}
 
+	fun setPageLayout(layout: PageLayout) {
+		if (layout == settings.pageLayout.state.value) return
+		settings.pageLayout.set(layout)
+		rereadTabs(currentTabs.filter { it.hasPageLayout && it.ownPageLayout == null })
+	}
+
+	fun setDocumentPageLayout(layout: PageLayout?) {
+		val tab = currentTabs.getOrNull(currentActiveIndex) ?: return
+		if (!tab.hasPageLayout) return
+		val before = config.pageLayoutFor(tab.documentUri)
+		config.setDocumentPageLayout(tab.documentUri, layout)
+		config.saveSoon()
+		val updated = tab.copy(ownPageLayout = layout)
+		currentTabs[currentActiveIndex] = updated
+		emitTabsState()
+		if (config.pageLayoutFor(tab.documentUri) != before) rereadTabs(listOf(updated))
+	}
+
+	// Read again from the copy already parsed, so each tab stays where it is and keeps its reader's place.
+	private fun rereadTabs(tabs: List<DocumentTabState>) {
+		if (tabs.isEmpty()) return
+		viewModelScope.launch(Dispatchers.IO) {
+			for (tab in tabs) {
+				val uri = tab.documentUri
+				val layout = config.pageLayoutFor(uri)
+				val session = try {
+					DocumentSession.newFfi(tab.localPath, config.getDocumentPassword(uri), "", false, layout)
+				} catch (_: Exception) {
+					continue
+				}
+				withContext(Dispatchers.Main) {
+					val index = currentTabs.indexOfFirst { it.docKey == tab.docKey }
+					// Closed meanwhile, or changed again and so read by a later pass.
+					if (index == -1 || config.pageLayoutFor(uri) != layout) return@withContext
+					val current = currentTabs[index]
+					val isActive = index == currentActiveIndex
+					val oldPosition = if (isActive) reading.ttsPosition.value else config.getDocumentPosition(uri)
+					val position = positionAfterReread(oldPosition, current.session.textLength(), session.textLength())
+					currentTabs[index] = current.copy(
+						session = session,
+						title = session.title().ifBlank { current.fileName },
+						author = session.author(),
+						lineCount = session.lineCount(),
+						toc = session.getToc(),
+						initialScrollIndex = lineIndexFor(session.lineFromPosition(position)),
+						savedPosition = position
+					)
+					emitTabsState()
+					if (isActive) {
+						reading.updateTtsPosition(position)
+					} else {
+						config.setDocumentPosition(uri, position)
+						config.saveSoon()
+					}
+				}
+			}
+		}
+	}
+
 	fun exportCurrentSettings(): Boolean {
 		val tab = uiState.value.activeTab ?: return false
 		return settingsTransfer.exportToSidecar(tab.documentUri)
@@ -494,6 +598,7 @@ class MainScreenViewModel(application: Application) : AndroidViewModel(applicati
 	fun importSettingsFromUri(context: Context, sourceUri: Uri): Boolean {
 		val tab = uiState.value.activeTab ?: return false
 		if (!settingsTransfer.importFrom(context, tab.documentUri, sourceUri)) return false
+		bookmarks.refresh()
 		val savedPosition = config.getDocumentPosition(tab.documentUri)
 		if (savedPosition > 0L) {
 			reading.updateTtsPosition(savedPosition)

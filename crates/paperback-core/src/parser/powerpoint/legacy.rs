@@ -12,7 +12,7 @@ use super::{persist::Presentation, pp95};
 use crate::{
 	document::{Document, DocumentBuffer, Marker, MarkerType, ParserContext, TocItem},
 	parser::{
-		PASSWORD_REQUIRED_ERROR_PREFIX,
+		PasswordRequired,
 		util::{path::extract_title_from_path, slides::no_text_placeholder},
 	},
 	t,
@@ -115,7 +115,7 @@ fn decrypt_if_encrypted(compound: &mut CompoundFile<File>, context: &ParserConte
 	let Some(password) = context.password.as_deref() else {
 		tracing::debug!(path = %context.file_path, "legacy ppt file is encrypted, asking for a password");
 		// TRANSLATORS: Error detail shown when an encrypted PowerPoint file needs a password (the internal sentinel prefix before it is not translated)
-		anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} {}", t("File is encrypted and requires a password"));
+		anyhow::bail!(PasswordRequired(t("File is encrypted and requires a password")));
 	};
 	let decrypted = decrypt_from_file(&context.file_path, password)
 		// TRANSLATORS: Error shown when decrypting an encrypted Office file fails; {} is the underlying error

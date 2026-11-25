@@ -88,7 +88,7 @@ impl DocumentManager {
 			let path_str = path.to_string_lossy();
 			let forced_extension = config.get_document_format(&path_str);
 			let password = config.get_document_password(&path_str);
-			let settings = parse_settings(&config);
+			let settings = parse_settings(&config, &path_str);
 			drop(config);
 			(password, forced_extension, settings)
 		};
@@ -152,7 +152,11 @@ impl DocumentManager {
 		let config = self.config.lock().unwrap();
 		let mut session = session;
 		// Before the position is read, since it was saved against the text OCR put in.
-		restore_saved_pages(&mut session, &saved_pages_of(&local_path), joins_recognized_text(&local_path, &config));
+		restore_saved_pages(
+			&mut session,
+			&saved_pages_of(&local_path),
+			joins_recognized_text(&local_path, &path.to_string_lossy(), &config),
+		);
 		let word_wrap = config.get_app_bool("word_wrap", false);
 		let edge_beep = config.get_app_bool("edge_beep", false);
 		let plain_text = config.get_app_bool("plain_text", false);
@@ -168,6 +172,9 @@ impl DocumentManager {
 		text_ctrl.add_to_sizer(sizer);
 		panel.set_sizer(sizer, true);
 		let path_str = path.to_string_lossy();
+		if let Some(start) = session.start_position() {
+			config.seed_document_position(&path_str, start);
+		}
 		let doc_len = session.document_len();
 		let initial_pos = config.get_validated_document_position(&path_str, doc_len.as_pos()).unwrap_or_default();
 		let window = load_document_into_ctrl(text_ctrl, &session, plain_text);

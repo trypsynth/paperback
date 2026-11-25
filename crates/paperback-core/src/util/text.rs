@@ -57,6 +57,32 @@ pub fn url_decode(input: &str) -> String {
 
 #[must_use]
 pub fn collapse_whitespace(input: &str) -> String {
+	// Between braille cells a zero-width space only marks where a line may break, as DAISY Pipeline writes one after a hyphen in eBraille, so it is no space.
+	if input.contains('\u{200B}') {
+		let kept = without_breaks_between_cells(input);
+		if kept.len() != input.len() {
+			return collapse(&kept);
+		}
+	}
+	collapse(input)
+}
+
+fn without_breaks_between_cells(input: &str) -> String {
+	let is_cell = |ch: Option<char>| ch.is_some_and(|ch| ('\u{2800}'..='\u{28FF}').contains(&ch));
+	let chars: Vec<char> = input.chars().collect();
+	chars
+		.iter()
+		.enumerate()
+		.filter(|&(index, &ch)| {
+			ch != '\u{200B}'
+				|| !(is_cell(index.checked_sub(1).map(|before| chars[before]))
+					&& is_cell(chars.get(index + 1).copied()))
+		})
+		.map(|(_, &ch)| ch)
+		.collect()
+}
+
+fn collapse(input: &str) -> String {
 	let mut result = String::with_capacity(input.len());
 	let mut in_leading = true;
 	let mut pending_space = false;
@@ -211,6 +237,11 @@ mod tests {
 	#[case("  spaces  ", "  spaces ")]
 	#[case("hello\u{00A0}\u{00A0}world", "hello world")]
 	#[case("hello\u{200B}\u{200B}world", "hello world")]
+	#[case(
+		"\u{2817}\u{2811}\u{2824}\u{200B}\u{2825}\u{280E}\u{2811}",
+		"\u{2817}\u{2811}\u{2824}\u{2825}\u{280E}\u{2811}"
+	)]
+	#[case("\u{2824}\u{200B} \u{2825}", "\u{2824} \u{2825}")]
 	#[case("\u{00A0}\u{200B}alpha\t \n beta\u{00A0}", "  alpha beta ")]
 	fn test_collapse_whitespace(#[case] input: &str, #[case] expected: &str) {
 		assert_eq!(collapse_whitespace(input), expected);

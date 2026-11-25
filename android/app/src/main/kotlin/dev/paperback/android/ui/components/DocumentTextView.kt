@@ -55,7 +55,9 @@ fun DocumentTextView(
 	onLineIndexChange: (Int?) -> Unit,
 	activeSearchQuery: String?,
 	activeSearchOptions: SearchOptionsFfi?,
-	onCloseSearch: () -> Unit
+	onCloseSearch: () -> Unit,
+	/** TalkBack actions for the line starting at a position, such as marking it with a bookmark. */
+	lineActions: (Long) -> List<CustomAccessibilityAction> = { emptyList() }
 ) {
 	val context = LocalContext.current
 	val scope = rememberCoroutineScope()
@@ -186,31 +188,35 @@ fun DocumentTextView(
 				}
 				val currentOptions = activeSearchOptions
 				val currentQuery = activeSearchQuery
-				if (currentQuery != null && currentOptions != null) {
-					textModifier = textModifier.semantics {
-						customActions = listOf(
-							// TRANSLATORS: Accessibility action on a text line to jump to the next search match
-							CustomAccessibilityAction(t("Find Next")) {
-								val nextLine = (index + 2).toLong().coerceAtMost(docState.lineCount)
-								val searchPos = docState.session.positionFromLine(nextLine)
-								val res = docState.session.searchFfi(currentQuery, searchPos, currentOptions.copy(forward = true))
-								if (res.found) goToPosition(res.position)
-								true
-							},
-							// TRANSLATORS: Accessibility action on a text line to jump to the previous search match
-							CustomAccessibilityAction(t("Find Previous")) {
-								val searchPos = docState.session.positionFromLine((index + 1).toLong())
-								val res = docState.session.searchFfi(currentQuery, searchPos, currentOptions.copy(forward = false))
-								if (res.found) goToPosition(res.position)
-								true
-							},
-							// TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
-							CustomAccessibilityAction(t("Close Search")) {
-								onCloseSearch()
-								true
-							}
-						)
-					}
+				val searchActions = if (currentQuery != null && currentOptions != null) {
+					listOf(
+						// TRANSLATORS: Accessibility action on a text line to jump to the next search match
+						CustomAccessibilityAction(t("Find Next")) {
+							val nextLine = (index + 2).toLong().coerceAtMost(docState.lineCount)
+							val searchPos = docState.session.positionFromLine(nextLine)
+							val res = docState.session.searchFfi(currentQuery, searchPos, currentOptions.copy(forward = true))
+							if (res.found) goToPosition(res.position)
+							true
+						},
+						// TRANSLATORS: Accessibility action on a text line to jump to the previous search match
+						CustomAccessibilityAction(t("Find Previous")) {
+							val searchPos = docState.session.positionFromLine((index + 1).toLong())
+							val res = docState.session.searchFfi(currentQuery, searchPos, currentOptions.copy(forward = false))
+							if (res.found) goToPosition(res.position)
+							true
+						},
+						// TRANSLATORS: Accessibility action on a text line to dismiss the in-document search
+						CustomAccessibilityAction(t("Close Search")) {
+							onCloseSearch()
+							true
+						}
+					)
+				} else {
+					emptyList()
+				}
+				val allActions = searchActions + lineActions(pos)
+				if (allActions.isNotEmpty()) {
+					textModifier = textModifier.semantics { customActions = allActions }
 				}
 				val textStyle = if (isHeading) {
 					// Leaving line height at the body value crowds the lines of a heading that wraps.

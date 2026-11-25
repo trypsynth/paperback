@@ -7,7 +7,8 @@ struct TextModeView: View {
 	var body: some View {
 		if let model = viewModel.bookModel(for: tab) {
 			ReadingScreen(model: model, reading: viewModel.reading, style: ReadingStyle(scalePercent: viewModel.textScalePercent, lineSpacingChoice: viewModel.lineSpacingChoice, paragraphSpacingChoice: viewModel.paragraphSpacingChoice, alignmentChoice: viewModel.textAlignmentChoice, highContrast: viewModel.highContrastText))
-				.id(tab.id)
+				// A document read again with a new page layout gets a new model, which needs a new reading screen.
+				.id(ObjectIdentifier(model))
 		} else {
 			Text("No document open.")
 				.padding()
@@ -32,6 +33,19 @@ private struct ReadingScreen: UIViewControllerRepresentable {
 		}
 		reading.onTextModeFollow = { [weak controller] position in
 			controller?.follow(position: position)
+		}
+		let bookView = controller.bookView
+		bookView.bookmarkUnits = { [weak reading, weak model] in
+			guard let reading, let model else { return [] }
+			return reading.bookmarkUnits(in: model)
+		}
+		bookView.bookmarkValue = { [weak reading, weak model] unit in
+			guard let reading, let model else { return nil }
+			return reading.bookmarkValue(forUnit: unit, in: model)
+		}
+		bookView.bookmarkActions = { [weak reading, weak model] unit in
+			guard let reading, let model else { return [] }
+			return reading.bookmarkActions(forUnit: unit, in: model)
 		}
 		return controller
 	}

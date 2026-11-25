@@ -186,7 +186,7 @@ pub fn handle_go_to_time(
 	announce(live_region_label, message);
 }
 
-pub fn handle_announce_chapter_time(
+pub fn handle_announce_chapter_progress(
 	doc_manager: &Rc<Mutex<DocumentManager>>,
 	live_region_label: StaticText,
 	from_keyboard: bool,
@@ -194,17 +194,12 @@ pub fn handle_announce_chapter_time(
 	let message = {
 		let dm = doc_manager.lock().unwrap();
 		let Some(tab) = dm.active_tab() else { return };
-		if tab.audio_player.is_none() {
-			// TRANSLATORS: Announced when trying to seek audio on a document that has none
-			t("This document has no audio.")
-		} else {
-			navigation::audio_elapsed_ms(tab).and_then(|ms| tab.session.audio_chapter_announcement(ms)).unwrap_or_else(
-				|| {
-					// TRANSLATORS: Announced when asking for the time in an audiobook's chapter while the length of its files isn't known, such as in many DAISY books
-					t("This book doesn't say how long its audio runs.")
-				},
-			)
-		}
+		tab.session.chapter_announcement(navigation::doc_caret(tab), navigation::audio_elapsed_ms(tab)).unwrap_or_else(
+			|| {
+				// TRANSLATORS: Announced when asking for the time in an audiobook's chapter while the length of its files isn't known, such as in many DAISY books
+				t("This book doesn't say how long its audio runs.")
+			},
+		)
 	};
 	announce_for_command(live_region_label, from_keyboard, message);
 }

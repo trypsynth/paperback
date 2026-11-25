@@ -1,6 +1,7 @@
 use std::{collections::HashMap, sync::OnceLock};
 
 pub use paperback_formats::ParserFlags;
+use serde::{Deserialize, Serialize};
 
 use crate::{audio::AudioTimeline, parser::braille};
 
@@ -32,6 +33,8 @@ pub struct Document {
 	pub audio: Option<AudioTimeline>,
 	/// The text only anchors audio (a zip of bare narration files), so read-aloud UIs navigate by time, as text units would have nothing to land on.
 	pub audio_only: bool,
+	/// Where the file says reading left off, as QRead's books keep it; used only until Paperback has a position of its own for the document.
+	pub start_position: Option<DocPos>,
 }
 
 impl Document {
@@ -48,6 +51,7 @@ impl Document {
 			stats: OnceLock::new(),
 			audio: None,
 			audio_only: false,
+			start_position: None,
 		}
 	}
 
@@ -92,24 +96,65 @@ impl Default for Document {
 	}
 }
 
+/// How a document laid out as pages, such as a PDF, is turned into reading order and paragraphs.
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum PageLayout {
+	/// The document's own tags where it has them, otherwise the order it was drawn in, with wrapped lines joined.
+	#[default]
+	Automatic,
+	/// For tags or a drawing order that jumps around the page: columns are found from where the text sits.
+	Columns,
+	/// As `Columns`, but every line kept apart, for code listings, poetry and clauses whose line breaks are the content.
+	Lines,
+}
+
+impl PageLayout {
+	pub const ALL: [Self; 3] = [Self::Automatic, Self::Columns, Self::Lines];
+
+	#[must_use]
+	pub const fn joins_lines(self) -> bool {
+		!matches!(self, Self::Lines)
+	}
+
+	#[must_use]
+	pub const fn reads_by_columns(self) -> bool {
+		!matches!(self, Self::Automatic)
+	}
+
+	/// Whether the document at `path` is of a format read off laid-out pages, the only ones a page layout changes.
+	#[must_use]
+	pub fn applies_to(path: &str) -> bool {
+		let extension =
+			std::path::Path::new(path).extension().and_then(|extension| extension.to_str()).unwrap_or_default();
+		[&paperback_formats::PDF, &paperback_formats::XPS]
+			.iter()
+			.any(|format| format.extensions.iter().any(|known| extension.eq_ignore_ascii_case(known)))
+	}
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct ParseSettings {
 	pub render_tables_inline: bool,
-	pub join_pdf_paragraphs: bool,
+	pub page_layout: PageLayout,
 	pub strip_running_text: bool,
 	pub markdown_dollar_math: bool,
 	/// The liblouis table Braille Ready Files and PEF books are back-translated with, one of [`crate::parser::braille::braille_tables`].
 	pub braille_table: &'static str,
+	/// Braille books keep their braille, as Unicode braille, for a reader on a braille display, whose screen reader would otherwise translate the print back into braille.
+	pub keep_braille: bool,
 }
 
 impl Default for ParseSettings {
 	fn default() -> Self {
 		Self {
 			render_tables_inline: true,
-			join_pdf_paragraphs: true,
+			page_layout: PageLayout::Automatic,
 			strip_running_text: true,
 			markdown_dollar_math: true,
 			braille_table: braille::DEFAULT_TABLE,
+			keep_braille: false,
 		}
 	}
 }
@@ -120,13 +165,14 @@ pub struct ParserContext {
 	pub password: Option<String>,
 	pub forced_extension: Option<String>,
 	pub render_tables_inline: bool,
-	/// Off is for documents whose line breaks are the content, such as code listings and poetry.
-	pub join_pdf_paragraphs: bool,
+	pub page_layout: PageLayout,
 	/// A judgement, not a fact: a line repeating on four or more pages can be the tail of a sentence that falls at a page break.
 	pub strip_running_text: bool,
 	/// Off is for dollars that are not math, such as `$HOME/bin:$PATH` in a README, since Markdown can't say which the writer meant.
 	pub markdown_dollar_math: bool,
+	/// Still read when `keep_braille` is on, since it says which braille ASCII a BRF is written in.
 	pub braille_table: &'static str,
+	pub keep_braille: bool,
 }
 
 impl ParserContext {
@@ -137,10 +183,11 @@ impl ParserContext {
 			password: None,
 			forced_extension: None,
 			render_tables_inline: true,
-			join_pdf_paragraphs: true,
+			page_layout: PageLayout::Automatic,
 			strip_running_text: true,
 			markdown_dollar_math: true,
 			braille_table: braille::DEFAULT_TABLE,
+			keep_braille: false,
 		}
 	}
 
@@ -169,8 +216,8 @@ impl ParserContext {
 	}
 
 	#[must_use]
-	pub const fn with_join_pdf_paragraphs(mut self, value: bool) -> Self {
-		self.join_pdf_paragraphs = value;
+	pub const fn with_page_layout(mut self, layout: PageLayout) -> Self {
+		self.page_layout = layout;
 		self
 	}
 
@@ -181,12 +228,19 @@ impl ParserContext {
 	}
 
 	#[must_use]
+	pub const fn with_keep_braille(mut self, keep: bool) -> Self {
+		self.keep_braille = keep;
+		self
+	}
+
+	#[must_use]
 	pub const fn with_parse_settings(mut self, settings: ParseSettings) -> Self {
 		self.render_tables_inline = settings.render_tables_inline;
-		self.join_pdf_paragraphs = settings.join_pdf_paragraphs;
+		self.page_layout = settings.page_layout;
 		self.strip_running_text = settings.strip_running_text;
 		self.markdown_dollar_math = settings.markdown_dollar_math;
 		self.braille_table = settings.braille_table;
+		self.keep_braille = settings.keep_braille;
 		self
 	}
 }
@@ -244,12 +298,20 @@ mod tests {
 	}
 
 	#[test]
+	fn a_page_layout_applies_only_to_documents_laid_out_as_pages() {
+		assert!(PageLayout::applies_to("/books/Pattern.PDF"));
+		assert!(PageLayout::applies_to("report.oxps"));
+		assert!(!PageLayout::applies_to("novel.epub"));
+		assert!(!PageLayout::applies_to("no extension"));
+	}
+
+	#[test]
 	fn parse_settings_reach_the_parser_context() {
 		let settings = ParseSettings { strip_running_text: false, ..ParseSettings::default() };
 		let context = ParserContext::new("book.pdf".to_string()).with_parse_settings(settings);
 		assert!(!context.strip_running_text);
 		assert!(context.render_tables_inline);
-		assert!(context.join_pdf_paragraphs);
+		assert_eq!(context.page_layout, PageLayout::Automatic);
 		assert!(context.markdown_dollar_math);
 	}
 }

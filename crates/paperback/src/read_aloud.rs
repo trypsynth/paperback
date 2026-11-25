@@ -1,5 +1,7 @@
 //! Read aloud on the desktop: the speech engine, and core's read-aloud audio played on the output device audio books use.
 
+#[cfg(target_os = "macos")]
+pub mod avspeech;
 #[cfg(windows)]
 pub mod onecore;
 #[cfg(windows)]
@@ -7,12 +9,7 @@ pub mod sapi5;
 #[cfg(windows)]
 mod wav;
 
-use std::{
-	num::NonZero,
-	rc::Rc,
-	sync::Arc,
-	time::{Duration, Instant},
-};
+use std::{num::NonZero, rc::Rc, sync::Arc, thread};
 
 use anyhow::Result;
 use paperback_core::{
@@ -21,7 +18,7 @@ use paperback_core::{
 	session::DocumentSession,
 	speech::{
 		AudioChunk, AudioFeed, FeedSample, ReadAloud, ReadAloudSettings, SpeechEngine, SpeechRequest, Synthesis, Voice,
-		WordBoundary, choose_voice,
+		WholeSynthesis, WordBoundary, choose_voice,
 	},
 };
 use rodio::{ChannelCount, MixerDeviceSink, Player, SampleRate, Source};
@@ -35,14 +32,12 @@ const DEFAULT_PERCENT: i32 = 50;
 const MAX_PAUSE_MS: i32 = 1000;
 const VOLUME_STEP: f32 = 0.1;
 const MAX_VOLUME: f32 = 2.0;
-/// How long the caret has to stay where the user moved it before reading starts there, so a screen reader speaks the move first and a held arrow key doesn't start reading at every step.
-const CARET_SETTLE: Duration = Duration::from_millis(150);
 
 /// What happened in reading since the last tick.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Followed {
-	/// A paragraph started, for the caret to move to.
-	Paragraph(DocPos),
+	/// A word started, or a paragraph when the engine doesn't say where its words are, for the caret to move to.
+	Word(DocPos),
 	/// The last paragraph has been read.
 	End,
 }
@@ -56,15 +51,15 @@ pub struct Speaker {
 	/// A new one for each start, since clearing a player blocks the UI thread.
 	player: Option<Player>,
 	/// The settings dialog's sample, apart from reading so it never disturbs where reading is.
-	sample: Option<Player>,
+	sample: Option<Arc<Player>>,
 	paused: bool,
 	volume: f32,
 	/// The paragraph the caret was last moved to, so it only moves when a new one starts.
 	followed: Option<DocPos>,
 	/// Where the caret was left, by reading or by the user, so a move of the user's own can be told apart.
 	caret: Option<DocPos>,
-	/// Where the user moved the caret while reading, and when, to read from once it has settled there.
-	moved: Option<(DocPos, Instant)>,
+	/// Where the user moved the caret while reading, until reading starts there.
+	moved: Option<DocPos>,
 }
 
 impl Speaker {
@@ -135,21 +130,16 @@ impl Speaker {
 		}
 	}
 
-	/// Notices the caret at `caret` somewhere reading didn't leave it, and returns it once it has stayed there long enough to read from, which [`Self::read_from_caret`] then does.
+	/// Notices the caret at `caret` somewhere reading didn't leave it, and returns where to read from, which [`Self::read_from_caret`] then does. A move reading hasn't started at yet is returned again.
 	pub fn caret_moved_to(&mut self, caret: DocPos) -> Option<DocPos> {
 		if !self.is_reading() && self.moved.is_none() {
 			return None;
 		}
 		if self.caret != Some(caret) {
 			self.caret = Some(caret);
-			self.moved = Some((caret, Instant::now()));
-			// Quiet until reading starts again there, so it doesn't talk over the screen reader saying where the caret went. `paused` stays as it was, for the new start.
-			if let Some(player) = &self.player {
-				player.pause();
-			}
-			return None;
+			self.moved = Some(caret);
 		}
-		self.moved.filter(|&(_, since)| since.elapsed() >= CARET_SETTLE).map(|(at, _)| at)
+		self.moved
 	}
 
 	/// Reads on from where the user moved the caret to, paused or not.
@@ -170,7 +160,7 @@ impl Speaker {
 	/// Where the user moved the caret while reading, if reading hasn't started there yet.
 	#[must_use]
 	pub fn pending_move(&self) -> Option<DocPos> {
-		self.moved.map(|(at, _)| at)
+		self.moved
 	}
 
 	/// Records that reading moved the caret to `caret`.
@@ -180,9 +170,11 @@ impl Speaker {
 
 	/// Speaks `text` with the engine called `engine_id` and this voice, rate and pitch, replacing any sample still playing. The engine reading uses stays as it is.
 	///
+	/// It's synthesized on a thread of its own, so Settings never waits for it, and since macOS hands its voices' audio over on the UI thread, which waiting would hold up.
+	///
 	/// # Errors
 	///
-	/// Returns why the engine couldn't speak it.
+	/// Returns why the engine couldn't be started. Why it couldn't speak the sample is logged.
 	pub fn play_sample(
 		&mut self,
 		engine_id: &str,
@@ -194,16 +186,30 @@ impl Speaker {
 		let request = SpeechRequest { text: text.to_owned(), voice, rate_percent, pitch_percent };
 		let engine =
 			if engine_id == self.engine.id() { Arc::clone(&self.engine) } else { resampled(engine_id, &self.device)? };
-		let mut synthesis = engine.synthesize(&request)?;
-		let rate = NonZero::new(synthesis.sample_rate()).unwrap_or(NonZero::<u32>::MIN);
-		let mut samples = Vec::new();
-		while let Some(chunk) = synthesis.next_chunk() {
-			samples.extend(chunk?.samples.iter().map(|&sample| f32::from(sample) / 32_768.0));
-		}
-		let player = Player::connect_new(self.device.mixer());
+		let player = Arc::new(Player::connect_new(self.device.mixer()));
 		player.set_volume(self.volume);
-		player.append(rodio::buffer::SamplesBuffer::new(NonZero::<u16>::MIN, rate, samples));
+		// A sample replaced or stopped before it's ready is never played.
+		let pending = Arc::downgrade(&player);
 		self.sample = Some(player);
+		thread::spawn(move || {
+			let spoken = (|| -> Result<_> {
+				let mut synthesis = engine.synthesize(&request)?;
+				let rate = NonZero::new(synthesis.sample_rate()).unwrap_or(NonZero::<u32>::MIN);
+				let mut samples = Vec::new();
+				while let Some(chunk) = synthesis.next_chunk() {
+					samples.extend(chunk?.samples.iter().map(|&sample| f32::from(sample) / 32_768.0));
+				}
+				Ok((rate, samples))
+			})();
+			match spoken {
+				Ok((rate, samples)) => {
+					if let Some(player) = pending.upgrade() {
+						player.append(rodio::buffer::SamplesBuffer::new(NonZero::<u16>::MIN, rate, samples));
+					}
+				}
+				Err(error) => tracing::warn!(%error, "read aloud: couldn't play the sample"),
+			}
+		});
 		Ok(())
 	}
 
@@ -283,7 +289,7 @@ impl Speaker {
 		self.moved = None;
 	}
 
-	/// Prepares the paragraphs ahead, and returns what the caret should follow: a paragraph that has just started, or the end, once. Call it on every tick for the document being read. Nothing is followed while the user is moving the caret.
+	/// Prepares the paragraphs ahead, and returns what the caret should follow: a word that has just started, or the end, once. Call it on every tick for the document being read. Nothing is followed while the user is moving the caret.
 	pub fn pump(&mut self, session: &DocumentSession) -> Option<Followed> {
 		self.player.as_ref()?;
 		self.read_aloud.refill(session);
@@ -298,11 +304,13 @@ impl Speaker {
 			self.player = None;
 			return Some(Followed::End);
 		}
-		if progress.paragraph == self.followed {
+		// The caret follows each word, so pausing and moving it goes on from the word being read rather than from where its paragraph starts.
+		let at = progress.word.or(progress.paragraph);
+		if at == self.followed {
 			return None;
 		}
-		self.followed = progress.paragraph;
-		progress.paragraph.map(Followed::Paragraph)
+		self.followed = at;
+		at.map(Followed::Word)
 	}
 
 	/// Returns the new volume, and whether it was already at its limit.
@@ -357,7 +365,7 @@ impl Speaker {
 			voice,
 			rate_percent: percent(book.rate_percent, "tts_rate"),
 			pitch_percent: percent(book.pitch_percent, "tts_pitch"),
-			rules: Vec::new(),
+			rules: config.get_speech_rules(),
 			paragraph_pause_ms: u32::try_from(config.get_app_int("tts_paragraph_pause_ms", 0).clamp(0, MAX_PAUSE_MS))
 				.unwrap_or(0),
 		}
@@ -369,7 +377,9 @@ impl Speaker {
 pub const fn engines() -> &'static [(&'static str, &'static str)] {
 	#[cfg(windows)]
 	return &[("onecore", "OneCore"), ("sapi5", "SAPI 5")];
-	#[cfg(not(windows))]
+	#[cfg(target_os = "macos")]
+	return &[("avspeech", "macOS")];
+	#[cfg(not(any(windows, target_os = "macos")))]
 	return &[];
 }
 
@@ -389,7 +399,14 @@ fn engine(id: &str) -> Result<Arc<dyn SpeechEngine>> {
 	Ok(if id == "sapi5" { Arc::new(sapi5::Sapi5) } else { Arc::new(onecore::OneCore) })
 }
 
-#[cfg(not(windows))]
+/// macOS has the one engine.
+#[cfg(target_os = "macos")]
+#[allow(clippy::unnecessary_wraps, reason = "other systems have no engine yet, so callers handle failure")]
+fn engine(_id: &str) -> Result<Arc<dyn SpeechEngine>> {
+	Ok(Arc::new(avspeech::AvSpeech))
+}
+
+#[cfg(not(any(windows, target_os = "macos")))]
 fn engine(_id: &str) -> Result<Arc<dyn SpeechEngine>> {
 	anyhow::bail!("there's no speech engine for this system yet")
 }
@@ -451,28 +468,6 @@ fn resample(samples: &[i16], from: u32, to: u32) -> Result<Vec<i16>> {
 		.into_iter()
 		.map(|sample| (sample * 32_768.0).round().clamp(-32_768.0, 32_767.0) as i16)
 		.collect())
-}
-
-/// An engine's whole paragraph, handed over as one chunk.
-pub(crate) struct WholeSynthesis {
-	sample_rate: u32,
-	chunk: Option<AudioChunk>,
-}
-
-impl WholeSynthesis {
-	pub(crate) const fn new(sample_rate: u32, chunk: AudioChunk) -> Self {
-		Self { sample_rate, chunk: Some(chunk) }
-	}
-}
-
-impl Synthesis for WholeSynthesis {
-	fn sample_rate(&self) -> u32 {
-		self.sample_rate
-	}
-
-	fn next_chunk(&mut self) -> Option<Result<AudioChunk>> {
-		self.chunk.take().map(Ok)
-	}
 }
 
 /// Core's read-aloud audio as a rodio source.

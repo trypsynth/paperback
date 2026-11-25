@@ -14,13 +14,15 @@ sealed interface NavUnit {
 	data class Time(val seconds: Int) : NavUnit
 
 	data object Find : NavUnit
+
+	data object Bookmark : NavUnit
 }
 
-/** Find has no stored form, since the search it steps through ends with the document. */
+/** Find has no stored form, since the search it steps through ends with the document; Bookmark has none so desktop and older versions never read one they don't know. */
 fun NavUnit.toStored(): NavigationUnit? = when (this) {
 	is NavUnit.Segment -> NavigationUnit.Segment(type)
 	is NavUnit.Time -> NavigationUnit.Seconds(seconds.toUInt())
-	NavUnit.Find -> null
+	NavUnit.Find, NavUnit.Bookmark -> null
 }
 
 fun NavigationUnit.toNavUnit(): NavUnit = when (this) {
@@ -150,6 +152,8 @@ fun getNavUnitName(unit: NavUnit): String = when (unit) {
 	is NavUnit.Time -> getSeekAmountName(unit.seconds)
 	// TRANSLATORS: Name of the "Find" navigation unit, which moves between search matches
 	is NavUnit.Find -> t("Find")
+	// TRANSLATORS: Name of the "Bookmark" navigation unit, which moves between the reader's bookmarks and notes
+	is NavUnit.Bookmark -> t("Bookmark")
 }
 
 fun formatDuration(ms: Long): String {

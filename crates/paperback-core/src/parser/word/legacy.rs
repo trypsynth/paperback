@@ -11,7 +11,7 @@ use office_crypto::decrypt_from_file;
 use crate::{
 	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext},
 	parser::{
-		PASSWORD_REQUIRED_ERROR_PREFIX,
+		PasswordRequired,
 		util::{
 			path::extract_title_from_path,
 			toc::{build_toc_from_buffer, heading_level_to_marker_type},
@@ -84,13 +84,13 @@ pub(super) fn parse_legacy_doc(context: &ParserContext) -> Result<Document> {
 		let Some(password) = context.password.as_deref() else {
 			tracing::debug!(path = %context.file_path, "encrypted doc file requires a password");
 			// TRANSLATORS: Error detail shown when an encrypted legacy DOC file needs a password (the internal sentinel prefix before it is not translated)
-			anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX} {}", t("DOC file is encrypted and requires a password"));
+			anyhow::bail!(PasswordRequired(t("DOC file is encrypted and requires a password")));
 		};
 		let decrypted = decrypt_from_file(&context.file_path, password).map_err(|e| {
 			tracing::warn!(path = %context.file_path, error = %e, "doc decryption failed");
 			// TRANSLATORS: Error detail shown when decrypting a legacy DOC file fails (the internal sentinel prefix before it is not translated); {} is the underlying error
 			let msg = t("DOC decryption failed (wrong password?): {}").replace("{}", &e.to_string());
-			anyhow::anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX} {msg}")
+			anyhow::anyhow!(PasswordRequired(msg))
 		})?;
 		let mut dec_compound =
 			CompoundFile::open(Cursor::new(decrypted)).context("Decrypted DOC data is not a valid compound file")?;

@@ -9,6 +9,9 @@ protocol ReadingContext: AnyObject {
 	func persistPosition(_ position: Int64)
 	func persistNavUnit(_ unit: NavigationUnit)
 	func savedNavUnit(for tab: DocumentTab) -> NavigationUnit?
+	var configManager: ConfigManagerFfi { get }
+	/// Where the active document's settings and bookmarks are kept.
+	var activeDocPath: String? { get }
 }
 
 @MainActor
@@ -16,14 +19,23 @@ protocol ReadingContext: AnyObject {
 final class ReadingController {
 	@ObservationIgnored weak var context: ReadingContext?
 
-	private var activeSession: DocumentSession? { context?.activeSession }
+	/// Bumped on every bookmark change, so views reading bookmarks through the core see the change.
+	var bookmarksRevision = 0
+	/// Opens the note sheet, for text mode's VoiceOver actions, which have no view of their own to do it from.
+	@ObservationIgnored var onRequestBookmarkNote: ((BookmarkNoteTarget) -> Void)?
+	/// Asks to confirm removing a bookmark that has a note, for text mode's VoiceOver actions likewise.
+	@ObservationIgnored var onRequestBookmarkRemoval: ((BookmarkFfi) -> Void)?
+	/// The active document's bookmarks as last read from the core. VoiceOver asks about bookmarks on every move in text mode, so it's answered from here rather than the core each time.
+	@ObservationIgnored var bookmarkSnapshot: BookmarkSnapshot?
+	@ObservationIgnored var paragraphBoundsCache: (session: ObjectIdentifier, position: Int64, bounds: (Int64, Int64))?
+
+	var activeSession: DocumentSession? { context?.activeSession }
 
 	// Not in init, because both of these need the context to be set.
 	func start() {
-		if let data = UserDefaults.standard.data(forKey: "tts_rules"),
-		   let loaded = try? JSONDecoder().decode([TtsRule].self, from: data) {
-			ttsRules = loaded
-			ttsManager.rules = loaded
+		if let config = context?.configManager {
+			migrateLegacySpeechRules(from: .standard, into: config)
+			ttsManager.config = config
 		}
 		ttsManager.onUtteranceFinished = { [weak self] in
 			self?.advanceTtsAfterUtterance()
@@ -53,8 +65,11 @@ final class ReadingController {
 		didSet {
 			spokeCurrentSegment = false
 			if isTextMode, !textModeReporting { onTextModeFollow?(ttsPosition) }
+			refreshBookmarkHere()
 		}
 	}
+	/// The bookmark on the paragraph being read. Kept rather than worked out by each view, so the toolbar and the read-aloud screen redraw only when it changes, not on every move; VoiceOver re-reads a screen whose toolbar keeps changing.
+	var bookmarkHere: BookmarkFfi?
 	// After a Find match is read, play means "carry on from here", not "read that again".
 	private var spokeCurrentSegment = false
 	var currentSegmentText: String = ""
@@ -78,6 +93,7 @@ final class ReadingController {
 			if isAudioOnly { segments = segments.filter { $0 == .segment(.section) } }
 			segments = audioSeekAmountsSeconds.map { NavUnit.time(seconds: $0) } + segments
 		}
+		if hasBookmarks { segments.append(.bookmark) }
 		return activeSearchQuery == nil ? segments : segments + [.find]
 	}
 	// Otherwise switching from an EPUB on Heading to a plain text file leaves every previous/next press doing nothing.
@@ -86,13 +102,13 @@ final class ReadingController {
 		guard !units.isEmpty, !units.contains(currentNavUnit) else { return }
 		currentNavUnit = units[0]
 	}
-	var ttsRules: [TtsRule] = [] {
-		didSet {
-			ttsManager.rules = ttsRules
-			if let data = try? JSONEncoder().encode(ttsRules) {
-				UserDefaults.standard.set(data, forKey: "tts_rules")
-			}
-		}
+	var speechRules: [SpeechRule] { context?.configManager.getSpeechRules() ?? [] }
+
+	func setSpeechRules(_ rules: [SpeechRule]) {
+		guard let config = context?.configManager else { return }
+		config.setSpeechRules(rules: rules)
+		config.flush()
+		ttsManager.speechRulesChanged()
 	}
 
 	var activeSearchQuery: String? = nil
@@ -146,6 +162,11 @@ final class ReadingController {
 		let forward = direction == .next
 		if seekAudioByNavUnit(forward: forward) { return true }
 		if navigateByFind(forward: forward, speak: speak, announce: shouldAnnounce) { return true }
+		if currentNavUnit == .bookmark {
+			// Like Find, always handled: there's nothing for previous/next to fall back to.
+			stepBookmark(forward: forward, speak: speak, announce: shouldAnnounce || !speak)
+			return true
+		}
 		if hasAudio { return navigateRecordedSegment(currentSegmentType, direction: direction) }
 		guard let session = activeSession else { return false }
 		let step = session.readingStep(position: ttsPosition, unit: .segment(segmentType: currentSegmentType), direction: direction)
@@ -188,12 +209,12 @@ final class ReadingController {
 		prefetchAdjacentSegments(around: step.position)
 	}
 
-	private func announceNavigationCue(_ text: String) {
+	func announceNavigationCue(_ text: String) {
 		let words = text.split(whereSeparator: \.isWhitespace)
 		announce(words.prefix(5).joined(separator: " "))
 	}
 
-	private func announce(_ text: String) {
+	func announce(_ text: String) {
 		// Delayed so SwiftUI's layout-changed notification after a button tap doesn't interrupt it.
 		Task { @MainActor in
 			try? await Task.sleep(for: .milliseconds(150))
@@ -201,7 +222,7 @@ final class ReadingController {
 		}
 	}
 
-	private func prefetchAdjacentSegments(around position: Int64) {
+	func prefetchAdjacentSegments(around position: Int64) {
 		guard let session = activeSession else { return }
 		let ahead = session.readingAhead(position: position)
 		ttsManager.prefetch(upcoming: [ahead.next, ahead.afterNext].filter { !$0.isEmpty })
@@ -381,13 +402,57 @@ final class ReadingController {
 		return Int(session.getStatusInfo(position: ttsPosition).percentage)
 	}
 
+	/// Whether the progress under the reading bar is the chapter's rather than the book's.
+	var showsChapterProgress = false
+	@ObservationIgnored private var countedChapterProgress: (session: ObjectIdentifier, position: Int64, progress: ChapterProgressFfi)?
+
+	/// False only for a book that is all audio whose files' lengths aren't known, which has no chapter to measure.
+	var canShowChapterProgress: Bool {
+		guard let session = activeSession else { return false }
+		return !isAudioOnly || !session.audioTimeAnnouncementFfi(elapsedMs: 0).isEmpty
+	}
+
+	/// The screen asks every second for a recording's sake, so a text book's answer is kept until the reading position moves: counting the words left reads the rest of the chapter.
+	func chapterProgress() -> ChapterProgressFfi? {
+		guard let session = activeSession else { return nil }
+		let elapsed = audioElapsedMs()
+		let id = ObjectIdentifier(session)
+		if elapsed == nil, let counted = countedChapterProgress, counted.session == id, counted.position == ttsPosition {
+			return counted.progress
+		}
+		let progress = session.chapterProgressFfi(position: ttsPosition, elapsedMs: elapsed ?? -1)
+		guard progress.found else { return nil }
+		if elapsed == nil { countedChapterProgress = (id, ttsPosition, progress) }
+		return progress
+	}
+
+	/// Announces what it switched to, since VoiceOver doesn't read a focused button again when its text changes.
+	func toggleChapterProgress() {
+		let chapter = showsChapterProgress ? nil : chapterProgress()
+		showsChapterProgress = chapter != nil
+		let text = chapter.map(chapterProgressText) ?? bookProgressText()
+		if !text.isEmpty { announce(text) }
+	}
+
+	/// How far into the recording, such as "1:02:03 of 10:30:00", or nil while a file's length is unknown.
+	func audioTimeText() -> String? {
+		guard let session = activeSession, let elapsed = audioElapsedMs() else { return nil }
+		let time = session.audioTimeAnnouncementFfi(elapsedMs: elapsed)
+		return time.isEmpty ? nil : time
+	}
+
+	private func bookProgressText() -> String {
+		let percent = progressPercent().map { t("{}% through").replacingOccurrences(of: "{}", with: "\($0)") }
+		return [percent, audioTimeText()].compactMap { $0 }.joined(separator: ", ")
+	}
+
 	func goToPercent(_ percent: Int32, announce shouldAnnounce: Bool = false) {
 		guard let session = activeSession else { return }
 		jump(to: session.positionFromPercent(percent: percent), announce: shouldAnnounce)
 	}
 
 	// Announces because the sheet the reader picked from is dismissing and nothing else reports the move; a paused buffer is dropped since it holds the old spot's audio.
-	private func jump(to position: Int64, announce shouldAnnounce: Bool) {
+	func jump(to position: Int64, announce shouldAnnounce: Bool) {
 		ttsPosition = position
 		context?.persistPosition(position)
 		refreshCurrentSegment()
@@ -442,9 +507,11 @@ final class ReadingController {
 		lastAnnouncedAudioSource = clip.source
 		let title = session.sectionTitleAt(position: clip.start)
 		announce(fileChanged && !title.isEmpty ? "\(title), \(time)" : time)
+		// An audio-only book's bookmarks are times, so a seek within a chapter can land on or leave one.
+		if isAudioOnly { refreshBookmarkHere() }
 	}
 
-	private func refreshCurrentSegment() {
+	func refreshCurrentSegment() {
 		guard let session = activeSession else { return }
 		currentSegmentText = session.readingStep(position: ttsPosition, unit: .segment(segmentType: currentSegmentType), direction: .current).text
 	}

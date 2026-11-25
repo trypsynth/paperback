@@ -9,12 +9,13 @@ use libchm::{ChmFile, Entry, EntryCategory, EntrySel};
 use crate::{
 	document::{DocPos, Document, DocumentBuffer, Marker, MarkerType, ParserContext, is_heading_marker},
 	parser::{
-		Parser, add_converter_markers_excluding_links, add_heading_markers_where, util::path::extract_title_from_path,
+		Parser, add_converter_markers_excluding_links, add_heading_markers_where, align_toc_to_title_lines,
+		util::path::extract_title_from_path,
 	},
 	util::text::url_decode,
 };
 
-mod convert;
+pub(super) mod convert;
 mod encoding;
 mod href;
 mod toc;
@@ -119,6 +120,7 @@ impl Parser for ChmParser {
 			}
 		}
 		calculate_toc_offsets(&mut toc_items, &file_positions, &id_positions);
+		align_toc_to_title_lines(&buffer, &mut toc_items);
 		// Asked per topic, not per book: a reference that marks up two of its six hundred pages needs the other 598, without those two announced twice.
 		let mut starts: Vec<DocPos> = file_positions.values().copied().collect();
 		starts.sort_unstable();

@@ -69,10 +69,14 @@ impl DocumentSession {
 		let markers = buf
 			.markers
 			.iter()
-			.filter(|m| matches!(m.mtype, MarkerType::Bold | MarkerType::Italic | MarkerType::Underline))
 			.filter_map(|m| {
+				let length = match m.mtype {
+					MarkerType::Bold | MarkerType::Italic | MarkerType::Underline => m.length,
+					MarkerType::Link if !m.reference.is_empty() => m.link_len(),
+					_ => return None,
+				};
 				let marker_start = m.position;
-				let marker_end = m.position + m.length;
+				let marker_end = m.position + length;
 				if marker_end <= start || marker_start >= end {
 					return None;
 				}
@@ -253,6 +257,44 @@ mod tests {
 		let slice = session.get_window(0.into(), session.document_len().as_pos());
 		assert_eq!(slice.markers.len(), 1);
 		assert_eq!(slice.markers[0].mtype, MarkerType::Bold);
+	}
+
+	fn link(position: usize, text: &str, reference: &str) -> Marker {
+		Marker::new(MarkerType::Link, position.into()).with_text(text.to_string()).with_reference(reference.to_string())
+	}
+
+	fn link_texts<'a>(slice: &'a WindowSlice<'_>) -> Vec<&'a str> {
+		slice
+			.markers
+			.iter()
+			.filter(|m| m.mtype == MarkerType::Link)
+			.map(|m| &slice.text[m.position.get()..(m.position + m.length).get()])
+			.collect()
+	}
+
+	#[test]
+	fn get_window_includes_links_spanning_their_text() {
+		let session = session_with("Intro link Body", &[link(6, "link", "#target")]);
+		let slice = session.get_window(0.into(), session.document_len().as_pos());
+		assert_eq!(slice.markers.len(), 1);
+		assert_eq!(link_texts(&slice), ["link"]);
+	}
+
+	#[test]
+	fn get_window_clips_a_link_at_the_window_edge() {
+		let content = "one two\nthree four";
+		let session = session_with(content, &[link(4, "two\nthree", "https://example.com/")]);
+		let raw_start = DocPos::from(content.find("four").unwrap());
+		let slice = session.get_window(raw_start, raw_start + 2.into());
+		assert_eq!(slice.text, "three four");
+		assert_eq!(link_texts(&slice), ["three"]);
+	}
+
+	#[test]
+	fn get_window_leaves_out_links_without_a_target() {
+		let session = session_with("Intro link Body", &[link(6, "link", "")]);
+		let slice = session.get_window(0.into(), session.document_len().as_pos());
+		assert!(slice.markers.is_empty());
 	}
 
 	fn paragraph(start: usize, end: usize, heading_level: Option<u8>, list_item: bool) -> ParagraphFormat {

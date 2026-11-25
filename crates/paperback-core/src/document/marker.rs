@@ -138,6 +138,12 @@ impl Marker {
 		self.prefix_length = prefix_length;
 		self
 	}
+
+	/// A link's extent: its length when set, otherwise the length of its text.
+	#[must_use]
+	pub fn link_len(&self) -> DocLen {
+		if self.length.is_zero() { DocLen::of(&self.text) } else { self.length }
+	}
 }
 
 #[must_use]
@@ -191,6 +197,13 @@ mod tests {
 		assert_eq!(marker.reference, "ref");
 		assert_eq!(marker.level, 3);
 		assert_eq!(marker.length, 9);
+	}
+
+	#[test]
+	fn link_len_is_the_length_when_set_and_the_text_length_otherwise() {
+		let link = Marker::new(MarkerType::Link, 0.into()).with_text("a link".to_string());
+		assert_eq!(link.link_len(), 6);
+		assert_eq!(link.with_length(4.into()).link_len(), 4);
 	}
 
 	#[test]

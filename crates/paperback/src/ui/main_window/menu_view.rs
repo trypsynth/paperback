@@ -1,10 +1,40 @@
 use std::{env, path::Path, rc::Rc, sync::Mutex};
 
-use paperback_core::{parser::is_external_url, session::SourceView};
+use paperback_core::{config::ConfigManager, parser::is_external_url, session::SourceView};
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{DocumentManager, dialogs, navigation};
+use super::{DocumentManager, dialogs, menu_ids, navigation};
+
+pub(super) fn handle_page_layout(dm: &Rc<Mutex<DocumentManager>>, id: i32) -> bool {
+	let Some(&(_, layout)) = menu_ids::PAGE_LAYOUTS.iter().find(|(item, _)| *item == id) else {
+		return false;
+	};
+	let mut dm_ref = dm.lock().unwrap();
+	dm_ref.set_active_page_layout(layout);
+	dm_ref.restore_focus();
+	true
+}
+
+/// Run as a menu opens, so the items show the document in front, which can change by switching tabs or closing one.
+pub(super) fn sync_page_layout_items(
+	frame: &Frame,
+	dm: &Rc<Mutex<DocumentManager>>,
+	config: &Rc<Mutex<ConfigManager>>,
+) {
+	let (Some(menu_bar), Ok(dm_ref)) = (frame.get_menu_bar(), dm.try_lock()) else {
+		return;
+	};
+	let own = dm_ref
+		.active_paged_document()
+		.and_then(|path| config.try_lock().ok().map(|cfg| cfg.get_document_page_layout(&path)));
+	for (id, layout) in menu_ids::PAGE_LAYOUTS {
+		menu_bar.enable_item(id, own.is_some());
+		if own == Some(layout) {
+			menu_bar.check_item(id, true);
+		}
+	}
+}
 
 pub(super) fn handle_open_in_web_view(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>) {
 	let Ok(dm_ref) = dm.try_lock() else {

@@ -109,7 +109,7 @@ pub(super) fn parse_package(package: Node<'_, '_>, opf_dir: &str) -> PackagePart
 						nav_path = Some(resolved.clone());
 					}
 					if manifest_item.media_type == "application/x-dtbncx+xml" {
-						ncx_path = Some(resolved.clone());
+						ncx_path = Some(resolved);
 					}
 					manifest.insert(id.to_string(), manifest_item);
 				}
