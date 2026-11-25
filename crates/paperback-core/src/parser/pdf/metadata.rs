@@ -2,7 +2,7 @@ use anyhow::anyhow;
 
 use super::text::sanitize_pdf_text;
 use crate::{
-	parser::PASSWORD_REQUIRED_ERROR_PREFIX,
+	parser::PasswordRequired,
 	pdf_engine::{Document, Error as PdfError},
 	t,
 	util::text::trim_string,
@@ -12,7 +12,7 @@ pub(super) fn map_load_error(err: PdfError) -> anyhow::Error {
 	match err {
 		PdfError::PasswordRequired => {
 			// TRANSLATORS: Error detail shown when a PDF's password is missing or wrong (the internal sentinel prefix before it is not translated)
-			anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX}{}", t("Password required or incorrect"))
+			anyhow!(PasswordRequired(t("Password required or incorrect")))
 		}
 		// TRANSLATORS: Error shown when a PDF fails to open for a reason other than a password; {} is the underlying error detail
 		other => anyhow!(t("Failed to open PDF document: {}").replace("{}", &other.to_string())),

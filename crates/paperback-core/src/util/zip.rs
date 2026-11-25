@@ -11,7 +11,7 @@ use sha1::{Digest, Sha1};
 use zip::{ZipArchive, result::ZipError};
 
 use crate::{
-	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, parser_supports_path},
+	parser::{PasswordRequired, parser_supports_path},
 	t,
 	util::encoding::decode_html,
 };
@@ -30,11 +30,11 @@ pub fn read_zip_entry_by_name_with_password<R: Read + Seek>(
 			Ok(e) => e,
 			Err(ZipError::UnsupportedArchive(msg)) if msg == ZipError::PASSWORD_REQUIRED => {
 				// TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
-				anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX}{}", t("Password required"));
+				anyhow::bail!(PasswordRequired(t("Password required")));
 			}
 			Err(ZipError::InvalidPassword) => {
 				// TRANSLATORS: Error detail shown when the password for a ZIP-based document is wrong (the internal sentinel prefix before it is not translated)
-				anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX}{}", t("Password incorrect"));
+				anyhow::bail!(PasswordRequired(t("Password incorrect")));
 			}
 			Err(e) => return Err(e.into()),
 		},
@@ -42,7 +42,7 @@ pub fn read_zip_entry_by_name_with_password<R: Read + Seek>(
 			Ok(e) => e,
 			Err(ZipError::UnsupportedArchive(msg)) if msg == ZipError::PASSWORD_REQUIRED => {
 				// TRANSLATORS: Error detail shown when a password-protected ZIP-based document needs a password (the internal sentinel prefix before it is not translated)
-				anyhow::bail!("{PASSWORD_REQUIRED_ERROR_PREFIX}{}", t("Password required"));
+				anyhow::bail!(PasswordRequired(t("Password required")));
 			}
 			Err(e) => return Err(e.into()),
 		},

@@ -9,7 +9,7 @@ use std::{
 
 use paperback_core::{
 	config::ConfigManager,
-	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, parser_supports_extension, parser_supports_path},
+	parser::{PasswordRequired, parser_supports_extension, parser_supports_path},
 	util::{
 		rar,
 		zip::{extract_zip_entry_to_cache, zip_books_to_browse},
@@ -65,7 +65,7 @@ fn rar_copy(frame: &Frame, path: &Path, config: &Rc<Mutex<ConfigManager>>) -> Op
 				}
 				return Some(copy);
 			}
-			Err(err) if err.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
+			Err(err) if err.is::<PasswordRequired>() => {
 				password = Some(prompt_for_password(frame)?);
 			}
 			Err(err) => {

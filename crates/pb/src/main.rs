@@ -13,7 +13,7 @@ use clap::Parser;
 use paperback_core::{
 	document::{Document, DocumentHandle, ParserContext},
 	export::{self, ExportFormat},
-	parser::{PASSWORD_REQUIRED_ERROR_PREFIX, braille, parse_document},
+	parser::{PasswordRequired, braille, parse_document},
 };
 
 mod cli;
@@ -328,8 +328,8 @@ impl std::error::Error for NeedsPassword {}
 
 /// The password prefix is a sentinel between the parsers and pb, not something to show the reader.
 fn parse_failed(shown: &str, error: &anyhow::Error) -> anyhow::Error {
-	let message = error.to_string();
-	let message = message.strip_prefix(PASSWORD_REQUIRED_ERROR_PREFIX).unwrap_or(&message);
+	let message =
+		error.downcast_ref::<PasswordRequired>().map_or_else(|| error.to_string(), |password| password.0.clone());
 	anyhow::anyhow!("failed to parse {shown}: {message}")
 }
 
@@ -393,7 +393,7 @@ impl<'a> Converter<'a> {
 		}
 		let doc = match parse_document(&context) {
 			Ok(doc) => doc,
-			Err(e) if e.to_string().starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) => {
+			Err(e) if e.is::<PasswordRequired>() => {
 				if cli.no_prompt {
 					return Err(anyhow::Error::new(NeedsPassword).context(shown.to_string()));
 				}
@@ -765,12 +765,10 @@ mod tests {
 
 	#[test]
 	fn the_password_marker_is_not_shown_to_the_reader() {
-		let error = parse_failed(
-			"alpha.pdf",
-			&anyhow::anyhow!("{PASSWORD_REQUIRED_ERROR_PREFIX}Password required or incorrect"),
-		);
+		let error =
+			parse_failed("alpha.pdf", &anyhow::anyhow!(PasswordRequired("Password required or incorrect".to_string())));
 		let printed = error.to_string();
-		assert!(!printed.contains(PASSWORD_REQUIRED_ERROR_PREFIX), "{printed}");
+		assert!(!printed.contains("password_required"), "{printed}");
 		assert!(printed.contains("alpha.pdf"), "{printed} does not name the document");
 		assert!(printed.contains("Password required or incorrect"), "{printed}");
 	}
