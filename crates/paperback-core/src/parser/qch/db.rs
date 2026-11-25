@@ -1,14 +1,10 @@
 use std::collections::HashSet;
 
 use anyhow::{Context, Result, bail};
-use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
-use rusqlite::{Connection, OpenFlags, OptionalExtension, types::Value};
+use rusqlite::{Connection, OptionalExtension, types::Value};
 
 use super::compress::q_uncompress;
-
-/// Kept as written in a URI path, so only what SQLite's URI parser would misread is escaped.
-const URI_PATH: &AsciiSet =
-	&NON_ALPHANUMERIC.remove(b'/').remove(b':').remove(b'-').remove(b'_').remove(b'.').remove(b'~');
+use crate::util::sqlite::open_read_only;
 
 /// Every table the reader queries; a file without them is some other SQLite database, or a collection file (`.qhc`), which holds no pages.
 const REQUIRED_TABLES: [&str; 5] = ["NamespaceTable", "FolderTable", "FileNameTable", "FileDataTable", "ContentsTable"];
@@ -27,13 +23,9 @@ pub(super) struct QchDatabase {
 }
 
 impl QchDatabase {
-	/// Read-only and immutable, as Qt's reader opens it: no journal, no lock, and nothing written beside the file, which may be on read-only media.
+	/// Read-only and immutable, as Qt's reader opens it.
 	pub fn open(path: &str) -> Result<Self> {
-		let connection = Connection::open_with_flags(
-			sqlite_uri(path),
-			OpenFlags::SQLITE_OPEN_READ_ONLY | OpenFlags::SQLITE_OPEN_URI | OpenFlags::SQLITE_OPEN_NO_MUTEX,
-		)
-		.with_context(|| format!("Failed to open Qt help file: {path}"))?;
+		let connection = open_read_only(path).with_context(|| format!("Failed to open Qt help file: {path}"))?;
 		let present: HashSet<String> = connection
 			.prepare("SELECT name FROM sqlite_master WHERE type = 'table'")
 			.and_then(|mut statement| {
@@ -141,40 +133,5 @@ impl QchDatabase {
 			.flatten()
 			.with_context(|| format!("Qt help file has no file named {name}"))?;
 		self.file_data(file_id)
-	}
-}
-
-/// A URI, so the query string can ask for read-only and immutable. Windows paths turn their backslashes and verbatim prefixes into what SQLite's URI parser expects, and UNC paths keep their leading slashes.
-fn sqlite_uri(path: &str) -> String {
-	let path = path.strip_prefix(r"\\?\UNC\").map_or_else(
-		|| path.strip_prefix(r"\\?\").unwrap_or(path).replace('\\', "/"),
-		|rest| format!("//{}", rest.replace('\\', "/")),
-	);
-	let encoded = utf8_percent_encode(&path, URI_PATH).to_string();
-	let encoded = if encoded.starts_with('/') {
-		format!("//{encoded}")
-	} else if encoded.as_bytes().get(1) == Some(&b':') {
-		format!("///{encoded}")
-	} else {
-		encoded
-	};
-	format!("file:{encoded}?mode=ro&immutable=1")
-}
-
-#[cfg(test)]
-mod tests {
-	use rstest::rstest;
-
-	use super::sqlite_uri;
-
-	#[rstest]
-	#[case(r"C:\Users\A B\help#1.qch", "file:///C:/Users/A%20B/help%231.qch?mode=ro&immutable=1")]
-	#[case(r"\\?\C:\docs\qtcore.qch", "file:///C:/docs/qtcore.qch?mode=ro&immutable=1")]
-	#[case(r"\\server\share\qtcore.qch", "file:////server/share/qtcore.qch?mode=ro&immutable=1")]
-	#[case(r"\\?\UNC\server\share\a.qch", "file:////server/share/a.qch?mode=ro&immutable=1")]
-	#[case("/home/me/what?.qch", "file:///home/me/what%3F.qch?mode=ro&immutable=1")]
-	#[case("relative/50%.qch", "file:relative/50%25.qch?mode=ro&immutable=1")]
-	fn builds_read_only_uris(#[case] path: &str, #[case] expected: &str) {
-		assert_eq!(sqlite_uri(path), expected);
 	}
 }

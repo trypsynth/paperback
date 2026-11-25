@@ -195,6 +195,9 @@ final class AppViewModel {
 		let path = url.path(percentEncoded: false)
 		let title = session.title().isEmpty ? url.deletingPathExtension().lastPathComponent : session.title()
 		var tab = DocumentTab(title: title, url: url, session: session)
+		if let start = session.startPosition() {
+			configManager.seedDocumentPosition(path: path, position: start)
+		}
 		tab.currentPosition = configManager.getDocumentPosition(path: path)
 		tab.securityScopeURL = scopeStarted ? url : nil
 		tabs.append(tab)

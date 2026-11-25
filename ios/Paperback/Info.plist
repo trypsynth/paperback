@@ -227,6 +227,27 @@
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
+			<string>dev.paperback.qrd</string>
+			<key>UTTypeDescription</key>
+			<string>QRead Book</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>qrd</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/x-qread</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
 			<string>dev.paperback.qch</string>
 			<key>UTTypeDescription</key>
 			<string>Qt Compressed Help</string>
@@ -390,6 +411,7 @@
 				<string>org.daisy.ebraille</string>
 				<string>dev.paperback.mobi</string>
 				<string>dev.paperback.fb2</string>
+				<string>dev.paperback.qrd</string>
 			</array>
 		</dict>
 		<dict>

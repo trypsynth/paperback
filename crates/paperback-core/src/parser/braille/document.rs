@@ -9,6 +9,20 @@ use crate::{
 	util::html,
 };
 
+/// For a reader who keeps braille books in braille: blank cells become spaces, one character for one, so nothing pointing into the text moves.
+pub(crate) fn keep_braille_document(document: &mut Document) {
+	if !document.buffer.content.contains(BLANK) {
+		return;
+	}
+	let content = document.buffer.content.replace(BLANK, " ");
+	let mut buffer = DocumentBuffer::with_content(content);
+	buffer.markers = std::mem::take(&mut document.buffer.markers);
+	for marker in &mut buffer.markers {
+		marker.text = marker.text.replace(BLANK, " ");
+	}
+	document.set_buffer(buffer);
+}
+
 pub(crate) fn back_translate_document(document: &mut Document, translator: &Translator) {
 	let lines: Vec<&str> = document.buffer.content.split('\n').collect();
 	let translated: Vec<(String, Vec<usize>)> = lines.par_iter().map(|line| translate_line(translator, line)).collect();

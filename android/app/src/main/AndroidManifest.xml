@@ -98,6 +98,7 @@
                 <data android:pathPattern=".*\\.pptm" />
                 <data android:pathPattern=".*\\.pptx" />
                 <data android:pathPattern=".*\\.qch" />
+                <data android:pathPattern=".*\\.qrd" />
                 <data android:pathPattern=".*\\.rar" />
                 <data android:pathPattern=".*\\.ronn" />
                 <data android:pathPattern=".*\\.rtf" />

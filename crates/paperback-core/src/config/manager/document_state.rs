@@ -1,7 +1,7 @@
 use super::ConfigManager;
 use crate::{
 	config::settings::{DocumentSpeech, NavigationHistory, NavigationUnit},
-	document::{DocPos, ReplaceOutcome},
+	document::{DocPos, PageLayout, ReplaceOutcome},
 };
 
 impl ConfigManager {
@@ -72,6 +72,26 @@ impl ConfigManager {
 		}
 		let key = self.get_doc_key(path);
 		self.data.borrow().documents.get(&key).map_or(DocPos::ZERO, |d| d.last_position)
+	}
+
+	/// The file's own idea of where reading left off, taken the first time only and only if Paperback hasn't moved from the start, so Paperback's position wins after that.
+	pub fn seed_document_position(&self, path: &str, position: DocPos) {
+		if !self.initialized {
+			return;
+		}
+		{
+			let key = self.get_doc_key(path);
+			let mut data = self.data.borrow_mut();
+			let entry = Self::doc_entry_mut(&mut data, key, path);
+			if entry.start_position_used {
+				return;
+			}
+			entry.start_position_used = true;
+			if entry.last_position == DocPos::ZERO {
+				entry.last_position = position;
+			}
+		}
+		self.dirty.set(true);
 	}
 
 	#[must_use]
@@ -190,6 +210,34 @@ impl ConfigManager {
 		self.data.borrow().documents.get(&key).and_then(|d| d.navigation_unit)
 	}
 
+	/// `None` hands the document back to the app's page layout.
+	pub fn set_document_page_layout(&self, path: &str, layout: Option<PageLayout>) {
+		if !self.initialized {
+			return;
+		}
+		{
+			let key = self.get_doc_key(path);
+			let mut data = self.data.borrow_mut();
+			Self::doc_entry_mut(&mut data, key, path).page_layout = layout;
+		}
+		self.dirty.set(true);
+	}
+
+	#[must_use]
+	pub fn get_document_page_layout(&self, path: &str) -> Option<PageLayout> {
+		if !self.initialized {
+			return None;
+		}
+		let key = self.get_doc_key(path);
+		self.data.borrow().documents.get(&key).and_then(|d| d.page_layout)
+	}
+
+	/// The document's own page layout, or the app's where it has none.
+	#[must_use]
+	pub fn page_layout_for(&self, path: &str) -> PageLayout {
+		self.get_document_page_layout(path).unwrap_or_else(|| self.get_page_layout())
+	}
+
 	pub fn set_document_password(&self, path: &str, password: &str) {
 		if !self.initialized {
 			return;
@@ -247,6 +295,20 @@ mod tests {
 	use crate::session::SegmentTypeFfi;
 
 	#[test]
+	fn a_documents_own_start_position_is_taken_once_and_never_over_paperbacks() {
+		let config = ConfigManager::in_memory();
+		config.add_recent_document("new.qrd");
+		config.seed_document_position("new.qrd", 40.into());
+		assert_eq!(config.get_document_position("new.qrd"), 40);
+		config.set_document_position("new.qrd", DocPos::ZERO);
+		config.seed_document_position("new.qrd", 40.into());
+		assert_eq!(config.get_document_position("new.qrd"), 0, "back at the top is where the reader left it");
+		config.set_document_position("read.qrd", 7.into());
+		config.seed_document_position("read.qrd", 40.into());
+		assert_eq!(config.get_document_position("read.qrd"), 7);
+	}
+
+	#[test]
 	fn the_download_size_is_kept_for_each_link() {
 		let config = ConfigManager::in_memory();
 		assert_eq!(config.get_document_download_size("https://example.org/a.epub"), None);
@@ -280,6 +342,21 @@ mod tests {
 		assert_eq!(config.get_document_navigation_unit("b.mp3"), Some(NavigationUnit::Seconds { seconds: 30 }));
 		config.set_document_navigation_unit("a.epub", None);
 		assert_eq!(config.get_document_navigation_unit("a.epub"), None);
+	}
+
+	#[test]
+	fn a_document_page_layout_overrides_the_app_one_until_cleared() {
+		let config = ConfigManager::in_memory();
+		config.set_page_layout(PageLayout::Lines);
+		config.set_document_page_layout("pattern.pdf", Some(PageLayout::Columns));
+		assert_eq!(config.page_layout_for("pattern.pdf"), PageLayout::Columns);
+		assert_eq!(config.page_layout_for("novel.pdf"), PageLayout::Lines);
+		config.set_document_page_layout("pattern.pdf", None);
+		assert_eq!(config.page_layout_for("pattern.pdf"), PageLayout::Lines);
+		let document =
+			crate::config::settings::DocumentConfig { page_layout: Some(PageLayout::Columns), ..Default::default() };
+		let json = serde_json::to_string(&document).expect("serialize");
+		assert!(json.contains(r#""page_layout":"columns""#), "{json}");
 	}
 
 	#[test]

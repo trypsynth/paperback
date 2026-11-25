@@ -85,6 +85,41 @@ fn joins_a_paragraph_across_a_page_and_marks_where_the_page_begins() {
 	assert_eq!(page_markers(&document), [(0, "Page 1".to_string()), (37, "Page 2".to_string())]);
 }
 
+fn keeping_braille(context: ParserContext) -> ParserContext {
+	context.with_keep_braille(true)
+}
+
+/// The paragraphs and pages are found as for print, and only the translation is left out.
+#[test]
+fn keeps_a_brf_in_braille_when_asked() {
+	let brf = "  HELLO HELLO HELLO HELLO HELLO HELLOS\r\n\x0c_W\r\n\x0c";
+	let document = parse_with(&BrfParser, "pages.brf", brf, keeping_braille).unwrap();
+	let expected = cells("HELLO HELLO HELLO HELLO HELLO HELLOS _W").replace(BLANK, " ");
+	assert_eq!(document.buffer.content, format!("{expected}\n"));
+	assert_eq!(page_markers(&document), [(0, "Page 1".to_string()), (37, "Page 2".to_string())]);
+}
+
+/// The table still says which braille ASCII the file is in, as French writes the capital sign `¨`, which North American Braille ASCII has no cell for.
+#[test]
+fn reads_a_kept_brf_in_the_braille_ascii_of_its_tables_country() {
+	let french =
+		|context: ParserContext| ParserContext { braille_table: "fr-bfu-comp6.utb", ..context }.with_keep_braille(true);
+	let document = parse_with(&BrfParser, "fr.brf", "¨le ¨président\n", french).unwrap();
+	let text = document.buffer.content.trim_end();
+	assert!(text.chars().all(|character| character == ' ' || is_cell(character)), "{text}");
+	assert_eq!(text.split(' ').count(), 2);
+}
+
+#[test]
+fn keeps_a_pef_in_braille_when_asked() {
+	let pef = pef("", &volume(&[&[",ABOUT ,,NCBI       #A", "  ,SOME FACTS"], &["  HELLO       A#A"]]));
+	let document = parse_with(&PefParser, "ncbi.pef", pef, keeping_braille).unwrap();
+	let lines: Vec<String> =
+		[",ABOUT ,,NCBI", ",SOME FACTS", "HELLO"].iter().map(|line| cells(line).replace(BLANK, " ")).collect();
+	assert_eq!(document.buffer.content, format!("{}\n", lines.join("\n")));
+	assert_eq!(page_markers(&document), [(0, "Page 1".to_string()), (26, "Page 2".to_string())]);
+}
+
 /// Older BRF files, such as the Internet Archive's, end their lines with a carriage return alone.
 #[test]
 fn reads_lines_ended_by_a_carriage_return_alone() {

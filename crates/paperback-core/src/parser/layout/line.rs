@@ -6,6 +6,8 @@ pub(in crate::parser) struct Line {
 	pub size: f64,
 	pub top: f64,
 	pub bottom: f64,
+	pub left: f64,
+	pub right: f64,
 	pub monospaced: bool,
 	pub bold: bool,
 }
@@ -101,7 +103,16 @@ mod tests {
 	}
 
 	fn line(text: &str, top: f64) -> Line {
-		Line { text: text.to_string(), size: 10.0, top, bottom: top - 10.0, monospaced: false, bold: false }
+		Line {
+			text: text.to_string(),
+			size: 10.0,
+			top,
+			bottom: top - 10.0,
+			left: 0.0,
+			right: 100.0,
+			monospaced: false,
+			bold: false,
+		}
 	}
 
 	fn texts(lines: &[Line]) -> Vec<&str> {
@@ -178,6 +189,8 @@ mod tests {
 			size: 0.0,
 			top: f64::NEG_INFINITY,
 			bottom: f64::NEG_INFINITY,
+			left: f64::NEG_INFINITY,
+			right: f64::NEG_INFINITY,
 			monospaced: false,
 			bold: false,
 		};

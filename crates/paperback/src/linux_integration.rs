@@ -42,6 +42,17 @@ const QCH_MIME_INFO: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
 </mime-info>
 "#;
 
+/// The same goes for `.qrd`, another SQLite database.
+const QRD_MIME_INFO: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+	<mime-type type="application/x-qread">
+		<comment>QRead book</comment>
+		<sub-class-of type="application/vnd.sqlite3"/>
+		<glob pattern="*.qrd" weight="60"/>
+	</mime-type>
+</mime-info>
+"#;
+
 pub fn maybe_run_first_run_setup(parent: &Frame, config: &Mutex<ConfigManager>) {
 	let Ok(appimage_path) = env::var("APPIMAGE") else { return };
 	if config.lock().unwrap().get_app_bool(SETUP_DONE_KEY, false) {
@@ -176,7 +187,11 @@ fn install_mime_info() {
 	if fs::create_dir_all(&mime_packages_dir).is_err() {
 		return;
 	}
-	let packages = [("paperback-daisy.xml", DAISY_OPF_MIME_INFO), ("paperback-qch.xml", QCH_MIME_INFO)];
+	let packages = [
+		("paperback-daisy.xml", DAISY_OPF_MIME_INFO),
+		("paperback-qch.xml", QCH_MIME_INFO),
+		("paperback-qrd.xml", QRD_MIME_INFO),
+	];
 	if packages.iter().any(|(name, info)| fs::write(mime_packages_dir.join(name), info).is_err()) {
 		return;
 	}

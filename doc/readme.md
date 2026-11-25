@@ -67,6 +67,7 @@ Paperback supports the following formats and extensions:
 * OS/2 help files and books, with their pictures (`.inf`, `.hlp`)
 * PDF documents (`.pdf`)
 * Qt help files, the documentation Qt Assistant and Qt Creator read, such as Qt's and CMake's own (`.qch`)
+* QRead books, the copies QRead saved of each book it opened (`.qrd`)
 * PowerPoint presentations (`.pptx`, `.pptm`, `.ppt`)
 * RAR archives of books, which open as a zip does, with a list to pick from when one holds several (`.rar`)
 * reStructuredText documents (`.rst`, `.rest`)
@@ -332,9 +333,99 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 
 ## Changelog
 
-### Version 1.1
+### Version 1.2
 
-1.1 brings a new PDF engine, a rebuilt iOS text mode, OCR on Linux, documents from links, support for decades of older Word, Write, and PowerPoint files, and much more.
+#### Added
+
+##### Read Aloud
+* Read any document aloud, with OneCore or SAPI 5 voices on Windows and the system's own voices on macOS. `Ctrl+Space` starts and stops reading, the seek keys skip paragraphs, and the speed and volume keys work as they do for audio books.
+* Choose the voice, rate, pitch, and pause between paragraphs in the Audio tab of Settings, try them with a sample button, and give one book its own voice.
+* Reading starts at the caret, starts again wherever you move it, and moves the caret to each word as it's spoken.
+* A speech dictionary, from the Audio tab of Settings, changes how words are read aloud: each rule replaces a word or a pattern, can match whole words only or be a regular expression, and can be turned on and off.
+
+##### Braille
+* Braille Ready Files (`.brf`) and PEF books open back-translated to print, in the braille code you choose in Settings.
+* eBraille books (`.ebrl`) open in print when they carry it, and are otherwise back-translated with the braille code they name.
+* NLS BARD braille books, from the zip or its `.bopf`, open as one book of all their volumes, in the braille code their package names.
+* To read braille books on a braille display, a setting in the Documents tab of Settings keeps them in braille, as Unicode braille, so the screen reader shows the transcriber's braille instead of translating print back into braille. `pb --keep-braille` does the same.
+* Braille files written in another country's braille ASCII, such as Norwegian, Danish, French, Spanish, Slovak, Czech, or Hungarian, are recognized.
+
+##### New Formats
+* XPS and OpenXPS documents.
+* RAR archives and RAR comics (`.cbr`).
+* GNU Info manuals, gzipped or split, with their menus, cross-references, and index.
+* OS/2 help files and books (`.inf`, `.hlp`), with their pictures and links.
+* PalmDOC books.
+* `.shtml` pages, and EPUB books that aren't zipped, opened by their `.opf`.
+* A zip of MP3 or M4B parts opens as one audio book.
+* Qt help files (`.qch`), the documentation Qt Assistant and Qt Creator read, such as Qt's and CMake's own.
+* QRead books (`.qrd`), the copies QRead saved of each book it opened, which open where QRead left off the first time.
+
+##### Audio Books
+* Go to Time (`Ctrl+J`) jumps to a time, such as `1:23:45` or `+5:00`.
+* `=` also says how far into the book you are and how long it runs, and `Shift+=` says the same for the chapter, also in the Audio menu as Announce Chapter Time.
+* Go to Percent plays from that point, not the start of the chapter it falls in.
+* A headset's play, pause, and skip buttons control the book, and playback moves to a new default output device when it changes.
+
+##### General
+* Report a Problem, in the Help menu, sends a report of what went wrong, and is offered at the next start after Paperback closes unexpectedly.
+* `Shift+=` in a text book says how far through the chapter you are and how many words are left.
+* Pictures with an empty description in EPUB and HTML books show when they're big enough to be content, such as scanned letters and figures.
+* Formulas inside links and table cells can be navigated to.
+* HTML export keeps block quotes, figures, definition lists, asides, line breaks, superscripts, and subscripts.
+* On Windows, screen readers say "link" on the links in a document as you read, and clicking a link follows it, as `Enter` does.
+
+##### iOS and Android
+* Go To has a Time mode for audio books, with `Cmd+J` on an iPad keyboard, and the playing screen shows how far in you are and how long the book runs.
+* Each book remembers its navigation unit.
+* Bookmarks and notes, from a button in the reader's top bar: hold it, or use the screen reader's actions, to add a note or open the Bookmarks list. They are the same bookmarks the desktop keeps, so they travel in `.paperback` files, and the desktop's bookmark keys work with a keyboard.
+* Tapping the progress under the read-aloud bar switches it to the chapter's: its name, percentage, and words left, or its times in an audio book.
+
+##### pb
+* pb is two to four times faster on most text formats, and converts as many documents at once as there are processors, or as many as `--jobs` says.
+* `--braille-table` chooses a braille book's code, `--list-braille-tables` lists the codes, and `--version` says which pb it is.
+
+#### Changed
+* Settings is split into six tabs, one for each kind of setting.
+* PDFs, big CHM references, and MOBI books open faster.
+
+#### Fixed
+
+##### General
+* Punctuation shortcuts work on every keyboard layout, matched by the key's place on a US keyboard.
+* Paperback no longer hangs when a shortcut with `Shift` and punctuation opens Settings, when a file it can't read is opened from the command line, or when OCR results, a file from another copy, or the sleep timer arrive while a dialog is open.
+* Very deeply nested HTML and XML documents no longer crash.
+* A configuration that won't load is kept as a `.bad` file instead of being overwritten, and saving can no longer leave it half written.
+* File > Exit saves the window's size and open tab, and removes the tray icon.
+* Paperback hidden in the tray no longer keeps a processor core busy, and closed dialogs no longer stay in memory.
+* Opening several files while Paperback is running opens all of them.
+* The document's title is announced when it opens without a dialog closing first.
+* A contents entry's chapter number is announced with its title.
+* On macOS and Linux, a document too long to load at once no longer runs ahead to its end and saves that as the reading position.
+
+##### Documents
+* Pages that use a table for their layout read as text, so Find, `Enter`, and headings work in them.
+* Word lists that restart their numbering number the same every time, from their restart value.
+* OpenDocument table rows inside header rows and row groups are no longer dropped.
+* Nested lists in DTBook books keep their levels.
+* Damaged MOBI files no longer crash.
+* A man page that redirects to one that isn't installed says which page.
+* Text files in a Central European or other national code page, and DOS text files, open with the right characters instead of symbols inside words.
+* A contents entry whose anchor falls inside its title line, as after a drop cap, lands at the start of that line, and its heading reads as the line is written.
+* Markdown export no longer writes empty bold or italic markers.
+
+##### iOS and Android
+* iOS: reading aloud no longer stops after the first paragraph on iOS 27.3.
+* iOS: closing a downloaded book keeps it closed.
+* Android: links, pictures, and tables are no longer placed wrongly after an emoji in the same line.
+* Removing an open document from Recent Documents closes it, as on Windows.
+* iOS: VoiceOver no longer offers Remove twice in Recent Documents, and Text Size and Paragraph Pause in Settings are each one adjustable control.
+
+##### Linux
+* The Linux build runs on Ubuntu 24.04, and other systems with its glibc, again.
+* A file sent to a running copy opens at once.
+
+### Version 1.1
 
 #### Added
 
@@ -374,6 +465,7 @@ Note: I consider a public GitHub sponsor grounds for automatic inclusion in this
 * A new PDF engine: faster, uses every CPU core, and needs no pdfium library.
 * Headings found in untagged pages, and better titles.
 * A setting to keep repeated page headers and footers.
+* A page layout setting for PDFs read out of order, in the Documents tab of Settings and for one document in View > Page Layout: by columns finds the columns from where the text sits instead of following the document, and can keep every line apart. It replaces the setting that kept lines apart. `pb --layout` does the same.
 
 ##### Other Documents
 * Word: numbered and bulleted lists, footnotes, endnotes, comments, picture alt text, list navigation, and Word's own pages.

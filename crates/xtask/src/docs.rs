@@ -1,9 +1,9 @@
 use std::{error::Error, fmt::Write as _, fs, path::Path};
 
 use patois::language_name;
-use shipfitter::docs::{Page, Readme, bcp47, convert, readmes};
+use shipfitter::docs::{Page, Readme, bcp47, convert, markdown_to_html, readmes};
 
-use crate::workspace::project_root;
+use crate::workspace::{crate_version, project_root};
 
 const TITLE: &str = "Paperback Documentation";
 const SITE: &str = "https://paperback.dev";
@@ -26,16 +26,45 @@ pub fn site_docs() -> Result<(), Box<dyn Error>> {
 	let out_dir = std::env::args().nth(2).map_or_else(|| project_root().join("web/_site"), Into::into);
 	fs::create_dir_all(&out_dir)?;
 	let readmes = readmes(&project_root().join("doc"))?;
+	let released =
+		version_parts(&crate_version(&project_root(), "paperback")?).ok_or("the workspace version isn't a version")?;
 	let head = site_head(&readmes);
 	for readme in &readmes {
 		let lang = bcp47(&readme.code);
 		let before_body =
 			format!("<p><a href=\"/\">&larr; paperback.dev</a></p>\n{}", language_bar(&readmes, &readme.code));
 		let page = Page { lang: &lang, title: TITLE, head: &head, before_body: &before_body, ..Page::default() };
-		convert(&readme.path, &out_dir.join(readme.html_name()), &page)?;
+		let markdown = without_unreleased(&fs::read_to_string(&readme.path)?, &released);
+		fs::write(out_dir.join(readme.html_name()), markdown_to_html(&markdown, &page))?;
 		println!("built {} from {}", readme.html_name(), readme.path.file_name().unwrap_or_default().to_string_lossy());
 	}
 	Ok(())
+}
+
+/// Leaves out the changelog of any version newer than the workspace's, so master's draft stays off the site until the release bumps the version.
+fn without_unreleased(markdown: &str, released: &[u32]) -> String {
+	let mut kept = String::with_capacity(markdown.len());
+	let mut skipping = false;
+	for line in markdown.split_inclusive('\n') {
+		let level = line.bytes().take_while(|&byte| byte == b'#').count();
+		if (1..=3).contains(&level) && line.as_bytes().get(level) == Some(&b' ') {
+			skipping = level == 3 && heading_version(line).is_some_and(|version| version.as_slice() > released);
+		}
+		if !skipping {
+			kept.push_str(line);
+		}
+	}
+	kept
+}
+
+/// Translations put the number anywhere in the heading: "Version 1.2", "1.2-es verzió", "バージョン1.2".
+fn heading_version(heading: &str) -> Option<Vec<u32>> {
+	heading.split(|c: char| !(c.is_ascii_digit() || c == '.')).find_map(version_parts)
+}
+
+fn version_parts(text: &str) -> Option<Vec<u32>> {
+	let parts: Vec<u32> = text.trim_matches('.').split('.').map(str::parse).collect::<Result<_, _>>().ok()?;
+	(parts.len() >= 2).then_some(parts)
 }
 
 /// `x-default` is English, which is also where a language with no manual should land.
@@ -72,4 +101,27 @@ fn language_bar(readmes: &[Readme], current: &str) -> String {
 	}
 	bar.push_str("</ul>\n</nav>\n");
 	bar
+}
+
+#[cfg(test)]
+mod tests {
+	use super::without_unreleased;
+
+	const README: &str = "# Paperback\n\n## Changelog\n\n### Version 1.2\n\n#### Added\n* Read aloud.\n\n### Version 1.1\n\n* OCR on Linux.\n";
+
+	#[test]
+	fn the_changelog_of_an_unreleased_version_is_left_out() {
+		assert_eq!(
+			without_unreleased(README, &[1, 1, 0]),
+			"# Paperback\n\n## Changelog\n\n### Version 1.1\n\n* OCR on Linux.\n"
+		);
+	}
+
+	#[test]
+	fn a_released_version_shows_however_a_translation_writes_it() {
+		assert_eq!(without_unreleased(README, &[1, 2, 0]), README);
+		let hungarian = "## Változásnapló\n\n### 1.2-es verzió\n\n* Új.\n\n### 1.1-es verzió\n\n* Régi.\n";
+		assert_eq!(without_unreleased(hungarian, &[1, 1, 0]), "## Változásnapló\n\n### 1.1-es verzió\n\n* Régi.\n");
+		assert_eq!(without_unreleased("### バージョン1.2\n\n* 新規\n", &[1, 1, 0]), "");
+	}
 }
