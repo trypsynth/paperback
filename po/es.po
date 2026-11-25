@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-24 01:53+0000\n"
+"POT-Creation-Date: 2026-11-25 16:45+0000\n"
 "PO-Revision-Date: 2026-02-28 00:00-0700\n"
 "Last-Translator: Quin Gillespie <trypsynth@gmail.com>\n"
 "Language-Team: Español <es@example.com>\n"
@@ -170,6 +170,31 @@ msgstr "El informe fue guardado."
 msgid "The report couldn't be saved: %s"
 msgstr "El informe no se pudo guardar: %s"
 
+#. TRANSLATORS: Checkbox in the Windows installer for a Paperback shortcut in the Start Menu, beside Inno Setup's own "Create a desktop shortcut". The & marks the key that checks it.
+#, fuzzy
+msgid "Create a &Start Menu shortcut"
+msgstr "Crear acceso directo en el &Menú Inicio"
+
+#. TRANSLATORS: Checkbox in the Windows installer: EPUB books open in Paperback when opened from File Explorer. Every other format Paperback reads is offered in Explorer's "Open with" without asking.
+#, fuzzy
+msgid "Make Paperback the default app for EPUB books (*.epub)"
+msgstr "Hacer que Paperback sea la aplicación predeterminada para libros EPUB (*.epub)"
+
+#. TRANSLATORS: Checkbox in the Windows installer: PDF files open in Paperback when opened from File Explorer, instead of in a browser or another PDF reader.
+#, fuzzy
+msgid "Make Paperback the default app for PDF files (*.pdf)"
+msgstr "Hacer que Paperback sea la aplicación predeterminada para archivos PDF (*.pdf)"
+
+#. TRANSLATORS: Checkbox in the Windows installer adding Paperback's folder to the PATH environment variable, so pb, Paperback's command-line converter, runs from any command prompt.
+#, fuzzy
+msgid "Add Paperback's folder to PATH, for the pb command"
+msgstr "Añadir la carpeta de Paperback a PATH, para el comando pb"
+
+#. TRANSLATORS: The file type File Explorer shows for a document set to open in Paperback, as in its Type column.
+#, fuzzy
+msgid "Paperback Document"
+msgstr "Documento de Paperback"
+
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 #, fuzzy
 msgid "Checking %s"
@@ -199,7 +224,7 @@ msgstr "Añadir la herramienta de línea de comandos pb a PATH"
 
 #. TRANSLATORS: Checkbox label in the Linux file-association setup dialog. Shared by
 #. multiple parsers (DAISY, Word-in-zip), so it's kept as its own opt-in entry rather
-#. than tied to one format, same as the Windows installer's "assoc_zip" task.
+#. than tied to one format.
 #, fuzzy
 msgid "ZIP Archives (.zip)"
 msgstr "Archivos ZIP (.zip)"
@@ -1658,6 +1683,21 @@ msgstr "Diccionario de &síntesis..."
 msgid "System default"
 msgstr "Sistema predeterminado"
 
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: PDF and XPS pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+#, fuzzy
+msgid "Automatic"
+msgstr "Automático"
+
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: the document's own reading order is ignored and the columns of each page are found from where the text sits, then read one after the other. It suits documents whose text is read out of order, such as two-column layouts
+#, fuzzy
+msgid "By columns, ignoring the document's own order"
+msgstr "Por columnas, ignorando el orden del documento"
+
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: like reading by columns, but every line is kept apart instead of joined into paragraphs, which suits code, poetry and lists of clauses whose line breaks are the content
+#, fuzzy
+msgid "By columns, keeping every line apart"
+msgstr "Por columnas, manteniendo cada línea separada"
+
 #. TRANSLATORS: Note at the top of the Documents tab of Settings, whose options change how a file is read
 #, fuzzy
 msgid "Changing these reads your open documents again when you press OK."
@@ -1668,10 +1708,10 @@ msgstr "Al cambiar estas opciones se releerán los documentos abiertos al presio
 msgid "Render tables &inline"
 msgstr "Mostrar tablas en &línea"
 
-#. TRANSLATORS: Option to join the wrapped lines of a page back into paragraphs, in documents laid out as pages, such as PDFs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
+#. TRANSLATORS: Label for the dropdown choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for every document not given a page layout of its own in the View menu
 #, fuzzy
-msgid "&Join wrapped lines into paragraphs"
-msgstr "&Unir líneas ajustadas en párrafos"
+msgid "Page &layout of PDF and XPS documents:"
+msgstr "Dis&posición de página de documentos PDF y XPS:"
 
 #. TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
 #, fuzzy
@@ -1687,6 +1727,11 @@ msgstr "Leer texto entre signos de dólar como &fórmula matemática en Markdown
 #, fuzzy
 msgid "&Braille code of BRF and PEF books:"
 msgstr "&Código braille de libros BRF y PEF:"
+
+#. TRANSLATORS: Option to show BRF, PEF, eBraille and BARD braille books as their braille, in Unicode braille, instead of turning them into print. It suits reading on a braille display, where the screen reader would otherwise turn the print back into braille; speech reads the cells as braille patterns. The braille code above still says which braille the books are written in.
+#, fuzzy
+msgid "&Keep braille books in braille, for reading on a braille display"
+msgstr "&Mantener libros en braille como braille, para lectura en pantalla braille"
 
 #. TRANSLATORS: Description text shown when the background color is set to default
 #, fuzzy
@@ -2876,6 +2921,55 @@ msgstr "Ver &Código Fuente"
 #, fuzzy
 msgid "Open the document source in a new tab"
 msgstr "Abre el documento original en una nueva pestaña"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open PDF or XPS document follows the page layout chosen for all documents in Settings
+#, fuzzy
+msgid "&Same as Other Documents"
+msgstr "&Igual que Otros Documentos"
+
+#. TRANSLATORS: Status-bar help text for the Same as Other Documents page layout item
+#, fuzzy
+msgid "Read this document with the page layout set in Settings"
+msgstr "Leer este documento con la disposición de página configurada en Configuración"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open document's pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+#, fuzzy
+msgid "&Automatic"
+msgstr "&Automático"
+
+#. TRANSLATORS: Status-bar help text for the Automatic page layout item
+#, fuzzy
+msgid "Read this document in its own order, joining wrapped lines"
+msgstr "Leer este documento en su propio orden, uniendo líneas envueltas"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open document's own reading order is ignored and the columns of each page are found from where the text sits, for documents read out of order
+#, fuzzy
+msgid "By &Columns"
+msgstr "Por &Columnas"
+
+#. TRANSLATORS: Status-bar help text for the By Columns page layout item
+#, fuzzy
+msgid "Find the columns of each page instead of following the document's own order"
+msgstr "Encontrar las columnas de cada página en lugar de seguir el orden del documento"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: like By Columns, but every line is kept apart instead of joined into paragraphs, for code, poetry and lists of clauses
+#, fuzzy
+msgid "By Columns, &Every Line Apart"
+msgstr "Por Columnas, &Cada Línea Separada"
+
+#. TRANSLATORS: Status-bar help text for the By Columns, Every Line Apart page layout item
+#, fuzzy
+msgid "Find the columns of each page and keep every line separate"
+msgstr "Encontrar las columnas de cada página y mantener cada línea separada"
+
+#. TRANSLATORS: Submenu of the View menu choosing how the open PDF or XPS document's pages are put in reading order and paragraphs
+#, fuzzy
+msgid "Page &Layout"
+msgstr "Dis&posición de Página"
+
+#, fuzzy
+msgid "How this document's pages are read"
+msgstr "Cómo se leen las páginas de este documento"
 
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
@@ -5050,31 +5144,31 @@ msgid "Pattern & Replacement"
 msgstr "Plantilla y sustitución"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the text (or regex) to search for
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Pattern"
 msgstr "Patrón"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the replacement text
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Replacement"
 msgstr "Sustitución"
 
 #. TRANSLATORS: Toggle limiting a word-scope rule to whole-word matches only (no partial-word matches)
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Whole word only"
 msgstr "Solo palabras completas"
 
 #. TRANSLATORS: Toggle enabling regex matching for a paragraph-scope rule; "\1" is a regex backreference syntax and must stay untranslated
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Regular expression (\\1 = first capture group)"
 msgstr "Expresión regular (\\1 = primer grupo de captura)"
 
 #. TRANSLATORS: Toggle for whether this text-substitution rule is currently active
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Enabled"
 msgstr "Activado"
@@ -5086,7 +5180,7 @@ msgid "Apply to"
 msgstr "Solicitar el puesto de"
 
 #. TRANSLATORS: Row label leading to the voice-filter picker for this rule
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Voices"
 msgstr "Voces"
@@ -5161,7 +5255,7 @@ msgid "Start Timer"
 msgstr "Iniciar el cronómetro"
 
 #. TRANSLATORS: Message shown when no speech dictionary rules have been created yet
-#: swift
+#: kt swift
 #, fuzzy
 msgid "No Rules"
 msgstr "Sin reglas"
@@ -6275,6 +6369,105 @@ msgstr "mostrar nota y opciones de marcador"
 #, fuzzy
 msgid "go to bookmark"
 msgstr "ir al marcador"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: the open PDF or XPS document follows the page layout chosen for all documents in Settings
+#: kt swift
+#, fuzzy
+msgid "Same as Other Documents"
+msgstr "Igual que Otros Documentos"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: the open document's own reading order is ignored and the columns of each page are found from where the text sits, for documents read out of order
+#: kt swift
+#, fuzzy
+msgid "By Columns"
+msgstr "Por Columnas"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: like By Columns, but every line is kept apart instead of joined into paragraphs, for code, poetry and lists of clauses
+#: kt swift
+#, fuzzy
+msgid "By Columns, Every Line Apart"
+msgstr "Por Columnas, Cada Línea Separada"
+
+#. TRANSLATORS: Submenu of the document actions menu choosing how the open PDF or XPS document's pages are put in reading order and paragraphs
+#: kt swift
+#, fuzzy
+msgid "Page Layout"
+msgstr "Disposición de Página"
+
+#. TRANSLATORS: Label for the picker choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for every document not given a page layout of its own in the More options menu
+#: kt swift
+#, fuzzy
+msgid "Page layout of PDF and XPS documents"
+msgstr "Disposición de página de documentos PDF y XPS"
+
+#. TRANSLATORS: Label of the choice between a rule matching words and one matching across a whole paragraph
+#: kt
+#, fuzzy
+msgid "Applies to"
+msgstr "Se aplica a"
+
+#. TRANSLATORS: Footer under the Speech Dictionary row in Settings, explaining what its rules do
+#: kt
+#, fuzzy
+msgid "Change how words are read aloud, without changing the document."
+msgstr "Cambiar cómo se leen las palabras en voz alta, sin cambiar el documento."
+
+#: kt
+#, fuzzy
+msgid "Moved to {} of {}"
+msgstr "Movido a {} de {}"
+
+#. TRANSLATORS: Announced after a speech dictionary rule is deleted
+#: kt
+#, fuzzy
+msgid "Rule deleted"
+msgstr "Regla eliminada"
+
+#. TRANSLATORS: Menu item and TalkBack action moving a speech dictionary rule one place earlier, so it applies sooner
+#: kt
+#, fuzzy
+msgid "Move Up"
+msgstr "Mover Arriba"
+
+#. TRANSLATORS: Menu item and TalkBack action moving a speech dictionary rule one place later, so it applies later
+#: kt
+#, fuzzy
+msgid "Move Down"
+msgstr "Mover Abajo"
+
+#. TRANSLATORS: TalkBack action turning a speech dictionary rule off, so it no longer changes what is read aloud
+#: kt
+#, fuzzy
+msgid "Turn Off"
+msgstr "Desactivar"
+
+#. TRANSLATORS: TalkBack action turning a speech dictionary rule back on
+#: kt
+#, fuzzy
+msgid "Turn On"
+msgstr "Activar"
+
+#. TRANSLATORS: TalkBack state of a speech dictionary rule that is on
+#: kt
+#, fuzzy
+msgid "On"
+msgstr "activado"
+
+#. TRANSLATORS: TalkBack action label for a rule in the Speech Dictionary, read as "double tap to edit rule"
+#: kt
+#, fuzzy
+msgid "edit rule"
+msgstr "editar regla"
+
+#. TRANSLATORS: Shown under "No Rules" in the Speech Dictionary, saying how to make the first rule
+#: kt
+#, fuzzy
+msgid "Use Add Rule to change how a word or pattern is read aloud."
+msgstr "Usa Añadir Regla para cambiar cómo se lee una palabra o patrón en voz alta."
+
+#, fuzzy
+#~ msgid "&Join wrapped lines into paragraphs"
+#~ msgstr "&Unir líneas ajustadas en párrafos"
 
 #, fuzzy
 #~ msgid "on"
