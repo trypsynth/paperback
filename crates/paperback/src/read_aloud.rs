@@ -34,10 +34,10 @@ const VOLUME_STEP: f32 = 0.1;
 const MAX_VOLUME: f32 = 2.0;
 
 /// What happened in reading since the last tick.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Followed {
-	/// A word started, or a paragraph when the engine doesn't say where its words are, for the caret to move to.
-	Word(DocPos),
+	/// The words that started since the last tick, in order, as their start and end, for the caret to move to the last. A paragraph the engine reports no words in comes as one word.
+	Words(Vec<(DocPos, DocPos)>),
 	/// The last paragraph has been read.
 	End,
 }
@@ -54,7 +54,7 @@ pub struct Speaker {
 	sample: Option<Arc<Player>>,
 	paused: bool,
 	volume: f32,
-	/// The paragraph the caret was last moved to, so it only moves when a new one starts.
+	/// The word the caret was last moved to, so it only moves when a new one starts.
 	followed: Option<DocPos>,
 	/// Where the caret was left, by reading or by the user, so a move of the user's own can be told apart.
 	caret: Option<DocPos>,
@@ -289,28 +289,30 @@ impl Speaker {
 		self.moved = None;
 	}
 
-	/// Prepares the paragraphs ahead, and returns what the caret should follow: a word that has just started, or the end, once. Call it on every tick for the document being read. Nothing is followed while the user is moving the caret.
+	/// Prepares the paragraphs ahead, and returns what the caret should follow: the words that have just started, or the end, once. Call it on every tick for the document being read. Nothing is followed while the user is moving the caret.
 	pub fn pump(&mut self, session: &DocumentSession) -> Option<Followed> {
 		self.player.as_ref()?;
 		self.read_aloud.refill(session);
 		for error in self.read_aloud.take_errors() {
 			tracing::warn!(%error, "read aloud: a paragraph couldn't be spoken, so it was skipped");
 		}
-		let progress = self.read_aloud.progress();
+		let mut words = self.read_aloud.take_started_words();
 		if self.moved.is_some() {
 			return None;
 		}
-		if progress.finished {
+		if self.read_aloud.progress().finished {
 			self.player = None;
 			return Some(Followed::End);
 		}
 		// The caret follows each word, so pausing and moving it goes on from the word being read rather than from where its paragraph starts.
-		let at = progress.word.or(progress.paragraph);
-		if at == self.followed {
-			return None;
-		}
-		self.followed = at;
-		at.map(Followed::Word)
+		let mut followed = self.followed;
+		words.retain(|&(start, _)| {
+			let new = followed != Some(start);
+			followed = Some(start);
+			new
+		});
+		self.followed = followed;
+		(!words.is_empty()).then_some(Followed::Words(words))
 	}
 
 	/// Returns the new volume, and whether it was already at its limit.

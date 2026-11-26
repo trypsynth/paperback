@@ -50,6 +50,24 @@ impl TextMap {
 			offset.saturating_add_signed(-shift)
 		})
 	}
+
+	/// The char offset in the original text that an end `offset` in the rewritten text came from. An end inside a replacement maps to where the replaced text ended.
+	#[must_use]
+	pub fn to_original_end(&self, offset: usize) -> usize {
+		self.steps.iter().rev().fold(offset, |offset, edits| {
+			let mut shift: isize = 0;
+			for edit in edits {
+				if offset <= edit.start {
+					break;
+				}
+				if offset < edit.start + edit.new_len {
+					return (edit.start + edit.old_len).saturating_add_signed(-shift);
+				}
+				shift += edit.new_len.cast_signed() - edit.old_len.cast_signed();
+			}
+			offset.saturating_add_signed(-shift)
+		})
+	}
 }
 
 #[cfg(test)]
@@ -82,5 +100,17 @@ mod tests {
 	#[test]
 	fn no_rewrites_is_the_identity() {
 		assert_eq!(TextMap::default().to_original(42), 42);
+		assert_eq!(TextMap::default().to_original_end(42), 42);
+	}
+
+	#[test]
+	fn an_end_inside_a_replacement_maps_to_where_the_replaced_text_ended() {
+		// "e.g. now" became "for example now": "e.g." (4 chars) at 0 became "for example" (11).
+		let mut map = TextMap::default();
+		map.push_step(&[(0, 4, 11)]);
+		assert_eq!(map.to_original_end(3), 4, "the end of \"for\"");
+		assert_eq!(map.to_original_end(11), 4, "the end of \"example\"");
+		assert_eq!(map.to_original_end(15), 8, "the end of \"now\"");
+		assert_eq!(map.to_original_end(0), 0, "an end where the replacement starts");
 	}
 }

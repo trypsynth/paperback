@@ -1,6 +1,7 @@
 mod app;
 mod audio;
 mod background;
+mod bookmark_sounds;
 mod bookmarks;
 mod commands;
 mod dialogs;
@@ -21,6 +22,8 @@ mod paragraph_format;
 mod readability;
 mod reader_ctrl;
 mod reader_input;
+#[cfg(target_os = "windows")]
+mod reader_units;
 #[cfg(target_os = "windows")]
 mod rtf_stream;
 mod selection;

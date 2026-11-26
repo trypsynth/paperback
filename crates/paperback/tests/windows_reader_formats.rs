@@ -1,5 +1,6 @@
 //! A screen reader reads headings and list items from `EM_GETPARAFORMAT`, and links from `CFE_LINK` or the Text Object Model's `tomLink` unit.
 //! Paragraph formats must not change anything a sighted reader sees.
+//! The word and visual line a key moves to are measured the way the control lays out the text.
 
 // The included modules' own unit tests compile here too, unused.
 #[cfg(target_os = "windows")]
@@ -37,6 +38,10 @@ pub mod text_window;
 #[allow(dead_code)]
 #[path = "../src/ui/reader_ctrl.rs"]
 pub mod reader_ctrl;
+
+#[cfg(target_os = "windows")]
+#[path = "../src/ui/reader_units.rs"]
+pub mod reader_units;
 
 // Where the included modules look for the reader control.
 #[cfg(target_os = "windows")]
@@ -334,6 +339,51 @@ mod link_marks {
 	}
 }
 
+#[cfg(target_os = "windows")]
+mod units {
+	use wxdragon::prelude::*;
+
+	use crate::{
+		reader_ctrl::ReaderCtrl,
+		reader_units::{visual_line_at, word_end},
+		text_window::CtrlPos,
+	};
+
+	fn pos(raw: i64) -> CtrlPos {
+		CtrlPos::from_raw(raw)
+	}
+
+	fn words(text_ctrl: ReaderCtrl) {
+		text_ctrl.set_value("One two  three\nfour");
+		assert_eq!(word_end(text_ctrl, pos(0)), pos(4), "the first word runs to the next word's start");
+		assert_eq!(word_end(text_ctrl, pos(4)), pos(9), "a word takes the spaces after it");
+		assert_eq!(word_end(text_ctrl, pos(5)), pos(9), "from inside a word, to the next word's start");
+	}
+
+	fn lines(text_ctrl: ReaderCtrl) {
+		text_ctrl.set_value("Short line\nNext");
+		assert_eq!(visual_line_at(text_ctrl, pos(3)), Some((pos(0), pos(11))), "a line up to the next line's start");
+		assert_eq!(visual_line_at(text_ctrl, pos(10)), Some((pos(0), pos(11))), "its line break");
+		assert_eq!(visual_line_at(text_ctrl, pos(13)), Some((pos(11), pos(15))), "the last line");
+		let paragraph = "word ".repeat(200);
+		let paragraph_end = i64::try_from(paragraph.len()).unwrap();
+		text_ctrl.set_value(&paragraph);
+		let first = visual_line_at(text_ctrl, pos(0)).expect("the first line");
+		assert_eq!(first.0, pos(0), "the first visual line starts the paragraph");
+		assert!(first.1 < pos(paragraph_end), "the paragraph wraps: {first:?}");
+		let second = visual_line_at(text_ctrl, first.1).expect("the second line");
+		assert_eq!(second.0, first.1, "the second visual line starts where the first ends");
+		assert!(second.1 > second.0, "the second visual line holds text: {second:?}");
+		assert_eq!(visual_line_at(text_ctrl, second.0 + 2), Some(second), "inside the second line");
+	}
+
+	pub fn run(text_ctrl: TextCtrl) {
+		let text_ctrl = ReaderCtrl::new(text_ctrl);
+		words(text_ctrl);
+		lines(text_ctrl);
+	}
+}
+
 // wxWidgets runs its windows on the main thread; Rust's default test harness uses worker threads.
 #[cfg(target_os = "windows")]
 fn main() {
@@ -354,6 +404,7 @@ fn main() {
 			.build();
 		paragraph_styles::run(text_ctrl);
 		link_marks::run(text_ctrl);
+		units::run(text_ctrl);
 		passed_for_app.set(true);
 		frame.close(true);
 		wxdragon::call_after(Box::new(|| wxdragon::app::get_app_instance().unwrap().exit_main_loop()));
