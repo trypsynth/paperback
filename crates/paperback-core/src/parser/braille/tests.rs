@@ -305,6 +305,17 @@ fn a_dash_ending_a_line_is_no_broken_word() {
 	assert_eq!(belle.paragraphs, [cells(",ELLE ALLA VOIR SA SOEUR ET SA B_-S]")], "French belle- broken at its hyphen");
 }
 
+/// A Christmas Carol from the Internet Archive writes its print page numbers as lines of their own.
+#[test]
+fn a_page_number_between_hyphens_is_no_broken_word() {
+	let layout = layout(&[&["  -#AE-", "8,NO?+6\"", "  ,! G\\D SPIRIT"]], true);
+	assert!(
+		layout.paragraphs.iter().all(|paragraph| !paragraph.starts_with(&cells("-#AE-8"))),
+		"{:?}",
+		layout.paragraphs
+	);
+}
+
 #[test]
 fn reads_guide_dots_as_one_space() {
 	let contents = layout(
