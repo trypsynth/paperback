@@ -5401,8 +5401,8 @@ msgid "Changing these reads your open documents again when you press OK."
 msgstr "Zmiana tych ustawień spowoduje ponowne wczytanie otwartych dokumentów po naciśnięciu OK."
 
 #. TRANSLATORS: Option to join the wrapped lines of a page back into paragraphs, in documents laid out as pages, such as PDFs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
-msgid "&Join wrapped lines into paragraphs"
-msgstr "&Scalaj zawinięte wiersze w akapity"
+#~ msgid "&Join wrapped lines into paragraphs"
+#~ msgstr "&Scalaj zawinięte wiersze w akapity"
 
 #. TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
 msgid "Remove repeated page &headers and footers"
@@ -5752,3 +5752,166 @@ msgstr "Pokaż lub ukryj okno"
 
 msgid "Close the app"
 msgstr "Zakończ aplikację"
+
+#. TRANSLATORS: Checkbox in the Windows installer for a Paperback shortcut in the Start Menu, beside Inno Setup's own "Create a desktop shortcut". The & marks the key that checks it.
+msgid "Create a &Start Menu shortcut"
+msgstr "Utwórz skrót w menu &Start"
+
+#. TRANSLATORS: Checkbox in the Windows installer: EPUB books open in Paperback when opened from File Explorer. Every other format Paperback reads is offered in Explorer's "Open with" without asking.
+msgid "Make Paperback the default app for EPUB books (*.epub)"
+msgstr "Ustaw Paperbacka jako domyślną aplikację do książek EPUB (*.epub)"
+
+#. TRANSLATORS: Checkbox in the Windows installer: PDF files open in Paperback when opened from File Explorer, instead of in a browser or another PDF reader.
+msgid "Make Paperback the default app for PDF files (*.pdf)"
+msgstr "Ustaw Paperbacka jako domyślną aplikację do plików PDF (*.pdf)"
+
+#. TRANSLATORS: Checkbox in the Windows installer adding Paperback's folder to the PATH environment variable, so pb, Paperback's command-line converter, runs from any command prompt.
+msgid "Add Paperback's folder to PATH, for the pb command"
+msgstr "Dodaj folder Paperbacka do PATH, aby móc używać polecenia pb"
+
+#. TRANSLATORS: The file type File Explorer shows for a document set to open in Paperback, as in its Type column.
+msgid "Paperback Document"
+msgstr "Dokument Paperbacka"
+
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: PDF and XPS pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+msgid "Automatic"
+msgstr "Automatycznie"
+
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: the document's own reading order is ignored and the columns of each page are found from where the text sits, then read one after the other. It suits documents whose text is read out of order, such as two-column layouts
+msgid "By columns, ignoring the document's own order"
+msgstr "Według kolumn, z pominięciem kolejności zapisanej w dokumencie"
+
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: like reading by columns, but every line is kept apart instead of joined into paragraphs, which suits code, poetry and lists of clauses whose line breaks are the content
+msgid "By columns, keeping every line apart"
+msgstr "Według kolumn, z zachowaniem podziału na wiersze"
+
+#. TRANSLATORS: Label for the dropdown choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for every document not given a page layout of its own in the View menu
+msgid "Page &layout of PDF and XPS documents:"
+msgstr "Układ stron do&kumentów PDF i XPS:"
+
+#. TRANSLATORS: Option to show BRF, PEF, eBraille and BARD braille books as their braille, in Unicode braille, instead of turning them into print. It suits reading on a braille display, where the screen reader would otherwise turn the print back into braille; speech reads the cells as braille patterns. The braille code above still says which braille the books are written in.
+msgid "&Keep braille books in braille, for reading on a braille display"
+msgstr "&Zachowuj zapis brajlowski książek do czytania na linijce brajlowskiej"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open PDF or XPS document follows the page layout chosen for all documents in Settings
+msgid "&Same as Other Documents"
+msgstr "&Taki jak dla innych dokumentów"
+
+#. TRANSLATORS: Status-bar help text for the Same as Other Documents page layout item
+msgid "Read this document with the page layout set in Settings"
+msgstr "Czytaj ten dokument zgodnie z układem stron wybranym w Ustawieniach"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open document's pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+msgid "&Automatic"
+msgstr "&Automatycznie"
+
+#. TRANSLATORS: Status-bar help text for the Automatic page layout item
+msgid "Read this document in its own order, joining wrapped lines"
+msgstr "Czytaj w kolejności zapisanej w dokumencie, scalając zawinięte wiersze"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open document's own reading order is ignored and the columns of each page are found from where the text sits, for documents read out of order
+msgid "By &Columns"
+msgstr "Według &kolumn"
+
+#. TRANSLATORS: Status-bar help text for the By Columns page layout item
+msgid "Find the columns of each page instead of following the document's own order"
+msgstr "Wykryj kolumny na każdej stronie, zamiast stosować kolejność zapisaną w dokumencie"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: like By Columns, but every line is kept apart instead of joined into paragraphs, for code, poetry and lists of clauses
+msgid "By Columns, &Every Line Apart"
+msgstr "Według kolumn, z zachowaniem podziału na &wiersze"
+
+#. TRANSLATORS: Status-bar help text for the By Columns, Every Line Apart page layout item
+msgid "Find the columns of each page and keep every line separate"
+msgstr "Wykryj kolumny na każdej stronie i zachowaj podział na wiersze"
+
+#. TRANSLATORS: Submenu of the View menu choosing how the open PDF or XPS document's pages are put in reading order and paragraphs
+msgid "Page &Layout"
+msgstr "&Układ strony"
+
+msgid "How this document's pages are read"
+msgstr "Ustal, w jakiej kolejności i z jakim podziałem na wiersze czytać strony tego dokumentu"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: the open PDF or XPS document follows the page layout chosen for all documents in Settings
+#: kt
+#: swift
+msgid "Same as Other Documents"
+msgstr "Taki jak dla innych dokumentów"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: the open document's own reading order is ignored and the columns of each page are found from where the text sits, for documents read out of order
+#: kt
+#: swift
+msgid "By Columns"
+msgstr "Według kolumn"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: like By Columns, but every line is kept apart instead of joined into paragraphs, for code, poetry and lists of clauses
+#: kt
+#: swift
+msgid "By Columns, Every Line Apart"
+msgstr "Według kolumn, z zachowaniem podziału na wiersze"
+
+#. TRANSLATORS: Submenu of the document actions menu choosing how the open PDF or XPS document's pages are put in reading order and paragraphs
+#: kt
+#: swift
+msgid "Page Layout"
+msgstr "Układ strony"
+
+#. TRANSLATORS: Label for the picker choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for every document not given a page layout of its own in the More options menu
+#: kt
+#: swift
+msgid "Page layout of PDF and XPS documents"
+msgstr "Układ stron dokumentów PDF i XPS"
+
+#. TRANSLATORS: Label of the choice between a rule matching words and one matching across a whole paragraph
+#: kt
+msgid "Applies to"
+msgstr "Zastosuj do"
+
+#. TRANSLATORS: Footer under the Speech Dictionary row in Settings, explaining what its rules do
+#: kt
+msgid "Change how words are read aloud, without changing the document."
+msgstr "Zmieniaj sposób odczytywania słów bez zmieniania treści dokumentu."
+
+#: kt
+msgid "Moved to {} of {}"
+msgstr "Przeniesiono na pozycję {} z {}"
+
+#. TRANSLATORS: Announced after a speech dictionary rule is deleted
+#: kt
+msgid "Rule deleted"
+msgstr "Usunięto regułę"
+
+#. TRANSLATORS: Menu item and TalkBack action moving a speech dictionary rule one place earlier, so it applies sooner
+#: kt
+msgid "Move Up"
+msgstr "Przenieś w górę"
+
+#. TRANSLATORS: Menu item and TalkBack action moving a speech dictionary rule one place later, so it applies later
+#: kt
+msgid "Move Down"
+msgstr "Przenieś w dół"
+
+#. TRANSLATORS: TalkBack action turning a speech dictionary rule off, so it no longer changes what is read aloud
+#: kt
+msgid "Turn Off"
+msgstr "Wyłącz"
+
+#. TRANSLATORS: TalkBack action turning a speech dictionary rule back on
+#: kt
+msgid "Turn On"
+msgstr "Włącz"
+
+#. TRANSLATORS: TalkBack state of a speech dictionary rule that is on
+#: kt
+msgid "On"
+msgstr "Włączony"
+
+#. TRANSLATORS: TalkBack action label for a rule in the Speech Dictionary, read as "double tap to edit rule"
+#: kt
+msgid "edit rule"
+msgstr "edytować regułę"
+
+#. TRANSLATORS: Shown under "No Rules" in the Speech Dictionary, saying how to make the first rule
+#: kt
+msgid "Use Add Rule to change how a word or pattern is read aloud."
+msgstr "Wybierz Dodaj regułę, aby zmienić sposób odczytywania słowa lub wzorca."

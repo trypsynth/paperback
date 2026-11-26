@@ -1,6 +1,7 @@
 use std::{error::Error, fmt::Write as _, fs, path::Path};
 
 use patois::language_name;
+use patois_build::po::PoDocument;
 use shipfitter::docs::{Page, Readme, bcp47, convert, markdown_to_html, readmes};
 
 use crate::workspace::{crate_version, project_root};
@@ -31,11 +32,14 @@ pub fn site_docs() -> Result<(), Box<dyn Error>> {
 	let head = site_head(&readmes);
 	for readme in &readmes {
 		let lang = bcp47(&readme.code);
-		let before_body =
-			format!("<p><a href=\"/\">&larr; paperback.dev</a></p>\n{}", language_bar(&readmes, &readme.code));
-		let page = Page { lang: &lang, title: TITLE, head: &head, before_body: &before_body, ..Page::default() };
+		let before_body = "<p><a href=\"/\">&larr; paperback.dev</a></p>\n";
+		let page = Page { lang: &lang, title: TITLE, head: &head, before_body, ..Page::default() };
 		let markdown = without_unreleased(&fs::read_to_string(&readme.path)?, &released);
-		fs::write(out_dir.join(readme.html_name()), markdown_to_html(&markdown, &page))?;
+		let html = markdown_to_html(&markdown, &page);
+		// The page template has no place after the document, so the picker goes in before the body closes.
+		let end = html.rfind("</body>").ok_or("the guide page has no </body>")?;
+		let html = format!("{}{}{}", &html[..end], language_picker(&readmes, &readme.code), &html[end..]);
+		fs::write(out_dir.join(readme.html_name()), html)?;
 		println!("built {} from {}", readme.html_name(), readme.path.file_name().unwrap_or_default().to_string_lossy());
 	}
 	Ok(())
@@ -83,9 +87,12 @@ fn site_head(readmes: &[Readme]) -> String {
 	head
 }
 
-/// Each name carries its own `lang` so a screen reader says "日本語" in a Japanese voice rather than spelling it out in the page's.
-fn language_bar(readmes: &[Readme], current: &str) -> String {
-	let mut bar = String::from("<nav class=\"language-bar\" aria-label=\"Language\">\n<ul>\n");
+/// Closed at the foot of the page, as scribeit.io has it, so the list doesn't stand between the reader and the guide. Each name carries its own `lang` so a screen reader says "日本語" in a Japanese voice rather than spelling it out in the page's.
+fn language_picker(readmes: &[Readme], current: &str) -> String {
+	let label = word_for_language(current);
+	let mut bar = format!(
+		"<footer class=\"language-picker\">\n<details>\n<summary>{label}</summary>\n<nav aria-label=\"{label}\">\n<ul>\n"
+	);
 	for readme in readmes {
 		let tag = bcp47(&readme.code);
 		let name = language_name(&readme.code);
@@ -99,8 +106,19 @@ fn language_bar(readmes: &[Readme], current: &str) -> String {
 			);
 		}
 	}
-	bar.push_str("</ul>\n</nav>\n");
+	bar.push_str("</ul>\n</nav>\n</details>\n</footer>\n");
 	bar
+}
+
+/// "Language" in the page's own language, from the app's translation of it, so the picker is found by someone who can read the page.
+fn word_for_language(code: &str) -> String {
+	fs::read_to_string(project_root().join("po").join(format!("{code}.po")))
+		.ok()
+		.and_then(|po| {
+			PoDocument::parse(&po).entries.into_iter().find(|entry| entry.msgid == "Language").map(|entry| entry.msgstr)
+		})
+		.filter(|word| !word.is_empty())
+		.unwrap_or_else(|| "Language".to_string())
 }
 
 #[cfg(test)]

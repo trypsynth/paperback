@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2e060f0cdd2c601f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,77b4e1b6,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: be2c117e73c87f18; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,bc0095e6,8423460b,77b4e1b6,d3762a01,e9860ee8,84e20448); please review and edit as needed -->
 
 # Paperback - version 1.1
 
@@ -68,6 +68,8 @@ Paperback prend en charge les formats et extensions suivants :
 * Fichiers texte OpenDocument (`.odt`, `.fodt`)
 * Fichiers d'aide et livres OS/2, avec leurs images (`.inf`, `.hlp`)
 * Documents PDF (`.pdf`)
+* Fichiers d'aide Qt, la documentation que Qt Assistant et Qt Creator lisent, comme celle de Qt et CMake (`.qch`)
+* Livres QRead, les copies que QRead a enregistrées de chaque livre qu'il a ouvert (`.qrd`)
 * Présentations PowerPoint (`.pptx`, `.pptm`, `.ppt`)
 * Archives RAR de livres, qui s'ouvrent comme un zip, avec une liste à choisir quand l'une en contient plusieurs (`.rar`)
 * Documents reStructuredText (`.rst`, `.rest`)
@@ -333,9 +335,105 @@ Remarque : je considère un parrain GitHub public comme un motif d'inclusion aut
 
 ## Journal des modifications
 
-### Version 1.1
+### Version 1.2
 
-1.1 apporte un nouveau moteur PDF, un mode texte iOS reconstruit, l'OCR sur Linux, des documents à partir de liens, la prise en charge de dizaines d'années de fichiers Word, Write et PowerPoint anciens, et bien d'autres choses.
+#### Ajouté
+
+##### Lecture à voix haute
+* Lire n'importe quel document à voix haute, avec les voix OneCore ou SAPI 5 sur Windows et les voix du système sur macOS. `Ctrl+Space` démarre et arrête la lecture, les touches de recherche sautent les paragraphes, et les touches de vitesse et de volume fonctionnent comme pour les audiolivres.
+* Choisissez la voix, le débit, la hauteur et la pause entre les paragraphes dans l'onglet Audio des Paramètres, essayez-les avec un bouton d'exemple, et donnez à un livre sa propre voix.
+* La lecture commence au curseur, recommence partout où vous le déplacez, et déplace le curseur à chaque mot prononcé.
+* Un dictionnaire de parole, depuis l'onglet Audio des Paramètres, change la façon dont les mots sont lus à voix haute : chaque règle remplace un mot ou un motif, peut correspondre aux mots entiers uniquement ou être une expression régulière, et peut être activée et désactivée.
+
+##### Braille
+* Les fichiers Braille Ready (`.brf`) et les livres PEF s'ouvrent rétro-traduits en caractères d'imprimerie, dans le code braille que vous choisissez dans Paramètres.
+* Les livres eBraille (`.ebrl`) s'ouvrent en caractères d'imprimerie s'ils les contiennent, et sont autrement rétro-traduits avec le code braille qu'ils désignent.
+* Les livres braille NLS BARD, à partir du fichier zip ou de son `.bopf`, s'ouvrent comme un seul livre contenant tous leurs volumes, dans le code braille que leurs noms de paquets désignent.
+* Pour lire les livres braille sur un afficheur braille, un paramètre de l'onglet Documents des Paramètres les maintient en braille, en braille Unicode, afin que le lecteur d'écran affiche le braille du transcripteur au lieu de retraduite les caractères d'imprimerie en braille. `pb --keep-braille` fait la même chose.
+* Les fichiers braille écrits en ASCII braille d'un autre pays, tels que le norvégien, le danois, le français, l'espagnol, le slovaque, le tchèque ou le hongrois, sont reconnus.
+
+##### Nouveaux formats
+* Documents XPS et OpenXPS.
+* Archives RAR et comics RAR (`.cbr`).
+* Manuels GNU Info, compressés ou divisés, avec leurs menus, références croisées et index.
+* Fichiers d'aide OS/2 et livres (`.inf`, `.hlp`), avec leurs images et liens.
+* Livres PalmDOC.
+* Pages `.shtml` et livres EPUB non compressés, ouverts par leur `.opf`.
+* Un fichier zip de parties MP3 ou M4B s'ouvre comme un seul audiolivre.
+* Fichiers d'aide Qt (`.qch`), la documentation que Qt Assistant et Qt Creator lisent, comme celle de Qt et CMake.
+* Livres QRead (`.qrd`), les copies que QRead a enregistrées de chaque livre qu'il a ouvert, qui s'ouvrent où QRead s'était arrêté la première fois.
+
+##### Audiolivres
+* Aller à l'heure (`Ctrl+J`) accède à une heure, comme `1:23:45` ou `+5:00`.
+* `=` indique également à quel point vous êtes dans le livre et combien de temps il dure, et `Shift+=` dit la même chose pour le chapitre, aussi dans le menu Audio sous Annoncer l'heure du chapitre.
+* Aller au pourcentage joue à partir de ce point, pas depuis le début du chapitre dans lequel il tombe.
+* Les boutons de lecture, de pause et d'avance du casque contrôlent le livre, et la lecture se déplace vers un nouveau périphérique de sortie par défaut quand il change.
+
+##### Général
+* Signaler un problème, dans le menu Aide, envoie un rapport de ce qui s'est mal passé, et est offert au prochain démarrage après que Paperback se ferme de façon inattendue.
+* `Shift+=` dans un livre texte indique à quel point vous êtes dans le chapitre et combien de mots il vous reste.
+* Les images avec une description vide dans les livres EPUB et HTML s'affichent quand elles sont assez grandes pour être du contenu, comme des lettres et figures numérisées.
+* Les formules à l'intérieur des liens et des cellules de tableau peuvent être parcourues.
+* L'export HTML conserve les citations en bloc, les figures, les listes de définitions, les aparté, les sauts de ligne, les exposants et les indices.
+* Sur Windows, les lecteurs d'écran disent « lien » sur les liens dans un document au fur et à mesure que vous lisez, et cliquer sur un lien le suit, comme le fait `Enter`.
+* Un paramètre de mise en page pour les PDF lus hors d'ordre, dans l'onglet Documents des Paramètres et pour un document dans Affichage > Mise en page : par colonnes trouve les colonnes d'après l'emplacement du texte au lieu de suivre le document, et peut garder chaque ligne séparée. Il remplace le paramètre qui maintenait les lignes séparées. `pb --layout` fait la même chose.
+
+##### iOS et Android
+* Aller à a un mode Heure pour les audiolivres, avec `Cmd+J` sur un clavier iPad, et l'écran de lecture indique à quel point vous êtes et combien de temps le livre dure.
+* Chaque livre se souvient de son unité de navigation.
+* Signets et notes, à partir d'un bouton dans la barre supérieure du lecteur : maintenez-le, ou utilisez les actions du lecteur d'écran, pour ajouter une note ou ouvrir la liste des signets. Ce sont les mêmes signets que le bureau garde, ils voyagent donc dans les fichiers `.paperback`, et les touches de signet du bureau fonctionnent avec un clavier.
+* Appuyer sur la progression sous la barre de lecture à voix haute la bascule vers celle du chapitre : son nom, son pourcentage et les mots restants, ou ses heures dans un audiolivre.
+* Le paramètre de mise en page pour les PDF lus hors d'ordre est dans Paramètres, et dans le menu Plus d'options pour un document PDF ou XPS.
+* Android dispose d'un dictionnaire de parole, dans Paramètres, et les deux applications lisent maintenant leurs règles exactement comme le fait le bureau. Les règles enregistrées sur iOS se transfèrent la première fois qu'il s'ouvre.
+
+##### pb
+* pb est deux à quatre fois plus rapide sur la plupart des formats texte, et convertit autant de documents à la fois qu'il y a de processeurs, ou autant que `--jobs` le dit.
+* `--braille-table` choisit le code d'un livre braille, `--list-braille-tables` répertorie les codes, et `--version` indique quelle version de pb c'est.
+
+#### Modifié
+* Paramètres est divisé en six onglets, un pour chaque type de paramètre.
+* Les PDF, les grandes références CHM et les livres MOBI s'ouvrent plus rapidement.
+* Le programme d'installation Windows pose moins de questions : Paperback s'affiche dans Ouvrir avec pour chaque format qu'il lit, et l'installation n'offre que de le définir comme application par défaut pour les livres EPUB et les PDF. Le raccourci du menu Démarrer est maintenant activé par défaut.
+* Le programme d'installation Windows s'ouvre dans votre langue d'affichage Windows quand Paperback y est traduit, et demande quelle langue utiliser quand ce n'est pas le cas.
+
+#### Corrigé
+
+##### Général
+* La lecture à voix haute avec une voix SAPI 5 qui fonctionne dans la page de codes Windows, comme Mikropuhe, ne rend plus les lettres comme ä et ö illisibles.
+* Les raccourcis de ponctuation fonctionnent sur chaque disposition de clavier, basés sur la position de la touche sur un clavier US.
+* Paperback ne se bloque plus quand un raccourci avec `Shift` et de la ponctuation ouvre Paramètres, quand un fichier qu'il ne peut pas lire est ouvert à partir de la ligne de commande, ou quand les résultats OCR, un fichier d'une autre copie, ou le minuteur de veille arrivent tandis qu'une boîte de dialogue est ouverte.
+* Les documents HTML et XML très profondément imbriqués ne plantent plus.
+* Une configuration qui ne se charge pas est conservée comme fichier `.bad` au lieu d'être écrasée, et l'enregistrement ne peut plus la laisser à moitié écrite.
+* Fichier > Quitter enregistre la taille et l'onglet ouvert de la fenêtre, et supprime l'icône de la barre d'état.
+* Paperback caché dans la barre d'état ne garde plus un cœur de processeur occupé, et les boîtes de dialogue fermées ne restent plus en mémoire.
+* L'ouverture de plusieurs fichiers tandis que Paperback s'exécute les ouvre tous.
+* Le titre du document est annoncé à son ouverture sans qu'une boîte de dialogue se ferme d'abord.
+* Le numéro de chapitre d'une entrée de contenu est annoncé avec son titre.
+* Sur macOS et Linux, un document trop long pour être chargé en une seule fois n'avance plus jusqu'à la fin et n'enregistre plus cela comme position de lecture.
+
+##### Documents
+* Les pages qui utilisent un tableau pour leur mise en page se lisent comme du texte, donc Rechercher, `Enter` et les titres y fonctionnent.
+* Les listes de mots qui redémarrent leur numérotation numérotent la même chose à chaque fois, à partir de leur valeur de redémarrage.
+* Les lignes de tableau OpenDocument à l'intérieur des lignes d'en-tête et des groupes de lignes ne sont plus supprimées.
+* Les listes imbriquées dans les livres DTBook conservent leurs niveaux.
+* Les fichiers MOBI endommagés ne plantent plus.
+* Une page de manuel qui redirige vers une qui n'est pas installée dit quelle page.
+* Les fichiers texte dans une page de codes d'Europe centrale ou autre page de codes nationale, et les fichiers texte DOS, s'ouvrent avec les bons caractères au lieu de symboles à l'intérieur des mots.
+* Une entrée de contenu dont l'ancre tombe à l'intérieur de sa ligne de titre, comme après une lettre ornée, s'arrête au début de cette ligne, et son en-tête se lit comme la ligne est écrite.
+* L'export Markdown n'écrit plus les marqueurs gras ou italiques vides.
+
+##### iOS et Android
+* iOS : la lecture à voix haute ne s'arrête plus après le premier paragraphe sur iOS 27.3.
+* iOS : fermer un livre téléchargé le maintient fermé.
+* Android : les liens, les images et les tableaux ne sont plus mal placés après un emoji sur la même ligne.
+* La suppression d'un document ouvert des Documents récents le ferme, comme sur Windows.
+* iOS : VoiceOver n'offre plus Supprimer deux fois dans Documents récents, et Taille du texte et Pause entre paragraphes dans Paramètres sont chacun un contrôle ajustable.
+
+##### Linux
+* La compilation Linux s'exécute sur Ubuntu 24.04, et autres systèmes avec sa glibc, à nouveau.
+* Un fichier envoyé à une copie en cours d'exécution s'ouvre immédiatement.
+
+### Version 1.1
 
 #### Ajouté
 
