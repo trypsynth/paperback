@@ -1,4 +1,4 @@
-# Paperback – versio 1.1
+# Paperback – versio 1.2
 
 ## Johdanto
 
@@ -66,6 +66,8 @@ Paperback tukee seuraavia tiedostomuotoja:
 * OpenDocument-tekstiasiakirjat (`.odt`, `.fodt`)
 * OS/2:n ohjetiedostot ja -kirjat kuvineen (`.inf`, `.hlp`)
 * PDF-asiakirjat (`.pdf`)
+* Qt Assistantin ja Qt Creatorin käyttämät ohjetiedostot, kuten esimerkiksi ohjelmistokehyksen itsensä ja CMake-ohjelman dokumentaatio (`.qch`)
+* QReadin tallentamat kopiot kaikista sen avaamista kirjoista (`.qrd`)
 * PowerPoint-esitykset (`.pptx`, `.pptm`, `.ppt`)
 * Kirjoja sisältävät RAR-paketit, jotka avataan ZIP-pakettien tavoin. Jos paketissa on useita kirjoja, avattava kirja valitaan luettelosta (`.rar`)
 * reStructuredText-asiakirjat (`.rst`, `.rest`)
@@ -81,7 +83,7 @@ Paperback on suunniteltu ensisijaisesti näppäimistöllä käytettäväksi. All
 
 Nämä pikanäppäimet toimivat Windowsissa. Jos macOSin pikanäppäin poikkeaa Windowsin vastaavasta, se ilmoitetaan sulkeissa. Erot johtuvat pääasiassa siitä, että macOSissa Ctrl+G, Ctrl+W ja Alt+Vasen/Oikea nuoli ovat jo muiden järjestelmä- tai sovellustoimintojen käytössä.
 
-Välimerkkejä käyttävien pikanäppäinten nimet perustuvat amerikkalaiseen näppäimistöasetteluun. Jos käytössä on jokin muu näppäimistöasettelu, paina samassa kohdassa olevaa näppäintä sen merkinnästä riippumatta. Esimerkiksi unkarilaisessa näppäimistöasettelussa é-näppäin vastaa ;-näppäintä ja á-näppäin '-näppäintä. Siksi Ctrl+' tarkoittaa Ctrl- ja á-näppäimien painamista yhdessä. Valikoissa näytetään silti amerikkalaisen näppäimistöasettelun mukaiset näppäimet. macOSissa valikoissa näytetään sen sijaan käytössä olevan näppäimistöasettelun mukaiset näppäimet.
+Välimerkkejä käyttävien pikanäppäinten nimet perustuvat yhdysvaltalaiseen näppäimistöasetteluun. Jos käytössä on jokin muu näppäimistöasettelu, paina samassa kohdassa olevaa näppäintä sen merkinnästä riippumatta. Esimerkiksi unkarilaisessa näppäimistöasettelussa é-näppäin vastaa ;-näppäintä ja á-näppäin '-näppäintä. Siksi Ctrl+' tarkoittaa Ctrl- ja á-näppäimien painamista yhdessä. Valikoissa näytetään silti amerikkalaisen näppäimistöasettelun mukaiset näppäimet. macOSissa valikoissa näytetään sen sijaan käytössä olevan näppäimistöasettelun mukaiset näppäimet.
 
 ### Tiedosto-valikko
 
@@ -331,9 +333,105 @@ Huom: julkista GitHub-sponsorointia pidetään automaattisen lisäämisen perust
 
 ## Versiohistoria
 
-### Versio 1.1
+### Versio 1.2
 
-Versio 1.1 tuo mukanaan uuden PDF-moottorin, uudistetun iOSin tekstitilan, Linuxissa toimivan tekstintunnistuksen, asiakirjojen avaamisen URL-osoitteista sekä tuen vanhoille Word-, Write- ja PowerPoint-tiedostoille.
+#### Lisätty
+
+##### Tekstistä puheeksi
+* Minkä tahansa asiakirjan voi luettaa tekstistä puheeksi -toiminnolla Windowsissa OneCore- tai SAPI 5 -puheäänillä ja macOSissa järjestelmän omilla puheäänillä. `Ctrl+Välilyönti` aloittaa ja keskeyttää lukemisen, kelausnäppäimillä voi siirtyä kappaleiden välillä, ja nopeuden sekä äänenvoimakkuuden säätönäppäimet toimivat samoin kuin äänikirjoissa.
+* Valitse puheääni, puhenopeus, äänenkorkeus ja kappaleiden välinen tauko Asetusten Ääni-välilehdellä. Voit kokeilla asetuksia Toista näyte -painikkeella ja määrittää yksittäiselle kirjalle oman puheäänen.
+* Lukeminen alkaa kohdistimen kohdalta ja jatkuu uudesta kohdasta aina kohdistinta siirtäessäsi. Kohdistin siirtyy lukemisen aikana sanasta toiseen sitä mukaa kuin ne luetaan.
+* Asetusten Ääni-välilehdellä olevan käyttäjän sanaston avulla voi muuttaa sanojen lukutapaa. Kukin sääntö korvaa sanan tai hakuehtoa vastaavan tekstin. Sääntö voi kohdistua vain kokonaisiin sanoihin tai käyttää säännöllistä lauseketta, ja sen voi ottaa käyttöön tai poistaa käytöstä.
+
+##### Pistekirjoitus
+* Braille Ready File -tiedostojen (`.brf`) ja PEF-kirjojen pistekirjoitus muunnetaan avattaessa tavalliseksi tekstiksi Asetuksissa valitun pistetaulukon avulla.
+* eBraille-kirjat (`.ebrl`) avataan ensisijaisesti tavallisena tekstinä. Jos sitä ei ole, pistekirjoitus muunnetaan tavalliseksi tekstiksi kirjassa määritetyn pistetaulukon avulla.
+* National Library Service -palvelun BARD-pistekirjat avataan kaikkine niteineen yhtenä kirjana joko ZIP-paketista tai sen purkamisen jälkeen `.bopf`-tiedostosta. Pistekirjoitus muunnetaan tavalliseksi tekstiksi paketissa määritetyn pistetaulukon avulla.
+* Asetusten Asiakirjat-välilehdellä voi määrittää, että pistekirjat säilytetään Unicode-pistekirjoituksena pistenäytöllä lukemista varten. Tällöin ruudunlukija näyttää alkuperäisen pistekirjoituksen sen sijaan, että tavallinen teksti muunnettaisiin uudelleen pistekirjoitukseksi. Komentokehotteessa annettava `pb --keep-braille` -komento toimii samoin.
+* Myös eri maiden pistekirjoituksen ASCII-koodauksilla tallennetut tiedostot tunnistetaan. Tällaisia koodauksia käytetään esimerkiksi Norjassa, Tanskassa, Ranskassa, Espanjassa, Slovakiassa, Tšekissä ja Unkarissa.
+
+##### Uudet tiedostomuodot
+* XPS- ja OpenXPS-asiakirjat.
+* RAR-paketit ja RAR-muodossa olevat sarjakuvat (`.cbr`).
+* Pakkaamattomat, gzip-pakatut sekä useaan tiedostoon jaetut GNU Info -ohjeet valikkoineen, ristiviittauksineen ja hakemistoineen.
+* OS/2:n ohjetiedostot ja -kirjat kuvineen ja linkkeineen (`.inf`, `.hlp`).
+* PalmDOC-kirjat.
+* `.shtml`-sivut ja pakkaamattomat EPUB-kirjat, jotka avataan niiden `.opf`-tiedostosta.
+* MP3- tai M4B-tiedostoja sisältävä ZIP-paketti avataan yhtenä äänikirjana.
+* Qt Assistantin ja Qt Creatorin lukemat ohjetiedostot, kuten ohjelmistokehyksen itsensä ja CMake-ohjelman dokumentaatio (`.qch`).
+* QRead-kirjat eli sovelluksen avaamien kirjojen tallennetut kopiot (`.qrd`). Ne avautuvat ensimmäisellä kerralla kohdasta, johon lukeminen QReadissa jäi.
+ 
+##### Äänikirjat
+* Siirry aikaan -toiminnolla (`Ctrl+J`) voi siirtyä äänitteen haluttuun kohtaan antamalla ajan, esimerkiksi `1:23:45` tai `+5:00`.
+* `=` ilmoittaa myös kirjan nykyisen toistokohdan ja kokonaiskeston. `Vaihto+=` ilmoittaa samat tiedot nykyisestä luvusta. Toiminto löytyy myös Ääni-valikosta nimellä Ilmoita luvun edistyminen.
+* Siirry prosenttiin -toiminto aloittaa toiston suoraan valitusta kohdasta eikä kyseisen luvun alusta.
+* Äänikirjan toistoa voi ohjata kuulokkeiden toisto-, tauko- ja kelauspainikkeilla. Jos oletusarvoinen äänentoistolaite vaihtuu, toisto alkaa käyttää automaattisesti uutta oletuslaitetta.
+
+##### Yleiset
+* Ohje-valikon Ilmoita ongelmasta -toiminnolla voi lähettää raportin ilmenneestä ongelmasta. Toimintoa tarjotaan myös seuraavan käynnistyksen yhteydessä, jos Paperback sulkeutui odottamattomasti.
+* Tekstimuotoisessa kirjassa `Vaihto+=` ilmoittaa luvun lukemisen edistymisen ja jäljellä olevien sanojen määrän.
+* EPUB- ja HTML-kirjoissa näytetään myös kuvauksettomat kuvat, jos ne ovat riittävän suuria ollakseen kirjan varsinaista sisältöä, kuten skannattuja kirjeitä tai kuvituksia.
+* Kaavoihin voi siirtyä myös silloin, kun ne ovat linkkejä tai sijaitsevat taulukon soluissa.
+* Sisennetyt lainaukset, kuvat, määritelmäluettelot, sivuhuomautukset, rivinvaihdot sekä ylä- ja alaindeksit säilyvät HTML-muotoon vietäessä.
+* Ruudunlukijat ilmoittavat Windowsissa asiakirjaa luettaessa linkkien kohdalla ”linkki”. Linkin voi avata napsauttamalla tai painamalla `Enter`-näppäintä.
+* PDF-asiakirjojen virheellistä lukemisjärjestystä voi korjata uudella lukemisjärjestyksen asetuksella, joka löytyy Asetukset-ikkunan Asiakirjat-välilehdeltä ja asiakirjakohtaisesti Näytä-valikon Lukemisjärjestys-kohdasta. Palstoittainen asettelu tunnistaa palstat tekstin sijainnin perusteella asiakirjan oman lukemisjärjestyksen sijaan. Myös rivinvaihdot voidaan säilyttää. Uusi asetus korvaa aiemman asetuksen, jolla rivit pidettiin erillisinä. Sama toiminto on käytettävissä `pb`-komentorivityökalun `--layout` -valitsimella.
+
+##### iOS ja Android
+* Siirry-toiminnossa on äänikirjoille tarkoitettu Aika-tila, jonka voi avata iPadin näppäimistöllä painamalla `Cmd+J`. Toistonäkymässä näytetään nykyinen toistokohta ja kirjan kokonaiskesto.
+* Navigointitarkkuuden valinta tallennetaan kirjakohtaisesti.
+* Lukunäkymän yläpalkissa on painike kirjanmerkkien ja muistiinpanojen käsittelyä varten. Muistiinpano lisätään tai kirjanmerkkiluettelo avataan painamalla kyseistä painiketta pitkään tai käyttämällä sen ruudunlukijatoimintoja. Kirjanmerkit ja muistiinpanot tallennetaan mobiili- ja työpöytäversioissa samalla tavalla, joten ne ovat helposti siirrettävissä versioiden välillä kopioimalla kirjojen `.paperback`-tiedostot. Myös työpöytäversion kirjanmerkkipikanäppäimet toimivat näppäimistöä käytettäessä.
+* Tekstistä puheeksi -lukupalkin alapuolella näkyvän edistymistiedon voi vaihtaa näyttämään luvun edistymistä napauttamalla sitä. Näytettäviä tietoja ovat luvun nimi, luettu osuus prosentteina ja jäljellä olevien sanojen määrä tai äänikirjan tapauksessa luvun aikatiedot.
+* PDF-asiakirjojen virheellisen lukemisjärjestyksen korjaamiseen tarkoitettu lukemisjärjestyksen asetus löytyy Asetukset-ikkunasta ja PDF- tai XPS-asiakirjoille tiedostokohtaisesti Lisää vaihtoehtoja -valikosta.
+* Android-version Asetukset-ikkunaan on lisätty käyttäjän sanasto, ja molemmat mobiiliversiot käsittelevät nyt sen sääntöjä täsmälleen samalla tavalla kuin työpöytäversio. iOSissa aiemmin tallennetut säännöt siirretään automaattisesti sovelluksen ensimmäisen käynnistyksen yhteydessä.
+
+##### pb
+* Paperbackin pb-komentorivityökalu käsittelee useimpia tekstimuotoja 2–4 kertaa aiempaa nopeammin ja pystyy muuntamaan useita asiakirjoja samanaikaisesti. Muunnosten enimmäismäärä määräytyy suorittimien määrän tai `--jobs`-valitsimella annetun arvon perusteella.
+* `--braille-table`-valitsin määrittää pistekirjan pistetaulukon, `--list-braille-tables` luettelee käytettävissä olevat pistetaulukot ja `--version` näyttää pb:n versionumeron.
+
+#### Muutettu
+* Asetukset on ryhmitelty aihealueittain kuudelle eri välilehdelle.
+* PDF-asiakirjat, laajat CHM-muodossa olevat hakuteokset ja MOBI-kirjat avautuvat aiempaa nopeammin.
+* Windows-version asennusohjelmassa on aiempaa vähemmän valintoja. Paperback näkyy Avaa sovelluksessa -valikossa kaikkien tuettujen tiedostomuotojen kohdalla, ja oletussovellukseksi määrittämistä tarjotaan vain EPUB-kirjoille ja PDF-asiakirjoille. Käynnistä-valikon pikakuvake luodaan nyt oletusarvoisesti.
+* Windows-version asennusohjelma avautuu Windowsin näyttökielellä, jos Paperback tukee kyseistä kieltä. Muussa tapauksessa asennusohjelma pyytää valitsemaan käytettävän kielen.
+
+#### Korjattu
+
+##### Yleiset
+* Windowsin koodisivua käyttävien SAPI 5 -puhesyntetisaattoreiden merkistöongelma on korjattu. Esimerkiksi Mikropuhe lukee nyt ä- ja ö-kirjaimet oikein.
+* Välimerkkejä sisältävät pikanäppäimet toimivat kaikilla näppäimistöasetteluilla. Niiden toiminta perustuu näppäinten fyysisiin sijainteihin yhdysvaltalaisella näppäimistöllä.
+* Paperback ei enää lakkaa vastaamasta, kun Asetukset avataan `Vaihto`-näppäintä ja välimerkkiä käyttävällä pikanäppäimellä tai komentoriviltä avataan tiedosto, jota ei voida lukea. Jumiutumista ei enää tapahdu myöskään silloin, kun tekstintunnistuksen tulokset avautuvat, toisesta Paperbackin kopiosta lähetetty tiedosto avataan tai uniajastimen ilmoitus puhutaan valintaikkunan ollessa avoinna.
+* Erittäin monitasoiset HTML- ja XML-asiakirjarakenteet eivät enää aiheuta sovelluksen kaatumista.
+* Jos asetustiedostoa ei voida avata, se säilytetään `.bad`-päätteisenä eikä sitä korvata uudella. Tallennus ei myöskään enää jätä asetustiedostoa keskeneräiseksi.
+* Tiedosto-valikon Lopeta-komento tallentaa ikkunan koon ja avoinna olevan välilehden sekä poistaa ilmoitusalueen kuvakkeen.
+* Paperback ei enää kuormita suoritinydintä tarpeettomasti ollessaan piilotettuna ilmoitusalueelle. Suljettujen valintaikkunoiden muistinkäyttö on myös korjattu.
+* Jos Paperback on jo käynnissä, useiden tiedostojen avaaminen avaa nyt ne kaikki.
+* Asiakirjan nimi ilmoitetaan heti sen avautuessa riippumatta siitä, sulkeutuuko valintaikkuna ensin.
+* Sisällysluettelossa ilmoitetaan luvun nimen lisäksi sen numero.
+* Lukukohta ei enää siirry macOSissa ja Linuxissa asiakirjan loppuun, jos se on liian suuri kerralla avattavaksi, eikä virheellistä sijaintia enää tallenneta lukukohdaksi.
+
+##### Asiakirjat
+* Taulukoiden avulla asetellut sivut luetaan tavallisena tekstinä, jolloin Etsi-toiminto, `Enter`-näppäin ja otsikoiden käsittely toimivat niissä oikein.
+* Word-asiakirjojen numeroitujen luetteloiden numerointi alkaa aina määritetystä aloitusnumerosta, kun numerointi aloitetaan alusta.
+* OpenDocument-taulukoiden otsikkorivien ja riviryhmien sisältämiä rivejä ei enää jätetä pois.
+* DTBook-kirjojen sisäkkäisten luetteloiden tasot säilytetään.
+* Vioittuneet MOBI-tiedostot eivät enää kaada sovellusta.
+* Jos man-ohjesivu ohjaa toiselle ohjesivulle, jota ei löydy, puuttuvan sivun nimi ilmoitetaan.
+* Keski-Euroopassa ja muissa maissa käytettävillä kansallisilla koodisivuilla tallennetut tekstitiedostot sekä DOS-tekstitiedostot avautuvat nyt oikein ilman sanojen keskelle ilmestyviä virheellisiä merkkejä.
+* Sisällysluettelon kohdasta siirrytään otsikkorivin alkuun, vaikka sen ankkuri sijaitsisi rivin keskellä, esimerkiksi ison alkukirjaimen perässä. Otsikko luetaan alkuperäisessä järjestyksessään.
+* Markdown-vienti ei enää lisää tyhjiä lihavointi- tai kursivointimerkintöjä.
+
+##### iOS ja Android
+* iOS: Tekstistä puheeksi -toiminnolla lukeminen ei enää pysähdy ensimmäisen kappaleen jälkeen iOS 27.3:ssa.
+* iOS: Ladatun kirjan sulkeminen toimii nyt oikein.
+* Android: Samalla rivillä emojin jäljessä olevia linkkejä, kuvia ja taulukoita ei enää sijoiteta väärään kohtaan.
+* Avoinna oleva asiakirja suljetaan, kun se poistetaan viimeksi avattujen asiakirjojen luettelosta. Toiminnallisuus on nyt sama kuin Windows-versiossa.
+* iOS: VoiceOver ei enää tarjoa Poista-toimintoa kahdesti viimeksi avattujen asiakirjojen luettelossa. Lisäksi Tekstin koko- ja Kappaleiden välinen tauko -asetukset näkyvät kumpikin omana säädettävänä ohjausobjektinaan.
+
+##### Linux
+* Linux-versio toimii taas Ubuntu 24.04:ssä ja muissa järjestelmissä, joissa käytetään samaa glibc-kirjaston versiota.
+* Käynnissä olevaan Paperbackiin lähetetty tiedosto avautuu heti.
+
+### Versio 1.1
 
 #### Lisätty
 
