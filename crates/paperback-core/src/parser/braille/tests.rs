@@ -294,6 +294,17 @@ fn joins_wrapped_lines_and_words_broken_at_a_hyphen() {
 	assert_eq!(layout.paragraphs, [cells("SELF-3TA9$ BOOK ) ! SAME DEGREE ( LOVE & C>E R1D]")]);
 }
 
+/// A full line ending in a dash wrapped before the next word, which keeps its space.
+#[test]
+fn a_dash_ending_a_line_is_no_broken_word() {
+	let french = layout(&[&["  ,! PARIS APP>T#ENTS PAUVRES OU GAIS _-", "SONT HO/ILES"]], true);
+	assert_eq!(french.paragraphs, [cells(",! PARIS APP>T#ENTS PAUVRES OU GAIS _- SONT HO/ILES")]);
+	let polish = layout(&[&["  A GDY WRO#ILI DO DOMU NAD WIECZOREM -", "BYLO JUZ CIEMNO"]], true);
+	assert_eq!(polish.paragraphs, [cells("A GDY WRO#ILI DO DOMU NAD WIECZOREM - BYLO JUZ CIEMNO")]);
+	let belle = layout(&[&["  ,ELLE ALLA VOIR SA SOEUR ET SA B_-", "S]"]], true);
+	assert_eq!(belle.paragraphs, [cells(",ELLE ALLA VOIR SA SOEUR ET SA B_-S]")], "French belle- broken at its hyphen");
+}
+
 #[test]
 fn reads_guide_dots_as_one_space() {
 	let contents = layout(

@@ -671,10 +671,14 @@ fn entry_runs_over<'a>(mut lines: impl Iterator<Item = &'a String>, entry_indent
 /// Dot 5, which guide dots are made of.
 const GUIDE_DOT: char = '\u{2810}';
 
-/// A line ends in a word broken at its hyphen when its last cell is the hyphen and the one before isn't dot 6 or another hyphen, which make it a dash: UEB and German write a dash as ⠠⠤, and some codes as ⠤⠤. The next line goes on that word, so no space joins them.
+/// A line ends in a word broken at its hyphen when its last cell is the hyphen and it isn't a dash. UEB and German write a dash as ⠠⠤, and most codes as ⠤⠤. French and Italian write one as ⠸⠤, and Polish and Czech as ⠤, standing as a word of their own: French ⠃⠸⠤ is "belle-" broken. The next line goes on a broken word, so no space joins them.
 fn ends_in_broken_word(line: &str) -> bool {
-	let mut cells = line.chars().rev();
-	cells.next() == Some(HYPHEN) && !matches!(cells.next(), Some(HYPHEN | '\u{2820}'))
+	let word: Vec<char> = line.chars().rev().take_while(|&cell| cell != BLANK).collect();
+	match word.as_slice() {
+		[HYPHEN] | [HYPHEN, HYPHEN | '\u{2820}', ..] | [HYPHEN, '\u{2838}'] => false,
+		[HYPHEN, ..] => true,
+		_ => false,
+	}
 }
 
 /// A page's lines without the blank cells padding them, their page numbers, or the blank lines at the page's end.
