@@ -32,15 +32,15 @@ Paperback toimii sujuvasti kaikilla yleisimmillä ruudunlukijoilla. JAWS-käytt�
 
 ### JAWS ja pistenäytöt
 
-Jos käytät JAWS-ruudunlukijaa ja pistenäyttöä, pitkät kappaleet saattavat katketa, kun tekstiä vieritetään eteenpäin näytön navigointinäppäimillä. Ongelma koskee myös nykyisen kappaleen lukukomentoa. Tämä johtuu JAWSin virheestä RICHEDIT50W-tekstikentän käsittelyssä, eli vika ei ole Paperbackissa. Ratkaisun löytäminen kesti kauan, koska Visperolta on tunnetusti vaikea saada vastauksia avoimen lähdekoodin sovellusten virheraportteihin.
+Jos käytät JAWS-ruudunlukijaa ja pistenäyttöä, pitkät kappaleet saattavat katketa, kun tekstiä vieritetään eteenpäin näytön navigointinäppäimillä. Ongelma koskee myös nykyisen kappaleen lukukomentoa. Tämä johtuu JAWSin virheestä RICHEDIT50W-tekstikentän käsittelyssä, eli vika ei ole Paperbackissa.
 
-Kiertotienä ongelmaan on paperback.jcf-tiedoston muokkaaminen siten, että asetuksen ”Braille Presentation and Panning” (Pistekirjoitusesitys ja -vieritys) arvoksi määritetään ”Always use DOM if available” (Käytä aina DOMia, jos se on saatavilla). Lisäksi asetus ”Pan Text by Paragraph” (Vieritä kappaleittain) on otettava käyttöön, jotta pistenäyttö siirtyy eteenpäin seuraavaan kappaleeseen. Näillä asetuksilla vierityksen pitäisi toimia oikein.
+Ongelman voi kiertää muokkaamalla paperback.jcf-tiedostossa olevan asetuksen ”Braille Presentation and Panning” (Pistekirjoitusesitys ja -vieritys) arvoksi ”Always use DOM if available” (Käytä aina DOMia, jos se on saatavilla). Lisäksi asetus ”Pan Text by Paragraph” (Vieritä kappaleittain) on otettava käyttöön, jotta pistenäyttö siirtyy eteenpäin seuraavaan kappaleeseen. Näillä asetuksilla vierityksen pitäisi toimia oikein.
 
 ### JAWS ja Paperbackin ilmoitukset
 
-Paperbackin ilmoitukset, kuten ”Ei sivuja” ja ”Asiakirjassa ei ole äänitettä”, lähetetään saavutettavuusilmoituksina, minkä ansiosta ruudunlukija voi lukea ne muun puheen päälle. JAWS reagoi niihin vain, jos sovellukselle on otettu käyttöön asetus ”Enable accessible notification events” (Ota käyttöön saavutettavat ilmoitukset), eikä se ole käytössä kaikissa koneissa.
+Paperbackin ilmoitukset, kuten ”Ei sivuja” ja ”Asiakirjassa ei ole äänitettä”, lähetetään saavutettavuusilmoituksina, minkä ansiosta ruudunlukija voi lukea ne muun puheen päälle. JAWS reagoi niihin vain, jos sovellukselle on otettu käyttöön asetus ”Enable accessible notification events” (Ota käyttöön saavutettavat ilmoitukset), eikä se välttämättä ole käytössä.
 
-Jos JAWS ei puhu mitään painaessasi jotain ilmoituksen aiheuttavaa näppäintä, avaa Settings Center (Asetuskeskus) Insert+6-pikanäppäimellä Paperbackin ollessa etualalla, etsi sanalla ”notification” (ilmoitukset) ja valitse valintaruutu ”Enable accessible notification events” (Ota käyttöön saavutettavat ilmoitukset). Tämä tallentaa asetuksen paperback.jcf-tiedostoon, joten se koskee vain Paperbackia.
+Jos JAWS ei puhu mitään painaessasi jotain ilmoituksen aiheuttavaa näppäintä, avaa Settings Center (Asetuskeskus) Insert+6-pikanäppäimellä Paperbackin ollessa etualalla, etsi sanalla ”notification” (ilmoitukset) ja valitse valintaruutu ”Enable accessible notification events” (Ota käyttöön saavutettavat ilmoitukset). Tämä tallentaa asetuksen paperback.jcf-tiedostoon, jolloin se koskee vain Paperbackia.
 
 ## Tuettavat tiedostomuodot
 
