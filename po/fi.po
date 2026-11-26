@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Paperback 0.8.5\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-25 16:45+0000\n"
-"PO-Revision-Date: 2026-11-25 23:54+0200\n"
+"PO-Revision-Date: 2026-11-26 18:22+0200\n"
 "Last-Translator: \n"
 "Language-Team: Jani Kinnunen\n"
 "Language: fi\n"
@@ -158,7 +158,7 @@ msgstr "Raporttia ei voitu tallentaa: %s"
 
 #. TRANSLATORS: Checkbox in the Windows installer for a Paperback shortcut in the Start Menu, beside Inno Setup's own "Create a desktop shortcut". The & marks the key that checks it.
 msgid "Create a &Start Menu shortcut"
-msgstr "Luo pikakuvake &Käynnistä-valikkoon"
+msgstr "Luo kuvake &Käynnistä-valikkoon"
 
 #. TRANSLATORS: Checkbox in the Windows installer: EPUB books open in Paperback when opened from File Explorer. Every other format Paperback reads is offered in Explorer's "Open with" without asking.
 msgid "Make Paperback the default app for EPUB books (*.epub)"
