@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Paperback – versio 1.1</title>
+<title>Paperback – versio 1.2</title>
 <style>
 :root { color-scheme: light dark; }
 body { font-family: system-ui, sans-serif; line-height: 1.5; max-width: 45em; margin: 0 auto; padding: 1em; }
@@ -60,7 +60,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 </nav>
 <main>
-<h1 id="paperback--versio-11">Paperback – versio 1.1</h1>
+<h1 id="paperback--versio-12">Paperback – versio 1.2</h1>
 <nav id="TOC">
 <ul>
 <li><a href="#johdanto">Johdanto</a></li>
@@ -190,6 +190,8 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <li>OpenDocument-tekstiasiakirjat (<code>.odt</code>, <code>.fodt</code>)</li>
 <li>OS/2:n ohjetiedostot ja -kirjat kuvineen (<code>.inf</code>, <code>.hlp</code>)</li>
 <li>PDF-asiakirjat (<code>.pdf</code>)</li>
+<li>Qt Assistantin ja Qt Creatorin käyttämät ohjetiedostot, kuten esimerkiksi ohjelmistokehyksen itsensä ja CMake-ohjelman dokumentaatio (<code>.qch</code>)</li>
+<li>QReadin tallentamat kopiot kaikista sen avaamista kirjoista (<code>.qrd</code>)</li>
 <li>PowerPoint-esitykset (<code>.pptx</code>, <code>.pptm</code>, <code>.ppt</code>)</li>
 <li>Kirjoja sisältävät RAR-paketit, jotka avataan ZIP-pakettien tavoin. Jos paketissa on useita kirjoja, avattava kirja valitaan luettelosta (<code>.rar</code>)</li>
 <li>reStructuredText-asiakirjat (<code>.rst</code>, <code>.rest</code>)</li>
@@ -202,7 +204,7 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 <h2 id="pikanäppäimet">Pikanäppäimet</h2>
 <p>Paperback on suunniteltu ensisijaisesti näppäimistöllä käytettäväksi. Alla on luettelo kaikista pikanäppäimistä.</p>
 <p>Nämä pikanäppäimet toimivat Windowsissa. Jos macOSin pikanäppäin poikkeaa Windowsin vastaavasta, se ilmoitetaan sulkeissa. Erot johtuvat pääasiassa siitä, että macOSissa Ctrl+G, Ctrl+W ja Alt+Vasen/Oikea nuoli ovat jo muiden järjestelmä- tai sovellustoimintojen käytössä.</p>
-<p>Välimerkkejä käyttävien pikanäppäinten nimet perustuvat amerikkalaiseen näppäimistöasetteluun. Jos käytössä on jokin muu näppäimistöasettelu, paina samassa kohdassa olevaa näppäintä sen merkinnästä riippumatta. Esimerkiksi unkarilaisessa näppäimistöasettelussa é-näppäin vastaa ;-näppäintä ja á-näppäin ‘-näppäintä. Siksi Ctrl+’ tarkoittaa Ctrl- ja á-näppäimien painamista yhdessä. Valikoissa näytetään silti amerikkalaisen näppäimistöasettelun mukaiset näppäimet. macOSissa valikoissa näytetään sen sijaan käytössä olevan näppäimistöasettelun mukaiset näppäimet.</p>
+<p>Välimerkkejä käyttävien pikanäppäinten nimet perustuvat yhdysvaltalaiseen näppäimistöasetteluun. Jos käytössä on jokin muu näppäimistöasettelu, paina samassa kohdassa olevaa näppäintä sen merkinnästä riippumatta. Esimerkiksi unkarilaisessa näppäimistöasettelussa é-näppäin vastaa ;-näppäintä ja á-näppäin ‘-näppäintä. Siksi Ctrl+’ tarkoittaa Ctrl- ja á-näppäimien painamista yhdessä. Valikoissa näytetään silti amerikkalaisen näppäimistöasettelun mukaiset näppäimet. macOSissa valikoissa näytetään sen sijaan käytössä olevan näppäimistöasettelun mukaiset näppäimet.</p>
 <h3 id="tiedosto-valikko">Tiedosto-valikko</h3>
 <ul>
 <li><code>Ctrl+O</code>: Avaa asiakirja.</li>
@@ -438,7 +440,6 @@ th, td { border: 1px solid color-mix(in srgb, currentColor 35%, transparent); pa
 </ul>
 <h2 id="versiohistoria">Versiohistoria</h2>
 <h3 id="versio-11">Versio 1.1</h3>
-<p>Versio 1.1 tuo mukanaan uuden PDF-moottorin, uudistetun iOSin tekstitilan, Linuxissa toimivan tekstintunnistuksen, asiakirjojen avaamisen URL-osoitteista sekä tuen vanhoille Word-, Write- ja PowerPoint-tiedostoille.</p>
 <h4 id="lisätty">Lisätty</h4>
 <h5 id="yleiset">Yleiset</h5>
 <ul>
