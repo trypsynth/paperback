@@ -134,24 +134,42 @@ impl DocumentManager {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
-		self.last_sound_position.set(Some(after));
-		let previous = self.last_sound_unit.get();
-		let Ok(config) = self.config.try_lock() else {
-			self.last_sound_unit.set(Some(remembered_unit(previous, None, after)));
+		// Only measured when the setting uses it, since measuring asks the reading control.
+		let measure =
+			self.config.try_lock().is_ok_and(|config| BookmarkSoundMode::load(&config) == BookmarkSoundMode::InUnit);
+		self.sound_moves(before, [(after, if measure { unit_of(tab) } else { None })]);
+	}
+
+	/// Sounds a run of caret moves starting from `before`, each to a position and the unit it moved to, reading the setting and the bookmarks once for all of them, as read aloud and synced audio pass several words or clips a tick.
+	pub(super) fn sound_moves(&self, mut before: DocPos, moves: impl IntoIterator<Item = (DocPos, Option<Unit>)>) {
+		let Some(tab) = self.active_tab() else {
 			return;
 		};
-		let mode = BookmarkSoundMode::load(&config);
-		if mode == BookmarkSoundMode::Never {
-			self.last_sound_unit.set(None);
-			return;
-		}
-		let unit = if mode == BookmarkSoundMode::InUnit { unit_of(tab) } else { None };
-		let bookmarks = config.get_bookmarks(&tab.file_path.to_string_lossy());
-		drop(config);
-		let (sound, remembered) = sound_for_move(&bookmarks, previous, before, after, unit);
-		self.last_sound_unit.set(Some(remembered));
-		if let Some(sound) = sound {
-			sound.play();
+		let loaded = self.config.try_lock().ok().map(|config| {
+			let mode = BookmarkSoundMode::load(&config);
+			let bookmarks = if mode == BookmarkSoundMode::Never {
+				Vec::new()
+			} else {
+				config.get_bookmarks(&tab.file_path.to_string_lossy())
+			};
+			(mode, bookmarks)
+		});
+		for (after, unit) in moves {
+			self.last_sound_position.set(Some(after));
+			let previous = self.last_sound_unit.get();
+			match &loaded {
+				None => self.last_sound_unit.set(Some(remembered_unit(previous, None, after))),
+				Some((BookmarkSoundMode::Never, _)) => self.last_sound_unit.set(None),
+				Some((mode, bookmarks)) => {
+					let unit = unit.filter(|_| *mode == BookmarkSoundMode::InUnit);
+					let (sound, remembered) = sound_for_move(bookmarks, previous, before, after, unit);
+					self.last_sound_unit.set(Some(remembered));
+					if let Some(sound) = sound {
+						sound.play();
+					}
+				}
+			}
+			before = after;
 		}
 	}
 
@@ -204,11 +222,7 @@ impl DocumentManager {
 			tab.text_ctrl.show_position(local);
 		}
 		self.last_followed_clip.set(Some((cursor.clip, elapsed)));
-		let mut before = current;
-		for unit in passed.into_iter().chain(moved.then_some(clip)) {
-			self.sound_move(before, unit.start, |_| Some(unit));
-			before = unit.start;
-		}
+		self.sound_moves(current, passed.into_iter().chain(moved.then_some(clip)).map(|unit| (unit.start, Some(unit))));
 	}
 
 	pub fn pause_inactive_audio(&mut self) {

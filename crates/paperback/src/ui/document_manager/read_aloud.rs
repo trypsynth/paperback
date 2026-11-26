@@ -244,11 +244,7 @@ impl DocumentManager {
 					tab.text_ctrl.show_position(local);
 					speaker.caret_followed(tab.window.to_doc(tab.text_ctrl.get_insertion_point()));
 				}
-				let mut before = caret;
-				for (start, end) in words {
-					self.sound_move(before, start, |_| Some(Unit { start, end }));
-					before = start;
-				}
+				self.sound_moves(caret, words.into_iter().map(|(start, end)| (start, Some(Unit { start, end }))));
 			}
 			Some(Followed::End) => set_caret_to_doc_offset(tab, tab.session.document_len().as_pos()),
 			None => {}
