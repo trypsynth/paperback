@@ -64,7 +64,7 @@ impl Scribe {
 
 	#[must_use]
 	pub fn with_base_url(store: Box<dyn TokenStore>, locale: &str, base_url: Url) -> Self {
-		// rustls is built with both ring, for ureq, and aws-lc, for reqwest, so it can't pick a default, and the documents channel's WebSocket asks for one; it is already set when this runs twice.
+		// scribe-client's reqwest and WebSocket take rustls's process-wide provider, which is ring, as ureq already uses; it is already set when this runs twice.
 		let _ = rustls::crypto::ring::default_provider().install_default();
 		let saved = store.load();
 		let scribe = Self {

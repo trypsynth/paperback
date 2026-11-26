@@ -102,7 +102,7 @@ fn the_calls_can_run_on_another_thread() {
 	sendable(&scribe.sign_out());
 }
 
-/// tokio-tungstenite builds its TLS configuration without naming a provider, which panics while rustls has two and no default.
+/// reqwest and tokio-tungstenite build their TLS configuration without naming a provider, which panics until one is installed.
 #[test]
 fn a_tls_connection_can_be_configured_without_naming_a_provider() {
 	let _scribe = offline(&MemoryStore::default());
