@@ -62,6 +62,16 @@ impl ConfigManager {
 		v.try_into().unwrap_or(default_value)
 	}
 
+	/// Drops a key front ends store, such as a setting another one replaced.
+	pub fn remove_app_key(&self, key: &str) {
+		if !self.initialized {
+			return;
+		}
+		if self.data.borrow_mut().app.extra.remove(key).is_some() {
+			self.dirty.set(true);
+		}
+	}
+
 	pub fn set_app_string(&self, key: &str, value: &str) {
 		if !self.initialized {
 			return;
@@ -166,6 +176,16 @@ mod tests {
 		assert_eq!(config.get_page_layout(), PageLayout::Lines);
 		config.set_page_layout(PageLayout::Automatic);
 		assert!(config.get_app_bool(OLD_JOIN_KEY, true), "the old key goes once the new one is set");
+	}
+
+	#[test]
+	fn an_app_key_can_be_removed() {
+		let mut config = ConfigManager::new();
+		config.initialized = true;
+		config.set_app_bool("an_old_key", false);
+		config.remove_app_key("an_old_key");
+		assert!(config.get_app_bool("an_old_key", true), "the key is gone");
+		assert!(!config.data.borrow().app.extra.contains_key("an_old_key"));
 	}
 
 	#[test]

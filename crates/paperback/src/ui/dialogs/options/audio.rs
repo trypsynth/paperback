@@ -9,8 +9,8 @@ use paperback_core::{
 use patois::t;
 use wxdragon::prelude::*;
 
-use super::{OPTION_PADDING, labeled_row, speech_dictionary::show_speech_dictionary};
-use crate::read_aloud;
+use super::{OPTION_PADDING, labeled_choice, labeled_row, speech_dictionary::show_speech_dictionary};
+use crate::{read_aloud, ui::bookmark_sounds::BookmarkSoundMode};
 
 /// Indexed by the seek amount choice's selection and also stepped through by `audio::handle_change_seek_amount`, so it must match the choices in the tab.
 pub(crate) const AUDIO_SEEK_AMOUNTS_SECONDS: [i32; 9] = [5, 10, 30, 60, 120, 300, 600, 1800, 3600];
@@ -19,7 +19,7 @@ const DEFAULT_SEEK_AMOUNT_SECONDS: i32 = 10;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AudioSettings {
-	pub bookmark_sounds: bool,
+	pub bookmark_sound_mode: BookmarkSoundMode,
 	pub sync_caret_to_audio: bool,
 	pub audio_seek_amount_seconds: i32,
 	pub audio_seek_continues_into_next_file: bool,
@@ -31,7 +31,7 @@ impl AudioSettings {
 	/// `book` is the open document, which can keep a voice of its own.
 	pub fn load(config: &ConfigManager, book: Option<&str>) -> Self {
 		Self {
-			bookmark_sounds: config.get_app_bool("bookmark_sounds", true),
+			bookmark_sound_mode: BookmarkSoundMode::load(config),
 			sync_caret_to_audio: config.get_app_bool("sync_caret_to_audio", true),
 			audio_seek_amount_seconds: config.get_app_int("audio_seek_amount_seconds", DEFAULT_SEEK_AMOUNT_SECONDS),
 			audio_seek_continues_into_next_file: config.get_app_bool("audio_seek_continues_into_next_file", false),
@@ -40,7 +40,7 @@ impl AudioSettings {
 	}
 
 	pub fn save(&self, config: &ConfigManager, book: Option<&str>) {
-		config.set_app_bool("bookmark_sounds", self.bookmark_sounds);
+		self.bookmark_sound_mode.save(config);
 		config.set_app_bool("sync_caret_to_audio", self.sync_caret_to_audio);
 		config.set_app_int("audio_seek_amount_seconds", self.audio_seek_amount_seconds);
 		config.set_app_bool("audio_seek_continues_into_next_file", self.audio_seek_continues_into_next_file);
@@ -120,7 +120,7 @@ fn keys(engine: &str) -> (String, String, String) {
 pub type PlaySample = Rc<dyn Fn(&str, Option<String>, i32, i32)>;
 
 pub(super) struct AudioTab {
-	bookmark_sounds: CheckBox,
+	bookmark_sound_mode: Choice,
 	sync_caret_to_audio: CheckBox,
 	seek_amount: Choice,
 	seek_continues_into_next_file: CheckBox,
@@ -136,9 +136,20 @@ impl AudioTab {
 		has_book: bool,
 		play_sample: PlaySample,
 	) -> Self {
-		let bookmark_sounds =
-			// TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
-			CheckBox::builder(&panel).with_label(&t("Play &sounds on bookmarks and notes")).build();
+		// In the order of `BookmarkSoundMode::to_config`.
+		let mut bookmark_sound_choices = vec![
+			// TRANSLATORS: Bookmark sounds option: no sound effects play for bookmarks and notes
+			t("Never"),
+			// TRANSLATORS: Bookmark sounds option: a sound plays when the caret moves onto a bookmark or note
+			t("When the caret is on a bookmark"),
+		];
+		if cfg!(target_os = "windows") {
+			// TRANSLATORS: Bookmark sounds option: a sound plays when the word, line or paragraph the caret moves to holds a bookmark or note
+			bookmark_sound_choices.push(t("When the word, line or paragraph you move to has a bookmark"));
+		}
+		// TRANSLATORS: Label for the dropdown choosing when sound effects play for bookmarks and notes
+		let (bookmark_sound_label, bookmark_sound_mode) =
+			labeled_choice(panel, &t("Bookmark and note &sounds:"), &bookmark_sound_choices);
 		let sync_caret_to_audio =
 			// TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
 			CheckBox::builder(&panel).with_label(&t("&Sync caret to audio playback")).build();
@@ -170,7 +181,12 @@ impl AudioTab {
 			// TRANSLATORS: Option controlling whether seeking audio narration past the end of a chapter's file continues into the next chapter, or stops at the end of the current one
 			CheckBox::builder(&panel).with_label(&t("Seeking &past the end of a chapter continues into the next")).build();
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
-		sizer.add(&bookmark_sounds, 0, SizerFlag::All, OPTION_PADDING);
+		sizer.add_sizer(
+			&labeled_row(bookmark_sound_label, &bookmark_sound_mode, padding),
+			0,
+			SizerFlag::All,
+			OPTION_PADDING,
+		);
 		sizer.add(&sync_caret_to_audio, 0, SizerFlag::All, OPTION_PADDING);
 		sizer.add_sizer(&labeled_row(seek_amount_label, &seek_amount, padding), 0, SizerFlag::All, OPTION_PADDING);
 		sizer.add(&seek_continues_into_next_file, 0, SizerFlag::All, OPTION_PADDING);
@@ -180,7 +196,7 @@ impl AudioTab {
 			section
 		});
 		panel.set_sizer(sizer, true);
-		bookmark_sounds.set_value(settings.bookmark_sounds);
+		bookmark_sound_mode.set_selection(u32::try_from(settings.bookmark_sound_mode.to_config()).unwrap_or(1));
 		sync_caret_to_audio.set_value(settings.sync_caret_to_audio);
 		let seek_index = AUDIO_SEEK_AMOUNTS_SECONDS
 			.iter()
@@ -189,12 +205,16 @@ impl AudioTab {
 			.unwrap_or(1);
 		seek_amount.set_selection(u32::try_from(seek_index).unwrap_or(1));
 		seek_continues_into_next_file.set_value(settings.audio_seek_continues_into_next_file);
-		Self { bookmark_sounds, sync_caret_to_audio, seek_amount, seek_continues_into_next_file, speech }
+		Self { bookmark_sound_mode, sync_caret_to_audio, seek_amount, seek_continues_into_next_file, speech }
 	}
 
 	pub(super) fn values(&self) -> AudioSettings {
 		AudioSettings {
-			bookmark_sounds: self.bookmark_sounds.is_checked(),
+			bookmark_sound_mode: self
+				.bookmark_sound_mode
+				.get_selection()
+				.and_then(|index| BookmarkSoundMode::from_config(i32::try_from(index).ok()?))
+				.unwrap_or(BookmarkSoundMode::OnBookmark),
 			sync_caret_to_audio: self.sync_caret_to_audio.is_checked(),
 			audio_seek_amount_seconds: self
 				.seek_amount

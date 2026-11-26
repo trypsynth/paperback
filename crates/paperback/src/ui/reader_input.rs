@@ -8,13 +8,14 @@ use paperback_core::document::DocPos;
 use patois::t;
 use wxdragon::{event::KeyboardEvent, prelude::*};
 
-#[cfg(any(target_os = "windows", target_os = "macos"))]
-use super::{document_manager::DocumentTab, text_render::reload_window_around};
 use super::{
+	bookmark_sounds::MoveUnit,
 	document_manager::{DocumentManager, tab_index_for_key},
 	menu, menu_ids,
 	reader_ctrl::ReaderCtrl,
 };
+#[cfg(any(target_os = "windows", target_os = "macos"))]
+use super::{document_manager::DocumentTab, text_render::reload_window_around};
 #[cfg(any(target_os = "windows", target_os = "macos"))]
 use crate::text_window::CtrlPos;
 
@@ -91,19 +92,20 @@ pub(super) fn build_text_ctrl(
 			}
 		}
 	});
+	// The unit of the last key pressed, set on key-down and taken on key-up.
+	let pending_move: Rc<Cell<Option<MoveUnit>>> = Rc::new(Cell::new(None));
 	let dm_for_key_up = Rc::clone(self_rc);
+	let pending_move_for_key_up = Rc::clone(&pending_move);
 	text_ctrl.bind_internal(EventType::KEY_UP, move |event| {
 		event.skip(true);
-		let moved_over_text = event.get_key_code().is_some_and(moves_through_text);
+		let moved_by = (!event.get_key_code().is_some_and(is_modifier_key)).then(|| pending_move_for_key_up.take());
 		if let Ok(mut dm) = dm_for_key_up.try_lock() {
 			// Before the status bar reads the position, so it reports the compacted window.
 			dm.compact_window_after_user_move();
 			dm.update_status_bar();
 			dm.save_position_throttled();
-			if moved_over_text {
-				dm.check_bookmark_sounds();
-			} else {
-				dm.forget_bookmark_sound_position();
+			if let Some(moved_by) = moved_by {
+				dm.sound_key_move(moved_by);
 			}
 		}
 	});
@@ -130,6 +132,9 @@ pub(super) fn build_text_ctrl(
 		if let WindowEventData::Keyboard(kbd) = &event
 			&& let Some(key) = kbd.get_key_code()
 		{
+			if !is_modifier_key(key) {
+				pending_move.set(move_unit_for_key(key, kbd.control_down(), kbd.alt_down()));
+			}
 			if (key == WXK_F10 && kbd.shift_down()) || key == WXK_WINDOWS_MENU {
 				kbd.event.skip(false);
 				show_reader_context_menu(text_ctrl_for_menu, &dm_for_keys);
@@ -304,9 +309,19 @@ fn shortcut_for_shifted_character(kbd: &KeyboardEvent, dm: &Rc<Mutex<DocumentMan
 	config.find_shortcut_action(i32::from(typed as u8), false, false, false)
 }
 
-// Only these play a bookmark's sound: a line move used to sound a mid-paragraph bookmark from the paragraph's start.
-const fn moves_through_text(key: i32) -> bool {
-	matches!(key, WXK_LEFT | WXK_RIGHT)
+const fn move_unit_for_key(key: i32, control: bool, alt: bool) -> Option<MoveUnit> {
+	match key {
+		WXK_LEFT | WXK_RIGHT if control && !alt => Some(MoveUnit::Word),
+		WXK_LEFT | WXK_RIGHT => Some(MoveUnit::Character),
+		WXK_UP | WXK_DOWN if alt => None,
+		WXK_UP | WXK_DOWN if control => Some(MoveUnit::Paragraph),
+		WXK_UP | WXK_DOWN => Some(MoveUnit::Line),
+		_ => None,
+	}
+}
+
+const fn is_modifier_key(key: i32) -> bool {
+	key == WXK_CONTROL || key == WXK_RAW_CONTROL || key == WXK_SHIFT || key == WXK_ALT
 }
 
 // wx reports Command as `control_down`, so this covers Cmd+Home/End; Cmd+Up/Down too since most Apple keyboards lack Home/End, and bare Home/End there only scroll.
@@ -395,6 +410,46 @@ fn show_reader_context_menu(text_ctrl: ReaderCtrl, dm: &Rc<Mutex<DocumentManager
 		.append_item(menu_ids::GO_TO_PERCENT, &t("Go to &percent"), &t("Go to percent"))
 		.build();
 	text_ctrl.popup_menu(&mut menu, None);
+}
+
+#[cfg(test)]
+mod move_unit_tests {
+	use wxdragon::prelude::*;
+
+	use super::{is_modifier_key, move_unit_for_key};
+	use crate::ui::bookmark_sounds::MoveUnit;
+
+	#[test]
+	fn arrows_name_the_unit_they_move_by() {
+		assert_eq!(move_unit_for_key(WXK_RIGHT, false, false), Some(MoveUnit::Character));
+		assert_eq!(move_unit_for_key(WXK_LEFT, true, false), Some(MoveUnit::Word));
+		assert_eq!(move_unit_for_key(WXK_DOWN, false, false), Some(MoveUnit::Line));
+		assert_eq!(move_unit_for_key(WXK_UP, true, false), Some(MoveUnit::Paragraph));
+	}
+
+	#[test]
+	fn alt_with_left_or_right_steps_a_character() {
+		assert_eq!(move_unit_for_key(WXK_LEFT, false, true), Some(MoveUnit::Character));
+		assert_eq!(move_unit_for_key(WXK_RIGHT, true, true), Some(MoveUnit::Character));
+	}
+
+	#[test]
+	fn other_keys_name_no_unit() {
+		assert_eq!(move_unit_for_key(WXK_DOWN, false, true), None, "Alt+Down");
+		assert_eq!(move_unit_for_key(WXK_HOME, false, false), None, "Home");
+		assert_eq!(move_unit_for_key(WXK_PAGEDOWN, false, false), None, "Page Down");
+		assert_eq!(move_unit_for_key('H' as i32, false, false), None, "H");
+	}
+
+	#[test]
+	fn only_ctrl_shift_and_alt_are_modifier_keys() {
+		for key in [WXK_CONTROL, WXK_RAW_CONTROL, WXK_SHIFT, WXK_ALT] {
+			assert!(is_modifier_key(key), "{key}");
+		}
+		for key in [WXK_LEFT, WXK_DOWN, 'C' as i32] {
+			assert!(!is_modifier_key(key), "{key}");
+		}
+	}
 }
 
 #[cfg(all(test, not(target_os = "macos")))]

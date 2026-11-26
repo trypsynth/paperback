@@ -8,6 +8,7 @@ use wx_utils::format_duration_ms;
 use wxdragon::prelude::*;
 
 use super::{
+	bookmark_sounds::BookmarkSoundMode,
 	dialogs,
 	document_manager::{DocumentManager, DocumentTab},
 	navigation::{
@@ -83,7 +84,7 @@ fn navigate_audio_bookmark(
 	};
 	let update = move_to_offset_and_record_history(tab, hit.start);
 	seek_to_audio_bookmark(tab, hit.audio_ms);
-	if config.get_app_bool("bookmark_sounds", true) {
+	if BookmarkSoundMode::load(config) != BookmarkSoundMode::Never {
 		super::sounds::play_bookmark_sound(!hit.note.is_empty());
 	}
 	let label = audio_bookmark_label(&hit.note, hit.audio_ms);
@@ -115,7 +116,7 @@ fn navigate_text_bookmark(
 		return (nothing_to_navigate_to(has_items, next, notes_only), None);
 	}
 	let update = move_to_offset_and_record_history(tab, result.offset);
-	if config.lock().unwrap().get_app_bool("bookmark_sounds", true) {
+	if BookmarkSoundMode::load(&config.lock().unwrap()) != BookmarkSoundMode::Never {
 		super::sounds::play_bookmark_sound(!result.marker_text.is_empty());
 	}
 	let note_text = result.marker_text;
@@ -146,6 +147,7 @@ pub fn handle_bookmark_navigation(
 		}
 		None => navigate_text_bookmark(tab, config, wrap, next, notes_only),
 	};
+	dm.forget_bookmark_sound_position();
 	drop(dm);
 	announce_for_command(live_region_label, from_keyboard, message);
 	persist_navigation_history(config, history_update.as_ref());
