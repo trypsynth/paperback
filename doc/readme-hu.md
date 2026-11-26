@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2e060f0cdd2c601f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,77b4e1b6,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: be2c117e73c87f18; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,bc0095e6,8423460b,77b4e1b6,d3762a01,e9860ee8,84e20448); please review and edit as needed -->
 
 # Paperback – 1.1-es verzió
 
@@ -68,6 +68,8 @@ A Paperback a következő formátumokat és kiterjesztéseket támogatja:
 * OpenDocument-szövegfájlok (`.odt`, `.fodt`)
 * OS/2-súgófájlok és könyvek a képeikkel (`.inf`, `.hlp`)
 * PDF-dokumentumok (`.pdf`)
+* Qt-súgófájlok, amelyeket a Qt Assistant és a Qt Creator olvas, például a Qt és a CMake saját dokumentációja (`.qch`)
+* QRead-könyvek, azok a másolatok, amelyeket a QRead mentett az általa megnyitott minden könyvről (`.qrd`)
 * PowerPoint-bemutatók (`.pptx`, `.pptm`, `.ppt`)
 * Könyvarchívumok RAR-formátumban, amelyek úgy nyílnak meg, mint egy zip-fájl, és több könyvet tartalmazva válassza ki a kívántat (`.rar`)
 * reStructuredText-dokumentumok (`.rst`, `.rest`)
@@ -333,9 +335,105 @@ Megjegyzés: a nyilvános GitHub-támogatást (GitHub Sponsors) elegendő oknak 
 
 ## Változásnapló
 
-### 1.1-es verzió
+### 1.2-es verzió
 
-Az 1.1 új PDF-motort, újraépített iOS-es szövegmódot, linuxos szövegfelismerést, webcímről megnyitható dokumentumokat, több évtizednyi régebbi Word-, Write- és PowerPoint-fájl támogatását és még sok mást hoz.
+#### Újdonságok
+
+##### Felolvasás
+* Bármely dokumentum felolvasása a Windows OneCore vagy SAPI 5 hangjaival, illetve a macOS rendszer hangjával. A `Ctrl+Space` billentyűparanccsal indítható és állítható meg a felolvasás, a léptetési billentyűk bekezdéseket ugrannak át, a sebesség- és hangerő-szabályozó pedig úgy működik, mint a hangoskönyvekben.
+* Válassza ki a beszédhangt, a sebességet, a hangmagasságot és a bekezdések közötti szünetet a Beállítások Hang lapján, próbálja ki őket egy minta gombbal, és adjon egy könyvnek saját beszédhangt.
+* A felolvasás a kurzornál kezdődik, amikor a kurzort mozgatja, újra kezdődik, és a kurzor minden kimondott szóra lép.
+* A kiejtési szótár a Beállítások Hang lapján megváltoztatja, hogyan hangzanak fel a szavak: mindegyik szabály egy szót vagy egy mintát helyettesít, csak teljes szavakra illeszkedhet vagy reguláris kifejezés lehet, és ki- vagy bekapcsolható.
+
+##### Braille
+* A Braille Ready fájlok (`.brf`) és a PEF-könyvek visszafordítva nyílnak meg nyomtatott formára, az Ön által a Beállítások között kiválasztott braille-kóddal.
+* Az eBraille-könyvek (`.ebrl`) megnyílnak nyomtatott formában, ha van ilyen, ellenkező esetben a bennük megnevezett braille-kóddal fordítódnak vissza.
+* Az NLS BARD braille-könyvek a zip-ből vagy annak `.bopf` fájljából a csomagnevükben megnevezett braille-kóddal nyílnak meg, és az összes kötet egyetlen könyvként jelenik meg.
+* A braille-könyvek braille-kijelzőn való olvasásához a Beállítások Dokumentumok lapján egy beállítás braille-ben tartja őket, Unicode braille-ként, így a képernyőolvasó a leíró braille-jét mutatja, ahelyett hogy a nyomtatott formát braille-be fordítaná vissza. A `pb --keep-braille` ugyanezt teszi.
+* Az más ország braille ASCII-jában írt braille-fájlok, például a norvég, dán, francia, spanyol, szlovák, cseh vagy magyar, felismerhetők.
+
+##### Új formátumok
+* XPS és OpenXPS dokumentumok.
+* RAR-archívumok és RAR-képregények (`.cbr`).
+* GNU Info-kézikönyvek, gzippel tömörítve vagy feldarabolva, menükkel, kereszthivatkozásokkal és mutatóval.
+* OS/2-es súgófájlok és könyvek (`.inf`, `.hlp`) képekkel és hivatkozásokkal.
+* PalmDOC-könyvek.
+* `.shtml` oldalak és nem tömörített EPUB-könyvek, amelyek `.opf` fájljuk alapján nyílnak meg.
+* Az MP3- vagy M4B-részekből álló ZIP egyetlen hangoskönyvként nyílik meg.
+* Qt-súgófájlok (`.qch`), amelyeket a Qt Assistant és a Qt Creator olvas, például a Qt és a CMake saját dokumentációja.
+* QRead-könyvek (`.qrd`), amelyeket a QRead mentett az általa megnyitott könyvekről, és ahol a QRead először abbahagyta.
+
+##### Hangoskönyvek
+* Az Ugrás az időpontra (`Ctrl+J`) egy időpontra ugrik, például `1:23:45` vagy `+5:00`.
+* Az `=` billentyűparancs azt is bejelenti, hol tart a könyvben és milyen hosszú, a `Shift+=` pedig ugyanezt a fejezetről, valamint az Hang menüben Fejezet idejének bejelentése formában.
+* Az Ugrás adott százalékra onnan játssza le, nem a fejezet elejétől, amelyikben ez az időpont található.
+* A fülhallgató lejátszás, szünet és ugrás gombja vezérli a könyvet, és a lejátszás automatikusan átvált az új alapértelmezett kimeneti eszközre, ha az megváltozik.
+
+##### Általános
+* Problémajelentés a Súgó menüben: hibajelentést küld, és a Paperback váratlan bezárása után a következő indítást követően ismét felajánlásra kerül.
+* A `Shift+=` szövegkönyvben bejelenti, hol tart a fejezetben és hány szó marad.
+* Az EPUB és HTML könyvekben az üres leírással rendelkező képek megjelennek, ha elég nagyok ahhoz, hogy tartalomnak minősüljenek, például az olvashatatlan levelek és ábrák.
+* A képletekre a hivatkozásokon és a táblázatcellákban is lehet navigálni.
+* A HTML-exportálás megőrzi a blokkidézeteket, az ábrákat, a definíciólistákat, az oldalsávokat, a sortöréseket, a felső és az alsó indexeket.
+* Windowson a képernyőolvasó az olvasás közben a dokumentum hivatkozásain „hivatkozás" szót mondja, és egy hivatkozásra kattintva azt követi, ahogy az `Enter` billentyűvel is lehet.
+* A PDF-ek nem megfelelő sorrendben való olvasásához egy oldalelrendezés-beállítás a Beállítások Dokumentumok lapján és egyetlen dokumentumhoz a Nézet > Oldalelrendezés alatt: az oszlopok szerint az oszlopokat onnan találja meg, ahol a szöveg található, nem a dokumentum alapján, és minden sort külön tarthat. Ez helyettesíti azt a beállítást, amely a sorokat külön tartotta. A `pb --layout` ugyanezt teszi.
+
+##### iOS és Android
+* Az Ugrás az időpontra mód az hangoskönyvekhez iOS-en az iPad-billentyűzeten `Cmd+J` billentyűparanccsal, és a lejátszási képernyő mutatja, hol tart és milyen hosszú a könyv.
+* Mindegyik könyv megjegyzi a navigációs egységét.
+* Könyvjelzők és jegyzetek az olvasó felső sávjában lévő gombból: tartsa lenyomva, vagy használja a képernyőolvasó műveleteit egy jegyzet hozzáadásához vagy a Könyvjelzők listájának megnyitásához. Ezek ugyanazok a könyvjelzők, amelyeket az asztali verzió tárol, így az `.paperback` fájlokkal utaznak, és az asztali billentyűparancsok billentyűzettel működnek.
+* Az olvasási sáv alatti haladásra koppintva átvált a fejezet adataira: a nevére, százalékára és maradék szavaira, illetve egy hangoskönyv időpontjaira.
+* Az oldalelrendezés-beállítás a nem megfelelő sorrendben olvasott PDF-ekhez a Beállítások között, és egyetlen PDF- vagy XPS-dokumentumhoz a További lehetőségek menüben.
+* Az Android-on van kiejtési szótár a Beállítások között, és mindkét alkalmazás most már a szabályait pontosan úgy olvassa fel, ahogy az asztali verzió. Az iOS-en mentett szabályok az első megnyitáskor átkerülnek.
+
+##### pb
+* A pb a legtöbb szöveges formátumon kétszeres-négyszeres sebességgel működik, és egyszerre annyi dokumentumot konvertál, ahány processzormag van, vagy ahány a `--jobs` paraméter megad.
+* A `--braille-table` választja meg a braille-könyv kódját, a `--list-braille-tables` felsorolja a kódokat, és a `--version` azt mondja meg, melyik pb-verzió.
+
+#### Módosítások
+* A Beállítások hat lapra van felosztva, fajtatypusonként egy-egy.
+* A PDF-ek, a nagy CHM-референciák és a MOBI-könyvek gyorsabban nyílnak meg.
+* A Windows-telepítő kevesebbet kérdez: a Paperback megjelenik a Megnyitás alatt minden általa olvasott formátumon, a telepítés pedig csak az EPUB-könyvek és a PDF-ek alapértelmezett alkalmazássá tételét ajánlja fel. A Start menü parancsikonja most már alapértelmezés szerint be van kapcsolva.
+* A Windows-telepítő a Paperback saját Windows-megjelenítési nyelvén nyílik meg, ha fordítva van rá, és megkérdezi, melyik nyelvet szeretné használni, ha nem.
+
+#### Javítások
+
+##### Általános
+* A SAPI 5-ös hang (például a Mikropuhe) felolvasása, amely a Windows-kódlappal működik, már nem összevisszáztatja az ä és az ö betűket.
+* Az írásjeles billentyűparancsok minden billentyűzetkiosztáson működnek, és az US-billentyűzet pozícióját figyelembe veszik.
+* A Paperback már nem fagy le, ha az `Shift` és írásjel billentyűparancs megnyitja a Beállítások ablakot, ha egy nem olvasható fájlt nyit meg a parancssorból, vagy ha szövegfelismerési eredmények, egy másik példányból származó fájl vagy az elalvási időzítő érkezik egy párbeszédpanel nyitva tartása közben.
+* A nagyon mélyen beágyazott HTML- és XML-dokumentumok már nem okoznak összeomlást.
+* Egy be nem töltődő konfiguráció a felülírás helyett `.bad` fájlként megmarad, és a mentés már nem hagyhat félbemaradt állapotban.
+* A Fájl > Kilépés megőrzi az ablak méretét és nyitott lapját, és eltávolítja a tálcaikonot.
+* A tálcán rejtett Paperback már nem foglal lekötött processzormagot, és a bezárt párbeszédpanelek már nem maradnak meg a memóriában.
+* Több fájl Paperback-futtatás közben történő megnyitása mind megnyílnak.
+* A dokumentum címe bejelentésre kerül, amikor megnyílik anélkül, hogy előtte egy párbeszédpanel bezárna.
+* A tartalomjegyzék-bejegyzés fejezetszáma a címével együtt bejelentésre kerül.
+* macOS-en és Linuxon egy egyszerre nem betölthető hosszú dokumentum már nem fut az végéhez és nem menti azt olvasási pozícióként.
+
+##### Dokumentumok
+* Az elrendezéshez táblázatot használó oldalak szövegként olvasódnak, így a Keresés, az `Enter` és a címsorok bennük működnek.
+* Az újrakezdő számozású szólisták minden alkalommal ugyanúgy számozódnak, az újrakezdési értékből kezdve.
+* Az OpenDocument-táblázatok fejlécsora és sorcsoportja belsejében levő sorok már nem esnek el.
+* A DTBook-könyvek beágyazott listái megtartják szintjüket.
+* A sérült MOBI-fájlok már nem okoznak összeomlást.
+* Egy olyan man-oldal, amely egy nem telepített oldalra irányít, azt megjeleníti.
+* A közép-európai vagy más nemzeti kódlapok, valamint a DOS-szövegfájlok a megfelelő karakterekkel nyílnak meg, nem pedig szóbelsejében lévő szimbólumokkal.
+* Egy olyan tartalomjegyzék-bejegyzés, amelynek horgony a sorok után esik, például a iniciálé után, a sor elejére érkezik, és a címsor úgy olvasódik, ahogy a sorban szerepel.
+* A Markdown-exportálás már nem ír üres félkövér vagy dőlt jelöléseket.
+
+##### iOS és Android
+* iOS: a felolvasás már nem áll meg az első bekezdés után az iOS 27.3-on.
+* iOS: egy letöltött könyv bezárása után bezárva marad.
+* Android: a hivatkozások, képek és táblázatok már nem kerülnek rossz helyre az emojit követő sor után.
+* Egy nyitott dokumentum eltávolítása a Legutóbbi dokumentumok közül bezárja, mint Windowson.
+* iOS: a VoiceOver már nem ajánlja fel kétszer az Eltávolítást a Legutóbbi dokumentumokban, és a Szövegméret és a Szünet a bekezdések között a Beállítások között külön módosítható vezérlők.
+
+##### Linux
+* A Linux-verzió újra fut az Ubuntu 24.04-en és más rendszereken az ugyanilyen glibc-vel.
+* A futó példányhoz küldött fájl azonnal megnyílik.
+
+### 1.1-es verzió
 
 #### Újdonságok
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-24 01:53+0000\n"
+"POT-Creation-Date: 2026-11-25 16:45+0000\n"
 "PO-Revision-Date: 2026-10-21 12:00+0200\n"
 "Last-Translator: Torma Zsolt <torma.zsolt@gmail.com>\n"
 "Language-Team: Torma Zsolt <torma.zsolt@gmail.com>\n"
@@ -163,6 +163,31 @@ msgstr "A jelentés mentve lett."
 msgid "The report couldn't be saved: %s"
 msgstr "A jelentés nem lett mentve: %s"
 
+#. TRANSLATORS: Checkbox in the Windows installer for a Paperback shortcut in the Start Menu, beside Inno Setup's own "Create a desktop shortcut". The & marks the key that checks it.
+#, fuzzy
+msgid "Create a &Start Menu shortcut"
+msgstr "Start Menü-&parancsikon létrehozása"
+
+#. TRANSLATORS: Checkbox in the Windows installer: EPUB books open in Paperback when opened from File Explorer. Every other format Paperback reads is offered in Explorer's "Open with" without asking.
+#, fuzzy
+msgid "Make Paperback the default app for EPUB books (*.epub)"
+msgstr "A Paperback legyen az alapértelmezett alkalmazás az EPUB-könyvekhez (*.epub)"
+
+#. TRANSLATORS: Checkbox in the Windows installer: PDF files open in Paperback when opened from File Explorer, instead of in a browser or another PDF reader.
+#, fuzzy
+msgid "Make Paperback the default app for PDF files (*.pdf)"
+msgstr "A Paperback legyen az alapértelmezett alkalmazás a PDF-fájlokhoz (*.pdf)"
+
+#. TRANSLATORS: Checkbox in the Windows installer adding Paperback's folder to the PATH environment variable, so pb, Paperback's command-line converter, runs from any command prompt.
+#, fuzzy
+msgid "Add Paperback's folder to PATH, for the pb command"
+msgstr "A Paperback mappájának felvétele a PATH-ba a pb parancshoz"
+
+#. TRANSLATORS: The file type File Explorer shows for a document set to open in Paperback, as in its Type column.
+#, fuzzy
+msgid "Paperback Document"
+msgstr "Paperback-dokumentum"
+
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 msgid "Checking %s"
 msgstr "Ellenőrzés: %s"
@@ -187,7 +212,7 @@ msgstr "A pb parancssori eszköz hozzáadása a PATH változóhoz"
 
 #. TRANSLATORS: Checkbox label in the Linux file-association setup dialog. Shared by
 #. multiple parsers (DAISY, Word-in-zip), so it's kept as its own opt-in entry rather
-#. than tied to one format, same as the Windows installer's "assoc_zip" task.
+#. than tied to one format.
 msgid "ZIP Archives (.zip)"
 msgstr "ZIP-archívumok (.zip)"
 
@@ -1462,6 +1487,21 @@ msgstr "Beszéd&szótár..."
 msgid "System default"
 msgstr "Rendszer alapértelmezése"
 
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: PDF and XPS pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+#, fuzzy
+msgid "Automatic"
+msgstr "Automatikus"
+
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: the document's own reading order is ignored and the columns of each page are found from where the text sits, then read one after the other. It suits documents whose text is read out of order, such as two-column layouts
+#, fuzzy
+msgid "By columns, ignoring the document's own order"
+msgstr "Oszlopok szerint, figyelmen kívül hagyva a dokumentum saját sorrendjét"
+
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: like reading by columns, but every line is kept apart instead of joined into paragraphs, which suits code, poetry and lists of clauses whose line breaks are the content
+#, fuzzy
+msgid "By columns, keeping every line apart"
+msgstr "Oszlopok szerint, minden sort szétválasztva"
+
 #. TRANSLATORS: Note at the top of the Documents tab of Settings, whose options change how a file is read
 #, fuzzy
 msgid "Changing these reads your open documents again when you press OK."
@@ -1471,10 +1511,10 @@ msgstr "Ezen beállítások módosítása az OK gombra kattintáskor újra beolv
 msgid "Render tables &inline"
 msgstr "Táblázatok megjelenítése a s&zövegben"
 
-#. TRANSLATORS: Option to join the wrapped lines of a page back into paragraphs, in documents laid out as pages, such as PDFs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
+#. TRANSLATORS: Label for the dropdown choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for every document not given a page layout of its own in the View menu
 #, fuzzy
-msgid "&Join wrapped lines into paragraphs"
-msgstr "&Zárt sorok bekezdésekké összekapcsolása"
+msgid "Page &layout of PDF and XPS documents:"
+msgstr "PDF- és XPS-dokumentumok oldal&elrendezése:"
 
 #. TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
 #, fuzzy
@@ -1489,6 +1529,11 @@ msgstr "Dollárjelek közötti szöveg olvasása &matematikai képletként Markd
 #, fuzzy
 msgid "&Braille code of BRF and PEF books:"
 msgstr "A BRF- és PEF-könyvek &braille-kódja:"
+
+#. TRANSLATORS: Option to show BRF, PEF, eBraille and BARD braille books as their braille, in Unicode braille, instead of turning them into print. It suits reading on a braille display, where the screen reader would otherwise turn the print back into braille; speech reads the cells as braille patterns. The braille code above still says which braille the books are written in.
+#, fuzzy
+msgid "&Keep braille books in braille, for reading on a braille display"
+msgstr "&Braille-könyvek braille-ként, braille-kijelzőn való olvasáshoz"
 
 #. TRANSLATORS: Description text shown when the background color is set to default
 msgid "Background: Default"
@@ -2541,6 +2586,55 @@ msgstr "&Forrás megtekintése"
 #. TRANSLATORS: Status-bar help text for the View Source menu item.
 msgid "Open the document source in a new tab"
 msgstr "A dokumentum forrásának megnyitása új lapon"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open PDF or XPS document follows the page layout chosen for all documents in Settings
+#, fuzzy
+msgid "&Same as Other Documents"
+msgstr "A &többi dokumentumhoz hasonlóan"
+
+#. TRANSLATORS: Status-bar help text for the Same as Other Documents page layout item
+#, fuzzy
+msgid "Read this document with the page layout set in Settings"
+msgstr "Ez a dokumentum a Beállításokban megadott oldalelrendezéssel olvasható"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open document's pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+#, fuzzy
+msgid "&Automatic"
+msgstr "&Automatikus"
+
+#. TRANSLATORS: Status-bar help text for the Automatic page layout item
+#, fuzzy
+msgid "Read this document in its own order, joining wrapped lines"
+msgstr "Ez a dokumentum a saját sorrendjében, az egymásba törött sorok összefűzésével olvasható"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open document's own reading order is ignored and the columns of each page are found from where the text sits, for documents read out of order
+#, fuzzy
+msgid "By &Columns"
+msgstr "&Oszlopok szerint"
+
+#. TRANSLATORS: Status-bar help text for the By Columns page layout item
+#, fuzzy
+msgid "Find the columns of each page instead of following the document's own order"
+msgstr "Az oldalak oszlopainak keresése a dokumentum saját sorrendje helyett"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: like By Columns, but every line is kept apart instead of joined into paragraphs, for code, poetry and lists of clauses
+#, fuzzy
+msgid "By Columns, &Every Line Apart"
+msgstr "Oszlopok szerint, &minden sor szétválasztva"
+
+#. TRANSLATORS: Status-bar help text for the By Columns, Every Line Apart page layout item
+#, fuzzy
+msgid "Find the columns of each page and keep every line separate"
+msgstr "Az oldalak oszlopainak keresése és minden sor szétválasztása"
+
+#. TRANSLATORS: Submenu of the View menu choosing how the open PDF or XPS document's pages are put in reading order and paragraphs
+#, fuzzy
+msgid "Page &Layout"
+msgstr "Oldal&elrendezés"
+
+#, fuzzy
+msgid "How this document's pages are read"
+msgstr "A dokumentum oldalainak olvasása"
 
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
@@ -4344,27 +4438,27 @@ msgid "Pattern & Replacement"
 msgstr "Minta és csere"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the text (or regex) to search for
-#: swift
+#: kt swift
 msgid "Pattern"
 msgstr "Minta"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the replacement text
-#: swift
+#: kt swift
 msgid "Replacement"
 msgstr "Csere"
 
 #. TRANSLATORS: Toggle limiting a word-scope rule to whole-word matches only (no partial-word matches)
-#: swift
+#: kt swift
 msgid "Whole word only"
 msgstr "Csak teljes szavak"
 
 #. TRANSLATORS: Toggle enabling regex matching for a paragraph-scope rule; "\1" is a regex backreference syntax and must stay untranslated
-#: swift
+#: kt swift
 msgid "Regular expression (\\1 = first capture group)"
 msgstr "Reguláris kifejezés (\\1 = első rögzítő csoport)"
 
 #. TRANSLATORS: Toggle for whether this text-substitution rule is currently active
-#: swift
+#: kt swift
 msgid "Enabled"
 msgstr "Engedélyezve"
 
@@ -4374,7 +4468,7 @@ msgid "Apply to"
 msgstr "Alkalmazás erre"
 
 #. TRANSLATORS: Row label leading to the voice-filter picker for this rule
-#: swift
+#: kt swift
 msgid "Voices"
 msgstr "Beszédhangok"
 
@@ -4437,7 +4531,7 @@ msgid "Start Timer"
 msgstr "Időzítő indítása"
 
 #. TRANSLATORS: Message shown when no speech dictionary rules have been created yet
-#: swift
+#: kt swift
 msgid "No Rules"
 msgstr "Nincsenek szabályok"
 
@@ -5391,6 +5485,105 @@ msgstr "jegyzet és könyvjelző beállításai megjelenítése"
 #, fuzzy
 msgid "go to bookmark"
 msgstr "ugrás a könyvjelzőre"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: the open PDF or XPS document follows the page layout chosen for all documents in Settings
+#: kt swift
+#, fuzzy
+msgid "Same as Other Documents"
+msgstr "A többi dokumentumhoz hasonlóan"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: the open document's own reading order is ignored and the columns of each page are found from where the text sits, for documents read out of order
+#: kt swift
+#, fuzzy
+msgid "By Columns"
+msgstr "Oszlopok szerint"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: like By Columns, but every line is kept apart instead of joined into paragraphs, for code, poetry and lists of clauses
+#: kt swift
+#, fuzzy
+msgid "By Columns, Every Line Apart"
+msgstr "Oszlopok szerint, minden sor szétválasztva"
+
+#. TRANSLATORS: Submenu of the document actions menu choosing how the open PDF or XPS document's pages are put in reading order and paragraphs
+#: kt swift
+#, fuzzy
+msgid "Page Layout"
+msgstr "Oldalelrendezés"
+
+#. TRANSLATORS: Label for the picker choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for every document not given a page layout of its own in the More options menu
+#: kt swift
+#, fuzzy
+msgid "Page layout of PDF and XPS documents"
+msgstr "PDF- és XPS-dokumentumok oldalelrendezése"
+
+#. TRANSLATORS: Label of the choice between a rule matching words and one matching across a whole paragraph
+#: kt
+#, fuzzy
+msgid "Applies to"
+msgstr "Vonatkozik erre"
+
+#. TRANSLATORS: Footer under the Speech Dictionary row in Settings, explaining what its rules do
+#: kt
+#, fuzzy
+msgid "Change how words are read aloud, without changing the document."
+msgstr "A szavak felolvasásának módja megváltoztatható a dokumentum megváltoztatása nélkül."
+
+#: kt
+#, fuzzy
+msgid "Moved to {} of {}"
+msgstr "Áthelyezve: {} / {}"
+
+#. TRANSLATORS: Announced after a speech dictionary rule is deleted
+#: kt
+#, fuzzy
+msgid "Rule deleted"
+msgstr "Szabály törölve"
+
+#. TRANSLATORS: Menu item and TalkBack action moving a speech dictionary rule one place earlier, so it applies sooner
+#: kt
+#, fuzzy
+msgid "Move Up"
+msgstr "Felfelé mozgatás"
+
+#. TRANSLATORS: Menu item and TalkBack action moving a speech dictionary rule one place later, so it applies later
+#: kt
+#, fuzzy
+msgid "Move Down"
+msgstr "Lefelé mozgatás"
+
+#. TRANSLATORS: TalkBack action turning a speech dictionary rule off, so it no longer changes what is read aloud
+#: kt
+#, fuzzy
+msgid "Turn Off"
+msgstr "Kikapcsolás"
+
+#. TRANSLATORS: TalkBack action turning a speech dictionary rule back on
+#: kt
+#, fuzzy
+msgid "Turn On"
+msgstr "Bekapcsolás"
+
+#. TRANSLATORS: TalkBack state of a speech dictionary rule that is on
+#: kt
+#, fuzzy
+msgid "On"
+msgstr "bekapcsolt"
+
+#. TRANSLATORS: TalkBack action label for a rule in the Speech Dictionary, read as "double tap to edit rule"
+#: kt
+#, fuzzy
+msgid "edit rule"
+msgstr "szabály szerkesztése"
+
+#. TRANSLATORS: Shown under "No Rules" in the Speech Dictionary, saying how to make the first rule
+#: kt
+#, fuzzy
+msgid "Use Add Rule to change how a word or pattern is read aloud."
+msgstr "Az „Szabály hozzáadása"
+
+#, fuzzy
+#~ msgid "&Join wrapped lines into paragraphs"
+#~ msgstr "&Zárt sorok bekezdésekké összekapcsolása"
 
 #, fuzzy
 #~ msgid "on"

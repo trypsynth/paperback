@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2e060f0cdd2c601f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,77b4e1b6,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: be2c117e73c87f18; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,bc0095e6,8423460b,77b4e1b6,d3762a01,e9860ee8,84e20448); please review and edit as needed -->
 
 # Paperback - phiên bản 1.1
 
@@ -68,6 +68,8 @@ Paperback hỗ trợ các định dạng và phần mở rộng sau:
 * Tệp văn bản OpenDocument (`.odt`, `.fodt`)
 * Tệp trợ giúp và sách OS/2, cùng với hình ảnh của chúng (`.inf`, `.hlp`)
 * Tài liệu PDF (`.pdf`)
+* Tệp trợ giúp Qt, tài liệu mà Qt Assistant và Qt Creator đọc, chẳng hạn như của Qt và CMake (`.qch`)
+* Sách QRead, các bản sao mà QRead đã lưu của mỗi cuốn sách nó mở (`.qrd`)
 * Trình chiếu PowerPoint (`.pptx`, `.pptm`, `.ppt`)
 * Lưu trữ RAR của sách, được mở như zip, với danh sách để chọn khi một tệp chứa nhiều sách (`.rar`)
 * Tài liệu reStructuredText (`.rst`, `.rest`)
@@ -333,9 +335,105 @@ Lưu ý: Tôi coi một nhà tài trợ GitHub công khai là căn cứ để t�
 
 ## Nhật ký thay đổi
 
-### Phiên bản 1.1
+### Phiên bản 1.2
 
-1.1 mang đến một công cụ PDF mới, chế độ văn bản iOS được xây dựng lại, OCR trên Linux, tài liệu từ liên kết, hỗ trợ cho hàng chục năm các tệp Word, Write và PowerPoint cũ hơn, và nhiều hơn nữa.
+#### Được thêm
+
+##### Đọc to
+* Đọc bất kỳ tài liệu nào to, với các giọng OneCore hoặc SAPI 5 trên Windows và các giọng riêng của hệ thống trên macOS. `Ctrl+Space` bắt đầu và dừng đọc, các phím tìm kiếm bỏ qua các đoạn, và các phím tốc độ và âm lượng hoạt động như chúng làm cho sách nói.
+* Chọn giọng nói, tốc độ, cao độ và tạm dừng giữa các đoạn trong tab Âm thanh của Cài đặt, thử chúng bằng nút mẫu và cho một cuốn sách giọng nói riêng của nó.
+* Đọc bắt đầu tại dấu mũ, bắt đầu lại bất cứ nơi nào bạn di chuyển nó và di chuyển dấu mũ đến mỗi từ khi nó được phát biểu.
+* Một từ điển phát biểu, từ tab Âm thanh của Cài đặt, thay đổi cách các từ được đọc to: mỗi quy tắc thay thế một từ hoặc một mẫu, có thể khớp toàn bộ từ chỉ hoặc là biểu thức chính quy, và có thể được bật và tắt.
+
+##### Nổi chữ
+* Tệp Braille Ready (`.brf`) và sách PEF mở được dịch ngược thành in, trong mã Braille bạn chọn trong Cài đặt.
+* Sách eBraille (`.ebrl`) mở in khi chúng mang theo nó, và nếu không được dịch ngược bằng mã Braille mà chúng đặt tên.
+* Sách Braille NLS BARD, từ zip hoặc `.bopf` của nó, mở dưới dạng một cuốn sách tất cả các tập của chúng, trong mã Braille các tên gói của chúng.
+* Để đọc sách Braille trên màn hình Braille, một cài đặt trong tab Tài liệu của Cài đặt giữ chúng bằng Braille, dưới dạng Braille Unicode, vì vậy trình đọc màn hình sẽ hiển thị Braille của người chuyển mã thay vì dịch in trở lại Braille. `pb --keep-braille` cũng làm như vậy.
+* Các tệp Braille được viết bằng ASCII Braille của quốc gia khác, chẳng hạn như Na Uy, Đan Mạch, Pháp, Tây Ban Nha, Slovakia, Séc hoặc Hungary, được nhận ra.
+
+##### Định dạng mới
+* Tài liệu XPS và OpenXPS.
+* Lưu trữ RAR và truyện tranh RAR (`.cbr`).
+* Hướng dẫn GNU Info, nén gzip hoặc chia, với menu, tham chiếu chéo và chỉ mục của chúng.
+* Tệp trợ giúp OS/2 và sách (`.inf`, `.hlp`), với hình ảnh và liên kết của chúng.
+* Sách PalmDOC.
+* Các trang `.shtml` và sách EPUB không được nén, được mở bởi `.opf` của chúng.
+* Một zip của các phần MP3 hoặc M4B mở dưới dạng một sách nói.
+* Các tệp trợ giúp Qt (`.qch`), tài liệu mà Qt Assistant và Qt Creator đọc, chẳng hạn như Qt và CMake của riêng chúng.
+* Sách QRead (`.qrd`), các bản sao QRead đã lưu của mỗi cuốn sách nó mở, mở ở nơi QRead đã ngừng lần đầu tiên.
+
+##### Sách nói
+* Chuyển đến Thời điểm (`Ctrl+J`) nhảy đến một thời điểm, chẳng hạn như `1:23:45` hoặc `+5:00`.
+* `=` cũng cho biết bạn đang ở bao xa trong cuốn sách và nó chạy bao lâu, và `Shift+=` nói điều tương tự cho chương, cũng như trong menu Âm thanh dưới dạng Thông báo thời gian chương.
+* Đi đến Phần trăm phát từ điểm đó, không phải từ đầu chương mà nó rơi vào.
+* Các nút phát, tạm dừng và bỏ qua của tai nghe kiểm soát cuốn sách, và phát lại chuyển sang một thiết bị đầu ra mặc định mới khi nó thay đổi.
+
+##### Chung
+* Báo cáo sự cố, trong menu Trợ giúp, gửi một báo cáo về những gì đã xảy ra sai và được cung cấp vào lần khởi động tiếp theo sau khi Paperback đóng không mong muốn.
+* `Shift+=` trong một cuốn sách văn bản cho biết bạn đã tiến bao xa qua chương và còn bao nhiêu từ.
+* Hình ảnh có mô tả trống trong sách EPUB và HTML hiển thị khi chúng đủ lớn để là nội dung, chẳng hạn như các bức thư và hình được quét.
+* Các công thức bên trong liên kết và ô bảng có thể được điều hướng đến.
+* Xuất HTML giữ các trích dẫn khối, hình, danh sách định nghĩa, aside, ngắt dòng, chỉ số trên và chỉ số dưới.
+* Trên Windows, trình đọc màn hình nói "liên kết" trên các liên kết trong tài liệu khi bạn đọc, và nhấp vào một liên kết sẽ theo nó, như `Enter` làm.
+* Một cài đặt bố cục trang cho các tệp PDF được đọc không theo thứ tự, trong tab Tài liệu của Cài đặt và cho một tài liệu trong Xem > Bố Cục Trang: theo cột tìm thấy các cột từ nơi văn bản nằm thay vì theo tài liệu, và có thể giữ mỗi dòng riêng biệt. Nó thay thế cài đặt giữ các dòng riêng biệt. `pb --layout` cũng làm như vậy.
+
+##### iOS và Android
+* Chuyển đến có chế độ Thời gian cho sách nói, với `Cmd+J` trên bàn phím iPad, và màn hình chơi hiển thị bạn ở bao xa và cuốn sách chạy bao lâu.
+* Mỗi cuốn sách ghi nhớ đơn vị điều hướng của nó.
+* Dấu trang và ghi chú, từ nút trong thanh trên cùng của trình đọc: giữ nó hoặc sử dụng các hành động của trình đọc màn hình để thêm ghi chú hoặc mở danh sách Dấu trang. Chúng là các dấu trang giống như máy tính để bàn giữ, vì vậy chúng di chuyển trong các tệp `.paperback` và các phím dấu trang của máy tính để bàn hoạt động với bàn phím.
+* Nhấn vào tiến độ dưới thanh đọc to sẽ chuyển nó sang tiến độ của chương: tên, phần trăm và từ còn lại hoặc lần của nó trong sách nói.
+* Cài đặt bố cục trang cho các tệp PDF được đọc không theo thứ tự nằm trong Cài đặt và trong menu Các tùy chọn khác cho một tệp PDF hoặc XPS.
+* Android có một từ điển phát biểu, trong Cài đặt, và cả hai ứng dụng hiện đang đọc các quy tắc của chúng chính xác như máy tính để bàn làm. Các quy tắc được lưu trên iOS chuyển qua lần đầu tiên nó mở.
+
+##### pb
+* pb nhanh hơn hai đến bốn lần trên hầu hết các định dạng văn bản, và chuyển đổi nhiều tài liệu cùng một lúc như có các bộ xử lý hoặc bao nhiêu `--jobs` nói.
+* `--braille-table` chọn mã của sách Braille, `--list-braille-tables` liệt kê các mã, và `--version` cho biết pb nào là.
+
+#### Đã thay đổi
+* Cài đặt được chia thành sáu tab, mỗi tab cho một loại cài đặt.
+* Các tệp PDF, tham chiếu CHM lớn và sách MOBI mở nhanh hơn.
+* Trình cài đặt Windows hỏi ít hơn: Paperback hiển thị trong Mở với cho mọi định dạng mà nó đọc, và thiết lập chỉ cung cấp để làm cho nó là ứng dụng mặc định cho sách EPUB và PDF. Phím tắt Menu Bắt đầu giờ đây được bật theo mặc định.
+* Trình cài đặt Windows mở bằng ngôn ngữ hiển thị Windows của bạn khi Paperback được dịch thành nó, và hỏi ngôn ngữ nào sẽ sử dụng khi nó không phải vậy.
+
+#### Đã sửa lỗi
+
+##### Chung
+* Đọc to bằng giọng nói SAPI 5 hoạt động trong trang mã Windows, chẳng hạn như Mikropuhe, không còn làm garbled các chữ cái như ä và ö.
+* Các phím tắt dấu chấm hoạt động trên mọi bố cục bàn phím, được so khớp với vị trí của phím trên bàn phím Mỹ.
+* Paperback không còn treo khi phím tắt có `Shift` và dấu chấm mở Cài đặt, khi tệp không thể đọc được được mở từ dòng lệnh, hoặc khi kết quả OCR, tệp từ bản sao khác hoặc bộ định thời ngủ đến trong khi hộp thoại mở.
+* Các tài liệu HTML và XML lồng sâu rất không còn gặp sự cố.
+* Cấu hình không tải được giữ dưới dạng tệp `.bad` thay vì bị ghi đè, và lưu không còn để lại nó một nửa.
+* Tệp > Thoát lưu kích thước và tab mở của cửa sổ, và xóa biểu tượng khay.
+* Paperback ẩn trong khay không còn giữ lõi xử lý bận rộn, và các hộp thoại đóng không còn ở trong bộ nhớ.
+* Mở nhiều tệp trong khi Paperback chạy sẽ mở tất cả chúng.
+* Tiêu đề của tài liệu được thông báo khi nó mở mà không có hộp thoại đóng trước tiên.
+* Số chương của mục lục được thông báo cùng với tiêu đề của nó.
+* Trên macOS và Linux, tài liệu quá dài để tải cùng một lúc không còn chạy trước đến cuối của nó và lưu nó là vị trí đọc.
+
+##### Tài liệu
+* Các trang sử dụng bảng cho bố cục của chúng đọc dưới dạng văn bản, vì vậy Tìm, `Enter` và tiêu đề hoạt động trong chúng.
+* Danh sách từ mà khởi động lại đánh số của chúng đánh số cùng mỗi lần, từ giá trị khởi động lại của chúng.
+* Các hàng bảng OpenDocument bên trong các hàng tiêu đề và nhóm hàng không còn bị loại bỏ.
+* Danh sách lồng nhau trong sách DTBook giữ cấp độ của chúng.
+* Các tệp MOBI bị hỏng không còn gặp sự cố.
+* Một trang hướng dẫn được chuyển hướng đến một trang chưa được cài đặt cho biết trang nào.
+* Các tệp văn bản trong trang mã Trung Âu hoặc quốc gia khác, và tệp văn bản DOS, mở với các ký tự đúng thay vì ký hiệu bên trong các từ.
+* Mục lục có neo của nó rơi bên trong dòng tiêu đề của nó, chẳng hạn như sau một chữ cái thả, hạ cánh ở đầu dòng đó, và tiêu đề của nó đọc khi dòng được viết.
+* Xuất Markdown không còn ghi các dấu in đậm hoặc in nghiêng trống.
+
+##### iOS và Android
+* iOS: đọc to không còn dừng sau đoạn đầu tiên trên iOS 27.3.
+* iOS: đóng một cuốn sách đã tải xuống giữ nó đóng.
+* Android: liên kết, hình ảnh và bảng không còn được đặt sai sau một emoji trên cùng một dòng.
+* Xóa tài liệu mở khỏi Tài liệu gần đây sẽ đóng nó, như trên Windows.
+* iOS: VoiceOver không còn cung cấp Gỡ bỏ hai lần trong Tài liệu gần đây, và Kích thước văn bản và Tạm dừng Đoạn văn trong Cài đặt là mỗi một điều khiển có thể điều chỉnh.
+
+##### Linux
+* Bản dựng Linux chạy trên Ubuntu 24.04 và các hệ thống khác có glibc của nó, một lần nữa.
+* Một tệp được gửi đến bản sao chạy mở ngay lập tức.
+
+### Phiên bản 1.1
 
 #### Được thêm
 
