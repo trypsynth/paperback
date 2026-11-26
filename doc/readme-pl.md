@@ -68,6 +68,8 @@ Paperback obsługuje następujące formaty i rozszerzenia:
 * Pliki tekstowe OpenDocument (`.odt`, `.fodt`)
 * Pliki pomocy i książki systemu OS/2 wraz z ilustracjami (`.inf`, `.hlp`)
 * Dokumenty PDF (`.pdf`)
+* Pliki pomocy Qt, czyli dokumentacja odczytywana przez Qt Assistant i Qt Creator, na przykład dokumentacja Qt i CMake (`.qch`)
+* Książki QRead, czyli kopie książek zapisane przez QRead (`.qrd`)
 * Prezentacje PowerPoint (`.pptx`, `.pptm`, `.ppt`)
 * Archiwa RAR z książkami, otwierane tak samo jak archiwa ZIP; jeśli archiwum zawiera kilka książek, można wybrać jedną z listy (`.rar`)
 * Dokumenty reStructuredText (`.rst`, `.rest`)
@@ -333,9 +335,105 @@ Uwaga: publiczne sponsorowanie w GitHub traktuję jako podstawę do automatyczne
 
 ## Lista zmian
 
-### Wersja 1.1
+### Wersja 1.2
 
-Wersja 1.1 przynosi nowy silnik PDF, przebudowany tryb tekstowy w iOS, OCR w systemie Linux, otwieranie dokumentów z odnośników, obsługę plików Word, Write i PowerPoint sprzed kilkudziesięciu lat oraz wiele innych nowości.
+#### Dodano
+
+##### Czytanie na głos
+* Każdy dokument można czytać na głos przy użyciu głosów OneCore lub SAPI 5 w systemie Windows oraz głosów systemowych w macOS. `Ctrl+Spacja` uruchamia i zatrzymuje odczyt. Klawisze przewijania przenoszą między akapitami, a klawisze zmiany szybkości i głośności działają tak samo jak w audiobookach.
+* Na karcie Dźwięk w Ustawieniach można wybrać głos, tempo, wysokość głosu i przerwę między akapitami oraz wypróbować ustawienia przyciskiem Odtwórz próbkę. Można też wybrać osobny głos dla danej książki.
+* Odczyt zaczyna się od kursora tekstowego i rozpoczyna się w nowym miejscu po jego przesunięciu. Podczas odczytu kursor przechodzi do każdego wypowiadanego słowa.
+* Słownik mowy na karcie Dźwięk w Ustawieniach pozwala zmienić sposób odczytywania słów. Każda reguła zastępuje słowo lub wzorzec, może uwzględniać tylko całe słowa albo używać wyrażenia regularnego. Reguły można włączać i wyłączać.
+
+##### Brajl
+* Pliki BRF (Braille Ready Files, `.brf`) i książki PEF są przekształcane z brajla na zwykły tekst przy użyciu tablicy brajlowskiej wybranej w Ustawieniach.
+* Książki eBraille (`.ebrl`) są odczytywane jako zwykły tekst, jeśli go zawierają, a w przeciwnym razie przekształcane z brajla na tekst z użyciem wskazanego w nich kodu brajlowskiego.
+* Książki brajlowskie BARD z National Library Service, otwierane z archiwum ZIP albo pliku `.bopf`, są odczytywane jako jedna książka obejmująca wszystkie tomy, z użyciem kodu brajlowskiego wskazanego w pakiecie.
+* Jeśli czytasz na linijce brajlowskiej, włącz „Zachowuj zapis brajlowski książek do czytania na linijce brajlowskiej” na karcie Dokumenty w Ustawieniach. Paperback zachowa oryginalny zapis jako znaki brajlowskie Unicode, więc czytnik ekranu wyświetli go na linijce, zamiast ponownie tłumaczyć tekst na brajla. To samo robi polecenie `pb --keep-braille`.
+* Paperback rozpoznaje pliki zapisane w różnych krajowych odmianach brajlowskiego ASCII, między innymi norweskiej, duńskiej, francuskiej, hiszpańskiej, słowackiej, czeskiej i węgierskiej.
+
+##### Nowe formaty
+* Dokumenty XPS i OpenXPS.
+* Archiwa RAR i komiksy w archiwach RAR (`.cbr`).
+* Podręczniki GNU Info, spakowane gzipem lub podzielone na części, wraz z menu, odsyłaczami i indeksem.
+* Pliki pomocy i książki systemu OS/2 wraz z ilustracjami i odnośnikami (`.inf`, `.hlp`).
+* Książki PalmDOC.
+* Strony `.shtml` oraz książki EPUB niespakowane do archiwum ZIP, otwierane z pliku `.opf`.
+* Archiwum ZIP z częściami w formacie MP3 lub M4B otwiera się jako jeden audiobook.
+* Pliki pomocy Qt (`.qch`), czyli dokumentacja odczytywana przez Qt Assistant i Qt Creator, na przykład dokumentacja Qt i CMake.
+* Książki QRead (`.qrd`), czyli kopie książek zapisane przez QRead. Przy pierwszym otwarciu Paperback przechodzi do miejsca, w którym zakończono czytanie w QRead.
+
+##### Audiobooki
+* Przejdź do czasu (`Ctrl+J`) przenosi do wskazanego czasu w nagraniu, na przykład `1:23:45` lub `+5:00`.
+* W audiobooku klawisz `=` podaje też bieżącą pozycję czasową i długość całego nagrania. `Shift+=` podaje te informacje dla bieżącego rozdziału; można też wybrać Odczytaj postęp w rozdziale w menu Dźwięk.
+* Przejdź do procentu rozpoczyna odtwarzanie we wskazanym miejscu, a nie na początku rozdziału, w którym ono wypada.
+* Odtwarzaniem można sterować przyciskami odtwarzania, pauzy i przewijania na zestawie słuchawkowym. Gdy zmieni się domyślne urządzenie wyjściowe, odtwarzanie przełącza się na nowe urządzenie.
+
+##### Ogólne
+* Polecenie Zgłoś problem w menu Pomoc wysyła raport o tym, co poszło nie tak. Paperback proponuje wysłanie raportu przy następnym uruchomieniu po nieoczekiwanym zamknięciu.
+* W książce bez nagrania `Shift+=` odczytuje procentową pozycję w rozdziale i liczbę pozostałych w nim słów.
+* W książkach EPUB i HTML obrazy z pustym opisem są wyświetlane, jeśli są na tyle duże, że mogą stanowić treść, na przykład skany listów lub ilustracje.
+* Można przechodzić do wzorów znajdujących się w odnośnikach i komórkach tabel.
+* Eksport do HTML zachowuje bloki cytatów, rysunki, listy definicji, treści poboczne, podziały wierszy oraz indeksy górne i dolne.
+* W systemie Windows czytniki ekranu podczas czytania oznajmiają odnośniki w dokumencie. Odnośnik można otworzyć kliknięciem lub klawiszem `Enter`.
+* Jeśli strony dokumentu PDF lub XPS są czytane w niewłaściwej kolejności, użyj opcji Układ stron dokumentów PDF i XPS na karcie Dokumenty w Ustawieniach. Dla pojedynczego dokumentu wybierz Widok > Układ strony. Tryb Według kolumn wykrywa kolumny na podstawie położenia tekstu, zamiast stosować kolejność zapisaną w dokumencie. Wariant z zachowaniem podziału na wiersze nie scala ich w akapity. Opcja zastępuje dotychczasowy przełącznik scalania zawiniętych wierszy. W wierszu poleceń służy do tego `pb --layout`.
+
+##### iOS i Android
+* Polecenie Przejdź do ma w audiobookach tryb przejścia do czasu. Na klawiaturze iPada działa skrót `Cmd+J`. Ekran odtwarzania pokazuje bieżącą pozycję czasową i długość książki.
+* Każda książka zapamiętuje jednostkę nawigacji.
+* Zakładki i notatki są dostępne z przycisku Zakładka u góry ekranu. Przytrzymaj przycisk Zakładka lub użyj akcji tego przycisku dostępnych w czytniku ekranu, aby dodać albo edytować notatkę lub otworzyć listę Zakładki. Zakładki i notatki możesz przenosić między aplikacjami mobilnymi a wersją komputerową. Wyeksportuj dane dokumentu do pliku `.paperback` i zaimportuj go w drugiej aplikacji. Na klawiaturze działają też skróty zakładek z wersji komputerowej.
+* Stuknięcie tekstu z postępem pod paskiem czytania przełącza go na postęp w rozdziale: nazwę rozdziału, procent przeczytanej treści i liczbę słów do końca, a w audiobooku zamiast procentu i liczby słów podaje czasy nagrania.
+* Opcja Układ stron dokumentów PDF i XPS jest dostępna w Ustawieniach. Dla pojedynczego dokumentu PDF lub XPS wybierz Układ strony z menu Więcej opcji.
+* W Androidzie w Ustawieniach jest teraz Słownik mowy. Obie aplikacje stosują reguły tak samo jak wersja komputerowa. Reguły zapisane wcześniej w iOS są przenoszone przy pierwszym uruchomieniu nowej wersji.
+
+##### pb
+* Narzędzie pb działa od dwóch do czterech razy szybciej w większości formatów tekstowych. Domyślnie przekształca równolegle tyle dokumentów, ile jest dostępnych logicznych procesorów. Opcja `--jobs` określa ich liczbę.
+* Opcja `--braille-table` wybiera tablicę brajlowską książki, `--list-braille-tables` wyświetla listę tablic, a `--version` wyświetla wersję pb.
+
+#### Zmieniono
+* Ustawienia są podzielone na sześć kart, po jednej dla każdego rodzaju ustawień.
+* Dokumenty PDF, duże pliki pomocy CHM i książki MOBI otwierają się szybciej.
+* Instalator w systemie Windows zadaje mniej pytań. Paperback pojawia się w menu Otwórz za pomocą dla wszystkich obsługiwanych formatów, a instalator proponuje ustawienie go jako aplikacji domyślnej tylko dla książek EPUB i plików PDF. Tworzenie skrótu w menu Start jest teraz domyślnie zaznaczone.
+* Instalator otwiera się w języku wyświetlania systemu Windows, jeśli jest dostępna odpowiednia wersja językowa. W przeciwnym razie pyta o wybór języka.
+
+#### Naprawiono
+
+##### Ogólne
+* Głosy SAPI 5 korzystające ze strony kodowej Windows, takie jak Mikropuhe, poprawnie odczytują już znaki takie jak ä i ö.
+* Skróty ze znakami interpunkcyjnymi działają w każdym układzie klawiatury. Liczy się położenie klawisza w układzie amerykańskim.
+* Paperback nie zawiesza się już po otwarciu Ustawień skrótem z klawiszem `Shift` i znakiem interpunkcyjnym ani po próbie otwarcia z wiersza poleceń pliku, którego nie może odczytać. Nie zawiesza się też, gdy przy otwartym dialogu pojawią się wyniki OCR, inna instancja przekaże plik lub upłynie czas wyłącznika czasowego.
+* Bardzo głęboko zagnieżdżone dokumenty HTML i XML nie powodują już awarii.
+* Jeśli nie można wczytać konfiguracji, Paperback zachowuje ją jako plik `.bad`, zamiast ją nadpisywać. Zapisywanie nie pozostawia już częściowo zapisanego pliku.
+* Polecenie Plik > Zakończ zapisuje rozmiar okna i otwartą kartę oraz usuwa ikonę z obszaru powiadomień.
+* Paperback ukryty w obszarze powiadomień nie obciąża już jednego rdzenia procesora, a zamknięte dialogi nie pozostają w pamięci.
+* Jeśli Paperback jest już uruchomiony, otwarcie kilku plików naraz otwiera je wszystkie.
+* Tytuł dokumentu jest odczytywany po otwarciu także wtedy, gdy otwarcia nie poprzedza zamknięcie dialogu.
+* W spisie treści numer rozdziału jest odczytywany razem z tytułem.
+* W systemach macOS i Linux dokumentu zbyt długiego, by wczytać go w całości naraz, Paperback nie przewija już samoczynnie do końca i nie zapisuje końca jako pozycji czytania.
+
+##### Dokumenty
+* Strony wykorzystujące tabele do rozmieszczenia treści są odczytywane jako tekst, więc działają w nich funkcja Znajdź, klawisz `Enter` i nawigacja po nagłówkach.
+* Numeracja list w dokumentach Word, którą rozpoczęto od nowa, pozostaje taka sama przy każdym odczycie i zaczyna się od ustawionej wartości.
+* W dokumentach OpenDocument nie są już pomijane wiersze tabel zagnieżdżone w sekcjach nagłówkowych lub grupach wierszy.
+* Zagnieżdżone listy w książkach DTBook zachowują swoje poziomy.
+* Uszkodzone pliki MOBI nie powodują już awarii.
+* Jeśli strona podręcznika systemowego przekierowuje do niezainstalowanej strony, Paperback podaje jej nazwę.
+* Pliki tekstowe zapisane w środkowoeuropejskiej lub innej krajowej stronie kodowej oraz pliki tekstowe z systemu DOS otwierają się z właściwymi znakami zamiast symboli w środku słów.
+* Jeśli kotwica pozycji spisu treści znajduje się wewnątrz wiersza tytułu, na przykład po inicjale, przejście do tej pozycji przenosi na początek wiersza. Nagłówek jest odczytywany zgodnie z tekstem wiersza.
+* Eksport do Markdown nie zapisuje już pustych znaczników pogrubienia ani kursywy.
+
+##### iOS i Android
+* iOS: czytanie na głos nie zatrzymuje się już po pierwszym akapicie w iOS 27.3.
+* iOS: pobrana książka po zamknięciu nie otwiera się ponownie.
+* Android: emoji w wierszu nie przesuwa już pozycji następujących po nim odnośników, obrazów i tabel.
+* Usunięcie otwartego dokumentu z listy Ostatnie dokumenty zamyka go, tak jak w systemie Windows.
+* iOS: VoiceOver nie udostępnia już dwukrotnie akcji Usuń na liście Ostatnie dokumenty. W Ustawieniach Rozmiar tekstu i Przerwa między akapitami są teraz pojedynczymi elementami z regulowaną wartością.
+
+##### Linux
+* Wersja dla Linuksa ponownie działa w Ubuntu 24.04 i innych systemach z tą samą wersją glibc.
+* Plik przekazany do działającej instancji Paperbacka otwiera się od razu.
+
+### Wersja 1.1
 
 #### Dodano
 
