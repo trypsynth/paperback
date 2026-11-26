@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-24 01:53+0000\n"
+"POT-Creation-Date: 2026-11-25 16:45+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -164,6 +164,31 @@ msgstr "Báo cáo đã được lưu."
 msgid "The report couldn't be saved: %s"
 msgstr "Không thể lưu báo cáo: %s"
 
+#. TRANSLATORS: Checkbox in the Windows installer for a Paperback shortcut in the Start Menu, beside Inno Setup's own "Create a desktop shortcut". The & marks the key that checks it.
+#, fuzzy
+msgid "Create a &Start Menu shortcut"
+msgstr "Tạo lối tắt &Start Menu"
+
+#. TRANSLATORS: Checkbox in the Windows installer: EPUB books open in Paperback when opened from File Explorer. Every other format Paperback reads is offered in Explorer's "Open with" without asking.
+#, fuzzy
+msgid "Make Paperback the default app for EPUB books (*.epub)"
+msgstr "Đặt Paperback làm ứng dụng mặc định cho sách EPUB (*.epub)"
+
+#. TRANSLATORS: Checkbox in the Windows installer: PDF files open in Paperback when opened from File Explorer, instead of in a browser or another PDF reader.
+#, fuzzy
+msgid "Make Paperback the default app for PDF files (*.pdf)"
+msgstr "Đặt Paperback làm ứng dụng mặc định cho tệp PDF (*.pdf)"
+
+#. TRANSLATORS: Checkbox in the Windows installer adding Paperback's folder to the PATH environment variable, so pb, Paperback's command-line converter, runs from any command prompt.
+#, fuzzy
+msgid "Add Paperback's folder to PATH, for the pb command"
+msgstr "Thêm thư mục Paperback vào PATH, cho lệnh pb"
+
+#. TRANSLATORS: The file type File Explorer shows for a document set to open in Paperback, as in its Type column.
+#, fuzzy
+msgid "Paperback Document"
+msgstr "Tài liệu Paperback"
+
 #. TRANSLATORS: Download window message while Paperback asks a web server about a link; %s is the link
 #, fuzzy
 msgid "Checking %s"
@@ -193,7 +218,7 @@ msgstr "Thêm công cụ dòng lệnh pb vào PATH"
 
 #. TRANSLATORS: Checkbox label in the Linux file-association setup dialog. Shared by
 #. multiple parsers (DAISY, Word-in-zip), so it's kept as its own opt-in entry rather
-#. than tied to one format, same as the Windows installer's "assoc_zip" task.
+#. than tied to one format.
 #, fuzzy
 msgid "ZIP Archives (.zip)"
 msgstr "Kho lưu trữ ZIP (.zip)"
@@ -1691,6 +1716,21 @@ msgstr "Từ &điển phát âm..."
 msgid "System default"
 msgstr "Mặc định của hệ thống"
 
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: PDF and XPS pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+#, fuzzy
+msgid "Automatic"
+msgstr "Tự động"
+
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: the document's own reading order is ignored and the columns of each page are found from where the text sits, then read one after the other. It suits documents whose text is read out of order, such as two-column layouts
+#, fuzzy
+msgid "By columns, ignoring the document's own order"
+msgstr "Theo cột, bỏ qua thứ tự của tài liệu"
+
+#. TRANSLATORS: Page layout choice in the Documents tab of Settings: like reading by columns, but every line is kept apart instead of joined into paragraphs, which suits code, poetry and lists of clauses whose line breaks are the content
+#, fuzzy
+msgid "By columns, keeping every line apart"
+msgstr "Theo cột, giữ nguyên từng dòng"
+
 #. TRANSLATORS: Note at the top of the Documents tab of Settings, whose options change how a file is read
 #, fuzzy
 msgid "Changing these reads your open documents again when you press OK."
@@ -1701,10 +1741,10 @@ msgstr "Thay đổi các tùy chọn này sẽ đọc lại các tài liệu đa
 msgid "Render tables &inline"
 msgstr "Hiển thị bảng &inline"
 
-#. TRANSLATORS: Option to join the wrapped lines of a page back into paragraphs, in documents laid out as pages, such as PDFs, taking away the hyphen at a line break that split a word. Turning it off keeps every line and every hyphen as they are, which suits poetry and anything whose line breaks are the content.
+#. TRANSLATORS: Label for the dropdown choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for every document not given a page layout of its own in the View menu
 #, fuzzy
-msgid "&Join wrapped lines into paragraphs"
-msgstr "&Nối các dòng được gói lại thành các đoạn"
+msgid "Page &layout of PDF and XPS documents:"
+msgstr "Bố &cục trang của tài liệu PDF và XPS:"
 
 #. TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
 #, fuzzy
@@ -1720,6 +1760,11 @@ msgstr "Đọc văn bản giữa dấu dollar dưới dạng &công thức toán
 #, fuzzy
 msgid "&Braille code of BRF and PEF books:"
 msgstr "&Mã Braille của sách BRF và PEF:"
+
+#. TRANSLATORS: Option to show BRF, PEF, eBraille and BARD braille books as their braille, in Unicode braille, instead of turning them into print. It suits reading on a braille display, where the screen reader would otherwise turn the print back into braille; speech reads the cells as braille patterns. The braille code above still says which braille the books are written in.
+#, fuzzy
+msgid "&Keep braille books in braille, for reading on a braille display"
+msgstr "&Giữ sách nổi theo kiểu nổi, để đọc trên màn hình nổi"
 
 #. TRANSLATORS: Description text shown when the background color is set to default
 #, fuzzy
@@ -2944,6 +2989,55 @@ msgstr "Xem &mã nguồn"
 #, fuzzy
 msgid "Open the document source in a new tab"
 msgstr "Mở nguồn tài liệu trong một tab mới"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open PDF or XPS document follows the page layout chosen for all documents in Settings
+#, fuzzy
+msgid "&Same as Other Documents"
+msgstr "&Giống như Tài liệu Khác"
+
+#. TRANSLATORS: Status-bar help text for the Same as Other Documents page layout item
+#, fuzzy
+msgid "Read this document with the page layout set in Settings"
+msgstr "Đọc tài liệu này với bố cục trang được đặt trong Cài đặt"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open document's pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+#, fuzzy
+msgid "&Automatic"
+msgstr "&Tự động"
+
+#. TRANSLATORS: Status-bar help text for the Automatic page layout item
+#, fuzzy
+msgid "Read this document in its own order, joining wrapped lines"
+msgstr "Đọc tài liệu này theo thứ tự của nó, nối các dòng được bao"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: the open document's own reading order is ignored and the columns of each page are found from where the text sits, for documents read out of order
+#, fuzzy
+msgid "By &Columns"
+msgstr "Theo &Cột"
+
+#. TRANSLATORS: Status-bar help text for the By Columns page layout item
+#, fuzzy
+msgid "Find the columns of each page instead of following the document's own order"
+msgstr "Tìm các cột của mỗi trang thay vì tuân theo thứ tự của tài liệu"
+
+#. TRANSLATORS: Item in the View menu's Page Layout submenu: like By Columns, but every line is kept apart instead of joined into paragraphs, for code, poetry and lists of clauses
+#, fuzzy
+msgid "By Columns, &Every Line Apart"
+msgstr "Theo Cột, &Mỗi Dòng Riêng Biệt"
+
+#. TRANSLATORS: Status-bar help text for the By Columns, Every Line Apart page layout item
+#, fuzzy
+msgid "Find the columns of each page and keep every line separate"
+msgstr "Tìm các cột của mỗi trang và giữ nguyên từng dòng"
+
+#. TRANSLATORS: Submenu of the View menu choosing how the open PDF or XPS document's pages are put in reading order and paragraphs
+#, fuzzy
+msgid "Page &Layout"
+msgstr "Bố &Cục Trang"
+
+#, fuzzy
+msgid "How this document's pages are read"
+msgstr "Cách đọc các trang của tài liệu này"
 
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
@@ -5150,31 +5244,31 @@ msgid "Pattern & Replacement"
 msgstr "Mẫu & Thay thế"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the text (or regex) to search for
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Pattern"
 msgstr "Mẫu"
 
 #. TRANSLATORS: Placeholder for the text field where the user enters the replacement text
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Replacement"
 msgstr "Thay thế"
 
 #. TRANSLATORS: Toggle limiting a word-scope rule to whole-word matches only (no partial-word matches)
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Whole word only"
 msgstr "Chỉ tìm kiếm toàn bộ từ"
 
 #. TRANSLATORS: Toggle enabling regex matching for a paragraph-scope rule; "\1" is a regex backreference syntax and must stay untranslated
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Regular expression (\\1 = first capture group)"
 msgstr "Biểu thức chính quy (\\1 = nhóm bắt giữ đầu tiên)"
 
 #. TRANSLATORS: Toggle for whether this text-substitution rule is currently active
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Enabled"
 msgstr "Đã bật"
@@ -5186,7 +5280,7 @@ msgid "Apply to"
 msgstr "Đăng ký vào"
 
 #. TRANSLATORS: Row label leading to the voice-filter picker for this rule
-#: swift
+#: kt swift
 #, fuzzy
 msgid "Voices"
 msgstr "Những tiếng nói"
@@ -5261,7 +5355,7 @@ msgid "Start Timer"
 msgstr "Bắt đầu hẹn giờ"
 
 #. TRANSLATORS: Message shown when no speech dictionary rules have been created yet
-#: swift
+#: kt swift
 #, fuzzy
 msgid "No Rules"
 msgstr "Không có quy tắc"
@@ -6375,6 +6469,105 @@ msgstr "hiển thị ghi chú và tùy chọn dấu trang"
 #, fuzzy
 msgid "go to bookmark"
 msgstr "đi tới dấu trang"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: the open PDF or XPS document follows the page layout chosen for all documents in Settings
+#: kt swift
+#, fuzzy
+msgid "Same as Other Documents"
+msgstr "Giống như Tài liệu Khác"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: the open document's own reading order is ignored and the columns of each page are found from where the text sits, for documents read out of order
+#: kt swift
+#, fuzzy
+msgid "By Columns"
+msgstr "Theo Cột"
+
+#. TRANSLATORS: Item in the Page Layout submenu of the document actions menu: like By Columns, but every line is kept apart instead of joined into paragraphs, for code, poetry and lists of clauses
+#: kt swift
+#, fuzzy
+msgid "By Columns, Every Line Apart"
+msgstr "Theo Cột, Mỗi Dòng Riêng Biệt"
+
+#. TRANSLATORS: Submenu of the document actions menu choosing how the open PDF or XPS document's pages are put in reading order and paragraphs
+#: kt swift
+#, fuzzy
+msgid "Page Layout"
+msgstr "Bố Cục Trang"
+
+#. TRANSLATORS: Label for the picker choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for every document not given a page layout of its own in the More options menu
+#: kt swift
+#, fuzzy
+msgid "Page layout of PDF and XPS documents"
+msgstr "Bố cục trang của tài liệu PDF và XPS"
+
+#. TRANSLATORS: Label of the choice between a rule matching words and one matching across a whole paragraph
+#: kt
+#, fuzzy
+msgid "Applies to"
+msgstr "Áp dụng cho"
+
+#. TRANSLATORS: Footer under the Speech Dictionary row in Settings, explaining what its rules do
+#: kt
+#, fuzzy
+msgid "Change how words are read aloud, without changing the document."
+msgstr "Thay đổi cách các từ được phát âm, mà không thay đổi tài liệu."
+
+#: kt
+#, fuzzy
+msgid "Moved to {} of {}"
+msgstr "Đã chuyển đến {} của {}"
+
+#. TRANSLATORS: Announced after a speech dictionary rule is deleted
+#: kt
+#, fuzzy
+msgid "Rule deleted"
+msgstr "Quy tắc đã xóa"
+
+#. TRANSLATORS: Menu item and TalkBack action moving a speech dictionary rule one place earlier, so it applies sooner
+#: kt
+#, fuzzy
+msgid "Move Up"
+msgstr "Chuyển Lên"
+
+#. TRANSLATORS: Menu item and TalkBack action moving a speech dictionary rule one place later, so it applies later
+#: kt
+#, fuzzy
+msgid "Move Down"
+msgstr "Chuyển Xuống"
+
+#. TRANSLATORS: TalkBack action turning a speech dictionary rule off, so it no longer changes what is read aloud
+#: kt
+#, fuzzy
+msgid "Turn Off"
+msgstr "Tắt"
+
+#. TRANSLATORS: TalkBack action turning a speech dictionary rule back on
+#: kt
+#, fuzzy
+msgid "Turn On"
+msgstr "Bật"
+
+#. TRANSLATORS: TalkBack state of a speech dictionary rule that is on
+#: kt
+#, fuzzy
+msgid "On"
+msgstr "bật"
+
+#. TRANSLATORS: TalkBack action label for a rule in the Speech Dictionary, read as "double tap to edit rule"
+#: kt
+#, fuzzy
+msgid "edit rule"
+msgstr "chỉnh sửa quy tắc"
+
+#. TRANSLATORS: Shown under "No Rules" in the Speech Dictionary, saying how to make the first rule
+#: kt
+#, fuzzy
+msgid "Use Add Rule to change how a word or pattern is read aloud."
+msgstr "Sử dụng Thêm Quy tắc để thay đổi cách một từ hoặc mẫu được phát âm."
+
+#, fuzzy
+#~ msgid "&Join wrapped lines into paragraphs"
+#~ msgstr "&Nối các dòng được gói lại thành các đoạn"
 
 #, fuzzy
 #~ msgid "on"

@@ -1712,8 +1712,9 @@ msgid "Render tables &inline"
 msgstr "Afficher les tableaux &en ligne"
 
 #. TRANSLATORS: Label for the dropdown choosing how the pages of PDF and XPS documents are put in reading order and paragraphs, for every document not given a page layout of its own in the View menu
+#, fuzzy
 msgid "Page &layout of PDF and XPS documents:"
-msgstr ""
+msgstr "Mise en &page des documents PDF et XPS :"
 
 #. TRANSLATORS: Option to take the headers and footers a document repeats on every page out of the text, in documents laid out as pages, such as PDFs. Turning it off keeps them, which suits a document whose page-edge lines are content.
 #, fuzzy

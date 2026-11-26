@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2e060f0cdd2c601f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,77b4e1b6,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: be2c117e73c87f18; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,bc0095e6,8423460b,77b4e1b6,d3762a01,e9860ee8,84e20448); please review and edit as needed -->
 
 # Paperback - Version 1.1
 
@@ -68,6 +68,8 @@ Paperback unterstützt die folgenden Formate und Dateitypen:
 * OpenDocument-Textdateien (`.odt`, `.fodt`)
 * OS/2-Hilfedateien und Bücher mit ihren Bildern (`.inf`, `.hlp`)
 * PDF-Dokumente (`.pdf`)
+* Qt-Hilfedateien, die Dokumentation, die Qt Assistant und Qt Creator lesen, wie die von Qt und CMake selbst (`.qch`)
+* QRead-Bücher, die Kopien, die QRead von jedem Buch speicherte, das es öffnete (`.qrd`)
 * PowerPoint-Präsentationen (`.pptx`, `.pptm`, `.ppt`)
 * RAR-Archive von Büchern, die sich wie eine ZIP-Datei öffnen, mit einer Liste zur Auswahl, wenn mehrere enthalten sind (`.rar`)
 * reStructuredText-Dokumente (`.rst`, `.rest`)
@@ -334,9 +336,105 @@ Hinweis: Ich betrachte ein öffentliches GitHub-Sponsoring als Grund für die au
 
 ## Änderungsprotokoll
 
-### Version 1.1
+### Version 1.2
 
-1.1 bringt eine neue PDF-Engine, einen neu aufgebauten iOS-Textmodus, Texterkennung unter Linux, Dokumente von Links, Unterstützung für Jahrzehnte alte Word-, Write- und PowerPoint-Dateien und vieles mehr.
+#### Hinzugefügt
+
+##### Vorlesen
+* Lies jedes Dokument vor, mit OneCore- oder SAPI-5-Stimmen unter Windows und den systemeigenen Stimmen unter macOS. `Ctrl+Space` startet und stoppt das Vorlesen, die Suchfunktionstasten springen über Absätze hinweg, und die Geschwindigkeits- und Lautstärkeregler funktionieren wie bei Hörbüchern.
+* Wähle die Stimme, die Sprechgeschwindigkeit, die Tonhöhe und die Pausen zwischen Absätzen im Reiter „Audio" der „Einstellungen", probiere sie mit einer Beispielschaltfläche aus und gib einem Buch eine eigene Stimme.
+* Das Vorlesen startet an der Schreibmarke, startet erneut, wo immer du sie bewegst, und bewegt die Schreibmarke zu jedem Wort, während es gesprochen wird.
+* Ein Sprachverzeichnis, aus dem Reiter „Audio" der „Einstellungen", ändert, wie Wörter vorgelesen werden: jede Regel ersetzt ein Wort oder ein Muster, kann nur ganze Wörter abgleichen oder ein regulärer Ausdruck sein und kann aktiviert und deaktiviert werden.
+
+##### Braille
+* Braille-Ready-Dateien (`.brf`) und PEF-Bücher öffnen in Brailleschrift, die du in „Einstellungen" wählst.
+* eBraille-Bücher (`.ebrl`) öffnen in Druckschrift, wenn sie diese enthalten, und werden ansonsten mit dem Braillescript rücktransliteriert, das sie nennen.
+* NLS BARD-Braille-Bücher, aus dem ZIP oder seiner `.bopf`, öffnen als ein Buch aller ihrer Bände, im Braillescript ihrer Paketnamen.
+* Um Braille-Bücher auf einer Braille-Anzeige zu lesen, hält eine Einstellung im Reiter „Dokumente" der „Einstellungen" sie in Brailleschrift als Unicode-Braille, sodass der Bildschirmleser die Brailleschrift des Schreibers anzeigt, statt die Druckschrift zurück in Brailleschrift zu übersetzen. `pb --keep-braille` macht dasselbe.
+* Braille-Dateien, die in einem anderen Länder-Braille-ASCII geschrieben sind, wie Norwegisch, Dänisch, Französisch, Spanisch, Slowakisch, Tschechisch oder Ungarisch, werden erkannt.
+
+##### Neue Formate
+* XPS- und OpenXPS-Dokumente.
+* RAR-Archive und RAR-Comics (`.cbr`).
+* GNU-Info-Handbücher, komprimiert oder aufgeteilt, mit ihren Menüs, Querverweisen und Index.
+* OS/2-Hilfedateien und -bücher (`.inf`, `.hlp`) mit ihren Bildern und Links.
+* PalmDOC-Bücher.
+* `.shtml`-Seiten und EPUB-Bücher, die nicht gezippt sind, öffnen sich an ihrer `.opf`.
+* Ein ZIP mit MP3- oder M4B-Teilen öffnet sich als ein Hörbuch.
+* Qt-Hilfedateien (`.qch`), die Dokumentation, die Qt Assistant und Qt Creator lesen, wie Qt's und CMake's eigene.
+* QRead-Bücher (`.qrd`), die Kopien, die QRead von jedem Buch, das es öffnete, speicherte, das dort öffnet, wo QRead beim ersten Mal aufhörte.
+
+##### Hörbücher
+* „Gehe zu Zeit" (`Ctrl+J`) springt zu einer Zeit, wie `1:23:45` oder `+5:00`.
+* `=` sagt auch, wie weit du im Buch bist und wie lange es läuft, und `Shift+=` sagt dasselbe für das Kapitel, auch im Menü „Audio" als „Kapitelzeit ankündigen".
+* „Gehe zu Prozent" spielt ab diesem Punkt ab, nicht vom Anfang des Kapitels, in das es fällt.
+* Die Schaltflächen „Abspielen", „Pausieren" und „Überspringen" eines Headsets steuern das Buch, und die Wiedergabe wechselt zu einem neuen Standardausgabegerät, wenn dieses sich ändert.
+
+##### Allgemein
+* „Problem melden" im Menü „Hilfe" sendet einen Bericht über das, was schief gelaufen ist, und wird beim nächsten Start angeboten, nachdem Paperback unerwartet geschlossen wird.
+* `Shift+=` in einem Textbuch sagt, wie weit du durch das Kapitel bist und wie viele Wörter übrig sind.
+* Bilder mit leerer Beschreibung in EPUB- und HTML-Büchern werden angezeigt, wenn sie groß genug sind, um Inhalte zu sein, wie gescannte Briefe und Abbildungen.
+* Formeln in Links und Tabellenzellen können angesteuert werden.
+* Der HTML-Export behält Blockzitate, Abbildungen, Definitionslisten, Ausschnitte, Zeilenumbrüche, Hoch- und Tiefstellungen bei.
+* Unter Windows sagen Bildschirmleser „Link" auf den Links in einem Dokument, während du liest, und das Klicken auf einen Link folgt ihm, wie `Enter` es tut.
+* Eine Seitenlayouteinstellung für PDFs, die außer der Reihe gelesen werden, im Reiter „Dokumente" der „Einstellungen" und für ein Dokument in Menü „Ansehen" > Menü „Seitenlayout": nach Spalten findet die Spalten, wo der Text sitzt, statt dem Dokument zu folgen, und kann jede Zeile getrennt halten. Es ersetzt die Einstellung, die Zeilen getrennt hielt. `pb --layout` macht dasselbe.
+
+##### iOS und Android
+* Das Menü „Gehe zu" hat einen Zeitmodus für Hörbücher, mit `Cmd+J` auf einer iPad-Tastatur, und der Wiedergabebildschirm zeigt, wie weit du bist und wie lange das Buch läuft.
+* Jedes Buch merkt sich seine Navigationseinheit.
+* Lesezeichen und Notizen, von einer Schaltfläche in der oberen Leiste des Readers: halte sie gedrückt oder verwende die Aktionen des Bildschirmlesers, um eine Notiz hinzuzufügen oder die Liste der Lesezeichen zu öffnen. Sie sind die gleichen Lesezeichen, die der Desktop führt, also reisen sie in `.paperback`-Dateien, und die Lesezeichen-Tasten des Desktops funktionieren mit einer Tastatur.
+* Das Tippen auf den Fortschritt unter der Vorlesen-Leiste wechselt ihn zum Kapitel: seinen Namen, Prozentsatz und verbleibende Wörter oder seine Zeiten in einem Hörbuch.
+* Die Seitenlayouteinstellung für PDFs, die außer der Reihe gelesen werden, ist in „Einstellungen" und im Menü „Weitere Optionen" für ein PDF- oder XPS-Dokument.
+* Android hat ein Sprachverzeichnis in „Einstellungen", und beide Apps lesen ihre Regeln jetzt genau wie der Desktop. Regeln, die unter iOS gespeichert sind, wechseln beim ersten Öffnen über.
+
+##### pb
+* pb ist zwei- bis viermal schneller bei den meisten Textformaten und konvertiert so viele Dokumente auf einmal wie es Prozessoren gibt, oder so viele wie `--jobs` sagt.
+* `--braille-table` wählt den Code eines Braille-Buches, `--list-braille-tables` zeigt die Codes auf, und `--version` sagt, welches pb es ist.
+
+#### Geändert
+* „Einstellungen" ist in sechs Reiter aufgeteilt, einen für jede Art von Einstellung.
+* PDFs, große CHM-Referenzen und MOBI-Bücher öffnen sich schneller.
+* Das Windows-Installationsprogramm fragt nach weniger: Paperback wird für jedes Format, das es liest, in „Öffnen mit" angezeigt, und das Setup bietet nur an, es zur Standard-App für EPUB-Bücher und PDFs zu machen. Die Verknüpfung zum Startmenü ist jetzt standardmäßig aktiviert.
+* Das Windows-Installationsprogramm öffnet sich in deiner Windows-Anzeigesprache, wenn Paperback in sie übersetzt ist, und fragt, welche Sprache verwendet werden soll, wenn dies nicht der Fall ist.
+
+#### Behoben
+
+##### Allgemein
+* Vorlesen mit einer SAPI-5-Stimme, die in der Windows-Codepage funktioniert, wie Mikropuhe, verzerrt nicht mehr Buchstaben wie ä und ö.
+* Interpunktions-Tastenkombinationen funktionieren auf jedem Tastaturlayout, abgeglichen an der Position des Schlüssels auf einer US-Tastatur.
+* Paperback hängt nicht mehr, wenn eine Tastenkombination mit `Shift` und Interpunktion die „Einstellungen" öffnet, wenn eine Datei, die es nicht lesen kann, aus der Befehlszeile geöffnet wird, oder wenn Texterkennung-Ergebnisse, eine Datei von einer anderen Kopie oder der Schlaf-Timer ankommen, während ein Dialog offen ist.
+* Sehr tief verschachtelte HTML- und XML-Dokumente stürzen nicht mehr ab.
+* Eine Konfiguration, die nicht geladen wird, wird als `.bad`-Datei behalten, statt überschrieben zu werden, und das Speichern kann sie nicht mehr halbgeschrieben hinterlassen.
+* Menü „Datei" > Menü „Beenden" speichert die Größe und den geöffneten Tab des Fensters und entfernt das Taskleisten-Symbol.
+* Paperback, das in der Taskleiste versteckt ist, hält keinen Prozessorkern mehr beschäftigt, und geschlossene Dialoge bleiben nicht mehr im Speicher.
+* Das Öffnen mehrerer Dateien während Paperback läuft, öffnet alle.
+* Der Titel des Dokuments wird ankündigt, wenn es öffnet, ohne dass ein Dialog zuerst geschlossen wird.
+* Die Kapitelnummer eines Inhaltsverzeichniseintrags wird mit seinem Titel ankündigt.
+* Unter macOS und Linux läuft ein Dokument, das zu lang zum Laden auf einmal ist, nicht mehr bis zum Ende vor und speichert das als Leseposition.
+
+##### Dokumente
+* Seiten, die eine Tabelle für ihr Layout verwenden, lesen sich als Text, so dass Menü „Suchen", `Enter` und Überschriften darin funktionieren.
+* Wortlisten, die ihre Nummerierung neu starten, nummerieren jedes Mal gleich, von ihrem Neustartwert.
+* OpenDocument-Tabellenzeilen in Kopfzeilen und Zeilengruppen werden nicht mehr gelöscht.
+* Verschachtelte Listen in DTBook-Büchern behalten ihre Ebenen.
+* Beschädigte MOBI-Dateien stürzen nicht mehr ab.
+* Eine Manpage, die zu einer umleitet, die nicht installiert ist, sagt, welche Seite.
+* Textdateien in einer Mitteleuropäischer oder anderen nationalen Codepage und DOS-Textdateien öffnen sich mit den richtigen Zeichen statt Symbolen in Wörtern.
+* Ein Inhaltsverzeichniseintrag, dessen Anker in seiner Tittelzeile fällt, wie nach einer Initialen, landet am Anfang dieser Zeile, und seine Überschrift liest sich, wie die Zeile geschrieben ist.
+* Der Markdown-Export schreibt nicht mehr leere Fett- oder Kursiv-Markierungen.
+
+##### iOS und Android
+* iOS: Vorlesen stoppt nicht mehr nach dem ersten Absatz auf iOS 27.3.
+* iOS: Das Schließen eines heruntergeladenen Buches hält es geschlossen.
+* Android: Links, Bilder und Tabellen werden nach einem Emoji in derselben Zeile nicht mehr falsch platziert.
+* Das Entfernen eines offenen Dokuments aus „Zuletzt geöffnete Dokumente" schließt es, wie unter Windows.
+* iOS: VoiceOver bietet nicht mehr zweimal „Entfernen" in „Zuletzt geöffnete Dokumente", und „Textgröße" und „Absatzpause" in „Einstellungen" sind jeweils ein einstellbares Steuerelement.
+
+##### Linux
+* Der Linux-Build läuft wieder auf Ubuntu 24.04 und anderen Systemen mit dessen glibc.
+* Eine Datei, die an eine laufende Kopie gesendet wird, öffnet sich sofort.
+
+### Version 1.1
 
 #### Hinzugefügt
 

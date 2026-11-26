@@ -1,4 +1,4 @@
-<!-- machine-translated from doc/readme.md (source-hash: 2e060f0cdd2c601f; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,102030be,8423460b,77b4e1b6,d3762a01,e9860ee8,15aeaaed); please review and edit as needed -->
+<!-- machine-translated from doc/readme.md (source-hash: be2c117e73c87f18; sections: 64167837,db723a70,df2f4c18,aa6b9ca2,1387e8b7,bc0095e6,8423460b,77b4e1b6,d3762a01,e9860ee8,84e20448); please review and edit as needed -->
 
 # Paperback - versie 1.1
 
@@ -68,6 +68,8 @@ Paperback ondersteunt de volgende indelingen en extensies:
 * OpenDocument-tekstbestanden (`.odt`, `.fodt`)
 * OS/2-helpbestanden en -boeken, met hun afbeeldingen (`.inf`, `.hlp`)
 * PDF-documenten (`.pdf`)
+* Qt-helpbestanden, de documentatie die Qt Assistant en Qt Creator lezen, zoals die van Qt en CMake zelf (`.qch`)
+* QRead-boeken, de kopieën die QRead van elk geopend boek opslaat (`.qrd`)
 * PowerPoint-presentaties (`.pptx`, `.pptm`, `.ppt`)
 * RAR-archieven van boeken, die net als een ZIP-bestand worden geopend, met een lijst om uit te kiezen als er meerdere in zitten (`.rar`)
 * reStructuredText-documenten (`.rst`, `.rest`)
@@ -333,9 +335,105 @@ Let op: een openbare GitHub-sponsor beschouw ik als grond voor automatische opna
 
 ## Versiegeschiedenis
 
-### Versie 1.1
+### Versie 1.2
 
-1.1 brengt een nieuwe PDF-engine, een opnieuw gebouwde iOS-tekstmodus, OCR op Linux, documenten via links, ondersteuning voor decennia aan oudere Word-, Write- en PowerPoint-bestanden en veel meer.
+#### Toegevoegd
+
+##### Voorlezen
+* Elk document voorlezen met OneCore- of SAPI 5-stemmen op Windows en de eigen stemmen van het systeem op macOS. `Ctrl+Space` starten en stoppen het voorlezen, de spoeltoetsen slaan alinea's over, en de snelheids- en volumeregeling werken zoals bij audioboeken.
+* Kies de stem, snelheid, toonhoogte en pauze tussen alinea's op het tabblad Audio van Instellingen, probeer ze met een voorbeeldknop uit, en geef één boek zijn eigen stem.
+* Het voorlezen begint bij de cursor, begint opnieuw waar je die ook verplaatst, en verplaatst de cursor mee naar elk woord dat wordt gesproken.
+* Een uitspraakwoordenboek van het tabblad Audio van Instellingen bepaalt hoe woorden worden voorgelezen: elke regel vervangt een woord of patroon, kan alleen heel woorden matchen of een reguliere expressie zijn, en kan aan- en uitgezet worden.
+
+##### Braille
+* Braille Ready Files (`.brf`) en PEF-boeken openen terugvertaald naar zwartschrift, in de braillecode die je kiest in Instellingen.
+* eBraille-boeken (`.ebrl`) openen in zwartschrift wanneer dat hebben, en worden anders terugvertaald met de braillecode die ze opgeven.
+* NLS BARD-brailleboeken, uit het ZIP-bestand of de `.bopf`, openen als één boek met al hun banden, in de braillecode uit hun pakketnamen.
+* Om brailleboeken op een brailleleesregel te lezen, houdt een instelling op het tabblad Documenten van Instellingen ze in braille, als Unicode-braille, zodat de schermlezer de braille van de transcriber toont in plaats van zwartschrift terug naar braille te vertalen. `pb --keep-braille` doet hetzelfde.
+* Braillebestanden geschreven in het braille-ASCII van een ander land, zoals Noors, Deens, Frans, Spaans, Slowaaks, Tsjechisch of Hongaars, worden herkend.
+
+##### Nieuwe indelingen
+* XPS- en OpenXPS-documenten.
+* RAR-archieven en RAR-comics (`.cbr`).
+* GNU Info-handleidingen, gecomprimeerd of opgesplitst, met hun menu's, verwijzingen en index.
+* OS/2-helpbestanden en -boeken (`.inf`, `.hlp`) met hun afbeeldingen en links.
+* PalmDOC-boeken.
+* `.shtml`-pagina's en EPUB-boeken die niet gecomprimeerd zijn, geopend via hun `.opf`.
+* Een ZIP met MP3- of M4B-onderdelen opent als één audioboek.
+* Qt-helpbestanden (`.qch`), de documentatie die Qt Assistant en Qt Creator lezen, zoals die van Qt en CMake zelf.
+* QRead-boeken (`.qrd`), de kopieën die QRead van elk boek opgeslagen had, die openen waar QRead de eerste keer was gestopt.
+
+##### Audioboeken
+* Ga naar tijd (`Ctrl+J`) springt naar een moment, zoals `1:23:45` of `+5:00`.
+* `=` meldt ook hoe ver je in het boek bent en hoe lang het duurt, en `Shift+=` doet hetzelfde voor het hoofdstuk, ook in het menu Audio als Meld hoofdstuktijd.
+* Ga naar percentage speelt van dat punt af, niet van het begin van het hoofdstuk waarin dat valt.
+* De afspeelknoppen van een koptelefoon bedienen het boek, en afspelen gaat naar een nieuw standaarduitvoerapparaat wanneer dat verandert.
+
+##### Algemeen
+* Probleem melden, in het menu Help, stuurt een rapport van wat fout ging, en wordt aangeboden bij de volgende start nadat Paperback onverwacht sluit.
+* `Shift+=` in een tekstboek meldt hoe ver je in het hoofdstuk bent en hoeveel woorden er nog over zijn.
+* Afbeeldingen zonder beschrijving in EPUB- en HTML-boeken worden getoond wanneer ze groot genoeg zijn om inhoud te zijn, zoals gescande brieven en figuren.
+* Formules in links en tabelcellen kunnen worden aangenavigeerd.
+* HTML-export behoudt citaatblokken, figuren, definitielijsten, opzijgestelde opmerkingen, regeleinden, superscripts en subscripts.
+* Op Windows zeggen schermlezers "link" op de links in een document terwijl je leest, en klikken op een link volgt het, net als `Enter`.
+* Een instelling voor paginaindeling voor PDF's die niet in volgorde worden gelezen, op het tabblad Documenten van Instellingen en voor één document in Beeld > Pagina-indeling: per kolommen vindt de kolommen op basis van waar de tekst zit in plaats van het document te volgen, en kan elke regel apart houden. Dit vervangt de instelling die regels apart hield. `pb --layout` doet hetzelfde.
+
+##### iOS en Android
+* Ga naar heeft voor audioboeken een Tijd-modus, met `Cmd+J` op een iPad-toetsenbord, en het afspeelscherm toont hoe ver je bent en hoe lang het boek duurt.
+* Elk boek onthouden zijn navigatie-eenheid.
+* Bladwijzers en notities, via een knop in de bovenbalk van de lezer: houd deze ingedrukt of gebruik de acties van de schermlezer om een notitie toe te voegen of de bladwijzerlijst te openen. Het zijn dezelfde bladwijzers die de desktopversie behoudt, dus ze reizen mee in `.paperback`-bestanden, en de sneltoetsen van de desktop werken met een toetsenbord.
+* Door op de voortgang onder de voorlezesbalk te tikken, schakel je naar die van het hoofdstuk: zijn naam, percentage en woorden over, of zijn tijden in een audioboek.
+* De instelling voor paginaindeling voor PDF's die niet in volgorde worden gelezen, staat in Instellingen en in het menu Meer opties voor één PDF- of XPS-document.
+* Android heeft een uitspraakwoordenboek in Instellingen, en beide apps lezen hun regels nu precies als de desktop. Op iOS opgeslagen regels worden overgenomen de eerste keer dat het opent.
+
+##### pb
+* pb is twee tot vier keer sneller bij de meeste tekstindelingen en converteert net zoveel documenten tegelijk als processoren aanwezig zijn, of zoveel als `--jobs` zegt.
+* `--braille-table` kiest de code van een brailleboek, `--list-braille-tables` somt de codes op, en `--version` zegt welke pb het is.
+
+#### Gewijzigd
+* Instellingen is opgesplitst in zes tabbladen, één voor elk soort instelling.
+* PDF's, grote CHM-referenties en MOBI-boeken openen sneller.
+* Het Windows-installatieprogramma vraagt minder: Paperback verschijnt in Openen met voor elke indeling die het leest, en setup biedt alleen aan het als standaardapp voor EPUB-boeken en PDF's in te stellen. De snelkoppeling naar het menu Start is nu standaard ingeschakeld.
+* Het Windows-installatieprogramma opent in je Windows-scherminstellingentaal wanneer Paperback daarin is vertaald, en vraagt welke taal je wilt gebruiken wanneer dat niet het geval is.
+
+#### Opgelost
+
+##### Algemeen
+* Het voorlezen met een SAPI 5-stem die in de Windows-codetabel werkt, zoals Mikropuhe, vervormt letters als ä en ö niet langer.
+* Leestekenshortcuts werken op elke toetsenborindeling, afgestemd op de plaats van de toets op een US-toetsenbord.
+* Paperback loopt niet langer vast wanneer een sneltoets met `Shift` en leestekens Instellingen opent, wanneer een bestand dat niet kan worden gelezen vanuit de terminal wordt geopend, of wanneer OCR-resultaten, een bestand van een ander exemplaar of de slaaptimer binnenkomt terwijl een venster open is.
+* Zeer diep geneste HTML- en XML-documenten crashen niet langer.
+* Een configuratie die niet kan worden geladen, wordt als `.bad`-bestand behouden in plaats van overschreven te worden, en opslaan kan dit niet meer half geschreven achterlaten.
+* Bestand > Afsluiten slaat de grootte en het geopende tabblad van het venster op en verwijdert het systeemvakpictogram.
+* Paperback verborgen in het systeemvak houdt niet langer een processorkern bezet, en gesloten vensters blijven niet langer in het geheugen.
+* Het openen van meerdere bestanden terwijl Paperback draait, opent ze allemaal.
+* De documenttitel wordt aangekondigd wanneer het opent zonder dat eerst een venster sluit.
+* Het hoofdstuknummer van een inhoudsopgave-item wordt met zijn titel aangekondigd.
+* Op macOS en Linux loopt een document dat tegelijk niet kan worden geladen niet langer door naar het einde en slaat dat als leespositie op.
+
+##### Documenten
+* Pagina's die een tabel voor hun indeling gebruiken, worden als tekst gelezen, zodat Zoeken, `Enter` en koppen erin werken.
+* Woordlijsten die hun nummering herstarten, nummeren elke keer hetzelfde, vanaf hun beginwaarde.
+* OpenDocument-tabelrijen binnen kop- en rijgroepen rijen worden niet langer weggelaten.
+* Geneste lijsten in DTBook-boeken behouden hun niveaus.
+* Beschadigde MOBI-bestanden crashen niet langer.
+* Een manual page die naar één omleiden die niet is geïnstalleerd, zegt welk.
+* Tekstbestanden in een Centraal-Europese of andere nationale codetabel, en DOS-tekstbestanden, openen met de juiste tekens in plaats van symbolen in woorden.
+* Een inhoudsopgave-item waarvan het anker in zijn titellijn valt, zoals na een initiaal, landt aan het begin van die regel, en zijn kop wordt gelezen zoals de regel geschreven staat.
+* Markdown-export schrijft niet langer lege vet- of cursief-markers.
+
+##### iOS en Android
+* iOS: het voorlezen stopt niet langer na de eerste alinea op iOS 27.3.
+* iOS: een gedownload boek sluiten houdt het gesloten.
+* Android: links, afbeeldingen en tabellen worden niet langer verkeerd geplaatst na een emoji in dezelfde regel.
+* Een geopend document uit Recente documenten verwijderen sluit het, zoals op Windows.
+* iOS: VoiceOver biedt Verwijderen niet langer twee keer in Recente documenten aan, en Tekstgrootte en Alineapauze in Instellingen zijn elk één regelbaar besturingselement.
+
+##### Linux
+* De Linux-build draait opnieuw op Ubuntu 24.04 en andere systemen met zijn glibc.
+* Een bestand dat naar een draaiend exemplaar wordt verzonden, opent meteen.
+
+### Versie 1.1
 
 #### Toegevoegd
 
