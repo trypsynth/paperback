@@ -21,7 +21,7 @@ live-region = "0.3.3"
 logkeeper = "0.1.0"
 mailbag-wx = "0.1.0"
 native-ocr = { workspace = true }
-paperback-core = { workspace = true, features = ["fetch"] }
+paperback-core = { workspace = true, features = ["fetch", "scribe"] }
 paperback-formats = { workspace = true }
 patois = { workspace = true, features = ["wx"] }
 rodio = { version = "0.22.2", default-features = false, features = ["playback", "tracing", "flac", "mp3", "mp4", "vorbis", "wav", "symphonia-adpcm", "symphonia-aiff", "symphonia-alac", "symphonia-mp2"] }

@@ -9,6 +9,8 @@ pub mod parser;
 mod pdf_engine;
 pub mod reader_core;
 pub mod reading;
+#[cfg(feature = "scribe")]
+pub mod scribe;
 pub mod session;
 pub mod speech;
 pub mod types;
