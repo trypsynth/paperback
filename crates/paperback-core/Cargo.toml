@@ -50,7 +50,7 @@ libinf = "0.1.0"
 # Qt help files are SQLite databases. Bundled, so desktop and mobile builds read them without a system SQLite.
 rusqlite = { version = "0.43.0", default-features = false, features = ["bundled"] }
 # Upstream main, which has the back-translation fixes BRF and PEF books need since the 0.4.0 release, until a release has them.
-louis-rs = { git = "https://github.com/liblouis/louis-rs", rev = "189bab1" }
+louis-rs = { git = "https://github.com/liblouis/louis-rs", rev = "53ee962" }
 lofty = "0.25.5"
 math-core = "0.9.0"
 mathcat = { version = "0.7.7", features = ["include-zip"] }
