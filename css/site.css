@@ -468,16 +468,26 @@ details > summary h3 {
 	margin-bottom: 0;
 }
 
-.language-bar ul {
+.language-picker {
+	margin-top: 3rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--border);
+}
+
+.language-picker summary {
+	cursor: pointer;
+}
+
+.language-picker ul {
 	list-style: none;
 	padding: 0;
-	margin: 0 0 1.5rem;
+	margin: 0.75rem 0 0;
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.4rem 1rem;
 }
 
-.language-bar [aria-current] {
+.language-picker [aria-current] {
 	font-weight: 700;
 }
 
