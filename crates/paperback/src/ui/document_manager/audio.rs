@@ -8,11 +8,14 @@ use paperback_core::{config::ConfigManager, document::DocLen};
 use wxdragon::prelude::*;
 
 use super::{DocumentManager, DocumentTab};
-#[cfg(target_os = "windows")]
-use crate::ui::reader_units::visual_line_at;
 use crate::ui::{
-	bookmark_sounds::{BookmarkSoundMode, MoveUnit, Unit, remembered_unit, sound_for_move},
+	bookmark_sounds::{BookmarkSoundMode, MoveUnit, SoundRule, Unit, remembered_unit, sound_for_move},
 	navigation::doc_caret,
+};
+#[cfg(target_os = "windows")]
+use crate::{
+	text_window::CtrlPos,
+	ui::{bookmark_sounds::sound_for_external_move, reader_units::visual_line_at},
 };
 
 /// The word, visual line or paragraph at the caret.
@@ -118,7 +121,7 @@ impl DocumentManager {
 			MoveUnit::Character | MoveUnit::Word => self.last_sound_position.get().unwrap_or(caret),
 			MoveUnit::Line | MoveUnit::Paragraph => caret,
 		};
-		self.sound_move(before, caret, |tab| unit_at_caret(tab, unit));
+		self.sound_move(sound_for_move, before, caret, |tab| unit_at_caret(tab, unit));
 	}
 
 	pub(crate) fn check_bookmark_sounds(&self) {
@@ -126,22 +129,45 @@ impl DocumentManager {
 			return;
 		};
 		let caret = doc_caret(tab);
-		self.sound_move(self.last_sound_position.get().unwrap_or(caret), caret, |_| None);
+		self.sound_move(sound_for_move, self.last_sound_position.get().unwrap_or(caret), caret, |_| None);
 	}
 
-	/// Sounds the caret's move from `before` to `after` by the setting. Under the unit setting, `unit_of` measures the unit moved to; without a unit, the move sounds the bookmarks it entered.
-	pub(super) fn sound_move(&self, before: DocPos, after: DocPos, unit_of: impl FnOnce(&DocumentTab) -> Option<Unit>) {
+	/// Sounds a caret move another process, such as a screen reader, made in the reader control whose window handle is `hwnd`, by the visual line `after` is on. A move in a control other than the active tab's stays silent.
+	#[cfg(target_os = "windows")]
+	pub(crate) fn sound_external_move(&self, hwnd: usize, before: CtrlPos, after: CtrlPos) {
+		let Some(tab) = self.active_tab().filter(|tab| tab.text_ctrl.widget().get_handle().addr() == hwnd) else {
+			return;
+		};
+		self.sound_move(sound_for_external_move, tab.window.to_doc(before), tab.window.to_doc(after), |tab| {
+			let (start, end) = visual_line_at(tab.text_ctrl, after)?;
+			Some(Unit { start: tab.window.to_doc(start), end: tab.window.to_doc(end) })
+		});
+	}
+
+	/// Sounds the caret's move from `before` to `after` by the setting and `rule`. Under the unit setting, `unit_of` measures the unit moved to; without a unit, the move sounds the bookmarks it entered.
+	pub(super) fn sound_move(
+		&self,
+		rule: SoundRule,
+		before: DocPos,
+		after: DocPos,
+		unit_of: impl FnOnce(&DocumentTab) -> Option<Unit>,
+	) {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
 		// Only measured when the setting uses it, since measuring asks the reading control.
 		let measure =
 			self.config.try_lock().is_ok_and(|config| BookmarkSoundMode::load(&config) == BookmarkSoundMode::InUnit);
-		self.sound_moves(before, [(after, if measure { unit_of(tab) } else { None })]);
+		self.sound_moves(rule, before, [(after, if measure { unit_of(tab) } else { None })]);
 	}
 
-	/// Sounds a run of caret moves starting from `before`, each to a position and the unit it moved to, reading the setting and the bookmarks once for all of them, as read aloud and synced audio pass several words or clips a tick.
-	pub(super) fn sound_moves(&self, mut before: DocPos, moves: impl IntoIterator<Item = (DocPos, Option<Unit>)>) {
+	/// Sounds a run of caret moves starting from `before` by `rule`, each to a position and the unit it moved to, reading the setting and the bookmarks once for all of them, as read aloud and synced audio pass several words or clips a tick.
+	pub(super) fn sound_moves(
+		&self,
+		rule: SoundRule,
+		mut before: DocPos,
+		moves: impl IntoIterator<Item = (DocPos, Option<Unit>)>,
+	) {
 		let Some(tab) = self.active_tab() else {
 			return;
 		};
@@ -162,7 +188,7 @@ impl DocumentManager {
 				Some((BookmarkSoundMode::Never, _)) => self.last_sound_unit.set(None),
 				Some((mode, bookmarks)) => {
 					let unit = unit.filter(|_| *mode == BookmarkSoundMode::InUnit);
-					let (sound, remembered) = sound_for_move(bookmarks, previous, before, after, unit);
+					let (sound, remembered) = rule(bookmarks, previous, before, after, unit);
 					self.last_sound_unit.set(Some(remembered));
 					if let Some(sound) = sound {
 						sound.play();
@@ -222,7 +248,11 @@ impl DocumentManager {
 			tab.text_ctrl.show_position(local);
 		}
 		self.last_followed_clip.set(Some((cursor.clip, elapsed)));
-		self.sound_moves(current, passed.into_iter().chain(moved.then_some(clip)).map(|unit| (unit.start, Some(unit))));
+		self.sound_moves(
+			sound_for_move,
+			current,
+			passed.into_iter().chain(moved.then_some(clip)).map(|unit| (unit.start, Some(unit))),
+		);
 	}
 
 	pub fn pause_inactive_audio(&mut self) {

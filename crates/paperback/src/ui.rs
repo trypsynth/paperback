@@ -6,6 +6,8 @@ mod bookmarks;
 mod commands;
 mod dialogs;
 mod document_manager;
+#[cfg(target_os = "windows")]
+mod external_caret;
 mod find;
 mod help;
 mod icon;

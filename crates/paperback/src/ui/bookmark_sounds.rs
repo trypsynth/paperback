@@ -88,6 +88,10 @@ impl Unit {
 	fn holds(self, bookmark: &Bookmark) -> bool {
 		bookmark.start < end_or_next(self.start, self.end) && end_or_next(bookmark.start, bookmark.end) > self.start
 	}
+
+	fn covers(self, position: DocPos) -> bool {
+		self.start <= position && position < end_or_next(self.start, self.end)
+	}
 }
 
 /// The end of `start..end`, where an empty range covers its one position.
@@ -95,7 +99,7 @@ fn end_or_next(start: DocPos, end: DocPos) -> DocPos {
 	if start == end { end + DocLen::from_raw(1) } else { end }
 }
 
-/// The sound for a move from `before` to `after`, and the unit to remember for the next move. With `unit`, the move sounds the bookmarks it holds and `previous` didn't. Without one, it sounds the bookmarks the caret entered and `previous` didn't hold. Bookmarks with a playback time stay silent.
+/// The sound for a move from `before` to `after`, and the unit to remember for the next move. The move sounds the bookmarks the caret entered. With `unit`, it also sounds the bookmarks `unit` holds and `previous` didn't. Bookmarks with a playback time stay silent.
 pub fn sound_for_move(
 	bookmarks: &[Bookmark],
 	previous: Option<Unit>,
@@ -104,23 +108,36 @@ pub fn sound_for_move(
 	unit: Option<Unit>,
 ) -> (Option<BookmarkSound>, Unit) {
 	let text_bookmarks = || bookmarks.iter().filter(|bookmark| bookmark.audio_ms.is_none());
-	let sound = match unit {
-		Some(unit) => new_in_unit(text_bookmarks(), previous, unit),
-		None => entered_bookmark(
-			text_bookmarks().filter(|bookmark| !previous.is_some_and(|previous| previous.holds(bookmark))),
-			before,
-			after,
-		),
-	};
+	let entered = entered_bookmark(text_bookmarks(), before, after);
+	let sound = unit.map_or(entered, |unit| new_in_unit(text_bookmarks(), previous, unit).max(entered));
 	(sound, remembered_unit(previous, unit, after))
+}
+
+/// A rule giving a move's sound and the unit to remember, as [`sound_for_move`] does.
+pub type SoundRule = fn(&[Bookmark], Option<Unit>, DocPos, DocPos, Option<Unit>) -> (Option<BookmarkSound>, Unit);
+
+/// The sound for a caret move another process made, such as a screen reader, and the unit to remember, as [`sound_for_move`] gives them. With `line`, the visual line the caret landed on, a move back measures that line. A move forward measures from just past `before` to the line's end, so it also sounds the bookmarks it passed that `previous` didn't hold. Either remembers the part of `line` it measured, joined with `previous` when that covers `before`.
+#[cfg(any(target_os = "windows", test))]
+pub fn sound_for_external_move(
+	bookmarks: &[Bookmark],
+	previous: Option<Unit>,
+	before: DocPos,
+	after: DocPos,
+	line: Option<Unit>,
+) -> (Option<BookmarkSound>, Unit) {
+	let Some(line) = line else {
+		return sound_for_move(bookmarks, previous, before, after, None);
+	};
+	let start = if before < after { before + DocLen::from_raw(1) } else { line.start };
+	let (sound, _) = sound_for_move(bookmarks, previous, before, after, Some(Unit { start, ..line }));
+	let heard_from =
+		previous.filter(|previous| previous.covers(before)).map_or(start, |previous| previous.start.min(start));
+	(sound, Unit { start: heard_from.max(line.start), ..line })
 }
 
 /// The unit a move leaves remembered: its own, or else the remembered one while the caret is still on it, or else the caret's position.
 pub fn remembered_unit(previous: Option<Unit>, unit: Option<Unit>, caret: DocPos) -> Unit {
-	unit.or_else(|| {
-		previous.filter(|previous| previous.start <= caret && caret < end_or_next(previous.start, previous.end))
-	})
-	.unwrap_or(Unit { start: caret, end: caret })
+	unit.or_else(|| previous.filter(|previous| previous.covers(caret))).unwrap_or(Unit { start: caret, end: caret })
 }
 
 /// The sound for the bookmarks the caret entered between `before` and `after`. A note's sound wins.
@@ -157,7 +174,8 @@ mod tests {
 	use paperback_core::{config::Bookmark, document::DocPos};
 
 	use super::{
-		BookmarkSound, BookmarkSoundMode, Unit, entered_bookmark, new_in_unit, remembered_unit, sound_for_move,
+		BookmarkSound, BookmarkSoundMode, SoundRule, Unit, entered_bookmark, new_in_unit, remembered_unit,
+		sound_for_external_move, sound_for_move,
 	};
 
 	fn pos(raw: usize) -> DocPos {
@@ -169,19 +187,29 @@ mod tests {
 		unit(index * 40, index * 40 + 40)
 	}
 
-	/// The sounds of a run of moves, each to a caret position, by its unit if it has one, starting at 0.
-	fn sounds(bookmarks: &[Bookmark], moves: &[(usize, Option<Unit>)]) -> Vec<Option<BookmarkSound>> {
+	/// The sounds of a run of moves by `rule` from `start`, each to a caret position, by its unit if it has one.
+	fn sounds_by(
+		rule: SoundRule,
+		bookmarks: &[Bookmark],
+		start: usize,
+		moves: &[(usize, Option<Unit>)],
+	) -> Vec<Option<BookmarkSound>> {
 		let mut previous = None;
-		let mut before = pos(0);
+		let mut before = pos(start);
 		moves
 			.iter()
 			.map(|&(caret, unit)| {
-				let (sound, remembered) = sound_for_move(bookmarks, previous, before, pos(caret), unit);
+				let (sound, remembered) = rule(bookmarks, previous, before, pos(caret), unit);
 				previous = Some(remembered);
 				before = pos(caret);
 				sound
 			})
 			.collect()
+	}
+
+	/// The sounds of a run of moves, each to a caret position, by its unit if it has one, starting at 0.
+	fn sounds(bookmarks: &[Bookmark], moves: &[(usize, Option<Unit>)]) -> Vec<Option<BookmarkSound>> {
+		sounds_by(sound_for_move, bookmarks, 0, moves)
 	}
 
 	#[test]
@@ -191,9 +219,9 @@ mod tests {
 	}
 
 	#[test]
-	fn steps_before_a_bookmark_starting_mid_line_keep_its_line() {
+	fn a_line_move_into_a_bookmark_its_line_announced_sounds_again() {
 		let heard = sounds(&[bookmark(20, 100)], &[(5, Some(line(0))), (6, None), (46, Some(line(1)))]);
-		assert_eq!(heard, [Some(BookmarkSound::Bookmark), None, None]);
+		assert_eq!(heard, [Some(BookmarkSound::Bookmark), None, Some(BookmarkSound::Bookmark)]);
 	}
 
 	#[test]
@@ -339,11 +367,22 @@ mod tests {
 	}
 
 	#[test]
-	fn a_step_into_a_bookmark_its_line_announced_is_silent() {
+	fn a_step_into_a_bookmark_its_line_announced_sounds_again() {
 		let heard = sounds(&[bookmark(20, 25)], &[(5, Some(line(0))), (20, None)]);
-		assert_eq!(heard, [Some(BookmarkSound::Bookmark), None]);
+		assert_eq!(heard, [Some(BookmarkSound::Bookmark), Some(BookmarkSound::Bookmark)]);
 	}
 
+	#[test]
+	fn a_word_move_into_a_bookmark_its_line_announced_sounds_again() {
+		let heard = sounds(&[bookmark(20, 25)], &[(5, Some(line(0))), (20, Some(unit(20, 26)))]);
+		assert_eq!(heard, [Some(BookmarkSound::Bookmark), Some(BookmarkSound::Bookmark)]);
+	}
+
+	#[test]
+	fn a_word_move_onto_a_word_holding_a_bookmark_its_line_announced_is_silent() {
+		let heard = sounds(&[bookmark(22, 22)], &[(5, Some(line(0))), (20, Some(unit(20, 26)))]);
+		assert_eq!(heard, [Some(BookmarkSound::Bookmark), None]);
+	}
 	#[test]
 	fn stepping_onto_the_next_lines_start_leaves_the_line() {
 		let heard = sounds(&[bookmark(20, 25)], &[(39, Some(line(0))), (40, None), (1, Some(line(0)))]);
@@ -354,5 +393,111 @@ mod tests {
 	fn a_step_into_a_bookmark_after_leaving_its_line_sounds() {
 		let heard = sounds(&[bookmark(20, 25)], &[(5, Some(line(0))), (45, None), (20, None)]);
 		assert_eq!(heard, [Some(BookmarkSound::Bookmark), None, Some(BookmarkSound::Bookmark)]);
+	}
+
+	/// The 40-position line `caret` is on.
+	fn line_of(caret: usize) -> Unit {
+		line(caret / 40)
+	}
+
+	/// The sounds of external caret moves from `start`, each onto its line.
+	fn external_move_sounds(bookmarks: &[Bookmark], start: usize, carets: &[usize]) -> Vec<Option<BookmarkSound>> {
+		let moves: Vec<_> = carets.iter().map(|&caret| (caret, Some(line_of(caret)))).collect();
+		sounds_by(sound_for_external_move, bookmarks, start, &moves)
+	}
+
+	#[test]
+	fn an_external_move_remembers_the_part_of_its_line_it_measured() {
+		let remembered = |previous: Option<Unit>, before: usize, after: usize| {
+			sound_for_external_move(&[], previous, pos(before), pos(after), Some(line_of(after))).1
+		};
+		assert_eq!(remembered(None, 10, 50), line(1), "forward from an earlier line");
+		assert_eq!(remembered(None, 45, 60), unit(46, 80), "forward along the line");
+		assert_eq!(remembered(None, 90, 50), line(1), "backward");
+		assert_eq!(remembered(Some(line(1)), 50, 60), line(1), "forward along a line already heard");
+		assert_eq!(remembered(Some(unit(45, 45)), 45, 60), unit(45, 80), "forward from a position");
+		assert_eq!(remembered(Some(line(0)), 30, 50), line(1), "forward from a line heard before");
+	}
+
+	#[test]
+	fn a_bookmark_an_external_move_sounded_stays_silent_after_it_moves_on_along_the_line() {
+		let bookmarks = [bookmark(42, 42)];
+		let (first, remembered) = sound_for_external_move(&bookmarks, None, pos(0), pos(50), Some(line_of(50)));
+		let (_, remembered) =
+			sound_for_external_move(&bookmarks, Some(remembered), pos(50), pos(60), Some(line_of(60)));
+		let (back, _) = sound_for_external_move(&bookmarks, Some(remembered), pos(60), pos(45), Some(line_of(45)));
+		assert_eq!((first, back), (Some(BookmarkSound::Bookmark), None));
+	}
+
+	#[test]
+	fn an_external_move_into_a_bookmark_on_a_line_it_reached_sounds_again() {
+		let heard = external_move_sounds(&[bookmark(55, 55)], 0, &[45, 55]);
+		assert_eq!(heard, [Some(BookmarkSound::Bookmark), Some(BookmarkSound::Bookmark)]);
+	}
+
+	#[test]
+	fn a_step_back_into_a_bookmark_an_external_move_passed_on_its_line_sounds() {
+		let bookmarks = [bookmark(42, 42)];
+		let (_, remembered) = sound_for_external_move(&bookmarks, None, pos(45), pos(60), Some(line_of(60)));
+		let (sound, _) = sound_for_move(&bookmarks, Some(remembered), pos(60), pos(42), None);
+		assert_eq!(sound, Some(BookmarkSound::Bookmark));
+	}
+
+	#[test]
+	fn an_external_move_backward_sounds_a_bookmark_earlier_on_its_line() {
+		assert_eq!(external_move_sounds(&[bookmark(45, 45)], 100, &[79]), [Some(BookmarkSound::Bookmark)]);
+	}
+
+	#[test]
+	fn a_line_an_external_move_passed_sounds_when_moved_back_to() {
+		let bookmarks = [bookmark(45, 45)];
+		let (_, remembered) = sound_for_external_move(&bookmarks, None, pos(0), pos(90), Some(line_of(90)));
+		let (sound, _) = sound_for_move(&bookmarks, Some(remembered), pos(90), pos(50), Some(line(1)));
+		assert_eq!(sound, Some(BookmarkSound::Bookmark));
+	}
+
+	#[test]
+	fn a_step_into_a_bookmark_an_external_move_passed_sounds() {
+		let bookmarks = [bookmark(45, 50)];
+		let (_, remembered) = sound_for_external_move(&bookmarks, None, pos(0), pos(90), Some(line_of(90)));
+		let (sound, _) = sound_for_move(&bookmarks, Some(remembered), pos(90), pos(49), None);
+		assert_eq!(sound, Some(BookmarkSound::Bookmark));
+	}
+
+	#[test]
+	fn without_a_unit_an_external_move_sounds_only_a_bookmark_it_lands_in() {
+		assert_eq!(sound_for_external_move(&[bookmark(45, 45)], None, pos(0), pos(90), None).0, None);
+		assert_eq!(
+			sound_for_external_move(&[bookmark(85, 95)], None, pos(0), pos(90), None).0,
+			Some(BookmarkSound::Bookmark)
+		);
+	}
+
+	#[test]
+	fn an_external_move_sounds_the_bookmarks_it_skipped() {
+		assert_eq!(external_move_sounds(&[bookmark(45, 45)], 0, &[90]), [Some(BookmarkSound::Bookmark)]);
+		assert_eq!(external_move_sounds(&[note(45, 50)], 0, &[90]), [Some(BookmarkSound::Note)]);
+	}
+
+	#[test]
+	fn an_external_move_sounds_a_bookmark_later_on_its_line() {
+		assert_eq!(external_move_sounds(&[bookmark(70, 70)], 0, &[50]), [Some(BookmarkSound::Bookmark)]);
+	}
+
+	#[test]
+	fn a_bookmark_heard_with_an_earlier_line_is_silent_when_passed() {
+		let heard = external_move_sounds(&[bookmark(30, 30)], 0, &[10, 90]);
+		assert_eq!(heard, [Some(BookmarkSound::Bookmark), None]);
+	}
+
+	#[test]
+	fn a_bookmark_on_the_old_position_is_silent() {
+		assert_eq!(external_move_sounds(&[bookmark(10, 10)], 10, &[90]), [None]);
+	}
+
+	#[test]
+	fn an_external_move_backward_sounds_only_its_line() {
+		assert_eq!(external_move_sounds(&[bookmark(50, 50)], 100, &[10]), [None]);
+		assert_eq!(external_move_sounds(&[bookmark(20, 20)], 100, &[10]), [Some(BookmarkSound::Bookmark)]);
 	}
 }
