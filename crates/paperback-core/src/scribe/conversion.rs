@@ -145,6 +145,17 @@ impl Conversion {
 	}
 }
 
+/// How many of the reader's pages converting `path` takes, where Paperback can tell before uploading, as Scribe counts them: a PDF's pages, or one for an image of one page. Scribe counts other files, such as Word documents or a TIFF of many pages, once it lays them out.
+#[must_use]
+pub fn pages_to_convert(path: &Path) -> Option<usize> {
+	let extension = path.extension()?.to_str()?.to_ascii_lowercase();
+	match extension.as_str() {
+		"pdf" => crate::pdf_engine::Document::open(path, None).ok().map(|document| document.page_count()),
+		"jpg" | "jpeg" | "gif" | "png" | "bmp" | "pcx" | "jp2" | "jpx" | "jpf" | "j2k" | "j2c" | "jpc" => Some(1),
+		_ => None,
+	}
+}
+
 /// A page of HTML titled `title` with `message` as its one paragraph, to show before any pages arrive.
 #[must_use]
 pub fn status_page(title: &str, message: &str) -> String {
@@ -208,6 +219,46 @@ mod tests {
 		assert!(
 			matches!(conversion.apply(failed), Err(Error::Failed(Some(message))) if message == "The file is damaged.")
 		);
+	}
+
+	fn two_page_pdf() -> Vec<u8> {
+		use std::fmt::Write;
+		let objects = [
+			"<< /Type /Catalog /Pages 2 0 R >>",
+			"<< /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >>",
+			"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>",
+			"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>",
+		];
+		let mut pdf = String::from("%PDF-1.4\n");
+		let mut offsets = Vec::new();
+		for (index, object) in objects.iter().enumerate() {
+			offsets.push(pdf.len());
+			write!(pdf, "{} 0 obj\n{object}\nendobj\n", index + 1).unwrap();
+		}
+		let (xref, size) = (pdf.len(), objects.len() + 1);
+		write!(pdf, "xref\n0 {size}\n0000000000 65535 f \n").unwrap();
+		for offset in offsets {
+			writeln!(pdf, "{offset:010} 00000 n ").unwrap();
+		}
+		write!(pdf, "trailer\n<< /Size {size} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n").unwrap();
+		pdf.into_bytes()
+	}
+
+	#[test]
+	fn a_pdf_costs_its_pages_and_an_image_one() {
+		let pdf = std::env::temp_dir().join(format!("paperback-scribe-pages-{}.PDF", std::process::id()));
+		std::fs::write(&pdf, two_page_pdf()).unwrap();
+		let pages = pages_to_convert(&pdf);
+		let _ = std::fs::remove_file(&pdf);
+		assert_eq!(pages, Some(2));
+		assert_eq!(pages_to_convert(Path::new("scan.jpeg")), Some(1));
+	}
+
+	#[test]
+	fn what_scribe_lays_out_itself_has_no_count_yet() {
+		assert_eq!(pages_to_convert(Path::new("Report.docx")), None);
+		assert_eq!(pages_to_convert(Path::new("Fax.tiff")), None);
+		assert_eq!(pages_to_convert(Path::new("Missing.pdf")), None);
 	}
 
 	#[test]

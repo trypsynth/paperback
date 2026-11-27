@@ -14,7 +14,7 @@ use std::{
 
 mod conversion;
 
-pub use conversion::{Conversion, Update, status_page};
+pub use conversion::{Conversion, Update, pages_to_convert, status_page};
 pub use scribe_client::{AccountInfo, BrailleTable, Dialect, Language, Settings, SettingsUpdate, Stage, Voice};
 use scribe_client::{
 	AuthClient, DELETE_ACCOUNT_PATH, PkceChallenge, ScribeClient, ScribeError, TokenSet, Url, reqwest,
@@ -446,21 +446,11 @@ impl Loopback {
 				escape(message)
 			);
 			format!(
-				"HTTP/1.1 200 OK
-Content-Type: text/html; charset=utf-8
-Content-Length: {}
-Connection: close
-
-{page}",
+				"HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{page}",
 				page.len()
 			)
 		} else {
-			"HTTP/1.1 404 Not Found
-Content-Length: 0
-Connection: close
-
-"
-			.to_string()
+			"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".to_string()
 		};
 		let _ = stream.write_all(response.as_bytes());
 		redirect

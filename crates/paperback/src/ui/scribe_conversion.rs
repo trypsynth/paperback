@@ -13,11 +13,11 @@ use std::{
 };
 
 use live_region::{Priority, announce_with_priority};
-use paperback_core::scribe::{Error, Stage, Update, status_page};
+use paperback_core::scribe::{Error, Stage, Update, pages_to_convert, status_page};
 use patois::{nt, t};
 use wx_utils::{
 	show_error,
-	tasks::{background, spawn_for},
+	tasks::{background, background_blocking, spawn_for},
 };
 use wxdragon::prelude::*;
 
@@ -35,26 +35,26 @@ fn title() -> String {
 	t("Convert with Scribe")
 }
 
-/// Converts the open document once the reader confirms, or one they choose when none is open or they'd rather another.
+/// Converts the open document, or one the reader chooses when none is open, once they confirm what it costs.
 pub fn convert_with_scribe(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, live_region: StaticText) {
 	if !scribe::shared().is_signed_in() {
-		// TRANSLATORS: Shown by Tools > Convert with Scribe before the reader has signed in
+		// TRANSLATORS: Shown by Services > Scribe > Convert Document before the reader has signed in
 		show_error(frame, t("Sign in to Scribe first, on the Scribe tab of Settings."), &title());
 		return;
 	}
 	let open = dm.lock().unwrap().active_tab().map(|tab| tab.file_path.clone()).filter(|path| path.is_file());
 	let (frame, dm) = (*frame, Rc::clone(dm));
 	spawn_for(&frame, async move {
-		let source = match &open {
-			Some(open) => match confirm(frame, open).await {
-				ID_YES => Some(open.clone()),
-				ID_NO => choose(frame, open.parent()),
-				_ => None,
-			},
-			None => choose(frame, None),
-		};
-		if let Some(source) = source {
-			start(frame, dm, live_region, source).await;
+		let Some(mut source) = open.or_else(|| choose(frame, None)) else { return };
+		loop {
+			match confirm(frame, &source).await {
+				ID_YES => return start(frame, dm, live_region, source).await,
+				ID_NO => match choose(frame, source.parent()) {
+					Some(chosen) => source = chosen,
+					None => return,
+				},
+				_ => return,
+			}
 		}
 	});
 }
@@ -62,35 +62,65 @@ pub fn convert_with_scribe(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, live_
 /// Yes converts `path`, No chooses another file, and Cancel does neither.
 async fn confirm(frame: Frame, path: &Path) -> i32 {
 	let scribe = scribe::shared();
-	let pages = background(async move { scribe.pages_remaining().await }).await;
+	let left = background(async move { scribe.pages_remaining().await });
+	let counted = path.to_path_buf();
+	let pages = background_blocking(move || pages_to_convert(&counted)).await;
+	let left = left.await.ok();
 	let name = path.file_name().map(|name| name.to_string_lossy().into_owned()).unwrap_or_default();
-	// TRANSLATORS: Asked by Tools > Convert with Scribe about the open document. %s is its file name.
+	// TRANSLATORS: Asked by Services > Scribe > Convert Document. %s is the document's file name.
 	let question = t("Convert %s with Scribe?").replacen("%s", &name, 1);
-	let cost = match pages {
-		// TRANSLATORS: Under the question whether to convert a document with Scribe. %d is how many pages the reader can still convert. Plural form is chosen by that number.
-		Ok(pages) => nt(
-			"You have %d page left, and converting uses one for each page of the document.",
-			"You have %d pages left, and converting uses one for each page of the document.",
-			pages.unsigned_abs(),
-		)
-		.replacen("%d", &pages.to_string(), 1),
-		// TRANSLATORS: Under the question whether to convert a document with Scribe, when the pages left couldn't be checked
-		Err(_) => t("Converting uses one of your Scribe pages for each page of the document."),
-	};
-	let dialog = MessageDialog::builder(
-		&frame,
-		&format!(
-			"{question}
-
-{cost}"
-		),
-		&title(),
-	)
-	.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::Cancel | MessageDialogStyle::IconQuestion)
-	.build();
-	// TRANSLATORS: Buttons of the question whether to convert the open document with Scribe
+	let dialog = MessageDialog::builder(&frame, &format!("{question}\n\n{}", cost(pages, left)), &title())
+		.with_style(MessageDialogStyle::YesNo | MessageDialogStyle::Cancel | MessageDialogStyle::IconQuestion)
+		.build();
+	// TRANSLATORS: Buttons of the question whether to convert a document with Scribe
 	dialog.set_yes_no_labels(&t("&Convert"), &t("C&hoose Another File..."));
 	dialog.show_modal()
+}
+
+/// What converting takes of the reader's pages, from the document's `pages` where Paperback can count them and the pages `left` where Scribe said. Scribe converts only a free preview of a document longer than the pages left.
+fn cost(pages: Option<usize>, left: Option<i64>) -> String {
+	// TRANSLATORS: Part of the question whether to convert a document with Scribe. %d is how many pages the reader can still convert. Plural form is chosen by that number.
+	let have = |left: i64| {
+		nt("You have %d page left.", "You have %d pages left.", left.unsigned_abs()).replacen(
+			"%d",
+			&left.to_string(),
+			1,
+		)
+	};
+	match (pages, left) {
+		(Some(pages), Some(left)) if i64::try_from(pages).unwrap_or(i64::MAX) > left => [
+			// TRANSLATORS: Part of the question whether to convert a document with Scribe, when the reader has fewer pages left than it takes. %d is how many pages converting it all takes. Plural form is chosen by that number.
+			nt("Converting it all takes %d page.", "Converting it all takes %d pages.", pages as u64).replacen(
+				"%d",
+				&pages.to_string(),
+				1,
+			),
+			have(left),
+			// TRANSLATORS: Part of the question whether to convert a document with Scribe, after saying the reader has too few pages left for all of it
+			t("Scribe will convert only a free preview of its first pages."),
+		]
+		.join(" "),
+		(Some(pages), left) => {
+			// TRANSLATORS: Part of the question whether to convert a document with Scribe. %d is how many of the reader's pages converting it uses. Plural form is chosen by that number.
+			let uses = nt("Converting it uses %d page.", "Converting it uses %d pages.", pages as u64).replacen(
+				"%d",
+				&pages.to_string(),
+				1,
+			);
+			match left {
+				Some(left) => format!("{uses} {}", have(left)),
+				None => uses,
+			}
+		}
+		// TRANSLATORS: Part of the question whether to convert a document with Scribe, when Paperback can't count its pages, as for a Word document
+		(None, Some(left)) => format!(
+			"{} {}",
+			t("Scribe counts its pages as it lays the document out, and uses one of yours for each."),
+			have(left)
+		),
+		// TRANSLATORS: Part of the question whether to convert a document with Scribe, when neither its pages nor the reader's pages left are known
+		(None, None) => t("Converting uses one of your Scribe pages for each page of the document."),
+	}
 }
 
 fn choose(frame: Frame, folder: Option<&Path>) -> Option<PathBuf> {
@@ -253,7 +283,7 @@ fn write_and_reload(dm: &Rc<Mutex<DocumentManager>>, output: &Path, html: &str) 
 /// The pages that arrived stay in the file, and the tab says what went wrong only when there are none.
 fn failed(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, output: &Path, name: &str, error: &Error, has_pages: bool) {
 	let reason = match error {
-		// TRANSLATORS: Shown when Tools > Convert with Scribe finds the reader signed out
+		// TRANSLATORS: Shown when Services > Scribe > Convert Document finds the reader signed out
 		Error::NotSignedIn => t("Sign in to Scribe again, on the Scribe tab of Settings."),
 		// TRANSLATORS: Shown when a Scribe conversion fails and Scribe gives no reason
 		Error::Failed(None) => t("Scribe couldn't convert the document."),
@@ -264,4 +294,27 @@ fn failed(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, output: &Path, name: &
 		write_and_reload(dm, output, &status_page(name, &reason));
 	}
 	show_error(frame, reason, &title());
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn the_cost_says_what_converting_uses_and_what_is_left() {
+		assert_eq!(cost(Some(12), Some(340)), "Converting it uses 12 pages. You have 340 pages left.");
+		assert_eq!(cost(Some(1), None), "Converting it uses 1 page.");
+	}
+
+	#[test]
+	fn a_document_longer_than_the_pages_left_gets_a_preview() {
+		let cost = cost(Some(30), Some(5));
+		assert!(cost.starts_with("Converting it all takes 30 pages. You have 5 pages left."), "{cost}");
+		assert!(cost.contains("preview"), "{cost}");
+	}
+
+	#[test]
+	fn a_document_paperback_cant_count_leaves_it_to_scribe() {
+		assert!(cost(None, Some(1)).ends_with("You have 1 page left."));
+	}
 }

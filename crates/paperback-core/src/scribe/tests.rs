@@ -117,14 +117,7 @@ fn a_tls_connection_can_be_configured_without_naming_a_provider() {
 fn visit(uri: &str, target: &str) -> String {
 	let port = Url::parse(uri).unwrap().port().unwrap();
 	let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
-	write!(
-		stream,
-		"GET {target} HTTP/1.1
-Host: 127.0.0.1:{port}
-
-"
-	)
-	.unwrap();
+	write!(stream, "GET {target} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\n\r\n").unwrap();
 	let mut response = String::new();
 	stream.read_to_string(&mut response).unwrap();
 	response
@@ -141,7 +134,8 @@ fn the_browser_coming_back_ends_the_wait() {
 	assert!(uri.starts_with("http://127.0.0.1:") && uri.ends_with("/oauth/scribe"), "{uri}");
 	let waiting = wait_in_background(loopback);
 	let response = visit(&uri, "/oauth/scribe?code=abc&state=xyz");
-	assert!(response.starts_with("HTTP/1.1 200"), "{response}");
+	assert!(response.starts_with("HTTP/1.1 200 OK\r\n"), "{response}");
+	assert!(response.contains("\r\n\r\n<!DOCTYPE html>"), "the headers end with a blank line: {response}");
 	assert!(response.contains(r#"lang="de""#) && response.contains("Fertig &amp; zurück"), "{response}");
 	let redirect = waiting.join().unwrap().unwrap();
 	assert_eq!(redirect.query(), Some("code=abc&state=xyz"));
