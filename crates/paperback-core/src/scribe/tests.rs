@@ -162,3 +162,55 @@ fn a_cancelled_or_timed_out_wait_gives_nothing() {
 	assert!(Loopback::bind().unwrap().wait(&AtomicBool::new(true), Duration::from_secs(10), "en", "").is_none());
 	assert!(Loopback::bind().unwrap().wait(&AtomicBool::new(false), Duration::ZERO, "en", "").is_none());
 }
+
+fn settings(language: &str, dialects: &serde_json::Value, voices: &serde_json::Value) -> Settings {
+	serde_json::from_value(serde_json::json!({
+		"language": language, "dialects": dialects, "voices": voices, "tts_gender": "", "tts_rate": 1.0,
+		"braille_translation_table": "en-us-g2.ctb", "braille_cells_per_line": 40, "braille_split_into_pages": true,
+		"braille_lines_per_page": 25, "large_print": false, "add_image_descriptions": true, "math": false,
+		"notify_when_complete": false
+	}))
+	.unwrap()
+}
+
+#[test]
+fn the_voice_comes_from_the_dialect_chosen_for_the_language() {
+	let choice = VoiceChoice::from_settings(&settings(
+		"en",
+		&serde_json::json!({"en": "en-GB", "fr": "fr-CA"}),
+		&serde_json::json!({"en-GB": "en-GB-RyanNeural", "en-US": "en-US-AriaNeural"}),
+	));
+	assert_eq!(choice.dialect(), Some("en-GB"));
+	assert_eq!(choice.voice(), Some("en-GB-RyanNeural"));
+}
+
+#[test]
+fn going_back_to_a_language_finds_its_dialect_and_voice() {
+	let mut choice = VoiceChoice::from_settings(&settings("en", &serde_json::json!({}), &serde_json::json!({})));
+	choice.set_dialect(Some("en-GB".to_string()));
+	choice.set_voice(Some("en-GB-RyanNeural".to_string()));
+	choice.language = Some("fr".to_string());
+	assert_eq!(choice.dialect(), None);
+	choice.language = Some("en".to_string());
+	assert_eq!(choice.voice(), Some("en-GB-RyanNeural"));
+}
+
+#[test]
+fn automatic_is_sent_as_an_empty_language_and_no_dialect() {
+	let mut choice =
+		VoiceChoice::from_settings(&settings("en", &serde_json::json!("{\"en\": \"en-GB\"}"), &serde_json::json!({})));
+	assert_eq!(choice.dialect(), Some("en-GB"), "a string of JSON is read too");
+	choice.set_dialect(None);
+	choice.language = None;
+	let mut update = SettingsUpdate::default();
+	choice.apply_to(&mut update);
+	assert_eq!(update.language.as_deref(), Some(""));
+	assert_eq!(update.dialects, Some(serde_json::json!({})));
+}
+
+#[test]
+fn a_language_without_dialects_offers_none() {
+	let catalog = Catalog::default();
+	assert!(catalog.dialects_of(Some("xx")).is_empty());
+	assert!(catalog.voices_of(None).is_empty());
+}

@@ -1,4 +1,6 @@
-//! The Scribe tab: signing in to Pneuma Solutions' Scribe for Documents. Signing in and out takes effect at once, not on OK, as it happens in the browser.
+//! The Scribe tab: signing in to Pneuma Solutions' Scribe for Documents, and the account's conversion defaults. Signing in and out takes effect at once, as it happens in the browser; the defaults are saved on OK.
+
+mod defaults;
 
 use std::{
 	cell::RefCell,
@@ -10,6 +12,7 @@ use std::{
 	time::Duration,
 };
 
+use defaults::Defaults;
 use paperback_core::scribe::{AccountInfo, Error, Loopback};
 use patois::{nt, t};
 use wx_utils::tasks::{background, background_blocking, spawn_for};
@@ -30,6 +33,7 @@ pub(super) struct ScribeTab {
 	status: StaticText,
 	account: Button,
 	manage: Button,
+	defaults: Defaults,
 	/// Set while the browser is out signing in, to cancel it.
 	waiting: Rc<RefCell<Option<Arc<AtomicBool>>>>,
 }
@@ -44,26 +48,24 @@ impl Drop for CancelOnDrop {
 }
 
 impl ScribeTab {
-	pub(super) fn new(panel: Panel) -> Self {
-		let about = StaticText::builder(&panel)
-			// TRANSLATORS: Introduction on the Scribe tab of Settings. Scribe for Documents is the name of a service by Pneuma Solutions and is not translated.
-			.with_label(&t("Scribe for Documents, by Pneuma Solutions, converts inaccessible documents, such as scanned PDFs, into accessible ones."))
-			.build();
+	pub(super) fn new(panel: Panel, padding: i32) -> Self {
 		let status = StaticText::builder(&panel).build();
 		let _ = live_region::set_live_region(&status);
 		let account = Button::builder(&panel).build();
 		// TRANSLATORS: Button on the Scribe tab of Settings that opens the reader's Scribe account page in the browser
 		let manage = Button::builder(&panel).with_label(&t("&Manage Account...")).build();
 		let sizer = BoxSizer::builder(Orientation::Vertical).build();
-		sizer.add(&about, 0, SizerFlag::All, OPTION_PADDING);
 		sizer.add(&status, 0, SizerFlag::All, OPTION_PADDING);
 		sizer.add(&account, 0, SizerFlag::All, OPTION_PADDING);
 		sizer.add(&manage, 0, SizerFlag::All, OPTION_PADDING);
+		let defaults = Defaults::new(panel, padding);
+		sizer.add(&defaults.form, 0, SizerFlag::Expand, 0);
 		panel.set_sizer(sizer, true);
-		let tab = Self { panel, status, account, manage, waiting: Rc::default() };
+		let tab = Self { panel, status, account, manage, defaults, waiting: Rc::default() };
 		if scribe::shared().is_signed_in() {
+			// TRANSLATORS: Shown on the Scribe tab of Settings while loading the account
 			tab.show(true, &t("Checking your Scribe account..."), false);
-			tab.load_account();
+			tab.load_account(false);
 		} else {
 			tab.show(false, &signed_out(), false);
 		}
@@ -74,8 +76,11 @@ impl ScribeTab {
 		tab
 	}
 
+	/// `announce` is for what the reader just did, not what loads while they are on another tab.
 	fn show(&self, signed_in: bool, message: &str, announce: bool) {
 		self.status.set_label(message);
+		// A screen reader skips text that can't take focus, but reads a property page's description as focus moves into it.
+		self.panel.set_accessibility_description(message);
 		self.status.wrap(self.panel.get_size().width.max(400));
 		self.account.set_label(&if signed_in {
 			// TRANSLATORS: Button on the Scribe tab of Settings
@@ -85,6 +90,9 @@ impl ScribeTab {
 			t("&Sign In...")
 		});
 		self.manage.enable(signed_in);
+		if !signed_in {
+			self.defaults.clear();
+		}
 		self.panel.layout();
 		if announce {
 			live_region::announce(self.status, message);
@@ -148,23 +156,59 @@ impl ScribeTab {
 			tab.show(false, &t("Signing in..."), false);
 			let result = background(async move { scribe.finish_sign_in(sign_in, &redirect).await }).await;
 			match result {
-				Ok(_) => tab.load_account(),
+				Ok(_) => tab.load_account(true),
 				Err(error) => tab.show(false, &describe(&error), true),
 			}
 		});
 	}
 
-	fn load_account(&self) {
+	/// Loads the account and the conversion defaults at once.
+	fn load_account(&self, announce: bool) {
 		let scribe = scribe::shared();
 		let tab = self.clone();
 		spawn_for(&self.panel, async move {
-			let result =
-				background(async move { Ok::<_, Error>((scribe.account().await?, scribe.pages_remaining().await?)) })
-					.await;
-			match result {
-				Ok((account, pages)) => tab.show(true, &signed_in(&account, pages), true),
-				Err(Error::NotSignedIn) => tab.show(false, &signed_out(), true),
-				Err(error) => tab.show(true, &describe(&error), true),
+			let account = background({
+				let scribe = Arc::clone(&scribe);
+				async move { Ok::<_, Error>((scribe.account().await?, scribe.pages_remaining().await?)) }
+			});
+			let defaults =
+				background(async move { Ok::<_, Error>((scribe.settings().await?, scribe.catalog().await?)) });
+			let status = match account.await {
+				Ok((account, pages)) => signed_in(&account, pages),
+				Err(Error::NotSignedIn) => return tab.show(false, &signed_out(), announce),
+				Err(error) => describe(&error),
+			};
+			tab.show(true, &status, announce);
+			match defaults.await {
+				Ok((settings, catalog)) => tab.defaults.fill(&settings, catalog),
+				Err(Error::NotSignedIn) => tab.show(false, &signed_out(), announce),
+				// TRANSLATORS: Shown on the Scribe tab of Settings when the conversion settings don't load. %s is the reason.
+				Err(error) => tab.show(
+					true,
+					&t("Paperback couldn't load your conversion settings: %s").replacen("%s", &describe(&error), 1),
+					announce,
+				),
+			}
+		});
+	}
+
+	/// Sends the conversion defaults changed on this tab, from `frame` since Settings is closing.
+	pub(super) fn save(&self, frame: Frame) {
+		let Some(update) = self.defaults.changes() else { return };
+		let scribe = scribe::shared();
+		spawn_for(&frame, async move {
+			if let Err(error) = background(async move { scribe.update_settings(update).await }).await {
+				// TRANSLATORS: Error shown after Settings closes when Scribe doesn't take the changed conversion settings. %s is the reason.
+				let message = t("Paperback couldn't save your Scribe conversion settings: %s").replacen(
+					"%s",
+					&describe(&error),
+					1,
+				);
+				// TRANSLATORS: Title of an error message
+				MessageDialog::builder(&frame, &message, &t("Error"))
+					.with_style(MessageDialogStyle::OK | MessageDialogStyle::IconError | MessageDialogStyle::Centre)
+					.build()
+					.show_modal();
 			}
 		});
 	}

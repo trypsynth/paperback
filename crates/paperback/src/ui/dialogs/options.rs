@@ -93,7 +93,7 @@ pub fn show_options_dialog(
 	#[cfg(target_os = "windows")]
 	let scribe_panel = page();
 	#[cfg(target_os = "windows")]
-	let _scribe = scribe::ScribeTab::new(scribe_panel);
+	let scribe = scribe::ScribeTab::new(scribe_panel, padding);
 	let mut tabs = vec![
 		// TRANSLATORS: Tab label for the General options panel
 		(general_panel, t("General")),
@@ -132,6 +132,10 @@ pub fn show_options_dialog(
 		documents: documents.values(),
 		advanced: advanced.values(),
 	});
+	#[cfg(target_os = "windows")]
+	if result.is_some() {
+		scribe.save(*parent);
+	}
 	dialog.destroy();
 	result
 }

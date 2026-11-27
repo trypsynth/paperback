@@ -23,7 +23,7 @@ required-features = ["uniffi"]
 
 [features]
 fetch = ["dep:ureq"]
-scribe = ["dep:scribe-client", "dep:rustls"]
+scribe = ["dep:scribe-client", "dep:rustls", "dep:futures-util"]
 uniffi = ["dep:uniffi"]
 
 [dependencies]
@@ -74,6 +74,8 @@ rustc-hash = "2.1.3"
 rustls = { version = "0.23.46", default-features = false, features = ["ring", "std"], optional = true }
 # Pneuma Solutions' Scribe for Documents. Async, on reqwest and Tokio, which only this feature pulls in. Without a crypto provider of its own, so it shares ureq's ring rather than adding aws-lc.
 scribe-client = { version = "0.4.1", default-features = false, features = ["rustls-no-provider"], optional = true }
+# To load the lists the Scribe settings choose from at once.
+futures-util = { version = "0.3.34", default-features = false, optional = true }
 scraper = "0.29.0"
 serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
 serde_json = { workspace = true }

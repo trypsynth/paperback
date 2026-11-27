@@ -1,7 +1,7 @@
 //! Scribe for Documents, Pneuma Solutions' conversion service. The calls are async to run on a Tokio runtime, such as wx-utils' `background`, since scribe-client is built on reqwest.
 
 use std::{
-	collections::HashMap,
+	collections::{BTreeMap, HashMap},
 	io::{self, Read, Write},
 	net::{Ipv4Addr, TcpListener, TcpStream},
 	sync::{
@@ -260,6 +260,18 @@ impl Scribe {
 		self.call(async |client| client.browser_entry_url(ACCOUNT_PATH).await).await
 	}
 
+	/// Everything the conversion settings choose from, loaded at once.
+	///
+	/// # Errors
+	///
+	/// [`Error::NotSignedIn`], or what the server said.
+	pub async fn catalog(&self) -> Result<Catalog, Error> {
+		let (languages, dialects, voices, braille_tables) =
+			futures_util::future::try_join4(self.languages(), self.dialects(), self.voices(), self.braille_tables())
+				.await?;
+		Ok(Catalog { languages, dialects, voices, braille_tables })
+	}
+
 	/// The page that deletes the account, opening already signed in.
 	///
 	/// # Errors
@@ -268,6 +280,100 @@ impl Scribe {
 	pub async fn delete_account_url(&self) -> Result<String, Error> {
 		self.call(async |client| client.browser_entry_url(DELETE_ACCOUNT_PATH).await).await
 	}
+}
+
+/// The lists the conversion settings choose from.
+#[derive(Clone, Debug, Default)]
+pub struct Catalog {
+	pub languages: Vec<Language>,
+	/// By language code.
+	pub dialects: HashMap<String, Vec<Dialect>>,
+	/// By dialect locale.
+	pub voices: HashMap<String, Vec<Voice>>,
+	pub braille_tables: Vec<BrailleTable>,
+}
+
+impl Catalog {
+	#[must_use]
+	pub fn dialects_of(&self, language: Option<&str>) -> &[Dialect] {
+		language.and_then(|language| self.dialects.get(language)).map_or(&[], Vec::as_slice)
+	}
+
+	#[must_use]
+	pub fn voices_of(&self, dialect: Option<&str>) -> &[Voice] {
+		dialect.and_then(|dialect| self.voices.get(dialect)).map_or(&[], Vec::as_slice)
+	}
+}
+
+/// The language, dialect and voice conversions speak with, each `None` for Scribe's Automatic. The account keeps a dialect for each language and a voice for each dialect, so going back to a language finds the dialect chosen for it before.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct VoiceChoice {
+	pub language: Option<String>,
+	dialects: BTreeMap<String, String>,
+	voices: BTreeMap<String, String>,
+}
+
+impl VoiceChoice {
+	#[must_use]
+	pub fn from_settings(settings: &Settings) -> Self {
+		Self {
+			language: settings.language.clone().filter(|language| !language.is_empty()),
+			dialects: string_map(&settings.dialects),
+			voices: string_map(&settings.voices),
+		}
+	}
+
+	#[must_use]
+	pub fn dialect(&self) -> Option<&str> {
+		self.dialects.get(self.language.as_deref()?).map(String::as_str)
+	}
+
+	/// Automatic removes the language's dialect rather than keeping an empty one, so the server picks its own, as the website does.
+	pub fn set_dialect(&mut self, dialect: Option<String>) {
+		let Some(language) = self.language.clone() else { return };
+		match dialect.filter(|dialect| !dialect.is_empty()) {
+			Some(dialect) => self.dialects.insert(language, dialect),
+			None => self.dialects.remove(&language),
+		};
+	}
+
+	#[must_use]
+	pub fn voice(&self) -> Option<&str> {
+		self.voices.get(self.dialect()?).map(String::as_str)
+	}
+
+	pub fn set_voice(&mut self, voice: Option<String>) {
+		let Some(dialect) = self.dialect().map(str::to_string) else { return };
+		match voice.filter(|voice| !voice.is_empty()) {
+			Some(voice) => self.voices.insert(dialect, voice),
+			None => self.voices.remove(&dialect),
+		};
+	}
+
+	/// Automatic is sent as an empty language, as the server's own form sends it, since a language left out is left as it was.
+	pub fn apply_to(&self, update: &mut SettingsUpdate) {
+		update.language = Some(self.language.clone().unwrap_or_default());
+		update.dialects = Some(serde_json::json!(self.dialects));
+		update.voices = Some(serde_json::json!(self.voices));
+	}
+}
+
+/// The server gives `dialects` and `voices` back as objects, though a string of JSON is read the same way.
+fn string_map(value: &serde_json::Value) -> BTreeMap<String, String> {
+	let parsed;
+	let value = match value {
+		serde_json::Value::String(json) => {
+			parsed = serde_json::from_str(json).unwrap_or_default();
+			&parsed
+		}
+		other => other,
+	};
+	value
+		.as_object()
+		.into_iter()
+		.flatten()
+		.filter_map(|(key, value)| Some((key.clone(), value.as_str().filter(|value| !value.is_empty())?.to_string())))
+		.collect()
 }
 
 /// Where a desktop sign-in's browser comes back to: a port of its own on 127.0.0.1.
