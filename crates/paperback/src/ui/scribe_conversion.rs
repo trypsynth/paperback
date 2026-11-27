@@ -13,7 +13,7 @@ use std::{
 };
 
 use live_region::{Priority, announce_with_priority};
-use paperback_core::scribe::{Error, Stage, Update, pages_to_convert, status_page};
+use paperback_core::scribe::{Conversion, Error, Stage, Update, pages_to_convert, status_page};
 use patois::{nt, t};
 use wx_utils::{
 	show_error,
@@ -22,6 +22,7 @@ use wx_utils::{
 use wxdragon::prelude::*;
 
 use super::{
+	dialogs::show_scribe_documents,
 	document_manager::{DocumentManager, prompt_for_password},
 	main_window::update_title_from_manager,
 };
@@ -49,8 +50,9 @@ pub fn convert_with_scribe(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, live_
 		loop {
 			match confirm(frame, &source).await {
 				ID_YES => {
-					let replacing = open.as_deref() == Some(source.as_path());
-					return start(frame, dm, live_region, source, replacing).await;
+					let replacing = (open.as_deref() == Some(source.as_path())).then(|| source.clone());
+					let name = source.file_stem().map(|stem| stem.to_string_lossy().into_owned()).unwrap_or_default();
+					return start(frame, dm, live_region, Source::Upload(source), name, replacing).await;
 				}
 				ID_NO => match choose(frame, source.parent()) {
 					Some(chosen) => source = chosen,
@@ -138,21 +140,52 @@ fn choose(frame: Frame, folder: Option<&Path>) -> Option<PathBuf> {
 	(picker.show_modal() == ID_OK).then(|| picker.get_path()).flatten().map(PathBuf::from)
 }
 
-/// `replacing` puts the conversion in the original's tab, as for a document of scanned pages nobody wants two tabs of; closing it there lets Reopen Last Closed bring the original back.
+/// Services > Scribe > My Documents: the documents in the reader's account, to open one again or move it to the trash.
+pub fn my_documents(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, live_region: StaticText) {
+	if !scribe::shared().is_signed_in() {
+		show_error(frame, t("Sign in to Scribe first, on the Scribe tab of Settings."), &title());
+		return;
+	}
+	let (frame, dm) = (*frame, Rc::clone(dm));
+	spawn_for(&frame, async move {
+		let scribe = scribe::shared();
+		let documents = match background(async move { scribe.documents().await }).await {
+			Ok(documents) => documents,
+			Err(error) => return show_error(&frame, describe(&error), &title()),
+		};
+		let Some(document) = show_scribe_documents(&frame, documents, live_region) else { return };
+		let name = document.title.clone().filter(|title| !title.trim().is_empty()).unwrap_or_else(untitled);
+		start(frame, dm, live_region, Source::Reopen(Box::new(Conversion::reopen(&document))), name, None).await;
+	});
+}
+
+/// What a tab reads from: a file to upload, or a document already in the reader's account.
+enum Source {
+	Upload(PathBuf),
+	/// Boxed, as a conversion is far larger than a path.
+	Reopen(Box<Conversion>),
+}
+
+/// `replacing` is the open document whose tab the conversion takes, as for a document of scanned pages nobody wants two tabs of; closing it there lets Reopen Last Closed bring the original back.
 async fn start(
 	frame: Frame,
 	dm: Rc<Mutex<DocumentManager>>,
 	live_region: StaticText,
-	source: PathBuf,
-	replacing: bool,
+	source: Source,
+	name: String,
+	replacing: Option<PathBuf>,
 ) {
-	let name = source.file_stem().map(|stem| stem.to_string_lossy().into_owned()).unwrap_or_default();
-	// TRANSLATORS: Tab title of a document converting with Scribe. %s is the original's name without its extension.
+	// TRANSLATORS: Tab title of a document from Scribe for Documents. %s is the document's name.
 	let tab_title = t("%s (Scribe)").replacen("%s", &name, 1);
-	// TRANSLATORS: Shown in a document's tab while it uploads to Scribe for converting
-	let uploading = status_page(&name, &t("Uploading to Scribe..."));
-	let copy =
-		WorkingCopy::new(&format!("{name}.html")).and_then(|copy| fs::write(copy.path(), uploading).map(|()| copy));
+	let first = match &source {
+		// TRANSLATORS: Shown in a document's tab while it uploads to Scribe for converting
+		Source::Upload(_) => t("Uploading to Scribe..."),
+		// TRANSLATORS: Shown in a document's tab while Paperback opens it again from the reader's Scribe account
+		Source::Reopen(_) => t("Opening from Scribe..."),
+	};
+	let uploading = status_page(&name, &first);
+	let copy = WorkingCopy::new(&format!("{}.html", file_name(&name)))
+		.and_then(|copy| fs::write(copy.path(), uploading).map(|()| copy));
 	let copy = match copy {
 		Ok(copy) => copy,
 		Err(error) => {
@@ -168,7 +201,7 @@ async fn start(
 		}
 	};
 	let output = copy.path().to_path_buf();
-	let at = replacing.then(|| dm.lock().unwrap().find_tab_by_path(&source)).flatten();
+	let at = replacing.and_then(|original| dm.lock().unwrap().find_tab_by_path(&original));
 	if let Some(index) = at {
 		dm.lock().unwrap().close_document(index, true);
 	}
@@ -183,23 +216,38 @@ async fn start(
 	convert(frame, dm, live_region, source, output, name).await;
 }
 
+/// A Scribe title, such as "Q3: Sales/Costs", made fit to name the temporary copy.
+fn file_name(name: &str) -> String {
+	let name: String =
+		name.chars().map(|c| if c.is_control() || r#"<>:"/\|?*"#.contains(c) { '_' } else { c }).collect();
+	let name = name.trim().trim_end_matches('.');
+	if name.is_empty() { "Scribe".to_string() } else { name.to_string() }
+}
+
+fn untitled() -> String {
+	// TRANSLATORS: Name of a document in the reader's Scribe account that has no title yet
+	t("Untitled")
+}
+
 /// Stops watching once the tab is closed, since the copy it writes goes with the tab; the conversion carries on in the reader's account. Its announcements wait behind what the screen reader is saying, as they matter less than the reading they would cut off.
 async fn convert(
 	frame: Frame,
 	dm: Rc<Mutex<DocumentManager>>,
 	live_region: StaticText,
-	source: PathBuf,
+	source: Source,
 	output: PathBuf,
 	name: String,
 ) {
 	let scribe = scribe::shared();
-	let uploading = {
-		let scribe = Arc::clone(&scribe);
-		background(async move { scribe.upload(&source).await })
-	};
-	let mut conversion = match uploading.await {
-		Ok(conversion) => conversion,
-		Err(error) => return failed(&frame, &dm, &output, &name, &error, false),
+	let mut conversion = match source {
+		Source::Upload(path) => {
+			let scribe = Arc::clone(&scribe);
+			match background(async move { scribe.upload(&path).await }).await {
+				Ok(conversion) => conversion,
+				Err(error) => return failed(&frame, &dm, &output, &name, &error, false),
+			}
+		}
+		Source::Reopen(conversion) => *conversion,
 	};
 	let mut shown = String::new();
 	let mut reloaded: Option<Instant> = None;
@@ -300,18 +348,22 @@ fn write_and_reload(dm: &Rc<Mutex<DocumentManager>>, output: &Path, html: &str) 
 
 /// The pages that arrived stay in the file, and the tab says what went wrong only when there are none.
 fn failed(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, output: &Path, name: &str, error: &Error, has_pages: bool) {
-	let reason = match error {
-		// TRANSLATORS: Shown when Services > Scribe > Convert Document finds the reader signed out
-		Error::NotSignedIn => t("Sign in to Scribe again, on the Scribe tab of Settings."),
-		// TRANSLATORS: Shown when a Scribe conversion fails and Scribe gives no reason
-		Error::Failed(None) => t("Scribe couldn't convert the document."),
-		other => other.to_string(),
-	};
+	let reason = describe(error);
 	tracing::warn!(%error, "the Scribe conversion failed");
 	if !has_pages {
 		write_and_reload(dm, output, &status_page(name, &reason));
 	}
 	show_error(frame, reason, &title());
+}
+
+pub(crate) fn describe(error: &Error) -> String {
+	match error {
+		// TRANSLATORS: Shown when Scribe finds the reader signed out
+		Error::NotSignedIn => t("Sign in to Scribe again, on the Scribe tab of Settings."),
+		// TRANSLATORS: Shown when a Scribe conversion fails and Scribe gives no reason
+		Error::Failed(None) => t("Scribe couldn't convert the document."),
+		other => other.to_string(),
+	}
 }
 
 #[cfg(test)]
@@ -329,6 +381,13 @@ mod tests {
 		let cost = cost(Some(30), Some(5));
 		assert!(cost.starts_with("Converting it all takes 30 pages. You have 5 pages left."), "{cost}");
 		assert!(cost.contains("preview"), "{cost}");
+	}
+
+	#[test]
+	fn a_title_names_the_copy_without_characters_windows_refuses() {
+		assert_eq!(file_name("Q3: Sales/Costs?"), "Q3_ Sales_Costs_");
+		assert_eq!(file_name(" notes. "), "notes");
+		assert_eq!(file_name("..."), "Scribe");
 	}
 
 	#[test]

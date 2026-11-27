@@ -104,6 +104,8 @@ seq_ids!(BASE + 510 => PAGE_LAYOUT_SHARED, PAGE_LAYOUT_AUTOMATIC, PAGE_LAYOUT_CO
 
 #[cfg(target_os = "windows")]
 pub const CONVERT_WITH_SCRIBE: i32 = BASE + 520;
+#[cfg(target_os = "windows")]
+pub const MY_SCRIBE_DOCUMENTS: i32 = BASE + 521;
 
 /// The View menu's page layout items and what each gives the open document, `None` following the app's own.
 pub const PAGE_LAYOUTS: [(i32, Option<paperback_core::document::PageLayout>); 4] = {

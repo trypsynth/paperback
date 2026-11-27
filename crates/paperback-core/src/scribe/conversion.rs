@@ -1,13 +1,15 @@
-//! One document's conversion: the upload, then its pages as Scribe streams them. Uploading starts the conversion, and it is charged: the stream is the whole document, not a preview.
+//! One document's conversion: the upload, then its pages as Scribe streams them. Uploading starts the conversion, and it is charged: the stream is the whole document, not a preview. A document reopened from the account comes back the same way where the server sends the pages again, and otherwise as HTML Scribe makes of it, which costs nothing more.
 
 use std::{collections::BTreeMap, path::Path, time::Duration};
 
-use scribe_client::{ChannelEvent, DocumentChannel, DocumentSource, OutputFormat, ScribeError, Stage};
+use scribe_client::{ChannelEvent, DocumentChannel, DocumentSource, DocumentSummary, OutputFormat, ScribeError, Stage};
 
 use super::{Error, Scribe};
 
 /// Scribe drops a channel now and then, as when it restarts, and the conversion carries on without it.
 const RECONNECTS: u32 = 5;
+/// A server that sends a finished document's pages again sends them as the channel opens.
+const REPLAY_WAIT: Duration = Duration::from_secs(2);
 
 /// What changed since the last [`Conversion::next`].
 #[derive(Clone, Debug, PartialEq)]
@@ -29,6 +31,13 @@ pub struct Conversion {
 	chunks: BTreeMap<u64, String>,
 	channel: Option<DocumentChannel>,
 	reconnects: u32,
+	/// Opened from the account rather than uploaded, so the pages before now may not come again.
+	reopened: bool,
+	/// Scribe has the document as HTML of its own, to download rather than stream.
+	html_ready: bool,
+	/// Scribe was asked for that HTML, as the stream came back without every page.
+	html_requested: bool,
+	html: Option<String>,
 }
 
 impl Scribe {
@@ -43,11 +52,49 @@ impl Scribe {
 		let title = path.file_stem().map(|stem| stem.to_string_lossy().into_owned()).unwrap_or_default();
 		Ok(Conversion::new(created.document_id, title))
 	}
+
+	/// The documents in the reader's account, newest first.
+	///
+	/// # Errors
+	///
+	/// [`Error::NotSignedIn`], or what the server said.
+	pub async fn documents(&self) -> Result<Vec<DocumentSummary>, Error> {
+		Ok(self.call(async |client| client.list_documents().await).await?.documents)
+	}
+
+	/// Scribe deletes a trashed document for good after 7 days, and the website can recover it until then.
+	///
+	/// # Errors
+	///
+	/// [`Error::NotSignedIn`], or what the server said.
+	pub async fn trash(&self, document_id: &str) -> Result<(), Error> {
+		self.call(async |client| client.trash_document(document_id).await).await
+	}
 }
 
 impl Conversion {
 	fn new(document_id: String, title: String) -> Self {
-		Self { document_id, title, chunks: BTreeMap::new(), channel: None, reconnects: 0 }
+		Self {
+			document_id,
+			title,
+			chunks: BTreeMap::new(),
+			channel: None,
+			reconnects: 0,
+			reopened: false,
+			html_ready: false,
+			html_requested: false,
+			html: None,
+		}
+	}
+
+	/// A document already in the reader's account, whether Scribe has finished it or not.
+	#[must_use]
+	pub fn reopen(document: &DocumentSummary) -> Self {
+		let mut conversion = Self::new(document.id.clone(), document.title.clone().unwrap_or_default());
+		conversion.reopened = true;
+		conversion.html_ready =
+			document.outputs.iter().any(|output| output.format == OutputFormat::Html && output.stage.is_complete());
+		conversion
 	}
 
 	/// Waits for the next change, reconnecting when the channel drops.
@@ -57,12 +104,27 @@ impl Conversion {
 	/// [`Error::Failed`] with Scribe's reason when the conversion fails, or what the server said when the channel can't be opened again.
 	pub async fn next(&mut self, scribe: &Scribe) -> Result<Update, Error> {
 		loop {
+			if self.html_ready && self.html.is_none() {
+				self.download(scribe).await?;
+				return Ok(Update::Complete);
+			}
 			let channel = self.channel(scribe).await?;
 			match channel.next_event().await {
 				Ok(event) => {
 					self.reconnects = 0;
-					if let Some(update) = self.apply(event)? {
-						return Ok(update);
+					match self.apply(event)? {
+						Some(Update::Complete) if self.reopened && !self.has_every_page() => {
+							if !self.html_requested {
+								self.await_replay().await?;
+								if self.has_every_page() {
+									return Ok(Update::Complete);
+								}
+								self.request_html(scribe).await?;
+								return Ok(Update::Stage { stage: Stage::Start, progress: 0.0 });
+							}
+						}
+						Some(update) => return Ok(update),
+						None => {}
 					}
 				}
 				Err(error @ (ScribeError::WebSocket(_) | ScribeError::ChannelClosed)) => self.dropped(error).await?,
@@ -79,6 +141,36 @@ impl Conversion {
 	pub async fn unlock(&mut self, scribe: &Scribe, password: &str) -> Result<(), Error> {
 		let channel = self.channel(scribe).await?;
 		channel.start_conversion(OutputFormat::HtmlStream, Some(password)).await?;
+		Ok(())
+	}
+
+	/// Takes the pages a server sends again as the channel opens, until it goes quiet.
+	async fn await_replay(&mut self) -> Result<(), Error> {
+		let Some(mut channel) = self.channel.take() else { return Ok(()) };
+		while let Ok(event) = tokio::time::timeout(REPLAY_WAIT, channel.next_event()).await {
+			// A dropped channel is opened again by the next call that needs it.
+			let Ok(event) = event else { return Ok(()) };
+			self.apply(event)?;
+		}
+		self.channel = Some(channel);
+		Ok(())
+	}
+
+	/// Asks Scribe to make HTML of the whole document, which [`Self::next`] downloads when it's done. A conversion already running, such as one asked for when the document was last opened, is waited for instead.
+	async fn request_html(&mut self, scribe: &Scribe) -> Result<(), Error> {
+		let channel = self.channel(scribe).await?;
+		match channel.start_conversion(OutputFormat::Html, None).await {
+			Ok(_) | Err(ScribeError::ConversionInProgress { .. }) => {}
+			Err(error) => return Err(error.into()),
+		}
+		self.html_requested = true;
+		Ok(())
+	}
+
+	async fn download(&mut self, scribe: &Scribe) -> Result<(), Error> {
+		let id = self.document_id.clone();
+		let download = scribe.call(async |client| client.download_output(&id, OutputFormat::Html).await).await?;
+		self.html = Some(String::from_utf8_lossy(&download.data).into_owned());
 		Ok(())
 	}
 
@@ -120,6 +212,14 @@ impl Conversion {
 				let index = index.unwrap_or_else(|| self.chunks.last_key_value().map_or(0, |(last, _)| last + 1));
 				self.chunks.insert(index, content).is_none().then_some(Update::Pages)
 			}
+			ChannelEvent::Status { format: OutputFormat::Html, stage: Stage::Complete, .. }
+			| ChannelEvent::ConversionComplete { format: OutputFormat::Html, .. } => {
+				self.html_ready = true;
+				None
+			}
+			ChannelEvent::Status { format: OutputFormat::Html, stage, progress } if self.html_requested => {
+				Some(Update::Stage { stage, progress })
+			}
 			ChannelEvent::PasswordRequired => Some(Update::PasswordRequired),
 			ChannelEvent::Error { reason, .. } if reason == "invalid_password" => Some(Update::PasswordRequired),
 			ChannelEvent::Error { message, .. } => return Err(Error::Failed(message)),
@@ -129,12 +229,20 @@ impl Conversion {
 
 	#[must_use]
 	pub fn has_pages(&self) -> bool {
-		!self.chunks.is_empty()
+		!self.chunks.is_empty() || self.html.is_some()
+	}
+
+	/// Every page from the first, with none missing, as a reopened document has when the server sent them all again.
+	fn has_every_page(&self) -> bool {
+		!self.chunks.is_empty() && self.chunks.keys().copied().eq(0..self.chunks.len() as u64)
 	}
 
 	/// The pages so far as one page of HTML. The chunks are fragments of its body, as Scribe's own reading view joins them.
 	#[must_use]
 	pub fn html(&self) -> String {
+		if let Some(html) = &self.html {
+			return html.clone();
+		}
 		let body: String = self.chunks.values().map(String::as_str).collect();
 		page(&self.title, &body)
 	}
@@ -259,6 +367,42 @@ mod tests {
 		assert_eq!(pages_to_convert(Path::new("Report.docx")), None);
 		assert_eq!(pages_to_convert(Path::new("Fax.tiff")), None);
 		assert_eq!(pages_to_convert(Path::new("Missing.pdf")), None);
+	}
+
+	fn summary(outputs: &serde_json::Value) -> DocumentSummary {
+		serde_json::from_value(serde_json::json!({
+			"id": "doc", "title": "Book", "page_count": 2, "inserted_at": "2026-11-27T03:53:52Z", "outputs": outputs
+		}))
+		.unwrap()
+	}
+
+	fn output(format: &str, stage: &str) -> serde_json::Value {
+		serde_json::json!({"format": format, "stage": stage, "progress": 1.0, "estimated_time_remaining": null, "is_preview": false})
+	}
+
+	#[test]
+	fn a_reopened_document_with_html_is_downloaded_rather_than_streamed() {
+		assert!(Conversion::reopen(&summary(&serde_json::json!([output("html", "complete")]))).html_ready);
+		assert!(!Conversion::reopen(&summary(&serde_json::json!([output("html_stream", "complete")]))).html_ready);
+		assert!(!Conversion::reopen(&summary(&serde_json::json!([output("html", "convert")]))).html_ready);
+	}
+
+	#[test]
+	fn pages_sent_again_are_whole_only_from_the_first_with_none_missing() {
+		let mut conversion = Conversion::reopen(&summary(&serde_json::json!([])));
+		assert!(!conversion.has_every_page());
+		conversion.apply(chunk(Some(1), "b")).unwrap();
+		assert!(!conversion.has_every_page(), "the first page is missing");
+		conversion.apply(chunk(Some(0), "a")).unwrap();
+		assert!(conversion.has_every_page());
+	}
+
+	#[test]
+	fn finished_html_is_noted_for_downloading() {
+		let mut conversion = Conversion::reopen(&summary(&serde_json::json!([])));
+		let done = ChannelEvent::ConversionComplete { format: OutputFormat::Html, output_id: "o".to_string() };
+		assert_eq!(conversion.apply(done).unwrap(), None);
+		assert!(conversion.html_ready);
 	}
 
 	#[test]

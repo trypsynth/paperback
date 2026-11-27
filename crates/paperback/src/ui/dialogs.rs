@@ -65,6 +65,10 @@ pub use open_url::{confirm_download, show_open_url_dialog};
 mod options;
 pub(crate) use options::AUDIO_SEEK_AMOUNTS_SECONDS;
 pub use options::{OptionsContext, OptionsDialogResult, PlaySample, show_options_dialog};
+#[cfg(target_os = "windows")]
+mod scribe_documents;
+#[cfg(target_os = "windows")]
+pub use scribe_documents::show_scribe_documents;
 mod shortcuts;
 pub use shortcuts::{Keymap, prompt_for_shortcuts};
 mod sleep_timer;

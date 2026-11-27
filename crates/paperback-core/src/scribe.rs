@@ -15,7 +15,9 @@ use std::{
 mod conversion;
 
 pub use conversion::{Conversion, Update, pages_to_convert, status_page};
-pub use scribe_client::{AccountInfo, BrailleTable, Dialect, Language, Settings, SettingsUpdate, Stage, Voice};
+pub use scribe_client::{
+	AccountInfo, BrailleTable, Dialect, DocumentSummary, Language, Settings, SettingsUpdate, Stage, Voice,
+};
 use scribe_client::{
 	AuthClient, DELETE_ACCOUNT_PATH, PkceChallenge, ScribeClient, ScribeError, TokenSet, Url, reqwest,
 };
