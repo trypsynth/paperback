@@ -2,7 +2,14 @@
 
 use std::{
 	collections::HashMap,
-	sync::{Arc, Mutex, PoisonError},
+	io::{self, Read, Write},
+	net::{Ipv4Addr, TcpListener, TcpStream},
+	sync::{
+		Arc, Mutex, PoisonError,
+		atomic::{AtomicBool, Ordering},
+	},
+	thread,
+	time::{Duration, Instant},
 };
 
 pub use scribe_client::{AccountInfo, BrailleTable, Dialect, Language, Settings, SettingsUpdate, Voice};
@@ -14,6 +21,8 @@ use scribe_client::{
 pub const CLIENT_ID: &str = "caaff386e53250d3130b246aee5b4a271b65bb5095cf448fdab2e7780a2a94df";
 const BASE_URL: &str = "https://scribeit.io";
 const ACCOUNT_PATH: &str = "/settings";
+/// Scribe registered `http://127.0.0.1/oauth/scribe` for Paperback, on any port.
+const LOOPBACK_PATH: &str = "/oauth/scribe";
 
 /// Where an app keeps the refresh token between runs, such as Credential Manager on Windows.
 pub trait TokenStore: Send + Sync {
@@ -258,6 +267,91 @@ impl Scribe {
 	/// [`Error::NotSignedIn`], or what the server said.
 	pub async fn delete_account_url(&self) -> Result<String, Error> {
 		self.call(async |client| client.browser_entry_url(DELETE_ACCOUNT_PATH).await).await
+	}
+}
+
+/// Where a desktop sign-in's browser comes back to: a port of its own on 127.0.0.1.
+pub struct Loopback {
+	listener: TcpListener,
+	port: u16,
+}
+
+impl Loopback {
+	/// # Errors
+	///
+	/// When no port can be opened on 127.0.0.1.
+	pub fn bind() -> io::Result<Self> {
+		let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0))?;
+		listener.set_nonblocking(true)?;
+		let port = listener.local_addr()?.port();
+		Ok(Self { listener, port })
+	}
+
+	#[must_use]
+	pub fn redirect_uri(&self) -> String {
+		format!("http://127.0.0.1:{}{LOOPBACK_PATH}", self.port)
+	}
+
+	/// Blocks until the browser comes back, showing it `message` in `language`, or gives `None` once `cancelled` is set or `timeout` passes.
+	pub fn wait(self, cancelled: &AtomicBool, timeout: Duration, language: &str, message: &str) -> Option<Url> {
+		let deadline = Instant::now() + timeout;
+		while !cancelled.load(Ordering::Relaxed) && Instant::now() < deadline {
+			match self.listener.accept() {
+				Ok((stream, _)) => {
+					if let Some(redirect) = self.answer(stream, language, message) {
+						return Some(redirect);
+					}
+				}
+				Err(error) if error.kind() == io::ErrorKind::WouldBlock => thread::sleep(Duration::from_millis(50)),
+				Err(error) => {
+					tracing::warn!(%error, "the Scribe sign-in listener failed");
+					return None;
+				}
+			}
+		}
+		None
+	}
+
+	/// The redirect `stream` brings, or `None` for anything else the browser asks for, such as its icon.
+	fn answer(&self, mut stream: TcpStream, language: &str, message: &str) -> Option<Url> {
+		// On Windows an accepted socket is nonblocking like its listener, and the request may not have arrived yet.
+		let _ = stream.set_nonblocking(false);
+		let _ = stream.set_read_timeout(Some(Duration::from_secs(5)));
+		let mut request = [0; 8192];
+		let read = stream.read(&mut request).unwrap_or(0);
+		let request = String::from_utf8_lossy(&request[..read]);
+		let target = request.lines().next().and_then(|line| line.strip_prefix("GET ")?.split(' ').next());
+		let redirect = target
+			.and_then(|target| Url::parse(&format!("http://127.0.0.1:{}{target}", self.port)).ok())
+			.filter(|url| url.path() == LOOPBACK_PATH);
+		let response = if redirect.is_some() {
+			let escape = |text: &str| {
+				text.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;")
+			};
+			let page = format!(
+				"<!DOCTYPE html><html lang=\"{}\"><meta charset=\"utf-8\"><title>Paperback</title><p>{}</p></html>",
+				escape(language),
+				escape(message)
+			);
+			format!(
+				"HTTP/1.1 200 OK
+Content-Type: text/html; charset=utf-8
+Content-Length: {}
+Connection: close
+
+{page}",
+				page.len()
+			)
+		} else {
+			"HTTP/1.1 404 Not Found
+Content-Length: 0
+Connection: close
+
+"
+			.to_string()
+		};
+		let _ = stream.write_all(response.as_bytes());
+		redirect
 	}
 }
 

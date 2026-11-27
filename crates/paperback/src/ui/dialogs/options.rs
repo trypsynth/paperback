@@ -15,6 +15,8 @@ mod documents;
 mod font;
 mod general;
 mod reading;
+#[cfg(target_os = "windows")]
+mod scribe;
 mod speech_dictionary;
 
 pub use advanced::AdvancedSettings;
@@ -88,7 +90,11 @@ pub fn show_options_dialog(
 	let appearance = appearance::AppearanceTab::new(appearance_panel, dialog, &initial.appearance, padding);
 	let documents = documents::DocumentsTab::new(documents_panel, &initial.documents, padding);
 	let advanced = advanced::AdvancedTab::new(advanced_panel, initial.advanced, padding);
-	let tabs = [
+	#[cfg(target_os = "windows")]
+	let scribe_panel = page();
+	#[cfg(target_os = "windows")]
+	let _scribe = scribe::ScribeTab::new(scribe_panel);
+	let mut tabs = vec![
 		// TRANSLATORS: Tab label for the General options panel
 		(general_panel, t("General")),
 		// TRANSLATORS: Tab label for the Reading options panel, about moving through and searching a document
@@ -99,9 +105,12 @@ pub fn show_options_dialog(
 		(appearance_panel, t("Appearance")),
 		// TRANSLATORS: Tab label for the Settings panel about how a file is read, such as whether tables are shown inline
 		(documents_panel, t("Documents")),
-		// TRANSLATORS: Tab label for the Settings panel with options most people never need, such as the update channel and log level
-		(advanced_panel, t("Advanced")),
 	];
+	// TRANSLATORS: Tab label for the Settings panel for signing in to Scribe for Documents, Pneuma Solutions' document conversion service
+	#[cfg(target_os = "windows")]
+	tabs.push((scribe_panel, t("Scribe")));
+	// TRANSLATORS: Tab label for the Settings panel with options most people never need, such as the update channel and log level
+	tabs.push((advanced_panel, t("Advanced")));
 	for (index, (panel, label)) in tabs.iter().enumerate() {
 		panel.set_accessibility_label(label);
 		#[cfg(target_os = "windows")]

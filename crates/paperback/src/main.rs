@@ -15,6 +15,8 @@ mod problem_report;
 mod read_aloud;
 #[cfg(any(target_os = "windows", test))]
 mod rtf;
+#[cfg(target_os = "windows")]
+mod scribe;
 mod shell;
 #[cfg(test)]
 mod test_locale;

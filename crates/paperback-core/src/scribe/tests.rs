@@ -1,4 +1,8 @@
-use std::sync::{Arc, Mutex};
+use std::{
+	io::{Read, Write},
+	net::TcpStream,
+	sync::{Arc, Mutex},
+};
 
 use super::*;
 
@@ -107,4 +111,54 @@ fn the_calls_can_run_on_another_thread() {
 fn a_tls_connection_can_be_configured_without_naming_a_provider() {
 	let _scribe = offline(&MemoryStore::default());
 	let _config = rustls::ClientConfig::builder();
+}
+
+/// Sends `target` to `uri`'s port as the browser would, and gives back the response.
+fn visit(uri: &str, target: &str) -> String {
+	let port = Url::parse(uri).unwrap().port().unwrap();
+	let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+	write!(
+		stream,
+		"GET {target} HTTP/1.1
+Host: 127.0.0.1:{port}
+
+"
+	)
+	.unwrap();
+	let mut response = String::new();
+	stream.read_to_string(&mut response).unwrap();
+	response
+}
+
+fn wait_in_background(loopback: Loopback) -> std::thread::JoinHandle<Option<Url>> {
+	std::thread::spawn(move || loopback.wait(&AtomicBool::new(false), Duration::from_secs(10), "de", "Fertig & zurück"))
+}
+
+#[test]
+fn the_browser_coming_back_ends_the_wait() {
+	let loopback = Loopback::bind().unwrap();
+	let uri = loopback.redirect_uri();
+	assert!(uri.starts_with("http://127.0.0.1:") && uri.ends_with("/oauth/scribe"), "{uri}");
+	let waiting = wait_in_background(loopback);
+	let response = visit(&uri, "/oauth/scribe?code=abc&state=xyz");
+	assert!(response.starts_with("HTTP/1.1 200"), "{response}");
+	assert!(response.contains(r#"lang="de""#) && response.contains("Fertig &amp; zurück"), "{response}");
+	let redirect = waiting.join().unwrap().unwrap();
+	assert_eq!(redirect.query(), Some("code=abc&state=xyz"));
+}
+
+#[test]
+fn other_requests_are_turned_away_while_waiting() {
+	let loopback = Loopback::bind().unwrap();
+	let uri = loopback.redirect_uri();
+	let waiting = wait_in_background(loopback);
+	assert!(visit(&uri, "/favicon.ico").starts_with("HTTP/1.1 404"));
+	visit(&uri, "/oauth/scribe?code=abc");
+	assert!(waiting.join().unwrap().is_some());
+}
+
+#[test]
+fn a_cancelled_or_timed_out_wait_gives_nothing() {
+	assert!(Loopback::bind().unwrap().wait(&AtomicBool::new(true), Duration::from_secs(10), "en", "").is_none());
+	assert!(Loopback::bind().unwrap().wait(&AtomicBool::new(false), Duration::ZERO, "en", "").is_none());
 }

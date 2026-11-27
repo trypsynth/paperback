@@ -226,6 +226,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-task"
+version = "4.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b75356056920673b02621b35afd0f7dda9306d03c79a30f5c56c44cf256e3de"
+
+[[package]]
 name = "atomic-waker"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6507,9 +6513,11 @@ name = "wx-utils"
 version = "0.5.3"
 source = "git+https://github.com/accessware/wx-utils?rev=ce1deed7ad906db8e50b12f7c20bf813afd8ef88#ce1deed7ad906db8e50b12f7c20bf813afd8ef88"
 dependencies = [
+ "async-task",
  "key-chord",
  "live-region",
  "patois",
+ "tokio",
  "tracing",
  "windows",
  "wxdragon",
