@@ -13,6 +13,8 @@ mod edit_menu;
 mod file_menu;
 mod go_menu;
 mod help_menu;
+#[cfg(target_os = "windows")]
+mod services_menu;
 mod state;
 mod tools_menu;
 mod view_menu;
@@ -22,21 +24,24 @@ use builder::{build_menu, claim_access_key, deduplicate_access_keys};
 pub use file_menu::recent_documents_for_menu;
 pub use state::{update_menu_item_states, update_reopen_state};
 
+/// `category` is `None` for a menu whose items have no shortcuts of their own, as the Services menu's don't yet.
 pub struct TopMenu {
-	pub category: ShortcutCategory,
+	pub category: Option<ShortcutCategory>,
 	pub entries: Vec<MenuEntry>,
 }
 
 pub fn menus(config: &ConfigManager, compact_go: bool) -> Vec<TopMenu> {
 	let mut menus = vec![
-		TopMenu { category: ShortcutCategory::File, entries: file_menu::entries(config) },
-		TopMenu { category: ShortcutCategory::Edit, entries: edit_menu::entries(config) },
-		TopMenu { category: ShortcutCategory::View, entries: view_menu::entries(config) },
-		TopMenu { category: ShortcutCategory::Go, entries: go_menu::entries(config, compact_go) },
-		TopMenu { category: ShortcutCategory::Bookmarks, entries: bookmarks_menu::entries(config) },
-		TopMenu { category: ShortcutCategory::Audio, entries: audio_menu::entries(config) },
-		TopMenu { category: ShortcutCategory::Tools, entries: tools_menu::entries(config) },
-		TopMenu { category: ShortcutCategory::Help, entries: help_menu::entries(config) },
+		TopMenu { category: Some(ShortcutCategory::File), entries: file_menu::entries(config) },
+		TopMenu { category: Some(ShortcutCategory::Edit), entries: edit_menu::entries(config) },
+		TopMenu { category: Some(ShortcutCategory::View), entries: view_menu::entries(config) },
+		TopMenu { category: Some(ShortcutCategory::Go), entries: go_menu::entries(config, compact_go) },
+		TopMenu { category: Some(ShortcutCategory::Bookmarks), entries: bookmarks_menu::entries(config) },
+		TopMenu { category: Some(ShortcutCategory::Audio), entries: audio_menu::entries(config) },
+		TopMenu { category: Some(ShortcutCategory::Tools), entries: tools_menu::entries(config) },
+		#[cfg(target_os = "windows")]
+		TopMenu { category: None, entries: services_menu::entries() },
+		TopMenu { category: Some(ShortcutCategory::Help), entries: help_menu::entries(config) },
 	];
 	for menu in &mut menus {
 		deduplicate_access_keys(&mut menu.entries);
@@ -56,7 +61,11 @@ fn titles(menus: &[TopMenu]) -> Vec<String> {
 		.collect()
 }
 
-fn title(category: ShortcutCategory) -> String {
+fn title(category: Option<ShortcutCategory>) -> String {
+	let Some(category) = category else {
+		// TRANSLATORS: Top-level "Services" menu label in the menu bar, for online services such as Scribe for Documents
+		return t("&Services");
+	};
 	match category {
 		// TRANSLATORS: Top-level "File" menu label in the menu bar
 		ShortcutCategory::File => t("&File"),
@@ -278,7 +287,7 @@ mod tests {
 	#[test]
 	fn menus_follow_the_shortcut_categories_in_order() {
 		let categories: Vec<ShortcutCategory> =
-			menus(&ConfigManager::new(), true).iter().map(|menu| menu.category).collect();
+			menus(&ConfigManager::new(), true).iter().filter_map(|menu| menu.category).collect();
 		assert_eq!(categories, ShortcutCategory::all());
 	}
 
@@ -290,7 +299,7 @@ mod tests {
 			let mut found = Vec::new();
 			ids(&menu.entries, &mut found);
 			for action in found.into_iter().filter_map(action_for) {
-				assert_eq!(action.category(), menu.category, "{action:?} is in the {:?} menu", menu.category);
+				assert_eq!(Some(action.category()), menu.category, "{action:?} is in the {:?} menu", menu.category);
 			}
 		}
 	}

@@ -102,6 +102,9 @@ seq_ids!(BASE + 500 => VIEW_HELP_BROWSER, VIEW_HELP_PAPERBACK, CHECK_FOR_UPDATES
 
 seq_ids!(BASE + 510 => PAGE_LAYOUT_SHARED, PAGE_LAYOUT_AUTOMATIC, PAGE_LAYOUT_COLUMNS, PAGE_LAYOUT_LINES);
 
+#[cfg(target_os = "windows")]
+pub const CONVERT_WITH_SCRIBE: i32 = BASE + 520;
+
 /// The View menu's page layout items and what each gives the open document, `None` following the app's own.
 pub const PAGE_LAYOUTS: [(i32, Option<paperback_core::document::PageLayout>); 4] = {
 	use paperback_core::document::PageLayout;

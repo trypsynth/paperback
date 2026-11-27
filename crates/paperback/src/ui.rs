@@ -26,6 +26,8 @@ mod reader_input;
 mod reader_units;
 #[cfg(target_os = "windows")]
 mod rtf_stream;
+#[cfg(target_os = "windows")]
+mod scribe_conversion;
 mod selection;
 mod sleep_timer;
 mod sounds;

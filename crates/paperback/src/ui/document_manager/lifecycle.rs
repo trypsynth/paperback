@@ -44,6 +44,13 @@ impl DocumentManager {
 		self.parse_and_add_tab(self_rc, Path::new(link), Some(copy), true, None)
 	}
 
+	/// A document Paperback writes and doesn't keep, such as a Scribe conversion, so it stays out of recent documents and the next session.
+	#[cfg(target_os = "windows")]
+	pub fn open_untracked_copy(&mut self, self_rc: &Rc<Mutex<Self>>, copy: WorkingCopy, title: &str) -> bool {
+		let path = copy.path().to_path_buf();
+		self.parse_and_add_tab(self_rc, &path, Some(copy), false, Some(title))
+	}
+
 	fn open_file_impl(
 		&mut self,
 		self_rc: &Rc<Mutex<Self>>,

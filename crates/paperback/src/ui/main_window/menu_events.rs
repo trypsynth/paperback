@@ -148,6 +148,10 @@ impl MainWindow {
 				menu_ids::IMPORT_DOCUMENT_DATA => {
 					menu_file::handle_import_document_data(&frame_copy, &dm, &config);
 				}
+				#[cfg(target_os = "windows")]
+				menu_ids::CONVERT_WITH_SCRIBE => {
+					crate::ui::scribe_conversion::convert_with_scribe(&frame_copy, &dm, live_region_label);
+				}
 				menu_ids::WORD_COUNT => {
 					menu_tools::handle_word_count(&frame_copy, &dm, &config);
 				}

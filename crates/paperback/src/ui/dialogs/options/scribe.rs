@@ -266,6 +266,6 @@ fn describe(error: &Error) -> String {
 		Error::Cancelled => t("Sign-in cancelled."),
 		// TRANSLATORS: Shown on the Scribe tab of Settings when the browser comes back with an answer that doesn't belong to this sign-in
 		Error::WrongState | Error::NoCode => t("The sign-in didn't finish. Please try again."),
-		Error::Scribe(error) => error.to_string(),
+		Error::Scribe(_) | Error::Failed(_) => error.to_string(),
 	}
 }

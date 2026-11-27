@@ -12,7 +12,10 @@ use std::{
 	time::{Duration, Instant},
 };
 
-pub use scribe_client::{AccountInfo, BrailleTable, Dialect, Language, Settings, SettingsUpdate, Voice};
+mod conversion;
+
+pub use conversion::{Conversion, Update, status_page};
+pub use scribe_client::{AccountInfo, BrailleTable, Dialect, Language, Settings, SettingsUpdate, Stage, Voice};
 use scribe_client::{
 	AuthClient, DELETE_ACCOUNT_PATH, PkceChallenge, ScribeClient, ScribeError, TokenSet, Url, reqwest,
 };
@@ -42,6 +45,9 @@ pub enum Error {
 	WrongState,
 	#[error("Scribe sent back no sign-in code")]
 	NoCode,
+	/// Scribe's reason, in the reader's language, from servers that send one.
+	#[error("{}", .0.as_deref().unwrap_or("the conversion failed"))]
+	Failed(Option<String>),
 	/// Its `Display` is the server's own sentence, in the locale the client was made with.
 	#[error(transparent)]
 	Scribe(#[from] ScribeError),

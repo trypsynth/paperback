@@ -131,6 +131,17 @@ impl DocumentManager {
 		if !tab.track {
 			return false;
 		}
+		self.reparse(index, forced)
+	}
+
+	/// For an untracked document Paperback writes itself, such as a Scribe conversion still arriving.
+	#[cfg(target_os = "windows")]
+	pub fn refresh_tab(&mut self, index: usize) -> bool {
+		index < self.tabs.len() && self.reparse(index, true)
+	}
+
+	fn reparse(&mut self, index: usize, forced: bool) -> bool {
+		let tab = &self.tabs[index];
 		let Some(current) = read_fingerprint(tab.local_path()) else {
 			return false;
 		};
@@ -252,6 +263,12 @@ fn reparse_tab_in_place(
 		}
 	};
 	let unchanged = new_session.handle().document().buffer.content == tab.session.handle().document().buffer.content;
+	// Text that only changed after the caret, as a document still arriving does, keeps the reader where they were rather than moving them in proportion.
+	let unmoved = unchanged || {
+		let (old, new) =
+			(&tab.session.handle().document().buffer.content, &new_session.handle().document().buffer.content);
+		old.chars().zip(new.chars()).take_while(|(old, new)| old == new).count() >= pos.get()
+	};
 	tab.session = new_session;
 	let local_path = tab.local_path().to_path_buf();
 	restore_saved_pages(
@@ -262,7 +279,7 @@ fn reparse_tab_in_place(
 	// Scaled by length rather than through the whole-number percentage, which in a book of millions of characters is tens of thousands off.
 	let doc_len = tab.session.document_len();
 	let proportional = || DocPos::from_raw(pos.get().saturating_mul(doc_len.get()) / old_len);
-	let restored_pos = if unchanged {
+	let restored_pos = if unmoved {
 		pos
 	} else if let Some((ref key, within)) = stable_anchor {
 		tab.session

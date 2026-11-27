@@ -23,7 +23,7 @@ required-features = ["uniffi"]
 
 [features]
 fetch = ["dep:ureq"]
-scribe = ["dep:scribe-client", "dep:rustls", "dep:futures-util"]
+scribe = ["dep:scribe-client", "dep:rustls", "dep:futures-util", "dep:tokio"]
 uniffi = ["dep:uniffi"]
 
 [dependencies]
@@ -76,6 +76,8 @@ rustls = { version = "0.23.46", default-features = false, features = ["ring", "s
 scribe-client = { version = "0.4.1", default-features = false, features = ["rustls-no-provider"], optional = true }
 # To load the lists the Scribe settings choose from at once.
 futures-util = { version = "0.3.34", default-features = false, optional = true }
+# To wait before reconnecting a dropped conversion channel.
+tokio = { version = "1.54.1", default-features = false, features = ["time"], optional = true }
 scraper = "0.29.0"
 serde = { version = "1.0.229", default-features = false, features = ["derive", "std"] }
 serde_json = { workspace = true }
