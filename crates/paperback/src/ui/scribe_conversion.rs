@@ -45,10 +45,13 @@ pub fn convert_with_scribe(frame: &Frame, dm: &Rc<Mutex<DocumentManager>>, live_
 	let open = dm.lock().unwrap().active_tab().map(|tab| tab.file_path.clone()).filter(|path| path.is_file());
 	let (frame, dm) = (*frame, Rc::clone(dm));
 	spawn_for(&frame, async move {
-		let Some(mut source) = open.or_else(|| choose(frame, None)) else { return };
+		let Some(mut source) = open.clone().or_else(|| choose(frame, None)) else { return };
 		loop {
 			match confirm(frame, &source).await {
-				ID_YES => return start(frame, dm, live_region, source).await,
+				ID_YES => {
+					let replacing = open.as_deref() == Some(source.as_path());
+					return start(frame, dm, live_region, source, replacing).await;
+				}
 				ID_NO => match choose(frame, source.parent()) {
 					Some(chosen) => source = chosen,
 					None => return,
@@ -135,7 +138,14 @@ fn choose(frame: Frame, folder: Option<&Path>) -> Option<PathBuf> {
 	(picker.show_modal() == ID_OK).then(|| picker.get_path()).flatten().map(PathBuf::from)
 }
 
-async fn start(frame: Frame, dm: Rc<Mutex<DocumentManager>>, live_region: StaticText, source: PathBuf) {
+/// `replacing` puts the conversion in the original's tab, as for a document of scanned pages nobody wants two tabs of; closing it there lets Reopen Last Closed bring the original back.
+async fn start(
+	frame: Frame,
+	dm: Rc<Mutex<DocumentManager>>,
+	live_region: StaticText,
+	source: PathBuf,
+	replacing: bool,
+) {
 	let name = source.file_stem().map(|stem| stem.to_string_lossy().into_owned()).unwrap_or_default();
 	// TRANSLATORS: Tab title of a document converting with Scribe. %s is the original's name without its extension.
 	let tab_title = t("%s (Scribe)").replacen("%s", &name, 1);
@@ -158,10 +168,18 @@ async fn start(frame: Frame, dm: Rc<Mutex<DocumentManager>>, live_region: Static
 		}
 	};
 	let output = copy.path().to_path_buf();
-	if !dm.lock().unwrap().open_untracked_copy(&dm, copy, &tab_title) {
+	let at = replacing.then(|| dm.lock().unwrap().find_tab_by_path(&source)).flatten();
+	if let Some(index) = at {
+		dm.lock().unwrap().close_document(index, true);
+	}
+	if !dm.lock().unwrap().open_untracked_copy(&dm, copy, &tab_title, at) {
 		return;
 	}
-	update_title_from_manager(&frame, &dm.lock().unwrap());
+	{
+		let dm_ref = dm.lock().unwrap();
+		update_title_from_manager(&frame, &dm_ref);
+		dm_ref.focus_document_text();
+	}
 	convert(frame, dm, live_region, source, output, name).await;
 }
 

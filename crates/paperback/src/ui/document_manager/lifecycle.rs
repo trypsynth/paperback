@@ -41,14 +41,20 @@ impl DocumentManager {
 	}
 
 	pub fn open_link(&mut self, self_rc: &Rc<Mutex<Self>>, link: &str, copy: WorkingCopy) -> bool {
-		self.parse_and_add_tab(self_rc, Path::new(link), Some(copy), true, None)
+		self.parse_and_add_tab(self_rc, Path::new(link), Some(copy), true, None, None)
 	}
 
-	/// A document Paperback writes and doesn't keep, such as a Scribe conversion, so it stays out of recent documents and the next session.
+	/// A document Paperback writes and doesn't keep, such as a Scribe conversion, so it stays out of recent documents and the next session. `at` is the tab it goes in front of, or the end when `None`.
 	#[cfg(target_os = "windows")]
-	pub fn open_untracked_copy(&mut self, self_rc: &Rc<Mutex<Self>>, copy: WorkingCopy, title: &str) -> bool {
+	pub fn open_untracked_copy(
+		&mut self,
+		self_rc: &Rc<Mutex<Self>>,
+		copy: WorkingCopy,
+		title: &str,
+		at: Option<usize>,
+	) -> bool {
 		let path = copy.path().to_path_buf();
-		self.parse_and_add_tab(self_rc, &path, Some(copy), false, Some(title))
+		self.parse_and_add_tab(self_rc, &path, Some(copy), false, Some(title), at)
 	}
 
 	fn open_file_impl(
@@ -82,7 +88,7 @@ impl DocumentManager {
 				config.import_settings_from_file(&path.to_string_lossy(), import_path.to_str().unwrap());
 			}
 		}
-		self.parse_and_add_tab(self_rc, path, None, track, title_override)
+		self.parse_and_add_tab(self_rc, path, None, track, title_override, None)
 	}
 
 	fn parse_and_add_tab(
@@ -92,6 +98,7 @@ impl DocumentManager {
 		working_copy: Option<WorkingCopy>,
 		track: bool,
 		title_override: Option<&str>,
+		at: Option<usize>,
 	) -> bool {
 		let (password, forced_extension, settings) = {
 			let config = self.config.lock().unwrap();
@@ -107,7 +114,9 @@ impl DocumentManager {
 		let open = |password: &str| DocumentSession::new(&parse_path, password, &forced_extension, settings);
 		tracing::info!(path = %path.display(), "opening document");
 		match open(&password) {
-			Ok(session) => self.add_session_tab(self_rc, path, working_copy, session, &password, track, title_override),
+			Ok(session) => {
+				self.add_session_tab(self_rc, path, working_copy, session, &password, track, title_override, at)
+			}
 			Err(err) => {
 				if err.starts_with(PASSWORD_REQUIRED_ERROR_PREFIX) {
 					let config = self.config.lock().unwrap();
@@ -120,9 +129,16 @@ impl DocumentManager {
 						return false;
 					};
 					match open(&password) {
-						Ok(session) => {
-							self.add_session_tab(self_rc, path, working_copy, session, &password, track, title_override)
-						}
+						Ok(session) => self.add_session_tab(
+							self_rc,
+							path,
+							working_copy,
+							session,
+							&password,
+							track,
+							title_override,
+							at,
+						),
 						Err(retry_error) => {
 							tracing::error!(path = %path.display(), error = %retry_error, "failed to open document");
 							let message = build_document_load_error_message(path, &retry_error);
@@ -151,6 +167,7 @@ impl DocumentManager {
 		password: &str,
 		track: bool,
 		title_override: Option<&str>,
+		at: Option<usize>,
 	) -> bool {
 		if let Some(index) = self.find_tab_by_path(path) {
 			self.notebook.set_selection(index);
@@ -193,9 +210,10 @@ impl DocumentManager {
 			config.get_letter_spacing(),
 			config.get_text_alignment(),
 		);
-		// `add_page(select: true)` can synchronously fire page-changed, whose handler locks `self.config` again; `Mutex` isn't reentrant, so holding it here deadlocked the app.
+		// `insert_page(select: true)` can synchronously fire page-changed, whose handler locks `self.config` again; `Mutex` isn't reentrant, so holding it here deadlocked the app.
 		drop(config);
-		self.notebook.add_page(&panel, &title, true, None);
+		let tab_index = at.filter(|&at| at < self.tabs.len()).unwrap_or(self.tabs.len());
+		self.notebook.insert_page(tab_index, &panel, &title, true, None);
 		let config = self.config.lock().unwrap();
 		let nav_history = config.get_navigation_history(&path_str);
 		session.set_history(&nav_history.positions, nav_history.index);
@@ -209,24 +227,26 @@ impl DocumentManager {
 				None
 			}
 		});
-		self.tabs.push(DocumentTab {
-			panel,
-			text_ctrl,
-			session,
-			file_path: path.to_path_buf(),
-			working_copy,
-			track,
-			audio_player,
-			disk_fingerprint: read_fingerprint(&local_path),
-			preferred_column: Cell::new(None),
-			selection_mark: Cell::new(None),
-			window,
-			ocr_job: None,
-		});
+		self.tabs.insert(
+			tab_index,
+			DocumentTab {
+				panel,
+				text_ctrl,
+				session,
+				file_path: path.to_path_buf(),
+				working_copy,
+				track,
+				audio_player,
+				disk_fingerprint: read_fingerprint(&local_path),
+				preferred_column: Cell::new(None),
+				selection_mark: Cell::new(None),
+				window,
+				ocr_job: None,
+			},
+		);
 		if !password.is_empty() {
 			config.set_document_password(&path_str, password);
 		}
-		let tab_index = self.tabs.len() - 1;
 		{
 			let tab = &self.tabs[tab_index];
 			let local = tab.window.to_local(initial_pos);
