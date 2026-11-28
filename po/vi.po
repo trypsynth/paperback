@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 0.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 16:45+0000\n"
+"POT-Creation-Date: 2026-11-28 15:14+0000\n"
 "PO-Revision-Date: 2026-01-25 15:00+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -85,6 +85,8 @@ msgstr "Hủy"
 msgid "Report Preview"
 msgstr "Xem trước báo cáo"
 
+#. TRANSLATORS: Title of an error message
+#. TRANSLATORS: Generic error dialog title
 #. TRANSLATORS: Title of an error message
 #. TRANSLATORS: Generic error dialog title
 msgid "Error"
@@ -1290,6 +1292,7 @@ msgid "Links"
 msgstr "Liên kết"
 
 #. TRANSLATORS: Choice option in the view dropdown to show the list of pages
+#. TRANSLATORS: Column of the My Scribe Documents list: how many pages the document has
 #, fuzzy
 msgid "Pages"
 msgstr "Trang"
@@ -1307,6 +1310,7 @@ msgstr "Danh sách"
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
 #. TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
+#. TRANSLATORS: Name of a document in the reader's Scribe account that has no title yet
 msgid "Untitled"
 msgstr "Chưa đặt tên"
 
@@ -1648,10 +1652,23 @@ msgstr "Căn đều"
 msgid "Choose a colour"
 msgstr "Chọn một màu"
 
-#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
+#. TRANSLATORS: Bookmark sounds option: no sound effects play for bookmarks and notes
 #, fuzzy
-msgid "Play &sounds on bookmarks and notes"
-msgstr "Phát &âm thanh khi gặp dấu trang và ghi chú"
+msgid "Never"
+msgstr "Không bao giờ"
+
+#. TRANSLATORS: Bookmark sounds option: a sound plays when the caret moves onto a bookmark or note
+#, fuzzy
+msgid "When the caret is on a bookmark"
+msgstr "Khi con trỏ ở trên một dấu trang"
+
+#. TRANSLATORS: Bookmark sounds option: a sound plays when the word, line or paragraph the caret moves to holds a bookmark or note
+#, fuzzy
+msgid "When the word, line or paragraph you move to has a bookmark"
+msgstr "Khi từ, dòng hoặc đoạn bạn di chuyển tới có một dấu trang"
+
+msgid "Bookmark and note &sounds:"
+msgstr ""
 
 #. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
 #, fuzzy
@@ -1679,6 +1696,7 @@ msgid "&Engine:"
 msgstr "&Công cụ:"
 
 #. TRANSLATORS: Label of the list of voices on the Audio tab of Settings
+#. TRANSLATORS: Label of the text-to-speech voice for converted audio, on the Scribe tab of Settings
 #, fuzzy
 msgid "&Voice:"
 msgstr "&Giọng nói:"
@@ -1717,6 +1735,7 @@ msgid "System default"
 msgstr "Mặc định của hệ thống"
 
 #. TRANSLATORS: Page layout choice in the Documents tab of Settings: PDF and XPS pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+#. TRANSLATORS: First option of the conversion language, dialect, voice and gender lists on the Scribe tab of Settings: let Scribe choose
 #, fuzzy
 msgid "Automatic"
 msgstr "Tự động"
@@ -1873,6 +1892,180 @@ msgstr "&Tô sáng văn bản tìm thấy"
 msgid "&Reading speed (words per minute):"
 msgstr "&Tốc độ đọc (số từ mỗi phút):"
 
+#. TRANSLATORS: Label of the language conversions speak and read in, on the Scribe tab of Settings
+#, fuzzy
+msgid "Conversion &language:"
+msgstr "Ngôn ngữ &chuyển đổi:"
+
+#. TRANSLATORS: Label of the dialect of the conversion language, such as British English, on the Scribe tab of Settings
+#, fuzzy
+msgid "&Dialect:"
+msgstr "&Phương ngữ:"
+
+#. TRANSLATORS: Option of the voice gender on the Scribe tab of Settings
+#, fuzzy
+msgid "Female"
+msgstr "Nữ"
+
+#. TRANSLATORS: Option of the voice gender on the Scribe tab of Settings
+#, fuzzy
+msgid "Male"
+msgstr "Nam"
+
+#. TRANSLATORS: Option of the voice gender on the Scribe tab of Settings, a gender-neutral voice
+#, fuzzy
+msgid "Neutral"
+msgstr "Trung lập"
+
+#. TRANSLATORS: Label of the voice gender, used when no voice is chosen, on the Scribe tab of Settings
+#, fuzzy
+msgid "Voice &gender:"
+msgstr "Giới tính &giọng nói:"
+
+#, fuzzy
+msgid "%s times"
+msgstr "%s lần"
+
+#. TRANSLATORS: Label of the text-to-speech speaking rate on the Scribe tab of Settings
+#, fuzzy
+msgid "Speaking &rate:"
+msgstr "Tốc độ &nói:"
+
+#. TRANSLATORS: Label of the braille translation table for converted braille, on the Scribe tab of Settings
+#, fuzzy
+msgid "&Braille table:"
+msgstr "&Bảng Braille:"
+
+#. TRANSLATORS: Label on the Scribe tab of Settings
+#, fuzzy
+msgid "Braille cells per li&ne:"
+msgstr "Ô Braille trên mỗi &dòng:"
+
+#. TRANSLATORS: Option on the Scribe tab of Settings
+#, fuzzy
+msgid "Spli&t braille into pages"
+msgstr "Chia &Braille thành các trang"
+
+#. TRANSLATORS: Label on the Scribe tab of Settings
+#, fuzzy
+msgid "Braille lines &per page:"
+msgstr "Dòng Braille trên mỗi &trang:"
+
+#. TRANSLATORS: Option on the Scribe tab of Settings to make converted documents in large print
+#, fuzzy
+msgid "Large pr&int"
+msgstr "In &lớn"
+
+#. TRANSLATORS: Option on the Scribe tab of Settings to describe the images in converted documents
+#, fuzzy
+msgid "&Add image descriptions"
+msgstr "&Thêm mô tả hình ảnh"
+
+#. TRANSLATORS: Option on the Scribe tab of Settings. Beta means the feature is still being tested.
+#, fuzzy
+msgid "Process mat&hematical notation (beta)"
+msgstr "Xử lý ký pháp &toán học (beta)"
+
+#. TRANSLATORS: Option on the Scribe tab of Settings for Scribe to send an email when a conversion finishes
+#, fuzzy
+msgid "&Email me when a conversion is complete"
+msgstr "&Gửi email cho tôi khi chuyển đổi hoàn tất"
+
+#. TRANSLATORS: Button on the Scribe tab of Settings that opens the reader's Scribe account page in the browser
+#, fuzzy
+msgid "&Manage Account..."
+msgstr "&Quản lý Tài khoản..."
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings while loading the account
+#, fuzzy
+msgid "Checking your Scribe account..."
+msgstr "Đang kiểm tra tài khoản Scribe của bạn..."
+
+#. TRANSLATORS: Button on the Scribe tab of Settings
+#, fuzzy
+msgid "Sign &Out"
+msgstr "&Đăng xuất"
+
+#. TRANSLATORS: Button on the Scribe tab of Settings that opens the browser to sign in to Scribe
+#, fuzzy
+msgid "&Sign In..."
+msgstr "&Đăng nhập..."
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings when the sign-in can't start
+#, fuzzy
+msgid "Paperback couldn't start the sign-in. Please try again."
+msgstr "Paperback không thể bắt đầu đăng nhập. Vui lòng thử lại."
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings when the browser doesn't open to sign in
+#, fuzzy
+msgid "Paperback couldn't open your browser to sign in."
+msgstr "Paperback không thể mở trình duyệt của bạn để đăng nhập."
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings while the reader signs in in the browser
+#, fuzzy
+msgid "Sign in to Scribe in your browser, then come back to Paperback."
+msgstr "Đăng nhập vào Scribe trong trình duyệt của bạn, sau đó quay lại Paperback."
+
+#. TRANSLATORS: Button on the Scribe tab of Settings that stops waiting for the browser sign-in
+#, fuzzy
+msgid "&Cancel Sign-In"
+msgstr "&Hủy Đăng nhập"
+
+#. TRANSLATORS: The page the browser shows once it hands the Scribe sign-in back to Paperback
+#, fuzzy
+msgid "You can close this page and go back to Paperback."
+msgstr "Bạn có thể đóng trang này và quay lại Paperback."
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings after the reader cancels signing in
+#. TRANSLATORS: Shown on the Scribe tab of Settings when the reader turns down the sign-in in the browser
+#, fuzzy
+msgid "Sign-in cancelled."
+msgstr "Đã hủy đăng nhập."
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings when the browser didn't come back in time
+#, fuzzy
+msgid "The sign-in took too long. Please try again."
+msgstr "Đăng nhập mất quá nhiều thời gian. Vui lòng thử lại."
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings while finishing the sign-in
+#, fuzzy
+msgid "Signing in..."
+msgstr "Đang đăng nhập..."
+
+#, fuzzy
+msgid "Paperback couldn't load your conversion settings: %s"
+msgstr "Paperback không thể tải cài đặt chuyển đổi của bạn: %s"
+
+#. TRANSLATORS: Error shown after Settings closes when Scribe doesn't take the changed conversion settings. %s is the reason.
+#, fuzzy
+msgid "Paperback couldn't save your Scribe conversion settings: %s"
+msgstr "Paperback không thể lưu cài đặt chuyển đổi Scribe của bạn: %s"
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings after signing out
+#, fuzzy
+msgid "You've signed out of Scribe."
+msgstr "Bạn đã đăng xuất khỏi Scribe."
+
+#, fuzzy
+msgid "Paperback couldn't open your browser."
+msgstr "Paperback không thể mở trình duyệt của bạn."
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings when the reader isn't signed in
+#, fuzzy
+msgid "You're not signed in to Scribe."
+msgstr "Bạn chưa đăng nhập vào Scribe."
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings. %s is the reader's name or email address; %d is how many pages they can still convert. Plural form is chosen by that number.
+#, fuzzy
+msgid "Signed in as %s. %d page left."
+msgid_plural "Signed in as %s. %d pages left."
+msgstr[0] "Đã đăng nhập dưới dạng %s. Còn lại %d trang."
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings when the browser comes back with an answer that doesn't belong to this sign-in
+#, fuzzy
+msgid "The sign-in didn't finish. Please try again."
+msgstr "Đăng nhập không hoàn tất. Vui lòng thử lại."
+
 #. TRANSLATORS: Title of the speech dictionary dialog, opened from the Read Aloud group on the Audio tab of Settings
 #, fuzzy
 msgid "Speech Dictionary"
@@ -2026,10 +2219,59 @@ msgstr "Giao diện"
 msgid "Documents"
 msgstr "Tài liệu"
 
+#, fuzzy
+msgid "Scribe"
+msgstr "Scribe"
+
 #. TRANSLATORS: Tab label for the Settings panel with options most people never need, such as the update channel and log level
 #, fuzzy
 msgid "Advanced"
 msgstr "Nâng cao"
+
+#. TRANSLATORS: Title of the dialog listing the documents in the reader's Scribe for Documents account
+#, fuzzy
+msgid "My Scribe Documents"
+msgstr "Tài liệu Scribe của tôi"
+
+#. TRANSLATORS: Shown by Services > Scribe > My Documents when the reader's account has no documents
+#, fuzzy
+msgid "You have no documents in Scribe yet."
+msgstr "Bạn chưa có tài liệu nào trong Scribe."
+
+#. TRANSLATORS: Label of the list of documents in the reader's Scribe account
+#, fuzzy
+msgid "&Documents:"
+msgstr "&Tài liệu:"
+
+#. TRANSLATORS: Column of the My Scribe Documents list
+#, fuzzy
+msgid "Title"
+msgstr "Tiêu đề"
+
+#. TRANSLATORS: Column of the My Scribe Documents list: the date the document was uploaded
+#, fuzzy
+msgid "Added"
+msgstr "Được thêm"
+
+#. TRANSLATORS: How many pages a document in the My Scribe Documents list has. Plural form is chosen by that number.
+#, fuzzy
+msgid "%d page"
+msgid_plural "%d pages"
+msgstr[0] "%d trang"
+
+#. TRANSLATORS: Button of the My Scribe Documents dialog. Scribe keeps trashed documents for 7 days before deleting them.
+#, fuzzy
+msgid "Move to &Trash"
+msgstr "Di chuyển đến &Thùng rác"
+
+#. TRANSLATORS: Title of the error when a document can't be moved to the trash in the My Scribe Documents dialog
+#, fuzzy
+msgid "Move to Trash"
+msgstr "Di chuyển đến Thùng rác"
+
+#, fuzzy
+msgid "Moved to the trash. Scribe deletes it for good in 7 days."
+msgstr "Đã di chuyển vào thùng rác. Scribe sẽ xóa nó vĩnh viễn trong 7 ngày."
 
 #, fuzzy
 msgid "System-Wide"
@@ -2910,6 +3152,21 @@ msgstr "&Quyên góp"
 msgid "Support Paperback development"
 msgstr "Hỗ trợ phát triển phiên bản bìa mềm"
 
+#. TRANSLATORS: Item in the Scribe submenu of the Services menu that uploads a document to Scribe to convert
+#, fuzzy
+msgid "&Convert Document..."
+msgstr "&Chuyển đổi Tài liệu..."
+
+#. TRANSLATORS: Item in the Scribe submenu of the Services menu that lists the documents in the reader's Scribe account
+#, fuzzy
+msgid "&My Documents..."
+msgstr "&Tài liệu của tôi..."
+
+#. TRANSLATORS: Submenu of the Services menu for Scribe for Documents, Pneuma Solutions' document conversion service
+#, fuzzy
+msgid "&Scribe"
+msgstr "&Scribe"
+
 #. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
 #, fuzzy
 msgid "&Word Count..."
@@ -3038,6 +3295,11 @@ msgstr "Bố &Cục Trang"
 #, fuzzy
 msgid "How this document's pages are read"
 msgstr "Cách đọc các trang của tài liệu này"
+
+#. TRANSLATORS: Top-level "Services" menu label in the menu bar, for online services such as Scribe for Documents
+#, fuzzy
+msgid "&Services"
+msgstr "&Dịch vụ"
 
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
 msgid "&File"
@@ -3367,6 +3629,128 @@ msgstr "Truy cập &percent"
 #, fuzzy
 msgid "Go to percent"
 msgstr "Đi tới phần trăm"
+
+#. TRANSLATORS: Title of messages about converting a document with Scribe for Documents, Pneuma Solutions' conversion service
+#, fuzzy
+msgid "Convert with Scribe"
+msgstr "Chuyển đổi với Scribe"
+
+#. TRANSLATORS: Shown by Services > Scribe > Convert Document before the reader has signed in
+#, fuzzy
+msgid "Sign in to Scribe first, on the Scribe tab of Settings."
+msgstr "Trước tiên hãy đăng nhập vào Scribe, trên tab Scribe của Cài đặt."
+
+#. TRANSLATORS: Asked by Services > Scribe > Convert Document. %s is the document's file name.
+#, fuzzy
+msgid "Convert %s with Scribe?"
+msgstr "Chuyển đổi %s với Scribe?"
+
+#. TRANSLATORS: Buttons of the question whether to convert a document with Scribe
+#, fuzzy
+msgid "&Convert"
+msgstr "&Chuyển đổi"
+
+#, fuzzy
+msgid "C&hoose Another File..."
+msgstr "C&họn Tệp khác..."
+
+#, fuzzy
+msgid "You have %d page left."
+msgid_plural "You have %d pages left."
+msgstr[0] "Bạn còn lại %d trang."
+
+#. TRANSLATORS: Part of the question whether to convert a document with Scribe, when the reader has fewer pages left than it takes. %d is how many pages converting it all takes. Plural form is chosen by that number.
+#, fuzzy
+msgid "Converting it all takes %d page."
+msgid_plural "Converting it all takes %d pages."
+msgstr[0] "Chuyển đổi toàn bộ sử dụng %d trang."
+
+#. TRANSLATORS: Part of the question whether to convert a document with Scribe, after saying the reader has too few pages left for all of it
+#, fuzzy
+msgid "Scribe will convert only a free preview of its first pages."
+msgstr "Scribe sẽ chỉ chuyển đổi bản xem trước miễn phí của các trang đầu tiên của nó."
+
+#. TRANSLATORS: Part of the question whether to convert a document with Scribe. %d is how many of the reader's pages converting it uses. Plural form is chosen by that number.
+#, fuzzy
+msgid "Converting it uses %d page."
+msgid_plural "Converting it uses %d pages."
+msgstr[0] "Chuyển đổi sử dụng %d trang của bạn."
+
+#, fuzzy
+msgid "Scribe counts its pages as it lays the document out, and uses one of yours for each."
+msgstr "Scribe tính toán các trang của nó khi bố cục tài liệu, và sử dụng một trong số bạn cho mỗi trang."
+
+#. TRANSLATORS: Part of the question whether to convert a document with Scribe, when neither its pages nor the reader's pages left are known
+#, fuzzy
+msgid "Converting uses one of your Scribe pages for each page of the document."
+msgstr "Chuyển đổi sử dụng một trong các trang Scribe của bạn cho mỗi trang của tài liệu."
+
+#, fuzzy
+msgid "Choose a Document to Convert with Scribe"
+msgstr "Chọn Tài liệu để Chuyển đổi với Scribe"
+
+#. TRANSLATORS: Tab title of a document from Scribe for Documents. %s is the document's name.
+#, fuzzy
+msgid "%s (Scribe)"
+msgstr "%s (Scribe)"
+
+#. TRANSLATORS: Shown in a document's tab while it uploads to Scribe for converting
+#, fuzzy
+msgid "Uploading to Scribe..."
+msgstr "Đang tải lên Scribe..."
+
+#. TRANSLATORS: Shown in a document's tab while Paperback opens it again from the reader's Scribe account
+#, fuzzy
+msgid "Opening from Scribe..."
+msgstr "Đang mở từ Scribe..."
+
+#. TRANSLATORS: Shown when Paperback can't make the temporary file a Scribe conversion is read from. %s is the reason.
+#, fuzzy
+msgid "Paperback couldn't make a temporary copy to read the conversion from: %s"
+msgstr "Paperback không thể tạo bản sao tạm thời để đọc từ bản chuyển đổi: %s"
+
+#, fuzzy
+msgid "Ready for reading. More pages are on the way."
+msgstr "Sẵn sàng để đọc. Thêm nhiều trang đang được gửi đến."
+
+#, fuzzy
+msgid "This document needs a password to convert."
+msgstr "Tài liệu này cần mật khẩu để chuyển đổi."
+
+#. TRANSLATORS: Announced when every page of a document converting with Scribe has arrived. %s is the document's name.
+#, fuzzy
+msgid "%s is ready."
+msgstr "%s sẵn sàng."
+
+#. TRANSLATORS: Shown in a document's tab while Scribe has it queued to convert
+#, fuzzy
+msgid "Waiting in line at Scribe..."
+msgstr "Đang chờ trong hàng tại Scribe..."
+
+#. TRANSLATORS: Shown in a document's tab as Scribe starts converting it
+#, fuzzy
+msgid "Scribe is starting the conversion..."
+msgstr "Scribe đang bắt đầu quá trình chuyển đổi..."
+
+#. TRANSLATORS: Shown in a document's tab while Scribe converts it. %s is how far through it is, as a percentage.
+#, fuzzy
+msgid "Converting: %s%"
+msgstr "Đang chuyển đổi: %s%"
+
+#. TRANSLATORS: Shown in a document's tab while Scribe describes its images. %s is how far through it is, as a percentage.
+#, fuzzy
+msgid "Describing images: %s%"
+msgstr "Đang mô tả hình ảnh: %s%"
+
+#. TRANSLATORS: Shown when Scribe finds the reader signed out
+#, fuzzy
+msgid "Sign in to Scribe again, on the Scribe tab of Settings."
+msgstr "Đăng nhập lại vào Scribe trên tab Scribe của Cài đặt."
+
+#. TRANSLATORS: Shown when a Scribe conversion fails and Scribe gives no reason
+#, fuzzy
+msgid "Scribe couldn't convert the document."
+msgstr "Scribe không thể chuyển đổi tài liệu."
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
 #, fuzzy
@@ -4613,12 +4997,12 @@ msgid "Update cancelled."
 msgstr "Đã hủy cập nhật."
 
 #, fuzzy
-msgid "Failed to open disk image"
-msgstr "Không thể mở liên kết."
+msgid "%s will quit and open the update's disk image. Drag the new version into Applications to finish installing."
+msgstr "%s sẽ thoát và mở ảnh đĩa của bản cập nhật. Kéo phiên bản mới vào Applications để hoàn thành cài đặt."
 
 #, fuzzy
-msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
-msgstr "Bản cập nhật đã được tải về và ảnh đĩa đã được mở. Hãy thoát %s và kéo phiên bản mới vào Applications để hoàn tất cài đặt."
+msgid "Failed to open disk image"
+msgstr "Không thể mở liên kết."
 
 #, fuzzy
 msgid "Invalid application metadata"
@@ -4721,8 +5105,8 @@ msgid "The update server returned HTTP error %s."
 msgstr "Máy chủ cập nhật trả về lỗi HTTP %s."
 
 #, fuzzy
-msgid "Could not reach the update server: %s"
-msgstr "Không thể kết nối với máy chủ cập nhật: %s"
+msgid "Could not reach the update server. Check your internet connection and try again."
+msgstr "Không thể kết nối đến máy chủ cập nhật. Kiểm tra kết nối internet của bạn và thử lại."
 
 #. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
 #, fuzzy
@@ -5123,12 +5507,6 @@ msgstr "Khôi phục các tài liệu đã mở gần đây nhất"
 #, fuzzy
 msgid "Swipe up moves forward"
 msgstr "Vuốt lên để chuyển sang trang tiếp theo"
-
-#. TRANSLATORS: Row label for the document's title in the Document Info sheet
-#: kt swift
-#, fuzzy
-msgid "Title"
-msgstr "Tiêu đề"
 
 #. TRANSLATORS: Row label for the document's author in the Document Info sheet
 #: kt swift
@@ -6564,6 +6942,18 @@ msgstr "chỉnh sửa quy tắc"
 #, fuzzy
 msgid "Use Add Rule to change how a word or pattern is read aloud."
 msgstr "Sử dụng Thêm Quy tắc để thay đổi cách một từ hoặc mẫu được phát âm."
+
+#, fuzzy
+#~ msgid "Play &sounds on bookmarks and notes"
+#~ msgstr "Phát &âm thanh khi gặp dấu trang và ghi chú"
+
+#, fuzzy
+#~ msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
+#~ msgstr "Bản cập nhật đã được tải về và ảnh đĩa đã được mở. Hãy thoát %s và kéo phiên bản mới vào Applications để hoàn tất cài đặt."
+
+#, fuzzy
+#~ msgid "Could not reach the update server: %s"
+#~ msgstr "Không thể kết nối với máy chủ cập nhật: %s"
 
 #, fuzzy
 #~ msgid "&Join wrapped lines into paragraphs"
