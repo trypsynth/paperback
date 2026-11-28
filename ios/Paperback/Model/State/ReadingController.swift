@@ -329,6 +329,34 @@ final class ReadingController {
 		return true
 	}
 
+	/// Whether a search has been run, so text mode offers the Find rotor only then.
+	var hasActiveSearch: Bool { activeSearchQuery != nil }
+
+	/// The unit holding the next or previous match of the active search, for the Find rotor. Rotors stop at the ends rather than wrapping, as the others in text mode do.
+	func findUnit(from unit: Int, forward: Bool, in model: BookModel) -> Int? {
+		guard let session = activeSession, let query = activeSearchQuery, unit >= -1, unit < model.count else { return nil }
+		let options = SearchOptionsFfi(matchCase: searchOptions.matchCase, wholeWord: searchOptions.wholeWord, regex: searchOptions.regex, forward: forward)
+		// Forward counts a match at its start, so it starts at the next unit; back finds a match ending at or before its start, so it starts at this one.
+		var start: Int64
+		if forward {
+			guard unit + 1 < model.count else { return nil }
+			start = model.position(ofUnit: unit + 1)
+		} else {
+			guard unit > 0 else { return nil }
+			start = model.position(ofUnit: unit)
+		}
+		// Units can share a start, so a match may still map to the unit it came from; search on past it.
+		while true {
+			let found = session.searchFfi(query: query, startPosition: start, options: options)
+			guard found.found, !found.wrapped else { return nil }
+			let target = model.unit(forPosition: found.position)
+			if forward ? target > unit : target < unit { return target }
+			let next = forward ? found.position + 1 : found.position
+			guard next != start else { return nil }
+			start = next
+		}
+	}
+
 	// Always reports handled once Find is the unit, even with no more matches, since there's nothing for previous/next to fall back to.
 	private func navigateByFind(forward: Bool, speak: Bool, announce shouldAnnounce: Bool) -> Bool {
 		guard currentNavUnit == .find else { return false }

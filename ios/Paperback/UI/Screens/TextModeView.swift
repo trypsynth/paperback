@@ -47,6 +47,13 @@ private struct ReadingScreen: UIViewControllerRepresentable {
 			guard let reading, let model else { return [] }
 			return reading.bookmarkActions(forUnit: unit, in: model)
 		}
+		bookView.hasSearch = { [weak reading] in
+			reading?.hasActiveSearch ?? false
+		}
+		bookView.findStop = { [weak reading, weak model] unit, forward in
+			guard let reading, let model else { return nil }
+			return reading.findUnit(from: unit, forward: forward, in: model)
+		}
 		return controller
 	}
 

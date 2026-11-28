@@ -49,6 +49,9 @@ final class BookView: UIScrollView {
 	/// What VoiceOver says after a unit's text when it is bookmarked, and the bookmark actions it offers.
 	var bookmarkValue: ((Int) -> String?)?
 	var bookmarkActions: ((Int) -> [UIAccessibilityCustomAction])?
+	/// Whether a search has been run, and the unit holding its next or previous match, for the Find rotor.
+	var hasSearch: (() -> Bool)?
+	var findStop: ((Int, Bool) -> Int?)?
 
 	init(model: BookModel) {
 		self.model = model
@@ -506,6 +509,7 @@ final class BookView: UIScrollView {
 			if !model.tableUnits.isEmpty { present.append(tablesRotor) }
 			if !model.sectionUnits.isEmpty { present.append(sectionsRotor) }
 			if !(bookmarkUnits?() ?? []).isEmpty { present.append(bookmarksRotor) }
+			if hasSearch?() == true { present.append(findRotor) }
 			return present
 		}
 		set {}
@@ -526,6 +530,11 @@ final class BookView: UIScrollView {
 	// TRANSLATORS: Name of the VoiceOver rotor setting that moves between the reader's bookmarks in text mode
 	private lazy var bookmarksRotor = unitRotor(name: t("Bookmarks")) { view, from, forward in
 		BookModel.stop(in: view.bookmarkUnits?() ?? [], from: from, forward: forward)
+	}
+
+	// TRANSLATORS: Name of the VoiceOver rotor setting that moves between the paragraphs matching the last Find search in text mode
+	private lazy var findRotor = unitRotor(name: t("Find")) { view, from, forward in
+		view.findStop?(from, forward)
 	}
 
 	/// The next or previous table, counted from the start of the one the origin is inside.
