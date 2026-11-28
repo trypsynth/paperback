@@ -159,5 +159,5 @@ opt-level = 3
 
 # Until releases log the update and its progress window (#1344).
 [patch.crates-io]
-ship-shape = { git = "https://github.com/accessware/ship-shape", rev = "6a0814eed517b4401ae44e67c5024cbdfcbe839e" }
+ship-shape = { git = "https://github.com/accessware/ship-shape", rev = "72541bdff1525d8291f25f4ac402a8b75261f5d1" }
 wx-utils = { git = "https://github.com/accessware/wx-utils", rev = "ce1deed7ad906db8e50b12f7c20bf813afd8ef88" }
