@@ -14,6 +14,7 @@ struct FindView: View {
 	@State private var useRegex = false
 	@State private var history: [String] = []
 	@FocusState private var queryFocused: Bool
+	@State private var selectQueryOnFocus = false
 
 	var body: some View {
 		Form {
@@ -25,6 +26,13 @@ struct FindView: View {
 					.focused($queryFocused)
 					.submitLabel(.search)
 					.onSubmit { find(forward: true) }
+					// Selects the last search when Find opens, so typing replaces it. Only that first time: tapping back into the field later puts the caret where the tap was, as usual.
+					.onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { note in
+						guard selectQueryOnFocus, let field = note.object as? UITextField else { return }
+						selectQueryOnFocus = false
+						// The field sets its own caret after this notification, so select on the next turn of the run loop.
+						DispatchQueue.main.async { field.selectAll(nil) }
+					}
 				if !history.isEmpty {
 					Menu {
 						ForEach(history, id: \.self) { term in
@@ -76,6 +84,7 @@ struct FindView: View {
 			wholeWord = config.getAppBool(key: wholeWordKey, defaultValue: false)
 			useRegex = config.getAppBool(key: useRegexKey, defaultValue: false)
 			history = config.getFindHistory()
+			selectQueryOnFocus = !query.isEmpty
 			queryFocused = true
 		}
 		.sheetAccessibilityFocus(title: t("Find"))
