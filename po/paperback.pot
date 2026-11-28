@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: paperback 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 16:45+0000\n"
+"POT-Creation-Date: 2026-11-28 15:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -73,6 +73,8 @@ msgstr ""
 msgid "Report Preview"
 msgstr ""
 
+#. TRANSLATORS: Title of an error message
+#. TRANSLATORS: Generic error dialog title
 #. TRANSLATORS: Title of an error message
 #. TRANSLATORS: Generic error dialog title
 msgid "Error"
@@ -1080,6 +1082,7 @@ msgid "Links"
 msgstr ""
 
 #. TRANSLATORS: Choice option in the view dropdown to show the list of pages
+#. TRANSLATORS: Column of the My Scribe Documents list: how many pages the document has
 msgid "Pages"
 msgstr ""
 
@@ -1094,6 +1097,7 @@ msgstr ""
 #. TRANSLATORS: Placeholder text shown in the elements list when a document element has no text content
 #. TRANSLATORS: Placeholder text shown in the table of contents tree when an entry has no title
 #. TRANSLATORS: Fallback document title shown in tabs and lists when a document has no title and its file name cannot be determined
+#. TRANSLATORS: Name of a document in the reader's Scribe account that has no title yet
 msgid "Untitled"
 msgstr ""
 
@@ -1376,8 +1380,19 @@ msgstr ""
 msgid "Choose a colour"
 msgstr ""
 
-#. TRANSLATORS: Option to play sound effects when bookmarks or notes are encountered
-msgid "Play &sounds on bookmarks and notes"
+#. TRANSLATORS: Bookmark sounds option: no sound effects play for bookmarks and notes
+msgid "Never"
+msgstr ""
+
+#. TRANSLATORS: Bookmark sounds option: a sound plays when the caret moves onto a bookmark or note
+msgid "When the caret is on a bookmark"
+msgstr ""
+
+#. TRANSLATORS: Bookmark sounds option: a sound plays when the word, line or paragraph the caret moves to holds a bookmark or note
+msgid "When the word, line or paragraph you move to has a bookmark"
+msgstr ""
+
+msgid "Bookmark and note &sounds:"
 msgstr ""
 
 #. TRANSLATORS: Option to move the reading caret to follow along with audio narration as it plays
@@ -1401,6 +1416,7 @@ msgid "&Engine:"
 msgstr ""
 
 #. TRANSLATORS: Label of the list of voices on the Audio tab of Settings
+#. TRANSLATORS: Label of the text-to-speech voice for converted audio, on the Scribe tab of Settings
 msgid "&Voice:"
 msgstr ""
 
@@ -1431,6 +1447,7 @@ msgid "System default"
 msgstr ""
 
 #. TRANSLATORS: Page layout choice in the Documents tab of Settings: PDF and XPS pages are read in the order the document gives, from its tags where it has them, with wrapped lines joined into paragraphs
+#. TRANSLATORS: First option of the conversion language, dialect, voice and gender lists on the Scribe tab of Settings: let Scribe choose
 msgid "Automatic"
 msgstr ""
 
@@ -1562,6 +1579,146 @@ msgstr ""
 msgid "&Reading speed (words per minute):"
 msgstr ""
 
+#. TRANSLATORS: Label of the language conversions speak and read in, on the Scribe tab of Settings
+msgid "Conversion &language:"
+msgstr ""
+
+#. TRANSLATORS: Label of the dialect of the conversion language, such as British English, on the Scribe tab of Settings
+msgid "&Dialect:"
+msgstr ""
+
+#. TRANSLATORS: Option of the voice gender on the Scribe tab of Settings
+msgid "Female"
+msgstr ""
+
+#. TRANSLATORS: Option of the voice gender on the Scribe tab of Settings
+msgid "Male"
+msgstr ""
+
+#. TRANSLATORS: Option of the voice gender on the Scribe tab of Settings, a gender-neutral voice
+msgid "Neutral"
+msgstr ""
+
+#. TRANSLATORS: Label of the voice gender, used when no voice is chosen, on the Scribe tab of Settings
+msgid "Voice &gender:"
+msgstr ""
+
+msgid "%s times"
+msgstr ""
+
+#. TRANSLATORS: Label of the text-to-speech speaking rate on the Scribe tab of Settings
+msgid "Speaking &rate:"
+msgstr ""
+
+#. TRANSLATORS: Label of the braille translation table for converted braille, on the Scribe tab of Settings
+msgid "&Braille table:"
+msgstr ""
+
+#. TRANSLATORS: Label on the Scribe tab of Settings
+msgid "Braille cells per li&ne:"
+msgstr ""
+
+#. TRANSLATORS: Option on the Scribe tab of Settings
+msgid "Spli&t braille into pages"
+msgstr ""
+
+#. TRANSLATORS: Label on the Scribe tab of Settings
+msgid "Braille lines &per page:"
+msgstr ""
+
+#. TRANSLATORS: Option on the Scribe tab of Settings to make converted documents in large print
+msgid "Large pr&int"
+msgstr ""
+
+#. TRANSLATORS: Option on the Scribe tab of Settings to describe the images in converted documents
+msgid "&Add image descriptions"
+msgstr ""
+
+#. TRANSLATORS: Option on the Scribe tab of Settings. Beta means the feature is still being tested.
+msgid "Process mat&hematical notation (beta)"
+msgstr ""
+
+#. TRANSLATORS: Option on the Scribe tab of Settings for Scribe to send an email when a conversion finishes
+msgid "&Email me when a conversion is complete"
+msgstr ""
+
+#. TRANSLATORS: Button on the Scribe tab of Settings that opens the reader's Scribe account page in the browser
+msgid "&Manage Account..."
+msgstr ""
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings while loading the account
+msgid "Checking your Scribe account..."
+msgstr ""
+
+#. TRANSLATORS: Button on the Scribe tab of Settings
+msgid "Sign &Out"
+msgstr ""
+
+#. TRANSLATORS: Button on the Scribe tab of Settings that opens the browser to sign in to Scribe
+msgid "&Sign In..."
+msgstr ""
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings when the sign-in can't start
+msgid "Paperback couldn't start the sign-in. Please try again."
+msgstr ""
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings when the browser doesn't open to sign in
+msgid "Paperback couldn't open your browser to sign in."
+msgstr ""
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings while the reader signs in in the browser
+msgid "Sign in to Scribe in your browser, then come back to Paperback."
+msgstr ""
+
+#. TRANSLATORS: Button on the Scribe tab of Settings that stops waiting for the browser sign-in
+msgid "&Cancel Sign-In"
+msgstr ""
+
+#. TRANSLATORS: The page the browser shows once it hands the Scribe sign-in back to Paperback
+msgid "You can close this page and go back to Paperback."
+msgstr ""
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings after the reader cancels signing in
+#. TRANSLATORS: Shown on the Scribe tab of Settings when the reader turns down the sign-in in the browser
+msgid "Sign-in cancelled."
+msgstr ""
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings when the browser didn't come back in time
+msgid "The sign-in took too long. Please try again."
+msgstr ""
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings while finishing the sign-in
+msgid "Signing in..."
+msgstr ""
+
+msgid "Paperback couldn't load your conversion settings: %s"
+msgstr ""
+
+#. TRANSLATORS: Error shown after Settings closes when Scribe doesn't take the changed conversion settings. %s is the reason.
+msgid "Paperback couldn't save your Scribe conversion settings: %s"
+msgstr ""
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings after signing out
+msgid "You've signed out of Scribe."
+msgstr ""
+
+msgid "Paperback couldn't open your browser."
+msgstr ""
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings when the reader isn't signed in
+msgid "You're not signed in to Scribe."
+msgstr ""
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings. %s is the reader's name or email address; %d is how many pages they can still convert. Plural form is chosen by that number.
+msgid "Signed in as %s. %d page left."
+msgid_plural "Signed in as %s. %d pages left."
+msgstr[0] ""
+msgstr[1] ""
+
+#. TRANSLATORS: Shown on the Scribe tab of Settings when the browser comes back with an answer that doesn't belong to this sign-in
+msgid "The sign-in didn't finish. Please try again."
+msgstr ""
+
 #. TRANSLATORS: Title of the speech dictionary dialog, opened from the Read Aloud group on the Audio tab of Settings
 msgid "Speech Dictionary"
 msgstr ""
@@ -1685,8 +1842,48 @@ msgstr ""
 msgid "Documents"
 msgstr ""
 
+msgid "Scribe"
+msgstr ""
+
 #. TRANSLATORS: Tab label for the Settings panel with options most people never need, such as the update channel and log level
 msgid "Advanced"
+msgstr ""
+
+#. TRANSLATORS: Title of the dialog listing the documents in the reader's Scribe for Documents account
+msgid "My Scribe Documents"
+msgstr ""
+
+#. TRANSLATORS: Shown by Services > Scribe > My Documents when the reader's account has no documents
+msgid "You have no documents in Scribe yet."
+msgstr ""
+
+#. TRANSLATORS: Label of the list of documents in the reader's Scribe account
+msgid "&Documents:"
+msgstr ""
+
+#. TRANSLATORS: Column of the My Scribe Documents list
+msgid "Title"
+msgstr ""
+
+#. TRANSLATORS: Column of the My Scribe Documents list: the date the document was uploaded
+msgid "Added"
+msgstr ""
+
+#. TRANSLATORS: How many pages a document in the My Scribe Documents list has. Plural form is chosen by that number.
+msgid "%d page"
+msgid_plural "%d pages"
+msgstr[0] ""
+msgstr[1] ""
+
+#. TRANSLATORS: Button of the My Scribe Documents dialog. Scribe keeps trashed documents for 7 days before deleting them.
+msgid "Move to &Trash"
+msgstr ""
+
+#. TRANSLATORS: Title of the error when a document can't be moved to the trash in the My Scribe Documents dialog
+msgid "Move to Trash"
+msgstr ""
+
+msgid "Moved to the trash. Scribe deletes it for good in 7 days."
 msgstr ""
 
 msgid "System-Wide"
@@ -2433,6 +2630,18 @@ msgstr ""
 msgid "Support Paperback development"
 msgstr ""
 
+#. TRANSLATORS: Item in the Scribe submenu of the Services menu that uploads a document to Scribe to convert
+msgid "&Convert Document..."
+msgstr ""
+
+#. TRANSLATORS: Item in the Scribe submenu of the Services menu that lists the documents in the reader's Scribe account
+msgid "&My Documents..."
+msgstr ""
+
+#. TRANSLATORS: Submenu of the Services menu for Scribe for Documents, Pneuma Solutions' document conversion service
+msgid "&Scribe"
+msgstr ""
+
 #. TRANSLATORS: Menu item in the Tools menu to show the document's word count.
 msgid "&Word Count..."
 msgstr ""
@@ -2534,6 +2743,10 @@ msgid "Page &Layout"
 msgstr ""
 
 msgid "How this document's pages are read"
+msgstr ""
+
+#. TRANSLATORS: Top-level "Services" menu label in the menu bar, for online services such as Scribe for Documents
+msgid "&Services"
 msgstr ""
 
 #. TRANSLATORS: Top-level "File" menu label in the menu bar
@@ -2813,6 +3026,106 @@ msgid "Go to &percent"
 msgstr ""
 
 msgid "Go to percent"
+msgstr ""
+
+#. TRANSLATORS: Title of messages about converting a document with Scribe for Documents, Pneuma Solutions' conversion service
+msgid "Convert with Scribe"
+msgstr ""
+
+#. TRANSLATORS: Shown by Services > Scribe > Convert Document before the reader has signed in
+msgid "Sign in to Scribe first, on the Scribe tab of Settings."
+msgstr ""
+
+#. TRANSLATORS: Asked by Services > Scribe > Convert Document. %s is the document's file name.
+msgid "Convert %s with Scribe?"
+msgstr ""
+
+#. TRANSLATORS: Buttons of the question whether to convert a document with Scribe
+msgid "&Convert"
+msgstr ""
+
+msgid "C&hoose Another File..."
+msgstr ""
+
+msgid "You have %d page left."
+msgid_plural "You have %d pages left."
+msgstr[0] ""
+msgstr[1] ""
+
+#. TRANSLATORS: Part of the question whether to convert a document with Scribe, when the reader has fewer pages left than it takes. %d is how many pages converting it all takes. Plural form is chosen by that number.
+msgid "Converting it all takes %d page."
+msgid_plural "Converting it all takes %d pages."
+msgstr[0] ""
+msgstr[1] ""
+
+#. TRANSLATORS: Part of the question whether to convert a document with Scribe, after saying the reader has too few pages left for all of it
+msgid "Scribe will convert only a free preview of its first pages."
+msgstr ""
+
+#. TRANSLATORS: Part of the question whether to convert a document with Scribe. %d is how many of the reader's pages converting it uses. Plural form is chosen by that number.
+msgid "Converting it uses %d page."
+msgid_plural "Converting it uses %d pages."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Scribe counts its pages as it lays the document out, and uses one of yours for each."
+msgstr ""
+
+#. TRANSLATORS: Part of the question whether to convert a document with Scribe, when neither its pages nor the reader's pages left are known
+msgid "Converting uses one of your Scribe pages for each page of the document."
+msgstr ""
+
+msgid "Choose a Document to Convert with Scribe"
+msgstr ""
+
+#. TRANSLATORS: Tab title of a document from Scribe for Documents. %s is the document's name.
+msgid "%s (Scribe)"
+msgstr ""
+
+#. TRANSLATORS: Shown in a document's tab while it uploads to Scribe for converting
+msgid "Uploading to Scribe..."
+msgstr ""
+
+#. TRANSLATORS: Shown in a document's tab while Paperback opens it again from the reader's Scribe account
+msgid "Opening from Scribe..."
+msgstr ""
+
+#. TRANSLATORS: Shown when Paperback can't make the temporary file a Scribe conversion is read from. %s is the reason.
+msgid "Paperback couldn't make a temporary copy to read the conversion from: %s"
+msgstr ""
+
+msgid "Ready for reading. More pages are on the way."
+msgstr ""
+
+msgid "This document needs a password to convert."
+msgstr ""
+
+#. TRANSLATORS: Announced when every page of a document converting with Scribe has arrived. %s is the document's name.
+msgid "%s is ready."
+msgstr ""
+
+#. TRANSLATORS: Shown in a document's tab while Scribe has it queued to convert
+msgid "Waiting in line at Scribe..."
+msgstr ""
+
+#. TRANSLATORS: Shown in a document's tab as Scribe starts converting it
+msgid "Scribe is starting the conversion..."
+msgstr ""
+
+#. TRANSLATORS: Shown in a document's tab while Scribe converts it. %s is how far through it is, as a percentage.
+msgid "Converting: %s%"
+msgstr ""
+
+#. TRANSLATORS: Shown in a document's tab while Scribe describes its images. %s is how far through it is, as a percentage.
+msgid "Describing images: %s%"
+msgstr ""
+
+#. TRANSLATORS: Shown when Scribe finds the reader signed out
+msgid "Sign in to Scribe again, on the Scribe tab of Settings."
+msgstr ""
+
+#. TRANSLATORS: Shown when a Scribe conversion fails and Scribe gives no reason
+msgid "Scribe couldn't convert the document."
 msgstr ""
 
 #. TRANSLATORS: Announced after text is copied, with Ctrl+C or from the marked beginning of a selection. The %d placeholder is replaced with the number of characters copied. Plural form is chosen by that count.
@@ -3808,10 +4121,10 @@ msgstr ""
 msgid "Update cancelled."
 msgstr ""
 
-msgid "Failed to open disk image"
+msgid "%s will quit and open the update's disk image. Drag the new version into Applications to finish installing."
 msgstr ""
 
-msgid "The update has been downloaded and its disk image opened. Quit %s and drag the new version into Applications to finish installing."
+msgid "Failed to open disk image"
 msgstr ""
 
 msgid "Invalid application metadata"
@@ -3890,7 +4203,7 @@ msgstr ""
 msgid "The update server returned HTTP error %s."
 msgstr ""
 
-msgid "Could not reach the update server: %s"
+msgid "Could not reach the update server. Check your internet connection and try again."
 msgstr ""
 
 #. TRANSLATORS: Duration segment for hours (for example, "1 hour" or "5 hours"). The %d placeholder is replaced with the count.
@@ -4246,12 +4559,6 @@ msgstr ""
 #: kt
 #: swift
 msgid "Swipe up moves forward"
-msgstr ""
-
-#. TRANSLATORS: Row label for the document's title in the Document Info sheet
-#: kt
-#: swift
-msgid "Title"
 msgstr ""
 
 #. TRANSLATORS: Row label for the document's author in the Document Info sheet
