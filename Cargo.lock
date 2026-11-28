@@ -5224,7 +5224,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.4.3",
+ "getrandom 0.3.4",
  "once_cell",
  "rustix",
  "windows-sys 0.61.2",
@@ -6513,11 +6513,14 @@ checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 [[package]]
 name = "wx-utils"
 version = "0.5.3"
-source = "git+https://github.com/accessware/wx-utils?rev=ce1deed7ad906db8e50b12f7c20bf813afd8ef88#ce1deed7ad906db8e50b12f7c20bf813afd8ef88"
+source = "git+https://github.com/accessware/wx-utils?rev=0ce7b5f78e7dee99ac6598008203fd3cb0bdc877#0ce7b5f78e7dee99ac6598008203fd3cb0bdc877"
 dependencies = [
  "async-task",
  "key-chord",
  "live-region",
+ "objc2",
+ "objc2-app-kit",
+ "objc2-foundation",
  "patois",
  "tokio",
  "tracing",

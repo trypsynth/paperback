@@ -13,6 +13,12 @@ pub fn add_recent_document(path: &Path) {
 	}
 }
 
-/// GTK's and macOS's recent-document registries aren't reachable through wx.
-#[cfg(not(target_os = "windows"))]
+/// Fills the Dock icon's menu and Apple menu > Recent Items.
+#[cfg(target_os = "macos")]
+pub fn add_recent_document(path: &Path) {
+	wx_utils::mac::note_recent_document(path);
+}
+
+/// GTK's recent-document registry isn't reachable through wx.
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
 pub const fn add_recent_document(_path: &Path) {}
